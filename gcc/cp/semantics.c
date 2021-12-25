@@ -2893,6 +2893,21 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
     {
       if (INDIRECT_REF_P (result))
 	result = TREE_OPERAND (result, 0);
+
+      /* Prune all but the selected function from the original overload
+	 set so that we can avoid some duplicate work at instantiation time.  */
+      if (TREE_CODE (result) == CALL_EXPR
+	  && really_overloaded_fn (orig_fn))
+	{
+	  orig_fn = CALL_EXPR_FN (result);
+	  if (TREE_CODE (orig_fn) == COMPONENT_REF)
+	    {
+	      /* The non-dependent result of build_new_method_call.  */
+	      orig_fn = TREE_OPERAND (orig_fn, 1);
+	      gcc_assert (BASELINK_P (orig_fn));
+	    }
+	}
+
       result = build_call_vec (TREE_TYPE (result), orig_fn, orig_args);
       SET_EXPR_LOCATION (result, input_location);
       KOENIG_LOOKUP_P (result) = koenig_p;

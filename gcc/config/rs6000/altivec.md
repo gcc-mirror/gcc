@@ -29,8 +29,6 @@
    UNSPEC_VMHADDSHS
    UNSPEC_VMHRADDSHS
    UNSPEC_VADDCUW
-   UNSPEC_VADDU
-   UNSPEC_VADDS
    UNSPEC_VAVGU
    UNSPEC_VAVGS
    UNSPEC_VMULEUB
@@ -61,8 +59,6 @@
    UNSPEC_VSR
    UNSPEC_VSRO
    UNSPEC_VSUBCUW
-   UNSPEC_VSUBU
-   UNSPEC_VSUBS
    UNSPEC_VSUM4UBS
    UNSPEC_VSUM4S
    UNSPEC_VSUM2SWS
@@ -517,9 +513,8 @@
 
 (define_insn "altivec_vaddu<VI_char>s"
   [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-		    (match_operand:VI 2 "register_operand" "v")]
-		   UNSPEC_VADDU))
+        (us_plus:VI (match_operand:VI 1 "register_operand" "v")
+		    (match_operand:VI 2 "register_operand" "v")))
    (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "<VI_unit>"
   "vaddu<VI_char>s %0,%1,%2"
@@ -527,9 +522,8 @@
 
 (define_insn "altivec_vadds<VI_char>s"
   [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-                    (match_operand:VI 2 "register_operand" "v")]
-		   UNSPEC_VADDS))
+        (ss_plus:VI (match_operand:VI 1 "register_operand" "v")
+		    (match_operand:VI 2 "register_operand" "v")))
    (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vadds<VI_char>s %0,%1,%2"
@@ -563,9 +557,8 @@
 
 (define_insn "altivec_vsubu<VI_char>s"
   [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-                    (match_operand:VI 2 "register_operand" "v")]
-		   UNSPEC_VSUBU))
+        (us_minus:VI (match_operand:VI 1 "register_operand" "v")
+		     (match_operand:VI 2 "register_operand" "v")))
    (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vsubu<VI_char>s %0,%1,%2"
@@ -573,9 +566,8 @@
 
 (define_insn "altivec_vsubs<VI_char>s"
   [(set (match_operand:VI 0 "register_operand" "=v")
-        (unspec:VI [(match_operand:VI 1 "register_operand" "v")
-                    (match_operand:VI 2 "register_operand" "v")]
-		   UNSPEC_VSUBS))
+        (ss_minus:VI (match_operand:VI 1 "register_operand" "v")
+		     (match_operand:VI 2 "register_operand" "v")))
    (set (reg:SI VSCR_REGNO) (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))]
   "VECTOR_UNIT_ALTIVEC_P (<MODE>mode)"
   "vsubs<VI_char>s %0,%1,%2"
@@ -3480,9 +3472,8 @@
 (define_expand "altivec_abss_<mode>"
   [(set (match_dup 2) (vec_duplicate:VI (const_int 0)))
    (parallel [(set (match_dup 3)
-		   (unspec:VI [(match_dup 2)
-			       (match_operand:VI 1 "register_operand" "v")]
-			      UNSPEC_VSUBS))
+		   (ss_minus:VI (match_dup 2)
+				(match_operand:VI 1 "register_operand" "v")))
 	      (set (reg:SI VSCR_REGNO)
 		   (unspec:SI [(const_int 0)] UNSPEC_SET_VSCR))])
    (set (match_operand:VI 0 "register_operand" "=v")

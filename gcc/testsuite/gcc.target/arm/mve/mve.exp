@@ -44,6 +44,12 @@ dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/intrinsics/*.\[cCS\]]] \
 	"" $DEFAULT_CFLAGS
 
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/general/*.\[cCS\]]] \
+	"" $DEFAULT_CFLAGS
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/general-c/*.\[cCS\]]] \
+        "" $DEFAULT_CFLAGS
+
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 	"" $DEFAULT_CFLAGS
 

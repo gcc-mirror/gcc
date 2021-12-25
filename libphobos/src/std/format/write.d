@@ -1287,3 +1287,26 @@ void formatValue(Writer, T, Char)(auto ref Writer w, auto ref T val, scope const
 
     assertThrown!FormatException(formattedWrite(w, "%(%0*d%)", new int[1]));
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=22609
+@safe pure unittest
+{
+    static enum State: ubyte { INACTIVE }
+    static struct S {
+        State state = State.INACTIVE;
+        int generation = 1;
+        alias state this;
+        // DMDBUG: https://issues.dlang.org/show_bug.cgi?id=16657
+        auto opEquals(S other) const { return state == other.state && generation == other.generation; }
+        auto opEquals(State other) const { return state == other; }
+    }
+
+    import std.array : appender;
+    import std.format.spec : singleSpec;
+
+    auto writer = appender!string();
+    const spec = singleSpec("%s");
+    S a;
+    writer.formatValue(a, spec);
+    assert(writer.data == "0");
+}

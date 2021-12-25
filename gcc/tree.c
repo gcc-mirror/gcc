@@ -13530,7 +13530,7 @@ verify_type (const_tree t)
   tree ct = TYPE_CANONICAL (t);
   if (!ct)
     ;
-  else if (TYPE_CANONICAL (t) != ct)
+  else if (TYPE_CANONICAL (ct) != ct)
     {
       error ("%<TYPE_CANONICAL%> has different %<TYPE_CANONICAL%>");
       debug_tree (ct);

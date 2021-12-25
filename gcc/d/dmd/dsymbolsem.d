@@ -3981,15 +3981,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             return;
 
         TypeFunction tf = ctd.type.toTypeFunction();
+        immutable dim = tf.parameterList.length;
+        auto sd = ad.isStructDeclaration();
 
         /* See if it's the default constructor
          * But, template constructor should not become a default constructor.
          */
         if (ad && (!ctd.parent.isTemplateInstance() || ctd.parent.isTemplateMixin()))
         {
-            immutable dim = tf.parameterList.length;
-
-            if (auto sd = ad.isStructDeclaration())
+            if (sd)
             {
                 if (dim == 0 && tf.parameterList.varargs == VarArg.none) // empty default ctor w/o any varargs
                 {
@@ -4032,6 +4032,24 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             else if (dim == 0 && tf.parameterList.varargs == VarArg.none)
             {
                 ad.defaultCtor = ctd;
+            }
+        }
+        // https://issues.dlang.org/show_bug.cgi?id=22593
+        else if (auto ti = ctd.parent.isTemplateInstance())
+        {
+            if (sd && sd.hasCopyCtor && (dim == 1 || (dim > 1 && tf.parameterList[1].defaultArg)))
+            {
+                auto param = tf.parameterList[0];
+
+                // if the template instance introduces an rvalue constructor
+                // between the members of a struct declaration, we should check if a
+                // copy constructor exists and issue an error in that case.
+                if (!(param.storageClass & STC.ref_) && param.type.mutableOf().unSharedOf() == sd.type.mutableOf().unSharedOf())
+                {
+                    .error(ctd.loc, "Cannot define both an rvalue constructor and a copy constructor for `struct %s`", sd.toChars);
+                    .errorSupplemental(ti.loc, "Template instance `%s` creates a rvalue constructor for `struct %s`",
+                            ti.toChars(), sd.toChars());
+                }
             }
         }
     }

@@ -85,8 +85,6 @@ DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 
 /* Used when calling delete on a pointer.  */
 DEF_D_RUNTIME (DELMEMORY, "_d_delmemory", RT(VOID), P1(POINTER_VOIDPTR), 0)
-DEF_D_RUNTIME (DELSTRUCT, "_d_delstruct", RT(VOID),
-	       P2(POINTER_VOIDPTR, TYPEINFO), 0)
 
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a

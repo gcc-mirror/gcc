@@ -23,7 +23,7 @@ import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.utf;
 
-enum TOK : ushort
+enum TOK : ubyte
 {
     reserved,
 
@@ -84,10 +84,7 @@ enum TOK : ushort
     rightShiftAssign,
     unsignedRightShift,
     unsignedRightShiftAssign,
-    concatenate,
     concatenateAssign, // ~=
-    concatenateElemAssign,
-    concatenateDcharAssign,
     add,
     min,
     addAssign,
@@ -109,15 +106,11 @@ enum TOK : ushort
     tilde,
     plusPlus,
     minusMinus,
-    construct,
-    blit,
     dot,
     comma,
     question,
     andAnd,
     orOr,
-    prePlusPlus,
-    preMinusMinus,
 
     // Numeric literals
     int32Literal,
@@ -144,7 +137,6 @@ enum TOK : ushort
     hexadecimalString,
     this_,
     super_,
-    tuple,
     error,
 
     // Basic types
@@ -244,7 +236,6 @@ enum TOK : ushort
 
     parameters,
     traits,
-    overloadSet,
     pure_,
     nothrow_,
     gshared,
@@ -564,7 +555,6 @@ private immutable TOK[] keywords =
     TOK.gshared,
     TOK.traits,
     TOK.vector,
-    TOK.overloadSet,
     TOK.file,
     TOK.fileFullPath,
     TOK.line,
@@ -769,7 +759,6 @@ extern (C++) struct Token
         TOK.gshared: "__gshared",
         TOK.traits: "__traits",
         TOK.vector: "__vector",
-        TOK.overloadSet: "__overloadset",
         TOK.file: "__FILE__",
         TOK.fileFullPath: "__FILE_FULL_PATH__",
         TOK.line: "__LINE__",
@@ -793,8 +782,6 @@ extern (C++) struct Token
         TOK.xor: "^",
         TOK.xorAssign: "^=",
         TOK.assign: "=",
-        TOK.construct: "=",
-        TOK.blit: "=",
         TOK.lessThan: "<",
         TOK.greaterThan: ">",
         TOK.lessOrEqual: "<=",
@@ -824,8 +811,6 @@ extern (C++) struct Token
         TOK.dollar: "$",
         TOK.plusPlus: "++",
         TOK.minusMinus: "--",
-        TOK.prePlusPlus: "++",
-        TOK.preMinusMinus: "--",
         TOK.type: "type",
         TOK.question: "?",
         TOK.negate: "-",
@@ -842,9 +827,6 @@ extern (C++) struct Token
         TOK.andAssign: "&=",
         TOK.orAssign: "|=",
         TOK.concatenateAssign: "~=",
-        TOK.concatenateElemAssign: "~=",
-        TOK.concatenateDcharAssign: "~=",
-        TOK.concatenate: "~",
         TOK.call: "call",
         TOK.identity: "is",
         TOK.notIdentity: "!is",
@@ -860,7 +842,6 @@ extern (C++) struct Token
         // For debugging
         TOK.error: "error",
         TOK.string_: "string",
-        TOK.tuple: "tuple",
         TOK.declaration: "declaration",
         TOK.onScopeExit: "scope(exit)",
         TOK.onScopeSuccess: "scope(success)",
@@ -1111,11 +1092,6 @@ nothrow:
     static const(char)* toChars(TOK value)
     {
         return toString(value).ptr;
-    }
-
-    static const(char)* toChars(ushort value)
-    {
-        return toString(cast(TOK)value).ptr;
     }
 
     extern (D) static string toString(TOK value) pure nothrow @nogc @safe

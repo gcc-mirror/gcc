@@ -1,3 +1,15 @@
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103778
+	* check.c (is_c_interoperable): A BOZ literal constant is not
+	interoperable.
+
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103776
+	* match.c (match_case_selector): Reject expressions in CASE
+	selector which are not scalar.
+
 2021-12-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103412
