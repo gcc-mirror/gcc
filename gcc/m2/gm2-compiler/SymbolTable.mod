@@ -41,7 +41,7 @@ FROM M2ALU IMPORT InitValue, PtrToValue, PushCard, PopInto,
 FROM M2Error IMPORT Error, NewError, ChainError, InternalError,
                     ErrorFormat0, ErrorFormat1, ErrorFormat2,
                     WriteFormat0, WriteFormat1, WriteFormat2, ErrorString,
-                    ErrorAbort0, FlushErrors ;
+                    ErrorAbort0, FlushErrors, ErrorScope, GetCurrentErrorScope ;
 
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3, MetaErrors1,
                         MetaErrorT0,
@@ -63,10 +63,11 @@ FROM Lists IMPORT List, InitList, GetItemFromList, PutItemIntoList,
 
 FROM NameKey IMPORT Name, MakeKey, makekey, NulName, WriteKey, LengthKey, GetKey, KeyToCharStar ;
 
-FROM SymbolKey IMPORT NulKey, SymbolTree,
+FROM SymbolKey IMPORT NulKey, SymbolTree, IsSymbol,
                       InitTree,
                       GetSymKey, PutSymKey, DelSymKey, IsEmptyTree,
-                      DoesTreeContainAny, ForeachNodeDo ;
+                      DoesTreeContainAny, ForeachNodeDo, ForeachNodeConditionDo,
+                      NoOfNodes ;
 
 FROM M2Base IMPORT MixTypes, InitBase, Char, Integer, LongReal,
                    Cardinal, LongInt, LongCard, ZType, RType ;
@@ -165,6 +166,8 @@ TYPE
                      name      : Name ;       (* Index into name array, name *)
                                               (* of record.                  *)
                      oafamily  : CARDINAL ;   (* The oafamily for this sym   *)
+                     errorScope: ErrorScope ; (* Title scope used if an      *)
+                                              (* error is emitted.           *)
                      At        : Where ;      (* Where was sym declared/used *)
                   END ;
 
@@ -365,6 +368,7 @@ TYPE
                ExceptionFinally,
                ExceptionBlock: BOOLEAN ;    (* does it have an exception?    *)
                Scope         : CARDINAL ;   (* Scope of declaration.         *)
+               errorScope    : ErrorScope ; (* The title scope.              *)
                ListOfModules : List ;       (* List of all inner modules.    *)
                Begin, End    : CARDINAL ;   (* Tokens marking the BEGIN END  *)
                At            : Where ;      (* Where was sym declared/used   *)
@@ -660,6 +664,7 @@ TYPE
                ListOfProcs   : List ;       (* List of all procedures        *)
                                             (* declared within this module.  *)
                ListOfModules : List ;       (* List of all inner modules.    *)
+               errorScope    : ErrorScope ; (* The title scope.              *)
                At            : Where ;      (* Where was sym declared/used *)
             END ;
 
@@ -722,6 +727,7 @@ TYPE
                ListOfProcs   : List ;       (* List of all procedures        *)
                                             (* declared within this module.  *)
                ListOfModules : List ;       (* List of all inner modules.    *)
+               errorScope    : ErrorScope ; (* The title scope.              *)
                At            : Where ;      (* Where was sym declared/used   *)
             END ;
 
@@ -2808,7 +2814,8 @@ BEGIN
             Scope := NulSym
          ELSE
             Scope := pCall^.Main
-         END
+         END ;
+         errorScope := GetCurrentErrorScope () ;       (* Title error scope. *)
       END
    END ;
    PutSymKey(ModuleTree, ModuleName, Sym) ;
@@ -2919,7 +2926,8 @@ BEGIN
             ELSE
                Scope := GetCurrentScope() ;
                AddModuleToParent(Sym, Scope)
-            END
+            END ;
+            errorScope := GetCurrentErrorScope () ;   (* Title error scope.  *)
          END ;
       END ;
       AddSymToScope(Sym, ModuleName)
@@ -3039,6 +3047,7 @@ BEGIN
          InitList(ListOfModules) ;    (* List of all inner modules.    *)
          InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.        *)
          InitWhereFirstUsedTok(tok, At) ; (* Where symbol first used.      *)
+         errorScope := GetCurrentErrorScope () ; (* Title error scope. *)
       END
    END ;
    PutSymKey(ModuleTree, DefImpName, Sym) ;
@@ -3122,6 +3131,7 @@ BEGIN
             Begin := 0 ;                 (* token number for BEGIN        *)
             End := 0 ;                   (* token number for END          *)
             InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.        *)
+            errorScope := GetCurrentErrorScope () ; (* Title error scope. *)
          END
       END ;
       (* Now add this procedure to the symbol table of the current scope *)
@@ -7897,6 +7907,45 @@ BEGIN
 END IsUnreportedUnknown ;
 
 
+VAR
+   ListifySentance : String ;
+   ListifyTotal,
+   ListifyWordCount: CARDINAL ;
+
+
+(*
+   AddListify -
+*)
+
+PROCEDURE AddListify (sym: CARDINAL) ;
+BEGIN
+   INC (ListifyWordCount) ;
+   IF ListifyWordCount = ListifyTotal
+   THEN
+      ListifySentance := ConCat (ListifySentance, Mark (InitString (" and ")))
+   ELSIF ListifyWordCount > 1
+   THEN
+      ListifySentance := ConCat (ListifySentance, Mark (InitString (", ")))
+   END ;
+   ListifySentance := ConCat (ListifySentance,
+                              Mark (InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+END AddListify ;
+
+
+(*
+   Listify - convert tree into a string list and return the result.
+*)
+
+PROCEDURE Listify (tree: SymbolTree; isCondition: IsSymbol) : String ;
+BEGIN
+   ListifyTotal := NoOfNodes (tree, isCondition) ;
+   ListifyWordCount := 0 ;
+   ListifySentance := InitString ('') ;
+   ForeachNodeConditionDo (tree, isCondition, AddListify) ;
+   RETURN ListifySentance
+END Listify ;
+
+
 (*
    CheckForUnknowns - checks a binary tree, Tree, to see whether it contains
                       an unknown symbol. All unknown symbols are displayed
@@ -7915,6 +7964,8 @@ BEGIN
       s := ConCat(s, Mark(InitStringCharStar(KeyToCharStar(name)))) ;
       s := ConCat(s, Mark(InitString('%> were '))) ;
       s := ConCat(s, Mark(InitString(a))) ;
+      s := ConCat (s, Mark (InitString (': '))) ;
+      s := ConCat (s, Mark (Listify (Tree, IsUnreportedUnknown))) ;
       MetaErrorStringT0(GetTokenNo(), s) ;
       ForeachNodeDo(Tree, UnknownSymbolError)
    END
@@ -9678,6 +9729,7 @@ BEGIN
       WITH Undefined DO
          name     := SymName ;
          oafamily := NulSym ;
+         errorScope := GetCurrentErrorScope () ;
          InitWhereFirstUsedTok (tok, At)
       END
    END
@@ -13280,6 +13332,59 @@ BEGIN
       INC (sym)
    END
 END DumpSymbols ;
+*)
+
+
+(*
+   GetErrorScope - returns the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+*)
+
+PROCEDURE GetErrorScope (sym: CARDINAL) : ErrorScope ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym:  RETURN Procedure.errorScope |
+      ModuleSym   :  RETURN Module.errorScope |
+      DefImpSym   :  RETURN DefImp.errorScope |
+      UndefinedSym:  RETURN Undefined.errorScope
+
+      ELSE
+         InternalError ('expecting procedure, module or defimp symbol')
+      END
+   END
+END GetErrorScope ;
+
+
+(*
+   PutErrorScope - sets the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+*)
+
+(*
+PROCEDURE PutErrorScope (sym: CARDINAL; errorScope: ErrorScope) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (type) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym:  Procedure.errorScope := errorScope |
+      ModuleSym   :  Module.errorScope := errorScope |
+      DefImpSym   :  DefImp.errorScope := errorScope
+
+      ELSE
+         InternalError ('expecting procedure, module or defimp symbol')
+      END
+   END
+END PutErrorScope ;
 *)
 
 

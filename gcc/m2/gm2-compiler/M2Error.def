@@ -32,7 +32,8 @@ DEFINITION MODULE M2Error ;
 FROM SYSTEM IMPORT BYTE ;
 FROM DynamicStrings IMPORT String ;
 FROM NameKey IMPORT Name ;
-EXPORT QUALIFIED Error,
+
+EXPORT QUALIFIED Error, ErrorScope,
                  InternalError,
                  WriteFormat0, WriteFormat1, WriteFormat2, WriteFormat3,
                  NewError, ErrorFormat0, ErrorFormat1, ErrorFormat2, ErrorFormat3,
@@ -45,13 +46,16 @@ EXPORT QUALIFIED Error,
                  WarnFormat0, WarnFormat1, MoveError,
                  AnnounceScope, EnterImplementationScope,
                  EnterModuleScope, EnterDefinitionScope, EnterProgramScope,
-                 EnterProcedureScope, LeaveScope, DepthScope, GetAnnounceScope,
+                 EnterProcedureScope, DepthScope, GetAnnounceScope,
                  DefaultProgramModule, DefaultImplementationModule,
                  DefaultDefinitionModule, DefaultInnerModule, DefaultProcedure,
-                 ParsingComplete ;
+                 EnterErrorScope, GetCurrentErrorScope, ResetErrorScope,
+                 LeaveErrorScope ;
+
 
 TYPE
    Error ;
+   ErrorScope ;
 
 
 (*
@@ -274,13 +278,6 @@ PROCEDURE EnterProcedureScope (scopename: Name) ;
 
 
 (*
-   LeaveScope - leave the current scope and pop into the previous one.
-*)
-
-PROCEDURE LeaveScope ;
-
-
-(*
    DepthScope - returns the depth of the scope stack.
 *)
 
@@ -336,11 +333,32 @@ PROCEDURE DefaultProcedure ;
 
 
 (*
-   ParsingComplete - after this is called the Enter scope procedure
-                     will not assert the default scope was set.
+   EnterErrorScope - pushes the currentScope and sets currentScope to scope.
 *)
 
-PROCEDURE ParsingComplete ;
+PROCEDURE EnterErrorScope (scope: ErrorScope) ;
+
+
+(*
+   LeaveErrorScope - leave the current scope and pop into the previous one.
+*)
+
+PROCEDURE LeaveErrorScope ;
+
+
+(*
+   GetCurrentErrorScope - returns currentScope.
+*)
+
+PROCEDURE GetCurrentErrorScope () : ErrorScope ;
+
+
+(*
+   ResetErrorScope - should be called at the start of each pass to
+                     reset the error scope index.
+*)
+
+PROCEDURE ResetErrorScope ;
 
 
 END M2Error.

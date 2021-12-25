@@ -29,16 +29,16 @@ CONST
    MaxBucket = 10 ;
 
 TYPE
-   StackBucket     = POINTER TO Bucket ;
-   Bucket          = RECORD
+   StackBucketWord = POINTER TO BucketWord ;
+   BucketWord      = RECORD
                          bucket: ARRAY [0..MaxBucket-1] OF WORD ;
                          items : CARDINAL ;
-                         last  : StackBucket ;
+                         last  : StackBucketWord ;
                      END ;
 
    StackOfWord     = POINTER TO StackDescriptor ;
    StackDescriptor = RECORD
-                        tail: StackBucket ;
+                        tail: StackBucketWord ;
                      END ;
 
 
@@ -59,10 +59,10 @@ END InitStackWord ;
 
 
 (*
-   KillBucket - destroys a StackBucket and returns, NIL.
+   KillBucket - destroys a StackBucketWord and returns, NIL.
 *)
 
-PROCEDURE KillBucket (b: StackBucket) : StackBucket ;
+PROCEDURE KillBucket (b: StackBucketWord) : StackBucketWord ;
 BEGIN
    IF b#NIL
    THEN
@@ -89,12 +89,12 @@ END KillStackWord ;
 
 
 (*
-   InitBucket - returns an empty StackBucket.
+   InitBucket - returns an empty StackBucketWord.
 *)
 
-PROCEDURE InitBucket (l: StackBucket) : StackBucket ;
+PROCEDURE InitBucket (l: StackBucketWord) : StackBucketWord ;
 VAR
-   b: StackBucket ;
+   b: StackBucketWord ;
 BEGIN
    NEW(b) ;
    WITH b^ DO
@@ -138,7 +138,7 @@ END PushWord ;
 
 PROCEDURE PopWord (s: StackOfWord) : WORD ;
 VAR
-   b: StackBucket ;
+   b: StackBucketWord ;
 BEGIN
    IF s=NIL
    THEN
@@ -185,7 +185,7 @@ END IsEmptyWord ;
 
 PROCEDURE PeepWord (s: StackOfWord; n: CARDINAL) : WORD ;
 VAR
-   b: StackBucket ;
+   b: StackBucketWord ;
 BEGIN
    IF s^.tail=NIL
    THEN
@@ -227,7 +227,7 @@ END PeepWord ;
 
 PROCEDURE ReduceWord (s: StackOfWord; n: CARDINAL) ;
 VAR
-   b: StackBucket ;
+   b: StackBucketWord ;
 BEGIN
    IF s^.tail=NIL
    THEN
@@ -279,7 +279,7 @@ END RemoveTop ;
 
 PROCEDURE NoOfItemsInStackWord (s: StackOfWord) : CARDINAL ;
 VAR
-   b: StackBucket ;
+   b: StackBucketWord ;
    n: CARDINAL ;
 BEGIN
    IF IsEmptyWord(s)

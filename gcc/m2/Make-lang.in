@@ -975,6 +975,13 @@ m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod 
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
             -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2GCCDeclare.c -o $@
 
+m2/gm2-compiler-boot/M2Error.o: $(srcdir)/m2/gm2-compiler/M2Error.mod $(MCDEPS) $(BUILD-BOOT-H)
+	$(MC) --extended-opaque -o=m2/gm2-compiler-boot/M2Error.c $<
+	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            -I. -I$(srcdir)/../include -I$(srcdir) \
+            -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
+            -I$(srcdir)/m2/gm2-libiberty $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/M2Error.c -o $@
+
 m2/gm2-compiler-boot/%.o: $(srcdir)/m2/gm2-compiler/%.mod $(BUILD-BOOT-H) $(MCDEPS)
 	$(MC) -o=m2/gm2-compiler-boot/$*.c $(srcdir)/m2/gm2-compiler/$*.mod
 	$(COMPILER) -c -fpermissive $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \

@@ -1120,11 +1120,11 @@ ProcedureHeading := "PROCEDURE"                                            % M2E
 
 Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
 
-DefProcedureHeading := "PROCEDURE"
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
                         Builtin
                         ( Ident
                           [ DefFormalParameters ] AttributeNoReturn
-                        )
+                        )                                                  % M2Error.LeaveErrorScope %
                     =:
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:

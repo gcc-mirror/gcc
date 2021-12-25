@@ -807,8 +807,10 @@ AttributeNoReturn := [ "<*" Ident "*>" ] =:
 Builtin := [ "__BUILTIN__"                                                % PutModuleContainsBuiltin %
                            | "__INLINE__"  ] =:
 
-DefProcedureHeading := "PROCEDURE" Builtin
+DefProcedureHeading := "PROCEDURE"                                        % M2Error.DefaultProcedure %
+                                   Builtin
                        ( Ident [ DefFormalParameters ] AttributeNoReturn )
+                                                                          % M2Error.LeaveErrorScope %
                      =:
 
 -- introduced procedure block so we can produce more informative

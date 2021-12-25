@@ -38,9 +38,12 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Error IMPORT MoveError ;
 FROM M2Debug IMPORT Assert ;
 
+FROM Indexing IMPORT Index, InitIndex, KillIndex, GetIndice, PutIndice,
+                     DeleteIndice, HighIndice ;
+
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar,
                            ConCat, ConCatChar, Mark, string, KillString,
-                           Dup, char, Length, Mult, EqualArray ;
+                           Dup, char, Length, Mult, EqualArray, Equal ;
 
 FROM SymbolTable IMPORT NulSym,
                         IsDefImp, IsModule, IsInnerModule,
@@ -55,7 +58,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsError, GetSymName, GetScope, IsExported,
                         GetType, SkipType, GetDeclaredDef, GetDeclaredMod,
                         GetDeclaredModule, GetDeclaredDefinition, GetScope,
-                        GetFirstUsed, IsNameAnonymous ;
+                        GetFirstUsed, IsNameAnonymous, GetErrorScope ;
 
 IMPORT M2ColorString ;
 IMPORT M2Error ;
@@ -92,10 +95,232 @@ TYPE
                    stackPtr  : CARDINAL ;
                 END ;
 
+
+    dictionaryEntry = POINTER TO RECORD
+                                    key,
+                                    value: String ;
+                                    next : dictionaryEntry ;
+                                 END ;
+
+
 VAR
    lastRoot  : Error ;
    lastColor : colorType ;
    seenAbort : BOOLEAN ;
+   dictionary : Index ;
+   outputStack: Index ;
+   freeEntry  : dictionaryEntry ;
+
+
+(*
+   pushOutput -
+*)
+
+PROCEDURE pushOutput (VAR eb: errorBlock) ;
+BEGIN
+   PutIndice (outputStack, HighIndice (outputStack)+1, eb.out) ;
+   eb.out := InitString ('') ;
+   eb.glyph := FALSE
+END pushOutput ;
+
+
+(*
+   readWord - reads and returns a word delimited by '}' it uses '%' as
+              the escape character.
+*)
+
+PROCEDURE readWord (VAR eb: errorBlock) : String ;
+VAR
+   word: String ;
+BEGIN
+   word := InitString ('') ;
+   WHILE (eb.ini < eb.len) AND (char (eb.in, eb.ini) # "}") DO
+      IF char (eb.in, eb.ini) = "%"
+      THEN
+         INC (eb.ini)
+      END ;
+      word := ConCatChar (word, char (eb.in, eb.ini)) ;
+      INC (eb.ini)
+   END ;
+   RETURN word
+END readWord ;
+
+
+(*
+   addEntry -
+*)
+
+PROCEDURE addEntry (key, value: String) ;
+VAR
+   e: dictionaryEntry ;
+   s: String ;
+   i: CARDINAL ;
+BEGIN
+   s := lookupString (key) ;
+   IF s = NIL
+   THEN
+      e := newEntry () ;
+      e^.key := key ;
+      e^.value := value ;
+      PutIndice (dictionary, HighIndice (dictionary)+1, e)
+   ELSE
+      i := 1 ;
+      WHILE i <= HighIndice (dictionary) DO
+         e := GetIndice (dictionary, i) ;
+         IF Equal (e^.key, key)
+         THEN
+            e^.value := KillString (e^.value) ;
+            e^.value := value ;
+            RETURN
+         END ;
+         INC (i)
+      END
+   END
+END addEntry ;
+
+
+(*
+   popOutput -
+*)
+
+PROCEDURE popOutput (VAR eb: errorBlock) ;
+VAR
+   key,
+   previous: String ;
+BEGIN
+   IF HighIndice (outputStack) >= 1
+   THEN
+      previous := GetIndice (outputStack, HighIndice (outputStack)) ;
+      DeleteIndice (outputStack, HighIndice (outputStack)) ;
+      key := readWord (eb) ;
+      addEntry (key, eb.out) ;
+      eb.out := previous
+   END
+END popOutput ;
+
+
+(*
+   newEntry -
+*)
+
+PROCEDURE newEntry () : dictionaryEntry ;
+VAR
+   e: dictionaryEntry ;
+BEGIN
+   IF freeEntry = NIL
+   THEN
+      NEW (e)
+   ELSE
+      e := freeEntry ;
+      freeEntry := freeEntry^.next
+   END ;
+   WITH e^ DO
+      key := NIL ;
+      value := NIL ;
+      next := NIL
+   END ;
+   RETURN e
+END newEntry ;
+
+
+(*
+   killEntry - dispose e and delete any strings.
+*)
+
+PROCEDURE killEntry (e: dictionaryEntry) ;
+BEGIN
+   e^.next := freeEntry ;
+   freeEntry := e ;
+   IF e^.key # NIL
+   THEN
+      e^.key := KillString (e^.key)
+   END ;
+   IF e^.value # NIL
+   THEN
+      e^.value := KillString (e^.value)
+   END
+END killEntry ;
+
+
+(*
+   resetDictionary - remove all entries in the dictionary.
+*)
+
+PROCEDURE resetDictionary ;
+VAR
+   i: CARDINAL ;
+   e: dictionaryEntry ;
+BEGIN
+   i := 1 ;
+   WHILE i <= HighIndice (dictionary) DO
+      e := GetIndice (dictionary, i) ;
+      killEntry (e) ;
+      INC (i)
+   END ;
+   dictionary := KillIndex (dictionary) ;
+   dictionary := InitIndex (1)
+END resetDictionary ;
+
+
+(*
+   lookupString - lookup and return a duplicate of the string value for key s.
+                  NIL is returned if the key s is unknown.
+*)
+
+PROCEDURE lookupString (s: String) : String ;
+VAR
+   i: CARDINAL ;
+   e: dictionaryEntry ;
+BEGIN
+   i := 1 ;
+   WHILE i <= HighIndice (dictionary) DO
+      e := GetIndice (dictionary, i) ;
+      IF Equal (e^.key, s)
+      THEN
+         RETURN Dup (e^.value)
+      END ;
+      INC (i)
+   END ;
+   RETURN NIL
+END lookupString ;
+
+
+(*
+   lookupDefine - looks up the word in the input string (ending with '}').
+                  It uses this word as a key into the dictionary and returns
+                  the entry.
+*)
+
+PROCEDURE lookupDefine (VAR eb: errorBlock) : String ;
+VAR
+   s: String ;
+BEGIN
+   s := InitString ('') ;
+   WHILE (eb.ini < eb.len) AND (char (eb.in, eb.ini) # "}") DO
+      IF char (eb.in, eb.ini) = "%"
+      THEN
+         INC (eb.ini)
+      END ;
+      s := ConCatChar (s, char (eb.in, eb.ini)) ;
+      INC (eb.ini)
+   END ;
+   s := lookupString (s) ;
+   IF s = NIL
+   THEN
+      s := InitString ('')
+   END ;
+   RETURN s
+END lookupDefine ;
+
+
+(*
+   processDefine - place contents of dictionary entry name onto the output string.
+*)
+
+PROCEDURE processDefine (VAR eb: errorBlock) ;
+BEGIN
+   eb.out := ConCat (eb.out, lookupDefine (eb))
+END processDefine ;
 
 
 (*
@@ -972,24 +1197,20 @@ BEGIN
    scope := GetScope (sym) ;
    IF scope = NulSym
    THEN
+      M2Error.EnterErrorScope (NIL) ;
       doError (eb, GetDeclaredMod (sym))
    ELSE
+      M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
-         M2Error.DefaultProcedure ;
-         M2Error.EnterProcedureScope (GetSymName (scope)) ;
-         doError (eb, GetDeclaredMod (sym)) ;
+         doError (eb, GetDeclaredMod (sym))
       ELSE
          IF IsModule (scope)
          THEN
             IF IsInnerModule (scope)
             THEN
-               M2Error.DefaultInnerModule ;
-               M2Error.EnterModuleScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             ELSE
-               M2Error.DefaultProgramModule ;
-               M2Error.EnterProgramScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             END
          ELSE
@@ -1000,18 +1221,14 @@ BEGIN
             UNTIL GetScope(OuterModule)=NulSym ;  *)
             IF GetDeclaredModule (sym) = UnknownTokenNo
             THEN
-               M2Error.DefaultDefinitionModule ;
-               M2Error.EnterDefinitionScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             ELSE
-               M2Error.DefaultImplementationModule ;
-               M2Error.EnterImplementationScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             END
          END
-      END ;
-      M2Error.LeaveScope
-   END
+      END
+   END ;
+   M2Error.LeaveErrorScope
 END doErrorScopeMod ;
 
 
@@ -1028,24 +1245,20 @@ BEGIN
    scope := GetScope (sym) ;
    IF scope = NulSym
    THEN
+      M2Error.EnterErrorScope (NIL) ;
       doError (eb, GetDeclaredDef (sym))
    ELSE
+      M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
-         M2Error.DefaultProcedure ;
-         M2Error.EnterProcedureScope (GetSymName (scope)) ;
-         doError (eb, GetDeclaredDef (sym)) ;
+         doError (eb, GetDeclaredDef (sym))
       ELSE
          IF IsModule (scope)
          THEN
             IF IsInnerModule (scope)
             THEN
-               M2Error.DefaultInnerModule ;
-               M2Error.EnterModuleScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             ELSE
-               M2Error.DefaultProgramModule ;
-               M2Error.EnterProgramScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             END
          ELSE
@@ -1056,18 +1269,14 @@ BEGIN
             UNTIL GetScope(OuterModule)=NulSym ;  *)
             IF GetDeclaredDefinition (sym) = UnknownTokenNo
             THEN
-               M2Error.DefaultImplementationModule ;
-               M2Error.EnterImplementationScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             ELSE
-               M2Error.DefaultDefinitionModule ;
-               M2Error.EnterDefinitionScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             END
          END
-      END ;
-      M2Error.LeaveScope
    END
+   END ;
+   M2Error.LeaveErrorScope
 END doErrorScopeDef ;
 
 
@@ -1305,6 +1514,10 @@ BEGIN
             DEC (eb.ini) |
       'k':  unquotedKeyword (eb) ;
             DEC (eb.ini) |
+      'Q':  resetDictionary |
+      'X':  pushOutput (eb) |
+      'Y':  processDefine (eb) |
+      'Z':  popOutput (eb) |
       'F':  filename (eb) ;
             DEC (eb.ini) |
       'u':  eb.quotes := FALSE |
@@ -1312,7 +1525,7 @@ BEGIN
             DEC (eb.ini)
 
       ELSE
-         InternalFormat (eb, 'expecting one of [akqtdnpsuCDEKNPOUW:<>%]', __LINE__)
+         InternalFormat (eb, 'expecting one of [akqtdnpsuCDEFKNOPQRSTUWXYZ:<>%]', __LINE__)
       END ;
       INC (eb.ini)
    END ;
@@ -2236,5 +2449,8 @@ END MetaString4 ;
 BEGIN
    lastRoot := NIL ;
    lastColor := noColor ;
-   seenAbort := FALSE
+   seenAbort := FALSE ;
+   outputStack := InitIndex (1) ;
+   dictionary := InitIndex (1) ;
+   freeEntry := NIL
 END M2MetaError.

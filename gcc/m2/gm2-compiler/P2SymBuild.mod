@@ -227,7 +227,7 @@ BEGIN
    THEN
       WriteFormat2('inconsistant definition module name, module began as (%a) and ended with (%a)', NameStart, NameEnd)
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P2EndBuildDefModule ;
 
 
@@ -295,7 +295,7 @@ BEGIN
    THEN
       WriteFormat1('inconsistant implementation module name %a', NameStart)
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P2EndBuildImplementationModule ;
 
 
@@ -368,7 +368,7 @@ BEGIN
    THEN
       WriteFormat2('inconsistant program module name %a does not match %a', NameStart, NameEnd)
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P2EndBuildProgramModule ;
 
 
@@ -433,7 +433,7 @@ BEGIN
       WriteFormat2('inconsistant inner module name %a does not match %a',
                    NameStart, NameEnd)
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndBuildInnerModule ;
 
 
@@ -1272,7 +1272,7 @@ BEGIN
       WriteFormat2('end procedure name does not match beginning %a name %a', NameStart, NameEnd)
    END ;
    EndScope ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndBuildProcedure ;
 
 

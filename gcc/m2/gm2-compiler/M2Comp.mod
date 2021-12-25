@@ -36,7 +36,7 @@ FROM M2Preprocess IMPORT PreprocessModule ;
 FROM libc IMPORT exit ;
 
 FROM M2Error IMPORT ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
-                    WriteFormat0, FlushErrors, FlushWarnings, ParsingComplete ;
+                    WriteFormat0, FlushErrors, FlushWarnings, ResetErrorScope ;
 
 FROM M2MetaError IMPORT MetaErrorString1, MetaError0, MetaError1 ;
 FROM FormatStrings IMPORT Sprintf1 ;
@@ -126,22 +126,22 @@ PROCEDURE Compile (s: String) ;
 BEGIN
    DoPass0(s) ;
    FlushWarnings ; FlushErrors ;
-   ResetForNewPass ;
+   ResetForNewPass ; ResetErrorScope ;
    qprintf0('Pass 1: scopes, enumerated types, imports and exports\n') ;
    DoPass1 ;
    FlushWarnings ; FlushErrors ;
    qprintf0('Pass 2: constants and types\n') ;
-   ResetForNewPass ;
+   ResetForNewPass ; ResetErrorScope ;
    DoPass2 ;
    FlushWarnings ; FlushErrors ;
    qprintf0('Pass C: aggregate constants\n') ;
-   ResetForNewPass ;
+   ResetForNewPass ; ResetErrorScope ;
    DoPassC ;
    FlushWarnings ; FlushErrors ;
    qprintf0('Pass 3: quadruple generation\n') ;
-   ResetForNewPass ;
+   ResetForNewPass ; ResetErrorScope ;
    DoPass3 ;
-   FlushWarnings ; FlushErrors ; ParsingComplete ;
+   FlushWarnings ; FlushErrors ;
    qprintf0('Pass 4: gcc tree generation\n') ;
    Code ;
    FlushWarnings ; FlushErrors

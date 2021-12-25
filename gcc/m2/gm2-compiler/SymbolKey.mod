@@ -26,6 +26,7 @@ FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM NumberIO IMPORT WriteCard ;
 FROM NameKey IMPORT WriteKey ;
+FROM Assertion IMPORT Assert ;
 FROM Debug IMPORT Halt ;
 
 
@@ -100,7 +101,7 @@ VAR
    father,
    child : SymbolTree ;
 BEGIN
-   FindNodeAndParentInTree(t, NameKey, child, father) ;
+   FindNodeParentInTree(t, NameKey, child, father) ;
    RETURN child#NIL
 END ContainsSymKey ;
 
@@ -110,12 +111,12 @@ VAR
    father,
    child : SymbolTree ;
 BEGIN
-   FindNodeAndParentInTree(t, NameKey, child, father) ;
+   FindNodeParentInTree(t, NameKey, child, father) ;
    IF child=NIL
    THEN
-      RETURN( NulKey )
+      RETURN NulKey
    ELSE
-      RETURN( child^.KeySym )
+      RETURN child^.KeySym
    END
 END GetSymKey ;
 
@@ -125,7 +126,7 @@ VAR
    father,
    child : SymbolTree ;
 BEGIN
-   FindNodeAndParentInTree(t, NameKey, child, father) ;
+   FindNodeParentInTree(t, NameKey, child, father) ;
    IF child=NIL
    THEN
       (* no child found, now is NameKey less than father or greater? *)
@@ -168,7 +169,7 @@ PROCEDURE DelSymKey (t: SymbolTree; NameKey: Name) ;
 VAR
    i, child, father: SymbolTree ;
 BEGIN
-   FindNodeAndParentInTree(t, NameKey, child, father) ;  (* find father and child of the node *)
+   FindNodeParentInTree(t, NameKey, child, father) ;  (* find father and child of the node *)
    IF (child#NIL) AND (child^.KeyName=NameKey)
    THEN
       (* Have found the node to be deleted *)
@@ -225,35 +226,36 @@ END DelSymKey ;
 
 
 (*
-   FindNodeAndParentInTree - find a node, child, in a binary tree, t, with name equal to n.
-                             if an entry is found, father is set to the node above child.
+   FindNodeParentInTree - find a node, child, in a binary tree, t, with name equal to n.
+                          if an entry is found, parent is set to the node above child.
 *)
 
-PROCEDURE FindNodeAndParentInTree (t: SymbolTree; n: Name;
-                                   VAR child, father: SymbolTree) ;
+PROCEDURE FindNodeParentInTree (t: SymbolTree; n: Name;
+                                VAR child, parent: SymbolTree) ;
 BEGIN
-   (* remember to skip the sentinal value and assign father and child *)
-   father := t ;
+   (* remember to skip the sentinal value and assign parent and child *)
+   parent := t ;
    IF t=NIL
    THEN
       Halt('parameter t should never be NIL', __LINE__, __FILE__)
    END ;
+   Assert (t^.Right = NIL) ;
    child := t^.Left ;
    IF child#NIL
    THEN
       REPEAT
          IF n<child^.KeyName
          THEN
-            father := child ;
+            parent := child ;
             child := child^.Left
          ELSIF n>child^.KeyName
          THEN
-            father := child ;
+            parent := child ;
             child := child^.Right
          END
       UNTIL (child=NIL) OR (n=child^.KeyName)
    END
-END FindNodeAndParentInTree ;
+END FindNodeParentInTree ;
 
 
 (*
@@ -262,7 +264,7 @@ END FindNodeAndParentInTree ;
 
 PROCEDURE IsEmptyTree (t: SymbolTree) : BOOLEAN ;
 BEGIN
-   RETURN( t^.Left=NIL )
+   RETURN t^.Left = NIL
 END IsEmptyTree ;
 
 
@@ -276,7 +278,7 @@ END IsEmptyTree ;
 
 PROCEDURE DoesTreeContainAny (t: SymbolTree; P: IsSymbol) : BOOLEAN ;
 BEGIN
-   RETURN( SearchForAny(t^.Left, P) )
+   RETURN SearchForAny (t^.Left, P)
 END DoesTreeContainAny ;
 
 
@@ -290,9 +292,10 @@ PROCEDURE SearchForAny (t: SymbolTree; P: IsSymbol) : BOOLEAN ;
 BEGIN
    IF t=NIL
    THEN
-      RETURN( FALSE )
+      RETURN FALSE
    ELSE
-      RETURN( P(t^.KeySym) OR SearchForAny(t^.Left, P) OR
+      RETURN( P (t^.KeySym) OR
+              SearchForAny (t^.Left, P) OR
                               SearchForAny(t^.Right, P)
             )
    END
@@ -329,6 +332,76 @@ BEGIN
       END
    END
 END SearchAndDo ;
+
+
+(*
+   CountNodes - wrapper for NoOfNodes.
+*)
+
+PROCEDURE CountNodes (t: SymbolTree; condition: IsSymbol; count: CARDINAL) : CARDINAL ;
+BEGIN
+   IF t # NIL
+   THEN
+      WITH t^ DO
+         IF condition (KeySym)
+         THEN
+            INC (count)
+         END ;
+         count := CountNodes (Left, condition, count) ;
+         count := CountNodes (Right, condition, count)
+      END
+   END ;
+   RETURN count
+END CountNodes ;
+
+
+(*
+   NoOfNodes - returns the number of nodes in the tree t.
+*)
+
+PROCEDURE NoOfNodes (t: SymbolTree; condition: IsSymbol) : CARDINAL ;
+BEGIN
+   RETURN CountNodes (t^.Left, condition, 0)
+END NoOfNodes ;
+
+
+(*
+   SearchConditional - wrapper for ForeachNodeConditionDo.
+*)
+
+PROCEDURE SearchConditional (t: SymbolTree; condition: IsSymbol; P: PerformOperation) ;
+BEGIN
+   IF t#NIL
+   THEN
+      WITH t^ DO
+         SearchConditional (Right, condition, P) ;
+         IF (KeySym # 0) AND condition (KeySym)
+         THEN
+            P (KeySym)
+         END ;
+         SearchConditional (Left, condition, P)
+      END
+   END
+END SearchConditional ;
+
+
+(*
+   ForeachNodeConditionDo - traverse the tree t and for any node which satisfied
+                            condition call P.
+*)
+
+PROCEDURE ForeachNodeConditionDo (t: SymbolTree;
+                                  condition: IsSymbol;
+                                  P: PerformOperation) ;
+BEGIN
+   IF t#NIL
+   THEN
+      WITH t^ DO
+         Assert (Right = NIL) ;
+         SearchConditional (Left, condition, P)
+      END
+   END
+END ForeachNodeConditionDo ;
 
 
 END SymbolKey.

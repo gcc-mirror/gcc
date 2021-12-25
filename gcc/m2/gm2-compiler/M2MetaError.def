@@ -85,6 +85,11 @@ EXPORT QUALIFIED MetaError0, MetaError1, MetaError2, MetaError3, MetaError4,
     {%R}      this error will be the root of the future chained errors.
     {%n}      decimal number.  Not quoted.
     {%N}      count (number), for example, 1st, 2nd, 3rd, 4th.  Not quoted.
+    {%X}      push contents of the output string onto the string stack.
+    {%Yname}  place contents of dictionary entry name onto the output string.
+    {%Zname}  replace dictionary entry name for the output string.
+              Pop contents of the string stack onto the output string.
+    {%Q}      remove all entries in the dictionary.
     {%P}      push the current color state.
     {%p}      pop the current color state.
     {%Ffilename} the string filename will be rendered using the filename color.

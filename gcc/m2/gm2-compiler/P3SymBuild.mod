@@ -129,7 +129,7 @@ BEGIN
       WriteFormat2('inconsistant definition module was named (%a) and concluded as (%a)',
                    NameStart, NameEnd)
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P3EndBuildDefModule ;
 
 
@@ -200,7 +200,7 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P3EndBuildImpModule ;
 
 
@@ -273,7 +273,7 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END P3EndBuildProgModule ;
 
 
@@ -343,7 +343,7 @@ BEGIN
       FlushErrors
    END ;
    SetCurrentModule(GetModuleScope(GetCurrentModule())) ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndBuildInnerModule ;
 
 
@@ -511,7 +511,7 @@ BEGIN
       FlushErrors
    END ;
    EndScope ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndBuildProcedure ;
 
 

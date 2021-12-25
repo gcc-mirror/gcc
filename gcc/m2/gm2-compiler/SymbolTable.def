@@ -34,6 +34,7 @@ FROM SymbolKey IMPORT PerformOperation ;
 FROM NameKey IMPORT Name ;
 FROM m2tree IMPORT Tree ;
 FROM DynamicStrings IMPORT String ;
+FROM M2Error IMPORT ErrorScope ;
 
 EXPORT QUALIFIED NulSym,
                  FinalSymbol,
@@ -311,6 +312,7 @@ EXPORT QUALIFIED NulSym,
 
                  PutModuleContainsBuiltin, IsBuiltinInModule,
 		 HasVarParameters,
+                 GetErrorScope,
 
                  IsSizeSolved,
                  IsOffsetSolved,
@@ -3200,6 +3202,24 @@ PROCEDURE DisplayTrees (ModSym: CARDINAL) ;
 *)
 
 PROCEDURE DebugLineNumbers (sym: CARDINAL) ;
+
+
+(*
+   GetErrorScope - returns the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+*)
+
+PROCEDURE GetErrorScope (sym: CARDINAL) : ErrorScope ;
+
+
+(*
+   PutErrorScope - sets the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+
+PROCEDURE PutErrorScope (sym: CARDINAL; errorScope: ErrorScope) ;
+*)
 
 
 END SymbolTable.

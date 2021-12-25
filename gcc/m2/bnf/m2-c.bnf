@@ -1104,6 +1104,7 @@ DefProcedureHeading := "PROCEDURE"                                         % M2E
                                                                            % PCBuildProcedureHeading ;
                                                                              PopAuto %
                         )                                                  % PopAuto %
+                                                                           % M2Error.LeaveErrorScope %
                      =:
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:

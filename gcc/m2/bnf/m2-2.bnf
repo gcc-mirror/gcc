@@ -1006,7 +1006,7 @@ DefProcedureHeading := "PROCEDURE"                                         % M2E
                           [ DefFormalParameters ] AttributeNoReturn
                                                                            % EndBuildFormalParameters %
                                                                            % BuildProcedureHeading %
-                        )
+                        )                                                  % M2Error.LeaveErrorScope %
                     =:
 
 AttributeNoReturn := [ "<*"                                                % PushAutoOff %

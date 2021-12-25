@@ -507,7 +507,7 @@ BEGIN
       END
    END ;
    EndBlock ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndProcedure ;
 
 
@@ -543,7 +543,7 @@ BEGIN
       END
    END ;
    EndBlock ;
-   M2Error.LeaveScope
+   M2Error.LeaveErrorScope
 END EndModule ;
 
 

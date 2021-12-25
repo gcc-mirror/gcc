@@ -27,7 +27,7 @@ FROM NameKey IMPORT Name ;
 
 FROM SymbolTable IMPORT IsProcedure, IsDefImp, GetProcedureQuads, GetScope,
                         GetProcedureScope, IsModule, IsModuleWithinProcedure,
-                        GetSymName, NulSym ;
+                        GetSymName, GetErrorScope, NulSym ;
 
 FROM M2Options IMPORT DisplayQuadruples ;
 FROM M2Printf IMPORT printf0, printf1 ;
@@ -433,11 +433,11 @@ BEGIN
 
       unsetscope,
       ignorescope        : |
-      procedurescope     :  M2Error.EnterProcedureScope (GetSymName (scopeSym)) |
-      modulescope        :  M2Error.EnterModuleScope (GetSymName (scopeSym)) |
-      definitionscope    :  M2Error.EnterDefinitionScope (GetSymName (scopeSym)) |
-      implementationscope:  M2Error.EnterImplementationScope (GetSymName (scopeSym)) |
-      programscope       :  M2Error.EnterProgramScope (GetSymName (scopeSym))
+      procedurescope     ,
+      modulescope        ,
+      definitionscope    ,
+      implementationscope,
+      programscope       : M2Error.EnterErrorScope (GetErrorScope (scopeSym))
 
       END
    END
@@ -456,7 +456,7 @@ BEGIN
    ignorescope   : |
 
    ELSE
-      M2Error.LeaveScope
+      M2Error.LeaveErrorScope
    END
 END leave ;
 

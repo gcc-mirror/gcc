@@ -28,14 +28,17 @@ FROM StrLib IMPORT StrLen, StrEqual ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToColumnNo, GetTokenNo ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
-FROM M2Printf IMPORT printf0, printf1, printf2 ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2Options IMPORT Xcode ;
 FROM M2RTS IMPORT ExitOnHalt ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Emit IMPORT EmitError ;
 FROM M2LexBuf IMPORT UnknownTokenNo ;
-FROM M2StackWord IMPORT StackOfWord, InitStackWord, InitStackWord, PushWord, PopWord, NoOfItemsInStackWord ;
+FROM M2StackAddress IMPORT StackOfAddress, InitStackAddress, PushAddress, PopAddress, NoOfItemsInStackAddress ;
+FROM Indexing IMPORT Index, HighIndice, InitIndex, GetIndice, PutIndice ;
 FROM M2Debug IMPORT Assert ;
+FROM M2Pass IMPORT IsPass0, IsPass1 ;
+FROM SymbolTable IMPORT NulSym ;
 
 FROM M2ColorString IMPORT filenameColor, endColor, errorColor, warningColor, noteColor,
                           range1Color, range2Color, quoteOpen, quoteClose ;
@@ -46,6 +49,7 @@ IMPORT M2Emit ;
 CONST
    Debugging  =  TRUE ;
    DebugTrace = FALSE ;
+   DebugError = FALSE ;
 
 TYPE
    Error = POINTER TO RECORD
@@ -58,20 +62,26 @@ TYPE
                          (* index of token causing the error *)
                          token    : CARDINAL ;
                          color    : BOOLEAN ;
-                         scopeKind: KindScope ;
-                         scopeName: Name ;
+                         scope    : ErrorScope ;
                       END ;
 
    KindScope = (noscope, definition, implementation, program, module, procedure) ;
 
+   ErrorScope = POINTER TO RECORD
+                         scopeKind: KindScope ;
+                         scopeName: Name ;
+                              symbol   : CARDINAL ;   (* symbol table entry.  *)
+                      END ;
+
+
 VAR
    head        : Error ;
    InInternal  : BOOLEAN ;
-   scopeName   : Name ;
-   lastKind,
-   scopeKind   : KindScope ;
-   scopeStack  : StackOfWord ;
-   parsing     : BOOLEAN ;
+   lastScope   : ErrorScope ;
+   scopeIndex  : CARDINAL ;
+   scopeArray  : Index ;
+   currentScope: ErrorScope ;
+   scopeStack  : StackOfAddress ;
 
 
 (*
@@ -405,8 +415,7 @@ BEGIN
       color  := FALSE ;
    END ;
    (* Assert (scopeKind # noscope) ;  *)
-   e^.scopeKind := scopeKind ;
-   e^.scopeName := scopeName ;
+   e^.scope := currentScope ;
    IF (head=NIL) OR (head^.token>AtTokenNo)
    THEN
       e^.next := head ;
@@ -435,7 +444,7 @@ BEGIN
    e := NewError(AtTokenNo) ;
    e^.fatal := FALSE ;
    e^.note  := FALSE ;
-   RETURN( e )
+   RETURN e
 END NewWarning ;
 
 
@@ -451,7 +460,7 @@ BEGIN
    e := NewError(AtTokenNo) ;
    e^.fatal := FALSE ;
    e^.note  := TRUE ;
-   RETURN( e )
+   RETURN e
 END NewNote ;
 
 
@@ -477,8 +486,7 @@ BEGIN
          parent    := e ;
          child     := NIL ;
          fatal     := e^.fatal ;
-         scopeKind := e^.scopeKind ;
-         scopeName := e^.scopeName
+         scope     := e^.scope
       END ;
       e^.child := f
    END ;
@@ -568,11 +576,10 @@ PROCEDURE Init ;
 BEGIN
    head := NIL ;
    InInternal := FALSE ;
-   scopeStack := InitStackWord () ;
-   scopeName := NulName ;
-   scopeKind := noscope ;
-   lastKind := noscope ;
-   parsing := TRUE
+   scopeStack := InitStackAddress () ;
+   scopeArray := InitIndex (1) ;
+   currentScope := NIL ;
+   scopeIndex := 0
 END Init ;
 
 
@@ -813,6 +820,16 @@ END ErrorAbort0 ;
 
 
 (*
+   IsErrorScopeNul - returns TRUE if es is NIL or it has a NulName.
+*)
+
+PROCEDURE IsErrorScopeNul (es: ErrorScope) : BOOLEAN ;
+BEGIN
+   RETURN (es = NIL) OR (es^.scopeName = NulName)
+END IsErrorScopeNul ;
+
+
+(*
    GetAnnounceScope - return message with the error scope attached to message.
                       filename and message are treated as read only by this
                       procedure function.
@@ -832,30 +849,59 @@ BEGIN
       pre := Sprintf1 (Mark (InitString ("%s: ")), filename)
    END ;
 
-   quoted := InitString ('') ;
-   IF scopeName # NulName
+   IF NOT IsErrorScopeNul (currentScope)
    THEN
+      quoted := InitString ('') ;
       quoted := quoteOpen (quoted) ;
-      quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
+      quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (currentScope^.scopeName)))) ;
       quoted := quoteClose (quoted)
    END ;
-   CASE scopeKind OF
 
-   definition    :   desc := InitString ("In definition module") |
-   implementation:   desc := InitString ("In implementation module") |
-   program       :   desc := InitString ("In program module") |
-   module        :   desc := InitString ("In inner module") |
-   procedure     :   desc := InitString ("In procedure")
+   IF currentScope = NIL
+   THEN
+      desc := InitString ('')
+   ELSE
+      CASE currentScope^.scopeKind OF
 
+      definition    :   desc := InitString ("In definition module") |
+      implementation:   desc := InitString ("In implementation module") |
+      program       :   desc := InitString ("In program module") |
+      module        :   desc := InitString ("In inner module") |
+      procedure     :   desc := InitString ("In procedure")
+
+      END
    END ;
-   fmt := ConCat (pre, desc) ;
-   fmt := ConCat (fmt, Sprintf1 (Mark (InitString (" %s:\n")), quoted)) ;
+   fmt := ConCat (pre, Mark (desc)) ;
+   IF IsErrorScopeNul (currentScope)
+   THEN
+      fmt := ConCat (fmt, Sprintf0 (Mark (InitString (": "))))
+   ELSE
+      fmt := ConCat (fmt, Sprintf1 (Mark (InitString (" %s: ")), quoted))
+   END ;
    RETURN ConCat (fmt, message)
 END GetAnnounceScope ;
 
 
 (*
+   IsSameScope - return TRUE if a and b refer to the same scope.
+*)
 
+PROCEDURE IsSameScope (a, b: ErrorScope) : BOOLEAN ;
+BEGIN
+   IF a = b
+   THEN
+      RETURN TRUE
+   ELSIF (a = NIL) OR (b = NIL)
+   THEN
+      RETURN FALSE
+   ELSE
+      (* this does not compare the symbol field.  *)
+      RETURN (a^.scopeKind = b^.scopeKind) AND (a^.scopeName = b^.scopeName)
+   END
+END IsSameScope ;
+
+
+(*
    AnnounceScope - return the error string s with a scope description prepended
                    assuming that scope has changed.
 *)
@@ -864,22 +910,60 @@ PROCEDURE AnnounceScope (e: Error; message: String) : String ;
 VAR
    filename: String ;
 BEGIN
-   IF (scopeKind#e^.scopeKind) OR (scopeName#e^.scopeName) OR (lastKind#e^.scopeKind)
+   IF NOT IsSameScope (lastScope, e^.scope)
    THEN
-      lastKind := e^.scopeKind ;
-      scopeKind := e^.scopeKind ;
-      scopeName := e^.scopeName ;
-      IF e^.scopeKind = noscope
+      lastScope := e^.scope ;
+      IF IsErrorScopeNul (lastScope)
       THEN
-         RETURN InitString ("no scope active")
+         RETURN ConCat (InitString ("no scope active"), message)
       ELSE
-         Assert (e^.scopeKind # noscope) ;
-         filename := FindFileNameFromToken (e^.token, 0) ;
-         message := GetAnnounceScope (filename, message)
+         Assert ((e^.scope # NIL) AND (e^.scope^.scopeKind # noscope)) ;
+         (* filename := FindFileNameFromToken (e^.token, 0) ; *)
+         message := GetAnnounceScope (NIL, message)
       END
    END ;
    RETURN message
 END AnnounceScope ;
+
+
+(*
+   newErrorScope - create an ErrorScope of kindScope and return the object.
+                   It is also added the a dynamic array.
+*)
+
+PROCEDURE newErrorScope (kind: KindScope) : ErrorScope ;
+VAR
+   es: ErrorScope ;
+   c : CARDINAL ;
+BEGIN
+   IF IsPass0 ()
+   THEN
+      NEW (es) ;
+      es^.scopeKind := kind ;
+      es^.scopeName := NulName ;
+      es^.symbol := NulSym ;
+      PutIndice (scopeArray, HighIndice (scopeArray) + 1, es) ;
+      IF DebugError
+      THEN
+         c := HighIndice (scopeArray) ;
+         printf2 ("pass 0:  %d  %d\n", c, kind)
+      END
+   ELSE
+      INC (scopeIndex) ;
+      es := GetIndice (scopeArray, scopeIndex) ;
+      IF DebugError
+   THEN
+         IF IsPass1 ()
+         THEN
+            printf3 ("pass 1:  %d  %d  %d\n", scopeIndex, es^.scopeKind, kind)
+         ELSE
+            printf3 ("pass 2:  %d  %d  %d\n", scopeIndex, es^.scopeKind, kind)
+   END
+      END ;
+      Assert (es^.scopeKind = kind)
+   END ;
+   RETURN es
+END newErrorScope ;
 
 
 (*
@@ -888,13 +972,8 @@ END AnnounceScope ;
 
 PROCEDURE DefaultProgramModule ;
 BEGIN
-   IF parsing
-   THEN
-      scopeKind := program ;
-      scopeName := NulName ;
-      PushWord (scopeStack, scopeKind) ;
-      PushWord (scopeStack, scopeName)
-   END
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := newErrorScope (program)
 END DefaultProgramModule ;
 
 
@@ -905,13 +984,8 @@ END DefaultProgramModule ;
 
 PROCEDURE DefaultImplementationModule ;
 BEGIN
-   IF parsing
-   THEN
-      scopeKind := implementation ;
-      scopeName := NulName ;
-      PushWord (scopeStack, scopeKind) ;
-      PushWord (scopeStack, scopeName)
-   END
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := newErrorScope (implementation)
 END DefaultImplementationModule ;
 
 
@@ -922,13 +996,8 @@ END DefaultImplementationModule ;
 
 PROCEDURE DefaultDefinitionModule ;
 BEGIN
-   IF parsing
-   THEN
-      PushWord (scopeStack, scopeKind) ;
-      PushWord (scopeStack, scopeName) ;
-      scopeKind := definition ;
-      scopeName := NulName
-   END
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := newErrorScope (definition)
 END DefaultDefinitionModule ;
 
 
@@ -939,13 +1008,8 @@ END DefaultDefinitionModule ;
 
 PROCEDURE DefaultInnerModule ;
 BEGIN
-   IF parsing
-   THEN
-      scopeKind := module ;
-      scopeName := NulName ;
-      PushWord (scopeStack, scopeKind) ;
-      PushWord (scopeStack, scopeName)
-   END
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := newErrorScope (module)
 END DefaultInnerModule ;
 
 
@@ -956,13 +1020,8 @@ END DefaultInnerModule ;
 
 PROCEDURE DefaultProcedure ;
 BEGIN
-   IF parsing
-   THEN
-      scopeKind := procedure ;
-      scopeName := NulName ;
-      PushWord (scopeStack, scopeKind) ;
-      PushWord (scopeStack, scopeName)
-   END ;
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := newErrorScope (procedure)
 END DefaultProcedure ;
 
 
@@ -973,15 +1032,16 @@ END DefaultProcedure ;
 
 PROCEDURE EnterImplementationScope (scopename: Name) ;
 BEGIN
-   IF parsing
+   Assert (currentScope # NIL) ;
+   Assert (currentScope^.scopeKind = implementation) ;
+   IF currentScope^.scopeName = NulName
    THEN
-      Assert (scopeKind = implementation) ;
-      LeaveScope   (* shutdown the default implementation scope.  *)
+      IF DebugError
+   THEN
+         printf1 ("seen implementation: %a\n", scopename)
    END ;
-   PushWord (scopeStack, scopeKind) ;
-   PushWord (scopeStack, scopeName) ;
-   scopeKind := implementation ;
-   scopeName := scopename
+      currentScope^.scopeName := scopename
+   END
 END EnterImplementationScope ;
 
 
@@ -992,15 +1052,16 @@ END EnterImplementationScope ;
 
 PROCEDURE EnterProgramScope (scopename: Name) ;
 BEGIN
-   IF parsing
+   Assert (currentScope # NIL) ;
+   Assert (currentScope^.scopeKind = program) ;
+   IF currentScope^.scopeName = NulName
    THEN
-      Assert (scopeKind = program) ;
-      LeaveScope   (* shutdown the default program scope.  *)
+      IF DebugError
+   THEN
+         printf1 ("seen program: %a\n", scopename)
    END ;
-   PushWord (scopeStack, scopeKind) ;
-   PushWord (scopeStack, scopeName) ;
-   scopeKind := program ;
-   scopeName := scopename
+      currentScope^.scopeName := scopename
+   END
 END EnterProgramScope ;
 
 
@@ -1011,15 +1072,16 @@ END EnterProgramScope ;
 
 PROCEDURE EnterModuleScope (scopename: Name) ;
 BEGIN
-   IF parsing
+   Assert (currentScope # NIL) ;
+   Assert (currentScope^.scopeKind = module) ;
+   IF currentScope^.scopeName = NulName
    THEN
-      Assert (scopeKind = module) ;
-      LeaveScope   (* shutdown the default inner module scope.  *)
+      IF DebugError
+      THEN
+         printf1 ("seen module: %a\n", scopename)
    END ;
-   PushWord (scopeStack, scopeKind) ;
-   PushWord (scopeStack, scopeName) ;
-   scopeKind := module ;
-   scopeName := scopename
+      currentScope^.scopeName := scopename
+   END
 END EnterModuleScope ;
 
 
@@ -1030,15 +1092,16 @@ END EnterModuleScope ;
 
 PROCEDURE EnterDefinitionScope (scopename: Name) ;
 BEGIN
-   IF parsing
+   Assert (currentScope # NIL) ;
+   Assert (currentScope^.scopeKind = definition) ;
+   IF currentScope^.scopeName = NulName
    THEN
-      Assert (scopeKind = definition)
+      IF DebugError
+   THEN
+         printf1 ("seen definition: %a\n", scopename)
    END ;
-   LeaveScope ;  (* shutdown the default definition module scope.  *)
-   PushWord (scopeStack, scopeKind) ;
-   PushWord (scopeStack, scopeName) ;
-   scopeKind := definition ;
-   scopeName := scopename
+      currentScope^.scopeName := scopename
+   END
 END EnterDefinitionScope ;
 
 
@@ -1049,27 +1112,48 @@ END EnterDefinitionScope ;
 
 PROCEDURE EnterProcedureScope (scopename: Name) ;
 BEGIN
-   IF parsing
+   Assert (currentScope # NIL) ;
+   Assert (currentScope^.scopeKind = procedure) ;
+   IF currentScope^.scopeName = NulName
    THEN
-      Assert (scopeKind = procedure) ;
-      LeaveScope  (* shutdown the default procedure scope.  *)
+      IF DebugError
+   THEN
+         printf1 ("seen procedure: %a\n", scopename)
    END ;
-   PushWord (scopeStack, scopeKind) ;
-   PushWord (scopeStack, scopeName) ;
-   scopeKind := procedure ;
-   scopeName := scopename
+      currentScope^.scopeName := scopename
+   END
 END EnterProcedureScope ;
 
 
 (*
-   LeaveScope - leave the current scope and pop into the previous one.
+   LeaveErrorScope - leave the current scope and pop into the previous one.
 *)
 
-PROCEDURE LeaveScope ;
+PROCEDURE LeaveErrorScope ;
 BEGIN
-   scopeName := PopWord (scopeStack) ;
-   scopeKind := PopWord (scopeStack)
-END LeaveScope ;
+   currentScope := PopAddress (scopeStack)
+END LeaveErrorScope ;
+
+
+(*
+   EnterErrorScope - pushes the currentScope and sets currentScope to scope.
+*)
+
+PROCEDURE EnterErrorScope (scope: ErrorScope) ;
+BEGIN
+   PushAddress (scopeStack, currentScope) ;
+   currentScope := scope
+END EnterErrorScope ;
+
+
+(*
+   GetCurrentErrorScope - returns currentScope.
+*)
+
+PROCEDURE GetCurrentErrorScope () : ErrorScope ;
+BEGIN
+   RETURN currentScope
+END GetCurrentErrorScope ;
 
 
 (*
@@ -1078,19 +1162,19 @@ END LeaveScope ;
 
 PROCEDURE DepthScope () : CARDINAL ;
 BEGIN
-   RETURN NoOfItemsInStackWord (scopeStack)
+   RETURN NoOfItemsInStackAddress (scopeStack)
 END DepthScope ;
 
 
 (*
-   ParsingComplete - after this is called the Enter scope procedure
-                     will not assert the default scope was set.
+   ResetErrorScope - should be called at the start of each pass to
+                     reset the error scope index.
 *)
 
-PROCEDURE ParsingComplete ;
+PROCEDURE ResetErrorScope ;
 BEGIN
-   parsing := FALSE
-END ParsingComplete ;
+   scopeIndex := 0
+END ResetErrorScope ;
 
 
 BEGIN

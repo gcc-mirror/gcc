@@ -907,14 +907,15 @@ Builtin := "__BUILTIN__"                                                   % Pus
             |                                                              % PushT(NulTok) %
         =:
 
-DefProcedureHeading := "PROCEDURE"                                         % PushAutoOn %
-                        Builtin
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
+                        Builtin                                            % PushAutoOn %
                        ( PossiblyExportIdent                               % StartBuildProcedure %
                                                                            % PushAutoOff %
                        [ DefFormalParameters ] AttributeNoReturn
                                                                            % PopAuto %
                                                                            % BuildProcedureHeading %
                      )                                                     % PopAuto %
+                                                                           % M2Error.LeaveErrorScope %
                      =:
 
 AttributeNoReturn := [ "<*" Ident "*>" ] =:
