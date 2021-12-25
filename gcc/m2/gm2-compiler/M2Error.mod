@@ -859,7 +859,7 @@ BEGIN
 
    IF currentScope = NIL
    THEN
-      desc := InitString ('')
+      desc := InitString ("no scope active")
    ELSE
       CASE currentScope^.scopeKind OF
 
@@ -915,7 +915,7 @@ BEGIN
       lastScope := e^.scope ;
       IF IsErrorScopeNul (lastScope)
       THEN
-         RETURN ConCat (InitString ("no scope active"), message)
+         RETURN ConCat (InitString ("no scope active: "), message)
       ELSE
          Assert ((e^.scope # NIL) AND (e^.scope^.scopeKind # noscope)) ;
          (* filename := FindFileNameFromToken (e^.token, 0) ; *)
