@@ -16286,7 +16286,7 @@ package body Sem_Util is
          end if;
 
       --  The packages may come from the same package chain or from entirely
-      --  different hierarcies. To determine this, climb the scope stack until
+      --  different hierarchies. To determine this, climb the scope stack until
       --  a common root is found.
 
       --        (root)      (root 1)  (root 2)
