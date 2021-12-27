@@ -429,7 +429,7 @@ is
    ------------------
 
    procedure Delete_First (Container : in out Set) is
-      X    : constant Count_Type := Container.Content.First;
+      X : constant Count_Type := Container.Content.First;
    begin
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container.Content, X);
@@ -442,7 +442,7 @@ is
    -----------------
 
    procedure Delete_Last (Container : in out Set) is
-      X    : constant Count_Type := Container.Content.Last;
+      X : constant Count_Type := Container.Content.Last;
    begin
       if X /= 0 then
          Tree_Operations.Delete_Node_Sans_Free (Container.Content, X);
@@ -1741,7 +1741,7 @@ is
       --------------
 
       function New_Node return Count_Type is
-         N  : Node_Type renames NN (Node);
+         N : Node_Type renames NN (Node);
       begin
          N.Element := Item;
          N.Color   := Red;

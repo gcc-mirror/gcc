@@ -4727,7 +4727,7 @@ package body Sem_Eval is
    ------------------
 
    function Expr_Value_E (N : Node_Id) return Entity_Id is
-      Ent  : constant Entity_Id := Entity (N);
+      Ent : constant Entity_Id := Entity (N);
    begin
       if Ekind (Ent) = E_Enumeration_Literal then
          return Ent;

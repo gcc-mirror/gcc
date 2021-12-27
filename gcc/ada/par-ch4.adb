@@ -1194,7 +1194,7 @@ package body Ch4 is
      (Prefix_Node : Node_Id)
       return        Node_Id
    is
-      Attr_Node  : Node_Id;
+      Attr_Node : Node_Id;
 
    begin
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);

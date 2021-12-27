@@ -593,7 +593,7 @@ package body Sem_Ch13 is
          Comp   := First_Component_Or_Discriminant (R);
          while Present (Comp) loop
             declare
-               CC   : constant Node_Id := Component_Clause (Comp);
+               CC : constant Node_Id := Component_Clause (Comp);
 
             begin
                --  Collect only component clauses whose last bit is less than

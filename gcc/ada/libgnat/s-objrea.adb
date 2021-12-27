@@ -1472,7 +1472,7 @@ package body System.Object_Reader is
         (Obj : in out XCOFF32_Object_File;
          Sym : Object_Symbol) return String_Ptr_Len
       is
-         Symbol  : Symbol_Entry;
+         Symbol : Symbol_Entry;
 
       begin
          Seek (Obj.Symtab_Stream, Sym.Off);
@@ -1820,7 +1820,7 @@ package body System.Object_Reader is
      (S : in out Mapped_Stream;
       Off : Offset) return String
    is
-      Buf     : Buffer;
+      Buf : Buffer;
 
    begin
       Seek (S, Off);

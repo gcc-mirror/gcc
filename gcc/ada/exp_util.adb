@@ -8780,7 +8780,7 @@ package body Exp_Util is
    ----------------------------------
 
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean is
-      T  : constant Entity_Id := Etype (N);
+      T : constant Entity_Id := Etype (N);
 
    begin
       --  If renamed object, apply test to underlying object

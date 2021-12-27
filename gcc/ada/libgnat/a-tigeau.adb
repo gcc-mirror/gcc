@@ -384,7 +384,7 @@ package body Ada.Text_IO.Generic_Aux is
       Buf  : out String;
       Ptr  : in out Natural)
    is
-      Loaded   : Boolean;
+      Loaded : Boolean;
 
    begin
       --  Skip initial blanks, and load possible sign

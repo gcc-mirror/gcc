@@ -9375,7 +9375,7 @@ package body Exp_Aggr is
          -----------------------
 
          function Get_Component_Val (N : Node_Id) return Uint is
-            Val  : Uint;
+            Val : Uint;
 
          begin
             --  We have to analyze the expression here before doing any further

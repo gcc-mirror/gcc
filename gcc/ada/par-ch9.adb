@@ -283,7 +283,7 @@ package body Ch9 is
    --  Error recovery:  cannot raise Error_Resync
 
    function P_Task_Definition return Node_Id is
-      Def_Node  : Node_Id;
+      Def_Node : Node_Id;
 
    begin
       Def_Node := New_Node (N_Task_Definition, Token_Ptr);

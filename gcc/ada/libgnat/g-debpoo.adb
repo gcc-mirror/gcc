@@ -777,7 +777,7 @@ package body GNAT.Debug_Pools is
       function Is_Valid_Or_Handled
         (Storage : System.Address;
          Valid   : Boolean) return Boolean is
-         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Int_Storage : constant Integer_Address := To_Integer (Storage);
 
       begin
          --  The pool only returns addresses aligned on Storage_Alignment so

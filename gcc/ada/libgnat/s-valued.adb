@@ -186,7 +186,7 @@ package body System.Value_D is
 
             elsif S > 0 then
                declare
-                  LS  : Integer := S;
+                  LS : Integer := S;
 
                begin
                   Y := Safe_Expont (B, LS, 10 ** Integer'Max (0, Scale));

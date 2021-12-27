@@ -1144,7 +1144,7 @@ package body Ch6 is
       --------------
 
       function Real_Dot return Boolean is
-         Scan_State  : Saved_Scan_State;
+         Scan_State : Saved_Scan_State;
 
       begin
          if Token /= Tok_Dot then

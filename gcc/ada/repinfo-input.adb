@@ -288,7 +288,7 @@ package body Repinfo.Input is
       ----------------------
 
       function Decode_Integer (Lo, Hi : Text_Ptr) return Uint is
-         Len  : constant Nat := Int (Hi) - Int (Lo) + 1;
+         Len : constant Nat := Int (Hi) - Int (Lo) + 1;
 
       begin
          --  Decode up to 9 characters manually, otherwise call into Uint

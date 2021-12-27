@@ -329,7 +329,7 @@ package body Sinput is
    begin
       for X in 1 .. Source_File.Last loop
          declare
-            S  : Source_File_Record renames Source_File.Table (X);
+            S : Source_File_Record renames Source_File.Table (X);
          begin
             if S.Instance = No_Instance_Id then
                Free_Source_Buffer (S.Source_Text);

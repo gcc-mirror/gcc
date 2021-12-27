@@ -403,7 +403,7 @@ is
    -----------------
 
    function End_Of_Page (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -598,7 +598,7 @@ is
      (File : File_Type;
       Item : out Character)
    is
-      ch          : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));

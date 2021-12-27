@@ -539,7 +539,7 @@ begin
    --  Initialize_Scalars, but others should be checked: as well???
 
    declare
-      Item  : Node_Id;
+      Item : Node_Id;
 
    begin
       Item := First (Context_Items (Cunit (Main_Unit)));

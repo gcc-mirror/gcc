@@ -2377,7 +2377,7 @@ package body Inline is
       ------------------------
 
       function Copy_Return_Object (Obj_Decl : Node_Id) return Node_Id is
-         Obj_Id  : constant Entity_Id := Defining_Entity (Obj_Decl);
+         Obj_Id : constant Entity_Id := Defining_Entity (Obj_Decl);
 
       begin
          --  The use of New_Copy_Tree ensures that global references are
@@ -3264,7 +3264,7 @@ package body Inline is
          ------------------
 
          function Process_Loop (N : Node_Id) return Traverse_Result is
-            Id  : Entity_Id;
+            Id : Entity_Id;
 
          begin
             if Nkind (N) = N_Loop_Statement
@@ -3676,7 +3676,7 @@ package body Inline is
       ----------------------------
 
       procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id) is
-         HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
+         HSS : constant Node_Id := Handled_Statement_Sequence (Blk);
 
       begin
          Make_Loop_Labels_Unique (HSS);

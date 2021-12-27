@@ -1110,7 +1110,7 @@ package body Ada.Exceptions is
 
       else
          declare
-            New_Msg  : constant String := Prefix & Exception_Name (X);
+            New_Msg : constant String := Prefix & Exception_Name (X);
 
          begin
             --  No message present, just provide our own

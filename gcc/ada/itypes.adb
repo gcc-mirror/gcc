@@ -89,7 +89,7 @@ package body Itypes is
        Related_Nod : Node_Id;
        Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
    is
-      I_Typ        : Entity_Id;
+      I_Typ : Entity_Id;
 
    begin
       pragma Assert (Is_Access_Type (T));

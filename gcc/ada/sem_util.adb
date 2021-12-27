@@ -1659,7 +1659,7 @@ package body Sem_Util is
       Typ            : Entity_Id;
       Suggest_Static : Boolean := False)
    is
-      Gen            : Entity_Id;
+      Gen : Entity_Id;
 
    begin
       --  Avoid cascaded errors
@@ -10729,7 +10729,7 @@ package body Sem_Util is
    -------------------------------------
 
    function Get_Actual_Subtype_If_Available (N : Node_Id) return Entity_Id is
-      Typ  : constant Entity_Id := Etype (N);
+      Typ : constant Entity_Id := Etype (N);
 
    begin
       --  If what we have is an identifier that references a subprogram
@@ -21951,7 +21951,7 @@ package body Sem_Util is
       ------------------------------------
 
       function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean is
-         Typ  : constant Entity_Id := Etype (P);
+         Typ : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then

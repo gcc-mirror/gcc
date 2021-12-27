@@ -1677,7 +1677,7 @@ package body Lib.Xref is
       --  declared in the main unit.
 
       Handle_Prim_Ops : declare
-         Ent  : Entity_Id;
+         Ent : Entity_Id;
 
       begin
          for J in 1 .. Xrefs.Last loop

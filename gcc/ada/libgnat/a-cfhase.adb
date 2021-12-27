@@ -949,7 +949,7 @@ is
            (Vet (Container, Position), "bad cursor in function Key");
 
          declare
-            N  : Node_Type renames Container.Content.Nodes (Position.Node);
+            N : Node_Type renames Container.Content.Nodes (Position.Node);
          begin
             return Key (N.Element);
          end;

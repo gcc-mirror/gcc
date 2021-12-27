@@ -193,7 +193,7 @@ package body GNAT.Expect is
       Str       : String;
       Filter_On : Filter_Type)
    is
-      Current_Filter  : Filter_List;
+      Current_Filter : Filter_List;
 
    begin
       if Pid.Filters_Lock = 0 then

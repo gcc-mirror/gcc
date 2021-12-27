@@ -664,7 +664,7 @@ package body System.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Old    : Pointer;
+         Old : Pointer;
       begin
          Old := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 7);
          Emit_Natural (Old + Next_Pointer_Bytes, Min);
@@ -2108,7 +2108,7 @@ package body System.Regpat is
 
          if Do_Print then
             declare
-               Point   : constant String := Pointer'Image (Index);
+               Point : constant String := Pointer'Image (Index);
             begin
                Put ([1 .. 4 - Point'Length => ' ']
                     & Point & ":"

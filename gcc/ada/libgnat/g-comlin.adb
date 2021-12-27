@@ -465,8 +465,8 @@ package body GNAT.Command_Line is
 
       if Do_Expansion then
          declare
-            Arg   : constant String :=
-                      Argument (Parser, Parser.Current_Argument - 1);
+            Arg : constant String :=
+                    Argument (Parser, Parser.Current_Argument - 1);
          begin
             for Index in Arg'Range loop
                if Arg (Index) in '*' | '?' | '[' then
@@ -1257,7 +1257,7 @@ package body GNAT.Command_Line is
       Expanded : String;
       Section  : String := "")
    is
-      Def    : Alias_Definition;
+      Def : Alias_Definition;
 
    begin
       if Config = null then

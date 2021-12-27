@@ -56,7 +56,7 @@ package body Ch11 is
    --  Error_Recovery : Cannot raise Error_Resync
 
    function P_Handled_Sequence_Of_Statements return Node_Id is
-      Handled_Stmt_Seq_Node  : Node_Id;
+      Handled_Stmt_Seq_Node : Node_Id;
    begin
       Handled_Stmt_Seq_Node :=
         New_Node (N_Handled_Sequence_Of_Statements, Token_Ptr);

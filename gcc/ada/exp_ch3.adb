@@ -4139,7 +4139,7 @@ package body Exp_Ch3 is
                Set_Static_Initialization (Proc_Id, Agg);
 
                declare
-                  Comp  : Node_Id;
+                  Comp : Node_Id;
                begin
                   Comp := First (Component_Associations (Agg));
                   while Present (Comp) loop

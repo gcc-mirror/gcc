@@ -255,7 +255,7 @@ package body System.Value_F is
 
       elsif ScaleB > 0 then
          declare
-            LS  : Integer := ScaleB;
+            LS : Integer := ScaleB;
 
          begin
             Y := Safe_Expont (B, LS, Den);

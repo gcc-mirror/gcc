@@ -1285,7 +1285,7 @@ package body Switch.C is
 
                else
                   declare
-                     OK  : Boolean;
+                     OK : Boolean;
 
                   begin
                      Set_Validity_Check_Options
@@ -1408,7 +1408,7 @@ package body Switch.C is
                   Store_Switch := False;
 
                   declare
-                     OK  : Boolean;
+                     OK : Boolean;
 
                   begin
                      Set_Style_Check_Options

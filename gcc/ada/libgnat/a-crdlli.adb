@@ -1316,7 +1316,7 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
       pragma Assert (Vet (Position), "bad cursor in Update_Element");
 
       declare
-         N  : Node_Type renames Container.Nodes (Position.Node);
+         N : Node_Type renames Container.Nodes (Position.Node);
 
       begin
          Process (N.Element);

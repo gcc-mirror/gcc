@@ -440,7 +440,7 @@ package body System.Shared_Storage is
 
       if SFE = null then
          declare
-            S  : aliased constant String := Dir.all & Var;
+            S : aliased constant String := Dir.all & Var;
 
          begin
             SFE := new Shared_Var_File_Entry;
@@ -521,7 +521,7 @@ package body System.Shared_Storage is
 
       if SFE = null then
          declare
-            S  : aliased constant String := Dir.all & Var;
+            S : aliased constant String := Dir.all & Var;
 
          begin
             SFE := new Shared_Var_File_Entry;

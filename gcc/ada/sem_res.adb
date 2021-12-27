@@ -9774,7 +9774,7 @@ package body Sem_Res is
       ----------------------------
 
       procedure Resolve_Set_Membership is
-         Alt  : Node_Id;
+         Alt : Node_Id;
 
       begin
          --  If the left operand is overloaded, find type compatible with not

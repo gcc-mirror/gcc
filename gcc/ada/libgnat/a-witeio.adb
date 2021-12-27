@@ -274,7 +274,7 @@ package body Ada.Wide_Text_IO is
    -----------------
 
    function End_Of_File (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -368,7 +368,7 @@ package body Ada.Wide_Text_IO is
    -----------------
 
    function End_Of_Page (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -444,7 +444,7 @@ package body Ada.Wide_Text_IO is
      (File : File_Type;
       Item : out Wide_Character)
    is
-      C  : Character;
+      C : Character;
 
    begin
       FIO.Check_Read_Status (AP (File));

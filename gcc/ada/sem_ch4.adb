@@ -8263,7 +8263,7 @@ package body Sem_Ch4 is
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare
-                  Proc   : Entity_Id;
+                  Proc : Entity_Id;
 
                begin
                   --  We should look for an interpretation with the proper

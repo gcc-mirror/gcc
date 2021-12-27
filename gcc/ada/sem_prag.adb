@@ -32677,7 +32677,7 @@ package body Sem_Prag is
    --------------------------------------------
 
    procedure Defer_Compile_Time_Warning_Error_To_BE (N : Node_Id) is
-      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
       Compile_Time_Warnings_Errors.Append
         (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),

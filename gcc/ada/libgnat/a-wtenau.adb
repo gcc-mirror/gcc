@@ -227,7 +227,7 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
       Start : out Natural;
       Stop  : out Natural)
    is
-      WC  : Wide_Character;
+      WC : Wide_Character;
 
    --  Processing for Scan_Enum_Lit
 

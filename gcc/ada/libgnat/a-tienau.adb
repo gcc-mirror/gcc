@@ -213,7 +213,7 @@ package body Ada.Text_IO.Enumeration_Aux is
       Start : out Natural;
       Stop  : out Natural)
    is
-      C  : Character;
+      C : Character;
 
    --  Processing for Scan_Enum_Lit
 

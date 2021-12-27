@@ -922,8 +922,8 @@ package body Par_SCO is
    ---------------------
 
    procedure Record_Instance (Id : Instance_Id; Inst_Sloc : Source_Ptr) is
-      Inst_Src  : constant Source_File_Index :=
-                    Get_Source_File_Index (Inst_Sloc);
+      Inst_Src : constant Source_File_Index :=
+                   Get_Source_File_Index (Inst_Sloc);
    begin
       SCO_Instance_Table.Append
         ((Inst_Dep_Num       => Dependency_Num (Unit (Inst_Src)),

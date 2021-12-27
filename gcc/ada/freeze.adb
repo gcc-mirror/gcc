@@ -2124,7 +2124,7 @@ package body Freeze is
    ----------------------------
 
    procedure Check_Strict_Alignment (E : Entity_Id) is
-      Comp  : Entity_Id;
+      Comp : Entity_Id;
 
    begin
       --  Bit-packed array types do not require strict alignment, even if they

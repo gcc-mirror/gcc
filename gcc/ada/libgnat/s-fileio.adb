@@ -244,7 +244,7 @@ package body System.File_IO is
 
          if File.Shared_Status = Yes then
             declare
-               P   : AFCB_Ptr;
+               P : AFCB_Ptr;
 
             begin
                P := Open_Files;

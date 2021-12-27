@@ -958,7 +958,7 @@ package body Lib.Load is
    --  code will have to be generated for it.
 
    procedure Make_Instance_Unit (N : Node_Id; In_Main : Boolean) is
-      Sind  : constant Source_File_Index := Source_Index (Main_Unit);
+      Sind : constant Source_File_Index := Source_Index (Main_Unit);
 
    begin
       Units.Increment_Last;

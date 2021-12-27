@@ -1233,7 +1233,7 @@ package body System.Perfect_Hash_Generators is
    ------------
 
    procedure Insert (Value : String) is
-      Len  : constant Natural := Value'Length;
+      Len : constant Natural := Value'Length;
 
    begin
       if Verbose then

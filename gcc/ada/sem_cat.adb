@@ -526,8 +526,8 @@ package body Sem_Cat is
    ----------------------------
 
    function In_Package_Declaration return Boolean is
-      Unit_Kind   : constant Node_Kind :=
-                      Nkind (Unit (Cunit (Current_Sem_Unit)));
+      Unit_Kind  : constant Node_Kind :=
+                     Nkind (Unit (Cunit (Current_Sem_Unit)));
 
    begin
       --  There are no restrictions on the body of an RCI or RT unit

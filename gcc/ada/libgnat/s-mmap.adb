@@ -367,7 +367,7 @@ package body System.Mmap is
       Length  : File_Size := 0;
       Mutable : Boolean := False) return Mapped_Region
    is
-      Region  : Mapped_Region := Invalid_Mapped_Region;
+      Region : Mapped_Region := Invalid_Mapped_Region;
    begin
       Read (File, Region, Offset, Length, Mutable);
       return Region;

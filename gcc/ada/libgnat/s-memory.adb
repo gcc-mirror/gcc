@@ -134,7 +134,7 @@ package body System.Memory is
       Size : size_t)
       return System.Address
    is
-      Result      : System.Address;
+      Result : System.Address;
    begin
       if Size = size_t'Last then
          raise Storage_Error with "object too large";

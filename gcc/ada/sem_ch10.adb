@@ -2279,7 +2279,7 @@ package body Sem_Ch10 is
       ----------------------------
 
       procedure Re_Install_Use_Clauses is
-         U  : Node_Id;
+         U : Node_Id;
       begin
          for J in reverse 1 .. Num_Scopes loop
             U := Use_Clauses (J);

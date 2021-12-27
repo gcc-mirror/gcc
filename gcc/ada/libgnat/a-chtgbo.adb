@@ -439,7 +439,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
      (Stream : not null access Root_Stream_Type'Class;
       HT     : out Hash_Table_Type'Class)
    is
-      N  : Count_Type'Base;
+      N : Count_Type'Base;
 
    begin
       Clear (HT);

@@ -4702,7 +4702,7 @@ package body Exp_Ch7 is
      (N   : Node_Id;
       Ref : Node_Id) return Node_Id
    is
-      Loc  : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are

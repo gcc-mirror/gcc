@@ -2908,7 +2908,7 @@ package body Exp_Dist is
    ---------------------------------
 
    procedure Expand_Calling_Stubs_Bodies (Unit_Node : Node_Id) is
-      Spec  : constant Node_Id := Specification (Unit_Node);
+      Spec : constant Node_Id := Specification (Unit_Node);
    begin
       Add_Calling_Stubs_To_Declarations (Spec);
    end Expand_Calling_Stubs_Bodies;

@@ -3784,7 +3784,7 @@ package body Exp_Attr is
       --------------
 
       when Attribute_From_Any => From_Any : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
 
       begin
          Rewrite (N,

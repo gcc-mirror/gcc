@@ -370,7 +370,7 @@ package body Ada.Strings.Fixed with SPARK_Mode is
       Before   : Positive;
       New_Item : String) return String
    is
-      Front  : constant Integer := Before - Source'First;
+      Front : constant Integer := Before - Source'First;
 
    begin
       if Before - 1 not in Source'First - 1 .. Source'Last then
