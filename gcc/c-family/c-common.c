@@ -3308,6 +3308,8 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
     size_exp = integer_one_node;
   else
     {
+      if (!complain && !COMPLETE_TYPE_P (TREE_TYPE (result_type)))
+	return error_mark_node;
       size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
       /* Wrap the pointer expression in a SAVE_EXPR to make sure it
 	 is evaluated first when the size expression may depend
