@@ -1,3 +1,13 @@
+2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103785
+	* gcc.target/i386/pr103785.c: New test.
+
+2021-12-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* gfortran.dg/pr98076.f90: New test.
+
 2021-12-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

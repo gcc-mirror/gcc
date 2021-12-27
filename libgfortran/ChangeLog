@@ -1,3 +1,10 @@
+2021-12-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* runtime/string.c (itoa64, itoa64_pad19): New helper functions.
+	(gfc_itoa): On targets with 128-bit integers, call fast
+	64-bit functions to avoid many slow divisions.
+
 2021-12-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libfortran/81986

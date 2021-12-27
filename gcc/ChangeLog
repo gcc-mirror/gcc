@@ -1,3 +1,9 @@
+2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103785
+	* config/i386/i386.md: Swap operand order in comments and check
+	AX input in any_mul_highpart peepholes.
+
 2021-12-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046
