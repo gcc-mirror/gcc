@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Ofast -fdump-tree-optimized-raw" }
+! { dg-options "-Ofast -fno-tree-vectorize -fdump-tree-optimized-raw" }
 
       SUBROUTINE F(N,X,Y,Z,A,B)
           DIMENSION X(4,4), Y(4), Z(4)
