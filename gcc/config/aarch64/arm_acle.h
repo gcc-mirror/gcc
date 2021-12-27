@@ -98,10 +98,6 @@ __rint64x (double __a)
 
 #pragma GCC target ("+nothing+crc")
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
 {
