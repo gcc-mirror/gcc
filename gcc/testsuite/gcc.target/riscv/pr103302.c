@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target int128 } } */
 /* { dg-options "-Og -fharden-compares -fno-tree-dce -fno-tree-fre " } */
 
 typedef unsigned char u8;
