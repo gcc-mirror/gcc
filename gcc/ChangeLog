@@ -1,3 +1,8 @@
+2021-12-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR target/100985
+	* config/aarch64/arm_acle.h: Remove unclosed extern "C" block.
+
 2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
