@@ -1701,13 +1701,10 @@ package body Sem_Warn is
                           and then Ekind (E1) /= E_Constant
                           and then Ekind (E1) /= E_Component)
 
-                         --  Check that E1T is not a task or an array of them
+                         --  Check that E1T is not a task or a composite type
+                         --  with a task component.
 
-                         or else not
-                           (Is_Task_Type (E1T)
-                             or else (Ekind (E1T) in Array_Kind
-                                       and then Is_Task_Type
-                                                  (Component_Type (E1T)))))
+                         or else not Has_Task (E1T))
 
               --  For subunits, only place warnings on the main unit itself,
               --  since parent units are not completely compiled.
