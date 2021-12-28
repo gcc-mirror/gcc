@@ -1,3 +1,34 @@
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103418
+	* check.c (variable_check): Replace previous check of procedure
+	dummy arguments with INTENT(IN) attribute when passed to intrinsic
+	procedures by gfc_check_vardef_context.
+	* expr.c (gfc_check_vardef_context): Correct check of INTENT(IN)
+	dummy arguments for the case of sub-components of a CLASS pointer.
+
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103778
+	* check.c (is_c_interoperable): A BOZ literal constant is not
+	interoperable.
+
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-18  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101329
+	* check.c (is_c_interoperable): Reject NULL() as it is not
+	interoperable.
+
 2021-12-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
