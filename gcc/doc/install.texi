@@ -137,7 +137,7 @@ Free Documentation License}''.
 @end ifnothtml
 
 The latest version of this document is always available at
-@uref{http://gcc.gnu.org/install/,,http://gcc.gnu.org/install/}.
+@uref{https://gcc.gnu.org/install/,,https://gcc.gnu.org/install/}.
 It refers to the current development sources, instructions for
 specific released versions are included with the sources.
 
@@ -159,7 +159,7 @@ We recommend you browse the entire generic installation instructions before
 you proceed.
 
 Lists of successful builds for released versions of GCC are
-available at @uref{http://gcc.gnu.org/buildstat.html}.
+available at @uref{https://gcc.gnu.org/buildstat.html}.
 These lists are updated as new information becomes available.
 
 The installation procedure itself is broken into five steps.
@@ -562,10 +562,10 @@ own sources.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via @uref{http://gcc.gnu.org/git.html,,git} and via
+GCC is distributed via @uref{https://gcc.gnu.org/git.html,,git} and via
 HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 
-Please refer to the @uref{http://gcc.gnu.org/releases.html,,releases web page}
+Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The source distribution includes the C, C++, Objective-C, Fortran,
@@ -2450,7 +2450,7 @@ Only supported for the AVR target. Specifies that @samp{AVR-Libc} is
 being used as the target C@tie{} library.  This causes float support
 functions like @code{__addsf3} to be omitted from @file{libgcc.a} on
 the assumption that it will be provided by @file{libm.a}.  For more
-technical details, cf. @uref{http://gcc.gnu.org/PR54461,,PR54461}.
+technical details, cf. @uref{https://gcc.gnu.org/PR54461,,PR54461}.
 It is not supported for
 RTEMS configurations, which currently use newlib.  The option is
 supported since version 4.7.2 and is the default in 4.8.0 and newer.
@@ -3059,9 +3059,9 @@ the code quality may be much worse.
 Before you install GCC, we encourage you to run the testsuites and to
 compare your results with results from a similar configuration that have
 been submitted to the
-@uref{http://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
+@uref{https://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
 Some of these archived results are linked from the build status lists
-at @uref{http://gcc.gnu.org/buildstat.html}, although not everyone who
+at @uref{https://gcc.gnu.org/buildstat.html}, although not everyone who
 reports a successful build runs the testsuites and submits the results.
 This step is optional and may require you to download additional software,
 but it can give you confidence in your new GCC installation or point out
@@ -3073,7 +3073,7 @@ These are part of the full distribution, but if you downloaded the
 separately.
 
 Second, you must have the testing tools installed.  This includes
-@uref{http://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
+@uref{https://www.gnu.org/software/dejagnu/,,DejaGnu}, Tcl, and Expect;
 the DejaGnu site has links to these.
 Some optional tests also require Python3 and pytest module.
 
@@ -3104,7 +3104,7 @@ might emit some harmless messages resembling
 @samp{WARNING: Couldn't find tool init file} that can be ignored.
 
 If you are testing a cross-compiler, you may want to run the testsuite
-on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
+on a simulator as described at @uref{https://gcc.gnu.org/simtest-howto.html}.
 
 @section How can you run the testsuite on selected tests?
 
@@ -3346,7 +3346,7 @@ make install-strip
 
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from
-@uref{http://gcc.gnu.org/buildstat.html}.
+@uref{https://gcc.gnu.org/buildstat.html}.
 If your system is not listed for the version of GCC that you built,
 send a note to
 @email{gcc@@gcc.gnu.org} indicating
@@ -3509,7 +3509,7 @@ The @uref{https://osdn.net/projects/mingw/,,MinGW} and
 number of platforms.
 
 @item
-The @uref{http://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
+The @uref{https://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
 links to GNU Fortran binaries for several platforms.
 @end itemize
 
@@ -4176,7 +4176,7 @@ libstdc++-v3 documentation.
 @anchor{ix86-x-linux}
 @heading i?86-*-linux*
 As of GCC 3.3, binutils 2.13.1 or later is required for this platform.
-See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
+See @uref{https://gcc.gnu.org/PR10877,,bug 10877} for more information.
 
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
@@ -4380,19 +4380,19 @@ overflow severe error when the @option{-bbigtoc} option is used to link
 GCC-produced object files into an executable that overflows the TOC@.  A fix
 for APAR IX75823 (OVERFLOW DURING LINK WHEN USING GCC AND -BBIGTOC) is
 available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U455193.
 
 The AIX 4.3.2.1 linker (bos.rte.bind_cmds Level 4.3.2.1) will dump core
 with a segmentation fault when invoked by any version of GCC@.  A fix for
 APAR IX87327 is available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U461879.  This fix is incorporated in AIX 4.3.3 and above.
 
 The initial assembler shipped with AIX 4.3.0 generates incorrect object
 files.  A fix for APAR IX74254 (64BIT DISASSEMBLED OUTPUT FROM COMPILER FAILS
 TO ASSEMBLE/BIND) is available from IBM Customer Support and from its
-@uref{http://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
+@uref{https://techsupport.services.ibm.com/,,techsupport.services.ibm.com}
 website as PTF U453956.  This fix is incorporated in AIX 4.3.1 and above.
 
 AIX provides National Language Support (NLS)@.  Compilers and assemblers
@@ -4641,7 +4641,7 @@ binaries are available at
 
 This version of GCC requires at least cctools-590.36.  The
 cctools-590.36 package referenced from
-@uref{http://gcc.gnu.org/ml/gcc/2006-03/msg00507.html} will not work
+@uref{https://gcc.gnu.org/ml/gcc/2006-03/msg00507.html} will not work
 on systems older than 10.3.9 (aka darwin7.9.0).
 
 @html

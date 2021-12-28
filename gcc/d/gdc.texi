@@ -66,7 +66,7 @@ This manual describes how to use @command{gdc}, the GNU compiler for
 the D programming language.  This manual is specifically about
 @command{gdc}.  For more information about the D programming
 language in general, including language specifications and standard
-package documentation, see @uref{http://dlang.org/}.
+package documentation, see @uref{https://dlang.org/}.
 
 @menu
 * Copying::                     The GNU General Public License.
@@ -326,14 +326,14 @@ values are supported:
 @item all
 Turns on all upcoming D language features.
 @item dip1000
-Implements @uref{http://wiki.dlang.org/DIP1000} (Scoped pointers).
+Implements @uref{https://wiki.dlang.org/DIP1000} (Scoped pointers).
 @item dip1008
-Implements @uref{http://wiki.dlang.org/DIP1008} (Allow exceptions in
+Implements @uref{https://wiki.dlang.org/DIP1008} (Allow exceptions in
 @code{@@nogc} code).
 @item dip1021
-Implements @uref{http://wiki.dlang.org/DIP1021} (Mutable function arguments).
+Implements @uref{https://wiki.dlang.org/DIP1021} (Mutable function arguments).
 @item dip25
-Implements @uref{http://wiki.dlang.org/DIP25} (Sealed references).
+Implements @uref{https://wiki.dlang.org/DIP25} (Sealed references).
 @item dtorfields
 Turns on generation for destructing fields of partially constructed objects.
 @item fieldwise
@@ -383,7 +383,7 @@ are supported:
 @item all
 Turns off all revertable D language features.
 @item dip25
-Reverts @uref{http://wiki.dlang.org/DIP25} (Sealed references).
+Reverts @uref{https://wiki.dlang.org/DIP25} (Sealed references).
 @item dtorfields
 Turns off generation for destructing fields of partially constructed objects.
 @item markdown

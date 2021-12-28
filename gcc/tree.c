@@ -13704,6 +13704,7 @@ verify_type (const_tree t)
 	    error_found = true;
 	  }
 	if (TREE_CODE (TREE_TYPE (value)) != INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (value)) != BOOLEAN_TYPE
 	    && !useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (value)))
 	  {
 	    error ("enum value type is not %<INTEGER_TYPE%> nor convertible "

@@ -1,3 +1,33 @@
+2021-12-27  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* runtime/string.c (gfc_itoa): Use two args for static_assert().
+
+2021-12-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* runtime/string.c (itoa64, itoa64_pad19): New helper functions.
+	(gfc_itoa): On targets with 128-bit integers, call fast
+	64-bit functions to avoid many slow divisions.
+
+2021-12-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/81986
+	PR libfortran/99191
+	* libgfortran.h: Remove gfc_xtoa(), adjust gfc_itoa() and
+	GFC_ITOA_BUF_SIZE.
+	* io/write.c (write_decimal): conversion parameter is always
+	gfc_itoa(), so remove it. Protect from overflow.
+	(xtoa): Move gfc_xtoa and update its name.
+	(xtoa_big): Renamed from ztoa_big for consistency.
+	(write_z): Adjust to new function names.
+	(write_i, write_integer): Remove last arg of write_decimal.
+	* runtime/backtrace.c (error_callback): Comment on the use of
+	gfc_itoa().
+	* runtime/error.c (gfc_xtoa): Move to io/write.c.
+	* runtime/string.c (gfc_itoa): Take an unsigned argument,
+	remove the handling of negative values.
+
 2021-12-22  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* kinds-override.h: Move GFC_REAL_16_IS_* macros...

@@ -1,3 +1,53 @@
+2021-12-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101239
+	* g++.dg/template/sfinae32a.C: New test.
+
+2021-12-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103700
+	* g++.dg/template/sfinae32.C: New test.
+
+2021-12-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr103762-1a.c: New test.
+	* gcc.target/i386/pr103762-1b.c: Likewise.
+	* gcc.target/i386/pr103762-1c.c: Likewise.
+
+2021-12-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gfortran.dg/extract_recip_1.f: Adjust testcase.
+
+2021-12-27  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/pr103302.c: skip if -march=rv32*
+
+2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103785
+	* gcc.target/i386/pr103785.c: New test.
+
+2021-12-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* gfortran.dg/pr98076.f90: New test.
+
+2021-12-24  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	PR target/103797
+	* gcc.target/i386/pr95046-1.c (test_div): Add.
+	(dg-options): Add -mno-recip.
+
+2021-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-aligned-globals.c: New test.
+	* gcc.dg/darwin-comm-1.c: New test.
+	* gcc.dg/attr-aligned.c: Amend for new alignment values on
+	Darwin.
+	* gcc.target/i386/pr89261.c: Likewise.
+
 2021-12-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/smuldi3_highpart.c: Replace long with long long.
