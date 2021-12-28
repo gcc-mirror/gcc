@@ -1,3 +1,28 @@
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103776
+	* gfortran.dg/select_10.f90: New test.
+
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103778
+	* gfortran.dg/illegal_boz_arg_3.f90: New test.
+
+2021-12-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-18  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101329
+	* gfortran.dg/pr101329.f90: New test.
+
 2021-12-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
