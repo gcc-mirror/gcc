@@ -1,3 +1,8 @@
+2021-12-27  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/98076
+	* runtime/string.c (gfc_itoa): Use two args for static_assert().
+
 2021-12-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libfortran/98076

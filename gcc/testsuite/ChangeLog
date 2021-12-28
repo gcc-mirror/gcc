@@ -1,3 +1,28 @@
+2021-12-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101239
+	* g++.dg/template/sfinae32a.C: New test.
+
+2021-12-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103700
+	* g++.dg/template/sfinae32.C: New test.
+
+2021-12-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr103762-1a.c: New test.
+	* gcc.target/i386/pr103762-1b.c: Likewise.
+	* gcc.target/i386/pr103762-1c.c: Likewise.
+
+2021-12-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95046
+	* gfortran.dg/extract_recip_1.f: Adjust testcase.
+
+2021-12-27  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/pr103302.c: skip if -march=rv32*
+
 2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/103785

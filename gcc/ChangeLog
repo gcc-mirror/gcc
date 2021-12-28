@@ -1,3 +1,23 @@
+2021-12-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-protos.h: Delete
+	pa_maybe_emit_compare_and_swap_exchange_loop() declaration.
+	* config/pa/pa.c (pa_expand_compare_and_swap_loop): Delete.
+	(pa_maybe_emit_compare_and_swap_exchange_loop): Delete.
+	* config/pa/pa.md (atomic_storeq): Use __sync_lock_test_and_set
+	instead of pa_maybe_emit_compare_and_swap_exchange_loop.
+	(atomic_storehi, atomic_storesi, atomic_storedi): Likewise.
+
+2021-12-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103762
+	* config/i386/constraints.md (BM): New constraint.
+	* config/i386/i386.md (m): New mode attribute.
+	Replace the 'm' constraint on <general_operand> with the '<m>'
+	constraint.
+	Replace the 'm' constraint on x86_64_general_operand with the
+	'BM' constraint.
+
 2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/103785
