@@ -523,6 +523,28 @@
    (set_attr "prefix" "*,orig,vex")
    (set_attr "mode" "V2SF,V4SF,V4SF")])
 
+(define_expand "divv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(div:V2SF (match_operand:V2SF 1 "register_operand")
+		  (match_operand:V2SF 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx op1 = lowpart_subreg (V4SFmode, force_reg (V2SFmode, operands[1]),
+			    V2SFmode);
+  rtx op2 = gen_rtx_VEC_CONCAT (V4SFmode, operands[2],
+				force_reg (V2SFmode, CONST1_RTX (V2SFmode)));
+  rtx tmp = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_rtx_SET (tmp, op2));
+
+  rtx op0 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_divv4sf3 (op0, op1, tmp));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
+  DONE;
+})
+
 (define_expand "mmx_<code>v2sf3"
   [(set (match_operand:V2SF 0 "register_operand")
         (smaxmin:V2SF

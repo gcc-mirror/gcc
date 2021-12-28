@@ -12,8 +12,12 @@
 #  define ALIGN_MAX_STATIC      0x1000
    /* Excessive alignment for functions and objects with static storage
       duration that's expected to trigger an error.  */
-#elif __MACH__
-#  define ALIGN_MAX_STATIC      0x8000
+#elif __APPLE__
+# if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070
+#   define ALIGN_MAX_STATIC      0x8000
+# else
+#   define ALIGN_MAX_STATIC      ALIGN_MAX_HARD
+# endif
 #elif pdp11
 #  define ALIGN_MAX_STATIC      2
 /* Work around a pdp11 ICE (see PR target/87821).  */

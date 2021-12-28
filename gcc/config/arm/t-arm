@@ -153,6 +153,16 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-builtins.c
 
+arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+  fold-const.h langhooks.h stringpool.h attribs.h diagnostic.h \
+  $(srcdir)/config/arm/arm-protos.h \
+  $(srcdir)/config/arm/arm-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/arm-mve-builtins.cc
+
 arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \

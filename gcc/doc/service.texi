@@ -24,4 +24,4 @@ The service directory is found at
 @end itemize
 
 For further information, see
-@uref{http://gcc.gnu.org/faq.html#support}.
+@uref{https://gcc.gnu.org/faq.html#support}.

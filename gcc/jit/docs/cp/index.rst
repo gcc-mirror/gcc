@@ -13,13 +13,13 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 C++ bindings for libgccjit
 ==========================
 
 This document describes the C++ bindings to
-`libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API for embedding GCC
+`libgccjit <https://gcc.gnu.org/wiki/JIT>`_, an API for embedding GCC
 inside programs and libraries.
 
 The C++ bindings consist of a single header file ``libgccjit++.h``.
