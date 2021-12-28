@@ -529,17 +529,19 @@
 		  (match_operand:V2SF 2 "register_operand")))]
   "TARGET_MMX_WITH_SSE"
 {
-  rtx op0 = lowpart_subreg (V4SFmode, operands[0],
-			    GET_MODE (operands[0]));
-  rtx op1 = lowpart_subreg (V4SFmode, operands[1],
-			    GET_MODE (operands[1]));
+  rtx op1 = lowpart_subreg (V4SFmode, force_reg (V2SFmode, operands[1]),
+			    V2SFmode);
   rtx op2 = gen_rtx_VEC_CONCAT (V4SFmode, operands[2],
 				force_reg (V2SFmode, CONST1_RTX (V2SFmode)));
   rtx tmp = gen_reg_rtx (V4SFmode);
 
   emit_insn (gen_rtx_SET (tmp, op2));
 
+  rtx op0 = gen_reg_rtx (V4SFmode);
+
   emit_insn (gen_divv4sf3 (op0, op1, tmp));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
   DONE;
 })
 
