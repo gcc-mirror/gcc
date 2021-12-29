@@ -1,3 +1,7 @@
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* gccgo.texi: Replace http:// with https.
+
 2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/103021

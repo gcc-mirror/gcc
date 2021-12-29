@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-stmt.h"
 #include "dependency.h"
 #include "gimplify.h"
+#include "tm.h"		/* For CHAR_TYPE_SIZE.  */
 
 
 /* Calculate the number of characters in a string.  */
@@ -3972,63 +3973,50 @@ gfc_string_to_single_character (tree len, tree str, int kind)
 }
 
 
-void
-gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
+static void
+conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
 {
+  gcc_assert (expr);
 
+  /* We used to modify the tree here. Now it is done earlier in
+     the front-end, so we only check it here to avoid regressions.  */
   if (sym->backend_decl)
     {
-      /* This becomes the nominal_type in
-	 function.c:assign_parm_find_data_types.  */
-      TREE_TYPE (sym->backend_decl) = unsigned_char_type_node;
-      /* This becomes the passed_type in
-	 function.c:assign_parm_find_data_types.  C promotes char to
-	 integer for argument passing.  */
-      DECL_ARG_TYPE (sym->backend_decl) = unsigned_type_node;
-
-      DECL_BY_REFERENCE (sym->backend_decl) = 0;
+      gcc_assert (TREE_CODE (TREE_TYPE (sym->backend_decl)) == INTEGER_TYPE);
+      gcc_assert (TYPE_UNSIGNED (TREE_TYPE (sym->backend_decl)) == 1);
+      gcc_assert (TYPE_PRECISION (TREE_TYPE (sym->backend_decl)) == CHAR_TYPE_SIZE);
+      gcc_assert (DECL_BY_REFERENCE (sym->backend_decl) == 0);
     }
 
-  if (expr != NULL)
+  /* If we have a constant character expression, make it into an
+      integer of type C char.  */
+  if ((*expr)->expr_type == EXPR_CONSTANT)
     {
-      /* If we have a constant character expression, make it into an
-	 integer.  */
-      if ((*expr)->expr_type == EXPR_CONSTANT)
-        {
-	  gfc_typespec ts;
-          gfc_clear_ts (&ts);
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
 
-	  *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
-				    (int)(*expr)->value.character.string[0]);
-	  if ((*expr)->ts.kind != gfc_c_int_kind)
-	    {
-  	      /* The expr needs to be compatible with a C int.  If the
-		 conversion fails, then the 2 causes an ICE.  */
-	      ts.type = BT_INTEGER;
-	      ts.kind = gfc_c_int_kind;
-	      gfc_convert_type (*expr, &ts, 2);
-	    }
+      *expr = gfc_get_int_expr (gfc_default_character_kind, NULL,
+				(*expr)->value.character.string[0]);
+    }
+  else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
+    {
+      if ((*expr)->ref == NULL)
+	{
+	  se->expr = gfc_string_to_single_character
+	    (build_int_cst (integer_type_node, 1),
+	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
+				  gfc_get_symbol_decl
+				  ((*expr)->symtree->n.sym)),
+	      (*expr)->ts.kind);
 	}
-      else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
-        {
-	  if ((*expr)->ref == NULL)
-	    {
-	      se->expr = gfc_string_to_single_character
-		(build_int_cst (integer_type_node, 1),
-		 gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				      gfc_get_symbol_decl
-				      ((*expr)->symtree->n.sym)),
-		 (*expr)->ts.kind);
-	    }
-	  else
-	    {
-	      gfc_conv_variable (se, *expr);
-	      se->expr = gfc_string_to_single_character
-		(build_int_cst (integer_type_node, 1),
-		 gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				      se->expr),
-		 (*expr)->ts.kind);
-	    }
+      else
+	{
+	  gfc_conv_variable (se, *expr);
+	  se->expr = gfc_string_to_single_character
+	    (build_int_cst (integer_type_node, 1),
+	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
+				  se->expr),
+	      (*expr)->ts.kind);
 	}
     }
 }
@@ -6341,7 +6329,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && fsym->ns->proc_name->attr.is_bind_c)
 		    {
 		      parmse.expr = NULL;
-		      gfc_conv_scalar_char_value (fsym, &parmse, &e);
+		      conv_scalar_char_value (fsym, &parmse, &e);
 		      if (parmse.expr == NULL)
 			gfc_conv_expr (&parmse, e);
 		    }

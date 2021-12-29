@@ -1,3 +1,9 @@
+2021-12-28  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libbacktrace/103822
+	* Makefile.am: Fix newline.
+	* Makefile.in: Regenerate.
+
 2021-11-12  Martin Liska  <mliska@suse.cz>
 
 	PR libbacktrace/103167

@@ -8115,9 +8115,12 @@
 	(any_float:V2SF (match_operand:V2DI 1 "nonimmediate_operand")))]
   "TARGET_AVX512DQ && TARGET_AVX512VL"
 {
-  operands[0] = simplify_gen_subreg (V4SFmode, operands[0], V2SFmode, 0);
+  rtx op0 = gen_reg_rtx (V4SFmode);
+
   emit_insn (gen_avx512dq_float<floatunssuffix>v2div2sf2
-	     (operands[0], operands[1]));
+	     (op0, operands[1]));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
   DONE;
 })
 
@@ -8547,10 +8550,10 @@
 	  (match_operand:V2SF 1 "register_operand")))]
   "TARGET_AVX512DQ && TARGET_AVX512VL"
 {
-  operands[1] = force_reg (V2SFmode, operands[1]);
-  operands[1] = simplify_gen_subreg (V4SFmode, operands[1], V2SFmode, 0);
+  rtx op1 = force_reg (V2SFmode, operands[1]);
+  op1 = lowpart_subreg (V4SFmode, op1, V2SFmode);
   emit_insn (gen_avx512dq_fix<fixunssuffix>_truncv2sfv2di2
-	     (operands[0], operands[1]));
+	     (operands[0], op1));
   DONE;
 })
 
@@ -13631,10 +13634,13 @@
 	  (match_operand:PMOV_SRC_MODE_3 1 "register_operand")))]
   "TARGET_AVX512VL"
 {
-  operands[0] = simplify_gen_subreg (V16QImode, operands[0], <pmov_dst_3>mode, 0);
-  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>qi2 (operands[0],
-							    operands[1],
-							    CONST0_RTX (<pmov_dst_zeroed_3>mode)));
+  rtx op0 = gen_reg_rtx (V16QImode);
+
+  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>qi2
+	     (op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_3>mode)));
+
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<pmov_dst_3>mode, op0, V16QImode));
   DONE;
 })
 
@@ -14006,12 +14012,14 @@
 	  (match_operand:PMOV_SRC_MODE_4 1 "register_operand")))]
   "TARGET_AVX512VL"
 {
-  operands[0] = simplify_gen_subreg (V8HImode, operands[0], <pmov_dst_4>mode, 0);
-  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>hi2 (operands[0],
-							    operands[1],
-							    CONST0_RTX (<pmov_dst_zeroed_4>mode)));
-  DONE;
+  rtx op0 = gen_reg_rtx (V8HImode);
 
+  emit_insn (gen_avx512vl_truncate<mode>v<ssescalarnum>hi2
+	     (op0, operands[1], CONST0_RTX (<pmov_dst_zeroed_4>mode)));
+
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<pmov_dst_4>mode, op0, V8HImode));
+  DONE;
 })
 
 (define_insn "avx512vl_<code><mode>v<ssescalarnum>hi2"
@@ -14251,10 +14259,13 @@
 	  (match_operand:V2DI 1 "register_operand")))]
   "TARGET_AVX512VL"
 {
-  operands[0] = simplify_gen_subreg (V4SImode, operands[0], V2SImode, 0);
-  emit_insn (gen_avx512vl_truncatev2div2si2 (operands[0],
-					     operands[1],
-					     CONST0_RTX (V2SImode)));
+  rtx op0 = gen_reg_rtx (V4SImode);
+
+  emit_insn (gen_avx512vl_truncatev2div2si2
+	     (op0, operands[1], CONST0_RTX (V2SImode)));
+
+  emit_move_insn (operands[0],
+		  lowpart_subreg (V2SImode, op0, V4SImode));
   DONE;
 })
 
@@ -14389,8 +14400,12 @@
 	    (match_operand:V8DI 1 "register_operand")))]
   "TARGET_AVX512F"
 {
-  operands[0] = simplify_gen_subreg (V16QImode, operands[0], V8QImode, 0);
-  emit_insn (gen_avx512f_truncatev8div16qi2 (operands[0], operands[1]));
+  rtx op0 = gen_reg_rtx (V16QImode);
+
+  emit_insn (gen_avx512f_truncatev8div16qi2 (op0, operands[1]));
+
+  emit_move_insn (operands[0],
+		  lowpart_subreg (V8QImode, op0, V16QImode));
   DONE;
 })
 
@@ -21625,9 +21640,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V8QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
-      emit_insn (gen_sse4_1_<code>v8qiv8hi2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V8QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, op1, V8QImode);
+      emit_insn (gen_sse4_1_<code>v8qiv8hi2 (operands[0], op1));
       DONE;
     }
 })
@@ -21703,9 +21718,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V8QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
-      emit_insn (gen_avx2_<code>v8qiv8si2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V8QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, op1, V8QImode);
+      emit_insn (gen_avx2_<code>v8qiv8si2 (operands[0], op1));
       DONE;
     }
 })
@@ -21767,9 +21782,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V4QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V4QImode, 0);
-      emit_insn (gen_sse4_1_<code>v4qiv4si2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V4QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, op1, V4QImode);
+      emit_insn (gen_sse4_1_<code>v4qiv4si2 (operands[0], op1));
       DONE;
     }
 })
@@ -21935,9 +21950,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V4HImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V8HImode, operands[1], V4HImode, 0);
-      emit_insn (gen_sse4_1_<code>v4hiv4si2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V4HImode, operands[1]);
+      op1 = lowpart_subreg (V8HImode, op1, V4HImode);
+      emit_insn (gen_sse4_1_<code>v4hiv4si2 (operands[0], op1));
       DONE;
     }
 })
@@ -22056,9 +22071,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V8QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
-      emit_insn (gen_avx512f_<code>v8qiv8di2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V8QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, op1, V8QImode);
+      emit_insn (gen_avx512f_<code>v8qiv8di2 (operands[0], op1));
       DONE;
     }
 })
@@ -22118,9 +22133,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V4QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V4QImode, 0);
-      emit_insn (gen_avx2_<code>v4qiv4di2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V4QImode, operands[1]);
+      op1 = lowpart_subreg (V16QImode, operands[1], V4QImode);
+      emit_insn (gen_avx2_<code>v4qiv4di2 (operands[0], op1));
       DONE;
     }
 })
@@ -22145,9 +22160,9 @@
 	  (match_operand:V2QI 1 "register_operand")))]
   "TARGET_SSE4_1"
 {
-  operands[1] = force_reg (V2QImode, operands[1]);
-  operands[1] = simplify_gen_subreg (V16QImode, operands[1], V2QImode, 0);
-  emit_insn (gen_sse4_1_<code>v2qiv2di2 (operands[0], operands[1]));
+  rtx op1 = force_reg (V2QImode, operands[1]);
+  op1 = lowpart_subreg (V16QImode, op1, V2QImode);
+  emit_insn (gen_sse4_1_<code>v2qiv2di2 (operands[0], op1));
   DONE;
 })
 
@@ -22218,9 +22233,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V4HImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V8HImode, operands[1], V4HImode, 0);
-      emit_insn (gen_avx2_<code>v4hiv4di2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V4HImode, operands[1]);
+      op1 = lowpart_subreg (V8HImode, op1, V4HImode);
+      emit_insn (gen_avx2_<code>v4hiv4di2 (operands[0], op1));
       DONE;
     }
 })
@@ -22280,9 +22295,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V2HImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V8HImode, operands[1], V2HImode, 0);
-      emit_insn (gen_sse4_1_<code>v2hiv2di2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V2HImode, operands[1]);
+      op1 = lowpart_subreg (V8HImode, op1, V2HImode);
+      emit_insn (gen_sse4_1_<code>v2hiv2di2 (operands[0], op1));
       DONE;
     }
 })
@@ -22497,9 +22512,9 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V2SImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V4SImode, operands[1], V2SImode, 0);
-      emit_insn (gen_sse4_1_<code>v2siv2di2 (operands[0], operands[1]));
+      rtx op1 = force_reg (V2SImode, operands[1]);
+      op1 = lowpart_subreg (V4SImode, op1, V2SImode);
+      emit_insn (gen_sse4_1_<code>v2siv2di2 (operands[0], op1));
       DONE;
     }
 })
