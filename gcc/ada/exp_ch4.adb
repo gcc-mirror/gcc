@@ -12757,18 +12757,35 @@ package body Exp_Ch4 is
          if not Has_Compatible_Representation (Target_Type, Operand_Type)
            and then not Conversion_OK (N)
          then
+            if Optimization_Level > 0
+              and then Is_Boolean_Type (Target_Type)
+            then
+               --  Convert x(y) to (if y then x'(True) else x'(False)).
+               --  Use literals, instead of indexing x'val, to enable
+               --  further optimizations in the middle-end.
 
-            --  Convert: x(y) to x'val (ytyp'pos (y))
+               Rewrite (N,
+                 Make_If_Expression (Loc,
+                   Expressions => New_List (
+                     Operand,
+                     Convert_To (Target_Type,
+                                 New_Occurrence_Of (Standard_True, Loc)),
+                     Convert_To (Target_Type,
+                                 New_Occurrence_Of (Standard_False, Loc)))));
 
-            Rewrite (N,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Target_Type, Loc),
-                Attribute_Name => Name_Val,
-                Expressions    => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Occurrence_Of (Operand_Type, Loc),
-                    Attribute_Name => Name_Pos,
-                    Expressions    => New_List (Operand)))));
+            else
+               --  Convert: x(y) to x'val (ytyp'pos (y))
+
+               Rewrite (N,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Target_Type, Loc),
+                   Attribute_Name => Name_Val,
+                   Expressions    => New_List (
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Operand_Type, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (Operand)))));
+            end if;
 
             Analyze_And_Resolve (N, Target_Type);
          end if;

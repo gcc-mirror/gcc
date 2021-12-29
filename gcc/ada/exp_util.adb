@@ -424,6 +424,9 @@ package body Exp_Util is
             elsif     KP in N_Op_Boolean
               or else KP in N_Short_Circuit
               or else KP = N_Op_Not
+              or else (KP in N_Type_Conversion
+                           | N_Unchecked_Type_Conversion
+                        and then Is_Boolean_Type (Etype (Parent (N))))
             then
                return;
 
