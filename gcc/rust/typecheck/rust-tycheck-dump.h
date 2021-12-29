@@ -27,9 +27,9 @@ namespace Resolver {
 
 class TypeResolverDump : public TypeCheckBase
 {
-public:
-  using Rust::Resolver::TypeCheckBase::visit;
+  using Rust::HIR::HIRFullVisitorBase::visit;
 
+public:
   static void go (HIR::Crate &crate, std::ofstream &out)
   {
     TypeResolverDump dumper;

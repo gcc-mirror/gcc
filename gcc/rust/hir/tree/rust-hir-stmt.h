@@ -39,7 +39,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   bool is_item () const override final { return false; }
 
@@ -113,7 +113,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   HIR::Type *get_type () { return type.get (); }
 
@@ -180,7 +180,7 @@ public:
   ExprStmtWithoutBlock (ExprStmtWithoutBlock &&other) = default;
   ExprStmtWithoutBlock &operator= (ExprStmtWithoutBlock &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_expr () { return expr.get (); }
 
@@ -227,7 +227,7 @@ public:
   ExprStmtWithBlock (ExprStmtWithBlock &&other) = default;
   ExprStmtWithBlock &operator= (ExprStmtWithBlock &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   ExprWithBlock *get_expr () { return expr.get (); }
 

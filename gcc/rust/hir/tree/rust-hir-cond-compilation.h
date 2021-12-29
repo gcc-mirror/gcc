@@ -38,7 +38,7 @@ public:
   }
 
   // not sure if I'll use this but here anyway
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Clone function impl to be overriden in base classes
@@ -67,7 +67,7 @@ public:
   // Name-only constructor
   ConfigurationOption (Identifier option_name) : option_name (option_name) {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -96,7 +96,7 @@ public:
     : predicate_list (predicate_list)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -119,7 +119,7 @@ public:
     : predicate_list (predicate_list)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -159,7 +159,7 @@ public:
   ConfigurationNot (ConfigurationNot &&other) = default;
   ConfigurationNot &operator= (ConfigurationNot &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

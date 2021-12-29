@@ -107,7 +107,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_type_representation () const { return type_representation; }
 
@@ -157,7 +157,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
 
@@ -187,7 +187,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Lifetime &get_lifetime () { return lifetime; }
 
@@ -268,7 +268,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
 
@@ -750,7 +750,7 @@ public:
   Module (Module &&other) = default;
   Module &operator= (Module &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<Item>> &get_items () { return items; };
 
@@ -810,7 +810,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   // Override that adds extern crate name in decl to passed list of names.
   void add_crate_name (std::vector<std::string> &names) const override
@@ -851,7 +851,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -895,7 +895,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   /* TODO: find way to ensure only PATH_PREFIXED glob_type has path - factory
    * methods? */
@@ -976,7 +976,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
@@ -1021,7 +1021,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
@@ -1075,7 +1075,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1187,7 +1187,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_impl_mappings () const override
   {
@@ -1328,7 +1328,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -1551,7 +1551,7 @@ public:
    * type is defined. */
   bool is_unit_struct () const { return is_unit; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<StructField> &get_fields () { return fields; }
 
@@ -1659,7 +1659,7 @@ public:
       fields (std::move (fields))
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<TupleField> &get_fields () { return fields; }
   const std::vector<TupleField> &get_fields () const { return fields; }
@@ -1707,7 +1707,7 @@ public:
   virtual std::string as_string () const override;
 
   // not pure virtual as not abstract
-  virtual void accept_vis (HIRVisitor &vis) override;
+  virtual void accept_vis (HIRFullVisitor &vis) override;
 
   Location get_locus () const override { return locus; }
 
@@ -1737,7 +1737,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<TupleField> &get_tuple_fields () { return tuple_fields; }
 
@@ -1769,7 +1769,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<StructField> &get_struct_fields () { return struct_fields; }
 
@@ -1817,7 +1817,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_discriminant_expression () { return expression; }
 
@@ -1911,7 +1911,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_identifier () const { return enum_name; }
 
@@ -2013,7 +2013,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<StructField> &get_variants () { return variants; }
 
@@ -2072,7 +2072,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Type *get_type () { return type.get (); }
 
@@ -2153,7 +2153,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_identifier () const { return name; }
 
@@ -2323,7 +2323,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   TraitFunctionDecl &get_decl () { return decl; }
 
@@ -2400,7 +2400,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_name () const { return name; }
 
@@ -2480,7 +2480,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_name () const { return name; }
 
@@ -2595,7 +2595,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -2693,7 +2693,7 @@ public:
   // Returns whether inherent impl block has inherent impl items.
   bool has_impl_items () const { return !impl_items.empty (); }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<ImplItem>> &get_impl_items ()
   {
@@ -2768,7 +2768,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -2846,7 +2846,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
@@ -2988,7 +2988,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -3081,7 +3081,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<ExternalItem>> &get_extern_items ()
   {

@@ -51,7 +51,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -126,7 +126,7 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -159,7 +159,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -190,7 +190,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // pure virtual as RangePatternBound is abstract
@@ -220,7 +220,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -246,7 +246,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -274,7 +274,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -337,7 +337,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -397,7 +397,7 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -440,7 +440,7 @@ public:
   }
 
   virtual std::string as_string () const;
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual ItemType get_item_type () const = 0;
 
   Location get_locus () const { return locus; }
@@ -496,7 +496,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
@@ -548,7 +548,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
 
@@ -580,7 +580,7 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   ItemType get_item_type () const override final { return ItemType::IDENT; }
 
@@ -673,7 +673,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   PathInExpression &get_path () { return path; }
   StructPatternElements &get_struct_pattern_elems () { return elems; }
@@ -714,7 +714,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual ItemType get_item_type () const = 0;
 
@@ -758,7 +758,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
   const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
@@ -822,7 +822,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
   {
@@ -896,7 +896,7 @@ public:
 
   Location get_locus () const { return path.get_locus (); }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   PathInExpression &get_path () { return path; }
 
@@ -933,7 +933,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // pure virtual clone implementation
@@ -1010,7 +1010,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1068,7 +1068,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1115,7 +1115,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -1172,7 +1172,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -1231,7 +1231,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
