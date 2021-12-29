@@ -616,7 +616,7 @@ package body Layout is
                Size : constant Uint := RM_Size (E);
 
             begin
-               Set_Esize (E, RM_Size (E));
+               Set_Esize (E, Size);
 
                --  For scalar types, increase Object_Size to power of 2, but
                --  not less than a storage unit in any case (i.e., normally
@@ -641,6 +641,11 @@ package body Layout is
                   loop
                      Set_Alignment (E, 2 * Alignment (E));
                   end loop;
+
+               --  For the other types, apply standard adjustments
+
+               else
+                  Adjust_Esize_Alignment (E);
                end if;
             end;
          end if;

@@ -577,7 +577,6 @@ package body Exp_Pakd is
 
          --  Set remaining fields of packed array type
 
-         Reinit_Alignment              (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
          Set_Original_Array_Type       (PAT, Typ);
