@@ -5166,7 +5166,8 @@ gfc_get_variable_expr (gfc_symtree *var)
 
   if (var->n.sym->attr.flavor != FL_PROCEDURE
       && ((var->n.sym->as != NULL && var->n.sym->ts.type != BT_CLASS)
-	   || (var->n.sym->ts.type == BT_CLASS && CLASS_DATA (var->n.sym)
+	   || (var->n.sym->ts.type == BT_CLASS && var->n.sym->ts.u.derived
+	       && CLASS_DATA (var->n.sym)
 	       && CLASS_DATA (var->n.sym)->as)))
     {
       e->rank = var->n.sym->ts.type == BT_CLASS

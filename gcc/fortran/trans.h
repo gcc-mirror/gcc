@@ -508,7 +508,6 @@ void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
-void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
 tree gfc_string_to_single_character (tree len, tree str, int kind);
 tree gfc_get_tree_for_caf_expr (gfc_expr *);
 void gfc_get_caf_token_offset (gfc_se*, tree *, tree *, tree, tree, gfc_expr *);

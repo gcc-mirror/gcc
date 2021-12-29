@@ -4282,6 +4282,10 @@ driver_handle_option (struct gcc_options *opts,
        use_ld = ".gold";
        break;
 
+    case OPT_fuse_ld_mold:
+       use_ld = ".mold";
+       break;
+
     case OPT_fcompare_debug_second:
       compare_debug_second = 1;
       break;
