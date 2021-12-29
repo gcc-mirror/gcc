@@ -1,3 +1,21 @@
+2021-12-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/103828
+	* trans-decl.c (generate_local_decl): Do not call
+	gfc_conv_scalar_char_value(), but check the type tree.
+	* trans-expr.c (gfc_conv_scalar_char_value): Rename to
+	conv_scalar_char_value, do not alter type tree.
+	(gfc_conv_procedure_call): Adjust call to renamed
+	conv_scalar_char_value() function.
+	* trans-types.c (gfc_sym_type): Take care of
+	CHARACTER(C_CHAR), VALUE arguments.
+	* trans.h (gfc_conv_scalar_char_value): Remove prototype.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.texi: Replace http:// with https.
+	* intrinsic.texi: Likewise.
+
 2021-12-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103778

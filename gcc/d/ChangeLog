@@ -1,3 +1,11 @@
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* gdc.texi: Use one more https.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* gdc.texi: Replace http:// with https.
+
 2021-12-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd ad8412530.

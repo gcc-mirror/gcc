@@ -1,3 +1,62 @@
+2021-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99968
+	* tree.c (verify_type): Allow enumerator with BOOLEAN_TYPE.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103813
+	* fold-const.c (fold_truth_andor_1): Punt of const_binop LSHIFT_EXPR
+	or RSHIFT_EXPR returns NULL.  Formatting fix.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103837
+	* loop-invariant.c (can_move_invariant_reg): Ignore DEBUG_INSNs in
+	the decisions whether to return false or continue and right before
+	returning true reset those debug insns that previously caused
+	returning false.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103838
+	* optabs.c (expand_doubleword_mod, expand_doubleword_divmod): Only
+	check newly added insns for CALL_P, not the last insn of previous
+	code.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/103465
+	* opts.c (finish_options): More part of diagnostics to ...
+	(diagnose_options): ... here. Call the function from both
+	finish_options and process_options.
+	* opts.h (diagnose_options): Declare.
+	* toplev.c (process_options): Call diagnose_options.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* doc/contrib.texi: Replace http:// with https.
+	* doc/contribute.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/gccint.texi: Likewise.
+	* doc/gnu.texi: Likewise.
+	* doc/implement-c.texi: Likewise.
+	* doc/implement-cxx.texi: Likewise.
+	* doc/include/fdl.texi: Likewise.
+	* doc/include/gpl_v3.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/service.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103842
+	* config/i386/mmx.md (divv2sf3): Use force_reg on op1.  Always perform
+	divv4sf3 into a pseudo and emit_move_insn into operands[0].
+
 2021-12-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-protos.h: Delete
