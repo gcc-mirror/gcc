@@ -1,3 +1,25 @@
+2021-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103742
+	* g++.dg/opt/pr103742.C: New test.
+
+2021-12-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/47334
+	PR testsuite/103823
+	* lib/prune.exp: Prune some warnings related to LTO and
+	visibility.
+
+2021-12-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102332
+	* gfortran.dg/pr102332.f90: New test.
+
+2021-12-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/103793
+	* gcc.dg/pr103793.c: New test.
+
 2021-12-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/103828
