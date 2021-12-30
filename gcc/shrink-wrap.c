@@ -777,7 +777,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   unsigned max_grow_size = get_uncond_jump_length ();
   max_grow_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
 
-  while (!vec.is_empty () && pro != entry)
+  while (pro != entry)
     {
       while (pro != entry && !can_get_prologue (pro, prologue_clobbered))
 	{
@@ -786,6 +786,9 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 	  if (bitmap_set_bit (bb_with, pro->index))
 	    vec.quick_push (pro);
 	}
+
+      if (vec.is_empty ())
+	break;
 
       basic_block bb = vec.pop ();
       if (!can_dup_for_shrink_wrapping (bb, pro, max_grow_size))
