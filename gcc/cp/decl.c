@@ -7428,12 +7428,14 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
       tree guard = (tree)data;
       tree tcleanup = TARGET_EXPR_CLEANUP (*stmt_p);
 
-      tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
-      /* Tell honor_protect_cleanup_actions to handle this as a separate
-	 cleanup.  */
-      TRY_CATCH_IS_CLEANUP (tcleanup) = 1;
- 
-      TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
+      if (tcleanup && !expr_noexcept_p (tcleanup, tf_none))
+	{
+	  tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
+	  /* Tell honor_protect_cleanup_actions to handle this as a separate
+	     cleanup.  */
+	  TRY_CATCH_IS_CLEANUP (tcleanup) = 1;
+	  TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
+	}
     }
 
   return NULL_TREE;
