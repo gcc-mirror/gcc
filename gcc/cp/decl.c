@@ -4718,6 +4718,9 @@ cxx_init_decl_processing (void)
     nullptr_node = build_int_cst (nullptr_type_node, 0);
   }
 
+  if (! supports_one_only ())
+    flag_weak = 0;
+
   abort_fndecl
     = build_library_fn_ptr ("__cxa_pure_virtual", void_ftype,
 			    ECF_NORETURN | ECF_NOTHROW | ECF_COLD);
@@ -4732,9 +4735,6 @@ cxx_init_decl_processing (void)
 
   if (flag_exceptions)
     init_exception_processing ();
-
-  if (! supports_one_only ())
-    flag_weak = 0;
 
   if (modules_p ())
     init_modules (parse_in);
