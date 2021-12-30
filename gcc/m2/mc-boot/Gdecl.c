@@ -146,6 +146,7 @@ typedef struct StdIO_ProcRead_p StdIO_ProcRead;
 #   define caseException TRUE
 #   define returnException TRUE
 #   define forceCompoundStatement TRUE
+#   define enableDefForCStrings FALSE
 typedef struct intrinsicT_r intrinsicT;
 
 typedef struct fixupInfo_r fixupInfo;
@@ -358,6 +359,8 @@ struct libc_timeb_r {
                     };
 
 typedef int (*libc_exitP_t) (void);
+typedef libc_exitP_t libc_exitP_C;
+
 struct libc_exitP_p { libc_exitP_t proc; };
 
 struct _T8_r {
@@ -493,6 +496,7 @@ struct varparamT_r {
                      decl_node type;
                      decl_node scope;
                      unsigned int isUnbounded;
+                     unsigned int isForC;
                    };
 
 struct paramT_r {
@@ -500,6 +504,7 @@ struct paramT_r {
                   decl_node type;
                   decl_node scope;
                   unsigned int isUnbounded;
+                  unsigned int isForC;
                 };
 
 struct varargsT_r {
@@ -751,6 +756,7 @@ struct procedureT_r {
                       scopeT decls;
                       decl_node scope;
                       Indexing_Index parameters;
+                      unsigned int isForC;
                       unsigned int built;
                       unsigned int checking;
                       unsigned int returnopt;
@@ -2766,7 +2772,7 @@ int libc_shutdown (int s, int how);
 int libc_rename (void * oldpath, void * newpath);
 int libc_setjmp (void * env);
 void libc_longjmp (void * env, int val);
-int libc_atexit (libc_exitP proc);
+int libc_atexit (libc_exitP_C proc);
 void * libc_ttyname (int filedes);
 unsigned int libc_sleep (unsigned int seconds);
 void mcMetaError_metaError1 (char *m_, unsigned int _m_high, unsigned char *s_, unsigned int _s_high);
@@ -4389,6 +4395,12 @@ static void doParamConstCast (mcPretty_pretty p, decl_node n);
 static decl_node getParameterVariable (decl_node n, nameKey_Name m);
 
 /*
+   doParamTypeEmit -
+*/
+
+static void doParamTypeEmit (mcPretty_pretty p, decl_node paramnode, decl_node paramtype);
+
+/*
    doParamC -
 */
 
@@ -5046,6 +5058,19 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_n
 */
 
 static void emitN (mcPretty_pretty p, char *a_, unsigned int _a_high, unsigned int n);
+
+/*
+   isForC - return true if node n is a varparam, param or procedure
+            which was declared inside a definition module for "C".
+*/
+
+static unsigned int isForC (decl_node n);
+
+/*
+   isDefForCNode - return TRUE if node n was declared inside a definition module for "C".
+*/
+
+static unsigned int isDefForCNode (decl_node n);
 
 /*
    doFuncParamC -
@@ -6047,6 +6072,12 @@ static void outputHiddenComplete (decl_node n);
 */
 
 static unsigned int tryPartial (decl_node n, nodeProcedure pt);
+
+/*
+   outputPartialRecordArrayProcType -
+*/
+
+static void outputPartialRecordArrayProcType (decl_node n, decl_node q, unsigned int indirection);
 
 /*
    outputPartial -
@@ -7340,7 +7371,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
   n->recordfieldF.tag = FALSE;
   n->recordfieldF.scope = NULL;
   initCname (&n->recordfieldF.cname);
-  /* 
+  /*
    IF r^.kind=record
    THEN
       doRecordM2 (doP, r)
@@ -7752,7 +7783,7 @@ static decl_node makeIntrinsicProc (nodeT k, unsigned int noArgs, decl_node p)
 {
   decl_node f;
 
-  /* 
+  /*
    makeIntrisicProc -
   */
   f = newNode (k);
@@ -9146,7 +9177,7 @@ static void doIncludeC (decl_node n)
   DynamicStrings_String s;
 
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
-  if (isDefForC (n))
+  if (FALSE)  /* --fixme-- remove this clause when all regressions pass: isDefForC (n)  */
     {
       mcPretty_print (doP, (char *) "#   include \"mc-", 16);
       mcPretty_prints (doP, s);
@@ -9216,7 +9247,7 @@ static DynamicStrings_String getFQstring (decl_node n)
   DynamicStrings_String i;
   DynamicStrings_String s;
 
-  if (((! (decl_isExported (n))) || (mcOptions_getIgnoreFQ ())) || (isDefForC (decl_getScope (n))))
+  if ((! (decl_isExported (n))) || (mcOptions_getIgnoreFQ ()))  /* OR isDefForC (getScope (n))  */
     {
       return DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
     }
@@ -10852,7 +10883,7 @@ static void doString (mcPretty_pretty p, decl_node n)
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
   outTextS (p, s);
   s = DynamicStrings_KillString (s);
-  /* 
+  /*
    IF DynamicStrings.Index (s, '"', 0)=-1
    THEN
       outText (p, '"') ;
@@ -11012,7 +11043,7 @@ static void doStringC (mcPretty_pretty p, decl_node n)
   DynamicStrings_String s;
 
   mcDebug_assert (isString (n));
-  /* 
+  /*
    s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
    IF DynamicStrings.Length (s)>3
    THEN
@@ -11506,6 +11537,25 @@ static decl_node getParameterVariable (decl_node n, nameKey_Name m)
 
 
 /*
+   doParamTypeEmit -
+*/
+
+static void doParamTypeEmit (mcPretty_pretty p, decl_node paramnode, decl_node paramtype)
+{
+  mcDebug_assert ((decl_isParam (paramnode)) || (decl_isVarParam (paramnode)));
+  if ((isForC (paramnode)) && (decl_isProcType (decl_skipType (paramtype))))
+    {
+      doFQNameC (p, paramtype);
+      outText (p, (char *) "_C", 2);
+    }
+  else
+    {
+      doTypeNameC (p, paramtype);
+    }
+}
+
+
+/*
    doParamC -
 */
 
@@ -11540,7 +11590,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
         {
           /* avoid dangling else.  */
           doParamConstCast (p, n);
-          doTypeNameC (p, ptype);
+          doParamTypeEmit (p, n, ptype);
           if ((decl_isArray (ptype)) && (decl_isUnbounded (ptype)))
             {
               outText (p, (char *) ",", 1);
@@ -11555,7 +11605,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
           while (c <= t)
             {
               doParamConstCast (p, n);
-              doTypeNameC (p, ptype);
+              doParamTypeEmit (p, n, ptype);
               i = wlists_getItemFromList (l, c);
               if ((decl_isArray (ptype)) && (decl_isUnbounded (ptype)))
                 {
@@ -11629,7 +11679,7 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
       l = n->varparamF.namelist->identlistF.names;
       if (l == NULL)
         {
-          doTypeNameC (p, ptype);
+          doParamTypeEmit (p, n, ptype);
         }
       else
         {
@@ -11637,7 +11687,7 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
           c = 1;
           while (c <= t)
             {
-              doTypeNameC (p, ptype);
+              doParamTypeEmit (p, n, ptype);
               if (! (decl_isArray (ptype)))
                 {
                   mcPretty_setNeedSpace (p);
@@ -12218,6 +12268,17 @@ static void doCompletePartialProcType (mcPretty_pretty p, decl_node t, decl_node
       outText (p, (char *) "void", 4);
     }
   outText (p, (char *) ");\\n", 4);
+  if (isDefForCNode (n))
+    {
+      /* emit a C named type which differs from the m2 proctype.  */
+      outText (p, (char *) "typedef", 7);
+      mcPretty_setNeedSpace (p);
+      doFQNameC (p, t);
+      outText (p, (char *) "_t", 2);
+      mcPretty_setNeedSpace (p);
+      doFQNameC (p, t);
+      outText (p, (char *) "_C;\\n\\n", 7);
+    }
   outText (p, (char *) "struct", 6);
   mcPretty_setNeedSpace (p);
   doFQNameC (p, t);
@@ -12767,10 +12828,10 @@ static void doTypeC (mcPretty_pretty p, decl_node n, decl_node *m)
     {
       /* avoid dangling else.  */
       doFQNameC (p, n);
-      /* 
+      /*
    ELSIF isProcType (n) OR isArray (n) OR isRecord (n)
    THEN
-      HALT   n should have been simplified.  
+      HALT   n should have been simplified.
   */
       mcPretty_setNeedSpace (p);
     }
@@ -12996,7 +13057,7 @@ static void doExternCP (mcPretty_pretty p)
 
 static void doProcedureCommentText (mcPretty_pretty p, DynamicStrings_String s)
 {
-  /* remove 
+  /* remove
    from the start of the comment.  */
   while (((DynamicStrings_Length (s)) > 0) && ((DynamicStrings_char (s, 0)) == ASCII_lf))
     {
@@ -13224,13 +13285,10 @@ static void doPrototypeC (decl_node n)
 {
   if (! (decl_isExported (n)))
     {
-      if (! ((mcOptions_getExtendedOpaque ()) && (isDefForC (decl_getScope (n)))))
-        {
-          keyc_enterScope (n);
-          doProcedureHeadingC (n, TRUE);
-          mcPretty_print (doP, (char *) ";\\n", 3);
-          keyc_leaveScope (n);
-        }
+      keyc_enterScope (n);
+      doProcedureHeadingC (n, TRUE);
+      mcPretty_print (doP, (char *) ";\\n", 3);
+      keyc_leaveScope (n);
     }
 }
 
@@ -13722,7 +13780,7 @@ static void includeDefVarProcedure (decl_node n)
       defModule = decl_lookupDef (decl_getSymName (n));
       if (defModule != NULL)
         {
-          /* 
+          /*
          includeVar (defModule^.defF.decls) ;
          simplifyTypes (defModule^.defF.decls) ;
   */
@@ -14629,17 +14687,13 @@ static void doFuncUnbounded (mcPretty_pretty p, decl_node actual, decl_node form
           outText (p, (char *) ".array[0]", 9);
         }
     }
-  /* --fixme-- isDefForC is not implemented yet.
-   IF NOT isDefForC (getScope (func))
-   THEN
-  */
-  outText (p, (char *) ",", 1);
-  mcPretty_setNeedSpace (p);
-  doFuncHighC (p, actual);
-  /* 
-   END
-  */
-  doTotype (p, actual, formal);
+  if (! (enableDefForCStrings && (isDefForC (decl_getScope (func)))))
+    {
+      outText (p, (char *) ",", 1);
+      mcPretty_setNeedSpace (p);
+      doFuncHighC (p, actual);
+      doTotype (p, actual, formal);
+    }
 }
 
 
@@ -14649,17 +14703,29 @@ static void doFuncUnbounded (mcPretty_pretty p, decl_node actual, decl_node form
 
 static void doProcedureParamC (mcPretty_pretty p, decl_node actual, decl_node formal)
 {
-  outText (p, (char *) "(", 1);
-  doTypeNameC (p, decl_getType (formal));
-  outText (p, (char *) ")", 1);
-  mcPretty_setNeedSpace (p);
-  outText (p, (char *) "{", 1);
-  outText (p, (char *) "(", 1);
-  doFQNameC (p, decl_getType (formal));
-  outText (p, (char *) "_t)", 3);
-  mcPretty_setNeedSpace (p);
-  doExprC (p, actual);
-  outText (p, (char *) "}", 1);
+  if (isForC (formal))
+    {
+      outText (p, (char *) "(", 1);
+      doFQNameC (p, decl_getType (formal));
+      outText (p, (char *) "_C", 2);
+      outText (p, (char *) ")", 1);
+      mcPretty_setNeedSpace (p);
+      doExprC (p, actual);
+    }
+  else
+    {
+      outText (p, (char *) "(", 1);
+      doTypeNameC (p, decl_getType (formal));
+      outText (p, (char *) ")", 1);
+      mcPretty_setNeedSpace (p);
+      outText (p, (char *) "{", 1);
+      outText (p, (char *) "(", 1);
+      doFQNameC (p, decl_getType (formal));
+      outText (p, (char *) "_t)", 3);
+      mcPretty_setNeedSpace (p);
+      doExprC (p, actual);
+      outText (p, (char *) "}", 1);
+    }
 }
 
 
@@ -14808,6 +14874,56 @@ static void emitN (mcPretty_pretty p, char *a_, unsigned int _a_high, unsigned i
 
 
 /*
+   isForC - return true if node n is a varparam, param or procedure
+            which was declared inside a definition module for "C".
+*/
+
+static unsigned int isForC (decl_node n)
+{
+  if (decl_isVarParam (n))
+    {
+      return n->varparamF.isForC;
+    }
+  else if (decl_isParam (n))
+    {
+      /* avoid dangling else.  */
+      return n->paramF.isForC;
+    }
+  else if (decl_isProcedure (n))
+    {
+      /* avoid dangling else.  */
+      return n->procedureF.isForC;
+    }
+  return FALSE;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   isDefForCNode - return TRUE if node n was declared inside a definition module for "C".
+*/
+
+static unsigned int isDefForCNode (decl_node n)
+{
+  nameKey_Name name;
+
+  while ((n != NULL) && (! (((decl_isImp (n)) || (decl_isDef (n))) || (decl_isModule (n)))))
+    {
+      n = decl_getScope (n);
+    }
+  if ((n != NULL) && (decl_isImp (n)))
+    {
+      name = decl_getSymName (n);
+      n = decl_lookupDef (name);
+    }
+  return ((n != NULL) && (decl_isDef (n))) && (isDefForC (n));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    doFuncParamC -
 */
 
@@ -14839,6 +14955,24 @@ static void doFuncParamC (mcPretty_pretty p, decl_node actual, decl_node formal,
               else
                 {
                   doProcedureParamC (p, actual, formal);
+                }
+            }
+          else if (((((decl_getType (actual)) != NULL) && (decl_isProcType (decl_skipType (decl_getType (actual))))) && (isAProcType (ft))) && (isForC (formal)))
+            {
+              /* avoid dangling else.  */
+              if (decl_isVarParam (formal))
+                {
+                  mcMetaError_metaError2 ((char *) "{%1MDad} cannot be passed as a VAR parameter to the definition for C module as the parameter requires a cast to the formal type {%2MDtad}", 137, (unsigned char *) &actual, (sizeof (actual)-1), (unsigned char *) &formal, (sizeof (formal)-1));
+                }
+              else
+                {
+                  outText (p, (char *) "(", 1);
+                  doFQNameC (p, decl_getType (formal));
+                  outText (p, (char *) "_C", 2);
+                  outText (p, (char *) ")", 1);
+                  mcPretty_setNeedSpace (p);
+                  doExprC (p, actual);
+                  outText (p, (char *) ".proc", 5);
                 }
             }
           else if ((((decl_getType (actual)) != NULL) && (decl_isProcType (decl_skipType (decl_getType (actual))))) && ((decl_getType (actual)) != (decl_getType (formal))))
@@ -15922,9 +16056,10 @@ static void doFuncExprC (mcPretty_pretty p, decl_node n)
     {
       outText (p, (char *) "(*", 2);
       doExprC (p, n->funccallF.function);
-      outText (p, (char *) ".proc)", 6);
-      mcPretty_setNeedSpace (p);
+      outText (p, (char *) ".proc", 5);
+      outText (p, (char *) ")", 1);
       t = getFuncFromExpr (n->funccallF.function);
+      mcPretty_setNeedSpace (p);
       if (t == procN)
         {
           doProcTypeArgsC (p, n, (Indexing_Index) NULL, TRUE);
@@ -19436,22 +19571,13 @@ static unsigned int tryPartial (decl_node n, nodeProcedure pt)
 
 
 /*
-   outputPartial -
+   outputPartialRecordArrayProcType -
 */
 
-static void outputPartial (decl_node n)
+static void outputPartialRecordArrayProcType (decl_node n, decl_node q, unsigned int indirection)
 {
   DynamicStrings_String s;
-  decl_node q;
-  unsigned int i;
 
-  q = decl_getType (n);
-  i = 0;
-  while (decl_isPointer (q))
-    {
-      q = decl_getType (q);
-      i += 1;
-    }
   outText (doP, (char *) "typedef struct", 14);
   mcPretty_setNeedSpace (doP);
   s = getFQstring (n);
@@ -19472,13 +19598,33 @@ static void outputPartial (decl_node n)
   outTextS (doP, s);
   mcPretty_setNeedSpace (doP);
   s = DynamicStrings_KillString (s);
-  while (i > 0)
+  while (indirection > 0)
     {
       outText (doP, (char *) "*", 1);
-      i -= 1;
+      indirection -= 1;
     }
   doFQNameC (doP, n);
   outText (doP, (char *) ";\\n\\n", 5);
+}
+
+
+/*
+   outputPartial -
+*/
+
+static void outputPartial (decl_node n)
+{
+  decl_node q;
+  unsigned int indirection;
+
+  q = decl_getType (n);
+  indirection = 0;
+  while (decl_isPointer (q))
+    {
+      q = decl_getType (q);
+      indirection += 1;
+    }
+  outputPartialRecordArrayProcType (n, q, indirection);
 }
 
 
@@ -22164,8 +22310,8 @@ decl_node decl_lookupModule (nameKey_Name n)
 
 void decl_putDefForC (decl_node n)
 {
-  /* --fixme-- currently disabled.  */
   mcDebug_assert (decl_isDef (n));
+  n->defF.forC = TRUE;
 }
 
 
@@ -24402,6 +24548,7 @@ decl_node decl_makeProcedure (nameKey_Name n)
       initDecls (&d->procedureF.decls);
       d->procedureF.scope = decl_getDeclScope ();
       d->procedureF.parameters = Indexing_InitIndex (1);
+      d->procedureF.isForC = isDefForCNode (decl_getDeclScope ());
       d->procedureF.built = FALSE;
       d->procedureF.returnopt = FALSE;
       d->procedureF.optarg_ = NULL;
@@ -24525,6 +24672,7 @@ decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc)
   d->varparamF.type = type;
   d->varparamF.scope = proc;
   d->varparamF.isUnbounded = FALSE;
+  d->varparamF.isForC = isDefForCNode (proc);
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -24545,6 +24693,7 @@ decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc)
   d->paramF.type = type;
   d->paramF.scope = proc;
   d->paramF.isUnbounded = FALSE;
+  d->paramF.isForC = isDefForCNode (proc);
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -24867,7 +25016,7 @@ decl_node decl_makeComponentRef (decl_node rec, decl_node field)
   decl_node n;
   decl_node a;
 
-  /* 
+  /*
    n := getLastOp (rec) ;
    IF (n#NIL) AND (isDeref (n) OR isPointerRef (n)) AND
       (skipType (getType (rec)) = skipType (getType (n)))

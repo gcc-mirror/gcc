@@ -80,6 +80,8 @@ struct libc_timeb_r {
                     };
 
 typedef int (*libc_exitP_t) (void);
+typedef libc_exitP_t libc_exitP_C;
+
 struct libc_exitP_p { libc_exitP_t proc; };
 
 EXTERN ssize_t libc_write (int d, void * buf, size_t nbytes);
@@ -279,6 +281,7 @@ EXTERN void * libc_memcpy (void * dest, void * src, size_t size);
    #include <string.h>
 
    void *memset(void *s, int c, size_t n);
+   It returns s.
 */
 
 EXTERN void * libc_memset (void * s, int c, size_t size);
@@ -376,7 +379,7 @@ EXTERN void libc_longjmp (void * env, int val);
    atexit - execute, proc, when the function exit is called.
 */
 
-EXTERN int libc_atexit (libc_exitP proc);
+EXTERN int libc_atexit (libc_exitP_C proc);
 
 /*
    ttyname - returns a pointer to a string determining the ttyname.

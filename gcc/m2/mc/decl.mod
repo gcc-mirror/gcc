@@ -72,6 +72,7 @@ CONST
    returnException = TRUE ;
    (* this is a work around to avoid ever having to handle dangling else.  *)
    forceCompoundStatement = TRUE ;    (* TRUE will avoid dangling else, by always using {}.  *)
+   enableDefForCStrings   = FALSE ;   (* currently disabled.  *)
 
 
 TYPE
@@ -398,6 +399,7 @@ TYPE
                       type       :  node ;
 		      scope      :  node ;
                       isUnbounded:  BOOLEAN ;
+                      isForC     :  BOOLEAN ;
                    END ;
 
        paramT = RECORD
@@ -405,6 +407,7 @@ TYPE
                    type       :  node ;
                    scope      :  node ;
                    isUnbounded:  BOOLEAN ;
+                   isForC     :  BOOLEAN ;
                 END ;
 
        varargsT = RECORD
@@ -566,6 +569,7 @@ TYPE
                        decls          :  scopeT ;
                        scope          :  node ;
                        parameters     :  Index ;
+                       isForC,
 		       built,
 		       checking,
                        returnopt,
@@ -1498,9 +1502,8 @@ END makeModule ;
 
 PROCEDURE putDefForC (n: node) ;
 BEGIN
-   (* --fixme-- currently disabled.  *)
    assert (isDef (n)) ;
-   (* n^.defF.forC := TRUE *)
+   n^.defF.forC := TRUE
 END putDefForC ;
 
 
@@ -2132,6 +2135,7 @@ BEGIN
          initDecls (procedureF.decls) ;
          procedureF.scope := getDeclScope () ;
          procedureF.parameters := InitIndex (1) ;
+         procedureF.isForC := isDefForCNode (getDeclScope ()) ;
 	 procedureF.built := FALSE ;
          procedureF.returnopt := FALSE ;
          procedureF.optarg := NIL ;
@@ -2298,6 +2302,7 @@ BEGIN
    d^.paramF.type := type ;
    d^.paramF.scope := proc ;
    d^.paramF.isUnbounded := FALSE ;
+   d^.paramF.isForC := isDefForCNode (proc) ;
    RETURN d
 END makeNonVarParameter ;
 
@@ -2316,6 +2321,7 @@ BEGIN
    d^.varparamF.type := type ;
    d^.varparamF.scope := proc ;
    d^.varparamF.isUnbounded := FALSE ;
+   d^.varparamF.isForC := isDefForCNode (proc) ;
    RETURN d
 END makeVarParameter ;
 
@@ -5440,7 +5446,7 @@ VAR
    s: String ;
 BEGIN
    s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
-   IF isDefForC (n)
+   IF FALSE (* --fixme-- remove this clause when all regressions pass: isDefForC (n) *)
    THEN
       print (doP, '#   include "mc-') ;
       prints (doP, s) ;
@@ -5489,8 +5495,7 @@ PROCEDURE getFQstring (n: node) : String ;
 VAR
    i, s: String ;
 BEGIN
-   IF (NOT isExported (n)) OR
-      getIgnoreFQ () OR isDefForC (getScope (n))
+   IF (NOT isExported (n)) OR getIgnoreFQ () (* OR isDefForC (getScope (n)) *)
    THEN
       RETURN InitStringCharStar (keyToCharStar (getSymName (n)))
    ELSE
@@ -7087,6 +7092,23 @@ END getParameterVariable ;
 
 
 (*
+   doParamTypeEmit -
+*)
+
+PROCEDURE doParamTypeEmit (p: pretty; paramnode, paramtype: node) ;
+BEGIN
+   assert (isParam (paramnode) OR isVarParam (paramnode)) ;
+   IF isForC (paramnode) AND isProcType (skipType (paramtype))
+   THEN
+      doFQNameC (p, paramtype) ;
+      outText (p, "_C")
+   ELSE
+      doTypeNameC (p, paramtype)
+   END
+END doParamTypeEmit ;
+
+
+(*
    doParamC -
 *)
 
@@ -7115,7 +7137,7 @@ BEGIN
       IF l=NIL
       THEN
          doParamConstCast (p, n) ;
-         doTypeNameC (p, ptype) ;
+         doParamTypeEmit (p, n, ptype) ;
          IF isArray (ptype) AND isUnbounded (ptype)
          THEN
             outText (p, ',') ; setNeedSpace (p) ;
@@ -7126,7 +7148,7 @@ BEGIN
          c := 1 ;
          WHILE c <= t DO
             doParamConstCast (p, n) ;
-            doTypeNameC (p, ptype) ;
+            doParamTypeEmit (p, n, ptype) ;
             i := wlists.getItemFromList (l, c) ;
             IF isArray (ptype) AND isUnbounded (ptype)
             THEN
@@ -7190,12 +7212,12 @@ BEGIN
       l := n^.varparamF.namelist^.identlistF.names ;
       IF l=NIL
       THEN
-         doTypeNameC (p, ptype)
+         doParamTypeEmit (p, n, ptype)
       ELSE
          t := wlists.noOfItemsInList (l) ;
          c := 1 ;
          WHILE c <= t DO
-            doTypeNameC (p, ptype) ;
+            doParamTypeEmit (p, n, ptype) ;
 	    IF NOT isArray (ptype)
             THEN
                setNeedSpace (p) ;
@@ -7660,6 +7682,15 @@ BEGIN
       outText (p, "void")
    END ;
    outText (p, ");\n") ;
+   IF isDefForCNode (n)
+   THEN
+      (* emit a C named type which differs from the m2 proctype.  *)
+      outText (p, "typedef") ; setNeedSpace (p) ;
+      doFQNameC (p, t) ;
+      outText (p, "_t") ; setNeedSpace (p) ;
+      doFQNameC (p, t) ;
+      outText (p, "_C;\n\n")
+   END ;
    outText (p, "struct") ; setNeedSpace (p) ;
    doFQNameC (p, t) ;
    outText (p, "_p {") ; setNeedSpace (p) ;
@@ -8424,13 +8455,10 @@ PROCEDURE doPrototypeC (n: node) ;
 BEGIN
    IF NOT isExported (n)
    THEN
-      IF NOT (getExtendedOpaque () AND isDefForC (getScope (n)))
-      THEN
-         keyc.enterScope (n) ;
-         doProcedureHeadingC (n, TRUE) ;
-         print (doP, ";\n") ;
-         keyc.leaveScope (n)
-      END
+      keyc.enterScope (n) ;
+      doProcedureHeadingC (n, TRUE) ;
+      print (doP, ";\n") ;
+      keyc.leaveScope (n)
    END
 END doPrototypeC ;
 
@@ -9713,17 +9741,13 @@ BEGIN
          outText (p, '.array[0]')
       END
    END ;
-(* --fixme-- isDefForC is not implemented yet.
-   IF NOT isDefForC (getScope (func))
+   IF NOT (enableDefForCStrings AND isDefForC (getScope (func)))
    THEN
-*)
       outText (p, ',') ;
       setNeedSpace (p) ;
       doFuncHighC (p, actual) ;
       doTotype (p, actual, formal)
-(*
    END
-*)
 END doFuncUnbounded ;
 
 
@@ -9733,17 +9757,27 @@ END doFuncUnbounded ;
 
 PROCEDURE doProcedureParamC (p: pretty; actual, formal: node) ;
 BEGIN
-   outText (p, '(') ;
-   doTypeNameC (p, getType (formal)) ;
-   outText (p, ')') ;
-   setNeedSpace (p) ;
-   outText (p, '{') ;
-   outText (p, '(') ;
-   doFQNameC (p, getType (formal)) ;
-   outText (p, '_t)') ;
-   setNeedSpace (p) ;
-   doExprC (p, actual) ;
-   outText (p, '}')
+   IF isForC (formal)
+   THEN
+      outText (p, '(') ;
+      doFQNameC (p, getType (formal)) ;
+      outText (p, "_C") ;
+      outText (p, ')') ;
+      setNeedSpace (p) ;
+      doExprC (p, actual)
+   ELSE
+      outText (p, '(') ;
+      doTypeNameC (p, getType (formal)) ;
+      outText (p, ')') ;
+      setNeedSpace (p) ;
+      outText (p, '{') ;
+      outText (p, '(') ;
+      doFQNameC (p, getType (formal)) ;
+      outText (p, '_t)') ;
+      setNeedSpace (p) ;
+      doExprC (p, actual) ;
+      outText (p, '}')
+    END
 END doProcedureParamC ;
 
 
@@ -9875,6 +9909,47 @@ END emitN ;
 
 
 (*
+   isForC - return true if node n is a varparam, param or procedure
+            which was declared inside a definition module for "C".
+*)
+
+PROCEDURE isForC (n: node) : BOOLEAN ;
+BEGIN
+   IF isVarParam (n)
+   THEN
+      RETURN n^.varparamF.isForC
+   ELSIF isParam (n)
+   THEN
+      RETURN n^.paramF.isForC
+   ELSIF isProcedure (n)
+   THEN
+      RETURN n^.procedureF.isForC
+   END ;
+   RETURN FALSE
+END isForC ;
+
+
+(*
+   isDefForCNode - return TRUE if node n was declared inside a definition module for "C".
+*)
+
+PROCEDURE isDefForCNode (n: node) : BOOLEAN ;
+VAR
+   name: Name ;
+BEGIN
+   WHILE (n # NIL) AND (NOT (isImp (n) OR isDef (n) OR isModule (n))) DO
+      n := getScope (n)
+   END ;
+   IF (n # NIL) AND isImp (n)
+   THEN
+      name := getSymName (n) ;
+      n := lookupDef (name) ;
+   END ;
+   RETURN (n # NIL) AND isDef (n) AND isDefForC (n)
+END isDefForCNode ;
+
+
+(*
    doFuncParamC -
 *)
 
@@ -9899,6 +9974,21 @@ BEGIN
                metaError1 ('{%1MDad} cannot be passed as a VAR parameter', actual)
             ELSE
                doProcedureParamC (p, actual, formal)
+            END
+         ELSIF (getType (actual) # NIL) AND isProcType (skipType (getType (actual))) AND isAProcType (ft) AND isForC (formal)
+         THEN
+            IF isVarParam (formal)
+            THEN
+               metaError2 ('{%1MDad} cannot be passed as a VAR parameter to the definition for C module as the parameter requires a cast to the formal type {%2MDtad}',
+                           actual, formal)
+            ELSE
+               outText (p, '(') ;
+               doFQNameC (p, getType (formal)) ;
+               outText (p, "_C") ;
+               outText (p, ')') ;
+               setNeedSpace (p) ;
+               doExprC (p, actual) ;
+               outText (p, ".proc")
             END
          ELSIF (getType (actual) # NIL) AND isProcType (skipType (getType (actual))) AND (getType (actual) # getType (formal))
          THEN
@@ -10814,9 +10904,10 @@ BEGIN
    ELSE
       outText (p, "(*") ;
       doExprC (p, n^.funccallF.function) ;
-      outText (p, ".proc)") ;
-      setNeedSpace (p) ;
+      outText (p, ".proc") ;
+      outText (p, ")") ;
       t := getFuncFromExpr (n^.funccallF.function) ;
+      setNeedSpace (p) ;
       IF t = procN
       THEN
          doProcTypeArgsC (p, n, NIL, TRUE)
@@ -13615,21 +13706,13 @@ END tryPartial ;
 
 
 (*
-   outputPartial -
+   outputPartialRecordArrayProcType -
 *)
 
-PROCEDURE outputPartial (n: node) ;
+PROCEDURE outputPartialRecordArrayProcType (n, q: node; indirection: CARDINAL) ;
 VAR
    s: String ;
-   q: node ;
-   i: CARDINAL ;
 BEGIN
-   q := getType (n) ;
-   i := 0 ;
-   WHILE isPointer (q) DO
-      q := getType (q) ;
-      INC (i)
-   END ;
    outText (doP, "typedef struct") ; setNeedSpace (doP) ;
    s := getFQstring (n) ;
    IF isRecord (q)
@@ -13645,12 +13728,31 @@ BEGIN
    outTextS (doP, s) ;
    setNeedSpace (doP) ;
    s := KillString (s) ;
-   WHILE i>0 DO
+   WHILE indirection>0 DO
       outText (doP, "*") ;
-      DEC (i)
+      DEC (indirection)
    END ;
    doFQNameC (doP, n) ;
    outText (doP, ";\n\n")
+END outputPartialRecordArrayProcType ;
+
+
+(*
+   outputPartial -
+*)
+
+PROCEDURE outputPartial (n: node) ;
+VAR
+   q          : node ;
+   indirection: CARDINAL ;
+BEGIN
+   q := getType (n) ;
+   indirection := 0 ;
+   WHILE isPointer (q) DO
+      q := getType (q) ;
+      INC (indirection)
+   END ;
+   outputPartialRecordArrayProcType (n, q, indirection)
 END outputPartial ;
 
 
