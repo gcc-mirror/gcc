@@ -310,25 +310,6 @@ get_type (enum gcc_jit_types type_)
 }
 
 /* Construct a playback::type instance (wrapping a tree) for the given
-   sign and number of bits.  */
-
-playback::type *
-playback::context::
-make_type (bool is_signed, size_t num_bits)
-{
-  tree int_type;
-  if (is_signed)
-  {
-    int_type = make_signed_type(num_bits);
-  }
-  else
-  {
-    int_type = make_unsigned_type(num_bits);
-  }
-  return new type (int_type);
-}
-
-/* Construct a playback::type instance (wrapping a tree) for the given
    array type.  */
 
 playback::type *
