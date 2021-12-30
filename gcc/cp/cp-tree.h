@@ -1008,6 +1008,9 @@ public:
      (bootstrap/91828).  */
   tree& operator[] (ptrdiff_t i) const { return (*v)[i]; }
 
+  tree *begin() { return ::begin (v); }
+  tree *end() { return ::end (v); }
+
   void release () { release_tree_vector (v); v = NULL; }
 
   ~releasing_vec () { release_tree_vector (v); }
