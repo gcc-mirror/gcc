@@ -2692,8 +2692,11 @@ package body Exp_Prag is
    begin
       --  If pragma is not enabled, rewrite as Null statement. If pragma is
       --  disabled, it has already been rewritten as a Null statement.
+      --
+      --  Likewise, do this in CodePeer mode, because the expanded code is too
+      --  complicated for CodePeer to analyse.
 
-      if Is_Ignored (N) then
+      if Is_Ignored (N) or else CodePeer_Mode then
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
          return;
