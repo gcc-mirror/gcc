@@ -64,9 +64,6 @@ begin
          pragma Loop_Invariant (Exp > 0);
          pragma Loop_Invariant (Result * Factor ** Exp = Left ** Right);
          pragma Loop_Variant (Decreases => Exp);
-         pragma Annotate
-           (CodePeer, False_Positive,
-            "validity check", "confusion on generated code");
 
          if Exp rem 2 /= 0 then
             pragma Assert

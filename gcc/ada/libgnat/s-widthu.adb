@@ -156,9 +156,6 @@ begin
          pragma Loop_Invariant (Pow = Big_10 ** (W - 2));
          pragma Loop_Invariant (Big (T) = Big (T_Init) / Pow);
          pragma Loop_Variant (Decreases => T);
-         pragma Annotate
-           (CodePeer, False_Positive,
-            "validity check", "confusion on generated code");
       end loop;
 
       declare
