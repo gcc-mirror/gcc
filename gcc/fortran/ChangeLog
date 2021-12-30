@@ -1,3 +1,13 @@
+2021-12-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102332
+	* expr.c (gfc_get_variable_expr): Avoid NULL pointer dereferences
+	during handling of errors with invalid uses of CLASS variables.
+	* match.c (select_type_set_tmp): Likewise.
+	* primary.c (gfc_match_varspec): Likewise.
+	* resolve.c (resolve_variable): Likewise.
+	(resolve_select_type): Likewise.
+
 2021-12-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/103828

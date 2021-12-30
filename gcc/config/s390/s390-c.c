@@ -457,7 +457,9 @@ s390_pragma_target_parse (tree args, tree pop_target)
     cpp_opts->warn_unused_macros = 0;
 
     /* Define all of the macros for new options that were just turned on.  */
+    cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
     s390_cpu_cpp_builtins_internal (parse_in, cur_opt, prev_opt);
+    cpp_stop_forcing_token_locations (parse_in);
 
     cpp_opts->warn_unused_macros = saved_warn_unused_macros;
   }

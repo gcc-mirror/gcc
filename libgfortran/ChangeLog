@@ -1,3 +1,7 @@
+2021-12-29  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/ieee_helper.c: Fix enum values.
+
 2021-12-27  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libfortran/98076
