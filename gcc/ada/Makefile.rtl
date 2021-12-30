@@ -898,7 +898,7 @@ ATOMICS_BUILTINS_TARGET_PAIRS = \
 
 X86_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
-  s-atocou.adb<libgnat/s-atocou__x86.adb
+  s-atocou.adb<libgnat/s-atocou__builtin.adb
 
 X86_64_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
