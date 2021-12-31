@@ -6001,15 +6001,20 @@ generate_local_decl (gfc_symbol * sym)
 
   if (sym->attr.dummy == 1)
     {
-      /* Modify the tree type for scalar character dummy arguments of bind(c)
-	 procedures if they are passed by value.  The tree type for them will
-	 be promoted to INTEGER_TYPE for the middle end, which appears to be
-	 what C would do with characters passed by-value.  The value attribute
-         implies the dummy is a scalar.  */
+      /* The tree type for scalar character dummy arguments of BIND(C)
+	 procedures, if they are passed by value, should be unsigned char.
+	 The value attribute implies the dummy is a scalar.  */
       if (sym->attr.value == 1 && sym->backend_decl != NULL
 	  && sym->ts.type == BT_CHARACTER && sym->ts.is_c_interop
 	  && sym->ns->proc_name != NULL && sym->ns->proc_name->attr.is_bind_c)
-	gfc_conv_scalar_char_value (sym, NULL, NULL);
+	{
+	  /* We used to modify the tree here. Now it is done earlier in
+	     the front-end, so we only check it here to avoid regressions.  */
+	  gcc_assert (TREE_CODE (TREE_TYPE (sym->backend_decl)) == INTEGER_TYPE);
+	  gcc_assert (TYPE_UNSIGNED (TREE_TYPE (sym->backend_decl)) == 1);
+	  gcc_assert (TYPE_PRECISION (TREE_TYPE (sym->backend_decl)) == CHAR_TYPE_SIZE);
+	  gcc_assert (DECL_BY_REFERENCE (sym->backend_decl) == 0);
+	}
 
       /* Unused procedure passed as dummy argument.  */
       if (sym->attr.flavor == FL_PROCEDURE)

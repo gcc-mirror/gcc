@@ -1183,9 +1183,21 @@ find_invariants_insn (rtx_insn *insn, bool always_reached, bool always_executed)
    call.  */
 
 static void
-find_invariants_bb (basic_block bb, bool always_reached, bool always_executed)
+find_invariants_bb (class loop *loop, basic_block bb, bool always_reached,
+		    bool always_executed)
 {
   rtx_insn *insn;
+  basic_block preheader = loop_preheader_edge (loop)->src;
+
+  /* Don't move insn of cold BB out of loop to preheader to reduce calculations
+     and register live range in hot loop with cold BB.  */
+  if (!always_executed && preheader->count > bb->count)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Don't move invariant from bb: %d out of loop %d\n",
+		 bb->index, loop->num);
+      return;
+    }
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -1214,8 +1226,7 @@ find_invariants_body (class loop *loop, basic_block *body,
   unsigned i;
 
   for (i = 0; i < loop->num_nodes; i++)
-    find_invariants_bb (body[i],
-			bitmap_bit_p (always_reached, i),
+    find_invariants_bb (loop, body[i], bitmap_bit_p (always_reached, i),
 			bitmap_bit_p (always_executed, i));
 }
 
@@ -1691,6 +1702,7 @@ can_move_invariant_reg (class loop *loop, struct invariant *inv, rtx reg)
   unsigned int dest_regno, defs_in_loop_count = 0;
   rtx_insn *insn = inv->insn;
   basic_block bb = BLOCK_FOR_INSN (inv->insn);
+  auto_vec <rtx_insn *, 16> debug_insns_to_reset;
 
   /* We ignore hard register and memory access for cost and complexity reasons.
      Hard register are few at this stage and expensive to consider as they
@@ -1725,10 +1737,13 @@ can_move_invariant_reg (class loop *loop, struct invariant *inv, rtx reg)
 	continue;
 
       /* Don't move if a use is not dominated by def in insn.  */
-      if (use_bb == bb && DF_INSN_LUID (insn) >= DF_INSN_LUID (use_insn))
-	return false;
-      if (!dominated_by_p (CDI_DOMINATORS, use_bb, bb))
-	return false;
+      if ((use_bb == bb && DF_INSN_LUID (insn) >= DF_INSN_LUID (use_insn))
+	  || !dominated_by_p (CDI_DOMINATORS, use_bb, bb))
+	{
+	  if (!DEBUG_INSN_P (use_insn))
+	    return false;
+	  debug_insns_to_reset.safe_push (use_insn);
+	}
     }
 
   /* Check for other defs.  Any other def in the loop might reach a use
@@ -1749,6 +1764,13 @@ can_move_invariant_reg (class loop *loop, struct invariant *inv, rtx reg)
 
       if (++defs_in_loop_count > 1)
 	return false;
+    }
+
+  /* Reset debug uses if a use is not dominated by def in insn.  */
+  for (auto use_insn : debug_insns_to_reset)
+    {
+      INSN_VAR_LOCATION_LOC (use_insn) = gen_rtx_UNKNOWN_VAR_LOC ();
+      df_insn_rescan (use_insn);
     }
 
   return true;

@@ -97,6 +97,7 @@ error_callback (void *data, const char *msg, int errnum)
 	  iov[1].iov_len = strlen (msg);
 	  iov[2].iov_base = (char*) ", errno: ";
 	  iov[2].iov_len = strlen (iov[2].iov_base);
+	  /* Async-signal-safe function, errnum must be positive.  */
 	  const char *p = gfc_itoa (errnum, errbuf, sizeof (errbuf));
 	  iov[3].iov_base = (char*) p;
 	  iov[3].iov_len = strlen (p);

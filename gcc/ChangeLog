@@ -1,3 +1,147 @@
+2021-12-29  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/103847
+	* godump.c (go_force_record_alignment): Name the alignment
+	field "_".
+
+2021-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103742
+	* tree-ssa-dce.c (make_forwarders_with_degenerate_phis): If any phi
+	argument is not CONSTANT_CLASS_P or SSA_NAME and any arguments are
+	equal, change second from hash value to lowest dest_idx from the
+	edges which have equal argument and resort to ensure -fcompare-debug
+	stability.
+
+2021-12-29  Martin Liska  <mliska@suse.cz>
+
+	* collect2.c (main): Add ld.mold.
+	* common.opt: Add -fuse-ld=mold.
+	* doc/invoke.texi: Document it.
+	* gcc.c (driver_handle_option): Handle -fuse-ld=mold.
+	* opts.c (common_handle_option): Likewise.
+
+2021-12-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_pack<floatprefix>_float_<mode>):
+	Perform gen_avx512dq_float<floatunssuffix>v2div2sf2 into a
+	pseudo and emit move insn into operands[0].
+	(fix<fixunssuffix>_truncv2sfv2di2): Use lowpart_subreg
+	instead of simplify_gen_subreg.
+	(trunc<mode><pmov_dst_3_lower>2): Perform
+	gen_avx512vl_truncate<mode>v<ssescalarnum>qi2 into a
+	pseudo and emit move insn into operands[0].
+	(trunc<mode><pmov_dst_4_lower>2): Perform
+	gen_avx512vl_truncate<mode>v<ssescalarnum>hi2 into a
+	pseudo and emit move insn into operands[0].
+	(truncv2div2si2): Perform gen_avx512vl_truncatev2div2si2 into a
+	pseudo and emit move insn into operands[0].
+	(truncv8div8qi2): Perform gen_avx512f_truncatev8div16qi2 into a
+	pseudo and emit move insn into operands[0].
+	(<any_extend:insn>v8qiv8hi2): Use lowpart_subreg
+	instead of simplify_gen_subreg.
+	(<any_extend:insn>v8qiv8si2): Ditto.
+	(<any_extend:insn>v4qiv4si2): Ditto.
+	(<any_extend:insn>v4hiv4si2): Ditto.
+	(<any_extend:insn>v8qiv8di2): Ditto.
+	(<any_extend:insn>v4qiv4di2): Ditto.
+	(<any_extend:insn>v2qiv2di2): Ditto.
+	(<any_extend:insn>v4hiv4di2): Ditto.
+	(<any_extend:insn>v2hiv2di2): Ditto.
+	(<any_extend:insn>v2siv2di2): Ditto.
+
+2021-12-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/103793
+	* tree-ssa-loop-split.c (fix_loop_bb_probability): New function.
+	(split_loop): Use multiply to scale loop1's exit probability.
+	(do_split_loop_on_cond): Call fix_loop_bb_probability.
+
+2021-12-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99968
+	* tree.c (verify_type): Allow enumerator with BOOLEAN_TYPE.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103813
+	* fold-const.c (fold_truth_andor_1): Punt of const_binop LSHIFT_EXPR
+	or RSHIFT_EXPR returns NULL.  Formatting fix.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103837
+	* loop-invariant.c (can_move_invariant_reg): Ignore DEBUG_INSNs in
+	the decisions whether to return false or continue and right before
+	returning true reset those debug insns that previously caused
+	returning false.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103838
+	* optabs.c (expand_doubleword_mod, expand_doubleword_divmod): Only
+	check newly added insns for CALL_P, not the last insn of previous
+	code.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	PR driver/103465
+	* opts.c (finish_options): More part of diagnostics to ...
+	(diagnose_options): ... here. Call the function from both
+	finish_options and process_options.
+	* opts.h (diagnose_options): Declare.
+	* toplev.c (process_options): Call diagnose_options.
+
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* doc/contrib.texi: Replace http:// with https.
+	* doc/contribute.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/gccint.texi: Likewise.
+	* doc/gnu.texi: Likewise.
+	* doc/implement-c.texi: Likewise.
+	* doc/implement-cxx.texi: Likewise.
+	* doc/include/fdl.texi: Likewise.
+	* doc/include/gpl_v3.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/service.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+
+2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103842
+	* config/i386/mmx.md (divv2sf3): Use force_reg on op1.  Always perform
+	divv4sf3 into a pseudo and emit_move_insn into operands[0].
+
+2021-12-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-protos.h: Delete
+	pa_maybe_emit_compare_and_swap_exchange_loop() declaration.
+	* config/pa/pa.c (pa_expand_compare_and_swap_loop): Delete.
+	(pa_maybe_emit_compare_and_swap_exchange_loop): Delete.
+	* config/pa/pa.md (atomic_storeq): Use __sync_lock_test_and_set
+	instead of pa_maybe_emit_compare_and_swap_exchange_loop.
+	(atomic_storehi, atomic_storesi, atomic_storedi): Likewise.
+
+2021-12-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103762
+	* config/i386/constraints.md (BM): New constraint.
+	* config/i386/i386.md (m): New mode attribute.
+	Replace the 'm' constraint on <general_operand> with the '<m>'
+	constraint.
+	Replace the 'm' constraint on x86_64_general_operand with the
+	'BM' constraint.
+
+2021-12-26  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103785
+	* config/i386/i386.md: Swap operand order in comments and check
+	AX input in any_mul_highpart peepholes.
+
 2021-12-24  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/95046

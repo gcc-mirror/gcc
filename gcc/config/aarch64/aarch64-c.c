@@ -259,7 +259,9 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
   cpp_opts->warn_unused_macros = 0;
 
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
   aarch64_update_cpp_builtins (parse_in);
+  cpp_stop_forcing_token_locations (parse_in);
 
   cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 

@@ -1,3 +1,42 @@
+2021-12-28  Martin Liska  <mliska@suse.cz>
+
+	* docs/_build/texinfo/libgccjit.texi: Replace http:// with https.
+	* docs/cp/index.rst: Likewise.
+	* docs/cp/intro/index.rst: Likewise.
+	* docs/cp/intro/tutorial01.rst: Likewise.
+	* docs/cp/intro/tutorial02.rst: Likewise.
+	* docs/cp/intro/tutorial03.rst: Likewise.
+	* docs/cp/intro/tutorial04.rst: Likewise.
+	* docs/cp/topics/asm.rst: Likewise.
+	* docs/cp/topics/compilation.rst: Likewise.
+	* docs/cp/topics/contexts.rst: Likewise.
+	* docs/cp/topics/expressions.rst: Likewise.
+	* docs/cp/topics/functions.rst: Likewise.
+	* docs/cp/topics/index.rst: Likewise.
+	* docs/cp/topics/locations.rst: Likewise.
+	* docs/cp/topics/objects.rst: Likewise.
+	* docs/cp/topics/types.rst: Likewise.
+	* docs/index.rst: Likewise.
+	* docs/internals/index.rst: Likewise.
+	* docs/intro/index.rst: Likewise.
+	* docs/intro/tutorial01.rst: Likewise.
+	* docs/intro/tutorial02.rst: Likewise.
+	* docs/intro/tutorial03.rst: Likewise.
+	* docs/intro/tutorial04.rst: Likewise.
+	* docs/intro/tutorial05.rst: Likewise.
+	* docs/topics/asm.rst: Likewise.
+	* docs/topics/compatibility.rst: Likewise.
+	* docs/topics/compilation.rst: Likewise.
+	* docs/topics/contexts.rst: Likewise.
+	* docs/topics/expressions.rst: Likewise.
+	* docs/topics/function-pointers.rst: Likewise.
+	* docs/topics/functions.rst: Likewise.
+	* docs/topics/index.rst: Likewise.
+	* docs/topics/locations.rst: Likewise.
+	* docs/topics/objects.rst: Likewise.
+	* docs/topics/performance.rst: Likewise.
+	* docs/topics/types.rst: Likewise.
+
 2021-12-20  Martin Liska  <mliska@suse.cz>
 
 	* libgccjit.c (struct version_info): Rename to jit_version_info.

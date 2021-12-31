@@ -1,3 +1,10 @@
+2021-12-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103700
+	* c-common.c (pointer_int_sum): When quiet, return
+	error_mark_node for an incomplete pointed-to type and don't
+	call size_in_bytes_loc.
+
 2021-12-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103681

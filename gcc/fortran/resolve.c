@@ -5736,6 +5736,8 @@ resolve_variable (gfc_expr *e)
      can't be translated that way.  */
   if (sym->assoc && e->rank == 0 && e->ref && sym->ts.type == BT_CLASS
       && sym->assoc->target && sym->assoc->target->ts.type == BT_CLASS
+      && sym->assoc->target->ts.u.derived
+      && CLASS_DATA (sym->assoc->target)
       && CLASS_DATA (sym->assoc->target)->as)
     {
       gfc_ref *ref = e->ref;
@@ -5799,7 +5801,8 @@ resolve_variable (gfc_expr *e)
   /* Like above, but for class types, where the checking whether an array
      ref is present is more complicated.  Furthermore make sure not to add
      the full array ref to _vptr or _len refs.  */
-  if (sym->assoc && sym->ts.type == BT_CLASS
+  if (sym->assoc && sym->ts.type == BT_CLASS && sym->ts.u.derived
+      && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.dimension
       && (e->ts.type != BT_DERIVED || !e->ts.u.derived->attr.vtype))
     {
@@ -9432,6 +9435,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       /* Check F03:C815.  */
       if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	  && selector_type
 	  && !selector_type->attr.unlimited_polymorphic
 	  && !gfc_type_is_extensible (c->ts.u.derived))
 	{
@@ -9442,7 +9446,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	}
 
       /* Check F03:C816.  */
-      if (c->ts.type != BT_UNKNOWN && !selector_type->attr.unlimited_polymorphic
+      if (c->ts.type != BT_UNKNOWN
+	  && selector_type && !selector_type->attr.unlimited_polymorphic
 	  && ((c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
 	      || !gfc_type_is_extension_of (selector_type, c->ts.u.derived)))
 	{

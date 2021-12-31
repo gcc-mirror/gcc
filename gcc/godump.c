@@ -651,7 +651,7 @@ go_force_record_alignment (struct obstack *ob, const char *type_string,
 			   unsigned int index, const char *error_string)
 {
   index = go_append_artificial_name (ob, index);
-  obstack_grow (ob, "_align ", 7);
+  obstack_grow (ob, "_ ", 2);
   if (type_string == NULL)
     obstack_grow (ob, error_string, strlen (error_string));
   else

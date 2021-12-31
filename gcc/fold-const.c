@@ -6454,15 +6454,19 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 			 size_int (xll_bitpos));
   rl_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc, lntype, rl_mask),
 			 size_int (xrl_bitpos));
+  if (ll_mask == NULL_TREE || rl_mask == NULL_TREE)
+    return 0;
 
   if (l_const)
     {
       l_const = fold_convert_loc (loc, lntype, l_const);
       l_const = unextend (l_const, ll_bitsize, ll_unsignedp, ll_and_mask);
       l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos));
+      if (l_const == NULL_TREE)
+	return 0;
       if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
 					fold_build1_loc (loc, BIT_NOT_EXPR,
-						     lntype, ll_mask))))
+							 lntype, ll_mask))))
 	{
 	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 
@@ -6474,9 +6478,11 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
       r_const = fold_convert_loc (loc, lntype, r_const);
       r_const = unextend (r_const, rl_bitsize, rl_unsignedp, rl_and_mask);
       r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos));
+      if (r_const == NULL_TREE)
+	return 0;
       if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
 					fold_build1_loc (loc, BIT_NOT_EXPR,
-						     lntype, rl_mask))))
+							 lntype, rl_mask))))
 	{
 	  warning (0, "comparison is always %d", wanted_code == NE_EXPR);
 
@@ -6521,6 +6527,8 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
       rr_mask = const_binop (LSHIFT_EXPR, fold_convert_loc (loc,
 							    rntype, rr_mask),
 			     size_int (xrr_bitpos));
+      if (lr_mask == NULL_TREE || rr_mask == NULL_TREE)
+	return 0;
 
       /* Make a mask that corresponds to both fields being compared.
 	 Do this for both items being compared.  If the operands are the
@@ -6580,6 +6588,8 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 				 size_int (MIN (xll_bitpos, xrl_bitpos)));
 	  lr_mask = const_binop (RSHIFT_EXPR, lr_mask,
 				 size_int (MIN (xlr_bitpos, xrr_bitpos)));
+	  if (ll_mask == NULL_TREE || lr_mask == NULL_TREE)
+	    return 0;
 
 	  /* Convert to the smaller type before masking out unwanted bits.  */
 	  type = lntype;

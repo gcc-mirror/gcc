@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 Internals
 =========
@@ -136,12 +136,12 @@ Running under valgrind
 
 The jit testsuite detects if :envvar:`RUN_UNDER_VALGRIND` is present in the
 environment (with any value).  If it is present, it runs the test client
-code under `valgrind <http://valgrind.org>`_,
+code under `valgrind <https://valgrind.org>`_,
 specifcally, the default
-`memcheck <http://valgrind.org/docs/manual/mc-manual.html>`_
+`memcheck <https://valgrind.org/docs/manual/mc-manual.html>`_
 tool with
 `--leak-check=full
-<http://valgrind.org/docs/manual/mc-manual.html#opt.leak-check>`_.
+<https://valgrind.org/docs/manual/mc-manual.html#opt.leak-check>`_.
 
 It automatically parses the output from valgrind, injecting XFAIL results if
 any issues are found, or PASS results if the output is clean.  The output
@@ -431,7 +431,7 @@ Every new testcase that doesn't generate errors should also touch
 
 Typically a patch that touches the .rst documentation will also need the
 texinfo to be regenerated.  You can do this with
-`Sphinx 1.0 <http://sphinx-doc.org/>`_ or later by
+`Sphinx 1.0 <https://sphinx-doc.org/>`_ or later by
 running ``make texinfo`` within ``SRCDIR/gcc/jit/docs``.   Don't do this
 within the patch sent to the mailing list; it can often be relatively
 large and inconsequential (e.g. anchor renumbering), rather like generated

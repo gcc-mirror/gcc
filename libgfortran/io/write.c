@@ -795,10 +795,10 @@ write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n, int len)
 
 static void
 write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
-	       int len,
-               const char *(*conv) (GFC_INTEGER_LARGEST, char *, size_t))
+	       int len)
 {
   GFC_INTEGER_LARGEST n = 0;
+  GFC_UINTEGER_LARGEST absn;
   int w, m, digits, nsign, nzero, nblank;
   char *p;
   const char *q;
@@ -831,18 +831,14 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
   sign = calculate_sign (dtp, n < 0);
   if (n < 0)
-    n = -n;
+    /* Use unsigned to protect from overflow. */
+    absn = -(GFC_UINTEGER_LARGEST) n;
+  else
+    absn = n;
   nsign = sign == S_NONE ? 0 : 1;
 
-  /* conv calls itoa which sets the negative sign needed
-     by write_integer. The sign '+' or '-' is set below based on sign
-     calculated above, so we just point past the sign in the string
-     before proceeding to avoid double signs in corner cases.
-     (see PR38504)  */
-  q = conv (n, itoa_buf, sizeof (itoa_buf));
-  if (*q == '-')
-    q++;
-
+  /* gfc_itoa() converts the nonnegative value to decimal representation.  */
+  q = gfc_itoa (absn, itoa_buf, sizeof (itoa_buf));
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
@@ -945,7 +941,37 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 }
 
 
-/* Convert unsigned octal to ascii.  */
+/* Convert hexadecimal to ASCII.  */
+
+static const char *
+xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
+{
+  int digit;
+  char *p;
+
+  assert (len >= GFC_XTOA_BUF_SIZE);
+
+  if (n == 0)
+    return "0";
+
+  p = buffer + GFC_XTOA_BUF_SIZE - 1;
+  *p = '\0';
+
+  while (n != 0)
+    {
+      digit = n & 0xF;
+      if (digit > 9)
+	digit += 'A' - '0' - 10;
+
+      *--p = '0' + digit;
+      n >>= 4;
+    }
+
+  return p;
+}
+
+
+/* Convert unsigned octal to ASCII.  */
 
 static const char *
 otoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
@@ -970,7 +996,7 @@ otoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 }
 
 
-/* Convert unsigned binary to ascii.  */
+/* Convert unsigned binary to ASCII.  */
 
 static const char *
 btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
@@ -994,7 +1020,7 @@ btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
   return p;
 }
 
-/* The following three functions, btoa_big, otoa_big, and ztoa_big, are needed
+/* The following three functions, btoa_big, otoa_big, and xtoa_big, are needed
    to convert large reals with kind sizes that exceed the largest integer type
    available on certain platforms.  In these cases, byte by byte conversion is
    performed. Endianess is taken into account.  */
@@ -1132,10 +1158,10 @@ otoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
   return q;
 }
 
-/* Conversion to hexidecimal.  */
+/* Conversion to hexadecimal.  */
 
 static const char *
-ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
+xtoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 {
   static char a[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -1177,7 +1203,7 @@ ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 	}
     }
 
-  /* write_z, which calls ztoa_big, is called from transfer.c,
+  /* write_z, which calls xtoa_big, is called from transfer.c,
      formatted_transfer_scalar_write.  There it is passed the kind as
      argument, which means a maximum of 16.  The buffer is large
      enough, but the compiler does not know that, so shut up the
@@ -1201,7 +1227,7 @@ ztoa_big (const char *s, char *buffer, int len, GFC_UINTEGER_LARGEST *n)
 void
 write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_decimal (dtp, f, p, len, (void *) gfc_itoa);
+  write_decimal (dtp, f, p, len);
 }
 
 
@@ -1258,13 +1284,13 @@ write_z (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 
   if (len > (int) sizeof (GFC_UINTEGER_LARGEST))
     {
-      p = ztoa_big (source, itoa_buf, len, &n);
+      p = xtoa_big (source, itoa_buf, len, &n);
       write_boz (dtp, f, p, n, len);
     }
   else
     {
       n = extract_uint (source, len);
-      p = gfc_xtoa (n, itoa_buf, sizeof (itoa_buf));
+      p = xtoa (n, itoa_buf, sizeof (itoa_buf));
       write_boz (dtp, f, p, n, len);
     }
 }
@@ -1365,7 +1391,7 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
   f.u.integer.w = width;
   f.u.integer.m = -1;
   f.format = FMT_NONE;
-  write_decimal (dtp, &f, source, kind, (void *) gfc_itoa);
+  write_decimal (dtp, &f, source, kind);
 }
 
 

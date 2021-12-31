@@ -15261,7 +15261,7 @@ the named constants defined in the modules are listed
 below.
 
 For details refer to the actual
-@uref{http://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
+@uref{https://www.openmp.org/wp-content/uploads/openmp-4.5.pdf,
 OpenMP Application Program Interface v4.5} and
 @uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5.0.pdf,
 OpenMP Application Program Interface v5.0}.
@@ -15426,7 +15426,7 @@ Runtime Library} manual, the named constants defined in the modules
 are listed below.
 
 For details refer to the actual
-@uref{http://www.openacc.org/,
+@uref{https://www.openacc.org/,
 OpenACC Application Programming Interface v2.6}.
 
 @code{OPENACC} provides the scalar default-integer

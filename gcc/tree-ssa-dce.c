@@ -1671,6 +1671,7 @@ make_forwarders_with_degenerate_phis (function *fn)
 	continue;
       gphi *phi = gsi.phi ();
       auto_vec<std::pair<edge, hashval_t>, 8> args;
+      bool need_resort = false;
       for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
 	{
 	  edge e = gimple_phi_arg_edge (phi, i);
@@ -1682,12 +1683,42 @@ make_forwarders_with_degenerate_phis (function *fn)
 	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
 	      && loop_exit_edge_p (e->src->loop_father, e))
 	    continue;
-	  args.safe_push (std::make_pair (e, iterative_hash_expr
-					     (gimple_phi_arg_def (phi, i), 0)));
+
+	  tree arg = gimple_phi_arg_def (phi, i);
+	  if (!CONSTANT_CLASS_P (arg) && TREE_CODE (arg) != SSA_NAME)
+	    need_resort = true;
+	  args.safe_push (std::make_pair (e, iterative_hash_expr (arg, 0)));
 	}
       if (args.length () < 2)
 	continue;
       args.qsort (sort_phi_args);
+      /* The above sorting can be different between -g and -g0, as e.g. decls
+	 can have different uids (-g could have bigger gaps in between them).
+	 So, only use that to determine which args are equal, then change
+	 second from hash value to smallest dest_idx of the edges which have
+	 equal argument and sort again.  If all the phi arguments are
+	 constants or SSA_NAME, there is no need for the second sort, the hash
+	 values are stable in that case.  */
+      hashval_t hash = args[0].second;
+      args[0].second = args[0].first->dest_idx;
+      bool any_equal = false;
+      for (unsigned i = 1; i < args.length (); ++i)
+	if (hash == args[i].second
+	    && operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, args[i - 1].first),
+				PHI_ARG_DEF_FROM_EDGE (phi, args[i].first)))
+	  {
+	    args[i].second = args[i - 1].second;
+	    any_equal = true;
+	  }
+	else
+	  {
+	    hash = args[i].second;
+	    args[i].second = args[i].first->dest_idx;
+	  }
+      if (!any_equal)
+	continue;
+      if (need_resort)
+	args.qsort (sort_phi_args);
 
       /* From the candidates vector now verify true candidates for
 	 forwarders and create them.  */
@@ -1697,8 +1728,7 @@ make_forwarders_with_degenerate_phis (function *fn)
 	{
 	  unsigned i;
 	  for (i = start + 1; i < args.length (); ++i)
-	    if (!operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, args[start].first),
-				  PHI_ARG_DEF_FROM_EDGE (phi, args[i].first)))
+	    if (args[start].second != args[i].second)
 	      break;
 	  /* args[start]..args[i-1] are equal.  */
 	  if (start != i - 1)
