@@ -21,7 +21,7 @@ Ax ax_;
 NOIPA void gax_ ()
 {
   ax_.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
-  ax_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  ax_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   ax_.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -32,7 +32,7 @@ Ax ax0 = { 0 };
 NOIPA void gax0 ()
 {
   ax0.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
-  ax0.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  ax0.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   ax0.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -43,7 +43,7 @@ Ax ax0_ = { 0, { } };
 NOIPA void gax0_ ()
 {
   ax0_.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
-  ax0_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  ax0_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   ax0_.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -53,8 +53,8 @@ Ax ax1 = { 1, { 0 } };
 
 NOIPA void gax1 ()
 {
-  ax1.a[0] = 0;
-  ax1.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  ax1.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  ax1.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   ax1.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -102,7 +102,7 @@ A0 a0_;
 NOIPA void ga0_ ()
 {
   a0_.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
-  a0_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  a0_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a0_.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -113,7 +113,7 @@ A0 a00 = { 0 };
 NOIPA void ga00 ()
 {
   a00.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
-  a00.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  a00.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a00.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -124,7 +124,7 @@ A0 a00_ = { 0, { } };
 NOIPA void ga00_ ()
 {
   a00_.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
-  a00_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  a00_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a00_.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -168,8 +168,8 @@ A1 a1_;
 
 NOIPA void ga1_ ()
 {
-  a1_.a[0] = 0;
-  a1_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  a1_.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1_.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1_.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -179,8 +179,8 @@ A1 a1__ = { 0 };
 
 NOIPA void ga1__ ()
 {
-  a1__.a[0] = 0;
-  a1__.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
+  a1__.a[0] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1__.a[1] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1__.a[2] = 0;                 // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -190,8 +190,8 @@ A1 a1_0 = { 0, { } };
 
 NOIPA void ga1_0_ ()
 {
-  a1_0.a[0] = 0;
-  a1_0.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  a1_0.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1_0.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1_0.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -201,8 +201,8 @@ A1 a1_1 = { 0, { 1 } };
 
 NOIPA void ga1_1 ()
 {
-  a1_1.a[0] = 0;
-  a1_1.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  a1_1.a[0] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1_1.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1_1.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -244,7 +244,7 @@ A1i a1i_;
 NOIPA void ga1i_ ()
 {
   a1i_.a[0] = 0;
-  a1i_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  a1i_.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1i_.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -255,7 +255,7 @@ A1i a1i__ = { 0 };
 NOIPA void ga1i__ ()
 {
   a1i__.a[0] = 0;
-  a1i__.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
+  a1i__.a[1] = 0;                // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1i__.a[2] = 0;                // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -265,8 +265,8 @@ A1 a1i_0 = { 0, { } };
 
 NOIPA void ga1i_0_ ()
 {
-  a1i_0.a[0] = 0;
-  a1i_0.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
+  a1i_0.a[0] = 0;               // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1i_0.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1i_0.a[2] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
 }
 
@@ -276,8 +276,8 @@ A1 a1i_1 = { 0, { 1 } };
 
 NOIPA void ga1i_1 ()
 {
-  a1i_1.a[0] = 0;
-  a1i_1.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
+  a1i_1.a[0] = 0;               // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  a1i_1.a[1] = 0;               // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
   a1i_1.a[2] = 0;               // { dg-warning "\\\[-Wstringop-overflow" }
 }
 

@@ -7665,6 +7665,14 @@ proc check_vect_slp_store_usage { pattern macro } {
 	    a.a[1] = 4;
 	    sink (&a);
 	}
+	#elif TEST_V2QI_2
+	extern char p[2];
+	void
+	foo3_2 ()
+	{
+	    p[0] = 0;
+	    p[1] = 1;
+	}
 	#elif TEST_V4HI
 	struct Ax
 	{
@@ -7763,7 +7771,15 @@ proc check_effective_target_vect_slp_v2qi_store_align { } {
     set macro "TEST_V2QI"
     return [check_cached_effective_target vect_slp_v2qi_store_align {
 	expr [check_vect_slp_store_usage $pattern $macro] }]
+}
 
+# Return the true if target support vectorization of 2-byte char stores
+# with unaligned address at plain O2.
+proc check_effective_target_vect_slp_v2qi_store_unalign { } {
+    set pattern {add new stmt: MEM <vector\(2\) char>}
+    set macro "TEST_V2QI_2"
+    return [check_cached_effective_target vect_slp_v2qi_store_unalign {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 4-byte char stores
