@@ -28,5 +28,5 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-          name: libgccjit.so
+          name: libgccjit_without_int128.so
           path: /home/runner/work/gcc/build/gcc/libgccjit.so
