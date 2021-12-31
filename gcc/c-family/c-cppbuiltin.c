@@ -589,6 +589,10 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   if (flag_undef)
     return;
 
+  /* Make sure all of the builtins about to be declared have
+     BUILTINS_LOCATION has their location_t.  */
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
+
   /* Other target-independent built-ins determined by command-line
      options.  */
   if (!prev->x_optimize_size && cur->x_optimize_size)
@@ -653,6 +657,8 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
     cpp_define_unused (pfile, "__ROUNDING_MATH__");
   else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
     cpp_undef (pfile, "__ROUNDING_MATH__");
+
+  cpp_stop_forcing_token_locations (parse_in);
 }
 
 

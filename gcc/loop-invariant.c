@@ -1183,9 +1183,21 @@ find_invariants_insn (rtx_insn *insn, bool always_reached, bool always_executed)
    call.  */
 
 static void
-find_invariants_bb (basic_block bb, bool always_reached, bool always_executed)
+find_invariants_bb (class loop *loop, basic_block bb, bool always_reached,
+		    bool always_executed)
 {
   rtx_insn *insn;
+  basic_block preheader = loop_preheader_edge (loop)->src;
+
+  /* Don't move insn of cold BB out of loop to preheader to reduce calculations
+     and register live range in hot loop with cold BB.  */
+  if (!always_executed && preheader->count > bb->count)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Don't move invariant from bb: %d out of loop %d\n",
+		 bb->index, loop->num);
+      return;
+    }
 
   FOR_BB_INSNS (bb, insn)
     {
@@ -1214,8 +1226,7 @@ find_invariants_body (class loop *loop, basic_block *body,
   unsigned i;
 
   for (i = 0; i < loop->num_nodes; i++)
-    find_invariants_bb (body[i],
-			bitmap_bit_p (always_reached, i),
+    find_invariants_bb (loop, body[i], bitmap_bit_p (always_reached, i),
 			bitmap_bit_p (always_executed, i));
 }
 

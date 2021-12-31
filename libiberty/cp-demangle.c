@@ -3884,10 +3884,11 @@ d_clone_suffix (struct d_info *di, struct demangle_component *encoding)
   const char *pend = suffix;
   struct demangle_component *n;
 
-  if (*pend == '.' && (IS_LOWER (pend[1]) || pend[1] == '_'))
+  if (*pend == '.' && (IS_LOWER (pend[1]) || IS_DIGIT (pend[1])
+		       || pend[1] == '_'))
     {
       pend += 2;
-      while (IS_LOWER (*pend) || *pend == '_')
+      while (IS_LOWER (*pend) || IS_DIGIT (*pend) || *pend == '_')
 	++pend;
     }
   while (*pend == '.' && IS_DIGIT (pend[1]))

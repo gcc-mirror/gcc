@@ -1,3 +1,100 @@
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103756
+	* regrename.c (find_rename_reg): Test noop_move_p on the first
+	non-debug insn in the chain rather than on the first insn.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103808
+	* emit-rtl.c (gen_rtx_REG_offset): Use gen_raw_REG instead of
+	gen_rtx_REG.
+
+2021-12-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/cpp.texi: Add missing dash for argument.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Perform
+	cpp_define/cpp_undef calls with forced token locations
+	BUILTINS_LOCATION.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse): Likewise.
+	* config/s390/s390-c.c (s390_pragma_target_parse): Likewise.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Make sure can_get_prologue is
+	called on pro even if nothing further is pushed into vec.
+
+2021-12-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* loop-invariant.c (find_invariants_bb): Check profile count
+	before motion.
+	(find_invariants_body): Add argument.
+
+2021-12-29  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/103847
+	* godump.c (go_force_record_alignment): Name the alignment
+	field "_".
+
+2021-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103742
+	* tree-ssa-dce.c (make_forwarders_with_degenerate_phis): If any phi
+	argument is not CONSTANT_CLASS_P or SSA_NAME and any arguments are
+	equal, change second from hash value to lowest dest_idx from the
+	edges which have equal argument and resort to ensure -fcompare-debug
+	stability.
+
+2021-12-29  Martin Liska  <mliska@suse.cz>
+
+	* collect2.c (main): Add ld.mold.
+	* common.opt: Add -fuse-ld=mold.
+	* doc/invoke.texi: Document it.
+	* gcc.c (driver_handle_option): Handle -fuse-ld=mold.
+	* opts.c (common_handle_option): Likewise.
+
+2021-12-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (vec_pack<floatprefix>_float_<mode>):
+	Perform gen_avx512dq_float<floatunssuffix>v2div2sf2 into a
+	pseudo and emit move insn into operands[0].
+	(fix<fixunssuffix>_truncv2sfv2di2): Use lowpart_subreg
+	instead of simplify_gen_subreg.
+	(trunc<mode><pmov_dst_3_lower>2): Perform
+	gen_avx512vl_truncate<mode>v<ssescalarnum>qi2 into a
+	pseudo and emit move insn into operands[0].
+	(trunc<mode><pmov_dst_4_lower>2): Perform
+	gen_avx512vl_truncate<mode>v<ssescalarnum>hi2 into a
+	pseudo and emit move insn into operands[0].
+	(truncv2div2si2): Perform gen_avx512vl_truncatev2div2si2 into a
+	pseudo and emit move insn into operands[0].
+	(truncv8div8qi2): Perform gen_avx512f_truncatev8div16qi2 into a
+	pseudo and emit move insn into operands[0].
+	(<any_extend:insn>v8qiv8hi2): Use lowpart_subreg
+	instead of simplify_gen_subreg.
+	(<any_extend:insn>v8qiv8si2): Ditto.
+	(<any_extend:insn>v4qiv4si2): Ditto.
+	(<any_extend:insn>v4hiv4si2): Ditto.
+	(<any_extend:insn>v8qiv8di2): Ditto.
+	(<any_extend:insn>v4qiv4di2): Ditto.
+	(<any_extend:insn>v2qiv2di2): Ditto.
+	(<any_extend:insn>v4hiv4di2): Ditto.
+	(<any_extend:insn>v2hiv2di2): Ditto.
+	(<any_extend:insn>v2siv2di2): Ditto.
+
+2021-12-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/103793
+	* tree-ssa-loop-split.c (fix_loop_bb_probability): New function.
+	(split_loop): Use multiply to scale loop1's exit probability.
+	(do_split_loop_on_cond): Call fix_loop_bb_probability.
+
 2021-12-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99968

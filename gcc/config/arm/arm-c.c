@@ -464,7 +464,9 @@ arm_pragma_target_parse (tree args, tree pop_target)
       acond_macro = get_identifier ("__ARM_FEATURE_LDREX");
       C_CPP_HASHNODE (acond_macro)->flags |= NODE_CONDITIONAL;
 
+      cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
       arm_cpu_builtins (parse_in);
+      cpp_stop_forcing_token_locations (parse_in);
 
       cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 

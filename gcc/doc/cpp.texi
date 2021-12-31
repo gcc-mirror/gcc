@@ -4276,7 +4276,7 @@ IP2K, MMIX, MIPS Irix 3, ARM aout, and PowerPC targets for the AIX
 operating system.
 
 You can override the default with @option{-fdollars-in-identifiers} or
-@option{fno-dollars-in-identifiers}.  @xref{fdollars-in-identifiers}.
+@option{-fno-dollars-in-identifiers}.  @xref{fdollars-in-identifiers}.
 
 @item Non-empty sequences of whitespace characters.
 

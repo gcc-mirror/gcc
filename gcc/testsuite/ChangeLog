@@ -1,3 +1,56 @@
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103756
+	* g++.dg/opt/pr103756.C: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/89971
+	* c-c++-common/cpp/va-opt-9.c: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103808
+	* gcc.dg/pr103808.c: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	PR c++/103012
+	* g++.dg/cpp/pr103012.C: New test.
+	* g++.target/i386/pr103012.C: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* gcc.dg/pr103860.c: New test.
+
+2021-12-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.dg/loop-invariant-2.c: New.
+
+2021-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103742
+	* g++.dg/opt/pr103742.C: New test.
+
+2021-12-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/47334
+	PR testsuite/103823
+	* lib/prune.exp: Prune some warnings related to LTO and
+	visibility.
+
+2021-12-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102332
+	* gfortran.dg/pr102332.f90: New test.
+
+2021-12-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR tree-optimization/103793
+	* gcc.dg/pr103793.c: New test.
+
 2021-12-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/103828

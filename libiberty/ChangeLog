@@ -1,3 +1,10 @@
+2021-12-30  Lancelot SIX  <lsix@lancelotsix.com>
+
+	* cp-demangle.c (d_clone_suffix): Support digits in clone tag
+	names.
+	* testsuite/demangle-expected: Check demangling of clone symbols
+	with digits in name.
+
 2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	Revert:
