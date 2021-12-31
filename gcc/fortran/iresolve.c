@@ -191,7 +191,8 @@ resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
 
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%s_%c%d"), prefix, name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+		      gfc_type_letter (array->ts.type),
+		      gfc_type_abi_kind (&array->ts));
 }
 
 
@@ -206,7 +207,8 @@ gfc_resolve_abs (gfc_expr *f, gfc_expr *a)
     f->ts.type = BT_REAL;
 
   f->value.function.name
-    = gfc_get_string ("__abs_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+    = gfc_get_string ("__abs_%c%d", gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -256,7 +258,8 @@ gfc_resolve_char_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind,
 
   f->value.function.name
     = gfc_get_string ("__%schar_%d_%c%d", is_achar ? "a" : "", f->ts.kind,
-		      gfc_type_letter (x->ts.type), x->ts.kind);
+		      gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -272,7 +275,8 @@ gfc_resolve_acos (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__acos_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__acos_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -282,7 +286,7 @@ gfc_resolve_acosh (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__acosh_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -293,7 +297,7 @@ gfc_resolve_aimag (gfc_expr *f, gfc_expr *x)
   f->ts.kind = x->ts.kind;
   f->value.function.name
     = gfc_get_string ("__aimag_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -312,7 +316,8 @@ gfc_resolve_and (gfc_expr *f, gfc_expr *i, gfc_expr *j)
     }
 
   f->value.function.name
-    = gfc_get_string ("__and_%c%d", gfc_type_letter (i->ts.type), f->ts.kind);
+    = gfc_get_string ("__and_%c%d", gfc_type_letter (i->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -334,7 +339,8 @@ gfc_resolve_aint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
   /* The resolved name is only used for specific intrinsics where
      the return kind is the same as the arg kind.  */
   f->value.function.name
-    = gfc_get_string ("__aint_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+    = gfc_get_string ("__aint_%c%d", gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -359,7 +365,7 @@ gfc_resolve_all (gfc_expr *f, gfc_expr *mask, gfc_expr *dim)
 
   f->value.function.name
     = gfc_get_string (PREFIX ("all_%c%d"), gfc_type_letter (mask->ts.type),
-		      mask->ts.kind);
+		      gfc_type_abi_kind (&mask->ts));
 }
 
 
@@ -383,7 +389,7 @@ gfc_resolve_anint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
      the return kind is the same as the arg kind.  */
   f->value.function.name
     = gfc_get_string ("__anint_%c%d", gfc_type_letter (a->ts.type),
-		      a->ts.kind);
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -408,7 +414,7 @@ gfc_resolve_any (gfc_expr *f, gfc_expr *mask, gfc_expr *dim)
 
   f->value.function.name
     = gfc_get_string (PREFIX ("any_%c%d"), gfc_type_letter (mask->ts.type),
-		      mask->ts.kind);
+		      gfc_type_abi_kind (&mask->ts));
 }
 
 
@@ -417,7 +423,8 @@ gfc_resolve_asin (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__asin_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__asin_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 void
@@ -426,7 +433,7 @@ gfc_resolve_asinh (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__asinh_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 void
@@ -434,7 +441,8 @@ gfc_resolve_atan (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__atan_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__atan_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 void
@@ -443,7 +451,7 @@ gfc_resolve_atanh (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__atanh_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 void
@@ -452,7 +460,7 @@ gfc_resolve_atan2 (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__atan2_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -507,10 +515,10 @@ gfc_resolve_bessel_n2 (gfc_expr *f, gfc_expr *n1, gfc_expr *n2, gfc_expr *x)
 
   if (f->value.function.isym->id == GFC_ISYM_JN2)
     f->value.function.name = gfc_get_string (PREFIX ("bessel_jn_r%d"),
-					     f->ts.kind);
+					     gfc_type_abi_kind (&f->ts));
   else
     f->value.function.name = gfc_get_string (PREFIX ("bessel_yn_r%d"),
-					     f->ts.kind);
+					     gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -546,7 +554,8 @@ gfc_resolve_ceiling (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
   f->value.function.name
     = gfc_get_string ("__ceiling_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -618,12 +627,15 @@ gfc_resolve_cmplx (gfc_expr *f, gfc_expr *x, gfc_expr *y, gfc_expr *kind)
   if (y == NULL)
     f->value.function.name
       = gfc_get_string ("__cmplx0_%d_%c%d", f->ts.kind,
-			gfc_type_letter (x->ts.type), x->ts.kind);
+			gfc_type_letter (x->ts.type),
+			gfc_type_abi_kind (&x->ts));
   else
     f->value.function.name
       = gfc_get_string ("__cmplx1_%d_%c%d_%c%d", f->ts.kind,
-			gfc_type_letter (x->ts.type), x->ts.kind,
-			gfc_type_letter (y->ts.type), y->ts.kind);
+			gfc_type_letter (x->ts.type),
+			gfc_type_abi_kind (&x->ts),
+			gfc_type_letter (y->ts.type),
+			gfc_type_abi_kind (&y->ts));
 }
 
 
@@ -659,8 +671,10 @@ gfc_resolve_complex (gfc_expr *f, gfc_expr *x, gfc_expr *y)
   f->ts.kind = kind;
   f->value.function.name
     = gfc_get_string ("__cmplx1_%d_%c%d_%c%d", f->ts.kind,
-		      gfc_type_letter (x->ts.type), x->ts.kind,
-		      gfc_type_letter (y->ts.type), y->ts.kind);
+		      gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts),
+		      gfc_type_letter (y->ts.type),
+		      gfc_type_abi_kind (&y->ts));
 }
 
 
@@ -677,7 +691,8 @@ gfc_resolve_cos (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__cos_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__cos_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -686,7 +701,8 @@ gfc_resolve_cosh (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__cosh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__cosh_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -709,7 +725,7 @@ gfc_resolve_count (gfc_expr *f, gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
   resolve_mask_arg (mask);
 
   f->value.function.name
-    = gfc_get_string (PREFIX ("count_%d_%c"), f->ts.kind,
+    = gfc_get_string (PREFIX ("count_%d_%c"), gfc_type_abi_kind (&f->ts),
 		      gfc_type_letter (mask->ts.type));
 }
 
@@ -810,7 +826,8 @@ gfc_resolve_dble (gfc_expr *f, gfc_expr *a)
   f->ts.type = BT_REAL;
   f->ts.kind = gfc_default_double_kind;
   f->value.function.name
-    = gfc_get_string ("__dble_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+    = gfc_get_string ("__dble_%c%d", gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -832,7 +849,8 @@ gfc_resolve_dim (gfc_expr *f, gfc_expr *a, gfc_expr *p)
     }
 
   f->value.function.name
-    = gfc_get_string ("__dim_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
+    = gfc_get_string ("__dim_%c%d", gfc_type_letter (f->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -850,7 +868,8 @@ gfc_resolve_dot_product (gfc_expr *f, gfc_expr *a, gfc_expr *b)
   f->ts = temp.ts;
   f->value.function.name
     = gfc_get_string (PREFIX ("dot_product_%c%d"),
-		      gfc_type_letter (f->ts.type), f->ts.kind);
+		      gfc_type_letter (f->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -860,7 +879,8 @@ gfc_resolve_dprod (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 {
   f->ts.kind = gfc_default_double_kind;
   f->ts.type = BT_REAL;
-  f->value.function.name = gfc_get_string ("__dprod_r%d", f->ts.kind);
+  f->value.function.name = gfc_get_string ("__dprod_r%d",
+					   gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -951,7 +971,8 @@ gfc_resolve_exp (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__exp_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__exp_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -1044,7 +1065,8 @@ gfc_resolve_floor (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
   f->value.function.name
     = gfc_get_string ("__floor%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1135,7 +1157,8 @@ void
 gfc_resolve_hypot (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 {
   f->ts = x->ts;
-  f->value.function.name = gfc_get_string ("__hypot_r%d", x->ts.kind);
+  f->value.function.name = gfc_get_string ("__hypot_r%d",
+					   gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -1311,7 +1334,8 @@ gfc_resolve_int (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1322,7 +1346,8 @@ gfc_resolve_int2 (gfc_expr *f, gfc_expr *a)
   f->ts.kind = 2;
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1333,7 +1358,8 @@ gfc_resolve_int8 (gfc_expr *f, gfc_expr *a)
   f->ts.kind = 8;
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1344,7 +1370,8 @@ gfc_resolve_long (gfc_expr *f, gfc_expr *a)
   f->ts.kind = 4;
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1498,7 +1525,8 @@ gfc_resolve_log (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__log_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__log_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -1508,7 +1536,7 @@ gfc_resolve_log10 (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__log10_%c%d", gfc_type_letter (x->ts.type),
-		      x->ts.kind);
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -1522,7 +1550,8 @@ gfc_resolve_logical (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 
   f->value.function.name
     = gfc_get_string ("__logical_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -1579,7 +1608,7 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 
   f->value.function.name
     = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (f->ts.type),
-		      f->ts.kind);
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -1605,7 +1634,8 @@ gfc_resolve_minmax (const char *name, gfc_expr *f, gfc_actual_arglist *args)
     }
 
   f->value.function.name
-    = gfc_get_string (name, gfc_type_letter (f->ts.type), f->ts.kind);
+    = gfc_get_string (name, gfc_type_letter (f->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -1689,7 +1719,8 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, d_num, f->ts.kind,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+		      gfc_type_letter (array->ts.type),
+		      gfc_type_abi_kind (&array->ts));
 
   if (kind)
     fkind = mpz_get_si (kind->value.integer);
@@ -1806,7 +1837,8 @@ gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
 
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%c%d"), name, d_num,
-		      gfc_type_letter (array->ts.type, true), array->ts.kind);
+		      gfc_type_letter (array->ts.type, true),
+		      gfc_type_abi_kind (&array->ts));
 
   /* We only have a single library function, so we need to convert
      here.  If the function is resolved from within a convert
@@ -1868,11 +1900,13 @@ gfc_resolve_maxval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   if (array->ts.type != BT_CHARACTER)
     f->value.function.name
       = gfc_get_string (PREFIX ("%s_%c%d"), name,
-			gfc_type_letter (array->ts.type), array->ts.kind);
+			gfc_type_letter (array->ts.type),
+			gfc_type_abi_kind (&array->ts));
   else
     f->value.function.name
       = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
-			gfc_type_letter (array->ts.type), array->ts.kind);     
+			gfc_type_letter (array->ts.type),
+			gfc_type_abi_kind (&array->ts));
 }
 
 
@@ -1926,7 +1960,7 @@ gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
   f->ts = tsource->ts;
   f->value.function.name
     = gfc_get_string ("__merge_%c%d", gfc_type_letter (tsource->ts.type),
-		      tsource->ts.kind);
+		      gfc_type_abi_kind (&tsource->ts));
 }
 
 
@@ -2017,7 +2051,8 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%d_%c%d"), name, d_num, f->ts.kind,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+		      gfc_type_letter (array->ts.type),
+		      gfc_type_abi_kind (&array->ts));
 
   if (fkind != f->ts.kind)
     {
@@ -2082,11 +2117,13 @@ gfc_resolve_minval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   if (array->ts.type != BT_CHARACTER)
     f->value.function.name
       = gfc_get_string (PREFIX ("%s_%c%d"), name,
-			gfc_type_letter (array->ts.type), array->ts.kind);
+			gfc_type_letter (array->ts.type),
+			gfc_type_abi_kind (&array->ts));
   else
     f->value.function.name
       = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
-			gfc_type_letter (array->ts.type), array->ts.kind);     
+			gfc_type_letter (array->ts.type),
+			gfc_type_abi_kind (&array->ts));
 }
 
 
@@ -2108,7 +2145,8 @@ gfc_resolve_mod (gfc_expr *f, gfc_expr *a, gfc_expr *p)
     }
 
   f->value.function.name
-    = gfc_get_string ("__mod_%c%d", gfc_type_letter (f->ts.type), f->ts.kind);
+    = gfc_get_string ("__mod_%c%d", gfc_type_letter (f->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -2131,7 +2169,7 @@ gfc_resolve_modulo (gfc_expr *f, gfc_expr *a, gfc_expr *p)
 
   f->value.function.name
     = gfc_get_string ("__modulo_%c%d", gfc_type_letter (f->ts.type),
-		      f->ts.kind);
+		      gfc_type_abi_kind (&f->ts));
 }
 
 void
@@ -2143,7 +2181,7 @@ gfc_resolve_nearest (gfc_expr *f, gfc_expr *a, gfc_expr *p)
   f->ts = a->ts;
   f->value.function.name
     = gfc_get_string ("__nearest_%c%d", gfc_type_letter (a->ts.type),
-		      a->ts.kind);
+		      gfc_type_abi_kind (&a->ts));
 }
 
 void
@@ -2187,7 +2225,8 @@ gfc_resolve_or (gfc_expr *f, gfc_expr *i, gfc_expr *j)
     }
 
   f->value.function.name
-    = gfc_get_string ("__or_%c%d", gfc_type_letter (i->ts.type), f->ts.kind);
+    = gfc_get_string ("__or_%c%d", gfc_type_letter (i->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -2265,7 +2304,8 @@ gfc_resolve_real (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 
   f->value.function.name
     = gfc_get_string ("__real_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -2276,7 +2316,8 @@ gfc_resolve_realpart (gfc_expr *f, gfc_expr *a)
   f->ts.kind = a->ts.kind;
   f->value.function.name
     = gfc_get_string ("__real_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -2361,7 +2402,7 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
 	f->value.function.name
 	  = gfc_get_string (PREFIX ("reshape_%c%d"),
 			    gfc_type_letter (source->ts.type),
-			    source->ts.kind);
+			    gfc_type_abi_kind (&source->ts));
       else if (source->ts.type == BT_CHARACTER)
 	f->value.function.name = gfc_get_string (PREFIX ("reshape_char%d"),
 						 kind);
@@ -2506,7 +2547,8 @@ gfc_resolve_sign (gfc_expr *f, gfc_expr *a, gfc_expr *b ATTRIBUTE_UNUSED)
 {
   f->ts = a->ts;
   f->value.function.name
-    = gfc_get_string ("__sign_%c%d", gfc_type_letter (a->ts.type), a->ts.kind);
+    = gfc_get_string ("__sign_%c%d", gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
 }
 
 
@@ -2536,7 +2578,8 @@ gfc_resolve_sin (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__sin_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__sin_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -2545,7 +2588,8 @@ gfc_resolve_sinh (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__sinh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__sinh_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -2639,7 +2683,8 @@ gfc_resolve_sqrt (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__sqrt_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__sqrt_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -2803,7 +2848,8 @@ gfc_resolve_tan (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__tan_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__tan_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -2812,7 +2858,8 @@ gfc_resolve_tanh (gfc_expr *f, gfc_expr *x)
 {
   f->ts = x->ts;
   f->value.function.name
-    = gfc_get_string ("__tanh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+    = gfc_get_string ("__tanh_%c%d", gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -3012,7 +3059,7 @@ gfc_resolve_transpose (gfc_expr *f, gfc_expr *matrix)
 	  f->value.function.name
 	    = gfc_get_string (PREFIX ("transpose_%c%d"),
 			      gfc_type_letter (matrix->ts.type),
-			      matrix->ts.kind);
+			      gfc_type_abi_kind (&matrix->ts));
 	  break;
 
 	case BT_INTEGER:
@@ -3060,7 +3107,8 @@ gfc_resolve_trigd (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string (PREFIX ("%s_%c%d"), f->value.function.isym->name,
-		      gfc_type_letter (x->ts.type), x->ts.kind);
+		      gfc_type_letter (x->ts.type),
+		      gfc_type_abi_kind (&x->ts));
 }
 
 
@@ -3188,7 +3236,8 @@ gfc_resolve_xor (gfc_expr *f, gfc_expr *i, gfc_expr *j)
     }
 
   f->value.function.name
-    = gfc_get_string ("__xor_%c%d", gfc_type_letter (i->ts.type), f->ts.kind);
+    = gfc_get_string ("__xor_%c%d", gfc_type_letter (i->ts.type),
+		      gfc_type_abi_kind (&f->ts));
 }
 
 
@@ -3326,7 +3375,7 @@ gfc_resolve_random_number (gfc_code *c)
   const char *name;
   int kind;
 
-  kind = c->ext.actual->expr->ts.kind;
+  kind = gfc_type_abi_kind (&c->ext.actual->expr->ts);
   if (c->ext.actual->expr->rank == 0)
     name = gfc_get_string (PREFIX ("random_r%d"), kind);
   else
