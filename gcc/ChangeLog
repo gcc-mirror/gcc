@@ -1,3 +1,41 @@
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103756
+	* regrename.c (find_rename_reg): Test noop_move_p on the first
+	non-debug insn in the chain rather than on the first insn.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103808
+	* emit-rtl.c (gen_rtx_REG_offset): Use gen_raw_REG instead of
+	gen_rtx_REG.
+
+2021-12-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/cpp.texi: Add missing dash for argument.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Perform
+	cpp_define/cpp_undef calls with forced token locations
+	BUILTINS_LOCATION.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse): Likewise.
+	* config/s390/s390-c.c (s390_pragma_target_parse): Likewise.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Make sure can_get_prologue is
+	called on pro even if nothing further is pushed into vec.
+
+2021-12-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* loop-invariant.c (find_invariants_bb): Check profile count
+	before motion.
+	(find_invariants_body): Add argument.
+
 2021-12-29  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/103847

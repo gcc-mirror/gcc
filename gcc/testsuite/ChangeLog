@@ -1,3 +1,34 @@
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103756
+	* g++.dg/opt/pr103756.C: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/89971
+	* c-c++-common/cpp/va-opt-9.c: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103808
+	* gcc.dg/pr103808.c: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	PR c++/103012
+	* g++.dg/cpp/pr103012.C: New test.
+	* g++.target/i386/pr103012.C: New test.
+
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* gcc.dg/pr103860.c: New test.
+
+2021-12-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.dg/loop-invariant-2.c: New.
+
 2021-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/103742
