@@ -363,6 +363,8 @@ gfc_init_kinds (void)
   int i_index, r_index, kind;
   bool saw_i4 = false, saw_i8 = false;
   bool saw_r4 = false, saw_r8 = false, saw_r10 = false, saw_r16 = false;
+  scalar_mode r16_mode = QImode;
+  scalar_mode composite_mode = QImode;
 
   i_index = 0;
   FOR_EACH_MODE_IN_CLASS (int_mode_iter, MODE_INT)
@@ -428,6 +430,10 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
+      if (MODE_COMPOSITE_P (mode)
+	  && (GET_MODE_PRECISION (mode) + 7) / 8 == 16)
+	composite_mode = mode;
+
       /* Only let float, double, long double and TFmode go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
@@ -471,7 +477,10 @@ gfc_init_kinds (void)
       if (kind == 10)
 	saw_r10 = true;
       if (kind == 16)
-	saw_r16 = true;
+	{
+	  saw_r16 = true;
+	  r16_mode = mode;
+	}
 
       /* Careful we don't stumble a weird internal mode.  */
       gcc_assert (r_index <= 0 || gfc_real_kinds[r_index-1].kind != kind);
@@ -479,6 +488,7 @@ gfc_init_kinds (void)
       gcc_assert (r_index != MAX_REAL_KINDS);
 
       gfc_real_kinds[r_index].kind = kind;
+      gfc_real_kinds[r_index].abi_kind = kind;
       gfc_real_kinds[r_index].radix = fmt->b;
       gfc_real_kinds[r_index].digits = fmt->p;
       gfc_real_kinds[r_index].min_exponent = fmt->emin;
@@ -494,6 +504,19 @@ gfc_init_kinds (void)
 	gfc_real_kinds[r_index].max_exponent = fmt->emax - 1;
       gfc_real_kinds[r_index].mode_precision = GET_MODE_PRECISION (mode);
       r_index += 1;
+    }
+
+  /* Detect the powerpc64le-linux case with -mabi=ieeelongdouble, where
+     the long double type is non-MODE_COMPOSITE_P TFmode but one can use
+     -mabi=ibmlongdouble too and get MODE_COMPOSITE_P TFmode with the same
+     precision.  For libgfortran calls pretend the IEEE 754 quad TFmode has
+     kind 17 rather than 16 and use kind 16 for the IBM extended format
+     TFmode.  */
+  if (composite_mode != QImode && saw_r16 && !MODE_COMPOSITE_P (r16_mode))
+    {
+      for (int i = 0; i < r_index; ++i)
+	if (gfc_real_kinds[i].kind == 16)
+	  gfc_real_kinds[i].abi_kind = 17;
     }
 
   /* Choose the default integer kind.  We choose 4 unless the user directs us

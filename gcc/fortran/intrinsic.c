@@ -103,6 +103,27 @@ gfc_type_letter (bt type, bool logical_equals_int)
 }
 
 
+/* Return kind that should be used for ABI purposes in libgfortran
+   APIs.  Usually the same as ts->kind, except for BT_REAL/BT_COMPLEX
+   for IEEE 754 quad format kind 16 where it returns 17.  */
+
+int
+gfc_type_abi_kind (bt type, int kind)
+{
+  switch (type)
+    {
+    case BT_REAL:
+    case BT_COMPLEX:
+      if (kind == 16)
+	for (int i = 0; gfc_real_kinds[i].kind != 0; i++)
+	  if (gfc_real_kinds[i].kind == kind)
+	    return gfc_real_kinds[i].abi_kind;
+      return kind;
+    default:
+      return kind;
+    }
+}
+
 /* Get a symbol for a resolved name. Note, if needed be, the elemental
    attribute has be added afterwards.  */
 
@@ -167,8 +188,8 @@ static const char *
 conv_name (gfc_typespec *from, gfc_typespec *to)
 {
   return gfc_get_string ("__convert_%c%d_%c%d",
-			 gfc_type_letter (from->type), from->kind,
-			 gfc_type_letter (to->type), to->kind);
+			 gfc_type_letter (from->type), gfc_type_abi_kind (from),
+			 gfc_type_letter (to->type), gfc_type_abi_kind (to));
 }
 
 
