@@ -1317,6 +1317,7 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
 #define PICFLAG_NOT_ALL_CONSTANT 2
 #define PICFLAG_NOT_ALL_SIMPLE 4
 #define PICFLAG_SIDE_EFFECTS 8
+#define PICFLAG_VEC_INIT 16
 
 /* Given an initializer INIT, return the flag (PICFLAG_*) which better
    describe it.  */
@@ -1460,10 +1461,19 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 
 	if (next)
 	  {
-	    picflags |= picflag_from_initializer (next);
-	    if (len > i+1
+	    if (next != error_mark_node
+		&& ! seen_error () // Improves error-recovery on anew5.C.
 		&& (initializer_constant_valid_p (next, TREE_TYPE (next))
-		    == null_pointer_node))
+		    != null_pointer_node))
+	      {
+		/* Use VEC_INIT_EXPR for non-constant initialization of
+		   trailing elements with no explicit initializers.  */
+		picflags |= PICFLAG_VEC_INIT;
+		break;
+	      }
+
+	    picflags |= picflag_from_initializer (next);
+	    if (len > i+1)
 	      {
 		tree range = build2 (RANGE_EXPR, size_type_node,
 				     build_int_cst (size_type_node, i),
@@ -1857,6 +1867,13 @@ process_init_constructor (tree type, tree init, int nested, int flags,
       TREE_SIDE_EFFECTS (init) = false;
       if (!(picflags & PICFLAG_NOT_ALL_SIMPLE))
 	TREE_STATIC (init) = 1;
+    }
+  if (picflags & PICFLAG_VEC_INIT)
+    {
+      /* Defer default-initialization of array elements with no corresponding
+	 initializer-clause until later so we can use a loop.  */
+      TREE_TYPE (init) = init_list_type_node;
+      init = build_vec_init_expr (type, init, complain);
     }
   return init;
 }

@@ -4337,12 +4337,19 @@ build_vec_init (tree base, tree maxindex, tree init,
       && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
 
+  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
+    {
+      gcc_checking_assert (false);
+      init = VEC_INIT_EXPR_INIT (init);
+    }
+
   bool direct_init = false;
   if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 1)
     {
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE)
+      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE
+	  && TREE_CODE (elt) != VEC_INIT_EXPR)
 	{
 	  direct_init = DIRECT_LIST_INIT_P (init);
 	  init = elt;
@@ -4516,6 +4523,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  if (digested)
 	    one_init = build2 (INIT_EXPR, type, baseref, elt);
+	  else if (TREE_CODE (elt) == VEC_INIT_EXPR)
+	    one_init = expand_vec_init_expr (baseref, elt, complain);
 	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else

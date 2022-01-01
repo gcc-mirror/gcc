@@ -756,13 +756,11 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
   else if (init == void_type_node)
     return build_value_init (inner_type, complain);
 
-  gcc_assert (init == NULL_TREE
-	      || (same_type_ignoring_top_level_qualifiers_p
-		  (type, TREE_TYPE (init))));
-
   releasing_vec argvec;
-  if (init)
+  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
     {
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (init)));
       tree init_type = strip_array_types (TREE_TYPE (init));
       tree dummy = build_dummy_object (init_type);
       if (!lvalue_p (init))
@@ -788,25 +786,28 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 tree
 build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
-  tree slot;
-  bool value_init = false;
-  tree elt_init;
-  if (init && TREE_CODE (init) == CONSTRUCTOR)
+  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
     {
-      gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (init));
-      /* We built any needed constructor calls in digest_init.  */
-      elt_init = init;
+      gcc_checking_assert (false);
+      return init;
     }
+
+  tree elt_init;
+  if (init && TREE_CODE (init) == CONSTRUCTOR
+      && !BRACE_ENCLOSED_INITIALIZER_P (init))
+    /* We built any needed constructor calls in digest_init.  */
+    elt_init = init;
   else
     elt_init = build_vec_init_elt (type, init, complain);
 
+  bool value_init = false;
   if (init == void_type_node)
     {
       value_init = true;
       init = NULL_TREE;
     }
 
-  slot = build_local_temp (type);
+  tree slot = build_local_temp (type);
   init = build2 (VEC_INIT_EXPR, type, slot, init);
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
@@ -817,6 +818,23 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
   return init;
+}
+
+/* Call build_vec_init to expand VEC_INIT into TARGET (for which NULL_TREE
+   means VEC_INIT_EXPR_SLOT).  */
+
+tree
+expand_vec_init_expr (tree target, tree vec_init, tsubst_flags_t complain)
+{
+  iloc_sentinel ils = EXPR_LOCATION (vec_init);
+
+  if (!target)
+    target = VEC_INIT_EXPR_SLOT (vec_init);
+  tree init = VEC_INIT_EXPR_INIT (vec_init);
+  int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
+  return build_vec_init (target, NULL_TREE, init,
+			 VEC_INIT_EXPR_VALUE_INIT (vec_init),
+			 from_array, complain);
 }
 
 /* Give a helpful diagnostic for a non-constexpr VEC_INIT_EXPR in a context

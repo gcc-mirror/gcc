@@ -462,21 +462,14 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case VEC_INIT_EXPR:
       {
-	location_t loc = input_location;
-	tree init = VEC_INIT_EXPR_INIT (*expr_p);
-	int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
-	gcc_assert (EXPR_HAS_LOCATION (*expr_p));
-	input_location = EXPR_LOCATION (*expr_p);
-	*expr_p = build_vec_init (VEC_INIT_EXPR_SLOT (*expr_p), NULL_TREE,
-				  init, VEC_INIT_EXPR_VALUE_INIT (*expr_p),
-				  from_array,
-				  tf_warning_or_error);
+	*expr_p = expand_vec_init_expr (NULL_TREE, *expr_p,
+					tf_warning_or_error);
+
 	hash_set<tree> pset;
 	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
 	cp_genericize_tree (expr_p, false);
 	copy_if_shared (expr_p);
 	ret = GS_OK;
-	input_location = loc;
       }
       break;
 

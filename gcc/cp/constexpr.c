@@ -3020,8 +3020,7 @@ reduced_constant_expression_p (tree t)
 	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	    /* An initialized vector would have a VECTOR_CST.  */
 	    return false;
-	  else if (cxx_dialect >= cxx20
-		   && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	  else if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    {
 	      /* There must be a valid constant initializer at every array
 		 index.  */
@@ -4955,8 +4954,36 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
 {
   tree atype = TREE_TYPE (t);
   tree init = VEC_INIT_EXPR_INIT (t);
-  tree r = cxx_eval_vec_init_1 (ctx, atype, init,
-				VEC_INIT_EXPR_VALUE_INIT (t),
+  bool value_init = VEC_INIT_EXPR_VALUE_INIT (t);
+  if (!init || !BRACE_ENCLOSED_INITIALIZER_P (init))
+    ;
+  else if (CONSTRUCTOR_NELTS (init) == 0)
+    {
+      /* Handle {} as value-init.  */
+      init = NULL_TREE;
+      value_init = true;
+    }
+  else
+    {
+      /* This is a more complicated case, like needing to loop over trailing
+	 elements; call build_vec_init and evaluate the result.  */
+      tsubst_flags_t complain = ctx->quiet ? tf_none : tf_warning_or_error;
+      constexpr_ctx new_ctx = *ctx;
+      if (!ctx->object)
+	{
+	  /* We want to have an initialization target for an VEC_INIT_EXPR.
+	     If we don't already have one in CTX, use the VEC_INIT_EXPR_SLOT.  */
+	  new_ctx.object = VEC_INIT_EXPR_SLOT (t);
+	  tree ctor = new_ctx.ctor = build_constructor (atype, NULL);
+	  CONSTRUCTOR_NO_CLEARING (ctor) = true;
+	  ctx->global->values.put (new_ctx.object, ctor);
+	  ctx = &new_ctx;
+	}
+      init = expand_vec_init_expr (ctx->object, t, complain);
+      return cxx_eval_constant_expression (ctx, init, lval, non_constant_p,
+					   overflow_p);
+    }
+  tree r = cxx_eval_vec_init_1 (ctx, atype, init, value_init,
 				lval, non_constant_p, overflow_p);
   if (*non_constant_p)
     return t;
