@@ -824,7 +824,8 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
    means VEC_INIT_EXPR_SLOT).  */
 
 tree
-expand_vec_init_expr (tree target, tree vec_init, tsubst_flags_t complain)
+expand_vec_init_expr (tree target, tree vec_init, tsubst_flags_t complain,
+		      vec<tree,va_gc> **flags)
 {
   iloc_sentinel ils = EXPR_LOCATION (vec_init);
 
@@ -834,7 +835,7 @@ expand_vec_init_expr (tree target, tree vec_init, tsubst_flags_t complain)
   int from_array = (init && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE);
   return build_vec_init (target, NULL_TREE, init,
 			 VEC_INIT_EXPR_VALUE_INIT (vec_init),
-			 from_array, complain);
+			 from_array, complain, flags);
 }
 
 /* Give a helpful diagnostic for a non-constexpr VEC_INIT_EXPR in a context

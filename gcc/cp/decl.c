@@ -7518,8 +7518,7 @@ initialize_local_var (tree decl, tree init)
 
 	  /* If we're only initializing a single object, guard the
 	     destructors of any temporaries used in its initializer with
-	     its destructor.  This isn't right for arrays because each
-	     element initialization is a full-expression.  */
+	     its destructor.  But arrays are handled in build_vec_init.  */
 	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
 	    wrap_temporary_cleanups (init, cleanup);
 

@@ -486,7 +486,7 @@ maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
    generated statements.  */
 
 static bool
-split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **flags)
+split_nonconstant_init_1 (tree dest, tree init, vec<tree,va_gc> **flags)
 {
   unsigned HOST_WIDE_INT idx, tidx = HOST_WIDE_INT_M1U;
   tree field_index, value;
@@ -515,14 +515,10 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **f
 	    }
 
 	  /* For an array, we only need/want a single cleanup region rather
-	     than one per element.  */
+	     than one per element.  build_vec_init will handle it.  */
 	  tree code = build_vec_init (dest, NULL_TREE, init, false, 1,
-				      tf_warning_or_error);
+				      tf_warning_or_error, flags);
 	  add_stmt (code);
-	  if (nested)
-	    /* Also clean up the whole array if something later in an enclosing
-	       init-list throws.  */
-	    maybe_push_temp_cleanup (dest, flags);
 	  return true;
 	}
       /* FALLTHRU */
@@ -541,18 +537,17 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **f
 	  if (!array_type_p)
 	    inner_type = TREE_TYPE (field_index);
 
+	  tree sub;
+	  if (array_type_p)
+	    sub = build4 (ARRAY_REF, inner_type, dest, field_index,
+			  NULL_TREE, NULL_TREE);
+	  else
+	    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
+			  NULL_TREE);
+
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
-	      tree sub;
-
-	      if (array_type_p)
-		sub = build4 (ARRAY_REF, inner_type, dest, field_index,
-			      NULL_TREE, NULL_TREE);
-	      else
-		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
-			      NULL_TREE);
-
-	      if (!split_nonconstant_init_1 (sub, value, true, flags)
+	      if (!split_nonconstant_init_1 (sub, value, flags)
 		      /* For flexible array member with initializer we
 			 can't remove the initializer, because only the
 			 initializer determines how many elements the
@@ -576,10 +571,20 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **f
 		  num_split_elts++;
 		}
 	    }
+	  else if (TREE_CODE (value) == VEC_INIT_EXPR)
+	    {
+	      add_stmt (expand_vec_init_expr (sub, value, tf_warning_or_error,
+					      flags));
+
+	      /* Mark element for removal.  */
+	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
+	      if (idx < tidx)
+		tidx = idx;
+	      num_split_elts++;
+	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
-	      tree sub;
 
 	      /* Mark element for removal.  */
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
@@ -603,13 +608,6 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested, vec<tree,va_gc> **f
 		}
 	      else
 		{
-		  if (array_type_p)
-		    sub = build4 (ARRAY_REF, inner_type, dest, field_index,
-				  NULL_TREE, NULL_TREE);
-		  else
-		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
-				  NULL_TREE);
-
 		  /* We may need to add a copy constructor call if
 		     the field has [[no_unique_address]].  */
 		  if (unsafe_return_slot_p (sub))
@@ -710,11 +708,14 @@ split_nonconstant_init (tree dest, tree init)
       init = cp_fully_fold_init (init);
       code = push_stmt_list ();
 
-      /* Collect flags for disabling subobject cleanups once the complete
-	 object is fully constructed.  */
-      vec<tree, va_gc> *flags = make_tree_vector ();
+      /* If the complete object is an array, build_vec_init's cleanup is
+	 enough.  Otherwise, collect flags for disabling subobject
+	 cleanups once the complete object is fully constructed.  */
+      vec<tree, va_gc> *flags = nullptr;
+      if (TREE_CODE (TREE_TYPE (dest)) != ARRAY_TYPE)
+	flags = make_tree_vector ();
 
-      if (split_nonconstant_init_1 (dest, init, false, &flags))
+      if (split_nonconstant_init_1 (dest, init, &flags))
 	init = NULL_TREE;
 
       for (tree f : flags)
@@ -722,6 +723,14 @@ split_nonconstant_init (tree dest, tree init)
 	  /* See maybe_push_temp_cleanup.  */
 	  tree d = f;
 	  tree i = boolean_false_node;
+	  if (TREE_CODE (f) == TREE_LIST)
+	    {
+	      /* To disable a build_vec_init cleanup, set
+		 iterator = maxindex.  */
+	      d = TREE_PURPOSE (f);
+	      i = TREE_VALUE (f);
+	      ggc_free (f);
+	    }
 	  add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (d), d, i));
 	}
       release_tree_vector (flags);
