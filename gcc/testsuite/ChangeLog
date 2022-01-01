@@ -1,3 +1,22 @@
+2021-12-31  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR fortran/89639
+	* gfortran.dg/ieee/ieee_9.f90: Adjust test for targets without
+	REAL128.
+
+2021-12-31  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_vect_slp_store_usage):
+	Handle TEST_V2QI_2.
+	(check_effective_target_vect_slp_v2qi_store_unalign): New procedure.
+	* c-c++-common/Wstringop-overflow-2.c: XFAIL specific tests for
+	vect_slp_v2qi_store_unalign targets.
+	* g++.dg/warn/Wstringop-overflow-3.C: Ditto.
+	* gcc.dg/Wstringop-overflow-28.c: Ditto.
+	* gcc.dg/Wstringop-overflow-68.c: Ditto.
+	* gcc.dg/Wstringop-overflow-75.c: Ditto.
+	* gcc.dg/Wstringop-overflow-76.c: Ditto.
+
 2021-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/103756
