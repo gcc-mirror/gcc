@@ -30,6 +30,11 @@
 #endif  /* DARWIN_9_LONG_DOUBLE_FUNCS_2_CHECK */
 
 
+#if defined( DARWIN_FLT_EVAL_METHOD_CHECK )
+#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16
+#endif  /* DARWIN_FLT_EVAL_METHOD_CHECK */
+
+
 #if defined( HPPA_HPUX_FP_MACROS_CHECK )
 #endif /* _INCLUDE_HPUX_SOURCE */
 
