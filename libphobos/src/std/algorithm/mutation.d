@@ -866,6 +866,9 @@ if (isInputRange!InputRange
 Initializes all elements of `range` with their `.init` value.
 Assumes that the elements of the range are uninitialized.
 
+This function is unavailable if `T` is a `struct` and  `T.this()` is annotated
+with `@disable`.
+
 Params:
         range = An
                 $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
@@ -874,10 +877,11 @@ Params:
 
 See_Also:
         $(LREF fill)
-        $(LREF uninitializeFill)
+        $(LREF uninitializedFill)
  */
 void initializeAll(Range)(Range range)
-if (isInputRange!Range && hasLvalueElements!Range && hasAssignableElements!Range)
+if (isInputRange!Range && hasLvalueElements!Range && hasAssignableElements!Range
+    && __traits(compiles, { static ElementType!Range _; }))
 {
     import core.stdc.string : memset, memcpy;
     import std.traits : hasElaborateAssign, isDynamicArray;
@@ -1035,6 +1039,18 @@ if (is(Range == char[]) || is(Range == wchar[]))
     initializeAll(R());
     assert(xs[0].x == 3);
     assert(xs[1].x == 3);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22105
+@system unittest
+{
+    struct NoDefaultCtor
+    {
+        @disable this();
+    }
+
+    NoDefaultCtor[1] array = void;
+    static assert(!__traits(compiles, array[].initializeAll));
 }
 
 // move

@@ -2,12 +2,12 @@
 
 This is the source code to the DMD compiler
 for the D Programming Language defined in the documents at
-http://dlang.org/
+https://dlang.org/
 
 These sources are free, they are redistributable and modifiable
 under the terms of the Boost Software License, Version 1.0.
 The terms of this license are in the file boostlicense.txt,
-or see http://www.boost.org/LICENSE_1_0.txt.
+or see https://www.boost.org/LICENSE_1_0.txt.
 
 If a particular file has a different license in it, that overrides
 this license for that file.
@@ -247,12 +247,9 @@ Note: many other utilities are in [dmd/root](https://github.com/dlang/dmd/tree/m
 
 | File                                                                              | Purpose                                           |
 |-----------------------------------------------------------------------------------|---------------------------------------------------|
-| [env.d](https://github.com/dlang/dmd/blob/master/src/dmd/env.d)                   | Modify environment variables                      |
 | [console.d](https://github.com/dlang/dmd/blob/master/src/dmd/console.d)           | Print error messages in color                     |
-| [utf.d](https://github.com/dlang/dmd/blob/master/src/dmd/utf.d)                   | Encoding/decoding Unicode text                    |
 | [file_manager.d](https://github.com/dlang/dmd/blob/master/src/dmd/file_manager.d) | Keep file contents in memory                      |
 | [utils.d](https://github.com/dlang/dmd/blob/master/src/dmd/utils.d)               | Utility functions related to files and file paths |
-| [complex.d](https://github.com/dlang/dmd/blob/master/src/dmd/complex.d)           | A complex number type                             |
 
 | File                                                                            | Purpose                                                       |
 |---------------------------------------------------------------------------------|---------------------------------------------------------------|

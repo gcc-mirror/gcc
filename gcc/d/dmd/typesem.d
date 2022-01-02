@@ -1,9 +1,9 @@
 /**
  * Semantic analysis for D types.
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typesem.d, _typesem.d)
  * Documentation:  https://dlang.org/phobos/dmd_typesem.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/typesem.d
@@ -22,7 +22,6 @@ import dmd.arrayop;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.astenums;
-import dmd.complex;
 import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
@@ -52,6 +51,7 @@ import dmd.mtype;
 import dmd.objc;
 import dmd.opover;
 import dmd.parse;
+import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.rmem;
 import dmd.common.outbuffer;
@@ -161,7 +161,7 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
     const(uinteger_t) d = eindex.toUInteger();
     if (d >= tup.objects.dim)
     {
-        .error(loc, "tuple index `%llu` exceeds length %zu", d, tup.objects.dim);
+        .error(loc, "tuple index `%llu` exceeds length %llu", d, cast(ulong)tup.objects.dim);
         pt = Type.terror;
         return;
     }

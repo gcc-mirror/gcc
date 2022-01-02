@@ -1700,7 +1700,6 @@ template match(handlers...)
  * Throws:
  *   [MatchException], if the currently-held type has no matching handler.
  *
- * See_Also: `std.variant.tryVisit`
  * See_Also: $(REF tryVisit, std,variant)
  */
 version (D_Exceptions)

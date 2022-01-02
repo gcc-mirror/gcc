@@ -3,9 +3,9 @@
  *
  * Also used to convert AST nodes to D code in general, e.g. for error messages or `printf` debugging.
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/hdrgen.d, _hdrgen.d)
  * Documentation:  https://dlang.org/phobos/dmd_hdrgen.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/hdrgen.d
@@ -21,7 +21,6 @@ import dmd.aliasthis;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
-import dmd.complex;
 import dmd.cond;
 import dmd.ctfeexpr;
 import dmd.dclass;
@@ -43,6 +42,7 @@ import dmd.init;
 import dmd.mtype;
 import dmd.nspace;
 import dmd.parse;
+import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;

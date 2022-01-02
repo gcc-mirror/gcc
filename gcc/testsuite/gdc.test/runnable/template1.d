@@ -1554,7 +1554,7 @@ void test64()
 }
 
 /******************************************/
-// http://www.digitalmars.com/d/archives/28052.html
+// https://www.digitalmars.com/d/archives/28052.html
 
 alias int value_type;
 
@@ -1923,7 +1923,7 @@ specialization:: first int
 
 
 /******************************************/
-// http://www.digitalmars.com/pnews/read.php?server=news.digitalmars.com&group=digitalmars.D.bugs&artnum=2117
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/2117.html
 
 class Conversion(T,U){
         alias char Small;

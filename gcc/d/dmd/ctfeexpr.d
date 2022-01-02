@@ -1,9 +1,9 @@
 /**
  * CTFE for expressions involving pointers, slices, array concatenation etc.
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ctfeexpr.d, _ctfeexpr.d)
  * Documentation:  https://dlang.org/phobos/dmd_ctfeexpr.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/ctfeexpr.d
@@ -16,7 +16,6 @@ import core.stdc.stdlib;
 import core.stdc.string;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.complex;
 import dmd.constfold;
 import dmd.compiler;
 import dmd.dclass;
@@ -29,6 +28,7 @@ import dmd.expression;
 import dmd.func;
 import dmd.globals;
 import dmd.mtype;
+import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.port;
 import dmd.root.rmem;
@@ -1362,6 +1362,15 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         mem.xfree(used);
         return 0;
     }
+    else if (e1.op == EXP.assocArrayLiteral && e2.op == EXP.null_)
+    {
+        return e1.isAssocArrayLiteralExp.keys.dim != 0;
+    }
+    else if (e1.op == EXP.null_ && e2.op == EXP.assocArrayLiteral)
+    {
+        return e2.isAssocArrayLiteralExp.keys.dim != 0;
+    }
+
     error(loc, "CTFE internal error: bad compare of `%s` and `%s`", e1.toChars(), e2.toChars());
     assert(0);
 }
@@ -1553,7 +1562,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
     {
         if (indx >= es1.len)
         {
-            error(loc, "string index %llu is out of bounds `[0 .. %zu]`", indx, es1.len);
+            error(loc, "string index %llu is out of bounds `[0 .. %llu]`", indx, cast(ulong)es1.len);
             return CTFEExp.cantexp;
         }
         emplaceExp!IntegerExp(pue, loc, es1.charAt(indx), type);
@@ -1564,7 +1573,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
     {
         if (indx >= ale.elements.dim)
         {
-            error(loc, "array index %llu is out of bounds `%s[0 .. %zu]`", indx, e1.toChars(), ale.elements.dim);
+            error(loc, "array index %llu is out of bounds `%s[0 .. %llu]`", indx, e1.toChars(), cast(ulong)ale.elements.dim);
             return CTFEExp.cantexp;
         }
         Expression e = (*ale.elements)[cast(size_t)indx];

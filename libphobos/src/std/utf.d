@@ -1168,7 +1168,7 @@ do
 
 /// ditto
 dchar decode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar, S)(
-auto ref S str, ref size_t index) @trusted pure
+auto ref scope S str, ref size_t index) @trusted pure
 if (isSomeString!S)
 in
 {
@@ -1274,7 +1274,7 @@ do
 
 /// ditto
 dchar decodeFront(UseReplacementDchar useReplacementDchar = No.useReplacementDchar, S)(
-ref S str, out size_t numCodeUnits) @trusted pure
+ref scope S str, out size_t numCodeUnits) @trusted pure
 if (isSomeString!S)
 in
 {
@@ -2541,14 +2541,12 @@ size_t encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
         `UTFException` if `c` is not a valid UTF code point.
   +/
 void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
-    ref char[] str, dchar c) @safe pure
+    ref scope char[] str, dchar c) @safe pure
 {
-    char[] r = str;
-
     if (c <= 0x7F)
     {
         assert(isValidDchar(c));
-        r ~= cast(char) c;
+        str ~= cast(char) c;
     }
     else
     {
@@ -2589,9 +2587,8 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
             c = _utfException!useReplacementDchar("Encoding an invalid code point in UTF-8", c);
             goto L3;
         }
-        r ~= buf[0 .. L];
+        str ~= buf[0 .. L];
     }
-    str = r;
 }
 
 ///
@@ -2666,10 +2663,8 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
 
 /// ditto
 void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
-    ref wchar[] str, dchar c) @safe pure
+    ref scope wchar[] str, dchar c) @safe pure
 {
-    wchar[] r = str;
-
     if (c <= 0xFFFF)
     {
         if (0xD800 <= c && c <= 0xDFFF)
@@ -2677,7 +2672,7 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
 
         assert(isValidDchar(c));
     L1:
-        r ~= cast(wchar) c;
+        str ~= cast(wchar) c;
     }
     else if (c <= 0x10FFFF)
     {
@@ -2686,7 +2681,7 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
         assert(isValidDchar(c));
         buf[0] = cast(wchar)((((c - 0x10000) >> 10) & 0x3FF) + 0xD800);
         buf[1] = cast(wchar)(((c - 0x10000) & 0x3FF) + 0xDC00);
-        r ~= buf;
+        str ~= buf;
     }
     else
     {
@@ -2694,8 +2689,6 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
         c = _utfException!useReplacementDchar("Encoding an invalid code point in UTF-16", c);
         goto L1;
     }
-
-    str = r;
 }
 
 @safe unittest
@@ -2727,7 +2720,7 @@ void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
 
 /// ditto
 void encode(UseReplacementDchar useReplacementDchar = No.useReplacementDchar)(
-    ref dchar[] str, dchar c) @safe pure
+    ref scope dchar[] str, dchar c) @safe pure
 {
     if ((0xD800 <= c && c <= 0xDFFF) || 0x10FFFF < c)
         c = _utfException!useReplacementDchar("Encoding an invalid code point in UTF-32", c);

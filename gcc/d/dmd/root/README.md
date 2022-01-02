@@ -5,7 +5,9 @@
 | [aav.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/aav.d)                 | An associative array implementation                                                        |
 | [array.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/array.d)             | A dynamic array implementation                                                             |
 | [bitarray.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/bitarray.d)       | A compact array of bits                                                                    |
+| [complex.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/complex.d)         | A complex number type                                                                      |
 | [ctfloat.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/ctfloat.d)         | A floating point type for compile-time calculations                                        |
+| [env.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/env.d)                 | Modify environment variables                                                               |
 | [file.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/file.d)               | Read a file from disk and store it in memory                                               |
 | [filename.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/filename.d)       | Encapsulate path and file names                                                            |
 | [hash.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/hash.d)               | Calculate a hash for a byte array                                                          |
@@ -19,4 +21,5 @@
 | [speller.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/speller.d)         | Try to detect typos in identifiers                                                         |
 | [string.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/string.d)           | Various string related functions                                                           |
 | [stringtable.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/stringtable.d) | Specialized associative array with string keys stored in a variable length structure       |
-| [strtold.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/strtold.d)         | D implementation of the standard C function `strtold` (String to long double)               |
+| [strtold.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/strtold.d)         | D implementation of the standard C function `strtold` (String to long double)              |
+| [utf.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/utf.d)                 | Encoding/decoding Unicode text                                                             |
