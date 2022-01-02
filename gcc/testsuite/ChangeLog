@@ -1,3 +1,21 @@
+2022-01-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR rtl-optimization/100241
+	PR rtl-optimization/99787
+	* gcc.c-torture/compile/pr100241-1.c: New test.
+	* gcc.c-torture/compile/pr99787-1.c: New test.
+
+2022-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.misc-tests/godump-1.c: Adjust for renaming of last
+	field from _align suffix to _ suffix.
+
+2022-01-01  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/103639
+	* objc.dg/pr103639.m: New test.
+
 2021-12-31  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR fortran/89639

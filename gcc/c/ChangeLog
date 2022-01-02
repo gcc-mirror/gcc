@@ -1,3 +1,9 @@
+2022-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/103639
+	* c-typeck.c (c_finish_bc_stmt): For break inside of switch inside of
+	ObjC foreach, emit normal BREAK_STMT rather than goto to label.
+
 2021-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/103649
