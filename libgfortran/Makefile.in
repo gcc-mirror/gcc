@@ -779,6 +779,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
 	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
 	runtime/in_unpack_generic.c $(am__append_3) $(am__append_4)
+@IEEE_SUPPORT_TRUE@gfor_ieee_helper_src = ieee/ieee_helper.c
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
 @IEEE_SUPPORT_TRUE@ieee/ieee_arithmetic.F90 \
@@ -6999,7 +7000,10 @@ $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
 
 # Add flags for IEEE modules
-@IEEE_SUPPORT_TRUE@$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore
+@IEEE_SUPPORT_TRUE@$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore -fsignaling-nans
+
+# Add flags for IEEE helper code
+@IEEE_SUPPORT_TRUE@$(patsubst %.c,%.lo,$(notdir $(gfor_ieee_helper_src))): AM_CFLAGS += -fsignaling-nans
 
 # Dependencies between IEEE_ARITHMETIC and IEEE_EXCEPTIONS
 ieee_arithmetic.lo: ieee/ieee_arithmetic.F90 ieee_exceptions.lo
