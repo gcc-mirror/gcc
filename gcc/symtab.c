@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "fold-const.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
@@ -2276,10 +2277,12 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
       return 0;
     }
 
+  if (rs1 == rs2)
+    return -1;
+
   /* If the FE tells us at least one of the decls will never be aliased nor
      overlapping with other vars in some other way, return 0.  */
   if (VAR_P (decl)
-      && rs1 != rs2
       && (lookup_attribute ("non overlapping", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("non overlapping", DECL_ATTRIBUTES (s2->decl))))
     return 0;
@@ -2288,9 +2291,14 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
      are different unless they are declared as alias of one to another while
      the code folding comparisons doesn't.
      We probably should be consistent and use this fact here, too, but for
-     the moment return false only when we are called from the alias oracle.  */
+     the moment return false only when we are called from the alias oracle.
+     Return 0 in C constant initializers and C++ manifestly constant
+     expressions, the likelyhood that different vars will be aliases is
+     small and returning -1 lets us reject too many initializers.  */
+  if (memory_accessed || folding_initializer)
+    return 0;
 
-  return memory_accessed && rs1 != rs2 ? 0 : -1;
+  return -1;
 }
 
 /* Worker for call_for_symbol_and_aliases.  */
