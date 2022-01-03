@@ -141,7 +141,7 @@ package body Sem_Res is
 
    function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean;
    --  N is either an indexed component or a selected component. This function
-   --  returns true if the prefix refers to an object that has an address
+   --  returns true if the prefix denotes an atomic object that has an address
    --  clause (the case in which we may want to issue a warning).
 
    function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
@@ -823,7 +823,10 @@ package body Sem_Res is
 
    procedure Check_For_Visible_Operator (N : Node_Id; T : Entity_Id) is
    begin
-      if Is_Invisible_Operator (N, T) then
+      if Comes_From_Source (N)
+        and then not Is_Visible_Operator (Original_Node (N), T)
+        and then not Error_Posted (N)
+      then
          Error_Msg_NE -- CODEFIX
            ("operator for} is not directly visible!", N, First_Subtype (T));
          Error_Msg_N -- CODEFIX
@@ -1662,6 +1665,14 @@ package body Sem_Res is
    begin
       Op_Node := New_Node (Operator_Kind (Op_Name, Is_Binary), Sloc (N));
 
+      --  Preserve the Comes_From_Source flag on the result if the original
+      --  call came from source. Although it is not strictly the case that the
+      --  operator as such comes from the source, logically it corresponds
+      --  exactly to the function call in the source, so it should be marked
+      --  this way (e.g. to make sure that validity checks work fine).
+
+      Preserve_Comes_From_Source (Op_Node, N);
+
       --  Ensure that the corresponding operator has the same parent as the
       --  original call. This guarantees that parent traversals performed by
       --  the ABE mechanism succeed.
@@ -1900,18 +1911,7 @@ package body Sem_Res is
       Set_Entity (Op_Node, Op_Id);
       Generate_Reference (Op_Id, N, ' ');
 
-      --  Do rewrite setting Comes_From_Source on the result if the original
-      --  call came from source. Although it is not strictly the case that the
-      --  operator as such comes from the source, logically it corresponds
-      --  exactly to the function call in the source, so it should be marked
-      --  this way (e.g. to make sure that validity checks work fine).
-
-      declare
-         CS : constant Boolean := Comes_From_Source (N);
-      begin
-         Rewrite (N, Op_Node);
-         Set_Comes_From_Source (N, CS);
-      end;
+      Rewrite (N, Op_Node);
 
       --  If this is an arithmetic operator and the result type is private,
       --  the operands and the result must be wrapped in conversion to
@@ -4148,15 +4148,38 @@ package body Sem_Res is
          if No (A) and then Needs_No_Actuals (Nam) then
             null;
 
-         --  If we have an error in any actual or formal, indicated by a type
+         --  If we have an error in any formal or actual, indicated by a type
          --  of Any_Type, then abandon resolution attempt, and set result type
-         --  to Any_Type. Skip this if the actual is a Raise_Expression, whose
-         --  type is imposed from context.
+         --  to Any_Type.
 
-         elsif (Present (A) and then Etype (A) = Any_Type)
-           or else Etype (F) = Any_Type
-         then
-            if Nkind (A) /= N_Raise_Expression then
+         elsif Etype (F) = Any_Type then
+            Set_Etype (N, Any_Type);
+            return;
+
+         elsif Present (A) and then Etype (A) = Any_Type then
+            --  For the peculiar case of a user-defined comparison or equality
+            --  operator that does not return a boolean type, the operands may
+            --  have been ambiguous for the predefined operator and, therefore,
+            --  marked with Any_Type. Since the operation has been resolved to
+            --  the user-defined operator, that is irrelevant, so reset Etype.
+
+            if Nkind (Original_Node (N)) in N_Op_Eq
+                                          | N_Op_Ge
+                                          | N_Op_Gt
+                                          | N_Op_Le
+                                          | N_Op_Lt
+                                          | N_Op_Ne
+              and then not Is_Boolean_Type (Etype (N))
+            then
+               Set_Etype (A, Etype (F));
+
+            --  Also skip this if the actual is a Raise_Expression, whose type
+            --  is imposed from context.
+
+            elsif Nkind (A) = N_Raise_Expression then
+               null;
+
+            else
                Set_Etype (N, Any_Type);
                return;
             end if;
@@ -6856,13 +6879,11 @@ package body Sem_Res is
       --  functional notation. Replace call node with operator node, so
       --  that actuals can be resolved appropriately.
 
-      if Is_Predefined_Op (Nam) or else Ekind (Nam) = E_Operator then
-         Make_Call_Into_Operator (N, Typ, Entity (Name (N)));
+      if Ekind (Nam) = E_Operator or else Is_Predefined_Op (Nam) then
+         Make_Call_Into_Operator (N, Typ, Nam);
          return;
 
-      elsif Present (Alias (Nam))
-        and then Is_Predefined_Op (Alias (Nam))
-      then
+      elsif Present (Alias (Nam)) and then Is_Predefined_Op (Alias (Nam)) then
          Resolve_Actuals (N, Nam);
          Make_Call_Into_Operator (N, Typ, Alias (Nam));
          return;
@@ -7489,39 +7510,35 @@ package body Sem_Res is
    -- Resolve_Comparison_Op --
    ---------------------------
 
-   --  Context requires a boolean type, and plays no role in resolution.
-   --  Processing identical to that for equality operators. The result type is
-   --  the base type, which matters when pathological subtypes of booleans with
-   --  limited ranges are used.
+   --  The operands must have compatible types and the boolean context does not
+   --  participate in the resolution. The first pass verifies that the operands
+   --  are not ambiguous and sets their type correctly, or to Any_Type in case
+   --  of ambiguity. If both operands are strings or aggregates, then they are
+   --  ambiguous even if they carry a single (universal) type.
 
    procedure Resolve_Comparison_Op (N : Node_Id; Typ : Entity_Id) is
       L : constant Node_Id := Left_Opnd (N);
       R : constant Node_Id := Right_Opnd (N);
-      T : Entity_Id;
+
+      T : Entity_Id := Find_Unique_Type (L, R);
 
    begin
-      --  If this is an intrinsic operation which is not predefined, use the
-      --  types of its declared arguments to resolve the possibly overloaded
-      --  operands. Otherwise the operands are unambiguous and specify the
-      --  expected type.
-
-      if Scope (Entity (N)) /= Standard_Standard then
-         T := Etype (First_Entity (Entity (N)));
-
-      else
-         T := Find_Unique_Type (L, R);
-
-         if T = Any_Fixed then
-            T := Unique_Fixed_Point_Type (L);
-         end if;
+      if T = Any_Fixed then
+         T := Unique_Fixed_Point_Type (L);
       end if;
 
       Set_Etype (N, Base_Type (Typ));
       Generate_Reference (T, N, ' ');
 
-      --  Skip remaining processing if already set to Any_Type
-
       if T = Any_Type then
+         --  Deal with explicit ambiguity of operands
+
+         if Ekind (Entity (N)) = E_Operator
+           and then (Is_Overloaded (L) or else Is_Overloaded (R))
+         then
+            Ambiguous_Operands (N);
+         end if;
+
          return;
       end if;
 
@@ -8510,24 +8527,37 @@ package body Sem_Res is
       --  overlapping actuals, just like for a subprogram call.
 
       Warn_On_Overlapping_Actuals (Nam, N);
-
    end Resolve_Entry_Call;
 
    -------------------------
    -- Resolve_Equality_Op --
    -------------------------
 
-   --  Both arguments must have the same type, and the boolean context does
-   --  not participate in the resolution. The first pass verifies that the
-   --  interpretation is not ambiguous, and the type of the left argument is
-   --  correctly set, or is Any_Type in case of ambiguity. If both arguments
-   --  are strings or aggregates, allocators, or Null, they are ambiguous even
-   --  though they carry a single (universal) type. Diagnose this case here.
+   --  The operands must have compatible types and the boolean context does not
+   --  participate in the resolution. The first pass verifies that the operands
+   --  are not ambiguous and sets their type correctly, or to Any_Type in case
+   --  of ambiguity. If both operands are strings, aggregates, allocators, or
+   --  null, they are ambiguous even if they carry a single (universal) type.
 
    procedure Resolve_Equality_Op (N : Node_Id; Typ : Entity_Id) is
-      L : constant Node_Id   := Left_Opnd (N);
-      R : constant Node_Id   := Right_Opnd (N);
+      L : constant Node_Id := Left_Opnd (N);
+      R : constant Node_Id := Right_Opnd (N);
+
       T : Entity_Id := Find_Unique_Type (L, R);
+
+      procedure Check_Access_Attribute (N : Node_Id);
+      --  For any object, '[Unchecked_]Access of such object can never be
+      --  passed as an operand to the Universal_Access equality operators.
+      --  This is so because the expected type for Obj'Access in a call to
+      --  these operators, whose formals are of type Universal_Access, is
+      --  Universal_Access, and Universal_Access does not have a designated
+      --  type. For more details, see RM 3.10.2(2/2) and 6.4.1(3).
+
+      procedure Check_Designated_Object_Types (T1, T2 : Entity_Id);
+      --  Check RM 4.5.2(9.6/2) on the given designated object types
+
+      procedure Check_Designated_Subprogram_Types (T1, T2 : Entity_Id);
+      --  Check RM 4.5.2(9.7/2) on the given designated subprogram types
 
       procedure Check_If_Expression (Cond : Node_Id);
       --  The resolution rule for if expressions requires that each such must
@@ -8553,6 +8583,54 @@ package body Sem_Res is
       --  Returns True iff the parent node is a and/or/xor operation that
       --  could be the cause of confused priorities. Note that if the not is
       --  in parens, then False is returned.
+
+      ----------------------------
+      -- Check_Access_Attribute --
+      ----------------------------
+
+      procedure Check_Access_Attribute (N : Node_Id) is
+      begin
+         if Nkind (N) = N_Attribute_Reference
+           and then Attribute_Name (N) in Name_Access | Name_Unchecked_Access
+         then
+            Error_Msg_N
+              ("access attribute cannot be used as actual for "
+               & "universal_access equality", N);
+         end if;
+      end Check_Access_Attribute;
+
+      -----------------------------------
+      -- Check_Designated_Object_Types --
+      -----------------------------------
+
+      procedure Check_Designated_Object_Types (T1, T2 : Entity_Id) is
+      begin
+         if (Is_Elementary_Type (T1) or else Is_Array_Type (T1))
+           and then (Base_Type (T1) /= Base_Type (T2)
+                      or else not Subtypes_Statically_Match (T1, T2))
+         then
+            Error_Msg_N
+              ("designated subtypes for universal_access equality "
+               & "do not statically match (RM 4.5.2(9.6/2)", N);
+            Error_Msg_NE ("\left operand has}!",  N, Etype (L));
+            Error_Msg_NE ("\right operand has}!", N, Etype (R));
+         end if;
+      end Check_Designated_Object_Types;
+
+      ---------------------------------------
+      -- Check_Designated_Subprogram_Types --
+      ---------------------------------------
+
+      procedure Check_Designated_Subprogram_Types (T1, T2 : Entity_Id) is
+      begin
+         if not Subtype_Conformant (T1, T2) then
+            Error_Msg_N
+              ("designated subtypes for universal_access equality "
+               & "not subtype conformant (RM 4.5.2(9.7/2)", N);
+            Error_Msg_NE ("\left operand has}!",  N, Etype (L));
+            Error_Msg_NE ("\right operand has}!", N, Etype (R));
+         end if;
+      end Check_Designated_Subprogram_Types;
 
       -------------------------
       -- Check_If_Expression --
@@ -8727,14 +8805,25 @@ package body Sem_Res is
    --  Start of processing for Resolve_Equality_Op
 
    begin
-      Set_Etype (N, Base_Type (Typ));
-      Generate_Reference (T, N, ' ');
-
       if T = Any_Fixed then
          T := Unique_Fixed_Point_Type (L);
       end if;
 
-      if T /= Any_Type then
+      Set_Etype (N, Base_Type (Typ));
+      Generate_Reference (T, N, ' ');
+
+      if T = Any_Type then
+         --  Deal with explicit ambiguity of operands
+
+         if Ekind (Entity (N)) = E_Operator
+           and then (Is_Overloaded (L) or else Is_Overloaded (R))
+         then
+            Ambiguous_Operands (N);
+         end if;
+
+      else
+         --  Deal with other error cases
+
          if T = Any_String    or else
             T = Any_Composite or else
             T = Any_Character
@@ -8771,6 +8860,44 @@ package body Sem_Res is
          then
             Check_If_Expression (L);
             Check_If_Expression (R);
+         end if;
+
+         --  RM 4.5.2(9.5/2): At least one of the operands of the equality
+         --  operators for universal_access shall be of type universal_access,
+         --  or both shall be of access-to-object types, or both shall be of
+         --  access-to-subprogram types (RM 4.5.2(9.5/2)).
+
+         if Is_Anonymous_Access_Type (T)
+           and then Etype (L) /= Universal_Access
+           and then Etype (R) /= Universal_Access
+         then
+            --  RM 4.5.2(9.6/2): When both are of access-to-object types, the
+            --  designated types shall be the same or one shall cover the other
+            --  and if the designated types are elementary or array types, then
+            --  the designated subtypes shall statically match.
+
+            if Is_Access_Object_Type (Etype (L))
+              and then Is_Access_Object_Type (Etype (R))
+            then
+               Check_Designated_Object_Types
+                 (Designated_Type (Etype (L)), Designated_Type (Etype (R)));
+
+            --  RM 4.5.2(9.7/2): When both are of access-to-subprogram types,
+            --  the designated profiles shall be subtype conformant.
+
+            elsif Is_Access_Subprogram_Type (Etype (L))
+              and then Is_Access_Subprogram_Type (Etype (R))
+            then
+               Check_Designated_Subprogram_Types
+                 (Designated_Type (Etype (L)), Designated_Type (Etype (R)));
+            end if;
+         end if;
+
+         --  Check another case of equality operators for universal_access
+
+         if Is_Anonymous_Access_Type (T) and then Comes_From_Source (N) then
+            Check_Access_Attribute (L);
+            Check_Access_Attribute (R);
          end if;
 
          Resolve (L, T);
@@ -8894,33 +9021,6 @@ package body Sem_Res is
            and then Is_Abstract_Subprogram (Entity (N))
          then
             Error_Msg_NE ("cannot call abstract subprogram &!", N, Entity (N));
-         end if;
-
-         --  Ada 2005: If one operand is an anonymous access type, convert the
-         --  other operand to it, to ensure that the underlying types match in
-         --  the back-end. Same for access_to_subprogram, and the conversion
-         --  verifies that the types are subtype conformant.
-
-         --  We apply the same conversion in the case one of the operands is a
-         --  private subtype of the type of the other.
-
-         --  Why the Expander_Active test here ???
-
-         if Expander_Active
-           and then
-             (Ekind (T) in E_Anonymous_Access_Type
-                         | E_Anonymous_Access_Subprogram_Type
-               or else Is_Private_Type (T))
-         then
-            if Etype (L) /= T then
-               Rewrite (L, Unchecked_Convert_To (T, L));
-               Analyze_And_Resolve (L, T);
-            end if;
-
-            if (Etype (R)) /= T then
-               Rewrite (R, Unchecked_Convert_To (Etype (L), R));
-               Analyze_And_Resolve (R, T);
-            end if;
          end if;
       end if;
    end Resolve_Equality_Op;
@@ -12592,63 +12692,49 @@ package body Sem_Res is
          end;
       end if;
 
-      --  Rewrite the operator node using the real operator, not its renaming.
-      --  Exclude user-defined intrinsic operations of the same name, which are
-      --  treated separately and rewritten as calls.
+      Op_Node := New_Node (Operator_Kind (Nam, Is_Binary), Sloc (N));
+      Set_Chars      (Op_Node, Nam);
+      Set_Etype      (Op_Node, Etype (N));
+      Set_Entity     (Op_Node, Op);
+      Set_Right_Opnd (Op_Node, Right_Opnd (N));
 
-      if Ekind (Op) /= E_Function or else Chars (N) /= Nam then
-         Op_Node := New_Node (Operator_Kind (Nam, Is_Binary), Sloc (N));
-         Set_Chars      (Op_Node, Nam);
-         Set_Etype      (Op_Node, Etype (N));
-         Set_Entity     (Op_Node, Op);
-         Set_Right_Opnd (Op_Node, Right_Opnd (N));
+      if Is_Binary then
+         Set_Left_Opnd (Op_Node, Left_Opnd (N));
+      end if;
 
-         --  Indicate that both the original entity and its renaming are
-         --  referenced at this point.
+      --  Indicate that both the original entity and its renaming are
+      --  referenced at this point.
 
-         Generate_Reference (Entity (N), N);
-         Generate_Reference (Op, N);
+      Generate_Reference (Entity (N), N);
+      Generate_Reference (Op, N);
 
-         if Is_Binary then
-            Set_Left_Opnd (Op_Node, Left_Opnd (N));
-         end if;
+      Rewrite (N, Op_Node);
 
-         Rewrite (N, Op_Node);
+      --  If the context type is private, add the appropriate conversions so
+      --  that the operator is applied to the full view. This is done in the
+      --  routines that resolve intrinsic operators.
 
-         --  If the context type is private, add the appropriate conversions so
-         --  that the operator is applied to the full view. This is done in the
-         --  routines that resolve intrinsic operators.
+      if Is_Intrinsic_Subprogram (Op) and then Is_Private_Type (Typ) then
+         case Nkind (N) is
+            when N_Op_Add
+               | N_Op_Divide
+               | N_Op_Expon
+               | N_Op_Mod
+               | N_Op_Multiply
+               | N_Op_Rem
+               | N_Op_Subtract
+            =>
+               Resolve_Intrinsic_Operator (N, Typ);
 
-         if Is_Intrinsic_Subprogram (Op) and then Is_Private_Type (Typ) then
-            case Nkind (N) is
-               when N_Op_Add
-                  | N_Op_Divide
-                  | N_Op_Expon
-                  | N_Op_Mod
-                  | N_Op_Multiply
-                  | N_Op_Rem
-                  | N_Op_Subtract
-               =>
-                  Resolve_Intrinsic_Operator (N, Typ);
+            when N_Op_Abs
+               | N_Op_Minus
+               | N_Op_Plus
+            =>
+               Resolve_Intrinsic_Unary_Operator (N, Typ);
 
-               when N_Op_Abs
-                  | N_Op_Minus
-                  | N_Op_Plus
-               =>
-                  Resolve_Intrinsic_Unary_Operator (N, Typ);
-
-               when others =>
-                  Resolve (N, Typ);
-            end case;
-         end if;
-
-      elsif Ekind (Op) = E_Function and then Is_Intrinsic_Subprogram (Op) then
-
-         --  Operator renames a user-defined operator of the same name. Use the
-         --  original operator in the node, which is the one Gigi knows about.
-
-         Set_Entity (N, Op);
-         Set_Is_Overloaded (N, False);
+            when others =>
+               Resolve (N, Typ);
+         end case;
       end if;
    end Rewrite_Renamed_Operator;
 

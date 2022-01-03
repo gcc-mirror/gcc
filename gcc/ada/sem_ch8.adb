@@ -509,6 +509,7 @@ package body Sem_Ch8 is
 
    function Has_Implicit_Operator (N : Node_Id) return Boolean;
    --  N is an expanded name whose selector is an operator name (e.g. P."+").
+   --  Determine if N denotes an operator implicitly declared in prefix P: P's
    --  declarative part contains an implicit declaration of an operator if it
    --  has a declaration of a type to which one of the predefined operators
    --  apply. The existence of this routine is an implementation artifact. A
@@ -8650,7 +8651,10 @@ package body Sem_Ch8 is
             | Name_Op_Xor
          =>
             while Id /= Priv_Id loop
-               if Valid_Boolean_Arg (Id) and then Is_Base_Type (Id) then
+               if Is_Type (Id)
+                 and then Valid_Boolean_Arg (Id)
+                 and then Is_Base_Type (Id)
+               then
                   Add_Implicit_Operator (Id);
                   return True;
                end if;
@@ -8665,7 +8669,7 @@ package body Sem_Ch8 is
          =>
             while Id /= Priv_Id loop
                if Is_Type (Id)
-                 and then not Is_Limited_Type (Id)
+                 and then Valid_Equality_Arg (Id)
                  and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);
@@ -8683,9 +8687,8 @@ package body Sem_Ch8 is
             | Name_Op_Lt
          =>
             while Id /= Priv_Id loop
-               if (Is_Scalar_Type (Id)
-                    or else (Is_Array_Type (Id)
-                              and then Is_Scalar_Type (Component_Type (Id))))
+               if Is_Type (Id)
+                 and then Valid_Comparison_Arg (Id)
                  and then Is_Base_Type (Id)
                then
                   Add_Implicit_Operator (Standard_Boolean, Id);

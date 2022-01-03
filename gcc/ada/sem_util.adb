@@ -21478,6 +21478,25 @@ package body Sem_Util is
         and then Nkind (Parent (Id)) = N_Function_Specification;
    end Is_User_Defined_Equality;
 
+   -----------------------------
+   -- Is_User_Defined_Literal --
+   -----------------------------
+
+   function Is_User_Defined_Literal
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+      Literal_Aspect_Map :
+        constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
+          (N_Integer_Literal => Aspect_Integer_Literal,
+           N_Real_Literal    => Aspect_Real_Literal,
+           N_String_Literal  => Aspect_String_Literal);
+
+   begin
+      return Nkind (N) in N_Numeric_Or_String_Literal
+        and then Present (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N))));
+   end Is_User_Defined_Literal;
+
    --------------------------------------
    -- Is_Validation_Variable_Reference --
    --------------------------------------
