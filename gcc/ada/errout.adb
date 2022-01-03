@@ -3578,10 +3578,14 @@ package body Errout is
          end if;
       end if;
 
-      --  The following assignment ensures that a second ampersand insertion
-      --  character will correspond to the Error_Msg_Node_2 parameter.
+      --  The following assignment ensures that further ampersand insertion
+      --  characters will correspond to the Error_Msg_Node_# parameter.
 
       Error_Msg_Node_1 := Error_Msg_Node_2;
+      Error_Msg_Node_2 := Error_Msg_Node_3;
+      Error_Msg_Node_3 := Error_Msg_Node_4;
+      Error_Msg_Node_4 := Error_Msg_Node_5;
+      Error_Msg_Node_5 := Error_Msg_Node_6;
    end Set_Msg_Insertion_Node;
 
    --------------------------------------
