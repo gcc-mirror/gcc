@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1261,7 +1261,13 @@ rtx
 gen_rtx_REG_offset (rtx reg, machine_mode mode, unsigned int regno,
 		    poly_int64 offset)
 {
-  rtx new_rtx = gen_rtx_REG (mode, regno);
+  /* Use gen_raw_REG rather than gen_rtx_REG, because otherwise we'd
+     overwrite REG_ATTRS (and in the callers often ORIGINAL_REGNO too)
+     of the shared REG rtxes like stack_pointer_rtx etc.  This should
+     happen only for SUBREGs from DEBUG_INSNs, RA should ensure
+     multi-word registers don't overlap the special registers like
+     stack pointer.  */
+  rtx new_rtx = gen_raw_REG (mode, regno);
 
   update_reg_offset (new_rtx, reg, offset);
   return new_rtx;

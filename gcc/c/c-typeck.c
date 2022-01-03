@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -11257,7 +11257,8 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
 
   if (skip)
     return NULL_TREE;
-  else if (in_statement & IN_OBJC_FOREACH)
+  else if ((in_statement & IN_OBJC_FOREACH)
+	   && !(is_break && (in_statement & IN_SWITCH_STMT)))
     {
       /* The foreach expander produces low-level code using gotos instead
 	 of a structured loop construct.  */

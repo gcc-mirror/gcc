@@ -1,5 +1,5 @@
 /* Platform-independent deterministic sort function.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by Alexander Monakov.
 
 This file is part of GCC.

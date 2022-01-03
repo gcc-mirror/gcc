@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -242,8 +242,8 @@ gfc_itoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 	 integers (we would need three calls), but they do suffice for all
 	 values up to 2^127, which is the largest that Fortran can produce
 	 (-HUGE(0_16)-1) with its signed integer types.  */
-      static_assert(sizeof(GFC_UINTEGER_LARGEST) <= 2 * sizeof(uint64_t),
-		    "integer too large");
+      _Static_assert (sizeof(GFC_UINTEGER_LARGEST) <= 2 * sizeof(uint64_t),
+		      "integer too large");
 
       GFC_UINTEGER_LARGEST r;
       r = n % TEN19;

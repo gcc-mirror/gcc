@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2022 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.

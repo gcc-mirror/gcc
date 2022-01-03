@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Quad Precision on the PowerPC.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com).
 

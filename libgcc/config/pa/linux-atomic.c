@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for PA Linux.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Based on code contributed by CodeSourcery for ARM EABI Linux.
    Modifications for PA Linux by Helge Deller <deller@gmx.de>
 
@@ -27,6 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define EFAULT  14 
 #define EBUSY   16
 #define ENOSYS 251 
+
+#define _ASM_EFAULT "-14"
 
 typedef unsigned char u8;
 typedef short unsigned int u16;
@@ -58,6 +60,8 @@ __kernel_cmpxchg (volatile void *mem, int oldval, int newval)
   register long lws_errno asm("r21");
   asm volatile (	"ble	0xb0(%%sr2, %%r0)	\n\t"
 			"ldi	%2, %%r20		\n\t"
+			"cmpiclr,<> " _ASM_EFAULT ", %%r21, %%r0\n\t"
+			"iitlbp %%r0,(%%sr0, %%r0)	\n\t"
 	: "=r" (lws_ret), "=r" (lws_errno)
 	: "i" (LWS_CAS), "r" (lws_mem), "r" (lws_old), "r" (lws_new)
 	: "r1", "r20", "r22", "r23", "r29", "r31", "memory"
@@ -84,6 +88,8 @@ __kernel_cmpxchg2 (volatile void *mem, const void *oldval, const void *newval,
   register long lws_errno asm("r21");
   asm volatile (	"ble	0xb0(%%sr2, %%r0)	\n\t"
 			"ldi	%6, %%r20		\n\t"
+			"cmpiclr,<> " _ASM_EFAULT ", %%r21, %%r0\n\t"
+			"iitlbp %%r0,(%%sr0, %%r0)	\n\t"
 	: "=r" (lws_ret), "=r" (lws_errno), "+r" (lws_mem),
 	  "+r" (lws_old), "+r" (lws_new), "+r" (lws_size)
 	: "i" (2)

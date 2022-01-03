@@ -1,3 +1,9 @@
+2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/89971
+	* macro.c (replace_args): For ##__VA_OPT__, if __VA_OPT__ expands
+	to no tokens at all, drop PASTE_LEFT flag from the previous token.
+
 2021-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/102432
@@ -7060,7 +7066,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

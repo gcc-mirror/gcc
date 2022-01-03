@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2021 Free Software Foundation, Inc.
+   Copyright (C) 1990-2022 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -964,7 +964,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2021 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2022 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\

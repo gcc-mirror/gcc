@@ -1,5 +1,5 @@
 ;; Scheduling description for the IBM POWER10 processor.
-;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Pat Haugen (pthaugen@us.ibm.com).
 

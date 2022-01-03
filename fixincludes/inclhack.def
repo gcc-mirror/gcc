@@ -1767,6 +1767,17 @@ fix = {
     test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
+/*  The darwin headers don't accept __FLT_EVAL_METHOD__ == 16.  */
+fix = {
+    hackname  = darwin_flt_eval_method;
+    mach      = "*-*-darwin*";
+    files     = math.h;
+    select    = "^#if __FLT_EVAL_METHOD__ == 0$";
+    c_fix     = format;
+    c_fix_arg = "#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16";
+    test_text = "#if __FLT_EVAL_METHOD__ == 0";
+};
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,

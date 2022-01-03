@@ -1,3 +1,9 @@
+2022-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* inclhack.def: Add new fix on darwin.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Regenerate.
+
 2021-11-23  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	PR bootstrap/103306

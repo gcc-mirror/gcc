@@ -57,7 +57,7 @@ void warn_comp_lit_zero (void)
 
 void warn_comp_lit (void)
 {
-  *(AC2*)a1 = Ac2;      // { dg-warning "writing 2 bytes into a region of size 1" "pr101475" { xfail *-*-* } }
+  *(AC2*)a1 = Ac2;      // { dg-warning "writing 2 bytes into a region of size 1" "pr101475" { target { vect_slp_v2qi_store_unalign } } }
   // After vectorization, below codes are optimized to
   // MEM <vector(4) char> [(char *)&a2] = { 0, 1, 2, 3 };
   // MEM <vector(4) char> [(char *)&a3] = { 0, 1, 2, 3 };

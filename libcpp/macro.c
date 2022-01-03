@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro and #define handling.)
-   Copyright (C) 1986-2021 Free Software Foundation, Inc.
+   Copyright (C) 1986-2022 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -2094,8 +2094,14 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		  tokens_buff_add_token (buff, virt_locs,
 					 t, t->src_loc, t->src_loc,
 					 NULL, 0);
+		  continue;
 		}
-	      else if (src->flags & PASTE_LEFT)
+	      if (start && paste_flag == start && (*start)->flags & PASTE_LEFT)
+		/* If __VA_OPT__ expands to nothing (either because __VA_ARGS__
+		   is empty or because it is __VA_OPT__() ), drop PASTE_LEFT
+		   flag from previous token.  */
+		copy_paste_flag (pfile, start, &pfile->avoid_paste);
+	      if (src->flags & PASTE_LEFT)
 		{
 		  /* Don't avoid paste after all.  */
 		  while (paste_flag && paste_flag != start

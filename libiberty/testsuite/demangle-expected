@@ -1164,6 +1164,11 @@ foo(int) [clone ._omp_cpyfn.6]
 foo
 #
 --format=gnu-v3 --no-params
+_Z3fooPfS_S_j.sse4_1.2
+foo(float*, float*, float*, unsigned int) [clone .sse4_1.2]
+foo
+#
+--format=gnu-v3 --no-params
 _Z1fIKFvvES0_Evv
 void f<void () const, void () const>()
 f<void () const, void () const>

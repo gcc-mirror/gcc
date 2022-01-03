@@ -501,10 +501,10 @@ struct { struct { uint8_t ca[3]; } s; uint32_t i; } sn;
 /* { dg-final { scan-file godump-1.out "(?n)^var _sn struct \{ s struct \{ ca \\\[2\\+1\\\]uint8; \}; i uint32; \}$" } } */
 
 typedef struct { struct { uint8_t a; uint16_t s; }; uint8_t b; } tsn_anon;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsn_anon struct \{ a uint8; s uint16; b uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsn_anon struct \{ a uint8; s uint16; b uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]int16; \}$" } } */
 
 struct { struct { uint8_t a; uint16_t s; }; uint8_t b; } sn_anon;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sn_anon struct \{ a uint8; s uint16; b uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sn_anon struct \{ a uint8; s uint16; b uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]int16; \}$" } } */
 
 
 /*** structs with bitfields ***/
@@ -575,16 +575,16 @@ struct { uint8_t bf : 8; uint8_t c; } sbf_pad8_3;
 /* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad8_3 struct \{ bf uint8; c uint8; \}$" } } */
 
 typedef struct { uint16_t bf : 1; uint8_t c; } tsbf_pad16_1;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad16_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad16_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_ \\\[0\\\]int16; \}$" } } */
 
 struct { uint16_t bf : 1; uint8_t c; } sbf_pad16_1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad16_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad16_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_ \\\[0\\\]int16; \}$" } } */
 
 typedef struct { uint16_t bf : 15; uint8_t c; } tsbf_pad16_2;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad16_2 struct \{ Godump_0_pad \\\[2\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad16_2 struct \{ Godump_0_pad \\\[2\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int16; \}$" } } */
 
 struct { uint16_t bf : 15; uint8_t c; } sbf_pad16_2;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad16_2 struct \{ Godump_0_pad \\\[2\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int16; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad16_2 struct \{ Godump_0_pad \\\[2\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int16; \}$" } } */
 
 typedef struct { uint16_t bf : 16; uint8_t c; } tsbf_pad16_3;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad16_3 struct \{ bf uint16; c uint8; Godump_0_pad \\\[.\\\]byte; \}$" } } */
@@ -593,16 +593,16 @@ struct { uint16_t bf : 16; uint8_t c; } sbf_pad16_3;
 /* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad16_3 struct \{ bf uint16; c uint8; Godump_0_pad \\\[.\\\]byte; \}$" } } */
 
 typedef struct { uint32_t bf : 1; uint8_t c; } tsbf_pad32_1;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad32_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad32_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int32; \}$" } } */
 
 struct { uint32_t bf : 1; uint8_t c; } sbf_pad32_1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad32_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad32_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int32; \}$" } } */
 
 typedef struct { uint32_t bf : 31; uint8_t c; } tsbf_pad32_2;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad32_2 struct \{ Godump_0_pad \\\[4\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad32_2 struct \{ Godump_0_pad \\\[4\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int32; \}$" } } */
 
 struct { uint32_t bf : 31; uint8_t c; } sbf_pad32_2;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad32_2 struct \{ Godump_0_pad \\\[4\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad32_2 struct \{ Godump_0_pad \\\[4\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int32; \}$" } } */
 
 typedef struct { uint32_t bf : 32; uint8_t c; } tsbf_pad32_3;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad32_3 struct \{ bf uint32; c uint8; Godump_0_pad \\\[.\\\]byte; \}$" } } */
@@ -611,16 +611,16 @@ struct { uint32_t bf : 32; uint8_t c; } sbf_pad32_3;
 /* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad32_3 struct \{ bf uint32; c uint8; Godump_0_pad \\\[.\\\]byte; \}$" } } */
 
 typedef struct { uint64_t bf : 1; uint8_t c; } tsbf_pad64_1;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad64_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad64_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int64; \}$" } } */
 
 struct { uint64_t bf : 1; uint8_t c; } sbf_pad64_1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad64_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad64_1 struct \{ Godump_0_pad \\\[1\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int64; \}$" } } */
 
 typedef struct { uint64_t bf : 63; uint8_t c; } tsbf_pad64_2;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad64_2 struct \{ Godump_0_pad \\\[8\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad64_2 struct \{ Godump_0_pad \\\[8\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int64; \}$" } } */
 
 struct { uint64_t bf : 63; uint8_t c; } sbf_pad64_2;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad64_2 struct \{ Godump_0_pad \\\[8\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_align \\\[0\\\]int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_pad64_2 struct \{ Godump_0_pad \\\[8\\\]byte; c uint8; Godump_1_pad \\\[.\\\]byte; Godump_2_ \\\[0\\\]int64; \}$" } } */
 
 typedef struct { uint64_t bf : 64; uint8_t c; } tsbf_pad64_3;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_pad64_3 struct \{ bf uint\[0-9\]*; c uint8; Godump_0_pad \\\[.\\\]byte; \}$" } } */
@@ -680,7 +680,7 @@ struct
   uint32_t bf3 : 12;
   uint16_t s;
 } sbf_gaps;
-/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_gaps struct \{ bf1 uint8; c uint8; bf2 uint8; Godump_0_pad \\\[2\\\]byte; s uint16; Godump_1_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _sbf_gaps struct \{ bf1 uint8; c uint8; bf2 uint8; Godump_0_pad \\\[2\\\]byte; s uint16; Godump_1_ \\\[0\\\]int32; \}$" } } */
 
 typedef struct
 {
@@ -690,7 +690,7 @@ typedef struct
   uint32_t bf3 : 12;
   uint16_t s;
 } tsbf_gaps;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_gaps struct \{ bf1 uint8; c uint8; bf2 uint8; Godump_0_pad \\\[2\\\]byte; s uint16; Godump_1_align \\\[0\\\]int32; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsbf_gaps struct \{ bf1 uint8; c uint8; bf2 uint8; Godump_0_pad \\\[2\\\]byte; s uint16; Godump_1_ \\\[0\\\]int32; \}$" } } */
 
 typedef struct
 {
@@ -708,7 +708,7 @@ typedef struct
 		};
 	} u;
 } ts_nested;
-/* { dg-final { scan-file godump-1.out "(?n)^type _ts_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _ts_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 struct
 {
@@ -726,7 +726,7 @@ struct
 		};
 	} u;
 } s_nested;
-/* { dg-final { scan-file godump-1.out "(?n)^var _s_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _s_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 typedef struct
 {
@@ -744,7 +744,7 @@ typedef struct
 		};
 	} u;
 } ts_nested2;
-/* { dg-final { scan-file godump-1.out "(?n)^type _ts_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _ts_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 struct
 {
@@ -762,7 +762,7 @@ struct
 		};
 	} u;
 } s_nested2;
-/* { dg-final { scan-file godump-1.out "(?n)^var _s_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _s_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 
 /*** unions ***/
@@ -780,10 +780,10 @@ union u_t_idem_v2 { };
 /* { dg-final { scan-file godump-1.out "(?n)^type _u_t_idem_v2 struct \{ \}$" } } */
 
 typedef union { uint8_t c; uint64_t l; } tu1;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tu1 struct \{ c uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tu1 struct \{ c uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 union { uint8_t c; uint64_t l; } u1;
-/* { dg-final { scan-file godump-1.out "(?n)^var _u1 struct \{ c uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _u1 struct \{ c uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 typedef union { uint64_t l; uint8_t c; } tu2;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tu2 struct \{ l uint64; \}$" } } */
@@ -798,16 +798,16 @@ union { uint64_t l[3]; uint8_t c; } u3;
 /* { dg-final { scan-file godump-1.out "(?n)^var _u3 struct \{ l \\\[2\\+1\\\]uint64; \}$" } } */
 
 typedef struct { union { uint8_t c; uint64_t l; }; } tsu_anon;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tsu_anon struct \{ c uint8; Godump_0_pad \\\[7\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tsu_anon struct \{ c uint8; Godump_0_pad \\\[7\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 struct { union { uint8_t c; uint64_t l; }; } su_anon;
-/* { dg-final { scan-file godump-1.out "(?n)^var _su_anon struct \{ c uint8; Godump_0_pad \\\[7\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _su_anon struct \{ c uint8; Godump_0_pad \\\[7\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 typedef union { uint64_t bf : 1; uint8_t ca[5]; } tu_size;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tu_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tu_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 union { uint64_t bf : 1; uint8_t ca[5]; } u_size;
-/* { dg-final { scan-file godump-1.out "(?n)^var _u_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _u_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 typedef union { uint64_t : 1; uint8_t ca[5]; } tu2_size;
 /* { dg-final { scan-file godump-1.out "(?n)^type _tu2_size struct \{ ca \\\[4\\+1\\\]uint8; \}$" } } */
@@ -818,10 +818,10 @@ union { uint64_t : 1; uint8_t ca[5]; } u2_size;
 typedef union u_undef_t u_undef_t2;
 
 typedef union { uint64_t b : 1; uint8_t ca[5]; } tu3_size;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tu3_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tu3_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 union { uint64_t b : 1; uint8_t ca[5]; } u3_size;
-/* { dg-final { scan-file godump-1.out "(?n)^var _u3_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_align \\\[0\\\]u?int64; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _u3_size struct \{ ca \\\[4\\+1\\\]uint8; Godump_0_pad \\\[.\\\]byte; Godump_1_ \\\[0\\\]u?int64; \}$" } } */
 
 typedef union
 {
@@ -839,7 +839,7 @@ typedef union
 		};
 	} u;
 } tu_nested;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tu_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tu_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 union
 {
@@ -857,7 +857,7 @@ union
 		};
 	} u;
 } u_nested;
-/* { dg-final { scan-file godump-1.out "(?n)^var _u_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _u_nested struct \{ u struct \{ s int16; Godump_0_pad \\\[2\\\]byte; Godump_1_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 typedef union
 {
@@ -875,7 +875,7 @@ typedef union
 		};
 	} u;
 } tu_nested2;
-/* { dg-final { scan-file godump-1.out "(?n)^type _tu_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^type _tu_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 union
 {
@@ -893,7 +893,7 @@ union
 		};
 	} u;
 } u_nested2;
-/* { dg-final { scan-file godump-1.out "(?n)^var _u_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_align \\\[0\\\]u?int32; \}; \}$" } } */
+/* { dg-final { scan-file godump-1.out "(?n)^var _u_nested2 struct \{ u struct \{ Godump_0_pad \\\[4\\\]byte; Godump_1_pad \\\[2\\\]byte; s int16; c int8; Godump_2_pad \\\[1\\\]byte; Godump_3_pad \\\[2\\\]byte; Godump_4_ \\\[0\\\]u?int32; \}; \}$" } } */
 
 
 /*** functions ***/

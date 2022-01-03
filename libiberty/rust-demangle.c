@@ -1,5 +1,5 @@
 /* Demangler for the Rust programming language
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Written by David Tolnay (dtolnay@gmail.com).
    Rewritten by Eduard-Mihai Burtescu (eddyb@lyken.rs) for v0 support.
 

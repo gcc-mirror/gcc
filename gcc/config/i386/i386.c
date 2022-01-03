@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19306,7 +19306,7 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
     }
 
   /* Require movement to gpr, and then store to memory.  */
-  if ((mode == HFmode || mode == HImode)
+  if ((mode == HFmode || mode == HImode || mode == V2QImode)
       && !TARGET_SSE4_1
       && SSE_CLASS_P (rclass)
       && !in_p && MEM_P (x))
@@ -22081,6 +22081,8 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE_3DNOW (mode))
+    return true;
+  if (mode == V2QImode)
     return true;
   return false;
 }

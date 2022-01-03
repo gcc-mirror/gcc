@@ -25,7 +25,7 @@ GNAT User's Guide for Native Platforms , Nov 30, 2021
 
 AdaCore
 
-Copyright @copyright{} 2008-2021, Free Software Foundation
+Copyright @copyright{} 2008-2022, Free Software Foundation
 @end quotation
 
 @end copying
