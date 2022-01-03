@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2021 Free Software Foundation, Inc.
+# Copyright (C) 2013-2022 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -726,6 +726,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Regents of the University of California.')
         self.add_external_author ('Ulf Adams')
         self.add_external_author ('Unicode, Inc.')
+        self.add_external_author ('University of Illinois at Urbana-Champaign.')
         self.add_external_author ('University of Toronto.')
         self.add_external_author ('Yoshinori Sato')
 
