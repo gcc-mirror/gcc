@@ -2276,6 +2276,14 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
       return 0;
     }
 
+  /* If the FE tells us at least one of the decls will never be aliased nor
+     overlapping with other vars in some other way, return 0.  */
+  if (VAR_P (decl)
+      && rs1 != rs2
+      && (lookup_attribute ("non overlapping", DECL_ATTRIBUTES (decl))
+	  || lookup_attribute ("non overlapping", DECL_ATTRIBUTES (s2->decl))))
+    return 0;
+
   /* TODO: Alias oracle basically assume that addresses of global variables
      are different unless they are declared as alias of one to another while
      the code folding comparisons doesn't.
