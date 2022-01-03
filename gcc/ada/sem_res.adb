@@ -7595,7 +7595,7 @@ package body Sem_Res is
       Local : Entity_Id := Empty;
 
       function Replace_Local (N  : Node_Id) return Traverse_Result;
-      --  Use a tree traversal to replace each ocurrence of the name of
+      --  Use a tree traversal to replace each occurrence of the name of
       --  a local object declared in the construct, with the corresponding
       --  entity. This replaces the usual way to perform name capture by
       --  visibility, because it is not possible to place on the scope
@@ -7632,7 +7632,7 @@ package body Sem_Res is
 
       procedure Replace_Local_Ref is new Traverse_Proc (Replace_Local);
 
-      --  Start of processing for  Resolve_Declare_Expression
+   --  Start of processing for Resolve_Declare_Expression
 
    begin
 
@@ -7645,6 +7645,19 @@ package body Sem_Res is
          then
             Local := Defining_Identifier (Decl);
             Replace_Local_Ref (Expr);
+
+            --  Traverse the expression to replace references to local
+            --  variables that occur within declarations of the
+            --  declare_expression.
+
+            declare
+               D : Node_Id := Next (Decl);
+            begin
+               while Present (D) loop
+                  Replace_Local_Ref (D);
+                  Next (D);
+               end loop;
+            end;
          end if;
 
          Next (Decl);
