@@ -841,7 +841,14 @@ package body Ch6 is
             begin
                --  Expression_Function case
 
-               if Token = Tok_Left_Paren
+               --  If likely an aggregate, check we are in Ada 2022 mode
+
+               if Token = Tok_Left_Bracket then
+                  Error_Msg_Ada_2022_Feature
+                    ("!aggregates as expression function", Token_Ptr);
+               end if;
+
+               if Token in Tok_Left_Paren | Tok_Left_Bracket
                  or else Likely_Expression_Function
                then
                   --  Check expression function allowed here
