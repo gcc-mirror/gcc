@@ -1,9 +1,9 @@
 /**
  * Hash functions for arbitrary binary data.
  *
- * Copyright: Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:   Martin Nowak, Walter Bright, http://www.digitalmars.com
- * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:   Martin Nowak, Walter Bright, https://www.digitalmars.com
+ * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/hash.d, root/_hash.d)
  * Documentation:  https://dlang.org/phobos/dmd_root_hash.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/root/hash.d

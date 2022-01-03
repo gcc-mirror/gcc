@@ -1,9 +1,9 @@
 /**
  * Implement $(LINK2 https://digitalmars.com/articles/b62.html, Value Range Propagation).
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/intrange.d, _intrange.d)
  * Documentation:  https://dlang.org/phobos/dmd_intrange.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/intrange.d
@@ -255,7 +255,7 @@ struct SignExtendedNumber
         uinteger_t v = copySign(value, negative);
 
         // compute base-2 log of 'v' to determine the maximum allowed bits to shift.
-        // Ref: http://graphics.stanford.edu/~seander/bithacks.html#IntegerLog
+        // Ref: https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog
 
         // Why is this a size_t? Looks like a bug.
         size_t r, s;

@@ -239,7 +239,7 @@ void test6()
 /*******************************************/
 
 /+
-// http://d.puremagic.com/issues/show_bug.cgi?id=3722
+// https://issues.dlang.org/show_bug.cgi?id=3722
 
 class Bug3722A
 {

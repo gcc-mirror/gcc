@@ -4607,7 +4607,8 @@ make_char_string_pack (tree value)
 {
   tree charvec;
   tree argpack = make_node (NONTYPE_ARGUMENT_PACK);
-  const char *str = TREE_STRING_POINTER (value);
+  const unsigned char *str
+    = (const unsigned char *) TREE_STRING_POINTER (value);
   int i, len = TREE_STRING_LENGTH (value) - 1;
   tree argvec = make_tree_vec (1);
 

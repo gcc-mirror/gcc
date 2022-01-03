@@ -6276,6 +6276,93 @@ expand_ifn_atomic_bit_test_and (gcall *call)
     emit_move_insn (target, result);
 }
 
+/* Expand IFN_ATOMIC_*_FETCH_CMP_0 internal function.  */
+
+void
+expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
+{
+  tree cmp = gimple_call_arg (call, 0);
+  tree ptr = gimple_call_arg (call, 1);
+  tree arg = gimple_call_arg (call, 2);
+  tree lhs = gimple_call_lhs (call);
+  enum memmodel model = MEMMODEL_SYNC_SEQ_CST;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (cmp));
+  optab optab;
+  rtx_code code;
+  class expand_operand ops[5];
+
+  gcc_assert (flag_inline_atomics);
+
+  if (gimple_call_num_args (call) == 4)
+    model = get_memmodel (gimple_call_arg (call, 3));
+
+  rtx mem = get_builtin_sync_mem (ptr, mode);
+  rtx op = expand_expr_force_mode (arg, mode);
+
+  switch (gimple_call_internal_fn (call))
+    {
+    case IFN_ATOMIC_ADD_FETCH_CMP_0:
+      code = PLUS;
+      optab = atomic_add_fetch_cmp_0_optab;
+      break;
+    case IFN_ATOMIC_SUB_FETCH_CMP_0:
+      code = MINUS;
+      optab = atomic_sub_fetch_cmp_0_optab;
+      break;
+    case IFN_ATOMIC_AND_FETCH_CMP_0:
+      code = AND;
+      optab = atomic_and_fetch_cmp_0_optab;
+      break;
+    case IFN_ATOMIC_OR_FETCH_CMP_0:
+      code = IOR;
+      optab = atomic_or_fetch_cmp_0_optab;
+      break;
+    case IFN_ATOMIC_XOR_FETCH_CMP_0:
+      code = XOR;
+      optab = atomic_xor_fetch_cmp_0_optab;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  enum rtx_code comp = UNKNOWN;
+  switch (tree_to_uhwi (cmp))
+    {
+    case ATOMIC_OP_FETCH_CMP_0_EQ: comp = EQ; break;
+    case ATOMIC_OP_FETCH_CMP_0_NE: comp = NE; break;
+    case ATOMIC_OP_FETCH_CMP_0_GT: comp = GT; break;
+    case ATOMIC_OP_FETCH_CMP_0_GE: comp = GE; break;
+    case ATOMIC_OP_FETCH_CMP_0_LT: comp = LT; break;
+    case ATOMIC_OP_FETCH_CMP_0_LE: comp = LE; break;
+    default: gcc_unreachable ();
+    }
+
+  rtx target;
+  if (lhs == NULL_TREE)
+    target = gen_reg_rtx (TYPE_MODE (boolean_type_node));
+  else
+    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  enum insn_code icode = direct_optab_handler (optab, mode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  create_output_operand (&ops[0], target, TYPE_MODE (boolean_type_node));
+  create_fixed_operand (&ops[1], mem);
+  create_convert_operand_to (&ops[2], op, mode, true);
+  create_integer_operand (&ops[3], model);
+  create_integer_operand (&ops[4], comp);
+  if (maybe_expand_insn (icode, 5, ops))
+    return;
+
+  rtx result = expand_atomic_fetch_op (gen_reg_rtx (mode), mem, op,
+				       code, model, true);
+  if (lhs)
+    {
+      result = emit_store_flag_force (target, comp, result, const0_rtx, mode,
+				      0, 1);
+      if (result != target)
+	emit_move_insn (target, result);
+    }
+}
+
 /* Expand an atomic clear operation.
 	void _atomic_clear (BOOL *obj, enum memmodel)
    EXP is the call expression.  */

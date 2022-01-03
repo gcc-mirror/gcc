@@ -3,9 +3,9 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expressionsem.d, _expressionsem.d)
  * Documentation:  https://dlang.org/phobos/dmd_expressionsem.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/expressionsem.d
@@ -67,6 +67,7 @@ import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
+import dmd.root.utf;
 import dmd.semantic2;
 import dmd.semantic3;
 import dmd.sideeffect;
@@ -76,7 +77,6 @@ import dmd.tokens;
 import dmd.traits;
 import dmd.typesem;
 import dmd.typinf;
-import dmd.utf;
 import dmd.utils;
 import dmd.visitor;
 
@@ -5980,7 +5980,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         /* Be wary of CWE-22: Improper Limitation of a Pathname to a Restricted Directory
          * ('Path Traversal') attacks.
-         * http://cwe.mitre.org/data/definitions/22.html
+         * https://cwe.mitre.org/data/definitions/22.html
          */
 
         if (FileName.absolute(namez))
@@ -6013,7 +6013,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 const attr = FileName.exists(path);
                 const(char)* err = attr == 2 ? "" :
                     (attr == 1 ? " (not a directory)" : " (path not found)");
-                e.errorSupplemental("[%zu]: `%s`%s", idx, path, err);
+                e.errorSupplemental("[%llu]: `%s`%s", cast(ulong)idx, path, err);
             }
             return setError();
         }
@@ -13108,7 +13108,7 @@ private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions
                 // CTFE sometimes creates null as hidden pointer; we'll allow this.
                 continue;
             }
-                .error(loc, "more initializers than fields (%zu) of `%s`", nfields, sd.toChars());
+                .error(loc, "more initializers than fields (%llu) of `%s`", cast(ulong)nfields, sd.toChars());
             return false;
         }
         VarDeclaration v = sd.fields[i];

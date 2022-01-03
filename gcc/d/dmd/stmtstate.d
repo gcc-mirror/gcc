@@ -1,9 +1,9 @@
 /**
  * Used to help transform statement AST into flow graph.
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/stmtstate.d, _stmtstate.d)
  * Documentation: https://dlang.org/phobos/dmd_stmtstate.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/stmtstate.d

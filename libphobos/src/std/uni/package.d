@@ -5798,7 +5798,7 @@ if (is(Char1 : dchar) && is(Char2 : dchar))
 // Utilities for compression of Unicode code point sets
 //============================================================================
 
-@safe void compressTo(uint val, ref ubyte[] arr) pure nothrow
+@safe void compressTo(uint val, ref scope ubyte[] arr) pure nothrow
 {
     // not optimized as usually done 1 time (and not public interface)
     if (val < 128)
@@ -5817,7 +5817,7 @@ if (is(Char1 : dchar) && is(Char2 : dchar))
     }
 }
 
-@safe uint decompressFrom(const(ubyte)[] arr, ref size_t idx) pure
+@safe uint decompressFrom(scope const(ubyte)[] arr, ref size_t idx) pure
 {
     import std.exception : enforce;
     immutable first = arr[idx++];
@@ -8412,7 +8412,7 @@ int hangulSyllableIndex(dchar ch) pure nothrow @nogc @safe
 }
 
 // internal helper: compose hangul syllables leaving dchar.init in holes
-void hangulRecompose(dchar[] seq) pure nothrow @nogc @safe
+void hangulRecompose(scope dchar[] seq) pure nothrow @nogc @safe
 {
     for (size_t idx = 0; idx + 1 < seq.length; )
     {
@@ -8695,7 +8695,7 @@ inout(C)[] normalize(NormalizationForm norm=NFC, C)(return scope inout(C)[] inpu
 }
 
 // canonically recompose given slice of code points, works in-place and mutates data
-private size_t recompose(size_t start, dchar[] input, ubyte[] ccc) pure nothrow @safe
+private size_t recompose(size_t start, scope dchar[] input, scope ubyte[] ccc) pure nothrow @safe
 {
     assert(input.length == ccc.length);
     int accumCC = -1;// so that it's out of 0 .. 255 range

@@ -1,9 +1,9 @@
 /**
  * Inline assembler for the GCC D compiler.
  *
- *              Copyright (C) 2018-2021 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2022 by The D Language Foundation, All Rights Reserved
  * Authors:     Iain Buclaw
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasmgcc.d, _iasmgcc.d)
  * Documentation:  https://dlang.org/phobos/dmd_iasmgcc.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/iasmgcc.d

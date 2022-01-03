@@ -1,9 +1,9 @@
 /**
  * Stores command line options and contains other miscellaneous declarations.
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/globals.d, _globals.d)
  * Documentation:  https://dlang.org/phobos/dmd_globals.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/globals.d
@@ -126,7 +126,7 @@ extern (C++) struct Param
     bool stackstomp;            // add stack stomping code
     bool useUnitTests;          // generate unittest code
     bool useInline = false;     // inline expand functions
-    FeatureState useDIP25;  // implement http://wiki.dlang.org/DIP25
+    FeatureState useDIP25;  // implement https://wiki.dlang.org/DIP25
     FeatureState useDIP1000; // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
     bool useDIP1021;        // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
     bool release;           // build release version
@@ -162,7 +162,7 @@ extern (C++) struct Param
                             // https://issues.dlang.org/show_bug.cgi?id=14246
     bool fieldwise;         // do struct equality testing field-wise rather than by memcmp()
     bool rvalueRefParam;    // allow rvalues to be arguments to ref parameters
-                            // http://dconf.org/2019/talks/alexandrescu.html
+                            // https://dconf.org/2019/talks/alexandrescu.html
                             // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
                             // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
                             // Implementation: https://github.com/dlang/dmd/pull/9817
@@ -303,7 +303,7 @@ extern (C++) struct Global
 {
     const(char)[] inifilename; /// filename of configuration file as given by `-conf=`, or default value
 
-    string copyright = "Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved";
+    string copyright = "Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved";
     string written = "written by Walter Bright";
 
     Array!(const(char)*)* path;         /// Array of char*'s which form the import lookup path
@@ -655,7 +655,7 @@ enum PINLINE : ubyte
     always,   /// always inline
 }
 
-alias StorageClass = uinteger_t;
+alias StorageClass = ulong;
 
 /// Collection of global state
 extern (C++) __gshared Global global;

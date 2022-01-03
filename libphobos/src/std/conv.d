@@ -2377,7 +2377,7 @@ Throws:
     A $(LREF ConvException) If an overflow occurred during conversion or
     if no character of the input was meaningfully converted.
 */
-auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref Source s)
+auto parse(Target, Source, Flag!"doCount" doCount = No.doCount)(ref scope Source s)
 if (isSomeChar!(ElementType!Source) &&
     isIntegral!Target && !is(Target == enum))
 {
@@ -2482,7 +2482,7 @@ if (isSomeChar!(ElementType!Source) &&
                 v = -v;
 
             static if (isNarrowString!Source)
-                s = cast(Source) source;
+                s = s[$-source.length..$];
 
             static if (doCount)
             {

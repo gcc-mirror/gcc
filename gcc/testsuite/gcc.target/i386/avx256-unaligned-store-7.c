@@ -14,8 +14,8 @@ __attribute__ ((noinline))
 void
 foo (void)
 {
-  ep = (char **) malloc (N);
-  fp = (char **) malloc (N);
+  ep = (char **) malloc (N * sizeof (char **));
+  fp = (char **) malloc (N * sizeof (char **));
 }
 
 void
