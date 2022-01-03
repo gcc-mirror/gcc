@@ -1,5 +1,5 @@
 /* LTO plugin for gold and/or GNU ld.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by Rafael Avila de Espindola (espindola@google.com).
 
 This program is free software; you can redistribute it and/or modify

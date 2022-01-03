@@ -1,5 +1,5 @@
 /* Header file for jump threading path solver.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.

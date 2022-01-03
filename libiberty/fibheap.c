@@ -1,5 +1,5 @@
 /* A Fibonacci heap datatype.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin (dan@cgsoftware.com).
    
 This file is part of GNU CC.

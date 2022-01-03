@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
