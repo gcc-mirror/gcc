@@ -3047,6 +3047,10 @@ class Named_object
   Location
   location() const;
 
+  // Traverse a Named_object.
+  int
+  traverse(Traverse*, bool is_global);
+
   // Convert a variable to the backend representation.
   Bvariable*
   get_backend_variable(Gogo*, Named_object* function);
