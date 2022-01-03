@@ -2788,12 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Token_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2862,12 +2857,7 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     if not Extensions_Allowed then
-                        Error_Msg_N
-                          ("fixed-lower-bound array is an extension feature; "
-                             & "use -gnatX",
-                           Token_Node);
-                     end if;
+                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3369,12 +3359,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Expr_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
 
                Expr_Node := Empty;
                Scan;
