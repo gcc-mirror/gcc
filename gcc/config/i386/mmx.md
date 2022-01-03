@@ -250,7 +250,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:V_32 0 "nonimmediate_operand")
 	(match_operand:V_32 1 "nonimmediate_operand"))]
-  "TARGET_SSE2"
+  ""
 {
   ix86_expand_vector_move (<MODE>mode, operands);
   DONE;
@@ -261,8 +261,7 @@
     "=r ,m ,v,v,v,m,r,v")
 	(match_operand:V_32 1 "general_operand"
     "rmC,rC,C,v,m,v,v,r"))]
-  "TARGET_SSE2
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
   switch (get_attr_type (insn))
     {
@@ -321,29 +320,19 @@
 (define_insn "*push<mode>2_rex64"
   [(set (match_operand:V_32 0 "push_operand" "=X,X")
 	(match_operand:V_32 1 "nonmemory_no_elim_operand" "rC,*v"))]
-  "TARGET_SSE2 && TARGET_64BIT"
+  "TARGET_64BIT"
   "@
    push{q}\t%q1
    #"
   [(set_attr "type" "push,multi")
    (set_attr "mode" "DI")])
 
-(define_insn "*push<mode>2"
-  [(set (match_operand:V_32 0 "push_operand" "=<,<")
-	(match_operand:V_32 1 "general_no_elim_operand" "rC*m,*v"))]
-  "TARGET_SSE2 && !TARGET_64BIT"
-  "@
-   push{l}\t%1
-   #"
-  [(set_attr "type" "push,multi")
-   (set_attr "mode" "SI")])
-
 (define_split
   [(set (match_operand:V_32 0 "push_operand")
 	(match_operand:V_32 1 "sse_reg_operand"))]
-  "TARGET_SSE2 && reload_completed"
+  "TARGET_64BIT && TARGET_SSE && reload_completed"
   [(set (reg:P SP_REG) (plus:P (reg:P SP_REG) (match_dup 2)))
-    (set (match_dup 0) (match_dup 1))]
+   (set (match_dup 0) (match_dup 1))]
 {
   operands[2] = GEN_INT (-PUSH_ROUNDING (GET_MODE_SIZE (<V_32:MODE>mode)));
   /* Preserve memory attributes. */
@@ -353,7 +342,7 @@
 (define_expand "movmisalign<mode>"
   [(set (match_operand:V_32 0 "nonimmediate_operand")
 	(match_operand:V_32 1 "nonimmediate_operand"))]
-  "TARGET_SSE2"
+  ""
 {
   ix86_expand_vector_move (<MODE>mode, operands);
   DONE;
