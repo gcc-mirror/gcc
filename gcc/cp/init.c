@@ -1,4 +1,4 @@
-/* Handle initialization things in C++.
+/* Handle initialization things in -*- C++ -*-
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
