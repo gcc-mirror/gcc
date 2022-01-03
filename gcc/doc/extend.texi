@@ -15385,8 +15385,8 @@ These built-in functions are available for the ARM family of
 processors with floating-point unit.
 
 @smallexample
-unsigned int __builtin_arm_get_fpscr ()
-void __builtin_arm_set_fpscr (unsigned int)
+unsigned int __builtin_arm_get_fpscr ();
+void __builtin_arm_set_fpscr (unsigned int);
 @end smallexample
 
 @node ARM ARMv8-M Security Extensions
