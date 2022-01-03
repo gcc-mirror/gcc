@@ -21,6 +21,7 @@
 
 namespace Rust {
 namespace Compile {
+
 class Mangler
 {
 public:
@@ -36,11 +37,6 @@ public:
 			   const Resolver::CanonicalPath &path,
 			   const std::string &crate_name) const;
 
-  std::string mangle_impl_item (const TyTy::BaseType *self,
-				const TyTy::BaseType *ty,
-				const std::string &name,
-				const std::string &crate_name) const;
-
   static void set_mangling (int frust_mangling_value)
   {
     version = static_cast<MangleVersion> (frust_mangling_value);
@@ -49,6 +45,8 @@ public:
 private:
   static enum MangleVersion version;
 };
+
 } // namespace Compile
 } // namespace Rust
+
 #endif // RUST_MANGLE_H

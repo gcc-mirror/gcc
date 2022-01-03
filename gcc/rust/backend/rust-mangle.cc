@@ -31,6 +31,8 @@ legacy_mangle_name (const std::string &name)
 	m = "$";
       else if (c == '&')
 	m = "RF";
+      else if (c == '<' || c == '>')
+	m = "..";
       else
 	m.push_back (c);
 
@@ -68,36 +70,6 @@ legacy_hash (const std::string &fingerprint)
   snprintf (hex, sizeof hex, "%08" PRIx64 "%08" PRIx64, lo, hi);
 
   return "h" + std::string (hex, sizeof (hex) - 1);
-}
-
-static std::string
-legacy_mangle_self (const TyTy::BaseType *self)
-{
-  if (self->get_kind () != TyTy::TypeKind::ADT)
-    return legacy_mangle_name (self->get_name ());
-
-  const TyTy::ADTType *s = static_cast<const TyTy::ADTType *> (self);
-  std::string buf = s->get_identifier ();
-
-  if (s->has_subsititions_defined ())
-    {
-      buf += kMangledSubstBegin;
-
-      const std::vector<TyTy::SubstitutionParamMapping> &params
-	= s->get_substs ();
-      for (size_t i = 0; i < params.size (); i++)
-	{
-	  const TyTy::SubstitutionParamMapping &sub = params.at (i);
-	  buf += sub.as_string ();
-
-	  if ((i + 1) < params.size ())
-	    buf += kMangledGenericDelim;
-	}
-
-      buf += kMangledSubstEnd;
-    }
-
-  return legacy_mangle_name (buf);
 }
 
 static std::string
@@ -255,19 +227,6 @@ legacy_mangle_item (const TyTy::BaseType *ty,
 	 + legacy_mangle_canonical_path (path) + hash_sig + kMangledSymbolDelim;
 }
 
-// FIXME this is a wee bit broken
-static std::string
-legacy_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
-			 const std::string &name, const std::string &crate_name)
-{
-  const std::string hash = legacy_hash (ty->as_string ());
-  const std::string hash_sig = legacy_mangle_name (hash);
-
-  return kMangledSymbolPrefix + legacy_mangle_name (crate_name)
-	 + legacy_mangle_self (self) + legacy_mangle_name (name) + hash_sig
-	 + kMangledSymbolDelim;
-}
-
 static std::string
 v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 		const std::string &crate_name)
@@ -282,13 +241,6 @@ v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
   gcc_unreachable ();
 }
 
-static std::string
-v0_mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
-		     const std::string &name, const std::string &crate_name)
-{
-  gcc_unreachable ();
-}
-
 std::string
 Mangler::mangle_item (const TyTy::BaseType *ty,
 		      const Resolver::CanonicalPath &path,
@@ -300,22 +252,6 @@ Mangler::mangle_item (const TyTy::BaseType *ty,
       return legacy_mangle_item (ty, path, crate_name);
     case Mangler::MangleVersion::V0:
       return v0_mangle_item (ty, path, crate_name);
-    default:
-      gcc_unreachable ();
-    }
-}
-
-std::string
-Mangler::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
-			   const std::string &name,
-			   const std::string &crate_name) const
-{
-  switch (version)
-    {
-    case Mangler::MangleVersion::LEGACY:
-      return legacy_mangle_impl_item (self, ty, name, crate_name);
-    case Mangler::MangleVersion::V0:
-      return v0_mangle_impl_item (self, ty, name, crate_name);
     default:
       gcc_unreachable ();
     }
