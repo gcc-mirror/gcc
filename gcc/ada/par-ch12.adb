@@ -184,7 +184,7 @@ package body Ch12 is
                if Token = Tok_Package then
                   Append (P_Formal_Package_Declaration, Decls);
 
-               elsif Token = Tok_Procedure or Token = Tok_Function then
+               elsif Token in Tok_Procedure | Tok_Function then
                   Append (P_Formal_Subprogram_Declaration, Decls);
 
                else

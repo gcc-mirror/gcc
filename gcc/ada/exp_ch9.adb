@@ -4394,7 +4394,7 @@ package body Exp_Ch9 is
       --  It would be better to encapsulate this as a routine in Exp_Dbug ???
 
       if Append_Char /= ' ' then
-         if Append_Char = 'P' or Append_Char = 'N' then
+         if Append_Char in 'P' | 'N' then
             Add_Char_To_Name_Buffer (Append_Char);
             return Name_Find;
          else

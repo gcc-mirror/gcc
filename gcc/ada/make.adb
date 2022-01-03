@@ -3765,7 +3765,7 @@ package body Make is
                declare
                   Arg : constant String := Argument (J);
                begin
-                  if Arg = "-cargs" or Arg = "-bargs" or Arg = "-largs" then
+                  if Arg in "-cargs" | "-bargs" | "-largs" then
                      In_Gnatmake_Switches := False;
 
                   elsif Arg = "-margs" then

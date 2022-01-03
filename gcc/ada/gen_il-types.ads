@@ -577,8 +577,7 @@ package Gen_IL.Types is
       | N_Defining_Operator_Symbol;
 
    subtype Opt_Abstract_Type is Opt_Type_Enum with
-     Predicate => Opt_Abstract_Type = No_Type or
-       Opt_Abstract_Type in Abstract_Type;
+     Predicate => Opt_Abstract_Type in No_Type | Abstract_Type;
 
    subtype Type_Boundaries is Type_Enum with
      Predicate => Type_Boundaries in

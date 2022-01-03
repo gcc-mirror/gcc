@@ -17125,9 +17125,8 @@ package body Sem_Ch13 is
 
    procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id) is
       A_Id        : constant Aspect_Id := Get_Aspect_Id (ASN);
-      pragma Assert ((A_Id = Aspect_Integer_Literal) or
-                     (A_Id = Aspect_Real_Literal) or
-                     (A_Id = Aspect_String_Literal));
+      pragma Assert (A_Id in Aspect_Integer_Literal |
+                             Aspect_Real_Literal | Aspect_String_Literal);
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 
