@@ -1,3 +1,34 @@
+2022-01-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.dg/store_merging_18.c (dg-options): Add -fno-tree-vectorize.
+	* gcc.dg/store_merging_29.c (dg-options): Ditto.
+	* gcc.target/i386/pr103861.c: New test.
+	* gcc.target/i386/pr92658-avx512vl.c (dg-final):
+	Remove vpmovqb scan-assembler xfail.
+	* gcc.target/i386/pr92658-sse4.c (dg-final):
+	Remove pmovzxbq scan-assembler xfail.
+	* gcc.target/i386/pr92658-sse4-2.c (dg-final):
+	Remove pmovsxbq scan-assembler xfail.
+	* gcc.target/i386/warn-vect-op-2.c (dg-warning): Adjust warnings.
+
+2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.target/hppa/shadd-2.c: Adjust count to 3.
+	* gcc.target/hppa/shadd-3.c: Likewise.
+
+2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/guality/example.c: Skip on hppa*-*-linux*.
+
+2022-01-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/array2.C: New test.
+
+2022-01-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/eh/cleanup6.C: New test.
+
 2022-01-01  Andrew Pinski  <apinski@marvell.com>
 
 	PR rtl-optimization/100241

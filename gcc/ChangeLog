@@ -1,3 +1,27 @@
+2022-01-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Add V2QImode.
+	(VALID_INT_MODE_P): Ditto.
+	* config/i386/i386.c (ix86_secondary_reload): Handle
+	V2QImode reloads from SSE register to memory.
+	(vector_mode_supported_p): Always return true for V2QImode.
+	* config/i386/i386.md (*subqi_ext<mode>_2): New insn pattern.
+	(*negqi_ext<mode>_2): Ditto.
+	* config/i386/mmx.md (movv2qi): New expander.
+	(movmisalignv2qi): Ditto.
+	(*movv2qi_internal): New insn pattern.
+	(*pushv2qi2): Ditto.
+	(negv2qi2 and splitters): Ditto.
+	(<plusminus:insn>v2qi3 and splitters): Ditto.
+
+2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (atomic_storeq): Use optab_libfunc to access
+	sync_lock_test_and_set libfunc. Call convert_memory_address to
+	convert memory address to Pmode.
+	(atomic_storehi, atomic_storesi, atomic_storedi): Likewise.
+
 2021-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/103756

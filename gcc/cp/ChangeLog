@@ -1,3 +1,11 @@
+2022-01-02  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_vec_init): Append the decrement to elt_init.
+
+2022-01-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (wrap_cleanups_r): Don't wrap if noexcept.
+
 2021-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	* call.c (build_new_method_call): Set

@@ -1,3 +1,10 @@
+2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (_ASM_EFAULT): Define.
+	(__kernel_cmpxchg): Nullify illegal iitlbp instruction if error
+	return is not equal _ASM_EFAULT.
+	(__kernel_cmpxchg2): Likewise.
+
 2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: Add shim declaration header to powerpc*-darwin builds.
