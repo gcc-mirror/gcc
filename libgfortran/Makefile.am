@@ -1077,15 +1077,16 @@ $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
 
 # Build *_r17.F90 and *_c17.F90 with additional -mabi=ieeelongdouble on powerpc64le-linux.
+
 if HAVE_REAL_17
-$(patsubst %_r17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
-$(patsubst %_r17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
-$(patsubst %_c17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
-$(patsubst %_c17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
-$(patsubst %_r16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
-$(patsubst %_r16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
-$(patsubst %_c16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
-$(patsubst %_c16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_r16.F90,%_r16.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_c16.F90,%_c16.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_r17.F90,%_r17.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble -D__powerpc64__
+$(patsubst %_c17.F90,%_c17.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble -D__powerpc64__
+$(patsubst %_r16.c,%_r16.lo,$(notdir $(gfor_built_src))): AM_CFLAGS += -mabi=ibmlongdouble
+$(patsubst %_c16.c,%_c16.lo,$(notdir $(gfor_built_src))): AM_CFLAGS += -mabi=ibmlongdouble
+$(patsubst %_r17.c,%_r17.lo,$(notdir $(gfor_built_src))): AM_CFLAGS += -mabi=ieeelongdouble
+$(patsubst %_c17.c,%_c17.lo,$(notdir $(gfor_built_src))): AM_CFLAGS += -mabi=ieeelongdouble
 endif
 
 if IEEE_SUPPORT
@@ -1160,8 +1161,8 @@ I_M4_DEPS9=$(I_M4_DEPS) m4/ifindloc2.m4
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '@LIBGOMP_CHECKED_INT_KINDS@' '@LIBGOMP_CHECKED_REAL_KINDS@' '$(FCCOMPILE)' > $@ || rm $@
 
-kinds.inc: kinds.h
-	grep '^#' < kinds.h > $@
+kinds.inc: kinds.h $(srcdir)/kinds-override.h
+	cat kinds.h $(srcdir)/kinds-override.h | grep '^#' | grep -v include > $@
 
 c99_protos.inc: $(srcdir)/c99_protos.h
 	grep '^#' < $(srcdir)/c99_protos.h > $@

@@ -163,9 +163,9 @@ if test "x$GCC" = "xyes"; then
 			   #error long double is double
 			   #endif]],
                          [[(void) 0;]])],
-        [AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble";
-	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble";
-	 CFLAGS="$CFLAGS -mabi=ibmlongdouble";
+        [AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
+	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
+	 CFLAGS="$CFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
 	 have_real_17=yes])
       ;;
     *)
@@ -547,6 +547,9 @@ GCC_CHECK_MATH_FUNC([catanl])
 # For POWER, check the ieee128 math functions
 
 if test "x$have_real_17" = "xyes"; then
+AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_REAL_17),[1],
+  [Define to 1 if you have REAL(KIND=17)])
+
 LIBGFOR_CHECK_MATH_IEEE128([__acoshieee128])
 LIBGFOR_CHECK_MATH_IEEE128([__acosieee128])
 LIBGFOR_CHECK_MATH_IEEE128([__asinhieee128])

@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_COMPLEX_17)
-#ifdef HAVE_CSIN_17
+#ifdef HAVE_CSINL
 
 elemental function _gfortran_specific__sin_c17 (parm)
-   complex (kind=17), intent (in) :: parm
-   complex (kind=17) :: _gfortran_specific__sin_c17
+   complex (kind=16), intent (in) :: parm
+   complex (kind=16) :: _gfortran_specific__sin_c17
 
    _gfortran_specific__sin_c17 = sin (parm)
 end function

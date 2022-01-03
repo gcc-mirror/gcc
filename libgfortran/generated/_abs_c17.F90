@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_COMPLEX_17)
-#ifdef HAVE_CABS_17
+#ifdef HAVE_CABSL
 
 elemental function _gfortran_specific__abs_c17 (parm)
-   complex (kind=17), intent (in) :: parm
-   real (kind=17) :: _gfortran_specific__abs_c17
+   complex (kind=16), intent (in) :: parm
+   real (kind=16) :: _gfortran_specific__abs_c17
 
    _gfortran_specific__abs_c17 = abs (parm)
 end function

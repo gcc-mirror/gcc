@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_REAL_17)
-#ifdef HAVE_ASIN_17
+#ifdef HAVE_ASINL
 
 elemental function _gfortran_specific__asin_r17 (parm)
-   real (kind=17), intent (in) :: parm
-   real (kind=17) :: _gfortran_specific__asin_r17
+   real (kind=16), intent (in) :: parm
+   real (kind=16) :: _gfortran_specific__asin_r17
 
    _gfortran_specific__asin_r17 = asin (parm)
 end function

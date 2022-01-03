@@ -32,11 +32,11 @@
 
 #if defined (HAVE_GFC_REAL_17)
 
-#ifdef HAVE_ATAN2_17
+#ifdef HAVE_ATAN2L
 
 elemental function _gfortran_specific__atan2_r17 (p1, p2)
-   real (kind=17), intent (in) :: p1, p2
-   real (kind=17) :: _gfortran_specific__atan2_r17
+   real (kind=16), intent (in) :: p1, p2
+   real (kind=16) :: _gfortran_specific__atan2_r17
 
    _gfortran_specific__atan2_r17 = atan2 (p1, p2)
 end function

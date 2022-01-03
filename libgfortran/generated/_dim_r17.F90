@@ -35,8 +35,8 @@
 
 
 elemental function _gfortran_specific__dim_r17 (p1, p2)
-   real (kind=17), intent (in) :: p1, p2
-   real (kind=17) :: _gfortran_specific__dim_r17
+   real (kind=16), intent (in) :: p1, p2
+   real (kind=16) :: _gfortran_specific__dim_r17
 
    _gfortran_specific__dim_r17 = dim (p1, p2)
 end function

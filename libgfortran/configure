@@ -6013,9 +6013,9 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_cpp "$LINENO"; then :
-  AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble";
-	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble";
-	 CFLAGS="$CFLAGS -mabi=ibmlongdouble";
+  AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
+	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
+	 CFLAGS="$CFLAGS -mabi=ibmlongdouble -mno-gnu-attribute";
 	 have_real_17=yes
 fi
 rm -f conftest.err conftest.i conftest.$ac_ext
@@ -25837,6 +25837,12 @@ _ACEOF
 # For POWER, check the ieee128 math functions
 
 if test "x$have_real_17" = "xyes"; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_REAL_17 1
+_ACEOF
+
+
 
 
 
