@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_COMPLEX_17)
-#ifdef HAVE_CCOS_17
+#ifdef HAVE_CCOSL
 
 elemental function _gfortran_specific__cos_c17 (parm)
-   complex (kind=17), intent (in) :: parm
-   complex (kind=17) :: _gfortran_specific__cos_c17
+   complex (kind=16), intent (in) :: parm
+   complex (kind=16) :: _gfortran_specific__cos_c17
 
    _gfortran_specific__cos_c17 = cos (parm)
 end function

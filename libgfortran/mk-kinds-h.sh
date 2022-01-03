@@ -64,15 +64,19 @@ for k in $possible_real_kinds; do
     case $k in
       4) ctype="float" ; cplxtype="complex float" ; suffix="f" ;;
       8) ctype="double" ; cplxtype="complex double" ; suffix="" ;;
+      # If we have a REAL(KIND=10), it is always long double
       10) ctype="long double" ; cplxtype="complex long double" ; suffix="l" ;;
-      16) if [ $long_double_kind -eq 10 ]; then
+      # If we have a REAL(KIND=16), it is either long double or __float128
+      16) if [ $long_double_kind -ne 16 ]; then
 	    ctype="__float128"
 	    cplxtype="_Complex float __attribute__((mode(TC)))"
 	    suffix="q"
+	    echo "#define GFC_REAL_16_IS_FLOAT128"
 	  else
 	    ctype="long double"
 	    cplxtype="complex long double"
 	    suffix="l"
+	    echo "#define GFC_REAL_16_IS_LONG_DOUBLE"
 	  fi ;;
       *) echo "$0: Unknown type" >&2 ; exit 1 ;;
     esac

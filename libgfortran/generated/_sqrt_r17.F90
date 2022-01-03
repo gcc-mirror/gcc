@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_REAL_17)
-#ifdef HAVE_SQRT_17
+#ifdef HAVE_SQRTL
 
 elemental function _gfortran_specific__sqrt_r17 (parm)
-   real (kind=17), intent (in) :: parm
-   real (kind=17) :: _gfortran_specific__sqrt_r17
+   real (kind=16), intent (in) :: parm
+   real (kind=16) :: _gfortran_specific__sqrt_r17
 
    _gfortran_specific__sqrt_r17 = sqrt (parm)
 end function

@@ -36,8 +36,8 @@
 
 
 elemental function _gfortran_specific__aimag_c17 (parm)
-   complex (kind=17), intent (in) :: parm
-   real (kind=17) :: _gfortran_specific__aimag_c17
+   complex (kind=16), intent (in) :: parm
+   real (kind=16) :: _gfortran_specific__aimag_c17
 
    _gfortran_specific__aimag_c17 = aimag (parm)
 end function

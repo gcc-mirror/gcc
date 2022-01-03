@@ -663,6 +663,9 @@
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
 
+/* Define to 1 if you have REAL(KIND=17) */
+#undef HAVE_REAL_17
+
 /* Define to 1 if you have the `round' function. */
 #undef HAVE_ROUND
 

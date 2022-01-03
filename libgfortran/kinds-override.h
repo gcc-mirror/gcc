@@ -23,31 +23,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* What are the C types corresponding to the real(kind=10) and
-   real(kind=16) types? We currently rely on the following assumptions:
-     -- if real(kind=10) exists, i.e. if HAVE_GFC_REAL_10 is defined,
-        then it is necessarily the "long double" type
-     -- if real(kind=16) exists, then:
-         * if HAVE_GFC_REAL_10, real(kind=16) is "__float128"
-	 * otherwise, real(kind=16) is "long double"
-   To allow to change this in the future, we create the
-   GFC_REAL_16_IS_FLOAT128 macro that is used throughout libgfortran.  */
+/* Ensure that TFmode is available under.  */
 
-#if defined(HAVE_GFC_REAL_16)
-# if defined(HAVE_GFC_REAL_10)
-#  define GFC_REAL_16_IS_FLOAT128
-#  if !defined(HAVE_FLOAT128)
-#   error "Where has __float128 gone?"
-#  endif
-# else
-#  define GFC_REAL_16_IS_LONG_DOUBLE
-# endif
+#if defined(GFC_REAL_16_IS_FLOAT128) && !defined(HAVE_FLOAT128)
+# error "Where has __float128 gone?"
 #endif
 
-#if defined(__powerpc64__) \
-    && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ \
-    && __SIZEOF_LONG_DOUBLE__ == 16 \
-    && defined(GFC_REAL_16_IS_LONG_DOUBLE)
+/* Keep these conditions on one line so grep can filter it out.  */
+#if defined(__powerpc64__)  && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__  && __SIZEOF_LONG_DOUBLE__ == 16
 typedef __float128 GFC_REAL_17;
 typedef _Complex float __attribute__((mode(KC))) GFC_COMPLEX_17;
 #define HAVE_GFC_REAL_17

@@ -36,8 +36,8 @@
 
 
 elemental function _gfortran_specific__conjg_17 (parm)
-   complex (kind=17), intent (in) :: parm
-   complex (kind=17) :: _gfortran_specific__conjg_17
+   complex (kind=16), intent (in) :: parm
+   complex (kind=16) :: _gfortran_specific__conjg_17
 
    _gfortran_specific__conjg_17 = conjg (parm)
 end function

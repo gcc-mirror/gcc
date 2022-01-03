@@ -33,11 +33,11 @@
 #include "c99_protos.inc"
 
 #if defined (HAVE_GFC_REAL_17)
-#ifdef HAVE_TANH_17
+#ifdef HAVE_TANHL
 
 elemental function _gfortran_specific__tanh_r17 (parm)
-   real (kind=17), intent (in) :: parm
-   real (kind=17) :: _gfortran_specific__tanh_r17
+   real (kind=16), intent (in) :: parm
+   real (kind=16) :: _gfortran_specific__tanh_r17
 
    _gfortran_specific__tanh_r17 = tanh (parm)
 end function
