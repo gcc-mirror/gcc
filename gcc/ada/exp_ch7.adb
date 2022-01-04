@@ -4737,8 +4737,7 @@ package body Exp_Ch7 is
       procedure Set_Block_Elab_Proc is
       begin
          if No (Block_Elab_Proc) then
-            Block_Elab_Proc :=
-              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('I'));
+            Block_Elab_Proc := Make_Temporary (Loc, 'I');
          end if;
       end Set_Block_Elab_Proc;
 
@@ -9964,9 +9963,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Decl));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10114,9 +10111,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Loop_Stmt));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10170,9 +10165,7 @@ package body Exp_Ch7 is
       New_Stmts  : constant List_Id := Empty_List;
 
    begin
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,

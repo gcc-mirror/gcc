@@ -10666,8 +10666,7 @@ package body Sem_Ch13 is
                --  what happens if a return appears within a return.
 
                BTemp :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('B'));
+                 Make_Temporary (Loc, 'B');
 
                FBody :=
                  Make_Subprogram_Body (Loc,

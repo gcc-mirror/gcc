@@ -23435,8 +23435,7 @@ package body Sem_Util is
             Elmt := First_Elmt (Decls);
             while Present (Elmt) loop
                Decl  := Node (Elmt);
-               New_E := Make_Defining_Identifier (Sloc (Decl),
-                          New_Internal_Name ('P'));
+               New_E := Make_Temporary (Sloc (Decl), 'P');
 
                if Nkind (Decl) = N_Expression_Function then
                   Decl := Specification (Decl);

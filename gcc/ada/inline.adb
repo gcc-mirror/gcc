@@ -2189,7 +2189,7 @@ package body Inline is
             --  conflicts when the non-inlined body N is analyzed.
 
             Set_Defining_Unit_Name (Specification (Body_To_Inline),
-               Make_Defining_Identifier (Sloc (N), New_Internal_Name ('P')));
+               Make_Temporary (Sloc (N), 'P'));
             Set_Corresponding_Spec (Body_To_Inline, Empty);
          end Generate_Subprogram_Body;
 
