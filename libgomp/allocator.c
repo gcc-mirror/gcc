@@ -101,27 +101,30 @@ GOMP_is_alloc (void *ptr)
 #define omp_max_predefined_alloc omp_thread_mem_alloc
 
 /* These macros may be overridden in config/<target>/allocator.c.
+   The defaults (no override) are to return NULL for pinned memory requests
+   and pass through to the regular OS calls otherwise.
    The following definitions (ab)use comma operators to avoid unused
    variable errors.  */
 #ifndef MEMSPACE_ALLOC
-#define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
-  malloc (((void)(MEMSPACE), (SIZE)))
+#define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
+  (PIN ? NULL : malloc (((void)(MEMSPACE), (SIZE))))
 #endif
 #ifndef MEMSPACE_CALLOC
-#define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
-  calloc (1, (((void)(MEMSPACE), (SIZE))))
+#define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
+  (PIN ? NULL : calloc (1, (((void)(MEMSPACE), (SIZE)))))
 #endif
 #ifndef MEMSPACE_REALLOC
-#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE) \
-  realloc (ADDR, (((void)(MEMSPACE), (void)(OLDSIZE), (SIZE))))
+#define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
+   ((PIN) || (OLDPIN) ? NULL \
+   : realloc (ADDR, (((void)(MEMSPACE), (void)(OLDSIZE), (SIZE)))))
 #endif
 #ifndef MEMSPACE_FREE
-#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
-  free (((void)(MEMSPACE), (void)(SIZE), (ADDR)))
+#define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
+  if (PIN) free (((void)(MEMSPACE), (void)(SIZE), (ADDR)))
 #endif
 #ifndef MEMSPACE_VALIDATE
-#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
-  (((void)(MEMSPACE), (void)(ACCESS), 1))
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS, PIN) \
+  (PIN ? 0 : ((void)(MEMSPACE), (void)(ACCESS), 1))
 #endif
 
 /* Map the predefined allocators to the correct memory space.
@@ -502,12 +505,8 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
     }
 #endif
 
-  /* No support for this so far.  */
-  if (data.pinned)
-    return omp_null_allocator;
-
   /* Reject unsupported memory spaces.  */
-  if (!MEMSPACE_VALIDATE (data.memspace, data.access))
+  if (!MEMSPACE_VALIDATE (data.memspace, data.access, data.pinned))
     return omp_null_allocator;
 
   ret = gomp_malloc (sizeof (struct omp_allocator_data));
@@ -649,7 +648,8 @@ retry:
 	}
       else
 #endif
-	ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
+	ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
+			      allocator_data->pinned);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -686,7 +686,8 @@ retry:
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
 		      : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_ALLOC (memspace, new_size);
+	  ptr = MEMSPACE_ALLOC (memspace, new_size,
+				allocator_data && allocator_data->pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -757,6 +758,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 {
   struct omp_mem_header *data;
   omp_memspace_handle_t memspace = omp_default_mem_space;
+  int pinned = false;
 
   if (ptr == NULL)
     return;
@@ -798,6 +800,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 #endif
 
       memspace = allocator_data->memspace;
+      pinned = allocator_data->pinned;
     }
   else
     {
@@ -822,7 +825,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
       memspace = predefined_alloc_mapping[data->allocator];
     }
 
-  MEMSPACE_FREE (memspace, data->ptr, data->size);
+  MEMSPACE_FREE (memspace, data->ptr, data->size, pinned);
 }
 
 ialias (omp_free)
@@ -953,7 +956,8 @@ retry:
 	}
       else
 #endif
-	ptr = MEMSPACE_CALLOC (allocator_data->memspace, new_size);
+	ptr = MEMSPACE_CALLOC (allocator_data->memspace, new_size,
+			       allocator_data->pinned);
       if (ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -992,7 +996,8 @@ retry:
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
 		      : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_CALLOC (memspace, new_size);
+	  ptr = MEMSPACE_CALLOC (memspace, new_size,
+				 allocator_data && allocator_data->pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -1224,9 +1229,13 @@ retry:
 #endif
       if (prev_size)
 	new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
-				    data->size, new_size);
+				    data->size, new_size,
+				    (free_allocator_data
+				     && free_allocator_data->pinned),
+				    allocator_data->pinned);
       else
-	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size);
+	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
+				  allocator_data->pinned);
       if (new_ptr == NULL)
 	{
 #ifdef HAVE_SYNC_BUILTINS
@@ -1279,10 +1288,14 @@ retry:
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
 		      : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size);
+	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size,
+				      (free_allocator_data
+				       && free_allocator_data->pinned),
+				      allocator_data && allocator_data->pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
+
       ret = (char *) new_ptr + sizeof (struct omp_mem_header);
       ((struct omp_mem_header *) ret)[-1].ptr = new_ptr;
       ((struct omp_mem_header *) ret)[-1].size = new_size;
@@ -1312,7 +1325,8 @@ retry:
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
 		      : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_ALLOC (memspace, new_size);
+	  new_ptr = MEMSPACE_ALLOC (memspace, new_size,
+				    allocator_data && allocator_data->pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1367,7 +1381,8 @@ retry:
     was_memspace = (free_allocator_data
 		    ? free_allocator_data->memspace
 		    : predefined_alloc_mapping[free_allocator]);
-    MEMSPACE_FREE (was_memspace, data->ptr, data->size);
+    int was_pinned = (free_allocator_data && free_allocator_data->pinned);
+    MEMSPACE_FREE (was_memspace, data->ptr, data->size, was_pinned);
   }
   return ret;
 

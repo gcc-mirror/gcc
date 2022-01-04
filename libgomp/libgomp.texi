@@ -5757,7 +5757,8 @@ a @code{nearest} allocation.
 
 Additional notes regarding the traits:
 @itemize
-@item The @code{pinned} trait is unsupported.
+@item The @code{pinned} trait is supported on Linux hosts, but is subject to
+      the OS @code{ulimit}/@code{rlimit} locked memory settings.
 @item The default for the @code{pool_size} trait is no pool and for every
       (re)allocation the associated library routine is called, which might
       internally use a memory pool.
