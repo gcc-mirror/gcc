@@ -4750,7 +4750,8 @@
  "TARGET_SSE && ix86_pre_reload_split ()"
  "#"
  "&& 1"
- [(set (match_dup 0) (match_dup 1))])
+ [(set (match_dup 0) (match_dup 1))]
+ "operands[1] = force_reg (<MODE>mode, operands[1]);")
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
