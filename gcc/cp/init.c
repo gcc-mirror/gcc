@@ -3047,7 +3047,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      address of the first array element.  This node is a VAR_DECL, and
      is therefore reusable.  */
   tree data_addr;
-  tree init_preeval_expr = NULL_TREE;
   tree orig_type = type;
 
   if (nelts)
@@ -3561,7 +3560,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      placement delete.  */
   if (is_initialized)
     {
-      bool stable;
       bool explicit_value_init_p = false;
 
       if (*init != NULL && (*init)->is_empty ())
@@ -3587,7 +3585,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						   init, elt_type,
 						   LOOKUP_NORMAL,
 						   complain);
-	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
       else if (array_p)
 	{
@@ -3633,11 +3630,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 			      explicit_value_init_p,
 			      /*from_array=*/0,
                               complain);
-
-	  /* An array initialization is stable because the initialization
-	     of each element is a full-expression, so the temporaries don't
-	     leak out.  */
-	  stable = true;
 	}
       else
 	{
@@ -3694,8 +3686,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      = replace_placeholders (TREE_OPERAND (init_expr, 1),
 				      TREE_OPERAND (init_expr, 0),
 				      &had_placeholder);
-	  stable = (!had_placeholder
-		    && stabilize_init (init_expr, &init_preeval_expr));
 	}
 
       if (init_expr == error_mark_node)
@@ -3726,20 +3716,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		      alloc_fn,
 		      complain));
 
-	  if (!cleanup)
-	    /* We're done.  */;
-	  else if (stable)
-	    /* This is much simpler if we were able to preevaluate all of
-	       the arguments to the constructor call.  */
-	    {
-	      /* CLEANUP is compiler-generated, so no diagnostics.  */
-	      suppress_warning (cleanup);
-	      init_expr = build2 (TRY_CATCH_EXPR, void_type_node,
-				  init_expr, cleanup);
-	      /* Likewise, this try-catch is compiler-generated.  */
-	      suppress_warning (init_expr);
-	    }
-	  else
+	  if (cleanup && !processing_template_decl)
 	    /* Ack!  First we allocate the memory.  Then we set our sentry
 	       variable to true, and expand a cleanup that deletes the
 	       memory if sentry is true.  Then we run the constructor, and
@@ -3747,9 +3724,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
 	       We need to do this because we allocate the space first, so
 	       if there are any temporaries with cleanups in the
-	       constructor args and we weren't able to preevaluate them, we
-	       need this EH region to extend until end of full-expression
-	       to preserve nesting.  */
+	       constructor args, we need this EH region to extend until
+	       end of full-expression to preserve nesting.
+
+	       We used to try to evaluate the args first to avoid this, but
+	       since C++17 [expr.new] says that "The invocation of the
+	       allocation function is sequenced before the evaluations of
+	       expressions in the new-initializer."  */
 	    {
 	      tree end, sentry, begin;
 
@@ -3809,9 +3790,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 has been initialized before we start using it.  */
       rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
     }
-
-  if (init_preeval_expr)
-    rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), init_preeval_expr, rval);
 
   /* A new-expression is never an lvalue.  */
   gcc_assert (!obvalue_p (rval));
