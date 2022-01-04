@@ -260,7 +260,14 @@ enum ld_plugin_status
 (*ld_plugin_claim_file_handler) (
   const struct ld_plugin_input_file *file, int *claimed);
 
-/* The plugin library's "all symbols read" handler.  */
+/* The plugin library's "parse symbols for file" handler.  */
+
+typedef
+bool
+(*ld_plugin_open_and_read_symbols_handler) (
+  const struct ld_plugin_input_file *file);
+
+/* The plugin library's "read all symbols" handler.  */
 
 typedef
 enum ld_plugin_status
@@ -277,6 +284,12 @@ enum ld_plugin_status
 typedef
 enum ld_plugin_status
 (*ld_plugin_register_claim_file) (ld_plugin_claim_file_handler handler);
+
+/* The linker's interface for registering the "read all symbols" handler.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_register_open_and_read_symbols) (ld_plugin_open_and_read_symbols_handler handler);
 
 /* The linker's interface for registering the "all symbols read" handler.  */
 
@@ -520,7 +533,8 @@ enum ld_plugin_tag
   LDPT_GET_INPUT_SECTION_SIZE = 30,
   LDPT_REGISTER_NEW_INPUT_HOOK = 31,
   LDPT_GET_WRAP_SYMBOLS = 32,
-  LDPT_ADD_SYMBOLS_V2 = 33
+  LDPT_ADD_SYMBOLS_V2 = 33,
+  LDPT_REGISTER_OPEN_AND_READ_SYMBOLS = 34
 };
 
 /* The plugin transfer vector.  */
@@ -556,6 +570,7 @@ struct ld_plugin_tv
     ld_plugin_get_input_section_size tv_get_input_section_size;
     ld_plugin_register_new_input tv_register_new_input;
     ld_plugin_get_wrap_symbols tv_get_wrap_symbols;
+    ld_plugin_register_open_and_read_symbols tv_register_open_and_read_symbols;
   } tv_u;
 };
 
