@@ -3408,7 +3408,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     = (type_num_arguments (TREE_TYPE (alloc_fn)) > 1
        || varargs_function_p (alloc_fn));
 
-  if (warn_aligned_new
+  if (complain & tf_warning_or_error
+      && warn_aligned_new
       && !placement_allocation_fn_p
       && TYPE_ALIGN (elt_type) > malloc_alignment ()
       && (warn_aligned_new > 1
