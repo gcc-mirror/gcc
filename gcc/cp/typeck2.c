@@ -486,7 +486,8 @@ maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
    generated statements.  */
 
 static bool
-split_nonconstant_init_1 (tree dest, tree init, vec<tree,va_gc> **flags)
+split_nonconstant_init_1 (tree dest, tree init, bool last,
+			  vec<tree,va_gc> **flags)
 {
   unsigned HOST_WIDE_INT idx, tidx = HOST_WIDE_INT_M1U;
   tree field_index, value;
@@ -545,9 +546,11 @@ split_nonconstant_init_1 (tree dest, tree init, vec<tree,va_gc> **flags)
 	    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
 			  NULL_TREE);
 
+	  bool elt_last = last && idx == CONSTRUCTOR_NELTS (init) - 1;
+
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
-	      if (!split_nonconstant_init_1 (sub, value, flags)
+	      if (!split_nonconstant_init_1 (sub, value, elt_last, flags)
 		      /* For flexible array member with initializer we
 			 can't remove the initializer, because only the
 			 initializer determines how many elements the
@@ -558,7 +561,7 @@ split_nonconstant_init_1 (tree dest, tree init, vec<tree,va_gc> **flags)
 		      && TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 		      && COMPLETE_TYPE_P (TREE_TYPE (value))
 		      && !integer_zerop (TYPE_SIZE (TREE_TYPE (value)))
-		      && idx == CONSTRUCTOR_NELTS (init) - 1
+		      && elt_last
 		      && TYPE_HAS_TRIVIAL_DESTRUCTOR
 				(strip_array_types (inner_type))))
 		complete_p = false;
@@ -634,7 +637,8 @@ split_nonconstant_init_1 (tree dest, tree init, vec<tree,va_gc> **flags)
 		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  add_stmt (code);
-		  maybe_push_temp_cleanup (sub, flags);
+		  if (!elt_last)
+		    maybe_push_temp_cleanup (sub, flags);
 		}
 
 	      num_split_elts++;
@@ -715,7 +719,7 @@ split_nonconstant_init (tree dest, tree init)
       if (TREE_CODE (TREE_TYPE (dest)) != ARRAY_TYPE)
 	flags = make_tree_vector ();
 
-      if (split_nonconstant_init_1 (dest, init, &flags))
+      if (split_nonconstant_init_1 (dest, init, true, &flags))
 	init = NULL_TREE;
 
       for (tree f : flags)
