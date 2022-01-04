@@ -46,6 +46,14 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
   switch (length)
     {
 #ifdef HAVE_GFC_INTEGER_16
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      {
+	GFC_INTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, 16);
+      }
+      break;
+#endif
 /* length=10 comes about for kind=10 real/complex BOZ, cf. PR41711. */
     case 10:
     case 16:
@@ -95,7 +103,14 @@ si_max (int length)
 #endif
 
   switch (length)
-      {
+    {
+#if defined HAVE_GFC_REAL_17
+    case 17:
+      value = 1;
+      for (int n = 1; n < 4 * 16; n++)
+	value = (value << 2) + 3;
+      return value;
+#endif
 #if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
     case 16:
     case 10:
@@ -180,6 +195,15 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 # endif
 #endif
 
+#if defined(HAVE_GFC_REAL_17)
+    case 17:
+# if defined(POWER_IEEE128)
+      *((GFC_REAL_17*) dest) = __strtoieee128 (buffer, &endptr);
+# else
+      *((GFC_REAL_17*) dest) = __qmath_(strtoflt128) (buffer, &endptr);
+# endif
+#endif
+
     default:
       internal_error (&dtp->common, "Unsupported real kind during IO");
     }
@@ -257,6 +281,15 @@ convert_infnan (st_parameter_dt *dtp, void *dest, const char *buffer,
 	*((GFC_REAL_16*) dest) = plus ? __builtin_nanl ("") : -__builtin_nanl ("");
       break;
 # endif
+#endif
+
+#if defined(HAVE_GFC_REAL_17)
+    case 17:
+      if (is_inf)
+	*((GFC_REAL_17*) dest) = plus ? __builtin_infl () : -__builtin_infl ();
+      else
+	*((GFC_REAL_17*) dest) = plus ? __builtin_nanl ("") : -__builtin_nanl ("");
+      break;
 #endif
 
     default:
@@ -1221,6 +1254,12 @@ zero:
 #ifdef HAVE_GFC_REAL_16
       case 16:
 	*((GFC_REAL_16 *) dest) = 0.0;
+	break;
+#endif
+
+#ifdef HAVE_GFC_REAL_17
+      case 17:
+	*((GFC_REAL_17 *) dest) = 0.0;
 	break;
 #endif
 

@@ -8,18 +8,26 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 ## Symbol versioning (copied from libssp).
 if LIBGFOR_USE_SYMVER
+# -Wc is only a libtool option.
+comma = ,
+PREPROCESS = $(subst -Wc$(comma), , $(COMPILE)) -E
+
+gfortran.ver: $(srcdir)/gfortran.map kinds.inc
+	$(EGREP) -v '#(#| |$$)' $< | \
+	  $(PREPROCESS) -P -include config.h -include kinds.inc - > $@ || (rm -f $@ ; exit 1)
+
 if LIBGFOR_USE_SYMVER_GNU
-version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
-version_dep = $(srcdir)/gfortran.map
+version_arg = -Wl,--version-script=gfortran.ver
+version_dep = gfortran.ver
 endif
 if LIBGFOR_USE_SYMVER_SUN
-version_arg = -Wl,-M,gfortran.map-sun
-version_dep = gfortran.map-sun
-gfortran.map-sun : $(srcdir)/gfortran.map \
+version_arg = -Wl,-M,gfortran.ver-sun
+version_dep = gfortran.ver-sun gfortran.ver
+gfortran.map-sun : gfortran.ver \
 		$(top_srcdir)/../contrib/make_sunver.pl \
 		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
-	  $(srcdir)/gfortran.map \
+	  gfortran.ver \
 	  $(libgfortran_la_OBJECTS:%.lo=.libs/%.o) \
 	 `echo $(libgfortran_la_LIBADD) | \
 	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
@@ -1110,7 +1118,7 @@ ieee_arithmetic.mod: ieee_arithmetic.lo
 	:
 
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
-	$(gfor_built_specific2_src) $(gfor_misc_specifics)
+	$(gfor_built_specific2_src) $(gfor_misc_specifics) $(version_dep)
 
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 	$(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)

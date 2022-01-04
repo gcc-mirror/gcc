@@ -1948,28 +1948,54 @@ internal_proto(cshift1_16_c17);
 
 /* Prototypes for the POWER __ieee128 functions.  */
 #ifdef POWER_IEEE128
-extern __float128 __acoshieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __acosieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __asinhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __asinieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atan2ieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atanhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __atanieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __coshieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __cosieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __erfieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __expieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __fabsieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __jnieee128 (int, __float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __log10ieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __logieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __powieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sinhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sinieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __sqrtieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __tanhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __tanieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
-extern __float128 __ynieee128 (int , __float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __acoshieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __acosieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __asinhieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __asinieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atan2ieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atanhieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atanieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __coshieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __cosieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __erfieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __expieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __fabsieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __jnieee128 (int, __float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __log10ieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __logieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __powieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sinhieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sinieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sqrtieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __tanhieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __tanieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __ynieee128 (int , __float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __strtoieee128 (const char *, char **)
+  __attribute__ ((__nothrow__, __leaf__));
+extern int __snprintfieee128 (char *, size_t, const char *, ...)
+  __attribute__ ((__nothrow__));
 
 #endif
 

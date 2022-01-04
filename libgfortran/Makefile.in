@@ -738,12 +738,16 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
+
+# -Wc is only a libtool option.
+@LIBGFOR_USE_SYMVER_TRUE@comma = ,
+@LIBGFOR_USE_SYMVER_TRUE@PREPROCESS = $(subst -Wc$(comma), , $(COMPILE)) -E
 @LIBGFOR_USE_SYMVER_FALSE@version_arg = 
-@LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,-M,gfortran.map-sun
+@LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=gfortran.ver
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_arg = -Wl,-M,gfortran.ver-sun
 @LIBGFOR_USE_SYMVER_FALSE@version_dep = 
-@LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = $(srcdir)/gfortran.map
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.map-sun
+@LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.ver
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.ver-sun gfortran.ver
 gfor_c_HEADERS = ISO_Fortran_binding.h
 gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
@@ -1648,7 +1652,7 @@ intrinsics/random_init.f90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
 	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
-	$(am__append_7)
+	$(version_dep) $(am__append_7)
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 	$(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
 
@@ -7607,11 +7611,15 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 
 .PRECIOUS: Makefile
 
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.map-sun : $(srcdir)/gfortran.map \
+
+@LIBGFOR_USE_SYMVER_TRUE@gfortran.ver: $(srcdir)/gfortran.map kinds.inc
+@LIBGFOR_USE_SYMVER_TRUE@	$(EGREP) -v '#(#| |$$)' $< | \
+@LIBGFOR_USE_SYMVER_TRUE@	  $(PREPROCESS) -P -include config.h -include kinds.inc - > $@ || (rm -f $@ ; exit 1)
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.map-sun : gfortran.ver \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  $(srcdir)/gfortran.map \
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  gfortran.ver \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  $(libgfortran_la_OBJECTS:%.lo=.libs/%.o) \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 `echo $(libgfortran_la_LIBADD) | \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \

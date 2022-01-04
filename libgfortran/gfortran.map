@@ -1295,8 +1295,10 @@ GFORTRAN_8 {
     _gfortran_transfer_character_wide;
     _gfortran_transfer_character_wide_write;
     _gfortran_transfer_character_write;
+#ifndef HAVE_GFC_REAL_17
     _gfortran_transfer_complex128;
     _gfortran_transfer_complex128_write;
+#endif
     _gfortran_transfer_complex;
     _gfortran_transfer_complex_write;
     _gfortran_transfer_derived;
@@ -1304,8 +1306,10 @@ GFORTRAN_8 {
     _gfortran_transfer_integer_write;
     _gfortran_transfer_logical;
     _gfortran_transfer_logical_write;
+#ifndef HAVE_GFC_REAL_17
     _gfortran_transfer_real128;
     _gfortran_transfer_real128_write;
+#endif
     _gfortran_transfer_real;
     _gfortran_transfer_real_write;
     _gfortran_ttynam;
@@ -1748,4 +1752,10 @@ GFORTRAN_12 {
   _gfortran_sproduct_c17;
   _gfortran_ssum_c17;
   _gfortran_sum_c17;
+#ifdef HAVE_GFC_REAL_17
+  _gfortran_transfer_complex128;
+  _gfortran_transfer_complex128_write;
+  _gfortran_transfer_real128;
+  _gfortran_transfer_real128_write;
+#endif
 } GFORTRAN_10.2;
