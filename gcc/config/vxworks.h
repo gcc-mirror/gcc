@@ -28,6 +28,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
 
+/* ??? Even though assigned to a HOST driver hook, this function
+   operates for all vxworks targets regardless of the current host.
+   We will get warnings at build time if the macro happens to be
+   redefined one way or another for a host.  */
+struct cl_decoded_option;
+extern void vxworks_driver_init (unsigned int *, struct cl_decoded_option **);
+
+#define GCC_DRIVER_HOST_INITIALIZATION \
+        vxworks_driver_init (&decoded_options_count, &decoded_options)
+
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
    like a traditional Unix, with more external files.  Most of our specs
