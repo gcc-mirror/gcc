@@ -2528,7 +2528,7 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   else
     charlen_arg = build_int_cst (gfc_charlen_type_node, 0);
 
-  kind_arg = build_int_cst (integer_type_node, ts->kind);
+  kind_arg = build_int_cst (integer_type_node, gfc_type_abi_kind (ts));
 
   tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
   if (last_dt == READ)

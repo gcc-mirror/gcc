@@ -202,6 +202,7 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 # else
       *((GFC_REAL_17*) dest) = __qmath_(strtoflt128) (buffer, &endptr);
 # endif
+      break;
 #endif
 
     default:
