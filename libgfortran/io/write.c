@@ -649,6 +649,15 @@ extract_uint (const void *p, int len)
 	i = (GFC_UINTEGER_16) tmp;
       }
       break;
+# ifdef HAVE_GFC_REAL_17
+    case 17:
+      {
+	GFC_INTEGER_16 tmp = 0;
+	memcpy ((void *) &tmp, p, 16);
+	i = (GFC_UINTEGER_16) tmp;
+      }
+      break;
+# endif
 #endif
     default:
       internal_error (NULL, "bad integer kind");
@@ -1518,6 +1527,9 @@ size_from_kind (st_parameter_dt *dtp, const fnode *f, int kind)
 	  size = 4932 + 3;
 	  break;
 	case 16:
+#ifdef HAVE_GFC_REAL_17
+	case 17:
+#endif
 	  size = 4932 + 3;
 	  break;
 	default:
@@ -1674,6 +1686,13 @@ set_fnode_default (st_parameter_dt *dtp, fnode *f, int length)
       f->u.real.e = 4;
 #endif
       break;
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      f->u.real.w = 45;
+      f->u.real.d = 36;
+      f->u.real.e = 4;
+      break;
+#endif
     default:
       internal_error (&dtp->common, "bad real kind");
       break;

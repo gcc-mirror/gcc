@@ -1765,18 +1765,17 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   else
     tmp = build_int_cst (gfc_charlen_type_node, 0);
 
+  int abi_kind = gfc_type_abi_kind (ts);
   if (dtio_proc == null_pointer_node)
-    tmp = build_call_expr_loc (input_location,
-			   iocall[IOCALL_SET_NML_VAL], 6,
-			   dt_parm_addr, addr_expr, string,
-			   build_int_cst (gfc_int4_type_node, ts->kind),
-			   tmp, dtype);
+    tmp = build_call_expr_loc (input_location, iocall[IOCALL_SET_NML_VAL], 6,
+			       dt_parm_addr, addr_expr, string,
+			       build_int_cst (gfc_int4_type_node, abi_kind),
+			       tmp, dtype);
   else
-    tmp = build_call_expr_loc (input_location,
-			   iocall[IOCALL_SET_NML_DTIO_VAL], 8,
-			   dt_parm_addr, addr_expr, string,
-			   build_int_cst (gfc_int4_type_node, ts->kind),
-			   tmp, dtype, dtio_proc, vtable);
+    tmp = build_call_expr_loc (input_location, iocall[IOCALL_SET_NML_DTIO_VAL],
+			       8, dt_parm_addr, addr_expr, string,
+			       build_int_cst (gfc_int4_type_node, abi_kind),
+			       tmp, dtype, dtio_proc, vtable);
   gfc_add_expr_to_block (block, tmp);
 
   /* If the object is an array, transfer rank times:
@@ -2298,7 +2297,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
       ts->kind = gfc_index_integer_kind;
     }
 
-  kind = ts->kind;
+  kind = gfc_type_abi_kind (ts);
   function = NULL;
   arg2 = NULL;
   arg3 = NULL;
@@ -2318,14 +2317,14 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
       arg2 = build_int_cst (integer_type_node, kind);
       if (last_dt == READ)
 	{
-	  if (gfc_real16_is_float128 && ts->kind == 16)
+	  if ((gfc_real16_is_float128 && kind == 16) || kind == 17)
 	    function = iocall[IOCALL_X_REAL128];
 	  else
 	    function = iocall[IOCALL_X_REAL];
 	}
       else
 	{
-	  if (gfc_real16_is_float128 && ts->kind == 16)
+	  if ((gfc_real16_is_float128 && kind == 16) || kind == 17)
 	    function = iocall[IOCALL_X_REAL128_WRITE];
 	  else
 	    function = iocall[IOCALL_X_REAL_WRITE];
@@ -2337,14 +2336,14 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
       arg2 = build_int_cst (integer_type_node, kind);
       if (last_dt == READ)
 	{
-	  if (gfc_real16_is_float128 && ts->kind == 16)
+	  if ((gfc_real16_is_float128 && kind == 16) || kind == 17)
 	    function = iocall[IOCALL_X_COMPLEX128];
 	  else
 	    function = iocall[IOCALL_X_COMPLEX];
 	}
       else
 	{
-	  if (gfc_real16_is_float128 && ts->kind == 16)
+	  if ((gfc_real16_is_float128 && kind == 16) || kind == 17)
 	    function = iocall[IOCALL_X_COMPLEX128_WRITE];
 	  else
 	    function = iocall[IOCALL_X_COMPLEX_WRITE];
