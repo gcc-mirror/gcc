@@ -1,3 +1,20 @@
+2022-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103390
+	* expr.c (gfc_is_simply_contiguous): Make it smarter about
+	function calls.
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Do not generate
+	copy loops for array expressions that are not "variables" (lvalues).
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.c (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

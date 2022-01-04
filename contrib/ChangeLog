@@ -1,3 +1,7 @@
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add University of Illinois as external author.
+
 2021-12-16  Xionghu Luo  <luoxhu@linux.ibm.com>
 
 	* analyze_brprob_spec.py: Add verbose argument.

@@ -1,3 +1,20 @@
+2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* parser.c (cp_parser_decl_specifier_seq): Replace %<decl-specifier%>
+	with %qD.
+
+2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (make_char_string_pack): Add a cast to const unsigned
+	char *.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103600
+	* rtti.c (get_tinfo_decl_direct): Add "non overlapping" attribute
+	to DECL_TINFO_P VAR_DECLs.
+
 2022-01-02  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_vec_init): Append the decrement to elt_init.

@@ -1,3 +1,7 @@
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2021-12-28  Martin Liska  <mliska@suse.cz>
 
 	* gccgo.texi: Replace http:// with https.

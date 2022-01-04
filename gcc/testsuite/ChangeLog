@@ -1,3 +1,83 @@
+2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* g++.dg/cpp0x/constexpr-condition.C: Adjust dg-error.
+
+2022-01-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103894
+	* gcc.target/i386/pr103894.c: New test.
+
+2022-01-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103390
+	* gfortran.dg/c-interop/pr103390-1.f90: New.
+	* gfortran.dg/c-interop/pr103390-2.f90: New.
+	* gfortran.dg/c-interop/pr103390-3.f90: New.
+	* gfortran.dg/c-interop/pr103390-4.f90: New.
+	* gfortran.dg/c-interop/pr103390-6.f90: New.
+	* gfortran.dg/c-interop/pr103390-7.f90: New.
+	* gfortran.dg/c-interop/pr103390-8.f90: New.
+	* gfortran.dg/c-interop/pr103390-9.f90: New.
+	* gfortran.dg/c-interop/pr103390-5.f90: New file.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98737
+	* gcc.target/i386/pr98737-1.c: New test.
+	* gcc.target/i386/pr98737-2.c: New test.
+	* gcc.target/i386/pr98737-3.c: New test.
+	* gcc.target/i386/pr98737-4.c: New test.
+	* gcc.target/i386/pr98737-5.c: New test.
+	* gcc.target/i386/pr98737-6.c: New test.
+	* gcc.target/i386/pr98737-7.c: New test.
+
+2022-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103851
+	* g++.dg/gomp/pr103851.C: New testcase.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94716
+	* gcc.dg/init-compare-1.c: New test.
+	* g++.dg/cpp0x/constexpr-compare1.C: New test.
+	* g++.dg/cpp1y/constexpr-94716.C: New test.
+	* g++.dg/cpp1z/constexpr-compare1.C: New test.
+
+2022-01-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/avx2-i32gatherpd256-4.c: Fix ASAN errors.
+	* gcc.target/i386/avx2-i32gatherq256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherpd256-4.c: Likewise.
+	* gcc.target/i386/avx2-i64gatherq256-4.c: Likewise.
+	* gcc.target/i386/avx2-vpabsb256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpabsd256-2.c: Likewise.
+	* gcc.target/i386/avx2-vpabsw256-2.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-load-7.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-7.c: Likewise.
+	* gcc.target/i386/pr64291-1.c: Likewise.
+
+2022-01-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/vect/vect-simd-18.c: Fix ASAN error.
+	* gcc.dg/vect/vect-simd-19.c: Likewise.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103600
+	* g++.dg/cpp0x/constexpr-typeid2.C: New test.
+
+2022-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66502
+	* gcc.dg/tree-ssa/ssa-fre-98.c: New testcase.
+
+2022-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103615
+	* gcc.dg/torture/pr103615.c: New testcase.
+
 2022-01-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861

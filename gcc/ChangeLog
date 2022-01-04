@@ -1,3 +1,96 @@
+2022-01-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103894
+	* config/i386/mmx.md (mov<V_32:mode>): Remove TARGET_SSE2 constraint.
+	(mov<V_32:mode>_internal): Ditto.
+	(*push<V_32:mode>_rex64): Ditto.
+	(movmisalign<V_32:mode>): Ditto.
+	(*push<V_32:mode>_rex64 splitter): Enable for
+	TARGET_64BIT && TARGET_SSE.
+	(*push<V_32:mode>2): Remove insn pattern.
+
+2022-01-03  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/33193
+	* doc/extend.texi: Extend the documentation about Complex
+	types for casting and also rewrite the __real__/__imag__
+	expression portion to use tables.
+	Move __builtin_complex to the Complex type section.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98737
+	* internal-fn.def (ATOMIC_ADD_FETCH_CMP_0, ATOMIC_SUB_FETCH_CMP_0,
+	ATOMIC_AND_FETCH_CMP_0, ATOMIC_OR_FETCH_CMP_0, ATOMIC_XOR_FETCH_CMP_0):
+	New internal fns.
+	* internal-fn.h (ATOMIC_OP_FETCH_CMP_0_EQ, ATOMIC_OP_FETCH_CMP_0_NE,
+	ATOMIC_OP_FETCH_CMP_0_LT, ATOMIC_OP_FETCH_CMP_0_LE,
+	ATOMIC_OP_FETCH_CMP_0_GT, ATOMIC_OP_FETCH_CMP_0_GE): New enumerators.
+	* internal-fn.c (expand_ATOMIC_ADD_FETCH_CMP_0,
+	expand_ATOMIC_SUB_FETCH_CMP_0, expand_ATOMIC_AND_FETCH_CMP_0,
+	expand_ATOMIC_OR_FETCH_CMP_0, expand_ATOMIC_XOR_FETCH_CMP_0): New
+	functions.
+	* optabs.def (atomic_add_fetch_cmp_0_optab,
+	atomic_sub_fetch_cmp_0_optab, atomic_and_fetch_cmp_0_optab,
+	atomic_or_fetch_cmp_0_optab, atomic_xor_fetch_cmp_0_optab): New
+	direct optabs.
+	* builtins.h (expand_ifn_atomic_op_fetch_cmp_0): Declare.
+	* builtins.c (expand_ifn_atomic_op_fetch_cmp_0): New function.
+	* tree-ssa-ccp.c: Include internal-fn.h.
+	(optimize_atomic_bit_test_and): Add . before internal fn call
+	in function comment.  Change return type from void to bool and
+	return true only if successfully replaced.
+	(optimize_atomic_op_fetch_cmp_0): New function.
+	(pass_fold_builtins::execute): Use optimize_atomic_op_fetch_cmp_0
+	for BUILT_IN_ATOMIC_{ADD,SUB,AND,OR,XOR}_FETCH_{1,2,4,8,16} and
+	BUILT_IN_SYNC_{ADD,SUB,AND,OR,XOR}_AND_FETCH_{1,2,4,8,16},
+	for *XOR* ones only if optimize_atomic_bit_test_and failed.
+	* config/i386/sync.md (atomic_<plusminus_mnemonic>_fetch_cmp_0<mode>,
+	atomic_<logic>_fetch_cmp_0<mode>): New define_expand patterns.
+	(atomic_add_fetch_cmp_0<mode>_1, atomic_sub_fetch_cmp_0<mode>_1,
+	atomic_<logic>_fetch_cmp_0<mode>_1): New define_insn patterns.
+	* doc/md.texi (atomic_add_fetch_cmp_0<mode>,
+	atomic_sub_fetch_cmp_0<mode>, atomic_and_fetch_cmp_0<mode>,
+	atomic_or_fetch_cmp_0<mode>, atomic_xor_fetch_cmp_0<mode>): Document
+	new named patterns.
+
+2022-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103851
+	* tree-cfg.c (move_sese_region_to_fn): Always release SSA names.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94716
+	* symtab.c: Include fold-const.h.
+	(symtab_node::equal_address_to): If folding_initializer is true,
+	handle it like memory_accessed.  Simplify.
+
+2022-01-03  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use ; for function declarations.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103600
+	* symtab.c (symtab_node::equal_address_to): Return 0 if one of
+	VAR_DECLs has "non overlapping" attribute and rs1 != rs2.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c (print_version): Ditto.
+	* gcov.c (print_version): Ditto.
+	* gcov-tool.c (print_version): Ditto.
+	* gengtype.c (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 2022-01-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861
