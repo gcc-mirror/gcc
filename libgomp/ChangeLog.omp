@@ -1,6 +1,14 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2022-01-04 Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-45.c: Iterate over all devices.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-12-13 Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/103576
