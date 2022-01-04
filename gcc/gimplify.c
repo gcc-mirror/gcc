@@ -8123,7 +8123,7 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
 	    if (error_operand_p (OMP_CLAUSE_DECL (c)))
 	      return;
 	    if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
-			       is_gimple_val, fb_rvalue) == GS_ERROR)
+			       is_gimple_lvalue, fb_lvalue) == GS_ERROR)
 	      return;
 	    gimplify_and_add (OMP_CLAUSE_DECL (c), pre_p);
 	  }
