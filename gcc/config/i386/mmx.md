@@ -2745,6 +2745,45 @@
   "TARGET_SSE2"
   "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
 
+(define_insn "one_cmplv2qi2"
+  [(set (match_operand:V2QI 0 "register_operand" "=r,&x,&v")
+	(not:V2QI
+	  (match_operand:V2QI 1 "register_operand" "0,x,v")))]
+  ""
+  "#"
+  [(set_attr "isa" "*,sse2,avx512vl")
+   (set_attr "type" "negnot,sselog,sselog")
+   (set_attr "mode" "SI,TI,TI")])
+
+(define_split
+  [(set (match_operand:V2QI 0 "general_reg_operand")
+	(not:V2QI
+	  (match_operand:V2QI 1 "general_reg_operand")))]
+  "reload_completed"
+  [(set (match_dup 0)
+	(not:SI (match_dup 1)))]
+{
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+})
+
+(define_split
+  [(set (match_operand:V2QI 0 "sse_reg_operand")
+	(not:V2QI
+	  (match_operand:V2QI 1 "sse_reg_operand")))]
+  "TARGET_SSE2 && reload_completed"
+  [(set (match_dup 0)
+	(xor:V4QI
+	  (match_dup 0) (match_dup 1)))]
+{
+  emit_insn
+   (gen_rtx_SET (gen_rtx_REG (V16QImode, REGNO (operands[0])),
+		 CONSTM1_RTX (V16QImode)));
+
+  operands[1] = gen_lowpart (V4QImode, operands[1]);
+  operands[0] = gen_lowpart (V4QImode, operands[0]);
+})
+
 (define_insn "mmx_andnot<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
 	(and:MMXMODEI
@@ -2774,6 +2813,69 @@
   [(set_attr "isa" "noavx,avx,avx512vl")
    (set_attr "type" "sselog")
    (set_attr "mode" "TI")])
+
+(define_insn "*andnotv2qi3"
+  [(set (match_operand:V2QI 0 "register_operand" "=&r,r,x,x,v")
+        (and:V2QI
+	  (not:V2QI (match_operand:V2QI 1 "register_operand" "0,r,0,x,v"))
+	  (match_operand:V2QI 2 "register_operand" "r,r,x,x,v")))
+   (clobber (reg:CC FLAGS_REG))]
+  ""
+  "#"
+  [(set_attr "isa" "*,bmi,sse2_noavx,avx,avx512vl")
+   (set_attr "type" "alu,bitmanip,sselog,sselog,sselog")
+   (set_attr "mode" "SI,SI,TI,TI,TI")])
+
+(define_split
+  [(set (match_operand:V2QI 0 "general_reg_operand")
+        (and:V2QI
+	  (not:V2QI (match_operand:V2QI 1 "general_reg_operand"))
+	  (match_operand:V2QI 2 "general_reg_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "TARGET_BMI && reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (and:SI (not:SI (match_dup 1)) (match_dup 2)))
+      (clobber (reg:CC FLAGS_REG))])]
+{
+  operands[2] = gen_lowpart (SImode, operands[2]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+})
+
+(define_split
+  [(set (match_operand:V2QI 0 "general_reg_operand")
+        (and:V2QI
+	  (not:V2QI (match_operand:V2QI 1 "general_reg_operand"))
+	  (match_operand:V2QI 2 "general_reg_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "!TARGET_BMI && reload_completed"
+  [(set (match_dup 0)
+        (not:SI (match_dup 1)))
+   (parallel
+     [(set (match_dup 0)
+	   (and:SI (match_dup 0) (match_dup 2)))
+      (clobber (reg:CC FLAGS_REG))])]
+{
+  operands[2] = gen_lowpart (SImode, operands[2]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+})
+
+(define_split
+  [(set (match_operand:V2QI 0 "sse_reg_operand")
+        (and:V2QI
+	  (not:V2QI (match_operand:V2QI 1 "sse_reg_operand"))
+	  (match_operand:V2QI 2 "sse_reg_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "TARGET_SSE2 && reload_completed"
+  [(set (match_dup 0)
+	(and:V4QI (not:V4QI (match_dup 1)) (match_dup 2)))]
+{
+  operands[2] = gen_lowpart (V4QImode, operands[2]);
+  operands[1] = gen_lowpart (V4QImode, operands[1]);
+  operands[0] = gen_lowpart (V4QImode, operands[0]);
+})
 
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
@@ -2820,6 +2922,50 @@
   [(set_attr "isa" "noavx,avx,avx512vl")
    (set_attr "type" "sselog")
    (set_attr "mode" "TI")])
+
+(define_insn "<code>v2qi3"
+  [(set (match_operand:V2QI 0 "register_operand" "=r,x,x,v")
+        (any_logic:V2QI
+	  (match_operand:V2QI 1 "register_operand" "%0,0,x,v")
+	  (match_operand:V2QI 2 "register_operand" "r,x,x,v")))
+   (clobber (reg:CC FLAGS_REG))]
+  ""
+  "#"
+  [(set_attr "isa" "*,sse2_noavx,avx,avx512vl")
+   (set_attr "type" "alu,sselog,sselog,sselog")
+   (set_attr "mode" "SI,TI,TI,TI")])
+
+(define_split
+  [(set (match_operand:V2QI 0 "general_reg_operand")
+        (any_logic:V2QI
+	  (match_operand:V2QI 1 "general_reg_operand")
+	  (match_operand:V2QI 2 "general_reg_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (any_logic:SI (match_dup 1) (match_dup 2)))
+      (clobber (reg:CC FLAGS_REG))])]
+{
+  operands[2] = gen_lowpart (SImode, operands[2]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+})
+
+(define_split
+  [(set (match_operand:V2QI 0 "sse_reg_operand")
+        (any_logic:V2QI
+	  (match_operand:V2QI 1 "sse_reg_operand")
+	  (match_operand:V2QI 2 "sse_reg_operand")))
+   (clobber (reg:CC FLAGS_REG))]
+  "TARGET_SSE2 && reload_completed"
+  [(set (match_dup 0)
+	(any_logic:V4QI (match_dup 1) (match_dup 2)))]
+{
+  operands[2] = gen_lowpart (V4QImode, operands[2]);
+  operands[1] = gen_lowpart (V4QImode, operands[1]);
+  operands[0] = gen_lowpart (V4QImode, operands[0]);
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
