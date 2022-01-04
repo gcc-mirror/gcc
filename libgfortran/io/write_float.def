@@ -799,6 +799,10 @@ CALCULATE_EXP(10)
 #ifdef HAVE_GFC_REAL_16
 CALCULATE_EXP(16)
 #endif
+
+#ifdef HAVE_GFC_REAL_17
+CALCULATE_EXP(17)
+#endif
 #undef CALCULATE_EXP
 
 
@@ -942,7 +946,7 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 #endif
 #ifdef HAVE_GFC_REAL_17
     case 17:
-      EN_PREC(16,Q)
+      EN_PREC(17,Q)
 #endif
       break;
     default:
@@ -1150,7 +1154,7 @@ get_float_string (st_parameter_dt *dtp, const fnode *f, const char *source,
 #endif
 #ifdef HAVE_GFC_REAL_17
     case 17:
-      FORMAT_FLOAT(16,Q)
+      FORMAT_FLOAT(17,Q)
       break;
 #endif
     default:
