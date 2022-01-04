@@ -5791,35 +5791,22 @@ expand_builtin_sync_lock_release (machine_mode mode, tree exp)
 static enum memmodel
 get_memmodel (tree exp)
 {
-  rtx op;
-  unsigned HOST_WIDE_INT val;
-  location_t loc
-    = expansion_point_location_if_in_system_header (input_location);
-
   /* If the parameter is not a constant, it's a run time value so we'll just
      convert it to MEMMODEL_SEQ_CST to avoid annoying runtime checking.  */
   if (TREE_CODE (exp) != INTEGER_CST)
     return MEMMODEL_SEQ_CST;
 
-  op = expand_normal (exp);
+  rtx op = expand_normal (exp);
 
-  val = INTVAL (op);
+  unsigned HOST_WIDE_INT val = INTVAL (op);
   if (targetm.memmodel_check)
     val = targetm.memmodel_check (val);
   else if (val & ~MEMMODEL_MASK)
-    {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "unknown architecture specifier in memory model to builtin");
-      return MEMMODEL_SEQ_CST;
-    }
+    return MEMMODEL_SEQ_CST;
 
   /* Should never see a user explicit SYNC memodel model, so >= LAST works. */
   if (memmodel_base (val) >= MEMMODEL_LAST)
-    {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid memory model argument to builtin");
-      return MEMMODEL_SEQ_CST;
-    }
+    return MEMMODEL_SEQ_CST;
 
   /* Workaround for Bugzilla 59448. GCC doesn't track consume properly, so
      be conservative and promote consume to acquire.  */
@@ -5866,28 +5853,17 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
 {
   rtx expect, desired, mem, oldval;
   rtx_code_label *label;
-  enum memmodel success, failure;
   tree weak;
   bool is_weak;
-  location_t loc
-    = expansion_point_location_if_in_system_header (input_location);
 
-  success = get_memmodel (CALL_EXPR_ARG (exp, 4));
-  failure = get_memmodel (CALL_EXPR_ARG (exp, 5));
+  memmodel success = get_memmodel (CALL_EXPR_ARG (exp, 4));
+  memmodel failure = get_memmodel (CALL_EXPR_ARG (exp, 5));
 
   if (failure > success)
-    {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "failure memory model cannot be stronger than success "
-		  "memory model for %<__atomic_compare_exchange%>");
-      success = MEMMODEL_SEQ_CST;
-    }
+    success = MEMMODEL_SEQ_CST;
  
   if (is_mm_release (failure) || is_mm_acq_rel (failure))
     {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid failure memory model for "
-		  "%<__atomic_compare_exchange%>");
       failure = MEMMODEL_SEQ_CST;
       success = MEMMODEL_SEQ_CST;
     }
@@ -5992,29 +5968,15 @@ expand_ifn_atomic_compare_exchange (gcall *call)
   int size = tree_to_shwi (gimple_call_arg (call, 3)) & 255;
   gcc_assert (size == 1 || size == 2 || size == 4 || size == 8 || size == 16);
   machine_mode mode = int_mode_for_size (BITS_PER_UNIT * size, 0).require ();
-  rtx expect, desired, mem, oldval, boolret;
-  enum memmodel success, failure;
-  tree lhs;
-  bool is_weak;
-  location_t loc
-    = expansion_point_location_if_in_system_header (gimple_location (call));
 
-  success = get_memmodel (gimple_call_arg (call, 4));
-  failure = get_memmodel (gimple_call_arg (call, 5));
+  memmodel success = get_memmodel (gimple_call_arg (call, 4));
+  memmodel failure = get_memmodel (gimple_call_arg (call, 5));
 
   if (failure > success)
-    {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "failure memory model cannot be stronger than success "
-		  "memory model for %<__atomic_compare_exchange%>");
-      success = MEMMODEL_SEQ_CST;
-    }
+    success = MEMMODEL_SEQ_CST;
 
   if (is_mm_release (failure) || is_mm_acq_rel (failure))
     {
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid failure memory model for "
-		  "%<__atomic_compare_exchange%>");
       failure = MEMMODEL_SEQ_CST;
       success = MEMMODEL_SEQ_CST;
     }
@@ -6026,15 +5988,15 @@ expand_ifn_atomic_compare_exchange (gcall *call)
     }
 
   /* Expand the operands.  */
-  mem = get_builtin_sync_mem (gimple_call_arg (call, 0), mode);
+  rtx mem = get_builtin_sync_mem (gimple_call_arg (call, 0), mode);
 
-  expect = expand_expr_force_mode (gimple_call_arg (call, 1), mode);
-  desired = expand_expr_force_mode (gimple_call_arg (call, 2), mode);
+  rtx expect = expand_expr_force_mode (gimple_call_arg (call, 1), mode);
+  rtx desired = expand_expr_force_mode (gimple_call_arg (call, 2), mode);
 
-  is_weak = (tree_to_shwi (gimple_call_arg (call, 3)) & 256) != 0;
+  bool is_weak = (tree_to_shwi (gimple_call_arg (call, 3)) & 256) != 0;
 
-  boolret = NULL;
-  oldval = NULL;
+  rtx boolret = NULL;
+  rtx oldval = NULL;
 
   if (!expand_atomic_compare_and_swap (&boolret, &oldval, mem, expect, desired,
 				       is_weak, success, failure))
@@ -6043,7 +6005,7 @@ expand_ifn_atomic_compare_exchange (gcall *call)
       return;
     }
 
-  lhs = gimple_call_lhs (call);
+  tree lhs = gimple_call_lhs (call);
   if (lhs)
     {
       rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
@@ -6062,24 +6024,15 @@ expand_ifn_atomic_compare_exchange (gcall *call)
 static rtx
 expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
 {
-  rtx mem;
-  enum memmodel model;
-
-  model = get_memmodel (CALL_EXPR_ARG (exp, 1));
+  memmodel model = get_memmodel (CALL_EXPR_ARG (exp, 1));
   if (is_mm_release (model) || is_mm_acq_rel (model))
-    {
-      location_t loc
-	= expansion_point_location_if_in_system_header (input_location);
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid memory model for %<__atomic_load%>");
-      model = MEMMODEL_SEQ_CST;
-    }
+    model = MEMMODEL_SEQ_CST;
 
   if (!flag_inline_atomics)
     return NULL_RTX;
 
   /* Expand the operand.  */
-  mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
+  rtx mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
   return expand_atomic_load (target, mem, model);
 }
@@ -6093,26 +6046,17 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
 static rtx
 expand_builtin_atomic_store (machine_mode mode, tree exp)
 {
-  rtx mem, val;
-  enum memmodel model;
-
-  model = get_memmodel (CALL_EXPR_ARG (exp, 2));
+  memmodel model = get_memmodel (CALL_EXPR_ARG (exp, 2));
   if (!(is_mm_relaxed (model) || is_mm_seq_cst (model)
 	|| is_mm_release (model)))
-    {
-      location_t loc
-	= expansion_point_location_if_in_system_header (input_location);
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid memory model for %<__atomic_store%>");
-      model = MEMMODEL_SEQ_CST;
-    }
+    model = MEMMODEL_SEQ_CST;
 
   if (!flag_inline_atomics)
     return NULL_RTX;
 
   /* Expand the operands.  */
-  mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
-  val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
+  rtx mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
+  rtx val = expand_expr_force_mode (CALL_EXPR_ARG (exp, 1), mode);
 
   return expand_atomic_store (mem, val, model, false);
 }
@@ -6370,29 +6314,19 @@ expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
 static rtx
 expand_builtin_atomic_clear (tree exp) 
 {
-  machine_mode mode;
-  rtx mem, ret;
-  enum memmodel model;
-
-  mode = int_mode_for_size (BOOL_TYPE_SIZE, 0).require ();
-  mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
-  model = get_memmodel (CALL_EXPR_ARG (exp, 1));
+  machine_mode mode = int_mode_for_size (BOOL_TYPE_SIZE, 0).require ();
+  rtx mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
+  memmodel model = get_memmodel (CALL_EXPR_ARG (exp, 1));
 
   if (is_mm_consume (model) || is_mm_acquire (model) || is_mm_acq_rel (model))
-    {
-      location_t loc
-	= expansion_point_location_if_in_system_header (input_location);
-      warning_at (loc, OPT_Winvalid_memory_model,
-		  "invalid memory model for %<__atomic_store%>");
-      model = MEMMODEL_SEQ_CST;
-    }
+    model = MEMMODEL_SEQ_CST;
 
   /* Try issuing an __atomic_store, and allow fallback to __sync_lock_release.
      Failing that, a store is issued by __atomic_store.  The only way this can
      fail is if the bool type is larger than a word size.  Unlikely, but
      handle it anyway for completeness.  Assume a single threaded model since
      there is no atomic support in this case, and no barriers are required.  */
-  ret = expand_atomic_store (mem, const0_rtx, model, true);
+  rtx ret = expand_atomic_store (mem, const0_rtx, model, true);
   if (!ret)
     emit_move_insn (mem, const0_rtx);
   return const0_rtx;

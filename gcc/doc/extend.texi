@@ -12457,9 +12457,7 @@ This built-in function implements an atomic exchange operation.  It writes
 @var{val} into @code{*@var{ptr}}, and returns the previous contents of
 @code{*@var{ptr}}.
 
-The valid memory order variants are
-@code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, @code{__ATOMIC_ACQUIRE},
-@code{__ATOMIC_RELEASE}, and @code{__ATOMIC_ACQ_REL}.
+All memory order variants are valid.
 
 @end deftypefn
 
