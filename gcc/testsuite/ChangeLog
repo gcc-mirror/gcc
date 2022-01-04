@@ -1,3 +1,11 @@
+2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102229
+	* g++.dg/cpp1y/decltype-auto5.C: New test.
+
 2022-01-02  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

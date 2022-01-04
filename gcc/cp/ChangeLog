@@ -1,3 +1,13 @@
+2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102229
+	* decl.c (check_decltype_auto): New.
+	(grokdeclarator): Call it.
+	* pt.c (do_auto_deduction): Don't check decltype(auto) here.
+
 2021-12-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
