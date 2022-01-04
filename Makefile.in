@@ -67370,9 +67370,7 @@ all-flex: maybe-all-build-bison
 all-flex: maybe-all-m4
 all-flex: maybe-all-build-texinfo
 all-m4: maybe-all-build-texinfo
-configure-target-libgm2: maybe-configure-target-libatomic
 configure-target-libgo: maybe-configure-target-libffi
-all-target-libgm2: maybe-all-target-libatomic
 all-target-libgo: maybe-all-target-libffi
 configure-target-libphobos: maybe-configure-target-libbacktrace
 configure-stage1-target-libphobos: maybe-configure-stage1-target-libbacktrace
@@ -67540,11 +67538,11 @@ all-flex: maybe-all-intl
 all-m4: maybe-all-intl
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
-configure-target-libgm2: maybe-all-target-libstdc++-v3
 configure-target-libgo: maybe-all-target-libstdc++-v3
 configure-target-libffi: maybe-all-target-libstdc++-v3
 all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libatomic
+configure-target-libgm2: maybe-all-target-libstdc++-v3
 all-target-libgm2: maybe-all-target-libatomic
 configure-target-liboffloadmic: maybe-configure-target-libgomp
 all-target-liboffloadmic: maybe-all-target-libgomp

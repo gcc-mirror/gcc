@@ -29,7 +29,7 @@ FROM nameKey IMPORT NulName, makeKey, lengthKey, makekey, keyToCharStar ;
 FROM SFIO IMPORT OpenToWrite, WriteS ;
 FROM FIO IMPORT File, Close, FlushBuffer, StdOut, WriteLine, WriteChar ;
 FROM DynamicStrings IMPORT String, InitString, EqualArray, InitStringCharStar, KillString, ConCat, Mark, RemoveWhitePostfix, RemoveWhitePrefix ;
-FROM StringConvert IMPORT CardinalToString ;
+FROM StringConvert IMPORT CardinalToString, ostoc ;
 FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ, getExtendedOpaque, writeGPLheader, getGccConfigSystem ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM libc IMPORT printf ;
@@ -751,7 +751,7 @@ VAR
 
 
 (*
-   newNode -
+   newNode - create and return a new node of kind k.
 *)
 
 PROCEDURE newNode (k: nodeT) : node ;
@@ -1400,7 +1400,7 @@ END getCurrentModule ;
 
 
 (*
-   initFixupInfo -
+   initFixupInfo - initialize the fixupInfo record.
 *)
 
 PROCEDURE initFixupInfo () : fixupInfo ;
@@ -1829,7 +1829,8 @@ END addImportedModule ;
 
 
 (*
-   completedEnum -
+   completedEnum - assign boolean enumsComplete to TRUE if a definition,
+                   implementation or module symbol.
 *)
 
 PROCEDURE completedEnum (n: node) ;
@@ -2023,7 +2024,8 @@ END checkPtr ;
 
 
 (*
-   makeVarDecl -
+   makeVarDecl - create a vardecl node and create a shadow variable in the
+                 current scope.
 *)
 
 PROCEDURE makeVarDecl (i: node; type: node) : node ;
@@ -2097,7 +2099,8 @@ END makeVariablesFromParameters ;
 
 
 (*
-   addProcedureToScope -
+   addProcedureToScope - add a procedure name n and node d to the
+                         current scope.
 *)
 
 PROCEDURE addProcedureToScope (d: node; n: Name) : node ;
@@ -2437,7 +2440,7 @@ VAR
 
 
 (*
-   setwatch -
+   setwatch - assign the globalNode to n.
 *)
 
 PROCEDURE setwatch (n: node) : BOOLEAN ;
@@ -2448,7 +2451,7 @@ END setwatch ;
 
 
 (*
-   runwatch -
+   runwatch - set the globalNode to an identlist.
 *)
 
 PROCEDURE runwatch () : BOOLEAN ;
@@ -2517,7 +2520,7 @@ END identListLen ;
 
 
 (*
-   checkParameters -
+   checkParameters - placeholder for future parameter checking.
 *)
 
 PROCEDURE checkParameters (p: node; i: node; type: node; var: BOOLEAN) ;
@@ -2554,7 +2557,9 @@ END avoidCnames ;
 
 
 (*
-   checkMakeVariables -
+   checkMakeVariables - create shadow local variables for parameters providing that
+                        procedure n has not already been built and we are compiling
+                        a module or an implementation module.
 *)
 
 PROCEDURE checkMakeVariables (n, i, type: node; isvar: BOOLEAN) ;
@@ -2900,7 +2905,9 @@ END putFieldVarient ;
 
 
 (*
-   putFieldRecord -
+   putFieldRecord - create a new recordfield and place it into record r.
+                    The new field has a tagname and type and can have a
+                    variant field v.
 *)
 
 PROCEDURE putFieldRecord (r: node; tag: Name; type, v: node) : node ;
@@ -3001,7 +3008,7 @@ END ensureOrder ;
 
 
 (*
-   putVarientTag -
+   putVarientTag - places tag into variant v.
 *)
 
 PROCEDURE putVarientTag (v: node; tag: node) ;
@@ -3043,7 +3050,6 @@ BEGIN
    CASE n^.kind OF
 
    record      :  RETURN n |
-(*   varient    :  RETURN getRecord (getParent (n)) | *)
    varientfield:  RETURN getRecord (getParent (n))
 
    END
@@ -3062,7 +3068,7 @@ END putUnbounded ;
 
 
 (*
-   isConstExp -
+   isConstExp - return TRUE if the node kind is a constexp.
 *)
 
 PROCEDURE isConstExp (c: node) : BOOLEAN ;
@@ -3095,7 +3101,7 @@ END addEnumToModule ;
 
 
 (*
-   getNextFixup -
+   getNextFixup - return the next fixup from from f.
 *)
 
 PROCEDURE getNextFixup (VAR f: fixupInfo) : node ;
@@ -3187,7 +3193,7 @@ END setEnumsComplete ;
 
 
 (*
-   doMakeEnum -
+   doMakeEnum - create an enumeration type and add it to the current module.
 *)
 
 PROCEDURE doMakeEnum () : node ;
@@ -3224,7 +3230,8 @@ END makeEnum ;
 
 
 (*
-   doMakeEnumField -
+   doMakeEnumField - create an enumeration field name and add it to enumeration e.
+                     Return the new field.
 *)
 
 PROCEDURE doMakeEnumField (e: node; n: Name) : node ;
@@ -3253,12 +3260,12 @@ BEGIN
          e^.enumerationF.low := f
       END ;
       e^.enumerationF.high := f ;
-
       RETURN addToScope (f)
    ELSE
       metaErrors2 ('cannot create enumeration field {%1k} as the name is already in use',
                    '{%2DMad} was declared elsewhere', n, f)
-   END
+   END ;
+   RETURN f
 END doMakeEnumField ;
 
 
@@ -3454,7 +3461,7 @@ END addConstToModule ;
 
 
 (*
-   doMakeConstExp -
+   doMakeConstExp - create a constexp node and add it to the current module.
 *)
 
 PROCEDURE doMakeConstExp () : node ;
@@ -3495,7 +3502,7 @@ END fixupConstExp ;
 
 
 (*
-   isAnyType -
+   isAnyType - return TRUE if node n is any type kind.
 *)
 
 PROCEDURE isAnyType (n: node) : BOOLEAN ;
@@ -3564,7 +3571,7 @@ END makeCast ;
 
 
 (*
-   makeIntrisicProc -
+   makeIntrisicProc - create an intrinsic node.
 *)
 
 PROCEDURE makeIntrinsicProc (k: nodeT; noArgs: CARDINAL; p: node) : node ;
@@ -3582,7 +3589,7 @@ END makeIntrinsicProc ;
 
 
 (*
-   makeIntrinsicUnaryType -
+   makeIntrinsicUnaryType - create an intrisic unary type.
 *)
 
 PROCEDURE makeIntrinsicUnaryType (k: nodeT; paramList: node; returnType: node) : node ;
@@ -3592,7 +3599,7 @@ END makeIntrinsicUnaryType ;
 
 
 (*
-   makeIntrinsicBinaryType -
+   makeIntrinsicBinaryType - create an intrisic binary type.
 *)
 
 PROCEDURE makeIntrinsicBinaryType (k: nodeT; paramList: node; returnType: node) : node ;
@@ -3962,7 +3969,7 @@ END lookupInScope ;
 
 
 (*
-   lookupBase -
+   lookupBase - return node named n from the base symbol scope.
 *)
 
 PROCEDURE lookupBase (n: Name) : node ;
@@ -3982,7 +3989,7 @@ END lookupBase ;
 
 
 (*
-   dumpScopes -
+   dumpScopes - display the names of all the scopes stacked.
 *)
 
 PROCEDURE dumpScopes ;
@@ -4002,7 +4009,7 @@ END dumpScopes ;
 
 
 (*
-   out0 -
+   out0 - write string a to StdOut.
 *)
 
 PROCEDURE out0 (a: ARRAY OF CHAR) ;
@@ -4015,7 +4022,7 @@ END out0 ;
 
 
 (*
-   out1 -
+   out1 - write string a to StdOut using format specifier a.
 *)
 
 PROCEDURE out1 (a: ARRAY OF CHAR; s: node) ;
@@ -4036,7 +4043,7 @@ END out1 ;
 
 
 (*
-   out2 -
+   out2 - write string a to StdOut using format specifier a.
 *)
 
 PROCEDURE out2 (a: ARRAY OF CHAR; c: CARDINAL; s: node) ;
@@ -4051,7 +4058,7 @@ END out2 ;
 
 
 (*
-   out3 -
+   out3 - write string a to StdOut using format specifier a.
 *)
 
 PROCEDURE out3 (a: ARRAY OF CHAR; l: CARDINAL; n: Name; s: node) ;
@@ -4357,7 +4364,44 @@ END isLeafString ;
 
 
 (*
-   getStringContents -
+   getLiteralStringContents - return the contents of a literal node as a string.
+*)
+
+PROCEDURE getLiteralStringContents (n: node) : String ;
+VAR
+   number,
+   content,
+   s      : String ;
+BEGIN
+   assert (n^.kind = literal) ;
+   s := InitStringCharStar (keyToCharStar (n^.literalF.name)) ;
+   content := NIL ;
+   IF n^.literalF.type = charN
+   THEN
+      IF DynamicStrings.char (s, -1) = 'C'
+      THEN
+         IF DynamicStrings.Length (s) > 1
+         THEN
+            number := DynamicStrings.Slice (s, 0, -1) ;
+            content := DynamicStrings.InitStringChar (VAL (CHAR, ostoc (number))) ;
+            number := DynamicStrings.KillString (number)
+         ELSE
+            content := DynamicStrings.InitStringChar ('C')
+         END
+      ELSE
+         content := DynamicStrings.Dup (s)
+      END
+   ELSE
+      metaError1 ('cannot obtain string contents from {%1k}', n^.literalF.name)
+   END ;
+   s := DynamicStrings.KillString (s) ;
+   RETURN content
+END getLiteralStringContents ;
+
+
+(*
+   getStringContents - return the string contents of a constant, literal,
+                       string or a constexp node.
 *)
 
 PROCEDURE getStringContents (n: node) : String ;
@@ -4367,8 +4411,7 @@ BEGIN
       RETURN getStringContents (n^.constF.value)
    ELSIF isLiteral (n)
    THEN
-      HALT ;  (* --fixme--  finish this.  *)
-      RETURN NIL
+      RETURN getLiteralStringContents (n)
    ELSIF isString (n)
    THEN
       RETURN getString (n)
@@ -5446,13 +5489,7 @@ VAR
    s: String ;
 BEGIN
    s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
-   IF FALSE (* --fixme-- remove this clause when all regressions pass: isDefForC (n) *)
-   THEN
-      print (doP, '#   include "mc-') ;
-      prints (doP, s) ;
-      print (doP, '.h"\n') ;
-      foreachNodeDo (n^.defF.decls.symbols, addDoneDef)
-   ELSIF getExtendedOpaque ()
+   IF getExtendedOpaque ()
    THEN
       (* no include in this case.  *)
    ELSIF isDef (n)
@@ -7092,7 +7129,11 @@ END getParameterVariable ;
 
 
 (*
-   doParamTypeEmit -
+   doParamTypeEmit - emit parameter type for C/C++.  It checks to see if the
+                     parameter type is a procedure type and if it were declared
+                     in a definition module for "C" and if so it uses the "C"
+                     definition for a procedure type, rather than the mc
+                     C++ version.
 *)
 
 PROCEDURE doParamTypeEmit (p: pretty; paramnode, paramtype: node) ;
@@ -7109,7 +7150,7 @@ END doParamTypeEmit ;
 
 
 (*
-   doParamC -
+   doParamC - emit parameter for C/C++.
 *)
 
 PROCEDURE doParamC (p: pretty; n: node) ;
@@ -7180,7 +7221,7 @@ END doParamC ;
 
 
 (*
-   doVarParamC -
+   doVarParamC - emit a VAR parameter for C/C++.
 *)
 
 PROCEDURE doVarParamC (p: pretty; n: node) ;
@@ -8118,7 +8159,7 @@ END doArrayNameC ;
 
 
 (*
-   doRecordNameC -
+   doRecordNameC - emit the C/C++ record name <name of n>"_r".
 *)
 
 PROCEDURE doRecordNameC (p: pretty; n: node) ;
@@ -8133,7 +8174,7 @@ END doRecordNameC ;
 
 
 (*
-   doPointerNameC -
+   doPointerNameC - emit the C/C++ pointer type <name of n>*.
 *)
 
 PROCEDURE doPointerNameC (p: pretty; n: node) ;

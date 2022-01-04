@@ -1449,7 +1449,8 @@ decl_node decl_makeVar (nameKey_Name n);
 void decl_putVar (decl_node var, decl_node type, decl_node decl);
 
 /*
-   makeVarDecl -
+   makeVarDecl - create a vardecl node and create a shadow variable in the
+                 current scope.
 */
 
 decl_node decl_makeVarDecl (decl_node i, decl_node type);
@@ -3384,7 +3385,7 @@ void mcPrintf_fprintf3 (FIO_File file, char *a_, unsigned int _a_high, unsigned 
 void mcPrintf_fprintf4 (FIO_File file, char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high, unsigned char *w4_, unsigned int _w4_high);
 
 /*
-   newNode -
+   newNode - create and return a new node of kind k.
 */
 
 static decl_node newNode (nodeT k);
@@ -3432,7 +3433,7 @@ static unsigned int isShortComplex (decl_node n);
 static unsigned int isAProcType (decl_node n);
 
 /*
-   initFixupInfo -
+   initFixupInfo - initialize the fixupInfo record.
 */
 
 static fixupInfo initFixupInfo (void);
@@ -3493,7 +3494,8 @@ static decl_node addToScope (decl_node n);
 static void addModuleToScope (decl_node m, decl_node i);
 
 /*
-   completedEnum -
+   completedEnum - assign boolean enumsComplete to TRUE if a definition,
+                   implementation or module symbol.
 */
 
 static void completedEnum (decl_node n);
@@ -3530,7 +3532,8 @@ static unsigned int isVarDecl (decl_node n);
 static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node type, unsigned int isvar);
 
 /*
-   addProcedureToScope -
+   addProcedureToScope - add a procedure name n and node d to the
+                         current scope.
 */
 
 static decl_node addProcedureToScope (decl_node d, nameKey_Name n);
@@ -3554,13 +3557,13 @@ static void putProcTypeOptReturn (decl_node proc);
 static decl_node makeOptParameter (decl_node l, decl_node type, decl_node init);
 
 /*
-   setwatch -
+   setwatch - assign the globalNode to n.
 */
 
 static unsigned int setwatch (decl_node n);
 
 /*
-   runwatch -
+   runwatch - set the globalNode to an identlist.
 */
 
 static unsigned int runwatch (void);
@@ -3578,13 +3581,15 @@ static unsigned int isIdentList (decl_node n);
 static unsigned int identListLen (decl_node n);
 
 /*
-   checkParameters -
+   checkParameters - placeholder for future parameter checking.
 */
 
 static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int var);
 
 /*
-   checkMakeVariables -
+   checkMakeVariables - create shadow local variables for parameters providing that
+                        procedure n has not already been built and we are compiling
+                        a module or an implementation module.
 */
 
 static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar);
@@ -3605,7 +3610,9 @@ static decl_node makeVarientField (decl_node v, decl_node p);
 static void putFieldVarient (decl_node f, decl_node v);
 
 /*
-   putFieldRecord -
+   putFieldRecord - create a new recordfield and place it into record r.
+                    The new field has a tagname and type and can have a
+                    variant field v.
 */
 
 static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, decl_node v);
@@ -3618,7 +3625,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
 static void ensureOrder (Indexing_Index i, decl_node a, decl_node b);
 
 /*
-   putVarientTag -
+   putVarientTag - places tag into variant v.
 */
 
 static void putVarientTag (decl_node v, decl_node tag);
@@ -3637,7 +3644,7 @@ static decl_node getParent (decl_node n);
 static decl_node getRecord (decl_node n);
 
 /*
-   isConstExp -
+   isConstExp - return TRUE if the node kind is a constexp.
 */
 
 static unsigned int isConstExp (decl_node c);
@@ -3650,19 +3657,20 @@ static unsigned int isConstExp (decl_node c);
 static void addEnumToModule (decl_node m, decl_node e);
 
 /*
-   getNextFixup -
+   getNextFixup - return the next fixup from from f.
 */
 
 static decl_node getNextFixup (fixupInfo *f);
 
 /*
-   doMakeEnum -
+   doMakeEnum - create an enumeration type and add it to the current module.
 */
 
 static decl_node doMakeEnum (void);
 
 /*
-   doMakeEnumField -
+   doMakeEnumField - create an enumeration field name and add it to enumeration e.
+                     Return the new field.
 */
 
 static decl_node doMakeEnumField (decl_node e, nameKey_Name n);
@@ -3693,13 +3701,13 @@ static unsigned int getConstExpComplete (decl_node n);
 static void addConstToModule (decl_node m, decl_node e);
 
 /*
-   doMakeConstExp -
+   doMakeConstExp - create a constexp node and add it to the current module.
 */
 
 static decl_node doMakeConstExp (void);
 
 /*
-   isAnyType -
+   isAnyType - return TRUE if node n is any type kind.
 */
 
 static unsigned int isAnyType (decl_node n);
@@ -3718,13 +3726,13 @@ static decl_node makeCast (decl_node c, decl_node p);
 static decl_node makeIntrinsicProc (nodeT k, unsigned int noArgs, decl_node p);
 
 /*
-   makeIntrinsicUnaryType -
+   makeIntrinsicUnaryType - create an intrisic unary type.
 */
 
 static decl_node makeIntrinsicUnaryType (nodeT k, decl_node paramList, decl_node returnType);
 
 /*
-   makeIntrinsicBinaryType -
+   makeIntrinsicBinaryType - create an intrisic binary type.
 */
 
 static decl_node makeIntrinsicBinaryType (nodeT k, decl_node paramList, decl_node returnType);
@@ -3764,37 +3772,37 @@ static void putTypeInternal (decl_node des);
 static unsigned int isTypeInternal (decl_node n);
 
 /*
-   lookupBase -
+   lookupBase - return node named n from the base symbol scope.
 */
 
 static decl_node lookupBase (nameKey_Name n);
 
 /*
-   dumpScopes -
+   dumpScopes - display the names of all the scopes stacked.
 */
 
 static void dumpScopes (void);
 
 /*
-   out0 -
+   out0 - write string a to StdOut.
 */
 
 static void out0 (char *a_, unsigned int _a_high);
 
 /*
-   out1 -
+   out1 - write string a to StdOut using format specifier a.
 */
 
 static void out1 (char *a_, unsigned int _a_high, decl_node s);
 
 /*
-   out2 -
+   out2 - write string a to StdOut using format specifier a.
 */
 
 static void out2 (char *a_, unsigned int _a_high, unsigned int c, decl_node s);
 
 /*
-   out3 -
+   out3 - write string a to StdOut using format specifier a.
 */
 
 static void out3 (char *a_, unsigned int _a_high, unsigned int l, nameKey_Name n, decl_node s);
@@ -3825,7 +3833,14 @@ static decl_node makeUnary (nodeT k, decl_node e, decl_node res);
 static unsigned int isLeafString (decl_node n);
 
 /*
-   getStringContents -
+   getLiteralStringContents - return the contents of a literal node as a string.
+*/
+
+static DynamicStrings_String getLiteralStringContents (decl_node n);
+
+/*
+   getStringContents - return the string contents of a constant, literal,
+                       string or a constexp node.
 */
 
 static DynamicStrings_String getStringContents (decl_node n);
@@ -4395,19 +4410,23 @@ static void doParamConstCast (mcPretty_pretty p, decl_node n);
 static decl_node getParameterVariable (decl_node n, nameKey_Name m);
 
 /*
-   doParamTypeEmit -
+   doParamTypeEmit - emit parameter type for C/C++.  It checks to see if the
+                     parameter type is a procedure type and if it were declared
+                     in a definition module for "C" and if so it uses the "C"
+                     definition for a procedure type, rather than the mc
+                     C++ version.
 */
 
 static void doParamTypeEmit (mcPretty_pretty p, decl_node paramnode, decl_node paramtype);
 
 /*
-   doParamC -
+   doParamC - emit parameter for C/C++.
 */
 
 static void doParamC (mcPretty_pretty p, decl_node n);
 
 /*
-   doVarParamC -
+   doVarParamC - emit a VAR parameter for C/C++.
 */
 
 static void doVarParamC (mcPretty_pretty p, decl_node n);
@@ -4600,13 +4619,13 @@ static void doTypeC (mcPretty_pretty p, decl_node n, decl_node *m);
 static void doArrayNameC (mcPretty_pretty p, decl_node n);
 
 /*
-   doRecordNameC -
+   doRecordNameC - emit the C/C++ record name <name of n>"_r".
 */
 
 static void doRecordNameC (mcPretty_pretty p, decl_node n);
 
 /*
-   doPointerNameC -
+   doPointerNameC - emit the C/C++ pointer type <name of n>*.
 */
 
 static void doPointerNameC (mcPretty_pretty p, decl_node n);
@@ -6563,7 +6582,7 @@ static void init (void);
 
 
 /*
-   newNode -
+   newNode - create and return a new node of kind k.
 */
 
 static decl_node newNode (nodeT k)
@@ -6700,7 +6719,7 @@ static unsigned int isAProcType (decl_node n)
 
 
 /*
-   initFixupInfo -
+   initFixupInfo - initialize the fixupInfo record.
 */
 
 static fixupInfo initFixupInfo (void)
@@ -6964,7 +6983,8 @@ static void addModuleToScope (decl_node m, decl_node i)
 
 
 /*
-   completedEnum -
+   completedEnum - assign boolean enumsComplete to TRUE if a definition,
+                   implementation or module symbol.
 */
 
 static void completedEnum (decl_node n)
@@ -7117,7 +7137,8 @@ static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node
 
 
 /*
-   addProcedureToScope -
+   addProcedureToScope - add a procedure name n and node d to the
+                         current scope.
 */
 
 static decl_node addProcedureToScope (decl_node d, nameKey_Name n)
@@ -7180,7 +7201,7 @@ static decl_node makeOptParameter (decl_node l, decl_node type, decl_node init)
 
 
 /*
-   setwatch -
+   setwatch - assign the globalNode to n.
 */
 
 static unsigned int setwatch (decl_node n)
@@ -7193,7 +7214,7 @@ static unsigned int setwatch (decl_node n)
 
 
 /*
-   runwatch -
+   runwatch - set the globalNode to an identlist.
 */
 
 static unsigned int runwatch (void)
@@ -7237,7 +7258,7 @@ static unsigned int identListLen (decl_node n)
 
 
 /*
-   checkParameters -
+   checkParameters - placeholder for future parameter checking.
 */
 
 static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned int var)
@@ -7248,7 +7269,9 @@ static void checkParameters (decl_node p, decl_node i, decl_node type, unsigned 
 
 
 /*
-   checkMakeVariables -
+   checkMakeVariables - create shadow local variables for parameters providing that
+                        procedure n has not already been built and we are compiling
+                        a module or an implementation module.
 */
 
 static void checkMakeVariables (decl_node n, decl_node i, decl_node type, unsigned int isvar)
@@ -7318,7 +7341,9 @@ static void putFieldVarient (decl_node f, decl_node v)
 
 
 /*
-   putFieldRecord -
+   putFieldRecord - create a new recordfield and place it into record r.
+                    The new field has a tagname and type and can have a
+                    variant field v.
 */
 
 static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, decl_node v)
@@ -7402,7 +7427,7 @@ static void ensureOrder (Indexing_Index i, decl_node a, decl_node b)
 
 
 /*
-   putVarientTag -
+   putVarientTag - places tag into variant v.
 */
 
 static void putVarientTag (decl_node v, decl_node tag)
@@ -7461,11 +7486,10 @@ static decl_node getRecord (decl_node n)
   switch (n->kind)
     {
       case record:
-        return n;
+        return n;  /* if this fails then we need to add parent field to varient.  */
         break;
 
       case varientfield:
-        /* varient    :  RETURN getRecord (getParent (n)) |  */
         return getRecord (getParent (n));
         break;
 
@@ -7480,7 +7504,7 @@ static decl_node getRecord (decl_node n)
 
 
 /*
-   isConstExp -
+   isConstExp - return TRUE if the node kind is a constexp.
 */
 
 static unsigned int isConstExp (decl_node c)
@@ -7519,7 +7543,7 @@ static void addEnumToModule (decl_node m, decl_node e)
 
 
 /*
-   getNextFixup -
+   getNextFixup - return the next fixup from from f.
 */
 
 static decl_node getNextFixup (fixupInfo *f)
@@ -7532,7 +7556,7 @@ static decl_node getNextFixup (fixupInfo *f)
 
 
 /*
-   doMakeEnum -
+   doMakeEnum - create an enumeration type and add it to the current module.
 */
 
 static decl_node doMakeEnum (void)
@@ -7554,7 +7578,8 @@ static decl_node doMakeEnum (void)
 
 
 /*
-   doMakeEnumField -
+   doMakeEnumField - create an enumeration field name and add it to enumeration e.
+                     Return the new field.
 */
 
 static decl_node doMakeEnumField (decl_node e, nameKey_Name n)
@@ -7587,7 +7612,8 @@ static decl_node doMakeEnumField (decl_node e, nameKey_Name n)
     {
       mcMetaError_metaErrors2 ((char *) "cannot create enumeration field {%1k} as the name is already in use", 67, (char *) "{%2DMad} was declared elsewhere", 31, (unsigned char *) &n, (sizeof (n)-1), (unsigned char *) &f, (sizeof (f)-1));
     }
-  ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
+  return f;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
@@ -7683,7 +7709,7 @@ static void addConstToModule (decl_node m, decl_node e)
 
 
 /*
-   doMakeConstExp -
+   doMakeConstExp - create a constexp node and add it to the current module.
 */
 
 static decl_node doMakeConstExp (void)
@@ -7699,7 +7725,7 @@ static decl_node doMakeConstExp (void)
 
 
 /*
-   isAnyType -
+   isAnyType - return TRUE if node n is any type kind.
 */
 
 static unsigned int isAnyType (decl_node n)
@@ -7784,7 +7810,7 @@ static decl_node makeIntrinsicProc (nodeT k, unsigned int noArgs, decl_node p)
   decl_node f;
 
   /*
-   makeIntrisicProc -
+   makeIntrisicProc - create an intrinsic node.
   */
   f = newNode (k);
   f->intrinsicF.args = p;
@@ -7799,7 +7825,7 @@ static decl_node makeIntrinsicProc (nodeT k, unsigned int noArgs, decl_node p)
 
 
 /*
-   makeIntrinsicUnaryType -
+   makeIntrinsicUnaryType - create an intrisic unary type.
 */
 
 static decl_node makeIntrinsicUnaryType (nodeT k, decl_node paramList, decl_node returnType)
@@ -7811,7 +7837,7 @@ static decl_node makeIntrinsicUnaryType (nodeT k, decl_node paramList, decl_node
 
 
 /*
-   makeIntrinsicBinaryType -
+   makeIntrinsicBinaryType - create an intrisic binary type.
 */
 
 static decl_node makeIntrinsicBinaryType (nodeT k, decl_node paramList, decl_node returnType)
@@ -8032,7 +8058,7 @@ static unsigned int isTypeInternal (decl_node n)
 
 
 /*
-   lookupBase -
+   lookupBase - return node named n from the base symbol scope.
 */
 
 static decl_node lookupBase (nameKey_Name n)
@@ -8056,7 +8082,7 @@ static decl_node lookupBase (nameKey_Name n)
 
 
 /*
-   dumpScopes -
+   dumpScopes - display the names of all the scopes stacked.
 */
 
 static void dumpScopes (void)
@@ -8076,7 +8102,7 @@ static void dumpScopes (void)
 
 
 /*
-   out0 -
+   out0 - write string a to StdOut.
 */
 
 static void out0 (char *a_, unsigned int _a_high)
@@ -8093,7 +8119,7 @@ static void out0 (char *a_, unsigned int _a_high)
 
 
 /*
-   out1 -
+   out1 - write string a to StdOut using format specifier a.
 */
 
 static void out1 (char *a_, unsigned int _a_high, decl_node s)
@@ -8118,7 +8144,7 @@ static void out1 (char *a_, unsigned int _a_high, decl_node s)
 
 
 /*
-   out2 -
+   out2 - write string a to StdOut using format specifier a.
 */
 
 static void out2 (char *a_, unsigned int _a_high, unsigned int c, decl_node s)
@@ -8138,7 +8164,7 @@ static void out2 (char *a_, unsigned int _a_high, unsigned int c, decl_node s)
 
 
 /*
-   out3 -
+   out3 - write string a to StdOut using format specifier a.
 */
 
 static void out3 (char *a_, unsigned int _a_high, unsigned int l, nameKey_Name n, decl_node s)
@@ -8309,7 +8335,52 @@ static unsigned int isLeafString (decl_node n)
 
 
 /*
-   getStringContents -
+   getLiteralStringContents - return the contents of a literal node as a string.
+*/
+
+static DynamicStrings_String getLiteralStringContents (decl_node n)
+{
+  DynamicStrings_String number;
+  DynamicStrings_String content;
+  DynamicStrings_String s;
+
+  mcDebug_assert (n->kind == literal);
+  s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n->literalF.name));
+  content = NULL;
+  if (n->literalF.type == charN)
+    {
+      if ((DynamicStrings_char (s, -1)) == 'C')
+        {
+          if ((DynamicStrings_Length (s)) > 1)
+            {
+              number = DynamicStrings_Slice (s, 0, -1);
+              content = DynamicStrings_InitStringChar ((char ) (StringConvert_ostoc (number)));
+              number = DynamicStrings_KillString (number);
+            }
+          else
+            {
+              content = DynamicStrings_InitStringChar ('C');
+            }
+        }
+      else
+        {
+          content = DynamicStrings_Dup (s);
+        }
+    }
+  else
+    {
+      mcMetaError_metaError1 ((char *) "cannot obtain string contents from {%1k}", 40, (unsigned char *) &n->literalF.name, (sizeof (n->literalF.name)-1));
+    }
+  s = DynamicStrings_KillString (s);
+  return content;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   getStringContents - return the string contents of a constant, literal,
+                       string or a constexp node.
 */
 
 static DynamicStrings_String getStringContents (decl_node n)
@@ -8321,9 +8392,7 @@ static DynamicStrings_String getStringContents (decl_node n)
   else if (decl_isLiteral (n))
     {
       /* avoid dangling else.  */
-      M2RTS_HALT (-1);  /* --fixme--  finish this.  */
-      __builtin_unreachable ();
-      return NULL;  /* --fixme--  finish this.  */
+      return getLiteralStringContents (n);
     }
   else if (isString (n))
     {
@@ -9177,18 +9246,9 @@ static void doIncludeC (decl_node n)
   DynamicStrings_String s;
 
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
-  if (FALSE)  /* --fixme-- remove this clause when all regressions pass: isDefForC (n)  */
-    {
-      mcPretty_print (doP, (char *) "#   include \"mc-", 16);
-      mcPretty_prints (doP, s);
-      mcPretty_print (doP, (char *) ".h\"\\n", 5);
-      symbolKey_foreachNodeDo (n->defF.decls.symbols, (symbolKey_performOperation) {(symbolKey_performOperation_t) addDoneDef});
-    }
+  if (mcOptions_getExtendedOpaque ())
+    {}  /* empty.  */
   /* no include in this case.  */
-  else if (mcOptions_getExtendedOpaque ())
-    {
-      /* avoid dangling else.  */
-    }
   else if (decl_isDef (n))
     {
       /* avoid dangling else.  */
@@ -11537,7 +11597,11 @@ static decl_node getParameterVariable (decl_node n, nameKey_Name m)
 
 
 /*
-   doParamTypeEmit -
+   doParamTypeEmit - emit parameter type for C/C++.  It checks to see if the
+                     parameter type is a procedure type and if it were declared
+                     in a definition module for "C" and if so it uses the "C"
+                     definition for a procedure type, rather than the mc
+                     C++ version.
 */
 
 static void doParamTypeEmit (mcPretty_pretty p, decl_node paramnode, decl_node paramtype)
@@ -11556,7 +11620,7 @@ static void doParamTypeEmit (mcPretty_pretty p, decl_node paramnode, decl_node p
 
 
 /*
-   doParamC -
+   doParamC - emit parameter for C/C++.
 */
 
 static void doParamC (mcPretty_pretty p, decl_node n)
@@ -11642,7 +11706,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
 
 
 /*
-   doVarParamC -
+   doVarParamC - emit a VAR parameter for C/C++.
 */
 
 static void doVarParamC (mcPretty_pretty p, decl_node n)
@@ -12891,7 +12955,7 @@ static void doArrayNameC (mcPretty_pretty p, decl_node n)
 
 
 /*
-   doRecordNameC -
+   doRecordNameC - emit the C/C++ record name <name of n>"_r".
 */
 
 static void doRecordNameC (mcPretty_pretty p, decl_node n)
@@ -12906,7 +12970,7 @@ static void doRecordNameC (mcPretty_pretty p, decl_node n)
 
 
 /*
-   doPointerNameC -
+   doPointerNameC - emit the C/C++ pointer type <name of n>*.
 */
 
 static void doPointerNameC (mcPretty_pretty p, decl_node n)
@@ -23555,7 +23619,8 @@ void decl_putVar (decl_node var, decl_node type, decl_node decl)
 
 
 /*
-   makeVarDecl -
+   makeVarDecl - create a vardecl node and create a shadow variable in the
+                 current scope.
 */
 
 decl_node decl_makeVarDecl (decl_node i, decl_node type)
