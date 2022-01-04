@@ -3831,6 +3831,9 @@ package body Sem_Ch3 is
                then
                   null;
 
+               elsif Is_Record_Type (Etype (Comp)) then
+                  Check_Dynamic_Object (Etype (Comp));
+
                elsif not Discriminated_Size (Comp)
                  and then Comes_From_Source (Comp)
                then
@@ -3838,8 +3841,6 @@ package body Sem_Ch3 is
                     ("component& of non-static size will violate restriction "
                      & "No_Implicit_Heap_Allocation?", N, Comp);
 
-               elsif Is_Record_Type (Etype (Comp)) then
-                  Check_Dynamic_Object (Etype (Comp));
                end if;
 
                Next_Component (Comp);
