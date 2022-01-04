@@ -324,6 +324,9 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 #   define GFC_REAL_16_INFINITY __builtin_infq ()
 #  endif
 # endif
+# ifdef HAVE_GFC_REAL_17
+#  define GFC_REAL_17_INFINITY __builtin_inff128 ()
+# endif
 #endif
 #if __FLT_HAS_QUIET_NAN__
 # define GFC_REAL_4_QUIET_NAN __builtin_nanf ("")
@@ -341,6 +344,9 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
 #  else
 #   define GFC_REAL_16_QUIET_NAN nanq ("")
 #  endif
+# endif
+# ifdef HAVE_GFC_REAL_17
+#  define GFC_REAL_17_QUIET_NAN __builtin_nanf128 ("")
 # endif
 #endif
 
@@ -1965,6 +1971,8 @@ extern __float128 __atanieee128 (__float128)
 extern __float128 __coshieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __cosieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __erfcieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __erfieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
