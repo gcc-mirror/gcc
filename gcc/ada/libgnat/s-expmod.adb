@@ -278,6 +278,7 @@ is
                  (Big (Result) * Big (Factor) ** (Exp - 1),
                   Big (Left) ** Right));
                Lemma_Exp_Expand (Big (Factor), Exp - 1);
+               pragma Assert (Exp / 2 = (Exp - 1) / 2);
             end if;
 
             Lemma_Exp_Expand (Big (Factor), Exp);
@@ -286,6 +287,8 @@ is
             exit when Exp = 0;
 
             Rest := Big (Factor) ** Exp;
+            pragma Assert (Equal_Modulo
+              (Big (Result) * (Rest * Rest), Big (Left) ** Right));
             Lemma_Exp_Mod (Big (Factor) * Big (Factor), Exp, Big (Modulus));
             pragma Assert
               ((Big (Factor) * Big (Factor)) ** Exp = Rest * Rest);
