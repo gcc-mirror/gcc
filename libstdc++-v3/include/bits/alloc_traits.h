@@ -632,13 +632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static _GLIBCXX20_CONSTEXPR void
 	construct(allocator_type&, _Up* __p, _Args&&... __args)
 	noexcept(std::is_nothrow_constructible<_Up, _Args...>::value)
-	{
-#if __cplusplus <= 201703L
-	  ::new((void *)__p) _Up(std::forward<_Args>(__args)...);
-#else
-	  std::construct_at(__p, std::forward<_Args>(__args)...);
-#endif
-	}
+	{ std::_Construct(__p, std::forward<_Args>(__args)...); }
 
       /**
        *  @brief  Destroy an object of type `_Up`
