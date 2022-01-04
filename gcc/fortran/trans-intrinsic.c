@@ -881,7 +881,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
     {
       snprintf (name, sizeof (name), PREFIX ("%s_%c%d"), m->name,
 		ts->type == BT_COMPLEX ? 'c' : 'r',
-		ts->kind);
+		gfc_type_abi_kind (ts));
     }
 
   argtypes = NULL;
