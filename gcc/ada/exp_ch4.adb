@@ -4345,116 +4345,110 @@ package body Exp_Ch4 is
       ------------------------------
 
       function Size_In_Storage_Elements (E : Entity_Id) return Node_Id is
+         Idx : Node_Id := First_Index (E);
+         Len : Node_Id;
+         Res : Node_Id := Empty;
+
       begin
          --  Logically this just returns E'Max_Size_In_Storage_Elements.
-         --  However, the reason for the existence of this function is
-         --  to construct a test for sizes too large, which means near the
-         --  32-bit limit on a 32-bit machine, and precisely the trouble
-         --  is that we get overflows when sizes are greater than 2**31.
+         --  However, the reason for the existence of this function is to
+         --  construct a test for sizes too large, which means near the 32-bit
+         --  limit on a 32-bit machine, and precisely the trouble is that we
+         --  get overflows when sizes are greater than 2**31.
 
          --  So what we end up doing for array types is to use the expression:
 
          --    number-of-elements * component_type'Max_Size_In_Storage_Elements
 
          --  which avoids this problem. All this is a bit bogus, but it does
-         --  mean we catch common cases of trying to allocate arrays that
-         --  are too large, and which in the absence of a check results in
+         --  mean we catch common cases of trying to allocate arrays that are
+         --  too large, and which in the absence of a check results in
          --  undetected chaos ???
 
-         declare
-            Idx : Node_Id := First_Index (E);
-            Len : Node_Id;
-            Res : Node_Id := Empty;
+         for J in 1 .. Number_Dimensions (E) loop
 
-         begin
-            for J in 1 .. Number_Dimensions (E) loop
+            if not Is_Modular_Integer_Type (Etype (Idx)) then
+               Len :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (E, Loc),
+                   Attribute_Name => Name_Length,
+                   Expressions    => New_List (Make_Integer_Literal (Loc, J)));
 
-               if not Is_Modular_Integer_Type (Etype (Idx)) then
+            --  For indexes that are modular types we cannot generate code to
+            --  compute 'Length since for large arrays 'Last -'First + 1 causes
+            --  overflow; therefore we compute 'Last - 'First (which is not the
+            --  exact number of components but it is valid for the purpose of
+            --  this runtime check on 32-bit targets).
+
+            else
+               declare
+                  Len_Minus_1_Expr : Node_Id;
+                  Test_Gt          : Node_Id;
+
+               begin
+                  Test_Gt :=
+                    Make_Op_Gt (Loc,
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (E, Loc),
+                        Attribute_Name => Name_Last,
+                        Expressions    =>
+                          New_List (Make_Integer_Literal (Loc, J))),
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (E, Loc),
+                        Attribute_Name => Name_First,
+                        Expressions    =>
+                          New_List (Make_Integer_Literal (Loc, J))));
+
+                  Len_Minus_1_Expr :=
+                    Convert_To (Standard_Unsigned,
+                      Make_Op_Subtract (Loc,
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (E, Loc),
+                          Attribute_Name => Name_Last,
+                          Expressions =>
+                            New_List (Make_Integer_Literal (Loc, J))),
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (E, Loc),
+                          Attribute_Name => Name_First,
+                          Expressions =>
+                            New_List (Make_Integer_Literal (Loc, J)))));
+
+                  --  Handle superflat arrays, i.e. arrays with such bounds as
+                  --  4 .. 2, to ensure that the result is correct.
+
+                  --  Generate:
+                  --    (if X'Last > X'First then X'Last - X'First else 0)
+
                   Len :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (E, Loc),
-                      Attribute_Name => Name_Length,
-                      Expressions    => New_List
-                                          (Make_Integer_Literal (Loc, J)));
+                    Make_If_Expression (Loc,
+                      Expressions => New_List (
+                        Test_Gt,
+                        Len_Minus_1_Expr,
+                        Make_Integer_Literal (Loc, Uint_0)));
+               end;
+            end if;
 
-               --  For indexes that are modular types we cannot generate code
-               --  to compute 'Length since for large arrays 'Last -'First + 1
-               --  causes overflow; therefore we compute 'Last - 'First (which
-               --  is not the exact number of components but it is valid for
-               --  the purpose of this runtime check on 32-bit targets).
+            if J = 1 then
+               Res := Len;
 
-               else
-                  declare
-                     Len_Minus_1_Expr : Node_Id;
-                     Test_Gt          : Node_Id;
+            else
+               pragma Assert (Present (Res));
+               Res :=
+                 Make_Op_Multiply (Loc,
+                   Left_Opnd  => Res,
+                   Right_Opnd => Len);
+            end if;
 
-                  begin
-                     Test_Gt :=
-                       Make_Op_Gt (Loc,
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (E, Loc),
-                           Attribute_Name => Name_Last,
-                           Expressions    =>
-                             New_List (Make_Integer_Literal (Loc, J))),
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (E, Loc),
-                           Attribute_Name => Name_First,
-                           Expressions    =>
-                             New_List (Make_Integer_Literal (Loc, J))));
+            Next_Index (Idx);
+         end loop;
 
-                     Len_Minus_1_Expr :=
-                       Convert_To (Standard_Unsigned,
-                         Make_Op_Subtract (Loc,
-                           Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (E, Loc),
-                             Attribute_Name => Name_Last,
-                             Expressions =>
-                               New_List
-                                 (Make_Integer_Literal (Loc, J))),
-                           Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (E, Loc),
-                             Attribute_Name => Name_First,
-                             Expressions =>
-                               New_List
-                                 (Make_Integer_Literal (Loc, J)))));
-
-                     --  Handle superflat arrays, i.e. arrays with such bounds
-                     --  as 4 .. 2, to ensure that the result is correct.
-
-                     --  Generate:
-                     --    (if X'Last > X'First then X'Last - X'First else 0)
-
-                     Len :=
-                       Make_If_Expression (Loc,
-                         Expressions => New_List (
-                           Test_Gt,
-                           Len_Minus_1_Expr,
-                           Make_Integer_Literal (Loc, Uint_0)));
-                  end;
-               end if;
-
-               if J = 1 then
-                  Res := Len;
-
-               else
-                  pragma Assert (Present (Res));
-                  Res :=
-                    Make_Op_Multiply (Loc,
-                      Left_Opnd  => Res,
-                      Right_Opnd => Len);
-               end if;
-
-               Next_Index (Idx);
-            end loop;
-
-            return
-              Make_Op_Multiply (Loc,
-                Left_Opnd  => Len,
-                Right_Opnd =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix => New_Occurrence_Of (Component_Type (E), Loc),
-                    Attribute_Name => Name_Max_Size_In_Storage_Elements));
-         end;
+         return
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Len,
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Occurrence_Of (Component_Type (E), Loc),
+                 Attribute_Name => Name_Max_Size_In_Storage_Elements));
       end Size_In_Storage_Elements;
 
       --  Local variables
