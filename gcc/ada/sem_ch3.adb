@@ -5512,6 +5512,7 @@ package body Sem_Ch3 is
             when Array_Kind =>
                Mutate_Ekind                  (Id, E_Array_Subtype);
                Copy_Array_Subtype_Attributes (Id, T);
+               Set_Packed_Array_Impl_Type    (Id, Packed_Array_Impl_Type (T));
 
             when Decimal_Fixed_Point_Kind =>
                Mutate_Ekind             (Id, E_Decimal_Fixed_Point_Subtype);
@@ -14972,6 +14973,9 @@ package body Sem_Ch3 is
    -- Copy_Array_Subtype_Attributes --
    -----------------------------------
 
+   --  Note that we used to copy Packed_Array_Impl_Type too here, but we now
+   --  let it be recreated during freezing for the sake of better debug info.
+
    procedure Copy_Array_Subtype_Attributes (T1, T2 : Entity_Id) is
    begin
       Set_Size_Info (T1, T2);
@@ -14989,7 +14993,6 @@ package body Sem_Ch3 is
       Set_Convention              (T1, Convention              (T2));
       Set_Is_Limited_Composite    (T1, Is_Limited_Composite    (T2));
       Set_Is_Private_Composite    (T1, Is_Private_Composite    (T2));
-      Set_Packed_Array_Impl_Type  (T1, Packed_Array_Impl_Type  (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------
