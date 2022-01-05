@@ -2841,7 +2841,7 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
       for (unsigned i = 0; valid[i] != UCHAR_MAX; ++i)
 	{
 	  const char *modname = memory_models[valid[i]].modname;
-	  pp_printf (&pp, "%s%<%s%>", i ? ", " : "", modname);
+	  pp_printf (&pp, "%s%qs", i ? ", " : "", modname);
 	}
 
       inform (loc, "valid models are %s", pp_formatted_text (&pp));
