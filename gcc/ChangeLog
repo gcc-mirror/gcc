@@ -1,3 +1,105 @@
+2022-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99612
+	* builtins.c (get_memmodel): Move warning code to
+	gimple-ssa-warn-access.cc.
+	(expand_builtin_atomic_compare_exchange): Same.
+	(expand_ifn_atomic_compare_exchange): Same.
+	(expand_builtin_atomic_load): Same.
+	(expand_builtin_atomic_store): Same.
+	(expand_builtin_atomic_clear): Same.
+	* doc/extend.texi (__atomic_exchange_n): Update valid memory
+	models.
+	* gimple-ssa-warn-access.cc (memmodel_to_uhwi): New function.
+	(struct memmodel_pair): New struct.
+	(memmodel_name): New function.
+	(pass_waccess::maybe_warn_memmodel): New function.
+	(pass_waccess::check_atomic_memmodel): New function.
+	(pass_waccess::check_atomic_builtin): Handle memory model.
+	* input.c (expansion_point_location_if_in_system_header): Return
+	original location if expansion location is in a system header.
+
+2022-01-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (one_cmplv2qi3): New insn pattern.
+	(one_cmplv2qi3 splitters): New post-reload splitters.
+	(*andnotv2qi3): New insn pattern.
+	(andnotv2qi3 splitters): New post-reload splitters.
+	(<any_logic:code>v2qi3): New insn pattern.
+	(<any_logic:insn>v2qi3 splitters): New post-reload splitters.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103800
+	* tree-vect-loop.c (vectorizable_phi): Remove assert and
+	expand comment.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103690
+	* tree-pass.h (tail_merge_optimize): Adjust.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Pass in whether
+	to re-split critical edges, move CFG cleanup ...
+	* tree-ssa-pre.c (pass_pre::execute): ... here, before
+	simple_dce_from_worklist and delay freeing inserted_exprs from
+	...
+	(fini_pre): .. here.
+
+2022-01-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.h (STORE_FLAG_VALUE): Change to 1.
+	* config/nvptx/nvptx.md (movbi): Use P1 constraint for true.
+	(setcc_from_bi): Remove SImode specific pattern.
+	(setcc<mode>_from_bi): Provide more general HSDIM pattern.
+	(extendbi<mode>2, zeroextendbi<mode>2): Provide instructions
+	for sign- and zero-extending BImode predicates to integers.
+	(setcc_int<mode>): Remove previous (-1-based) instructions.
+	(cstorebi4): Remove BImode to SImode specific expander.
+	(cstore<mode>4): Fix indentation.  Expand using setccsi_from_bi.
+	(cstore<mode>4): For both integer and floating point modes.
+
+2022-01-04  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (driver_handle_option): do_save --sysroot.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103864
+	PR tree-optimization/103544
+	* tree-vect-slp.c (vect_analyze_slp_instance): Exclude
+	reductions wrapped in conversions from SLP handling.
+	(vect_analyze_slp): Revert PR103544 change.
+
+2022-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Don't call can_get_prologue
+	uselessly for blocks for which it has been called already.
+
+2022-01-04  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add new model values
+	to Alderlake and Rocketlake.
+
+2022-01-04  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103643
+	* gimplify.c (gimplify_omp_affinity): Adjust gimplify_expr of entire
+	OMP_CLAUSE_DECL to use 'is_gimple_lvalue, fb_lvalue'
+
+2022-01-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103895
+	* config/i386/sse.md (*bit_and_float_vector_all_ones):
+	Force_reg operand 1 to avoid ICE.
+
+2022-01-04  Jason Merrill  <jason@redhat.com>
+
+	* tree-pretty-print.c (do_niy): Add spc parameter.
+	(NIY): Pass it.
+	(print_call_name): Add spc local variable.
+
 2022-01-03  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103894

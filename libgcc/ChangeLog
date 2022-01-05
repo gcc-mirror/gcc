@@ -1,3 +1,8 @@
+2022-01-04  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call _dl_find_object
+	if available.
+
 2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/linux-atomic.c (_ASM_EFAULT): Define.

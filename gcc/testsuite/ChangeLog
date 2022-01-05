@@ -1,3 +1,43 @@
+2022-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99612
+	* c-c++-common/pr83059.c: Adjust text of expected diagnostics.
+	* gcc.dg/atomic-invalid-2.c: Same.
+	* gcc.dg/atomic-invalid.c: Same.
+	* c-c++-common/Winvalid-memory-model.c: New test.
+	* g++.dg/warn/Winvalid-memory-model-2.C: New test.
+	* g++.dg/warn/Winvalid-memory-model.C: New test.
+
+2022-01-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.target/i386/warn-vect-op-2.c: Adjust warnings.
+	* gcc.target/i386/pr103900.c: New test.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103800
+	* gcc.dg/vect/bb-slp-pr103800.c: New testcase.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103864
+	PR tree-optimization/103544
+	* gcc.dg/vect/pr103864.c: New testcase.
+
+2022-01-04  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.dg/gomp/pr103643.f90: New test.
+
+2022-01-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103895.c: New test.
+
+2022-01-04  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/90782
+	* g++.dg/cpp1z/class-deduction100.C: New test.
+
 2022-01-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103758
