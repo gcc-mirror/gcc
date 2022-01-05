@@ -1,3 +1,16 @@
+2022-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add explicit
+	specialization for allocator<void>. Improve doxygen comments.
+	* include/bits/allocator.h (allocator<void>): Restore for the
+	versioned namespace.
+	(allocator<void>::construct, allocator<void>::destroy): Remove.
+	* include/ext/extptr_allocator.h (_Extptr_allocator<void>):
+	Add default constructor and converting constructor.
+
 2021-12-10  Thomas Rodgers  <rodgert@twrodgers.com>
 
 	Backported from master:
