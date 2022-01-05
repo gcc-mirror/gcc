@@ -21292,10 +21292,7 @@
 	  (lt:VI1_AVX2 (match_dup 3) (match_dup 4))] UNSPEC_BLENDV))]
   "operands[3] = gen_lowpart (<MODE>mode, operands[3]);")
 
-(define_mode_attr blendsuf
-  [(V8HI "w") (V8HF "ph")])
-
-(define_insn "sse4_1_pblend<blendsuf>"
+(define_insn "sse4_1_pblend<ssemodesuffix>"
   [(set (match_operand:V8_128 0 "register_operand" "=Yr,*x,x")
 	(vec_merge:V8_128
 	  (match_operand:V8_128 2 "vector_operand" "YrBm,*xBm,xm")
@@ -21314,11 +21311,11 @@
    (set_attr "mode" "TI")])
 
 ;; The builtin uses an 8-bit immediate.  Expand that.
-(define_expand "avx2_pblendw"
-  [(set (match_operand:V16HI 0 "register_operand")
-	(vec_merge:V16HI
-	  (match_operand:V16HI 2 "nonimmediate_operand")
-	  (match_operand:V16HI 1 "register_operand")
+(define_expand "avx2_pblend<ssemodesuffix>"
+  [(set (match_operand:V16_256 0 "register_operand")
+	(vec_merge:V16_256
+	  (match_operand:V16_256 2 "nonimmediate_operand")
+	  (match_operand:V16_256 1 "register_operand")
 	  (match_operand:SI 3 "const_0_to_255_operand")))]
   "TARGET_AVX2"
 {
@@ -21326,11 +21323,11 @@
   operands[3] = GEN_INT (val << 8 | val);
 })
 
-(define_expand "avx2_pblendph"
-  [(set (match_operand:V16HF 0 "register_operand")
-	(vec_merge:V16HF
-	  (match_operand:V16HF 2 "register_operand")
-	  (match_operand:V16HF 1 "register_operand")
+(define_expand "avx2_pblend<ssemodesuffix>_1"
+  [(set (match_operand:V16_256 0 "register_operand")
+	(vec_merge:V16_256
+	  (match_operand:V16_256 2 "register_operand")
+	  (match_operand:V16_256 1 "register_operand")
 	  (match_operand:SI 3 "const_int_operand")))]
   "TARGET_AVX2
   && !((INTVAL (operands[3]) & 0xff) && (INTVAL (operands[3]) & 0xff00))"
@@ -21340,7 +21337,7 @@
     emit_move_insn (operands[0], operands[1]);
   else
    {
-     rtx tmp = gen_reg_rtx (V16HImode);
+     rtx tmp = gen_reg_rtx (<MODE>mode);
      rtx blendw_idx, blendd_idx;
 
      if (mask & 0xff)
@@ -21353,13 +21350,12 @@
 	 blendw_idx = GEN_INT (mask >> 8 & 0xff);
 	 blendd_idx = GEN_INT (240);
        }
-     operands[1] = lowpart_subreg (V16HImode, operands[1], V16HFmode);
-     operands[2] = lowpart_subreg (V16HImode, operands[2], V16HFmode);
-     emit_insn (gen_avx2_pblendw (tmp, operands[1], operands[2], blendw_idx));
+     emit_insn (gen_avx2_pblend<ssemodesuffix> (tmp, operands[1],
+						operands[2], blendw_idx));
 
-     operands[0] = lowpart_subreg (V8SImode, operands[0], V16HFmode);
-     tmp = lowpart_subreg (V8SImode, tmp, V16HImode);
-     operands[1] = lowpart_subreg (V8SImode, operands[1], V16HImode);
+     operands[0] = lowpart_subreg (V8SImode, operands[0], <MODE>mode);
+     tmp = lowpart_subreg (V8SImode, tmp, <MODE>mode);
+     operands[1] = lowpart_subreg (V8SImode, operands[1], <MODE>mode);
      emit_insn (gen_avx2_pblenddv8si (operands[0], operands[1],
 				      tmp, blendd_idx));
   }
@@ -21367,11 +21363,11 @@
   DONE;
 })
 
-(define_insn "*avx2_pblendw"
-  [(set (match_operand:V16HI 0 "register_operand" "=x")
-	(vec_merge:V16HI
-	  (match_operand:V16HI 2 "nonimmediate_operand" "xm")
-	  (match_operand:V16HI 1 "register_operand" "x")
+(define_insn "*avx2_pblend<ssemodesuffix>"
+  [(set (match_operand:V16_256 0 "register_operand" "=x")
+	(vec_merge:V16_256
+	  (match_operand:V16_256 2 "nonimmediate_operand" "xm")
+	  (match_operand:V16_256 1 "register_operand" "x")
 	  (match_operand:SI 3 "avx2_pblendw_operand" "n")))]
   "TARGET_AVX2"
 {

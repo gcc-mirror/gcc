@@ -16245,10 +16245,11 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       goto half;
 
     case E_V16HFmode:
-      if (TARGET_AVX2)
+      /* For ELT == 0, vec_setv8hf_0 can save 1 vpbroadcastw.  */
+      if (TARGET_AVX2 && elt != 0)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx2_pblendph;
+	  gen_blendm = gen_avx2_pblendph_1;
 	  blendm_const = true;
 	  break;
 	}
