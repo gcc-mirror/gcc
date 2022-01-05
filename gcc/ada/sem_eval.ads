@@ -113,7 +113,7 @@ package Sem_Eval is
    --  The expression 'C' is not static in the technical RM sense, but for many
    --  simple record types, the size is in fact known at compile time. When we
    --  are trying to perform compile time constant folding (for instance for
-   --  expressions like C + 1, Is_Static_Expression or Is_OK_Static_Expression
+   --  expressions like C + 1), Is_Static_Expression or Is_OK_Static_Expression
    --  are not the right functions to test if folding is possible. Instead, we
    --  use Compile_Time_Known_Value. All static expressions that do not raise
    --  constraint error (i.e. those for which Is_OK_Static_Expression is true)

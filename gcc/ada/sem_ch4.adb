@@ -515,7 +515,7 @@ package body Sem_Ch4 is
             --  parameters. Note that this is now a static error even if the
             --  subprogram is not the main program (this is a change, in an
             --  earlier version only the main program was affected, and the
-            --  check had to be done in the binder.
+            --  check had to be done in the binder).
 
             if Nkind (P) = N_Subprogram_Body
               and then Nkind (Parent (P)) = N_Compilation_Unit
@@ -563,7 +563,7 @@ package body Sem_Ch4 is
          Find_Type (Subtype_Mark (E));
 
          --  Analyze the qualified expression, and apply the name resolution
-         --  rule given in  4.7(3).
+         --  rule given in 4.7(3).
 
          Analyze (E);
          Type_Id := Etype (E);
