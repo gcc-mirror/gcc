@@ -7191,6 +7191,10 @@ on this implementation detail.
 
 @hook TARGET_CAN_INLINE_P
 
+@hook TARGET_UPDATE_IPA_FN_TARGET_INFO
+
+@hook TARGET_NEED_IPA_FN_TARGET_INFO
+
 @hook TARGET_RELAYOUT_FUNCTION
 
 @node Emulated TLS
