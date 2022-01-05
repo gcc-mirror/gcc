@@ -83,6 +83,15 @@ gfc_pop_suppress_errors (void)
 }
 
 
+/* Query whether errors are suppressed.  */
+
+bool
+gfc_query_suppress_errors (void)
+{
+  return suppress_errors > 0;
+}
+
+
 /* Determine terminal width (for trimming source lines in output).  */
 
 static int

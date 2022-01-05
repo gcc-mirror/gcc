@@ -1083,6 +1083,7 @@ typedef struct
 
 void gfc_push_suppress_errors (void);
 void gfc_pop_suppress_errors (void);
+bool gfc_query_suppress_errors (void);
 
 
 /* Character length structures hold the expression that gives the
