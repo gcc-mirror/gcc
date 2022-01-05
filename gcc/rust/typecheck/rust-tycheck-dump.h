@@ -141,7 +141,7 @@ public:
 
   void visit (HIR::LiteralExpr &expr) override
   {
-    dump += expr.get_literal ()->as_string () + ":"
+    dump += expr.get_literal ().as_string () + ":"
 	    + type_string (expr.get_mappings ());
   }
 

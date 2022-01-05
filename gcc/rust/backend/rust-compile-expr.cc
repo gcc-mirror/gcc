@@ -27,6 +27,8 @@
 #include "rust-compile-pattern.h"
 
 #include "fold-const.h"
+#include "realmpfr.h"
+#include "convert.h"
 
 namespace Rust {
 namespace Compile {
@@ -891,6 +893,211 @@ CompileExpr::resolve_operator_overload (
   auto fncontext = ctx->peek_fn ();
   return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
 					       nullptr, expr.get_locus ());
+}
+
+tree
+CompileExpr::compile_bool_literal (const HIR::LiteralExpr &expr,
+				   const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::BOOL);
+
+  const auto literal_value = expr.get_literal ();
+  bool bval = literal_value.as_string ().compare ("true") == 0;
+  return ctx->get_backend ()->boolean_constant_expression (bval);
+}
+
+tree
+CompileExpr::compile_integer_literal (const HIR::LiteralExpr &expr,
+				      const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::INT);
+  const auto literal_value = expr.get_literal ();
+
+  tree type = TyTyResolveCompile::compile (ctx, tyty);
+  rust_assert (TREE_CODE (type) == INTEGER_TYPE);
+
+  mpz_t ival;
+  if (mpz_init_set_str (ival, literal_value.as_string ().c_str (), 10) != 0)
+    {
+      rust_error_at (expr.get_locus (), "bad number in literal");
+      return error_mark_node;
+    }
+
+  mpz_t type_min;
+  mpz_t type_max;
+  mpz_init (type_min);
+  mpz_init (type_max);
+  get_type_static_bounds (type, type_min, type_max);
+
+  if (mpz_cmp (ival, type_min) < 0 || mpz_cmp (ival, type_max) > 0)
+    {
+      rust_error_at (expr.get_locus (),
+		     "integer overflows the respective type %<%s%>",
+		     tyty->get_name ().c_str ());
+      return error_mark_node;
+    }
+  return double_int_to_tree (type, mpz_get_double_int (type, ival, true));
+}
+
+tree
+CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
+				    const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::FLOAT);
+  const auto literal_value = expr.get_literal ();
+
+  mpfr_t fval;
+  if (mpfr_init_set_str (fval, literal_value.as_string ().c_str (), 10,
+			 MPFR_RNDN)
+      != 0)
+    {
+      rust_error_at (expr.get_locus (), "bad number in literal");
+      return error_mark_node;
+    }
+
+  tree type = TyTyResolveCompile::compile (ctx, tyty);
+
+  // taken from:
+  // see go/gofrontend/expressions.cc:check_float_type
+  mpfr_exp_t exp = mpfr_get_exp (fval);
+  bool real_value_overflow = exp > TYPE_PRECISION (type);
+
+  REAL_VALUE_TYPE r1;
+  real_from_mpfr (&r1, fval, type, GMP_RNDN);
+  REAL_VALUE_TYPE r2;
+  real_convert (&r2, TYPE_MODE (type), &r1);
+
+  tree real_value = build_real (type, r2);
+  if (TREE_OVERFLOW (real_value) || real_value_overflow)
+    {
+      rust_error_at (expr.get_locus (),
+		     "decimal overflows the respective type %<%s%>",
+		     tyty->get_name ().c_str ());
+      return error_mark_node;
+    }
+
+  return real_value;
+}
+
+tree
+CompileExpr::compile_char_literal (const HIR::LiteralExpr &expr,
+				   const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::CHAR);
+  const auto literal_value = expr.get_literal ();
+
+  // FIXME needs wchar_t
+  char c = literal_value.as_string ().c_str ()[0];
+  return ctx->get_backend ()->wchar_constant_expression (c);
+}
+
+tree
+CompileExpr::compile_byte_literal (const HIR::LiteralExpr &expr,
+				   const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::BYTE);
+  const auto literal_value = expr.get_literal ();
+
+  tree type = TyTyResolveCompile::compile (ctx, tyty);
+  char c = literal_value.as_string ().c_str ()[0];
+  return build_int_cst (type, c);
+}
+
+tree
+CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
+				     const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::STRING);
+  const auto literal_value = expr.get_literal ();
+
+  auto base = ctx->get_backend ()->string_constant_expression (
+    literal_value.as_string ());
+  return ctx->get_backend ()->address_expression (base, expr.get_locus ());
+}
+
+tree
+CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
+					  const TyTy::BaseType *tyty)
+{
+  rust_assert (expr.get_lit_type () == HIR::Literal::BYTE_STRING);
+
+  // the type here is &[ty; capacity]
+  rust_assert (tyty->get_kind () == TyTy::TypeKind::REF);
+  const auto ref_tyty = static_cast<const TyTy::ReferenceType *> (tyty);
+  auto base_tyty = ref_tyty->get_base ();
+  rust_assert (base_tyty->get_kind () == TyTy::TypeKind::ARRAY);
+  auto array_tyty = static_cast<TyTy::ArrayType *> (base_tyty);
+
+  std::string value_str = expr.get_literal ().as_string ();
+  std::vector<tree> vals;
+  std::vector<unsigned long> indexes;
+  for (size_t i = 0; i < value_str.size (); i++)
+    {
+      char b = value_str.at (i);
+      tree bb = ctx->get_backend ()->char_constant_expression (b);
+      vals.push_back (bb);
+      indexes.push_back (i);
+    }
+
+  tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
+  tree constructed
+    = ctx->get_backend ()->array_constructor_expression (array_type, indexes,
+							 vals,
+							 expr.get_locus ());
+
+  return ctx->get_backend ()->address_expression (constructed,
+						  expr.get_locus ());
+}
+
+tree
+CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
+				   Location location)
+{
+  if (type_to_cast_to == error_mark_node || expr_tree == error_mark_node
+      || TREE_TYPE (expr_tree) == error_mark_node)
+    return error_mark_node;
+
+  if (ctx->get_backend ()->type_size (type_to_cast_to) == 0
+      || TREE_TYPE (expr_tree) == void_type_node)
+    {
+      // Do not convert zero-sized types.
+      return expr_tree;
+    }
+  else if (TREE_CODE (type_to_cast_to) == INTEGER_TYPE)
+    {
+      tree cast = fold (convert_to_integer (type_to_cast_to, expr_tree));
+      // FIXME check for TREE_OVERFLOW?
+      return cast;
+    }
+  else if (TREE_CODE (type_to_cast_to) == REAL_TYPE)
+    {
+      tree cast = fold (convert_to_real (type_to_cast_to, expr_tree));
+      // FIXME
+      // We might need to check that the tree is MAX val and thusly saturate it
+      // to inf. we can get the bounds and check the value if its >= or <= to
+      // the min and max bounds
+      //
+      // https://github.com/Rust-GCC/gccrs/issues/635
+      return cast;
+    }
+  else if (TREE_CODE (type_to_cast_to) == COMPLEX_TYPE)
+    {
+      return fold (convert_to_complex (type_to_cast_to, expr_tree));
+    }
+  else if (TREE_CODE (type_to_cast_to) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (expr_tree)) == INTEGER_TYPE)
+    {
+      return fold (convert_to_pointer (type_to_cast_to, expr_tree));
+    }
+  else if (TREE_CODE (type_to_cast_to) == RECORD_TYPE
+	   || TREE_CODE (type_to_cast_to) == ARRAY_TYPE)
+    {
+      return fold_build1_loc (location.gcc_location (), VIEW_CONVERT_EXPR,
+			      type_to_cast_to, expr_tree);
+    }
+
+  return fold_convert_loc (location.gcc_location (), type_to_cast_to,
+			   expr_tree);
 }
 
 } // namespace Compile

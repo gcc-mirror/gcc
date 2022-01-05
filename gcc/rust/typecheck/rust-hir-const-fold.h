@@ -354,7 +354,7 @@ public:
       {
 	case HIR::Literal::INT: {
 	  mpz_t ival;
-	  if (mpz_init_set_str (ival, literal_value->as_string ().c_str (), 10)
+	  if (mpz_init_set_str (ival, literal_value.as_string ().c_str (), 10)
 	      != 0)
 	    {
 	      rust_fatal_error (expr.get_locus (), "bad number in literal");
@@ -376,14 +376,14 @@ public:
 	return;
 
 	case HIR::Literal::BOOL: {
-	  bool bval = literal_value->as_string ().compare ("true") == 0;
+	  bool bval = literal_value.as_string ().compare ("true") == 0;
 	  folded = ctx->get_backend ()->boolean_constant_expression (bval);
 	}
 	return;
 
 	case HIR::Literal::FLOAT: {
 	  mpfr_t fval;
-	  if (mpfr_init_set_str (fval, literal_value->as_string ().c_str (), 10,
+	  if (mpfr_init_set_str (fval, literal_value.as_string ().c_str (), 10,
 				 MPFR_RNDN)
 	      != 0)
 	    {

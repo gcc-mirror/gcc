@@ -234,132 +234,41 @@ public:
 
   void visit (HIR::LiteralExpr &expr) override
   {
-    auto literal_value = expr.get_literal ();
+    TyTy::BaseType *tyty = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					 &tyty))
+      return;
+
     switch (expr.get_lit_type ())
       {
-	case HIR::Literal::BOOL: {
-	  bool bval = literal_value->as_string ().compare ("true") == 0;
-	  translated = ctx->get_backend ()->boolean_constant_expression (bval);
-	}
+      case HIR::Literal::BOOL:
+	translated = compile_bool_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::INT: {
-	  mpz_t ival;
-	  if (mpz_init_set_str (ival, literal_value->as_string ().c_str (), 10)
-	      != 0)
-	    {
-	      rust_fatal_error (expr.get_locus (), "bad number in literal");
-	      return;
-	    }
-
-	  TyTy::BaseType *tyty = nullptr;
-	  if (!ctx->get_tyctx ()->lookup_type (
-		expr.get_mappings ().get_hirid (), &tyty))
-	    {
-	      rust_fatal_error (
-		expr.get_locus (),
-		"did not resolve type for this literal expr (HirId %d)",
-		expr.get_mappings ().get_hirid ());
-	      return;
-	    }
-
-	  tree type = TyTyResolveCompile::compile (ctx, tyty);
-	  translated
-	    = ctx->get_backend ()->integer_constant_expression (type, ival);
-	}
+      case HIR::Literal::INT:
+	translated = compile_integer_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::FLOAT: {
-	  mpfr_t fval;
-	  if (mpfr_init_set_str (fval, literal_value->as_string ().c_str (), 10,
-				 MPFR_RNDN)
-	      != 0)
-	    {
-	      rust_fatal_error (expr.get_locus (),
-				"bad floating-point number in literal");
-	      return;
-	    }
-
-	  TyTy::BaseType *tyty = nullptr;
-	  if (!ctx->get_tyctx ()->lookup_type (
-		expr.get_mappings ().get_hirid (), &tyty))
-	    {
-	      rust_fatal_error (expr.get_locus (),
-				"did not resolve type for this literal expr");
-	      return;
-	    }
-
-	  tree type = TyTyResolveCompile::compile (ctx, tyty);
-	  translated
-	    = ctx->get_backend ()->float_constant_expression (type, fval);
-	}
+      case HIR::Literal::FLOAT:
+	translated = compile_float_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::CHAR: {
-	  // FIXME needs wchar_t
-	  char c = literal_value->as_string ().c_str ()[0];
-	  translated = ctx->get_backend ()->wchar_constant_expression (c);
-	}
+      case HIR::Literal::CHAR:
+	translated = compile_char_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::BYTE: {
-	  char c = literal_value->as_string ().c_str ()[0];
-	  translated = ctx->get_backend ()->char_constant_expression (c);
-	}
+      case HIR::Literal::BYTE:
+	translated = compile_byte_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::STRING: {
-	  auto base = ctx->get_backend ()->string_constant_expression (
-	    literal_value->as_string ());
-	  translated
-	    = ctx->get_backend ()->address_expression (base, expr.get_locus ());
-	}
+      case HIR::Literal::STRING:
+	translated = compile_string_literal (expr, tyty);
 	return;
 
-	case HIR::Literal::BYTE_STRING: {
-	  TyTy::BaseType *tyty = nullptr;
-	  if (!ctx->get_tyctx ()->lookup_type (
-		expr.get_mappings ().get_hirid (), &tyty))
-	    {
-	      rust_error_at (expr.get_locus (),
-			     "did not resolve type for this byte string");
-	      return;
-	    }
-
-	  // the type here is &[ty; capacity]
-	  rust_assert (tyty->get_kind () == TyTy::TypeKind::REF);
-	  auto ref_tyty = static_cast<TyTy::ReferenceType *> (tyty);
-	  auto base_tyty = ref_tyty->get_base ();
-	  rust_assert (base_tyty->get_kind () == TyTy::TypeKind::ARRAY);
-	  auto array_tyty = static_cast<TyTy::ArrayType *> (base_tyty);
-
-	  std::string value_str = expr.get_literal ()->as_string ();
-	  std::vector<tree> vals;
-	  std::vector<unsigned long> indexes;
-	  for (size_t i = 0; i < value_str.size (); i++)
-	    {
-	      char b = value_str.at (i);
-	      tree bb = ctx->get_backend ()->char_constant_expression (b);
-	      vals.push_back (bb);
-	      indexes.push_back (i);
-	    }
-
-	  tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
-	  tree constructed = ctx->get_backend ()->array_constructor_expression (
-	    array_type, indexes, vals, expr.get_locus ());
-
-	  translated
-	    = ctx->get_backend ()->address_expression (constructed,
-						       expr.get_locus ());
-	}
-	return;
-
-      default:
-	rust_fatal_error (expr.get_locus (), "unknown literal");
+      case HIR::Literal::BYTE_STRING:
+	translated = compile_byte_string_literal (expr, tyty);
 	return;
       }
-
-    gcc_unreachable ();
   }
 
   void visit (HIR::AssignmentExpr &expr) override
@@ -502,20 +411,19 @@ public:
 
   void visit (HIR::TypeCastExpr &expr) override
   {
-    TyTy::BaseType *tyty_to_cast_to = nullptr;
+    TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-					 &tyty_to_cast_to))
+					 &tyty))
       {
-	translated = ctx->get_backend ()->error_expression ();
+	translated = error_mark_node;
 	return;
       }
 
-    auto type_to_cast_to = TyTyResolveCompile::compile (ctx, tyty_to_cast_to);
+    auto type_to_cast_to = TyTyResolveCompile::compile (ctx, tyty);
     auto casted_expr
       = CompileExpr::Compile (expr.get_casted_expr ().get (), ctx);
     translated
-      = ctx->get_backend ()->convert_expression (type_to_cast_to, casted_expr,
-						 expr.get_locus ());
+      = type_cast_expression (type_to_cast_to, casted_expr, expr.get_locus ());
   }
 
   void visit (HIR::IfExpr &expr) override
@@ -1067,9 +975,33 @@ protected:
 			     HIR::OperatorExpr &expr, tree lhs, tree rhs,
 			     HIR::Expr *lhs_expr, HIR::Expr *rhs_expr);
 
+  tree compile_bool_literal (const HIR::LiteralExpr &expr,
+			     const TyTy::BaseType *tyty);
+
+  tree compile_integer_literal (const HIR::LiteralExpr &expr,
+				const TyTy::BaseType *tyty);
+
+  tree compile_float_literal (const HIR::LiteralExpr &expr,
+			      const TyTy::BaseType *tyty);
+
+  tree compile_char_literal (const HIR::LiteralExpr &expr,
+			     const TyTy::BaseType *tyty);
+
+  tree compile_byte_literal (const HIR::LiteralExpr &expr,
+			     const TyTy::BaseType *tyty);
+
+  tree compile_string_literal (const HIR::LiteralExpr &expr,
+			       const TyTy::BaseType *tyty);
+
+  tree compile_byte_string_literal (const HIR::LiteralExpr &expr,
+				    const TyTy::BaseType *tyty);
+
+  tree type_cast_expression (tree type_to_cast_to, tree expr, Location locus);
+
 private:
   CompileExpr (Context *ctx)
-    : HIRCompileBase (ctx), translated (nullptr), capacity_expr (nullptr)
+    : HIRCompileBase (ctx), translated (error_mark_node),
+      capacity_expr (nullptr)
   {}
 
   tree translated;

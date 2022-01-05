@@ -444,7 +444,7 @@ public:
   void visit (FloatType &type) override
   {
     bool is_valid
-      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL)
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL)
 	|| (base->get_infer_kind () == TyTy::InferType::InferTypeKind::FLOAT);
     if (is_valid)
       {

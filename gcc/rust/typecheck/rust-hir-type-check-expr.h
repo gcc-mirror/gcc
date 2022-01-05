@@ -604,7 +604,7 @@ public:
 	case HIR::Literal::LitType::INT: {
 	  bool ok = false;
 
-	  switch (expr.get_literal ()->get_type_hint ())
+	  switch (expr.get_literal ().get_type_hint ())
 	    {
 	    case CORETYPE_I8:
 	      ok = context->lookup_builtin ("i8", &infered);
@@ -639,11 +639,11 @@ public:
 	      break;
 
 	    case CORETYPE_F32:
-	      expr.get_literal ()->set_lit_type (HIR::Literal::LitType::FLOAT);
+	      expr.get_literal ().set_lit_type (HIR::Literal::LitType::FLOAT);
 	      ok = context->lookup_builtin ("f32", &infered);
 	      break;
 	    case CORETYPE_F64:
-	      expr.get_literal ()->set_lit_type (HIR::Literal::LitType::FLOAT);
+	      expr.get_literal ().set_lit_type (HIR::Literal::LitType::FLOAT);
 	      ok = context->lookup_builtin ("f64", &infered);
 	      break;
 
@@ -661,7 +661,7 @@ public:
 	case HIR::Literal::LitType::FLOAT: {
 	  bool ok = false;
 
-	  switch (expr.get_literal ()->get_type_hint ())
+	  switch (expr.get_literal ().get_type_hint ())
 	    {
 	    case CORETYPE_F32:
 	      ok = context->lookup_builtin ("f32", &infered);
@@ -727,7 +727,7 @@ public:
 	  /* Capacity is the size of the string (number of chars).
 	     It is a constant, but for fold it to get a tree.  */
 	  std::string capacity_str
-	    = std::to_string (expr.get_literal ()->as_string ().size ());
+	    = std::to_string (expr.get_literal ().as_string ().size ());
 	  HIR::LiteralExpr literal_capacity (capacity_mapping, capacity_str,
 					     HIR::Literal::LitType::INT,
 					     PrimitiveCoreType::CORETYPE_USIZE,
