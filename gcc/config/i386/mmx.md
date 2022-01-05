@@ -63,6 +63,12 @@
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
 
+;; 4-byte and 2-byte integer vector modes
+(define_mode_iterator VI_16_32 [V4QI V2QI V2HI])
+
+;; 4-byte and 2-byte QImode vector modes
+(define_mode_iterator VI1_16_32 [V4QI V2QI])
+
 ;; V2S* modes
 (define_mode_iterator V2FI [V2SF V2SI])
 
@@ -71,7 +77,8 @@
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize
-  [(V8QI "b") (V4QI "b") (V4HI "w") (V2HI "w") (V2SI "d") (V1DI "q")])
+  [(V8QI "b") (V4QI "b") (V2QI "b")
+   (V4HI "w") (V2HI "w") (V2SI "d") (V1DI "q")])
 
 (define_mode_attr mmxdoublemode
   [(V8QI "V8HI") (V4HI "V4SI")])
@@ -2140,11 +2147,11 @@
 	  (match_operand:V4HI 2 "register_operand")))]
   "TARGET_MMX_WITH_SSE")
 
-(define_insn "<code>v4qi3"
-  [(set (match_operand:V4QI 0 "register_operand" "=Yr,*x,Yv")
-	(smaxmin:V4QI
-	  (match_operand:V4QI 1 "register_operand" "%0,0,Yv")
-	  (match_operand:V4QI 2 "register_operand" "Yr,*x,Yv")))]
+(define_insn "<code><mode>3"
+  [(set (match_operand:VI1_16_32 0 "register_operand" "=Yr,*x,Yv")
+	(smaxmin:VI1_16_32
+	  (match_operand:VI1_16_32 1 "register_operand" "%0,0,Yv")
+	  (match_operand:VI1_16_32 2 "register_operand" "Yr,*x,Yv")))]
   "TARGET_SSE4_1"
   "@
    p<maxmin_int>b\t{%2, %0|%0, %2}
@@ -2218,11 +2225,11 @@
 	  (match_operand:V8QI 2 "register_operand")))]
   "TARGET_MMX_WITH_SSE")
 
-(define_insn "<code>v4qi3"
-  [(set (match_operand:V4QI 0 "register_operand" "=x,Yw")
-        (umaxmin:V4QI
-	  (match_operand:V4QI 1 "register_operand" "%0,Yw")
-	  (match_operand:V4QI 2 "register_operand" "x,Yw")))]
+(define_insn "<code><mode>3"
+  [(set (match_operand:VI1_16_32 0 "register_operand" "=x,Yw")
+        (umaxmin:VI1_16_32
+	  (match_operand:VI1_16_32 1 "register_operand" "%0,Yw")
+	  (match_operand:VI1_16_32 2 "register_operand" "x,Yw")))]
   "TARGET_SSE2"
   "@
    p<maxmin_int>b\t{%2, %0|%0, %2}
@@ -2269,9 +2276,9 @@
   "TARGET_SSSE3 && TARGET_MMX_WITH_SSE")
 
 (define_insn "abs<mode>2"
-  [(set (match_operand:VI_32 0 "register_operand" "=Yv")
-	(abs:VI_32
-	  (match_operand:VI_32 1 "register_operand" "Yv")))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=Yv")
+	(abs:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "Yv")))]
   "TARGET_SSSE3"
   "%vpabs<mmxvecsize>\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog1")
@@ -4342,6 +4349,26 @@
 		  (match_operand:V4QI 2 "register_operand" "x,Yw")))
 	      (const_vector:V4HI [(const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)]))
+	    (const_int 1))))]
+  "TARGET_SSE2"
+  "@
+   pavgb\t{%2, %0|%0, %2}
+   vpavgb\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "mode" "TI")])
+
+(define_insn "uavgv2qi3_ceil"
+  [(set (match_operand:V2QI 0 "register_operand" "=x,Yw")
+	(truncate:V2QI
+	  (lshiftrt:V2HI
+	    (plus:V2HI
+	      (plus:V2HI
+		(zero_extend:V2HI
+		  (match_operand:V2QI 1 "register_operand" "%0,Yw"))
+		(zero_extend:V2HI
+		  (match_operand:V2QI 2 "register_operand" "x,Yw")))
+	      (const_vector:V2HI [(const_int 1) (const_int 1)]))
 	    (const_int 1))))]
   "TARGET_SSE2"
   "@
