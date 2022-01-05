@@ -4006,7 +4006,8 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
 static tree
 build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 		    special_function_kind auto_delete_vec,
-		    int use_global_delete, tsubst_flags_t complain)
+		    int use_global_delete, tsubst_flags_t complain,
+		    bool in_cleanup = false)
 {
   tree virtual_size;
   tree ptype = build_pointer_type (type = complete_type (type));
@@ -4109,6 +4110,18 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
   body = build_compound_expr (loc, body, tmp);
 
   loop = build1 (LOOP_EXPR, void_type_node, body);
+
+  /* If one destructor throws, keep trying to clean up the rest, unless we're
+     already in a build_vec_init cleanup.  */
+  if (flag_exceptions && !in_cleanup && !expr_noexcept_p (tmp, tf_none))
+    {
+      loop = build2 (TRY_CATCH_EXPR, void_type_node, loop,
+		     unshare_expr (loop));
+      /* Tell honor_protect_cleanup_actions to discard this on the
+	 exceptional path.  */
+      TRY_CATCH_IS_CLEANUP (loop) = true;
+    }
+
   loop = build_compound_expr (loc, tbase_init, loop);
 
  no_destructor:
@@ -4490,7 +4503,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       e = build_vec_delete_1 (input_location, rval, m,
 			      inner_elt_type, sfk_complete_destructor,
-			      /*use_global_delete=*/0, complain);
+			      /*use_global_delete=*/0, complain,
+			      /*in_cleanup*/true);
       if (e == error_mark_node)
 	errors = true;
       TARGET_EXPR_CLEANUP (iterator_targ) = e;
