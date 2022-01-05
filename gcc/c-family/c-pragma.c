@@ -441,7 +441,8 @@ handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
 
   token = pragma_lex (&x);
   if (token != CPP_NAME)
-    GCC_BAD ("missing [big-endian|little-endian|default] after %<#pragma scalar_storage_order%>");
+    GCC_BAD ("missing %<big-endian%>, %<little-endian%>, or %<default%> after "
+	     "%<#pragma scalar_storage_order%>");
   kind_string = IDENTIFIER_POINTER (x);
   if (strcmp (kind_string, "default") == 0)
     global_sso = default_sso;
@@ -450,7 +451,8 @@ handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
   else if (strcmp (kind_string, "little") == 0)
     global_sso = SSO_LITTLE_ENDIAN;
   else
-    GCC_BAD ("expected [big-endian|little-endian|default] after %<#pragma scalar_storage_order%>");
+    GCC_BAD ("expected %<big-endian%>, %<little-endian%>, or %<default%> after "
+	     "%<#pragma scalar_storage_order%>");
 }
 
 /* GCC supports two #pragma directives for renaming the external
@@ -771,8 +773,9 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   if (token != CPP_NAME)
     {
       warning_at (loc, OPT_Wpragmas,
-		  "missing [error|warning|ignored|push|pop|ignored_attributes]"
-		  " after %<#pragma GCC diagnostic%>");
+		  "missing %<error%>, %<warning%>, %<ignored%>, %<push%>, "
+		  "%<pop%>, or %<ignored_attributes%> after "
+		  "%<#pragma GCC diagnostic%>");
       return;
     }
 
@@ -830,8 +833,9 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
   else
     {
       warning_at (loc, OPT_Wpragmas,
-		  "expected [error|warning|ignored|push|pop|ignored_attributes]"
-		  " after %<#pragma GCC diagnostic%>");
+		  "expected %<error%>, %<warning%>, %<ignored%>, %<push%>, "
+		  "%<pop%>, %<ignored_attributes%> after "
+		  "%<#pragma GCC diagnostic%>");
       return;
     }
 
