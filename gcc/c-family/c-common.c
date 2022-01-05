@@ -1243,6 +1243,13 @@ c_build_shufflevector (location_t loc, tree v0, tree v1,
       tree lpartt = build_vector_type (TREE_TYPE (ret_type), mask.length ());
       ret = build3_loc (loc, BIT_FIELD_REF,
 			lpartt, ret, TYPE_SIZE (lpartt), bitsize_zero_node);
+      /* Wrap the lowpart operation in a TARGET_EXPR so it gets a separate
+	 temporary during gimplification.  See PR101530 for cases where
+	 we'd otherwise end up with non-toplevel BIT_FIELD_REFs.  */
+      tree tem = create_tmp_var_raw (lpartt);
+      DECL_CONTEXT (tem) = current_function_decl;
+      ret = build4 (TARGET_EXPR, lpartt, tem, ret, NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (ret) = 1;
     }
 
   if (!c_dialect_cxx () && !wrap)
