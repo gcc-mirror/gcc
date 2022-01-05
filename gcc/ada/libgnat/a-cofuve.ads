@@ -303,7 +303,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
          and then Get (Add'Result, Position) = New_Item
          and then Range_Equal
                     (Left  => Container,
-                     Right =>  Add'Result,
+                     Right => Add'Result,
                      Fst   => Index_Type'First,
                      Lst   => Index_Type'Pred (Position))
          and then Range_Shifted

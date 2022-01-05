@@ -420,7 +420,7 @@ package body Sinput.L is
       if Null_Source_Buffer_Ptr (Src) then
          Source_File.Decrement_Last;
 
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             return No_Source_File;
          else
             return No_Access_To_Source_File;

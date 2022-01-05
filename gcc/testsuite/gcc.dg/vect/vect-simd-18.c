@@ -17,7 +17,7 @@ foo (int s, int *p)
   return r;
 }
 
-int p[10000 / 78];
+int p[10000 / 78 + 1];
 
 int
 main ()

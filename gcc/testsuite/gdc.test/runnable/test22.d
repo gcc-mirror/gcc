@@ -16,7 +16,7 @@ extern(C)
 
 /*************************************/
 
-// http://www.digitalmars.com/d/archives/digitalmars/D/bugs/4766.html
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/4766.html
 // Only with -O
 
 real randx()

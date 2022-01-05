@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with System.Soft_Links; use System.Soft_Links;
 
 package body System.Exception_Table is

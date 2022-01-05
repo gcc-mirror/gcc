@@ -31,11 +31,28 @@
 
 --  Long_Long_Long_Integer exponentiation (checks off)
 
+--  Preconditions, postconditions, ghost code, loop invariants and assertions
+--  in this unit are meant for analysis only, not for run-time checking, as it
+--  would be too costly otherwise. This is enforced by setting the assertion
+--  policy to Ignore.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Exponn;
 
-package System.Exn_LLLI is
+package System.Exn_LLLI
+  with SPARK_Mode
+is
 
-   function Exn_Long_Long_Long_Integer is new Exponn (Long_Long_Long_Integer);
-   pragma Pure_Function (Exn_Long_Long_Long_Integer);
+   package Exponn_Integer is new Exponn (Long_Long_Long_Integer);
+
+   function Exn_Long_Long_Long_Integer
+     (Left : Long_Long_Long_Integer; Right : Natural)
+      return Long_Long_Long_Integer
+     renames Exponn_Integer.Expon;
 
 end System.Exn_LLLI;

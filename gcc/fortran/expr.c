@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -5883,8 +5883,16 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 
   if (expr->expr_type == EXPR_FUNCTION)
     {
-      if (expr->value.function.esym)
-	return expr->value.function.esym->result->attr.contiguous;
+      if (expr->value.function.isym)
+	/* TRANSPOSE is the only intrinsic that may return a
+	   non-contiguous array.  It's treated as a special case in
+	   gfc_conv_expr_descriptor too.  */
+	return (expr->value.function.isym->id != GFC_ISYM_TRANSPOSE);
+      else if (expr->value.function.esym)
+	/* Only a pointer to an array without the contiguous attribute
+	   can be non-contiguous as a result value.  */
+	return (expr->value.function.esym->result->attr.contiguous
+		|| !expr->value.function.esym->result->attr.pointer);
       else
 	{
 	  /* Type-bound procedures.  */

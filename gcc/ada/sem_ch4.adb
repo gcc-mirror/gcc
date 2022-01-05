@@ -1637,10 +1637,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Case_Expression
 
    begin
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("case expression", N);
-      end if;
-
       Analyze_And_Resolve (Expr, Any_Discrete);
       Check_Unset_Reference (Expr);
       Exp_Type := Etype (Expr);
@@ -2401,10 +2397,6 @@ package body Sem_Ch4 is
 
       Else_Expr := Next (Then_Expr);
 
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("if expression", N);
-      end if;
-
       --  Analyze and resolve the condition. We need to resolve this now so
       --  that it gets folded to True/False if possible, before we analyze
       --  the THEN/ELSE branches, because when analyzing these branches, we
@@ -2996,10 +2988,6 @@ package body Sem_Ch4 is
          Common_Type       : Entity_Id := Empty;
 
       begin
-         if Comes_From_Source (N) then
-            Check_Compiler_Unit ("set membership", N);
-         end if;
-
          Analyze (L);
          Candidate_Interps := L;
 
@@ -8751,10 +8739,6 @@ package body Sem_Ch4 is
       --  resolution take place. Before expansion the original node is replaced
       --  with the generalized indexing node, which is a call, possibly with a
       --  dereference operation.
-
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("generalized indexing", N);
-      end if;
 
       --  Create argument list for function call that represents generalized
       --  indexing. Note that indices (i.e. actuals) may themselves be

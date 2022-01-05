@@ -433,7 +433,7 @@ enum DecodeMode
  * writefln(decode("a &gt; b")); // writes "a > b"
  * --------------
  */
-string decode(return scope string s, DecodeMode mode=DecodeMode.LOOSE) @safe pure
+string decode(string s, DecodeMode mode=DecodeMode.LOOSE) @safe pure
 {
     import std.algorithm.searching : startsWith;
 

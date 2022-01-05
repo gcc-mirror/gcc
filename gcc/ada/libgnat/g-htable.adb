@@ -34,7 +34,5 @@
 --  supply a dummy body, the old incorrect body is picked up during the
 --  bootstrap process).
 
-pragma Compiler_Unit_Warning;
-
 package body GNAT.HTable is
 end GNAT.HTable;

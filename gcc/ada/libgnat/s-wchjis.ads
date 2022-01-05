@@ -32,8 +32,6 @@
 --  This package contains routines used for converting between internal
 --  JIS codes and the two external forms we support (EUC and Shift-JIS)
 
-pragma Compiler_Unit_Warning;
-
 package System.WCh_JIS is
    pragma Pure;
 

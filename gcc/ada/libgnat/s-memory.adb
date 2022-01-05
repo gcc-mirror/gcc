@@ -38,8 +38,6 @@
 --  of task on sjlj runtimes) cannot safely be handled while malloc is
 --  executing.
 
-pragma Compiler_Unit_Warning;
-
 with System.CRTL;
 with System.Parameters;
 with System.Soft_Links;

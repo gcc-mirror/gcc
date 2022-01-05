@@ -34,8 +34,6 @@
 --  This package provides a utility routine for checking for bad spellings
 --  for the case of System.WCh_Cnv.UTF_32_String arguments.
 
-pragma Compiler_Unit_Warning;
-
 with System.WCh_Cnv;
 
 package GNAT.UTF_32_Spelling_Checker is

@@ -38,8 +38,6 @@
 --  version of the package, an entry is a mere code location representing the
 --  address of a call instruction part of the call-chain.
 
-pragma Compiler_Unit_Warning;
-
 package System.Traceback_Entries is
    pragma Preelaborate;
 

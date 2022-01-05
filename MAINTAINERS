@@ -543,7 +543,7 @@ James A. Morrison				<phython@gcc.gnu.org>
 Brooks Moses					<bmoses@google.com>
 Dirk Mueller					<dmueller@suse.de>
 Phil Muldoon					<pmuldoon@redhat.com>
-Gaius Mulley					<gaius.mulley@southwales.ac.uk>
+Gaius Mulley					<gaiusmod2@gmail.com>
 Steven Munroe					<munroesj52@gmail.com>
 Jun Ma						<junma@linux.alibaba.com>
 Szabolcs Nagy					<szabolcs.nagy@arm.com>
@@ -711,13 +711,14 @@ Certificate of Origin Version 1.1.  See https://gcc.gnu.org/dco.html for more
 information.
 
 
- Matthias Kretz					<m.kretz@gsi.de>
+ Gaius Mulley					<gaiusmod2@gmail.com>
  Jeff Law					<jeffreyalaw@gmail.com>
  Jeff Law					<jlaw@tachyum.com>
  Jonathan Wakely				<jwakely@redhat.com>
- Gaius Mulley					<gaius.mulley@southwales.ac.uk>
- Siddhesh Poyarekar				<siddhesh@gotplt.org>
- Navid Rahimi					<navidrahimi@microsoft.com>
- Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
- Petter Tomner					<tomner@kth.se>
  Martin Uecker					<uecker@gcc.gnu.org>
+ Matthias Kretz					<m.kretz@gsi.de>
+ Nathan Sidwell					<nathan@acm.org>
+ Navid Rahimi					<navidrahimi@microsoft.com>
+ Petter Tomner					<tomner@kth.se>
+ Siddhesh Poyarekar				<siddhesh@gotplt.org>
+ Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>

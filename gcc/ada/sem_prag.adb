@@ -398,14 +398,12 @@ package body Sem_Prag is
             CC := Get_String_Char (Strval (N), J);
 
             if Opt.External_Name_Exp_Casing = Uppercase
-              and then CC >= Get_Char_Code ('a')
-              and then CC <= Get_Char_Code ('z')
+              and then CC in Get_Char_Code ('a') .. Get_Char_Code ('z')
             then
                Store_String_Char (CC - 32);
 
             elsif Opt.External_Name_Exp_Casing = Lowercase
-              and then CC >= Get_Char_Code ('A')
-              and then CC <= Get_Char_Code ('Z')
+              and then CC in Get_Char_Code ('A') .. Get_Char_Code ('Z')
             then
                Store_String_Char (CC + 32);
 
@@ -12974,10 +12972,6 @@ package body Sem_Prag is
                then
                   Mark_Ghost_Pragma (N, Entity (Get_Pragma_Arg (Nam_Arg)));
                end if;
-
-               --  Not allowed in compiler units (bootstrap issues)
-
-               Check_Compiler_Unit ("Entity for pragma Annotate", N);
             end if;
 
             --  Continue the processing with last argument removed for now
@@ -14337,50 +14331,6 @@ package body Sem_Prag is
             end if;
 
             Process_Compile_Time_Warning_Or_Error;
-
-         ---------------------------
-         -- Compiler_Unit_Warning --
-         ---------------------------
-
-         --  pragma Compiler_Unit_Warning;
-
-         --  Historical note
-
-         --  Originally, we had only pragma Compiler_Unit, and it resulted in
-         --  errors not warnings. This means that we had introduced a big extra
-         --  inertia to compiler changes, since even if we implemented a new
-         --  feature, and even if all versions to be used for bootstrapping
-         --  implemented this new feature, we could not use it, since old
-         --  compilers would give errors for using this feature in units
-         --  having Compiler_Unit pragmas.
-
-         --  By changing Compiler_Unit to Compiler_Unit_Warning, we solve the
-         --  problem. We no longer have any units mentioning Compiler_Unit,
-         --  so old compilers see Compiler_Unit_Warning which is unrecognized,
-         --  and thus generates a warning which can be ignored. So that deals
-         --  with the problem of old compilers not implementing the newer form
-         --  of the pragma.
-
-         --  Newer compilers recognize the new pragma, but generate warning
-         --  messages instead of errors, which again can be ignored in the
-         --  case of an old compiler which implements a wanted new feature
-         --  but at the time felt like warning about it for older compilers.
-
-         --  We retain Compiler_Unit so that new compilers can be used to build
-         --  older run-times that use this pragma. That's an unusual case, but
-         --  it's easy enough to handle, so why not?
-
-         when Pragma_Compiler_Unit
-            | Pragma_Compiler_Unit_Warning
-         =>
-            GNAT_Pragma;
-            Check_Arg_Count (0);
-
-            --  Only recognized in main unit
-
-            if Current_Sem_Unit = Main_Unit then
-               Compiler_Unit := True;
-            end if;
 
          -----------------------------
          -- Complete_Representation --
@@ -25694,10 +25644,6 @@ package body Sem_Prag is
                   Reason := End_String;
                   Arg_Count := Arg_Count - 1;
 
-                  --  Not allowed in compiler units (bootstrap issues)
-
-                  Check_Compiler_Unit ("Reason for pragma Warnings", N);
-
                --  No REASON string, set null string as reason
 
                else
@@ -31490,8 +31436,6 @@ package body Sem_Prag is
       Pragma_CUDA_Global                    => -1,
       Pragma_Compile_Time_Error             => -1,
       Pragma_Compile_Time_Warning           => -1,
-      Pragma_Compiler_Unit                  => -1,
-      Pragma_Compiler_Unit_Warning          => -1,
       Pragma_Complete_Representation        =>  0,
       Pragma_Complex_Representation         =>  0,
       Pragma_Component_Alignment            =>  0,

@@ -1,5 +1,5 @@
 /* Definitions for -*- C++ -*- parsing and type checking.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1007,6 +1007,9 @@ public:
      rather than unsigned to avoid ambiguity with the built-in operator[]
      (bootstrap/91828).  */
   tree& operator[] (ptrdiff_t i) const { return (*v)[i]; }
+
+  tree *begin() { return ::begin (v); }
+  tree *end() { return ::end (v); }
 
   void release () { release_tree_vector (v); v = NULL; }
 

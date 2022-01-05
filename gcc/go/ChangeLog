@@ -1,3 +1,7 @@
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2021-12-28  Martin Liska  <mliska@suse.cz>
 
 	* gccgo.texi: Replace http:// with https.
@@ -1801,7 +1805,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2021 Free Software Foundation, Inc.
+Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

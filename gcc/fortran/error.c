@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -80,6 +80,15 @@ gfc_pop_suppress_errors (void)
 {
   gcc_assert (suppress_errors > 0);
   --suppress_errors;
+}
+
+
+/* Query whether errors are suppressed.  */
+
+bool
+gfc_query_suppress_errors (void)
+{
+  return suppress_errors > 0;
 }
 
 

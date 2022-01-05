@@ -1923,7 +1923,7 @@ void test20050()
 
 ////////////////////////////////////////////////////////////////////////
 
-// http://github.com/dlang/dmd/pull/11238
+// https://github.com/dlang/dmd/pull/11238
 
 int testCpStatic1(int y)
 {
@@ -1960,7 +1960,7 @@ void test7()
 
 ////////////////////////////////////////////////////////////////////////
 
-// http://github.com/dlang/dmd/pull/11388
+// https://github.com/dlang/dmd/pull/11388
 
 ushort byteswap(ushort x) pure
 {

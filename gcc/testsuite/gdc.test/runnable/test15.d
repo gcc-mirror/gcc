@@ -515,7 +515,7 @@ void test30()
 
 
 /************************************/
-// http://www.digitalmars.com/d/archives/18204.html
+// https://www.digitalmars.com/d/archives/18204.html
 // DMD0.050 also failed with alias.
 
 alias int recls_bool_t;

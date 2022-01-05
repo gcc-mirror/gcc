@@ -6408,7 +6408,7 @@ package body Exp_Aggr is
             One_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>  New_Copy_Tree (Iter)),
+                  Iterator_Specification => New_Copy_Tree (Iter)),
                 Statements => New_List (Incr));
 
             Append (One_Loop, Size_Expr_Code);
@@ -6540,7 +6540,7 @@ package body Exp_Aggr is
             One_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>  Copy_Separate_Tree (Iter)),
+                  Iterator_Specification => Copy_Separate_Tree (Iter)),
                 Statements => New_List (New_Comp, Incr));
 
             Append (One_Loop, Insertion_Code);

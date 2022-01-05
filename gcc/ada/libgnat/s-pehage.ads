@@ -64,8 +64,6 @@
 --  < h (w2). These hashing functions are convenient for use with realtime
 --  applications.
 
-pragma Compiler_Unit_Warning;
-
 package System.Perfect_Hash_Generators is
 
    type Optimization is (Memory_Space, CPU_Time);

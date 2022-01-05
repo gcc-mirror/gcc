@@ -40,8 +40,6 @@
 --  worst case and is in place with no additional storage required. See
 --  the body for exact details of the algorithm used.
 
-pragma Compiler_Unit_Warning;
-
 package GNAT.Heap_Sort_A is
    pragma Preelaborate;
 

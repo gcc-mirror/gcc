@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU -*- C++ -*-.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -12277,6 +12277,14 @@ instantiate_class_template_1 (tree type)
 
   perform_instantiation_time_access_checks (pattern, args);
   perform_deferred_access_checks (tf_warning_or_error);
+
+  /* Now that we've gone through all the members, instantiate those
+     marked with attribute used.  We must do this in the context of
+     the class -- not the context we pushed from, as that might be
+     inside a template and change the behaviour of mark_used.  */
+  for (tree x : used)
+    mark_used (x);
+
   pop_nested_class ();
   maximum_field_alignment = saved_maximum_field_alignment;
   if (!fn_context)
@@ -12289,11 +12297,6 @@ instantiate_class_template_1 (tree type)
      the keyed_classes.  */
   if (TYPE_CONTAINS_VPTR_P (type) && CLASSTYPE_KEY_METHOD (type))
     vec_safe_push (keyed_classes, type);
-
-  /* Now that we've gone through all the members, instantiate those
-     marked with attribute used.  */
-  for (tree x : used)
-    mark_used (x);
 
   return type;
 }

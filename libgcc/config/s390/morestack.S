@@ -1,5 +1,5 @@
 # s390 support for -fsplit-stack.
-# Copyright (C) 2015-2021 Free Software Foundation, Inc.
+# Copyright (C) 2015-2022 Free Software Foundation, Inc.
 # Contributed by Marcin Kościelnicki <koriakin@0x04.net>.
 
 # This file is part of GCC.

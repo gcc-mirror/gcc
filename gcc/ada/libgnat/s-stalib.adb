@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 --  The purpose of this body is simply to ensure that the two with'ed units
 --  are properly included in the link. They are not with'ed from the spec
 --  of System.Standard_Library, since this would cause order of elaboration

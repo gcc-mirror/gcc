@@ -2759,7 +2759,7 @@ package body Sem_Dim is
 
       --  Insert a blank between the literal and the symbol
 
-      Add_Str_To_Name_Buffer (" ");
+      Add_Char_To_Name_Buffer (' ');
       Append (Global_Name_Buffer, Symbol_Of (Typ));
 
       Error_Msg_Name_1 := Name_Find;
@@ -3322,13 +3322,13 @@ package body Sem_Dim is
             if Chars (Name_Call) = Name_Image then
                Rewrite (N,
                  Make_Function_Call (Loc,
-                   Name =>                   New_Copy (Name_Call),
+                   Name                   => New_Copy (Name_Call),
                    Parameter_Associations => New_Actuals));
                Analyze_And_Resolve (N);
             else
                Rewrite (N,
                  Make_Procedure_Call_Statement (Loc,
-                   Name =>                   New_Copy (Name_Call),
+                   Name                   => New_Copy (Name_Call),
                    Parameter_Associations => New_Actuals));
                Analyze (N);
             end if;
@@ -3665,7 +3665,7 @@ package body Sem_Dim is
       declare
          G : constant Int := GCD (X.Numerator, X.Denominator);
       begin
-         return Rational'(Numerator =>   Whole (Int (X.Numerator)   / G),
+         return Rational'(Numerator   => Whole (Int (X.Numerator)   / G),
                           Denominator => Whole (Int (X.Denominator) / G));
       end;
    end Reduce;

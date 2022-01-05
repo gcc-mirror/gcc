@@ -395,24 +395,6 @@ begin
             Ada_Version_Pragma := Pragma_Node;
          end if;
 
-      ---------------------------
-      -- Compiler_Unit_Warning --
-      ---------------------------
-
-      --  This pragma must be processed at parse time, since the resulting
-      --  status may be tested during the parsing of the program.
-
-      when Pragma_Compiler_Unit
-         | Pragma_Compiler_Unit_Warning
-      =>
-         Check_Arg_Count (0);
-
-         --  Only recognized in main unit
-
-         if Current_Source_Unit = Main_Unit then
-            Compiler_Unit := True;
-         end if;
-
       -----------
       -- Debug --
       -----------

@@ -41,8 +41,6 @@
 --     GNAT.Table
 --     Table (the compiler unit)
 
-pragma Compiler_Unit_Warning;
-
 with GNAT.Dynamic_Tables;
 
 generic

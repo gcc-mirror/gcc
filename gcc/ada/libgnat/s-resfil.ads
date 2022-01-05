@@ -35,7 +35,8 @@
 --  Using a response file allow passing a set of arguments to an executable
 --  longer than the maximum allowed by the system on the command line.
 
-pragma Compiler_Unit_Warning;
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
 
 with System.Strings;
 

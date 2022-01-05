@@ -31,8 +31,6 @@
 
 --  This package provides the low level interface to the C runtime library
 
-pragma Compiler_Unit_Warning;
-
 with System.Parameters;
 
 package System.CRTL is

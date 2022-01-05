@@ -37,8 +37,6 @@
 --  initialized to non-tasking versions, and then if the tasking support is
 --  initialized, they are set to the real tasking versions.
 
-pragma Compiler_Unit_Warning;
-
 with Ada.Exceptions;
 with System.Parameters;
 with System.Secondary_Stack;

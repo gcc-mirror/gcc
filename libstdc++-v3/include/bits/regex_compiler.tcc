@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -157,8 +157,7 @@ namespace __detail
 	  auto __neg = _M_value[0] == 'n';
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren,
-				"Parenthesis is not closed.");
+	    __throw_regex_error(regex_constants::error_paren);
 	  auto __tmp = _M_pop();
 	  __tmp._M_append(_M_nfa->_M_insert_accept());
 	  _M_stack.push(
@@ -180,8 +179,7 @@ namespace __detail
       auto __init = [this, &__neg]()
 	{
 	  if (_M_stack.empty())
-	    __throw_regex_error(regex_constants::error_badrepeat,
-				"Nothing to repeat before a quantifier.");
+	    __throw_regex_error(regex_constants::error_badrepeat);
 	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
 	};
       if (_M_match_token(_ScannerT::_S_token_closure0))
@@ -217,11 +215,9 @@ namespace __detail
       else if (_M_match_token(_ScannerT::_S_token_interval_begin))
 	{
 	  if (_M_stack.empty())
-	    __throw_regex_error(regex_constants::error_badrepeat,
-				"Nothing to repeat before a quantifier.");
+	    __throw_regex_error(regex_constants::error_badrepeat);
 	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
-	    __throw_regex_error(regex_constants::error_badbrace,
-				"Unexpected token in brace expression.");
+	    __throw_regex_error(regex_constants::error_badbrace);
 	  _StateSeqT __r(_M_pop());
 	  _StateSeqT __e(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  long __min_rep = _M_cur_int_value(10);
@@ -237,8 +233,7 @@ namespace __detail
 		__infi = true;
 	    }
 	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
-	    __throw_regex_error(regex_constants::error_brace,
-				"Unexpected end of brace expression.");
+	    __throw_regex_error(regex_constants::error_brace);
 
 	  __neg = __neg && _M_match_token(_ScannerT::_S_token_opt);
 
@@ -257,8 +252,7 @@ namespace __detail
 	  else
 	    {
 	      if (__n < 0)
-		__throw_regex_error(regex_constants::error_badbrace,
-				    "Invalid range in brace expression.");
+		__throw_regex_error(regex_constants::error_badbrace);
 	      auto __end = _M_nfa->_M_insert_dummy();
 	      // _M_alt is the "match more" branch, and _M_next is the
 	      // "match less" one. Switch _M_alt and _M_next of all created
@@ -325,8 +319,7 @@ namespace __detail
 	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_dummy());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren,
-				"Parenthesis is not closed.");
+	    __throw_regex_error(regex_constants::error_paren);
 	  __r._M_append(_M_pop());
 	  _M_stack.push(__r);
 	}
@@ -335,8 +328,7 @@ namespace __detail
 	  _StateSeqT __r(*_M_nfa, _M_nfa->_M_insert_subexpr_begin());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	    __throw_regex_error(regex_constants::error_paren,
-				"Parenthesis is not closed.");
+	    __throw_regex_error(regex_constants::error_paren);
 	  __r._M_append(_M_pop());
 	  __r._M_append(_M_nfa->_M_insert_subexpr_end());
 	  _M_stack.push(__r);
@@ -503,7 +495,8 @@ namespace __detail
 	    {
 	      // "\\w-" is invalid, start of range must be a single char.
 	      __throw_regex_error(regex_constants::error_range,
-		    "Invalid start of range in bracket expression.");
+				  "Invalid start of '[x-x]' range in "
+				  "regular expression");
 	    }
 	  else if (__last_char._M_is_char())
 	    {
@@ -521,7 +514,8 @@ namespace __detail
 		}
 	      else
 		__throw_regex_error(regex_constants::error_range,
-		      "Invalid end of range in bracket expression.");
+				    "Invalid end of '[x-x]' range in "
+				    "regular expression");
 	    }
 	  else if (_M_flags & regex_constants::ECMAScript)
 	    {
@@ -532,7 +526,8 @@ namespace __detail
 	    }
 	  else
 	    __throw_regex_error(regex_constants::error_range,
-				"Invalid dash in bracket expression.");
+				"Invalid location of '-' within '[...]' in "
+				"POSIX regular expression");
 	}
       else if (_M_match_token(_ScannerT::_S_token_quoted_class))
 	{
@@ -543,8 +538,8 @@ namespace __detail
 	}
       else
 	__throw_regex_error(regex_constants::error_brack,
-			    "Unexpected character in bracket expression.");
-
+			    "Unexpected character within '[...]' in "
+			    "regular expression");
       return true;
     }
 

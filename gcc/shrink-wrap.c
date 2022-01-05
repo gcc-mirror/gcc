@@ -1,5 +1,5 @@
 /* Shrink-wrapping related optimizations.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -781,14 +781,20 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   unsigned max_grow_size = get_uncond_jump_length ();
   max_grow_size *= param_max_grow_copy_bb_insns;
 
+  basic_block checked_pro = NULL;
+
   while (pro != entry)
     {
-      while (pro != entry && !can_get_prologue (pro, prologue_clobbered))
+      if (pro != checked_pro)
 	{
-	  pro = get_immediate_dominator (CDI_DOMINATORS, pro);
+	  while (pro != entry && !can_get_prologue (pro, prologue_clobbered))
+	    {
+	      pro = get_immediate_dominator (CDI_DOMINATORS, pro);
 
-	  if (bitmap_set_bit (bb_with, pro->index))
-	    vec.quick_push (pro);
+	      if (bitmap_set_bit (bb_with, pro->index))
+		vec.quick_push (pro);
+	    }
+	  checked_pro = pro;
 	}
 
       if (vec.is_empty ())

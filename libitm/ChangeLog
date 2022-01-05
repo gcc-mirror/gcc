@@ -1,3 +1,7 @@
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2021-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* eh_cpp.cc (GTM::gtm_thread::init_cpp_exceptions): If the
@@ -2304,7 +2308,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2008-2021 Free Software Foundation, Inc.
+Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

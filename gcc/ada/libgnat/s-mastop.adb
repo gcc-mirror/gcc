@@ -33,8 +33,6 @@
 --  This dummy version of System.Machine_State_Operations is used on targets
 --  for which zero cost exception handling is not implemented.
 
-pragma Compiler_Unit_Warning;
-
 package body System.Machine_State_Operations is
 
    --  Turn off warnings since many unused parameters

@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -4306,7 +4306,6 @@ fini_pre ()
   value_expressions.release ();
   constant_value_expressions.release ();
   expressions.release ();
-  BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
   pre_expr_pool.release ();
@@ -4431,16 +4430,28 @@ pass_pre::execute (function *fun)
 
   vn_valueize = NULL;
 
+  fini_pre ();
+
+  scev_finalize ();
+  loop_optimizer_finalize ();
+
+  /* Perform a CFG cleanup before we run simple_dce_from_worklist since
+     unreachable code regions will have not up-to-date SSA form which
+     confuses it.  */
+  bool need_crit_edge_split = false;
+  if (todo & TODO_cleanup_cfg)
+    {
+      cleanup_tree_cfg ();
+      todo &= ~TODO_cleanup_cfg;
+      need_crit_edge_split = true;
+    }
+
   /* Because we don't follow exactly the standard PRE algorithm, and decide not
      to insert PHI nodes sometimes, and because value numbering of casts isn't
      perfect, we sometimes end up inserting dead code.   This simple DCE-like
      pass removes any insertions we made that weren't actually used.  */
   simple_dce_from_worklist (inserted_exprs);
-
-  fini_pre ();
-
-  scev_finalize ();
-  loop_optimizer_finalize ();
+  BITMAP_FREE (inserted_exprs);
 
   /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
      case we can merge the block with the remaining predecessor of the block.
@@ -4449,7 +4460,7 @@ pass_pre::execute (function *fun)
      - call merge_blocks after all tail merge iterations
      - mark TODO_cleanup_cfg when necessary
      - share the cfg cleanup with fini_pre.  */
-  todo |= tail_merge_optimize (todo);
+  todo |= tail_merge_optimize (todo, need_crit_edge_split);
 
   free_rpo_vn ();
 

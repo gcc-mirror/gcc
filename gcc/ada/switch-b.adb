@@ -312,7 +312,7 @@ package body Switch.B is
 
             Ptr := Max + 1;
 
-            if not Is_Read_Accessible_File (Force_Elab_Order_File.all) then
+            if not Is_Regular_File (Force_Elab_Order_File.all) then
                Osint.Fail (Force_Elab_Order_File.all & ": file not found");
             end if;
 

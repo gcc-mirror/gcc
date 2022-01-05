@@ -1,5 +1,5 @@
 /* Check calls to formatted I/O functions (-Wformat).
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3194,7 +3194,7 @@ check_tokens (const token_t *tokens, unsigned ntoks,
 			   wlen, format_chars);
   else
     {
-      /* Diagnose some common missspellings.  */
+      /* Diagnose some common misspellings.  */
       for (unsigned i = 0; i != sizeof badwords / sizeof *badwords; ++i)
 	{
 	  unsigned badwlen = strspn (badwords[i].name, " -");
@@ -3214,6 +3214,12 @@ check_tokens (const token_t *tokens, unsigned ntoks,
 		  ++badwlen;
 		  plural = "s";
 		}
+
+	      /* As an exception, don't warn about "decl-specifier*" since
+		 it's a C++ grammar production.  */
+	      if (badwords[i].name[0] == 'd'
+		  && startswith (format_chars, "decl-specifier"))
+		continue;
 
 	      format_warning_substr (format_string_loc, format_string_cst,
 				     fmtchrpos, fmtchrpos + badwords[i].len,

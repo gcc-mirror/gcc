@@ -1,7 +1,7 @@
 /* Pass to detect and issue warnings for invalid accesses, including
    invalid or mismatched allocation/deallocation calls.
 
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -29,6 +29,7 @@
 #include "gimple.h"
 #include "tree-pass.h"
 #include "builtins.h"
+#include "diagnostic.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-ssa-warn-access.h"
@@ -38,6 +39,8 @@
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "langhooks.h"
+#include "memmodel.h"
+#include "target.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
 #include "tree-cfg.h"
@@ -2103,6 +2106,8 @@ private:
 
   void maybe_check_dealloc_call (gcall *);
   void maybe_check_access_sizes (rdwr_map *, tree, tree, gimple *);
+  bool maybe_warn_memmodel (gimple *, tree, tree, const unsigned char *);
+  void check_atomic_memmodel (gimple *, tree, tree, const unsigned char *);
 
   /* A pointer_query object and its cache to store information about
      pointers and their targets in.  */
@@ -2686,6 +2691,237 @@ pass_waccess::check_read_access (gimple *stmt, tree src,
 		&data, m_ptr_qry.rvals);
 }
 
+/* Return true if memory model ORD is constant in the context of STMT and
+   set *CSTVAL to the constant value.  Otherwise return false.  Warn for
+   invalid ORD.  */
+
+bool
+memmodel_to_uhwi (tree ord, gimple *stmt, unsigned HOST_WIDE_INT *cstval)
+{
+  unsigned HOST_WIDE_INT val;
+
+  if (TREE_CODE (ord) == INTEGER_CST)
+    {
+      if (!tree_fits_uhwi_p (ord))
+	return false;
+      val = tree_to_uhwi (ord);
+    }
+  else
+    {
+      /* Use the range query to determine constant values in the absence
+	 of constant proppagation (such as at -O0).  */
+      value_range rng;
+      if (!get_range_query (cfun)->range_of_expr (rng, ord, stmt)
+	  || !rng.constant_p ()
+	  || !rng.singleton_p (&ord))
+	return false;
+
+      wide_int lob = rng.lower_bound ();
+      if (!wi::fits_uhwi_p (lob))
+	return false;
+
+      val = lob.to_shwi ();
+    }
+
+  if (targetm.memmodel_check)
+    /* This might warn for an invalid VAL but return a conservatively
+       valid result.  */
+    val = targetm.memmodel_check (val);
+  else if (val & ~MEMMODEL_MASK)
+    {
+      tree fndecl = gimple_call_fndecl (stmt);
+      location_t loc = gimple_location (stmt);
+      loc = expansion_point_location_if_in_system_header (loc);
+
+      warning_at (loc, OPT_Winvalid_memory_model,
+		  "unknown architecture specifier in memory model "
+		  "%wi for %qD", val, fndecl);
+      return false;
+    }
+
+  *cstval = val;
+
+  return true;
+}
+
+/* Valid memory model for each set of atomic built-in functions.  */
+
+struct memmodel_pair
+{
+  memmodel modval;
+  const char* modname;
+
+#define MEMMODEL_PAIR(val, str)			\
+  { MEMMODEL_ ## val, "memory_order_" str }
+};
+
+/* Valid memory models in the order of increasing strength.  */
+
+static const memmodel_pair memory_models[] =
+  { MEMMODEL_PAIR (RELAXED, "relaxed"),
+    MEMMODEL_PAIR (SEQ_CST, "seq_cst"),
+    MEMMODEL_PAIR (ACQUIRE, "acquire"),
+    MEMMODEL_PAIR (CONSUME, "consume"),
+    MEMMODEL_PAIR (RELEASE, "release"),
+    MEMMODEL_PAIR (ACQ_REL, "acq_rel")
+  };
+
+/* Return the name of the memory model VAL.  */
+
+static const char*
+memmodel_name (unsigned HOST_WIDE_INT val)
+{
+  val = memmodel_base (val);
+
+  for (unsigned i = 0; i != sizeof memory_models / sizeof *memory_models; ++i)
+    {
+      if (val == memory_models[i].modval)
+	return memory_models[i].modname;
+    }
+  return NULL;
+}
+
+/* Indices of valid MEMORY_MODELS above for corresponding atomic operations.  */
+static const unsigned char load_models[] = { 0, 1, 2, 3, UCHAR_MAX };
+static const unsigned char store_models[] = { 0, 1, 4, UCHAR_MAX };
+static const unsigned char xchg_models[] = { 0, 1, 3, 4, 5, UCHAR_MAX };
+static const unsigned char flag_clr_models[] = { 0, 1, 4, UCHAR_MAX };
+static const unsigned char all_models[] = { 0, 1, 2, 3, 4, 5, UCHAR_MAX };
+
+/* Check the success memory model argument ORD_SUCS to the call STMT to
+   an atomic function and warn if it's invalid.  If nonnull, also check
+   the failure memory model ORD_FAIL and warn if it's invalid.  Return
+   true if a warning has been issued.  */
+
+bool
+pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
+				   tree ord_fail, const unsigned char *valid)
+{
+  unsigned HOST_WIDE_INT sucs, fail = 0;
+  if (!memmodel_to_uhwi (ord_sucs, stmt, &sucs)
+      || (ord_fail && !memmodel_to_uhwi (ord_fail, stmt, &fail)))
+    return false;
+
+  bool is_valid = false;
+  if (valid)
+    for (unsigned i = 0; valid[i] != UCHAR_MAX; ++i)
+      {
+	memmodel model = memory_models[valid[i]].modval;
+	if (memmodel_base (sucs) == model)
+	  {
+	    is_valid = true;
+	    break;
+	  }
+      }
+  else
+    is_valid = true;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  location_t loc = gimple_location (stmt);
+  loc = expansion_point_location_if_in_system_header (loc);
+
+  if (!is_valid)
+    {
+      bool warned = false;
+      if (const char *modname = memmodel_name (sucs))
+	warned = warning_at (loc, OPT_Winvalid_memory_model,
+			     "invalid memory model %qs for %qD",
+			     modname, fndecl);
+      else
+	warned = warning_at (loc, OPT_Winvalid_memory_model,
+			     "invalid memory model %wi for %qD",
+			     sucs, fndecl);
+
+      if (!warned)
+	return false;
+
+      /* Print a note with the valid memory models.  */
+      pretty_printer pp;
+      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      for (unsigned i = 0; valid[i] != UCHAR_MAX; ++i)
+	{
+	  const char *modname = memory_models[valid[i]].modname;
+	  pp_printf (&pp, "%s%<%s%>", i ? ", " : "", modname);
+	}
+
+      inform (loc, "valid models are %s", pp_formatted_text (&pp));
+      return true;
+    }
+
+  if (!ord_fail)
+    return false;
+
+  if (fail == MEMMODEL_RELEASE || fail == MEMMODEL_ACQ_REL)
+    if (const char *failname = memmodel_name (fail))
+      {
+	/* If both memory model arguments are valid but their combination
+	   is not, use their names in the warning.  */
+	if (!warning_at (loc, OPT_Winvalid_memory_model,
+			 "invalid failure memory model %qs for %qD",
+			 failname, fndecl))
+	  return false;
+
+	inform (loc,
+		"valid failure models are %qs, %qs, %qs, %qs",
+		"memory_order_relaxed", "memory_order_seq_cst",
+		"memory_order_acquire", "memory_order_consume");
+	return true;
+      }
+
+  if (memmodel_base (fail) <= memmodel_base (sucs))
+    return false;
+
+  if (const char *sucsname = memmodel_name (sucs))
+    if (const char *failname = memmodel_name (fail))
+      {
+	/* If both memory model arguments are valid but their combination
+	   is not, use their names in the warning.  */
+	if (!warning_at (loc, OPT_Winvalid_memory_model,
+			 "failure memory model %qs cannot be stronger "
+			 "than success memory model %qs for %qD",
+			 failname, sucsname, fndecl))
+	  return false;
+
+	/* Print a note with the valid failure memory models which are
+	   those with a value less than or equal to the success mode.  */
+	char buf[120];
+	*buf = '\0';
+	for (unsigned i = 0;
+	     memory_models[i].modval <= memmodel_base (sucs); ++i)
+	  {
+	    if (*buf)
+	      strcat (buf, ", ");
+
+	    const char *modname = memory_models[valid[i]].modname;
+	    sprintf (buf + strlen (buf), "'%s'", modname);
+	  }
+
+	inform (loc, "valid models are %s", buf);
+	return true;
+      }
+
+  /* If either memory model argument value is invalid use the numerical
+     value of both in the message.  */
+  return warning_at (loc, OPT_Winvalid_memory_model,
+		     "failure memory model %wi cannot be stronger "
+		     "than success memory model %wi for %qD",
+		     fail, sucs, fndecl);
+}
+
+/* Wrapper for the above.  */
+
+void
+pass_waccess::check_atomic_memmodel (gimple *stmt, tree ord_sucs,
+				     tree ord_fail, const unsigned char *valid)
+{
+  if (warning_suppressed_p (stmt, OPT_Winvalid_memory_model))
+    return;
+
+  if (maybe_warn_memmodel (stmt, ord_sucs, ord_fail, valid))
+    return;
+
+  suppress_warning (stmt, OPT_Winvalid_memory_model);
+}
 
 /* Check a call STMT to an atomic or sync built-in.  */
 
@@ -2699,12 +2935,14 @@ pass_waccess::check_atomic_builtin (gcall *stmt)
   /* The size in bytes of the access by the function, and the number
      of the second argument to check (if any).  */
   unsigned bytes = 0, arg2 = UINT_MAX;
+  unsigned sucs_arg = UINT_MAX, fail_arg = UINT_MAX;
+  /* Points to the array of indices of valid memory models.  */
+  const unsigned char *pvalid_models = NULL;
 
   switch (DECL_FUNCTION_CODE (callee))
     {
 #define BUILTIN_ACCESS_SIZE_FNSPEC(N)			\
-      BUILT_IN_ATOMIC_LOAD_ ## N:			\
-    case BUILT_IN_SYNC_FETCH_AND_ADD_ ## N:		\
+      BUILT_IN_SYNC_FETCH_AND_ADD_ ## N:		\
     case BUILT_IN_SYNC_FETCH_AND_SUB_ ## N:		\
     case BUILT_IN_SYNC_FETCH_AND_OR_ ## N:		\
     case BUILT_IN_SYNC_FETCH_AND_AND_ ## N:		\
@@ -2720,8 +2958,16 @@ pass_waccess::check_atomic_builtin (gcall *stmt)
     case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_ ## N:	\
     case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_ ## N:	\
     case BUILT_IN_SYNC_LOCK_RELEASE_ ## N:		\
-    case BUILT_IN_ATOMIC_EXCHANGE_ ## N:		\
+      bytes = N;					\
+      break;						\
+    case BUILT_IN_ATOMIC_LOAD_ ## N:			\
+      pvalid_models = load_models;			\
+      sucs_arg = 1;					\
+      /* FALLTHROUGH */					\
     case BUILT_IN_ATOMIC_STORE_ ## N:			\
+      if (!pvalid_models)				\
+	pvalid_models = store_models;			\
+      /* FALLTHROUGH */					\
     case BUILT_IN_ATOMIC_ADD_FETCH_ ## N:		\
     case BUILT_IN_ATOMIC_SUB_FETCH_ ## N:		\
     case BUILT_IN_ATOMIC_AND_FETCH_ ## N:		\
@@ -2735,9 +2981,21 @@ pass_waccess::check_atomic_builtin (gcall *stmt)
     case BUILT_IN_ATOMIC_FETCH_OR_ ## N:		\
     case BUILT_IN_ATOMIC_FETCH_XOR_ ## N:		\
 	bytes = N;					\
+	if (sucs_arg == UINT_MAX)			\
+	  sucs_arg = 2;					\
+	if (!pvalid_models)				\
+	  pvalid_models = all_models;			\
+	break;						\
+    case BUILT_IN_ATOMIC_EXCHANGE_ ## N:		\
+	bytes = N;					\
+	sucs_arg = 3;					\
+	pvalid_models = xchg_models;			\
 	break;						\
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_ ## N:	\
 	bytes = N;					\
+	sucs_arg = 4;					\
+	fail_arg = 5;					\
+	pvalid_models = all_models;			\
 	arg2 = 1
 
     case BUILTIN_ACCESS_SIZE_FNSPEC (1);
@@ -2751,9 +3009,27 @@ pass_waccess::check_atomic_builtin (gcall *stmt)
     case BUILTIN_ACCESS_SIZE_FNSPEC (16);
       break;
 
+    case BUILT_IN_ATOMIC_CLEAR:
+      sucs_arg = 1;
+      pvalid_models = flag_clr_models;
+      break;
+
     default:
       return false;
     }
+
+  unsigned nargs = gimple_call_num_args (stmt);
+  if (sucs_arg < nargs)
+    {
+      tree ord_sucs = gimple_call_arg (stmt, sucs_arg);
+      tree ord_fail = NULL_TREE;
+      if (fail_arg < nargs)
+	ord_fail = gimple_call_arg (stmt, fail_arg);
+      check_atomic_memmodel (stmt, ord_sucs, ord_fail, pvalid_models);
+    }
+
+  if (!bytes)
+    return true;
 
   tree size = build_int_cstu (sizetype, bytes);
   tree dst = gimple_call_arg (stmt, 0);

@@ -213,6 +213,50 @@ is
    --  natural number, consisting in a sequence of figures possibly separated
    --  by single underscores. It may be followed by other characters.
 
+   function Starts_As_Exponent_Format_Ghost
+     (Str  : String;
+      Real : Boolean) return Boolean
+   is
+     (Str'Length > 1
+      and then Str (Str'First) in 'E' | 'e'
+      and then
+        (declare
+            Plus_Sign  : constant Boolean := Str (Str'First + 1) = '+';
+            Minus_Sign : constant Boolean := Str (Str'First + 1) = '-';
+            Sign       : constant Boolean := Plus_Sign or Minus_Sign;
+         begin
+           (if Minus_Sign then Real)
+            and then (if Sign then Str'Length > 2)
+            and then
+              (declare
+                 Start : constant Natural :=
+                  (if Sign then Str'First + 2 else Str'First + 1);
+               begin
+                 Str (Start) in '0' .. '9')))
+   with
+     Ghost;
+   --  Ghost function that determines if Str is recognized as something which
+   --  might be an exponent, ie. it starts with an 'e', capitalized or not,
+   --  followed by an optional sign which can only be '-' if we are working on
+   --  real numbers (Real is True), and then a digit in decimal notation.
+
+   function Is_Opt_Exponent_Format_Ghost
+     (Str  : String;
+      Real : Boolean) return Boolean
+   is
+     (not Starts_As_Exponent_Format_Ghost (Str, Real)
+      or else
+        (declare
+           Start : constant Natural :=
+             (if Str (Str'First + 1) in '+' | '-' then Str'First + 2
+              else Str'First + 1);
+         begin Is_Natural_Format_Ghost (Str (Start .. Str'Last))))
+   with
+     Ghost;
+   --  Ghost function that determines if Str has the correct format for an
+   --  optional exponent, that is, either it does not start as an exponent, or
+   --  it is in a correct format for a natural number.
+
    function Scan_Natural_Ghost
      (Str : String;
       P   : Natural;
@@ -238,50 +282,22 @@ is
      Pre =>
        --  Ptr.all .. Max is either an empty range, or a valid range in Str
        (Ptr.all > Max or else (Ptr.all >= Str'First and then Max <= Str'Last))
-         and then
-       Max < Natural'Last
-         and then
-       (if Ptr.all < Max and then Str (Ptr.all) in 'E' | 'e' then
-          (declare
-             Plus_Sign  : constant Boolean := Str (Ptr.all + 1) = '+';
-             Minus_Sign : constant Boolean := Str (Ptr.all + 1) = '-';
-             Sign       : constant Boolean := Plus_Sign or Minus_Sign;
-           begin
-             (if Minus_Sign and not Real then True
-              elsif Sign
-                and then (Ptr.all > Max - 2
-                            or else Str (Ptr.all + 2) not in '0' .. '9')
-              then True
-              else
-                (declare
-                   Start : constant Natural :=
-                     (if Sign then Ptr.all + 2 else Ptr.all + 1);
-                 begin
-                   Is_Natural_Format_Ghost (Str (Start .. Max)))))),
+         and then Max < Natural'Last
+         and then Is_Opt_Exponent_Format_Ghost (Str (Ptr.all .. Max), Real),
      Post =>
-       (if Ptr.all'Old < Max and then Str (Ptr.all'Old) in 'E' | 'e' then
+       (if Starts_As_Exponent_Format_Ghost (Str (Ptr.all'Old .. Max), Real)
+        then
           (declare
              Plus_Sign  : constant Boolean := Str (Ptr.all'Old + 1) = '+';
              Minus_Sign : constant Boolean := Str (Ptr.all'Old + 1) = '-';
              Sign       : constant Boolean := Plus_Sign or Minus_Sign;
-             Unchanged  : constant Boolean :=
-               Exp = 0 and Ptr.all = Ptr.all'Old;
+             Start      : constant Natural :=
+               (if Sign then Ptr.all'Old + 2 else Ptr.all'Old + 1);
+             Value      : constant Natural :=
+               Scan_Natural_Ghost (Str (Start .. Max), Start, 0);
            begin
-             (if Minus_Sign and not Real then Unchanged
-              elsif Sign
-                and then (Ptr.all'Old > Max - 2
-                            or else Str (Ptr.all'Old + 2) not in '0' .. '9')
-              then Unchanged
-              else
-                (declare
-                   Start : constant Natural :=
-                     (if Sign then Ptr.all'Old + 2 else Ptr.all'Old + 1);
-                   Value : constant Natural :=
-                     Scan_Natural_Ghost (Str (Start .. Max), Start, 0);
-                 begin
-                   Exp = (if Minus_Sign then -Value else Value))))
-        else
-          Exp = 0 and Ptr.all = Ptr.all'Old);
+             Exp = (if Minus_Sign then -Value else Value))
+        else Exp = 0 and Ptr.all = Ptr.all'Old);
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
    --  for Scan_Sign. If Ptr.all < Max and Str (Ptr.all) = 'E' or 'e', then an
    --  exponent is scanned out, with the exponent value returned in Exp, and

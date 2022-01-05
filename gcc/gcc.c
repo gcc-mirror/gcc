@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4492,7 +4492,9 @@ driver_handle_option (struct gcc_options *opts,
     case OPT__sysroot_:
       target_system_root = arg;
       target_system_root_changed = 1;
-      do_save = false;
+      /* Saving this option is useful to let self-specs decide to
+	 provide a default one.  */
+      do_save = true;
       break;
 
     case OPT_time_:
@@ -8776,7 +8778,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2021 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2022 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

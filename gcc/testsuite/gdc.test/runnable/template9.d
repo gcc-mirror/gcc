@@ -4706,7 +4706,7 @@ void test14735()
 {
     char[64] buf;
 
-    // Supported from 2.063: (http://dlang.org/changelog#implicitarraycast)
+    // Supported from 2.063: (https://dlang.org/changelog/2.063.html#implicitarraycast)
     assert(indexOf14735a(buf[0..32], '\0') == 2);
     assert(indexOf14735b(buf[0..32], '\0') == 2);
 

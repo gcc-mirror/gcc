@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -215,7 +215,7 @@
 ;; get variables in this mode and pseudos are never spilled.
 (define_insn "movbi"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R,R,R")
-	(match_operand:BI 1 "nvptx_nonmemory_operand" "R,P0,Pn"))]
+	(match_operand:BI 1 "nvptx_nonmemory_operand" "R,P0,P1"))]
   ""
   "@
    %.\\tmov%t0\\t%0, %1;
@@ -859,12 +859,26 @@
 
 ;; Conditional stores
 
-(define_insn "setcc_from_bi"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(ne:SI (match_operand:BI 1 "nvptx_register_operand" "R")
-	       (const_int 0)))]
+(define_insn "setcc<mode>_from_bi"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ne:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+		   (const_int 0)))]
   ""
-  "%.\\tselp%t0 %0,-1,0,%1;")
+  "%.\\tselp%t0\\t%0, 1, 0, %1;")
+
+(define_insn "extendbi<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:HSDIM
+	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tselp%t0\\t%0, -1, 0, %1;")
+
+(define_insn "zero_extendbi<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(zero_extend:HSDIM
+	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tselp%t0\\t%0, 1, 0, %1;")
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
@@ -901,22 +915,6 @@
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
   ""
   "%.\\tselp%t0\\t%0, %3, %2, %1;")
-
-(define_insn "setcc_int<mode>"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(match_operator:SI 1 "nvptx_comparison_operator"
-	  [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
-  ""
-  "%.\\tset%t0%c1\\t%0, %2, %3;")
-
-(define_insn "setcc_int<mode>"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(match_operator:SI 1 "nvptx_float_comparison_operator"
-	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
-  ""
-  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
@@ -934,29 +932,35 @@
   ""
   "%.\\tset%t0%c1\\t%0, %2, %3;")
 
-(define_expand "cstorebi4"
-  [(set (match_operand:SI 0 "nvptx_register_operand")
-	(match_operator:SI 1 "ne_operator"
-         [(match_operand:BI 2 "nvptx_register_operand")
-          (match_operand:BI 3 "const0_operand")]))]
-  ""
-  "")
-
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
 	(match_operator:SI 1 "nvptx_comparison_operator"
-         [(match_operand:HSDIM 2 "nvptx_register_operand")
-          (match_operand:HSDIM 3 "nvptx_nonmemory_operand")]))]
+	  [(match_operand:HSDIM 2 "nvptx_register_operand")
+	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand")]))]
   ""
-  "")
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
 	(match_operator:SI 1 "nvptx_float_comparison_operator"
-         [(match_operand:SDFM 2 "nvptx_register_operand")
-          (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
+	  [(match_operand:SDFM 2 "nvptx_register_operand")
+	   (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
   ""
-  "")
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
 
 ;; Calls
 

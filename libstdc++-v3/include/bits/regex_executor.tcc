@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -425,7 +425,7 @@ namespace __detail
     void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_handle_accept(_Match_mode __match_mode, _StateIdT)
     {
-      if (__dfs_mode)
+      if _GLIBCXX17_CONSTEXPR (__dfs_mode)
 	{
 	  __glibcxx_assert(!_M_has_sol);
 	  if (__match_mode == _Match_mode::_Exact)

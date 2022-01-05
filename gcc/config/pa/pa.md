@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
-;;   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+;;   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -10366,10 +10366,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx libfunc = init_one_libfunc ("__sync_lock_test_and_set_1");
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, QImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
 
-      emit_library_call (libfunc, LCT_NORMAL, VOIDmode,
-			 XEXP (operands[0], 0), Pmode,
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], QImode);
       DONE;
     }
@@ -10386,10 +10386,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx libfunc = init_one_libfunc ("__sync_lock_test_and_set_2");
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, HImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
 
-      emit_library_call (libfunc, LCT_NORMAL, VOIDmode,
-			 XEXP (operands[0], 0), Pmode,
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], HImode);
       DONE;
     }
@@ -10406,10 +10406,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx libfunc = init_one_libfunc ("__sync_lock_test_and_set_4");
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, SImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
 
-      emit_library_call (libfunc, LCT_NORMAL, VOIDmode,
-			 XEXP (operands[0], 0), Pmode,
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], SImode);
       DONE;
     }
@@ -10459,10 +10459,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx libfunc = init_one_libfunc ("__sync_lock_test_and_set_8");
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, DImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
 
-      emit_library_call (libfunc, LCT_NORMAL, VOIDmode,
-			 XEXP (operands[0], 0), Pmode,
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
 			 operands[1], DImode);
       DONE;
     }

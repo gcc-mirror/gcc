@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -8123,7 +8123,7 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
 	    if (error_operand_p (OMP_CLAUSE_DECL (c)))
 	      return;
 	    if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
-			       is_gimple_val, fb_rvalue) == GS_ERROR)
+			       is_gimple_lvalue, fb_lvalue) == GS_ERROR)
 	      return;
 	    gimplify_and_add (OMP_CLAUSE_DECL (c), pre_p);
 	  }

@@ -3,9 +3,9 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expression.d, _expression.d)
  * Documentation:  https://dlang.org/phobos/dmd_expression.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/expression.d
@@ -26,7 +26,6 @@ import dmd.astenums;
 import dmd.ast_node;
 import dmd.gluelayer;
 import dmd.canthrow;
-import dmd.complex;
 import dmd.constfold;
 import dmd.ctfeexpr;
 import dmd.ctorflow;
@@ -57,6 +56,7 @@ import dmd.nspace;
 import dmd.objc;
 import dmd.opover;
 import dmd.optimize;
+import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.filename;
 import dmd.common.outbuffer;
@@ -64,12 +64,12 @@ import dmd.root.optional;
 import dmd.root.rmem;
 import dmd.root.rootobject;
 import dmd.root.string;
+import dmd.root.utf;
 import dmd.safe;
 import dmd.sideeffect;
 import dmd.target;
 import dmd.tokens;
 import dmd.typesem;
-import dmd.utf;
 import dmd.visitor;
 
 enum LOGSEMANTIC = false;
@@ -659,7 +659,7 @@ enum WANTvalue  = 0;    // default
 enum WANTexpand = 1;    // expand const/immutable variables if possible
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#expression
+ * https://dlang.org/spec/expression.html#expression
  */
 extern (C++) abstract class Expression : ASTNode
 {
@@ -2262,7 +2262,7 @@ extern (C++) final class DsymbolExp : Expression
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#this
+ * https://dlang.org/spec/expression.html#this
  */
 extern (C++) class ThisExp : Expression
 {
@@ -2318,7 +2318,7 @@ extern (C++) class ThisExp : Expression
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#super
+ * https://dlang.org/spec/expression.html#super
  */
 extern (C++) final class SuperExp : ThisExp
 {
@@ -2334,7 +2334,7 @@ extern (C++) final class SuperExp : ThisExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#null
+ * https://dlang.org/spec/expression.html#null
  */
 extern (C++) final class NullExp : Expression
 {
@@ -2380,7 +2380,7 @@ extern (C++) final class NullExp : Expression
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#string_literals
+ * https://dlang.org/spec/expression.html#string_literals
  */
 extern (C++) final class StringExp : Expression
 {
@@ -2904,7 +2904,7 @@ extern (C++) final class TupleExp : Expression
 /***********************************************************
  * [ e1, e2, e3, ... ]
  *
- * http://dlang.org/spec/expression.html#array_literals
+ * https://dlang.org/spec/expression.html#array_literals
  */
 extern (C++) final class ArrayLiteralExp : Expression
 {
@@ -3069,7 +3069,7 @@ extern (C++) final class ArrayLiteralExp : Expression
 /***********************************************************
  * [ key0 : value0, key1 : value1, ... ]
  *
- * http://dlang.org/spec/expression.html#associative_array_literals
+ * https://dlang.org/spec/expression.html#associative_array_literals
  */
 extern (C++) final class AssocArrayLiteralExp : Expression
 {
@@ -5423,7 +5423,7 @@ extern (C++) final class VectorArrayExp : UnaExp
 /***********************************************************
  * e1 [lwr .. upr]
  *
- * http://dlang.org/spec/expression.html#slice_expressions
+ * https://dlang.org/spec/expression.html#slice_expressions
  */
 extern (C++) final class SliceExp : UnaExp
 {
@@ -5506,7 +5506,7 @@ extern (C++) final class ArrayLengthExp : UnaExp
 /***********************************************************
  * e1 [ a0, a1, a2, a3 ,... ]
  *
- * http://dlang.org/spec/expression.html#index_expressions
+ * https://dlang.org/spec/expression.html#index_expressions
  */
 extern (C++) final class ArrayExp : UnaExp
 {
@@ -6208,7 +6208,7 @@ extern (C++) final class CatDcharAssignExp : CatAssignExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#add_expressions
+ * https://dlang.org/spec/expression.html#add_expressions
  */
 extern (C++) final class AddExp : BinExp
 {
@@ -6239,7 +6239,7 @@ extern (C++) final class MinExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#cat_expressions
+ * https://dlang.org/spec/expression.html#cat_expressions
  */
 extern (C++) final class CatExp : BinExp
 {
@@ -6262,7 +6262,7 @@ extern (C++) final class CatExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#mul_expressions
+ * https://dlang.org/spec/expression.html#mul_expressions
  */
 extern (C++) final class MulExp : BinExp
 {
@@ -6278,7 +6278,7 @@ extern (C++) final class MulExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#mul_expressions
+ * https://dlang.org/spec/expression.html#mul_expressions
  */
 extern (C++) final class DivExp : BinExp
 {
@@ -6294,7 +6294,7 @@ extern (C++) final class DivExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#mul_expressions
+ * https://dlang.org/spec/expression.html#mul_expressions
  */
 extern (C++) final class ModExp : BinExp
 {
@@ -6310,7 +6310,7 @@ extern (C++) final class ModExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#pow_expressions
+ * https://dlang.org/spec/expression.html#pow_expressions
  */
 extern (C++) final class PowExp : BinExp
 {
@@ -6416,8 +6416,8 @@ extern (C++) final class XorExp : BinExp
 }
 
 /***********************************************************
- * http://dlang.org/spec/expression.html#andand_expressions
- * http://dlang.org/spec/expression.html#oror_expressions
+ * https://dlang.org/spec/expression.html#andand_expressions
+ * https://dlang.org/spec/expression.html#oror_expressions
  */
 extern (C++) final class LogicalExp : BinExp
 {
@@ -6437,7 +6437,7 @@ extern (C++) final class LogicalExp : BinExp
  * `op` is one of:
  *      EXP.lessThan, EXP.lessOrEqual, EXP.greaterThan, EXP.greaterOrEqual
  *
- * http://dlang.org/spec/expression.html#relation_expressions
+ * https://dlang.org/spec/expression.html#relation_expressions
  */
 extern (C++) final class CmpExp : BinExp
 {
@@ -6490,7 +6490,7 @@ extern (C++) final class RemoveExp : BinExp
  *
  * EXP.equal and EXP.notEqual
  *
- * http://dlang.org/spec/expression.html#equality_expressions
+ * https://dlang.org/spec/expression.html#equality_expressions
  */
 extern (C++) final class EqualExp : BinExp
 {
@@ -6511,7 +6511,7 @@ extern (C++) final class EqualExp : BinExp
  *
  * EXP.identity and EXP.notIdentity
  *
- *  http://dlang.org/spec/expression.html#identity_expressions
+ *  https://dlang.org/spec/expression.html#identity_expressions
  */
 extern (C++) final class IdentityExp : BinExp
 {
@@ -6530,7 +6530,7 @@ extern (C++) final class IdentityExp : BinExp
 /***********************************************************
  * `econd ? e1 : e2`
  *
- * http://dlang.org/spec/expression.html#conditional_expressions
+ * https://dlang.org/spec/expression.html#conditional_expressions
  */
 extern (C++) final class CondExp : BinExp
 {

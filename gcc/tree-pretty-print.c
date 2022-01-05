@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -53,19 +53,19 @@ static const char *op_symbol (const_tree);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, dump_flags_t);
-static void do_niy (pretty_printer *, const_tree, dump_flags_t);
+static void do_niy (pretty_printer *, const_tree, int, dump_flags_t);
 
 #define INDENT(SPACE) do { \
   int i; for (i = 0; i<SPACE; i++) pp_space (pp); } while (0)
 
-#define NIY do_niy (pp, node, flags)
+#define NIY do_niy (pp, node, spc, flags)
 
 static pretty_printer *tree_pp;
 
 /* Try to print something for an unknown tree code.  */
 
 static void
-do_niy (pretty_printer *pp, const_tree node, dump_flags_t flags)
+do_niy (pretty_printer *pp, const_tree node, int spc, dump_flags_t flags)
 {
   int i, len;
 
@@ -77,8 +77,8 @@ do_niy (pretty_printer *pp, const_tree node, dump_flags_t flags)
       len = TREE_OPERAND_LENGTH (node);
       for (i = 0; i < len; ++i)
 	{
-	  newline_and_indent (pp, 2);
-	  dump_generic_node (pp, TREE_OPERAND (node, i), 2, flags, false);
+	  newline_and_indent (pp, spc+2);
+	  dump_generic_node (pp, TREE_OPERAND (node, i), spc+2, flags, false);
 	}
     }
 
@@ -4397,6 +4397,7 @@ void
 print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
 {
   tree op0 = node;
+  int spc = 0;
 
   if (TREE_CODE (op0) == NON_LVALUE_EXPR)
     op0 = TREE_OPERAND (op0, 0);

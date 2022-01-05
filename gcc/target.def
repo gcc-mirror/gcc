@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -6534,6 +6534,41 @@ default, inlining is not allowed if the callee function has function\n\
 specific target options and the caller does not use the same options.",
  bool, (tree caller, tree callee),
  default_target_can_inline_p)
+
+DEFHOOK
+(update_ipa_fn_target_info,
+ "Allow target to analyze all gimple statements for the given function to\n\
+record and update some target specific information for inlining.  A typical\n\
+example is that a caller with one isa feature disabled is normally not\n\
+allowed to inline a callee with that same isa feature enabled even which is\n\
+attributed by always_inline, but with the conservative analysis on all\n\
+statements of the callee if we are able to guarantee the callee does not\n\
+exploit any instructions from the mismatch isa feature, it would be safe to\n\
+allow the caller to inline the callee.\n\
+@var{info} is one @code{unsigned int} value to record information in which\n\
+one set bit indicates one corresponding feature is detected in the analysis,\n\
+@var{stmt} is the statement being analyzed.  Return true if target still\n\
+need to analyze the subsequent statements, otherwise return false to stop\n\
+subsequent analysis.\n\
+The default version of this hook returns false.",
+ bool, (unsigned int& info, const gimple* stmt),
+ default_update_ipa_fn_target_info)
+
+DEFHOOK
+(need_ipa_fn_target_info,
+ "Allow target to check early whether it is necessary to analyze all gimple\n\
+statements in the given function to update target specific information for\n\
+inlining.  See hook @code{update_ipa_fn_target_info} for usage example of\n\
+target specific information.  This hook is expected to be invoked ahead of\n\
+the iterating with hook @code{update_ipa_fn_target_info}.\n\
+@var{decl} is the function being analyzed, @var{info} is the same as what\n\
+in hook @code{update_ipa_fn_target_info}, target can do one time update\n\
+into @var{info} without iterating for some case.  Return true if target\n\
+decides to analyze all gimple statements to collect information, otherwise\n\
+return false.\n\
+The default version of this hook returns false.",
+ bool, (const_tree decl, unsigned int& info),
+ default_need_ipa_fn_target_info)
 
 DEFHOOK
 (relayout_function,

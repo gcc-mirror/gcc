@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3609,7 +3609,9 @@ done:
 	  gfc_current_ns = gfc_get_namespace (NULL, 0);
 
 	  e = gfc_copy_expr (len);
+	  gfc_push_suppress_errors ();
 	  gfc_reduce_init_expr (e);
+	  gfc_pop_suppress_errors ();
 	  if (e->expr_type == EXPR_CONSTANT)
 	    {
 	      gfc_replace_expr (len, e);

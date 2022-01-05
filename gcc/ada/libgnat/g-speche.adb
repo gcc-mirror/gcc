@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with GNAT.Spelling_Checker_Generic;
 
 package body GNAT.Spelling_Checker is

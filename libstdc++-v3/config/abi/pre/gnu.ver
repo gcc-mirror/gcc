@@ -1,6 +1,6 @@
 ## Linker script for GNU versioning (GNU ld 2.13.91+ only.)
 ##
-## Copyright (C) 2002-2021 Free Software Foundation, Inc.
+## Copyright (C) 2002-2022 Free Software Foundation, Inc.
 ##
 ## This file is part of the GNU ISO C++ Library.  This library is free
 ## software; you can redistribute it and/or modify it under the
@@ -2423,6 +2423,9 @@ GLIBCXX_3.4.30 {
 
     # std::__timepunct<char>::_M_am_pm_format(const char**)
     _ZNKSt11__timepunctI[cw]E15_M_am_pm_formatEPPK[cw];
+
+    # Only defined #if ! __GXX_TYPEINFO_EQUALITY_INLINE
+    _ZNKSt9type_info7__equalERKS_;
 
 } GLIBCXX_3.4.29;
 

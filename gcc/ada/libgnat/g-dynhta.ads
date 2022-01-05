@@ -46,7 +46,8 @@
 --  GNAT.HTable to keep as much coherency as possible between these two
 --  related units.
 
-pragma Compiler_Unit_Warning;
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
 
 package GNAT.Dynamic_HTables is
 

@@ -61,8 +61,6 @@
 --     cases depend on the first character of the XML file being < so that the
 --     encoding of this character can be recognized.
 
-pragma Compiler_Unit_Warning;
-
 package GNAT.Byte_Order_Mark is
 
    type BOM_Kind is

@@ -1,5 +1,5 @@
 // original post to the D newsgroup:
-//    http://www.digitalmars.com/pnews/read.php?server=news.digitalmars.com&group=D&artnum=10554&header
+//    https://www.digitalmars.com/d/archives/10510.html#N10554
 // Test to manipulate 3D vectors, in D!
 // by Sean L Palmer (seanpalmer@directvinternet.com)
 // This code is released without any warranty.  Use at your own risk.

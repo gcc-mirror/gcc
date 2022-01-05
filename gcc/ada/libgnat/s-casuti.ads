@@ -34,11 +34,6 @@
 --  This package provides simple casing functions that do not require the
 --  overhead of the full casing tables found in Ada.Characters.Handling.
 
---  Note that all the routines in this package are available to the user
---  via GNAT.Case_Util, which imports all the entities from this package.
-
-pragma Compiler_Unit_Warning;
-
 package System.Case_Util is
    pragma Pure;
 

@@ -1,6 +1,6 @@
 # Pretty-printers for libstdc++.
 
-# Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1522,7 +1522,7 @@ class StdErrorCodePrinter:
 
     def __init__ (self, typename, val):
         self.val = val
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         # Do this only once ...
         if StdErrorCodePrinter._errno_categories is None:
             StdErrorCodePrinter._errno_categories = ['generic']
@@ -1553,6 +1553,34 @@ class StdErrorCodePrinter:
             except:
                 pass
         return '%s = {"%s": %s}' % (self.typename, category, strval)
+
+class StdRegexStatePrinter:
+    "Print a state node in the NFA for a std::regex"
+
+    def __init__ (self, typename, val):
+        self.val = val
+        self.typename = typename
+
+    def to_string (self):
+        opcode = str(self.val['_M_opcode'])
+        if opcode:
+            opcode = opcode[25:]
+        next_id = self.val['_M_next']
+
+        variants = {'repeat':'alt', 'alternative':'alt',
+                    'subexpr_begin':'subexpr', 'subexpr_end':'subexpr',
+                    'line_begin_assertion':None, 'line_end_assertion':None,
+                    'word_boundary':'neg', 'subexpr_lookahead':'neg',
+                    'backref':'backref_index',
+                    'match':None, 'accept':None,
+                    'dummy':None, 'unknown':None
+                   }
+        v = variants[opcode]
+
+        s = "opcode={}, next={}".format(opcode, next_id)
+        if v is not None and self.val['_M_' + v] is not None:
+            s = "{}, {}={}".format(s, v, self.val['_M_' + v])
+        return "{%s}" % (s)
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -2014,6 +2042,10 @@ def build_libstdcxx_dictionary ():
                                   Tr1UnorderedMapPrinter)
     libstdcxx_printer.add_version('std::tr1::', 'unordered_multiset',
                                   Tr1UnorderedSetPrinter)
+
+    # std::regex components
+    libstdcxx_printer.add_version('std::__detail::', '_State',
+                                  StdRegexStatePrinter)
 
     # These are the C++11 printer registrations for -D_GLIBCXX_DEBUG cases.
     # The tr1 namespace containers do not have any debug equivalents,

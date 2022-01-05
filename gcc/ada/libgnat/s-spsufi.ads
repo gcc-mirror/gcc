@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 package System.Storage_Pools.Subpools.Finalization is
 
    --  The pragma is needed because package System.Storage_Pools.Subpools which

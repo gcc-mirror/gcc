@@ -228,26 +228,8 @@ if (isInputRange!Range && is(StringTypeOf!T) && !isAggregateType!T && !is(T == e
 }
 
 T unformatValueImpl(T, Range, Char)(ref Range input, scope const ref FormatSpec!Char fmt)
-if (isInputRange!Range && isArray!T && !is(StringTypeOf!T) && !isAggregateType!T
-    && !is(T == enum))
-{
-    import std.conv : parse, text;
-    import std.format : enforceFmt;
-
-    const spec = fmt.spec;
-    if (spec == '(')
-    {
-        return unformatRange!T(input, fmt);
-    }
-
-    enforceFmt(spec == 's',
-               text("Wrong unformat specifier '%", spec , "' for ", T.stringof));
-
-    return parse!T(input);
-}
-
-T unformatValueImpl(T, Range, Char)(ref Range input, scope const ref FormatSpec!Char fmt)
-if (isInputRange!Range && isAssociativeArray!T && !is(T == enum))
+if (isInputRange!Range && !is(StringTypeOf!T) && !isAggregateType!T
+    && (isArray!T || isAssociativeArray!T || is(T == enum)))
 {
     import std.conv : parse, text;
     import std.format : enforceFmt;

@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 pragma Warnings (Off);
 --  Disable warnings as System.Soft_Links.Initialize is not Preelaborate. It is
 --  safe to with this unit as its elaboration routine will only be initializing
