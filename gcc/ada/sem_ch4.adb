@@ -588,59 +588,58 @@ package body Sem_Ch4 is
       --  Case where allocator has a subtype indication
 
       else
-         declare
-            Def_Id   : Entity_Id;
-            Base_Typ : Entity_Id;
+         --  If the allocator includes a N_Subtype_Indication then a
+         --  constraint is present, otherwise the node is a subtype mark.
+         --  Introduce an explicit subtype declaration into the tree
+         --  defining some anonymous subtype and rewrite the allocator to
+         --  use this subtype rather than the subtype indication.
 
-         begin
-            --  If the allocator includes a N_Subtype_Indication then a
-            --  constraint is present, otherwise the node is a subtype mark.
-            --  Introduce an explicit subtype declaration into the tree
-            --  defining some anonymous subtype and rewrite the allocator to
-            --  use this subtype rather than the subtype indication.
+         --  It is important to introduce the explicit subtype declaration
+         --  so that the bounds of the subtype indication are attached to
+         --  the tree in case the allocator is inside a generic unit.
 
-            --  It is important to introduce the explicit subtype declaration
-            --  so that the bounds of the subtype indication are attached to
-            --  the tree in case the allocator is inside a generic unit.
+         --  Finally, if there is no subtype indication and the type is
+         --  a tagged unconstrained type with discriminants, the designated
+         --  object is constrained by their default values, and it is
+         --  simplest to introduce an explicit constraint now. In some cases
+         --  this is done during expansion, but freeze actions are certain
+         --  to be emitted in the proper order if constraint is explicit.
 
-            --  Finally, if there is no subtype indication and the type is
-            --  a tagged unconstrained type with discriminants, the designated
-            --  object is constrained by their default values, and it is
-            --  simplest to introduce an explicit constraint now. In some cases
-            --  this is done during expansion, but freeze actions are certain
-            --  to be emitted in the proper order if constraint is explicit.
+         if Is_Entity_Name (E) and then Expander_Active then
+            Find_Type (E);
+            Type_Id := Entity (E);
 
-            if Is_Entity_Name (E) and then Expander_Active then
-               Find_Type (E);
-               Type_Id := Entity (E);
+            if Is_Tagged_Type (Type_Id)
+              and then Has_Defaulted_Discriminants (Type_Id)
+              and then not Is_Constrained (Type_Id)
+            then
+               declare
+                  Constr : constant List_Id    := New_List;
+                  Loc    : constant Source_Ptr := Sloc (E);
+                  Discr  : Entity_Id := First_Discriminant (Type_Id);
 
-               if Is_Tagged_Type (Type_Id)
-                 and then Has_Defaulted_Discriminants (Type_Id)
-                 and then not Is_Constrained (Type_Id)
-               then
-                  declare
-                     Constr : constant List_Id    := New_List;
-                     Loc    : constant Source_Ptr := Sloc (E);
-                     Discr  : Entity_Id := First_Discriminant (Type_Id);
+               begin
+                  while Present (Discr) loop
+                     Append (Discriminant_Default_Value (Discr), Constr);
+                     Next_Discriminant (Discr);
+                  end loop;
 
-                  begin
-                     while Present (Discr) loop
-                        Append (Discriminant_Default_Value (Discr), Constr);
-                        Next_Discriminant (Discr);
-                     end loop;
-
-                     Rewrite (E,
-                       Make_Subtype_Indication (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
-                         Constraint   =>
-                           Make_Index_Or_Discriminant_Constraint (Loc,
-                             Constraints => Constr)));
-                  end;
-               end if;
+                  Rewrite (E,
+                    Make_Subtype_Indication (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                      Constraint   =>
+                        Make_Index_Or_Discriminant_Constraint (Loc,
+                          Constraints => Constr)));
+               end;
             end if;
+         end if;
 
-            if Nkind (E) = N_Subtype_Indication then
+         if Nkind (E) = N_Subtype_Indication then
+            declare
+               Def_Id   : Entity_Id;
+               Base_Typ : Entity_Id;
 
+            begin
                --  A constraint is only allowed for a composite type in Ada
                --  95. In Ada 83, a constraint is also allowed for an
                --  access-to-composite type, but the constraint is ignored.
@@ -693,151 +692,151 @@ package body Sem_Ch4 is
                                N_Index_Or_Discriminant_Constraint
                   then
                      Error_Msg_N -- CODEFIX
-                       ("if qualified expression was meant, "
-                        & "use apostrophe!", Constraint (E));
+                       ("if qualified expression was meant, use apostrophe!",
+                        Constraint (E));
                   end if;
 
                   E := New_Occurrence_Of (Def_Id, Loc);
                   Rewrite (Expression (N), E);
                end if;
-            end if;
+            end;
+         end if;
 
-            Type_Id := Process_Subtype (E, N);
-            Acc_Type := Create_Itype (E_Allocator_Type, N);
-            Set_Etype (Acc_Type, Acc_Type);
-            Set_Directly_Designated_Type (Acc_Type, Type_Id);
-            Check_Fully_Declared (Type_Id, N);
+         Type_Id := Process_Subtype (E, N);
+         Acc_Type := Create_Itype (E_Allocator_Type, N);
+         Set_Etype (Acc_Type, Acc_Type);
+         Set_Directly_Designated_Type (Acc_Type, Type_Id);
+         Check_Fully_Declared (Type_Id, N);
 
-            --  Ada 2005 (AI-231): If the designated type is itself an access
-            --  type that excludes null, its default initialization will
-            --  be a null object, and we can insert an unconditional raise
-            --  before the allocator.
+         --  Ada 2005 (AI-231): If the designated type is itself an access
+         --  type that excludes null, its default initialization will
+         --  be a null object, and we can insert an unconditional raise
+         --  before the allocator.
 
-            --  Ada 2012 (AI-104): A not null indication here is altogether
-            --  illegal.
+         --  Ada 2012 (AI-104): A not null indication here is altogether
+         --  illegal.
 
-            if Can_Never_Be_Null (Type_Id) then
-               declare
-                  Not_Null_Check : constant Node_Id :=
-                                     Make_Raise_Constraint_Error (Sloc (E),
-                                       Reason => CE_Null_Not_Allowed);
+         if Can_Never_Be_Null (Type_Id) then
+            declare
+               Not_Null_Check : constant Node_Id :=
+                                  Make_Raise_Constraint_Error (Sloc (E),
+                                    Reason => CE_Null_Not_Allowed);
 
-               begin
-                  if Expander_Active then
-                     Insert_Action (N, Not_Null_Check);
-                     Analyze (Not_Null_Check);
+            begin
+               if Expander_Active then
+                  Insert_Action (N, Not_Null_Check);
+                  Analyze (Not_Null_Check);
 
-                  elsif Warn_On_Ada_2012_Compatibility then
-                     Error_Msg_N
-                       ("null value not allowed here in Ada 2012?y?", E);
-                  end if;
-               end;
-            end if;
-
-            --  Check for missing initialization. Skip this check if we already
-            --  had errors on analyzing the allocator, since in that case these
-            --  are probably cascaded errors.
-
-            if not Is_Definite_Subtype (Type_Id)
-              and then Serious_Errors_Detected = Sav_Errs
-            then
-               --  The build-in-place machinery may produce an allocator when
-               --  the designated type is indefinite but the underlying type is
-               --  not. In this case the unknown discriminants are meaningless
-               --  and should not trigger error messages. Check the parent node
-               --  because the allocator is marked as coming from source.
-
-               if Present (Underlying_Type (Type_Id))
-                 and then Is_Definite_Subtype (Underlying_Type (Type_Id))
-                 and then not Comes_From_Source (Parent (N))
-               then
-                  null;
-
-               --  An unusual case arises when the parent of a derived type is
-               --  a limited record extension  with unknown discriminants, and
-               --  its full view has no discriminants.
-               --
-               --  A more general fix might be to create the proper underlying
-               --  type for such a derived type, but it is a record type with
-               --  no private attributes, so this required extending the
-               --  meaning of this attribute. ???
-
-               elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
-                 and then Present (Underlying_Type (Etype (Type_Id)))
-                 and then
-                   not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
-                 and then not Comes_From_Source (Parent (N))
-               then
-                  null;
-
-               elsif Is_Class_Wide_Type (Type_Id) then
+               elsif Warn_On_Ada_2012_Compatibility then
                   Error_Msg_N
-                    ("initialization required in class-wide allocation", N);
+                    ("null value not allowed here in Ada 2012?y?", E);
+               end if;
+            end;
+         end if;
+
+         --  Check for missing initialization. Skip this check if we already
+         --  had errors on analyzing the allocator, since in that case these
+         --  are probably cascaded errors.
+
+         if not Is_Definite_Subtype (Type_Id)
+           and then Serious_Errors_Detected = Sav_Errs
+         then
+            --  The build-in-place machinery may produce an allocator when
+            --  the designated type is indefinite but the underlying type is
+            --  not. In this case the unknown discriminants are meaningless
+            --  and should not trigger error messages. Check the parent node
+            --  because the allocator is marked as coming from source.
+
+            if Present (Underlying_Type (Type_Id))
+              and then Is_Definite_Subtype (Underlying_Type (Type_Id))
+              and then not Comes_From_Source (Parent (N))
+            then
+               null;
+
+            --  An unusual case arises when the parent of a derived type is
+            --  a limited record extension  with unknown discriminants, and
+            --  its full view has no discriminants.
+            --
+            --  A more general fix might be to create the proper underlying
+            --  type for such a derived type, but it is a record type with
+            --  no private attributes, so this required extending the
+            --  meaning of this attribute. ???
+
+            elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
+              and then Present (Underlying_Type (Etype (Type_Id)))
+              and then
+                not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
+              and then not Comes_From_Source (Parent (N))
+            then
+               null;
+
+            elsif Is_Class_Wide_Type (Type_Id) then
+               Error_Msg_N
+                 ("initialization required in class-wide allocation", N);
+
+            else
+               if Ada_Version < Ada_2005
+                 and then Is_Limited_Type (Type_Id)
+               then
+                  Error_Msg_N ("unconstrained allocation not allowed", N);
+
+                  if Is_Array_Type (Type_Id) then
+                     Error_Msg_N
+                       ("\constraint with array bounds required", N);
+
+                  elsif Has_Unknown_Discriminants (Type_Id) then
+                     null;
+
+                  else pragma Assert (Has_Discriminants (Type_Id));
+                     Error_Msg_N
+                       ("\constraint with discriminant values required", N);
+                  end if;
+
+               --  Limited Ada 2005 and general nonlimited case.
+               --  This is an error, except in the case of an
+               --  uninitialized allocator that is generated
+               --  for a build-in-place function return of a
+               --  discriminated but compile-time-known-size
+               --  type.
 
                else
-                  if Ada_Version < Ada_2005
-                    and then Is_Limited_Type (Type_Id)
+                  if Original_Node (N) /= N
+                    and then Nkind (Original_Node (N)) = N_Allocator
                   then
-                     Error_Msg_N ("unconstrained allocation not allowed", N);
+                     declare
+                        Qual : constant Node_Id :=
+                          Expression (Original_Node (N));
+                        pragma Assert
+                          (Nkind (Qual) = N_Qualified_Expression);
+                        Call : constant Node_Id := Expression (Qual);
+                        pragma Assert
+                          (Is_Expanded_Build_In_Place_Call (Call));
+                     begin
+                        null;
+                     end;
+
+                  else
+                     Error_Msg_N
+                       ("uninitialized unconstrained allocation not "
+                        & "allowed", N);
 
                      if Is_Array_Type (Type_Id) then
                         Error_Msg_N
-                          ("\constraint with array bounds required", N);
+                          ("\qualified expression or constraint with "
+                           & "array bounds required", N);
 
                      elsif Has_Unknown_Discriminants (Type_Id) then
-                        null;
+                        Error_Msg_N ("\qualified expression required", N);
 
                      else pragma Assert (Has_Discriminants (Type_Id));
                         Error_Msg_N
-                          ("\constraint with discriminant values required", N);
-                     end if;
-
-                  --  Limited Ada 2005 and general nonlimited case.
-                  --  This is an error, except in the case of an
-                  --  uninitialized allocator that is generated
-                  --  for a build-in-place function return of a
-                  --  discriminated but compile-time-known-size
-                  --  type.
-
-                  else
-                     if Original_Node (N) /= N
-                       and then Nkind (Original_Node (N)) = N_Allocator
-                     then
-                        declare
-                           Qual : constant Node_Id :=
-                             Expression (Original_Node (N));
-                           pragma Assert
-                             (Nkind (Qual) = N_Qualified_Expression);
-                           Call : constant Node_Id := Expression (Qual);
-                           pragma Assert
-                             (Is_Expanded_Build_In_Place_Call (Call));
-                        begin
-                           null;
-                        end;
-
-                     else
-                        Error_Msg_N
-                          ("uninitialized unconstrained allocation not "
-                           & "allowed", N);
-
-                        if Is_Array_Type (Type_Id) then
-                           Error_Msg_N
-                             ("\qualified expression or constraint with "
-                              & "array bounds required", N);
-
-                        elsif Has_Unknown_Discriminants (Type_Id) then
-                           Error_Msg_N ("\qualified expression required", N);
-
-                        else pragma Assert (Has_Discriminants (Type_Id));
-                           Error_Msg_N
-                             ("\qualified expression or constraint with "
-                              & "discriminant values required", N);
-                        end if;
+                          ("\qualified expression or constraint with "
+                           & "discriminant values required", N);
                      end if;
                   end if;
                end if;
             end if;
-         end;
+         end if;
       end if;
 
       if Is_Abstract_Type (Type_Id) then
