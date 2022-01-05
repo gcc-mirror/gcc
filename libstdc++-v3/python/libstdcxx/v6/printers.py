@@ -1522,7 +1522,7 @@ class StdErrorCodePrinter:
 
     def __init__ (self, typename, val):
         self.val = val
-        self.typename = typename
+        self.typename = strip_versioned_namespace(typename)
         # Do this only once ...
         if StdErrorCodePrinter._errno_categories is None:
             StdErrorCodePrinter._errno_categories = ['generic']
