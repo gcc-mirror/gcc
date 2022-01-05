@@ -868,11 +868,14 @@ is
          if (X >= 0) = Den_Pos then
             pragma Assert (Quot >= 0);
             pragma Assert (Big_Q >= 0);
+            pragma Assert (Q >= 0);
             pragma Assert (Big (Q) = Big_Q);
          else
             pragma Assert ((X >= 0) /= (Big (Y) * Big (Z) >= 0));
             pragma Assert (Quot <= 0);
             pragma Assert (Big_Q <= 0);
+            pragma Assert (if X >= 0 then R >= 0);
+            pragma Assert (if X < 0 then R <= 0);
             pragma Assert (Big (R) = Big_R);
          end if;
       end Prove_Signs;
@@ -893,6 +896,7 @@ is
       else
          Big_Q := Quot;
       end if;
+      Lemma_Abs_Mult_Commutation (Big (Y), Big (Z));
       Lemma_Mult_Decomposition (Mult, Yu, Zu, Yhi, Ylo, Zhi, Zlo);
 
       --  Compute Y * Z. Note that if the result overflows Double_Uns, then
@@ -1417,7 +1421,8 @@ is
         Pre  => In_Double_Int_Range (Big (X) * Big (Y))
           and then Mult = Big (T2)
           and then ((X >= 0 and then Y >= 0) or else (X < 0 and then Y < 0)),
-        Post => To_Pos_Int (T2) = X * Y;
+        Post => In_Double_Int_Range (Big (T2))
+          and then To_Pos_Int (T2) = X * Y;
 
       procedure Prove_Result_Too_Large
       with
@@ -1925,6 +1930,10 @@ is
          Lemma_Hi_Lo (T1, Hi (T1), S3);
          Lemma_Hi_Lo (T2, Hi (T2), Lo (T2));
          Lemma_Hi_Lo (T3, Hi (T3), S2);
+         Lemma_Mult_Commutation (Double_Uns (Q), Double_Uns (Lo (Zu)), T1);
+         Lemma_Mult_Commutation (Double_Uns (Q), Double_Uns (Hi (Zu)), T2);
+         pragma Assert (Big (Double_Uns (Q)) * Big (Zu) =
+                          Big_2xxSingle * Big (T2) + Big (T1));
          pragma Assert (Big (Double_Uns (Q)) * Big (Zu) =
            Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (Hi (T2)))
          + Big_2xxSingle * Big_2xxSingle * Big (Double_Uns (Hi (T3)))
@@ -2321,6 +2330,21 @@ is
                  Post => Shift / 2 = 2 ** (Log_Single_Size - (Inter + 1))
                    and then (Shift = 2 or (Shift / 2) mod 2 = 0);
 
+               procedure Prove_Shift_Progress
+               with
+                 Ghost,
+                 Pre  => Shift <= Single_Size / 2
+                   and then Shift_Prev = 2 * Shift
+                   and then Mask_Prev =
+                     Shift_Left (Single_Uns'Last, Single_Size - Shift_Prev)
+                   and then Mask =
+                     Shift_Left (Single_Uns'Last,
+                                 Single_Size - Shift_Prev + Shift),
+                 Post => Mask_Prev =
+                     Shift_Left (Single_Uns'Last, Single_Size - 2 * Shift)
+                   and then Mask =
+                     Shift_Left (Single_Uns'Last, Single_Size - Shift);
+
                procedure Prove_Shifting
                with
                  Ghost,
@@ -2333,17 +2357,13 @@ is
                    and then (Hi (Zu_Prev) and Mask_Prev and not Mask) /= 0,
                  Post => (Hi (Zu) and Mask) /= 0;
 
-               -----------------
-               -- Prove_Power --
-               -----------------
+               -----------------------------
+               -- Local lemma null bodies --
+               -----------------------------
 
                procedure Prove_Power is null;
-
-               --------------------
-               -- Prove_Shifting --
-               --------------------
-
                procedure Prove_Shifting is null;
+               procedure Prove_Shift_Progress is null;
 
             begin
                Prove_Power;
@@ -2357,6 +2377,7 @@ is
 
                Lemma_Double_Shift
                  (Single_Uns'Last, Single_Size - Shift_Prev, Shift);
+               Prove_Shift_Progress;
 
                if (Hi (Zu) and Mask) = 0 then
                   Zu := Shift_Left (Zu, Shift);
@@ -2378,9 +2399,13 @@ is
 
                   Scale := Scale + Shift;
 
+                  pragma Assert (Zu = Shift_Left (abs Z, Scale));
                   pragma Assert
                     (Big (Zu) = Big (Double_Uns'(abs Z)) * Big_2xx (Scale));
                end if;
+
+               pragma Assert
+                 (Big (Zu) = Big (Double_Uns'(abs Z)) * Big_2xx (Scale));
             end;
          end loop;
 
