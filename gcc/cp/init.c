@@ -4092,6 +4092,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
   tbase_init = build_stmt (loc, DECL_EXPR, tbase);
   controller = build3 (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
+  BIND_EXPR_VEC_DTOR (controller) = true;
 
   body = build1 (EXIT_EXPR, void_type_node,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,

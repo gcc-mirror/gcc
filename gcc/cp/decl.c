@@ -7451,11 +7451,24 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
    they are run on the normal path, but not if they are run on the
    exceptional path.  We implement this by telling
    honor_protect_cleanup_actions to strip the variable cleanup from the
-   exceptional path.  */
+   exceptional path.
+
+   Another approach could be to make the variable cleanup region enclose
+   initialization, but depend on a flag to indicate that the variable is
+   initialized; that's effectively what we do for arrays.  But the current
+   approach works fine for non-arrays, and has no code overhead in the usual
+   case where the temporary destructors are noexcept.  */
 
 static void
 wrap_temporary_cleanups (tree init, tree guard)
 {
+  if (TREE_CODE (guard) == BIND_EXPR)
+    {
+      /* An array cleanup region already encloses any temporary cleanups,
+	 don't wrap it around them again.  */
+      gcc_checking_assert (BIND_EXPR_VEC_DTOR (guard));
+      return;
+    }
   cp_walk_tree_without_duplicates (&init, wrap_cleanups_r, (void *)guard);
 }
 
@@ -7518,8 +7531,8 @@ initialize_local_var (tree decl, tree init)
 
 	  /* If we're only initializing a single object, guard the
 	     destructors of any temporaries used in its initializer with
-	     its destructor.  But arrays are handled in build_vec_init.  */
-	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
+	     its destructor.  */
+	  if (cleanup)
 	    wrap_temporary_cleanups (init, cleanup);
 
 	  gcc_assert (building_stmt_list_p ());
@@ -8367,7 +8380,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (cleanups)
     {
       for (tree t : *cleanups)
-	push_cleanup (decl, t, false);
+	{
+	  push_cleanup (decl, t, false);
+	  /* As in initialize_local_var.  */
+	  wrap_temporary_cleanups (init, t);
+	}
       release_tree_vector (cleanups);
     }
 

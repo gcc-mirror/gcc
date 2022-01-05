@@ -465,6 +465,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_USING_P (in OVERLOAD)
       IMPLICIT_CONV_EXPR_NONTYPE_ARG (in IMPLICIT_CONV_EXPR)
       BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (in BASELINK)
+      BIND_EXPR_VEC_DTOR (in BIND_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -711,6 +712,10 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 
 #define BIND_EXPR_TRY_BLOCK(NODE) \
   TREE_LANG_FLAG_0 (BIND_EXPR_CHECK (NODE))
+
+/* This BIND_EXPR is from build_vec_delete_1.  */
+#define BIND_EXPR_VEC_DTOR(NODE) \
+  TREE_LANG_FLAG_1 (BIND_EXPR_CHECK (NODE))
 
 /* Used to mark the block around the member initializers and cleanups.  */
 #define BIND_EXPR_BODY_BLOCK(NODE) \
