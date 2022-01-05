@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Og -ffloat-store" } */
+/* { dg-options "-Og -ffloat-store -msse2" } */
 
 #include <emmintrin.h>
 typedef float vFloat __attribute__((__vector_size__(16)));
