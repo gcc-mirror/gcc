@@ -451,11 +451,21 @@ proc check_effective_target_openacc_nvidia_accel_selected { } {
 # Return 1 if using Intel MIC offload device.
 proc check_effective_target_offload_device_intel_mic { } {
     return [check_runtime_nocache offload_device_intel_mic {
-      #include <omp.h>
       #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
       int main ()
 	{
 	  return !on_device_arch_intel_mic ();
+	}
+    } ]
+}
+
+# Return 1 if any Intel MIC offload device is available.
+proc check_effective_target_offload_device_any_intel_mic { } {
+    return [check_runtime_nocache offload_device_any_intel_mic {
+      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
+      int main ()
+	{
+	  return !any_device_arch_intel_mic ();
 	}
     } ]
 }
