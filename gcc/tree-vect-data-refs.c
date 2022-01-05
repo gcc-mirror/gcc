@@ -2721,7 +2721,20 @@ vect_analyze_group_access_1 (vec_info *vinfo, dr_vec_info *dr_info)
           /* Check that the distance between two accesses is equal to the type
              size. Otherwise, we have gaps.  */
           diff = (TREE_INT_CST_LOW (DR_INIT (data_ref))
-                  - TREE_INT_CST_LOW (prev_init)) / type_size;
+		  - TREE_INT_CST_LOW (prev_init)) / type_size;
+	  if (diff < 1 || diff > UINT_MAX)
+	    {
+	      /* For artificial testcases with array accesses with large
+		 constant indices we can run into overflow issues which
+		 can end up fooling the groupsize constraint below so
+		 check the individual gaps (which are represented as
+		 unsigned int) as well.  */
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "interleaved access with gap larger "
+				 "than representable\n");
+	      return false;
+	    }
 	  if (diff != 1)
 	    {
 	      /* FORNOW: SLP of accesses with gaps is not supported.  */
