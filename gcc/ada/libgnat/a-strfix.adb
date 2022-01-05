@@ -384,6 +384,10 @@ package body Ada.Strings.Fixed with SPARK_Mode is
            Source (Source'First .. Before - 1);
          Result (Front + 1 .. Front + New_Item'Length) :=
            New_Item;
+
+         pragma Assert
+           (Result (1 .. Before - Source'First)
+            = Source (Source'First .. Before - 1));
          pragma Assert
            (Result
               (Before - Source'First + 1
@@ -558,15 +562,21 @@ package body Ada.Strings.Fixed with SPARK_Mode is
             if Position <= Source'Last - New_Item'Length then
                Result (Front + New_Item'Length + 1 .. Result'Last) :=
                  Source (Position + New_Item'Length .. Source'Last);
+
+               pragma Assert
+                 (Result
+                    (Position - Source'First + New_Item'Length + 1
+                     .. Result'Last)
+                  = Source (Position + New_Item'Length .. Source'Last));
             end if;
 
             pragma Assert
               (if Position <= Source'Last - New_Item'Length
                then
                   Result
-                 (Position - Source'First + New_Item'Length + 1
-                  .. Result'Last)
-               = Source (Position + New_Item'Length .. Source'Last));
+                    (Position - Source'First + New_Item'Length + 1
+                     .. Result'Last)
+                  = Source (Position + New_Item'Length .. Source'Last));
          end return;
       end;
    end Overwrite;
