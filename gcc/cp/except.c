@@ -1294,26 +1294,35 @@ maybe_set_retval_sentinel ()
 		 current_retval_sentinel, boolean_true_node);
 }
 
-/* COMPOUND_STMT is the STATEMENT_LIST for the current function body.  If
-   current_retval_sentinel was set in this function, wrap the body in a
-   CLEANUP_STMT to destroy the return value on throw.  */
+/* COMPOUND_STMT is the STATEMENT_LIST for some block.  If COMPOUND_STMT is the
+   current function body or a try block, and current_retval_sentinel was set in
+   this function, wrap the block in a CLEANUP_STMT to destroy the return value
+   on throw.  */
 
 void
 maybe_splice_retval_cleanup (tree compound_stmt)
 {
-  /* If need_retval_cleanup set current_retval_sentinel, wrap the function body
-     in a CLEANUP_STMT to handle destroying the return value.  */
-  if (!DECL_CONSTRUCTOR_P (current_function_decl)
+  /* If we need a cleanup for the return value, add it in at the same level as
+     pushdecl_outermost_localscope.  And also in try blocks.  */
+  bool function_body
+    = (current_binding_level->level_chain
+       && current_binding_level->level_chain->kind == sk_function_parms);
+
+  if ((function_body || current_binding_level->kind == sk_try)
+      && !DECL_CONSTRUCTOR_P (current_function_decl)
       && !DECL_DESTRUCTOR_P (current_function_decl)
       && current_retval_sentinel)
     {
       location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
-
-      /* Add a DECL_EXPR for current_retval_sentinel.  */
       tree_stmt_iterator iter = tsi_start (compound_stmt);
       tree retval = DECL_RESULT (current_function_decl);
-      tree decl_expr = build_stmt (loc, DECL_EXPR, current_retval_sentinel);
-      tsi_link_before (&iter, decl_expr, TSI_SAME_STMT);
+
+      if (function_body)
+	{
+	  /* Add a DECL_EXPR for current_retval_sentinel.  */
+	  tree decl_expr = build_stmt (loc, DECL_EXPR, current_retval_sentinel);
+	  tsi_link_before (&iter, decl_expr, TSI_SAME_STMT);
+	}
 
       /* Skip past other decls, they can't contain a return.  */
       while (TREE_CODE (tsi_stmt (iter)) == DECL_EXPR)
