@@ -2752,7 +2752,7 @@
   ""
   "#"
   [(set_attr "isa" "*,sse2,avx512vl")
-   (set_attr "type" "negnot,sselog,sselog")
+   (set_attr "type" "negnot,sselog1,sselog1")
    (set_attr "mode" "SI,TI,TI")])
 
 (define_split
