@@ -2424,6 +2424,9 @@ GLIBCXX_3.4.30 {
     # std::__timepunct<char>::_M_am_pm_format(const char**)
     _ZNKSt11__timepunctI[cw]E15_M_am_pm_formatEPPK[cw];
 
+    # Only defined #if ! __GXX_TYPEINFO_EQUALITY_INLINE
+    _ZNKSt9type_info7__equalERKS_;
+
 } GLIBCXX_3.4.29;
 
 # Symbols in the support library (libsupc++) have their own tag.

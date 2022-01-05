@@ -295,6 +295,7 @@
 // c++2b
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
 #define __cpp_lib_byteswap 202110L
+#define __cpp_lib_constexpr_typeinfo 202106L
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_ios_noreplace 202200L
 #define __cpp_lib_is_scoped_enum 202011L
