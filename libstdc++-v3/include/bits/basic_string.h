@@ -766,7 +766,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
        */
-      template<typename _Tp, typename = _If_sv<_Tp, void>>
+      template<typename _Tp,
+	       typename = enable_if_t<is_convertible_v<const _Tp&, __sv_type>>>
 	_GLIBCXX20_CONSTEXPR
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
