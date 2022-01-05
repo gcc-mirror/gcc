@@ -18730,7 +18730,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt, eltsz, mask;
   unsigned char perm[64];
-  machine_mode vmode = V16QImode;
+  machine_mode vmode;
   struct expand_vec_perm_d nd;
   rtx rperm[64], vperm, target, op0, op1;
 
@@ -18754,6 +18754,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
       case 16:
 	if (!TARGET_XOP)
 	  return false;
+	vmode = V16QImode;
 	break;
 
       case 32:
@@ -18803,6 +18804,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
       case 16:
 	if (!TARGET_SSSE3)
 	  return false;
+	vmode = V16QImode;
 	break;
 
       case 32:
@@ -18894,6 +18896,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	/* Or if vpermps can be used.  */
 	else if (d->vmode == V16SFmode)
 	  vmode = V16SImode;
+
 	if (vmode == V64QImode)
 	  {
 	    /* vpshufb only works intra lanes, it is not
@@ -18946,8 +18949,10 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 
   machine_mode vpmode = vmode;
 
-  if (vmode == V4QImode
-      || vmode == V8QImode)
+  nelt = GET_MODE_SIZE (vmode);
+
+  /* Emulate narrow modes with V16QI instructions.  */
+  if (nelt < 16)
     {
       rtx m128 = GEN_INT (-128);
 
@@ -18955,19 +18960,15 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	 account for inactive top elements from the first operand.  */
       if (!d->one_operand_p)
 	{
-	  int sz = GET_MODE_SIZE (vmode);
-
 	  for (i = 0; i < nelt; ++i)
 	    {
-	      int ival = INTVAL (rperm[i]);
-	      if (ival >= sz)
-		ival += 16-sz;
-	      rperm[i] = GEN_INT (ival);
+	      unsigned ival = UINTVAL (rperm[i]);
+	      if (ival >= nelt)
+		rperm[i] = GEN_INT (ival + 16 - nelt);
 	    }
 	}
 
-      /* V4QI/V8QI is emulated with V16QI instruction, fill inactive
-	 elements in the top positions with zeros.  */
+      /* Fill inactive elements in the top positions with zeros.  */
       for (i = nelt; i < 16; ++i)
 	rperm[i] = m128;
 
