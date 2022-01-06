@@ -545,6 +545,16 @@ perform_target_ctor (tree init)
 				|LOOKUP_NONVIRTUAL
 				|LOOKUP_DESTRUCTOR,
 				0, tf_warning_or_error);
+      if (DECL_HAS_IN_CHARGE_PARM_P (current_function_decl))
+	{
+	  tree base = build_delete (input_location,
+				    type, decl, sfk_base_destructor,
+				    LOOKUP_NORMAL
+				    |LOOKUP_NONVIRTUAL
+				    |LOOKUP_DESTRUCTOR,
+				    0, tf_warning_or_error);
+	  expr = build_if_in_charge (expr, base);
+	}
       if (expr != error_mark_node
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	finish_eh_cleanup (expr);
