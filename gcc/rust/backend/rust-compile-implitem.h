@@ -153,8 +153,7 @@ public:
 
     std::string ir_symbol_name
       = canonical_path->get () + fntype->subst_as_string ();
-    std::string asm_name
-      = ctx->mangle_impl_item (self, fntype, function.get_function_name ());
+    std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
 
     tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,

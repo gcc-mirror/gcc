@@ -310,14 +310,6 @@ public:
     return mangler.mangle_item (ty, path, mappings->get_current_crate_name ());
   }
 
-  std::string mangle_impl_item (const TyTy::BaseType *self,
-				const TyTy::BaseType *ty,
-				const std::string &name) const
-  {
-    return mangler.mangle_impl_item (self, ty, name,
-				     mappings->get_current_crate_name ());
-  }
-
 private:
   ::Backend *backend;
   Resolver::Resolver *resolver;
