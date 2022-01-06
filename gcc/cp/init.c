@@ -3316,6 +3316,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		     ? TYPE_HAS_ARRAY_NEW_OPERATOR (elt_type)
 		     : TYPE_HAS_NEW_OPERATOR (elt_type));
 
+  bool member_delete_p = (!globally_qualified_p
+			  && CLASS_TYPE_P (elt_type)
+			  && (array_p
+			      ? TYPE_GETS_VEC_DELETE (elt_type)
+			      : TYPE_GETS_REG_DELETE (elt_type)));
+
   if (member_new_p)
     {
       /* Use a class-specific operator new.  */
@@ -3473,7 +3479,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
-  if (!cookie_size && !is_initialized)
+  if (!cookie_size && !is_initialized && !member_delete_p)
     return build_nop (pointer_type, alloc_call);
 
   /* Store the result of the allocation call in a variable so that we can
@@ -3700,76 +3706,76 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
       if (init_expr == error_mark_node)
 	return error_mark_node;
-
-      /* If any part of the object initialization terminates by throwing an
-	 exception and a suitable deallocation function can be found, the
-	 deallocation function is called to free the memory in which the
-	 object was being constructed, after which the exception continues
-	 to propagate in the context of the new-expression. If no
-	 unambiguous matching deallocation function can be found,
-	 propagating the exception does not cause the object's memory to be
-	 freed.  */
-      if (flag_exceptions)
-	{
-	  enum tree_code dcode = array_p ? VEC_DELETE_EXPR : DELETE_EXPR;
-	  tree cleanup;
-
-	  /* The Standard is unclear here, but the right thing to do
-	     is to use the same method for finding deallocation
-	     functions that we use for finding allocation functions.  */
-	  cleanup = (build_op_delete_call
-		     (dcode,
-		      alloc_node,
-		      size,
-		      globally_qualified_p,
-		      placement_allocation_fn_p ? alloc_call : NULL_TREE,
-		      alloc_fn,
-		      complain));
-
-	  if (cleanup && !processing_template_decl)
-	    /* Ack!  First we allocate the memory.  Then we set our sentry
-	       variable to true, and expand a cleanup that deletes the
-	       memory if sentry is true.  Then we run the constructor, and
-	       finally clear the sentry.
-
-	       We need to do this because we allocate the space first, so
-	       if there are any temporaries with cleanups in the
-	       constructor args, we need this EH region to extend until
-	       end of full-expression to preserve nesting.
-
-	       We used to try to evaluate the args first to avoid this, but
-	       since C++17 [expr.new] says that "The invocation of the
-	       allocation function is sequenced before the evaluations of
-	       expressions in the new-initializer."  */
-	    {
-	      tree end, sentry, begin;
-
-	      begin = get_target_expr (boolean_true_node);
-	      CLEANUP_EH_ONLY (begin) = 1;
-
-	      sentry = TARGET_EXPR_SLOT (begin);
-
-	      /* CLEANUP is compiler-generated, so no diagnostics.  */
-	      suppress_warning (cleanup);
-
-	      TARGET_EXPR_CLEANUP (begin)
-		= build3 (COND_EXPR, void_type_node, sentry,
-			  cleanup, void_node);
-
-	      end = build2 (MODIFY_EXPR, TREE_TYPE (sentry),
-			    sentry, boolean_false_node);
-
-	      init_expr
-		= build2 (COMPOUND_EXPR, void_type_node, begin,
-			  build2 (COMPOUND_EXPR, void_type_node, init_expr,
-				  end));
-	      /* Likewise, this is compiler-generated.  */
-	      suppress_warning (init_expr);
-	    }
-	}
     }
   else
     init_expr = NULL_TREE;
+
+  /* If any part of the object initialization terminates by throwing an
+     exception and a suitable deallocation function can be found, the
+     deallocation function is called to free the memory in which the
+     object was being constructed, after which the exception continues
+     to propagate in the context of the new-expression. If no
+     unambiguous matching deallocation function can be found,
+     propagating the exception does not cause the object's memory to be
+     freed.  */
+  if (flag_exceptions && (init_expr || member_delete_p))
+    {
+      enum tree_code dcode = array_p ? VEC_DELETE_EXPR : DELETE_EXPR;
+      tree cleanup;
+
+      /* The Standard is unclear here, but the right thing to do
+	 is to use the same method for finding deallocation
+	 functions that we use for finding allocation functions.  */
+      cleanup = (build_op_delete_call
+		 (dcode,
+		  alloc_node,
+		  size,
+		  globally_qualified_p,
+		  placement_allocation_fn_p ? alloc_call : NULL_TREE,
+		  alloc_fn,
+		  complain));
+
+      if (cleanup && init_expr && !processing_template_decl)
+	/* Ack!  First we allocate the memory.  Then we set our sentry
+	   variable to true, and expand a cleanup that deletes the
+	   memory if sentry is true.  Then we run the constructor, and
+	   finally clear the sentry.
+
+	   We need to do this because we allocate the space first, so
+	   if there are any temporaries with cleanups in the
+	   constructor args, we need this EH region to extend until
+	   end of full-expression to preserve nesting.
+
+	   We used to try to evaluate the args first to avoid this, but
+	   since C++17 [expr.new] says that "The invocation of the
+	   allocation function is sequenced before the evaluations of
+	   expressions in the new-initializer."  */
+	{
+	  tree end, sentry, begin;
+
+	  begin = get_target_expr (boolean_true_node);
+	  CLEANUP_EH_ONLY (begin) = 1;
+
+	  sentry = TARGET_EXPR_SLOT (begin);
+
+	  /* CLEANUP is compiler-generated, so no diagnostics.  */
+	  suppress_warning (cleanup);
+
+	  TARGET_EXPR_CLEANUP (begin)
+	    = build3 (COND_EXPR, void_type_node, sentry,
+		      cleanup, void_node);
+
+	  end = build2 (MODIFY_EXPR, TREE_TYPE (sentry),
+			sentry, boolean_false_node);
+
+	  init_expr
+	    = build2 (COMPOUND_EXPR, void_type_node, begin,
+		      build2 (COMPOUND_EXPR, void_type_node, init_expr,
+			      end));
+	  /* Likewise, this is compiler-generated.  */
+	  suppress_warning (init_expr);
+	}
+    }
 
   /* Now build up the return value in reverse order.  */
 

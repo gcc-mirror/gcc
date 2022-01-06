@@ -2395,6 +2395,7 @@ struct GTY(()) lang_type {
 /* Nonzero for _CLASSTYPE means that operator delete is defined.  */
 #define TYPE_GETS_DELETE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->gets_delete)
 #define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
+#define TYPE_GETS_VEC_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 2)
 
 /* Nonzero if `new NODE[x]' should cause the allocation of extra
    storage to indicate how many array elements are in use.  */
