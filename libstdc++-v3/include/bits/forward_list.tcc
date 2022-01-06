@@ -372,6 +372,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       forward_list<_Tp, _Alloc>::
       merge(forward_list&& __list, _Comp __comp)
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3088. forward_list::merge behavior unclear when passed *this
+	if (std::__addressof(__list) == this)
+	  return;
+
 	_Node_base* __node = &this->_M_impl._M_head;
 	while (__node->_M_next && __list._M_impl._M_head._M_next)
 	  {
