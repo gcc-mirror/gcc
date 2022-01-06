@@ -5535,15 +5535,30 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 
     case MODE_DI:
       /* Handle broken assemblers that require movd instead of movq. */
-      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
-	  && (GENERAL_REG_P (operands[0])
-	      || GENERAL_REG_P (operands[1])))
-	return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%1, %q0|%q0, %1}";
+	  else
+	    return "%vmovd\t{%1, %q0|%q0, %1}";
+	}
+      else if (GENERAL_REG_P (operands[1]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%q1, %0|%0, %q1}";
+	  else
+	    return "%vmovd\t{%q1, %0|%0, %q1}";
+	}
       else
 	return "%vmovq\t{%1, %0|%0, %1}";
 
     case MODE_SI:
-      return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	return "%vmovd\t{%1, %k0|%k0, %1}";
+      else if (GENERAL_REG_P (operands[1]))
+	return "%vmovd\t{%k1, %0|%0, %k1}";
+      else
+	return "%vmovd\t{%1, %0|%0, %1}";
 
     case MODE_HI:
       if (GENERAL_REG_P (operands[0]))

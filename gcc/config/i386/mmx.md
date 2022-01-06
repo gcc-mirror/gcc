@@ -389,13 +389,9 @@
 	return standard_sse_constant_opcode (insn, operands);
 
       if (SSE_REG_P (operands[0]))
-	return MEM_P (operands[1])
-	  ? "%vpinsrw\t{$0, %1, %d0|%d0, %1, 0}"
-	  : "%vpinsrw\t{$0, %k1, %d0|%d0, %k1, 0}";
+	return "%vpinsrw\t{$0, %1, %d0|%d0, %1, 0}";
       else
-	return MEM_P (operands[0])
-	  ? "%vpextrw\t{$0, %1, %0|%0, %1, 0}"
-	  : "%vpextrw\t{$0, %1, %k0|%k0, %1, 0}";
+	return "%vpextrw\t{$0, %1, %0|%0, %1, 0}";
 
     case TYPE_SSEMOV:
       return ix86_output_ssemov (insn, operands);
@@ -412,13 +408,13 @@
 	       ]
 	       (const_string "*")))
    (set (attr "type")
-     (cond [(eq_attr "alternative" "6,7,8,9")
+     (cond [(eq_attr "alternative" "6,7")
 	      (if_then_else (match_test "TARGET_AVX512FP16")
 		(const_string "ssemov")
 		(const_string "sselog1"))
 	    (eq_attr "alternative" "4")
 	      (const_string "sselog1")
-	    (eq_attr "alternative" "5")
+	    (eq_attr "alternative" "5,8,9")
 	      (const_string "ssemov")
 	    (match_test "optimize_function_for_size_p (cfun)")
 	      (const_string "imov")
@@ -440,10 +436,14 @@
 	      ]
 	      (const_string "orig")))
    (set (attr "mode")
-     (cond [(eq_attr "alternative" "6,7,8,9")
+     (cond [(eq_attr "alternative" "6,7")
 	      (if_then_else (match_test "TARGET_AVX512FP16")
 		(const_string "HI")
 		(const_string "TI"))
+	    (eq_attr "alternative" "8,9")
+	      (if_then_else (match_test "TARGET_AVX512FP16")
+		(const_string "HI")
+		(const_string "SI"))
 	    (eq_attr "alternative" "4")
 	      (cond [(match_test "TARGET_AVX")
 		       (const_string "TI")
