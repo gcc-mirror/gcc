@@ -336,6 +336,7 @@ package Snames is
    Name_uCall                          : constant Name_Id := N + $;
    Name_RCI_Name                       : constant Name_Id := N + $;
    Name_Receiver                       : constant Name_Id := N + $;
+   Name_Rpc                            : constant Name_Id := N + $;
    Name_Subp_Id                        : constant Name_Id := N + $;
    Name_Operation                      : constant Name_Id := N + $;
    Name_Argument                       : constant Name_Id := N + $;
