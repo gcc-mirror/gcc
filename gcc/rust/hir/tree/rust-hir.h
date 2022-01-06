@@ -314,6 +314,21 @@ protected:
 class Pattern
 {
 public:
+  enum PatternType
+  {
+    PATH,
+    LITERAL,
+    IDENTIFIER,
+    WILDCARD,
+    RANGE,
+    REFERENCE,
+    STRUCT,
+    TUPLE_STRUCT,
+    TUPLE,
+    GROUPED,
+    SLICE,
+  };
+
   // Unique pointer custom clone function
   std::unique_ptr<Pattern> clone_pattern () const
   {
@@ -331,6 +346,8 @@ public:
   virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
 
   virtual Location get_locus () const = 0;
+
+  virtual PatternType get_pattern_type () const = 0;
 
 protected:
   // Clone pattern implementation as pure virtual method

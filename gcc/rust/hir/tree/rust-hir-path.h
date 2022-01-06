@@ -269,6 +269,11 @@ public:
   PathExprSegment &get_root_seg () { return segments.at (0); }
 
   PathExprSegment get_final_segment () const { return segments.back (); }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::PATH;
+  }
 };
 
 /* HIR node representing a path-in-expression pattern (path that allows generic

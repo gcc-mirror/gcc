@@ -49,13 +49,18 @@ public:
       has_minus (has_minus), locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::LITERAL;
   }
 
 protected:
@@ -122,7 +127,7 @@ public:
   IdentifierPattern (IdentifierPattern &&other) = default;
   IdentifierPattern &operator= (IdentifierPattern &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
@@ -134,6 +139,11 @@ public:
   }
 
   Identifier get_identifier () const { return variable_ident; }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::IDENTIFIER;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -157,13 +167,18 @@ public:
     : locus (locus), mappings (mappings)
   {}
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::WILDCARD;
   }
 
 protected:
@@ -335,13 +350,18 @@ public:
   RangePattern (RangePattern &&other) = default;
   RangePattern &operator= (RangePattern &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::RANGE;
   }
 
 protected:
@@ -405,6 +425,11 @@ public:
   }
 
   Location get_locus () const override final { return locus; }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::REFERENCE;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -671,7 +696,7 @@ public:
 
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
-  Location get_locus () const { return path.get_locus (); }
+  Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -681,6 +706,11 @@ public:
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::STRUCT;
   }
 
 protected:
@@ -894,7 +924,7 @@ public:
   TupleStructPattern (TupleStructPattern &&other) = default;
   TupleStructPattern &operator= (TupleStructPattern &&other) = default;
 
-  Location get_locus () const { return path.get_locus (); }
+  Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -905,6 +935,11 @@ public:
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::TUPLE_STRUCT;
   }
 
 protected:
@@ -939,41 +974,6 @@ protected:
   // pure virtual clone implementation
   virtual TuplePatternItems *clone_tuple_pattern_items_impl () const = 0;
 };
-
-// Class representing TuplePattern patterns where there is only a single pattern
-/*class TuplePatternItemsSingle : public TuplePatternItems {
-    // Pattern pattern;
-    std::unique_ptr<Pattern> pattern;
-
-  public:
-    TuplePatternItemsSingle(Pattern* pattern) : pattern(pattern) {}
-
-    // Copy constructor uses clone
-    TuplePatternItemsSingle(TuplePatternItemsSingle const& other) :
-      pattern(other.pattern->clone_pattern()) {}
-
-    // Destructor - define here if required
-
-    // Overload assignment operator to clone
-    TuplePatternItemsSingle& operator=(TuplePatternItemsSingle const& other) {
-	pattern = other.pattern->clone_pattern();
-
-	return *this;
-    }
-
-    // move constructors
-    TuplePatternItemsSingle(TuplePatternItemsSingle&& other) = default;
-    TuplePatternItemsSingle& operator=(TuplePatternItemsSingle&& other) =
-default;
-
-  protected:
-    // Use covariance to implement clone function as returning this object
-rather than base virtual TuplePatternItemsSingle*
-clone_tuple_pattern_items_impl() const override { return new
-TuplePatternItemsSingle(*this);
-    }
-};*/
-// removed in favour of single-element TuplePatternItemsMultiple
 
 // Class representing TuplePattern patterns where there are multiple patterns
 class TuplePatternItemsMultiple : public TuplePatternItems
@@ -1113,13 +1113,18 @@ public:
     return *this;
   }
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::TUPLE;
   }
 
 protected:
@@ -1170,13 +1175,18 @@ public:
   GroupedPattern (GroupedPattern &&other) = default;
   GroupedPattern &operator= (GroupedPattern &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::GROUPED;
   }
 
 protected:
@@ -1229,13 +1239,18 @@ public:
   SlicePattern (SlicePattern &&other) = default;
   SlicePattern &operator= (SlicePattern &&other) = default;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
     return mappings;
+  }
+
+  PatternType get_pattern_type () const override final
+  {
+    return PatternType::SLICE;
   }
 
 protected:

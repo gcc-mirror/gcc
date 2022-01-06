@@ -70,6 +70,8 @@ public:
 
   void visit (AST::TupleStructPattern &pattern) override;
 
+  void visit (AST::WildcardPattern &pattern) override;
+
 private:
   ASTLoweringPattern () : translated (nullptr) {}
 
