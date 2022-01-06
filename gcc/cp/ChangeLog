@@ -1,3 +1,12 @@
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* pt.c (instantiate_class_template_1): Process attribute((used)) set
+	in class's context.
+
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* init.c (build_new_1): Check complain before alignment warning.
+
 2022-01-04  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (class releasing_vec): Add begin/end fns.

@@ -1,3 +1,341 @@
+2022-01-05  Steve Baird  <baird@adacore.com>
+
+	* exp_ch5.adb (Finish_Binding_Object_Declaration): Fix a bug
+	that was introduced in the previous commit.  The previous
+	version initialized a Boolean constant Declare_Copy before the
+	variable Decl had been initialized properly.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Adjust_External_Name_Case): Use membership test.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): For
+	GNATprove build the wrapper as an expression function.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.ads (Make_Controlling_Function_Wrappers): Move
+	declaration from body to spec, so it can be called by
+	SPARK-specific expansion.
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Likewise.
+	* exp_spark.adb (SPARK_Freeze_Type): Enable expansion of
+	wrappers for function with controlling result types.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dbug.adb, sem_dim.adb: Replace Add_Str_To_Name_Buffer with
+	Add_Char_To_Name_Buffer.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnatls.adb (Gnatls): Use Name_Find function.
+	* targparm.adb (Get_Target_Parameters): Likewise.
+
+2022-01-05  Bob Duff  <duff@adacore.com>
+
+	* repinfo.adb (List_Entities): The code was assuming that if we
+	encounter a package in the current scope, then it must be
+	a (physically) nested package.  That was wrong, because it could
+	be a child package.  Avoid recursing into child packages; they
+	have not been annotated with representation information, and
+	-gnatR2 queries that information.
+
+2022-01-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/s-sopco3.ads, libgnat/s-sopco3.adb: Remove.
+	* libgnat/s-sopco4.ads, libgnat/s-sopco4.adb: Remove.
+	* libgnat/s-sopco5.ads, libgnat/s-sopco5.adb: Remove.
+	* libgnat/s-strops.ads, libgnat/s-strops.adb: Remove.
+	* Makefile.rtl (ADA_EXCLUDE_SRCS): Remove occurences of removed
+	units.
+	* gcc-interface/Make-lang.in (ada/sdefault.o): Remove
+	dependencies on removed units.
+	(GNATBIND_OBJS): Remove occurences of removed units.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Build_Dcheck_Function): Remove extra whitespace.
+	* libgnarl/s-taskin.adb (Initialize_ATCB): Likewise.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Build_Array_VS_Func): Remove explicit "IN" in
+	spec of the generated array validation function; it was
+	redundant, just like it would be in a user-written code.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Ne): Fix whitespace.
+	* sem_dim.adb (Expand_Put_Call_With_Symbol): Likewise.
+	(Reduce): Likewise.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Fix whitespace.
+	* libgnat/a-cofuve.ads (Add): Likewise.
+	* sem_ch3.adb (Build_Access_Subprogram_Wrapper): Likewise.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Eq_Body, Make_Neq_Body,
+	Make_Predefined_Primitive_Eq_Spec,
+	Make_Predefined_Primitive_Specs): Fix whitespace.
+
+2022-01-05  Etienne Servais  <servais@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Rework condition
+	to build subtypes.
+	(Analyze_Object_Declaration): Likewise.
+	(Should_Build_Subtype): New.
+
+2022-01-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-arit128.adb: Mark in SPARK.
+	* libgnat/s-arit128.ads: Add functional contracts.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (String_From_Numeric_Literal): Simplify using
+	membership tests and ranges; fix whitespace.
+
+2022-01-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-expint.ads: Mark in SPARK. Adapt to change to
+	package.
+	* libgnat/s-explli.ads: Likewise.
+	* libgnat/s-expllli.ads: Likewise.
+	* libgnat/s-expont.adb: Add lemmas and ghost code.
+	* libgnat/s-expont.ads: Add functional contract.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_disp.adb (Gen_Parameters_Profile): Remove redundant guard.
+
+2022-01-05  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-valuti.ads (Starts_As_Exponent_Format_Ghost): Ghost
+	function to determine if a string is recognized as something
+	which might be an exponent.
+	(Is_Opt_Exponent_Format_Ghost): Ghost function to determine if a
+	string has the correct format for an optional exponent.
+	(Scan_Exponent): Use ghost functions to factorize contracts.
+
+2022-01-05  Bob Duff  <duff@adacore.com>
+
+	* exp_util.ads (Get_Current_Value_Condition): Belt: Add a
+	postcondition that Val /= Var.
+	* sem_util.adb (Known_Null): Suspenders: Raise Program_Error if
+	Get_Current_Value_Condition returned the same value. This will
+	be enabled even without assertions, because infinite recursion
+	is a nuisance -- better to crash if this bug ever occurs.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Null_Procedure_Specs): Simplify by reusing
+	Copy_Subprogram_Spec.
+	* sem_util.ads (Copy_Subprogram_Spec): Add New_Sloc parameter.
+	* sem_util.adb (Copy_Subprogram_Spec): Pass New_Sloc to
+	New_Copy_Tree.
+
+2022-01-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-exnint.ads: Mark in SPARK. Adapt to change to
+	package.
+	* libgnat/s-exnlli.ads: Likewise.
+	* libgnat/s-exnllli.ads: Likewise.
+	* libgnat/s-exponn.adb: Add lemmas and ghost code. Secial case
+	value zero as Left or Right to simplify proof.
+	* libgnat/s-exponn.ads: Transform the generic function into a
+	generic package with a function inside. Add a functional
+	contract.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Subprogram): Remove redundant
+	call to Set_Defining_Unit_Name; a similar call is done few lines
+	below.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Controlling_Function_Wrappers): Create
+	distinct copies of parameter lists for spec and body with
+	Copy_Parameter_List; cleanup.
+	(Make_Null_Procedure_Specs): Fix style in comments; remove a
+	potentially unnecessary initialization of a local variable.
+
+2022-01-05  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb (Renamed_Entity Alias):
+	Change Node_Id to Entity_Id.
+
+2022-01-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.ads (Build_Function_Wrapper, Build_Operator_Wrapper):
+	Remove unreferenced spec.
+	* sem_ch12.adb (Build_Function_Wrapper, Build_Operator_Wrapper):
+	Remove dead bodies.
+
+2022-01-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb: Apply replacement.
+
+2022-01-05  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Word_Commutation): Fix for
+	instances with other values of Single_Size.
+
+2022-01-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Compiler_Unit)
+	(Compiler_Unit_Warning): Remove.
+	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Regenerate.
+	* libgnat/g-dynhta.ads: Add comment indicating this unit is
+	built during stage1.
+	* libgnat/g-dyntab.ads: Likewise.
+	* libgnat/g-graphs.ads: Likewise.
+	* libgnat/g-lists.ads: Likewise.
+	* libgnat/g-sets.ads: Likewise.
+	* libgnat/gnat.ads: Likewise.
+	* libgnat/s-pehage.ads: Likewise.
+	* libgnat/s-resfil.ads: Likewise.
+	* libgnat/s-rident.ads: Likewise.
+	* libgnat/s-utf_32.ads: Likewise.
+	* errout.ads: Update comment.
+	* opt.ads (Opt): Remove Compiler_Unit.
+	* par-ch5.adb (All_Pragmas): Remove call to Check_Compiler_Unit.
+	* sem_prag.adb (Analyze_Pragma): Likewise.
+	* sem_ch4.adb (Non_Static_Choice_Error, Analyze_If_Expression)
+	(Analyze_Set_Membership, Record_Interp): Likewise.
+	* sem_ch11.adb (Analyze_Raise_Expression): Likewise.
+	* sem_ch6.adb: Remove Restric package reference.
+	(Analyze_Extended_Return_Statement): Remove call to
+	Check_Compiler_Unit.
+	* par-prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Remove handling of Pragma_Compiler_Unit[_Warning}.
+	* restrict.adb (Check_Compiler_Unit): Remove both.
+	* restrict.ads: Likewise.
+	* snames.ads-tmpl (Pragma_Id): Remove
+	Pragma_Compiler_Unit[_Warning].
+	* libgnat/a-assert.ads: Remove pragma Compiler_Unit_Warning.
+	* libgnat/a-chlat1.ads: Likewise.
+	* libgnat/a-elchha.adb: Likewise.
+	* libgnat/a-elchha.ads: Likewise.
+	* libgnat/a-ioexce.ads: Likewise.
+	* libgnat/a-strhas.ads: Likewise.
+	* libgnat/g-byorma.adb: Likewise.
+	* libgnat/g-byorma.ads: Likewise.
+	* libgnat/g-dyntab.adb: Likewise.
+	* libgnat/g-heasor.ads: Likewise.
+	* libgnat/g-hesora.adb: Likewise.
+	* libgnat/g-hesora.ads: Likewise.
+	* libgnat/g-htable.adb: Likewise.
+	* libgnat/g-htable.ads: Likewise.
+	* libgnat/g-spchge.adb: Likewise.
+	* libgnat/g-spchge.ads: Likewise.
+	* libgnat/g-speche.adb: Likewise.
+	* libgnat/g-speche.ads: Likewise.
+	* libgnat/g-table.ads: Likewise.
+	* libgnat/g-u3spch.adb: Likewise.
+	* libgnat/g-u3spch.ads: Likewise.
+	* libgnat/interfac.ads: Likewise.
+	* libgnat/s-addope.adb: Likewise.
+	* libgnat/s-addope.ads: Likewise.
+	* libgnat/s-assert.adb: Likewise.
+	* libgnat/s-assert.ads: Likewise.
+	* libgnat/s-bitops.adb: Likewise.
+	* libgnat/s-bitops.ads: Likewise.
+	* libgnat/s-carun8.adb: Likewise.
+	* libgnat/s-carun8.ads: Likewise.
+	* libgnat/s-casuti.adb: Likewise.
+	* libgnat/s-casuti.ads: Likewise.
+	* libgnat/s-conca2.adb: Likewise.
+	* libgnat/s-conca2.ads: Likewise.
+	* libgnat/s-conca3.adb: Likewise.
+	* libgnat/s-conca3.ads: Likewise.
+	* libgnat/s-conca4.adb: Likewise.
+	* libgnat/s-conca4.ads: Likewise.
+	* libgnat/s-conca5.adb: Likewise.
+	* libgnat/s-conca5.ads: Likewise.
+	* libgnat/s-conca6.adb: Likewise.
+	* libgnat/s-conca6.ads: Likewise.
+	* libgnat/s-conca7.adb: Likewise.
+	* libgnat/s-conca7.ads: Likewise.
+	* libgnat/s-conca8.adb: Likewise.
+	* libgnat/s-conca8.ads: Likewise.
+	* libgnat/s-conca9.adb: Likewise.
+	* libgnat/s-conca9.ads: Likewise.
+	* libgnat/s-crc32.adb: Likewise.
+	* libgnat/s-crc32.ads: Likewise.
+	* libgnat/s-crtl.ads: Likewise.
+	* libgnat/s-excdeb.adb: Likewise.
+	* libgnat/s-excdeb.ads: Likewise.
+	* libgnat/s-except.ads: Likewise.
+	* libgnat/s-exctab.adb: Likewise.
+	* libgnat/s-exctab.ads: Likewise.
+	* libgnat/s-finmas.ads: Likewise.
+	* libgnat/s-htable.adb: Likewise.
+	* libgnat/s-htable.ads: Likewise.
+	* libgnat/s-mastop.adb: Likewise.
+	* libgnat/s-mastop.ads: Likewise.
+	* libgnat/s-memory.adb: Likewise.
+	* libgnat/s-memory.ads: Likewise.
+	* libgnat/s-os_lib.ads: Likewise.
+	* libgnat/s-parame.adb: Likewise.
+	* libgnat/s-parame.ads: Likewise.
+	* libgnat/s-parame__posix2008.ads: Likewise.
+	* libgnat/s-purexc.ads: Likewise.
+	* libgnat/s-resfil.adb: Likewise.
+	* libgnat/s-restri.adb: Likewise.
+	* libgnat/s-restri.ads: Likewise.
+	* libgnat/s-secsta.adb: Likewise.
+	* libgnat/s-secsta.ads: Likewise.
+	* libgnat/s-soflin.adb: Likewise.
+	* libgnat/s-soflin.ads: Likewise.
+	* libgnat/s-sopco3.adb: Likewise.
+	* libgnat/s-sopco3.ads: Likewise.
+	* libgnat/s-sopco4.adb: Likewise.
+	* libgnat/s-sopco4.ads: Likewise.
+	* libgnat/s-sopco5.adb: Likewise.
+	* libgnat/s-sopco5.ads: Likewise.
+	* libgnat/s-spsufi.ads: Likewise.
+	* libgnat/s-stache.adb: Likewise.
+	* libgnat/s-stache.ads: Likewise.
+	* libgnat/s-stalib.adb: Likewise.
+	* libgnat/s-stalib.ads: Likewise.
+	* libgnat/s-stoele.adb: Likewise.
+	* libgnat/s-stoele.ads: Likewise.
+	* libgnat/s-strcom.adb: Likewise.
+	* libgnat/s-strcom.ads: Likewise.
+	* libgnat/s-strhas.adb: Likewise.
+	* libgnat/s-string.adb: Likewise.
+	* libgnat/s-string.ads: Likewise.
+	* libgnat/s-strops.adb: Likewise.
+	* libgnat/s-strops.ads: Likewise.
+	* libgnat/s-ststop.adb: Likewise.
+	* libgnat/s-ststop.ads: Likewise.
+	* libgnat/s-traceb.adb: Likewise.
+	* libgnat/s-traceb.ads: Likewise.
+	* libgnat/s-traent.adb: Likewise.
+	* libgnat/s-traent.ads: Likewise.
+	* libgnat/s-utf_32.adb: Likewise.
+	* libgnat/s-unstyp.ads: Likewise.
+	* libgnat/s-wchcnv.adb: Likewise.
+	* libgnat/s-wchcnv.ads: Likewise.
+	* libgnat/s-wchcon.adb: Likewise.
+	* libgnat/s-wchcon.ads: Likewise.
+	* libgnat/s-wchjis.adb: Likewise.
+	* libgnat/s-wchjis.ads: Likewise.
+
+2022-01-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint.adb (File_Names_Equal): Declare To_Lower locally.
+	* osint.ads (Null_FD): New.
+	* fmap.adb, sinput-l.adb, targparm.adb: Adapt to changes above.
+	* switch-b.adb (Scan_Debug_Switches): Use Is_Regular_File to
+	simplify the bootstrap dependencies.
+
 2022-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.

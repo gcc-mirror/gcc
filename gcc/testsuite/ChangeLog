@@ -1,3 +1,61 @@
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.target/i386/pr103861-3.c: New test.
+	* g++.dg/vect/slp-pr98855.cc (dg-final): Check that
+	no vectorization using SLP was performed.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103915
+	* gcc.target/i386/pr103915.c: New test.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103905
+	* gcc.target/i386/pr103905.c: New test.
+
+2022-01-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103258
+	* gfortran.dg/pr103258.f90: New.
+
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/attr-used.C: New.
+
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/diagnostic/recur-align.C: New.
+
+2022-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103816
+	* gcc.dg/torture/pr103816.c: New testcase.
+
+2022-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103691
+	* gfortran.dg/pr103691.f90: New test.
+
+2022-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103895
+	* gcc.target/i386/pr103895.c: Add -msse2 to dg-options.
+
+2022-01-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR ipa/102059
+	* gcc.dg/lto/pr102059-1_0.c: New test.
+	* gcc.dg/lto/pr102059-1_1.c: New test.
+	* gcc.dg/lto/pr102059-1_2.c: New test.
+	* gcc.dg/lto/pr102059-2_0.c: New test.
+	* gcc.dg/lto/pr102059-2_1.c: New test.
+	* gcc.dg/lto/pr102059-2_2.c: New test.
+	* gcc.target/powerpc/pr102059-1.c: New test.
+	* gcc.target/powerpc/pr102059-2.c: New test.
+	* gcc.target/powerpc/pr102059-3.c: New test.
+
 2022-01-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/99612

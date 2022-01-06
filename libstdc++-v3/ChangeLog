@@ -1,3 +1,142 @@
+2022-01-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/68303
+	* include/bits/hashtable_policy.h
+	(_Hashtable_hash_traits<_Hash>): New.
+	(_Hash_code_base<>::_M_hash_code(const _Hash_node_value<>&)): New.
+	(_Hashtable_base<>::_M_key_equals): New.
+	(_Hashtable_base<>::_M_equals): Use latter.
+	(_Hashtable_base<>::_M_key_equals_tr): New.
+	(_Hashtable_base<>::_M_equals_tr): Use latter.
+	* include/bits/hashtable.h
+	(_Hashtable<>::__small_size_threshold()): New, use _Hashtable_hash_traits.
+	(_Hashtable<>::find): Loop through elements to look for key if size is lower
+	than __small_size_threshold().
+	(_Hashtable<>::_M_emplace(true_type, _Args&&...)): Likewise.
+	(_Hashtable<>::_M_insert_unique(_Kt&&, _Args&&, const _NodeGenerator&)): Likewise.
+	(_Hashtable<>::_M_compute_hash_code(const_iterator, const key_type&)): New.
+	(_Hashtable<>::_M_emplace(const_iterator, false_type, _Args&&...)): Use latter.
+	(_Hashtable<>::_M_find_before_node(const key_type&)): New.
+	(_Hashtable<>::_M_erase(true_type, const key_type&)): Use latter.
+	(_Hashtable<>::_M_erase(false_type, const key_type&)): Likewise.
+	* src/c++11/hashtable_c++0x.cc: Include <bits/functional_hash.h>.
+	* testsuite/util/testsuite_performance.h
+	(report_performance): Use 9 width to display memory.
+	* testsuite/performance/23_containers/insert_erase/unordered_small_size.cc:
+	New performance test case.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103919
+	* include/bits/basic_string.h (basic_string(const T&, size_t, size_t)):
+	Relax constraints on string_view parameter.
+	* include/bits/cow_string.h (basic_string(const T&, size_t, size_t)):
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/103919.cc: New test.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.30): Export new symbol for
+	ARM EABI.
+	* include/bits/c++config (_GLIBCXX23_CONSTEXPR): Define.
+	* include/std/version (__cpp_lib_constexpr_typeinfo): Define.
+	* libsupc++/tinfo.cc: Add #error to ensure non-inline definition
+	is emitted.
+	(type_info::__equal): Define alias symbol.
+	* libsupc++/typeinfo (type_info::before): Combine different
+	implementations into one.
+	(type_info::operator==): Likewise. Use address equality for
+	constant evaluation. Call __equal for targets that require the
+	definition to be non-inline.
+	* testsuite/18_support/type_info/constexpr.cc: New test.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (io_error_category): Define
+	class and virtual functions as 'final'.
+	(io_category_instance): Use constinit union to make the object
+	immortal.
+	* src/c++11/future.cc (future_error_category): Define class and
+	virtual functions as 'final'.
+	(future_category_instance): Use constinit union.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Strip
+	versioned namespace from the type name that is printed.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdRegexStatePrinter): New
+	printer for std::regex NFA states.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/operations/1.cc: Fill in
+	placeholders in comments.
+	* testsuite/23_containers/forward_list/operations/2.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/operations/3.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/operations/4.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/operations/5.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/operations/6.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/operations/7.cc:
+	Likewise.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103848
+	* include/bits/stl_deque.h (operator-): Do not use 0 as null
+	pointer constant.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits<allocator<void>>):
+	Use std::_Construct for construct.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103877
+	* doc/xml/faq.xml: Add '-x c++' to preprocessor command.
+	* doc/html/faq.html: Regenerate.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (__regex_algo_impl): Change __policy and
+	__match_mode template parameters to be function parameters.
+	(regex_match, regex_search): Pass policy and match mode as
+	function arguments.
+	* include/bits/regex.tcc (__regex_algo_impl): Change template
+	parameters to function parameters.
+	* include/bits/regex_compiler.h (_RegexTranslatorBase): Use
+	'if constexpr' for conditions using template parameters.
+	(_RegexTranslator): Likewise.
+	* include/bits/regex_executor.tcc (_Executor::_M_handle_accept):
+	Likewise.
+	* testsuite/util/testsuite_regex.h (regex_match_debug)
+	(regex_search_debug): Move template arguments to function
+	arguments.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_regex.h (regex_match_debug): Compare
+	results even if the match failed.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc: Adjust all calls to
+	__throw_regex_error.
+	* include/bits/regex_error.h (__throw_regex_error): Add noreturn
+	attribute.
+	* include/bits/regex_scanner.tcc: Likewise.
+	* src/c++11/regex.cc (desc): New helper function.
+	(regex_error::regex_error(error_type)): Use desc to get a string
+	corresponding to the error code.
+
 
 Copyright (C) 2022 Free Software Foundation, Inc.
 

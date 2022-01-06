@@ -1,3 +1,7 @@
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Add DCO entry.  Sort that list.
+
 2022-01-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* MAINTAINERS: Change of email address in both DCO and

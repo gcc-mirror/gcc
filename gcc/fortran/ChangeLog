@@ -1,3 +1,12 @@
+2022-01-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103258
+	* decl.c (gfc_match_char_spec): Suppress errors around call
+	to gfc_reduce_init_expr.
+	* error.c (gfc_query_suppress_errors): New.
+	* gfortran.h (gfc_query_suppress_errors): Declare.
+	* symbol.c (gfc_set_default_type): Check gfc_query_suppress_errors.
+
 2022-01-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/103390
