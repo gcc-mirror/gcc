@@ -219,5 +219,14 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
     }
 }
 
+void
+TypeCheckPattern::visit (HIR::WildcardPattern &pattern)
+{
+  // wildcard patterns within the MatchArm's are simply just the same type as
+  // the parent
+  infered = parent->clone ();
+  infered->set_ref (pattern.get_pattern_mappings ().get_hirid ());
+}
+
 } // namespace Resolver
 } // namespace Rust

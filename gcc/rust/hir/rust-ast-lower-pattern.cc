@@ -23,6 +23,23 @@ namespace Rust {
 namespace HIR {
 
 void
+ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  std::unique_ptr<Pattern> to_bind;
+  translated
+    = new HIR::IdentifierPattern (mapping, pattern.get_ident (),
+				  pattern.get_locus (), pattern.get_is_ref (),
+				  pattern.get_is_mut () ? Mutability::Mut
+							: Mutability::Imm,
+				  std::move (to_bind));
+}
+
+void
 ASTLoweringPattern::visit (AST::PathInExpression &pattern)
 {
   translated = ASTLowerPathInExpression::translate (&pattern);
@@ -133,6 +150,17 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 
   HIR::StructPatternElements elems (std::move (fields));
   translated = new HIR::StructPattern (mapping, *path, std::move (elems));
+}
+
+void
+ASTLoweringPattern::visit (AST::WildcardPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::WildcardPattern (mapping, pattern.get_locus ());
 }
 
 } // namespace HIR

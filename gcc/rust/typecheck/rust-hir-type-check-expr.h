@@ -1294,7 +1294,7 @@ public:
 	for (auto &pattern : kase_arm.get_patterns ())
 	  {
 	    TyTy::BaseType *kase_arm_ty
-	      = TypeCheckPattern::Resolve (pattern.get ());
+	      = TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
 
 	    TyTy::BaseType *checked_kase = scrutinee_tyty->unify (kase_arm_ty);
 	    if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)

@@ -275,19 +275,12 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       tree case_label = ctx->get_backend ()->label (
 	fndecl, "" /* empty creates an artificial label */, arm_locus);
 
-      // not sure if we need to add this to the block or if the CASE_LABEL_EXPR
-      // does this implicitly
-      //
-      // tree case_label_decl_statement
-      //   = ctx->get_backend ()->label_definition_statement (case_label);
-
       // setup the bindings for the block
       for (auto &kase_pattern : kase_arm.get_patterns ())
 	{
 	  tree switch_kase_expr
 	    = CompilePatternCaseLabelExpr::Compile (kase_pattern.get (),
 						    case_label, ctx);
-	  // ctx->add_statement (case_label_decl_statement);
 	  ctx->add_statement (switch_kase_expr);
 
 	  CompilePatternBindings::Compile (kase_pattern.get (),
