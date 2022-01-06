@@ -448,6 +448,23 @@ expand_start_catch_block (tree decl)
   return type;
 }
 
+/* True if we are in a catch block within a catch block.  Assumes that we are
+   in function scope.  */
+
+static bool
+in_nested_catch (void)
+{
+  int catches = 0;
+
+  /* Scan through the template parameter scopes.  */
+  for (cp_binding_level *b = current_binding_level;
+       b->kind != sk_function_parms;
+       b = b->level_chain)
+    if (b->kind == sk_catch
+	&& ++catches == 2)
+      return true;
+  return false;
+}
 
 /* Call this to end a catch block.  Its responsible for emitting the
    code to handle jumping back to the correct place, and for emitting
@@ -463,7 +480,8 @@ expand_end_catch_block (void)
      a handler of the function-try-block of a constructor or destructor.  */
   if (in_function_try_handler
       && (DECL_CONSTRUCTOR_P (current_function_decl)
-	  || DECL_DESTRUCTOR_P (current_function_decl)))
+	  || DECL_DESTRUCTOR_P (current_function_decl))
+      && !in_nested_catch ())
     {
       tree rethrow = build_throw (input_location, NULL_TREE);
       /* Disable all warnings for the generated rethrow statement.  */
