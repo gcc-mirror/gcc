@@ -448,29 +448,29 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 		  tree lab = gimple_switch_label (stmt, i);
 		  basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
 		  edge e2 = find_edge (gimple_bb (stmt), dest);
-		  if (e == e2)
-		    {
-		      tree cmp;
-		      if (CASE_HIGH (lab) != NULL_TREE)
-			{
-			  tree cmp1 = build2 (GE_EXPR, boolean_type_node, idx,
-					      CASE_LOW (lab));
-			  tree cmp2 = build2 (LE_EXPR, boolean_type_node, idx,
-					      CASE_HIGH (lab));
-			  cmp = build2 (BIT_AND_EXPR, boolean_type_node, cmp1,
-					cmp2);
-			}
-		      else
-			cmp = build2 (EQ_EXPR, boolean_type_node, idx,
-				      CASE_LOW (lab));
+		  if (e != e2)
+		    continue;
 
-		      /* Combine the expression with the existing one.  */
-		      if (expr == NULL_TREE)
-			expr = cmp;
-		      else
-			expr = build2 (BIT_IOR_EXPR, boolean_type_node, expr,
-				       cmp);
+		  tree cmp;
+		  if (CASE_HIGH (lab) != NULL_TREE)
+		    {
+		      tree cmp1 = build2 (GE_EXPR, boolean_type_node, idx,
+					  CASE_LOW (lab));
+		      tree cmp2 = build2 (LE_EXPR, boolean_type_node, idx,
+					  CASE_HIGH (lab));
+		      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1,
+					 cmp2);
 		    }
+		  else
+		    cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
+				  CASE_LOW (lab));
+
+		  /* Combine the expression with the existing one.  */
+		  if (expr == NULL_TREE)
+		    expr = cmp;
+		  else
+		    expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr,
+					cmp);
 		}
 
 	      if (expr != NULL_TREE)
@@ -661,52 +661,52 @@ simplify_loop_version (class loop *loop, predicate_vector &predicate_path,
   for (unsigned i = 0; i != loop->num_nodes; i++)
     {
       vec<unswitch_predicate *> &predicates = get_predicates_for_bb (bbs[i]);
-      if (!predicates.is_empty ())
+      if (predicates.is_empty ())
+	continue;
+
+      hash_set<edge> ignored_edges;
+      gimple *stmt = last_stmt (bbs[i]);
+      tree folded = evaluate_control_stmt_using_entry_checks (stmt,
+							      predicate_path,
+							      ignored_edge_flag,
+							      &ignored_edges);
+
+      gcond *cond = dyn_cast<gcond *> (stmt);
+      gswitch *swtch = dyn_cast<gswitch *> (stmt);
+
+      if (cond != NULL
+	  && folded != NULL_TREE)
 	{
-	  hash_set<edge> ignored_edges;
-	  gimple *stmt = last_stmt (bbs[i]);
-	  tree folded = evaluate_control_stmt_using_entry_checks (stmt,
-								  predicate_path,
-								  ignored_edge_flag,
-								  &ignored_edges);
+	  /* Remove path.  */
+	  if (integer_nonzerop (folded))
+	    gimple_cond_set_condition_from_tree (cond, boolean_true_node);
+	  else
+	    gimple_cond_set_condition_from_tree (cond, boolean_false_node);
 
-	  gcond *cond = dyn_cast<gcond *> (stmt);
-	  gswitch *swtch = dyn_cast<gswitch *> (stmt);
+	  gimple_set_uid (cond, 0);
+	  update_stmt (cond);
+	  changed = true;
+	}
+      else if (swtch != NULL)
+	{
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	    if (ignored_edges.contains (e))
+	      e->flags = ignored_edge_flag;
 
-	  if (cond != NULL
-	      && folded != NULL_TREE)
+	  for (unsigned j = 0; j < predicates.length (); j++)
 	    {
-	      /* Remove path.  */
-	      if (integer_nonzerop (folded))
-		gimple_cond_set_condition_from_tree (cond, boolean_true_node);
-	      else
-		gimple_cond_set_condition_from_tree (cond, boolean_false_node);
-
-	      gimple_set_uid (cond, 0);
-	      update_stmt (cond);
-	      changed = true;
+	      edge e = EDGE_SUCC (bbs[i], predicates[j]->edge_index);
+	      if (ignored_edges.contains (e))
+		predicates[j]->handled = true;
 	    }
-	  else if (swtch != NULL)
+
+	  if (folded)
 	    {
-	      edge e;
-	      edge_iterator ei;
-	      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-		if (ignored_edges.contains (e))
-		  e->flags = ignored_edge_flag;
-
-	      for (unsigned j = 0; j < predicates.length (); j++)
-		{
-		  edge e = EDGE_SUCC (bbs[i], predicates[j]->edge_index);
-		  if (ignored_edges.contains (e))
-		    predicates[j]->handled = true;
-		}
-
-	      if (folded)
-		{
-		  gimple_switch_set_index (swtch, folded);
-		  update_stmt (swtch);
-		  changed = true;
-		}
+	      gimple_switch_set_index (swtch, folded);
+	      update_stmt (swtch);
+	      changed = true;
 	    }
 	}
     }
@@ -861,13 +861,6 @@ tree_unswitch_single_loop (class loop *loop, int num,
 
   unswitch_predicate *predicate = NULL;
   basic_block bb = NULL;
-  if (num > param_max_unswitch_level)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "Not unswitching anymore, hit max level\n");
-      goto exit;
-    }
 
   bbs = get_loop_body (loop);
 
@@ -1473,6 +1466,8 @@ static void
 clean_up_after_unswitching (const auto_edge_flag &ignored_edge_flag)
 {
   basic_block bb;
+  edge e;
+  edge_iterator ei;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1500,14 +1495,8 @@ clean_up_after_unswitching (const auto_edge_flag &ignored_edge_flag)
 	  if (index != nlabels)
 	    gimple_switch_set_num_labels (stmt, index);
 	}
-    }
 
-  /* Clean up the ignored_edge_flag from edges.  */
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      edge e;
-      edge_iterator ei;
-
+      /* Clean up the ignored_edge_flag from edges.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
 	e->flags &= ~ignored_edge_flag;
     }
