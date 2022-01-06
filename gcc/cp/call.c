@@ -7267,6 +7267,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   tree oaddr = addr;
   addr = cp_convert (ptr_type_node, addr, complain);
 
+  tree excluded_destroying = NULL_TREE;
+
   if (placement)
     {
       /* "A declaration of a placement deallocation function matches the
@@ -7352,6 +7354,15 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	dealloc_info di_elt;
 	if (usual_deallocation_fn_p (elt, &di_elt))
 	  {
+	    /* If we're called for an EH cleanup in a new-expression, we can't
+	       use a destroying delete; the exception was thrown before the
+	       object was constructed.  */
+	    if (alloc_fn && di_elt.destroying)
+	      {
+		excluded_destroying = elt;
+		continue;
+	      }
+
 	    if (!fn)
 	      {
 		fn = elt;
@@ -7499,6 +7510,14 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       return ret;
     }
 
+  /* If there's only a destroying delete that we can't use because the
+     object isn't constructed yet, and we used global new, use global
+     delete as well.  */
+  if (excluded_destroying
+      && DECL_NAMESPACE_SCOPE_P (alloc_fn))
+    return build_op_delete_call (code, addr, size, true, placement,
+				 alloc_fn, complain);
+
   /* [expr.new]
 
      If no unambiguous matching deallocation function can be found,
@@ -7508,8 +7527,16 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     {
       if ((complain & tf_warning)
 	  && !placement)
-	warning (0, "no corresponding deallocation function for %qD",
-		 alloc_fn);
+	{
+	  bool w = warning (0,
+			    "no corresponding deallocation function for %qD",
+			    alloc_fn);
+	  if (w && excluded_destroying)
+	    inform (DECL_SOURCE_LOCATION (excluded_destroying), "destroying "
+		    "delete %qD cannot be used to release the allocated memory"
+		    " if the initialization throws because the object is not "
+		    "constructed yet", excluded_destroying);
+	}
       return NULL_TREE;
     }
 
