@@ -15382,7 +15382,7 @@ package body Sem_Elab is
 
                elsif Present (Vis_Decls)
                  and then List_Containing (FNode) = Vis_Decls
-                 and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
+                 and then Is_Empty_List (Prv_Decls)
                then
                   null;
 

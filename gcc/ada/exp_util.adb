@@ -7172,7 +7172,7 @@ package body Exp_Util is
       Wrapped_Node : Node_Id := Empty;
 
    begin
-      if No (Ins_Actions) or else Is_Empty_List (Ins_Actions) then
+      if Is_Empty_List (Ins_Actions) then
          return;
       end if;
 
@@ -9963,7 +9963,7 @@ package body Exp_Util is
             --  Nothing to do when the pragma lacks arguments, in which case it
             --  is illegal.
 
-            elsif No (Args) or else Is_Empty_List (Args) then
+            elsif Is_Empty_List (Args) then
                return False;
             end if;
 
@@ -12674,10 +12674,6 @@ package body Exp_Util is
       Typ     : Entity_Id;
 
    begin
-      if No (L) or else Is_Empty_List (L) then
-         return False;
-      end if;
-
       Decl := First (L);
       while Present (Decl) loop
 

@@ -2249,7 +2249,7 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Declarations
 
       begin
-         if No (Decls) or else Is_Empty_List (Decls) then
+         if Is_Empty_List (Decls) then
             return;
          end if;
 

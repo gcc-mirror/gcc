@@ -4475,9 +4475,7 @@ package body Exp_Ch5 is
             --  entire if statement by the sequence of else statements.
 
             if No (Elsif_Parts (N)) then
-               if No (Else_Statements (N))
-                 or else Is_Empty_List (Else_Statements (N))
-               then
+               if Is_Empty_List (Else_Statements (N)) then
                   Rewrite (N,
                     Make_Null_Statement (Sloc (N)));
                else

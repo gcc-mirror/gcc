@@ -5697,7 +5697,7 @@ package body Exp_Ch4 is
       --  Do not evaluate the expression when there are no actions because the
       --  expression_with_actions node will be replaced by the expression.
 
-      elsif No (Acts) or else Is_Empty_List (Acts) then
+      elsif Is_Empty_List (Acts) then
          null;
 
       --  Force the evaluation of the expression by capturing its value in a
