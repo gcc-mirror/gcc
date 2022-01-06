@@ -8006,10 +8006,14 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 	  cond = gfc_evaluate_now (cond, &se->pre);
 	  /* 'block2' contains the arg2 absent case, 'block' the arg2 present
 	      case; size_var can be used in both blocks. */
-	  tree size_var = gfc_tree_array_size (&block2, arg1, e, NULL_TREE);
+	  tree size_var = gfc_create_var (TREE_TYPE (size), "size");
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 				 TREE_TYPE (size_var), size_var, size);
 	  gfc_add_expr_to_block (&block, tmp);
+	  size = gfc_tree_array_size (&block2, arg1, e, NULL_TREE);
+	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				 TREE_TYPE (size_var), size_var, size);
+	  gfc_add_expr_to_block (&block2, tmp);
 	  tmp = build3_v (COND_EXPR, cond, gfc_finish_block (&block),
 			  gfc_finish_block (&block2));
 	  gfc_add_expr_to_block (&se->pre, tmp);
