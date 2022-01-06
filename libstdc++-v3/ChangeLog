@@ -1,3 +1,87 @@
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move):
+	Do not compare unrelated pointers during constant evaluation.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Improve tests for char_traits::move.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103877
+	* doc/xml/faq.xml: Add '-x c++' to preprocessor command.
+	* doc/html/faq.html: Regenerate.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103549
+	* include/bits/regex.h (match_results): Give names to template
+	parameters in first declaration.
+	(match_results::_M_begin): Add default member-initializer.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103453
+	* config/allocator/malloc_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Define for Clang.
+	* config/allocator/new_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Likewise.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Strip
+	versioned namespace from the type name that is printed.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (allocator_traits): Add explicit
+	specialization for allocator<void>. Improve doxygen comments.
+	* include/bits/allocator.h (allocator<void>): Restore for the
+	versioned namespace.
+	(allocator<void>::construct, allocator<void>::destroy): Remove.
+	* include/ext/extptr_allocator.h (_Extptr_allocator<void>):
+	Add default constructor and converting constructor.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr
+	with non-empty pointer and non-empty deleter.
+
+2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* python/libstdcxx/v6/printers.py (_tuple_impl_get): New helper
+	for accessing the tuple element stored in a _Tuple_impl node.
+	(tuple_get): New function for accessing a tuple element.
+	(unique_ptr_get): New function for accessing a unique_ptr.
+	(UniquePointerPrinter, StdPathPrinter): Use unique_ptr_get.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker): Cast
+	tuple to its base class before accessing _M_head_impl.
+
 2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
