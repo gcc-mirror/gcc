@@ -25,3 +25,18 @@ typedef void (*__gcc_VOIDFUNCPTR) ();
 #endif
 #define VOIDFUNCPTR __gcc_VOIDFUNCPTR
 #endif  /* VXWORKS_TIME_CHECK */
+
+
+#if defined( VXWORKS_TIME_H_SYSLIB_CHECK )
+/* kernel header pattern:  */
+#include <vxWorks.h>
+#include <sysLib.h>
+
+/* rtp header pattern:  */
+#ifndef _YVALS
+#include <yvals.h>
+#endif /* _YVALS */
+#include <sysLib.h>
+
+#define CLOCKS_PER_SEC  sysClkRateGet()
+#endif  /* VXWORKS_TIME_H_SYSLIB_CHECK */

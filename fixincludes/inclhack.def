@@ -5357,6 +5357,38 @@ fix = {
 };
 
 /*
+ *  Make sure there is a visible prototype of sysClkRateGet() when
+ *  CLOCKS_PER_SEC is #defined to that in time.h for VxWorks.  This would
+ *  typically be provided by sysLib.h.
+ *
+ *  The new #include has to come after the one for vxWorks.h in kernel headers
+ *  and vxWorks.h is typically not #included in RTP headers. yvals.h is
+ *  conditionally included in the latter, instead, and new #include are better
+ *  inserted after that.
+ */
+fix = {
+    hackname    = vxworks_time_h_syslib;
+    files       = time.h;
+    mach        = "*-*-vxworks*";
+    select      = "[ \t]*#define[ \t]+CLOCKS_PER_SEC[ \t]+sysClkRateGet.*";
+
+    c_fix       = format;
+    c_fix_arg   = "%0\n#include <sysLib.h>";
+    c_fix_arg   = "#include <vxWorks.h>|#endif.* _YVALS.*";
+
+    test_text   =
+    "/* kernel header pattern:  */\n"
+    "#include <vxWorks.h>\n"
+    "\n"
+    "/* rtp header pattern:  */\n"
+    "#ifndef _YVALS\n"
+    "#include <yvals.h>\n"
+    "#endif /* _YVALS */\n"
+    "\n"
+    "#define CLOCKS_PER_SEC  sysClkRateGet()";
+};
+
+/*
  *  There are several name conflicts with C++ reserved words in X11 header
  *  files.  These are fixed in some versions, so don't do the fixes if
  *  we find __cplusplus in the file.  These were found on the RS/6000.
