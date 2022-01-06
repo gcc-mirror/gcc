@@ -3965,6 +3965,13 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 
 /* class engine.  */
 
+/* engine's ctor.  */
+
+engine::engine (logger *logger)
+: m_mgr (logger)
+{
+}
+
 /* Dump the managed objects by class to LOGGER, and the per-class totals.  */
 
 void

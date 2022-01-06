@@ -787,6 +787,8 @@ class store_manager
 public:
   store_manager (region_model_manager *mgr) : m_mgr (mgr) {}
 
+  logger *get_logger () const;
+
   /* binding consolidation.  */
   const concrete_binding *
   get_concrete_binding (bit_offset_t start_bit_offset,
