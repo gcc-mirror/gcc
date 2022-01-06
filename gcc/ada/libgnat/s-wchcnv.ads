@@ -43,8 +43,6 @@
 --  This unit may be used directly from an application program by providing
 --  an appropriate WITH, and the interface can be expected to remain stable.
 
-pragma Compiler_Unit_Warning;
-
 with System.WCh_Con;
 
 package System.WCh_Cnv is

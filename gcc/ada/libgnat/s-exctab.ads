@@ -33,8 +33,6 @@
 --  registered exception names, for the implementation of the mapping
 --  of names to exceptions (used for exception streams and attributes)
 
-pragma Compiler_Unit_Warning;
-
 with System.Standard_Library;
 
 package System.Exception_Table is

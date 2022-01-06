@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 

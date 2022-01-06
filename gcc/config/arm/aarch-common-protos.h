@@ -1,6 +1,6 @@
 /* Functions and structures shared between arm and aarch64.
 
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.

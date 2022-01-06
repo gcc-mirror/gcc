@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -1724,7 +1724,7 @@ update_debug_stmts (void)
 /* Runs tail merge optimization.  */
 
 unsigned int
-tail_merge_optimize (unsigned int todo)
+tail_merge_optimize (unsigned int todo, bool need_crit_edge_split)
 {
   int nr_bbs_removed_total = 0;
   int nr_bbs_removed;
@@ -1738,15 +1738,9 @@ tail_merge_optimize (unsigned int todo)
 
   timevar_push (TV_TREE_TAIL_MERGE);
 
-  /* We enter from PRE which has critical edges split.  Elimination
-     does not process trivially dead code so cleanup the CFG if we
-     are told so.  And re-split critical edges then.  */
-  if (todo & TODO_cleanup_cfg)
-    {
-      cleanup_tree_cfg ();
-      todo &= ~TODO_cleanup_cfg;
-      split_edges_for_insertion ();
-    }
+  /* Re-split critical edges when PRE did a CFG cleanup.  */
+  if (need_crit_edge_split)
+    split_edges_for_insertion ();
 
   if (!dom_info_available_p (CDI_DOMINATORS))
     {

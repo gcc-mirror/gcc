@@ -1,5 +1,5 @@
 /* Definitions for option handling for IA-32.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -124,8 +124,8 @@ enum instrument_return {
 enum harden_sls {
   harden_sls_none = 0,
   harden_sls_return = 1 << 0,
-  harden_sls_indirect_branch = 1 << 1,
-  harden_sls_all = harden_sls_return | harden_sls_indirect_branch
+  harden_sls_indirect_jmp = 1 << 1,
+  harden_sls_all = harden_sls_return | harden_sls_indirect_jmp
 };
 
 #endif

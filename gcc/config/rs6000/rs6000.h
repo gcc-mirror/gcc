@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -603,6 +603,11 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64)
+
+/* Inlining allows targets to define the meanings of bits in target_info
+   field of ipa_fn_summary by itself, the used bits for rs6000 are listed
+   below.  */
+#define RS6000_FN_TARGET_INFO_HTM 1
 
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction

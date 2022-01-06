@@ -460,10 +460,6 @@ package body Sem_Ch11 is
       Exception_Name : Entity_Id        := Empty;
 
    begin
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("raise expression", N);
-      end if;
-
       --  Check exception restrictions on the original source
 
       if Comes_From_Source (N) then

@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1083,6 +1083,7 @@ typedef struct
 
 void gfc_push_suppress_errors (void);
 void gfc_pop_suppress_errors (void);
+bool gfc_query_suppress_errors (void);
 
 
 /* Character length structures hold the expression that gives the

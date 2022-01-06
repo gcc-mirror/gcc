@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -3401,12 +3401,12 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	}
     }
 
-  GCN_DEBUG ("Looking for variable %s\n", STRINGX (GOMP_DEVICE_NUM_VAR));
+  GCN_DEBUG ("Looking for variable %s\n", XSTRING (GOMP_DEVICE_NUM_VAR));
 
   hsa_status_t status;
   hsa_executable_symbol_t var_symbol;
   status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						 STRINGX (GOMP_DEVICE_NUM_VAR),
+						 XSTRING (GOMP_DEVICE_NUM_VAR),
 						 agent->id, 0, &var_symbol);
   if (status == HSA_STATUS_SUCCESS)
     {

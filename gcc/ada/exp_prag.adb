@@ -125,7 +125,7 @@ package body Exp_Prag is
 
    begin
       --  Suppress the expansion of an ignored assertion pragma. Such a pragma
-      --  should not be transformed into a null statment because:
+      --  should not be transformed into a null statement because:
       --
       --    * The pragma may be part of the rep item chain of a type, in which
       --      case rewriting it will destroy the chain.

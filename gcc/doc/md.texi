@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -7917,6 +7917,30 @@ If these patterns are not defined, attempts will be made to use
 @code{atomic_fetch_and@var{mode}} instruction patterns, or their @code{sync}
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
+
+@cindex @code{atomic_add_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_sub_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_and_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_or_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_xor_fetch_cmp_0@var{mode}} instruction pattern
+@item @samp{atomic_add_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_sub_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_and_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_or_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_xor_fetch_cmp_0@var{mode}}
+These patterns emit code for an atomic operation on memory with memory
+model semantics if the fetch result is used only in a comparison against
+zero.
+Operand 0 is an output operand which contains a boolean result of comparison
+of the value after the operation against zero.  Operand 1 is the memory on
+which the atomic operation is performed.  Operand 2 is the second operand
+to the binary operator.  Operand 3 is the memory model to be used by the
+operation.  Operand 4 is an integer holding the comparison code, one of
+@code{EQ}, @code{NE}, @code{LT}, @code{GT}, @code{LE} or @code{GE}.
+
+If these patterns are not defined, attempts will be made to use separate
+atomic operation and fetch pattern followed by comparison of the result
+against zero.
 
 @cindex @code{mem_thread_fence} instruction pattern
 @item @samp{mem_thread_fence}

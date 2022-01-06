@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -71,6 +71,9 @@
 #include "tree-vector-builder.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "symbol-summary.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 #include "except.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
@@ -1779,6 +1782,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_INVALID_CONVERSION
 #define TARGET_INVALID_CONVERSION rs6000_invalid_conversion
+
+#undef TARGET_NEED_IPA_FN_TARGET_INFO
+#define TARGET_NEED_IPA_FN_TARGET_INFO rs6000_need_ipa_fn_target_info
+
+#undef TARGET_UPDATE_IPA_FN_TARGET_INFO
+#define TARGET_UPDATE_IPA_FN_TARGET_INFO rs6000_update_ipa_fn_target_info
 
 
 /* Processor table.  */
@@ -25308,7 +25317,63 @@ rs6000_generate_version_dispatcher_body (void *node_p)
   return resolver;
 }
 
-
+/* Hook to decide if we need to scan function gimple statements to
+   collect target specific information for inlining, and update the
+   corresponding RS6000_FN_TARGET_INFO_* bit in INFO if we are able
+   to predict which ISA feature is used at this time.  Return true
+   if we need to scan, otherwise return false.  */
+
+static bool
+rs6000_need_ipa_fn_target_info (const_tree decl,
+				unsigned int &info ATTRIBUTE_UNUSED)
+{
+  tree target = DECL_FUNCTION_SPECIFIC_TARGET (decl);
+  if (!target)
+    target = target_option_default_node;
+  struct cl_target_option *opts = TREE_TARGET_OPTION (target);
+
+  /* See PR102059, we only handle HTM for now, so will only do
+     the consequent scannings when HTM feature enabled.  */
+  if (opts->x_rs6000_isa_flags & OPTION_MASK_HTM)
+      return true;
+
+  return false;
+}
+
+/* Hook to update target specific information INFO for inlining by
+   checking the given STMT.  Return false if we don't need to scan
+   any more, otherwise return true.  */
+
+static bool
+rs6000_update_ipa_fn_target_info (unsigned int &info, const gimple *stmt)
+{
+  /* Assume inline asm can use any instruction features.  */
+  if (gimple_code (stmt) == GIMPLE_ASM)
+    {
+      /* Should set any bits we concerned, for now OPTION_MASK_HTM is
+	 the only bit we care about.  */
+      info |= RS6000_FN_TARGET_INFO_HTM;
+      return false;
+    }
+  else if (gimple_code (stmt) == GIMPLE_CALL)
+    {
+      tree fndecl = gimple_call_fndecl (stmt);
+      if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD))
+	{
+	  enum rs6000_gen_builtins fcode
+	    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
+	  /* HTM bifs definitely exploit HTM insns.  */
+	  if (bif_is_htm (rs6000_builtin_info[fcode]))
+	    {
+	      info |= RS6000_FN_TARGET_INFO_HTM;
+	      return false;
+	    }
+	}
+    }
+
+  return true;
+}
+
 /* Hook to determine if one function can safely inline another.  */
 
 static bool
@@ -25335,6 +25400,17 @@ rs6000_can_inline_p (tree caller, tree callee)
 	caller_isa = TREE_TARGET_OPTION (caller_tree)->x_rs6000_isa_flags;
       else
 	caller_isa = rs6000_isa_flags;
+
+      cgraph_node *callee_node = cgraph_node::get (callee);
+      if (ipa_fn_summaries && ipa_fn_summaries->get (callee_node) != NULL)
+	{
+	  unsigned int info = ipa_fn_summaries->get (callee_node)->target_info;
+	  if ((info & RS6000_FN_TARGET_INFO_HTM) == 0)
+	    {
+	      callee_isa &= ~OPTION_MASK_HTM;
+	      explicit_isa &= ~OPTION_MASK_HTM;
+	    }
+	}
 
       /* The callee's options must be a subset of the caller's options, i.e.
 	 a vsx function may inline an altivec function, but a no-vsx function

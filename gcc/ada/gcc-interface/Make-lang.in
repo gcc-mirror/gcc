@@ -527,16 +527,12 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-secsta.o	\
  ada/libgnat/s-soflin.o	\
  ada/libgnat/s-soliin.o	\
- ada/libgnat/s-sopco3.o	\
- ada/libgnat/s-sopco4.o	\
- ada/libgnat/s-sopco5.o	\
  ada/libgnat/s-stache.o	\
  ada/libgnat/s-stalib.o	\
  ada/libgnat/s-stoele.o	\
  ada/libgnat/s-strcom.o	\
  ada/libgnat/s-strhas.o	\
  ada/libgnat/s-string.o	\
- ada/libgnat/s-strops.o	\
  ada/libgnat/s-traceb.o \
  ada/libgnat/s-traent.o	\
  ada/libgnat/s-trasym.o \
@@ -692,15 +688,11 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-secsta.o   \
  ada/libgnat/s-soflin.o   \
  ada/libgnat/s-soliin.o   \
- ada/libgnat/s-sopco3.o   \
- ada/libgnat/s-sopco4.o   \
- ada/libgnat/s-sopco5.o   \
  ada/libgnat/s-stache.o   \
  ada/libgnat/s-stalib.o   \
  ada/libgnat/s-stoele.o   \
  ada/libgnat/s-strhas.o   \
  ada/libgnat/s-string.o   \
- ada/libgnat/s-strops.o   \
  ada/libgnat/s-traent.o   \
  ada/libgnat/s-traceb.o   \
  ada/libgnat/s-unstyp.o   \
@@ -1122,8 +1114,7 @@ ada/sdefault.o : ada/libgnat/ada.ads ada/libgnat/a-except.ads ada/libgnat/a-uncc
    ada/libgnat/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads ada/namet.ads \
    ada/opt.ads ada/osint.ads ada/output.ads ada/sdefault.ads ada/sdefault.adb \
    ada/libgnat/s-exctab.ads ada/libgnat/s-memory.ads ada/libgnat/s-os_lib.ads ada/libgnat/s-parame.ads \
-   ada/libgnat/s-stalib.ads ada/libgnat/s-strops.ads ada/libgnat/s-sopco3.ads ada/libgnat/s-sopco4.ads \
-   ada/libgnat/s-sopco5.ads ada/libgnat/s-string.ads ada/libgnat/s-traent.ads ada/libgnat/s-unstyp.ads \
+   ada/libgnat/s-stalib.ads ada/libgnat/s-string.ads ada/libgnat/s-traent.ads ada/libgnat/s-unstyp.ads \
    ada/libgnat/s-wchcon.ads ada/table.adb ada/table.ads \
    ada/types.ads ada/libgnat/unchdeal.ads ada/libgnat/unchconv.ads \
    ada/gcc-interface/system.ads

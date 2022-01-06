@@ -1,5 +1,5 @@
-/* Handle initialization things in C++.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Handle initialization things in -*- C++ -*-
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3408,7 +3408,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
     = (type_num_arguments (TREE_TYPE (alloc_fn)) > 1
        || varargs_function_p (alloc_fn));
 
-  if (warn_aligned_new
+  if (complain & tf_warning_or_error
+      && warn_aligned_new
       && !placement_allocation_fn_p
       && TYPE_ALIGN (elt_type) > malloc_alignment ()
       && (warn_aligned_new > 1
@@ -4665,11 +4666,13 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
 		       for_stmt, false, 0);
-      elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
-				    complain);
-      if (elt_init == error_mark_node)
-	errors = true;
-      finish_for_expr (elt_init, for_stmt);
+      /* We used to pass this decrement to finish_for_expr; now we add it to
+	 elt_init below so it's part of the same full-expression as the
+	 initialization, and thus happens before any potentially throwing
+	 temporary cleanups.  */
+      tree decr = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
+				     complain);
+
 
       to = build1 (INDIRECT_REF, type, base);
 
@@ -4794,7 +4797,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
       if (elt_init && !errors)
-	finish_expr_stmt (elt_init);
+	elt_init = build2 (COMPOUND_EXPR, void_type_node, elt_init, decr);
+      else
+	elt_init = decr;
+      finish_expr_stmt (elt_init);
       current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
       finish_expr_stmt (cp_build_unary_op (PREINCREMENT_EXPR, base, false,

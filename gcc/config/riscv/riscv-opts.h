@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -104,5 +104,36 @@ enum stack_protector_guard {
 #define TARGET_ZKSED  ((riscv_zk_subext & MASK_ZKSED) != 0)
 #define TARGET_ZKSH   ((riscv_zk_subext & MASK_ZKSH) != 0)
 #define TARGET_ZKT    ((riscv_zk_subext & MASK_ZKT) != 0)
+
+#define MASK_VECTOR_EEW_32    (1 << 0)
+#define MASK_VECTOR_EEW_64    (1 << 1)
+#define MASK_VECTOR_EEW_FP_32 (1 << 2)
+#define MASK_VECTOR_EEW_FP_64 (1 << 3)
+
+#define MASK_ZVL32B    (1 <<  0)
+#define MASK_ZVL64B    (1 <<  1)
+#define MASK_ZVL128B   (1 <<  2)
+#define MASK_ZVL256B   (1 <<  3)
+#define MASK_ZVL512B   (1 <<  4)
+#define MASK_ZVL1024B  (1 <<  5)
+#define MASK_ZVL2048B  (1 <<  6)
+#define MASK_ZVL4096B  (1 <<  7)
+#define MASK_ZVL8192B  (1 <<  8)
+#define MASK_ZVL16384B (1 <<  9)
+#define MASK_ZVL32768B (1 << 10)
+#define MASK_ZVL65536B (1 << 11)
+
+#define TARGET_ZVL32B    ((riscv_zvl_flags & MASK_ZVL32B) != 0)
+#define TARGET_ZVL64B    ((riscv_zvl_flags & MASK_ZVL64B) != 0)
+#define TARGET_ZVL128B   ((riscv_zvl_flags & MASK_ZVL128B) != 0)
+#define TARGET_ZVL256B   ((riscv_zvl_flags & MASK_ZVL256B) != 0)
+#define TARGET_ZVL512B   ((riscv_zvl_flags & MASK_ZVL512B) != 0)
+#define TARGET_ZVL1024B  ((riscv_zvl_flags & MASK_ZVL1024B) != 0)
+#define TARGET_ZVL2048B  ((riscv_zvl_flags & MASK_ZVL2048B) != 0)
+#define TARGET_ZVL4096B  ((riscv_zvl_flags & MASK_ZVL4096B) != 0)
+#define TARGET_ZVL8192B  ((riscv_zvl_flags & MASK_ZVL8192B) != 0)
+#define TARGET_ZVL16384B ((riscv_zvl_flags & MASK_ZVL16384B) != 0)
+#define TARGET_ZVL32768B ((riscv_zvl_flags & MASK_ZVL32768B) != 0)
+#define TARGET_ZVL65536B ((riscv_zvl_flags & MASK_ZVL65536B) != 0)
 
 #endif /* ! GCC_RISCV_OPTS_H */

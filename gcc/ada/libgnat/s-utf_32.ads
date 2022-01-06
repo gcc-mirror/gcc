@@ -41,7 +41,8 @@
 --  the same services. The reason this package is in System is so that it can
 --  with'ed by other packages in the Ada and System hierarchies.
 
-pragma Compiler_Unit_Warning;
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
 
 package System.UTF_32 is
    pragma Pure;

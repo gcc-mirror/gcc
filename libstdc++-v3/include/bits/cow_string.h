@@ -1,6 +1,6 @@
 // Definition of gcc4-compatible Copy-on-Write basic_string -*- C++ -*-
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -690,7 +690,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
        */
-      template<typename _Tp, typename = _If_sv<_Tp, void>>
+      template<typename _Tp,
+	       typename = enable_if_t<is_convertible_v<const _Tp&, __sv_type>>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
 	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }

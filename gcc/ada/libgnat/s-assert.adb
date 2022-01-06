@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with Ada.Exceptions;
 with System.Exceptions_Debug;
 

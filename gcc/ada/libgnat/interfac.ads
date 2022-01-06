@@ -35,8 +35,6 @@
 
 --  This is the compiler version of this unit
 
-pragma Compiler_Unit_Warning;
-
 package Interfaces is
    pragma No_Elaboration_Code_All;
    pragma Pure;

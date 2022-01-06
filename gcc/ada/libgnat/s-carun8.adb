@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with System.Address_Operations; use System.Address_Operations;
 
 with Ada.Unchecked_Conversion;

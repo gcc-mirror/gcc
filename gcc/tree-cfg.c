@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -7947,18 +7947,14 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   if (eh_map)
     delete eh_map;
 
-  if (gimple_in_ssa_p (cfun))
-    {
-      /* We need to release ssa-names in a defined order, so first find them,
-	 and then iterate in ascending version order.  */
-      bitmap release_names = BITMAP_ALLOC (NULL);
-      vars_map.traverse<void *, gather_ssa_name_hash_map_from> (release_names);
-      bitmap_iterator bi;
-      unsigned i;
-      EXECUTE_IF_SET_IN_BITMAP (release_names, 0, i, bi)
-	release_ssa_name (ssa_name (i));
-      BITMAP_FREE (release_names);
-    }
+  /* We need to release ssa-names in a defined order, so first find them,
+     and then iterate in ascending version order.  */
+  bitmap release_names = BITMAP_ALLOC (NULL);
+  vars_map.traverse<void *, gather_ssa_name_hash_map_from> (release_names);
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (release_names, 0, i, bi)
+    release_ssa_name (ssa_name (i));
+  BITMAP_FREE (release_names);
 
   /* Rewire the entry and exit blocks.  The successor to the entry
      block turns into the successor of DEST_FN's ENTRY_BLOCK_PTR in

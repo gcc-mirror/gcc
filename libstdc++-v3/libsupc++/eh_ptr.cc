@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //

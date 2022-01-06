@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -159,6 +159,7 @@ static tree handle_omp_declare_variant_attribute (tree *, tree, tree, int,
 static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
 						 bool *);
+static tree handle_non_overlapping_attribute (tree *, tree, tree, int, bool *);
 static tree handle_designated_init_attribute (tree *, tree, tree, int, bool *);
 static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
 						       int, bool *);
@@ -512,6 +513,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target block", 0, 0, true, false, false, false,
 			      handle_omp_declare_target_attribute, NULL },
+  { "non overlapping",	      0, 0, true, false, false, false,
+			      handle_non_overlapping_attribute, NULL },
   { "alloc_align",	      1, 1, false, true, true, false,
 			      handle_alloc_align_attribute,
 	                      attr_alloc_exclusions },
@@ -3761,6 +3764,15 @@ handle_simd_attribute (tree *node, tree name, tree args, int, bool *no_add_attrs
 
 static tree
 handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
+{
+  return NULL_TREE;
+}
+
+/* Handle an "non overlapping" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_non_overlapping_attribute (tree *, tree, tree, int, bool *)
 {
   return NULL_TREE;
 }

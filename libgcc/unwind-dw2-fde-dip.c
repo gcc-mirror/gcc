@@ -1,4 +1,4 @@
-/* Copyright (C) 2001-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of GCC.
@@ -503,6 +503,24 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   ret = _Unwind_Find_registered_FDE (pc, bases);
   if (ret != NULL)
     return ret;
+
+  /* Use DLFO_STRUCT_HAS_EH_DBASE as a proxy for the existence of a glibc-style
+     _dl_find_object function.  */
+#ifdef DLFO_STRUCT_HAS_EH_DBASE
+  {
+    struct dl_find_object dlfo;
+    if (_dl_find_object (pc, &dlfo) == 0)
+      return find_fde_tail ((_Unwind_Ptr) pc, dlfo.dlfo_eh_frame,
+# if DLFO_STRUCT_HAS_EH_DBASE
+			    (_Unwind_Ptr) dlfo.dlfo_eh_dbase,
+# else
+			    NULL,
+# endif
+			    bases);
+    else
+      return NULL;
+    }
+#endif /* DLFO_STRUCT_HAS_EH_DBASE */
 
   data.pc = (_Unwind_Ptr) pc;
 #if NEED_DBASE_MEMBER

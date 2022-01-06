@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "tree.h"
 #include "gimple.h"
 #include "alloc-pool.h"
@@ -1149,6 +1150,8 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	  fprintf (f, "  calls:\n");
 	  dump_ipa_call_summary (f, 4, node, s);
 	  fprintf (f, "\n");
+	  if (s->target_info)
+	    fprintf (f, "  target_info: %x\n", s->target_info);
 	}
       else
 	fprintf (f, "IPA summary for %s is missing.\n", node->dump_name ());
@@ -2675,6 +2678,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 			   bb_predicate,
 		           bb_predicate);
 
+  /* Only look for target information for inlinable functions.  */
+  bool scan_for_target_info =
+    info->inlinable
+    && targetm.target_option.need_ipa_fn_target_info (node->decl,
+						      info->target_info);
+
   if (fbi.info)
     compute_bb_predicates (&fbi, node, info, params_summary);
   const profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
@@ -2894,6 +2903,15 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		    fprintf (dump_file, "   fp_expression set\n");
 		}
 	    }
+
+	  /* For target specific information, we want to scan all statements
+	     rather than those statements with non-zero weights, to avoid
+	     missing to scan something interesting for target information,
+	     such as: internal function calls.  */
+	  if (scan_for_target_info)
+	    scan_for_target_info =
+	      targetm.target_option.update_ipa_fn_target_info
+	      (info->target_info, stmt);
 
 	  /* Account cost of address calculations in the statements.  */
 	  for (unsigned int i = 0; i < gimple_num_ops (stmt); i++)
@@ -4116,6 +4134,7 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
     toplev_predicate = true;
 
   info->fp_expressions |= callee_info->fp_expressions;
+  info->target_info |= callee_info->target_info;
 
   if (callee_info->conds)
     {
@@ -4456,13 +4475,17 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       bp = streamer_read_bitpack (&ib);
       if (info)
 	{
-          info->inlinable = bp_unpack_value (&bp, 1);
-          info->fp_expressions = bp_unpack_value (&bp, 1);
+	  info->inlinable = bp_unpack_value (&bp, 1);
+	  info->fp_expressions = bp_unpack_value (&bp, 1);
+	  if (!lto_stream_offload_p)
+	    info->target_info = streamer_read_uhwi (&ib);
 	}
       else
 	{
-          bp_unpack_value (&bp, 1);
-          bp_unpack_value (&bp, 1);
+	  bp_unpack_value (&bp, 1);
+	  bp_unpack_value (&bp, 1);
+	  if (!lto_stream_offload_p)
+	    streamer_read_uhwi (&ib);
 	}
 
       count2 = streamer_read_uhwi (&ib);
@@ -4698,6 +4721,8 @@ ipa_fn_summary_write (void)
 	  bp_pack_value (&bp, info->inlinable, 1);
 	  bp_pack_value (&bp, info->fp_expressions, 1);
 	  streamer_write_bitpack (&bp);
+	  if (!lto_stream_offload_p)
+	    streamer_write_uhwi (ob, info->target_info);
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));
 	  for (i = 0; vec_safe_iterate (info->conds, i, &c); i++)
 	    {

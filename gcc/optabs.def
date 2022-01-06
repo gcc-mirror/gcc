@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -451,6 +451,11 @@ OPTAB_D (atomic_sub_fetch_optab, "atomic_sub_fetch$I$a")
 OPTAB_D (atomic_sub_optab, "atomic_sub$I$a")
 OPTAB_D (atomic_xor_fetch_optab, "atomic_xor_fetch$I$a")
 OPTAB_D (atomic_xor_optab, "atomic_xor$I$a")
+OPTAB_D (atomic_add_fetch_cmp_0_optab, "atomic_add_fetch_cmp_0$I$a")
+OPTAB_D (atomic_sub_fetch_cmp_0_optab, "atomic_sub_fetch_cmp_0$I$a")
+OPTAB_D (atomic_and_fetch_cmp_0_optab, "atomic_and_fetch_cmp_0$I$a")
+OPTAB_D (atomic_or_fetch_cmp_0_optab, "atomic_or_fetch_cmp_0$I$a")
+OPTAB_D (atomic_xor_fetch_cmp_0_optab, "atomic_xor_fetch_cmp_0$I$a")
 
 OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
 OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")

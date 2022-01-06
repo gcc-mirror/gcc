@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1708,6 +1708,22 @@ default_target_can_inline_p (tree caller, tree callee)
      options since build_target_option_node uses a hash table for the
      options.  */
   return callee_opts == caller_opts;
+}
+
+/* By default, return false to not need to collect any target information
+   for inlining.  Target maintainer should re-define the hook if the
+   target want to take advantage of it.  */
+
+bool
+default_need_ipa_fn_target_info (const_tree, unsigned int &)
+{
+  return false;
+}
+
+bool
+default_update_ipa_fn_target_info (unsigned int &, const gimple *)
+{
+  return false;
 }
 
 /* If the machine does not have a case insn that compares the bounds,

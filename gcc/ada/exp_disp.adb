@@ -4988,9 +4988,12 @@ package body Exp_Disp is
       Set_Is_Statically_Allocated (Exname);
       Set_Is_True_Constant (Exname);
 
-      --  Declare the object used by Ada.Tags.Register_Tag
+      --  Declare the object used by Ada.Tags.Register_Tag, unless
+      --  No_Tagged_Type_Registration is active.
 
-      if RTE_Available (RE_Register_Tag) then
+      if not Restriction_Active (No_Tagged_Type_Registration)
+        and then RTE_Available (RE_Register_Tag)
+      then
          Append_To (Result,
            Make_Object_Declaration (Loc,
              Defining_Identifier => HT_Link,
@@ -5260,7 +5263,9 @@ package body Exp_Disp is
 
       --  HT_Link
 
-      if RTE_Available (RE_Register_Tag) then
+      if not Restriction_Active (No_Tagged_Type_Registration)
+        and then RTE_Available (RE_Register_Tag)
+      then
          Append_To (TSD_Aggr_List,
            Unchecked_Convert_To (RTE (RE_Tag_Ptr),
              Make_Attribute_Reference (Loc,
@@ -6329,13 +6334,14 @@ package body Exp_Disp is
       --  up the RE_Check_TSD entity and call it in No_Run_Time mode.
 
       --  We cannot perform this check if the generation of its expanded name
-      --  was discarded.
+      --  was discarded or if No_Tagged_Type_Registration is active.
 
       if not No_Run_Time_Mode
         and then not Discard_Names
         and then Ada_Version >= Ada_2005
-        and then RTE_Available (RE_Check_TSD)
         and then not Duplicated_Tag_Checks_Suppressed (Typ)
+        and then not Restriction_Active (No_Tagged_Type_Registration)
+        and then RTE_Available (RE_Check_TSD)
       then
          Append_To (Elab_Code,
            Make_Procedure_Call_Statement (Loc,
@@ -6358,9 +6364,11 @@ package body Exp_Disp is
       --    3) if Typ is not defined at the library level (this is required
       --       to avoid adding concurrency control to the hash table used
       --       by the run-time to register the tags).
+      --    4) No_Tagged_Type_Registration is active.
 
       if not No_Run_Time_Mode
         and then Is_Library_Level_Entity (Typ)
+        and then not Restriction_Active (No_Tagged_Type_Registration)
         and then RTE_Available (RE_Register_Tag)
       then
          Append_To (Elab_Code,
@@ -8065,19 +8073,17 @@ package body Exp_Disp is
                Out_Present         => True,
                Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
-         if Present (Parameter_Specifications (Parent (E))) then
-            P := First (Parameter_Specifications (Parent (E)));
-            while Present (P) loop
-               Append_To (Parms,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc,
-                       Chars => Chars (Defining_Identifier (P))),
-                   Parameter_Type      => New_Copy_Tree (Parameter_Type (P)),
-                   Expression          => New_Copy_Tree (Expression (P))));
-               Next (P);
-            end loop;
-         end if;
+         P := First (Parameter_Specifications (Parent (E)));
+         while Present (P) loop
+            Append_To (Parms,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier (P))),
+                Parameter_Type      => New_Copy_Tree (Parameter_Type (P)),
+                Expression          => New_Copy_Tree (Expression (P))));
+            Next (P);
+         end loop;
 
          return Parms;
       end Gen_Parameters_Profile;

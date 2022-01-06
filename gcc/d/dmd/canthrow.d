@@ -3,9 +3,9 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/function.html#nothrow-functions, Nothrow Functions)
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/canthrow.d, _canthrow.d)
  * Documentation:  https://dlang.org/phobos/dmd_canthrow.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/canthrow.d

@@ -3,9 +3,9 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/grammar.html, D Grammar)
  *
- * Copyright:   Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
- * Authors:     $(LINK2 http://www.digitalmars.com, Walter Bright)
- * License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
+ * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
+ * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/parse.d, _parse.d)
  * Documentation:  https://dlang.org/phobos/dmd_parse.html
  * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/parse.d
@@ -6081,7 +6081,19 @@ LagainStc:
                 check(TOK.leftParenthesis);
                 param = parseAssignCondition();
                 condition = parseExpression();
-                check(TOK.rightParenthesis);
+                if (token.value != TOK.rightParenthesis && condition)
+                {
+                    error("missing closing `)` after `if (%s`", param ? "declaration".ptr : condition.toChars());
+                }
+                else
+                    check(TOK.rightParenthesis);
+                if (token.value == TOK.rightParenthesis)
+                {
+                    if (condition) // if not an error in condition
+                        error("extra `)` after `if (%s)`", param ? "declaration".ptr : condition.toChars());
+                    nextToken();
+                }
+
                 {
                     const lookingForElseSave = lookingForElse;
                     lookingForElse = loc;

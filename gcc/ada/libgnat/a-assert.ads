@@ -39,8 +39,6 @@
 
 pragma Assertion_Policy (Pre => Ignore);
 
-pragma Compiler_Unit_Warning;
-
 package Ada.Assertions with
   SPARK_Mode, Pure
 is

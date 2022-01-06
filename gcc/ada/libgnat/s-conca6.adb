@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with System.Concat_5;
 
 package body System.Concat_6 is

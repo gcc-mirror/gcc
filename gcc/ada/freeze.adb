@@ -2711,7 +2711,11 @@ package body Freeze is
       --  List of freezing actions, left at No_List if none
 
       Test_E : Entity_Id := E;
-      --  This could use a comment ???
+      --  A local temporary used to test if freezing is necessary for E, since
+      --  its value can be set to something other than E in certain cases. For
+      --  example, E cannot be used directly in cases such as when it is an
+      --  Itype defined within a record - since it is the location of record
+      --  which matters.
 
       procedure Add_To_Result (Fnod : Node_Id);
       --  Add freeze action Fnod to list Result

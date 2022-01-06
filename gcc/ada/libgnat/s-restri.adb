@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 package body System.Restrictions is
    use Rident;
 

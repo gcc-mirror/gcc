@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -93,7 +93,6 @@ D_FRONTEND_OBJS = \
 	d/common-outbuffer.o \
 	d/common-string.o \
 	d/compiler.o \
-	d/complex.o \
 	d/cond.o \
 	d/constfold.o \
 	d/cparse.o \
@@ -157,6 +156,7 @@ D_FRONTEND_OBJS = \
 	d/root-aav.o \
 	d/root-array.o \
 	d/root-bitarray.o \
+	d/root-complex.o \
 	d/root-ctfloat.o \
 	d/root-file.o \
 	d/root-filename.o \
@@ -170,6 +170,7 @@ D_FRONTEND_OBJS = \
 	d/root-speller.o \
 	d/root-string.o \
 	d/root-stringtable.o \
+	d/root-utf.o \
 	d/safe.o \
 	d/sapply.o \
 	d/semantic2.o \
@@ -188,7 +189,6 @@ D_FRONTEND_OBJS = \
 	d/transitivevisitor.o \
 	d/typesem.o \
 	d/typinf.o \
-	d/utf.o \
 	d/utils.o \
 	d/visitor.o
 

@@ -2937,7 +2937,7 @@ package body Exp_Ch9 is
    --             Desired_Comp : Comp_Type := Expected_Comp;
    --             Comp         : Comp_Type renames Desired_Comp;
    --
-   --             <original delarations after the object renaming declaration
+   --             <original declarations after the object renaming declaration
    --              of Comp>
    --
    --          begin
@@ -2977,7 +2977,7 @@ package body Exp_Ch9 is
    --                              (_Object.Comp'Address));
    --       Comp          : Comp_Type renames Expected_Comp;
    --
-   --       <original delarations after the object renaming declaration of
+   --       <original declarations after the object renaming declaration of
    --        Comp>
    --
    --    begin

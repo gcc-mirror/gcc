@@ -1842,7 +1842,7 @@ package Sinfo is
 
    --  Is_Read
    --    Present in variable reference markers. Set when the original variable
-   --    reference constitues a read of the variable.
+   --    reference constitutes a read of the variable.
 
    --  Is_Source_Call
    --    Present in call marker nodes. Set when the related call came from
@@ -1902,7 +1902,7 @@ package Sinfo is
 
    --  Is_Write
    --    Present in variable reference markers. Set when the original variable
-   --    reference constitues a write of the variable.
+   --    reference constitutes a write of the variable.
 
    --  Itype
    --    Used in N_Itype_Reference node to reference an itype for which it is

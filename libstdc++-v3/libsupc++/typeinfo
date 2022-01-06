@@ -1,5 +1,5 @@
 // RTTI support for -*- C++ -*-
-// Copyright (C) 1994-2021 Free Software Foundation, Inc.
+// Copyright (C) 1994-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -37,6 +37,10 @@
 #endif
 
 #pragma GCC visibility push(default)
+
+#if __cplusplus >= 202100L
+# define __cpp_lib_constexpr_typeinfo 202106L
+#endif
 
 extern "C++" {
 
@@ -99,40 +103,12 @@ namespace std
     const char* name() const _GLIBCXX_NOEXCEPT
     { return __name[0] == '*' ? __name + 1 : __name; }
 
-#if !__GXX_TYPEINFO_EQUALITY_INLINE
-    // In old abi, or when weak symbols are not supported, there can
-    // be multiple instances of a type_info object for one
-    // type. Uniqueness must use the _name value, not object address.
-    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
-    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
-#else
-  #if !__GXX_MERGED_TYPEINFO_NAMES
-    /** Returns true if @c *this precedes @c __arg in the implementation's
+    /** Returns true if `*this` precedes `__arg` in the implementation's
      *  collation order.  */
-    // Even with the new abi, on systems that support dlopen
-    // we can run into cases where type_info names aren't merged,
-    // so we still need to do string comparison.
-    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT
-    { return (__name[0] == '*' && __arg.__name[0] == '*')
-	? __name < __arg.__name
-	: __builtin_strcmp (__name, __arg.__name) < 0; }
+    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
 
-    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
-    {
-      return ((__name == __arg.__name)
-	      || (__name[0] != '*' &&
-		  __builtin_strcmp (__name, __arg.__name) == 0));
-    }
-  #else
-    // On some targets we can rely on type_info's NTBS being unique,
-    // and therefore address comparisons are sufficient.
-    bool before(const type_info& __arg) const _GLIBCXX_NOEXCEPT
-    { return __name < __arg.__name; }
-
-    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
-    { return __name == __arg.__name; }
-  #endif
-#endif
+    _GLIBCXX23_CONSTEXPR
+    bool operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT;
 
 #if __cpp_impl_three_way_comparison < 201907L
     bool operator!=(const type_info& __arg) const _GLIBCXX_NOEXCEPT
@@ -176,10 +152,64 @@ namespace std
     explicit type_info(const char *__n): __name(__n) { }
 
   private:
-    /// Assigning type_info is not supported.
+    // type_info objects cannot be copied.
+#if __cplusplus >= 201103L
+    type_info& operator=(const type_info&) = delete;
+    type_info(const type_info&) = delete;
+#else
     type_info& operator=(const type_info&);
     type_info(const type_info&);
+#endif
+
+#if ! __GXX_TYPEINFO_EQUALITY_INLINE
+    bool __equal(const type_info&) const _GLIBCXX_NOEXCEPT;
+#endif
   };
+
+#if __GXX_TYPEINFO_EQUALITY_INLINE
+  inline bool
+  type_info::before(const type_info& __arg) const _GLIBCXX_NOEXCEPT
+  {
+#if !__GXX_MERGED_TYPEINFO_NAMES
+    // Even with the new abi, on systems that support dlopen
+    // we can run into cases where type_info names aren't merged,
+    // so we still need to do string comparison.
+    if (__name[0] != '*' || __arg.__name[0] != '*')
+      return __builtin_strcmp (__name, __arg.__name) < 0;
+#else
+    // On some targets we can rely on type_info's NTBS being unique,
+    // and therefore address comparisons are sufficient.
+#endif
+
+    // In old abi, or when weak symbols are not supported, there can
+    // be multiple instances of a type_info object for one
+    // type. Uniqueness must use the __name value, not object address.
+    return __name < __arg.__name;
+  }
+#endif
+
+#if __GXX_TYPEINFO_EQUALITY_INLINE || __cplusplus > 202002L
+  _GLIBCXX23_CONSTEXPR inline bool
+  type_info::operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
+  {
+    if (std::__is_constant_evaluated())
+      return this == &__arg;
+
+    if (__name == __arg.__name)
+      return true;
+
+#if !__GXX_TYPEINFO_EQUALITY_INLINE
+    // ABI requires comparisons to be non-inline.
+    return __equal(__arg);
+#elif !__GXX_MERGED_TYPEINFO_NAMES
+    // Need to do string comparison.
+    return __name[0] != '*' && __builtin_strcmp (__name, __arg.name()) == 0;
+#else
+    return false;
+#endif
+  }
+# endif
+
 
   /**
    *  @brief  Thrown during incorrect typecasting.

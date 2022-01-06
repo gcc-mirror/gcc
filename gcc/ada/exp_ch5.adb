@@ -3392,12 +3392,12 @@ package body Exp_Ch5 is
                Decl         : Node_Id := First (Declarations (Block_Stmt));
                Def_Id       : Node_Id := Empty;
 
+               function Declare_Copy (Decl : Node_Id) return Boolean is
+                 (Nkind (Decl) = N_Object_Declaration);
                --  Declare_Copy indicates which of the two approaches
                --  was chosen during analysis: declare (and initialize)
                --  a new variable, or use access values to declare a renaming
                --  of the appropriate subcomponent of the selector value.
-               Declare_Copy : constant Boolean :=
-                 Nkind (Decl) = N_Object_Declaration;
 
                function Make_Conditional (Stmt : Node_Id) return Node_Id;
                --  If there is only one choice for this alternative, then
@@ -3443,7 +3443,7 @@ package body Exp_Ch5 is
                end loop;
 
                --  For a binding object, we sometimes make a copy and
-               --  sometimes introduce  a renaming. That decision is made
+               --  sometimes introduce a renaming. That decision is made
                --  elsewhere. The renaming case involves dereferencing an
                --  access value because of the possibility of multiple
                --  choices (with multiple binding definitions) for a single
@@ -3452,7 +3452,7 @@ package body Exp_Ch5 is
                --  renaming case, we initialize (again, maybe conditionally)
                --  the access value.
 
-               if Declare_Copy then
+               if Declare_Copy (Decl) then
                   declare
                      Assign_Value : constant Node_Id  :=
                        Make_Assignment_Statement (Loc,

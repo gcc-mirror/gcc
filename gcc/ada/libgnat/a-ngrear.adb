@@ -36,6 +36,17 @@
 --  BLAS/LAPACK implementation. Finally, on some platforms there are more
 --  floating point types than supported by BLAS/LAPACK.
 
+--  Preconditions, postconditions, ghost code, loop invariants and assertions
+--  in this unit are meant for analysis only, not for run-time checking, as it
+--  would be too costly otherwise. This is enforced by setting the assertion
+--  policy to Ignore.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with Ada.Containers.Generic_Anonymous_Array_Sort; use Ada.Containers;
 
 with System; use System;

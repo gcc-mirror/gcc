@@ -656,6 +656,18 @@ To take maximum advantage of this space-saving optimization, any
 unit declaring a tagged type should be compiled with the restriction,
 though this is not required.
 
+No_Tagged_Type_Registration
+---------------------------
+.. index:: No_Tagged_Type_Registration
+
+[GNAT] If this restriction is active, then class-wide streaming
+attributes are not supported. In addition, the subprograms in
+Ada.Tags are not supported.
+If this restriction is active, the generated code is simplified by
+omitting the otherwise-required global registration of tagged types when they
+are declared. This restriction may be necessary in order to also apply
+the No_Elaboration_Code restriction.
+
 No_Task_Allocators
 ------------------
 .. index:: No_Task_Allocators
@@ -1049,4 +1061,3 @@ follows::
 or equivalently::
 
   gnatprove -P project.gpr --mode=check_all
-

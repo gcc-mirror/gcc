@@ -53,29 +53,29 @@ void max_b6_b4 (int i)
 
 /* Same as above but with the first MAX_EXPR operand pointing to an unknown
    object.  */
-extern char c7[7];  // { dg-message "at offset 7 into destination object 'c7' of size 7" "note" }
+extern char c7[7];  // { dg-message "at offset 7 into destination object 'c7' of size 7" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 
 void max_p_c7 (char *p, int i)
 {
   char *q = c7 + i;
   char *d = MAX (p, q);
 
-  d[6] = 0;
-  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[6] = 0;         // { dg-warning "writing 2 bytes into a region of size 1" "" { target { vect_slp_v2qi_store_unalign } } }
+  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
 /* Same as above but with the second MIN_EXPR operand pointing to an unknown
    object.  */
-extern char d8[8];  // { dg-message "at offset 8 into destination object 'd8' of size 8" "note" }
+extern char d8[8];  // { dg-message "at offset 8 into destination object 'd8' of size 8" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 
 void max_d8_p (char *q, int i)
 {
   char *p = d8 + i;
   char *d = MAX (p, q);
 
-  d[7] = 0;
-  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[7] = 0;         // { dg-warning "writing 2 bytes into a region of size 1" "" { target { vect_slp_v2qi_store_unalign } } }
+  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
@@ -122,7 +122,7 @@ void max_B6_B4 (int i, struct B4_B6 *pb4_b6)
 
 struct C7
 {
-  char c7[7];       // { dg-message "at offset 7 into destination object 'c7' of size 7" "note" }
+  char c7[7];       // { dg-message "at offset 7 into destination object 'c7' of size 7" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 };
 
 void max_p_C7 (char *p, int i, struct C7 *pc7)
@@ -131,13 +131,13 @@ void max_p_C7 (char *p, int i, struct C7 *pc7)
   char *d = MAX (p, q);
 
   d[6] = 0;
-  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
 struct D8
 {
-  char d8[8];       // { dg-message "at offset 8 into destination object 'd8' of size 8" "note" }
+  char d8[8];       // { dg-message "at offset 8 into destination object 'd8' of size 8" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 };
 
 void max_D8_p (char *q, int i, struct D8 *pd8)
@@ -146,5 +146,5 @@ void max_D8_p (char *q, int i, struct D8 *pd8)
   char *d = MAX (p, q);
 
   d[7] = 0;
-  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }

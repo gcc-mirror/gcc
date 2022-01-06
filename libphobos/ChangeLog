@@ -1,3 +1,8 @@
+2022-01-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 759e6023.
+	* src/MERGE: Merge upstream phobos 468788323.
+
 2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure.tgt: Add power*-*-freebsd* as a supported target.
@@ -1413,7 +1418,7 @@
 	* testsuite/testsuite_flags.in: New file.
 
 
-Copyright (C) 2018-2021 Free Software Foundation, Inc.
+Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

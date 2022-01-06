@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the PowerPC architecture.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -2002,6 +2002,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	 the overloaded call to that instance.  */
       for (; instance != NULL; instance = instance->next)
 	{
+	  /* It is possible for an instance to require a data type that isn't
+	     defined on this target, in which case instance->fntype will be
+	     NULL.  */
+	  if (!instance->fntype)
+	    continue;
+
 	  bool mismatch = false;
 	  tree nextparm = TYPE_ARG_TYPES (instance->fntype);
 

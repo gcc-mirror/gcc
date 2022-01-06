@@ -1767,6 +1767,17 @@ fix = {
     test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
+/*  The darwin headers don't accept __FLT_EVAL_METHOD__ == 16.  */
+fix = {
+    hackname  = darwin_flt_eval_method;
+    mach      = "*-*-darwin*";
+    files     = math.h;
+    select    = "^#if __FLT_EVAL_METHOD__ == 0$";
+    c_fix     = format;
+    c_fix_arg = "#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16";
+    test_text = "#if __FLT_EVAL_METHOD__ == 0";
+};
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
@@ -5148,21 +5159,23 @@ fix = {
 };
 
 /*
- *  Wrap VxWorks mkdir to be posix compliant
+ *  mkdir's posix interface expects two arguments.  While the RTP VxWorks
+ *  API is fine, the kernel version handles only one.  We used to expose
+ *  a macro and this didn't play nice with uses such as posix:mkdir(x, y)
+ *  in libstdc++, so we expose a vararg prototype instead.
  */
 fix = {
-    hackname    = vxworks_mkdir_macro;
+    hackname    = vxworks_posix_mkdir;
     files       = sys/stat.h;
     mach        = "*-*-vxworks*";
 
     c_fix       = format;
-    c_fix_arg   = "%0\n"
-                "#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))\n";
+    c_fix_arg   = "extern STATUS mkdir(const char *dir, ...);";
     c_fix_arg   = "extern[\t ]+STATUS[\t ]+mkdir[\t ]*"
                 "\\([\t ]*const[\t ]+char[\t ]*\\*[\t ]*" /* arg type */
                 "(|[_[:alpha:]][_[:alnum:]]*)" /* arg name (optional) */
                 "\\)[\t ]*;";
-        
+
     test_text   = "extern STATUS mkdir (const char * _qwerty) ;";
 };
 
@@ -5195,6 +5208,28 @@ fix = {
     test_text = "`touch types/vxTypesOld.h`"
     "#include </dev/null> /* ULONG */\n"
     "# define\t__INCstath <sys/stat.h>";
+};
+
+/*
+ * yvals.h on VxWorks-6 expects the toolchain to provide its own
+ * version of the header, which we don't do.  Arrange to fallback
+ * on the system definition.
+ */
+fix = {
+    hackname  = vxworks_next_yvals;
+    mach      = "*-*-vxworks*";
+    files     = yvals.h;
+    select    = "#include_next <yvals.h>";
+    c_fix     = format;
+    c_fix_arg = "#if 0 /* GCC does not provide yvals.h.  */\n%1";
+    c_fix_arg = "#if .*\n"
+                "/\\* .*\n"
+                "(#include_next <yvals.h>\n)";
+
+    test_text = "#if (defined(__cplusplus) && defined(__GNUC__))\n"
+                "/* GCC C++ has it's own yvals.h */\n"
+                "#include_next <yvals.h>\n"
+                "#else\n";
 };
 
 /*

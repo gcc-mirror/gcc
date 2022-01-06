@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 package body System.String_Hash is
 
    --  Compute a hash value for a key. The approach here follows the algorithm

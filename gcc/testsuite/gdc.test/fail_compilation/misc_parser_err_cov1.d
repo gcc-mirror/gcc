@@ -15,14 +15,18 @@ fail_compilation/misc_parser_err_cov1.d(35): Error: `key:value` expected for ass
 fail_compilation/misc_parser_err_cov1.d(36): Error: basic type expected, not `;`
 fail_compilation/misc_parser_err_cov1.d(36): Error: `{ members }` expected for anonymous class
 fail_compilation/misc_parser_err_cov1.d(38): Error: template argument expected following `!`
-fail_compilation/misc_parser_err_cov1.d(38): Error: found `if` when expecting `)`
-fail_compilation/misc_parser_err_cov1.d(38): Error: found `)` instead of statement
+fail_compilation/misc_parser_err_cov1.d(38): Error: missing closing `)` after `if (parseShift!()`
+fail_compilation/misc_parser_err_cov1.d(38): Error: found `)` when expecting `(`
+fail_compilation/misc_parser_err_cov1.d(39): Error: missing closing `)` after `if (`
 fail_compilation/misc_parser_err_cov1.d(39): Error: identifier expected following `(type)`.
 fail_compilation/misc_parser_err_cov1.d(39): Error: expression expected, not `;`
 fail_compilation/misc_parser_err_cov1.d(40): Error: semicolon expected following auto declaration, not `auto`
 fail_compilation/misc_parser_err_cov1.d(40): Error: identifier or `new` expected following `.`, not `+`
-fail_compilation/misc_parser_err_cov1.d(41): Error: declaration expected, not `(`
-fail_compilation/misc_parser_err_cov1.d(42): Error: unrecognized declaration
+fail_compilation/misc_parser_err_cov1.d(41): Error: identifier or new keyword expected following `(...)`.
+fail_compilation/misc_parser_err_cov1.d(41): Error: found `.` when expecting `;` following statement
+fail_compilation/misc_parser_err_cov1.d(41): Error: expression expected, not `;`
+fail_compilation/misc_parser_err_cov1.d(42): Error: found `}` when expecting `;` following statement
+fail_compilation/misc_parser_err_cov1.d(43): Error: found `End of File` when expecting `}` following compound statement
 ---
 */
 module misc_parser_err_cov1;

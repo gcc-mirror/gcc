@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -133,7 +133,9 @@ namespace regex_constants
    */
   class regex_error : public std::runtime_error
   {
-    regex_constants::error_type _M_code;
+    using error_type = regex_constants::error_type;
+
+    error_type _M_code;
 
   public:
     /**
@@ -142,7 +144,7 @@ namespace regex_constants
      * @param __ecode the regex error code.
      */
     explicit
-    regex_error(regex_constants::error_type __ecode);
+    regex_error(error_type __ecode);
 
     virtual ~regex_error() throw();
 
@@ -156,23 +158,30 @@ namespace regex_constants
     { return _M_code; }
 
   private:
-    regex_error(regex_constants::error_type __ecode, const char* __what)
+    regex_error(error_type __ecode, const char* __what)
     : std::runtime_error(__what), _M_code(__ecode)
     { }
 
-    friend void __throw_regex_error(regex_constants::error_type, const char*);
+    [[__noreturn__]]
+    friend void
+    __throw_regex_error(error_type __ecode __attribute__((__unused__)),
+			const char* __what __attribute__((__unused__)))
+    { _GLIBCXX_THROW_OR_ABORT(regex_error(__ecode, __what)); }
   };
 
-  ///@} // group regex
+  /// @cond undocumented
 
+  [[__noreturn__]]
   void
   __throw_regex_error(regex_constants::error_type __ecode);
 
+  [[__noreturn__]]
   inline void
-  __throw_regex_error(regex_constants::error_type __ecode
-			__attribute__((__unused__)),
-		      const char* __what __attribute__((__unused__)))
-  { _GLIBCXX_THROW_OR_ABORT(regex_error(__ecode, __what)); }
+  __throw_regex_error(regex_constants::error_type __ecode, const char* __what);
+
+  /// @endcond
+
+  ///@} // group regex
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.

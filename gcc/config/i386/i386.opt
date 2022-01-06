@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -1144,7 +1144,7 @@ EnumValue
 Enum(harden_sls) String(return) Value(harden_sls_return)
 
 EnumValue
-Enum(harden_sls) String(indirect-branch) Value(harden_sls_indirect_branch)
+Enum(harden_sls) String(indirect-jmp) Value(harden_sls_indirect_jmp)
 
 EnumValue
 Enum(harden_sls) String(all) Value(harden_sls_all)

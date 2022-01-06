@@ -989,7 +989,15 @@ package body Sem_Attr is
                   Set_Etype  (P, Typ);
                end if;
 
-               if Typ = Scop then
+               --  A current instance typically appears immediately within
+               --  the type declaration, but may be nested within an internally
+               --  generated temporary scope - as for an aggregate of a
+               --  discriminated component.
+
+               if Typ = Scop
+                 or else (In_Open_Scopes (Typ)
+                           and then not Comes_From_Source (Scop))
+               then
                   declare
                      Q : Node_Id := Parent (N);
 
@@ -2620,6 +2628,15 @@ package body Sem_Attr is
                      Is_RTE (P_Type, RE_Exception_Occurrence))
          then
             Check_Restriction (No_Exception_Registration, P);
+         end if;
+
+         --  If the No_Tagged_Type_Registration restriction is active, then
+         --  class-wide streaming attributes are not allowed.
+
+         if Restriction_Check_Required (No_Tagged_Type_Registration)
+           and then Is_Class_Wide_Type (P_Type)
+         then
+            Check_Restriction (No_Tagged_Type_Registration, P);
          end if;
 
          --  Here we must check that the first argument is an access type
@@ -12555,19 +12572,28 @@ package body Sem_Attr is
    is
       Etyp : Entity_Id := Typ;
 
+      Real_Rep : Node_Id;
+
    --  Start of processing for Stream_Attribute_Available
 
    begin
-      --  We need some comments in this body ???
+      --  Test if the attribute is specified directly on the type
 
-      if Has_Stream_Attribute_Definition (Typ, Nam) then
+      if Has_Stream_Attribute_Definition (Typ, Nam, Real_Rep) then
          return True;
       end if;
+
+      --  We assume class-wide types have stream attributes
+      --  when they are not limited. Otherwise we recurse on the
+      --  parent type.
 
       if Is_Class_Wide_Type (Typ) then
          return not Is_Limited_Type (Typ)
            or else Stream_Attribute_Available (Etype (Typ), Nam);
       end if;
+
+      --  Non-class-wide abstract types cannot have Input streams
+      --  specified.
 
       if Nam = TSS_Stream_Input
         and then Is_Abstract_Type (Typ)
@@ -12575,6 +12601,8 @@ package body Sem_Attr is
       then
          return False;
       end if;
+
+      --  Otherwise, nonlimited types have stream attributes
 
       if not (Is_Limited_Type (Typ)
         or else (Present (Partial_View)
@@ -12587,13 +12615,13 @@ package body Sem_Attr is
 
       if Nam = TSS_Stream_Input
         and then Ada_Version >= Ada_2005
-        and then Stream_Attribute_Available (Etyp, TSS_Stream_Read)
+        and then Stream_Attribute_Available (Etyp, TSS_Stream_Read, Real_Rep)
       then
          return True;
 
       elsif Nam = TSS_Stream_Output
         and then Ada_Version >= Ada_2005
-        and then Stream_Attribute_Available (Etyp, TSS_Stream_Write)
+        and then Stream_Attribute_Available (Etyp, TSS_Stream_Write, Real_Rep)
       then
          return True;
       end if;
@@ -12607,7 +12635,7 @@ package body Sem_Attr is
          begin
             Etyp := Etype (Etyp);
 
-            if Has_Stream_Attribute_Definition (Etyp, Nam) then
+            if Has_Stream_Attribute_Definition (Etyp, Nam, Real_Rep) then
                if not Derivation_Too_Early_To_Inherit (Derived_Type, Nam) then
                   return True;
                end if;

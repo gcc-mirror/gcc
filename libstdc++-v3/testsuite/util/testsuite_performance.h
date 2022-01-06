@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing performance utilities for the C++ library testsuite.
 //
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -239,7 +239,7 @@ namespace __gnu_test
     out << std::setw(4) << t.real_time() << "r" << space;
     out << std::setw(4) << t.user_time() << "u" << space;
     out << std::setw(4) << t.system_time() << "s" << space;
-    out << std::setw(8) << r.allocated_memory() << "mem" << space;
+    out << std::setw(9) << r.allocated_memory() << "mem" << space;
     out << std::setw(4) << r.hard_page_fault() << "pf" << space;
 
     out << std::endl;

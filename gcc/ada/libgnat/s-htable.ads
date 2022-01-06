@@ -37,8 +37,6 @@
 --  The Static_HTable package provides a more complex interface that allows
 --  complete control over allocation.
 
-pragma Compiler_Unit_Warning;
-
 package System.HTable is
    pragma Preelaborate;
 

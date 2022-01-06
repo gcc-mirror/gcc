@@ -1,5 +1,5 @@
 ;; Machine description for ARM processor synchronization primitives.
-;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2022 Free Software Foundation, Inc.
 ;; Written by Marcus Shawcroft (marcus.shawcroft@arm.com)
 ;; 64bit Atomics by Dave Gilbert (david.gilbert@linaro.org)
 ;;

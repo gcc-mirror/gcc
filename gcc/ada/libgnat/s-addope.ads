@@ -40,8 +40,6 @@
 --  inappropriate use by applications programs). In addition, the logical
 --  operations may not be available if type Address is a signed integer.
 
-pragma Compiler_Unit_Warning;
-
 package System.Address_Operations is
    pragma Pure;
 

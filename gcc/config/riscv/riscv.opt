@@ -1,6 +1,6 @@
 ; Options for the RISC-V port of the compiler
 ;
-; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -146,6 +146,8 @@ Mask(RVC)
 
 Mask(RVE)
 
+Mask(VECTOR)
+
 mriscv-attribute
 Target Var(riscv_emit_attribute_p) Init(-1)
 Emit RISC-V ELF attribute.
@@ -200,6 +202,12 @@ int riscv_zb_subext
 
 TargetVariable
 int riscv_zk_subext
+
+TargetVariable
+int riscv_vector_eew_flags
+
+TargetVariable
+int riscv_zvl_flags
 
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)

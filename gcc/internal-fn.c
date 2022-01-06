@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3236,6 +3236,46 @@ static void
 expand_ATOMIC_COMPARE_EXCHANGE (internal_fn, gcall *call)
 {
   expand_ifn_atomic_compare_exchange (call);
+}
+
+/* Expand atomic add fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_ADD_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic sub fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_SUB_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic and fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_AND_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic or fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_OR_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic xor fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_XOR_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
 }
 
 /* Expand LAUNDER to assignment, lhs = arg0.  */

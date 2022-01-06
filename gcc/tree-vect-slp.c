@@ -1,5 +1,5 @@
 /* SLP - Basic Block Vectorization
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -3325,8 +3325,13 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	= as_a <loop_vec_info> (vinfo)->reductions;
       scalar_stmts.create (reductions.length ());
       for (i = 0; reductions.iterate (i, &next_info); i++)
-	if (STMT_VINFO_RELEVANT_P (next_info)
-	    || STMT_VINFO_LIVE_P (next_info))
+	if ((STMT_VINFO_RELEVANT_P (next_info)
+	     || STMT_VINFO_LIVE_P (next_info))
+	    /* ???  Make sure we didn't skip a conversion around a reduction
+	       path.  In that case we'd have to reverse engineer that conversion
+	       stmt following the chain using reduc_idx and from the PHI
+	       using reduc_def.  */
+	    && STMT_VINFO_DEF_TYPE (next_info) == vect_reduction_def)
 	  scalar_stmts.quick_push (next_info);
       /* If less than two were relevant/live there's nothing to SLP.  */
       if (scalar_stmts.length () < 2)
@@ -3419,13 +3424,8 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		vinfo = next;
 	      }
 	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-	    /* It can be still vectorized as part of an SLP reduction.
-	       ???  But only if we didn't skip a conversion around the group.
-	       In that case we'd have to reverse engineer that conversion
-	       stmt following the chain using reduc_idx and from the PHI
-	       using reduc_def.  */
-	    if (STMT_VINFO_DEF_TYPE (last) == vect_reduction_def)
-	      loop_vinfo->reductions.safe_push (last);
+	    /* It can be still vectorized as part of an SLP reduction.  */
+	    loop_vinfo->reductions.safe_push (last);
 	  }
 
       /* Find SLP sequences starting from groups of reductions.  */

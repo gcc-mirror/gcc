@@ -1,3 +1,18 @@
+2022-01-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-45.c: Iterate over all devices.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-01-04  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Change uses of STRINGX
+	into XSTRING when looking for GOMP_DEVICE_NUM_VAR in offload image.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1): Set Fortran support for atomic to 'Y'.
@@ -16472,7 +16487,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2021 Free Software Foundation, Inc.
+Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

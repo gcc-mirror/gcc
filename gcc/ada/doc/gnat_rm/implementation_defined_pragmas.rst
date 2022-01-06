@@ -1003,39 +1003,6 @@ Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
 a warning. You can use :ref:`Compile_Time_Error` to force the generation of
 an error.
 
-Pragma Compiler_Unit
-====================
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Compiler_Unit;
-
-
-This pragma is obsolete. It is equivalent to Compiler_Unit_Warning. It is
-retained so that old versions of the GNAT run-time that use this pragma can
-be compiled with newer versions of the compiler.
-
-Pragma Compiler_Unit_Warning
-============================
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Compiler_Unit_Warning;
-
-
-This pragma is intended only for internal use in the GNAT run-time library.
-It indicates that the unit is used as part of the compiler build. The effect
-is to generate warnings for the use of constructs (for example, conditional
-expressions) that would cause trouble when bootstrapping using an older
-version of GNAT. For the exact list of restrictions, see the compiler sources
-and references to Check_Compiler_Unit.
-
 Pragma Complete_Representation
 ==============================
 

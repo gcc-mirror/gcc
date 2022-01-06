@@ -5,7 +5,7 @@ fail_compilation/fail35.d(15): Error: variable `t` cannot be read at compile tim
 ---
 */
 
-// http://www.digitalmars.com/d/archives/digitalmars/D/bugs/2372.html
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/2372.html
 // allegedly crashes, but cannot reproduce
 
 void main()

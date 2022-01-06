@@ -32,8 +32,6 @@
 --  This package contains a procedure for runtime concatenation of three string
 --  operands. It is used when we want to save space in the generated code.
 
-pragma Compiler_Unit_Warning;
-
 package System.Concat_3 is
 
    procedure Str_Concat_3 (R : out String; S1, S2, S3 : String);

@@ -35,8 +35,6 @@
 --  also contains some related definitions for other specialized types
 --  used by the compiler in connection with packed array types.
 
-pragma Compiler_Unit_Warning;
-
 package System.Unsigned_Types is
    pragma Pure;
    pragma No_Elaboration_Code_All;

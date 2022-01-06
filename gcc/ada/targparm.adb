@@ -157,15 +157,12 @@ package body Targparm is
          return;
       end if;
 
-      Name_Buffer (1 .. 10) := "system.ads";
-      Name_Len := 10;
-
-      Read_Source_File (Name_Find, 0, Hi, Text, FD);
+      Read_Source_File (Name_Find ("system.ads"), 0, Hi, Text, FD);
 
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
 
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             Write_Line ("cannot locate file system.ads");
          else
             Write_Line ("no read access for file system.ads");

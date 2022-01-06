@@ -1,5 +1,5 @@
 ;; GCC machine description for i386 synchronization instructions.
-;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -938,3 +938,107 @@
 	(const_int 0))]
   ""
   "lock{%;} %K2btr{<imodesuffix>}\t{%1, %0|%0, %1}")
+
+(define_expand "atomic_<plusminus_mnemonic>_fetch_cmp_0<mode>"
+  [(match_operand:QI 0 "register_operand")
+   (plusminus:SWI (match_operand:SWI 1 "memory_operand")
+		  (match_operand:SWI 2 "nonmemory_operand"))
+   (match_operand:SI 3 "const_int_operand") ;; model
+   (match_operand:SI 4 "const_int_operand")]
+  ""
+{
+  if (INTVAL (operands[4]) == GT || INTVAL (operands[4]) == LE)
+    FAIL;
+  emit_insn (gen_atomic_<plusminus_mnemonic>_fetch_cmp_0<mode>_1 (operands[1],
+								  operands[2],
+								  operands[3]));
+  ix86_expand_setcc (operands[0], (enum rtx_code) INTVAL (operands[4]),
+		     gen_rtx_REG (CCGOCmode, FLAGS_REG), const0_rtx);
+  DONE;
+})
+
+(define_insn "atomic_add_fetch_cmp_0<mode>_1"
+  [(set (reg:CCGOC FLAGS_REG)
+	(compare:CCGOC
+	  (plus:SWI
+	    (unspec_volatile:SWI
+	      [(match_operand:SWI 0 "memory_operand" "+m")
+	       (match_operand:SI 2 "const_int_operand")]		;; model
+	      UNSPECV_XCHG)
+	    (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
+	  (const_int 0)))
+   (set (match_dup 0)
+	(plus:SWI (match_dup 0) (match_dup 1)))]
+  ""
+{
+  if (incdec_operand (operands[1], <MODE>mode))
+    {
+      if (operands[1] == const1_rtx)
+	return "lock{%;} %K2inc{<imodesuffix>}\t%0";
+      else
+	return "lock{%;} %K2dec{<imodesuffix>}\t%0";
+    }
+
+  if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
+    return "lock{%;} %K2sub{<imodesuffix>}\t{%1, %0|%0, %1}";
+
+  return "lock{%;} %K2add{<imodesuffix>}\t{%1, %0|%0, %1}";
+})
+
+(define_insn "atomic_sub_fetch_cmp_0<mode>_1"
+  [(set (reg:CCGOC FLAGS_REG)
+	(compare:CCGOC
+	  (minus:SWI
+	    (unspec_volatile:SWI
+	      [(match_operand:SWI 0 "memory_operand" "+m")
+	       (match_operand:SI 2 "const_int_operand")]		;; model
+	      UNSPECV_XCHG)
+	    (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
+	  (const_int 0)))
+   (set (match_dup 0)
+	(minus:SWI (match_dup 0) (match_dup 1)))]
+  ""
+{
+  if (incdec_operand (operands[1], <MODE>mode))
+    {
+      if (operands[1] != const1_rtx)
+	return "lock{%;} %K2inc{<imodesuffix>}\t%0";
+      else
+	return "lock{%;} %K2dec{<imodesuffix>}\t%0";
+    }
+
+  if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
+    return "lock{%;} %K2add{<imodesuffix>}\t{%1, %0|%0, %1}";
+
+  return "lock{%;} %K2sub{<imodesuffix>}\t{%1, %0|%0, %1}";
+})
+
+(define_expand "atomic_<logic>_fetch_cmp_0<mode>"
+  [(match_operand:QI 0 "register_operand")
+   (any_logic:SWI (match_operand:SWI 1 "memory_operand")
+		  (match_operand:SWI 2 "nonmemory_operand"))
+   (match_operand:SI 3 "const_int_operand") ;; model
+   (match_operand:SI 4 "const_int_operand")]
+  ""
+{
+  emit_insn (gen_atomic_<logic>_fetch_cmp_0<mode>_1 (operands[1], operands[2],
+						     operands[3]));
+  ix86_expand_setcc (operands[0], (enum rtx_code) INTVAL (operands[4]),
+		     gen_rtx_REG (CCNOmode, FLAGS_REG), const0_rtx);
+  DONE;
+})
+
+(define_insn "atomic_<logic>_fetch_cmp_0<mode>_1"
+  [(set (reg:CCNO FLAGS_REG)
+	(compare:CCNO
+	  (any_logic:SWI
+	    (unspec_volatile:SWI
+	      [(match_operand:SWI 0 "memory_operand" "+m")
+	       (match_operand:SI 2 "const_int_operand")]		;; model
+	      UNSPECV_XCHG)
+	    (match_operand:SWI 1 "nonmemory_operand" "<r><i>"))
+	  (const_int 0)))
+   (set (match_dup 0)
+	(any_logic:SWI (match_dup 0) (match_dup 1)))]
+  ""
+  "lock{%;} %K2<logic>{<imodesuffix>}\t{%1, %0|%0, %1}")

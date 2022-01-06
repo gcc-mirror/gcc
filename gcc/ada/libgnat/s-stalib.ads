@@ -44,8 +44,6 @@
 --  package and the packages it references are included in all Ada programs,
 --  together with the included data.
 
-pragma Compiler_Unit_Warning;
-
 with Ada.Unchecked_Conversion;
 
 package System.Standard_Library is

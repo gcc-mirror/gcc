@@ -31,11 +31,26 @@
 
 --  Integer exponentiation (checks on)
 
+--  Preconditions, postconditions, ghost code, loop invariants and assertions
+--  in this unit are meant for analysis only, not for run-time checking, as it
+--  would be too costly otherwise. This is enforced by setting the assertion
+--  policy to Ignore.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Expont;
 
-package System.Exp_Int is
+package System.Exp_Int
+  with SPARK_Mode
+is
 
-   function Exp_Integer is new Expont (Integer);
-   pragma Pure_Function (Exp_Integer);
+   package Expont_Integer is new Expont (Integer);
+
+   function Exp_Integer (Left : Integer; Right : Natural) return Integer
+     renames Expont_Integer.Expon;
 
 end System.Exp_Int;

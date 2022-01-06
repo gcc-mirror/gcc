@@ -503,7 +503,7 @@ package body Sem_Util is
                              (Scope (Defining_Identifier (Par))));
 
                when N_Assignment_Statement =>
-                  --  Return the accessiblity level of the left-hand part
+                  --  Return the accessibility level of the left-hand part
 
                   return Accessibility_Level
                            (Expr              => Name (Par),
@@ -1970,6 +1970,12 @@ package body Sem_Util is
       --  Similar to previous one, for discriminated components constrained
       --  by the discriminant of the enclosing object.
 
+      function Build_Discriminant_Reference
+        (Discrim_Name : Node_Id; Obj : Node_Id := P) return Node_Id;
+      --  Build a reference to the discriminant denoted by Discrim_Name.
+      --  The prefix of the result is usually Obj, but it could be
+      --  a prefix of Obj in some corner cases.
+
       function Copy_And_Maybe_Dereference (N : Node_Id) return Node_Id;
       --  Copy the subtree rooted at N and insert an explicit dereference if it
       --  is of an access type.
@@ -1993,11 +1999,7 @@ package body Sem_Util is
             Old_Hi := Type_High_Bound (Etype (Indx));
 
             if Denotes_Discriminant (Old_Lo) then
-               Lo :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Copy_And_Maybe_Dereference (P),
-                   Selector_Name => New_Occurrence_Of (Entity (Old_Lo), Loc));
-
+               Lo := Build_Discriminant_Reference (Old_Lo);
             else
                Lo := New_Copy_Tree (Old_Lo);
 
@@ -2011,11 +2013,7 @@ package body Sem_Util is
             end if;
 
             if Denotes_Discriminant (Old_Hi) then
-               Hi :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Copy_And_Maybe_Dereference (P),
-                   Selector_Name => New_Occurrence_Of (Entity (Old_Hi), Loc));
-
+               Hi := Build_Discriminant_Reference (Old_Hi);
             else
                Hi := New_Copy_Tree (Old_Hi);
                Set_Analyzed (Hi, False);
@@ -2041,10 +2039,7 @@ package body Sem_Util is
          D := First_Elmt (Discriminant_Constraint (Desig_Typ));
          while Present (D) loop
             if Denotes_Discriminant (Node (D)) then
-               D_Val := Make_Selected_Component (Loc,
-                 Prefix => Copy_And_Maybe_Dereference (P),
-                Selector_Name => New_Occurrence_Of (Entity (Node (D)), Loc));
-
+               D_Val := Build_Discriminant_Reference (Node (D));
             else
                D_Val := New_Copy_Tree (Node (D));
             end if;
@@ -2055,6 +2050,90 @@ package body Sem_Util is
 
          return Constraints;
       end Build_Actual_Record_Constraint;
+
+      ----------------------------------
+      -- Build_Discriminant_Reference --
+      ----------------------------------
+
+      function Build_Discriminant_Reference
+        (Discrim_Name : Node_Id; Obj : Node_Id := P) return Node_Id
+      is
+         Discrim : constant Entity_Id := Entity (Discrim_Name);
+
+         function Obj_Is_Good_Prefix return Boolean;
+         --  Returns True if Obj.Discrim makes sense; that is, if
+         --  Obj has Discrim as one of its discriminants (or is an
+         --  access value that designates such an object).
+
+         ------------------------
+         -- Obj_Is_Good_Prefix --
+         ------------------------
+
+         function Obj_Is_Good_Prefix return Boolean is
+            Obj_Type           : Entity_Id :=
+              Implementation_Base_Type (Etype (Obj));
+
+            Discriminated_Type : constant Entity_Id :=
+              Implementation_Base_Type
+                (Scope (Original_Record_Component (Discrim)));
+         begin
+            --  The order of the following two tests matters in the
+            --  access-to-class-wide case.
+
+            if Is_Access_Type (Obj_Type) then
+               Obj_Type := Implementation_Base_Type
+                             (Designated_Type (Obj_Type));
+            end if;
+
+            if Is_Class_Wide_Type (Obj_Type) then
+               Obj_Type := Implementation_Base_Type
+                             (Find_Specific_Type (Obj_Type));
+            end if;
+
+            --  If a type T1 defines a discriminant D1, then Obj.D1 is ok (for
+            --  our purposes here) if T1 is an ancestor of the type of Obj.
+            --  So that's what we would like to test for here.
+            --  The bad news: Is_Ancestor is only defined in the tagged case.
+            --  The good news: in the untagged case, Implementation_Base_Type
+            --  looks through derived types so we can use a simpler test.
+
+            if Is_Tagged_Type (Discriminated_Type) then
+               return Is_Ancestor (Discriminated_Type, Obj_Type);
+            else
+               return Discriminated_Type = Obj_Type;
+            end if;
+         end Obj_Is_Good_Prefix;
+
+      --  Start of processing for Build_Discriminant_Reference
+
+      begin
+         if not Obj_Is_Good_Prefix then
+            --  If the given discriminant is not a component of the given
+            --  object, then try the enclosing object.
+
+            if Nkind (Obj) = N_Selected_Component then
+               return Build_Discriminant_Reference
+                        (Discrim_Name => Discrim_Name,
+                         Obj          => Prefix (Obj));
+            elsif Nkind (Obj) in N_Has_Entity
+              and then Nkind (Parent (Entity (Obj))) =
+                       N_Object_Renaming_Declaration
+            then
+               --  Look through a renaming (a corner case of a corner case).
+               return Build_Discriminant_Reference
+                        (Discrim_Name => Discrim_Name,
+                         Obj          => Name (Parent (Entity (Obj))));
+            else
+               --  We are in some unexpected case here, so revert to the
+               --  old behavior (by falling through to it).
+               null;
+            end if;
+         end if;
+
+         return Make_Selected_Component (Loc,
+                  Prefix => Copy_And_Maybe_Dereference (Obj),
+                  Selector_Name => New_Occurrence_Of (Discrim, Loc));
+      end Build_Discriminant_Reference;
 
       ------------------------------------
       -- Build_Access_Record_Constraint --
@@ -5967,31 +6046,29 @@ package body Sem_Util is
 
          --  Traverse the graph of ancestor interfaces
 
-         if Is_Non_Empty_List (Abstract_Interface_List (Full_T)) then
-            Id := First (Abstract_Interface_List (Full_T));
-            while Present (Id) loop
-               Iface := Etype (Id);
+         Id := First (Abstract_Interface_List (Full_T));
+         while Present (Id) loop
+            Iface := Etype (Id);
 
-               --  Protect against wrong uses. For example:
-               --    type I is interface;
-               --    type O is tagged null record;
-               --    type Wrong is new I and O with null record; -- ERROR
+            --  Protect against wrong uses. For example:
+            --    type I is interface;
+            --    type O is tagged null record;
+            --    type Wrong is new I and O with null record; -- ERROR
 
-               if Is_Interface (Iface) then
-                  if Exclude_Parents
-                    and then Etype (T) /= T
-                    and then Interface_Present_In_Ancestor (Etype (T), Iface)
-                  then
-                     null;
-                  else
-                     Collect (Iface);
-                     Append_Unique_Elmt (Iface, Ifaces_List);
-                  end if;
+            if Is_Interface (Iface) then
+               if Exclude_Parents
+                 and then Etype (T) /= T
+                 and then Interface_Present_In_Ancestor (Etype (T), Iface)
+               then
+                  null;
+               else
+                  Collect (Iface);
+                  Append_Unique_Elmt (Iface, Ifaces_List);
                end if;
+            end if;
 
-               Next (Id);
-            end loop;
-         end if;
+            Next (Id);
+         end loop;
       end Collect;
 
    --  Start of processing for Collect_Interfaces
@@ -6525,7 +6602,7 @@ package body Sem_Util is
       Error_Msg_Warn := Warn or SPARK_Mode /= On;
 
       --  A static constraint error in an instance body is not a fatal error.
-      --  we choose to inhibit the message altogether, because there is no
+      --  We choose to inhibit the message altogether, because there is no
       --  obvious node (for now) on which to post it. On the other hand the
       --  offending node must be replaced with a constraint_error in any case.
 
@@ -6871,7 +6948,10 @@ package body Sem_Util is
    -- Copy_Subprogram_Spec --
    --------------------------
 
-   function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id is
+   function Copy_Subprogram_Spec
+     (Spec     : Node_Id;
+      New_Sloc : Source_Ptr := No_Location) return Node_Id
+   is
       Def_Id      : Node_Id;
       Formal_Spec : Node_Id;
       Result      : Node_Id;
@@ -6880,7 +6960,7 @@ package body Sem_Util is
       --  The structure of the original tree must be replicated without any
       --  alterations. Use New_Copy_Tree for this purpose.
 
-      Result := New_Copy_Tree (Spec);
+      Result := New_Copy_Tree (Spec, New_Sloc => New_Sloc);
 
       --  However, the spec of a null procedure carries the corresponding null
       --  statement of the body (created by the parser), and this cannot be
@@ -7702,62 +7782,30 @@ package body Sem_Util is
 
    function Derivation_Too_Early_To_Inherit
      (Typ : Entity_Id; Streaming_Op : TSS_Name_Type) return Boolean is
+
       Btyp        : constant Entity_Id := Implementation_Base_Type (Typ);
       Parent_Type : Entity_Id;
+
+      Real_Rep : Node_Id;
+
+   --  Start of processing for Derivation_Too_Early_To_Inherit
+
    begin
       if Is_Derived_Type (Btyp) then
          Parent_Type := Implementation_Base_Type (Etype (Btyp));
          pragma Assert (Parent_Type /= Btyp);
+
          if Has_Stream_Attribute_Definition
-              (Parent_Type, Streaming_Op)
+              (Parent_Type, Streaming_Op, Real_Rep => Real_Rep)
+
            and then In_Same_Extended_Unit (Btyp, Parent_Type)
            and then Instantiation (Get_Source_File_Index (Sloc (Btyp))) =
                     Instantiation (Get_Source_File_Index (Sloc (Parent_Type)))
          then
-            declare
-               --  ??? Avoid code duplication here with
-               --  Sem_Cat.Has_Stream_Attribute_Definition by introducing a
-               --  new function to be called from both places?
-
-               Rep_Item : Node_Id := First_Rep_Item (Parent_Type);
-               Real_Rep : Node_Id;
-               Found    : Boolean := False;
-            begin
-               while Present (Rep_Item) loop
-                  Real_Rep := Rep_Item;
-
-                  if Nkind (Rep_Item) = N_Aspect_Specification then
-                     Real_Rep := Aspect_Rep_Item (Rep_Item);
-                  end if;
-
-                  if Nkind (Real_Rep) = N_Attribute_Definition_Clause then
-                     case Chars (Real_Rep) is
-                        when Name_Read =>
-                           Found := Streaming_Op = TSS_Stream_Read;
-
-                        when Name_Write =>
-                           Found := Streaming_Op = TSS_Stream_Write;
-
-                        when Name_Input =>
-                           Found := Streaming_Op = TSS_Stream_Input;
-
-                        when Name_Output =>
-                           Found := Streaming_Op = TSS_Stream_Output;
-
-                        when others =>
-                           null;
-                     end case;
-                  end if;
-
-                  if Found then
-                     return Earlier_In_Extended_Unit (Btyp, Real_Rep);
-                  end if;
-
-                  Next_Rep_Item (Rep_Item);
-               end loop;
-            end;
+            return Earlier_In_Extended_Unit (Btyp, Real_Rep);
          end if;
       end if;
+
       return False;
    end Derivation_Too_Early_To_Inherit;
 
@@ -12974,18 +13022,15 @@ package body Sem_Util is
       Node : Node_Id;
 
    begin
-      if Is_Non_Empty_List (L) then
-         Node := First (L);
+      Node := First (L);
 
-         loop
-            if Nkind (Node) not in N_Null_Statement | N_Call_Marker then
-               return True;
-            end if;
+      while Present (Node) loop
+         if Nkind (Node) not in N_Null_Statement | N_Call_Marker then
+            return True;
+         end if;
 
-            Next (Node);
-            exit when Node = Empty;
-         end loop;
-      end if;
+         Next (Node);
+      end loop;
 
       return False;
    end Has_Non_Null_Statements;
@@ -13044,28 +13089,26 @@ package body Sem_Util is
       Node : Node_Id;
 
    begin
-      if Is_Non_Empty_List (L) then
-         Node := First (L);
+      Node := First (L);
 
-         loop
-            case Nkind (Node) is
-               when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
-                  null;
-               when N_Object_Declaration =>
-                  if Present (Expression (Node))
-                    and then not Side_Effect_Free (Expression (Node))
-                  then
-                     return False;
-                  end if;
+      while Present (Node) loop
+         case Nkind (Node) is
+            when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
+               null;
 
-               when others =>
+            when N_Object_Declaration =>
+               if Present (Expression (Node))
+                 and then not Side_Effect_Free (Expression (Node))
+               then
                   return False;
-            end case;
+               end if;
 
-            Next (Node);
-            exit when Node = Empty;
-         end loop;
-      end if;
+            when others =>
+               return False;
+         end case;
+
+         Next (Node);
+      end loop;
 
       return True;
    end Side_Effect_Free_Statements;
@@ -16709,7 +16752,18 @@ package body Sem_Util is
                           | N_Private_Type_Declaration
                           | N_Subtype_Declaration
               and then Comes_From_Source (P)
-              and then Defining_Entity (P) = Typ
+
+              --  If the type has a previous incomplete declaration, the
+              --  reference in the type definition may have the incomplete
+              --  view. So, here we detect if this incomplete view is a current
+              --  instance by checking if its full view is the entity of the
+              --  full declaration begin analyzed.
+
+              and then
+                (Defining_Entity (P) = Typ
+                  or else
+                   (Ekind (Typ) = E_Incomplete_Type
+                     and then Full_View (Typ) = Defining_Entity (P)))
             then
                return True;
 
@@ -22059,6 +22113,13 @@ package body Sem_Util is
 
          Get_Current_Value_Condition (N, Op, Val);
 
+         --  If Get_Current_Value_Condition were to return Val = N, then the
+         --  recursion below could be infinite.
+
+         if Val = N then
+            raise Program_Error;
+         end if;
+
          if Known_Null (Val) then
             if Op = N_Op_Eq then
                return True;
@@ -25143,7 +25204,7 @@ package body Sem_Util is
       --    * Semantic fields of nodes such as First_Real_Statement must be
       --      updated to reference the proper replicated nodes.
 
-      --  Finally, quantified expressions contain an implicit delaration for
+      --  Finally, quantified expressions contain an implicit declaration for
       --  the bound variable. Given that quantified expressions appearing
       --  in contracts are copied to create pragmas and eventually checking
       --  procedures, a new bound variable must be created for each copy, to
@@ -28968,7 +29029,7 @@ package body Sem_Util is
                   Source_Text (Get_Source_File_Index (Loc));
       Src_Ptr : Source_Ptr := Loc;
 
-      C : Character  := Sbuffer (Src_Ptr);
+      C : Character := Sbuffer (Src_Ptr);
       --  Current source program character
 
       function Belongs_To_Numeric_Literal (C : Character) return Boolean;
@@ -28981,9 +29042,7 @@ package body Sem_Util is
       function Belongs_To_Numeric_Literal (C : Character) return Boolean is
       begin
          case C is
-            when '0' .. '9'
-               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-            =>
+            when '0' .. '9' | '_' | '.' | 'e' | '#' | 'A' .. 'F' =>
                return True;
 
             --  Make sure '+' or '-' is part of an exponent
@@ -28992,7 +29051,7 @@ package body Sem_Util is
                declare
                   Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
                begin
-                  return Prev_C = 'e' or else Prev_C = 'E';
+                  return Prev_C in 'e' | 'E';
                end;
 
             --  Other characters cannot belong to a numeric literal

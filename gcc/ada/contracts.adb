@@ -4254,6 +4254,11 @@ package body Contracts is
          procedure Remove_Formals (Id : Entity_Id);
          --  Remove formals from homonym chains and make them not visible
 
+         procedure Restore_Original_Selected_Component;
+         --  Traverse Expr searching for dispatching calls to functions whose
+         --  original node was a selected component, and replace them with
+         --  their original node.
+
          ----------------------------
          -- Clear_Unset_References --
          ----------------------------
@@ -4313,6 +4318,46 @@ package body Contracts is
             end loop;
          end Remove_Formals;
 
+         -----------------------------------------
+         -- Restore_Original_Selected_Component --
+         -----------------------------------------
+
+         procedure Restore_Original_Selected_Component is
+
+            function Restore_Node (N : Node_Id) return Traverse_Result;
+            --  Process a single node
+
+            ------------------
+            -- Restore_Node --
+            ------------------
+
+            function Restore_Node (N : Node_Id) return Traverse_Result is
+            begin
+               if Nkind (N) = N_Function_Call
+                 and then Nkind (Original_Node (N)) = N_Selected_Component
+                 and then Is_Dispatching_Operation (Entity (Name (N)))
+               then
+                  Rewrite (N, Original_Node (N));
+                  Set_Original_Node (N, N);
+
+                  --  Restore decoration of its child nodes; required to ensure
+                  --  proper copies of this subtree (if required) by subsequent
+                  --  calls to New_Copy_Tree (since otherwise these child nodes
+                  --  are not duplicated).
+
+                  Set_Parent (Prefix (N), N);
+                  Set_Parent (Selector_Name (N), N);
+               end if;
+
+               return OK;
+            end Restore_Node;
+
+            procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
+
+         begin
+            Restore_Nodes (Expr);
+         end Restore_Original_Selected_Component;
+
       --  Start of processing for Preanalyze_Condition
 
       begin
@@ -4328,6 +4373,16 @@ package body Contracts is
          Inside_Class_Condition_Preanalysis := False;
          Remove_Formals (Subp);
          Pop_Scope;
+
+         --  If this preanalyzed condition has occurrences of dispatching calls
+         --  using the Object.Operation notation, during preanalysis such calls
+         --  are rewritten as dispatching function calls; if at later stages
+         --  this condition is inherited we must have restored the original
+         --  selected-component node to ensure that the preanalysis of the
+         --  inherited condition rewrites these dispatching calls in the
+         --  correct context to avoid reporting spurious errors.
+
+         Restore_Original_Selected_Component;
 
          --  Traverse Expr and clear the Controlling_Argument of calls to
          --  nonabstract functions. Required since the preanalyzed condition
@@ -4373,103 +4428,9 @@ package body Contracts is
            (Par_Subp : Entity_Id;
             Subp     : Entity_Id) return Node_Id
          is
-            Installed_Calls : constant Elist_Id := New_Elmt_List;
-
-            procedure Install_Original_Selected_Component (Expr : Node_Id);
-            --  Traverse the given expression searching for dispatching calls
-            --  to functions whose original nodes was a selected component,
-            --  and replacing them temporarily by a copy of their original
-            --  node. Modified calls are stored in the list Installed_Calls
-            --  (to undo this work later).
-
-            procedure Restore_Dispatching_Calls (Expr : Node_Id);
-            --  Undo the work done by Install_Original_Selected_Component.
-
-            -----------------------------------------
-            -- Install_Original_Selected_Component --
-            -----------------------------------------
-
-            procedure Install_Original_Selected_Component (Expr : Node_Id) is
-               function Install_Node (N : Node_Id) return Traverse_Result;
-               --  Process a single node
-
-               ------------------
-               -- Install_Node --
-               ------------------
-
-               function Install_Node (N : Node_Id) return Traverse_Result is
-                  New_N    : Node_Id;
-                  Orig_Nod : Node_Id;
-
-               begin
-                  if Nkind (N) = N_Function_Call
-                    and then Nkind (Original_Node (N)) = N_Selected_Component
-                    and then Is_Dispatching_Operation (Entity (Name (N)))
-                  then
-                     Orig_Nod := Original_Node (N);
-
-                     --  Temporarily use the original node field to keep the
-                     --  reference to this node (to undo this work later!).
-
-                     New_N := New_Copy (N);
-                     Set_Original_Node (New_N, Orig_Nod);
-                     Append_Elmt (New_N, Installed_Calls);
-
-                     Rewrite (N, Orig_Nod);
-                     Set_Original_Node (N, New_N);
-                  end if;
-
-                  return OK;
-               end Install_Node;
-
-               procedure Install_Nodes is new Traverse_Proc (Install_Node);
-
-            begin
-               Install_Nodes (Expr);
-            end Install_Original_Selected_Component;
-
-            -------------------------------
-            -- Restore_Dispatching_Calls --
-            -------------------------------
-
-            procedure Restore_Dispatching_Calls (Expr : Node_Id) is
-               function Restore_Node (N : Node_Id) return Traverse_Result;
-               --  Process a single node
-
-               ------------------
-               -- Restore_Node --
-               ------------------
-
-               function Restore_Node (N : Node_Id) return Traverse_Result is
-                  Orig_Sel_N : Node_Id;
-
-               begin
-                  if Nkind (N) = N_Selected_Component
-                    and then Nkind (Original_Node (N)) = N_Function_Call
-                    and then Contains (Installed_Calls, Original_Node (N))
-                  then
-                     Orig_Sel_N := Original_Node (Original_Node (N));
-                     pragma Assert (Nkind (Orig_Sel_N) = N_Selected_Component);
-                     Rewrite (N, Original_Node (N));
-                     Set_Original_Node (N, Orig_Sel_N);
-                  end if;
-
-                  return OK;
-               end Restore_Node;
-
-               procedure Restore_Nodes is new Traverse_Proc (Restore_Node);
-
-            begin
-               Restore_Nodes (Expr);
-            end Restore_Dispatching_Calls;
-
-            --  Local variables
-
             Assoc_List     : constant Elist_Id := New_Elmt_List;
             Par_Formal_Id  : Entity_Id := First_Formal (Par_Subp);
             Subp_Formal_Id : Entity_Id := First_Formal (Subp);
-            New_Expr       : Node_Id;
-            Class_Cond     : Node_Id;
 
          --  Start of processing for Inherit_Condition
 
@@ -4482,18 +4443,9 @@ package body Contracts is
                Next_Formal (Subp_Formal_Id);
             end loop;
 
-            --  In order to properly preanalyze an inherited preanalyzed
-            --  condition that has occurrences of the Object.Operation
-            --  notation we must restore the original node; otherwise we
-            --  would report spurious errors.
-
-            Class_Cond := Class_Condition (Kind, Par_Subp);
-
-            Install_Original_Selected_Component (Class_Cond);
-            New_Expr := New_Copy_Tree (Class_Cond);
-            Restore_Dispatching_Calls (Class_Cond);
-
-            return New_Copy_Tree (New_Expr, Map => Assoc_List);
+            return New_Copy_Tree
+                     (Source => Class_Condition (Kind, Par_Subp),
+                      Map    => Assoc_List);
          end Inherit_Condition;
 
          ----------------------

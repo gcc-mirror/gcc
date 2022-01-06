@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -7190,6 +7190,10 @@ on this implementation detail.
 @hook TARGET_OPTION_FUNCTION_VERSIONS
 
 @hook TARGET_CAN_INLINE_P
+
+@hook TARGET_UPDATE_IPA_FN_TARGET_INFO
+
+@hook TARGET_NEED_IPA_FN_TARGET_INFO
 
 @hook TARGET_RELAYOUT_FUNCTION
 

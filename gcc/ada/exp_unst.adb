@@ -1755,7 +1755,7 @@ package body Exp_Unst is
 
                      procedure Add_Form_To_Spec (F : Entity_Id; S : Node_Id);
                      --  S is an N_Function/Procedure_Specification node, and F
-                     --  is the new entity to add to this subprogramn spec as
+                     --  is the new entity to add to this subprogram spec as
                      --  the last Extra_Formal.
 
                      ----------------------
@@ -2206,7 +2206,7 @@ package body Exp_Unst is
 
          begin
             --  Ignore type references, these are implicit references that do
-            --  not need rewriting (e.g. the appearence in a conversion).
+            --  not need rewriting (e.g. the appearance in a conversion).
             --  Also ignore if no reference was specified or if the rewriting
             --  has already been done (this can happen if the N_Identifier
             --  occurs more than one time in the tree). Also ignore references

@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,15 +45,14 @@ namespace __detail
   enum class _RegexExecutorPolicy : int { _S_auto, _S_alternate };
 
   template<typename _BiIter, typename _Alloc,
-	   typename _CharT, typename _TraitsT,
-	   _RegexExecutorPolicy __policy,
-	   bool __match_mode>
+	   typename _CharT, typename _TraitsT>
     bool
-    __regex_algo_impl(_BiIter			      __s,
-		      _BiIter			      __e,
+    __regex_algo_impl(_BiIter __s, _BiIter __e,
 		      match_results<_BiIter, _Alloc>&      __m,
 		      const basic_regex<_CharT, _TraitsT>& __re,
-		      regex_constants::match_flag_type     __flags);
+		      regex_constants::match_flag_type     __flags,
+		      _RegexExecutorPolicy		   __policy,
+		      bool				   __match_mode);
 
   template<typename, typename, typename, bool>
     class _Executor;
@@ -792,12 +791,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_M_flags = __f;
       }
 
-      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
-	__detail::_RegexExecutorPolicy, bool>
+      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp>
 	friend bool
 	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
 				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+				    regex_constants::match_flag_type,
+				    __detail::_RegexExecutorPolicy, bool);
 
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
@@ -2063,12 +2062,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
 
-      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp,
-	__detail::_RegexExecutorPolicy, bool>
+      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp>
 	friend bool
 	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
 				    const basic_regex<_Cp, _Rp>&,
-				    regex_constants::match_flag_type);
+				    regex_constants::match_flag_type,
+				    __detail::_RegexExecutorPolicy, bool);
 
       // Reset contents to __size unmatched sub_match objects
       // (plus additional objects for prefix, suffix and unmatched sub).
@@ -2206,9 +2205,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 		regex_constants::match_flag_type	 __flags
 			       = regex_constants::match_default)
     {
-      return __detail::__regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	__detail::_RegexExecutorPolicy::_S_auto, true>
-	  (__s, __e, __m, __re, __flags);
+      return __detail::__regex_algo_impl(__s, __e, __m, __re, __flags,
+	__detail::_RegexExecutorPolicy::_S_auto, true);
     }
 
   /**
@@ -2363,9 +2361,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 		 regex_constants::match_flag_type __flags
 		 = regex_constants::match_default)
     {
-      return __detail::__regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	__detail::_RegexExecutorPolicy::_S_auto, false>
-	  (__s, __e, __m, __re, __flags);
+      return __detail::__regex_algo_impl(__s, __e, __m, __re, __flags,
+	__detail::_RegexExecutorPolicy::_S_auto, false);
     }
 
   /**

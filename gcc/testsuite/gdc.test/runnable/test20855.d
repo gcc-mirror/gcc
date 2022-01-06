@@ -1,3 +1,4 @@
+// PERMUTE_ARGS: -O
 // https://issues.dlang.org/show_bug.cgi?id=20855
 
 string exp()

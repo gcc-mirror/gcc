@@ -29,7 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
 
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 

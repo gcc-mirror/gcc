@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -986,10 +986,11 @@ linemap_client_expand_location_to_spelling_point (location_t loc,
 }
 
 
-/* If LOCATION is in a system header and if it is a virtual location for
-   a token coming from the expansion of a macro, unwind it to the
-   location of the expansion point of the macro.  Otherwise, just return
-   LOCATION.
+/* If LOCATION is in a system header and if it is a virtual location
+   for a token coming from the expansion of a macro, unwind it to
+   the location of the expansion point of the macro.  If the expansion
+   point is also in a system header return the original LOCATION.
+   Otherwise, return the location of the expansion point.
 
    This is used for instance when we want to emit diagnostics about a
    token that may be located in a macro that is itself defined in a
@@ -1001,11 +1002,13 @@ linemap_client_expand_location_to_spelling_point (location_t loc,
 location_t
 expansion_point_location_if_in_system_header (location_t location)
 {
-  if (in_system_header_at (location))
-    location = linemap_resolve_location (line_table, location,
-					 LRK_MACRO_EXPANSION_POINT,
-					 NULL);
-  return location;
+  if (!in_system_header_at (location))
+    return location;
+
+  location_t xloc = linemap_resolve_location (line_table, location,
+					      LRK_MACRO_EXPANSION_POINT,
+					      NULL);
+  return in_system_header_at (xloc) ? location : xloc;
 }
 
 /* If LOCATION is a virtual location for a token coming from the expansion

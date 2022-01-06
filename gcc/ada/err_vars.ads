@@ -61,14 +61,6 @@ package Err_Vars is
    --  not get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
 
-   Warn_On_Instance : Boolean := False;
-   --  Normally if a warning is generated in a generic template from the
-   --  analysis of the template, then the warning really belongs in the
-   --  template, and the default value of False for this Boolean achieves
-   --  that effect. If Warn_On_Instance is set True, then the warnings are
-   --  generated on the instantiation (referring to the template) rather
-   --  than on the template itself.
-
    Raise_Exception_On_Error : Nat := 0;
    --  If this value is non-zero, then any attempt to generate an error
    --  message raises the exception Error_Msg_Exception, and the error

@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with Ada.IO_Exceptions;        use Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;
 with Ada.Unchecked_Conversion;

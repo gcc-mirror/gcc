@@ -1,5 +1,5 @@
 /* Expression translation
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -5536,13 +5536,17 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
     {
       /* If the actual argument can be noncontiguous, copy-in/out is required,
 	 if the dummy has either the CONTIGUOUS attribute or is an assumed-
-	 length assumed-length/assumed-size CHARACTER array.  */
+	 length assumed-length/assumed-size CHARACTER array.  This only
+	 applies if the actual argument is a "variable"; if it's some
+	 non-lvalue expression, we are going to evaluate it to a
+	 temporary below anyway.  */
       se.force_no_tmp = 1;
       if ((fsym->attr.contiguous
 	   || (fsym->ts.type == BT_CHARACTER && !fsym->ts.u.cl->length
 	       && (fsym->as->type == AS_ASSUMED_SIZE
 		   || fsym->as->type == AS_EXPLICIT)))
-	  && !gfc_is_simply_contiguous (e, false, true))
+	  && !gfc_is_simply_contiguous (e, false, true)
+	  && gfc_expr_is_variable (e))
 	{
 	  bool optional = fsym->attr.optional;
 	  fsym->attr.optional = 0;
@@ -6841,6 +6845,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					     fsym->attr.pointer);
 		}
 	      else
+		/* This is where we introduce a temporary to store the
+		   result of a non-lvalue array expression.  */
 		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
 					  sym->name, NULL);
 

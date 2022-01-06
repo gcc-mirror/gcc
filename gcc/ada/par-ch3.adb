@@ -209,39 +209,9 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    function P_Defining_Identifier (C : Id_Check := None) return Node_Id is
-      Ident_Node : Node_Id;
+      Ident_Node : Node_Id := P_Identifier (C, True);
 
    begin
-      --  Scan out the identifier. Note that this code is essentially identical
-      --  to P_Identifier, except that in the call to Scan_Reserved_Identifier
-      --  we set Force_Msg to True, since we want at least one message for each
-      --  separate declaration (but not use) of a reserved identifier.
-
-      --  Duplication should be removed, common code should be factored???
-
-      if Token = Tok_Identifier then
-         Check_Future_Keyword;
-
-      --  If we have a reserved identifier, manufacture an identifier with
-      --  a corresponding name after posting an appropriate error message
-
-      elsif Is_Reserved_Identifier (C) then
-         Scan_Reserved_Identifier (Force_Msg => True);
-
-      --  Otherwise we have junk that cannot be interpreted as an identifier
-
-      else
-         T_Identifier; -- to give message
-         raise Error_Resync;
-      end if;
-
-      if Style_Check then
-         Style.Check_Defining_Identifier_Casing;
-      end if;
-
-      Ident_Node := Token_Node;
-      Scan; -- past the identifier
-
       --  If we already have a defining identifier, clean it out and make
       --  a new clean identifier. This situation arises in some error cases
       --  and we need to fix it.
