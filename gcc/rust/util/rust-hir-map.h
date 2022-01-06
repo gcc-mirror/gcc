@@ -41,6 +41,11 @@ public:
     MULTIPLY,
     DIVIDE,
     REMAINDER,
+    BITAND,
+    BITOR,
+    BITXOR,
+    SHL,
+    SHR,
 
     NEGATION,
     NOT,
@@ -50,6 +55,11 @@ public:
     MUL_ASSIGN,
     DIV_ASSIGN,
     REM_ASSIGN,
+    BITAND_ASSIGN,
+    BITOR_ASSIGN,
+    BITXOR_ASSIGN,
+    SHL_ASSIGN,
+    SHR_ASSIGN,
 
     DEREF,
 
@@ -77,6 +87,26 @@ public:
     else if (item.compare ("rem") == 0)
       {
 	return ItemType::REMAINDER;
+      }
+    else if (item.compare ("bitand") == 0)
+      {
+	return ItemType::BITAND;
+      }
+    else if (item.compare ("bitor") == 0)
+      {
+	return ItemType::BITOR;
+      }
+    else if (item.compare ("bitxor") == 0)
+      {
+	return ItemType::BITXOR;
+      }
+    else if (item.compare ("shl") == 0)
+      {
+	return ItemType::SHL;
+      }
+    else if (item.compare ("shr") == 0)
+      {
+	return ItemType::SHR;
       }
     else if (item.compare ("neg") == 0)
       {
@@ -106,6 +136,26 @@ public:
       {
 	return ItemType::REM_ASSIGN;
       }
+    else if (item.compare ("bitand_assign") == 0)
+      {
+	return ItemType::BITAND_ASSIGN;
+      }
+    else if (item.compare ("bitor_assign") == 0)
+      {
+	return ItemType::BITOR_ASSIGN;
+      }
+    else if (item.compare ("bitxor_assign") == 0)
+      {
+	return ItemType::BITXOR_ASSIGN;
+      }
+    else if (item.compare ("shl_assign") == 0)
+      {
+	return ItemType::SHL_ASSIGN;
+      }
+    else if (item.compare ("shr_assign") == 0)
+      {
+	return ItemType::SHR_ASSIGN;
+      }
     else if (item.compare ("deref") == 0)
       {
 	return ItemType::DEREF;
@@ -128,6 +178,16 @@ public:
 	return "div";
       case REMAINDER:
 	return "rem";
+      case BITAND:
+	return "bitand";
+      case BITOR:
+	return "bitor";
+      case BITXOR:
+	return "bitxor";
+      case SHL:
+	return "shl";
+      case SHR:
+	return "shr";
       case NEGATION:
 	return "neg";
       case NOT:
@@ -142,11 +202,21 @@ public:
 	return "div_assign";
       case REM_ASSIGN:
 	return "rem_assign";
+      case BITAND_ASSIGN:
+	return "bitand_assign";
+      case BITOR_ASSIGN:
+	return "bitor_assign";
+      case BITXOR_ASSIGN:
+	return "bitxor_assign";
+      case SHL_ASSIGN:
+	return "shl_assign";
+      case SHR_ASSIGN:
+	return "shr_assign";
       case DEREF:
 	return "deref";
 
       case UNKNOWN:
-	break;
+	return "<UNKNOWN>";
       }
     return "<UNKNOWN>";
   }
@@ -165,9 +235,16 @@ public:
 	return ItemType::DIVIDE;
       case ArithmeticOrLogicalOperator::MODULUS:
 	return ItemType::REMAINDER;
-
-      default:
-	return ItemType::UNKNOWN;
+      case ArithmeticOrLogicalOperator::BITWISE_AND:
+	return ItemType::BITAND;
+      case ArithmeticOrLogicalOperator::BITWISE_OR:
+	return ItemType::BITOR;
+      case ArithmeticOrLogicalOperator::BITWISE_XOR:
+	return ItemType::BITXOR;
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+	return ItemType::SHL;
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+	return ItemType::SHR;
       }
     return ItemType::UNKNOWN;
   }
@@ -187,9 +264,16 @@ public:
 	return ItemType::DIV_ASSIGN;
       case ArithmeticOrLogicalOperator::MODULUS:
 	return ItemType::REM_ASSIGN;
-
-      default:
-	return ItemType::UNKNOWN;
+      case ArithmeticOrLogicalOperator::BITWISE_AND:
+	return ItemType::BITAND_ASSIGN;
+      case ArithmeticOrLogicalOperator::BITWISE_OR:
+	return ItemType::BITOR_ASSIGN;
+      case ArithmeticOrLogicalOperator::BITWISE_XOR:
+	return ItemType::BITXOR_ASSIGN;
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+	return ItemType::SHL_ASSIGN;
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+	return ItemType::SHR_ASSIGN;
       }
     return ItemType::UNKNOWN;
   }
@@ -202,9 +286,6 @@ public:
 	return ItemType::NEGATION;
       case NegationOperator::NOT:
 	return ItemType::NOT;
-
-      default:
-	return ItemType::UNKNOWN;
       }
     return ItemType::UNKNOWN;
   }
