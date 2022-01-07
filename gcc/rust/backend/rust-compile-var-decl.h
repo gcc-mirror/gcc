@@ -64,6 +64,15 @@ public:
 					     address_taken, locus);
   }
 
+  void visit (HIR::WildcardPattern &pattern) override
+  {
+    translated_type = ctx->get_backend ()->immutable_type (translated_type);
+    compiled_variable
+      = ctx->get_backend ()->local_variable (fndecl, "_", translated_type,
+					     NULL /*decl_var*/, address_taken,
+					     locus);
+  }
+
 private:
   CompileVarDecl (Context *ctx, tree fndecl)
     : HIRCompileBase (ctx), fndecl (fndecl),

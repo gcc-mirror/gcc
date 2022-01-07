@@ -52,6 +52,16 @@ public:
       fndecl, pattern.get_identifier (), decl_type, address_taken, locus);
   }
 
+  void visit (HIR::WildcardPattern &pattern) override
+  {
+    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+
+    bool address_taken = false;
+    compiled_param
+      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type,
+						 address_taken, locus);
+  }
+
 private:
   CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus,
 		  const HIR::FunctionParam &param)
