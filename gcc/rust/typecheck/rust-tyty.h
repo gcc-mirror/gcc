@@ -1069,6 +1069,8 @@ public:
   HirId get_id () const { return id; }
 
   VariantType get_variant_type () const { return type; }
+  bool is_data_variant () const { return type != VariantType::NUM; }
+  bool is_dataless_variant () const { return type == VariantType::NUM; }
 
   std::string get_identifier () const { return identifier; }
   int get_discriminant () const { return discriminant; }

@@ -822,6 +822,9 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
   for (auto &variant : adt->get_variants ())
     {
+      if (variant->is_dataless_variant ())
+	continue;
+
       for (auto &field : variant->get_fields ())
 	{
 	  bool ok = ::Rust::TyTy::handle_substitions (subst_mappings, field);
