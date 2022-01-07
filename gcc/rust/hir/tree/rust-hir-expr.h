@@ -95,7 +95,8 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
-  Literal *get_literal () { return &literal; }
+  Literal &get_literal () { return literal; }
+  const Literal &get_literal () const { return literal; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
