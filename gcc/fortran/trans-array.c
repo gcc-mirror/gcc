@@ -11225,11 +11225,15 @@ arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
 	  switch (function->id)
 	    {
 	      case GFC_ISYM_INDEX:
+	      case GFC_ISYM_SCAN:
+	      case GFC_ISYM_VERIFY:
 		if (arg_num == 3)
 		  return false;
 		break;
 
 	      case GFC_ISYM_LEN_TRIM:
+	      case GFC_ISYM_MASKL:
+	      case GFC_ISYM_MASKR:
 		if (arg_num == 1)
 		  return false;
 
