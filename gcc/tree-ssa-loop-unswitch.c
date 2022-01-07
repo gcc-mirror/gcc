@@ -147,8 +147,7 @@ static bool tree_unswitch_single_loop (class loop *, int,
 				       const auto_edge_flag &ignored_edge_flag);
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates,
-				    const auto_edge_flag &ignored_edge_flag);
+				    vec<unswitch_predicate *> &candidates);
 static bool tree_unswitch_outer_loop (class loop *);
 static edge find_loop_guard (class loop *);
 static bool empty_bb_without_guard_p (class loop *, basic_block);
@@ -180,8 +179,7 @@ set_predicates_for_bb (basic_block bb, vec<unswitch_predicate *> predicates)
    Return total number of instructions in the loop.  */
 
 static unsigned
-init_loop_unswitch_info (class loop *loop,
-			 const auto_edge_flag &ignored_edge_flag)
+init_loop_unswitch_info (class loop *loop)
 {
   unsigned total_insns = 0;
 
@@ -204,8 +202,7 @@ init_loop_unswitch_info (class loop *loop,
       /* Find a bb to unswitch on.  */
       vec<unswitch_predicate *> candidates;
       candidates.create (1);
-      find_unswitching_predicates_for_bb (bbs[i], loop, candidates,
-					  ignored_edge_flag);
+      find_unswitching_predicates_for_bb (bbs[i], loop, candidates);
       if (!candidates.is_empty ())
 	set_predicates_for_bb (bbs[i], candidates);
       else
@@ -242,8 +239,7 @@ tree_ssa_unswitch_loops (void)
 
 	  /* Unswitch innermost loop.  */
 	  unsigned int budget
-	    = (init_loop_unswitch_info (loop, ignored_edge_flag)
-	       + param_max_unswitch_insns);
+	    = (init_loop_unswitch_info (loop) + param_max_unswitch_insns);
 
 	  predicate_vector predicate_path;
 	  predicate_path.create (8);
@@ -357,8 +353,7 @@ is_maybe_undefined (const tree name, gimple *stmt, class loop *loop)
 
 static void
 find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
-				    vec<unswitch_predicate *> &candidates,
-				    const auto_edge_flag &ignored_edge_flag)
+				    vec<unswitch_predicate *> &candidates)
 {
   gimple *last, *def;
   tree cond, use;
@@ -438,56 +433,53 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
       unsigned edge_index = 0;
       FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->succs)
 	{
-	  if (!(e->flags & ignored_edge_flag))
+	  /* Build compound expression for all cases leading
+	     to this edge.  */
+	  tree expr = NULL_TREE;
+	  for (unsigned i = 1; i < gimple_switch_num_labels (stmt); ++i)
 	    {
-	      /* Build compound expression for all cases leading
-		 to this edge.  */
-	      tree expr = NULL_TREE;
-	      for (unsigned i = 1; i < gimple_switch_num_labels (stmt); ++i)
+	      tree lab = gimple_switch_label (stmt, i);
+	      basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
+	      edge e2 = find_edge (gimple_bb (stmt), dest);
+	      if (e != e2)
+		continue;
+
+	      tree cmp;
+	      if (CASE_HIGH (lab) != NULL_TREE)
 		{
-		  tree lab = gimple_switch_label (stmt, i);
-		  basic_block dest = label_to_block (cfun, CASE_LABEL (lab));
-		  edge e2 = find_edge (gimple_bb (stmt), dest);
-		  if (e != e2)
-		    continue;
-
-		  tree cmp;
-		  if (CASE_HIGH (lab) != NULL_TREE)
-		    {
-		      tree cmp1 = build2 (GE_EXPR, boolean_type_node, idx,
-					  CASE_LOW (lab));
-		      tree cmp2 = build2 (LE_EXPR, boolean_type_node, idx,
-					  CASE_HIGH (lab));
-		      cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1,
-					 cmp2);
-		    }
-		  else
-		    cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
-				  CASE_LOW (lab));
-
-		  /* Combine the expression with the existing one.  */
-		  if (expr == NULL_TREE)
-		    expr = cmp;
-		  else
-		    expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr,
-					cmp);
+		  tree cmp1 = build2 (GE_EXPR, boolean_type_node, idx,
+				      CASE_LOW (lab));
+		  tree cmp2 = build2 (LE_EXPR, boolean_type_node, idx,
+				      CASE_HIGH (lab));
+		  cmp = fold_build2 (BIT_AND_EXPR, boolean_type_node, cmp1,
+				     cmp2);
 		}
+	      else
+		cmp = fold_build2 (EQ_EXPR, boolean_type_node, idx,
+				   CASE_LOW (lab));
 
-	      if (expr != NULL_TREE)
+	      /* Combine the expression with the existing one.  */
+	      if (expr == NULL_TREE)
+		expr = cmp;
+	      else
+		expr = fold_build2 (BIT_IOR_EXPR, boolean_type_node, expr,
+				    cmp);
+	    }
+
+	  if (expr != NULL_TREE)
+	    {
+	      unswitch_predicate *predicate
+		= new unswitch_predicate (expr, idx, edge_index);
+	      if (!ranger->gori ().outgoing_edge_range_p (predicate->true_range, e,
+							  idx, *get_global_range_query ()))
 		{
-		  unswitch_predicate *predicate
-		    = new unswitch_predicate (expr, idx, edge_index);
-		  if (!ranger->gori ().outgoing_edge_range_p (predicate->true_range, e,
-							      idx, *get_global_range_query ()))
-		    {
-		      /* Huge switches are not supported by Ranger.  */
-		      delete predicate;
-		      return;
-		    }
-		  predicate->init_false_edge ();
-
-		  candidates.safe_push (predicate);
+		  /* Huge switches are not supported by Ranger.  */
+		  delete predicate;
+		  return;
 		}
+	      predicate->init_false_edge ();
+
+	      candidates.safe_push (predicate);
 	    }
 	  edge_index++;
 	}
