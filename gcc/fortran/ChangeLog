@@ -1,3 +1,10 @@
+2022-01-06  Steve Kargl  <kargl@gcc.gnu.org>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103287
+	* interface.c (argument_rank_mismatch): Replace incorrect assertion
+	with return.
+
 2022-01-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/103258

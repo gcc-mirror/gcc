@@ -1,3 +1,10 @@
+2022-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* store.cc (store::eval_alias_1): Refactor handling of decl
+	regions, adding a test for may_be_aliased, rejecting those for
+	which it returns false.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* engine.cc: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.

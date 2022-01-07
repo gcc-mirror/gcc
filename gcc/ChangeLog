@@ -1,3 +1,93 @@
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103925
+	* config/i386/i386.c (ix86_output_indirect_function_return):
+	Generate INT3 after indirect jmp for -mharden-sls=indirect-jmp.
+
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386-opts.h (harden_sls): Replace
+	harden_sls_indirect_branch with harden_sls_indirect_jmp.
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect):
+	Likewise.
+	(ix86_output_indirect_jmp): Likewise.
+	(ix86_output_call_insn): Likewise.
+	* config/i386/i386.opt: Replace indirect-branch with
+	indirect-jmp.  Replace harden_sls_indirect_branch with
+	harden_sls_indirect_jmp.
+	* doc/invoke.texi (-harden-sls=): Replace indirect-branch with
+	indirect-jmp.
+
+2022-01-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_output_ssemov) <MODE_DI>:
+	Add %q modifier for operands in general registers.
+	<MODE_SI>: Add %q modifier for operands in general registers.
+	* config/i386/i386.md (*movhi_internal): Change type attribute of
+	xmm-gpr interunit alternatives 9,10 to ssemov and mode attribute
+	to SImode for non-avx512fp16 targets.
+	(*movhf_internal): Ditto for xmm-gpr interunit alternatives 6,8.
+	* config/i386/mmx.md (*movv2qi_internal):
+	Ditto for xmm-gpr interunit alternatives 8,9.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info): Add
+	vector extensions.
+	(riscv_ext_version_table): Add version info for vector extensions.
+	(riscv_ext_flag_table): Add option mask for vector extensions.
+	* config/riscv/riscv-opts.h (MASK_VECTOR_EEW_32): New.
+	(MASK_VECTOR_EEW_64): New.
+	(MASK_VECTOR_EEW_FP_32): New.
+	(MASK_VECTOR_EEW_FP_64): New.
+	(MASK_ZVL32B): New.
+	(MASK_ZVL64B): New.
+	(MASK_ZVL128B): New.
+	(MASK_ZVL256B): New.
+	(MASK_ZVL512B): New.
+	(MASK_ZVL1024B): New.
+	(MASK_ZVL2048B): New.
+	(MASK_ZVL4096B): New.
+	(MASK_ZVL8192B): New.
+	(MASK_ZVL16384B): New.
+	(MASK_ZVL32768B): New.
+	(MASK_ZVL65536B): New.
+	(TARGET_ZVL32B): New.
+	(TARGET_ZVL64B): New.
+	(TARGET_ZVL128B): New.
+	(TARGET_ZVL256B): New.
+	(TARGET_ZVL512B): New.
+	(TARGET_ZVL1024B): New.
+	(TARGET_ZVL2048B): New.
+	(TARGET_ZVL4096B): New.
+	(TARGET_ZVL8192B): New.
+	(TARGET_ZVL16384B): New.
+	(TARGET_ZVL32768B): New.
+	(TARGET_ZVL65536B): New.
+	* config/riscv/riscv.opt (Mask(VECTOR)): New.
+	(riscv_vector_eew_flags): New.
+	(riscv_zvl_flags): New.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parse_multiletter_ext): Allow ext. name has
+	digit.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103899
+	* expr.c (expand_expr_real_1): Add a workaround for bogus uninit
+	warning by moving context variable to the only spot where it is used
+	and moving gcc_assert into if body.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* ifcvt.c (bb_valid_for_noce_process_p): Punt on bbs ending with
+	asm goto.
+
 2022-01-05  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/103622

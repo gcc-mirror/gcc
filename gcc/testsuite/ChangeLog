@@ -1,3 +1,48 @@
+2022-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* gcc.dg/analyzer/aliasing-3.c: New test.
+
+2022-01-06  Steve Kargl  <kargl@gcc.gnu.org>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103287
+	* gfortran.dg/c-interop/pr103287-1.f90: new.
+	* gfortran.dg/c-interop/pr103287-2.f90: new.
+
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103925
+	* gcc.target/i386/harden-sls-6.c: New test.
+
+2022-01-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr102811-2.c (dg-final):
+	Update scan-assembler-times directives.
+	* gcc.target/i386/sse2-float16-2.c (dg-final):
+	Update scan-assembler directives.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/predef-14.c: New.
+	* gcc.target/riscv/predef-15.c: Ditto.
+	* gcc.target/riscv/predef-16.c: Ditto.
+
+2022-01-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/69681
+	* g++.dg/cpp0x/constexpr-compare2.C: New test.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* gcc.target/i386/pr103908.c: New test.
+
+2022-01-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* gcc.dg/sso-6.c: Update dg-warning.
+
 2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861

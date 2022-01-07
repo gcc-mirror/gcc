@@ -1,3 +1,296 @@
+2022-01-06  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb (Resolve_Range): Warn on null range, unless we are
+	inside a generic unit or an instance thereof.
+	* sem_ch3.adb (Analyze_Subtype_Indication): Minor: avoid double
+	negative.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Adjust_Name_Case): Remove unnecessary declare
+	block.
+
+2022-01-06  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-ngcoar.adb: Add pragma to ignore assertions in
+	instance.
+	* libgnat/a-ngrear.adb: Likewise.
+	* libgnat/s-gearop.adb: Prove implementation is free of runtime
+	errors.
+	* libgnat/s-gearop.ads: Add contracts to protect against runtime
+	errors in the generic part.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Remove_Warning_Messages): Use traversal procedure
+	instead of traversal function, since we discard status of each
+	step anyway.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): There is no reason for using
+	declaring, raising and catching an exception; a simple return
+	statement is enough.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Eval_Arithmetic_Op): Add Loc parameter to all
+	calls to Apply_Compile_Time_Constraint_Error related to division
+	by zero.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Remove_Warning_Messages): Remove unnecessary guard.
+	* exp_util.adb (Kill_Dead_Code): Likewise.
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Likewise.
+	* sem_ch3.adb (Build_Derived_Record_Type): Likewise.
+	* sem_ch4.adb (Traverse_Interfaces): Likewise.
+	* sem_eval.adb (Traverse_Interfaces): Likewise.
+	* sem_util.adb (Collect_Interfaces): Likewise.
+	(Has_Non_Null_Statements, Side_Effect_Free_Statements):
+	Likewise; turn into WHILE loops, for consistency.
+
+2022-01-06  Etienne Servais  <servais@adacore.com>
+
+	* sem_type.adb (Full_View_Covers): Fix typo.
+
+2022-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance): When going to
+	the outer level, do not jump over following instantiations in
+	the list.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* err_vars.ads (Warn_On_Instance): Remove; it was a relic from
+	the previous handling of warning in instances that was removed
+	decades ago.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Reorder words.
+	* erroutc.ads (Is_Warning_Msg): Add closing paren.
+	* sem_util.adb (Compile_Time_Constraint_Error): Fix casing.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_String_Literal): Simplify pointer
+	arithmetic.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (Resolve_String_Literal): Avoid unnecessary
+	conversions inside "<" and ">" bodies.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* checks.adb (Null_Exclusion_Static_Checks,
+	Selected_Range_Checks): Fix style.
+
+2022-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Package_Renaming): Do not check for Text_IO
+	special units when the name of the renaming is a generic instance,
+	which is the case for package instantiations in the GNAT model.
+
+2022-01-06  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Build_Discriminant_Reference): In the unexpected
+	case where we previously would fail an assertion, we instead
+	revert to the old behavior.
+
+2022-01-06  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Build_Actual_Subtype_Of_Component): Define a new
+	local function, Build_Discriminant_Reference, and call it in
+	each of the three cases where Make_Selected_Component was
+	previously being called to construct a discriminant reference (2
+	in Build_Actual_Array_Constraint and 1 in
+	Build_Actual_Record_Constraint). Instead of unconditionally
+	using the passed-in object name as the prefix for the new
+	selected component node, this new function checks to see if
+	perhaps a prefix of that name should be used instead.
+
+2022-01-06  Etienne Servais  <servais@adacore.com>
+
+	* atree.adb: Fix typo.
+	* einfo.ads: Likewise.
+	* exp_aggr.adb: Likewise.
+	* exp_ch6.adb: Likewise.
+	* exp_ch7.adb: Likewise.
+	* exp_ch9.adb: Likewise.
+	* exp_prag.adb: Likewise.
+	* exp_unst.adb: Likewise.
+	* exp_unst.ads: Likewise.
+	* exp_util.adb: Likewise.
+	* par-endh.adb: Likewise.
+	* par.adb: Likewise.
+	* restrict.adb: Likewise.
+	* sem.ads: Likewise.
+	* sem_ch4.adb: Likewise.
+	* sem_ch5.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_ch8.adb: Likewise.
+	* sem_ch12.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_dim.adb: Likewise.
+	* sem_elab.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* sem_res.adb: Likewise.
+	* sem_util.adb: Likewise.
+	* sem_util.ads: Likewise.
+	* sinfo.ads: Likewise.
+	* sprint.adb: Likewise.
+	* urealp.adb: Likewise.
+
+2022-01-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Replace current instance of
+	type with Init_Proc formal.
+	* sem_attr.adb (OK_Self_Reference): Handle recognition of
+	Current_Instance to detect certain expansion.
+	* sem_ch4.adb (Analyze_One_Call): Set actual's type when the
+	actual in question is a current instance and its corresponding
+	formal is an incomplete type.
+	* sem_util.adb (Is_Current_Instance): Add check for incomplete
+	views and add comment.
+
+2022-01-06  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-rident.ads (No_Tagged_Type_Registration): New
+	restriction identifier.
+	* restrict.ads (Implementation_Restriction): Add restriction.
+	* exp_ch7.adb (Process_Declarations): Suppress
+	tagged-type-related finalization actions if the restriction is
+	active.  Call RTE_Available last.
+	* exp_disp.adb (Make_DT): Likewise.
+	* exp_util.adb (Requires_Cleanup_Actions): Return False for a
+	tagged type declaration if No_Tagged_Type_Registration is
+	active.
+	* sem_attr.adb (Check_Stream_Attribute): Check restriction
+	No_Tagged_Type_Registration.
+	* libgnat/a-except.ads (Null_Occurrence): Minor: Initialize, to
+	avoid stopping at a warning in gdb.
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Document new restriction.
+	* gnat_rm.texi: Regenerate.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* par-ch4.adb (P_Simple_Expression): Reuse Null_String_Id.
+	* prep.adb (Parse_Def_File): Likewise; remove Empty_String.
+
+2022-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stand.ads (Any_Access): Delete.
+	(Universal_Access): New entity.
+	* einfo.ads: Remove obsolete reference to Any_Access.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* cstand.adb (Create_Standard): Do not create Any_Access and create
+	Universal_Access as a full type instead.
+	* errout.adb (Set_Msg_Insertion_Type_Reference): Do not deal with
+	Any_Access and deal with Universal_Access instead.
+	* sem_ch3.adb (Analyze_Object_Declaration): Replace Any_Access with
+	Universal_Access.
+	* sem_ch4.adb (Analyze_Null): Likewise.
+	(Find_Non_Universal_Interpretations): Likewise.
+	(Find_Equality_Types.Try_One_Interp): Likewise and avoid shadowing
+	by renaming a local variable of the same name.
+	* sem_res.adb (Make_Call_Into_Operato): Likewise.
+	(Resolve_Equality_Op): Likewise.
+	* sem_type.adb (Covers): Likewise.
+	(Specific_Type): Likewise.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* treepr.adb (Destroy): Prevent spurious check from CodePeer.
+
+2022-01-06  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-exponu.adb (Exponu): Add annotation.
+
+2022-01-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Add comments
+	regarding special handling of components which depend on
+	discriminants.
+	* exp_dist.adb (Build_From_Any_Function): Add Real_Rep actual
+	for calls to Has_Stream_Attribute_Definition.
+	(Build_To_Any_Function): Likewise.
+	(Build_TypeCode_Function): Likewise.
+	* freeze.adb (Freeze_Entity): Add missing comment for Test_E.
+	* libgnat/s-utf_32.adb: Remove disabled warning comments and
+	temporarily inserted pragma warnings.  Remove very old (2006 and
+	2012) comments about bootstrapping older versions.
+	* par.adb (P_Identifier): Add new parameter Force_Msg.
+	* par-ch2.adb (P_Identifier): Restructure and clean up function.
+	* par-ch3.adb (P_Defining_Identifier): Remove code duplication
+	for parsing identifiers.
+	* sem_attr.adb (Stream_Attribute_Available): Add missing
+	comments and add Real_Rep actual for calls to
+	Has_Stream_Attribute_Definition.
+	* sem_cat.adb (Has_Read_Write_Attribute): Add Real_Rep actual
+	for calls to Has_Stream_Attribute_Definition.
+	(Has_Stream_Attribute_Definition): Remove local Real_Rep and fix
+	recursive calls. Add default value for Real_Rep.
+	* sem_cat.ads (Has_Stream_Attribute_Definition): Add new out
+	parameter "Real_Rep".
+	* sem_type.adb (Add_Entry): Add condition to avoid passing
+	non-function calls to Function_Interp_Has_Abstract_Op.
+	(Function_Interp_Has_Abstract_Op): Add missing comments and
+	remove check for Is_Overloadable.
+	* sem_util.adb (Derivation_Too_Early_To_Inherit): Remove
+	duplicated code.
+
+2022-01-06  Javier Miranda  <miranda@adacore.com>
+
+	* contracts.adb (Restore_Original_Selected_Component): New
+	subprogram that traverses a preanalyzed expression searching for
+	dispatching calls to functions whose original node was a
+	selected component, and replacing them with their original node.
+	This functionality is required because the preanalyis of
+	dispatching calls using the Object.Operation notation transforms
+	such calls, and we need the original condition to properly
+	inherit and extend the condition expression on tagged type
+	derivations.  This functionality was previously provided by the
+	routine Install_Original_Selected_Component (as part of
+	inheriting conditions); now it is performed as part of the
+	preanalysis of the condition, thus avoiding repeatedly
+	installing and restoring such nodes.
+	(Install_Original_Selected_Component): Removed.
+	(Restore_Dispatching_Calls): Removed.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* treepr.adb (Visit_Node): Simplify repeated call to
+	Next_Entity.
+
+2022-01-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* treepr.ads (Treepr, Print_Tree_List, Print_Tree_Elist): Fix
+	style in comments.
+	* treepr.adb (Serial_Numbers): Hash table instance.
+	(Hash): Hashing routine.
+	(Print_Field): Fix style.
+	(Print_Init): Adapt to simple hash table.
+	(Print_Term): Likewise.
+	(Serial_Numbers): Likewise.
+	(Set_Serial_Number): Likewise.
+
+2022-01-06  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-expmod.adb: Mark in SPARK. Add ghost code for proof.
+	* libgnat/s-expmod.ads: Mark in SPARK. Add ghost specifications.
+
+2022-01-06  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-explllu.ads: Mark in SPARK.
+	* libgnat/s-expllu.ads: Mark in SPARK.
+	* libgnat/s-exponu.adb: Add loop invariants and needed
+	assertions.
+	* libgnat/s-exponu.ads: Add functional contract.
+	* libgnat/s-expuns.ads: Mark in SPARK.
+
 2022-01-05  Steve Baird  <baird@adacore.com>
 
 	* exp_ch5.adb (Finish_Binding_Object_Declaration): Fix a bug

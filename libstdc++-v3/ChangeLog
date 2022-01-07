@@ -1,3 +1,29 @@
+2022-01-06  Pavel I. Kryukov  <pavel.kryukov@phystech.edu>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103853
+	* include/bits/forward_list.tcc (forward_list::merge): Check for
+	self-merge.
+	* testsuite/23_containers/forward_list/operations/merge.cc: New test.
+
+2022-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex, match_results): Qualify
+	name in friend declaration, to work around Clang bug.
+
+2022-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/rope/pthread7-rope.cc: Add dg-timeout-factor.
+
+2022-01-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103911
+	* include/std/charconv (__from_chars_alpha_to_num): Return
+	char instead of unsigned char. Change invalid return value to
+	127 instead of using numeric trait.
+	(__from_chars_alnum): Fix comment. Do not use std::isdigit.
+	Change type of variable to char.
+
 2022-01-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/68303
