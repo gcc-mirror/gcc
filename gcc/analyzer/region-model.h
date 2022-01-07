@@ -286,6 +286,11 @@ public:
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
 
+  /* Dynamically-allocated svalue instances.
+     The number of these within the analysis can grow arbitrarily.
+     They are still owned by the manager.  */
+  const svalue *create_unique_svalue (tree type);
+
   /* region consolidation.  */
   const stack_region * get_stack_region () const { return &m_stack_region; }
   const heap_region *get_heap_region () const { return &m_heap_region; }
@@ -332,8 +337,8 @@ public:
 
   void log_stats (logger *logger, bool show_objs) const;
 
-  void enable_complexity_check (void) { m_check_complexity = true; }
-  void disable_complexity_check (void) { m_check_complexity = false; }
+  void begin_checking_feasibility (void) { m_checking_feasibility = true; }
+  void end_checking_feasibility (void) { m_checking_feasibility = false; }
 
   logger *get_logger () const { return m_logger; }
 
@@ -429,7 +434,12 @@ private:
 		   asm_output_svalue *> asm_output_values_map_t;
   asm_output_values_map_t m_asm_output_values_map;
 
-  bool m_check_complexity;
+  bool m_checking_feasibility;
+
+  /* "Dynamically-allocated" svalue instances.
+     The number of these within the analysis can grow arbitrarily.
+     They are still owned by the manager.  */
+  auto_delete_vec<svalue> m_managed_dynamic_svalues;
 
   /* Maximum complexity of svalues that weren't rejected.  */
   complexity m_max_complexity;

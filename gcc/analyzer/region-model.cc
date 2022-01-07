@@ -4555,6 +4555,39 @@ test_binop_svalue_folding ()
     = mgr.get_or_create_binop (integer_type_node, PLUS_EXPR,
 			       x_init_plus_one, cst_sval[1]);
   ASSERT_EQ (x_init_plus_one_plus_one, x_init_plus_two);
+
+  /* Verify various binops on booleans.  */
+  {
+    const svalue *sval_true = mgr.get_or_create_int_cst (boolean_type_node, 1);
+    const svalue *sval_false = mgr.get_or_create_int_cst (boolean_type_node, 0);
+    const svalue *sval_unknown
+      = mgr.get_or_create_unknown_svalue (boolean_type_node);
+    const placeholder_svalue sval_placeholder (boolean_type_node, "v");
+    for (auto op : {BIT_IOR_EXPR, TRUTH_OR_EXPR})
+      {
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, sval_unknown),
+		   sval_true);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, sval_unknown),
+		   sval_unknown);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, &sval_placeholder),
+		   &sval_placeholder);
+      }
+    for (auto op : {BIT_AND_EXPR, TRUTH_AND_EXPR})
+      {
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, sval_unknown),
+		   sval_false);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, sval_unknown),
+		   sval_unknown);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, &sval_placeholder),
+		   &sval_placeholder);
+      }
+  }
 }
 
 /* Verify that sub_svalues are folded as expected.  */
