@@ -559,6 +559,8 @@ public:
 
   bool symbolic_p () const;
 
+  const region *get_base_region () const { return m_base_region; }
+
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 

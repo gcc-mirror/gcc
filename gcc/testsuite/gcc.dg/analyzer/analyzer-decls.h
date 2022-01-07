@@ -18,6 +18,9 @@ extern void __analyzer_dump (void);
 /* Emit a warning describing the size of the base region of (*ptr).  */
 extern void __analyzer_dump_capacity (const void *ptr);
 
+/* Dump information about what decls have escaped at this point on the path.  */
+extern void __analyzer_dump_escaped (void);
+
 /* Dump information after analysis on all of the exploded nodes at this
    program point.
 

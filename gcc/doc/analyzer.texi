@@ -487,6 +487,14 @@ will emit a warning describing the capacity of the base region of
 the region pointed to by the 1st argument.
 
 @smallexample
+extern void __analyzer_dump_escaped (void);
+@end smallexample
+
+will emit a warning giving the number of decls that have escaped on this
+analysis path, followed by a comma-separated list of their names,
+in alphabetical order.
+
+@smallexample
 __analyzer_dump_path ();
 @end smallexample
 
