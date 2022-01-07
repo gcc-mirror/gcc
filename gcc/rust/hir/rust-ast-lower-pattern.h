@@ -48,27 +48,15 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::IdentifierPattern &pattern) override
-  {
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-
-    std::unique_ptr<Pattern> to_bind;
-    translated
-      = new HIR::IdentifierPattern (mapping, pattern.get_ident (),
-				    pattern.get_locus (), pattern.get_is_ref (),
-				    pattern.get_is_mut () ? Mutability::Mut
-							  : Mutability::Imm,
-				    std::move (to_bind));
-  }
+  void visit (AST::IdentifierPattern &pattern) override;
 
   void visit (AST::PathInExpression &pattern) override;
 
   void visit (AST::StructPattern &pattern) override;
 
   void visit (AST::TupleStructPattern &pattern) override;
+
+  void visit (AST::WildcardPattern &pattern) override;
 
 private:
   ASTLoweringPattern () : translated (nullptr) {}

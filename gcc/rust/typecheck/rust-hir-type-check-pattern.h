@@ -30,14 +30,14 @@ class TypeCheckPattern : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TyTy::BaseType *Resolve (HIR::Pattern *pattern)
+  static TyTy::BaseType *Resolve (HIR::Pattern *pattern, TyTy::BaseType *parent)
   {
-    TypeCheckPattern resolver;
+    TypeCheckPattern resolver (parent);
     pattern->accept_vis (resolver);
 
-    // FIXME need to check how we do mappings here
     if (resolver.infered == nullptr)
-      return new TyTy::ErrorType (1);
+      return new TyTy::ErrorType (
+	pattern->get_pattern_mappings ().get_hirid ());
 
     return resolver.infered;
   }
@@ -48,10 +48,15 @@ public:
 
   void visit (HIR::TupleStructPattern &pattern) override;
 
+  void visit (HIR::WildcardPattern &pattern) override;
+
 private:
-  TypeCheckPattern () : TypeCheckBase (), infered (nullptr) {}
+  TypeCheckPattern (TyTy::BaseType *parent)
+    : TypeCheckBase (), infered (nullptr), parent (parent)
+  {}
 
   TyTy::BaseType *infered;
+  TyTy::BaseType *parent;
 };
 
 } // namespace Resolver

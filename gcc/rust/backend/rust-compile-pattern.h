@@ -40,6 +40,8 @@ public:
 
   void visit (HIR::TupleStructPattern &pattern) override;
 
+  void visit (HIR::WildcardPattern &pattern) override;
+
 private:
   CompilePatternCaseLabelExpr (Context *ctx, tree associated_case_label)
     : HIRCompileBase (ctx), case_label_expr (error_mark_node),
