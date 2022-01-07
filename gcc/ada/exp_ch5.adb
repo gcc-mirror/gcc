@@ -1848,27 +1848,14 @@ package body Exp_Ch5 is
             CI : constant List_Id := Component_Items (CL);
             VP : constant Node_Id := Variant_Part (CL);
 
-            Constrained_Typ : Entity_Id;
-            Alts            : List_Id;
-            DC              : Node_Id;
-            DCH             : List_Id;
-            Expr            : Node_Id;
-            Result          : List_Id;
-            V               : Node_Id;
+            Alts   : List_Id;
+            DC     : Node_Id;
+            DCH    : List_Id;
+            Expr   : Node_Id;
+            Result : List_Id;
+            V      : Node_Id;
 
          begin
-            --  Try to find a constrained type to extract discriminant values
-            --  from, so that the case statement built below gets an
-            --  opportunity to be folded by Expand_N_Case_Statement.
-
-            if U_U or else Is_Constrained (Etype (Rhs)) then
-               Constrained_Typ := Etype (Rhs);
-            elsif Is_Constrained (Etype (Expression (N))) then
-               Constrained_Typ := Etype (Expression (N));
-            else
-               Constrained_Typ := Empty;
-            end if;
-
             Result := Make_Field_Assigns (CI);
 
             if Present (VP) then
@@ -1890,13 +1877,38 @@ package body Exp_Ch5 is
                   Next_Non_Pragma (V);
                end loop;
 
-               if Present (Constrained_Typ) then
+               --  Try to find a constrained type or a derived type to extract
+               --  discriminant values from, so that the case statement built
+               --  below can be folded by Expand_N_Case_Statement.
+
+               if U_U or else Is_Constrained (Etype (Rhs)) then
                   Expr :=
                     New_Copy (Get_Discriminant_Value (
                       Entity (Name (VP)),
-                      Constrained_Typ,
-                      Discriminant_Constraint (Constrained_Typ)));
+                      Etype (Rhs),
+                      Discriminant_Constraint (Etype (Rhs))));
+
+               elsif Is_Constrained (Etype (Expression (N))) then
+                  Expr :=
+                    New_Copy (Get_Discriminant_Value (
+                      Entity (Name (VP)),
+                      Etype (Expression (N)),
+                      Discriminant_Constraint (Etype (Expression (N)))));
+
+               elsif Is_Derived_Type (Etype (Rhs))
+                 and then Present (Stored_Constraint (Etype (Rhs)))
+               then
+                  Expr :=
+                    New_Copy (Get_Discriminant_Value (
+                      Corresponding_Record_Component (Entity (Name (VP))),
+                      Etype (Etype (Rhs)),
+                      Stored_Constraint (Etype (Rhs))));
+
                else
+                  Expr := Empty;
+               end if;
+
+               if No (Expr) or else not Compile_Time_Known_Value (Expr) then
                   Expr :=
                     Make_Selected_Component (Loc,
                       Prefix        => Duplicate_Subexpr (Rhs),

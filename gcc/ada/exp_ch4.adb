@@ -11745,31 +11745,24 @@ package body Exp_Ch4 is
                   declare
                      Stored : constant Elist_Id :=
                                 Stored_Constraint (Operand_Type);
-
-                     Elmt : Elmt_Id;
+                     --  Stored constraints of the operand. If present, they
+                     --  correspond to the discriminants of the parent type.
 
                      Disc_O : Entity_Id;
                      --  Discriminant of the operand type. Its value in the
                      --  object is captured in a selected component.
 
-                     Disc_S : Entity_Id;
-                     --  Stored discriminant of the operand. If present, it
-                     --  corresponds to a constrained discriminant of the
-                     --  parent type.
-
                      Disc_T : Entity_Id;
                      --  Discriminant of the target type
 
-                  begin
-                     Disc_T := First_Discriminant (Target_Type);
-                     Disc_O := First_Discriminant (Operand_Type);
-                     Disc_S := First_Stored_Discriminant (Operand_Type);
+                     Elmt : Elmt_Id;
 
-                     if Present (Stored) then
-                        Elmt := First_Elmt (Stored);
-                     else
-                        Elmt := No_Elmt; -- init to avoid warning
-                     end if;
+                  begin
+                     Disc_O := First_Discriminant (Operand_Type);
+                     Disc_T := First_Discriminant (Target_Type);
+                     Elmt   := (if Present (Stored)
+                                 then First_Elmt (Stored)
+                                 else No_Elmt);
 
                      Cons := New_List;
                      while Present (Disc_T) loop
@@ -11784,8 +11777,11 @@ package body Exp_Ch4 is
                                  Make_Identifier (Loc, Chars (Disc_O))));
                            Next_Discriminant (Disc_O);
 
-                        elsif Present (Disc_S) then
+                        elsif Present (Elmt) then
                            Append_To (Cons, New_Copy_Tree (Node (Elmt)));
+                        end if;
+
+                        if Present (Elmt) then
                            Next_Elmt (Elmt);
                         end if;
 
