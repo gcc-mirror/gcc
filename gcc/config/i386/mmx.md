@@ -285,7 +285,12 @@
       gcc_unreachable ();
     }
 }
-  [(set (attr "type")
+  [(set (attr "isa")
+     (cond [(eq_attr "alternative" "6,7")
+	      (const_string "sse2")
+	   ]
+	   (const_string "*")))
+   (set (attr "type")
      (cond [(eq_attr "alternative" "2")
 	      (const_string "sselog1")
 	    (eq_attr "alternative" "3,4,5,6,7")
@@ -306,12 +311,15 @@
 		       (const_string "V4SF")
 		     (match_test "TARGET_AVX")
 		       (const_string "TI")
-		     (match_test "optimize_function_for_size_p (cfun)")
+		     (ior (not (match_test "TARGET_SSE2"))
+			  (match_test "optimize_function_for_size_p (cfun)"))
 		       (const_string "V4SF")
 		    ]
 		    (const_string "TI"))
+
 	    (and (eq_attr "alternative" "4,5")
-		 (match_test "<MODE>mode == V2HFmode"))
+		 (ior (match_test "<MODE>mode == V2HFmode")
+		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "SF")
 	   ]
 	   (const_string "SI")))
@@ -401,7 +409,7 @@
     }
 }
   [(set (attr "isa")
-	(cond [(eq_attr "alternative" "4,5,6,8,9")
+	(cond [(eq_attr "alternative" "6,8,9")
 		  (const_string "sse2")
 	       (eq_attr "alternative" "7")
 		  (const_string "sse4")
