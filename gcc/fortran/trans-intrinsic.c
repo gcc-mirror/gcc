@@ -154,7 +154,9 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
     i = m->float_built_in;
   else if (precision == TYPE_PRECISION (double_type_node))
     i = m->double_built_in;
-  else if (precision == TYPE_PRECISION (long_double_type_node))
+  else if (precision == TYPE_PRECISION (long_double_type_node)
+	   && (!gfc_real16_is_float128
+	       || long_double_type_node != gfc_float128_type_node))
     i = m->long_double_built_in;
   else if (precision == TYPE_PRECISION (gfc_float128_type_node))
     {

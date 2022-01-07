@@ -413,6 +413,9 @@ fblas-matmul-limit=
 Fortran RejectNegative Joined UInteger Var(flag_blas_matmul_limit) Init(30)
 -fblas-matmul-limit=<n>	Size of the smallest matrix for which matmul will use BLAS.
 
+fbuilding-libgfortran
+Fortran Undocumented Var(flag_building_libgfortran)
+
 fcheck-array-temporaries
 Fortran
 Produce a warning at runtime if a array temporary has been created for a procedure argument.

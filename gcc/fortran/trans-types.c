@@ -516,7 +516,16 @@ gfc_init_kinds (void)
     {
       for (int i = 0; i < r_index; ++i)
 	if (gfc_real_kinds[i].kind == 16)
-	  gfc_real_kinds[i].abi_kind = 17;
+	  {
+	    gfc_real_kinds[i].abi_kind = 17;
+	    if (flag_building_libgfortran
+		&& (TARGET_GLIBC_MAJOR < 2
+		    || (TARGET_GLIBC_MAJOR == 2 && TARGET_GLIBC_MINOR < 32)))
+	      {
+		gfc_real16_is_float128 = true;
+		gfc_real_kinds[i].c_float128 = 1;
+	      }
+	  }
     }
 
   /* Choose the default integer kind.  We choose 4 unless the user directs us
@@ -859,7 +868,7 @@ gfc_build_real_type (gfc_real_info *info)
     info->c_float = 1;
   if (mode_precision == DOUBLE_TYPE_SIZE)
     info->c_double = 1;
-  if (mode_precision == LONG_DOUBLE_TYPE_SIZE)
+  if (mode_precision == LONG_DOUBLE_TYPE_SIZE && !info->c_float128)
     info->c_long_double = 1;
   if (mode_precision != LONG_DOUBLE_TYPE_SIZE && mode_precision == 128)
     {

@@ -1081,8 +1081,8 @@ endif
 $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 
 # Add the -fallow-leading-underscore option when needed
-$(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore
-selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
+$(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore -fbuilding-libgfortran
+selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore -fbuilding-libgfortran
 
 # Build *_r17.F90 and *_c17.F90 with additional -mabi=ieeelongdouble on powerpc64le-linux.
 
@@ -1099,7 +1099,7 @@ endif
 
 if IEEE_SUPPORT
 # Add flags for IEEE modules
-$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore -fsignaling-nans
+$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore -fsignaling-nans -fbuilding-libgfortran
 
 # Add flags for IEEE helper code
 $(patsubst %.c,%.lo,$(notdir $(gfor_ieee_helper_src))): AM_CFLAGS += -fsignaling-nans
