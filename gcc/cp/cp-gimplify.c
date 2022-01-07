@@ -469,6 +469,19 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       ret = GS_OK;
       break;
 
+    case VEC_INIT_EXPR:
+      {
+	*expr_p = expand_vec_init_expr (NULL_TREE, *expr_p,
+					tf_warning_or_error);
+
+	hash_set<tree> pset;
+	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
+	cp_genericize_tree (expr_p, false);
+	copy_if_shared (expr_p);
+	ret = GS_OK;
+      }
+      break;
+
     case THROW_EXPR:
       /* FIXME communicate throw type to back end, probably by moving
 	 THROW_EXPR into ../tree.def.  */
