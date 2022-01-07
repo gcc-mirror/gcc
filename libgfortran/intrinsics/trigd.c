@@ -313,6 +313,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define HAVE_INFINITY_KIND
 #endif
 
+#ifdef POWER_IEEE128
+#define COPYSIGN __copysignieee128
+#define FMOD __fmodieee128
+#define FABS __fabsieee128
+#define FMA __fmaieee128
+#define SIN __sinieee128
+#define COS __cosieee128
+#define TAN __tanieee128
+#endif
+
 #include "trigd_lib.inc"
 
 #undef KIND

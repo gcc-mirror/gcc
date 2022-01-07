@@ -1956,6 +1956,8 @@ extern __float128 __atanhieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __atanieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __copysignieee128 (__float128, __float128)
+  __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __coshieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __cosieee128 (__float128)
@@ -1967,6 +1969,10 @@ extern __float128 __erfieee128 (__float128)
 extern __float128 __expieee128 (__float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __fabsieee128 (__float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __fmaieee128 (__float128, __float128, __float128)
+  __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __fmodieee128 (__float128, __float128)
   __attribute__ ((__nothrow__, __leaf__));
 extern __float128 __jnieee128 (int, __float128)
   __attribute__ ((__nothrow__, __leaf__));
