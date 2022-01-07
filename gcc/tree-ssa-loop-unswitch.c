@@ -477,11 +477,10 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 		{
 		  unswitch_predicate *predicate
 		    = new unswitch_predicate (expr, idx, edge_index);
-		  ranger->gori ().outgoing_edge_range_p (predicate->true_range, e,
-							 idx, *get_global_range_query ());
-		  /* Huge switches are not supported by Ranger.  */
-		  if (predicate->true_range.undefined_p ())
+		  if (!ranger->gori ().outgoing_edge_range_p (predicate->true_range, e,
+							      idx, *get_global_range_query ()))
 		    {
+		      /* Huge switches are not supported by Ranger.  */
 		      delete predicate;
 		      return;
 		    }

@@ -39,7 +39,7 @@ foo(double *a, double *b, double *c, double *d, double *r, int size, int order)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Unswitching loop on condition: order_.* >= 5 & order_.* <= 6 \\| order_.* == 9" 1 "unswitch" } } */
+/* { dg-final { scan-tree-dump-times "Unswitching loop on condition: order.* \\+ 4294967291.*order.* == 9" 1 "unswitch" } } */
 /* { dg-final { scan-tree-dump-times "Unswitching loop on condition: order.* == 1" 1 "unswitch" } } */
 /* { dg-final { scan-tree-dump-times "Unswitching loop on condition: order.* == 2" 1 "unswitch" } } */
 /* { dg-final { scan-tree-dump-times "Unswitching loop on condition: order.* == 3" 1 "unswitch" } } */
