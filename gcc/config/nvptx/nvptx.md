@@ -592,6 +592,13 @@
   ""
   "%.\\tnot.b%T0\\t%0, %1;")
 
+(define_insn "*cnot<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(eq:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+		  (const_int 0)))]
+  ""
+  "%.\\tcnot.b%T0\\t%0, %1;")
+
 (define_insn "bitrev<mode>2"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(unspec:SDIM [(match_operand:SDIM 1 "nvptx_register_operand" "R")]
