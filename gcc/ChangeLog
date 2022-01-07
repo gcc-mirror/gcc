@@ -1,3 +1,176 @@
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103925
+	* config/i386/i386.c (ix86_output_indirect_function_return):
+	Generate INT3 after indirect jmp for -mharden-sls=indirect-jmp.
+
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386-opts.h (harden_sls): Replace
+	harden_sls_indirect_branch with harden_sls_indirect_jmp.
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect):
+	Likewise.
+	(ix86_output_indirect_jmp): Likewise.
+	(ix86_output_call_insn): Likewise.
+	* config/i386/i386.opt: Replace indirect-branch with
+	indirect-jmp.  Replace harden_sls_indirect_branch with
+	harden_sls_indirect_jmp.
+	* doc/invoke.texi (-harden-sls=): Replace indirect-branch with
+	indirect-jmp.
+
+2022-01-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_output_ssemov) <MODE_DI>:
+	Add %q modifier for operands in general registers.
+	<MODE_SI>: Add %q modifier for operands in general registers.
+	* config/i386/i386.md (*movhi_internal): Change type attribute of
+	xmm-gpr interunit alternatives 9,10 to ssemov and mode attribute
+	to SImode for non-avx512fp16 targets.
+	(*movhf_internal): Ditto for xmm-gpr interunit alternatives 6,8.
+	* config/i386/mmx.md (*movv2qi_internal):
+	Ditto for xmm-gpr interunit alternatives 8,9.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info): Add
+	vector extensions.
+	(riscv_ext_version_table): Add version info for vector extensions.
+	(riscv_ext_flag_table): Add option mask for vector extensions.
+	* config/riscv/riscv-opts.h (MASK_VECTOR_EEW_32): New.
+	(MASK_VECTOR_EEW_64): New.
+	(MASK_VECTOR_EEW_FP_32): New.
+	(MASK_VECTOR_EEW_FP_64): New.
+	(MASK_ZVL32B): New.
+	(MASK_ZVL64B): New.
+	(MASK_ZVL128B): New.
+	(MASK_ZVL256B): New.
+	(MASK_ZVL512B): New.
+	(MASK_ZVL1024B): New.
+	(MASK_ZVL2048B): New.
+	(MASK_ZVL4096B): New.
+	(MASK_ZVL8192B): New.
+	(MASK_ZVL16384B): New.
+	(MASK_ZVL32768B): New.
+	(MASK_ZVL65536B): New.
+	(TARGET_ZVL32B): New.
+	(TARGET_ZVL64B): New.
+	(TARGET_ZVL128B): New.
+	(TARGET_ZVL256B): New.
+	(TARGET_ZVL512B): New.
+	(TARGET_ZVL1024B): New.
+	(TARGET_ZVL2048B): New.
+	(TARGET_ZVL4096B): New.
+	(TARGET_ZVL8192B): New.
+	(TARGET_ZVL16384B): New.
+	(TARGET_ZVL32768B): New.
+	(TARGET_ZVL65536B): New.
+	* config/riscv/riscv.opt (Mask(VECTOR)): New.
+	(riscv_vector_eew_flags): New.
+	(riscv_zvl_flags): New.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parse_multiletter_ext): Allow ext. name has
+	digit.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103899
+	* expr.c (expand_expr_real_1): Add a workaround for bogus uninit
+	warning by moving context variable to the only spot where it is used
+	and moving gcc_assert into if body.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* ifcvt.c (bb_valid_for_noce_process_p): Punt on bbs ending with
+	asm goto.
+
+2022-01-05  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/103622
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Skip over instances with undefined function types.
+
+2022-01-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/103910
+	* config/i386/i386.h (x86_mfence): Mark with GTY.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (VI_16_32): New mode iterator.
+	(VI1_16_32): Ditto.
+	(mmxvecsize): Handle V2QI mode.
+	(<smaxmin:code><mode>3): Rename from <smaxmin:code>v4qi3.
+	Use VI1_16_32 mode iterator.
+	(<umaxmin:code><mode>3): Rename from <umaxmin:code>v4qi3.
+	Use VI1_16_32 mode iterator.
+	(abs<mode>2): Use VI_16_32 mode iterator.
+	(uavgv2qi3_ceil): New insn pattern.
+
+2022-01-05  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_warn_memmodel): Use
+	%qs to avoid -Wformat-diag.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103915
+	* config/i386/mmx.md (one_cmplv2qi2): Change
+	alternatives 1,2 type from sselog to sselog1.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103905
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb): Fix number of
+	narrow mode remapped elements for !one_operand_p case.
+
+2022-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103816
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Also
+	check DR_GROUP_GAP compute for overflow and representability.
+
+2022-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103691
+	* gimple-fold.c (fold_stmt_1): Don't call maybe_fold_reference
+	for DEBUG stmts with ADDR_EXPR gimple_debug_bind_get_value,
+	it can do unwanted rhs folding like &a[0] into &2.0 etc.
+
+2022-01-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR ipa/102059
+	* config/rs6000/rs6000.c (TARGET_NEED_IPA_FN_TARGET_INFO): New macro.
+	(TARGET_UPDATE_IPA_FN_TARGET_INFO): Likewise.
+	(rs6000_need_ipa_fn_target_info): New function.
+	(rs6000_update_ipa_fn_target_info): Likewise.
+	(rs6000_can_inline_p): Adjust for ipa function summary target info.
+	* config/rs6000/rs6000.h (RS6000_FN_TARGET_INFO_HTM): New macro.
+	* ipa-fnsummary.c (ipa_dump_fn_summary): Adjust for ipa function
+	summary target info.
+	(analyze_function_body): Adjust for ipa function summary target info
+	and call hook rs6000_need_ipa_fn_target_info and
+	rs6000_update_ipa_fn_target_info.
+	(ipa_merge_fn_summary_after_inlining): Adjust for ipa function summary
+	target info.
+	(inline_read_section): Likewise.
+	(ipa_fn_summary_write): Likewise.
+	* ipa-fnsummary.h (ipa_fn_summary::target_info): New member.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_UPDATE_IPA_FN_TARGET_INFO): Document new hook.
+	(TARGET_NEED_IPA_FN_TARGET_INFO): Likewise.
+	* target.def (update_ipa_fn_target_info): New hook.
+	(need_ipa_fn_target_info): Likewise.
+	* targhooks.c (default_need_ipa_fn_target_info): New function.
+	(default_update_ipa_fn_target_info): Likewise.
+	* targhooks.h (default_update_ipa_fn_target_info): New declare.
+	(default_need_ipa_fn_target_info): Likewise.
+
 2022-01-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/99612

@@ -118,7 +118,6 @@ package body GNAT.MBBS_Float_Random is
 
    function Euclid (P, Q : Int) return Int is
       X, Y, GCD : Int;
-      pragma Unreferenced (Y, GCD);
    begin
       Euclid (P, Q, X, Y, GCD);
       return X;

@@ -448,6 +448,23 @@ expand_start_catch_block (tree decl)
   return type;
 }
 
+/* True if we are in a catch block within a catch block.  Assumes that we are
+   in function scope.  */
+
+static bool
+in_nested_catch (void)
+{
+  int catches = 0;
+
+  /* Scan through the template parameter scopes.  */
+  for (cp_binding_level *b = current_binding_level;
+       b->kind != sk_function_parms;
+       b = b->level_chain)
+    if (b->kind == sk_catch
+	&& ++catches == 2)
+      return true;
+  return false;
+}
 
 /* Call this to end a catch block.  Its responsible for emitting the
    code to handle jumping back to the correct place, and for emitting
@@ -463,7 +480,8 @@ expand_end_catch_block (void)
      a handler of the function-try-block of a constructor or destructor.  */
   if (in_function_try_handler
       && (DECL_CONSTRUCTOR_P (current_function_decl)
-	  || DECL_DESTRUCTOR_P (current_function_decl)))
+	  || DECL_DESTRUCTOR_P (current_function_decl))
+      && !in_nested_catch ())
     {
       tree rethrow = build_throw (input_location, NULL_TREE);
       /* Disable all warnings for the generated rethrow statement.  */
@@ -1294,26 +1312,35 @@ maybe_set_retval_sentinel ()
 		 current_retval_sentinel, boolean_true_node);
 }
 
-/* COMPOUND_STMT is the STATEMENT_LIST for the current function body.  If
-   current_retval_sentinel was set in this function, wrap the body in a
-   CLEANUP_STMT to destroy the return value on throw.  */
+/* COMPOUND_STMT is the STATEMENT_LIST for some block.  If COMPOUND_STMT is the
+   current function body or a try block, and current_retval_sentinel was set in
+   this function, wrap the block in a CLEANUP_STMT to destroy the return value
+   on throw.  */
 
 void
 maybe_splice_retval_cleanup (tree compound_stmt)
 {
-  /* If need_retval_cleanup set current_retval_sentinel, wrap the function body
-     in a CLEANUP_STMT to handle destroying the return value.  */
-  if (!DECL_CONSTRUCTOR_P (current_function_decl)
+  /* If we need a cleanup for the return value, add it in at the same level as
+     pushdecl_outermost_localscope.  And also in try blocks.  */
+  bool function_body
+    = (current_binding_level->level_chain
+       && current_binding_level->level_chain->kind == sk_function_parms);
+
+  if ((function_body || current_binding_level->kind == sk_try)
+      && !DECL_CONSTRUCTOR_P (current_function_decl)
       && !DECL_DESTRUCTOR_P (current_function_decl)
       && current_retval_sentinel)
     {
       location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
-
-      /* Add a DECL_EXPR for current_retval_sentinel.  */
       tree_stmt_iterator iter = tsi_start (compound_stmt);
       tree retval = DECL_RESULT (current_function_decl);
-      tree decl_expr = build_stmt (loc, DECL_EXPR, current_retval_sentinel);
-      tsi_link_before (&iter, decl_expr, TSI_SAME_STMT);
+
+      if (function_body)
+	{
+	  /* Add a DECL_EXPR for current_retval_sentinel.  */
+	  tree decl_expr = build_stmt (loc, DECL_EXPR, current_retval_sentinel);
+	  tsi_link_before (&iter, decl_expr, TSI_SAME_STMT);
+	}
 
       /* Skip past other decls, they can't contain a return.  */
       while (TREE_CODE (tsi_stmt (iter)) == DECL_EXPR)

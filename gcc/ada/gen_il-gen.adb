@@ -2472,7 +2472,8 @@ package body Gen_IL.Gen is
          for T in First_Concrete (Root) .. Last_Concrete (Root) loop
             if T not in N_Unused_At_Start | N_Unused_At_End then
                Put_Make_Spec (S, Root, T);
-               Put (S, ";" & LF & "pragma " & Inline & " (Make_" &
+               Put (S, ";" & LF);
+               Put (S, "pragma " & Inline & " (Make_" &
                     Image_Sans_N (T) & ");" & LF & LF);
             end if;
          end loop;

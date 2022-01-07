@@ -1144,7 +1144,7 @@ EnumValue
 Enum(harden_sls) String(return) Value(harden_sls_return)
 
 EnumValue
-Enum(harden_sls) String(indirect-branch) Value(harden_sls_indirect_branch)
+Enum(harden_sls) String(indirect-jmp) Value(harden_sls_indirect_jmp)
 
 EnumValue
 Enum(harden_sls) String(all) Value(harden_sls_all)

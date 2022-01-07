@@ -23,17 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Osint;
-
-pragma Elaborate_All (Osint);
---  This pragma is needed because of the call to Set_Program in the
---  elaboration of the package. We cannot rely on the static model
---  of elaboration since the compiler is routinely compiled with
---  checks off (-gnatp), and with older versions of the compiler
---  (up to and including most 5.04 wavefronts), -gnatp suppresses
---  the static elaboration check mechanisms. It could be removed
---  one day, but there really is no need to do so.
-
 package body Osint.M is
 
    -----------------------

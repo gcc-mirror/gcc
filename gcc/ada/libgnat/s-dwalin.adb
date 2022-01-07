@@ -35,7 +35,6 @@ with Ada.Unchecked_Deallocation;
 
 with Interfaces; use Interfaces;
 
-with System;                   use System;
 with System.Address_Image;
 with System.Bounded_Strings;   use System.Bounded_Strings;
 with System.IO;                use System.IO;

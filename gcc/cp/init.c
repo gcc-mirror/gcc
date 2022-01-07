@@ -545,6 +545,16 @@ perform_target_ctor (tree init)
 				|LOOKUP_NONVIRTUAL
 				|LOOKUP_DESTRUCTOR,
 				0, tf_warning_or_error);
+      if (DECL_HAS_IN_CHARGE_PARM_P (current_function_decl))
+	{
+	  tree base = build_delete (input_location,
+				    type, decl, sfk_base_destructor,
+				    LOOKUP_NORMAL
+				    |LOOKUP_NONVIRTUAL
+				    |LOOKUP_DESTRUCTOR,
+				    0, tf_warning_or_error);
+	  expr = build_if_in_charge (expr, base);
+	}
       if (expr != error_mark_node
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	finish_eh_cleanup (expr);
@@ -3047,7 +3057,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      address of the first array element.  This node is a VAR_DECL, and
      is therefore reusable.  */
   tree data_addr;
-  tree init_preeval_expr = NULL_TREE;
   tree orig_type = type;
 
   if (nelts)
@@ -3561,7 +3570,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      placement delete.  */
   if (is_initialized)
     {
-      bool stable;
       bool explicit_value_init_p = false;
 
       if (*init != NULL && (*init)->is_empty ())
@@ -3587,7 +3595,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 						   init, elt_type,
 						   LOOKUP_NORMAL,
 						   complain);
-	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
       else if (array_p)
 	{
@@ -3633,11 +3640,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 			      explicit_value_init_p,
 			      /*from_array=*/0,
                               complain);
-
-	  /* An array initialization is stable because the initialization
-	     of each element is a full-expression, so the temporaries don't
-	     leak out.  */
-	  stable = true;
 	}
       else
 	{
@@ -3694,8 +3696,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      = replace_placeholders (TREE_OPERAND (init_expr, 1),
 				      TREE_OPERAND (init_expr, 0),
 				      &had_placeholder);
-	  stable = (!had_placeholder
-		    && stabilize_init (init_expr, &init_preeval_expr));
 	}
 
       if (init_expr == error_mark_node)
@@ -3726,20 +3726,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		      alloc_fn,
 		      complain));
 
-	  if (!cleanup)
-	    /* We're done.  */;
-	  else if (stable)
-	    /* This is much simpler if we were able to preevaluate all of
-	       the arguments to the constructor call.  */
-	    {
-	      /* CLEANUP is compiler-generated, so no diagnostics.  */
-	      suppress_warning (cleanup);
-	      init_expr = build2 (TRY_CATCH_EXPR, void_type_node,
-				  init_expr, cleanup);
-	      /* Likewise, this try-catch is compiler-generated.  */
-	      suppress_warning (init_expr);
-	    }
-	  else
+	  if (cleanup && !processing_template_decl)
 	    /* Ack!  First we allocate the memory.  Then we set our sentry
 	       variable to true, and expand a cleanup that deletes the
 	       memory if sentry is true.  Then we run the constructor, and
@@ -3747,9 +3734,13 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
 	       We need to do this because we allocate the space first, so
 	       if there are any temporaries with cleanups in the
-	       constructor args and we weren't able to preevaluate them, we
-	       need this EH region to extend until end of full-expression
-	       to preserve nesting.  */
+	       constructor args, we need this EH region to extend until
+	       end of full-expression to preserve nesting.
+
+	       We used to try to evaluate the args first to avoid this, but
+	       since C++17 [expr.new] says that "The invocation of the
+	       allocation function is sequenced before the evaluations of
+	       expressions in the new-initializer."  */
 	    {
 	      tree end, sentry, begin;
 
@@ -3809,9 +3800,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	 has been initialized before we start using it.  */
       rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), alloc_expr, rval);
     }
-
-  if (init_preeval_expr)
-    rval = build2 (COMPOUND_EXPR, TREE_TYPE (rval), init_preeval_expr, rval);
 
   /* A new-expression is never an lvalue.  */
   gcc_assert (!obvalue_p (rval));
@@ -4028,7 +4016,8 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
 static tree
 build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 		    special_function_kind auto_delete_vec,
-		    int use_global_delete, tsubst_flags_t complain)
+		    int use_global_delete, tsubst_flags_t complain,
+		    bool in_cleanup = false)
 {
   tree virtual_size;
   tree ptype = build_pointer_type (type = complete_type (type));
@@ -4113,6 +4102,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
   tbase_init = build_stmt (loc, DECL_EXPR, tbase);
   controller = build3 (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
+  BIND_EXPR_VEC_DTOR (controller) = true;
 
   body = build1 (EXIT_EXPR, void_type_node,
 		 build2 (EQ_EXPR, boolean_type_node, tbase,
@@ -4131,6 +4121,18 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
   body = build_compound_expr (loc, body, tmp);
 
   loop = build1 (LOOP_EXPR, void_type_node, body);
+
+  /* If one destructor throws, keep trying to clean up the rest, unless we're
+     already in a build_vec_init cleanup.  */
+  if (flag_exceptions && !in_cleanup && !expr_noexcept_p (tmp, tf_none))
+    {
+      loop = build2 (TRY_CATCH_EXPR, void_type_node, loop,
+		     unshare_expr (loop));
+      /* Tell honor_protect_cleanup_actions to discard this on the
+	 exceptional path.  */
+      TRY_CATCH_IS_CLEANUP (loop) = true;
+    }
+
   loop = build_compound_expr (loc, tbase_init, loop);
 
  no_destructor:
@@ -4314,7 +4316,9 @@ finish_length_check (tree atype, tree iterator, tree obase, unsigned n)
 tree
 build_vec_init (tree base, tree maxindex, tree init,
 		bool explicit_value_init_p,
-		int from_array, tsubst_flags_t complain)
+		int from_array,
+		tsubst_flags_t complain,
+		vec<tree, va_gc>** flags /* = nullptr */)
 {
   tree rval;
   tree base2 = NULL_TREE;
@@ -4332,7 +4336,6 @@ build_vec_init (tree base, tree maxindex, tree init,
   tree stmt_expr;
   tree compound_stmt;
   int destroy_temps;
-  tree try_block = NULL_TREE;
   HOST_WIDE_INT num_initialized_elts = 0;
   bool is_global;
   tree obase = base;
@@ -4359,12 +4362,19 @@ build_vec_init (tree base, tree maxindex, tree init,
       && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
 
+  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
+    {
+      gcc_checking_assert (false);
+      init = VEC_INIT_EXPR_INIT (init);
+    }
+
   bool direct_init = false;
   if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
       && CONSTRUCTOR_NELTS (init) == 1)
     {
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
-      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE)
+      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE
+	  && TREE_CODE (elt) != VEC_INIT_EXPR)
 	{
 	  direct_init = DIRECT_LIST_INIT_P (init);
 	  init = elt;
@@ -4462,7 +4472,9 @@ build_vec_init (tree base, tree maxindex, tree init,
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
   rval = get_temp_regvar (ptype, base);
   base = get_temp_regvar (ptype, rval);
-  iterator = get_temp_regvar (ptrdiff_type_node, maxindex);
+  tree iterator_targ = get_target_expr (maxindex);
+  add_stmt (iterator_targ);
+  iterator = TARGET_EXPR_SLOT (iterator_targ);
 
   /* If initializing one array from another, initialize element by
      element.  We rely upon the below calls to do the argument
@@ -4485,7 +4497,38 @@ build_vec_init (tree base, tree maxindex, tree init,
   if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
       && from_array != 2)
     {
-      try_block = begin_try_block ();
+      tree e;
+      tree m = cp_build_binary_op (input_location,
+				   MINUS_EXPR, maxindex, iterator,
+				   complain);
+
+      /* Flatten multi-dimensional array since build_vec_delete only
+	 expects one-dimensional array.  */
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	m = cp_build_binary_op (input_location,
+				MULT_EXPR, m,
+				/* Avoid mixing signed and unsigned.  */
+				convert (TREE_TYPE (m),
+					 array_type_nelts_total (type)),
+				complain);
+
+      e = build_vec_delete_1 (input_location, rval, m,
+			      inner_elt_type, sfk_complete_destructor,
+			      /*use_global_delete=*/0, complain,
+			      /*in_cleanup*/true);
+      if (e == error_mark_node)
+	errors = true;
+      TARGET_EXPR_CLEANUP (iterator_targ) = e;
+      CLEANUP_EH_ONLY (iterator_targ) = true;
+
+      /* Since we push this cleanup before doing any initialization, cleanups
+	 for any temporaries in the initialization are naturally within our
+	 cleanup region, so we don't want wrap_temporary_cleanups to do
+	 anything for arrays.  But if the array is a subobject, we need to
+	 tell split_nonconstant_init how to turn off this cleanup in favor of
+	 the cleanup for the complete object.  */
+      if (flags)
+	vec_safe_push (*flags, build_tree_list (iterator, maxindex));
     }
 
   /* Should we try to create a constant initializer?  */
@@ -4535,9 +4578,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 
 	  num_initialized_elts++;
 
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  if (digested)
 	    one_init = build2 (INIT_EXPR, type, baseref, elt);
+	  else if (TREE_CODE (elt) == VEC_INIT_EXPR)
+	    one_init = expand_vec_init_expr (baseref, elt, complain, flags);
 	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else
@@ -4573,7 +4617,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 
 	  if (one_init)
 	    finish_expr_stmt (one_init);
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
 	  one_init = cp_build_unary_op (PREINCREMENT_EXPR, base, false,
 					complain);
@@ -4795,6 +4838,17 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    }
 	}
 
+      /* [class.temporary]: "There are three contexts in which temporaries are
+	 destroyed at a different point than the end of the full-
+	 expression. The first context is when a default constructor is called
+	 to initialize an element of an array with no corresponding
+	 initializer. The second context is when a copy constructor is called
+	 to copy an element of an array while the entire array is copied. In
+	 either case, if the constructor has one or more default arguments, the
+	 destruction of every temporary created in a default argument is
+	 sequenced before the construction of the next array element, if any."
+
+	 So, for this loop, statements are full-expressions.  */
       current_stmt_tree ()->stmts_are_full_exprs_p = 1;
       if (elt_init && !errors)
 	elt_init = build2 (COMPOUND_EXPR, void_type_node, elt_init, decr);
@@ -4810,34 +4864,6 @@ build_vec_init (tree base, tree maxindex, tree init,
                                              complain));
 
       finish_for_stmt (for_stmt);
-    }
-
-  /* Make sure to cleanup any partially constructed elements.  */
-  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
-      && from_array != 2)
-    {
-      tree e;
-      tree m = cp_build_binary_op (input_location,
-				   MINUS_EXPR, maxindex, iterator,
-				   complain);
-
-      /* Flatten multi-dimensional array since build_vec_delete only
-	 expects one-dimensional array.  */
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	m = cp_build_binary_op (input_location,
-				MULT_EXPR, m,
-				/* Avoid mixing signed and unsigned.  */
-				convert (TREE_TYPE (m),
-					 array_type_nelts_total (type)),
-				complain);
-
-      finish_cleanup_try_block (try_block);
-      e = build_vec_delete_1 (input_location, rval, m,
-			      inner_elt_type, sfk_complete_destructor,
-			      /*use_global_delete=*/0, complain);
-      if (e == error_mark_node)
-	errors = true;
-      finish_cleanup (e, try_block);
     }
 
   /* The value of the array initialization is the array itself, RVAL

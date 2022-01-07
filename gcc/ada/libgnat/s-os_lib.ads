@@ -48,7 +48,6 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
-with System;
 with System.Strings;
 
 package System.OS_Lib is

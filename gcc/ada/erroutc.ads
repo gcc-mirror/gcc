@@ -69,7 +69,7 @@ package Erroutc is
 
    Is_Warning_Msg : Boolean := False;
    --  Set True to indicate if current message is warning message (contains ?
-   --  or contains < and Error_Msg_Warn is True.
+   --  or contains < and Error_Msg_Warn is True).
 
    Is_Info_Msg : Boolean := False;
    --  Set True to indicate that the current message starts with the characters

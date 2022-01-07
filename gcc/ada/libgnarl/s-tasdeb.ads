@@ -32,7 +32,6 @@
 --  This package encapsulates all direct interfaces to task debugging services
 --  that are needed by gdb with gnat mode.
 
-with System.Tasking;
 with System.OS_Interface;
 
 package System.Tasking.Debug is

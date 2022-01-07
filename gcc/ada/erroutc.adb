@@ -1226,7 +1226,6 @@ package body Erroutc is
          else
             Set_At;
             Set_Msg_Str ("line ");
-            Int_File := False;
             Set_Msg_Int (Int (Get_Logical_Line_Number (Loc)));
          end if;
 

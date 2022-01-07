@@ -2417,21 +2417,18 @@ package body Par_SCO is
 
       --  Loop through statements or declarations
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
+      N := First (L);
+      while Present (N) loop
 
-            --  Note: For separate bodies, we see the tree after Par.Labl has
-            --  introduced implicit labels, so we need to ignore those nodes.
+         --  Note: For separate bodies, we see the tree after Par.Labl has
+         --  introduced implicit labels, so we need to ignore those nodes.
 
-            if Nkind (N) /= N_Implicit_Label_Declaration then
-               Traverse_One (N);
-            end if;
+         if Nkind (N) /= N_Implicit_Label_Declaration then
+            Traverse_One (N);
+         end if;
 
-            Next (N);
-         end loop;
-
-      end if;
+         Next (N);
+      end loop;
 
       --  End sequence of statements and flush deferred decisions
 

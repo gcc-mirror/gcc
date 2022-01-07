@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Stack_Usage;
-
 --  This is why this package is part of GNARL:
 
 with System.Tasking.Debug;

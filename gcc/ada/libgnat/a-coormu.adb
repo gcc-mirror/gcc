@@ -1053,7 +1053,6 @@ is
 
    procedure Insert (Container : in out Set; New_Item : Element_Type) is
       Position : Cursor;
-      pragma Unreferenced (Position);
    begin
       Insert (Container, New_Item, Position);
    end Insert;
@@ -1858,7 +1857,6 @@ is
    function To_Set (New_Item : Element_Type) return Set is
       Tree : Tree_Type;
       Node : Node_Access;
-      pragma Unreferenced (Node);
    begin
       Insert_Sans_Hint (Tree, New_Item, Node);
       return Set'(Controlled with Tree);

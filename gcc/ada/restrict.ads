@@ -143,6 +143,7 @@ package Restrict is
       No_Standard_Storage_Pools          => True,
       No_Stream_Optimizations            => True,
       No_Streams                         => True,
+      No_Tagged_Type_Registration        => True,
       No_Task_Attributes_Package         => True,
       No_Task_Termination                => True,
       No_Tasking                         => True,

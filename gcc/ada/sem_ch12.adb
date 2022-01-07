@@ -2248,9 +2248,7 @@ package body Sem_Ch12 is
       --  explicit box associations for the formals that are covered by an
       --  Others_Choice.
 
-      if not Is_Empty_List (Default_Formals) then
-         Append_List (Default_Formals, Formals);
-      end if;
+      Append_List (Default_Formals, Formals);
 
       return Assoc_List;
    end Analyze_Associations;
@@ -3192,7 +3190,7 @@ package body Sem_Ch12 is
 
    <<Leave>>
       if Has_Aspects (N) then
-         --  Unclear that any other aspects may appear here, snalyze them
+         --  Unclear that any other aspects may appear here, analyze them
          --  for completion, given that the grammar allows their appearance.
 
          Analyze_Aspect_Specifications (N, Pack_Id);
@@ -9703,6 +9701,7 @@ package body Sem_Ch12 is
       Decl     : Node_Id;
       Decls    : List_Id;
       Inst     : Entity_Id;
+      Origin   : Entity_Id;
       Par_Inst : Node_Id;
       Par_N    : Node_Id;
 
@@ -9793,9 +9792,10 @@ package body Sem_Ch12 is
          end;
       end if;
 
-      Decl  := N;
-      Decls := List_Containing (N);
-      Par_N := Parent (Decls);
+      Decl   := N;
+      Decls  := List_Containing (N);
+      Par_N  := Parent (Decls);
+      Origin := Empty;
 
       --  Determine the proper freeze point of an instantiation
 
@@ -9824,10 +9824,13 @@ package body Sem_Ch12 is
                 not In_Same_Source_Unit (Generic_Parent (Par_Inst), Inst)
             then
                while Present (Decl) loop
-                  if (Nkind (Decl) in N_Unit_Body
+                  if ((Nkind (Decl) in N_Unit_Body
                         or else
-                      Nkind (Decl) in N_Body_Stub)
-                    and then Comes_From_Source (Decl)
+                       Nkind (Decl) in N_Body_Stub)
+                      and then Comes_From_Source (Decl))
+                    or else (Present (Origin)
+                              and then Nkind (Decl) in N_Generic_Instantiation
+                              and then Instance_Spec (Decl) /= Origin)
                   then
                      Set_Sloc (F_Node, Sloc (Decl));
                      Insert_Before (Decl, F_Node);
@@ -9851,16 +9854,19 @@ package body Sem_Ch12 is
                return;
 
             --  When the instantiation occurs in a package spec and there is
-            --  no source body which follows, not even of the package itself
-            --  then insert into the declaration list of the outer level.
+            --  no source body which follows, not even of the package itself,
+            --  then insert into the declaration list of the outer level, but
+            --  do not jump over following instantiations in this list because
+            --  they may have a body that has not materialized yet, see above.
 
             elsif Nkind (Par_N) = N_Package_Specification
               and then No (Corresponding_Body (Parent (Par_N)))
               and then Is_List_Member (Parent (Par_N))
             then
-               Decl  := Parent (Par_N);
-               Decls := List_Containing (Decl);
-               Par_N := Parent (Decls);
+               Decl   := Parent (Par_N);
+               Decls  := List_Containing (Decl);
+               Par_N  := Parent (Decls);
+               Origin := Decl;
 
             --  In a package declaration, or if no source body which follows
             --  and at library level, then insert at end of list.

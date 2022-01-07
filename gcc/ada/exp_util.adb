@@ -1422,7 +1422,7 @@ package body Exp_Util is
       --  Add a runtime check to verify assertion expression DIC_Expr of
       --  inherited pragma DIC_Prag. This routine applies class-wide pre-
       --  and postcondition-like runtime semantics to the check. Expr is
-      --  the assertion expression after substitition has been performed
+      --  the assertion expression after substitution has been performed
       --  (via Replace_References). All generated code is added to list Stmts.
 
       procedure Add_Inherited_DICs
@@ -3752,7 +3752,7 @@ package body Exp_Util is
       --  Anonymous arrays in object declarations have no explicit declaration
       --  so use the related object declaration as the insertion point.
 
-      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ)  then
+      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ) then
          Typ_Decl := Associated_Node_For_Itype (Work_Typ);
 
       --  Derived types with the full view as parent do not have a partial
@@ -9495,14 +9495,12 @@ package body Exp_Util is
    begin
       W := Warn;
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
-            Kill_Dead_Code (N, W);
-            W := False;
-            Next (N);
-         end loop;
-      end if;
+      N := First (L);
+      while Present (N) loop
+         Kill_Dead_Code (N, W);
+         W := False;
+         Next (N);
+      end loop;
    end Kill_Dead_Code;
 
    -----------------------------
@@ -12698,9 +12696,10 @@ package body Exp_Util is
               and then Is_Library_Level_Entity (Typ)
               and then Convention (Typ) = Convention_Ada
               and then Present (Access_Disp_Table (Typ))
-              and then RTE_Available (RE_Unregister_Tag)
               and then not Is_Abstract_Type (Typ)
               and then not No_Run_Time_Mode
+              and then not Restriction_Active (No_Tagged_Type_Registration)
+              and then RTE_Available (RE_Unregister_Tag)
             then
                return True;
             end if;

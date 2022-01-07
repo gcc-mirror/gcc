@@ -26,7 +26,7 @@
 with Types; use Types;
 package Treepr is
 
---  This package provides printing routines for the abstract syntax tree
+--  This package provides printing routines for the abstract syntax tree.
 --  These routines are intended only for debugging use.
 
    procedure Tree_Dump;
@@ -42,11 +42,11 @@ package Treepr is
 
    procedure Print_Tree_List (L : List_Id);
    --  Prints a single node list, without printing the descendants of any
-   --  of the nodes in the list
+   --  of the nodes in the list.
 
    procedure Print_Tree_Elist (E : Elist_Id);
    --  Prints a single node list, without printing the descendants of any
-   --  of the nodes in the list
+   --  of the nodes in the list.
 
    procedure Print_Node_Subtree (N : Node_Id);
    --  Prints the subtree rooted at a specified tree node, including all

@@ -343,7 +343,6 @@ package body Ada.Wide_Text_IO.Generic_Aux is
       Ptr    : in out Integer)
    is
       Junk : Boolean;
-      pragma Unreferenced (Junk);
    begin
       Load_Extended_Digits (File, Buf, Ptr, Junk);
    end Load_Extended_Digits;

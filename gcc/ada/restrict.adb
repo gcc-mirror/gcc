@@ -71,12 +71,12 @@ package body Restrict is
 
    No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=
                                           (others => True);
-   --  An entry in this array is set False in reponse to a previous call to
-   --  Set_No_Speficiation_Of_Aspect for pragmas in the main unit that
+   --  An entry in this array is set False in response to a previous call to
+   --  Set_No_Specification_Of_Aspect for pragmas in the main unit that
    --  specify Warning as False. Once set False, an entry is never reset.
 
    No_Specification_Of_Aspect_Set : Boolean := False;
-   --  Set True if any entry of No_Specifcation_Of_Aspects has been set True.
+   --  Set True if any entry of No_Specification_Of_Aspects has been set True.
    --  Once set True, this is never turned off again.
 
    No_Use_Of_Attribute : array (Attribute_Id) of Source_Ptr :=

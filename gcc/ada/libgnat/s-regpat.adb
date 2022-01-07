@@ -1974,7 +1974,6 @@ package body System.Regpat is
       Result : Pointer;
 
       Expr_Flags : Expression_Flags;
-      pragma Unreferenced (Expr_Flags);
 
    --  Start of processing for Compile
 
@@ -3582,7 +3581,6 @@ package body System.Regpat is
    is
       PM            : Pattern_Matcher (Size);
       Finalize_Size : Program_Size;
-      pragma Unreferenced (Finalize_Size);
    begin
       if Size = 0 then
          Match (Compile (Expression), Data, Matches, Data_First, Data_Last);
@@ -3605,7 +3603,6 @@ package body System.Regpat is
    is
       PM         : Pattern_Matcher (Size);
       Final_Size : Program_Size;
-      pragma Unreferenced (Final_Size);
    begin
       if Size = 0 then
          return Match (Compile (Expression), Data, Data_First, Data_Last);
@@ -3629,7 +3626,6 @@ package body System.Regpat is
       Matches    : Match_Array (0 .. 0);
       PM         : Pattern_Matcher (Size);
       Final_Size : Program_Size;
-      pragma Unreferenced (Final_Size);
    begin
       if Size = 0 then
          Match (Compile (Expression), Data, Matches, Data_First, Data_Last);

@@ -624,6 +624,8 @@ do_poplevel (tree stmt_list)
 {
   tree block = NULL;
 
+  maybe_splice_retval_cleanup (stmt_list);
+
   if (stmts_are_full_exprs_p ())
     block = poplevel (kept_level_p (), 1, 0);
 

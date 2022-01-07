@@ -239,8 +239,7 @@ package body Sem_Ch4 is
    --  operand types. If one of the operands has a universal interpretation,
    --  the legality check uses some compatible non-universal interpretation of
    --  the other operand. N can be an operator node, or a function call whose
-   --  name is an operator designator. Any_Access, which is the initial type of
-   --  the literal NULL, is a universal type for the purpose of this routine.
+   --  name is an operator designator.
 
    function Find_Primitive_Operation (N : Node_Id) return Boolean;
    --  Find candidate interpretations for the name Obj.Proc when it appears in
@@ -1498,7 +1497,7 @@ package body Sem_Ch4 is
             while Present (Form) and then Present (Act) loop
                --  Check whether the formal is aliased and if the accessibility
                --  level of the actual is deeper than the accessibility level
-               --  of the enclosing subprogam to which the current return
+               --  of the enclosing subprogram to which the current return
                --  statement applies.
 
                --  Should we be checking Is_Entity_Name on Act? Won't this miss
@@ -3273,7 +3272,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      Set_Etype (N, Any_Access);
+      Set_Etype (N, Universal_Access);
    end Analyze_Null;
 
    ----------------------
@@ -3725,6 +3724,24 @@ package body Sem_Ch4 is
                elsif Compatible_Types_In_Predicate
                        (Etype (Formal), Etype (Actual))
                then
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
+               --  A current instance used as an actual of a function,
+               --  whose body has not been seen, may include a formal
+               --  whose type is an incomplete view of an enclosing
+               --  type declaration containing the current call (e.g.
+               --  in the Expression for a component declaration).
+
+               --  In this case, update the signature of the subprogram
+               --  so the formal has the type of the full view.
+
+               elsif Inside_Init_Proc
+                 and then Nkind (Actual) = N_Identifier
+                 and then Ekind (Etype (Formal)) = E_Incomplete_Type
+                 and then Etype (Actual) = Full_View (Etype (Formal))
+               then
+                  Set_Etype (Formal, Etype (Actual));
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
@@ -6678,14 +6695,9 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      if T1 = Universal_Integer or else T1 = Universal_Real
-
-        --  If the left operand of an equality operator is null, the visibility
-        --  of the operator must be determined from the interpretation of the
-        --  right operand. This processing must be done for Any_Access, which
-        --  is the internal representation of the type of the literal null.
-
-        or else T1 = Any_Access
+      if T1 = Universal_Integer
+        or else T1 = Universal_Real
+        or else T1 = Universal_Access
       then
          if not Is_Overloaded (R) then
             Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (Etype (R)));
@@ -6770,7 +6782,7 @@ package body Sem_Ch4 is
       --  operator.
       --  This is because the expected type for Obj'Access in a call to
       --  the Standard."=" operator whose formals are of type
-      --  Universal_Access is Universal_Integer, and Universal_Access
+      --  Universal_Access is Universal_Access, and Universal_Access
       --  doesn't have a designated type. For more detail see RM 6.4.1(3)
       --  and 3.10.2.
       --  This procedure assumes that the context is a universal_access.
@@ -6992,7 +7004,7 @@ package body Sem_Ch4 is
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Universal_Access : Boolean;
+         Anonymous_Access : Boolean;
          Bas              : Entity_Id;
 
       begin
@@ -7013,7 +7025,7 @@ package body Sem_Ch4 is
          --  In Ada 2005, the equality operator for anonymous access types
          --  is declared in Standard, and preference rules apply to it.
 
-         Universal_Access := Is_Anonymous_Access_Type (T1)
+         Anonymous_Access := Is_Anonymous_Access_Type (T1)
            or else References_Anonymous_Access_Type (R, T1);
 
          if Present (Scop) then
@@ -7028,7 +7040,7 @@ package body Sem_Ch4 is
               or else In_Instance
               or else T1 = Universal_Integer
               or else T1 = Universal_Real
-              or else T1 = Any_Access
+              or else T1 = Universal_Access
               or else T1 = Any_String
               or else T1 = Any_Composite
               or else (Ekind (T1) = E_Access_Subprogram_Type
@@ -7036,7 +7048,7 @@ package body Sem_Ch4 is
             then
                null;
 
-            elsif Scop /= Standard_Standard or else not Universal_Access then
+            elsif Scop /= Standard_Standard or else not Anonymous_Access then
 
                --  The scope does not contain an operator for the type
 
@@ -7057,7 +7069,7 @@ package body Sem_Ch4 is
          then
             null;
 
-         elsif not Universal_Access then
+         elsif not Anonymous_Access then
             --  Save candidate type for subsequent error message, if any
 
             if not Is_Limited_Type (T1) then
@@ -7070,7 +7082,7 @@ package body Sem_Ch4 is
          --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
          --  Do not allow anonymous access types in equality operators.
 
-         if Ada_Version < Ada_2005 and then Universal_Access then
+         if Ada_Version < Ada_2005 and then Anonymous_Access then
             return;
          end if;
 
@@ -7091,7 +7103,7 @@ package body Sem_Ch4 is
          --  Finally, also check for RM 4.5.2 (9.6/2).
 
          if T1 /= Standard_Void_Type
-           and then (Universal_Access
+           and then (Anonymous_Access
                       or else
                      Has_Compatible_Type (R, T1, For_Comparison => True))
 
@@ -7109,7 +7121,7 @@ package body Sem_Ch4 is
                or else not Is_Tagged_Type (T1)
                or else Chars (Op_Id) = Name_Op_Eq)
 
-           and then (not Universal_Access
+           and then (not Anonymous_Access
                       or else Check_Access_Object_Types (R, T1))
          then
             if Found
@@ -7124,14 +7136,14 @@ package body Sem_Ch4 is
 
                else
                   T_F := It.Typ;
-                  Is_Universal_Access := Universal_Access;
+                  Is_Universal_Access := Anonymous_Access;
                end if;
 
             else
                Found := True;
                T_F   := T1;
                I_F   := Index;
-               Is_Universal_Access := Universal_Access;
+               Is_Universal_Access := Anonymous_Access;
             end if;
 
             if not Analyzed (L) then
@@ -9585,31 +9597,29 @@ package body Sem_Ch4 is
          begin
             Error := False;
 
-            if Is_Non_Empty_List (Intface_List) then
-               Intface := First (Intface_List);
-               while Present (Intface) loop
+            Intface := First (Intface_List);
+            while Present (Intface) loop
 
-                  --  Look for acceptable class-wide homonyms associated with
-                  --  the interface.
+               --  Look for acceptable class-wide homonyms associated with the
+               --  interface.
 
-                  Traverse_Homonyms (Etype (Intface), Error);
+               Traverse_Homonyms (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  --  Continue the search by looking at each of the interface's
-                  --  associated interface ancestors.
+               --  Continue the search by looking at each of the interface's
+               --  associated interface ancestors.
 
-                  Traverse_Interfaces (Etype (Intface), Error);
+               Traverse_Interfaces (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  Next (Intface);
-               end loop;
-            end if;
+               Next (Intface);
+            end loop;
          end Traverse_Interfaces;
 
       --  Start of processing for Try_Class_Wide_Operation

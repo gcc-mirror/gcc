@@ -1594,9 +1594,18 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Check for Text_IO special unit (we may be renaming a Text_IO child)
+      --  Check for Text_IO special units (we may be renaming a Text_IO child),
+      --  but make sure not to catch renamings generated for package instances
+      --  that have nothing to do with them but are nevertheless homonyms.
 
-      Check_Text_IO_Special_Unit (Name (N));
+      if Is_Entity_Name (Name (N))
+        and then Present (Entity (Name (N)))
+        and then Is_Generic_Instance (Entity (Name (N)))
+      then
+         null;
+      else
+         Check_Text_IO_Special_Unit (Name (N));
+      end if;
 
       if Current_Scope /= Standard_Standard then
          Set_Is_Pure (New_P, Is_Pure (Current_Scope));
@@ -6423,17 +6432,13 @@ package body Sem_Ch8 is
                   --  Else see if we have a left hand side
 
                   else
-                     case Is_LHS (N) is
-                        when Yes =>
+                     case Known_To_Be_Assigned (N, Only_LHS => True) is
+                        when True =>
                            Generate_Reference (E, N, 'm');
 
-                        when No =>
+                        when False =>
                            Generate_Reference (E, N, 'r');
 
-                        --  If we don't know now, generate reference later
-
-                        when Unknown =>
-                           Defer_Reference ((E, N));
                      end case;
                   end if;
                end if;
@@ -6484,7 +6489,7 @@ package body Sem_Ch8 is
 
       if Needs_Variable_Reference_Marker (N => N, Calls_OK => False) then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker
@@ -7077,15 +7082,13 @@ package body Sem_Ch8 is
       else
          Set_Entity_Or_Discriminal (N, Id);
 
-         case Is_LHS (N) is
-            when Yes =>
+         case Known_To_Be_Assigned (N, Only_LHS => True) is
+            when True =>
                Generate_Reference (Id, N, 'm');
 
-            when No =>
+            when False =>
                Generate_Reference (Id, N, 'r');
 
-            when Unknown =>
-               Defer_Reference ((Id, N));
          end case;
       end if;
 
@@ -7181,7 +7184,7 @@ package body Sem_Ch8 is
             Calls_OK => False)
       then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker
@@ -10120,7 +10123,7 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         --  Set P back to the non-renamed package so that visiblilty of the
+         --  Set P back to the non-renamed package so that visibility of the
          --  entities within the package can be properly set below.
 
          P := Entity (Pack_Name);

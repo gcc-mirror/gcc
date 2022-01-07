@@ -7113,7 +7113,7 @@ package body Sem_Prag is
 
          if From_Aspect_Specification (N) then
 
-            --  Change appearence of "pragma" in message to "aspect"
+            --  Change appearance of "pragma" in message to "aspect"
 
             J := Res'First;
             while J <= Res_Last - 5 loop
@@ -26585,7 +26585,7 @@ package body Sem_Prag is
 
             --  The current refinement clause is legally constructed following
             --  the rules in SPARK RM 7.2.5, therefore it can be removed from
-            --  the pool of candidates. The seach continues because a single
+            --  the pool of candidates. The search continues because a single
             --  dependence clause may have multiple matching refinements.
 
             if Inputs_Match and Outputs_Match then
@@ -30903,8 +30903,8 @@ package body Sem_Prag is
                   return Stmt;
 
                --  The subprogram declaration is an internally generated spec
-               --  for a stand-alone subrogram body declared inside a protected
-               --  body.
+               --  for a stand-alone subprogram body declared inside a
+               --  protected body.
 
                elsif Present (Corresponding_Body (Stmt))
                  and then Comes_From_Source (Corresponding_Body (Stmt))
@@ -31387,7 +31387,7 @@ package body Sem_Prag is
    --  whether appearance of some name in a given pragma is to be considered
    --  as a reference for the purposes of warnings about unreferenced objects.
 
-   --  -1  indicates that appearence in any argument is significant
+   --  -1  indicates that appearance in any argument is significant
    --  0   indicates that appearance in any argument is not significant
    --  +n  indicates that appearance as argument n is significant, but all
    --      other arguments are not significant

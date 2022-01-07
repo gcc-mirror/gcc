@@ -5535,15 +5535,30 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 
     case MODE_DI:
       /* Handle broken assemblers that require movd instead of movq. */
-      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
-	  && (GENERAL_REG_P (operands[0])
-	      || GENERAL_REG_P (operands[1])))
-	return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%1, %q0|%q0, %1}";
+	  else
+	    return "%vmovd\t{%1, %q0|%q0, %1}";
+	}
+      else if (GENERAL_REG_P (operands[1]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%q1, %0|%0, %q1}";
+	  else
+	    return "%vmovd\t{%q1, %0|%0, %q1}";
+	}
       else
 	return "%vmovq\t{%1, %0|%0, %1}";
 
     case MODE_SI:
-      return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	return "%vmovd\t{%1, %k0|%k0, %1}";
+      else if (GENERAL_REG_P (operands[1]))
+	return "%vmovd\t{%k1, %0|%0, %k1}";
+      else
+	return "%vmovd\t{%1, %0|%0, %1}";
 
     case MODE_HI:
       if (GENERAL_REG_P (operands[0]))
@@ -16037,7 +16052,7 @@ ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
       fprintf (asm_out_file, "\tjmp\t");
       assemble_name (asm_out_file, thunk_name);
       putc ('\n', asm_out_file);
-      if ((ix86_harden_sls & harden_sls_indirect_branch))
+      if ((ix86_harden_sls & harden_sls_indirect_jmp))
 	fputs ("\tint3\n", asm_out_file);
     }
   else
@@ -16263,7 +16278,7 @@ ix86_output_indirect_jmp (rtx call_op)
     }
   else
     output_asm_insn ("%!jmp\t%A0", &call_op);
-  return (ix86_harden_sls & harden_sls_indirect_branch) ? "int3" : "";
+  return (ix86_harden_sls & harden_sls_indirect_jmp) ? "int3" : "";
 }
 
 /* Output return instrumentation for current function if needed.  */
@@ -16367,11 +16382,14 @@ ix86_output_indirect_function_return (rtx ret_op)
 	}
       else
 	output_indirect_thunk (regno);
-
-      return "";
     }
   else
-    return "%!jmp\t%A0";
+    {
+      output_asm_insn ("%!jmp\t%A0", &ret_op);
+      if (ix86_harden_sls & harden_sls_indirect_jmp)
+	fputs ("\tint3\n", asm_out_file);
+    }
+  return "";
 }
 
 /* Output the assembly for a call instruction.  */
@@ -16430,7 +16448,7 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	{
 	  output_asm_insn (xasm, &call_op);
 	  if (!direct_p
-	      && (ix86_harden_sls & harden_sls_indirect_branch))
+	      && (ix86_harden_sls & harden_sls_indirect_jmp))
 	    return "int3";
 	}
       return "";

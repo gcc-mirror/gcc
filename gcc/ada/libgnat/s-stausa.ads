@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;
 with System.Storage_Elements;
 with System.Address_To_Access_Conversions;
 with Interfaces;

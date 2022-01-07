@@ -486,7 +486,7 @@ extern unsigned char ix86_prefetch_sse;
 
 /* Fence to use after loop using storent.  */
 
-extern tree x86_mfence;
+extern GTY(()) tree x86_mfence;
 #define FENCE_FOLLOWING_MOVNT x86_mfence
 
 /* Once GDB has been enhanced to deal with functions without frame

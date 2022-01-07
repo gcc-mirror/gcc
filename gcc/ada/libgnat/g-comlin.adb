@@ -2235,7 +2235,6 @@ package body GNAT.Command_Line is
       Add_Before : Boolean   := False)
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
    begin
       Add_Switch (Cmd, Switch, Parameter, Separator,
                   Section, Add_Before, Success);
@@ -2453,7 +2452,6 @@ package body GNAT.Command_Line is
       Section       : String := "")
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
    begin
       Remove_Switch (Cmd, Switch, Remove_All, Has_Parameter, Section, Success);
    end Remove_Switch;

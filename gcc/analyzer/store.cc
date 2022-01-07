@@ -2456,13 +2456,17 @@ store::eval_alias_1 (const region *base_reg_a,
       = base_reg_a->dyn_cast_symbolic_region ())
     {
       const svalue *sval_a = sym_reg_a->get_pointer ();
-      if (sval_a->get_kind () == SK_INITIAL)
-	if (tree decl_b = base_reg_b->maybe_get_decl ())
-	  if (!is_global_var (decl_b))
-	    {
-	      /* The initial value of a pointer can't point to a local.  */
-	      return tristate::TS_FALSE;
-	    }
+      if (tree decl_b = base_reg_b->maybe_get_decl ())
+	{
+	  if (!may_be_aliased (decl_b))
+	    return tristate::TS_FALSE;
+	  if (sval_a->get_kind () == SK_INITIAL)
+	    if (!is_global_var (decl_b))
+	      {
+		/* The initial value of a pointer can't point to a local.  */
+		return tristate::TS_FALSE;
+	      }
+	}
       if (sval_a->get_kind () == SK_INITIAL
 	  && base_reg_b->get_kind () == RK_HEAP_ALLOCATED)
 	{

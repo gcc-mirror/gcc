@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Wide_Text_IO; use Ada.Wide_Text_IO;
 with Ada.Unchecked_Deallocation;
 
 package body Ada.Wide_Text_IO.Wide_Bounded_IO is
