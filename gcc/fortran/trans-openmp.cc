@@ -6538,6 +6538,12 @@ gfc_trans_omp_allocate (gfc_code *code)
   OMP_ALLOCATE_CLAUSES (stmt) = gfc_trans_omp_clauses (&block, clauses,
 						       code->loc, false,
 						       true);
+  if (code->next == NULL && code->block == NULL
+      && code->resolved_sym != NULL)
+    OMP_ALLOCATE_KIND_FREE (stmt) = 1;
+  else
+    OMP_ALLOCATE_KIND_ALLOCATE (stmt) = 1;
+
   gfc_add_expr_to_block (&block, stmt);
   gfc_merge_block_scope (&block);
   return gfc_finish_block (&block);

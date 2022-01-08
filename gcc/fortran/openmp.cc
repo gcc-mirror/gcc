@@ -6693,6 +6693,7 @@ gfc_match_omp_allocate (void)
 
   new_st.op = EXEC_OMP_ALLOCATE;
   new_st.ext.omp_clauses = c;
+  new_st.resolved_sym = NULL;
   gfc_free_expr (allocator);
   return MATCH_YES;
 }
@@ -10328,6 +10329,34 @@ gfc_resolve_oacc_routines (gfc_namespace *ns)
 }
 
 static void
+prepare_omp_allocated_var_list_for_cleanup (gfc_omp_namelist *cn, locus loc)
+{
+  gfc_symbol *proc = cn->sym->ns->proc_name;
+  gfc_omp_namelist *p, *n;
+
+  for (n = cn; n; n = n->next)
+    {
+      if (n->sym->attr.allocatable && !n->sym->attr.save
+	  && !n->sym->attr.result && !proc->attr.is_main_program)
+	{
+	  p = gfc_get_omp_namelist ();
+	  p->sym = n->sym;
+	  p->expr = gfc_copy_expr (n->expr);
+	  p->where = loc;
+	  p->next = NULL;
+	  if (proc->omp_allocated == NULL)
+	    proc->omp_allocated_end = proc->omp_allocated = p;
+	  else
+	    {
+	      proc->omp_allocated_end->next = p;
+	      proc->omp_allocated_end = p;
+	    }
+
+	}
+    }
+}
+
+static void
 check_allocate_directive_restrictions (gfc_symbol *sym, gfc_expr *omp_al,
 				       gfc_namespace *ns, locus loc)
 {
@@ -10457,6 +10486,7 @@ gfc_resolve_omp_allocate (gfc_code *code, gfc_namespace *ns)
 						 code->loc);
 	}
     }
+  prepare_omp_allocated_var_list_for_cleanup (cn, code->loc);
 }
 
 

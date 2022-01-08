@@ -4635,6 +4635,26 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  }
     }
 
+  /* Generate a dummy allocate pragma with free kind so that cleanup
+     of those variables which were allocated using the allocate statement
+     associated with an allocate clause happens correctly.  */
+
+  if (proc_sym->omp_allocated)
+    {
+      gfc_clear_new_st ();
+      new_st.op = EXEC_OMP_ALLOCATE;
+      gfc_omp_clauses *c = gfc_get_omp_clauses ();
+      c->lists[OMP_LIST_ALLOCATOR] = proc_sym->omp_allocated;
+      new_st.ext.omp_clauses = c;
+      /* This is just a hacky way to convey to handler that we are
+	 dealing with cleanup here.  Saves us from using another field
+	 for it.  */
+      new_st.resolved_sym = proc_sym->omp_allocated->sym;
+      gfc_add_init_cleanup (block, NULL,
+			    gfc_trans_omp_directive (&new_st));
+      gfc_free_omp_clauses (c);
+      proc_sym->omp_allocated = NULL;
+    }
 
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
      should be done here so that the offsets and lbounds of arrays

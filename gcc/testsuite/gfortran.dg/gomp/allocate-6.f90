@@ -69,4 +69,5 @@ end type
   allocate(pii, parr(5))
 end subroutine
 
-! { dg-final { scan-tree-dump-times "#pragma omp allocate" 6 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp allocate \\(kind=allocate\\)" 6 "original" } }
+! { dg-final { scan-tree-dump "#pragma omp allocate \\(kind=free\\)" "original" } }

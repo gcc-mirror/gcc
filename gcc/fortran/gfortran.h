@@ -1865,6 +1865,7 @@ typedef struct gfc_symbol
   gfc_array_spec *as;
   struct gfc_symbol *result;	/* function result symbol */
   gfc_component *components;	/* Derived type components */
+  gfc_omp_namelist *omp_allocated, *omp_allocated_end;
 
   /* Defined only for Cray pointees; points to their pointer.  */
   struct gfc_symbol *cp_pointer;

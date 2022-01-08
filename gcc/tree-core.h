@@ -1266,6 +1266,9 @@ struct GTY(()) tree_base {
        EXPR_LOCATION_WRAPPER_P in
 	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
 
+       OMP_ALLOCATE_KIND_ALLOCATE in
+	   OMP_ALLOCATE
+
    private_flag:
 
        TREE_PRIVATE in
@@ -1291,6 +1294,9 @@ struct GTY(()) tree_base {
 
        ENUM_IS_OPAQUE in
 	   ENUMERAL_TYPE
+
+       OMP_ALLOCATE_KIND_FREE in
+	   OMP_ALLOCATE
 
    protected_flag:
 

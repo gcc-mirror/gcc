@@ -1,3 +1,11 @@
+2022-01-08  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* tree-core.h (struct tree_base): Add comments.
+	* tree-pretty-print.cc (dump_generic_node): Handle allocate directive
+	kind.
+	* tree.h (OMP_ALLOCATE_KIND_ALLOCATE): New define.
+	(OMP_ALLOCATE_KIND_FREE): Likewise.
+
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_ALLOCATOR.

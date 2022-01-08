@@ -1,3 +1,15 @@
+2022-01-08  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* gfortran.h (struct access_ref): Declare new members
+	omp_allocated and omp_allocated_end.
+	* openmp.cc (gfc_match_omp_allocate): Set new_st.resolved_sym to
+	NULL.
+	(prepare_omp_allocated_var_list_for_cleanup): New function.
+	(gfc_resolve_omp_allocate): Call it.
+	* trans-decl.cc (gfc_trans_deferred_vars): Process omp_allocated.
+	* trans-openmp.cc (gfc_trans_omp_allocate): Set kind for the stmt
+	generated for allocate directive.
+
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_ALLOCATOR.

@@ -3608,6 +3608,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_ALLOCATE:
       pp_string (pp, "#pragma omp allocate ");
+      if (OMP_ALLOCATE_KIND_ALLOCATE (node))
+	pp_string (pp, "(kind=allocate) ");
+      else if (OMP_ALLOCATE_KIND_FREE (node))
+	pp_string (pp, "(kind=free) ");
       dump_omp_clauses (pp, OMP_ALLOCATE_CLAUSES (node), spc, flags);
       break;
 
