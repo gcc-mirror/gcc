@@ -1,3 +1,11 @@
+2022-01-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100551
+	* gfortran.dg/pr100551.f90: New test.
+
 2021-12-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
