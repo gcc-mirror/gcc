@@ -4369,10 +4369,7 @@ build_vec_init (tree base, tree maxindex, tree init,
     init = TARGET_EXPR_INITIAL (init);
 
   if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    {
-      gcc_checking_assert (false);
-      init = VEC_INIT_EXPR_INIT (init);
-    }
+    init = VEC_INIT_EXPR_INIT (init);
 
   bool direct_init = false;
   if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
