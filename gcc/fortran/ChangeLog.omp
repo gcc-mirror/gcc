@@ -1,6 +1,21 @@
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588370.html
+
+	* gfortran.h (struct access_ref): Declare new members
+	omp_allocated and omp_allocated_end.
+	* openmp.cc (gfc_match_omp_allocate): Set new_st.resolved_sym to
+	NULL.
+	(prepare_omp_allocated_var_list_for_cleanup): New function.
+	(gfc_resolve_omp_allocate): Call it.
+	* trans-decl.cc (gfc_trans_deferred_vars): Process omp_allocated.
+	* trans-openmp.ccc (gfc_trans_omp_allocate): Set kind for the stmt
+	generated for allocate directive.
+
+2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backport of a patch posted at
 	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588369.html
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_ALLOCATOR.
