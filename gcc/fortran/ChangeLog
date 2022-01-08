@@ -1,3 +1,9 @@
+2022-01-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103898
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Make size_var
+	actually be a variable and fix surrounding code.
+
 2022-01-06  Steve Kargl  <kargl@gcc.gnu.org>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

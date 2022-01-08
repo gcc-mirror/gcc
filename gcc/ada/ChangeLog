@@ -1,3 +1,307 @@
+2022-01-07  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/a-direct.adb (Search_Data): Remove type.
+	(Directory_Vectors): New package instantiation.
+	(Search_State): New type.
+	(Fetch_Next_Entry): Remove.
+	(Close): Remove.
+	(Finalize): Rewritten.
+	(Full_Name): Ditto.
+	(Get_Next_Entry): Return next entry from Search results vector
+	rather than querying the directory directly using readdir.
+	(Kind): Rewritten.
+	(Modification_Time): Rewritten.
+	(More_Entries): Use Search state cursor to determine if more
+	entries are available for users to read.
+	(Simple_Name): Rewritten.
+	(Size): Rewritten.
+	(Start_Search_Internal): Rewritten to load the contents of the
+	directory that matches the pattern and filter into the search
+	object.
+	* libgnat/a-direct.ads (Search_Type): New type.
+	(Search_Ptr): Ditto.
+	(Directory_Entry_Type): Rewritten to support new Start_Search
+	procedure.
+	* libgnat/s-filatt.ads (File_Length_Attr): New function.
+
+2022-01-07  Etienne Servais  <servais@adacore.com>
+
+	* sem_attr.adb (Check_Reference): Fix condition.
+
+2022-01-07  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb (Timed_Sleep): Remove "pragma
+	Unreferenced" for Result.
+	(Timed_Delay): Likewise.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen.adb (Put_Make_Decls): Put pragma Inline in a
+	dedicated line, so that the current indentation is taken into
+	account.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Fix inconsistent style
+	in comments and code.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb (Gen_Assign): Remove explicit initialization for
+	components of access types.
+	(Get_Assoc_Expr): Enable initialization for components of all
+	types that require simple initialization.
+
+2022-01-07  Javier Miranda  <miranda@adacore.com>
+
+	* atree.ads (Traverse_Func_With_Parent): New generic subprogram.
+	(Traverse_Proc_With_Parent): Likewise.
+	* atree.adb (Parents_Stack): New table used to traverse trees
+	passing the parent field of each node.
+	(Internal_Traverse_With_Parent): New generic subprogram.
+	(Traverse_Func_With_Parent): Likewise.
+	(Traverse_Proc_With_Parent): Likewise.
+	* contracts.adb (Fix_Parents): New subprogram.
+	(Restore_Original_Selected_Component): Enhanced to fix the
+	parent field of restored nodes.
+	(Inherit_Condition): Adding assertions to check the parent field
+	of inherited conditions and to ensure that the built inherited
+	condition has no reference to the formals of the parent
+	subprogram.
+	* sem_util.ads, sem_util.adb (Check_Parents): New subprogram.
+
+2022-01-07  Etienne Servais  <servais@adacore.com>
+
+	* sem_attr.adb (Check_Placement_In_Test_Case): Fix typo.
+
+2022-01-07  Justin Squirek  <squirek@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Replace unnecessary
+	Unreferenced pragma with specific pragma Warnings.
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Unreferenced):
+	Add documentation for new behavior.
+	* gnat_rm.texi: Regenerate.
+	* erroutc.adb (Set_At): Remove useless assignment.
+	* exp_ch2.adb (In_Assignment_Context): Deleted.
+	(Is_Object_Renaming_Name): Replace calls to Is_LHS with calls to
+	Known_To_Be_Assigned.
+	(Expand_Current_Value): Replace calls to May_Be_Lvalue with
+	calls to Known_To_Be_Assigned.
+	(Expand_Entry_Paramter): Replace calls to In_Assignment_Context
+	with calls to Known_To_Be_Assigned.
+	* exp_ch4.adb (Expand_N_Op_Rem): Remove unnecessary Unreferenced
+	pragma.
+	* exp_imgv.adb (Build_Enumeration_Image_Tables): Default
+	initialize S_N.
+	* ghost.adb (Check_Ghost_Policy): Replace call to May_Be_Lvalue
+	with call to Known_To_Be_Assigned.
+	* lib-xref.adb (Is_On_LHS): Deleted.
+	(OK_To_Set_Referenced): Rewrite subprogram to encompass the new
+	pragma Unreferenced behavior.
+	(Process_Deferred_References): Replace call to Is_LHS with call
+	to Known_To_Be_Assigned.
+	* libgnarl/s-taasde.adb, libgnarl/s-tasren.adb,
+	libgnarl/s-tpobop.adb, libgnat/a-calend.adb,
+	libgnat/a-calfor.adb, libgnat/a-cbdlli.adb,
+	libgnat/a-cbhama.adb, libgnat/a-cbhase.adb,
+	libgnat/a-cbmutr.adb, libgnat/a-cborma.adb,
+	libgnat/a-cborse.adb, libgnat/a-cdlili.adb,
+	libgnat/a-cfhama.adb, libgnat/a-cforse.adb,
+	libgnat/a-cidlli.adb, libgnat/a-cihama.adb,
+	libgnat/a-cihase.adb, libgnat/a-cimutr.adb,
+	libgnat/a-ciorma.adb, libgnat/a-ciormu.adb,
+	libgnat/a-ciorse.adb, libgnat/a-cohama.adb,
+	libgnat/a-cohase.adb, libgnat/a-comutr.adb,
+	libgnat/a-convec.adb, libgnat/a-coorma.adb,
+	libgnat/a-coormu.adb, libgnat/a-coorse.adb,
+	libgnat/a-crdlli.adb, libgnat/a-tigeau.adb,
+	libgnat/a-wtgeau.adb, libgnat/a-ztgeau.adb,
+	libgnat/g-calend.adb, libgnat/g-comlin.adb,
+	libgnat/g-expect.adb, libgnat/g-mbflra.adb,
+	libgnat/g-spipat.adb, libgnat/s-fatgen.adb,
+	libgnat/s-fileio.adb, libgnat/s-os_lib.adb,
+	libgnat/s-regpat.adb, libgnat/s-valued.adb,
+	libgnat/s-valuer.adb: Remove unnecessary Unreferenced pragmas
+	* sem_ch10.adb (Process_Spec_Clauses): Remove useless
+	assignments.
+	* sem_ch13.adb (Validate_Literal_Aspect): Default initialize I.
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Default
+	initialize Corr_Decl.
+	* sem_ch8.adb (Undefined): Replace calls to Is_LHS with calls to
+	Known_To_Be_Assigned.
+	(In_Abstract_View_Pragma): Likewise.
+	* sem_eval.adb (Eval_Selected_Component): Replace calls to
+	Is_LHS with calls to Known_To_Be_Assigned.
+	* sem_res.adb (Init_Component): Replace calls to May_Be_Lvalue
+	with calls to Known_To_Be_Assigned.
+	* sem_util.adb, sem_util.ads (End_Label_Loc): Default initialize
+	Owner.
+	(Explain_Limited_Type): Default initialize Expr_Func.
+	(Find_Actual): Modified to handle entry families.
+	(Is_LHS): Deleted.
+	(May_Be_Lvalue): Deleted.
+	(Known_To_Be_Assigned): Modified and improved to handle all
+	cases.
+	* sem_warn.adb (Traverse_Result): Replace calls to May_Be_Lvalue
+	with calls to Known_To_Be_Assigned.
+	(Check_Ref): Modify error on unreferenced out parameters to take
+	into account different warning flags.
+
+2022-01-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Reorder_Interfaces): When the conflicting
+	interface is identified we just replace the interface in the
+	list of interfaces of the tagged type (instead of adding a
+	duplicate to the list of interfaces).
+
+2022-01-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* adaint.c (__gnat_kill): Terminate process only in case of
+	SIGKILL, SIGINT, SIGBREAK, SIGTERM, SIGABRT.  Do not call
+	OpenProcess if not going to terminate process.
+
+2022-01-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Inspection_Point): Do a single pass
+	over the arguments of the pragma.  Set the Address_Taken flag on
+	them and use the Has_Delayed_Freeze flag to spot those which have
+	their elaboration delayed.  Reuse the location variable Loc.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* osint.adb (To_Lower): Clarify that only To_Lower function
+	causes bootstrap issues; fix style.
+	* treepr.adb (Print_Str_Mixed_Case): Reuse existing case
+	conversion routine.
+	(To_Mixed): Rename from Capitalize; reuse System.Case_Util
+	procedure and explain the bootstrap issue.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch7.adb (Process_Transients_In_Scope): Remove unnecessary
+	initialization of Must_Hook; change Detect_Subprogram_Call from
+	function to procedure; adapt caller.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch5.adb, exp_disp.adb, exp_util.adb, par-ch4.adb,
+	sem_ch13.adb: Remove extra space before THEN that occurs at the
+	end of a line.
+
+2022-01-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* expect.c (__gnat_waitpid): Use macros WIFEXITED, WEXITSTATUS,
+	WIFSIGNALED, WTERMSIG, WIFSTOPPED, WSTOPSIG to get exit status
+	or signal that caused the child process to terminate/stop.  Do
+	not process exit status in case of error in waitpid call.
+	* adaint.c (__gnat_kill): Use of GenerateConsoleCtrlEvent is
+	removed in Windows variant as it actually is not working and was
+	terminating the calling process.  Set signal number into exit
+	code parameter of TerminateProcess to work the same like in
+	Linux.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): Remove explicit
+	expansion.
+
+2022-01-07  Etienne Servais  <servais@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update -gnatwr documentation.
+	* gnat_ugn.texi: Regenerate.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Sync comment with the
+	current code.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Raise_Accessibility_Error): Move exception name
+	to the message string; move << control characters to the end,
+	for consistency.
+	* sem_ch6.adb (Analyze_Function_Return): Likewise.
+	* sem_util.adb (Compile_Time_Constraint_Error): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove quotes
+	around Storage_Error.
+	* gcc-interface/trans.c (gnat_to_gnu): Remove quotes around
+	Constraint_Error.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Error_Msg): Move warning suppression code from
+	Error_Msg_NLE
+	(Error_Msg_NLE): Warning suppression is now done by the internal
+	call to Error_Msg.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Remove unnecessary
+	guards.
+	* exp_ch4.adb (Expand_N_If_Expression): Likewise; clarify comment.
+	* exp_ch5.adb (Expand_N_If_Statement,
+	Expand_Iterator_Loop_Over_Container): Likewise.
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Remove redundant
+	guard.
+	* freeze.adb (Freeze_All_Ent): Reduce scope of a local variable.
+
+2022-01-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): Remove unnecessary guard.
+	* exp_disp.adb (Make_DT): Likewise.
+	* sem_ch12.adb (Analyze_Associations): Likewise.
+
+2022-01-07  Etienne Servais  <servais@adacore.com>
+
+	* sem_res.adb (Resolve_Op_Concat_Arg): Check range when
+	concatenating scalars.
+
+2022-01-07  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node_Ref): Change "not Is_Array_Type" to
+	"Is_Discrete_Type".
+
+2022-01-07  Richard Kenner  <kenner@adacore.com>
+
+	* libgnat/g-spipat.ads (Boolean_Func, Natural_Func,
+	VString_Func): Mark as Favor_Top_Level.
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Avoid using
+	internal representation if Unchecked_Conversion between
+	an access to subprogram and System.Address within the same unit.
+
+2022-01-07  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb (Print_Node_Ref): Print the value if available.
+
+2022-01-07  Richard Kenner  <kenner@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Get_Fullest_View): Add option to
+	not recurse and return the next-most-fullest view.
+
+2022-01-07  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Check_Redundant_Withs): Add a warning if a
+	library unit with's its own ancestor. Note that this warning is
+	not triggered for something like "with P.R;" in P.Q, because
+	there the "with P;" is considered implicit.
+	* fname-sf.adb, libgnarl/s-stusta.adb, libgnarl/s-tasdeb.ads,
+	libgnat/a-calfor.adb, libgnat/a-tiboio.adb,
+	libgnat/a-wwboio.adb, libgnat/a-zzboio.adb, libgnat/i-cobol.adb,
+	libgnat/s-bitops.adb, libgnat/s-bitops.ads,
+	libgnat/s-direio.adb, libgnat/s-dwalin.adb,
+	libgnat/s-geveop.adb, libgnat/s-mmosin__unix.adb,
+	libgnat/s-os_lib.adb, libgnat/s-os_lib.ads,
+	libgnat/s-pooglo.ads, libgnat/s-secsta.adb,
+	libgnat/s-shasto.adb, libgnat/s-stausa.ads,
+	libgnat/s-stratt.ads, libgnat/s-ststop.adb: Remove with of
+	parent.
+	* sinfo.ads: Minor comment fix.
+
+2022-01-07  Bob Duff  <duff@adacore.com>
+
+	* osint-m.adb: Remove with_clause and pragma.
+
 2022-01-06  Bob Duff  <duff@adacore.com>
 
 	* sem_res.adb (Resolve_Range): Warn on null range, unless we are

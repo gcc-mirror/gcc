@@ -1,3 +1,114 @@
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/20040
+	* init.c (build_new_1): Also build pointer cleanup if
+	TYPE_GETS_DELETE.
+	* cp-tree.h (TYPE_GETS_VEC_DELETE): New.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103936
+	PR c++/65591
+	* cp-gimplify.c (cp_gimplify_expr): Restore VEC_INIT_EXPR handling.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103711
+	* init.c (perform_target_ctor): Select destructor by in_chrg.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61611
+	* except.c (in_nested_catch): New.
+	(expand_end_catch_block): Check it.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33799
+	PR c++/102191
+	* except.c (maybe_splice_retval_cleanup): Check
+	current_binding_level.
+	* semantics.c (do_poplevel): Call it here.
+	* parser.c (cp_parser_compound_statement): Not here.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53868
+	* decl.c (cp_finish_decl): Use wrap_temporary_cleanups for
+	cleanups from set_up_extended_ref_temp.
+	(wrap_temporary_cleanups): Ignore array cleanups.
+	(initialize_local_var): Don't check for array here.
+	* cp-tree.h (BIND_EXPR_VEC_DTOR): New.
+	* init.c (build_vec_delete_1): Set it.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66451
+	* init.c (build_vec_delete_1): Handle throwing dtor.
+	(build_vec_init): Tell it we're in a cleanup already.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (split_nonconstant_init_1): Don't cleanup the last elt.
+	(split_nonconstant_init): Adjust.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66139
+	PR c++/52320
+	* constexpr.c (replace_decl): Rename from replace_result_decl.
+	* cp-tree.h (replace_decl): Declare it.
+	* cp-gimplify.c (cp_gimplify_init_expr): Call it.
+	(cp_gimplify_expr): Don't handle VEC_INIT_EXPR.
+	(cp_genericize_init, cp_genericize_init_expr)
+	(cp_genericize_target_expr): New.
+	(cp_fold_r): Call them.
+	* tree.c (build_array_copy): Add a TARGET_EXPR.
+	* typeck2.c (digest_init_r): Look through a TARGET_EXPR.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94041
+	* decl.c (initialize_local_var): Fix comment.
+	* init.c (build_new_1): Do stabilize array init.
+	(build_vec_init): Use TARGET_EXPR for cleanup.  Initialization
+	of an element from an explicit initializer is not a
+	full-expression.
+	* tree.c (expand_vec_init_expr): Pass flags through.
+	* typeck2.c (split_nonconstant_init_1): Handle VEC_INIT_EXPR.
+	(split_nonconstant_init): Handle array cleanups.
+	* cp-tree.h: Adjust.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94041
+	* decl.c (check_initializer): Remove obsolete comment.
+	(wrap_cleanups_r): Don't wrap CLEANUP_EH_ONLY.
+	(initialize_local_var): Change assert to test.
+	* typeck2.c (maybe_push_temp_cleanup): New.
+	(split_nonconstant_init_1): Use it.
+	(split_nonconstant_init): Clear cleanup flags.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92385
+	* typeck2.c (PICFLAG_VEC_INIT): New.
+	(process_init_constructor_array): Set it.
+	(process_init_constructor): Handle it.
+	(split_nonconstant_init_1): Handle VEC_INIT_EXPR.
+	* init.c (build_vec_init): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Factor out...
+	* tree.c (expand_vec_init_expr): ...this function.
+	(build_vec_init_elt): Handle BRACE_ENCLOSED_INITIALIZER_P.
+	(build_vec_init_expr): Likewise.
+	* constexpr.c (cxx_eval_vec_init): Likewise.
+	(reduced_constant_expression_p): Check arrays before C++20.
+	* cp-tree.h (expand_vec_init_expr): Declare.
+
+2022-01-07  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_new_1): Remove preevaluation code.
+
 2022-01-05  Nathan Sidwell  <nathan@acm.org>
 
 	* pt.c (instantiate_class_template_1): Process attribute((used)) set

@@ -1,3 +1,62 @@
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi
+	(Special Functions for Debugging the Analyzer): Document
+	__analyzer_dump_escaped.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Other Debugging Techniques): Document
+	region::is_named_decl_p.
+
+2022-01-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/102941
+	* config/arm/aarch-common.c (arm_md_asm_adjust):
+	Use a temp if !REG_P.
+
+2022-01-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*move<V_32:mode>_internal): Add isa attribute.
+	(*movv2qi_internal): Remve sse2 requirement for alternatives 4,5.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/103750
+	* fwprop.c (forward_propagate_into): Allow propagations from
+	inner loop to outer loop.
+
+2022-01-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*cnot<mode>2): New define_insn.
+
+2022-01-07  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (rs6000_mffscrni): Define.
+	(rs6000_set_fpscr_rn): Change the type of operand[0] from DI to SI.
+	Call gen_rs6000_mffscrni when operand[0] is a const_0_to_3_operand.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md
+	(*<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Extend to
+	UNSPEC_PCMP_UNSIGNED.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103753
+	* config/i386/i386-expand.c (ix86_expand_vector_set): Not use
+	gen_avx2_pblendph_1 when elt == 0.
+	* config/i386/sse.md (avx2_pblendph): Rename to ..
+	(avx2_pblend<ssemodesuffix>_1).. this, and extend to V16HI.
+	(*avx2_pblendw): Rename to ..
+	(*avx2_pblend<ssemodesuffix>): .. this, and extend to V16HF.
+	(avx2_pblendw): Rename to ..
+	(*avx2_pblend<ssemodesuffix>): .. this, and extend to V16HF.
+	(blendsuf): Removed.
+	(sse4_1_pblend<blendsuf>): Renamed to ..
+	(sse4_1_pblend<ssemodesuffix>): .. this.
+
 2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/103925
