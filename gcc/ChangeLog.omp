@@ -1,6 +1,17 @@
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588370.html
+
+	* tree-core.h (struct tree_base): Add comments.
+	* tree-pretty-print.c (dump_generic_node): Handle allocate directive
+	kind.
+	* tree.h (OMP_ALLOCATE_KIND_ALLOCATE): New define.
+	(OMP_ALLOCATE_KIND_FREE): Likewise.
+
+2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
+
+	Backport of a patch posted at
 	https://gcc.gnu.org/pipermail/gcc-patches/2022-January/588369.html
 
 	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_ALLOCATOR.
