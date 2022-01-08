@@ -615,6 +615,23 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* Special case TImode to V1TImode conversions, via V2DI.  */
+  if (mode == V1TImode
+      && SUBREG_P (op1)
+      && GET_MODE (SUBREG_REG (op1)) == TImode
+      && TARGET_64BIT && TARGET_SSE
+      && can_create_pseudo_p ())
+    {
+      rtx tmp = gen_reg_rtx (V2DImode);
+      rtx lo = gen_reg_rtx (DImode);
+      rtx hi = gen_reg_rtx (DImode);
+      emit_move_insn (lo, gen_lowpart (DImode, SUBREG_REG (op1)));
+      emit_move_insn (hi, gen_highpart (DImode, SUBREG_REG (op1)));
+      emit_insn (gen_vec_concatv2di (tmp, lo, hi));
+      emit_move_insn (op0, gen_lowpart (V1TImode, tmp));
+      return;
+    }
+
   /* If operand0 is a hard register, make operand1 a pseudo.  */
   if (can_create_pseudo_p ()
       && !ix86_hardreg_mov_ok (op0, op1))
