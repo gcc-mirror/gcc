@@ -1088,6 +1088,8 @@ static void
 unformatted_read (st_parameter_dt *dtp, bt type,
 		  void *dest, int kind, size_t size, size_t nelems)
 {
+  unit_convert convert;
+
   if (type == BT_CLASS)
     {
 	  int unit = dtp->u.p.current_unit->unit_number;
@@ -1126,8 +1128,8 @@ unformatted_read (st_parameter_dt *dtp, bt type,
     size *= GFC_SIZE_OF_CHAR_KIND(kind);
   read_block_direct (dtp, dest, size * nelems);
 
-  if (unlikely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_SWAP)
-      && kind != 1)
+  convert = dtp->u.p.current_unit->flags.convert;
+  if (unlikely (convert != GFC_CONVERT_NATIVE) && kind != 1)
     {
       /* Handle wide chracters.  */
       if (type == BT_CHARACTER)
@@ -1142,7 +1144,50 @@ unformatted_read (st_parameter_dt *dtp, bt type,
   	  nelems *= 2;
   	  size /= 2;
   	}
+#ifndef HAVE_GFC_REAL_17
       bswap_array (dest, dest, size, nelems);
+#else
+      unit_convert bswap = convert & ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+      if (bswap == GFC_CONVERT_SWAP)
+	bswap_array (dest, dest, size, nelems);
+
+      if ((convert & GFC_CONVERT_R16_IEEE)
+	  && kind == 16
+	  && (type == BT_REAL || type == BT_COMPLEX))
+	{
+	  char *pd = dest;
+	  for (size_t i = 0; i < nelems; i++)
+	    {
+	      GFC_REAL_16 r16;
+	      GFC_REAL_17 r17;
+	      memcpy (&r17, pd, 16);
+	      r16 = r17;
+	      memcpy (pd, &r16, 16);
+	      pd += size;
+	    }
+	}
+      else if ((dtp->u.p.current_unit->flags.convert & GFC_CONVERT_R16_IBM)
+	       && kind == 17
+	       && (type == BT_REAL || type == BT_COMPLEX))
+	{
+	  if (type == BT_COMPLEX && size == 32)
+	    {
+	      nelems *= 2;
+	      size /= 2;
+	    }
+
+	  char *pd = dest;
+	  for (size_t i = 0; i < nelems; i++)
+	    {
+	      GFC_REAL_16 r16;
+	      GFC_REAL_17 r17;
+	      memcpy (&r16, pd, 16);
+	      r17 = r16;
+	      memcpy (pd, &r17, 16);
+	      pd += size;
+	    }
+	}
+#endif /* HAVE_GFC_REAL_17.  */
     }
 }
 
@@ -1156,6 +1201,8 @@ static void
 unformatted_write (st_parameter_dt *dtp, bt type,
 		   void *source, int kind, size_t size, size_t nelems)
 {
+  unit_convert convert;
+
   if (type == BT_CLASS)
     {
 	  int unit = dtp->u.p.current_unit->unit_number;
@@ -1190,8 +1237,14 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  return;
     }
 
-  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE)
-      || kind == 1)
+  convert = dtp->u.p.current_unit->flags.convert;
+  if (likely (convert == GFC_CONVERT_NATIVE) || kind == 1
+#ifdef HAVE_GFC_REAL_17
+      || ((type == BT_REAL || type == BT_COMPLEX)
+	  && ((kind == 16 && convert == GFC_CONVERT_R16_IBM)
+	      || (kind == 17 && convert == GFC_CONVERT_R16_IEEE)))
+#endif
+      )
     {
       size_t stride = type == BT_CHARACTER ?
 		  size * GFC_SIZE_OF_CHAR_KIND(kind) : size;
@@ -1233,9 +1286,50 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  else
 	    nc = nrem;
 
-	  bswap_array (buffer, p, size, nc);
+#ifdef HAVE_GFC_REAL_17
+	  if ((dtp->u.p.current_unit->flags.convert & GFC_CONVERT_R16_IEEE)
+	      && kind == 16
+	      && (type == BT_REAL || type == BT_COMPLEX))
+	    {
+	      for (size_t i = 0; i < nc; i++)
+		{
+		  GFC_REAL_16 r16;
+		  GFC_REAL_17 r17;
+		  memcpy (&r16, p, 16);
+		  r17 = r16;
+		  memcpy (&buffer[i * 16], &r17, 16);
+		  p += 16;
+		}
+	      if ((dtp->u.p.current_unit->flags.convert
+		   & ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM))
+		  == GFC_CONVERT_SWAP)
+		bswap_array (buffer, buffer, size, nc);
+	    }
+	  else if ((dtp->u.p.current_unit->flags.convert & GFC_CONVERT_R16_IBM)
+		   && kind == 17
+		   && (type == BT_REAL || type == BT_COMPLEX))
+	    {
+	      for (size_t i = 0; i < nc; i++)
+		{
+		  GFC_REAL_16 r16;
+		  GFC_REAL_17 r17;
+		  memcpy (&r17, p, 16);
+		  r16 = r17;
+		  memcpy (&buffer[i * 16], &r16, 16);
+		  p += 16;
+		}
+	      if ((dtp->u.p.current_unit->flags.convert
+		   & ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM))
+		  == GFC_CONVERT_SWAP)
+		bswap_array (buffer, buffer, size, nc);
+	    }
+	  else
+#endif
+	    {
+	      bswap_array (buffer, p, size, nc);
+	      p += size * nc;
+	    }
 	  write_buf (dtp, buffer, size * nc);
-	  p += size * nc;
 	  nrem -= nc;
 	}
       while (nrem > 0);
@@ -2691,8 +2785,12 @@ us_read (st_parameter_dt *dtp, int continued)
       return;
     }
 
+  int convert = dtp->u.p.current_unit->flags.convert;
+#ifdef HAVE_GFC_REAL_17
+  convert &= ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+#endif
   /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
-  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE))
+  if (likely (convert == GFC_CONVERT_NATIVE))
     {
       switch (nr)
 	{
@@ -2894,6 +2992,13 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
       if (conv == GFC_CONVERT_NONE)
 	conv = compile_options.convert;
 
+      u_flags.convert = 0;
+
+#ifdef HAVE_GFC_REAL_17
+      u_flags.convert = conv & (GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+      conv &= ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+#endif
+
       switch (conv)
 	{
 	case GFC_CONVERT_NATIVE:
@@ -2913,7 +3018,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	  break;
 	}
 
-      u_flags.convert = conv;
+      u_flags.convert |= conv;
 
       opp.common = dtp->common;
       opp.common.flags &= IOPARM_COMMON_MASK;
@@ -3710,8 +3815,12 @@ write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
   else
     len = compile_options.record_marker;
 
+  int convert = dtp->u.p.current_unit->flags.convert;
+#ifdef HAVE_GFC_REAL_17
+  convert &= ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+#endif
   /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
-  if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE))
+  if (likely (convert == GFC_CONVERT_NATIVE))
     {
       switch (len)
 	{
