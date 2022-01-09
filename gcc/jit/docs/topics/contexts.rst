@@ -453,6 +453,10 @@ Boolean options
      If true, the :type:`gcc_jit_context` will not clean up intermediate files
      written to the filesystem, and will display their location on stderr.
 
+  .. macro:: GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR
+
+     If true, libgccjit will not log the errors on stderr.
+
 .. function:: void \
               gcc_jit_context_set_bool_allow_unreachable_blocks (gcc_jit_context *ctxt, \
                                                                  int bool_value)
