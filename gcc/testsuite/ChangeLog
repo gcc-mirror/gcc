@@ -1,3 +1,25 @@
+2022-01-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-mov-1.c: New test case.
+	* gcc.target/i386/sse2-v1ti-zext.c: New test case.
+
+2022-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* g++.dg/cpp1y/constexpr-89074-2.C: New test.
+	* g++.dg/cpp1z/constexpr-89074-1.C: New test.
+
+2022-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103946
+	* g++.dg/cpp0x/nsdmi-array1.C: New test.
+
+2022-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100588
+	* g++.dg/cpp2a/destroying-delete5.C: Expect warning.
+	* g++.dg/cpp2a/destroying-delete6.C: New test.
+
 2022-01-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_dump_escaped): New

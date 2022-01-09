@@ -1,3 +1,21 @@
+2022-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* constexpr.c (cxx_maybe_fold_addr_pointer_plus): New function.
+	(cxx_eval_binary_expression): Use it.
+
+2022-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103946
+	* init.c (build_vec_init): Remove assert.
+	* tree.c (build_vec_init_expr): Likewise.
+
+2022-01-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100588
+	* call.c (build_op_delete_call): Ignore destroying delete
+	if alloc_fn.
+
 2022-01-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20040

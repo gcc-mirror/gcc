@@ -1,3 +1,14 @@
+2022-01-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_move): Add
+	special case for TImode to V1TImode moves, going via V2DImode.
+
+2022-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* match.pd ((ptr) (x p+ y) p+ z -> (ptr) (x p+ (y + z))): New GENERIC
+	simplification.
+
 2022-01-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi
