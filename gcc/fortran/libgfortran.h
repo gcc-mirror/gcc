@@ -86,14 +86,22 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_INVALID_UNIT   -3
 
 /* Possible values for the CONVERT I/O specifier.  */
-/* Keep in sync with GFC_FLAG_CONVERT_* in gcc/flags.h.  */
+/* Keep in sync with GFC_FLAG_CONVERT_* in gcc/flag-types.h.  */
 typedef enum
 {
   GFC_CONVERT_NONE = -1,
   GFC_CONVERT_NATIVE = 0,
   GFC_CONVERT_SWAP,
   GFC_CONVERT_BIG,
-  GFC_CONVERT_LITTLE
+  GFC_CONVERT_LITTLE,
+  GFC_CONVERT_R16_IEEE = 4,
+  GFC_CONVERT_R16_IEEE_SWAP,
+  GFC_CONVERT_R16_IEEE_BIG,
+  GFC_CONVERT_R16_IEEE_LITTLE,
+  GFC_CONVERT_R16_IBM = 8,
+  GFC_CONVERT_R16_IBM_SWAP,
+  GFC_CONVERT_R16_IBM_BIG,
+  GFC_CONVERT_R16_IBM_LITTLE,
 }
 unit_convert;
 
