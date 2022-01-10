@@ -11945,7 +11945,7 @@ joust_maybe_elide_copy (z_candidate *&cand)
 /* True if the defining declarations of the two candidates have equivalent
    parameters.  */
 
-bool
+static bool
 cand_parms_match (z_candidate *c1, z_candidate *c2)
 {
   tree fn1 = c1->fn;
@@ -11967,8 +11967,19 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
       fn1 = DECL_TEMPLATE_RESULT (t1);
       fn2 = DECL_TEMPLATE_RESULT (t2);
     }
-  return compparms (TYPE_ARG_TYPES (TREE_TYPE (fn1)),
-		    TYPE_ARG_TYPES (TREE_TYPE (fn2)));
+  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
+  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
+  if (DECL_FUNCTION_MEMBER_P (fn1)
+      && DECL_FUNCTION_MEMBER_P (fn2)
+      && (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn1)
+	  != DECL_NONSTATIC_MEMBER_FUNCTION_P (fn2)))
+    {
+      /* Ignore 'this' when comparing the parameters of a static member
+	 function with those of a non-static one.  */
+      parms1 = skip_artificial_parms_for (fn1, parms1);
+      parms2 = skip_artificial_parms_for (fn2, parms2);
+    }
+  return compparms (parms1, parms2);
 }
 
 /* Compare two candidates for overloading as described in
