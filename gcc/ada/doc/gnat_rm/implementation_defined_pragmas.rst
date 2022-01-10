@@ -7313,7 +7313,7 @@ For the variable case, warnings are never given for unreferenced
 variables whose name contains one of the substrings
 ``DISCARD, DUMMY, IGNORE, JUNK, UNUSED`` in any casing. Such names
 are typically to be used in cases where such warnings are expected.
-Thus it is never necessary to use ``pragma Unmodified`` for such
+Thus it is never necessary to use ``pragma Unused`` for such
 variables, though it is harmless to do so.
 
 Pragma Validity_Checks

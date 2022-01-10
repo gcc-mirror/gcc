@@ -936,10 +936,10 @@ package body Lib.Xref is
                      if Chars (BE) = Chars (E) then
                         if Has_Pragma_Unused (E) then
                            Error_Msg_NE -- CODEFIX
-                             ("??pragma Unused given for&!", N, BE);
+                             ("??aspect Unused specified for&!", N, BE);
                         else
                            Error_Msg_NE -- CODEFIX
-                             ("??pragma Unreferenced given for&!", N, BE);
+                             ("??aspect Unreferenced specified for&!", N, BE);
                         end if;
                         exit;
                      end if;
@@ -952,10 +952,10 @@ package body Lib.Xref is
 
             elsif Has_Pragma_Unused (E) then
                Error_Msg_NE -- CODEFIX
-                 ("??pragma Unused given for&!", N, E);
+                 ("??aspect Unused specified for&!", N, E);
             else
                Error_Msg_NE -- CODEFIX
-                 ("??pragma Unreferenced given for&!", N, E);
+                 ("??aspect Unreferenced specified for&!", N, E);
             end if;
          end if;
 

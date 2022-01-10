@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jan 03, 2022
+GNAT Reference Manual , Apr 22, 2022
 
 AdaCore
 
@@ -8837,7 +8837,7 @@ For the variable case, warnings are never given for unreferenced
 variables whose name contains one of the substrings
 @code{DISCARD, DUMMY, IGNORE, JUNK, UNUSED} in any casing. Such names
 are typically to be used in cases where such warnings are expected.
-Thus it is never necessary to use @code{pragma Unmodified} for such
+Thus it is never necessary to use @code{pragma Unused} for such
 variables, though it is harmless to do so.
 
 @node Pragma Validity_Checks,Pragma Volatile,Pragma Unused,Implementation Defined Pragmas
