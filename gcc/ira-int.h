@@ -1067,6 +1067,7 @@ extern void ira_debug_conflicts (bool);
 extern void ira_build_conflicts (void);
 
 /* ira-color.c */
+extern ira_allocno_t ira_soft_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_debug_hard_regs_forest (void);
 extern int ira_loop_edge_freq (ira_loop_tree_node_t, int, bool);
 extern void ira_reassign_conflict_allocnos (int);
