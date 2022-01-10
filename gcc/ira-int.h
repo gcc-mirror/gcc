@@ -1539,4 +1539,60 @@ ira_need_caller_save_p (ira_allocno_t a, unsigned int regno)
 				     ALLOCNO_MODE (a), regno);
 }
 
+/* Represents the boundary between an allocno in one loop and its parent
+   allocno in the enclosing loop.  It is usually possible to change a
+   register's allocation on this boundary; the class provides routines
+   for calculating the cost of such changes.  */
+class ira_loop_border_costs
+{
+public:
+  ira_loop_border_costs (ira_allocno_t);
+
+  int move_between_loops_cost () const;
+  int spill_outside_loop_cost () const;
+  int spill_inside_loop_cost () const;
+
+private:
+  /* The mode and class of the child allocno.  */
+  machine_mode m_mode;
+  reg_class m_class;
+
+  /* Sums the frequencies of the entry edges and the exit edges.  */
+  int m_entry_freq, m_exit_freq;
+};
+
+/* Return the cost of storing the register on entry to the loop and
+   loading it back on exit from the loop.  This is the cost to use if
+   the register is spilled within the loop but is successfully allocated
+   in the parent loop.  */
+inline int
+ira_loop_border_costs::spill_inside_loop_cost () const
+{
+  return (m_entry_freq * ira_memory_move_cost[m_mode][m_class][0]
+	  + m_exit_freq * ira_memory_move_cost[m_mode][m_class][1]);
+}
+
+/* Return the cost of loading the register on entry to the loop and
+   storing it back on exit from the loop.  This is the cost to use if
+   the register is successfully allocated within the loop but is spilled
+   in the parent loop.  */
+inline int
+ira_loop_border_costs::spill_outside_loop_cost () const
+{
+  return (m_entry_freq * ira_memory_move_cost[m_mode][m_class][1]
+	  + m_exit_freq * ira_memory_move_cost[m_mode][m_class][0]);
+}
+
+/* Return the cost of moving the pseudo register between different hard
+   registers on entry and exit from the loop.  This is the cost to use
+   if the register is successfully allocated within both this loop and
+   the parent loop, but the allocations for the loops differ.  */
+inline int
+ira_loop_border_costs::move_between_loops_cost () const
+{
+  ira_init_register_move_cost_if_necessary (m_mode);
+  auto move_cost = ira_register_move_cost[m_mode][m_class][m_class];
+  return move_cost * (m_entry_freq + m_exit_freq);
+}
+
 #endif /* GCC_IRA_INT_H */

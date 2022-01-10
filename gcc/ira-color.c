@@ -2567,13 +2567,23 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
   return REG_FREQ_FROM_EDGE_FREQ (freq);
 }
 
+/* Construct an object that describes the boundary between A and its
+   parent allocno.  */
+ira_loop_border_costs::ira_loop_border_costs (ira_allocno_t a)
+  : m_mode (ALLOCNO_MODE (a)),
+    m_class (ALLOCNO_CLASS (a)),
+    m_entry_freq (ira_loop_edge_freq (ALLOCNO_LOOP_TREE_NODE (a),
+				      ALLOCNO_REGNO (a), false)),
+    m_exit_freq (ira_loop_edge_freq (ALLOCNO_LOOP_TREE_NODE (a),
+				     ALLOCNO_REGNO (a), true))
+{
+}
+
 /* Calculate and return the cost of putting allocno A into memory.  */
 static int
 calculate_allocno_spill_cost (ira_allocno_t a)
 {
   int regno, cost;
-  machine_mode mode;
-  enum reg_class rclass;
   ira_allocno_t parent_allocno;
   ira_loop_tree_node_t parent_node, loop_node;
 
@@ -2586,24 +2596,12 @@ calculate_allocno_spill_cost (ira_allocno_t a)
     return cost;
   if ((parent_allocno = parent_node->regno_allocno_map[regno]) == NULL)
     return cost;
-  mode = ALLOCNO_MODE (a);
-  rclass = ALLOCNO_CLASS (a);
+  ira_loop_border_costs border_costs (a);
   if (ALLOCNO_HARD_REGNO (parent_allocno) < 0)
-    cost -= (ira_memory_move_cost[mode][rclass][0]
-	     * ira_loop_edge_freq (loop_node, regno, true)
-	     + ira_memory_move_cost[mode][rclass][1]
-	     * ira_loop_edge_freq (loop_node, regno, false));
+    cost -= border_costs.spill_outside_loop_cost ();
   else
-    {
-      ira_init_register_move_cost_if_necessary (mode);
-      cost += ((ira_memory_move_cost[mode][rclass][1]
-		* ira_loop_edge_freq (loop_node, regno, true)
-		+ ira_memory_move_cost[mode][rclass][0]
-		* ira_loop_edge_freq (loop_node, regno, false))
-	       - (ira_register_move_cost[mode][rclass][rclass]
-		  * (ira_loop_edge_freq (loop_node, regno, false)
-		     + ira_loop_edge_freq (loop_node, regno, true))));
-    }
+    cost += (border_costs.spill_inside_loop_cost ()
+	     - border_costs.move_between_loops_cost ());
   return cost;
 }
 
@@ -3342,7 +3340,7 @@ static void
 color_pass (ira_loop_tree_node_t loop_tree_node)
 {
   int regno, hard_regno, index = -1, n;
-  int cost, exit_freq, enter_freq;
+  int cost;
   unsigned int j;
   bitmap_iterator bi;
   machine_mode mode;
@@ -3466,8 +3464,6 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		}
 	      continue;
 	    }
-	  exit_freq = ira_loop_edge_freq (subloop_node, regno, true);
-	  enter_freq = ira_loop_edge_freq (subloop_node, regno, false);
 	  ira_assert (regno < ira_reg_equiv_len);
 	  if (ira_equiv_no_lvalue_p (regno))
 	    {
@@ -3483,16 +3479,16 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    }
 	  else if (hard_regno < 0)
 	    {
+	      ira_loop_border_costs border_costs (subloop_allocno);
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
-		-= ((ira_memory_move_cost[mode][rclass][1] * enter_freq)
-		    + (ira_memory_move_cost[mode][rclass][0] * exit_freq));
+		-= border_costs.spill_outside_loop_cost ();
 	    }
 	  else
 	    {
+	      ira_loop_border_costs border_costs (subloop_allocno);
 	      aclass = ALLOCNO_CLASS (subloop_allocno);
 	      ira_init_register_move_cost_if_necessary (mode);
-	      cost = (ira_register_move_cost[mode][rclass][rclass]
-		      * (exit_freq + enter_freq));
+	      cost = border_costs.move_between_loops_cost ();
 	      ira_allocate_and_set_or_copy_costs
 		(&ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno), aclass,
 		 ALLOCNO_UPDATED_CLASS_COST (subloop_allocno),
@@ -3508,8 +3504,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		ALLOCNO_UPDATED_CLASS_COST (subloop_allocno)
 		  = ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index];
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
-		+= (ira_memory_move_cost[mode][rclass][0] * enter_freq
-		    + ira_memory_move_cost[mode][rclass][1] * exit_freq);
+		+= border_costs.spill_inside_loop_cost ();
 	    }
 	}
     }
@@ -3550,7 +3545,6 @@ move_spill_restore (void)
 {
   int cost, regno, hard_regno, hard_regno2, index;
   bool changed_p;
-  int enter_freq, exit_freq;
   machine_mode mode;
   enum reg_class rclass;
   ira_allocno_t a, parent_allocno, subloop_allocno;
@@ -3605,38 +3599,28 @@ move_spill_restore (void)
 		       - (ALLOCNO_HARD_REG_COSTS (subloop_allocno) == NULL
 			  ? ALLOCNO_CLASS_COST (subloop_allocno)
 			  : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]));
-	      exit_freq = ira_loop_edge_freq (subloop_node, regno, true);
-	      enter_freq = ira_loop_edge_freq (subloop_node, regno, false);
+	      ira_loop_border_costs border_costs (subloop_allocno);
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (subloop_allocno)) < 0)
-		cost -= (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			 + ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		cost -= border_costs.spill_outside_loop_cost ();
 	      else
 		{
-		  cost
-		    += (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			+ ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		  cost += border_costs.spill_outside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
-			     * (exit_freq + enter_freq));
+		    cost -= border_costs.move_between_loops_cost ();
 		}
 	    }
 	  if ((parent = loop_node->parent) != NULL
 	      && (parent_allocno = parent->regno_allocno_map[regno]) != NULL)
 	    {
 	      ira_assert (rclass == ALLOCNO_CLASS (parent_allocno));
-	      exit_freq	= ira_loop_edge_freq (loop_node, regno, true);
-	      enter_freq = ira_loop_edge_freq (loop_node, regno, false);
+	      ira_loop_border_costs border_costs (a);
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (parent_allocno)) < 0)
-		cost -= (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			 + ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		cost -= border_costs.spill_outside_loop_cost ();
 	      else
 		{
-		  cost
-		    += (ira_memory_move_cost[mode][rclass][1] * exit_freq
-			+ ira_memory_move_cost[mode][rclass][0] * enter_freq);
+		  cost += border_costs.spill_inside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
-			     * (exit_freq + enter_freq));
+		    cost -= border_costs.move_between_loops_cost ();
 		}
 	    }
 	  if (cost < 0)
