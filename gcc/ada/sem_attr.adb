@@ -3421,7 +3421,6 @@ package body Sem_Attr is
               New_Occurrence_Of (RTE (RE_Low_Order_First), Loc));
          end if;
 
-         Set_Etype (N, RTE (RE_Bit_Order));
          Resolve (N);
 
          --  Reset incorrect indication of staticness
