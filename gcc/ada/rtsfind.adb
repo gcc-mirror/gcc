@@ -564,8 +564,12 @@ package body Rtsfind is
      Ada_Interrupts_Names .. Ada_Interrupts_Names;
 
    subtype Ada_Numerics_Descendant is Ada_Descendant
-     range Ada_Numerics_Generic_Elementary_Functions ..
-           Ada_Numerics_Generic_Elementary_Functions;
+     range Ada_Numerics_Big_Numbers ..
+           Ada_Numerics_Big_Numbers_Big_Integers_Ghost;
+
+   subtype Ada_Numerics_Big_Numbers_Descendant is Ada_Descendant
+     range Ada_Numerics_Big_Numbers_Big_Integers ..
+           Ada_Numerics_Big_Numbers_Big_Integers_Ghost;
 
    subtype Ada_Real_Time_Descendant is Ada_Descendant
      range Ada_Real_Time_Delays .. Ada_Real_Time_Timing_Events;
@@ -656,6 +660,10 @@ package body Rtsfind is
 
          elsif U_Id in Ada_Numerics_Descendant then
             Name_Buffer (13) := '.';
+
+            if U_Id in Ada_Numerics_Big_Numbers_Descendant then
+               Name_Buffer (25) := '.';
+            end if;
 
          elsif U_Id in Ada_Real_Time_Descendant then
             Name_Buffer (14) := '.';

@@ -10239,15 +10239,61 @@ package body Exp_Util is
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
+      Typ      : Entity_Id;
       Mode     : Name_Id;
       Curr_Val : Node_Id;
       Old_Val  : Node_Id) return Node_Id
    is
+      function Big_Integer_Lt return Entity_Id;
+      --  Returns the entity of the predefined "<" function from
+      --  Ada.Numerics.Big_Numbers.Big_Integers.
+
+      --------------------
+      -- Big_Integer_Lt --
+      --------------------
+
+      function Big_Integer_Lt return Entity_Id is
+         Big_Integers : constant Entity_Id :=
+           RTU_Entity (Ada_Numerics_Big_Numbers_Big_Integers);
+
+         E : Entity_Id := First_Entity (Big_Integers);
+
+      begin
+         while Present (E) loop
+            if Chars (E) = Name_Op_Lt then
+               return E;
+            end if;
+            Next_Entity (E);
+         end loop;
+
+         raise Program_Error;
+      end Big_Integer_Lt;
+
+   --  Start of processing for Make_Variant_Comparison
+
    begin
       if Mode = Name_Increases then
          return Make_Op_Gt (Loc, Curr_Val, Old_Val);
+
       else pragma Assert (Mode = Name_Decreases);
-         return Make_Op_Lt (Loc, Curr_Val, Old_Val);
+
+         --  For discrete expressions use the "<" operator
+
+         if Is_Discrete_Type (Typ) then
+            return Make_Op_Lt (Loc, Curr_Val, Old_Val);
+
+         --  For Big_Integer expressions use the "<" function, because the
+         --  operator on private type might not be visible and won't be
+         --  resolved.
+
+         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer));
+            return
+              Make_Function_Call (Loc,
+                Name                   =>
+                  New_Occurrence_Of (Big_Integer_Lt, Loc),
+                Parameter_Associations =>
+                  New_List (Curr_Val, Old_Val));
+         end if;
       end if;
    end Make_Variant_Comparison;
 

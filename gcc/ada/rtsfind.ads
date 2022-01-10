@@ -115,7 +115,13 @@ package Rtsfind is
 
       --  Children of Ada.Numerics
 
+      Ada_Numerics_Big_Numbers,
       Ada_Numerics_Generic_Elementary_Functions,
+
+      --  Children of Ada.Numerics.Big_Numbers
+
+      Ada_Numerics_Big_Numbers_Big_Integers,
+      Ada_Numerics_Big_Numbers_Big_Integers_Ghost,
 
       --  Children of Ada.Real_Time
 
@@ -584,6 +590,9 @@ package Rtsfind is
      RE_Exchange_Handler,                -- Ada.Interrupts
      RE_Detach_Handler,                  -- Ada.Interrupts
      RE_Reference,                       -- Ada.Interrupts
+
+     RE_Big_Integer,             -- Ada.Numerics.Big_Numbers.Big_Integers
+     RO_GH_Big_Integer,          -- Ada.Numerics.Big_Numbers.Big_Integers_Ghost
 
      RE_Names,                           -- Ada.Interrupts.Names
 
@@ -2270,6 +2279,9 @@ package Rtsfind is
      RE_Exchange_Handler                 => Ada_Interrupts,
      RE_Detach_Handler                   => Ada_Interrupts,
      RE_Reference                        => Ada_Interrupts,
+
+     RE_Big_Integer             => Ada_Numerics_Big_Numbers_Big_Integers,
+     RO_GH_Big_Integer          => Ada_Numerics_Big_Numbers_Big_Integers_Ghost,
 
      RE_Names                            => Ada_Interrupts_Names,
 

@@ -2636,6 +2636,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (Variant),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
@@ -3000,6 +3001,7 @@ package body Exp_Prag is
                  Expression =>
                    Make_Variant_Comparison (Loc,
                      Mode     => Chars (First (Choices (Variant))),
+                     Typ      => Expr_Typ,
                      Curr_Val => New_Occurrence_Of (Curr_Id, Loc),
                      Old_Val  => New_Occurrence_Of (Old_Id, Loc)))));
 
