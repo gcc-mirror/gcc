@@ -4444,6 +4444,12 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      else if (code == GT && TARGET_SSE4_1)
 		gen = gen_sminv4qi3;
 	      break;
+	    case E_V2QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv2qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv2qi3;
+	      break;
 	    case E_V8HImode:
 	      if (code == GTU && TARGET_SSE4_1)
 		gen = gen_uminv8hi3;
@@ -4537,6 +4543,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V16QImode:
 	    case E_V8QImode:
 	    case E_V4QImode:
+	    case E_V2QImode:
 	    case E_V8HImode:
 	    case E_V4HImode:
 	    case E_V2HImode:
