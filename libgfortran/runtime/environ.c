@@ -246,6 +246,11 @@ init_variables (void)
 #define SWAP     258
 #define BIG      259
 #define LITTLE   260
+#ifdef HAVE_GFC_REAL_17
+#define R16_IEEE 261
+#define R16_IBM  262
+#endif
+
 /* Some space for additional tokens later.  */
 #define INTEGER  273
 #define END      (-1)
@@ -391,6 +396,15 @@ next_token (void)
       result = match_word ("swap", SWAP);
       break;
 
+#ifdef HAVE_GFC_REAL_17
+    case 'r':
+    case 'R':
+      result = match_word ("r16_ieee", R16_IEEE);
+      if (result == ILLEGAL)
+	result = match_word ("r16_ibm", R16_IBM);
+      break;
+
+#endif
     case '1': case '2': case '3': case '4': case '5':
     case '6': case '7': case '8': case '9':
       result = match_integer ();
@@ -413,7 +427,8 @@ push_token (void)
 
 /* This is called when a unit is identified.  If do_count is nonzero,
    increment the number of units by one.  If do_count is zero,
-   put the unit into the table.  */
+   put the unit into the table.  For POWER, we have to make sure that
+   we can also put in the conversion btween IBM and IEEE long double.  */
 
 static void
 mark_single (int unit)
@@ -427,7 +442,11 @@ mark_single (int unit)
     }
   if (search_unit (unit, &i))
     {
+#ifdef HAVE_GFC_REAL_17
+      elist[i].conv |= endian;
+#else
       elist[i].conv = endian;
+#endif
     }
   else
     {
@@ -436,7 +455,11 @@ mark_single (int unit)
 
       n_elist += 1;
       elist[i].unit = unit;
+#ifdef HAVE_GFC_REAL_17
+      elist[i].conv |= endian;
+#else
       elist[i].conv = endian;
+#endif
     }
 }
 
@@ -480,6 +503,8 @@ do_parse (void)
 
   /* Parse the string.  First, let's look for a default.  */
   tok = next_token ();
+  endian = 0;
+
   switch (tok)
     {
     case NATIVE:
@@ -498,6 +523,15 @@ do_parse (void)
       endian = GFC_CONVERT_LITTLE;
       break;
 
+#ifdef HAVE_GFC_REAL_17
+    case R16_IEEE:
+      endian = GFC_CONVERT_R16_IEEE;
+      break;
+
+    case R16_IBM:
+      endian = GFC_CONVERT_R16_IBM;
+      break;
+#endif
     case INTEGER:
       /* A leading digit means that we are looking at an exception.
 	 Reset the position to the beginning, and continue processing
@@ -570,6 +604,19 @@ do_parse (void)
 	    goto error;
 	  endian = GFC_CONVERT_BIG;
 	  break;
+#ifdef HAVE_GFC_REAL_17
+	case R16_IEEE:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = GFC_CONVERT_R16_IEEE;
+	  break;
+
+	case R16_IBM:
+	  if (next_token () != ':')
+	    goto error;
+	  endian = GFC_CONVERT_R16_IBM;
+	  break;
+#endif
 
 	case INTEGER:
 	  push_token ();
