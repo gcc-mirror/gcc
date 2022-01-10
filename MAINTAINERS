@@ -23,8 +23,8 @@ Maintainers
 
 			Global Reviewers
 
-Richard Earnshaw				<richard.earnshaw@arm.com>
 Richard Biener					<rguenther@suse.de>
+Richard Earnshaw				<richard.earnshaw@arm.com>
 Jakub Jelinek					<jakub@redhat.com>
 Richard Kenner					<kenner@nyu.edu>
 Jeff Law					<jlaw@tachyum.com>
@@ -346,8 +346,8 @@ Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
 Christian Bruel					<christian.bruel@st.com>
-Andrew Burgess					<aburgess@redhat.com>
 Kevin Buettner					<kevinb@redhat.com>
+Andrew Burgess					<aburgess@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
 Daniel Carrera					<dcarrera@gmail.com>
@@ -469,8 +469,8 @@ Tim Josling					<tej@melbpc.org.au>
 Victor Kaplansky				<victork@il.ibm.com>
 Geoffrey Keating				<geoffk@geoffk.org>
 Brendan Kehoe					<brendan@zen.org>
-Matthias Klose					<doko@debian.org>
 Andi Kleen					<andi@firstfloor.org>
+Matthias Klose					<doko@debian.org>
 Jeff Knaggs					<jknaggs@redhat.com>
 Michael Koch					<konqueror@gmx.de>
 Nicolas Koenig					<koenigni@student.ethz.ch>
@@ -487,9 +487,9 @@ Doug Kwan					<dougkwan@google.com>
 Scott Robert Ladd				<scott.ladd@coyotegulch.com>
 Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
-Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
 Jerome Lambourg					<lambourg@adacore.com>
+Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
@@ -517,6 +517,7 @@ H.J. Lu						<hjl.tools@gmail.com>
 Xiong Hu Luo					<luoxhu@linux.vnet.ibm.com>
 Bin Bin Lv					<shlb@linux.ibm.com>
 Christophe Lyon					<christophe.lyon@st.com>
+Jun Ma						<junma@linux.alibaba.com>
 Luis Machado					<luisgpm@br.ibm.com>
 Ziga Mahkovec					<ziga.mahkovec@klika.si>
 Matthew Malcomson				<matthew.malcomson@arm.com>
@@ -545,7 +546,6 @@ Dirk Mueller					<dmueller@suse.de>
 Phil Muldoon					<pmuldoon@redhat.com>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Steven Munroe					<munroesj52@gmail.com>
-Jun Ma						<junma@linux.alibaba.com>
 Szabolcs Nagy					<szabolcs.nagy@arm.com>
 Quentin Neill					<quentin.neill.gnu@gmail.com>
 Adam Nemet					<adambnemet@gmail.com>
@@ -556,9 +556,9 @@ James Norris
 Diego Novillo					<dnovillo@google.com>
 Dorit Nuzman					<dorit@il.ibm.com>
 David O'Brien					<obrien@FreeBSD.org>
-Braden Obrzut					<admin@maniacsvault.net>
 Carlos O'Donell					<carlos@redhat.com>
 Peter O'Gorman					<pogma@thewrittenword.com>
+Braden Obrzut					<admin@maniacsvault.net>
 Andrea Ornstein					<andrea.ornstein@st.com>
 Maxim Ostapenko					<m.ostapenko@samsung.com>
 Patrick Palka					<ppalka@gcc.gnu.org>
@@ -621,14 +621,15 @@ Franz Sirl					<franz.sirl-kernel@lauterbach.com>
 Jan Sjodin					<jan.sjodin@amd.com>
 Trevor Smigiel					<trevor_smigiel@playstation.sony.com>
 Edward Smith-Rowland				<3dw4rd@verizon.net>
-Jayant Sonar					<rsonar.jayant@gmail.com>
 Anatoly Sokolov					<aesok@dol.ru>
 Michael Sokolov					<msokolov@ivan.Harhan.ORG>
+Jayant Sonar					<rsonar.jayant@gmail.com>
 Richard Stallman				<rms@gnu.org>
 Basile Starynkevitch				<basile@starynkevitch.net>
 Jakub Staszak					<kuba@et.pl>
 Graham Stott					<graham.stott@btinternet.com>
 Jeff Sturm					<jsturm@gcc.gnu.org>
+YunQiang Su					<yunqiang.su@cipunited.com>
 Robert Suchanek					<rsuchy84@gmail.com>
 Andrew Sutton					<andrew.n.sutton@gmail.com>
 Gabriele Svelto					<gabriele.svelto@st.com>
@@ -695,7 +696,6 @@ Shujing Zhao					<pearly.zhao@oracle.com>
 Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
 Josef Zlomek					<josef.zlomek@email.cz>
-YunQiang Su					<yunqiang.su@cipunited.com>
 
 			Bug database only accounts
 
@@ -711,14 +711,14 @@ Certificate of Origin Version 1.1.  See https://gcc.gnu.org/dco.html for more
 information.
 
 
- Gaius Mulley					<gaiusmod2@gmail.com>
- Jeff Law					<jeffreyalaw@gmail.com>
- Jeff Law					<jlaw@tachyum.com>
- Jonathan Wakely				<jwakely@redhat.com>
- Martin Uecker					<uecker@gcc.gnu.org>
- Matthias Kretz					<m.kretz@gsi.de>
- Nathan Sidwell					<nathan@acm.org>
- Navid Rahimi					<navidrahimi@microsoft.com>
- Petter Tomner					<tomner@kth.se>
- Siddhesh Poyarekar				<siddhesh@gotplt.org>
- Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
+Matthias Kretz					<m.kretz@gsi.de>
+Jeff Law					<jeffreyalaw@gmail.com>
+Jeff Law					<jlaw@tachyum.com>
+Gaius Mulley					<gaiusmod2@gmail.com>
+Siddhesh Poyarekar				<siddhesh@gotplt.org>
+Navid Rahimi					<navidrahimi@microsoft.com>
+Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
+Nathan Sidwell					<nathan@acm.org>
+Petter Tomner					<tomner@kth.se>
+Martin Uecker					<uecker@gcc.gnu.org>
+Jonathan Wakely					<jwakely@redhat.com>
