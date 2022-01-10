@@ -1618,7 +1618,7 @@ set_gc_used (pair_p variables)
     printf ("%s used %d GTY-ed variables\n", progname, nbvars);
 }
 
-/* File mapping routines.  For each input file, there is one output .c file
+/* File mapping routines.  For each input file, there is one output .cc file
    (but some output files have many input files), and there is one .h file
    for the whole build.  */
 
@@ -1949,8 +1949,8 @@ struct file_rule_st {
 /* File rule action handling *.h files.  */
 static outf_p header_dot_h_frul (input_file*, char**, char**);
 
-/* File rule action handling *.c files.  */
-static outf_p source_dot_c_frul (input_file*, char**, char**);
+/* File rule action handling *.cc files.  */
+static outf_p source_dot_cc_frul (input_file*, char**, char**);
 
 #define NULL_REGEX (regex_t*)0
 
@@ -1970,9 +1970,9 @@ struct file_rule_st files_rules[] = {
      but are not shared.  */
 
   /* the c-family/ source directory is special.  */
-  { DIR_PREFIX_REGEX "c-family/([[:alnum:]_-]*)\\.c$",
+  { DIR_PREFIX_REGEX "c-family/([[:alnum:]_-]*)\\.cc$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-c-family-$3.h", "c-family/$3.c", NULL_FRULACT},
+    "gt-c-family-$3.h", "c-family/$3.cc", NULL_FRULACT},
 
   { DIR_PREFIX_REGEX "c-family/([[:alnum:]_-]*)\\.h$",
     REG_EXTENDED, NULL_REGEX,
@@ -2015,20 +2015,14 @@ struct file_rule_st files_rules[] = {
     REG_EXTENDED, NULL_REGEX,
     "gt-objc-objc-map.h", "objc/objc-map.cc", NULL_FRULACT },
 
-  /* General cases.  For header *.h and source *.c or *.cc files, we
+  /* General cases.  For header *.h and *.cc files, we
    * need special actions to handle the language.  */
-
-  /* Source *.c files are using get_file_gtfilename to compute their
-     output_name and get_file_basename to compute their for_name
-     through the source_dot_c_frul action.  */
-  { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.c$",
-    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.c", source_dot_c_frul},
 
   /* Source *.cc files are using get_file_gtfilename to compute their
      output_name and get_file_basename to compute their for_name
-     through the source_dot_c_frul action.  */
+     through the source_dot_cc_frul action.  */
   { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.cc$",
-    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.cc", source_dot_c_frul},
+    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.cc", source_dot_cc_frul},
 
   /* Common header files get "gtype-desc.cc" as their output_name,
    * while language specific header files are handled specially.  So
@@ -2083,13 +2077,13 @@ header_dot_h_frul (input_file* inpf, char**poutname,
 }
 
 
-/* Special file rules action for handling *.c source files using
+/* Special file rules action for handling *.cc source files using
  * get_file_gtfilename to compute their output_name and
  * get_file_basename to compute their for_name.  The output_name is
  * gt-<LANG>-<BASE>.h for language specific source files, and
  * gt-<BASE>.h for common source files.  */
 static outf_p
-source_dot_c_frul (input_file* inpf, char**poutname, char**pforname)
+source_dot_cc_frul (input_file* inpf, char**poutname, char**pforname)
 {
   char *newbasename = CONST_CAST (char*, get_file_basename (inpf));
   char *newoutname = CONST_CAST (char*, get_file_gtfilename (inpf));
@@ -2371,8 +2365,8 @@ close_output_files (void)
 	{
 	  FILE *newfile = NULL;
 	  char *backupname = NULL;
-	  /* Back up the old version of the output file gt-FOO.c as
-	     BACKUPDIR/gt-FOO.c~ if we have a backup directory.  */
+	  /* Back up the old version of the output file gt-FOO.cc as
+	     BACKUPDIR/gt-FOO.cc~ if we have a backup directory.  */
 	  if (backup_dir)
 	    {
 	      backupname = concat (backup_dir, "/",

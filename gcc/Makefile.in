@@ -1784,7 +1784,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  gcc-ranlib$(exeext) \
  genversion$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  gcov-tool$(exeect) \
- gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a \
+ gengtype$(exeext) *.[0-9][0-9].* *.[si] *-checksum.cc libbackend.a \
  libcommon-target.a libcommon.a libgcc.mk perf.data
 
 # This symlink makes the full installation name of the driver be available
@@ -2421,10 +2421,10 @@ simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
 simple_generated_c	= $(simple_rtl_generated_c) insn-enums.cc
 
 $(simple_generated_h:insn-%.h=s-%) \
-$(simple_generated_c:insn-%.c=s-%): s-%: $(MD_DEPS)
+$(simple_generated_c:insn-%.cc=s-%): s-%: $(MD_DEPS)
 
 $(simple_rtl_generated_h:insn-%.h=s-%) \
-$(simple_rtl_generated_c:insn-%.c=s-%): s-%: insn-conditions.md
+$(simple_rtl_generated_c:insn-%.cc=s-%): s-%: insn-conditions.md
 
 $(simple_generated_h): insn-%.h: s-%; @true
 
@@ -2434,11 +2434,11 @@ $(simple_generated_h:insn-%.h=s-%): s-%: build/gen%$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-$*.h insn-$*.h
 	$(STAMP) s-$*
 
-$(simple_generated_c): insn-%.c: s-%; @true
-$(simple_generated_c:insn-%.c=s-%): s-%: build/gen%$(build_exeext)
+$(simple_generated_c): insn-%.cc: s-%; @true
+$(simple_generated_c:insn-%.cc=s-%): s-%: build/gen%$(build_exeext)
 	$(RUN_GEN) build/gen$*$(build_exeext) $(md_file) \
-	  $(filter insn-conditions.md,$^) > tmp-$*.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-$*.c insn-$*.c
+	  $(filter insn-conditions.md,$^) > tmp-$*.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-$*.cc insn-$*.cc
 	$(STAMP) s-$*
 
 # gencheck doesn't read the machine description, and the file produced
@@ -2449,12 +2449,12 @@ s-check : build/gencheck$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-check.h tree-check.h
 	$(STAMP) s-check
 
-# genattrtab produces three files: tmp-{attrtab.c,dfatab.c,latencytab.c}
+# genattrtab produces three files: tmp-{attrtab.cc,dfatab.cc,latencytab.cc}
 insn-attrtab.cc insn-dfatab.cc insn-latencytab.cc: s-attrtab ; @true
 s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext) \
   insn-conditions.md
 	$(RUN_GEN) build/genattrtab$(build_exeext) $(md_file) insn-conditions.md \
-		-Atmp-attrtab.c -Dtmp-dfatab.c -Ltmp-latencytab.c
+		-Atmp-attrtab.cc -Dtmp-dfatab.cc -Ltmp-latencytab.cc
 	$(SHELL) $(srcdir)/../move-if-change tmp-attrtab.cc    insn-attrtab.cc
 	$(SHELL) $(srcdir)/../move-if-change tmp-dfatab.cc     insn-dfatab.cc
 	$(SHELL) $(srcdir)/../move-if-change tmp-latencytab.cc insn-latencytab.cc
@@ -2464,7 +2464,7 @@ s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext) \
 insn-opinit.cc insn-opinit.h: s-opinit ; @true
 s-opinit: $(MD_DEPS) build/genopinit$(build_exeext) insn-conditions.md
 	$(RUN_GEN) build/genopinit$(build_exeext) $(md_file) \
-	  insn-conditions.md -htmp-opinit.h -ctmp-opinit.c
+	  insn-conditions.md -htmp-opinit.h -ctmp-opinit.cc
 	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.h insn-opinit.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.cc insn-opinit.cc
 	$(STAMP) s-opinit
@@ -2472,8 +2472,8 @@ s-opinit: $(MD_DEPS) build/genopinit$(build_exeext) insn-conditions.md
 # gencondmd doesn't use the standard naming convention.
 build/gencondmd.cc: s-conditions; @true
 s-conditions: $(MD_DEPS) build/genconditions$(build_exeext)
-	$(RUN_GEN) build/genconditions$(build_exeext) $(md_file) > tmp-condmd.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-condmd.c build/gencondmd.cc
+	$(RUN_GEN) build/genconditions$(build_exeext) $(md_file) > tmp-condmd.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-condmd.cc build/gencondmd.cc
 	$(STAMP) s-conditions
 
 insn-conditions.md: s-condmd; @true
@@ -2499,8 +2499,8 @@ insn-modes-inline.h: s-modes-inline-h; @true
 min-insn-modes.cc: s-modes-m; @true
 
 s-modes: build/genmodes$(build_exeext)
-	$(RUN_GEN) build/genmodes$(build_exeext) > tmp-modes.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-modes.c insn-modes.cc
+	$(RUN_GEN) build/genmodes$(build_exeext) > tmp-modes.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-modes.cc insn-modes.cc
 	$(STAMP) s-modes
 
 s-modes-h: build/genmodes$(build_exeext)
@@ -2515,8 +2515,8 @@ s-modes-inline-h: build/genmodes$(build_exeext)
 	$(STAMP) s-modes-inline-h
 
 s-modes-m: build/genmodes$(build_exeext)
-	$(RUN_GEN) build/genmodes$(build_exeext) -m > tmp-min-modes.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.c min-insn-modes.cc
+	$(RUN_GEN) build/genmodes$(build_exeext) -m > tmp-min-modes.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.cc min-insn-modes.cc
 	$(STAMP) s-modes-m
 
 insn-preds.cc: s-preds; @true
@@ -2528,8 +2528,8 @@ mddump: $(BUILD_RTL) $(MD_DEPS) build/genmddump$(build_exeext)
 	$(RUN_GEN) build/genmddump$(build_exeext) $(md_file) > tmp-mddump.md
 
 s-preds: $(MD_DEPS) build/genpreds$(build_exeext)
-	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-preds.c insn-preds.cc
+	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-preds.cc insn-preds.cc
 	$(STAMP) s-preds
 
 s-preds-h: $(MD_DEPS) build/genpreds$(build_exeext)
@@ -2734,8 +2734,8 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
 
 GTFILES_H = $(subst /,-, \
 	    $(shell echo $(patsubst $(srcdir)/%,gt-%, \
-			   $(patsubst %.c,%.h, \
-			     $(filter %.c, $(GTFILES)))) \
+			   $(patsubst %.cc,%.h, \
+			     $(filter %.cc, $(GTFILES)))) \
 			| sed -e "s|/[^ ]*/|/|g" -e "s|gt-config/|gt-|g"))
 
 GTFILES_LANG_H = $(patsubst [%], gtype-%.h, $(filter [%], $(GTFILES)))
@@ -3536,7 +3536,7 @@ mostlyclean: lang.mostlyclean
 	-rm -f gt-*
 	-rm -f gtype.state
 # Delete genchecksum outputs
-	-rm -f *-checksum.c
+	-rm -f *-checksum.cc
 # Delete lock-and-run bits
 	-rm -rf linkfe.lck lock-stamp.*
 
@@ -3574,7 +3574,7 @@ distclean: clean lang.distclean
 	-rm -f *.asm
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/*.log testsuite/*.sum
-	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.c
+	-cd testsuite && rm -f x *.x *.x? *.exe *.rpo *.o *.s *.S *.cc
 	-cd testsuite && rm -f *.out *.gcov *$(coverageexts)
 	-rm -rf ${QMTEST_DIR} stamp-qmtest
 	-rm -f .gdbinit configargs.h
@@ -4336,7 +4336,7 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	$(ETAGS) -o TAGS.sub c-family/*.h c-family/*.c c-family/*.cc \
+	$(ETAGS) -o TAGS.sub c-family/*.h c-family/*.cc c-family/*.cc \
 	      *.h *.c *.cc \
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \

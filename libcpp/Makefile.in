@@ -96,7 +96,7 @@ libcpp_a_SOURCES = charset.cc directives.cc errors.cc \
 all: libcpp.a $(USED_CATALOGS)
 
 .SUFFIXES:
-.SUFFIXES: .c .gmo .o .obj .po .pox
+.SUFFIXES: .cc .gmo .o .obj .po .pox
 
 libcpp.a: $(libcpp_a_OBJS)
 	-rm -f libcpp.a
@@ -223,7 +223,7 @@ endif
 
 # Implicit rules and I18N
 
-.c.o:
+.cc.o:
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

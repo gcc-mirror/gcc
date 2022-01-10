@@ -121,13 +121,13 @@ ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
 
-# FIXME: need to add $(ADA_CFLAGS) to .c.o suffix rule
+# FIXME: need to add $(ADA_CFLAGS) to .cc.o suffix rule
 # Use mildly strict warnings for this front end and add special flags.
 ada-warn = $(ADA_CFLAGS) $(filter-out -pedantic, $(STRICT_WARN))
 # Unresolved warnings in specific files.
 ada/adaint.o-warn = -Wno-error
 
-ada/%.o: ada/gcc-interface/%.c
+ada/%.o: ada/gcc-interface/%.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
@@ -796,7 +796,7 @@ ada.srcextra:
 ada.srcman:
 
 ada.tags: force
-	cd $(srcdir)/ada && $(ETAGS) -o TAGS.sub *.c *.h *.ads *.adb && \
+	cd $(srcdir)/ada && $(ETAGS) -o TAGS.sub *.cc *.h *.ads *.adb && \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 

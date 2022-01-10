@@ -296,6 +296,10 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(INCLUDES) $< $(OUTPUT_OPTION)
 
+.cc.o:
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	  $(INCLUDES) $< $(OUTPUT_OPTION)
+
 .adb.o:
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -411,6 +415,7 @@ ifeq ($(TOOLSCASE),native)
   vpath %.ads ../$(RTSDIR) ../
   vpath %.adb ../$(RTSDIR) ../
   vpath %.c   ../$(RTSDIR) ../
+  vpath %.cc  ../$(RTSDIR) ../
   vpath %.h   ../$(RTSDIR) ../
 endif
 
@@ -420,6 +425,7 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.ads ../
   vpath %.adb ../
   vpath %.c   ../
+  vpath %.cc  ../
   vpath %.h   ../
 endif
 

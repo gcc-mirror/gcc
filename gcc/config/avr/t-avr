@@ -84,7 +84,7 @@ avr-mcus: $(srcdir)/doc/avr-mmcu.texi ; @true
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.cc \
   $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.cc \
   $(srcdir)/config/avr/avr-arch.h
-	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@
 
 gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.cc \
   $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.cc \
