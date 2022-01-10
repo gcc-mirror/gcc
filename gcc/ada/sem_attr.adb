@@ -2693,8 +2693,6 @@ package body Sem_Attr is
 
       procedure Check_Task_Prefix is
       begin
-         Analyze (P);
-
          --  Ada 2005 (AI-345): Attribute 'Terminated can be applied to
          --  task interface class-wide types.
 
@@ -4301,7 +4299,6 @@ package body Sem_Attr is
 
       when Attribute_Identity =>
          Check_E0;
-         Analyze (P);
 
          if Etype (P) = Standard_Exception_Type then
             Set_Etype (N, RTE (RE_Exception_Id));
@@ -5505,8 +5502,6 @@ package body Sem_Attr is
 
          --  The prefix must be a protected object (AARM D.5.2 (2/2))
 
-         Analyze (P);
-
          if Is_Protected_Type (Etype (P))
            or else (Is_Access_Type (Etype (P))
                       and then Is_Protected_Type (Designated_Type (Etype (P))))
@@ -5846,7 +5841,6 @@ package body Sem_Attr is
 
       when Attribute_Ref =>
          Check_E1;
-         Analyze (P);
 
          if Nkind (P) /= N_Expanded_Name
            or else not Is_RTE (P_Type, RE_Address)
@@ -5874,7 +5868,6 @@ package body Sem_Attr is
 
       begin
          Check_E1;
-         Analyze (P);
          Check_System_Prefix;
 
          --  No_Dependence case
@@ -6456,7 +6449,6 @@ package body Sem_Attr is
          Val : Uint;
       begin
          Check_E1;
-         Analyze (P);
          Check_System_Prefix;
 
          Generate_Reference (RTE (RE_Address), P);
