@@ -3479,6 +3479,13 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    }
 	  else if (hard_regno < 0)
 	    {
+	      /* If we allocate a register to SUBLOOP_ALLOCNO, we'll need
+		 to load the register on entry to the subloop and store
+		 the register back on exit from the subloop.  This incurs
+		 a fixed cost for all registers.  Since UPDATED_MEMORY_COST
+		 is (and should only be) used relative to the register costs
+		 for the same allocno, we can subtract this shared register
+		 cost from the memory cost.  */
 	      ira_loop_border_costs border_costs (subloop_allocno);
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
 		-= border_costs.spill_outside_loop_cost ();
@@ -3503,6 +3510,9 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  > ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index])
 		ALLOCNO_UPDATED_CLASS_COST (subloop_allocno)
 		  = ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index];
+	      /* If we spill SUBLOOP_ALLOCNO, we'll need to store HARD_REGNO
+		 on entry to the subloop and restore HARD_REGNO on exit from
+		 the subloop.  */
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
 		+= border_costs.spill_inside_loop_cost ();
 	    }
@@ -3601,9 +3611,17 @@ move_spill_restore (void)
 			  : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]));
 	      ira_loop_border_costs border_costs (subloop_allocno);
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (subloop_allocno)) < 0)
-		cost -= border_costs.spill_outside_loop_cost ();
+		/* The register was spilled in the subloop.  If we spill
+		   it in the outer loop too then we'll no longer need to
+		   save the register on entry to the subloop and restore
+		   the register on exit from the subloop.  */
+		cost -= border_costs.spill_inside_loop_cost ();
 	      else
 		{
+		  /* The register was also allocated in the subloop.  If we
+		     spill it in the outer loop then we'll need to load the
+		     register on entry to the subloop and store the register
+		     back on exit from the subloop.  */
 		  cost += border_costs.spill_outside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
 		    cost -= border_costs.move_between_loops_cost ();
@@ -3615,9 +3633,17 @@ move_spill_restore (void)
 	      ira_assert (rclass == ALLOCNO_CLASS (parent_allocno));
 	      ira_loop_border_costs border_costs (a);
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (parent_allocno)) < 0)
+		/* The register was spilled in the parent loop.  If we spill
+		   it in this loop too then we'll no longer need to load the
+		   register on entry to this loop and save the register back
+		   on exit from this loop.  */
 		cost -= border_costs.spill_outside_loop_cost ();
 	      else
 		{
+		  /* The register was also allocated in the parent loop.
+		     If we spill it in this loop then we'll need to save
+		     the register on entry to this loop and restore the
+		     register on exit from this loop.  */
 		  cost += border_costs.spill_inside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
 		    cost -= border_costs.move_between_loops_cost ();
