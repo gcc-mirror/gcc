@@ -314,6 +314,13 @@ struct ira_allocno
      vector where a bit with given index represents allocno with the
      same number.  */
   unsigned int conflict_vec_p : 1;
+  /* True if the parent loop has an allocno for the same register and
+     if the parent allocno's assignment might not be valid in this loop.
+     This means that we cannot merge this allocno and the parent allocno
+     together.
+
+     This is only ever true for non-cap allocnos.  */
+  unsigned int might_conflict_with_parent_p : 1;
   /* Hard register assigned to given allocno.  Negative value means
      that memory was allocated to the allocno.  During the reload,
      spilled allocno has value equal to the corresponding stack slot
@@ -423,6 +430,8 @@ struct ira_allocno
 #define ALLOCNO_CAP_MEMBER(A) ((A)->cap_member)
 #define ALLOCNO_NREFS(A) ((A)->nrefs)
 #define ALLOCNO_FREQ(A) ((A)->freq)
+#define ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P(A) \
+  ((A)->might_conflict_with_parent_p)
 #define ALLOCNO_HARD_REGNO(A) ((A)->hard_regno)
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)
@@ -1621,6 +1630,34 @@ ira_subloop_allocnos_can_differ_p (ira_allocno_t a, bool allocated_p = true)
     }
 
   return true;
+}
+
+/* Return true if we should treat A and SUBLOOP_A as belonging to a
+   single region.  */
+inline bool
+ira_single_region_allocno_p (ira_allocno_t a, ira_allocno_t subloop_a)
+{
+  if (flag_ira_region != IRA_REGION_MIXED)
+    return false;
+
+  if (ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (subloop_a))
+    return false;
+
+  auto rclass = ALLOCNO_CLASS (a);
+  auto pclass = ira_pressure_class_translate[rclass];
+  auto loop_used_regs = ALLOCNO_LOOP_TREE_NODE (a)->reg_pressure[pclass];
+  return loop_used_regs <= ira_class_hard_regs_num[pclass];
+}
+
+/* Return the set of all hard registers that conflict with A.  */
+inline HARD_REG_SET
+ira_total_conflict_hard_regs (ira_allocno_t a)
+{
+  auto obj_0 = ALLOCNO_OBJECT (a, 0);
+  HARD_REG_SET conflicts = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj_0);
+  for (int i = 1; i < ALLOCNO_NUM_OBJECTS (a); i++)
+    conflicts |= OBJECT_TOTAL_CONFLICT_HARD_REGS (ALLOCNO_OBJECT (a, i));
+  return conflicts;
 }
 
 #endif /* GCC_IRA_INT_H */

@@ -497,6 +497,7 @@ ira_create_allocno (int regno, bool cap_p,
   bitmap_set_bit (loop_tree_node->all_allocnos, ALLOCNO_NUM (a));
   ALLOCNO_NREFS (a) = 0;
   ALLOCNO_FREQ (a) = 0;
+  ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (a) = false;
   ALLOCNO_HARD_REGNO (a) = -1;
   ALLOCNO_CALL_FREQ (a) = 0;
   ALLOCNO_CALLS_CROSSED_NUM (a) = 0;
@@ -1991,6 +1992,35 @@ propagate_modified_regnos (ira_loop_tree_node_t loop_tree_node)
 		   loop_tree_node->modified_regnos);
 }
 
+/* Propagate ALLOCNO_HARD_REG_COSTS from A to PARENT_A.  Use SPILL_COST
+   as the cost of spilling a register throughout A (which we have to do
+   for PARENT_A allocations that conflict with A).  */
+static void
+ira_propagate_hard_reg_costs (ira_allocno_t parent_a, ira_allocno_t a,
+			      int spill_cost)
+{
+  HARD_REG_SET conflicts = ira_total_conflict_hard_regs (a);
+  conflicts &= ~ira_total_conflict_hard_regs (parent_a);
+
+  auto costs = ALLOCNO_HARD_REG_COSTS (a);
+  if (!hard_reg_set_empty_p (conflicts))
+    ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (a) = true;
+  else if (!costs)
+    return;
+
+  auto aclass = ALLOCNO_CLASS (a);
+  ira_allocate_and_set_costs (&ALLOCNO_HARD_REG_COSTS (parent_a),
+			      aclass, ALLOCNO_CLASS_COST (parent_a));
+  auto parent_costs = ALLOCNO_HARD_REG_COSTS (parent_a);
+  for (int i = 0; i < ira_class_hard_regs_num[aclass]; ++i)
+    if (TEST_HARD_REG_BIT (conflicts, ira_class_hard_regs[aclass][i]))
+      parent_costs[i] += spill_cost;
+    else if (costs)
+      /* The cost to A of allocating this register to PARENT_A can't
+	 be more than the cost of spilling the register throughout A.  */
+      parent_costs[i] += MIN (costs[i], spill_cost);
+}
+
 /* Propagate new info about allocno A (see comments about accumulated
    info in allocno definition) to the corresponding allocno on upper
    loop tree level.  So allocnos on upper levels accumulate
@@ -2019,12 +2049,27 @@ propagate_allocno_info (void)
 	  && bitmap_bit_p (ALLOCNO_LOOP_TREE_NODE (a)->border_allocnos,
 			   ALLOCNO_NUM (a)))
 	{
+	  /* Calculate the cost of storing to memory on entry to A's loop,
+	     referencing as memory within A's loop, and restoring from
+	     memory on exit from A's loop.  */
+	  ira_loop_border_costs border_costs (a);
+	  int spill_cost = INT_MAX;
+	  if (ira_subloop_allocnos_can_differ_p (parent_a))
+	    spill_cost = (border_costs.spill_inside_loop_cost ()
+			  + ALLOCNO_MEMORY_COST (a));
+
 	  if (! ALLOCNO_BAD_SPILL_P (a))
 	    ALLOCNO_BAD_SPILL_P (parent_a) = false;
 	  ALLOCNO_NREFS (parent_a) += ALLOCNO_NREFS (a);
 	  ALLOCNO_FREQ (parent_a) += ALLOCNO_FREQ (a);
+
+	  /* If A's allocation can differ from PARENT_A's, we can if necessary
+	     spill PARENT_A on entry to A's loop and restore it afterwards.
+	     Doing that has cost SPILL_COST.  */
+	  if (!ira_subloop_allocnos_can_differ_p (parent_a))
+	    merge_hard_reg_conflicts (a, parent_a, true);
+
 	  ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
-	  merge_hard_reg_conflicts (a, parent_a, true);
 	  ALLOCNO_CALLS_CROSSED_NUM (parent_a)
 	    += ALLOCNO_CALLS_CROSSED_NUM (a);
 	  ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
@@ -2037,15 +2082,15 @@ propagate_allocno_info (void)
 	    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	  aclass = ALLOCNO_CLASS (a);
 	  ira_assert (aclass == ALLOCNO_CLASS (parent_a));
-	  ira_allocate_and_accumulate_costs
-	    (&ALLOCNO_HARD_REG_COSTS (parent_a), aclass,
-	     ALLOCNO_HARD_REG_COSTS (a));
+	  ira_propagate_hard_reg_costs (parent_a, a, spill_cost);
 	  ira_allocate_and_accumulate_costs
 	    (&ALLOCNO_CONFLICT_HARD_REG_COSTS (parent_a),
 	     aclass,
 	     ALLOCNO_CONFLICT_HARD_REG_COSTS (a));
+	  /* The cost to A of allocating a register to PARENT_A can't be
+	     more than the cost of spilling the register throughout A.  */
 	  ALLOCNO_CLASS_COST (parent_a)
-	    += ALLOCNO_CLASS_COST (a);
+	    += MIN (ALLOCNO_CLASS_COST (a), spill_cost);
 	  ALLOCNO_MEMORY_COST (parent_a) += ALLOCNO_MEMORY_COST (a);
 	}
 }

@@ -3344,7 +3344,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
   unsigned int j;
   bitmap_iterator bi;
   machine_mode mode;
-  enum reg_class rclass, aclass, pclass;
+  enum reg_class rclass, aclass;
   ira_allocno_t a, subloop_allocno;
   ira_loop_tree_node_t subloop_node;
 
@@ -3389,10 +3389,9 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	/* Remove from processing in the next loop.  */
 	bitmap_clear_bit (consideration_allocno_bitmap, j);
 	rclass = ALLOCNO_CLASS (a);
-	pclass = ira_pressure_class_translate[rclass];
-	if (flag_ira_region == IRA_REGION_MIXED
-	    && (loop_tree_node->reg_pressure[pclass]
-		<= ira_class_hard_regs_num[pclass]))
+	subloop_allocno = ALLOCNO_CAP_MEMBER (a);
+	subloop_node = ALLOCNO_LOOP_TREE_NODE (subloop_allocno);
+	if (ira_single_region_allocno_p (a, subloop_allocno))
 	  {
 	    mode = ALLOCNO_MODE (a);
 	    hard_regno = ALLOCNO_HARD_REGNO (a);
@@ -3402,8 +3401,6 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		ira_assert (index >= 0);
 	      }
 	    regno = ALLOCNO_REGNO (a);
-	    subloop_allocno = ALLOCNO_CAP_MEMBER (a);
-	    subloop_node = ALLOCNO_LOOP_TREE_NODE (subloop_allocno);
 	    ira_assert (!ALLOCNO_ASSIGNED_P (subloop_allocno));
 	    ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
 	    ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
@@ -3426,7 +3423,6 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	  mode = ALLOCNO_MODE (a);
 	  rclass = ALLOCNO_CLASS (a);
-	  pclass = ira_pressure_class_translate[rclass];
 	  hard_regno = ALLOCNO_HARD_REGNO (a);
 	  /* Use hard register class here.  ??? */
 	  if (hard_regno >= 0)
@@ -3443,11 +3439,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (ALLOCNO_CLASS (subloop_allocno) == rclass);
 	  ira_assert (bitmap_bit_p (subloop_node->all_allocnos,
 				    ALLOCNO_NUM (subloop_allocno)));
-	  if ((flag_ira_region == IRA_REGION_MIXED
-	       && (loop_tree_node->reg_pressure[pclass]
-		   <= ira_class_hard_regs_num[pclass]))
+	  if (ira_single_region_allocno_p (a, subloop_allocno)
 	      || !ira_subloop_allocnos_can_differ_p (a, hard_regno >= 0))
 	    {
+	      gcc_assert (!ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P
+			  (subloop_allocno));
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{
 		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
@@ -3583,14 +3579,35 @@ move_spill_restore (void)
 	      if (subloop_allocno == NULL)
 		continue;
 	      ira_assert (rclass == ALLOCNO_CLASS (subloop_allocno));
-	      /* We have accumulated cost.  To get the real cost of
-		 allocno usage in the loop we should subtract costs of
-		 the subloop allocnos.  */
-	      cost -= (ALLOCNO_MEMORY_COST (subloop_allocno)
-		       - (ALLOCNO_HARD_REG_COSTS (subloop_allocno) == NULL
-			  ? ALLOCNO_CLASS_COST (subloop_allocno)
-			  : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]));
 	      ira_loop_border_costs border_costs (subloop_allocno);
+
+	      /* We have accumulated cost.  To get the real cost of
+		 allocno usage in the loop we should subtract the costs
+		 added by propagate_allocno_info for the subloop allocnos.  */
+	      int reg_cost
+		= (ALLOCNO_HARD_REG_COSTS (subloop_allocno) == NULL
+		   ? ALLOCNO_CLASS_COST (subloop_allocno)
+		   : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]);
+
+	      int spill_cost
+		= (border_costs.spill_inside_loop_cost ()
+		   + ALLOCNO_MEMORY_COST (subloop_allocno));
+
+	      /* If HARD_REGNO conflicts with SUBLOOP_A then
+		 propagate_allocno_info will have propagated
+		 the cost of spilling HARD_REGNO in SUBLOOP_NODE.
+		 (ira_subloop_allocnos_can_differ_p must be true
+		 in that case.)  Otherwise, SPILL_COST acted as
+		 a cap on the propagated register cost, in cases
+		 where the allocations can differ.  */
+	      auto conflicts = ira_total_conflict_hard_regs (subloop_allocno);
+	      if (TEST_HARD_REG_BIT (conflicts, hard_regno))
+		reg_cost = spill_cost;
+	      else if (ira_subloop_allocnos_can_differ_p (a))
+		reg_cost = MIN (reg_cost, spill_cost);
+
+	      cost -= ALLOCNO_MEMORY_COST (subloop_allocno) - reg_cost;
+
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (subloop_allocno)) < 0)
 		/* The register was spilled in the subloop.  If we spill
 		   it in the outer loop too then we'll no longer need to
