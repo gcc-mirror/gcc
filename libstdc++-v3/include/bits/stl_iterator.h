@@ -77,11 +77,12 @@
 # define __cpp_lib_array_constexpr 201803L
 #endif
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
 # include <new>
 # include <bits/exception_defines.h>
 # include <bits/iterator_concepts.h>
+# include <bits/stl_construct.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1938,7 +1939,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-    common_iterator&
+    constexpr common_iterator&
     operator=(const common_iterator& __x)
     noexcept(is_nothrow_copy_assignable_v<_It>
 	     && is_nothrow_copy_assignable_v<_Sent>
@@ -1953,7 +1954,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& convertible_to<const _Sent2&, _Sent>
 	&& assignable_from<_It&, const _It2&>
 	&& assignable_from<_Sent&, const _Sent2&>
-      common_iterator&
+      constexpr common_iterator&
       operator=(const common_iterator<_It2, _Sent2>& __x)
       noexcept(is_nothrow_constructible_v<_It, const _It2&>
 	       && is_nothrow_constructible_v<_Sent, const _Sent2&>
@@ -1973,7 +1974,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_index = -1;
 	    [[fallthrough]];
 	  case 0b1001:
-	    ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	    std::construct_at(std::__addressof(_M_sent), _Sent(__x._M_sent));
 	    _M_index = 1;
 	    break;
 	  case 0b0100:
@@ -1981,7 +1982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_index = -1;
 	    [[fallthrough]];
 	  case 0b1000:
-	    ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	    std::construct_at(std::__addressof(_M_it), _It(__x._M_it));
 	    _M_index = 0;
 	    break;
 	  default:
@@ -1991,6 +1992,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+    constexpr
     ~common_iterator()
     {
       switch (_M_index)
@@ -2005,7 +2007,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator*()
     {
       __glibcxx_assert(_M_index == 0);
@@ -2013,7 +2015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator*() const requires __detail::__dereferenceable<const _It>
     {
       __glibcxx_assert(_M_index == 0);
@@ -2021,7 +2023,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator->() const requires __detail::__common_iter_has_arrow<_It>
     {
       __glibcxx_assert(_M_index == 0);
@@ -2036,7 +2038,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __arrow_proxy{*_M_it};
     }
 
-    common_iterator&
+    constexpr common_iterator&
     operator++()
     {
       __glibcxx_assert(_M_index == 0);
@@ -2044,7 +2046,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *this;
     }
 
-    decltype(auto)
+    constexpr decltype(auto)
     operator++(int)
     {
       __glibcxx_assert(_M_index == 0);
@@ -2066,7 +2068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2>
-      friend bool
+      friend constexpr bool
       operator== [[nodiscard]] (const common_iterator& __x,
 				const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2088,7 +2090,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2> && equality_comparable_with<_It, _It2>
-      friend bool
+      friend constexpr bool
       operator== [[nodiscard]] (const common_iterator& __x,
 				const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2111,7 +2113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<sized_sentinel_for<_It> _It2, sized_sentinel_for<_It> _Sent2>
       requires sized_sentinel_for<_Sent, _It2>
-      friend iter_difference_t<_It2>
+      friend constexpr iter_difference_t<_It2>
       operator- [[nodiscard]] (const common_iterator& __x,
 			       const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2133,7 +2135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     [[nodiscard]]
-    friend iter_rvalue_reference_t<_It>
+    friend constexpr iter_rvalue_reference_t<_It>
     iter_move(const common_iterator& __i)
     noexcept(noexcept(ranges::iter_move(std::declval<const _It&>())))
     requires input_iterator<_It>
@@ -2143,7 +2145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template<indirectly_swappable<_It> _It2, typename _Sent2>
-      friend void
+      friend constexpr void
       iter_swap(const common_iterator& __x,
 		const common_iterator<_It2, _Sent2>& __y)
       noexcept(noexcept(ranges::iter_swap(std::declval<const _It&>(),
@@ -2158,7 +2160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<input_or_output_iterator _It2, sentinel_for<_It2> _Sent2>
       friend class common_iterator;
 
-    bool _M_has_value() const noexcept { return _M_index < 2; }
+    constexpr bool _M_has_value() const noexcept { return _M_index < 2; }
 
     union
     {
