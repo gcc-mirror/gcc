@@ -3446,26 +3446,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  if ((flag_ira_region == IRA_REGION_MIXED
 	       && (loop_tree_node->reg_pressure[pclass]
 		   <= ira_class_hard_regs_num[pclass]))
-	      || (pic_offset_table_rtx != NULL
-		  && regno == (int) REGNO (pic_offset_table_rtx))
-	      /* Avoid overlapped multi-registers. Moves between them
-		 might result in wrong code generation.  */
-	      || (hard_regno >= 0
-		  && ira_reg_class_max_nregs[pclass][mode] > 1))
-	    {
-	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
-		{
-		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
-		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
-		  if (hard_regno >= 0)
-		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore.  */
-		  ira_free_allocno_updated_costs (subloop_allocno);
-		}
-	      continue;
-	    }
-	  ira_assert (regno < ira_reg_equiv_len);
-	  if (ira_equiv_no_lvalue_p (regno))
+	      || !ira_subloop_allocnos_can_differ_p (a, hard_regno >= 0))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{

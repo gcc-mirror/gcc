@@ -1595,4 +1595,32 @@ ira_loop_border_costs::move_between_loops_cost () const
   return move_cost * (m_entry_freq + m_exit_freq);
 }
 
+/* Return true if subloops that contain allocnos for A's register can
+   use a different assignment from A.  ALLOCATED_P is true for the case
+   in which allocation succeeded for A.  */
+inline bool
+ira_subloop_allocnos_can_differ_p (ira_allocno_t a, bool allocated_p = true)
+{
+  auto regno = ALLOCNO_REGNO (a);
+
+  if (pic_offset_table_rtx != NULL
+      && regno == (int) REGNO (pic_offset_table_rtx))
+    return false;
+
+  ira_assert (regno < ira_reg_equiv_len);
+  if (ira_equiv_no_lvalue_p (regno))
+    return false;
+
+  /* Avoid overlapping multi-registers.  Moves between them might result
+     in wrong code generation.  */
+  if (allocated_p)
+    {
+      auto pclass = ira_pressure_class_translate[ALLOCNO_CLASS (a)];
+      if (ira_reg_class_max_nregs[pclass][ALLOCNO_MODE (a)] > 1)
+	return false;
+    }
+
+  return true;
+}
+
 #endif /* GCC_IRA_INT_H */
