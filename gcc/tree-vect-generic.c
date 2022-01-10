@@ -1052,7 +1052,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 	}
     }
 
-  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1), code))
+  if (expand_vec_cond_expr_p (type, TREE_TYPE (a1), code)
+      || (integer_all_onesp (b) && integer_zerop (c)
+	  && expand_vec_cmp_expr_p (type, TREE_TYPE (a1), code)))
     {
       gcc_assert (TREE_CODE (a) == SSA_NAME || TREE_CODE (a) == VECTOR_CST);
       return true;
