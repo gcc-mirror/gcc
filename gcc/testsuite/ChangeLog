@@ -1,3 +1,32 @@
+2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103777
+	* gfortran.dg/masklr_3.f90: New test.
+
+2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101762
+	* gfortran.dg/pr101762.f90: New test.
+
+2022-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103789
+	* gfortran.dg/maskl_1.f90: New test.
+	* gfortran.dg/maskr_1.f90: New test.
+	* gfortran.dg/scan_3.f90: New test.
+	* gfortran.dg/verify_3.f90: New test.
+
+2022-01-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/constexpr-compare1.C: Add explicit
+	-fdelete-null-pointer-checks option.
+	* g++.dg/cpp0x/constexpr-compare2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-typeid2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-94716.C: Likewise.
+	* g++.dg/cpp1z/constexpr-compare1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-if36.C: Likewise.
+	* gcc.dg/init-compare-1.c: Likewise.
+
 2022-01-08  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/i386/sse2-v1ti-mov-1.c: New test case.
