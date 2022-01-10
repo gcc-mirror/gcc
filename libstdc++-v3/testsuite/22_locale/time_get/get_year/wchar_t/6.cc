@@ -1,5 +1,3 @@
-// 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
-
 // Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -29,73 +27,48 @@ void test01()
 
   typedef istreambuf_iterator<wchar_t> iterator_type;
 
-  // basic construction
   locale loc_c = locale::classic();
 
-  const wstring empty;
-
-  // create an ostream-derived object, cache the time_get facet
   iterator_type end;
 
   wistringstream iss;
   iss.imbue(loc_c);
-  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc());
+  ios_base::iostate errorstate = ios_base::goodbit;
 
-  const ios_base::iostate good = ios_base::goodbit;
-  ios_base::iostate errorstate = good;
-
-   // create "C" time objects
-  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
-
-  // iter_type 
-  // get_year(iter_type, iter_type, ios_base&, ios_base::iostate&, tm*) const
-
-  // sanity checks for "C" locale
-  iss.str(L"1971");
+  iss.str(L"69");
   iterator_type is_it01(iss);
   tm time01;
-  errorstate = good;
   tim_get.get_year(is_it01, end, iss, errorstate, &time01);
-  VERIFY( time01.tm_year == time_bday.tm_year );
+  VERIFY( time01.tm_year == 1969 - 1900 );
   VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str(L"1971 ");
+  iss.str(L"68 ");
   iterator_type is_it02(iss);
   tm time02;
-  errorstate = good;
+  errorstate = ios_base::goodbit;
   iterator_type ret02 = tim_get.get_year(is_it02, end, iss, errorstate,
 					 &time02);
-  VERIFY( time02.tm_year == time_bday.tm_year );
-  VERIFY( errorstate == good );
+  VERIFY( time02.tm_year == 2068 - 1900 );
+  VERIFY( errorstate == ios_base::goodbit );
   VERIFY( *ret02 == L' ' );
 
-  iss.str(L"197d1 ");
+  iss.str(L"0069");
   iterator_type is_it03(iss);
   tm time03;
-  time03.tm_year = 3;
-  errorstate = good;
+  errorstate = ios_base::goodbit;
   iterator_type ret03 = tim_get.get_year(is_it03, end, iss, errorstate,
 					 &time03);
-  VERIFY( time03.tm_year == 197 - 1900 );
-  VERIFY( errorstate == good );
-  VERIFY( *ret03 == L'd' );
+  VERIFY( time03.tm_year == 69 - 1900 );
+  VERIFY( errorstate == ios_base::eofbit );
 
-  iss.str(L"71d71");
+  iss.str(L"0068");
   iterator_type is_it04(iss);
   tm time04;
-  errorstate = good;
+  errorstate = ios_base::goodbit;
   iterator_type ret04 = tim_get.get_year(is_it04, end, iss, errorstate,
 					 &time04);
-  VERIFY( time04.tm_year == time_bday.tm_year );
-  VERIFY( errorstate == good );
-  VERIFY( *ret04 == L'd' );
-
-  iss.str(L"71");
-  iterator_type is_it05(iss);
-  tm time05;
-  errorstate = good;
-  tim_get.get_year(is_it05, end, iss, errorstate, &time05);
-  VERIFY( time05.tm_year == time_bday.tm_year );
+  VERIFY( time04.tm_year == 68 - 1900 );
   VERIFY( errorstate == ios_base::eofbit );
 }
 
