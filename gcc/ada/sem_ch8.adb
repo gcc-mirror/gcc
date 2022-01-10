@@ -4532,7 +4532,7 @@ package body Sem_Ch8 is
       --  have at least one formal parameter, with the exceptions of the GNAT
       --  attribute 'Img, which GNAT treats as renameable.
 
-      if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
+      if Is_Empty_List (Parameter_Specifications (Spec)) then
          if Aname /= Name_Img then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);

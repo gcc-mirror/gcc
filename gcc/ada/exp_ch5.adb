@@ -3563,8 +3563,7 @@ package body Exp_Ch5 is
                         --  is ok here.
                         --
                         pragma Assert
-                          (not Is_Non_Empty_List
-                                 (Component_Associations (Pattern)));
+                          (Is_Empty_List (Component_Associations (Pattern)));
 
                         declare
                            Agg_Length : constant Node_Id :=
