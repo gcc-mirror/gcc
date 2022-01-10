@@ -1660,4 +1660,43 @@ ira_total_conflict_hard_regs (ira_allocno_t a)
   return conflicts;
 }
 
+/* Return the cost of saving a caller-saved register before each call
+   in A's live range and restoring the same register after each call.  */
+inline int
+ira_caller_save_cost (ira_allocno_t a)
+{
+  auto mode = ALLOCNO_MODE (a);
+  auto rclass = ALLOCNO_CLASS (a);
+  return (ALLOCNO_CALL_FREQ (a)
+	  * (ira_memory_move_cost[mode][rclass][0]
+	     + ira_memory_move_cost[mode][rclass][1]));
+}
+
+/* A and SUBLOOP_A are allocnos for the same pseudo register, with A's
+   loop immediately enclosing SUBLOOP_A's loop.  If we allocate to A a
+   hard register R that is clobbered by a call in SUBLOOP_A, decide
+   which of the following approaches should be used for handling the
+   conflict:
+
+   (1) Spill R on entry to SUBLOOP_A's loop, assign memory to SUBLOOP_A,
+       and restore R on exit from SUBLOOP_A's loop.
+
+   (2) Spill R before each necessary call in SUBLOOP_A's live range and
+       restore R after each such call.
+
+   Return true if (1) is better than (2).  SPILL_COST is the cost of
+   doing (1).  */
+inline bool
+ira_caller_save_loop_spill_p (ira_allocno_t a, ira_allocno_t subloop_a,
+			      int spill_cost)
+{
+  if (!ira_subloop_allocnos_can_differ_p (a))
+    return false;
+
+  /* Calculate the cost of saving a call-clobbered register
+     before each call and restoring it afterwards.  */
+  int call_cost = ira_caller_save_cost (subloop_a);
+  return call_cost && call_cost >= spill_cost;
+}
+
 #endif /* GCC_IRA_INT_H */

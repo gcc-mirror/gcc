@@ -3597,11 +3597,16 @@ move_spill_restore (void)
 		 propagate_allocno_info will have propagated
 		 the cost of spilling HARD_REGNO in SUBLOOP_NODE.
 		 (ira_subloop_allocnos_can_differ_p must be true
-		 in that case.)  Otherwise, SPILL_COST acted as
-		 a cap on the propagated register cost, in cases
-		 where the allocations can differ.  */
+		 in that case.)  If HARD_REGNO is a caller-saved
+		 register, we might have modelled it in the same way.
+
+		 Otherwise, SPILL_COST acted as a cap on the propagated
+		 register cost, in cases where the allocations can differ.  */
 	      auto conflicts = ira_total_conflict_hard_regs (subloop_allocno);
-	      if (TEST_HARD_REG_BIT (conflicts, hard_regno))
+	      if (TEST_HARD_REG_BIT (conflicts, hard_regno)
+		  || (ira_need_caller_save_p (subloop_allocno, hard_regno)
+		      && ira_caller_save_loop_spill_p (a, subloop_allocno,
+						       spill_cost)))
 		reg_cost = spill_cost;
 	      else if (ira_subloop_allocnos_can_differ_p (a))
 		reg_cost = MIN (reg_cost, spill_cost);

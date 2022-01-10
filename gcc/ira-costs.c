@@ -2308,7 +2308,7 @@ ira_tune_allocno_costs (void)
 {
   int j, n, regno;
   int cost, min_cost, *reg_costs;
-  enum reg_class aclass, rclass;
+  enum reg_class aclass;
   machine_mode mode;
   ira_allocno_t a;
   ira_allocno_iterator ai;
@@ -2347,12 +2347,9 @@ ira_tune_allocno_costs (void)
 		}
 	      if (skip_p)
 		continue;
-	      rclass = REGNO_REG_CLASS (regno);
 	      cost = 0;
 	      if (ira_need_caller_save_p (a, regno))
-		cost += (ALLOCNO_CALL_FREQ (a)
-			 * (ira_memory_move_cost[mode][rclass][0]
-			    + ira_memory_move_cost[mode][rclass][1]));
+		cost += ira_caller_save_cost (a);
 #ifdef IRA_HARD_REGNO_ADD_COST_MULTIPLIER
 	      cost += ((ira_memory_move_cost[mode][rclass][0]
 			+ ira_memory_move_cost[mode][rclass][1])

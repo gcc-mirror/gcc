@@ -2000,6 +2000,8 @@ ira_propagate_hard_reg_costs (ira_allocno_t parent_a, ira_allocno_t a,
 			      int spill_cost)
 {
   HARD_REG_SET conflicts = ira_total_conflict_hard_regs (a);
+  if (ira_caller_save_loop_spill_p (parent_a, a, spill_cost))
+    conflicts |= ira_need_caller_save_regs (a);
   conflicts &= ~ira_total_conflict_hard_regs (parent_a);
 
   auto costs = ALLOCNO_HARD_REG_COSTS (a);
@@ -2069,15 +2071,18 @@ propagate_allocno_info (void)
 	  if (!ira_subloop_allocnos_can_differ_p (parent_a))
 	    merge_hard_reg_conflicts (a, parent_a, true);
 
-	  ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
-	  ALLOCNO_CALLS_CROSSED_NUM (parent_a)
-	    += ALLOCNO_CALLS_CROSSED_NUM (a);
-	  ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
-	    += ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
-	  ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
-	    |= ALLOCNO_CROSSED_CALLS_ABIS (a);
-	  ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
-	    |= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
+	  if (!ira_caller_save_loop_spill_p (parent_a, a, spill_cost))
+	    {
+	      ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
+	      ALLOCNO_CALLS_CROSSED_NUM (parent_a)
+		+= ALLOCNO_CALLS_CROSSED_NUM (a);
+	      ALLOCNO_CHEAP_CALLS_CROSSED_NUM (parent_a)
+		+= ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a);
+	      ALLOCNO_CROSSED_CALLS_ABIS (parent_a)
+		|= ALLOCNO_CROSSED_CALLS_ABIS (a);
+	      ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (parent_a)
+		|= ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a);
+	    }
 	  ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (parent_a)
 	    += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a);
 	  aclass = ALLOCNO_CLASS (a);
