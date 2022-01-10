@@ -10306,7 +10306,8 @@ fold_builtin_object_size (tree ptr, tree ost, enum built_in_function fcode)
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
       compute_builtin_object_size (ptr, object_size_type, &bytes);
-      if (int_fits_type_p (bytes, size_type_node))
+      if ((object_size_type & OST_DYNAMIC)
+	  || int_fits_type_p (bytes, size_type_node))
 	return fold_convert (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
@@ -10315,7 +10316,8 @@ fold_builtin_object_size (tree ptr, tree ost, enum built_in_function fcode)
        later.  Maybe subsequent passes will help determining
        it.  */
       if (compute_builtin_object_size (ptr, object_size_type, &bytes)
-	  && int_fits_type_p (bytes, size_type_node))
+	  && ((object_size_type & OST_DYNAMIC)
+	      || int_fits_type_p (bytes, size_type_node)))
 	return fold_convert (size_type_node, bytes);
     }
 

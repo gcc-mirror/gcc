@@ -43,7 +43,12 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (q, 3) != 0)
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3)
+      != (x < 0 ? sizeof (a.a) - 9 : sizeof (a.c) - 1))
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 9)
+#endif
     abort ();
   if (x < 6)
     r = &w[2].a[1];
@@ -55,31 +60,57 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (&y.b, 3) != sizeof (a.b))
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3)
+      != (x < 6 ? sizeof (w[2].a) - 1 : sizeof (a.a) - 6))
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 6)
+#endif
     abort ();
   if (x < 20)
     r = malloc (30);
   else
     r = calloc (2, 16);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3) != (x < 20 ? 30 : 2 * 16))
+#else
   if (__builtin_object_size (r, 3) != 30)
+#endif
     abort ();
   if (x < 20)
     r = malloc (30);
   else
     r = calloc (2, 14);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3) != (x < 20 ? 30 : 2 * 14))
+#else
   if (__builtin_object_size (r, 3) != 2 * 14)
+#endif
     abort ();
   if (x < 30)
     r = malloc (sizeof (a));
   else
     r = &a.a[3];
+#ifdef __builtin_object_size
+  size_t objsz = x < 30 ? sizeof (a) : sizeof (a.a) - 3;
+  if (__builtin_object_size (r, 3) != objsz)
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3)
+#endif
     abort ();
   r = memcpy (r, "a", 2);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3) != objsz)
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3)
+#endif
     abort ();
   r = memcpy (r + 2, "b", 2) + 2;
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3) != objsz - 4)
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.a) - 3 - 4)
+#endif
     abort ();
   r = &a.a[4];
   r = memset (r, 'a', 2);
@@ -184,6 +215,9 @@ test2 (void)
   struct B { char buf1[10]; char buf2[10]; } a;
   char *r, buf3[20];
   int i;
+#ifdef __builtin_object_size
+  size_t dyn_res = 0;
+#endif
 
   if (sizeof (a) != 20)
     return;
@@ -228,13 +262,38 @@ test2 (void)
       else if (i == l1 + 2)
 	r = &a.buf1[2];
     }
+#ifdef __builtin_object_size
+  dyn_res = sizeof (buf3) - 1;
+
+  for (i = 0; i < 4; ++i)
+    {
+      if (i == l1 - 1)
+        dyn_res = sizeof (a.buf1) - 6;
+      else if (i == l1)
+        dyn_res = sizeof (a.buf2) - 4;
+      else if (i == l1 + 1)
+        dyn_res = sizeof (buf3) - 5;
+      else if (i == l1 + 2)
+        dyn_res = sizeof (a.buf1) - 2;
+    }
+  if (__builtin_object_size (r, 3) != dyn_res)
+    abort ();
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.buf1) - 6)
     abort ();
+#endif
   r += 2;
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 3) != dyn_res - 2)
+    abort ();
+  if (__builtin_object_size (r + 1, 3) != dyn_res - 3)
+    abort ();
+#else
   if (__builtin_object_size (r, 3) != sizeof (a.buf1) - 6 - 2)
     abort ();
   if (__builtin_object_size (r + 1, 3) != sizeof (a.buf1) - 6 - 3)
     abort ();
+#endif
 }
 
 void
@@ -352,7 +411,11 @@ test5 (size_t x)
 
   for (i = 0; i < x; ++i)
     p = p + 4;
+#ifdef __builtin_object_size
+  if (__builtin_object_size (p, 3) != sizeof (t.buf) - 8 - 4 * x)
+#else
   if (__builtin_object_size (p, 3) != 0)
+#endif
     abort ();
   memset (p, ' ', sizeof (t.buf) - 8 - 4 * 4);
 }
@@ -407,21 +470,36 @@ test8 (unsigned cond)
   else
     p = &buf2[4];
 
+#ifdef __builtin_object_size
+  if (__builtin_object_size (&p[-4], 3) != (cond ? 6 : 10))
+    abort ();
+#else
   if (__builtin_object_size (&p[-4], 3) != 6)
     abort ();
+#endif
 
   for (unsigned i = cond; i > 0; i--)
     p--;
 
+#ifdef __builtin_object_size
+  if (__builtin_object_size (p, 3) != ((cond ? 2 : 6) + cond))
+    abort ();
+#else
   if (__builtin_object_size (p, 3) != 2)
     abort ();
+#endif
 
   p = &y.c[8];
   for (unsigned i = cond; i > 0; i--)
     p--;
 
+#ifdef __builtin_object_size
+  if (__builtin_object_size (p, 3) != sizeof (y.c) - 8 + cond)
+    abort ();
+#else
   if (__builtin_object_size (p, 3) != sizeof (y.c) - 8)
     abort ();
+#endif
 }
 
 int
