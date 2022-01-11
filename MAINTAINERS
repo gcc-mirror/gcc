@@ -18,6 +18,9 @@ To report problems in GCC, please visit:
 Note: when adding someone to a more specific section please remove any
 corresponding entry from the Write After Approval list.
 
+Note: please verify that sorting is correct with:
+./contrib/check-MAINTAINERS.py MAINTAINERS
+
 Maintainers
 ===========
 
@@ -422,6 +425,7 @@ Haochen Gui					<guihaoc@gcc.gnu.org>
 Jiufu Guo					<guojiufu@linux.ibm.com>
 Xuepeng Guo					<terry.xpguo@gmail.com>
 Wei Guozhi					<carrot@google.com>
+Naveen H.S					<naveenh@marvell.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
 Andrew Haley					<aph@redhat.com>
 Frederik Harwath				<frederik@codesourcery.com>
@@ -447,7 +451,6 @@ Dominique d'Humieres				<dominiq@lps.ens.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
 Joel Hutton					<joel.hutton@arm.com>
 Lewis Hyatt					<lhyatt@gmail.com>
-Naveen H.S					<naveenh@marvell.com>
 Roland Illig					<roland.illig@gmx.de>
 Meador Inge					<meadori@codesourcery.com>
 Bernardo Innocenti				<bernie@develer.com>
@@ -484,12 +487,12 @@ Louis Krupp					<louis.krupp@zoho.com>
 Prathamesh Kulkarni				<prathamesh.kulkarni@linaro.org>
 Venkataramanan Kumar				<venkataramanan.kumar@amd.com>
 Doug Kwan					<dougkwan@google.com>
+Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Scott Robert Ladd				<scott.ladd@coyotegulch.com>
 Razya Ladelsky					<razya@gcc.gnu.org>
 Thierry Lafage					<thierry.lafage@inria.fr>
 Rask Ingemann Lambertsen			<ccc94453@vip.cybercity.dk>
 Jerome Lambourg					<lambourg@adacore.com>
-Aaron W. LaFramboise				<aaronavay62@aaronwl.com>
 Asher Langton					<langton2@llnl.gov>
 Chris Lattner					<sabre@nondot.org>
 Terry Laurenzo					<tlaurenzo@gmail.com>
