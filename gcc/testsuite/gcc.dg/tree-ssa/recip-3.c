@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fno-trapping-math -funsafe-math-optimizations -fdump-tree-recip" } */
 
-double F[2] = { 0.0, 0.0 }, e;
+double F[5] = { 0.0, 0.0 }, e;
 
 /* In this case the optimization is interesting.  */
 float h ()
@@ -13,7 +13,7 @@ float h ()
 	d = 2.*e;
 	E = 1. - d;
 
-	for( i=0; i < 2; i++ )
+	for( i=0; i < 5; i++ )
 		if( d > 0.01 )
 		{
 			P = ( W < E ) ? (W - E)/d : (E - W)/d;
@@ -23,4 +23,4 @@ float h ()
 	F[0] += E / d;
 }
 
-/* { dg-final { scan-tree-dump-times " / " 5 "recip" } } */
+/* { dg-final { scan-tree-dump-times " / " 1 "recip" } } */
