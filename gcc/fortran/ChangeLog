@@ -1,3 +1,9 @@
+2022-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103366
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Allow unlimited
+	polymorphic actual argument passed to assumed type formal.
+
 2022-01-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103777

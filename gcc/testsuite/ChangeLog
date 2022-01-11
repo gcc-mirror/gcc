@@ -1,3 +1,72 @@
+2022-01-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.target/i386/pr103861-2.c: New test.
+
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103879
+	* g++.dg/cpp1y/constexpr-base2.C: New test.
+	* g++.dg/cpp1y/constexpr-base2a.C: New test.
+
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103783
+	* g++.dg/cpp2a/concepts-memfun2.C: New test.
+
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103912
+	* g++.dg/cpp2a/consteval26.C: New test.
+
+2022-01-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-blendvps.c: Copy from gcc.target/i386,
+	adjust dg directives to suit.
+
+2022-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/masked_epilogue.c: New test.
+
+2022-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103366
+	* gfortran.dg/pr103366.f90: New test.
+
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* gcc.target/i386/pr102024.c: New test.
+	* g++.target/i386/pr102024.C: New test.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/reg-alloc-4.c: New test.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/reg-alloc-3.c: New test.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/reg-alloc-2.c: New test.
+
+2022-01-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/82207
+	* gfortran.dg/ieee/signaling_1.f90: New test.
+	* gfortran.dg/ieee/signaling_1_c.c: New file.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101530
+	* c-c++-common/builtin-shufflevector-3.c: New testcase.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100359
+	* gcc.dg/tree-ssa/pr100359.c: New testcase.
+
 2022-01-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103777

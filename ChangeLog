@@ -1,3 +1,7 @@
+2022-01-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix obvious issues with sorting.
+
 2022-01-07  liuhongt  <hongtao.liu@intel.com>
 
 	* build.log: New file.

@@ -1,3 +1,26 @@
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103879
+	* constexpr.c (cxx_fold_indirect_ref): Split out object/offset
+	canonicalization step into a local lambda.  Strengthen it to
+	absorb more components at position 0.  Use it before both calls
+	to cxx_fold_indirect_ref_1.
+
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103783
+	* call.c (cand_parms_match): Skip over 'this' when given one
+	static and one non-static member function.
+
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103912
+	* semantics.c (expand_or_defer_fn): For immediate functions, set
+	node->body_removed to true and clear analyzed, definition and
+	force_output.
+	* decl2.c (c_parse_final_cleanups): Ignore immediate functions for
+	expand_or_defer_fn.
+
 2022-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89074

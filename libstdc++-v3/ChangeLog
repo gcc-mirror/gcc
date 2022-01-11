@@ -1,3 +1,88 @@
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/77760
+	* include/bits/locale_facets_nonio.h (__time_get_state): New struct.
+	(time_get::_M_extract_via_format): Declare new method with
+	__time_get_state& as an extra argument.
+	* include/bits/locale_facets_nonio.tcc (_M_extract_via_format): Add
+	__state argument, set various fields in it while parsing.  Handle %j,
+	%U, %w and %W, fix up handling of %y, %Y and %C, don't adjust tm_hour
+	for %p immediately.  Add a wrapper around the method without the
+	__state argument for backwards compatibility.
+	(_M_extract_num): Remove all __len == 4 special cases.
+	(time_get::do_get_time, time_get::do_get_date, time_get::do_get): Zero
+	initialize __state, pass it to _M_extract_via_format and finalize it
+	at the end.
+	(do_get_year): For 1-2 digit parsed years, map 0-68 to 2000-2068,
+	69-99 to 1969-1999.  For 3-4 digit parsed years use that as year.
+	(get): If do_get isn't overloaded from the locale_facets_nonio.tcc
+	version, don't call do_get but call _M_extract_via_format instead to
+	pass around state.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.30): Export _M_extract_via_format
+	with extra __time_get_state and __time_get_state::_M_finalize_state.
+	* src/c++98/locale_facets.cc (is_leap, day_of_the_week,
+	day_of_the_year): New functions in anon namespace.
+	(mon_yday): New var in anon namespace.
+	(__time_get_state::_M_finalize_state): Define.
+	* testsuite/22_locale/time_get/get/char/4.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/4.cc: New test.
+	* testsuite/22_locale/time_get/get_year/char/1.cc (test01): Parse 197
+	as year 197AD instead of error.
+	* testsuite/22_locale/time_get/get_year/char/5.cc (test01): Parse 1 as
+	year 2001 instead of error.
+	* testsuite/22_locale/time_get/get_year/char/6.cc: New test.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc (test01): Parse
+	197 as year 197AD instead of error.
+	* testsuite/22_locale/time_get/get_year/wchar_t/5.cc (test01): Parse
+	1 as year 2001 instead of error.
+	* testsuite/22_locale/time_get/get_year/wchar_t/6.cc: New test.
+
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103866
+	* acinclude.m4 (GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS): Do
+	nothing for freestanding builds.
+	(GLIBCXX_ENABLE_HOSTED): Define FREESTANDING_FLAGS.
+	* configure.ac: Do not use AC_LIBTOOL_DLOPEN when configured
+	with --without-headers.  Do not use GCC_HEADER_STDINT for
+	freestanding builds.
+	* libsupc++/Makefile.am (HOSTED_CXXFLAGS): Use -ffreestanding
+	for freestanding builds.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_replace/char/103664.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/28_regex/basic_regex/84110.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/char/other.cc: Likewise.
+	* testsuite/28_regex/match_results/102667.cc: Likewise.
+
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Update documentation around default
+	-std option.
+	* doc/html/*: Regenerate.
+
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100017
+	* src/c++17/Makefile.am (AM_CXXFLAGS): Add -nostdinc++.
+	* src/c++17/Makefile.in: Regenerate.
+
 2022-01-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* testsuite/18_support/type_info/constexpr.cc: Add explicit

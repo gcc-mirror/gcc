@@ -1,3 +1,131 @@
+2022-01-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	Handle V2QImode.
+	* config/i386/mmx.md (<sat_plusminus:insn><mode>3):
+	Use VI1_16_32 mode iterator.
+	(*eq<mode>3): Ditto.
+	(*gt<mode>3): Ditto.
+	(*xop_maskcmp<mode>3): Ditto.
+	(*xop_maskcmp_uns<mode>3): Ditto.
+	(vec_cmp<mode><mode>): Ditto.
+	(vec_cmpu<mode><mode>): Ditto.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103948
+	* tree-vect-generic.c (expand_vector_condition): Return true if
+	all ones vector is returned for true, all zeros vector for false
+	and the target defines corresponding vec_cmp{,u}MN named RTX pattern.
+
+2022-01-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blendv_epi8): Use vec_blendv
+	when _ARCH_PWR10. Use signed types.
+	(_mm_blendv_ps): Use vec_blendv when _ARCH_PWR10.
+	(_mm_blendv_pd): Likewise.
+
+2022-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vectorizer.c (better_epilogue_loop_than_p): Round factors up for
+	epilogue costing.
+	* tree-vect-loop.c (vect_analyze_loop): Re-analyze all modes for
+	epilogues, unless we are guaranteed that we can't have partial vectors.
+	* genopinit.c: (partial_vectors_supported): Generate new function.
+
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* config/i386/i386.c (classify_argument): Add zero_width_bitfields
+	argument, when seeing DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD bitfields,
+	always ignore them, when seeing other zero sized bitfields, either
+	set zero_width_bitfields to 1 and ignore it or if equal to 2 process
+	it.  Pass it to recursive calls.  Add wrapper
+	with old arguments and diagnose ABI differences for C structures
+	with zero width bitfields.  Formatting fixes.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_soft_conflict): Declare.
+	* ira-color.c (max_soft_conflict_loop_depth): New constant.
+	(ira_soft_conflict): New function.
+	(spill_soft_conflicts): Likewise.
+	(assign_hard_reg): Use them to handle the case described by
+	the comment above ira_soft_conflict.
+	(improve_allocation): Likewise.
+	* ira.c (check_allocation): Allow allocnos with "soft" conflicts
+	to share the same register.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_caller_save_cost): New function.
+	(ira_caller_save_loop_spill_p): Likewise.
+	* ira-build.c (ira_propagate_hard_reg_costs): Test whether it is
+	cheaper to spill a call-clobbered register throughout a loop rather
+	than spill it around each individual call.  If so, treat all
+	call-clobbered registers as conflicts and...
+	(propagate_allocno_info): ...do not propagate call information
+	from the child to the parent.
+	* ira-color.c (move_spill_restore): Update accordingly.
+	* ira-costs.c (ira_tune_allocno_costs): Use ira_caller_save_cost.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_allocno::might_conflict_with_parent_p): New field.
+	(ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P): New macro.
+	(ira_single_region_allocno_p): New function.
+	(ira_total_conflict_hard_regs): Likewise.
+	* ira-build.c (ira_create_allocno): Initialize
+	ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P.
+	(ira_propagate_hard_reg_costs): New function.
+	(propagate_allocno_info): Use it.  Try to avoid propagating
+	hard register conflicts to parent allocnos if we can handle
+	the conflicts by spilling instead.  Limit the propagated
+	register costs to the cost of spilling throughout the child loop.
+	* ira-color.c (color_pass): Use ira_single_region_allocno_p to
+	test whether a child and parent allocno can share the same
+	register.
+	(move_spill_restore): Adjust for the new behavior of
+	propagate_allocno_info.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_subloop_allocnos_can_differ_p): New function,
+	extracted from...
+	* ira-color.c (color_pass): ...here.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-color.c (color_pass): Add comments to describe the spill costs.
+	(move_spill_restore): Likewise.  Fix reversed calculation.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_loop_border_costs): New class.
+	* ira-color.c (ira_loop_border_costs::ira_loop_border_costs):
+	New constructor.
+	(calculate_allocno_spill_cost): Use ira_loop_border_costs.
+	(color_pass): Likewise.
+	(move_spill_restore): Likewise.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103465
+	* coretypes.h (unwind_info_type): Swap UI_SEH and UI_TARGET.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100359
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	Allow non-growing peeling with !allow_peel and UL_ALL.
+
 2022-01-08  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.c (ix86_expand_vector_move): Add

@@ -1,3 +1,76 @@
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Use correct subtype.
+	(elaborate_profile): New function.
+	(Call_to_gnu): Call it on the formals and the result type before
+	retrieving the translated result type from the subprogram type.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Fix
+	computation of boolean result in the unchecked union case.
+	(components_to_record): Rename MAYBE_UNUSED parameter to IN_VARIANT
+	and remove local variable of the same name.  Pass NULL recursively
+	as P_GNU_REP_LIST for nested variants in the unchecked union case.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_required_p) <N_Pragma>: New case.
+	<N_Pragma_Argument_Association>: Likewise.
+	(Pragma_to_gnu) <Pragma_Inspection_Point>: Fetch the corresponding
+	variable of a constant before marking it as addressable.
+
+2022-01-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in (ADA_GENERATED_FILES): Remove
+	s-casuti.ad?, s-crtl.ad?, s-os_lib.ad?.  Update list of object
+	files accordingly.
+
+2022-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-atopri.ads (Atomic_Compare_Exchange): Replaces
+	deprecated Sync_Compare_And_Swap.
+	* libgnat/s-atopri.adb (Lock_Free_Try_Write): Switch from __sync
+	to __atomic builtins.
+
+2022-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-exponn.adb, libgnat/s-expont.adb,
+	libgnat/s-exponu.adb, libgnat/s-widthi.adb,
+	libgnat/s-widthu.adb: Remove CodePeer annotations for pragma
+	Loop_Variant.
+
+2022-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Loop_Variant): Disable expansion
+	in CodePeer mode.
+
+2022-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Child_Or_Sibling): Fix typo in comment.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Install_PAT): If the PAT is a scalar type, apply
+	the canonical adjustment to its alignment.
+
+2022-01-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-atocou__builtin.adb (Decrement, Increment): Switch
+	from __sync to __atomic builtins; use 'Address to be consistent
+	with System.Atomic_Primitives.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Install_PAT): Do not reset the alignment here.
+	* layout.adb (Layout_Type): Call Adjust_Esize_Alignment after having
+	copied the RM_Size onto the Esize when the latter is too small.
+
+2022-01-10  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Check_References): Handle arrays of tasks
+	similar to task objects.
+
 2022-01-07  Patrick Bernardi  <bernardi@adacore.com>
 
 	* libgnat/a-direct.adb (Search_Data): Remove type.
