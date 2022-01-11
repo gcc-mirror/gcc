@@ -140,10 +140,17 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (&extb[5], 2) != sizeof (extb) - 5)
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (var, 2) != x + 10)
+    abort ();
+  if (__builtin_object_size (var + 10, 2) != x)
+    abort ();
+#else
   if (__builtin_object_size (var, 2) != 0)
     abort ();
   if (__builtin_object_size (var + 10, 2) != 0)
     abort ();
+#endif
   if (__builtin_object_size (&var[5], 2) != 0)
     abort ();
   if (__builtin_object_size (zerol, 2) != 0)

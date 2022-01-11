@@ -137,16 +137,30 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (&extc[5].c[3], 1) != (size_t) -1)
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (var, 1) != x + 10)
+    abort ();
+  if (__builtin_object_size (var + 10, 1) != x)
+    abort ();
+#else
   if (__builtin_object_size (var, 1) != (size_t) -1)
     abort ();
   if (__builtin_object_size (var + 10, 1) != (size_t) -1)
     abort ();
+#endif
   if (__builtin_object_size (&var[5], 1) != (size_t) -1)
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (vara, 1) != (x + 10) * sizeof (struct A))
+    abort ();
+  if (__builtin_object_size (vara + 10, 1) != x * sizeof (struct A))
+    abort ();    
+#else
   if (__builtin_object_size (vara, 1) != (size_t) -1)
     abort ();
   if (__builtin_object_size (vara + 10, 1) != (size_t) -1)
     abort ();    
+#endif
   if (__builtin_object_size (&vara[5], 1) != (size_t) -1)
     abort ();
   if (__builtin_object_size (&vara[0].a, 1) != sizeof (vara[0].a))
