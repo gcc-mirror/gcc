@@ -81,30 +81,56 @@ test1 (void *q, int x)
     r = malloc (30);
   else
     r = calloc (2, 16);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 0) != (x < 20 ? 30 : 2 * 16))
+    abort ();
+#else
   /* We may duplicate this test onto the two exit paths.  On one path
      the size will be 32, the other it will be 30.  If we don't duplicate
      this test, then the size will be 32.  */
   if (__builtin_object_size (r, 0) != 2 * 16
       && __builtin_object_size (r, 0) != 30)
     abort ();
+#endif
   if (x < 20)
     r = malloc (30);
   else
     r = calloc (2, 14);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 0) != (x < 20 ? 30 : 2 * 14))
+    abort ();
+#else
   if (__builtin_object_size (r, 0) != 30)
     abort ();
+#endif
   if (x < 30)
     r = malloc (sizeof (a));
   else
     r = &a.a[3];
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 0) != (x < 30 ? sizeof (a) : sizeof (a) - 3))
+    abort ();
+#else
   if (__builtin_object_size (r, 0) != sizeof (a))
     abort ();
+#endif
   r = memcpy (r, "a", 2);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 0) != (x < 30 ? sizeof (a) : sizeof (a) - 3))
+    abort ();
+#else
   if (__builtin_object_size (r, 0) != sizeof (a))
     abort ();
+#endif
   r = memcpy (r + 2, "b", 2) + 2;
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 0)
+      != (x < 30 ? sizeof (a) - 4 : sizeof (a) - 7))
+    abort ();
+#else
   if (__builtin_object_size (r, 0) != sizeof (a) - 4)
     abort ();
+#endif
   r = &a.a[4];
   r = memset (r, 'a', 2);
   if (__builtin_object_size (r, 0)
@@ -140,14 +166,16 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (var + 10, 0) != x)
     abort ();
+  if (__builtin_object_size (&var[5], 0) != x + 5)
+    abort ();
 #else
   if (__builtin_object_size (var, 0) != (size_t) -1)
     abort ();
   if (__builtin_object_size (var + 10, 0) != (size_t) -1)
     abort ();
-#endif
   if (__builtin_object_size (&var[5], 0) != (size_t) -1)
     abort ();
+#endif
   if (__builtin_object_size (zerol, 0) != 0)
     abort ();
   if (__builtin_object_size (&zerol, 0) != 0)

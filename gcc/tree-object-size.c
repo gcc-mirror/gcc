@@ -107,6 +107,14 @@ size_unknown_p (tree val, int object_size_type)
 	  ? integer_zerop (val) : integer_all_onesp (val));
 }
 
+/* Return true if VAL represents a valid size for OBJECT_SIZE_TYPE.  */
+
+static inline bool
+size_valid_p (tree val, int object_size_type)
+{
+  return ((object_size_type & OST_DYNAMIC) || TREE_CODE (val) == INTEGER_CST);
+}
+
 /* Return true if VAL is usable as an object size in the object_sizes
    vectors.  */
 
@@ -341,7 +349,6 @@ init_offset_limit (void)
 static tree
 size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
 {
-  gcc_checking_assert (TREE_CODE (offset) == INTEGER_CST);
   gcc_checking_assert (types_compatible_p (TREE_TYPE (sz), sizetype));
 
   /* For negative offsets, if we have a distinct WHOLESIZE, use it to get a net
@@ -540,18 +547,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    sz = wholesize = size_unknown (object_size_type);
 	}
       if (!size_unknown_p (sz, object_size_type))
-	{
-	  tree offset = TREE_OPERAND (pt_var, 1);
-	  if (TREE_CODE (offset) != INTEGER_CST
-	      || TREE_CODE (sz) != INTEGER_CST)
-	    sz = wholesize = size_unknown (object_size_type);
-	  else
-	    sz = size_for_offset (sz, offset, wholesize);
-	}
+	sz = size_for_offset (sz, TREE_OPERAND (pt_var, 1), wholesize);
 
       if (!size_unknown_p (sz, object_size_type)
-	  && TREE_CODE (sz) == INTEGER_CST
-	  && compare_tree_int (sz, offset_limit) < 0)
+	  && (TREE_CODE (sz) != INTEGER_CST
+	      || compare_tree_int (sz, offset_limit) < 0))
 	{
 	  pt_var_size = sz;
 	  pt_var_wholesize = wholesize;
@@ -571,8 +571,9 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 
   if (pt_var_size)
     {
-      /* Validate the size determined above.  */
-      if (compare_tree_int (pt_var_size, offset_limit) >= 0)
+      /* Validate the size determined above if it is a constant.  */
+      if (TREE_CODE (pt_var_size) == INTEGER_CST
+	  && compare_tree_int (pt_var_size, offset_limit) >= 0)
 	return false;
     }
 
@@ -596,7 +597,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    var = TREE_OPERAND (var, 0);
 	  if (! TYPE_SIZE_UNIT (TREE_TYPE (var))
 	      || ! tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (var)))
-	      || (pt_var_size
+	      || (pt_var_size && TREE_CODE (pt_var_size) == INTEGER_CST
 		  && tree_int_cst_lt (pt_var_size,
 				      TYPE_SIZE_UNIT (TREE_TYPE (var)))))
 	    var = pt_var;
@@ -610,17 +611,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		switch (TREE_CODE (v))
 		  {
 		  case ARRAY_REF:
-		    if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (v, 0)))
-			&& TREE_CODE (TREE_OPERAND (v, 1)) == INTEGER_CST)
+		    if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (v, 0))))
 		      {
 			tree domain
 			  = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (v, 0)));
-			if (domain
-			    && TYPE_MAX_VALUE (domain)
-			    && TREE_CODE (TYPE_MAX_VALUE (domain))
-			       == INTEGER_CST
-			    && tree_int_cst_lt (TREE_OPERAND (v, 1),
-						TYPE_MAX_VALUE (domain)))
+			if (domain && TYPE_MAX_VALUE (domain))
 			  {
 			    v = NULL_TREE;
 			    break;
@@ -687,20 +682,20 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	var = pt_var;
 
       if (var != pt_var)
-	var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
+	{
+	  var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
+	  if (!TREE_CONSTANT (var_size))
+	    var_size = get_or_create_ssa_default_def (cfun, var_size);
+	  if (!var_size)
+	    return false;
+	}
       else if (!pt_var_size)
 	return false;
       else
 	var_size = pt_var_size;
       bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
       if (bytes != error_mark_node)
-	{
-	  if (TREE_CODE (bytes) == INTEGER_CST
-	      && tree_int_cst_lt (var_size, bytes))
-	    bytes = size_zero_node;
-	  else
-	    bytes = size_binop (MINUS_EXPR, var_size, bytes);
-	}
+	bytes = size_for_offset (var_size, bytes);
       if (var != pt_var
 	  && pt_var_size
 	  && TREE_CODE (pt_var) == MEM_REF
@@ -709,11 +704,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
 	  if (bytes2 != error_mark_node)
 	    {
-	      if (TREE_CODE (bytes2) == INTEGER_CST
-		  && tree_int_cst_lt (pt_var_size, bytes2))
-		bytes2 = size_zero_node;
-	      else
-		bytes2 = size_binop (MINUS_EXPR, pt_var_size, bytes2);
+	      bytes2 = size_for_offset (pt_var_size, bytes2);
 	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
 	    }
 	}
@@ -729,14 +720,18 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
       wholebytes = pt_var_wholesize;
     }
 
-  if (TREE_CODE (bytes) != INTEGER_CST
-      || TREE_CODE (wholebytes) != INTEGER_CST)
-    return false;
+  if (!size_unknown_p (bytes, object_size_type)
+      && size_valid_p (bytes, object_size_type)
+      && !size_unknown_p (bytes, object_size_type)
+      && size_valid_p (wholebytes, object_size_type))
+    {
+      *psize = bytes;
+      if (pwholesize)
+	*pwholesize = wholebytes;
+      return true;
+    }
 
-  *psize = bytes;
-  if (pwholesize)
-    *pwholesize = wholebytes;
-  return true;
+  return false;
 }
 
 
@@ -1058,11 +1053,11 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      tree offset = gimple_assign_rhs2 (def);
 	      ptr = gimple_assign_rhs1 (def);
 
-	      if (tree_fits_shwi_p (offset)
+	      if (((object_size_type & OST_DYNAMIC)
+		   || tree_fits_shwi_p (offset))
 		  && compute_builtin_object_size (ptr, object_size_type,
 						  psize))
 		{
-		  /* Return zero when the offset is out of bounds.  */
 		  *psize = size_for_offset (*psize, offset);
 		  return true;
 		}
@@ -1247,7 +1242,7 @@ call_object_size (struct object_size_info *osi, tree ptr, gcall *call)
   gcc_assert (osi->pass == 0);
   tree bytes = alloc_object_size (call, object_size_type);
 
-  if (!(object_size_type & OST_DYNAMIC) && TREE_CODE (bytes) != INTEGER_CST)
+  if (!size_valid_p (bytes, object_size_type))
     bytes = size_unknown (object_size_type);
 
   object_sizes_set (osi, varno, bytes, bytes);
@@ -1328,9 +1323,8 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
     return false;
 
   /* Handle PTR + OFFSET here.  */
-  if (TREE_CODE (op1) == INTEGER_CST
-      && (TREE_CODE (op0) == SSA_NAME
-	  || TREE_CODE (op0) == ADDR_EXPR))
+  if (size_valid_p (op1, object_size_type)
+      && (TREE_CODE (op0) == SSA_NAME || TREE_CODE (op0) == ADDR_EXPR))
     {
       if (TREE_CODE (op0) == SSA_NAME)
 	{
@@ -1356,6 +1350,10 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 	bytes = size_for_offset (bytes, op1, wholesize);
     }
   else
+    bytes = wholesize = size_unknown (object_size_type);
+
+  if (!size_valid_p (bytes, object_size_type)
+      || !size_valid_p (wholesize, object_size_type))
     bytes = wholesize = size_unknown (object_size_type);
 
   if (object_sizes_set (osi, varno, bytes, wholesize))

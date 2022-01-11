@@ -42,9 +42,17 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (q, 2) != 0)
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 2)
+      != (x < 0
+	  ? sizeof (a) - __builtin_offsetof (struct A, a) - 9
+	  : sizeof (a) - __builtin_offsetof (struct A, c) - 1))
+    abort ();
+#else
   if (__builtin_object_size (r, 2)
       != sizeof (a) - __builtin_offsetof (struct A, c) - 1)
     abort ();
+#endif
   if (x < 6)
     r = &w[2].a[1];
   else
@@ -58,15 +66,28 @@ test1 (void *q, int x)
   if (__builtin_object_size (&y.b, 2)
       != sizeof (a) - __builtin_offsetof (struct A, b))
     abort ();
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 2)
+      != (x < 6
+	  ? 2 * sizeof (w[0]) - __builtin_offsetof (struct A, a) - 1
+	  : sizeof (a) - __builtin_offsetof (struct A, a) - 6))
+    abort ();
+#else
   if (__builtin_object_size (r, 2)
       != sizeof (a) - __builtin_offsetof (struct A, a) - 6)
     abort ();
+#endif
   if (x < 20)
     r = malloc (30);
   else
     r = calloc (2, 16);
+#ifdef __builtin_object_size
+  if (__builtin_object_size (r, 2) != (x < 20 ? 30 : 2 * 16))
+    abort ();
+#else
   if (__builtin_object_size (r, 2) != 30)
     abort ();
+#endif
   if (x < 20)
     r = malloc (30);
   else
@@ -145,14 +166,16 @@ test1 (void *q, int x)
     abort ();
   if (__builtin_object_size (var + 10, 2) != x)
     abort ();
+  if (__builtin_object_size (&var[5], 2) != x + 5)
+    abort ();
 #else
   if (__builtin_object_size (var, 2) != 0)
     abort ();
   if (__builtin_object_size (var + 10, 2) != 0)
     abort ();
-#endif
   if (__builtin_object_size (&var[5], 2) != 0)
     abort ();
+#endif
   if (__builtin_object_size (zerol, 2) != 0)
     abort ();
   if (__builtin_object_size (&zerol, 2) != 0)
