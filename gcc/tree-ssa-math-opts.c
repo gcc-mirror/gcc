@@ -207,6 +207,9 @@ static struct
 
   /* Number of divmod calls inserted.  */
   int divmod_calls_inserted;
+
+  /* Number of highpart multiplication ops inserted.  */
+  int highpart_mults_inserted;
 } widen_mul_stats;
 
 /* The instance of "struct occurrence" representing the highest
@@ -4548,9 +4551,96 @@ convert_to_divmod (gassign *stmt)
   return true; 
 }    
 
+/* Process a single gimple assignment STMT, which has a RSHIFT_EXPR as
+   its rhs, and try to convert it into a MULT_HIGHPART_EXPR.  The return
+   value is true iff we converted the statement.  */
+
+static bool
+convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
+{
+  tree lhs = gimple_assign_lhs (stmt);
+  tree stype = TREE_TYPE (lhs);
+  tree sarg0 = gimple_assign_rhs1 (stmt);
+  tree sarg1 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (stype) != INTEGER_TYPE
+      || TREE_CODE (sarg1) != INTEGER_CST
+      || TREE_CODE (sarg0) != SSA_NAME
+      || !tree_fits_uhwi_p (sarg1)
+      || !has_single_use (sarg0))
+    return false;
+
+  gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (sarg0));
+  if (!def)
+    return false;
+
+  enum tree_code mcode = gimple_assign_rhs_code (def);
+  if (mcode == NOP_EXPR)
+    {
+      tree tmp = gimple_assign_rhs1 (def);
+      if (TREE_CODE (tmp) != SSA_NAME || !has_single_use (tmp))
+	return false;
+      def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (tmp));
+      if (!def)
+	return false;
+      mcode = gimple_assign_rhs_code (def);
+    }
+
+  if (mcode != WIDEN_MULT_EXPR
+      || gimple_bb (def) != gimple_bb (stmt))
+    return false;
+  tree mtype = TREE_TYPE (gimple_assign_lhs (def));
+  if (TREE_CODE (mtype) != INTEGER_TYPE
+      || TYPE_PRECISION (mtype) != TYPE_PRECISION (stype))
+    return false;
+
+  tree mop1 = gimple_assign_rhs1 (def);
+  tree mop2 = gimple_assign_rhs2 (def);
+  tree optype = TREE_TYPE (mop1);
+  bool unsignedp = TYPE_UNSIGNED (optype);
+  unsigned int prec = TYPE_PRECISION (optype);
+
+  if (unsignedp != TYPE_UNSIGNED (mtype)
+      || TYPE_PRECISION (mtype) != 2 * prec)
+    return false;
+
+  unsigned HOST_WIDE_INT bits = tree_to_uhwi (sarg1);
+  if (bits < prec || bits >= 2 * prec)
+    return false;
+
+  machine_mode mode = TYPE_MODE (optype);
+  optab tab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
+  if (optab_handler (tab, mode) == CODE_FOR_nothing)
+    return false;
+
+  location_t loc = gimple_location (stmt);
+  tree highpart1 = build_and_insert_binop (gsi, loc, "highparttmp",
+					   MULT_HIGHPART_EXPR, mop1, mop2);
+  tree highpart2 = highpart1;
+  tree ntype = optype;
+
+  if (TYPE_UNSIGNED (stype) != TYPE_UNSIGNED (optype))
+    {
+      ntype = TYPE_UNSIGNED (stype) ? unsigned_type_for (optype)
+				    : signed_type_for (optype);
+      highpart2 = build_and_insert_cast (gsi, loc, ntype, highpart1);
+    }
+  if (bits > prec)
+    highpart2 = build_and_insert_binop (gsi, loc, "highparttmp",
+					RSHIFT_EXPR, highpart2, 
+					build_int_cst (ntype, bits - prec));
+
+  gassign *new_stmt = gimple_build_assign (lhs, NOP_EXPR, highpart2);
+  gsi_replace (gsi, new_stmt, true);
+
+  widen_mul_stats.highpart_mults_inserted++;
+  return true;
+}
+
+
 /* Find integer multiplications where the operands are extended from
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
-   where appropriate.  */
+   or MULT_HIGHPART_EXPR where appropriate.  */
 
 namespace {
 
@@ -4656,6 +4746,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      convert_to_divmod (as_a<gassign *> (stmt));
 	      break;
 
+	    case RSHIFT_EXPR:
+	      convert_mult_to_highpart (as_a<gassign *> (stmt), &gsi);
+	      break;
+
 	    default:;
 	    }
 	}
@@ -4738,6 +4832,8 @@ pass_optimize_widening_mul::execute (function *fun)
 			    widen_mul_stats.fmas_inserted);
   statistics_counter_event (fun, "divmod calls inserted",
 			    widen_mul_stats.divmod_calls_inserted);
+  statistics_counter_event (fun, "highpart multiplications inserted",
+			    widen_mul_stats.highpart_mults_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }

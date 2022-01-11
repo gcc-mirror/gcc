@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -777,7 +777,7 @@ package body GNAT.Debug_Pools is
       function Is_Valid_Or_Handled
         (Storage : System.Address;
          Valid   : Boolean) return Boolean is
-         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Int_Storage : constant Integer_Address := To_Integer (Storage);
 
       begin
          --  The pool only returns addresses aligned on Storage_Alignment so

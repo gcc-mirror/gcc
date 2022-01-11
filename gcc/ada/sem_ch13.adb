@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -593,7 +593,7 @@ package body Sem_Ch13 is
          Comp   := First_Component_Or_Discriminant (R);
          while Present (Comp) loop
             declare
-               CC   : constant Node_Id := Component_Clause (Comp);
+               CC : constant Node_Id := Component_Clause (Comp);
 
             begin
                --  Collect only component clauses whose last bit is less than
@@ -10666,8 +10666,7 @@ package body Sem_Ch13 is
                --  what happens if a return appears within a return.
 
                BTemp :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('B'));
+                 Make_Temporary (Loc, 'B');
 
                FBody :=
                  Make_Subprogram_Body (Loc,
@@ -17125,9 +17124,8 @@ package body Sem_Ch13 is
 
    procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id) is
       A_Id        : constant Aspect_Id := Get_Aspect_Id (ASN);
-      pragma Assert ((A_Id = Aspect_Integer_Literal) or
-                     (A_Id = Aspect_Real_Literal) or
-                     (A_Id = Aspect_String_Literal));
+      pragma Assert (A_Id in Aspect_Integer_Literal |
+                             Aspect_Real_Literal | Aspect_String_Literal);
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 

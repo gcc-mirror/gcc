@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Vectors.Boolean_Operations is
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
+package body System.Vectors.Boolean_Operations
+  with SPARK_Mode
+is
 
    SU : constant := Storage_Unit;
    --  Convenient short hand, used throughout
@@ -76,7 +86,26 @@ package body System.Vectors.Boolean_Operations is
    -----------
 
    function "not" (Item : Vectors.Vector) return Vectors.Vector is
+
+      procedure Prove_Not (Result : Vectors.Vector)
+      with
+        Ghost,
+        Pre  => Valid (Item)
+          and then Result = (Item xor True_Val),
+        Post => Valid (Result)
+          and then (for all J in 1 .. Vector_Boolean_Size =>
+                      Model (Result) (J) = not Model (Item) (J));
+
+      procedure Prove_Not (Result : Vectors.Vector) is
+      begin
+         for J in 1 .. Vector_Boolean_Size loop
+            pragma Assert
+              (Element (Result, J) = 1 - Element (Item, J));
+         end loop;
+      end Prove_Not;
+
    begin
+      Prove_Not (Item xor True_Val);
       return Item xor True_Val;
    end "not";
 
@@ -90,7 +119,32 @@ package body System.Vectors.Boolean_Operations is
    end Nand;
 
    function Nand (Left, Right : Vectors.Vector) return Vectors.Vector is
+
+      procedure Prove_And (Result : Vectors.Vector)
+      with
+        Ghost,
+        Pre  => Valid (Left)
+          and then Valid (Right)
+          and then Result = (Left and Right),
+          Post => Valid (Result)
+            and then (for all J in 1 .. Vector_Boolean_Size =>
+                        Model (Result) (J) =
+                          (Model (Left) (J) and Model (Right) (J)));
+
+      procedure Prove_And (Result : Vectors.Vector) is
+      begin
+         for J in 1 .. Vector_Boolean_Size loop
+            pragma Assert
+              (Element (Result, J) =
+                 (if Element (Left, J) = 1
+                    and Element (Right, J) = 1
+                  then 1
+                  else 0));
+         end loop;
+      end Prove_And;
+
    begin
+      Prove_And (Left and Right);
       return not (Left and Right);
    end Nand;
 
@@ -104,7 +158,32 @@ package body System.Vectors.Boolean_Operations is
    end Nor;
 
    function Nor (Left, Right : Vectors.Vector) return Vectors.Vector is
+
+      procedure Prove_Or (Result : Vectors.Vector)
+      with
+        Ghost,
+        Pre  => Valid (Left)
+          and then Valid (Right)
+          and then Result = (Left or Right),
+          Post => Valid (Result)
+            and then (for all J in 1 .. Vector_Boolean_Size =>
+                        Model (Result) (J) =
+                          (Model (Left) (J) or Model (Right) (J)));
+
+      procedure Prove_Or (Result : Vectors.Vector) is
+      begin
+         for J in 1 .. Vector_Boolean_Size loop
+            pragma Assert
+              (Element (Result, J) =
+                 (if Element (Left, J) = 1
+                    or Element (Right, J) = 1
+                  then 1
+                  else 0));
+         end loop;
+      end Prove_Or;
+
    begin
+      Prove_Or (Left or Right);
       return not (Left or Right);
    end Nor;
 
@@ -118,7 +197,32 @@ package body System.Vectors.Boolean_Operations is
    end Nxor;
 
    function Nxor (Left, Right : Vectors.Vector) return Vectors.Vector is
+
+      procedure Prove_Xor (Result : Vectors.Vector)
+      with
+        Ghost,
+        Pre  => Valid (Left)
+          and then Valid (Right)
+          and then Result = (Left xor Right),
+          Post => Valid (Result)
+            and then (for all J in 1 .. Vector_Boolean_Size =>
+                        Model (Result) (J) =
+                          (Model (Left) (J) xor Model (Right) (J)));
+
+      procedure Prove_Xor (Result : Vectors.Vector) is
+      begin
+         for J in 1 .. Vector_Boolean_Size loop
+            pragma Assert
+              (Element (Result, J) =
+                 (if Element (Left, J) = 1
+                    xor Element (Right, J) = 1
+                  then 1
+                  else 0));
+         end loop;
+      end Prove_Xor;
+
    begin
+      Prove_Xor (Left xor Right);
       return not (Left xor Right);
    end Nxor;
 

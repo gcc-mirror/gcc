@@ -5272,6 +5272,7 @@ c_parse_final_cleanups (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
+	      && !DECL_IMMEDIATE_FUNCTION_P (decl)
 	      && !node->definition)
 	    {
 	      /* We will output the function; no longer consider it in this

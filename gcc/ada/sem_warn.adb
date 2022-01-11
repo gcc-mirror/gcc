@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1700,7 +1700,11 @@ package body Sem_Warn is
               and then ((Ekind (E1) /= E_Variable
                           and then Ekind (E1) /= E_Constant
                           and then Ekind (E1) /= E_Component)
-                         or else not Is_Task_Type (E1T))
+
+                         --  Check that E1T is not a task or a composite type
+                         --  with a task component.
+
+                         or else not Has_Task (E1T))
 
               --  For subunits, only place warnings on the main unit itself,
               --  since parent units are not completely compiled.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2279,7 +2279,7 @@ package body Sem_Ch10 is
       ----------------------------
 
       procedure Re_Install_Use_Clauses is
-         U  : Node_Id;
+         U : Node_Id;
       begin
          for J in reverse 1 .. Num_Scopes loop
             U := Use_Clauses (J);

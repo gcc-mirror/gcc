@@ -1,3 +1,36 @@
+2022-01-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103366
+	* trans-expr.c (gfc_conv_gfc_desc_to_cfi_desc): Allow unlimited
+	polymorphic actual argument passed to assumed type formal.
+
+2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103777
+	* simplify.c (gfc_simplify_maskr): Check validity of argument 'I'
+	before simplifying.
+	(gfc_simplify_maskl): Likewise.
+
+2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101762
+	* expr.c (gfc_check_pointer_assign): For pointer initialization
+	targets, check that subscripts and substring indices in
+	specifications are constant expressions.
+
+2022-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103789
+	* trans-array.c (arg_evaluated_for_scalarization): Add MASKL, MASKR,
+	SCAN and VERIFY to the list of intrinsics whose KIND argument is to be
+	ignored.
+
+2022-01-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103898
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Make size_var
+	actually be a variable and fix surrounding code.
+
 2022-01-06  Steve Kargl  <kargl@gcc.gnu.org>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

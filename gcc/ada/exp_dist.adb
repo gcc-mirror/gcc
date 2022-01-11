@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2908,7 +2908,7 @@ package body Exp_Dist is
    ---------------------------------
 
    procedure Expand_Calling_Stubs_Bodies (Unit_Node : Node_Id) is
-      Spec  : constant Node_Id := Specification (Unit_Node);
+      Spec : constant Node_Id := Specification (Unit_Node);
    begin
       Add_Calling_Stubs_To_Declarations (Spec);
    end Expand_Calling_Stubs_Bodies;

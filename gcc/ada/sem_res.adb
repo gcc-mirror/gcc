@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9774,7 +9774,7 @@ package body Sem_Res is
       ----------------------------
 
       procedure Resolve_Set_Membership is
-         Alt  : Node_Id;
+         Alt : Node_Id;
 
       begin
          --  If the left operand is overloaded, find type compatible with not

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -922,8 +922,8 @@ package body Par_SCO is
    ---------------------
 
    procedure Record_Instance (Id : Instance_Id; Inst_Sloc : Source_Ptr) is
-      Inst_Src  : constant Source_File_Index :=
-                    Get_Source_File_Index (Inst_Sloc);
+      Inst_Src : constant Source_File_Index :=
+                   Get_Source_File_Index (Inst_Sloc);
    begin
       SCO_Instance_Table.Append
         ((Inst_Dep_Num       => Dependency_Num (Unit (Inst_Src)),

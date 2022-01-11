@@ -720,7 +720,7 @@ try_unroll_loop_completely (class loop *loop,
     exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
-  if ((allow_peel || maxiter == 0 || ul == UL_NO_GROWTH)
+  if ((maxiter == 0 || ul != UL_SINGLE_ITER)
       && maxiter >= 0
       && (!n_unroll_found || (unsigned HOST_WIDE_INT)maxiter < n_unroll))
     {
@@ -729,6 +729,10 @@ try_unroll_loop_completely (class loop *loop,
       /* Loop terminates before the IV variable test, so we cannot
 	 remove it in the last iteration.  */
       edge_to_cancel = NULL;
+      /* If we do not allow peeling and we iterate just allow cases
+	 that do not grow code.  */
+      if (!allow_peel && maxiter != 0)
+	ul = UL_NO_GROWTH;
     }
 
   if (!n_unroll_found)

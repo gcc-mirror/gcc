@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2018-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2018-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -288,7 +288,7 @@ package body Repinfo.Input is
       ----------------------
 
       function Decode_Integer (Lo, Hi : Text_Ptr) return Uint is
-         Len  : constant Nat := Int (Hi) - Int (Lo) + 1;
+         Len : constant Nat := Int (Hi) - Int (Lo) + 1;
 
       begin
          --  Decode up to 9 characters manually, otherwise call into Uint

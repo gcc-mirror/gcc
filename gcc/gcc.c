@@ -4495,6 +4495,7 @@ driver_handle_option (struct gcc_options *opts,
       /* Saving this option is useful to let self-specs decide to
 	 provide a default one.  */
       do_save = true;
+      validated = true;
       break;
 
     case OPT_time_:

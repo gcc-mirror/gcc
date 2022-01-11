@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3831,6 +3831,9 @@ package body Sem_Ch3 is
                then
                   null;
 
+               elsif Is_Record_Type (Etype (Comp)) then
+                  Check_Dynamic_Object (Etype (Comp));
+
                elsif not Discriminated_Size (Comp)
                  and then Comes_From_Source (Comp)
                then
@@ -3838,8 +3841,6 @@ package body Sem_Ch3 is
                     ("component& of non-static size will violate restriction "
                      & "No_Implicit_Heap_Allocation?", N, Comp);
 
-               elsif Is_Record_Type (Etype (Comp)) then
-                  Check_Dynamic_Object (Etype (Comp));
                end if;
 
                Next_Component (Comp);
@@ -5511,6 +5512,7 @@ package body Sem_Ch3 is
             when Array_Kind =>
                Mutate_Ekind                  (Id, E_Array_Subtype);
                Copy_Array_Subtype_Attributes (Id, T);
+               Set_Packed_Array_Impl_Type    (Id, Packed_Array_Impl_Type (T));
 
             when Decimal_Fixed_Point_Kind =>
                Mutate_Ekind             (Id, E_Decimal_Fixed_Point_Subtype);
@@ -14971,6 +14973,9 @@ package body Sem_Ch3 is
    -- Copy_Array_Subtype_Attributes --
    -----------------------------------
 
+   --  Note that we used to copy Packed_Array_Impl_Type too here, but we now
+   --  let it be recreated during freezing for the sake of better debug info.
+
    procedure Copy_Array_Subtype_Attributes (T1, T2 : Entity_Id) is
    begin
       Set_Size_Info (T1, T2);
@@ -14988,7 +14993,6 @@ package body Sem_Ch3 is
       Set_Convention              (T1, Convention              (T2));
       Set_Is_Limited_Composite    (T1, Is_Limited_Composite    (T2));
       Set_Is_Private_Composite    (T1, Is_Private_Composite    (T2));
-      Set_Packed_Array_Impl_Type  (T1, Packed_Array_Impl_Type  (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------

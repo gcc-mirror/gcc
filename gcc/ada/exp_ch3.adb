@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4139,7 +4139,7 @@ package body Exp_Ch3 is
                Set_Static_Initialization (Proc_Id, Agg);
 
                declare
-                  Comp  : Node_Id;
+                  Comp : Node_Id;
                begin
                   Comp := First (Component_Associations (Agg));
                   while Present (Comp) loop

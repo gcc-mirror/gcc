@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4394,7 +4394,7 @@ package body Exp_Ch9 is
       --  It would be better to encapsulate this as a routine in Exp_Dbug ???
 
       if Append_Char /= ' ' then
-         if Append_Char = 'P' or Append_Char = 'N' then
+         if Append_Char in 'P' | 'N' then
             Add_Char_To_Name_Buffer (Append_Char);
             return Name_Find;
          else

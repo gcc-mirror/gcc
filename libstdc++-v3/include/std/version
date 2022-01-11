@@ -173,7 +173,8 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 #define __cpp_lib_unordered_map_try_emplace 201411
-#if __cplusplus == 201703L || ! __cpp_concepts // N.B. updated value in C++20
+#ifndef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
+// N.B. updated value in C++20
 # define __cpp_lib_variant 202102L
 #endif
 #endif
@@ -286,7 +287,7 @@
 # endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
-#if __cpp_concepts
+#ifdef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
 # define __cpp_lib_variant 202106L
 #endif
 #endif

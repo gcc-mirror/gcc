@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -827,27 +827,14 @@ package body Errout is
    -------------------
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id) is
-      CNRT : constant String := " not allowed in no run time mode";
-      CCRT : constant String := " not supported by configuration>";
-
-      S : String (1 .. Feature'Length + 1 + CCRT'Length);
-      L : Natural;
-
    begin
-      S (1) := '|';
-      S (2 .. Feature'Length + 1) := Feature;
-      L := Feature'Length + 2;
-
       if No_Run_Time_Mode then
-         S (L .. L + CNRT'Length - 1) := CNRT;
-         L := L + CNRT'Length - 1;
+         Error_Msg_N ('|' & Feature & " not allowed in no run time mode", N);
 
       else pragma Assert (Configurable_Run_Time_Mode);
-         S (L .. L + CCRT'Length - 1) := CCRT;
-         L := L + CCRT'Length - 1;
+         Error_Msg_N ('|' & Feature & " not supported by configuration>", N);
       end if;
 
-      Error_Msg_N (S (1 .. L), N);
       Configurable_Run_Time_Violations := Configurable_Run_Time_Violations + 1;
    end Error_Msg_CRT;
 
@@ -1224,6 +1211,7 @@ package body Errout is
           Check               => Is_Check_Msg,
           Warn_Err            => False, -- reset below
           Warn_Chr            => Warning_Msg_Char,
+          Warn_Runtime_Raise  => Is_Runtime_Raise,
           Style               => Is_Style_Msg,
           Serious             => Is_Serious_Error,
           Uncond              => Is_Unconditional_Msg,
@@ -1240,10 +1228,15 @@ package body Errout is
                       or else
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
 
-      --  Propagate Warn_Err to this message and preceding continuations
+      --  Propagate Warn_Err to this message and preceding continuations.
+      --  Likewise, propagate Is_Warning_Msg and Is_Runtime_Raise, because the
+      --  current continued message could have been escalated from warning to
+      --  error.
 
       for J in reverse 1 .. Errors.Last loop
-         Errors.Table (J).Warn_Err := Warn_Err;
+         Errors.Table (J).Warn_Err           := Warn_Err;
+         Errors.Table (J).Warn               := Is_Warning_Msg;
+         Errors.Table (J).Warn_Runtime_Raise := Is_Runtime_Raise;
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
 
@@ -3287,13 +3280,17 @@ package body Errout is
                --  not remove style messages here. They are warning messages
                --  but not ones we want removed in this context.
 
-               and then Errors.Table (E).Warn
+               and then (Errors.Table (E).Warn
+                           or else
+                         Errors.Table (E).Warn_Runtime_Raise)
 
                --  Don't remove unconditional messages
 
                and then not Errors.Table (E).Uncond
             then
-               Warnings_Detected := Warnings_Detected - 1;
+               if Errors.Table (E).Warn then
+                  Warnings_Detected := Warnings_Detected - 1;
+               end if;
 
                if Errors.Table (E).Info then
                   Warning_Info_Messages := Warning_Info_Messages - 1;
@@ -4069,7 +4066,8 @@ package body Errout is
                if Is_Warning_Msg
                  and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                then
-                  Is_Warning_Msg := False;
+                  Is_Warning_Msg   := False;
+                  Is_Runtime_Raise := True;
                end if;
 
                if Is_Warning_Msg then

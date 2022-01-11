@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2021, AdaCore                    --
+--                      Copyright (C) 1999-2022, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -664,7 +664,7 @@ package body System.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Old    : Pointer;
+         Old : Pointer;
       begin
          Old := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 7);
          Emit_Natural (Old + Next_Pointer_Bytes, Min);
@@ -2108,7 +2108,7 @@ package body System.Regpat is
 
          if Do_Print then
             declare
-               Point   : constant String := Pointer'Image (Index);
+               Point : constant String := Pointer'Image (Index);
             begin
                Put ([1 .. 4 - Point'Length => ' ']
                     & Point & ":"

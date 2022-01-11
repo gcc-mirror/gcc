@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2012-2021, Free Software Foundation, Inc.     --
+--              Copyright (C) 2012-2022, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,17 +80,20 @@ package System.Atomic_Primitives is
 
    generic
       type Atomic_Type is mod <>;
-   function Sync_Compare_And_Swap
-     (Ptr      : Address;
-      Expected : Atomic_Type;
-      Desired  : Atomic_Type) return Atomic_Type;
+   function Atomic_Compare_Exchange
+     (Ptr           : Address;
+      Expected      : Address;
+      Desired       : Atomic_Type;
+      Weak          : Boolean   := False;
+      Success_Model : Mem_Model := Seq_Cst;
+      Failure_Model : Mem_Model := Seq_Cst) return Boolean;
    pragma Import
-     (Intrinsic, Sync_Compare_And_Swap, "__sync_val_compare_and_swap");
+     (Intrinsic, Atomic_Compare_Exchange, "__atomic_compare_exchange_n");
 
-   function Sync_Compare_And_Swap_8  is new Sync_Compare_And_Swap (uint8);
-   function Sync_Compare_And_Swap_16 is new Sync_Compare_And_Swap (uint16);
-   function Sync_Compare_And_Swap_32 is new Sync_Compare_And_Swap (uint32);
-   function Sync_Compare_And_Swap_64 is new Sync_Compare_And_Swap (uint64);
+   function Atomic_Compare_Exchange_8  is new Atomic_Compare_Exchange (uint8);
+   function Atomic_Compare_Exchange_16 is new Atomic_Compare_Exchange (uint16);
+   function Atomic_Compare_Exchange_32 is new Atomic_Compare_Exchange (uint32);
+   function Atomic_Compare_Exchange_64 is new Atomic_Compare_Exchange (uint64);
 
    function Atomic_Test_And_Set
      (Ptr   : System.Address;

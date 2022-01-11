@@ -36,6 +36,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "cfgloop.h"
 
+/* To prevent soft conflict detection becoming quadratic in the
+   loop depth.  Only for very pathological cases, so it hardly
+   seems worth a --param.  */
+const int max_soft_conflict_loop_depth = 64;
+
 typedef struct allocno_hard_regs *allocno_hard_regs_t;
 
 /* The structure contains information about hard registers can be
@@ -1707,6 +1712,167 @@ calculate_saved_nregs (int hard_regno, machine_mode mode)
   return nregs;
 }
 
+/* Allocnos A1 and A2 are known to conflict.  Check whether, in some loop L
+   that is either the current loop or a nested subloop, the conflict is of
+   the following form:
+
+   - One allocno (X) is a cap allocno for some non-cap allocno X2.
+
+   - X2 belongs to some loop L2.
+
+   - The other allocno (Y) is a non-cap allocno.
+
+   - Y is an ancestor of some allocno Y2 in L2.  (Note that such a Y2
+     must exist, given that X and Y conflict.)
+
+   - Y2 is not referenced in L2 (that is, ALLOCNO_NREFS (Y2) == 0).
+
+   - Y can use a different allocation from Y2.
+
+   In this case, Y's register is live across L2 but is not used within it,
+   whereas X's register is used only within L2.  The conflict is therefore
+   only "soft", in that it can easily be avoided by spilling Y2 inside L2
+   without affecting any insn references.
+
+   If the conflict does have this form, return the Y2 that would need to be
+   spilled in order to allow X and Y (and thus A1 and A2) to use the same
+   register.  Return null otherwise.  Returning null is conservatively correct;
+   any nonnnull return value is an optimization.  */
+ira_allocno_t
+ira_soft_conflict (ira_allocno_t a1, ira_allocno_t a2)
+{
+  /* Search for the loop L and its associated allocnos X and Y.  */
+  int search_depth = 0;
+  while (ALLOCNO_CAP_MEMBER (a1) && ALLOCNO_CAP_MEMBER (a2))
+    {
+      a1 = ALLOCNO_CAP_MEMBER (a1);
+      a2 = ALLOCNO_CAP_MEMBER (a2);
+      if (search_depth++ > max_soft_conflict_loop_depth)
+	return nullptr;
+    }
+  /* This must be true if A1 and A2 conflict.  */
+  ira_assert (ALLOCNO_LOOP_TREE_NODE (a1) == ALLOCNO_LOOP_TREE_NODE (a2));
+
+  /* Make A1 the cap allocno (X in the comment above) and A2 the
+     non-cap allocno (Y in the comment above).  */
+  if (ALLOCNO_CAP_MEMBER (a2))
+    std::swap (a1, a2);
+  if (!ALLOCNO_CAP_MEMBER (a1))
+    return nullptr;
+
+  /* Search for the real allocno that A1 caps (X2 in the comment above).  */
+  do
+    {
+      a1 = ALLOCNO_CAP_MEMBER (a1);
+      if (search_depth++ > max_soft_conflict_loop_depth)
+	return nullptr;
+    }
+  while (ALLOCNO_CAP_MEMBER (a1));
+
+  /* Find the associated allocno for A2 (Y2 in the comment above).  */
+  auto node = ALLOCNO_LOOP_TREE_NODE (a1);
+  auto local_a2 = node->regno_allocno_map[ALLOCNO_REGNO (a2)];
+
+  /* Find the parent of LOCAL_A2/Y2.  LOCAL_A2 must be a descendant of A2
+     for the conflict query to make sense, so this parent lookup must succeed.
+
+     If the parent allocno has no references, it is usually cheaper to
+     spill at that loop level instead.  Keep searching until we find
+     a parent allocno that does have references (but don't look past
+     the starting allocno).  */
+  ira_allocno_t local_parent_a2;
+  for (;;)
+    {
+      local_parent_a2 = ira_parent_allocno (local_a2);
+      if (local_parent_a2 == a2 || ALLOCNO_NREFS (local_parent_a2) != 0)
+	break;
+      local_a2 = local_parent_a2;
+    }
+  if (CHECKING_P)
+    {
+      /* Sanity check to make sure that the conflict we've been given
+	 makes sense.  */
+      auto test_a2 = local_parent_a2;
+      while (test_a2 != a2)
+	{
+	  test_a2 = ira_parent_allocno (test_a2);
+	  ira_assert (test_a2);
+	}
+    }
+  if (local_a2
+      && ALLOCNO_NREFS (local_a2) == 0
+      && ira_subloop_allocnos_can_differ_p (local_parent_a2))
+    return local_a2;
+  return nullptr;
+}
+
+/* The caller has decided to allocate HREGNO to A and has proved that
+   this is safe.  However, the allocation might require the kind of
+   spilling described in the comment above ira_soft_conflict.
+   The caller has recorded that:
+
+   - The allocnos in ALLOCNOS_TO_SPILL are the ones that would need
+     to be spilled to satisfy soft conflicts for at least one allocation
+     (not necessarily HREGNO).
+
+   - The soft conflicts apply only to A allocations that overlap
+     SOFT_CONFLICT_REGS.
+
+   If allocating HREGNO is subject to any soft conflicts, record the
+   subloop allocnos that need to be spilled.  */
+static void
+spill_soft_conflicts (ira_allocno_t a, bitmap allocnos_to_spill,
+		      HARD_REG_SET soft_conflict_regs, int hregno)
+{
+  auto nregs = hard_regno_nregs (hregno, ALLOCNO_MODE (a));
+  bitmap_iterator bi;
+  unsigned int i;
+  EXECUTE_IF_SET_IN_BITMAP (allocnos_to_spill, 0, i, bi)
+    {
+      /* SPILL_A needs to be spilled for at least one allocation
+	 (not necessarily this one).  */
+      auto spill_a = ira_allocnos[i];
+
+      /* Find the corresponding allocno for this loop.  */
+      auto conflict_a = spill_a;
+      do
+	{
+	  conflict_a = ira_parent_or_cap_allocno (conflict_a);
+	  ira_assert (conflict_a);
+	}
+      while (ALLOCNO_LOOP_TREE_NODE (conflict_a)->level
+	     > ALLOCNO_LOOP_TREE_NODE (a)->level);
+
+      ira_assert (ALLOCNO_LOOP_TREE_NODE (conflict_a)
+		  == ALLOCNO_LOOP_TREE_NODE (a));
+
+      if (conflict_a == a)
+	{
+	  /* SPILL_A is a descendant of A.  We don't know (and don't need
+	     to know) which cap allocnos have a soft conflict with A.
+	     All we need to do is test whether the soft conflict applies
+	     to the chosen allocation.  */
+	  if (ira_hard_reg_set_intersection_p (hregno, ALLOCNO_MODE (a),
+					       soft_conflict_regs))
+	    ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (spill_a) = true;
+	}
+      else
+	{
+	  /* SPILL_A is a descendant of CONFLICT_A, which has a soft conflict
+	     with A.  Test whether the soft conflict applies to the current
+	     allocation.  */
+	  ira_assert (ira_soft_conflict (a, conflict_a) == spill_a);
+	  auto conflict_hregno = ALLOCNO_HARD_REGNO (conflict_a);
+	  ira_assert (conflict_hregno >= 0);
+	  auto conflict_nregs = hard_regno_nregs (conflict_hregno,
+						  ALLOCNO_MODE (conflict_a));
+	  if (hregno + nregs > conflict_hregno
+	      && conflict_hregno + conflict_nregs > hregno)
+	    ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (spill_a) = true;
+	}
+    }
+}
+
 /* Choose a hard register for allocno A.  If RETRY_P is TRUE, it means
    that the function called from function
    `ira_reassign_conflict_allocnos' and `allocno_reload_assign'.  In
@@ -1746,6 +1912,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 #ifdef STACK_REGS
   bool no_stack_reg_p;
 #endif
+  auto_bitmap allocnos_to_spill;
+  HARD_REG_SET soft_conflict_regs = {};
 
   ira_assert (! ALLOCNO_ASSIGNED_P (a));
   get_conflict_and_start_profitable_regs (a, retry_p,
@@ -1833,23 +2001,56 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 
 		  mode = ALLOCNO_MODE (conflict_a);
 		  conflict_nregs = hard_regno_nregs (hard_regno, mode);
-		  if (conflict_nregs == n_objects && conflict_nregs > 1)
+		  auto spill_a = (retry_p
+				  ? nullptr
+				  : ira_soft_conflict (a, conflict_a));
+		  if (spill_a)
 		    {
-		      int num = OBJECT_SUBWORD (conflict_obj);
-
-		      if (REG_WORDS_BIG_ENDIAN)
-			SET_HARD_REG_BIT (conflicting_regs[word],
-					  hard_regno + n_objects - num - 1);
-		      else
-			SET_HARD_REG_BIT (conflicting_regs[word],
-					  hard_regno + num);
+		      if (bitmap_set_bit (allocnos_to_spill,
+					  ALLOCNO_NUM (spill_a)))
+			{
+			  ira_loop_border_costs border_costs (spill_a);
+			  auto cost = border_costs.spill_inside_loop_cost ();
+			  auto note_conflict = [&](int r)
+			    {
+			      SET_HARD_REG_BIT (soft_conflict_regs, r);
+			      auto hri = ira_class_hard_reg_index[aclass][r];
+			      if (hri >= 0)
+				{
+				  costs[hri] += cost;
+				  full_costs[hri] += cost;
+				}
+			    };
+			  for (int r = hard_regno;
+			       r >= 0 && (int) end_hard_regno (mode, r) > hard_regno;
+			       r--)
+			    note_conflict (r);
+			  for (int r = hard_regno + 1;
+			       r < hard_regno + conflict_nregs;
+			       r++)
+			    note_conflict (r);
+			}
 		    }
 		  else
-		    conflicting_regs[word]
-		      |= ira_reg_mode_hard_regset[hard_regno][mode];
-		  if (hard_reg_set_subset_p (profitable_hard_regs,
-					     conflicting_regs[word]))
-		    goto fail;
+		    {
+		      if (conflict_nregs == n_objects && conflict_nregs > 1)
+			{
+			  int num = OBJECT_SUBWORD (conflict_obj);
+
+			  if (REG_WORDS_BIG_ENDIAN)
+			    SET_HARD_REG_BIT (conflicting_regs[word],
+					      hard_regno + n_objects - num - 1);
+			  else
+			    SET_HARD_REG_BIT (conflicting_regs[word],
+					      hard_regno + num);
+			}
+		      else
+			conflicting_regs[word]
+			  |= ira_reg_mode_hard_regset[hard_regno][mode];
+		      if (hard_reg_set_subset_p (profitable_hard_regs,
+						 conflicting_regs[word]))
+			goto fail;
+		    }
 		}
 	    }
 	  else if (! retry_p
@@ -1962,6 +2163,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
     {
       for (i = hard_regno_nregs (best_hard_regno, mode) - 1; i >= 0; i--)
 	allocated_hardreg_p[best_hard_regno + i] = true;
+      spill_soft_conflicts (a, allocnos_to_spill, soft_conflict_regs,
+			    best_hard_regno);
     }
   if (! retry_p)
     restore_costs_from_copies (a);
@@ -2567,13 +2770,23 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
   return REG_FREQ_FROM_EDGE_FREQ (freq);
 }
 
+/* Construct an object that describes the boundary between A and its
+   parent allocno.  */
+ira_loop_border_costs::ira_loop_border_costs (ira_allocno_t a)
+  : m_mode (ALLOCNO_MODE (a)),
+    m_class (ALLOCNO_CLASS (a)),
+    m_entry_freq (ira_loop_edge_freq (ALLOCNO_LOOP_TREE_NODE (a),
+				      ALLOCNO_REGNO (a), false)),
+    m_exit_freq (ira_loop_edge_freq (ALLOCNO_LOOP_TREE_NODE (a),
+				     ALLOCNO_REGNO (a), true))
+{
+}
+
 /* Calculate and return the cost of putting allocno A into memory.  */
 static int
 calculate_allocno_spill_cost (ira_allocno_t a)
 {
   int regno, cost;
-  machine_mode mode;
-  enum reg_class rclass;
   ira_allocno_t parent_allocno;
   ira_loop_tree_node_t parent_node, loop_node;
 
@@ -2586,24 +2799,12 @@ calculate_allocno_spill_cost (ira_allocno_t a)
     return cost;
   if ((parent_allocno = parent_node->regno_allocno_map[regno]) == NULL)
     return cost;
-  mode = ALLOCNO_MODE (a);
-  rclass = ALLOCNO_CLASS (a);
+  ira_loop_border_costs border_costs (a);
   if (ALLOCNO_HARD_REGNO (parent_allocno) < 0)
-    cost -= (ira_memory_move_cost[mode][rclass][0]
-	     * ira_loop_edge_freq (loop_node, regno, true)
-	     + ira_memory_move_cost[mode][rclass][1]
-	     * ira_loop_edge_freq (loop_node, regno, false));
+    cost -= border_costs.spill_outside_loop_cost ();
   else
-    {
-      ira_init_register_move_cost_if_necessary (mode);
-      cost += ((ira_memory_move_cost[mode][rclass][1]
-		* ira_loop_edge_freq (loop_node, regno, true)
-		+ ira_memory_move_cost[mode][rclass][0]
-		* ira_loop_edge_freq (loop_node, regno, false))
-	       - (ira_register_move_cost[mode][rclass][rclass]
-		  * (ira_loop_edge_freq (loop_node, regno, false)
-		     + ira_loop_edge_freq (loop_node, regno, true))));
-    }
+    cost += (border_costs.spill_inside_loop_cost ()
+	     - border_costs.move_between_loops_cost ());
   return cost;
 }
 
@@ -2985,6 +3186,8 @@ improve_allocation (void)
 	   assigning hard register to allocno A even without spilling
 	   conflicting allocnos.  */
 	continue;
+      auto_bitmap allocnos_to_spill;
+      HARD_REG_SET soft_conflict_regs = {};
       mode = ALLOCNO_MODE (a);
       nwords = ALLOCNO_NUM_OBJECTS (a);
       /* Process each allocno conflicting with A and update the cost
@@ -3010,31 +3213,49 @@ improve_allocation (void)
 	      ALLOCNO_COLOR_DATA (conflict_a)->temp = check;
 	      if ((conflict_hregno = ALLOCNO_HARD_REGNO (conflict_a)) < 0)
 		continue;
-	      spill_cost = ALLOCNO_UPDATED_MEMORY_COST (conflict_a);
-	      k = (ira_class_hard_reg_index
-		   [ALLOCNO_CLASS (conflict_a)][conflict_hregno]);
-	      ira_assert (k >= 0);
-	      if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
-		  != NULL)
-		spill_cost -= allocno_costs[k];
+	      auto spill_a = ira_soft_conflict (a, conflict_a);
+	      if (spill_a)
+		{
+		  if (!bitmap_set_bit (allocnos_to_spill,
+				       ALLOCNO_NUM (spill_a)))
+		    continue;
+		  ira_loop_border_costs border_costs (spill_a);
+		  spill_cost = border_costs.spill_inside_loop_cost ();
+		}
 	      else
-		spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
-	      spill_cost
-		+= allocno_copy_cost_saving (conflict_a, conflict_hregno);
+		{
+		  spill_cost = ALLOCNO_UPDATED_MEMORY_COST (conflict_a);
+		  k = (ira_class_hard_reg_index
+		       [ALLOCNO_CLASS (conflict_a)][conflict_hregno]);
+		  ira_assert (k >= 0);
+		  if ((allocno_costs = ALLOCNO_HARD_REG_COSTS (conflict_a))
+		      != NULL)
+		    spill_cost -= allocno_costs[k];
+		  else
+		    spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
+		  spill_cost
+		    += allocno_copy_cost_saving (conflict_a, conflict_hregno);
+		}
 	      conflict_nregs = hard_regno_nregs (conflict_hregno,
 						 ALLOCNO_MODE (conflict_a));
+	      auto note_conflict = [&](int r)
+		{
+		  if (check_hard_reg_p (a, r,
+					conflicting_regs, profitable_hard_regs))
+		    {
+		      if (spill_a)
+			SET_HARD_REG_BIT (soft_conflict_regs, r);
+		      costs[r] += spill_cost;
+		    }
+		};
 	      for (r = conflict_hregno;
 		   r >= 0 && (int) end_hard_regno (mode, r) > conflict_hregno;
 		   r--)
-		if (check_hard_reg_p (a, r,
-				      conflicting_regs, profitable_hard_regs))
-		  costs[r] += spill_cost;
+		note_conflict (r);
 	      for (r = conflict_hregno + 1;
 		   r < conflict_hregno + conflict_nregs;
 		   r++)
-		if (check_hard_reg_p (a, r,
-				      conflicting_regs, profitable_hard_regs))
-		  costs[r] += spill_cost;
+		note_conflict (r);
 	    }
 	}
       min_cost = INT_MAX;
@@ -3057,6 +3278,7 @@ improve_allocation (void)
 	   by spilling some conflicting allocnos does not improve the
 	   allocation cost.  */
 	continue;
+      spill_soft_conflicts (a, allocnos_to_spill, soft_conflict_regs, best);
       nregs = hard_regno_nregs (best, mode);
       /* Now spill conflicting allocnos which contain a hard register
 	 of A when we assign the best chosen hard register to it.  */
@@ -3342,11 +3564,11 @@ static void
 color_pass (ira_loop_tree_node_t loop_tree_node)
 {
   int regno, hard_regno, index = -1, n;
-  int cost, exit_freq, enter_freq;
+  int cost;
   unsigned int j;
   bitmap_iterator bi;
   machine_mode mode;
-  enum reg_class rclass, aclass, pclass;
+  enum reg_class rclass, aclass;
   ira_allocno_t a, subloop_allocno;
   ira_loop_tree_node_t subloop_node;
 
@@ -3391,10 +3613,9 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	/* Remove from processing in the next loop.  */
 	bitmap_clear_bit (consideration_allocno_bitmap, j);
 	rclass = ALLOCNO_CLASS (a);
-	pclass = ira_pressure_class_translate[rclass];
-	if (flag_ira_region == IRA_REGION_MIXED
-	    && (loop_tree_node->reg_pressure[pclass]
-		<= ira_class_hard_regs_num[pclass]))
+	subloop_allocno = ALLOCNO_CAP_MEMBER (a);
+	subloop_node = ALLOCNO_LOOP_TREE_NODE (subloop_allocno);
+	if (ira_single_region_allocno_p (a, subloop_allocno))
 	  {
 	    mode = ALLOCNO_MODE (a);
 	    hard_regno = ALLOCNO_HARD_REGNO (a);
@@ -3404,8 +3625,6 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		ira_assert (index >= 0);
 	      }
 	    regno = ALLOCNO_REGNO (a);
-	    subloop_allocno = ALLOCNO_CAP_MEMBER (a);
-	    subloop_node = ALLOCNO_LOOP_TREE_NODE (subloop_allocno);
 	    ira_assert (!ALLOCNO_ASSIGNED_P (subloop_allocno));
 	    ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
 	    ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
@@ -3428,7 +3647,6 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	  mode = ALLOCNO_MODE (a);
 	  rclass = ALLOCNO_CLASS (a);
-	  pclass = ira_pressure_class_translate[rclass];
 	  hard_regno = ALLOCNO_HARD_REGNO (a);
 	  /* Use hard register class here.  ??? */
 	  if (hard_regno >= 0)
@@ -3445,32 +3663,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (ALLOCNO_CLASS (subloop_allocno) == rclass);
 	  ira_assert (bitmap_bit_p (subloop_node->all_allocnos,
 				    ALLOCNO_NUM (subloop_allocno)));
-	  if ((flag_ira_region == IRA_REGION_MIXED
-	       && (loop_tree_node->reg_pressure[pclass]
-		   <= ira_class_hard_regs_num[pclass]))
-	      || (pic_offset_table_rtx != NULL
-		  && regno == (int) REGNO (pic_offset_table_rtx))
-	      /* Avoid overlapped multi-registers. Moves between them
-		 might result in wrong code generation.  */
-	      || (hard_regno >= 0
-		  && ira_reg_class_max_nregs[pclass][mode] > 1))
+	  if (ira_single_region_allocno_p (a, subloop_allocno)
+	      || !ira_subloop_allocnos_can_differ_p (a, hard_regno >= 0))
 	    {
-	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
-		{
-		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
-		  ALLOCNO_ASSIGNED_P (subloop_allocno) = true;
-		  if (hard_regno >= 0)
-		    update_costs_from_copies (subloop_allocno, true, true);
-		  /* We don't need updated costs anymore.  */
-		  ira_free_allocno_updated_costs (subloop_allocno);
-		}
-	      continue;
-	    }
-	  exit_freq = ira_loop_edge_freq (subloop_node, regno, true);
-	  enter_freq = ira_loop_edge_freq (subloop_node, regno, false);
-	  ira_assert (regno < ira_reg_equiv_len);
-	  if (ira_equiv_no_lvalue_p (regno))
-	    {
+	      gcc_assert (!ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P
+			  (subloop_allocno));
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{
 		  ALLOCNO_HARD_REGNO (subloop_allocno) = hard_regno;
@@ -3483,16 +3680,23 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	    }
 	  else if (hard_regno < 0)
 	    {
+	      /* If we allocate a register to SUBLOOP_ALLOCNO, we'll need
+		 to load the register on entry to the subloop and store
+		 the register back on exit from the subloop.  This incurs
+		 a fixed cost for all registers.  Since UPDATED_MEMORY_COST
+		 is (and should only be) used relative to the register costs
+		 for the same allocno, we can subtract this shared register
+		 cost from the memory cost.  */
+	      ira_loop_border_costs border_costs (subloop_allocno);
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
-		-= ((ira_memory_move_cost[mode][rclass][1] * enter_freq)
-		    + (ira_memory_move_cost[mode][rclass][0] * exit_freq));
+		-= border_costs.spill_outside_loop_cost ();
 	    }
 	  else
 	    {
+	      ira_loop_border_costs border_costs (subloop_allocno);
 	      aclass = ALLOCNO_CLASS (subloop_allocno);
 	      ira_init_register_move_cost_if_necessary (mode);
-	      cost = (ira_register_move_cost[mode][rclass][rclass]
-		      * (exit_freq + enter_freq));
+	      cost = border_costs.move_between_loops_cost ();
 	      ira_allocate_and_set_or_copy_costs
 		(&ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno), aclass,
 		 ALLOCNO_UPDATED_CLASS_COST (subloop_allocno),
@@ -3507,9 +3711,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 		  > ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index])
 		ALLOCNO_UPDATED_CLASS_COST (subloop_allocno)
 		  = ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno)[index];
+	      /* If we spill SUBLOOP_ALLOCNO, we'll need to store HARD_REGNO
+		 on entry to the subloop and restore HARD_REGNO on exit from
+		 the subloop.  */
 	      ALLOCNO_UPDATED_MEMORY_COST (subloop_allocno)
-		+= (ira_memory_move_cost[mode][rclass][0] * enter_freq
-		    + ira_memory_move_cost[mode][rclass][1] * exit_freq);
+		+= border_costs.spill_inside_loop_cost ();
 	    }
 	}
     }
@@ -3550,7 +3756,6 @@ move_spill_restore (void)
 {
   int cost, regno, hard_regno, hard_regno2, index;
   bool changed_p;
-  int enter_freq, exit_freq;
   machine_mode mode;
   enum reg_class rclass;
   ira_allocno_t a, parent_allocno, subloop_allocno;
@@ -3598,45 +3803,77 @@ move_spill_restore (void)
 	      if (subloop_allocno == NULL)
 		continue;
 	      ira_assert (rclass == ALLOCNO_CLASS (subloop_allocno));
+	      ira_loop_border_costs border_costs (subloop_allocno);
+
 	      /* We have accumulated cost.  To get the real cost of
-		 allocno usage in the loop we should subtract costs of
-		 the subloop allocnos.  */
-	      cost -= (ALLOCNO_MEMORY_COST (subloop_allocno)
-		       - (ALLOCNO_HARD_REG_COSTS (subloop_allocno) == NULL
-			  ? ALLOCNO_CLASS_COST (subloop_allocno)
-			  : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]));
-	      exit_freq = ira_loop_edge_freq (subloop_node, regno, true);
-	      enter_freq = ira_loop_edge_freq (subloop_node, regno, false);
+		 allocno usage in the loop we should subtract the costs
+		 added by propagate_allocno_info for the subloop allocnos.  */
+	      int reg_cost
+		= (ALLOCNO_HARD_REG_COSTS (subloop_allocno) == NULL
+		   ? ALLOCNO_CLASS_COST (subloop_allocno)
+		   : ALLOCNO_HARD_REG_COSTS (subloop_allocno)[index]);
+
+	      int spill_cost
+		= (border_costs.spill_inside_loop_cost ()
+		   + ALLOCNO_MEMORY_COST (subloop_allocno));
+
+	      /* If HARD_REGNO conflicts with SUBLOOP_A then
+		 propagate_allocno_info will have propagated
+		 the cost of spilling HARD_REGNO in SUBLOOP_NODE.
+		 (ira_subloop_allocnos_can_differ_p must be true
+		 in that case.)  If HARD_REGNO is a caller-saved
+		 register, we might have modelled it in the same way.
+
+		 Otherwise, SPILL_COST acted as a cap on the propagated
+		 register cost, in cases where the allocations can differ.  */
+	      auto conflicts = ira_total_conflict_hard_regs (subloop_allocno);
+	      if (TEST_HARD_REG_BIT (conflicts, hard_regno)
+		  || (ira_need_caller_save_p (subloop_allocno, hard_regno)
+		      && ira_caller_save_loop_spill_p (a, subloop_allocno,
+						       spill_cost)))
+		reg_cost = spill_cost;
+	      else if (ira_subloop_allocnos_can_differ_p (a))
+		reg_cost = MIN (reg_cost, spill_cost);
+
+	      cost -= ALLOCNO_MEMORY_COST (subloop_allocno) - reg_cost;
+
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (subloop_allocno)) < 0)
-		cost -= (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			 + ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		/* The register was spilled in the subloop.  If we spill
+		   it in the outer loop too then we'll no longer need to
+		   save the register on entry to the subloop and restore
+		   the register on exit from the subloop.  */
+		cost -= border_costs.spill_inside_loop_cost ();
 	      else
 		{
-		  cost
-		    += (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			+ ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		  /* The register was also allocated in the subloop.  If we
+		     spill it in the outer loop then we'll need to load the
+		     register on entry to the subloop and store the register
+		     back on exit from the subloop.  */
+		  cost += border_costs.spill_outside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
-			     * (exit_freq + enter_freq));
+		    cost -= border_costs.move_between_loops_cost ();
 		}
 	    }
 	  if ((parent = loop_node->parent) != NULL
 	      && (parent_allocno = parent->regno_allocno_map[regno]) != NULL)
 	    {
 	      ira_assert (rclass == ALLOCNO_CLASS (parent_allocno));
-	      exit_freq	= ira_loop_edge_freq (loop_node, regno, true);
-	      enter_freq = ira_loop_edge_freq (loop_node, regno, false);
+	      ira_loop_border_costs border_costs (a);
 	      if ((hard_regno2 = ALLOCNO_HARD_REGNO (parent_allocno)) < 0)
-		cost -= (ira_memory_move_cost[mode][rclass][0] * exit_freq
-			 + ira_memory_move_cost[mode][rclass][1] * enter_freq);
+		/* The register was spilled in the parent loop.  If we spill
+		   it in this loop too then we'll no longer need to load the
+		   register on entry to this loop and save the register back
+		   on exit from this loop.  */
+		cost -= border_costs.spill_outside_loop_cost ();
 	      else
 		{
-		  cost
-		    += (ira_memory_move_cost[mode][rclass][1] * exit_freq
-			+ ira_memory_move_cost[mode][rclass][0] * enter_freq);
+		  /* The register was also allocated in the parent loop.
+		     If we spill it in this loop then we'll need to save
+		     the register on entry to this loop and restore the
+		     register on exit from this loop.  */
+		  cost += border_costs.spill_inside_loop_cost ();
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
-			     * (exit_freq + enter_freq));
+		    cost -= border_costs.move_between_loops_cost ();
 		}
 	    }
 	  if (cost < 0)

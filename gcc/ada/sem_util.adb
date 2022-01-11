@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1659,7 +1659,7 @@ package body Sem_Util is
       Typ            : Entity_Id;
       Suggest_Static : Boolean := False)
    is
-      Gen            : Entity_Id;
+      Gen : Entity_Id;
 
    begin
       --  Avoid cascaded errors
@@ -10729,7 +10729,7 @@ package body Sem_Util is
    -------------------------------------
 
    function Get_Actual_Subtype_If_Available (N : Node_Id) return Entity_Id is
-      Typ  : constant Entity_Id := Etype (N);
+      Typ : constant Entity_Id := Etype (N);
 
    begin
       --  If what we have is an identifier that references a subprogram
@@ -16286,7 +16286,7 @@ package body Sem_Util is
          end if;
 
       --  The packages may come from the same package chain or from entirely
-      --  different hierarcies. To determine this, climb the scope stack until
+      --  different hierarchies. To determine this, climb the scope stack until
       --  a common root is found.
 
       --        (root)      (root 1)  (root 2)
@@ -21951,7 +21951,7 @@ package body Sem_Util is
       ------------------------------------
 
       function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean is
-         Typ  : constant Entity_Id := Etype (P);
+         Typ : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
@@ -23435,8 +23435,7 @@ package body Sem_Util is
             Elmt := First_Elmt (Decls);
             while Present (Elmt) loop
                Decl  := Node (Elmt);
-               New_E := Make_Defining_Identifier (Sloc (Decl),
-                          New_Internal_Name ('P'));
+               New_E := Make_Temporary (Sloc (Decl), 'P');
 
                if Nkind (Decl) = N_Expression_Function then
                   Decl := Specification (Decl);

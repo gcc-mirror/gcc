@@ -3290,6 +3290,38 @@ cxx_fold_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
   return NULL_TREE;
 }
 
+/* Try to fold expressions like
+   (struct S *) (&a[0].D.2378 + 12)
+   into
+   &MEM <struct T> [(void *)&a + 12B]
+   This is something normally done by gimple_fold_stmt_to_constant_1
+   on GIMPLE, but is undesirable on GENERIC if we are e.g. going to
+   dereference the address because some details are lost.
+   For pointer comparisons we want such folding though so that
+   match.pd address_compare optimization works.  */
+
+static tree
+cxx_maybe_fold_addr_pointer_plus (tree t)
+{
+  while (CONVERT_EXPR_P (t)
+	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
+    t = TREE_OPERAND (t, 0);
+  if (TREE_CODE (t) != POINTER_PLUS_EXPR)
+    return NULL_TREE;
+  tree op0 = TREE_OPERAND (t, 0);
+  tree op1 = TREE_OPERAND (t, 1);
+  if (TREE_CODE (op1) != INTEGER_CST)
+    return NULL_TREE;
+  while (CONVERT_EXPR_P (op0)
+	 && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0))))
+    op0 = TREE_OPERAND (op0, 0);
+  if (TREE_CODE (op0) != ADDR_EXPR)
+    return NULL_TREE;
+  op1 = fold_convert (ptr_type_node, op1);
+  tree r = fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (op0)), op0, op1);
+  return build1_loc (EXPR_LOCATION (t), ADDR_EXPR, TREE_TYPE (op0), r);
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Like cxx_eval_unary_expression, except for binary expressions.  */
 
@@ -3348,6 +3380,15 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 	lhs = cplus_expand_constant (lhs);
       else if (TREE_CODE (rhs) == PTRMEM_CST)
 	rhs = cplus_expand_constant (rhs);
+    }
+  if (r == NULL_TREE
+      && TREE_CODE_CLASS (code) == tcc_comparison
+      && POINTER_TYPE_P (TREE_TYPE (lhs)))
+    {
+      if (tree lhso = cxx_maybe_fold_addr_pointer_plus (lhs))
+	lhs = fold_convert (TREE_TYPE (lhs), lhso);
+      if (tree rhso = cxx_maybe_fold_addr_pointer_plus (rhs))
+	rhs = fold_convert (TREE_TYPE (rhs), rhso);
     }
   if (code == POINTER_PLUS_EXPR && !*non_constant_p
       && integer_zerop (lhs) && !integer_zerop (rhs))
@@ -5174,6 +5215,25 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
   if (!INDIRECT_TYPE_P (subtype))
     return NULL_TREE;
 
+  /* Canonicalizes the given OBJ/OFF pair by iteratively absorbing
+     the innermost component into the offset until it would make the
+     offset positive, so that cxx_fold_indirect_ref_1 can identify
+     more folding opportunities.  */
+  auto canonicalize_obj_off = [] (tree& obj, tree& off) {
+    while (TREE_CODE (obj) == COMPONENT_REF
+	   && (tree_int_cst_sign_bit (off) || integer_zerop (off)))
+      {
+	tree field = TREE_OPERAND (obj, 1);
+	tree pos = byte_position (field);
+	if (integer_zerop (off) && integer_nonzerop (pos))
+	  /* If the offset is already 0, keep going as long as the
+	     component is at position 0.  */
+	  break;
+	off = int_const_binop (PLUS_EXPR, off, pos);
+	obj = TREE_OPERAND (obj, 0);
+      }
+  };
+
   if (TREE_CODE (sub) == ADDR_EXPR)
     {
       tree op = TREE_OPERAND (sub, 0);
@@ -5192,7 +5252,12 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
 	    return op;
 	}
       else
-	return cxx_fold_indirect_ref_1 (ctx, loc, type, op, 0, empty_base);
+	{
+	  tree off = integer_zero_node;
+	  canonicalize_obj_off (op, off);
+	  gcc_assert (integer_zerop (off));
+	  return cxx_fold_indirect_ref_1 (ctx, loc, type, op, 0, empty_base);
+	}
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
 	   && tree_fits_uhwi_p (TREE_OPERAND (sub, 1)))
@@ -5204,17 +5269,7 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
       if (TREE_CODE (op00) == ADDR_EXPR)
 	{
 	  tree obj = TREE_OPERAND (op00, 0);
-	  while (TREE_CODE (obj) == COMPONENT_REF
-		 && tree_int_cst_sign_bit (off))
-	    {
-	      /* Canonicalize this object/offset pair by iteratively absorbing
-		 the innermost component into the offset until the offset is
-		 nonnegative, so that cxx_fold_indirect_ref_1 can identify
-		 more folding opportunities.  */
-	      tree field = TREE_OPERAND (obj, 1);
-	      off = int_const_binop (PLUS_EXPR, off, byte_position (field));
-	      obj = TREE_OPERAND (obj, 0);
-	    }
+	  canonicalize_obj_off (obj, off);
 	  return cxx_fold_indirect_ref_1 (ctx, loc, type, obj,
 					  tree_to_uhwi (off), empty_base);
 	}

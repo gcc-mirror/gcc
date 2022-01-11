@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,8 +38,11 @@
 private generic
    type Num is (<>);
 
-   with function Scan
-     (Str : String; Ptr : not null access Integer; Max : Integer) return Num;
+   with procedure Scan
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer;
+      Res : out Num);
    with procedure Set_Image
      (V : Num; S : in out String; P : in out Natural);
    with procedure Set_Image_Width

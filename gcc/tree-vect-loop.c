@@ -2936,8 +2936,6 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   machine_mode autodetected_vector_mode = VOIDmode;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
   unsigned int mode_i = 0;
-  unsigned int first_loop_i = 0;
-  unsigned int first_loop_next_i = 0;
   unsigned HOST_WIDE_INT simdlen = loop->simdlen;
 
   /* First determine the main loop vectorization mode, either the first
@@ -2946,7 +2944,6 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
      lowest cost if pick_lowest_cost_p.  */
   while (1)
     {
-      unsigned int loop_vinfo_i = mode_i;
       bool fatal;
       opt_loop_vec_info loop_vinfo
 	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
@@ -2975,11 +2972,7 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
 	    }
 	  if (first_loop_vinfo == NULL)
-	    {
-	      first_loop_vinfo = loop_vinfo;
-	      first_loop_i = loop_vinfo_i;
-	      first_loop_next_i = mode_i;
-	    }
+	    first_loop_vinfo = loop_vinfo;
 	  else
 	    {
 	      delete loop_vinfo;
@@ -3025,32 +3018,37 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   /* Now analyze first_loop_vinfo for epilogue vectorization.  */
   poly_uint64 lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
 
-  /* Handle the case that the original loop can use partial
-     vectorization, but want to only adopt it for the epilogue.
-     The retry should be in the same mode as original.  */
-  if (LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (first_loop_vinfo))
-    {
-      gcc_assert (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (first_loop_vinfo)
-		  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (first_loop_vinfo));
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Re-trying analysis with same vector mode"
-			 " %s for epilogue with partial vectors.\n",
-			 GET_MODE_NAME (first_loop_vinfo->vector_mode));
-      mode_i = first_loop_i;
-    }
-  else
-    {
-      mode_i = first_loop_next_i;
-      if (mode_i == vector_modes.length ())
-	return first_loop_vinfo;
-    }
-
-  /* ???  If first_loop_vinfo was using VOIDmode then we probably
-     want to instead search for the corresponding mode in vector_modes[].  */
+  /* For epilogues start the analysis from the first mode.  The motivation
+     behind starting from the beginning comes from cases where the VECTOR_MODES
+     array may contain length-agnostic and length-specific modes.  Their
+     ordering is not guaranteed, so we could end up picking a mode for the main
+     loop that is after the epilogue's optimal mode.  */
+  mode_i = 1;
+  bool supports_partial_vectors = partial_vectors_supported_p ();
+  poly_uint64 first_vinfo_vf = LOOP_VINFO_VECT_FACTOR (first_loop_vinfo);
 
   while (1)
     {
+      /* If the target does not support partial vectors we can shorten the
+	 number of modes to analyze for the epilogue as we know we can't pick a
+	 mode that has at least as many NUNITS as the main loop's vectorization
+	 factor, since that would imply the epilogue's vectorization factor
+	 would be at least as high as the main loop's and we would be
+	 vectorizing for more scalar iterations than there would be left.  */
+      if (!supports_partial_vectors
+	  && maybe_ge (GET_MODE_NUNITS (vector_modes[mode_i]), first_vinfo_vf))
+	{
+	  mode_i++;
+	  if (mode_i == vector_modes.length ())
+	    break;
+	  continue;
+	}
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying epilogue analysis with vector "
+			 "mode %s\n", GET_MODE_NAME (vector_modes[mode_i]));
+
       bool fatal;
       opt_loop_vec_info loop_vinfo
 	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
@@ -3102,11 +3100,6 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
       if (mode_i == vector_modes.length ())
 	break;
 
-      /* Try the next biggest vector size.  */
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Re-trying epilogue analysis with vector "
-			 "mode %s\n", GET_MODE_NAME (vector_modes[mode_i]));
     }
 
   if (!first_loop_vinfo->epilogue_vinfos.is_empty ())

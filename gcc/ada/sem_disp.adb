@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -476,6 +476,29 @@ package body Sem_Disp is
       end if;
 
       if No (Tagged_Type) or else Is_Class_Wide_Type (Tagged_Type) then
+         return Empty;
+
+      --  In the special case of a protected subprogram of a tagged protected
+      --  type that has a formal of a tagged type (or access formal whose type
+      --  designates a tagged type), such a formal is not controlling unless
+      --  it's of the protected type's corresponding record type. The latter
+      --  can occur for the special wrapper subprograms created for protected
+      --  subprograms. Such subprograms may occur in the same scope where some
+      --  formal's tagged type is declared, and we don't want formals of that
+      --  tagged type being marked as controlling, for one thing because they
+      --  aren't controlling from the language point of view, but also because
+      --  this can cause errors for access formals when conformance is checked
+      --  between the spec and body of the protected subprogram (null-exclusion
+      --  status of the formals may be set differently, which is the case that
+      --  led to adding this check).
+
+      elsif Is_Subprogram (Subp)
+        and then Present (Protected_Subprogram (Subp))
+        and then Ekind (Scope (Protected_Subprogram (Subp))) = E_Protected_Type
+        and then
+          Base_Type (Tagged_Type)
+            /= Corresponding_Record_Type (Scope (Protected_Subprogram (Subp)))
+      then
          return Empty;
 
       --  The dispatching type and the primitive operation must be defined in

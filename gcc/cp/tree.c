@@ -787,10 +787,7 @@ tree
 build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
   if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    {
-      gcc_checking_assert (false);
-      return init;
-    }
+    return init;
 
   tree elt_init;
   if (init && TREE_CODE (init) == CONSTRUCTOR

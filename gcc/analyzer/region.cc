@@ -638,6 +638,20 @@ region::symbolic_for_unknown_ptr_p () const
   return false;
 }
 
+/* Return true if this is a region for a decl with name DECL_NAME.
+   Intended for use when debugging (for assertions and conditional
+   breakpoints).  */
+
+DEBUG_FUNCTION bool
+region::is_named_decl_p (const char *decl_name) const
+{
+  if (tree decl = maybe_get_decl ())
+    if (DECL_NAME (decl)
+	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), decl_name))
+      return true;
+  return false;
+}
+
 /* region's ctor.  */
 
 region::region (complexity c, unsigned id, const region *parent, tree type)

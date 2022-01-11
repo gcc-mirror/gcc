@@ -628,7 +628,7 @@ GLIBCXX_3.4 {
     _ZNSt8time_get*;
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1*;
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE8*;
-    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*;
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*PK[cw];
 
     # std::time_get_byname
     _ZNSt15time_get_bynameI[cw]*EEEC[12]EPKc[jmy];
@@ -1887,7 +1887,9 @@ GLIBCXX_3.4.21 {
     _ZNKSt7__cxx119money_putI*;
     _ZNKSt7__cxx1110moneypunctI*;
     _ZNKSt7__cxx118numpunctI*;
-    _ZNKSt7__cxx118time_getI*;
+    _ZNKSt7__cxx118time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[13-9]*;
+    _ZNKSt7__cxx118time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*PK[cw];
+    _ZNKSt7__cxx118time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE24*;
 
     _ZSt9has_facetINSt7__cxx117collate*;
     _ZSt9has_facetINSt7__cxx118messages*;
@@ -2426,6 +2428,12 @@ GLIBCXX_3.4.30 {
 
     # Only defined #if ! __GXX_TYPEINFO_EQUALITY_INLINE
     _ZNKSt9type_info7__equalERKS_;
+
+    # std::time_get
+    _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*__time_get_state;
+    _ZNKSt7__cxx118time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*__time_get_state;
+
+    _ZNSt16__time_get_state17_M_finalize_stateEP2tm;
 
 } GLIBCXX_3.4.29;
 

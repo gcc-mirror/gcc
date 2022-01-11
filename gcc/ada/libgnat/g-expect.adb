@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2021, AdaCore                     --
+--                     Copyright (C) 2000-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package body GNAT.Expect is
       Str       : String;
       Filter_On : Filter_Type)
    is
-      Current_Filter  : Filter_List;
+      Current_Filter : Filter_List;
 
    begin
       if Pid.Filters_Lock = 0 then

@@ -1,3 +1,36 @@
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (impl_run_checkers): Pass logger to engine ctor.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Add logger param and
+	use it to initialize m_logger.
+	* region-model.cc (engine::engine): New.
+	* region-model.h (region_model_manager::region_model_manager):
+	Add logger param.
+	(region_model_manager::get_logger): New.
+	(region_model_manager::m_logger): New field.
+	(engine::engine): New.
+	* store.cc (store_manager::get_logger): New.
+	(store::set_value): Log scope.  Log when marking a cluster as
+	unknown due to possible aliasing.
+	* store.h (store_manager::get_logger): New decl.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (cmp_decls): New.
+	(cmp_decls_ptr_ptr): New.
+	(region_model::impl_call_analyzer_dump_escaped): New.
+	* region-model.cc (region_model::on_stmt_pre): Handle
+	__analyzer_dump_escaped.
+	* region-model.h (region_model::impl_call_analyzer_dump_escaped):
+	New decl.
+	* store.h (binding_cluster::get_base_region): New accessor.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.cc (region::is_named_decl_p): New.
+	* region.h (region::is_named_decl_p): New decl.
+
 2022-01-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103546

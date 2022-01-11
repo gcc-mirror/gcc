@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2249,7 +2249,7 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Declarations
 
       begin
-         if No (Decls) or else Is_Empty_List (Decls) then
+         if Is_Empty_List (Decls) then
             return;
          end if;
 
@@ -4702,7 +4702,7 @@ package body Exp_Ch7 is
      (N   : Node_Id;
       Ref : Node_Id) return Node_Id
    is
-      Loc  : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
@@ -4737,8 +4737,7 @@ package body Exp_Ch7 is
       procedure Set_Block_Elab_Proc is
       begin
          if No (Block_Elab_Proc) then
-            Block_Elab_Proc :=
-              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('I'));
+            Block_Elab_Proc := Make_Temporary (Loc, 'I');
          end if;
       end Set_Block_Elab_Proc;
 
@@ -9964,9 +9963,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Decl));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10114,9 +10111,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Loop_Stmt));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10170,9 +10165,7 @@ package body Exp_Ch7 is
       New_Stmts  : constant List_Id := Empty_List;
 
    begin
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,

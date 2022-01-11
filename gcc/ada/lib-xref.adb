@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1677,7 +1677,7 @@ package body Lib.Xref is
       --  declared in the main unit.
 
       Handle_Prim_Ops : declare
-         Ent  : Entity_Id;
+         Ent : Entity_Id;
 
       begin
          for J in 1 .. Xrefs.Last loop

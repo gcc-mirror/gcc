@@ -615,6 +615,23 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* Special case TImode to V1TImode conversions, via V2DI.  */
+  if (mode == V1TImode
+      && SUBREG_P (op1)
+      && GET_MODE (SUBREG_REG (op1)) == TImode
+      && TARGET_64BIT && TARGET_SSE
+      && can_create_pseudo_p ())
+    {
+      rtx tmp = gen_reg_rtx (V2DImode);
+      rtx lo = gen_reg_rtx (DImode);
+      rtx hi = gen_reg_rtx (DImode);
+      emit_move_insn (lo, gen_lowpart (DImode, SUBREG_REG (op1)));
+      emit_move_insn (hi, gen_highpart (DImode, SUBREG_REG (op1)));
+      emit_insn (gen_vec_concatv2di (tmp, lo, hi));
+      emit_move_insn (op0, gen_lowpart (V1TImode, tmp));
+      return;
+    }
+
   /* If operand0 is a hard register, make operand1 a pseudo.  */
   if (can_create_pseudo_p ()
       && !ix86_hardreg_mov_ok (op0, op1))
@@ -4427,6 +4444,12 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      else if (code == GT && TARGET_SSE4_1)
 		gen = gen_sminv4qi3;
 	      break;
+	    case E_V2QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv2qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv2qi3;
+	      break;
 	    case E_V8HImode:
 	      if (code == GTU && TARGET_SSE4_1)
 		gen = gen_uminv8hi3;
@@ -4520,6 +4543,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V16QImode:
 	    case E_V8QImode:
 	    case E_V4QImode:
+	    case E_V2QImode:
 	    case E_V8HImode:
 	    case E_V4HImode:
 	    case E_V2HImode:
