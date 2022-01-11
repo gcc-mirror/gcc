@@ -109,7 +109,8 @@ namespace ranges
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 3477. Simplify constraints for semiregular-box
-	__box&
+	// 3572. copyable-box should be fully constexpr
+	constexpr __box&
 	operator=(const __box& __that)
 	noexcept(is_nothrow_copy_constructible_v<_Tp>)
 	requires (!copyable<_Tp>)
@@ -124,7 +125,7 @@ namespace ranges
 	  return *this;
 	}
 
-	__box&
+	constexpr __box&
 	operator=(__box&& __that)
 	noexcept(is_nothrow_move_constructible_v<_Tp>)
 	requires (!movable<_Tp>)
