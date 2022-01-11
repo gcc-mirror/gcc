@@ -990,13 +990,10 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 	  addr_object_size (osi, op0, object_size_type, &bytes, &wholesize);
 	}
 
-      /* In the first pass, do not compute size for offset if either the
-	 maximum size is unknown or the minimum size is not initialized yet;
-	 the latter indicates a dependency loop and will be resolved in
-	 subsequent passes.  We attempt to compute offset for 0 minimum size
-	 too because a negative offset could be within bounds of WHOLESIZE,
-	 giving a non-zero result for VAR.  */
-      if (osi->pass != 0 || !size_unknown_p (bytes, 0))
+      /* size_for_offset doesn't make sense for -1 size, but it does for size 0
+	 since the wholesize could be non-zero and a negative offset could give
+	 a non-zero size.  */
+      if (!size_unknown_p (bytes, 0))
 	bytes = size_for_offset (bytes, op1, wholesize);
     }
   else
