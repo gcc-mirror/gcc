@@ -12778,13 +12778,8 @@ package body Sem_Attr is
    ------------------------
 
    procedure Set_Boolean_Result (N : Node_Id; B : Boolean) is
-      Loc : constant Source_Ptr := Sloc (N);
    begin
-      if B then
-         Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-      else
-         Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-      end if;
+      Rewrite (N, New_Occurrence_Of (Boolean_Literals (B), Sloc (N)));
    end Set_Boolean_Result;
 
    --------------------------------
