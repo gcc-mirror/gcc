@@ -96,7 +96,8 @@ LIBSTDCXX=../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs/libstdc++.a
 SRC_PREFIX=G
 
 m2/gm2spec.o: $(srcdir)/m2/gm2spec.c $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
-               m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS) $(generated_files)
+               m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS) \
+               $(generated_files) $(C_TREE_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
@@ -1738,7 +1739,7 @@ stage1/m2/gm2l$(exeext): \
      m2/gm2-ici-boot/M2Emit.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2l.o \
      m2/gm2-ici/m2flex.o  \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
 	unset CC ; $(M2LINK) -s --g++ --exit --name gm2l_init.c $(srcdir)/m2/init/gm2linit
 	mv gm2l_init.c m2/gm2-compiler-boot/gm2l_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2l_init.c -o m2/gm2-compiler-boot/gm2l_init.o
@@ -1755,7 +1756,7 @@ stage1/m2/gm2lcc$(exeext): \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2lcc.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
 	unset CC ; $(M2LINK) -s --g++ --exit --name gm2lcc_init.c $(srcdir)/m2/init/gm2lccinit
 	mv gm2lcc_init.c m2/gm2-compiler-boot/gm2lcc_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lcc_init.c -o m2/gm2-compiler-boot/gm2lcc_init.o
@@ -1772,7 +1773,7 @@ stage1/m2/gm2lgen$(exeext): \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
      m2/gm2-libs-boot/libgm2.a m2/gm2-compiler-boot/gm2lgen.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
 	unset CC ; $(M2LINK) -s --g++ --exit --name gm2lgen_init.c $(srcdir)/m2/init/gm2lgeninit
 	mv gm2lgen_init.c m2/gm2-compiler-boot/gm2lgen_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lgen_init.c -o m2/gm2-compiler-boot/gm2lgen_init.o
@@ -1789,7 +1790,7 @@ stage1/m2/gm2lorder$(exeext): \
      m2/gm2-ici-boot/M2Emit.o \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
 	unset CC ; $(M2LINK) -s --g++ --exit --name gm2lorder_init.c $(srcdir)/m2/init/gm2lorderinit
 	mv gm2lorder_init.c m2/gm2-compiler-boot/gm2lorder_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2lorder_init.c -o m2/gm2-compiler-boot/gm2lorder_init.o
@@ -1806,7 +1807,7 @@ stage1/m2/gm2m$(exeext): \
      m2/gm2-ici-boot/M2Emit.o  \
      m2/gm2-ici/m2flex.o \
      m2/gm2-ici-boot/m2linemap.o \
-     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS)
+     $(GCC_COLOR) $(GM2_LIBS_BOOT) $(MC_LIBS) $(LIBS)
 	unset CC ; $(M2LINK) -s --g++ --exit --name gm2m_init.c $(srcdir)/m2/init/gm2minit
 	mv gm2m_init.c m2/gm2-compiler-boot/gm2m_init.c
 	$(COMPILER) -c -g m2/gm2-compiler-boot/gm2m_init.c -o m2/gm2-compiler-boot/gm2m_init.o
