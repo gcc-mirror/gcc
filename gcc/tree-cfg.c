@@ -3455,19 +3455,14 @@ verify_gimple_call (gcall *stmt)
     }
 
   /* For a call to .DEFERRED_INIT,
-     LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA)
-     we should guarantee that the 1st and the 3rd arguments are consistent:
-     1st argument: SIZE of the DECL;
-     3rd argument: IS_VLA, 0 NO, 1 YES;
+     LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, NAME of the DECL)
+     we should guarantee that when the 1st argument is a constant, it should
+     be the same as the size of the LHS.  */
 
-     if IS_VLA is false, the 1st argument should be a constant and the same as
-     the size of the LHS.  */
   if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
     {
       tree size_of_arg0 = gimple_call_arg (stmt, 0);
       tree size_of_lhs = TYPE_SIZE_UNIT (TREE_TYPE (lhs));
-      tree is_vla_node = gimple_call_arg (stmt, 2);
-      bool is_vla = (bool) TREE_INT_CST_LOW (is_vla_node);
 
       if (TREE_CODE (lhs) == SSA_NAME)
 	lhs = SSA_NAME_VAR (lhs);
@@ -3477,27 +3472,13 @@ verify_gimple_call (gcall *stmt)
 						    &size_from_arg0);
       bool is_constant_size_lhs = poly_int_tree_p (size_of_lhs,
 						   &size_from_lhs);
-      if (!is_vla)
-	{
-	  if (!is_constant_size_arg0)
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have "
-		     "constant size for the first argument");
-	      return true;
-	    }
-	  else if (!is_constant_size_lhs)
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have "
-		     "constant size for the LHS");
-	      return true;
-	    }
-	  else if (maybe_ne (size_from_arg0, size_from_lhs))
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have same "
-		     "constant size for the first argument and LHS");
-	      return true;
-	    }
-	}
+      if (is_constant_size_arg0 && is_constant_size_lhs)
+	if (maybe_ne (size_from_arg0, size_from_lhs))
+	  {
+	    error ("%<DEFFERED_INIT%> calls should have same "
+		   "constant size for the first argument and LHS");
+	    return true;
+	  }
     }
 
   /* ???  The C frontend passes unpromoted arguments in case it
