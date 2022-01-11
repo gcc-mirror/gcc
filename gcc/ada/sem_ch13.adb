@@ -2724,13 +2724,11 @@ package body Sem_Ch13 is
                Expr_Value : Boolean := False;
 
             begin
-               --  Check valid declarations for 'Yield
+               --  Check valid entity for 'Yield
 
-               if Nkind (N) in N_Abstract_Subprogram_Declaration
-                             | N_Entry_Declaration
-                             | N_Generic_Subprogram_Declaration
-                             | N_Subprogram_Declaration
-                             | N_Formal_Subprogram_Declaration
+               if (Is_Subprogram (E)
+                     or else Is_Generic_Subprogram (E)
+                     or else Is_Entry (E))
                  and then not Within_Protected_Type (E)
                then
                   null;
