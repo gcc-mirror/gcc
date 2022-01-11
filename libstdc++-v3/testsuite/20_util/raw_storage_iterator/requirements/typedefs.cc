@@ -27,7 +27,7 @@ void test01()
   using namespace std;
 
   // Check for required typedefs
-  typedef raw_storage_iterator<long*, long> test_iterator;
+  typedef raw_storage_iterator<long*, long> test_iterator; // { dg-warning "is deprecated" "" { target c++17 } }
   typedef test_iterator::value_type value_type;
   typedef test_iterator::difference_type difference_type;
   typedef test_iterator::pointer pointer;

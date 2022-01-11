@@ -121,7 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// @c result_type is the return type
       typedef _Result 	result_type;  
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /**
    *  Helper for defining adaptable binary function objects.
@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// @c result_type is the return type
       typedef _Result 	result_type;
-    };
+    } _GLIBCXX11_DEPRECATED;
   /** @}  */
 
   // 20.3.2 arithmetic
@@ -174,6 +174,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp = void>
     struct negate;
 #endif
+
+// Ignore warnings about unary_function and binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   /// One of the @link arithmetic_functors math functors@endlink.
   template<typename _Tp>
@@ -235,6 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return -__x; }
     };
+#pragma GCC diagnostic pop
 
 #if __cplusplus > 201103L
 
@@ -360,6 +365,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct less_equal;
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// One of the @link comparison_functors comparison functors@endlink.
   template<typename _Tp>
     struct equal_to : public binary_function<_Tp, _Tp, bool>
@@ -479,6 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return (__UINTPTR_TYPE__)__x <= (__UINTPTR_TYPE__)__y;
       }
     };
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201402L
   /// One of the @link comparison_functors comparison functors@endlink.
@@ -779,6 +788,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct logical_not;
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// One of the @link logical_functors Boolean operations functors@endlink.
   template<typename _Tp>
     struct logical_and : public binary_function<_Tp, _Tp, bool>
@@ -808,6 +820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return !__x; }
     };
+#pragma GCC diagnostic pop
 
 #if __cplusplus > 201103L
   /// One of the @link logical_functors Boolean operations functors@endlink.
@@ -871,6 +884,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct bit_not;
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 660. Missing Bitwise Operations.
   template<typename _Tp>
@@ -908,6 +924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp& __x) const
       { return ~__x; }
     };
+#pragma GCC diagnostic pop
 
 #if __cplusplus > 201103L
   template <>
@@ -965,7 +982,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef __is_transparent is_transparent;
     };
-#endif
+#endif // C++14
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   // 20.3.5 negators
   /** @defgroup negators Negators
@@ -1001,7 +1021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
-    class unary_negate
+    class _GLIBCXX17_DEPRECATED unary_negate
     : public unary_function<typename _Predicate::argument_type, bool>
     {
     protected:
@@ -1020,6 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
+    _GLIBCXX17_DEPRECATED_SUGGEST("std::not_fn")
     _GLIBCXX14_CONSTEXPR
     inline unary_negate<_Predicate>
     not1(const _Predicate& __pred)
@@ -1027,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
-    class binary_negate
+    class _GLIBCXX17_DEPRECATED binary_negate
     : public binary_function<typename _Predicate::first_argument_type,
 			     typename _Predicate::second_argument_type, bool>
     {
@@ -1048,6 +1069,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link negators negation functors@endlink.
   template<typename _Predicate>
+    _GLIBCXX17_DEPRECATED_SUGGEST("std::not_fn")
     _GLIBCXX14_CONSTEXPR
     inline binary_negate<_Predicate>
     not2(const _Predicate& __pred)
@@ -1095,10 +1117,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Result
       operator()(_Arg __x) const
       { return _M_ptr(__x); }
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
   template<typename _Arg, typename _Result>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline pointer_to_unary_function<_Arg, _Result>
     ptr_fun(_Result (*__x)(_Arg))
     { return pointer_to_unary_function<_Arg, _Result>(__x); }
@@ -1121,10 +1144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Result
       operator()(_Arg1 __x, _Arg2 __y) const
       { return _M_ptr(__x, __y); }
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
   template<typename _Arg1, typename _Arg2, typename _Result>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline pointer_to_binary_function<_Arg1, _Arg2, _Result>
     ptr_fun(_Result (*__x)(_Arg1, _Arg2))
     { return pointer_to_binary_function<_Arg1, _Arg2, _Result>(__x); }
@@ -1218,7 +1242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)();
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp>
@@ -1235,7 +1259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)() const;
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp>
@@ -1252,7 +1276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)();
-  };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp>
@@ -1269,7 +1293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)() const;
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp, typename _Arg>
@@ -1286,7 +1310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)(_Arg);
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp, typename _Arg>
@@ -1303,7 +1327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)(_Arg) const;
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp, typename _Arg>
@@ -1320,7 +1344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)(_Arg);
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   /// One of the @link ptrmem_adaptors adaptors for member pointers@endlink.
   template<typename _Ret, typename _Tp, typename _Arg>
@@ -1337,49 +1361,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       _Ret (_Tp::*_M_f)(_Arg) const;
-    };
+    } _GLIBCXX11_DEPRECATED;
 
   // Mem_fun adaptor helper functions.  There are only two:
   // mem_fun and mem_fun_ref.
   template<typename _Ret, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)())
     { return mem_fun_t<_Ret, _Tp>(__f); }
 
   template<typename _Ret, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline const_mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)() const)
     { return const_mem_fun_t<_Ret, _Tp>(__f); }
 
   template<typename _Ret, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)())
     { return mem_fun_ref_t<_Ret, _Tp>(__f); }
 
   template<typename _Ret, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline const_mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)() const)
     { return const_mem_fun_ref_t<_Ret, _Tp>(__f); }
 
   template<typename _Ret, typename _Tp, typename _Arg>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg))
     { return mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template<typename _Ret, typename _Tp, typename _Arg>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline const_mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template<typename _Ret, typename _Tp, typename _Arg>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg))
     { return mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
   template<typename _Ret, typename _Tp, typename _Arg>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
     inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
+#pragma GCC diagnostic pop
 
   /** @}  */
 

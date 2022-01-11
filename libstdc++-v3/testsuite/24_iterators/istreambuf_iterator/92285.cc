@@ -24,8 +24,8 @@
 
 typedef std::input_iterator_tag category;
 typedef std::char_traits<char>::off_type off_type;
-typedef std::iterator<category, char, off_type, char*, char> good;
-typedef std::iterator<category, char, off_type, char*, char&> bad;
+typedef std::iterator<category, char, off_type, char*, char> good; // { dg-warning "is deprecated" "" { target c++17 } }
+typedef std::iterator<category, char, off_type, char*, char&> bad; // { dg-warning "is deprecated" "" { target c++17 } }
 
 bool check(good&) { return true; }
 void check(bad&) { }

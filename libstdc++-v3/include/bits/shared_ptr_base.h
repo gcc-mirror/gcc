@@ -2108,6 +2108,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(__weak_ptr<_Tp, _Lp>& __a, __weak_ptr<_Tp, _Lp>& __b) noexcept
     { __a.swap(__b); }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _Tp, typename _Tp1>
     struct _Sp_owner_less : public binary_function<_Tp, _Tp, bool>
     {
@@ -2123,6 +2125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(const _Tp1& __lhs, const _Tp& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
     };
+#pragma GCC diagnostic pop
 
   template<>
     struct _Sp_owner_less<void, void>

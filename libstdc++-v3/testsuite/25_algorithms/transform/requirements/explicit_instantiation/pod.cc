@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
@@ -36,4 +37,4 @@ namespace std
 				   operator1_type);
   template iterator_type transform(iterator_type, iterator_type, iterator_type,
 				   iterator_type, operator2_type);
-} 
+}

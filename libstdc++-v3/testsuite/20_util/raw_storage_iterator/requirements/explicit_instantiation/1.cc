@@ -22,4 +22,4 @@
 
 #include <memory>
 
-template class std::raw_storage_iterator<int*, int>;
+template class std::raw_storage_iterator<int*, int>; // { dg-warning "is deprecated" "" { target c++17 } }

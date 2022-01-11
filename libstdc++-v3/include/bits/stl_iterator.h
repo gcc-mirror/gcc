@@ -105,6 +105,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 #endif
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   // 24.4.1 Reverse iterators
   /**
    *  Bidirectional and random access iterators have corresponding reverse
@@ -990,6 +994,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int)
       { return *this; }
     };
+
+#pragma GCC diagnostic pop
 
   /**
    *  @param __x  A container of arbitrary type.
