@@ -3066,7 +3066,7 @@ namespace views::__adaptor
 	    { return _InnerIter<_Const>{_M_i}; }
 
 	    constexpr default_sentinel_t
-	    end() const
+	    end() const noexcept
 	    { return default_sentinel; }
 	  };
 
