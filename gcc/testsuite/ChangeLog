@@ -1,3 +1,11 @@
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103783
+	* g++.dg/cpp2a/concepts-memfun2.C: New test.
+
 2022-01-03  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,8 @@
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103465
+	* coretypes.h (unwind_info_type): Swap UI_SEH and UI_TARGET.
+
 2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (atomic_storeq): Use optab_libfunc to access

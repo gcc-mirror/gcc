@@ -1,3 +1,21 @@
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Update documentation around default
+	-std option.
+	* doc/html/*: Regenerate.
+
+2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100017
+	* src/c++17/Makefile.am (AM_CXXFLAGS): Add -nostdinc++.
+	* src/c++17/Makefile.in: Regenerate.
+
 2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103783
+	* call.c (cand_parms_match): Skip over 'this' when given one
+	static and one non-static member function.
+
 2022-01-03  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
