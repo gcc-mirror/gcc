@@ -293,14 +293,16 @@ public:
 		   const sm_state_map *old_smap,
 		   sm_state_map *new_smap,
 		   path_context *path_ctxt,
-		   stmt_finder *stmt_finder = NULL)
+		   stmt_finder *stmt_finder = NULL,
+		   bool unknown_side_effects = false)
   : sm_context (sm_idx, sm),
     m_logger (eg.get_logger ()),
     m_eg (eg), m_enode_for_diag (enode_for_diag),
     m_old_state (old_state), m_new_state (new_state),
     m_old_smap (old_smap), m_new_smap (new_smap),
     m_path_ctxt (path_ctxt),
-    m_stmt_finder (stmt_finder)
+    m_stmt_finder (stmt_finder),
+    m_unknown_side_effects (unknown_side_effects)
   {
   }
 
@@ -490,6 +492,11 @@ public:
     return m_path_ctxt;
   }
 
+  bool unknown_side_effects_p () const FINAL OVERRIDE
+  {
+    return m_unknown_side_effects;
+  }
+
   log_user m_logger;
   exploded_graph &m_eg;
   exploded_node *m_enode_for_diag;
@@ -499,6 +506,9 @@ public:
   sm_state_map *m_new_smap;
   path_context *m_path_ctxt;
   stmt_finder *m_stmt_finder;
+
+  /* Are we handling an external function with unknown side effects?  */
+  bool m_unknown_side_effects;
 };
 
 /* Subclass of stmt_finder for finding the best stmt to report the leak at,
@@ -1304,7 +1314,8 @@ exploded_node::on_stmt (exploded_graph &eg,
 	= old_state.m_checker_states[sm_idx];
       sm_state_map *new_smap = state->m_checker_states[sm_idx];
       impl_sm_context sm_ctxt (eg, sm_idx, sm, this, &old_state, state,
-			       old_smap, new_smap, path_ctxt);
+			       old_smap, new_smap, path_ctxt, NULL,
+			       unknown_side_effects);
 
       /* Allow the state_machine to handle the stmt.  */
       if (sm.on_stmt (&sm_ctxt, snode, stmt))

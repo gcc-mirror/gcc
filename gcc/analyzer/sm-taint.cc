@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -102,6 +104,13 @@ public:
 
   state_t combine_states (state_t s0, state_t s1) const;
 
+private:
+  void check_for_tainted_size_arg (sm_context *sm_ctxt,
+				   const supernode *node,
+				   const gcall *call,
+				   tree callee_fndecl) const;
+
+public:
   /* State for a "tainted" value: unsanitized data potentially under an
      attacker's control.  */
   state_t m_tainted;
@@ -338,15 +347,13 @@ class tainted_size : public taint_diagnostic
 {
 public:
   tainted_size (const taint_state_machine &sm, tree arg,
-		enum bounds has_bounds,
-		enum access_direction dir)
-  : taint_diagnostic (sm, arg, has_bounds),
-    m_dir (dir)
+		enum bounds has_bounds)
+  : taint_diagnostic (sm, arg, has_bounds)
   {}
 
-  const char *get_kind () const FINAL OVERRIDE { return "tainted_size"; }
+  const char *get_kind () const OVERRIDE { return "tainted_size"; }
 
-  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  bool emit (rich_location *rich_loc) OVERRIDE
   {
     diagnostic_metadata m;
     m.add_cwe (129);
@@ -395,9 +402,44 @@ public:
 				   m_arg);
       }
   }
+};
+
+/* Subclass of tainted_size for reporting on tainted size values
+   passed to an external function annotated with attribute "access".  */
+
+class tainted_access_attrib_size : public tainted_size
+{
+public:
+  tainted_access_attrib_size (const taint_state_machine &sm, tree arg,
+			      enum bounds has_bounds, tree callee_fndecl,
+			      unsigned size_argno, const char *access_str)
+  : tainted_size (sm, arg, has_bounds),
+    m_callee_fndecl (callee_fndecl),
+    m_size_argno (size_argno), m_access_str (access_str)
+  {
+  }
+
+  const char *get_kind () const OVERRIDE
+  {
+    return "tainted_access_attrib_size";
+  }
+
+  bool emit (rich_location *rich_loc) FINAL OVERRIDE
+  {
+    bool warned = tainted_size::emit (rich_loc);
+    if (warned)
+      {
+	inform (DECL_SOURCE_LOCATION (m_callee_fndecl),
+		"parameter %i of %qD marked as a size via attribute %qs",
+		m_size_argno + 1, m_callee_fndecl, m_access_str);
+      }
+    return warned;
+  }
 
 private:
-  enum access_direction m_dir;
+  tree m_callee_fndecl;
+  unsigned m_size_argno;
+  const char *m_access_str;
 };
 
 /* Concrete taint_diagnostic subclass for reporting attacker-controlled
@@ -679,6 +721,10 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 				      m_start, m_tainted);
 	    return true;
 	  }
+
+	/* External function with "access" attribute. */
+	if (sm_ctxt->unknown_side_effects_p ())
+	  check_for_tainted_size_arg (sm_ctxt, node, call, callee_fndecl);
       }
   // TODO: ...etc; many other sources of untrusted data
 
@@ -826,6 +872,58 @@ taint_state_machine::combine_states (state_t s0, state_t s1) const
   gcc_unreachable ();
 }
 
+/* Check for calls to external functions marked with
+   __attribute__((access)) with a size-index: complain about
+   tainted values passed as a size to such a function.  */
+
+void
+taint_state_machine::check_for_tainted_size_arg (sm_context *sm_ctxt,
+						 const supernode *node,
+						 const gcall *call,
+						 tree callee_fndecl) const
+{
+  tree fntype = TREE_TYPE (callee_fndecl);
+  if (!fntype)
+    return;
+
+  if (!TYPE_ATTRIBUTES (fntype))
+    return;
+
+  /* Initialize a map of attribute access specifications for arguments
+     to the function function call.  */
+  rdwr_map rdwr_idx;
+  init_attr_rdwr_indices (&rdwr_idx, TYPE_ATTRIBUTES (fntype));
+
+  unsigned argno = 0;
+
+  for (tree iter = TYPE_ARG_TYPES (fntype); iter;
+       iter = TREE_CHAIN (iter), ++argno)
+    {
+      const attr_access* access = rdwr_idx.get (argno);
+      if (!access)
+	continue;
+
+      if (access->sizarg == UINT_MAX)
+	continue;
+
+      tree size_arg = gimple_call_arg (call, access->sizarg);
+
+      state_t state = sm_ctxt->get_state (call, size_arg);
+      enum bounds b;
+      if (get_taint (state, TREE_TYPE (size_arg), &b))
+	{
+	  const char* const access_str =
+	    TREE_STRING_POINTER (access->to_external_string ());
+	  tree diag_size = sm_ctxt->get_diagnostic_tree (size_arg);
+	  sm_ctxt->warn (node, call, size_arg,
+			 new tainted_access_attrib_size (*this, diag_size, b,
+							 callee_fndecl,
+							 access->sizarg,
+							 access_str));
+	}
+    }
+}
+
 } // anonymous namespace
 
 /* Internal interface to this file. */
@@ -841,7 +939,7 @@ make_taint_state_machine (logger *logger)
 
 void
 region_model::check_region_for_taint (const region *reg,
-				      enum access_direction dir,
+				      enum access_direction,
 				      region_model_context *ctxt) const
 {
   gcc_assert (reg);
@@ -931,7 +1029,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, size_sval->get_type (), &b))
 	      {
 		tree arg = get_representative_tree (size_sval);
-		ctxt->warn (new tainted_size (taint_sm, arg, b, dir));
+		ctxt->warn (new tainted_size (taint_sm, arg, b));
 	      }
 	  }
 	  break;
