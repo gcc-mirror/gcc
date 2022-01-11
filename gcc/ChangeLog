@@ -1,3 +1,8 @@
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103465
+	* coretypes.h (unwind_info_type): Swap UI_SEH and UI_TARGET.
+
 2021-12-16  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
