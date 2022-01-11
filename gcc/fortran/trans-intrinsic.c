@@ -8533,7 +8533,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     {
     case BT_CHARACTER:
       tmp = size_of_string_in_bytes (arg->expr->ts.kind, argse.string_length);
-      mold_type = gfc_get_character_type_len (arg->expr->ts.kind, tmp);
+      mold_type = gfc_get_character_type_len (arg->expr->ts.kind,
+					      argse.string_length);
       break;
     case BT_CLASS:
       tmp = gfc_class_vtab_size_get (argse.expr);
@@ -8635,7 +8636,13 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   se->expr = info->descriptor;
   if (expr->ts.type == BT_CHARACTER)
-    se->string_length = fold_convert (gfc_charlen_type_node, dest_word_len);
+    {
+      tmp = fold_convert (gfc_charlen_type_node,
+			  TYPE_SIZE_UNIT (gfc_get_char_type (expr->ts.kind)));
+      se->string_length = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+					   gfc_charlen_type_node,
+					   dest_word_len, tmp);
+    }
 
   return;
 
@@ -8689,7 +8696,11 @@ scalar_transfer:
       gfc_add_expr_to_block (&se->post, tmp);
 
       se->expr = tmpdecl;
-      se->string_length = fold_convert (gfc_charlen_type_node, dest_word_len);
+      tmp = fold_convert (gfc_charlen_type_node,
+			  TYPE_SIZE_UNIT (gfc_get_char_type (expr->ts.kind)));
+      se->string_length = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+					   gfc_charlen_type_node,
+					   dest_word_len, tmp);
     }
   else
     {
