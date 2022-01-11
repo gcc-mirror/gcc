@@ -2351,10 +2351,13 @@ ira_tune_allocno_costs (void)
 	      if (ira_need_caller_save_p (a, regno))
 		cost += ira_caller_save_cost (a);
 #ifdef IRA_HARD_REGNO_ADD_COST_MULTIPLIER
-	      cost += ((ira_memory_move_cost[mode][rclass][0]
-			+ ira_memory_move_cost[mode][rclass][1])
-		       * ALLOCNO_FREQ (a)
-		       * IRA_HARD_REGNO_ADD_COST_MULTIPLIER (regno) / 2);
+	      {
+		auto rclass = REGNO_REG_CLASS (regno);
+		cost += ((ira_memory_move_cost[mode][rclass][0]
+			  + ira_memory_move_cost[mode][rclass][1])
+			 * ALLOCNO_FREQ (a)
+			 * IRA_HARD_REGNO_ADD_COST_MULTIPLIER (regno) / 2);
+	      }
 #endif
 	      if (INT_MAX - cost < reg_costs[j])
 		reg_costs[j] = INT_MAX;
