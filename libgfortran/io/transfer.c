@@ -1145,11 +1145,28 @@ unformatted_read (st_parameter_dt *dtp, bt type,
   	  size /= 2;
   	}
 #ifndef HAVE_GFC_REAL_17
+#if defined(HAVE_GFC_REAL_16) && GFC_REAL_16_DIGITS == 106
+      /* IBM extended format is stored as a pair of IEEE754
+	 double values, with the more significant value first
+	 in both big and little endian.  */
+      if (kind == 16 && (type == BT_REAL || type == BT_COMPLEX))
+	{
+	  nelems *= 2;
+	  size /= 2;
+	}
+#endif
       bswap_array (dest, dest, size, nelems);
 #else
       unit_convert bswap = convert & ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
       if (bswap == GFC_CONVERT_SWAP)
-	bswap_array (dest, dest, size, nelems);
+	{
+	  if ((type == BT_REAL || type == BT_COMPLEX)
+	      && ((kind == 16 && (convert & GFC_CONVERT_R16_IEEE) == 0)
+		  || (kind == 17 && (convert & GFC_CONVERT_R16_IBM))))
+	    bswap_array (dest, dest, size / 2, nelems * 2);
+	  else
+	    bswap_array (dest, dest, size, nelems);
+	}
 
       if ((convert & GFC_CONVERT_R16_IEEE)
 	  && kind == 16
@@ -1274,6 +1291,18 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	  size /= 2;
 	}
 
+#if !defined(HAVE_GFC_REAL_17) && defined(HAVE_GFC_REAL_16) \
+    && GFC_REAL_16_DIGITS == 106
+      /* IBM extended format is stored as a pair of IEEE754
+	 double values, with the more significant value first
+	 in both big and little endian.  */
+      if (kind == 16 && (type == BT_REAL || type == BT_COMPLEX))
+	{
+	  nelems *= 2;
+	  size /= 2;
+	}
+#endif
+
       /* By now, all complex variables have been split into their
 	 constituent reals.  */
 
@@ -1321,7 +1350,12 @@ unformatted_write (st_parameter_dt *dtp, bt type,
 	      if ((dtp->u.p.current_unit->flags.convert
 		   & ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM))
 		  == GFC_CONVERT_SWAP)
-		bswap_array (buffer, buffer, size, nc);
+		bswap_array (buffer, buffer, size / 2, nc * 2);
+	    }
+	  else if (kind == 16 && (type == BT_REAL || type == BT_COMPLEX))
+	    {
+	      bswap_array (buffer, p, size / 2, nc * 2);
+	      p += size * nc;
 	    }
 	  else
 #endif
