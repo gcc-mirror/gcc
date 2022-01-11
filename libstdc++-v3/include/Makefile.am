@@ -1426,7 +1426,7 @@ endif
 # <cstddef>, <cfloat>, <limits>, <climits>, <version>, <cstdint>, <cstdlib>,
 # <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
 # <concepts>, <coroutine>, <cstdbool>, <type_traits>, <bit>, <atomic>,
-# and any files which they include (and which we provide).
+# <source_location> and any files which they include (and which we provide).
 # <new>, <typeinfo>, <exception>, <initializer_list> and <compare>
 # are installed by libsupc++, so only the others and the sub-includes
 # are copied here.
@@ -1440,7 +1440,8 @@ install-freestanding-headers:
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	for file in limits type_traits atomic bit concepts coroutine version; do \
+	for file in limits type_traits atomic bit concepts coroutine \
+	  source_location version; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ciso646 cstddef cfloat climits cstdint cstdlib \

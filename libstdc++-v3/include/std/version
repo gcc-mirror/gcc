@@ -201,6 +201,9 @@
 #endif
 #define __cpp_lib_is_nothrow_convertible 201806L
 #define __cpp_lib_remove_cvref 201711L
+#if __has_builtin(__builtin_source_location)
+# define __cpp_lib_source_location 201907L
+#endif
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201907L
 #endif
@@ -273,9 +276,6 @@
 # define __cpp_lib_semaphore 201907L
 #endif
 #define __cpp_lib_shift 201806L
-#if __has_builtin(__builtin_source_location)
-# define __cpp_lib_source_location 201907L
-#endif
 #if __cpp_lib_concepts
 # define __cpp_lib_span 202002L
 #endif
