@@ -82,7 +82,7 @@ def check_group(name, lines):
         print(f'{name} are fine!')
 
 
-lines = open('MAINTAINERS').read().splitlines()
+lines = open(sys.argv[1]).read().splitlines()
 
 needle = 'Global Reviewers'
 lines = list(dropwhile(lambda x: x.strip() != needle, lines))
