@@ -3664,7 +3664,8 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  ira_assert (bitmap_bit_p (subloop_node->all_allocnos,
 				    ALLOCNO_NUM (subloop_allocno)));
 	  if (ira_single_region_allocno_p (a, subloop_allocno)
-	      || !ira_subloop_allocnos_can_differ_p (a, hard_regno >= 0))
+	      || !ira_subloop_allocnos_can_differ_p (a, hard_regno >= 0,
+						     false))
 	    {
 	      gcc_assert (!ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P
 			  (subloop_allocno));
