@@ -3899,7 +3899,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  op_true = force_reg (mode, op_true);
 
-	  gen = gen_mmx_pblendvb64;
+	  gen = gen_mmx_pblendvb_v8qi;
 	  if (mode != V8QImode)
 	    d = gen_reg_rtx (V8QImode);
 	  op_false = gen_lowpart (V8QImode, op_false);
@@ -3913,12 +3913,20 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  op_true = force_reg (mode, op_true);
 
-	  gen = gen_mmx_pblendvb32;
+	  gen = gen_mmx_pblendvb_v4qi;
 	  if (mode != V4QImode)
 	    d = gen_reg_rtx (V4QImode);
 	  op_false = gen_lowpart (V4QImode, op_false);
 	  op_true = gen_lowpart (V4QImode, op_true);
 	  cmp = gen_lowpart (V4QImode, cmp);
+	}
+      break;
+    case E_V2QImode:
+      if (TARGET_SSE4_1)
+	{
+	  op_true = force_reg (mode, op_true);
+
+	  gen = gen_mmx_pblendvb_v2qi;
 	}
       break;
     case E_V16QImode:
@@ -18462,9 +18470,9 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 	    vperm = force_reg (vmode, vperm);
 
 	    if (GET_MODE_SIZE (vmode) == 4)
-	      emit_insn (gen_mmx_pblendvb32 (target, op0, op1, vperm));
+	      emit_insn (gen_mmx_pblendvb_v4qi (target, op0, op1, vperm));
 	    else if (GET_MODE_SIZE (vmode) == 8)
-	      emit_insn (gen_mmx_pblendvb64 (target, op0, op1, vperm));
+	      emit_insn (gen_mmx_pblendvb_v8qi (target, op0, op1, vperm));
 	    else if (GET_MODE_SIZE (vmode) == 16)
 	      emit_insn (gen_sse4_1_pblendvb (target, op0, op1, vperm));
 	    else

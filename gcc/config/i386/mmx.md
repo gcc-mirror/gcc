@@ -2580,14 +2580,14 @@
 })
 
 (define_expand "vcond<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(if_then_else:VI_32
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(if_then_else:VI_16_32
 	  (match_operator 3 ""
-	    [(match_operand:VI_32 4 "register_operand")
-	     (match_operand:VI_32 5 "register_operand")])
-	  (match_operand:VI_32 1)
-	  (match_operand:VI_32 2)))]
-  "TARGET_SSE2"
+	    [(match_operand:VI_16_32 4 "register_operand")
+	     (match_operand:VI_16_32 5 "register_operand")])
+	  (match_operand:VI_16_32 1)
+	  (match_operand:VI_16_32 2)))]
+  "TARGET_SSE4_1"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
@@ -2612,14 +2612,14 @@
 })
 
 (define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(if_then_else:VI_32
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(if_then_else:VI_16_32
 	  (match_operator 3 ""
-	    [(match_operand:VI_32 4 "register_operand")
-	     (match_operand:VI_32 5 "register_operand")])
-	  (match_operand:VI_32 1)
-	  (match_operand:VI_32 2)))]
-  "TARGET_SSE2"
+	    [(match_operand:VI_16_32 4 "register_operand")
+	     (match_operand:VI_16_32 5 "register_operand")])
+	  (match_operand:VI_16_32 1)
+	  (match_operand:VI_16_32 2)))]
+  "TARGET_SSE4_1"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
@@ -2640,19 +2640,19 @@
 })
 
 (define_expand "vcond_mask_<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(vec_merge:VI_32
-	  (match_operand:VI_32 1 "register_operand")
-	  (match_operand:VI_32 2 "register_operand")
-	  (match_operand:VI_32 3 "register_operand")))]
-  "TARGET_SSE2"
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(vec_merge:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand")
+	  (match_operand:VI_16_32 2 "register_operand")
+	  (match_operand:VI_16_32 3 "register_operand")))]
+  "TARGET_SSE4_1"
 {
   ix86_expand_sse_movcc (operands[0], operands[3],
 			 operands[1], operands[2]);
   DONE;
 })
 
-(define_insn "mmx_pblendvb64"
+(define_insn "mmx_pblendvb_v8qi"
   [(set (match_operand:V8QI 0 "register_operand" "=Yr,*x,x")
 	(unspec:V8QI
 	  [(match_operand:V8QI 1 "register_operand" "0,0,x")
@@ -2672,12 +2672,12 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
-(define_insn "mmx_pblendvb32"
-  [(set (match_operand:V4QI 0 "register_operand" "=Yr,*x,x")
-	(unspec:V4QI
-	  [(match_operand:V4QI 1 "register_operand" "0,0,x")
-	   (match_operand:V4QI 2 "register_operand" "Yr,*x,x")
-	   (match_operand:V4QI 3 "register_operand" "Yz,Yz,x")]
+(define_insn "mmx_pblendvb_<mode>"
+  [(set (match_operand:VI_16_32 0 "register_operand" "=Yr,*x,x")
+	(unspec:VI_16_32
+	  [(match_operand:VI_16_32 1 "register_operand" "0,0,x")
+	   (match_operand:VI_16_32 2 "register_operand" "Yr,*x,x")
+	   (match_operand:VI_16_32 3 "register_operand" "Yz,Yz,x")]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "@

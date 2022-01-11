@@ -4,7 +4,7 @@
 
 typedef char T;
 
-#define M 4
+#define M 2
 
 extern T a[M], b[M], s1[M], s2[M], r[M];
 
@@ -16,4 +16,4 @@ void foo (void)
     r[j] = (a[j] < b[j]) ? s1[j] : s2[j];
 }
 
-/* { dg-final { scan-assembler "pcmpgtb" } } */
+/* { dg-final { scan-assembler "pcmpgtb" { xfail *-*-* } } } */
