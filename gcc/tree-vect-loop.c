@@ -3023,7 +3023,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
      array may contain length-agnostic and length-specific modes.  Their
      ordering is not guaranteed, so we could end up picking a mode for the main
      loop that is after the epilogue's optimal mode.  */
-  mode_i = 1;
+  vector_modes[0] = autodetected_vector_mode;
+  mode_i = 0;
+
   bool supports_partial_vectors = partial_vectors_supported_p ();
   poly_uint64 first_vinfo_vf = LOOP_VINFO_VECT_FACTOR (first_loop_vinfo);
 
