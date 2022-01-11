@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
+#include "tree-dfa.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "builtins.h"
@@ -1440,6 +1441,55 @@ cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
   return reexamine;
 }
 
+/* Find size of an object passed as a parameter to the function.  */
+
+static void
+parm_object_size (struct object_size_info *osi, tree var)
+{
+  int object_size_type = osi->object_size_type;
+  tree parm = SSA_NAME_VAR (var);
+
+  if (!(object_size_type & OST_DYNAMIC) || !POINTER_TYPE_P (TREE_TYPE (parm)))
+    {
+      expr_object_size (osi, var, parm);
+      return;
+    }
+
+  /* Look for access attribute.  */
+  rdwr_map rdwr_idx;
+
+  tree fndecl = cfun->decl;
+  const attr_access *access = get_parm_access (rdwr_idx, parm, fndecl);
+  tree typesize = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (parm)));
+  tree sz = NULL_TREE;
+
+  if (access && access->sizarg != UINT_MAX)
+    {
+      tree fnargs = DECL_ARGUMENTS (fndecl);
+      tree arg = NULL_TREE;
+      unsigned argpos = 0;
+
+      /* Walk through the parameters to pick the size parameter and safely
+	 scale it by the type size.  */
+      for (arg = fnargs; arg; arg = TREE_CHAIN (arg), ++argpos)
+	if (argpos == access->sizarg && INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	  {
+	    sz = get_or_create_ssa_default_def (cfun, arg);
+	    if (sz != NULL_TREE)
+	      {
+		sz = fold_convert (sizetype, sz);
+		if (typesize)
+		  sz = size_binop (MULT_EXPR, sz, typesize);
+	      }
+	    break;
+	  }
+    }
+  if (!sz)
+    sz = size_unknown (object_size_type);
+
+  object_sizes_set (osi, SSA_NAME_VERSION (var), sz, sz);
+}
+
 /* Compute an object size expression for VAR, which is the result of a PHI
    node.  */
 
@@ -1617,7 +1667,7 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
     case GIMPLE_NOP:
       if (SSA_NAME_VAR (var)
 	  && TREE_CODE (SSA_NAME_VAR (var)) == PARM_DECL)
-	expr_object_size (osi, var, SSA_NAME_VAR (var));
+	parm_object_size (osi, var);
       else
 	/* Uninitialized SSA names point nowhere.  */
 	unknown_object_size (osi, var);

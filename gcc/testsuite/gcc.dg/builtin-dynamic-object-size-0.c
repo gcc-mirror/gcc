@@ -34,6 +34,30 @@ test_deploop (size_t sz, size_t cond)
   return __builtin_dynamic_object_size (bin, 0);
 }
 
+size_t
+__attribute__ ((access (__read_write__, 1, 2)))
+__attribute__ ((noinline))
+test_parmsz_simple (void *obj, size_t sz)
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((access (__read_write__, 1, 2)))
+__attribute__ ((noinline))
+test_parmsz_scaled (int *obj, size_t sz)
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
+size_t
+__attribute__ ((access (__read_write__, 1, 3)))
+__attribute__ ((noinline))
+test_parmsz_unknown (void *obj, void *unknown, size_t sz, int cond)
+{
+  return __builtin_dynamic_object_size (cond ? obj : unknown, 0);
+}
+
 unsigned nfails = 0;
 
 #define FAIL() ({ \
@@ -42,13 +66,22 @@ unsigned nfails = 0;
 })
 
 int
-main ()
+main (int argc, char **argv)
 {
   if (test_builtin_malloc_condphi (1) != 32)
     FAIL ();
   if (test_builtin_malloc_condphi (0) != 64)
     FAIL ();
   if (test_deploop (128, 129) != 32)
+    FAIL ();
+  if (test_parmsz_simple (argv[0], __builtin_strlen (argv[0]) + 1)
+      != __builtin_strlen (argv[0]) + 1)
+    FAIL ();
+  int arr[42];
+  if (test_parmsz_scaled (arr, 42) != sizeof (arr))
+    FAIL ();
+  if (test_parmsz_unknown (argv[0], argv[0], __builtin_strlen (argv[0]) + 1, 0)
+      != -1)
     FAIL ();
 
   if (nfails > 0)
