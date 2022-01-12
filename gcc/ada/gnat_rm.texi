@@ -1457,11 +1457,11 @@ EXTERNAL_PROPERTY_LIST ::=
   | (EXTERNAL_PROPERTY @{, EXTERNAL_PROPERTY@} )
 
 EXTERNAL_PROPERTY ::=
-    Async_Readers    [=> boolean_EXPRESSION]
-  | Async_Writers    [=> boolean_EXPRESSION]
-  | Effective_Reads  [=> boolean_EXPRESSION]
-  | Effective_Writes [=> boolean_EXPRESSION]
-    others            => boolean_EXPRESSION
+    Async_Readers    [=> static_boolean_EXPRESSION]
+  | Async_Writers    [=> static_boolean_EXPRESSION]
+  | Effective_Reads  [=> static_boolean_EXPRESSION]
+  | Effective_Writes [=> static_boolean_EXPRESSION]
+    others            => static_boolean_EXPRESSION
 
 STATE_NAME ::= defining_identifier
 
@@ -1983,7 +1983,7 @@ case, and it is recommended that these two options not be used together.
 Syntax:
 
 @example
-pragma Async_Readers [ (boolean_EXPRESSION) ];
+pragma Async_Readers [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Async_Readers} in
@@ -1997,7 +1997,7 @@ the SPARK 2014 Reference Manual, section 7.1.2.
 Syntax:
 
 @example
-pragma Async_Writers [ (boolean_EXPRESSION) ];
+pragma Async_Writers [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Async_Writers} in
@@ -2533,7 +2533,7 @@ clause), the GNAT uses the default alignment as described previously.
 Syntax:
 
 @example
-pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+pragma Constant_After_Elaboration [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect
@@ -3060,7 +3060,7 @@ See Ada 2012 Reference Manual for details.
 Syntax:
 
 @example
-pragma Effective_Reads [ (boolean_EXPRESSION) ];
+pragma Effective_Reads [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Effective_Reads} in
@@ -3074,7 +3074,7 @@ the SPARK 2014 Reference Manual, section 7.1.2.
 Syntax:
 
 @example
-pragma Effective_Writes [ (boolean_EXPRESSION) ];
+pragma Effective_Writes [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Effective_Writes}
@@ -3852,7 +3852,7 @@ end Stacks;
 Syntax:
 
 @example
-pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+pragma Extensions_Visible [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Extensions_Visible}
@@ -4079,7 +4079,7 @@ No other value of digits is permitted.
 Syntax:
 
 @example
-pragma Ghost [ (boolean_EXPRESSION) ];
+pragma Ghost [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Ghost} in the SPARK
@@ -5485,7 +5485,7 @@ earlier versions of the package body.
 Syntax:
 
 @example
-pragma No_Caching [ (boolean_EXPRESSION) ];
+pragma No_Caching [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{No_Caching} in
@@ -8948,7 +8948,7 @@ access only part of the object in this case.
 Syntax:
 
 @example
-pragma Volatile_Function [ (boolean_EXPRESSION) ];
+pragma Volatile_Function [ (static_boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Volatile_Function}

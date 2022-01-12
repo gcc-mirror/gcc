@@ -90,11 +90,11 @@ Syntax:
     | (EXTERNAL_PROPERTY {, EXTERNAL_PROPERTY} )
 
   EXTERNAL_PROPERTY ::=
-      Async_Readers    [=> boolean_EXPRESSION]
-    | Async_Writers    [=> boolean_EXPRESSION]
-    | Effective_Reads  [=> boolean_EXPRESSION]
-    | Effective_Writes [=> boolean_EXPRESSION]
-      others            => boolean_EXPRESSION
+      Async_Readers    [=> static_boolean_EXPRESSION]
+    | Async_Writers    [=> static_boolean_EXPRESSION]
+    | Effective_Reads  [=> static_boolean_EXPRESSION]
+    | Effective_Writes [=> static_boolean_EXPRESSION]
+      others            => static_boolean_EXPRESSION
 
   STATE_NAME ::= defining_identifier
 
@@ -600,7 +600,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Async_Readers [ (boolean_EXPRESSION) ];
+  pragma Async_Readers [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Readers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -614,7 +614,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Async_Writers [ (boolean_EXPRESSION) ];
+  pragma Async_Writers [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Writers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1132,7 +1132,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Constant_After_Elaboration [ (boolean_EXPRESSION) ];
+  pragma Constant_After_Elaboration [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect
 ``Constant_After_Elaboration`` in the SPARK 2014 Reference Manual, section 3.3.1.
@@ -1656,7 +1656,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Effective_Reads [ (boolean_EXPRESSION) ];
+  pragma Effective_Reads [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Effective_Reads`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -1670,7 +1670,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Effective_Writes [ (boolean_EXPRESSION) ];
+  pragma Effective_Writes [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Effective_Writes``
 in the SPARK 2014 Reference Manual, section 7.1.2.
@@ -2401,7 +2401,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Visible [ (boolean_EXPRESSION) ];
+  pragma Extensions_Visible [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Extensions_Visible``
 in the SPARK 2014 Reference Manual, section 6.1.7.
@@ -2615,7 +2615,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Ghost [ (boolean_EXPRESSION) ];
+  pragma Ghost [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Ghost`` in the SPARK
 2014 Reference Manual, section 6.9.
@@ -3969,7 +3969,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma No_Caching [ (boolean_EXPRESSION) ];
+  pragma No_Caching [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``No_Caching`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -7430,7 +7430,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Volatile_Function [ (boolean_EXPRESSION) ];
+  pragma Volatile_Function [ (static_boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Volatile_Function``
 in the SPARK 2014 Reference Manual, section 7.1.2.
