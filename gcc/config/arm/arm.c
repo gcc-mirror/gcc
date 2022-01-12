@@ -3894,7 +3894,7 @@ arm_options_perform_arch_sanity_checks (void)
 
   /* __fp16 support currently assumes the core has ldrh.  */
   if (!arm_arch4 && arm_fp16_format != ARM_FP16_FORMAT_NONE)
-    sorry ("__fp16 and no ldrh");
+    sorry ("%<__fp16%> and no ldrh");
 
   if (use_cmse && !arm_arch_cmse)
     error ("target CPU does not support ARMv8-M Security Extensions");
@@ -6455,7 +6455,7 @@ use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 
       if (TARGET_THUMB1 && !seen_thumb1_vfp)
 	{
-	  sorry ("Thumb-1 hard-float VFP ABI");
+	  sorry ("Thumb-1 %<hard-float%> VFP ABI");
 	  /* sorry() is not immediately fatal, so only display this once.  */
 	  seen_thumb1_vfp = true;
 	}
@@ -6544,7 +6544,7 @@ aapcs_vfp_is_call_or_return_candidate (enum arm_pcs pcs_variant,
   *base_mode = new_mode;
 
   if (TARGET_GENERAL_REGS_ONLY)
-    error ("argument of type %qT not permitted with -mgeneral-regs-only",
+    error ("argument of type %qT not permitted with %<-mgeneral-regs-only%>",
 	   type);
 
   return true;
@@ -7488,7 +7488,7 @@ arm_handle_cmse_nonsecure_entry (tree *node, tree name,
     {
       *no_add_attrs = true;
       warning (OPT_Wattributes, "%qE attribute ignored without %<-mcmse%> "
-	       "option.", name);
+	       "option", name);
       return NULL_TREE;
     }
 
@@ -7540,7 +7540,7 @@ arm_handle_cmse_nonsecure_call (tree *node, tree name,
     {
       *no_add_attrs = true;
       warning (OPT_Wattributes, "%qE attribute ignored without %<-mcmse%> "
-	       "option.", name);
+	       "option", name);
       return NULL_TREE;
     }
 
@@ -34087,7 +34087,7 @@ thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     if (startswith (constraints[i], "=@cc"))
       {
-	sorry ("asm flags not supported in thumb1 mode");
+	sorry ("%<asm%> flags not supported in thumb1 mode");
 	break;
       }
   return NULL;
