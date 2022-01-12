@@ -5516,7 +5516,8 @@ handle_optimize_attribute (tree *node, tree name, tree args,
 
       if (saved_global_options != NULL)
 	{
-	  cl_optimization_compare (saved_global_options, &global_options);
+	  if (!seen_error ())
+	    cl_optimization_compare (saved_global_options, &global_options);
 	  free (saved_global_options);
 	}
     }
