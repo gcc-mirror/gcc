@@ -1,6 +1,6 @@
 /* PR target/100637 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msse4" } */
+/* { dg-options "-O2 -ftree-vectorize -msse2" } */
 
 typedef char T;
 
