@@ -2451,9 +2451,8 @@ cp_fold (tree x)
     case VIEW_CONVERT_EXPR:
       rval_ops = false;
       /* FALLTHRU */
-    case CONVERT_EXPR:
-    case NOP_EXPR:
     case NON_LVALUE_EXPR:
+    CASE_CONVERT:
 
       if (VOID_TYPE_P (TREE_TYPE (x)))
 	{

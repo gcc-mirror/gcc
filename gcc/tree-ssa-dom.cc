@@ -220,8 +220,7 @@ edge_info::derive_equivalences (tree name, tree value, int recursion_limit)
 	/* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	   set via a widening type conversion, then we may be able to record
 	   additional equivalences.  */
-	case NOP_EXPR:
-	case CONVERT_EXPR:
+	CASE_CONVERT:
 	  {
 	    tree rhs = gimple_assign_rhs1 (def_stmt);
 	    tree rhs_type = TREE_TYPE (rhs);

@@ -8016,9 +8016,8 @@ fold_simple_1 (tree t)
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
-    case NOP_EXPR:
     case VIEW_CONVERT_EXPR:
-    case CONVERT_EXPR:
+    CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
     case FIXED_CONVERT_EXPR:
