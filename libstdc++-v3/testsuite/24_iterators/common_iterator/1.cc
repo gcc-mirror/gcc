@@ -157,6 +157,22 @@ test04()
   VERIFY( x.i == 2 );
 }
 
+constexpr bool
+test_pr103992()
+{
+  using C1 = std::common_iterator<std::reverse_iterator<int*>,
+				  std::unreachable_sentinel_t>;
+  using C2 = std::common_iterator<std::reverse_iterator<const int*>,
+				  std::unreachable_sentinel_t>;
+  C1 c1;
+  C2 c2 = c1;
+  C1 c3 = c1;
+
+  return true;
+}
+
+static_assert( test_pr103992() );
+
 int
 main()
 {
