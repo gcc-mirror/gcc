@@ -520,8 +520,10 @@ epiphany_handle_interrupt_attribute (tree *node, tree name, tree args,
 	   && strcmp (TREE_STRING_POINTER (value), "swi"))
     {
       warning (OPT_Wattributes,
-	       "argument of %qE attribute is not \"reset\", \"software_exception\", \"page_miss\", \"timer0\", \"timer1\", \"message\", \"dma0\", \"dma1\", \"wand\" or \"swi\"",
-	       name);
+	       "argument of %qE attribute is not %qs, %qs %qs, %qs, %qs, "
+	       "%qs, %qs, %qs, %qs or %qs", name,
+	       "reset", "software_exception", "page_miss", "timer0", "timer1",
+	       "message", "dma0", "dma1", "wand", "swi");
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -1538,9 +1540,9 @@ static void
 epiphany_override_options (void)
 {
   if (epiphany_stack_offset < 4)
-    error ("stack_offset must be at least 4");
+    error ("%<stack_offset%> must be at least 4");
   if (epiphany_stack_offset & 3)
-    error ("stack_offset must be a multiple of 4");
+    error ("%<stack_offset%> must be a multiple of 4");
   epiphany_stack_offset = (epiphany_stack_offset + 3) & -4;
  if (!TARGET_SOFT_CMPSF)
    flag_finite_math_only = 1;
