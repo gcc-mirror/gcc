@@ -2,7 +2,7 @@
 ! { dg-require-effective-target issignaling } */
 ! { dg-additional-sources signaling_1_c.c }
 ! { dg-additional-options "-w" }
-! the -w option is needed to make f951 not report a warning for 
+! the -w option is needed to make cc1 not report a warning for 
 ! the -fintrinsic-modules-path option passed by ieee.exp
 !
 program test
