@@ -5589,20 +5589,20 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   if (bif_is_nosoft (*bifaddr)
       && rs6000_isa_flags & OPTION_MASK_SOFT_FLOAT)
     {
-      error ("%<%s%> not supported with %<-msoft-float%>",
+      error ("%qs not supported with %<-msoft-float%>",
 	     bifaddr->bifname);
       return const0_rtx;
     }
 
   if (bif_is_no32bit (*bifaddr) && TARGET_32BIT)
     {
-      error ("%<%s%> is not supported in 32-bit mode", bifaddr->bifname);
+      error ("%qs is not supported in 32-bit mode", bifaddr->bifname);
       return const0_rtx;
     }
 
   if (bif_is_ibmld (*bifaddr) && !FLOAT128_2REG_P (TFmode))
     {
-      error ("%<%s%> requires %<long double%> to be IBM 128-bit format",
+      error ("%qs requires %<long double%> to be IBM 128-bit format",
 	     bifaddr->bifname);
       return const0_rtx;
     }
