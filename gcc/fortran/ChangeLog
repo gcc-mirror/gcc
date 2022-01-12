@@ -1,3 +1,66 @@
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran.h (unit_convert): Add flags.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_init_kinds): When setting abi_kind to 17, if not
+	targetting glibc 2.32 or later and -fbuilding-libgfortran, set
+	gfc_real16_is_float128 and c_float128 in gfc_real_kinds.
+	(gfc_build_real_type): Don't set c_long_double if c_float128 is
+	already set.
+	* trans-intrinsic.c (builtin_decl_for_precision): Don't use
+	long_double_built_in if gfc_real16_is_float128 and
+	long_double_type_node == gfc_float128_type_node.
+	* lang.opt (fbuilding-libgfortran): New undocumented option.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-intrinsic.c (gfc_get_intrinsic_lib_fndecl): Use
+	gfc_type_abi_kind.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-io.c (transfer_array_desc): Pass abi kind instead of kind
+	to libgfortran.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-io.c (transfer_namelist_element): Use gfc_type_abi_kind,
+	formatting fixes.
+	(transfer_expr): Use gfc_type_abi_kind, use *REAL128* APIs even
+	for abi_kind == 17.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_real_info): Add abi_kind member.
+	(gfc_type_abi_kind): Declare.
+	* trans-types.c (gfc_init_kinds): Initialize abi_kind.
+	* intrinsic.c (gfc_type_abi_kind): New function.
+	(conv_name): Use it.
+	* iresolve.c (resolve_transformational, gfc_resolve_abs,
+	gfc_resolve_char_achar, gfc_resolve_acos, gfc_resolve_acosh,
+	gfc_resolve_aimag, gfc_resolve_and, gfc_resolve_aint, gfc_resolve_all,
+	gfc_resolve_anint, gfc_resolve_any, gfc_resolve_asin,
+	gfc_resolve_asinh, gfc_resolve_atan, gfc_resolve_atanh,
+	gfc_resolve_atan2, gfc_resolve_bessel_n2, gfc_resolve_ceiling,
+	gfc_resolve_cmplx, gfc_resolve_complex, gfc_resolve_cos,
+	gfc_resolve_cosh, gfc_resolve_count, gfc_resolve_dble,
+	gfc_resolve_dim, gfc_resolve_dot_product, gfc_resolve_dprod,
+	gfc_resolve_exp, gfc_resolve_floor, gfc_resolve_hypot,
+	gfc_resolve_int, gfc_resolve_int2, gfc_resolve_int8, gfc_resolve_long,
+	gfc_resolve_log, gfc_resolve_log10, gfc_resolve_logical,
+	gfc_resolve_matmul, gfc_resolve_minmax, gfc_resolve_maxloc,
+	gfc_resolve_findloc, gfc_resolve_maxval, gfc_resolve_merge,
+	gfc_resolve_minloc, gfc_resolve_minval, gfc_resolve_mod,
+	gfc_resolve_modulo, gfc_resolve_nearest, gfc_resolve_or,
+	gfc_resolve_real, gfc_resolve_realpart, gfc_resolve_reshape,
+	gfc_resolve_sign, gfc_resolve_sin, gfc_resolve_sinh, gfc_resolve_sqrt,
+	gfc_resolve_tan, gfc_resolve_tanh, gfc_resolve_transpose,
+	gfc_resolve_trigd, gfc_resolve_xor, gfc_resolve_random_number):
+	Likewise.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Likewise.
+
 2022-01-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/103366

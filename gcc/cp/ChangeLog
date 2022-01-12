@@ -1,3 +1,23 @@
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* class.c (build_vfn_ref): Build OBJ_TYPE_REF with INTEGER_CST
+	OBJ_TYPE_REF_TOKEN with type equal to OBJ_TYPE_REF_OBJECT type.
+	* error.c (resolve_virtual_fun_from_obj_type_ref): Use type of
+	OBJ_TYPE_REF_TOKEN rather than type of OBJ_TYPE_REF_OBJECT as
+	obj_type.
+
+2022-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103831
+	* call.c (build_new_method_call): Consider dependent bases only
+	if 'this' is available.
+
+2022-01-11  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (cxx_init_decl_processing): Move code possibly
+	altering flag_weak before code testing it.
+
 2022-01-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/103879

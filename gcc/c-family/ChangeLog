@@ -1,3 +1,10 @@
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101537
+	PR c/103881
+	* c-warn.c (conversion_warning): Handle BIT_AND_EXPR, BIT_IOR_EXPR
+	and BIT_XOR_EXPR.
+
 2022-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/101530

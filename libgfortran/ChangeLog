@@ -1,3 +1,303 @@
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/transfer.c (unformatted_read, unformatted_write): When
+	byteswapping IBM extended real(kind=16), handle it as byteswapping
+	two real(kind=8) values.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/environ.c (R16_IEEE): New macro.
+	(R16_IBM): New macro.
+	(next_token): Handle IBM R16 conversion cases.
+	(push_token): Likewise.
+	(mark_single): Likewise.
+	(do_parse): Likewise, initialize endian.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.in: Regenerate.
+	* io/file_pos.c (unformatted_backspace): Mask off
+	R16 parts for convert.
+	* io/inquire.c (inquire_via_unit): Add cases for
+	R16 parts.
+	* io/open.c (st_open): Add cases for R16 conversion.
+	* io/transfer.c (unformatted_read): Adjust for R16 conversions.
+	(unformatted_write): Likewise.
+	(us_read): Mask of R16 bits.
+	(data_transfer_init): Likewiese.
+	(write_us_marker): Likewise.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_FCFLAGS): Add -fbuilding-libgfortran after
+	-fallow-leading-underscore.
+	* Makefile.in: Regenerated.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (__copysignieee128, __fmaieee128, __fmodieee128):
+	Declare.
+	* intrinsics/trigd.c (COPYSIGN, FMOD, FABS, FMA, SIN, COS, TAN): If
+	POWER_IEEE128 is defined, define these for kind 17 include.
+	* intrinsics/trigd_lib.inc (COPYSIGN, FMOD, FABS, FMA, SIN, COS, TAN):
+	Don't define if COPYSIGN is already defined.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (GFC_REAL_17_INFINITY, GFC_REAL_17_QUIET_NAN): Define.
+	(__erfcieee128): Declare.
+	* intrinsics/trigd.c (_gfortran_sind_r17, _gfortran_cosd_r17,
+	_gfortran_tand_r17): Define for HAVE_GFC_REAL_17.
+	* intrinsics/random.c (random_r17, arandom_r17, rnumber_17): Define.
+	* intrinsics/erfc_scaled.c (ERFC_SCALED): Define.
+	(erfc_scaled_r16): Use ERFC_SCALED macro.
+	(erfc_scaled_r17): Define.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/read.c (convert_real): Add missing break; for the
+	HAVE_GFC_REAL_17 case.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/write_float.def (CALCULATE_EXP): If HAVE_GFC_REAL_17, also use
+	CALCULATE_EXP(17).
+	(determine_en_precision): Use 17 instead of 16 as first EN_PREC
+	argument for kind 17.
+	(get_float_string): Use 17 instead of 16 as first FORMAT_FLOAT
+	argument for kind 17.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (__acoshieee128, __acosieee128, __asinhieee128,
+	__asinieee128, __atan2ieee128, __atanhieee128, __atanieee128,
+	__coshieee128, __cosieee128, __erfieee128, __expieee128,
+	__fabsieee128, __jnieee128, __log10ieee128, __logieee128,
+	__powieee128, __sinhieee128, __sinieee128, __sqrtieee128,
+	__tanhieee128, __tanieee128, __ynieee128): Formatting fixes.
+	(__strtoieee128, __snprintfieee128): Declare.
+	* io/io.h (default_width_for_float, default_precision_for_float):
+	Handle kind == 17.
+	* io/size_from_kind.c (size_from_real_kind, size_from_complex_kind):
+	Likewise.
+	* io/read.c (set_integer, si_max, convert_real, convert_infnan,
+	read_f): Likewise.
+	* io/write.c (extract_uint, size_from_kind, set_fnode_default):
+	Likewise.
+	* io/write_float.def (DTOA2Q, FDTOA2Q): Define for HAVE_GFC_REAL_17.
+	(determine_en_precision, get_float_string): Handle kind == 17.
+	* io/transfer128.c: Use also for HAVE_GFC_REAL_17, but don't drag in
+	libquadmath if POWER_IEEE128.
+	* Makefile.am (comma, PREPROCESS): New variables.
+	(gfortran.ver): New goal.
+	(version_arg, version_dep): Use gfortran.ver instead of
+	$(srcdir)/gfortran.map.
+	(gfortran.map-sun): Depend on and use gfortran.ver instead of
+	$(srcdir)/gfortran.map.
+	(BUILT_SOURCES): Add $(version_dep).
+	* Makefile.in: Regenerated.
+	* gfortran.map (GFORTRAN_8): Don't export
+	_gfortran_transfer_complex128, _gfortran_transfer_complex128_write,
+	_gfortran_transfer_real128 and _gfortran_transfer_real128_write if
+	HAVE_GFC_REAL_17 is defined.
+	(GFORTRAN_12): Export those here instead.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Correct files for compilation flags. Add
+	-D__powerpc64__ for Fortran sources.  Get kinds.inc from
+	grep of kinds.h and kinds-override.h.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add -mno-gnu-attribute to compile flags.
+	* generated/_abs_c17.F90: Regenerate.
+	* generated/_abs_r17.F90: Regenerate.
+	* generated/_acos_r17.F90: Regenerate.
+	* generated/_acosh_r17.F90: Regenerate.
+	* generated/_aimag_c17.F90: Regenerate.
+	* generated/_aint_r17.F90: Regenerate.
+	* generated/_anint_r17.F90: Regenerate.
+	* generated/_asin_r17.F90: Regenerate.
+	* generated/_asinh_r17.F90: Regenerate.
+	* generated/_atan2_r17.F90: Regenerate.
+	* generated/_atan_r17.F90: Regenerate.
+	* generated/_atanh_r17.F90: Regenerate.
+	* generated/_conjg_c17.F90: Regenerate.
+	* generated/_cos_c17.F90: Regenerate.
+	* generated/_cos_r17.F90: Regenerate.
+	* generated/_cosh_r17.F90: Regenerate.
+	* generated/_dim_r17.F90: Regenerate.
+	* generated/_exp_c17.F90: Regenerate.
+	* generated/_exp_r17.F90: Regenerate.
+	* generated/_log10_r17.F90: Regenerate.
+	* generated/_log_c17.F90: Regenerate.
+	* generated/_log_r17.F90: Regenerate.
+	* generated/_mod_r17.F90: Regenerate.
+	* generated/_sign_r17.F90: Regenerate.
+	* generated/_sin_c17.F90: Regenerate.
+	* generated/_sin_r17.F90: Regenerate.
+	* generated/_sinh_r17.F90: Regenerate.
+	* generated/_sqrt_c17.F90: Regenerate.
+	* generated/_sqrt_r17.F90: Regenerate.
+	* generated/_tan_r17.F90: Regenerate.
+	* generated/_tanh_r17.F90: Regenerate.
+	* kinds-override.h: Adjust to trunk.
+	Change condition to single line so it can be grepped.
+	* m4/specific.m4: Make sure that real=kind16 is used
+	for _r17.F90 and _c17.F90 files.
+	* m4/specific2.m4: Likewise.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (internal_pack_r17, internal_pack_c17,
+	internal_unpack_r17, internal_unpack_c17, pack_r17, pack_c17,
+	unpack0_r17, unpack0_c17, unpack1_r17, unpack1_c17, spread_r17,
+	spread_c17, spread_scalar_r17, spread_scalar_c17, cshift0_r17,
+	cshift0_c17, cshift1_4_r17, cshift1_8_r17, cshift1_16_r17,
+	cshift1_4_c17, cshift1_8_c17, cshift1_16_c17): Declare.
+	* gfortran.map (GFORTRAN_12): Export *_r17 and *_c17.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* acinclude.m4 (LIBGFOR_CHECK_MATH_IEEE128): New macro.
+	* configure.ac: Use it.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Fix pattern substitution for _r17 and _c17.
+	* Makefile.in: Regenerate.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add _r17 and _c17 files.  Build them
+	with -mabi=ieeelongdouble on POWER.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: New flag HAVE_REAL_17.
+	* kinds-override.h: (HAVE_GFC_REAL_17): New macro.
+	(HAVE_GFC_COMPLEX_17): New macro.
+	(GFC_REAL_17_HUGE): New macro.
+	(GFC_REAL_17_LITERAL_SUFFIX): New macro.
+	(GFC_REAL_17_LITERAL): New macro.
+	(GFC_REAL_17_DIGITS): New macro.
+	(GFC_REAL_17_RADIX): New macro.
+	* libgfortran.h	(POWER_IEEE128): New macro.
+	(gfc_array_r17): Typedef.
+	(GFC_DTYPE_REAL_17): New macro.
+	(GFC_DTYPE_COMPLEX_17): New macro.
+	(__acoshieee128): Prototype.
+	(__acosieee128): Prototype.
+	(__asinhieee128): Prototype.
+	(__asinieee128): Prototype.
+	(__atan2ieee128): Prototype.
+	(__atanhieee128): Prototype.
+	(__atanieee128): Prototype.
+	(__coshieee128): Prototype.
+	(__cosieee128): Prototype.
+	(__erfieee128): Prototype.
+	(__expieee128): Prototype.
+	(__fabsieee128): Prototype.
+	(__jnieee128): Prototype.
+	(__log10ieee128): Prototype.
+	(__logieee128): Prototype.
+	(__powieee128): Prototype.
+	(__sinhieee128): Prototype.
+	(__sinieee128): Prototype.
+	(__sqrtieee128): Prototype.
+	(__tanhieee128): Prototype.
+	(__tanieee128): Prototype.
+	(__ynieee128): Prototype.
+	* m4/mtype.m4: Make a bit more readable. Add KIND=17.
+	* generated/_abs_c17.F90: New file.
+	* generated/_abs_r17.F90: New file.
+	* generated/_acos_r17.F90: New file.
+	* generated/_acosh_r17.F90: New file.
+	* generated/_aimag_c17.F90: New file.
+	* generated/_aint_r17.F90: New file.
+	* generated/_anint_r17.F90: New file.
+	* generated/_asin_r17.F90: New file.
+	* generated/_asinh_r17.F90: New file.
+	* generated/_atan2_r17.F90: New file.
+	* generated/_atan_r17.F90: New file.
+	* generated/_atanh_r17.F90: New file.
+	* generated/_conjg_c17.F90: New file.
+	* generated/_cos_c17.F90: New file.
+	* generated/_cos_r17.F90: New file.
+	* generated/_cosh_r17.F90: New file.
+	* generated/_dim_r17.F90: New file.
+	* generated/_exp_c17.F90: New file.
+	* generated/_exp_r17.F90: New file.
+	* generated/_log10_r17.F90: New file.
+	* generated/_log_c17.F90: New file.
+	* generated/_log_r17.F90: New file.
+	* generated/_mod_r17.F90: New file.
+	* generated/_sign_r17.F90: New file.
+	* generated/_sin_c17.F90: New file.
+	* generated/_sin_r17.F90: New file.
+	* generated/_sinh_r17.F90: New file.
+	* generated/_sqrt_c17.F90: New file.
+	* generated/_sqrt_r17.F90: New file.
+	* generated/_tan_r17.F90: New file.
+	* generated/_tanh_r17.F90: New file.
+	* generated/bessel_r17.c: New file.
+	* generated/cshift0_c17.c: New file.
+	* generated/cshift0_r17.c: New file.
+	* generated/cshift1_16_c17.c: New file.
+	* generated/cshift1_16_r17.c: New file.
+	* generated/cshift1_4_c17.c: New file.
+	* generated/cshift1_4_r17.c: New file.
+	* generated/cshift1_8_c17.c: New file.
+	* generated/cshift1_8_r17.c: New file.
+	* generated/findloc0_c17.c: New file.
+	* generated/findloc0_r17.c: New file.
+	* generated/findloc1_c17.c: New file.
+	* generated/findloc1_r17.c: New file.
+	* generated/in_pack_c17.c: New file.
+	* generated/in_pack_r17.c: New file.
+	* generated/in_unpack_c17.c: New file.
+	* generated/in_unpack_r17.c: New file.
+	* generated/matmul_c17.c: New file.
+	* generated/matmul_r17.c: New file.
+	* generated/matmulavx128_c17.c: New file.
+	* generated/matmulavx128_r17.c: New file.
+	* generated/maxloc0_16_r17.c: New file.
+	* generated/maxloc0_4_r17.c: New file.
+	* generated/maxloc0_8_r17.c: New file.
+	* generated/maxloc1_16_r17.c: New file.
+	* generated/maxloc1_4_r17.c: New file.
+	* generated/maxloc1_8_r17.c: New file.
+	* generated/maxval_r17.c: New file.
+	* generated/minloc0_16_r17.c: New file.
+	* generated/minloc0_4_r17.c: New file.
+	* generated/minloc0_8_r17.c: New file.
+	* generated/minloc1_16_r17.c: New file.
+	* generated/minloc1_4_r17.c: New file.
+	* generated/minloc1_8_r17.c: New file.
+	* generated/minval_r17.c: New file.
+	* generated/norm2_r17.c: New file.
+	* generated/pack_c17.c: New file.
+	* generated/pack_r17.c: New file.
+	* generated/pow_c17_i16.c: New file.
+	* generated/pow_c17_i4.c: New file.
+	* generated/pow_c17_i8.c: New file.
+	* generated/pow_r17_i16.c: New file.
+	* generated/pow_r17_i4.c: New file.
+	* generated/pow_r17_i8.c: New file.
+	* generated/product_c17.c: New file.
+	* generated/product_r17.c: New file.
+	* generated/reshape_c17.c: New file.
+	* generated/reshape_r17.c: New file.
+	* generated/spread_c17.c: New file.
+	* generated/spread_r17.c: New file.
+	* generated/sum_c17.c: New file.
+	* generated/sum_r17.c: New file.
+	* generated/unpack_c17.c: New file.
+	* generated/unpack_r17.c: New file.
+	* m4/ifunc.m4: New file.
+
 2022-01-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/82207

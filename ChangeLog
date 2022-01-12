@@ -1,3 +1,11 @@
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: New file.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Sort 2 names.
+
 2022-01-10  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: Fix obvious issues with sorting.

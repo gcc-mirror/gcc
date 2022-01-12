@@ -1,3 +1,32 @@
+2022-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102692
+	* diagnostic-manager.cc
+	(class auto_disable_complexity_checks): Rename to...
+	(class auto_checking_feasibility): ...this, updating
+	the calls accordingly.
+	(epath_finder::explore_feasible_paths): Update for renaming.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Update for change from
+	m_check_complexity to m_checking_feasibility.
+	(region_model_manager::reject_if_too_complex): Likewise.
+	(region_model_manager::get_or_create_unknown_svalue): Handle
+	m_checking_feasibility.
+	(region_model_manager::create_unique_svalue): New.
+	(region_model_manager::maybe_fold_binop): Handle BIT_AND_EXPR and
+	BIT_IOR_EXPRs on booleans where we know the result.
+	* region-model.cc (test_binop_svalue_folding): Add test coverage
+	for the above.
+	* region-model.h (region_model_manager::create_unique_svalue): New
+	decl.
+	(region_model_manager::enable_complexity_check): Replace with...
+	(region_model_manager::begin_checking_feasibility): ...this.
+	(region_model_manager::disable_complexity_check): Replace with...
+	(region_model_manager::end_checking_feasibility): ...this.
+	(region_model_manager::m_check_complexity): Replace with...
+	(region_model_manager::m_checking_feasibility): ...this.
+	(region_model_manager::m_managed_dynamic_svalues): New field.
+
 2022-01-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (impl_run_checkers): Pass logger to engine ctor.

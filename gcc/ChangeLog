@@ -1,3 +1,167 @@
+2022-01-11  qing zhao  <qing.zhao@oracle.com>
+
+	* gimplify.c (gimple_add_init_for_auto_var): Delete the 3rd argument.
+	Change the 3rd argument of function .DEFERRED_INIT to the name of the
+	decl.
+	(gimplify_decl_expr): Delete the 3rd argument when call
+	gimple_add_init_for_auto_var.
+	* internal-fn.c (expand_DEFERRED_INIT): Update comments to reflect
+	the 3rd argument change of function .DEFERRED_INIT.
+	* tree-cfg.c (verify_gimple_call): Update comments and verification
+	to reflect the 3rd argument change of function .DEFERRED_INIT.
+	* tree-sra.c (generate_subtree_deferred_init): Delete the 3rd argument.
+	(sra_modify_deferred_init): Change the 3rd argument of function
+	.DEFERRED_INIT to the name of the decl.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* flag-types.h (enum gfc_convert): Add flags for
+	conversion.
+
+2022-01-11  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	checks for only C/C++ front ends before allowing the long double
+	format to change without a warning.
+
+2022-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/103974
+	* ira-int.h (ira_subloop_allocnos_can_differ_p): Take an
+	extra argument, default true, that says whether old-reload
+	targets should be excluded.
+	* ira-color.c (color_pass): Pass false.
+
+2022-01-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (vcond<mode><mode>):
+	Use VI_16_32 mode iterator.  Enable for TARGET_SSE4_1.
+	(vcondu<mode><mode>): Ditto.
+	(vcond_mask_<mode><mode>): Ditto.
+	(mmx_pblendvb_v8qi): Rename from mmx_pblendvb64.
+	(mmx_pblendvb_<mode>): Rename from mmx_pblendvb32.
+	Use VI_16_32 mode iterator.
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc):
+	Update for rename.  Handle V2QImode.
+	(expand_vec_perm_blend): Update for rename.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* tree.def (OBJ_TYPE_REF): Document type of OBJ_TYPE_REF_TOKEN.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c (size_valid_p): New function.
+	(size_for_offset): Remove OFFSET constness assertion.
+	(addr_object_size): Build dynamic expressions for object
+	sizes and use size_valid_p to decide if it is valid for the
+	given OBJECT_SIZE_TYPE.
+	(compute_builtin_object_size): Allow dynamic offsets when
+	computing size at O0.
+	(call_object_size): Call size_valid_p.
+	(plus_stmt_object_size): Allow non-constant offset and use
+	size_valid_p to decide if it is valid for the given
+	OBJECT_SIZE_TYPE.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c (alloc_object_size): Make and return
+	non-constant size expression.
+	(call_object_size): Return expression or unknown based on
+	whether dynamic object size is requested.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c: Include tree-dfa.h.
+	(parm_object_size): New function.
+	(collect_object_sizes_for): Call it.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* builtins.c (fold_builtin_object_size): Adjust for dynamic size
+	expressions.
+	* tree-object-size.c: Include gimplify-me.h.
+	(struct object_size_info): New member UNKNOWNS.
+	(size_initval_p, size_usable_p, object_sizes_get_raw): New
+	functions.
+	(object_sizes_get): Return suitable gimple variable for
+	object size.
+	(bundle_sizes): New function.
+	(object_sizes_set): Use it and handle dynamic object size
+	expressions.
+	(object_sizes_set_temp): New function.
+	(size_for_offset): Adjust for dynamic size expressions.
+	(emit_phi_nodes, propagate_unknowns, gimplify_size_expressions):
+	New functions.
+	(compute_builtin_object_size): Call gimplify_size_expressions
+	for OST_DYNAMIC.
+	(dynamic_object_size): New function.
+	(cond_expr_object_size): Use it.
+	(phi_dynamic_object_size): New function.
+	(collect_object_sizes_for): Call it for OST_DYNAMIC.  Adjust to
+	accommodate dynamic object sizes.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103961
+	* tree-object-size.c (plus_stmt_object_size): Always avoid
+	computing offset for -1 size.
+
+2022-01-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103821
+	* range-op.cc (range_operator::fold_range): Only do precise ranges
+	when there are not too many subranges.
+
+2022-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-costs.c (ira_tune_allocno_costs): Fix missing rclass
+	definition in IRA_HARD_REGNO_ADD_COST_MULTIPLIER code.
+
+2022-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (struct widen_mul_stats): Add a
+	highpart_mults_inserted field.
+	(convert_mult_to_highpart): New function to convert right shift
+	of a widening multiply into a MULT_HIGHPART_EXPR.
+	(math_opts_dom_walker::after_dom_children) [RSHIFT_EXPR]:
+	Call new convert_mult_to_highpart function.
+	(pass_optimize_widening_mul::execute): Add a statistics counter
+	for tracking "highpart multiplications inserted" events.
+
+2022-01-11  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102239
+	* config/rs6000/rs6000-protos.h (rs6000_is_valid_rotate_dot_mask): New
+	declare.
+	* config/rs6000/rs6000.c (rs6000_is_valid_rotate_dot_mask): New
+	function.
+	* config/rs6000/rs6000.md (*branch_anddi3_dot): New.
+
+2022-01-11  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (driver_handle_option): State --sysroot as
+	validated.
+
+2022-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_disable_incompatible_switches): Remove
+	useless related to option -mno-power10.
+
+2022-01-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/53652
+	* config/i386/sse.md (*andnot<mode>3): Extend predicate of
+	operands[1] from register_operand to vector_operand.
+
 2022-01-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861

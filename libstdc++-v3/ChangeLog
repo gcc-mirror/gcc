@@ -1,3 +1,58 @@
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103726
+	* include/Makefile.am: Install <source_location> for
+	freestanding.
+	* include/Makefile.in: Regenerate.
+	* include/std/version (__cpp_lib_source_location): Define for
+	freestanding.
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::lazy_split_view::_InnerIter::end()):
+	Add neoxcept (LWG 3593).
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::__detail::__box): Add constexpr to
+	assignment operators (LWG 3572).
+	* testsuite/std/ranges/adaptors/filter.cc: Check assignment of a
+	view that uses copyable-box.
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103726
+	* include/Makefile.am: Install <coroutine> for freestanding.
+	* include/Makefile.in: Regenerate.
+	* include/std/coroutine: Adjust headers and preprocessor
+	conditions.
+	(__coroutine_traits_impl): Use concepts when available.
+	[_GLIBCXX_HOSTED] (hash<coroutine_handle>): Define.
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (operator<<(basic_ostream&, charT)):
+	Use unformatted input if no padding is needed.
+	(operator<<(basic_ostream<char>&, char)): Likewise.
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103891
+	* include/bits/c++config (_GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS):
+	Define.
+	* include/std/variant (__cpp_lib_variant): Only define C++20
+	value when the compiler is known to support conditionally
+	trivial destructors.
+	* include/std/version (__cpp_lib_variant): Likewise.
+
+2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Add constexpr
+	to all member functions (LWG 3574).
+	* testsuite/24_iterators/common_iterator/1.cc: Evaluate some
+	tests as constant expressions.
+	* testsuite/24_iterators/common_iterator/2.cc: Likewise.
+
 2022-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/77760
