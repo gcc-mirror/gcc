@@ -16337,7 +16337,7 @@ aarch64_parse_boolean_options (const char *option,
   /* We ended with a comma, print something.  */
   if (!(*specs))
     {
-      error ("%s string ill-formed\n", option_name);
+      error ("%qs string ill-formed", option_name);
       return 0;
     }
 
@@ -16393,7 +16393,7 @@ aarch64_parse_sve_width_string (const char *tune_string,
   int n = sscanf (tune_string, "%d", &width);
   if (n == EOF)
     {
-      error ("invalid format for sve_width");
+      error ("invalid format for %<sve_width%>");
       return;
     }
   switch (width)
@@ -16405,7 +16405,7 @@ aarch64_parse_sve_width_string (const char *tune_string,
     case SVE_2048:
       break;
     default:
-      error ("invalid sve_width value: %d", width);
+      error ("invalid %<sve_width%> value: %d", width);
     }
   tune->sve_width = (enum aarch64_sve_vector_bits_enum) width;
 }
@@ -16628,7 +16628,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
   if (opts->x_aarch64_stack_protector_guard_reg_str)
     {
       if (strlen (opts->x_aarch64_stack_protector_guard_reg_str) > 100)
-	  error ("specify a system register with a small string length.");
+	  error ("specify a system register with a small string length");
     }
 
   if (opts->x_aarch64_stack_protector_guard_offset_str)
@@ -16832,7 +16832,7 @@ aarch64_print_hint_for_extensions (const std::string &str)
     inform (input_location, "valid arguments are: %s;"
 			     " did you mean %qs?", s, hint);
   else
-    inform (input_location, "valid arguments are: %s;", s);
+    inform (input_location, "valid arguments are: %s", s);
 
   XDELETEVEC (s);
 }
@@ -16933,7 +16933,7 @@ aarch64_validate_sls_mitigation (const char *const_str)
 	temp |= SLS_RETBR;
       else if (strcmp (str, "none") == 0 || strcmp (str, "all") == 0)
 	{
-	  error ("%<%s%> must be by itself for %<-mharden-sls=%>", str);
+	  error ("%qs must be by itself for %<-mharden-sls=%>", str);
 	  break;
 	}
       else
@@ -17572,11 +17572,11 @@ aarch64_handle_attr_arch (const char *str)
 	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("invalid name (\"%s\") in %<target(\"arch=\")%> pragma or attribute", str);
+	error ("invalid name (%qs) in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %s of value (\"%s\") in "
+	error ("invalid feature modifier %s of value (%qs) in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
@@ -17614,11 +17614,11 @@ aarch64_handle_attr_cpu (const char *str)
 	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
       case AARCH64_PARSE_INVALID_ARG:
-	error ("invalid name (\"%s\") in %<target(\"cpu=\")%> pragma or attribute", str);
+	error ("invalid name (%qs) in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %s of value (\"%s\") in "
+	error ("invalid feature modifier %s of value (%qs) in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
@@ -17645,7 +17645,7 @@ aarch64_handle_attr_cpu (const char *str)
 	      " attribute");
        break;
      case AARCH64_PARSE_INVALID_ARG:
-       error ("invalid protection type (\"%s\") in %<target(\"branch-protection"
+       error ("invalid protection type (%qs) in %<target(\"branch-protection"
 	      "=\")%> pragma or attribute", err_str);
        break;
      case AARCH64_PARSE_OK:
@@ -17680,7 +17680,7 @@ aarch64_handle_attr_tune (const char *str)
   switch (parse_res)
     {
       case AARCH64_PARSE_INVALID_ARG:
-	error ("invalid name (\"%s\") in %<target(\"tune=\")%> pragma or attribute", str);
+	error ("invalid name (%qs) in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
       default:
@@ -17725,7 +17725,7 @@ aarch64_handle_attr_isa_flags (char *str)
 	break;
 
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier %s of value (\"%s\") in "
+	error ("invalid feature modifier %s of value (%qs) in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	break;
 
