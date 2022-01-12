@@ -1,6 +1,7 @@
 // PR libstdc++/103955
 // Verify we don't crash when the floating-point to_chars overloads are passed
 // a large precision argument.
+// { dg-do run { target c++17 } }
 
 #include <charconv>
 
