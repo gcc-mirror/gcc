@@ -2371,6 +2371,7 @@ epiphany_mode_priority (int entity, int priority)
 	  case 2: return (epiphany_normal_fp_rounding == FP_MODE_ROUND_NEAREST
 			  ? FP_MODE_ROUND_TRUNC : FP_MODE_ROUND_NEAREST);
 	  case 3: return FP_MODE_CALLER;
+	  default: gcc_unreachable ();
 	  }
       case FP_MODE_ROUND_NEAREST:
       case FP_MODE_CALLER:
@@ -2380,6 +2381,7 @@ epiphany_mode_priority (int entity, int priority)
 	  case 1: return FP_MODE_ROUND_TRUNC;
 	  case 2: return FP_MODE_INT;
 	  case 3: return FP_MODE_CALLER;
+	  default: gcc_unreachable ();
 	  }
       case FP_MODE_ROUND_TRUNC:
 	switch (priority)
@@ -2388,6 +2390,7 @@ epiphany_mode_priority (int entity, int priority)
 	  case 1: return FP_MODE_ROUND_NEAREST;
 	  case 2: return FP_MODE_INT;
 	  case 3: return FP_MODE_CALLER;
+	  default: gcc_unreachable ();
 	  }
       case FP_MODE_ROUND_UNKNOWN:
       case FP_MODE_NONE:
