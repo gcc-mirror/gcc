@@ -6190,7 +6190,7 @@ do_assemble_alias (tree decl, tree target)
       if (!TARGET_SUPPORTS_WEAK)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "weakref is not supported in this configuration");
+		    "%qs is not supported in this configuration", "weakref ");
 	  return;
 	}
 #endif

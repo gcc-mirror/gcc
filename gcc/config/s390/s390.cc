@@ -766,7 +766,7 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 		     argnum, decl, values);
 	    }
 	  else
-	    error ("constant argument %d for builtin %qF is out of range (0..%wu)",
+	    error ("constant argument %d for builtin %qF is out of range (0-%wu)",
 		   argnum, decl, (HOST_WIDE_INT_1U << bitwidth) - 1);
 
 	  return false;
@@ -783,7 +783,7 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 	  || tree_to_shwi (arg) > ((HOST_WIDE_INT_1 << (bitwidth - 1)) - 1))
 	{
 	  error ("constant argument %d for builtin %qF is out of range "
-		 "(%wd..%wd)", argnum, decl,
+		 "(%wd-%wd)", argnum, decl,
 		 -(HOST_WIDE_INT_1 << (bitwidth - 1)),
 		 (HOST_WIDE_INT_1 << (bitwidth - 1)) - 1);
 	  return false;
@@ -832,25 +832,25 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_HTM) && !TARGET_HTM)
 	{
 	  error ("builtin %qF is not supported without %<-mhtm%> "
-		 "(default with %<-march=zEC12%> and higher).", fndecl);
+		 "(default with %<-march=zEC12%> and higher)", fndecl);
 	  return const0_rtx;
 	}
       if (((bflags & B_VX) || (bflags & B_VXE)) && !TARGET_VX)
 	{
 	  error ("builtin %qF requires %<-mvx%> "
-		 "(default with %<-march=z13%> and higher).", fndecl);
+		 "(default with %<-march=z13%> and higher)", fndecl);
 	  return const0_rtx;
 	}
 
       if ((bflags & B_VXE) && !TARGET_VXE)
 	{
-	  error ("Builtin %qF requires z14 or higher.", fndecl);
+	  error ("Builtin %qF requires z14 or higher", fndecl);
 	  return const0_rtx;
 	}
 
       if ((bflags & B_VXE2) && !TARGET_VXE2)
 	{
-	  error ("Builtin %qF requires z15 or higher.", fndecl);
+	  error ("Builtin %qF requires z15 or higher", fndecl);
 	  return const0_rtx;
 	}
 
@@ -11464,8 +11464,8 @@ s390_emit_prologue (void)
 	    {
 	      warning (0, "frame size of function %qs is %wd"
 		       " bytes exceeding user provided stack limit of "
-		       "%d bytes.  "
-		       "An unconditional trap is added.",
+		       "%d bytes; "
+		       "an unconditional trap is added",
 		       current_function_name(), cfun_frame_layout.frame_size,
 		       s390_stack_size);
 	      emit_insn (gen_trap ());
@@ -11479,9 +11479,9 @@ s390_emit_prologue (void)
 	      if (stack_guard >= s390_stack_size)
 		{
 		  warning (0, "frame size of function %qs is %wd"
-			   " bytes which is more than half the stack size. "
-			   "The dynamic check would not be reliable. "
-			   "No check emitted for this function.",
+			   " bytes which is more than half the stack size; "
+			   "the dynamic check would not be reliable; "
+			   "no check emitted for this function",
 			   current_function_name(),
 			   cfun_frame_layout.frame_size);
 		}
@@ -15557,11 +15557,11 @@ s390_option_override_internal (struct gcc_options *opts,
       if (TARGET_HARD_DFP_P (opts_set->x_target_flags))
 	{
 	  if (!TARGET_CPU_DFP_P (opts))
-	    error ("hardware decimal floating point instructions"
+	    error ("hardware decimal floating-point instructions"
 		   " not available on %s",
 		   processor_table[(int)opts->x_s390_arch].name);
 	  if (!TARGET_ZARCH_P (opts->x_target_flags))
-	    error ("hardware decimal floating point instructions"
+	    error ("hardware decimal floating-point instructions"
 		   " not available in ESA/390 mode");
 	}
       else
@@ -15573,7 +15573,7 @@ s390_option_override_internal (struct gcc_options *opts,
     {
       if (TARGET_HARD_DFP_P (opts_set->x_target_flags)
 	  && TARGET_HARD_DFP_P (opts->x_target_flags))
-	error ("%<-mhard-dfp%> can%'t be used in conjunction with "
+	error ("%<-mhard-dfp%> cannot be used in conjunction with "
 	       "%<-msoft-float%>");
 
       opts->x_target_flags &= ~MASK_HARD_DFP;
