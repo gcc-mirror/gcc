@@ -10734,7 +10734,7 @@ tree_expr_nonzero_p (tree t)
 bool
 expr_not_equal_to (tree t, const wide_int &w)
 {
-  value_range vr;
+  int_range_max vr;
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
