@@ -725,7 +725,7 @@ cris_op_str (rtx x)
 	 an operator, for immediate output.  If that ever happens for
 	 MULT, we need to apply TARGET_MUL_BUG in the caller.  Make sure
 	 we notice.  */
-      internal_error ("MULT case in cris_op_str");
+      internal_error ("MULT case in %<cris_op_str%>");
       break;
 
     case DIV:
@@ -2213,7 +2213,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
     }
 
   /* If we get here, the caller got its initial tests wrong.  */
-  internal_error ("internal error: cris_side_effect_mode_ok with bad operands");
+  internal_error ("internal error: %<cris_side_effect_mode_ok%> with bad operands");
 }
 
 /* Queue an .ident string in the queue of top-level asm statements.
@@ -2296,7 +2296,7 @@ cris_option_override (void)
 
       if (cris_cpu_version < 0 || cris_cpu_version > 10)
 	error ("unknown CRIS version specification in %<-march=%> or "
-	       "%<-mcpu=%> : %s", cris_cpu_str);
+	       "%<-mcpu=%>: %s", cris_cpu_str);
 
       /* Set the target flags.  */
       if (cris_cpu_version >= CRIS_CPU_ETRAX4)
@@ -2331,7 +2331,7 @@ cris_option_override (void)
 	cris_tune = 10;
 
       if (cris_tune < 0 || cris_tune > 32)
-	error ("unknown CRIS cpu version specification in %<-mtune=%> : %s",
+	error ("unknown CRIS cpu version specification in %<-mtune=%>: %s",
 	       cris_tune_str);
 
       if (cris_tune >= CRIS_CPU_SVINTO)

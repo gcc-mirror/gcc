@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 /* We don't want to use gcc_assert for everything, as that can be
    compiled out.  */
 #define CRIS_ASSERT(x) \
- do { if (!(x)) internal_error ("CRIS-port assertion failed: " #x); } while (0)
+ do { if (!(x)) internal_error ("CRIS-port assertion failed: %s", #x); } while (0)
 
 /* Replacement for REG_P since it does not match SUBREGs.  Happens for
    testcase Axis-20000320 with gcc-2.9x.  */
