@@ -15606,16 +15606,16 @@ s390_option_override_internal (struct gcc_options *opts,
 
 #if TARGET_TPF != 0
   if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_prologue_check))
-    error ("-mtpf-trace-hook-prologue-check requires integer in range 0..4095");
+    error ("%<-mtpf-trace-hook-prologue-check%> requires integer in range 0-4095");
 
   if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_prologue_target))
-    error ("-mtpf-trace-hook-prologue-target requires integer in range 0..4095");
+    error ("%<-mtpf-trace-hook-prologue-target%> requires integer in range 0-4095");
 
   if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_epilogue_check))
-    error ("-mtpf-trace-hook-epilogue-check requires integer in range 0..4095");
+    error ("%<-mtpf-trace-hook-epilogue-check%> requires integer in range 0-4095");
 
   if (!CONST_OK_FOR_J (opts->x_s390_tpf_trace_hook_epilogue_target))
-    error ("-mtpf-trace-hook-epilogue-target requires integer in range 0..4095");
+    error ("%<-mtpf-trace-hook-epilogue-target%> requires integer in range 0-4095");
 
   if (s390_tpf_trace_skip)
     {
