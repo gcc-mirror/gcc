@@ -1,3 +1,14 @@
+2022-01-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103603
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Create stmt stack.
+	(gimple_ranger::~gimple_ranger): New.
+	(gimple_ranger::range_of_stmt): Process dependencies if they have no
+	global cache entry.
+	(gimple_ranger::prefill_name): New.
+	(gimple_ranger::prefill_stmt_dependencies): New.
+	* gimple-range.h (class gimple_ranger): Add prototypes.
+
 2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/103465
