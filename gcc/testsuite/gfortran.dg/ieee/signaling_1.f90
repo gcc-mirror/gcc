@@ -1,7 +1,9 @@
 ! { dg-do run }
 ! { dg-require-effective-target issignaling } */
 ! { dg-additional-sources signaling_1_c.c }
-! { dg-options "-fsignaling-nans" }
+! { dg-additional-options "-w" }
+! the -w option is needed to make f951 not report a warning for 
+! the -fintrinsic-modules-path option passed by ieee.exp
 !
 program test
   use, intrinsic :: iso_c_binding
