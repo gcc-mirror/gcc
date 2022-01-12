@@ -81,6 +81,5 @@ void encrypt_n(const uint8_t in[], uint8_t out[], size_t blocks, uint32_t *EK)
     }
 }
 
-// This used to work on { target x86_64-*-* i?86-*-* } but a fix in SLP
-// discovery makes us trip over the threshold again.
-// { dg-final { scan-tree-dump-times "not vectorized: vectorization is not profitable" 2 "slp1" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump "not vectorized: vectorization is not profitable" "slp1" } }
+// { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" "slp1" } }

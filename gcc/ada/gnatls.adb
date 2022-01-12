@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2092,10 +2092,7 @@ begin
          Hi   : Source_Ptr;
 
       begin
-         Name_Buffer (1 .. 10) := "system.ads";
-         Name_Len := 10;
-
-         Read_Source_File (Name_Find, 0, Hi, Text, FD);
+         Read_Source_File (Name_Find ("system.ads"), 0, Hi, Text, FD);
 
          if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;

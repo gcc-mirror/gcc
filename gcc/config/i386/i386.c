@@ -2065,7 +2065,8 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
 
 static int
 classify_argument (machine_mode mode, const_tree type,
-		   enum x86_64_reg_class classes[MAX_CLASSES], int bit_offset)
+		   enum x86_64_reg_class classes[MAX_CLASSES], int bit_offset,
+		   int &zero_width_bitfields)
 {
   HOST_WIDE_INT bytes
     = mode == BLKmode ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
@@ -2123,6 +2124,16 @@ classify_argument (machine_mode mode, const_tree type,
 		     misaligned integers.  */
 		  if (DECL_BIT_FIELD (field))
 		    {
+		      if (integer_zerop (DECL_SIZE (field)))
+			{
+			  if (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field))
+			    continue;
+			  if (zero_width_bitfields != 2)
+			    {
+			      zero_width_bitfields = 1;
+			      continue;
+			    }
+			}
 		      for (i = (int_bit_position (field)
 				+ (bit_offset % 64)) / 8 / 8;
 			   i < ((int_bit_position (field) + (bit_offset % 64))
@@ -2160,7 +2171,8 @@ classify_argument (machine_mode mode, const_tree type,
 		      num = classify_argument (TYPE_MODE (type), type,
 					       subclasses,
 					       (int_bit_position (field)
-						+ bit_offset) % 512);
+						+ bit_offset) % 512,
+					       zero_width_bitfields);
 		      if (!num)
 			return 0;
 		      pos = (int_bit_position (field)
@@ -2178,7 +2190,8 @@ classify_argument (machine_mode mode, const_tree type,
 	  {
 	    int num;
 	    num = classify_argument (TYPE_MODE (TREE_TYPE (type)),
-				     TREE_TYPE (type), subclasses, bit_offset);
+				     TREE_TYPE (type), subclasses, bit_offset,
+				     zero_width_bitfields);
 	    if (!num)
 	      return 0;
 
@@ -2211,7 +2224,7 @@ classify_argument (machine_mode mode, const_tree type,
 
 		  num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
 					   TREE_TYPE (field), subclasses,
-					   bit_offset);
+					   bit_offset, zero_width_bitfields);
 		  if (!num)
 		    return 0;
 		  for (i = 0; i < num && i < words; i++)
@@ -2231,7 +2244,7 @@ classify_argument (machine_mode mode, const_tree type,
 	     X86_64_SSEUP_CLASS, everything should be passed in
 	     memory.  */
 	  if (classes[0] != X86_64_SSE_CLASS)
-	      return 0;
+	    return 0;
 
 	  for (i = 1; i < words; i++)
 	    if (classes[i] != X86_64_SSEUP_CLASS)
@@ -2257,8 +2270,8 @@ classify_argument (machine_mode mode, const_tree type,
 	      classes[i] = X86_64_SSE_CLASS;
 	    }
 
-	  /*  If X86_64_X87UP_CLASS isn't preceded by X86_64_X87_CLASS,
-	       everything should be passed in memory.  */
+	  /* If X86_64_X87UP_CLASS isn't preceded by X86_64_X87_CLASS,
+	     everything should be passed in memory.  */
 	  if (classes[i] == X86_64_X87UP_CLASS
 	      && (classes[i - 1] != X86_64_X87_CLASS))
 	    {
@@ -2485,6 +2498,44 @@ classify_argument (machine_mode mode, const_tree type,
       classes[1] = X86_64_INTEGER_CLASS;
       return 1 + (bytes > 8);
     }
+}
+
+/* Wrapper around classify_argument with the extra zero_width_bitfields
+   argument, to diagnose GCC 12.1 ABI differences for C.  */
+
+static int
+classify_argument (machine_mode mode, const_tree type,
+		   enum x86_64_reg_class classes[MAX_CLASSES], int bit_offset)
+{
+  int zero_width_bitfields = 0;
+  static bool warned = false;
+  int n = classify_argument (mode, type, classes, bit_offset,
+			     zero_width_bitfields);
+  if (!zero_width_bitfields || warned || !warn_psabi)
+    return n;
+  enum x86_64_reg_class alt_classes[MAX_CLASSES];
+  zero_width_bitfields = 2;
+  if (classify_argument (mode, type, alt_classes, bit_offset,
+			 zero_width_bitfields) != n)
+    zero_width_bitfields = 3;
+  else
+    for (int i = 0; i < n; i++)
+      if (classes[i] != alt_classes[i])
+	{
+	  zero_width_bitfields = 3;
+	  break;
+	}
+  if (zero_width_bitfields == 3)
+    {
+      warned = true;
+      const char *url
+	= CHANGES_ROOT_URL "gcc-12/changes.html#zero_width_bitfields";
+
+      inform (input_location,
+	      "the ABI of passing C structures with zero-width bit-fields"
+	      " has changed in GCC %{12.1%}", url);
+    }
+  return n;
 }
 
 /* Examine the argument and return set number of register required in each
@@ -5535,15 +5586,30 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 
     case MODE_DI:
       /* Handle broken assemblers that require movd instead of movq. */
-      if (!HAVE_AS_IX86_INTERUNIT_MOVQ
-	  && (GENERAL_REG_P (operands[0])
-	      || GENERAL_REG_P (operands[1])))
-	return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%1, %q0|%q0, %1}";
+	  else
+	    return "%vmovd\t{%1, %q0|%q0, %1}";
+	}
+      else if (GENERAL_REG_P (operands[1]))
+	{
+	  if (HAVE_AS_IX86_INTERUNIT_MOVQ)
+	    return "%vmovq\t{%q1, %0|%0, %q1}";
+	  else
+	    return "%vmovd\t{%q1, %0|%0, %q1}";
+	}
       else
 	return "%vmovq\t{%1, %0|%0, %1}";
 
     case MODE_SI:
-      return "%vmovd\t{%1, %0|%0, %1}";
+      if (GENERAL_REG_P (operands[0]))
+	return "%vmovd\t{%1, %k0|%k0, %1}";
+      else if (GENERAL_REG_P (operands[1]))
+	return "%vmovd\t{%k1, %0|%0, %k1}";
+      else
+	return "%vmovd\t{%1, %0|%0, %1}";
 
     case MODE_HI:
       if (GENERAL_REG_P (operands[0]))
@@ -16037,7 +16103,7 @@ ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
       fprintf (asm_out_file, "\tjmp\t");
       assemble_name (asm_out_file, thunk_name);
       putc ('\n', asm_out_file);
-      if ((ix86_harden_sls & harden_sls_indirect_branch))
+      if ((ix86_harden_sls & harden_sls_indirect_jmp))
 	fputs ("\tint3\n", asm_out_file);
     }
   else
@@ -16263,7 +16329,7 @@ ix86_output_indirect_jmp (rtx call_op)
     }
   else
     output_asm_insn ("%!jmp\t%A0", &call_op);
-  return (ix86_harden_sls & harden_sls_indirect_branch) ? "int3" : "";
+  return (ix86_harden_sls & harden_sls_indirect_jmp) ? "int3" : "";
 }
 
 /* Output return instrumentation for current function if needed.  */
@@ -16367,11 +16433,14 @@ ix86_output_indirect_function_return (rtx ret_op)
 	}
       else
 	output_indirect_thunk (regno);
-
-      return "";
     }
   else
-    return "%!jmp\t%A0";
+    {
+      output_asm_insn ("%!jmp\t%A0", &ret_op);
+      if (ix86_harden_sls & harden_sls_indirect_jmp)
+	fputs ("\tint3\n", asm_out_file);
+    }
+  return "";
 }
 
 /* Output the assembly for a call instruction.  */
@@ -16430,7 +16499,7 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	{
 	  output_asm_insn (xasm, &call_op);
 	  if (!direct_p
-	      && (ix86_harden_sls & harden_sls_indirect_branch))
+	      && (ix86_harden_sls & harden_sls_indirect_jmp))
 	    return "int3";
 	}
       return "";

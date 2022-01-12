@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,7 +172,7 @@ package body Exp_Dbug is
    procedure Add_Real_To_Buffer (U : Ureal) is
    begin
       Add_Uint_To_Buffer (Norm_Num (U));
-      Add_Str_To_Name_Buffer ("_");
+      Add_Char_To_Name_Buffer ('_');
       Add_Uint_To_Buffer (Norm_Den (U));
    end Add_Real_To_Buffer;
 
@@ -671,7 +671,7 @@ package body Exp_Dbug is
          Add_Real_To_Buffer (Delta_Value (E));
 
          if Small_Value (E) /= Delta_Value (E) then
-            Add_Str_To_Name_Buffer ("_");
+            Add_Char_To_Name_Buffer ('_');
             Add_Real_To_Buffer (Small_Value (E));
          end if;
 
@@ -710,7 +710,7 @@ package body Exp_Dbug is
 
             if Lo_Encode or Hi_Encode then
                if Biased then
-                  Add_Str_To_Name_Buffer ("_");
+                  Add_Char_To_Name_Buffer ('_');
                else
                   if Lo_Encode then
                      if Hi_Encode then
@@ -1535,7 +1535,7 @@ package body Exp_Dbug is
 
                begin
                   Set_Entity_Name (Var);
-                  Add_Str_To_Name_Buffer ("L");
+                  Add_Char_To_Name_Buffer ('L');
                   Set_Chars (Var, Name_Enter);
                end;
 
@@ -1544,7 +1544,7 @@ package body Exp_Dbug is
               and then Ekind (Scope (Homonym (Ent))) = E_Block
             then
                Set_Entity_Name (Ent);
-               Add_Str_To_Name_Buffer ("B");
+               Add_Char_To_Name_Buffer ('B');
                Set_Chars (Ent, Name_Enter);
             end if;
          end if;

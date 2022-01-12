@@ -771,6 +771,7 @@ thread_header
 glibcxx_PCHFLAGS
 GLIBCXX_BUILD_PCH_FALSE
 GLIBCXX_BUILD_PCH_TRUE
+FREESTANDING_FLAGS
 GLIBCXX_HOSTED_FALSE
 GLIBCXX_HOSTED_TRUE
 glibcxx_compiler_shared_flag
@@ -5949,7 +5950,9 @@ $as_echo "$as_me: OS config directory is $os_include_dir" >&6;}
 
 
 # Libtool setup.
-if test "x${with_newlib}" != "xyes" && test "x${with_avrlibc}" != "xyes"; then
+if test "x${with_newlib}" != "xyes" &&
+    test "x${with_avrlibc}" != "xyes" &&
+    test "x$with_headers" != "xno"; then
   enable_dlopen=yes
 
 
@@ -12176,7 +12179,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12179 "configure"
+#line 12182 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12282,7 +12285,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12285 "configure"
+#line 12288 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15623,6 +15626,7 @@ else
      esac
 fi
 
+  freestanding_flags=
   if test "$enable_hosted_libstdcxx" = no; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: Only freestanding libraries will be built" >&5
 $as_echo "$as_me: Only freestanding libraries will be built" >&6;}
@@ -15630,6 +15634,9 @@ $as_echo "$as_me: Only freestanding libraries will be built" >&6;}
     hosted_define=0
     enable_abi_check=no
     enable_libstdcxx_pch=no
+    if test "x$with_headers" = xno; then
+      freestanding_flags="-ffreestanding"
+    fi
   else
     is_hosted=yes
     hosted_define=1
@@ -15639,6 +15646,8 @@ $as_echo "$as_me: Only freestanding libraries will be built" >&6;}
 cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_HOSTED $hosted_define
 _ACEOF
+
+  FREESTANDING_FLAGS="$freestanding_flags"
 
 
 
@@ -15960,7 +15969,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15963 "configure"
+#line 15972 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15995,7 +16004,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15998 "configure"
+#line 16007 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16030,7 +16039,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16033 "configure"
+#line 16042 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16066,7 +16075,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16069 "configure"
+#line 16078 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16219,7 +16228,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16222 "configure"
+#line 16231 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16261,7 +16270,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16264 "configure"
+#line 16273 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -20183,6 +20192,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # For the EOF, SEEK_CUR, and SEEK_END integer constants.
 
 
+if test "$is_hosted" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of EOF" >&5
 $as_echo_n "checking for the value of EOF... " >&6; }
 if ${glibcxx_cv_stdio_eof+:} false; then :
@@ -20248,6 +20258,7 @@ cat >>confdefs.h <<_ACEOF
 #define _GLIBCXX_STDIO_SEEK_END $glibcxx_cv_stdio_seek_end
 _ACEOF
 
+fi
 
 
 # For gettimeofday support.
@@ -29129,7 +29140,7 @@ else
 
     $as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h
 
-  else
+  elif test "x$with_headers" != "xno"; then
 
 # Base decisions on target environment.
 case "${host}" in
@@ -74203,6 +74214,9 @@ $as_echo "#define HAVE_LINUX_FUTEX 1" >>confdefs.h
 fi
 
 
+if test "$is_hosted" = yes; then
+# TODO: remove this and change src/c++11/compatibility-atomic-c++0x.cc to
+# use <stdint.h> instead of <gstdint.h>.
 
 
 inttype_headers=`echo inttypes.h sys/inttypes.h  | sed -e 's/,/ /g'`
@@ -74604,6 +74618,7 @@ ac_config_commands="$ac_config_commands include/gstdint.h"
 
 
 
+fi
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GNU c++filt" >&5

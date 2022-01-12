@@ -264,6 +264,75 @@ region_model::impl_call_analyzer_dump_capacity (const gcall *call,
   warning_at (call->location, 0, "capacity: %qs", desc.m_buffer);
 }
 
+/* Compare D1 and D2 using their names, and then IDs to order them.  */
+
+static int
+cmp_decls (tree d1, tree d2)
+{
+  gcc_assert (DECL_P (d1));
+  gcc_assert (DECL_P (d2));
+  if (DECL_NAME (d1) && DECL_NAME (d2))
+    if (int cmp = strcmp (IDENTIFIER_POINTER (DECL_NAME (d1)),
+			  IDENTIFIER_POINTER (DECL_NAME (d2))))
+      return cmp;
+  return (int)DECL_UID (d1) - (int)DECL_UID (d2);
+}
+
+/* Comparator for use by vec<tree>::qsort,
+   using their names, and then IDs to order them.  */
+
+static int
+cmp_decls_ptr_ptr (const void *p1, const void *p2)
+{
+  tree const *d1 = (tree const *)p1;
+  tree const *d2 = (tree const *)p2;
+
+  return cmp_decls (*d1, *d2);
+}
+
+/* Handle a call to "__analyzer_dump_escaped".
+
+   Emit a warning giving the number of decls that have escaped, followed
+   by a comma-separated list of their names, in alphabetical order.
+
+   This is for use when debugging, and may be of use in DejaGnu tests.  */
+
+void
+region_model::impl_call_analyzer_dump_escaped (const gcall *call)
+{
+  auto_vec<tree> escaped_decls;
+  for (auto iter : m_store)
+    {
+      const binding_cluster *c = iter.second;
+      if (!c->escaped_p ())
+	continue;
+      if (tree decl = c->get_base_region ()->maybe_get_decl ())
+	escaped_decls.safe_push (decl);
+    }
+
+  /* Sort them into deterministic order; alphabetical is
+     probably most user-friendly.  */
+  escaped_decls.qsort (cmp_decls_ptr_ptr);
+
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  bool first = true;
+  for (auto iter : escaped_decls)
+    {
+      if (first)
+	first = false;
+      else
+	pp_string (&pp, ", ");
+      pp_printf (&pp, "%qD", iter);
+    }
+  /* Print the number to make it easier to write DejaGnu tests for
+     the "nothing has escaped" case.  */
+  warning_at (call->location, 0, "escaped: %i: %s",
+	      escaped_decls.length (),
+	      pp_formatted_text (&pp));
+}
+
 /* Handle a call to "__analyzer_eval" by evaluating the input
    and dumping as a dummy warning, so that test cases can use
    dg-warning to validate the result (and so unexpected warnings will

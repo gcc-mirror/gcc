@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,8 +62,6 @@
 --  is inhibited anyway, regardless of the setting of the restriction. This
 --  handles the XDR implementation of System.Stream_Attributes in particular
 --  which does not permit block io optimization.
-
-pragma Compiler_Unit_Warning;
 
 with Ada.Streams;
 

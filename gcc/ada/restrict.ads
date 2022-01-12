@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,6 +143,7 @@ package Restrict is
       No_Standard_Storage_Pools          => True,
       No_Stream_Optimizations            => True,
       No_Streams                         => True,
+      No_Tagged_Type_Registration        => True,
       No_Task_Attributes_Package         => True,
       No_Task_Termination                => True,
       No_Tasking                         => True,
@@ -239,16 +240,6 @@ package Restrict is
    --  Tests to see if abort is allowed by the current restrictions settings.
    --  For abort to be allowed, either No_Abort_Statements must be False,
    --  or Max_Asynchronous_Select_Nesting must be non-zero.
-
-   procedure Check_Compiler_Unit (Feature : String; N : Node_Id);
-   --  If unit N is in a unit that has a pragma Compiler_Unit_Warning, then
-   --  a message is posted on node N noting use of the given feature is not
-   --  permitted in the compiler (bootstrap considerations).
-
-   procedure Check_Compiler_Unit (Feature : String; Loc : Source_Ptr);
-   --  If unit N is in a unit that has a pragma Compiler_Unit_Warning, then a
-   --  message is posted at location Loc noting use of the given feature is not
-   --  permitted in the compiler (bootstrap considerations).
 
    procedure Check_Restricted_Unit (U : Unit_Name_Type; N : Node_Id);
    --  Checks if loading of unit U is prohibited by the setting of some

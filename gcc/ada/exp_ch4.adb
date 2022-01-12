@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2695,9 +2695,6 @@ package body Exp_Ch4 is
       --  lengths of operands. The choice of this type is a little subtle and
       --  is discussed in a separate section at the start of the body code.
 
-      Concatenation_Error : exception;
-      --  Raised if concatenation is sure to raise a CE
-
       Result_May_Be_Null : Boolean := True;
       --  Reset to False if at least one operand is encountered which is known
       --  at compile time to be non-null. Used for handling the special case
@@ -3460,7 +3457,16 @@ package body Exp_Ch4 is
       --  Catch the static out of range case now
 
       if Raises_Constraint_Error (High_Bound) then
-         raise Concatenation_Error;
+         --  Kill warning generated for the declaration of the static out of
+         --  range high bound, and instead generate a Constraint_Error with
+         --  an appropriate specific message.
+
+         Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
+         Apply_Compile_Time_Constraint_Error
+           (N      => Cnode,
+            Msg    => "concatenation result upper bound out of range??",
+            Reason => CE_Range_Check_Failed);
+         return;
       end if;
 
       --  Now we will generate the assignments to do the actual concatenation
@@ -3629,19 +3635,6 @@ package body Exp_Ch4 is
       pragma Assert (Present (Result));
       Rewrite (Cnode, Result);
       Analyze_And_Resolve (Cnode, Atyp);
-
-   exception
-      when Concatenation_Error =>
-
-         --  Kill warning generated for the declaration of the static out of
-         --  range high bound, and instead generate a Constraint_Error with
-         --  an appropriate specific message.
-
-         Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
-         Apply_Compile_Time_Constraint_Error
-           (N      => Cnode,
-            Msg    => "concatenation result upper bound out of range??",
-            Reason => CE_Range_Check_Failed);
    end Expand_Concatenate;
 
    ---------------------------------------------------
@@ -4352,116 +4345,110 @@ package body Exp_Ch4 is
       ------------------------------
 
       function Size_In_Storage_Elements (E : Entity_Id) return Node_Id is
+         Idx : Node_Id := First_Index (E);
+         Len : Node_Id;
+         Res : Node_Id := Empty;
+
       begin
          --  Logically this just returns E'Max_Size_In_Storage_Elements.
-         --  However, the reason for the existence of this function is
-         --  to construct a test for sizes too large, which means near the
-         --  32-bit limit on a 32-bit machine, and precisely the trouble
-         --  is that we get overflows when sizes are greater than 2**31.
+         --  However, the reason for the existence of this function is to
+         --  construct a test for sizes too large, which means near the 32-bit
+         --  limit on a 32-bit machine, and precisely the trouble is that we
+         --  get overflows when sizes are greater than 2**31.
 
          --  So what we end up doing for array types is to use the expression:
 
          --    number-of-elements * component_type'Max_Size_In_Storage_Elements
 
          --  which avoids this problem. All this is a bit bogus, but it does
-         --  mean we catch common cases of trying to allocate arrays that
-         --  are too large, and which in the absence of a check results in
+         --  mean we catch common cases of trying to allocate arrays that are
+         --  too large, and which in the absence of a check results in
          --  undetected chaos ???
 
-         declare
-            Idx : Node_Id := First_Index (E);
-            Len : Node_Id;
-            Res : Node_Id := Empty;
+         for J in 1 .. Number_Dimensions (E) loop
 
-         begin
-            for J in 1 .. Number_Dimensions (E) loop
+            if not Is_Modular_Integer_Type (Etype (Idx)) then
+               Len :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (E, Loc),
+                   Attribute_Name => Name_Length,
+                   Expressions    => New_List (Make_Integer_Literal (Loc, J)));
 
-               if not Is_Modular_Integer_Type (Etype (Idx)) then
+            --  For indexes that are modular types we cannot generate code to
+            --  compute 'Length since for large arrays 'Last -'First + 1 causes
+            --  overflow; therefore we compute 'Last - 'First (which is not the
+            --  exact number of components but it is valid for the purpose of
+            --  this runtime check on 32-bit targets).
+
+            else
+               declare
+                  Len_Minus_1_Expr : Node_Id;
+                  Test_Gt          : Node_Id;
+
+               begin
+                  Test_Gt :=
+                    Make_Op_Gt (Loc,
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (E, Loc),
+                        Attribute_Name => Name_Last,
+                        Expressions    =>
+                          New_List (Make_Integer_Literal (Loc, J))),
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (E, Loc),
+                        Attribute_Name => Name_First,
+                        Expressions    =>
+                          New_List (Make_Integer_Literal (Loc, J))));
+
+                  Len_Minus_1_Expr :=
+                    Convert_To (Standard_Unsigned,
+                      Make_Op_Subtract (Loc,
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (E, Loc),
+                          Attribute_Name => Name_Last,
+                          Expressions =>
+                            New_List (Make_Integer_Literal (Loc, J))),
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (E, Loc),
+                          Attribute_Name => Name_First,
+                          Expressions =>
+                            New_List (Make_Integer_Literal (Loc, J)))));
+
+                  --  Handle superflat arrays, i.e. arrays with such bounds as
+                  --  4 .. 2, to ensure that the result is correct.
+
+                  --  Generate:
+                  --    (if X'Last > X'First then X'Last - X'First else 0)
+
                   Len :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (E, Loc),
-                      Attribute_Name => Name_Length,
-                      Expressions    => New_List
-                                          (Make_Integer_Literal (Loc, J)));
+                    Make_If_Expression (Loc,
+                      Expressions => New_List (
+                        Test_Gt,
+                        Len_Minus_1_Expr,
+                        Make_Integer_Literal (Loc, Uint_0)));
+               end;
+            end if;
 
-               --  For indexes that are modular types we cannot generate code
-               --  to compute 'Length since for large arrays 'Last -'First + 1
-               --  causes overflow; therefore we compute 'Last - 'First (which
-               --  is not the exact number of components but it is valid for
-               --  the purpose of this runtime check on 32-bit targets).
+            if J = 1 then
+               Res := Len;
 
-               else
-                  declare
-                     Len_Minus_1_Expr : Node_Id;
-                     Test_Gt          : Node_Id;
+            else
+               pragma Assert (Present (Res));
+               Res :=
+                 Make_Op_Multiply (Loc,
+                   Left_Opnd  => Res,
+                   Right_Opnd => Len);
+            end if;
 
-                  begin
-                     Test_Gt :=
-                       Make_Op_Gt (Loc,
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (E, Loc),
-                           Attribute_Name => Name_Last,
-                           Expressions    =>
-                             New_List (Make_Integer_Literal (Loc, J))),
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Occurrence_Of (E, Loc),
-                           Attribute_Name => Name_First,
-                           Expressions    =>
-                             New_List (Make_Integer_Literal (Loc, J))));
+            Next_Index (Idx);
+         end loop;
 
-                     Len_Minus_1_Expr :=
-                       Convert_To (Standard_Unsigned,
-                         Make_Op_Subtract (Loc,
-                           Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (E, Loc),
-                             Attribute_Name => Name_Last,
-                             Expressions =>
-                               New_List
-                                 (Make_Integer_Literal (Loc, J))),
-                           Make_Attribute_Reference (Loc,
-                             Prefix => New_Occurrence_Of (E, Loc),
-                             Attribute_Name => Name_First,
-                             Expressions =>
-                               New_List
-                                 (Make_Integer_Literal (Loc, J)))));
-
-                     --  Handle superflat arrays, i.e. arrays with such bounds
-                     --  as 4 .. 2, to ensure that the result is correct.
-
-                     --  Generate:
-                     --    (if X'Last > X'First then X'Last - X'First else 0)
-
-                     Len :=
-                       Make_If_Expression (Loc,
-                         Expressions => New_List (
-                           Test_Gt,
-                           Len_Minus_1_Expr,
-                           Make_Integer_Literal (Loc, Uint_0)));
-                  end;
-               end if;
-
-               if J = 1 then
-                  Res := Len;
-
-               else
-                  pragma Assert (Present (Res));
-                  Res :=
-                    Make_Op_Multiply (Loc,
-                      Left_Opnd  => Res,
-                      Right_Opnd => Len);
-               end if;
-
-               Next_Index (Idx);
-            end loop;
-
-            return
-              Make_Op_Multiply (Loc,
-                Left_Opnd  => Len,
-                Right_Opnd =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix => New_Occurrence_Of (Component_Type (E), Loc),
-                    Attribute_Name => Name_Max_Size_In_Storage_Elements));
-         end;
+         return
+           Make_Op_Multiply (Loc,
+             Left_Opnd  => Len,
+             Right_Opnd =>
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Occurrence_Of (Component_Type (E), Loc),
+                 Attribute_Name => Name_Max_Size_In_Storage_Elements));
       end Size_In_Storage_Elements;
 
       --  Local variables
@@ -5710,7 +5697,7 @@ package body Exp_Ch4 is
       --  Do not evaluate the expression when there are no actions because the
       --  expression_with_actions node will be replaced by the expression.
 
-      elsif No (Acts) or else Is_Empty_List (Acts) then
+      elsif Is_Empty_List (Acts) then
          null;
 
       --  Force the evaluation of the expression by capturing its value in a
@@ -6205,18 +6192,10 @@ package body Exp_Ch4 is
          Set_Sloc (Parent (N), Loc);
       end if;
 
-      --  Make sure Then_Actions and Else_Actions are appropriately moved
-      --  to the new if statement.
+      --  Move Then_Actions and Else_Actions, if any, to the new if statement
 
-      if Present (Then_Actions (N)) then
-         Insert_List_Before
-           (First (Then_Statements (New_If)), Then_Actions (N));
-      end if;
-
-      if Present (Else_Actions (N)) then
-         Insert_List_Before
-           (First (Else_Statements (New_If)), Else_Actions (N));
-      end if;
+      Insert_List_Before (First (Then_Statements (New_If)), Then_Actions (N));
+      Insert_List_Before (First (Else_Statements (New_If)), Else_Actions (N));
 
       Insert_Action (N, Decl);
       Insert_Action (N, New_If);
@@ -10067,7 +10046,7 @@ package body Exp_Ch4 is
               Make_Op_Not (Loc,
                 Right_Opnd =>
                   Make_Op_Eq (Loc,
-                    Left_Opnd =>  Left_Opnd (N),
+                    Left_Opnd  => Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)));
 
             --  The level of parentheses is useless in GNATprove mode, and
@@ -10427,8 +10406,6 @@ package body Exp_Ch4 is
       Lneg : Boolean;
       Rneg : Boolean;
       --  Set if corresponding operand can be negative
-
-      pragma Unreferenced (Hi);
 
    begin
       Binary_Op_Validity_Checks (N);
@@ -11900,8 +11877,8 @@ package body Exp_Ch4 is
              Reason => PE_Accessibility_Check_Failed));
          Set_Etype (N, Target_Type);
 
-         Error_Msg_N ("<<accessibility check failure", N);
-         Error_Msg_NE ("\<<& [", N, Standard_Program_Error);
+         Error_Msg_N ("accessibility check failure<<", N);
+         Error_Msg_N ("\Program_Error [<<", N);
       end Raise_Accessibility_Error;
 
       ----------------------

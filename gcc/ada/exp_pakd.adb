@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -573,11 +573,23 @@ package body Exp_Pakd is
             end if;
          end if;
 
+         --  In the case of a modular type, make sure the alignment is
+         --  consistent with the Esize.
+
+         if Is_Scalar_Type (PAT) then
+            while Alignment (PAT) * System_Storage_Unit < Esize (PAT)
+              and then Alignment (PAT) < Maximum_Alignment
+            loop
+               Set_Alignment (PAT, 2 * Alignment (PAT));
+            end loop;
+         end if;
+
+         --  Then, in all cases, make sure the opposite is also true
+
          Adjust_Esize_Alignment (PAT);
 
          --  Set remaining fields of packed array type
 
-         Reinit_Alignment              (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
          Set_Original_Array_Type       (PAT, Typ);

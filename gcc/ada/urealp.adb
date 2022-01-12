@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1520,7 +1520,7 @@ package body Urealp is
 
    --  We defer to the implementation of UR_Write in all cases, either directly
    --  for values that are naturally written in a JSON compatible format, or by
-   --  first computing a decimal approxixmation for other values.
+   --  first computing a decimal approximation for other values.
 
    procedure UR_Write_To_JSON (Real : Ureal) is
       Val  : constant Ureal_Entry      := Ureals.Table (Real);
@@ -1561,7 +1561,7 @@ package body Urealp is
       elsif Val.Rbase = 0 and then Val.Num mod Val.Den = 0 then
          T := Real;
 
-      --  For other constants, compute an approxixmation in base 10
+      --  For other constants, compute an approximation in base 10
 
       else
          declare

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,6 +157,17 @@ package Exp_Ch3 is
    --  True then the tag components located at fixed positions of Target are
    --  initialized; if Variable_Comps is True then tags components located at
    --  variable positions of Target are initialized.
+
+   procedure Make_Controlling_Function_Wrappers
+     (Tag_Typ   : Entity_Id;
+      Decl_List : out List_Id;
+      Body_List : out List_Id);
+   --  Ada 2005 (AI-391): Makes specs and bodies for the wrapper functions
+   --  associated with inherited functions with controlling results which
+   --  are not overridden. The body of each wrapper function consists solely
+   --  of a return statement whose expression is an extension aggregate
+   --  invoking the inherited subprogram's parent subprogram and extended
+   --  with a null association list.
 
    procedure Make_Predefined_Primitive_Eq_Spec
      (Tag_Typ     : Entity_Id;

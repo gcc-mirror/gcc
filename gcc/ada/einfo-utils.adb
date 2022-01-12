@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,16 +47,16 @@ package body Einfo.Utils is
    -- Aliases/Renamings of Renamed_Or_Alias --
    -------------------------------------------
 
-   function Alias (N : Entity_Id) return Node_Id is
+   function Alias (N : Entity_Id) return Entity_Id is
    begin
-      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+      return Val : constant Entity_Id := Renamed_Or_Alias (N) do
          pragma Assert
            (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
          pragma Assert (Val in N_Entity_Id | N_Empty_Id);
       end return;
    end Alias;
 
-   procedure Set_Alias (N : Entity_Id; Val : Node_Id) is
+   procedure Set_Alias (N : Entity_Id; Val : Entity_Id) is
    begin
       pragma Assert
         (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
@@ -65,15 +65,15 @@ package body Einfo.Utils is
       Set_Renamed_Or_Alias (N, Val);
    end Set_Alias;
 
-   function Renamed_Entity (N : Entity_Id) return Node_Id is
+   function Renamed_Entity (N : Entity_Id) return Entity_Id is
    begin
-      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+      return Val : constant Entity_Id := Renamed_Or_Alias (N) do
          pragma Assert (not Is_Object (N) or else Etype (N) = Any_Type);
          pragma Assert (Val in N_Entity_Id | N_Empty_Id);
       end return;
    end Renamed_Entity;
 
-   procedure Set_Renamed_Entity (N : Entity_Id; Val : Node_Id) is
+   procedure Set_Renamed_Entity (N : Entity_Id; Val : Entity_Id) is
    begin
       pragma Assert (not Is_Object (N));
       pragma Assert (Val in N_Entity_Id);

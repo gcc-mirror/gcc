@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived for use with GNAT from AI-00248,  which is --
 -- expected to be a part of a future expected revised Ada Reference Manual. --
@@ -372,14 +372,17 @@ package Ada.Directories is
    --  matching pattern. If Pattern is null, all items in the directory are
    --  matched; otherwise, the interpretation of Pattern is implementation-
    --  defined. Only items which match Filter will be returned. After a
-   --  successful call on Start_Search, the object Search may have entries
-   --  available, but it may have no entries available if no files or
-   --  directories match Pattern and Filter. The exception Name_Error is
-   --  propagated if the string given by Directory does not identify an
-   --  existing directory, or if Pattern does not allow the identification of
-   --  any possible external file or directory. The exception Use_Error is
-   --  propagated if the external environment does not support the searching
-   --  of the directory with the given name (in the absence of Name_Error).
+   --  successful call on Start_Search, the object Search will be populated
+   --  with the items of the directory that match the Pattern and Filter, if
+   --  any. Any subsequent change to the directory after the call to
+   --  Start_Search will not be reflected in the Search object.
+   --
+   --  The exception Name_Error is propagated if the string given by Directory
+   --  does not identify an existing directory, or if Pattern does not allow
+   --  the identification of any possible external file or directory. The
+   --  exception Use_Error is propagated if the external environment does not
+   --  support the searching of the directory with the given name (in the
+   --  absence of Name_Error).
 
    procedure End_Search (Search : in out Search_Type);
    --  Ends the search represented by Search. After a successful call on
@@ -397,12 +400,12 @@ package Ada.Directories is
       Directory_Entry : out Directory_Entry_Type);
    --  Returns the next Directory_Entry for the search described by Search that
    --  matches the pattern and filter. If no further matches are available,
-   --  Status_Error is raised. It is implementation-defined as to whether the
-   --  results returned by this routine are altered if the contents of the
-   --  directory are altered while the Search object is valid (for example, by
-   --  another program). The exception Use_Error is propagated if the external
-   --  environment does not support continued searching of the directory
-   --  represented by Search.
+   --  Status_Error is raised. The results returned by this routine reflect the
+   --  contents of the directory at the time of the Start_Search call.
+   --  Consequently, changes to the contents of the directory, by this or
+   --  another program, will not be reflected in the Search object. The
+   --  exception Use_Error is propagated if the external environment does not
+   --  support continued searching of the directory represented by Search.
 
    procedure Search
      (Directory : String;
@@ -472,30 +475,49 @@ package Ada.Directories is
    Device_Error : exception renames Ada.IO_Exceptions.Device_Error;
 
 private
-   type Directory_Entry_Type is record
-      Is_Valid : Boolean := False;
-      Simple   : Ada.Strings.Unbounded.Unbounded_String;
-      Full     : Ada.Strings.Unbounded.Unbounded_String;
-      Kind     : File_Kind := Ordinary_File;
-   end record;
-
-   --  The type Search_Data is defined in the body, so that the spec does not
-   --  depend on packages of the GNAT hierarchy.
-
-   type Search_Data;
-   type Search_Ptr is access Search_Data;
-
-   --  Search_Type need to be a controlled type, because it includes component
-   --  of type Dir_Type (in GNAT.Directory_Operations) that need to be closed
-   --  (if opened) during finalization. The component need to be an access
-   --  value, because Search_Data is not fully defined in the spec.
+   type Search_State;
+   type Search_Ptr is access Search_State;
+   --  To simplify the setup of a new search and its subsequent teardown, the
+   --  state of Search_Type is implemented in a seperate record type that can
+   --  be allocated when a new search is started and deallocated when the
+   --  search is ended. The type is defined in the body as it is not required
+   --  by child packages.
 
    type Search_Type is new Ada.Finalization.Controlled with record
-      Value : Search_Ptr;
+      State : Search_Ptr;
+   end record;
+
+   type Directory_Entry_Type is record
+      Valid : Boolean := False;
+      --  Indicates if the record has been populated by the Get_Next_Entry
+      --  procedure. The default initialization ensures objects created through
+      --  declarations or allocators are identified as not valid for use with
+      --  the Directory_Entry_Type routines until Get_Next_Entry is called.
+
+      Name : Ada.Strings.Unbounded.Unbounded_String;
+      --  The name of the item in the directory
+
+      Full_Name : Ada.Strings.Unbounded.Unbounded_String;
+      --  The full path to the item
+
+      Attr_Error_Code : Integer;
+      --  The error code returned when querying the item's file attributes
+      --  during Start_Search. Allows Get_Next_Entry to raise an exception when
+      --  the error code is non-zero.
+
+      Kind : File_Kind;
+      --  The type of item
+
+      Modification_Time : Ada.Calendar.Time;
+      --  The modification time of the item at the time of Start_Search
+
+      Size : File_Size;
+      --  The size of an ordinary file at the time of Start_Search. For special
+      --  files and directories, Size is always zero.
    end record;
 
    procedure Finalize (Search : in out Search_Type);
-   --  Close the directory, if opened, and deallocate Value
+   --  Deallocate the data structures used for the search
 
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -169,9 +169,9 @@ package body Exp_Aggr is
    --  Subsidiary to the expansion of array and record aggregates. Generate
    --  part of the necessary code to finalize a transient component. Aggr is
    --  the related aggregate. Fin_Clear is the finalization call used to clean
-   --  up the transient component. Hook_Clear is the hook reset statment. Stmts
-   --  is the initialization statement list for the component. All generated
-   --  code is added to Stmts.
+   --  up the transient component. Hook_Clear is the hook reset statement.
+   --  Stmts is the initialization statement list for the component. All
+   --  generated code is added to Stmts.
 
    procedure Sort_Case_Table (Case_Table : in out Case_Table_Type);
    --  Sort the Case Table using the Lower Bound of each Choice as the key.
@@ -1021,7 +1021,7 @@ package body Exp_Aggr is
 
    --  2. If the aggregate contains positional elements we
 
-   --     (a) translate the positional elements in a series of assignments
+   --     (a) Translate the positional elements in a series of assignments
 
    --     (b) Generate a final loop to cover the others choice if any.
    --         Note that this final loop has to be a while loop since the case
@@ -1032,7 +1032,7 @@ package body Exp_Aggr is
 
    --         cannot be handled by a for loop. Thus for the following
 
-   --             array (L .. H) := (.. positional elements.., others =>E);
+   --             array (L .. H) := (.. positional elements.., others => E);
 
    --         we always generate something like:
 
@@ -1872,12 +1872,6 @@ package body Exp_Aggr is
                   Set_Etype (Indexed_Comp, Ctype);
                   Append_To (Stmts, Make_Invariant_Call (Indexed_Comp));
                end if;
-
-            elsif Is_Access_Type (Ctype) then
-               Append_To (Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Copy_Tree (Indexed_Comp),
-                   Expression => Make_Null (Loc)));
             end if;
 
             if Needs_Finalization (Ctype) then
@@ -2069,11 +2063,9 @@ package body Exp_Aggr is
          --  Construct "for L_J in Index_Base range L .. H"
 
          L_Iteration_Scheme :=
-           Make_Iteration_Scheme
-             (Loc,
+           Make_Iteration_Scheme (Loc,
               Loop_Parameter_Specification =>
-                Make_Loop_Parameter_Specification
-                  (Loc,
+                Make_Loop_Parameter_Specification (Loc,
                    Defining_Identifier         => L_J,
                    Discrete_Subtype_Definition => L_Range));
 
@@ -2212,15 +2204,10 @@ package body Exp_Aggr is
 
       begin
          if Box_Present (Assoc) then
-            if Is_Scalar_Type (Ctype) then
-               if Present (Default_Aspect_Component_Value (Typ)) then
-                  return Default_Aspect_Component_Value (Typ);
-               elsif Present (Default_Aspect_Value (Ctype)) then
-                  return Default_Aspect_Value (Ctype);
-               else
-                  return Empty;
-               end if;
-
+            if Present (Default_Aspect_Component_Value (Typ)) then
+               return Default_Aspect_Component_Value (Typ);
+            elsif Needs_Simple_Initialization (Ctype) then
+               return Get_Simple_Init_Val (Ctype, N);
             else
                return Empty;
             end if;
@@ -6408,7 +6395,7 @@ package body Exp_Aggr is
             One_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>  New_Copy_Tree (Iter)),
+                  Iterator_Specification => New_Copy_Tree (Iter)),
                 Statements => New_List (Incr));
 
             Append (One_Loop, Size_Expr_Code);
@@ -6540,7 +6527,7 @@ package body Exp_Aggr is
             One_Loop := Make_Loop_Statement (Loc,
               Iteration_Scheme =>
                 Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>  Copy_Separate_Tree (Iter)),
+                  Iterator_Specification => Copy_Separate_Tree (Iter)),
                 Statements => New_List (New_Comp, Incr));
 
             Append (One_Loop, Insertion_Code);
@@ -6932,7 +6919,7 @@ package body Exp_Aggr is
 
       --  In the remaining cases the aggregate appears in the RHS of an
       --  assignment, which may be part of the expansion of an object
-      --  delaration. If the aggregate is an actual in a call, itself
+      --  declaration. If the aggregate is an actual in a call, itself
       --  possibly in a RHS, building it in the target is not possible.
 
       elsif Maybe_In_Place_OK
@@ -7271,7 +7258,7 @@ package body Exp_Aggr is
       --  overestimate if a filter is present, but is a safe approximation.
       --  If bounds are dynamic the aggregate is created in two passes, and
       --  the first generates a loop for the sole purpose of computing the
-      --  number of elements that will be generated on the seocnd pass.
+      --  number of elements that will be generated on the second pass.
 
       procedure Expand_Iterated_Component (Comp : Node_Id);
       --  Handle iterated_component_association and iterated_Element
@@ -7495,7 +7482,7 @@ package body Exp_Aggr is
                    Iterator_Specification => Iterator_Specification (Comp));
 
             else
-               --  Loop_Parameter_Specifcation is parsed with a choice list.
+               --  Loop_Parameter_Specification is parsed with a choice list.
                --  where the range is the first (and only) choice.
 
                L_Range := Relocate_Node (First (Discrete_Choices (Comp)));
@@ -9388,7 +9375,7 @@ package body Exp_Aggr is
          -----------------------
 
          function Get_Component_Val (N : Node_Id) return Uint is
-            Val  : Uint;
+            Val : Uint;
 
          begin
             --  We have to analyze the expression here before doing any further

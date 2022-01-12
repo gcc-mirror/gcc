@@ -104,6 +104,11 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   ssize_t length;
   int continued;
   char p[sizeof (GFC_INTEGER_8)];
+  int convert = u->flags.convert;
+
+#ifdef HAVE_GFC_REAL_17
+  convert &= ~(GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM);
+#endif
 
   if (compile_options.record_marker == 0)
     length = sizeof (GFC_INTEGER_4);
@@ -119,7 +124,7 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
         goto io_error;
 
       /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
-      if (likely (u->flags.convert == GFC_CONVERT_NATIVE))
+      if (likely (convert == GFC_CONVERT_NATIVE))
 	{
 	  switch (length)
 	    {

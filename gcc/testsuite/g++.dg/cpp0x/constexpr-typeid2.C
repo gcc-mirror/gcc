@@ -1,5 +1,6 @@
 // PR c++/103600
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 #include <typeinfo>
 

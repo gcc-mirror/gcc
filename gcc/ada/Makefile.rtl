@@ -898,7 +898,7 @@ ATOMICS_BUILTINS_TARGET_PAIRS = \
 
 X86_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
-  s-atocou.adb<libgnat/s-atocou__x86.adb
+  s-atocou.adb<libgnat/s-atocou__builtin.adb
 
 X86_64_TARGET_PAIRS = \
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
@@ -2906,8 +2906,7 @@ ADA_EXCLUDE_SRCS =\
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
   i-vxinco.adb i-vxinco.ads i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
-  s-sopco3.adb s-sopco3.ads s-sopco4.adb s-sopco4.ads \
-  s-sopco5.adb s-sopco5.ads s-stchop.ads s-stchop.adb \
+  s-stchop.ads s-stchop.adb \
   s-strcom.adb s-strcom.ads s-thread.ads \
 
 # ADA_EXCLUDE_SRCS without the sources used by the target

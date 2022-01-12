@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -440,6 +440,28 @@ package body Errout is
         and then Warnings_Detected >= Maximum_Messages
       then
          return;
+
+      --  Suppress warnings inside a loop that is known to be null or is
+      --  probably null (i.e. when loop executes only if invalid values
+      --  present). In either case warnings in the loop are likely to be junk.
+
+      elsif Is_Warning_Msg and then Present (N) then
+
+         declare
+            P : Node_Id;
+
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Loop_Statement
+                 and then Suppress_Loop_Warnings (P)
+               then
+                  return;
+               end if;
+
+               P := Parent (P);
+            end loop;
+         end;
       end if;
 
       --  The idea at this stage is that we have two kinds of messages
@@ -805,27 +827,14 @@ package body Errout is
    -------------------
 
    procedure Error_Msg_CRT (Feature : String; N : Node_Id) is
-      CNRT : constant String := " not allowed in no run time mode";
-      CCRT : constant String := " not supported by configuration>";
-
-      S : String (1 .. Feature'Length + 1 + CCRT'Length);
-      L : Natural;
-
    begin
-      S (1) := '|';
-      S (2 .. Feature'Length + 1) := Feature;
-      L := Feature'Length + 2;
-
       if No_Run_Time_Mode then
-         S (L .. L + CNRT'Length - 1) := CNRT;
-         L := L + CNRT'Length - 1;
+         Error_Msg_N ('|' & Feature & " not allowed in no run time mode", N);
 
       else pragma Assert (Configurable_Run_Time_Mode);
-         S (L .. L + CCRT'Length - 1) := CCRT;
-         L := L + CCRT'Length - 1;
+         Error_Msg_N ('|' & Feature & " not supported by configuration>", N);
       end if;
 
-      Error_Msg_N (S (1 .. L), N);
       Configurable_Run_Time_Violations := Configurable_Run_Time_Violations + 1;
    end Error_Msg_CRT;
 
@@ -1049,7 +1058,7 @@ package body Errout is
          elsif No (Cunit (Main_Unit)) then
             null;
 
-         --  If the flag location is not in the main extended source unit, then
+         --  If the flag location is not in the extended main source unit, then
          --  we want to eliminate the warning, unless it is in the extended
          --  main code unit and we want warnings on the instance.
 
@@ -1202,6 +1211,7 @@ package body Errout is
           Check               => Is_Check_Msg,
           Warn_Err            => False, -- reset below
           Warn_Chr            => Warning_Msg_Char,
+          Warn_Runtime_Raise  => Is_Runtime_Raise,
           Style               => Is_Style_Msg,
           Serious             => Is_Serious_Error,
           Uncond              => Is_Unconditional_Msg,
@@ -1218,10 +1228,15 @@ package body Errout is
                       or else
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
 
-      --  Propagate Warn_Err to this message and preceding continuations
+      --  Propagate Warn_Err to this message and preceding continuations.
+      --  Likewise, propagate Is_Warning_Msg and Is_Runtime_Raise, because the
+      --  current continued message could have been escalated from warning to
+      --  error.
 
       for J in reverse 1 .. Errors.Last loop
-         Errors.Table (J).Warn_Err := Warn_Err;
+         Errors.Table (J).Warn_Err           := Warn_Err;
+         Errors.Table (J).Warn               := Is_Warning_Msg;
+         Errors.Table (J).Warn_Runtime_Raise := Is_Runtime_Raise;
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
 
@@ -1490,26 +1505,6 @@ package body Errout is
             Last_Killed := True;
             return;
          end if;
-
-         --  Suppress if inside loop that is known to be null or is probably
-         --  null (case where loop executes only if invalid values present).
-         --  In either case warnings in the loop are likely to be junk.
-
-         declare
-            P : Node_Id;
-
-         begin
-            P := Parent (N);
-            while Present (P) loop
-               if Nkind (P) = N_Loop_Statement
-                 and then Suppress_Loop_Warnings (P)
-               then
-                  return;
-               end if;
-
-               P := Parent (P);
-            end loop;
-         end;
       end if;
 
       --  Test for message to be output
@@ -3254,7 +3249,7 @@ package body Errout is
       function Check_For_Warning (N : Node_Id) return Traverse_Result;
       --  This function checks one node for a possible warning message
 
-      function Check_All_Warnings is new Traverse_Func (Check_For_Warning);
+      procedure Check_All_Warnings is new Traverse_Proc (Check_For_Warning);
       --  This defines the traversal operation
 
       -----------------------
@@ -3285,13 +3280,17 @@ package body Errout is
                --  not remove style messages here. They are warning messages
                --  but not ones we want removed in this context.
 
-               and then Errors.Table (E).Warn
+               and then (Errors.Table (E).Warn
+                           or else
+                         Errors.Table (E).Warn_Runtime_Raise)
 
                --  Don't remove unconditional messages
 
                and then not Errors.Table (E).Uncond
             then
-               Warnings_Detected := Warnings_Detected - 1;
+               if Errors.Table (E).Warn then
+                  Warnings_Detected := Warnings_Detected - 1;
+               end if;
 
                if Errors.Table (E).Info then
                   Warning_Info_Messages := Warning_Info_Messages - 1;
@@ -3341,50 +3340,34 @@ package body Errout is
             --  the current tree. Given that we are in unreachable code, this
             --  modification to the tree is harmless.
 
-            declare
-               Status : Traverse_Final_Result;
-
-            begin
-               if Is_List_Member (N) then
-                  Set_Condition (N, Original_Node (N));
-                  Status := Check_All_Warnings (Condition (N));
-               else
-                  Rewrite (N, Original_Node (N));
-                  Status := Check_All_Warnings (N);
-               end if;
-
-               return Status;
-            end;
-
-         else
-            return OK;
+            if Is_List_Member (N) then
+               Set_Condition (N, Original_Node (N));
+               Check_All_Warnings (Condition (N));
+            else
+               Rewrite (N, Original_Node (N));
+               Check_All_Warnings (N);
+            end if;
          end if;
+
+         return OK;
       end Check_For_Warning;
 
    --  Start of processing for Remove_Warning_Messages
 
    begin
       if Warnings_Detected /= 0 then
-         declare
-            Discard : Traverse_Final_Result;
-            pragma Warnings (Off, Discard);
-
-         begin
-            Discard := Check_All_Warnings (N);
-         end;
+         Check_All_Warnings (N);
       end if;
    end Remove_Warning_Messages;
 
    procedure Remove_Warning_Messages (L : List_Id) is
       Stat : Node_Id;
    begin
-      if Is_Non_Empty_List (L) then
-         Stat := First (L);
-         while Present (Stat) loop
-            Remove_Warning_Messages (Stat);
-            Next (Stat);
-         end loop;
-      end if;
+      Stat := First (L);
+      while Present (Stat) loop
+         Remove_Warning_Messages (Stat);
+         Next (Stat);
+      end loop;
    end Remove_Warning_Messages;
 
    --------------------
@@ -3407,60 +3390,57 @@ package body Errout is
      (Buf : in out Bounded_String;
       Loc : Source_Ptr)
    is
+      Src_Ind : constant Source_File_Index := Get_Source_File_Index (Loc);
+      Sbuffer : Source_Buffer_Ptr;
+      Ref_Ptr : Integer;
+      Src_Ptr : Source_Ptr;
+
    begin
       --  We have an all lower case name from Namet, and now we want to set
       --  the appropriate case. If possible we copy the actual casing from
       --  the source. If not we use standard identifier casing.
 
-      declare
-         Src_Ind : constant Source_File_Index := Get_Source_File_Index (Loc);
-         Sbuffer : Source_Buffer_Ptr;
-         Ref_Ptr : Integer;
-         Src_Ptr : Source_Ptr;
+      Ref_Ptr := 1;
+      Src_Ptr := Loc;
 
-      begin
-         Ref_Ptr := 1;
-         Src_Ptr := Loc;
+      --  For standard locations, always use mixed case
 
-         --  For standard locations, always use mixed case
+      if Loc <= No_Location then
+         Set_Casing (Buf, Mixed_Case);
 
-         if Loc <= No_Location then
-            Set_Casing (Buf, Mixed_Case);
+      else
+         --  Determine if the reference we are dealing with corresponds to text
+         --  at the point of the error reference. This will often be the case
+         --  for simple identifier references, and is the case where we can
+         --  copy the casing from the source.
 
-         else
-            --  Determine if the reference we are dealing with corresponds to
-            --  text at the point of the error reference. This will often be
-            --  the case for simple identifier references, and is the case
-            --  where we can copy the casing from the source.
+         Sbuffer := Source_Text (Src_Ind);
 
-            Sbuffer := Source_Text (Src_Ind);
+         while Ref_Ptr <= Buf.Length loop
+            exit when
+              Fold_Lower (Sbuffer (Src_Ptr)) /=
+                Fold_Lower (Buf.Chars (Ref_Ptr));
+            Ref_Ptr := Ref_Ptr + 1;
+            Src_Ptr := Src_Ptr + 1;
+         end loop;
 
-            while Ref_Ptr <= Buf.Length loop
-               exit when
-                 Fold_Lower (Sbuffer (Src_Ptr)) /=
-                   Fold_Lower (Buf.Chars (Ref_Ptr));
-               Ref_Ptr := Ref_Ptr + 1;
+         --  If we get through the loop without a mismatch, then output the
+         --  name the way it is cased in the source program.
+
+         if Ref_Ptr > Buf.Length then
+            Src_Ptr := Loc;
+
+            for J in 1 .. Buf.Length loop
+               Buf.Chars (J) := Sbuffer (Src_Ptr);
                Src_Ptr := Src_Ptr + 1;
             end loop;
 
-            --  If we get through the loop without a mismatch, then output the
-            --  name the way it is cased in the source program
+         --  Otherwise set the casing using the default identifier casing
 
-            if Ref_Ptr > Buf.Length then
-               Src_Ptr := Loc;
-
-               for J in 1 .. Buf.Length loop
-                  Buf.Chars (J) := Sbuffer (Src_Ptr);
-                  Src_Ptr := Src_Ptr + 1;
-               end loop;
-
-            --  Otherwise set the casing using the default identifier casing
-
-            else
-               Set_Casing (Buf, Identifier_Casing (Src_Ind));
-            end if;
+         else
+            Set_Casing (Buf, Identifier_Casing (Src_Ind));
          end if;
-      end;
+      end if;
    end Adjust_Name_Case;
 
    ---------------------------
@@ -3622,8 +3602,7 @@ package body Errout is
          Set_Msg_Str ("exception name");
          return;
 
-      elsif     Error_Msg_Node_1 = Any_Access
-        or else Error_Msg_Node_1 = Any_Array
+      elsif Error_Msg_Node_1 = Any_Array
         or else Error_Msg_Node_1 = Any_Boolean
         or else Error_Msg_Node_1 = Any_Character
         or else Error_Msg_Node_1 = Any_Composite
@@ -3640,16 +3619,20 @@ package body Errout is
          Set_Msg_Name_Buffer;
          return;
 
-      elsif Error_Msg_Node_1 = Universal_Real then
-         Set_Msg_Str ("type universal real");
-         return;
-
       elsif Error_Msg_Node_1 = Universal_Integer then
          Set_Msg_Str ("type universal integer");
          return;
 
+      elsif Error_Msg_Node_1 = Universal_Real then
+         Set_Msg_Str ("type universal real");
+         return;
+
       elsif Error_Msg_Node_1 = Universal_Fixed then
          Set_Msg_Str ("type universal fixed");
+         return;
+
+      elsif Error_Msg_Node_1 = Universal_Access then
+         Set_Msg_Str ("type universal access");
          return;
       end if;
 
@@ -4083,7 +4066,8 @@ package body Errout is
                if Is_Warning_Msg
                  and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                then
-                  Is_Warning_Msg := False;
+                  Is_Warning_Msg   := False;
+                  Is_Runtime_Raise := True;
                end if;
 
                if Is_Warning_Msg then

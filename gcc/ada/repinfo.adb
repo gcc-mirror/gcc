@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -568,12 +568,14 @@ package body Repinfo is
                   end if;
                end if;
 
-               --  Recurse into nested package, but not if they are package
-               --  renamings (in particular renamings of the enclosing package,
-               --  as for some Java bindings and for generic instances).
+               --  Recurse into nested package, but not child packages, and not
+               --  nested package renamings (in particular renamings of the
+               --  enclosing package, as for some Java bindings and for generic
+               --  instances).
 
                if Ekind (E) = E_Package then
-                  if No (Renamed_Entity (E)) then
+                  if No (Renamed_Entity (E)) and then not Is_Child_Unit (E)
+                  then
                      List_Entities (E, Bytes_Big_Endian);
                   end if;
 

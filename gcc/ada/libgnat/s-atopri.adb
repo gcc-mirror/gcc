@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2012-2021, Free Software Foundation, Inc.     --
+--              Copyright (C) 2012-2022, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,22 +55,15 @@ package body System.Atomic_Primitives is
        Expected : in out Atomic_Type;
        Desired  : Atomic_Type) return Boolean
    is
-      function My_Sync_Compare_And_Swap is
-        new Sync_Compare_And_Swap (Atomic_Type);
-
-      Actual : Atomic_Type;
+      function My_Atomic_Compare_Exchange is
+        new Atomic_Compare_Exchange (Atomic_Type);
 
    begin
       if Expected /= Desired then
          if Atomic_Type'Atomic_Always_Lock_Free then
-            Actual := My_Sync_Compare_And_Swap (Ptr, Expected, Desired);
+            return My_Atomic_Compare_Exchange (Ptr, Expected'Address, Desired);
          else
             raise Program_Error;
-         end if;
-
-         if Actual /= Expected then
-            Expected := Actual;
-            return False;
          end if;
       end if;
 

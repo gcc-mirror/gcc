@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -903,6 +903,9 @@ package body Exp_SPARK is
       Eq_Spec     : Node_Id := Empty;
       Predef_List : List_Id;
 
+      Wrapper_Decl_List : List_Id;
+      Wrapper_Body_List : List_Id := No_List;
+
       Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
       Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
       --  Save the Ghost-related attributes to restore on exit
@@ -958,6 +961,35 @@ package body Exp_SPARK is
                Remove (Eq_Spec);
                Set_Parent (Eq_Spec, Decl);
             end if;
+         end if;
+      end if;
+
+      if Ekind (Typ) = E_Record_Type
+        and then Is_Tagged_Type (Typ)
+        and then not Is_CPP_Class (Typ)
+      then
+         --  Ada 2005 (AI-391): For a nonabstract null extension, create
+         --  wrapper functions for each nonoverridden inherited function
+         --  with a controlling result of the type. The wrapper for such
+         --  a function returns an extension aggregate that invokes the
+         --  parent function.
+
+         if Ada_Version >= Ada_2005
+           and then not Is_Abstract_Type (Typ)
+           and then Is_Null_Extension (Typ)
+         then
+            Exp_Ch3.Make_Controlling_Function_Wrappers
+              (Typ, Wrapper_Decl_List, Wrapper_Body_List);
+            Insert_List_Before_And_Analyze (N, Wrapper_Decl_List);
+         end if;
+
+         --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
+         --  inherited functions, then add their bodies to the AST, so they
+         --  will be processed like ordinary subprogram bodies (even though the
+         --  compiler adds them into the freezing action).
+
+         if not Is_Interface (Typ) then
+            Insert_List_Before_And_Analyze (N, Wrapper_Body_List);
          end if;
       end if;
 

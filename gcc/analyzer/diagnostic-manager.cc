@@ -303,18 +303,21 @@ private:
 
    Hence this is an RAII class for temporarily disabling complexity-checking
    in the region_model_manager, for use within
-   epath_finder::explore_feasible_paths.  */
+   epath_finder::explore_feasible_paths.
 
-class auto_disable_complexity_checks
+   We also disable the creation of unknown_svalue instances during feasibility
+   checking, instead creating unique svalues, to avoid paradoxes in paths.  */
+
+class auto_checking_feasibility
 {
 public:
-  auto_disable_complexity_checks (region_model_manager *mgr) : m_mgr (mgr)
+  auto_checking_feasibility (region_model_manager *mgr) : m_mgr (mgr)
   {
-    m_mgr->disable_complexity_check ();
+    m_mgr->begin_checking_feasibility ();
   }
-  ~auto_disable_complexity_checks ()
+  ~auto_checking_feasibility ()
   {
-    m_mgr->enable_complexity_check ();
+    m_mgr->end_checking_feasibility ();
   }
 private:
   region_model_manager *m_mgr;
@@ -406,7 +409,7 @@ epath_finder::explore_feasible_paths (const exploded_node *target_enode,
   exploded_path *best_path = NULL;
 
   {
-    auto_disable_complexity_checks sentinel (mgr);
+    auto_checking_feasibility sentinel (mgr);
 
     while (process_worklist_item (&worklist, tg, &fg, target_enode, diag_idx,
 				  &best_path))

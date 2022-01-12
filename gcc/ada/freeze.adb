@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2124,7 +2124,7 @@ package body Freeze is
    ----------------------------
 
    procedure Check_Strict_Alignment (E : Entity_Id) is
-      Comp  : Entity_Id;
+      Comp : Entity_Id;
 
    begin
       --  Bit-packed array types do not require strict alignment, even if they
@@ -2354,7 +2354,6 @@ package body Freeze is
       procedure Freeze_All_Ent (From : Entity_Id; After : in out Node_Id) is
          E     : Entity_Id;
          Flist : List_Id;
-         Lastn : Node_Id;
 
          procedure Process_Flist;
          --  If freeze nodes are present, insert and analyze, and reset cursor
@@ -2365,6 +2364,7 @@ package body Freeze is
          -------------------
 
          procedure Process_Flist is
+            Lastn : Node_Id;
          begin
             if Is_Non_Empty_List (Flist) then
                Lastn := Next (After);
@@ -2711,7 +2711,11 @@ package body Freeze is
       --  List of freezing actions, left at No_List if none
 
       Test_E : Entity_Id := E;
-      --  This could use a comment ???
+      --  A local temporary used to test if freezing is necessary for E, since
+      --  its value can be set to something other than E in certain cases. For
+      --  example, E cannot be used directly in cases such as when it is an
+      --  Itype defined within a record - since it is the location of record
+      --  which matters.
 
       procedure Add_To_Result (Fnod : Node_Id);
       --  Add freeze action Fnod to list Result

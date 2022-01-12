@@ -2002,6 +2002,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	 the overloaded call to that instance.  */
       for (; instance != NULL; instance = instance->next)
 	{
+	  /* It is possible for an instance to require a data type that isn't
+	     defined on this target, in which case instance->fntype will be
+	     NULL.  */
+	  if (!instance->fntype)
+	    continue;
+
 	  bool mismatch = false;
 	  tree nextparm = TYPE_ARG_TYPES (instance->fntype);
 

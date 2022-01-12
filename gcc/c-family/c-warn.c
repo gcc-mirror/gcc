@@ -1304,6 +1304,34 @@ conversion_warning (location_t loc, tree type, tree expr, tree result)
 		|| conversion_warning (loc, type, op2, result));
       }
 
+    case BIT_AND_EXPR:
+      if (TREE_CODE (expr_type) == INTEGER_TYPE
+	  && TREE_CODE (type) == INTEGER_TYPE)
+	for (int i = 0; i < 2; ++i)
+	  {
+	    tree op = TREE_OPERAND (expr, i);
+	    if (TREE_CODE (op) != INTEGER_CST)
+	      continue;
+
+	    /* If one of the operands is a non-negative constant
+	       that fits in the target type, then the type of the
+	       other operand does not matter.  */
+	    if (int_fits_type_p (op, c_common_signed_type (type))
+		&& int_fits_type_p (op, c_common_unsigned_type (type)))
+	      return false;
+
+	    /* If constant is unsigned and fits in the target
+	       type, then the result will also fit.  */
+	    if (TYPE_UNSIGNED (TREE_TYPE (op)) && int_fits_type_p (op, type))
+	      return false;
+	  }
+      /* FALLTHRU */
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      return (conversion_warning (loc, type, TREE_OPERAND (expr, 0), result)
+	      || conversion_warning (loc, type, TREE_OPERAND (expr, 1),
+				     result));
+
     default_:
     default:
       conversion_kind = unsafe_conversion_p (type, expr, result, true);

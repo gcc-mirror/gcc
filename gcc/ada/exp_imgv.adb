@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,7 @@ package body Exp_Imgv is
       Lit  : Entity_Id;
       Nlit : Nat;
       S_Id : Entity_Id;
-      S_N  : Nat;
+      S_N  : Nat := 0;
       Str  : String_Id;
 
       package SPHG renames System.Perfect_Hash_Generators;

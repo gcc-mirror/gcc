@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2222,7 +2222,10 @@ package body Exp_Ch7 is
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
 
-               else
+               --  Unregister tagged type, unless No_Tagged_Type_Registration
+               --  is active.
+
+               elsif not Restriction_Active (No_Tagged_Type_Registration) then
                   Process_Tagged_Type_Declaration (Decl);
                end if;
 
@@ -2246,7 +2249,7 @@ package body Exp_Ch7 is
       --  Start of processing for Process_Declarations
 
       begin
-         if No (Decls) or else Is_Empty_List (Decls) then
+         if Is_Empty_List (Decls) then
             return;
          end if;
 
@@ -2286,9 +2289,10 @@ package body Exp_Ch7 is
                  and then Is_Library_Level_Entity (Typ)
                  and then Convention (Typ) = Convention_Ada
                  and then Present (Access_Disp_Table (Typ))
-                 and then RTE_Available (RE_Register_Tag)
                  and then not Is_Abstract_Type (Typ)
                  and then not No_Run_Time_Mode
+                 and then not Restriction_Active (No_Tagged_Type_Registration)
+                 and then RTE_Available (RE_Register_Tag)
                then
                   Processing_Actions;
                end if;
@@ -4055,7 +4059,7 @@ package body Exp_Ch7 is
          end if;
 
          --  Call _postconditions when no general finalization exceptions have
-         --  occured taking care to enable the postconditions and save any
+         --  occurred taking care to enable the postconditions and save any
          --  exception occurrences.
 
          --  Generate:
@@ -4698,7 +4702,7 @@ package body Exp_Ch7 is
      (N   : Node_Id;
       Ref : Node_Id) return Node_Id
    is
-      Loc  : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
 
    begin
       --  For restricted run-time libraries (Ravenscar), tasks are
@@ -4733,8 +4737,7 @@ package body Exp_Ch7 is
       procedure Set_Block_Elab_Proc is
       begin
          if No (Block_Elab_Proc) then
-            Block_Elab_Proc :=
-              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('I'));
+            Block_Elab_Proc := Make_Temporary (Loc, 'I');
          end if;
       end Set_Block_Elab_Proc;
 
@@ -6184,15 +6187,15 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Must_Hook : Boolean := False;
+         Must_Hook : Boolean;
          --  Flag denoting whether the context requires transient object
          --  export to the outer finalizer.
 
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
-         --  Determine whether an arbitrary node denotes a subprogram call
+         --  Return Abandon if arbitrary node denotes a subprogram call
 
-         procedure Detect_Subprogram_Call is
-           new Traverse_Proc (Is_Subprogram_Call);
+         function Has_Subprogram_Call is
+           new Traverse_Func (Is_Subprogram_Call);
 
          procedure Process_Transient_In_Scope
            (Obj_Decl  : Node_Id;
@@ -6212,7 +6215,6 @@ package body Exp_Ch7 is
             --  A regular procedure or function call
 
             if Nkind (N) in N_Subprogram_Call then
-               Must_Hook := True;
                return Abandon;
 
             --  Special cases
@@ -6222,20 +6224,13 @@ package body Exp_Ch7 is
             --  of the call.
 
             elsif Is_Rewrite_Substitution (N) then
-               Detect_Subprogram_Call (Original_Node (N));
-
-               if Must_Hook then
-                  return Abandon;
-               else
-                  return OK;
-               end if;
+               return Has_Subprogram_Call (Original_Node (N));
 
             --  Generalized indexing always involves a function call
 
             elsif Nkind (N) = N_Indexed_Component
               and then Present (Generalized_Indexing (N))
             then
-               Must_Hook := True;
                return Abandon;
 
             --  Keep searching
@@ -6472,8 +6467,8 @@ package body Exp_Ch7 is
          --  due to the possibility of abnormal call termination.
 
          else
-            Detect_Subprogram_Call (N);
-            Blk_Ins := Last_Object;
+            Must_Hook := Has_Subprogram_Call (N) = Abandon;
+            Blk_Ins   := Last_Object;
          end if;
 
          if Clean then
@@ -9968,9 +9963,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Decl));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10118,9 +10111,7 @@ package body Exp_Ch7 is
       Local_Scop := Entity (Identifier (Loop_Stmt));
       Ent := First_Entity (Local_Scop);
 
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,
@@ -10174,9 +10165,7 @@ package body Exp_Ch7 is
       New_Stmts  : constant List_Id := Empty_List;
 
    begin
-      Local_Proc :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('P'));
+      Local_Proc := Make_Temporary (Loc, 'P');
 
       Local_Body :=
         Make_Subprogram_Body (Loc,

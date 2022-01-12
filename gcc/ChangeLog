@@ -1,3 +1,733 @@
+2022-01-11  qing zhao  <qing.zhao@oracle.com>
+
+	* gimplify.c (gimple_add_init_for_auto_var): Delete the 3rd argument.
+	Change the 3rd argument of function .DEFERRED_INIT to the name of the
+	decl.
+	(gimplify_decl_expr): Delete the 3rd argument when call
+	gimple_add_init_for_auto_var.
+	* internal-fn.c (expand_DEFERRED_INIT): Update comments to reflect
+	the 3rd argument change of function .DEFERRED_INIT.
+	* tree-cfg.c (verify_gimple_call): Update comments and verification
+	to reflect the 3rd argument change of function .DEFERRED_INIT.
+	* tree-sra.c (generate_subtree_deferred_init): Delete the 3rd argument.
+	(sra_modify_deferred_init): Change the 3rd argument of function
+	.DEFERRED_INIT to the name of the decl.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* flag-types.h (enum gfc_convert): Add flags for
+	conversion.
+
+2022-01-11  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	checks for only C/C++ front ends before allowing the long double
+	format to change without a warning.
+
+2022-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/103974
+	* ira-int.h (ira_subloop_allocnos_can_differ_p): Take an
+	extra argument, default true, that says whether old-reload
+	targets should be excluded.
+	* ira-color.c (color_pass): Pass false.
+
+2022-01-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (vcond<mode><mode>):
+	Use VI_16_32 mode iterator.  Enable for TARGET_SSE4_1.
+	(vcondu<mode><mode>): Ditto.
+	(vcond_mask_<mode><mode>): Ditto.
+	(mmx_pblendvb_v8qi): Rename from mmx_pblendvb64.
+	(mmx_pblendvb_<mode>): Rename from mmx_pblendvb32.
+	Use VI_16_32 mode iterator.
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc):
+	Update for rename.  Handle V2QImode.
+	(expand_vec_perm_blend): Update for rename.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* tree.def (OBJ_TYPE_REF): Document type of OBJ_TYPE_REF_TOKEN.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c (size_valid_p): New function.
+	(size_for_offset): Remove OFFSET constness assertion.
+	(addr_object_size): Build dynamic expressions for object
+	sizes and use size_valid_p to decide if it is valid for the
+	given OBJECT_SIZE_TYPE.
+	(compute_builtin_object_size): Allow dynamic offsets when
+	computing size at O0.
+	(call_object_size): Call size_valid_p.
+	(plus_stmt_object_size): Allow non-constant offset and use
+	size_valid_p to decide if it is valid for the given
+	OBJECT_SIZE_TYPE.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c (alloc_object_size): Make and return
+	non-constant size expression.
+	(call_object_size): Return expression or unknown based on
+	whether dynamic object size is requested.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* tree-object-size.c: Include tree-dfa.h.
+	(parm_object_size): New function.
+	(collect_object_sizes_for): Call it.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* builtins.c (fold_builtin_object_size): Adjust for dynamic size
+	expressions.
+	* tree-object-size.c: Include gimplify-me.h.
+	(struct object_size_info): New member UNKNOWNS.
+	(size_initval_p, size_usable_p, object_sizes_get_raw): New
+	functions.
+	(object_sizes_get): Return suitable gimple variable for
+	object size.
+	(bundle_sizes): New function.
+	(object_sizes_set): Use it and handle dynamic object size
+	expressions.
+	(object_sizes_set_temp): New function.
+	(size_for_offset): Adjust for dynamic size expressions.
+	(emit_phi_nodes, propagate_unknowns, gimplify_size_expressions):
+	New functions.
+	(compute_builtin_object_size): Call gimplify_size_expressions
+	for OST_DYNAMIC.
+	(dynamic_object_size): New function.
+	(cond_expr_object_size): Use it.
+	(phi_dynamic_object_size): New function.
+	(collect_object_sizes_for): Call it for OST_DYNAMIC.  Adjust to
+	accommodate dynamic object sizes.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103961
+	* tree-object-size.c (plus_stmt_object_size): Always avoid
+	computing offset for -1 size.
+
+2022-01-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103821
+	* range-op.cc (range_operator::fold_range): Only do precise ranges
+	when there are not too many subranges.
+
+2022-01-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-costs.c (ira_tune_allocno_costs): Fix missing rclass
+	definition in IRA_HARD_REGNO_ADD_COST_MULTIPLIER code.
+
+2022-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-math-opts.c (struct widen_mul_stats): Add a
+	highpart_mults_inserted field.
+	(convert_mult_to_highpart): New function to convert right shift
+	of a widening multiply into a MULT_HIGHPART_EXPR.
+	(math_opts_dom_walker::after_dom_children) [RSHIFT_EXPR]:
+	Call new convert_mult_to_highpart function.
+	(pass_optimize_widening_mul::execute): Add a statistics counter
+	for tracking "highpart multiplications inserted" events.
+
+2022-01-11  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102239
+	* config/rs6000/rs6000-protos.h (rs6000_is_valid_rotate_dot_mask): New
+	declare.
+	* config/rs6000/rs6000.c (rs6000_is_valid_rotate_dot_mask): New
+	function.
+	* config/rs6000/rs6000.md (*branch_anddi3_dot): New.
+
+2022-01-11  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (driver_handle_option): State --sysroot as
+	validated.
+
+2022-01-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_disable_incompatible_switches): Remove
+	useless related to option -mno-power10.
+
+2022-01-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/53652
+	* config/i386/sse.md (*andnot<mode>3): Extend predicate of
+	operands[1] from register_operand to vector_operand.
+
+2022-01-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	Handle V2QImode.
+	* config/i386/mmx.md (<sat_plusminus:insn><mode>3):
+	Use VI1_16_32 mode iterator.
+	(*eq<mode>3): Ditto.
+	(*gt<mode>3): Ditto.
+	(*xop_maskcmp<mode>3): Ditto.
+	(*xop_maskcmp_uns<mode>3): Ditto.
+	(vec_cmp<mode><mode>): Ditto.
+	(vec_cmpu<mode><mode>): Ditto.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103948
+	* tree-vect-generic.c (expand_vector_condition): Return true if
+	all ones vector is returned for true, all zeros vector for false
+	and the target defines corresponding vec_cmp{,u}MN named RTX pattern.
+
+2022-01-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blendv_epi8): Use vec_blendv
+	when _ARCH_PWR10. Use signed types.
+	(_mm_blendv_ps): Use vec_blendv when _ARCH_PWR10.
+	(_mm_blendv_pd): Likewise.
+
+2022-01-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vectorizer.c (better_epilogue_loop_than_p): Round factors up for
+	epilogue costing.
+	* tree-vect-loop.c (vect_analyze_loop): Re-analyze all modes for
+	epilogues, unless we are guaranteed that we can't have partial vectors.
+	* genopinit.c: (partial_vectors_supported): Generate new function.
+
+2022-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102024
+	* config/i386/i386.c (classify_argument): Add zero_width_bitfields
+	argument, when seeing DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD bitfields,
+	always ignore them, when seeing other zero sized bitfields, either
+	set zero_width_bitfields to 1 and ignore it or if equal to 2 process
+	it.  Pass it to recursive calls.  Add wrapper
+	with old arguments and diagnose ABI differences for C structures
+	with zero width bitfields.  Formatting fixes.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_soft_conflict): Declare.
+	* ira-color.c (max_soft_conflict_loop_depth): New constant.
+	(ira_soft_conflict): New function.
+	(spill_soft_conflicts): Likewise.
+	(assign_hard_reg): Use them to handle the case described by
+	the comment above ira_soft_conflict.
+	(improve_allocation): Likewise.
+	* ira.c (check_allocation): Allow allocnos with "soft" conflicts
+	to share the same register.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_caller_save_cost): New function.
+	(ira_caller_save_loop_spill_p): Likewise.
+	* ira-build.c (ira_propagate_hard_reg_costs): Test whether it is
+	cheaper to spill a call-clobbered register throughout a loop rather
+	than spill it around each individual call.  If so, treat all
+	call-clobbered registers as conflicts and...
+	(propagate_allocno_info): ...do not propagate call information
+	from the child to the parent.
+	* ira-color.c (move_spill_restore): Update accordingly.
+	* ira-costs.c (ira_tune_allocno_costs): Use ira_caller_save_cost.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_allocno::might_conflict_with_parent_p): New field.
+	(ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P): New macro.
+	(ira_single_region_allocno_p): New function.
+	(ira_total_conflict_hard_regs): Likewise.
+	* ira-build.c (ira_create_allocno): Initialize
+	ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P.
+	(ira_propagate_hard_reg_costs): New function.
+	(propagate_allocno_info): Use it.  Try to avoid propagating
+	hard register conflicts to parent allocnos if we can handle
+	the conflicts by spilling instead.  Limit the propagated
+	register costs to the cost of spilling throughout the child loop.
+	* ira-color.c (color_pass): Use ira_single_region_allocno_p to
+	test whether a child and parent allocno can share the same
+	register.
+	(move_spill_restore): Adjust for the new behavior of
+	propagate_allocno_info.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_subloop_allocnos_can_differ_p): New function,
+	extracted from...
+	* ira-color.c (color_pass): ...here.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-color.c (color_pass): Add comments to describe the spill costs.
+	(move_spill_restore): Likewise.  Fix reversed calculation.
+
+2022-01-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98782
+	* ira-int.h (ira_loop_border_costs): New class.
+	* ira-color.c (ira_loop_border_costs::ira_loop_border_costs):
+	New constructor.
+	(calculate_allocno_spill_cost): Use ira_loop_border_costs.
+	(color_pass): Likewise.
+	(move_spill_restore): Likewise.
+
+2022-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103465
+	* coretypes.h (unwind_info_type): Swap UI_SEH and UI_TARGET.
+
+2022-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100359
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	Allow non-growing peeling with !allow_peel and UL_ALL.
+
+2022-01-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_vector_move): Add
+	special case for TImode to V1TImode moves, going via V2DImode.
+
+2022-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* match.pd ((ptr) (x p+ y) p+ z -> (ptr) (x p+ (y + z))): New GENERIC
+	simplification.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi
+	(Special Functions for Debugging the Analyzer): Document
+	__analyzer_dump_escaped.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Other Debugging Techniques): Document
+	region::is_named_decl_p.
+
+2022-01-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/102941
+	* config/arm/aarch-common.c (arm_md_asm_adjust):
+	Use a temp if !REG_P.
+
+2022-01-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (*move<V_32:mode>_internal): Add isa attribute.
+	(*movv2qi_internal): Remve sse2 requirement for alternatives 4,5.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/103750
+	* fwprop.c (forward_propagate_into): Allow propagations from
+	inner loop to outer loop.
+
+2022-01-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*cnot<mode>2): New define_insn.
+
+2022-01-07  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.md (rs6000_mffscrni): Define.
+	(rs6000_set_fpscr_rn): Change the type of operand[0] from DI to SI.
+	Call gen_rs6000_mffscrni when operand[0] is a const_0_to_3_operand.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md
+	(*<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Extend to
+	UNSPEC_PCMP_UNSIGNED.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103753
+	* config/i386/i386-expand.c (ix86_expand_vector_set): Not use
+	gen_avx2_pblendph_1 when elt == 0.
+	* config/i386/sse.md (avx2_pblendph): Rename to ..
+	(avx2_pblend<ssemodesuffix>_1).. this, and extend to V16HI.
+	(*avx2_pblendw): Rename to ..
+	(*avx2_pblend<ssemodesuffix>): .. this, and extend to V16HF.
+	(avx2_pblendw): Rename to ..
+	(*avx2_pblend<ssemodesuffix>): .. this, and extend to V16HF.
+	(blendsuf): Removed.
+	(sse4_1_pblend<blendsuf>): Renamed to ..
+	(sse4_1_pblend<ssemodesuffix>): .. this.
+
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103925
+	* config/i386/i386.c (ix86_output_indirect_function_return):
+	Generate INT3 after indirect jmp for -mharden-sls=indirect-jmp.
+
+2022-01-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386-opts.h (harden_sls): Replace
+	harden_sls_indirect_branch with harden_sls_indirect_jmp.
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect):
+	Likewise.
+	(ix86_output_indirect_jmp): Likewise.
+	(ix86_output_call_insn): Likewise.
+	* config/i386/i386.opt: Replace indirect-branch with
+	indirect-jmp.  Replace harden_sls_indirect_branch with
+	harden_sls_indirect_jmp.
+	* doc/invoke.texi (-harden-sls=): Replace indirect-branch with
+	indirect-jmp.
+
+2022-01-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_output_ssemov) <MODE_DI>:
+	Add %q modifier for operands in general registers.
+	<MODE_SI>: Add %q modifier for operands in general registers.
+	* config/i386/i386.md (*movhi_internal): Change type attribute of
+	xmm-gpr interunit alternatives 9,10 to ssemov and mode attribute
+	to SImode for non-avx512fp16 targets.
+	(*movhf_internal): Ditto for xmm-gpr interunit alternatives 6,8.
+	* config/i386/mmx.md (*movv2qi_internal):
+	Ditto for xmm-gpr interunit alternatives 8,9.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info): Add
+	vector extensions.
+	(riscv_ext_version_table): Add version info for vector extensions.
+	(riscv_ext_flag_table): Add option mask for vector extensions.
+	* config/riscv/riscv-opts.h (MASK_VECTOR_EEW_32): New.
+	(MASK_VECTOR_EEW_64): New.
+	(MASK_VECTOR_EEW_FP_32): New.
+	(MASK_VECTOR_EEW_FP_64): New.
+	(MASK_ZVL32B): New.
+	(MASK_ZVL64B): New.
+	(MASK_ZVL128B): New.
+	(MASK_ZVL256B): New.
+	(MASK_ZVL512B): New.
+	(MASK_ZVL1024B): New.
+	(MASK_ZVL2048B): New.
+	(MASK_ZVL4096B): New.
+	(MASK_ZVL8192B): New.
+	(MASK_ZVL16384B): New.
+	(MASK_ZVL32768B): New.
+	(MASK_ZVL65536B): New.
+	(TARGET_ZVL32B): New.
+	(TARGET_ZVL64B): New.
+	(TARGET_ZVL128B): New.
+	(TARGET_ZVL256B): New.
+	(TARGET_ZVL512B): New.
+	(TARGET_ZVL1024B): New.
+	(TARGET_ZVL2048B): New.
+	(TARGET_ZVL4096B): New.
+	(TARGET_ZVL8192B): New.
+	(TARGET_ZVL16384B): New.
+	(TARGET_ZVL32768B): New.
+	(TARGET_ZVL65536B): New.
+	* config/riscv/riscv.opt (Mask(VECTOR)): New.
+	(riscv_vector_eew_flags): New.
+	(riscv_zvl_flags): New.
+
+2022-01-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parse_multiletter_ext): Allow ext. name has
+	digit.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103899
+	* expr.c (expand_expr_real_1): Add a workaround for bogus uninit
+	warning by moving context variable to the only spot where it is used
+	and moving gcc_assert into if body.
+
+2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* ifcvt.c (bb_valid_for_noce_process_p): Punt on bbs ending with
+	asm goto.
+
+2022-01-05  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/103622
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Skip over instances with undefined function types.
+
+2022-01-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/103910
+	* config/i386/i386.h (x86_mfence): Mark with GTY.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (VI_16_32): New mode iterator.
+	(VI1_16_32): Ditto.
+	(mmxvecsize): Handle V2QI mode.
+	(<smaxmin:code><mode>3): Rename from <smaxmin:code>v4qi3.
+	Use VI1_16_32 mode iterator.
+	(<umaxmin:code><mode>3): Rename from <umaxmin:code>v4qi3.
+	Use VI1_16_32 mode iterator.
+	(abs<mode>2): Use VI_16_32 mode iterator.
+	(uavgv2qi3_ceil): New insn pattern.
+
+2022-01-05  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_warn_memmodel): Use
+	%qs to avoid -Wformat-diag.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103915
+	* config/i386/mmx.md (one_cmplv2qi2): Change
+	alternatives 1,2 type from sselog to sselog1.
+
+2022-01-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103905
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb): Fix number of
+	narrow mode remapped elements for !one_operand_p case.
+
+2022-01-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103816
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Also
+	check DR_GROUP_GAP compute for overflow and representability.
+
+2022-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/103691
+	* gimple-fold.c (fold_stmt_1): Don't call maybe_fold_reference
+	for DEBUG stmts with ADDR_EXPR gimple_debug_bind_get_value,
+	it can do unwanted rhs folding like &a[0] into &2.0 etc.
+
+2022-01-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR ipa/102059
+	* config/rs6000/rs6000.c (TARGET_NEED_IPA_FN_TARGET_INFO): New macro.
+	(TARGET_UPDATE_IPA_FN_TARGET_INFO): Likewise.
+	(rs6000_need_ipa_fn_target_info): New function.
+	(rs6000_update_ipa_fn_target_info): Likewise.
+	(rs6000_can_inline_p): Adjust for ipa function summary target info.
+	* config/rs6000/rs6000.h (RS6000_FN_TARGET_INFO_HTM): New macro.
+	* ipa-fnsummary.c (ipa_dump_fn_summary): Adjust for ipa function
+	summary target info.
+	(analyze_function_body): Adjust for ipa function summary target info
+	and call hook rs6000_need_ipa_fn_target_info and
+	rs6000_update_ipa_fn_target_info.
+	(ipa_merge_fn_summary_after_inlining): Adjust for ipa function summary
+	target info.
+	(inline_read_section): Likewise.
+	(ipa_fn_summary_write): Likewise.
+	* ipa-fnsummary.h (ipa_fn_summary::target_info): New member.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_UPDATE_IPA_FN_TARGET_INFO): Document new hook.
+	(TARGET_NEED_IPA_FN_TARGET_INFO): Likewise.
+	* target.def (update_ipa_fn_target_info): New hook.
+	(need_ipa_fn_target_info): Likewise.
+	* targhooks.c (default_need_ipa_fn_target_info): New function.
+	(default_update_ipa_fn_target_info): Likewise.
+	* targhooks.h (default_update_ipa_fn_target_info): New declare.
+	(default_need_ipa_fn_target_info): Likewise.
+
+2022-01-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99612
+	* builtins.c (get_memmodel): Move warning code to
+	gimple-ssa-warn-access.cc.
+	(expand_builtin_atomic_compare_exchange): Same.
+	(expand_ifn_atomic_compare_exchange): Same.
+	(expand_builtin_atomic_load): Same.
+	(expand_builtin_atomic_store): Same.
+	(expand_builtin_atomic_clear): Same.
+	* doc/extend.texi (__atomic_exchange_n): Update valid memory
+	models.
+	* gimple-ssa-warn-access.cc (memmodel_to_uhwi): New function.
+	(struct memmodel_pair): New struct.
+	(memmodel_name): New function.
+	(pass_waccess::maybe_warn_memmodel): New function.
+	(pass_waccess::check_atomic_memmodel): New function.
+	(pass_waccess::check_atomic_builtin): Handle memory model.
+	* input.c (expansion_point_location_if_in_system_header): Return
+	original location if expansion location is in a system header.
+
+2022-01-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/mmx.md (one_cmplv2qi3): New insn pattern.
+	(one_cmplv2qi3 splitters): New post-reload splitters.
+	(*andnotv2qi3): New insn pattern.
+	(andnotv2qi3 splitters): New post-reload splitters.
+	(<any_logic:code>v2qi3): New insn pattern.
+	(<any_logic:insn>v2qi3 splitters): New post-reload splitters.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103800
+	* tree-vect-loop.c (vectorizable_phi): Remove assert and
+	expand comment.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103690
+	* tree-pass.h (tail_merge_optimize): Adjust.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Pass in whether
+	to re-split critical edges, move CFG cleanup ...
+	* tree-ssa-pre.c (pass_pre::execute): ... here, before
+	simple_dce_from_worklist and delay freeing inserted_exprs from
+	...
+	(fini_pre): .. here.
+
+2022-01-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.h (STORE_FLAG_VALUE): Change to 1.
+	* config/nvptx/nvptx.md (movbi): Use P1 constraint for true.
+	(setcc_from_bi): Remove SImode specific pattern.
+	(setcc<mode>_from_bi): Provide more general HSDIM pattern.
+	(extendbi<mode>2, zeroextendbi<mode>2): Provide instructions
+	for sign- and zero-extending BImode predicates to integers.
+	(setcc_int<mode>): Remove previous (-1-based) instructions.
+	(cstorebi4): Remove BImode to SImode specific expander.
+	(cstore<mode>4): Fix indentation.  Expand using setccsi_from_bi.
+	(cstore<mode>4): For both integer and floating point modes.
+
+2022-01-04  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.c (driver_handle_option): do_save --sysroot.
+
+2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103864
+	PR tree-optimization/103544
+	* tree-vect-slp.c (vect_analyze_slp_instance): Exclude
+	reductions wrapped in conversions from SLP handling.
+	(vect_analyze_slp): Revert PR103544 change.
+
+2022-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Don't call can_get_prologue
+	uselessly for blocks for which it has been called already.
+
+2022-01-04  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add new model values
+	to Alderlake and Rocketlake.
+
+2022-01-04  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103643
+	* gimplify.c (gimplify_omp_affinity): Adjust gimplify_expr of entire
+	OMP_CLAUSE_DECL to use 'is_gimple_lvalue, fb_lvalue'
+
+2022-01-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103895
+	* config/i386/sse.md (*bit_and_float_vector_all_ones):
+	Force_reg operand 1 to avoid ICE.
+
+2022-01-04  Jason Merrill  <jason@redhat.com>
+
+	* tree-pretty-print.c (do_niy): Add spc parameter.
+	(NIY): Pass it.
+	(print_call_name): Add spc local variable.
+
+2022-01-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103894
+	* config/i386/mmx.md (mov<V_32:mode>): Remove TARGET_SSE2 constraint.
+	(mov<V_32:mode>_internal): Ditto.
+	(*push<V_32:mode>_rex64): Ditto.
+	(movmisalign<V_32:mode>): Ditto.
+	(*push<V_32:mode>_rex64 splitter): Enable for
+	TARGET_64BIT && TARGET_SSE.
+	(*push<V_32:mode>2): Remove insn pattern.
+
+2022-01-03  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/33193
+	* doc/extend.texi: Extend the documentation about Complex
+	types for casting and also rewrite the __real__/__imag__
+	expression portion to use tables.
+	Move __builtin_complex to the Complex type section.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98737
+	* internal-fn.def (ATOMIC_ADD_FETCH_CMP_0, ATOMIC_SUB_FETCH_CMP_0,
+	ATOMIC_AND_FETCH_CMP_0, ATOMIC_OR_FETCH_CMP_0, ATOMIC_XOR_FETCH_CMP_0):
+	New internal fns.
+	* internal-fn.h (ATOMIC_OP_FETCH_CMP_0_EQ, ATOMIC_OP_FETCH_CMP_0_NE,
+	ATOMIC_OP_FETCH_CMP_0_LT, ATOMIC_OP_FETCH_CMP_0_LE,
+	ATOMIC_OP_FETCH_CMP_0_GT, ATOMIC_OP_FETCH_CMP_0_GE): New enumerators.
+	* internal-fn.c (expand_ATOMIC_ADD_FETCH_CMP_0,
+	expand_ATOMIC_SUB_FETCH_CMP_0, expand_ATOMIC_AND_FETCH_CMP_0,
+	expand_ATOMIC_OR_FETCH_CMP_0, expand_ATOMIC_XOR_FETCH_CMP_0): New
+	functions.
+	* optabs.def (atomic_add_fetch_cmp_0_optab,
+	atomic_sub_fetch_cmp_0_optab, atomic_and_fetch_cmp_0_optab,
+	atomic_or_fetch_cmp_0_optab, atomic_xor_fetch_cmp_0_optab): New
+	direct optabs.
+	* builtins.h (expand_ifn_atomic_op_fetch_cmp_0): Declare.
+	* builtins.c (expand_ifn_atomic_op_fetch_cmp_0): New function.
+	* tree-ssa-ccp.c: Include internal-fn.h.
+	(optimize_atomic_bit_test_and): Add . before internal fn call
+	in function comment.  Change return type from void to bool and
+	return true only if successfully replaced.
+	(optimize_atomic_op_fetch_cmp_0): New function.
+	(pass_fold_builtins::execute): Use optimize_atomic_op_fetch_cmp_0
+	for BUILT_IN_ATOMIC_{ADD,SUB,AND,OR,XOR}_FETCH_{1,2,4,8,16} and
+	BUILT_IN_SYNC_{ADD,SUB,AND,OR,XOR}_AND_FETCH_{1,2,4,8,16},
+	for *XOR* ones only if optimize_atomic_bit_test_and failed.
+	* config/i386/sync.md (atomic_<plusminus_mnemonic>_fetch_cmp_0<mode>,
+	atomic_<logic>_fetch_cmp_0<mode>): New define_expand patterns.
+	(atomic_add_fetch_cmp_0<mode>_1, atomic_sub_fetch_cmp_0<mode>_1,
+	atomic_<logic>_fetch_cmp_0<mode>_1): New define_insn patterns.
+	* doc/md.texi (atomic_add_fetch_cmp_0<mode>,
+	atomic_sub_fetch_cmp_0<mode>, atomic_and_fetch_cmp_0<mode>,
+	atomic_or_fetch_cmp_0<mode>, atomic_xor_fetch_cmp_0<mode>): Document
+	new named patterns.
+
+2022-01-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103851
+	* tree-cfg.c (move_sese_region_to_fn): Always release SSA names.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94716
+	* symtab.c: Include fold-const.h.
+	(symtab_node::equal_address_to): If folding_initializer is true,
+	handle it like memory_accessed.  Simplify.
+
+2022-01-03  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use ; for function declarations.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103600
+	* symtab.c (symtab_node::equal_address_to): Return 0 if one of
+	VAR_DECLs has "non overlapping" attribute and rs1 != rs2.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (process_command): Update copyright notice dates.
+	* gcov-dump.c (print_version): Ditto.
+	* gcov.c (print_version): Ditto.
+	* gcov-tool.c (print_version): Ditto.
+	* gengtype.c (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 2022-01-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861

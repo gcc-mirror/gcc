@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +30,6 @@
 ------------------------------------------------------------------------------
 
 --  This is the default (used on all native platforms) version of this package
-
-pragma Compiler_Unit_Warning;
 
 package body System.Parameters is
 

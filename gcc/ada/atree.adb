@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,12 +88,29 @@ package body Atree is
       Table_Increment      => Alloc.Node_Offsets_Increment,
       Table_Name           => "Orig_Nodes");
 
+   ------------------
+   -- Parent Stack --
+   ------------------
+
+   --  A separate table is used to traverse trees. It passes the parent field
+   --  of each node to the called process subprogram. It is defined global to
+   --  avoid adding performance overhead if allocated each time the traversal
+   --  functions are invoked.
+
+   package Parents_Stack is new Table.Table
+     (Table_Component_Type => Node_Id,
+      Table_Index_Type     => Nat,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 256,
+      Table_Increment      => 100,
+      Table_Name           => "Parents_Stack");
+
    --------------------------
    -- Paren_Count Handling --
    --------------------------
 
    --  The Small_Paren_Count field has range 0 .. 3. If the Paren_Count is
-   --  in the range 0 .. 2, then it is stoed as Small_Paren_Count. Otherwise,
+   --  in the range 0 .. 2, then it is stored as Small_Paren_Count. Otherwise,
    --  Small_Paren_Count = 3, and the actual Paren_Count is stored in the
    --  Paren_Counts table.
    --
@@ -134,6 +151,20 @@ package body Atree is
    procedure Fix_Parents (Ref_Node, Fix_Node : Node_Id);
    --  Fix up parent pointers for the children of Fix_Node after a copy,
    --  setting them to Fix_Node when they pointed to Ref_Node.
+
+   generic
+      with function Process
+        (Parent_Node : Node_Id;
+         Node        : Node_Id) return Traverse_Result is <>;
+   function Internal_Traverse_With_Parent
+     (Node : Node_Id) return Traverse_Final_Result;
+   pragma Inline (Internal_Traverse_With_Parent);
+   --  Internal function that provides a functionality similar to Traverse_Func
+   --  but extended to pass the Parent node to the called Process subprogram;
+   --  delegates to Traverse_Func_With_Parent the initialization of the stack
+   --  data structure which stores the parent nodes (cf. Parents_Stack).
+   --  ??? Could we factorize the common code of Internal_Traverse_Func and
+   --  Traverse_Func?
 
    procedure Mark_New_Ghost_Node (N : Node_Or_Entity_Id);
    --  Mark arbitrary node or entity N as Ghost when it is created within a
@@ -2322,6 +2353,167 @@ package body Atree is
       return Size_In_Slots (N) - N_Head;
    end Size_In_Slots_Dynamic;
 
+   -----------------------------------
+   -- Internal_Traverse_With_Parent --
+   -----------------------------------
+
+   function Internal_Traverse_With_Parent
+      (Node : Node_Id) return Traverse_Final_Result
+   is
+      Tail_Recursion_Counter : Natural := 0;
+
+      procedure Pop_Parents;
+      --  Pop enclosing nodes of tail recursion plus the current parent.
+
+      function Traverse_Field (Fld : Union_Id) return Traverse_Final_Result;
+      --  Fld is one of the Traversed fields of Nod, which is necessarily a
+      --  Node_Id or List_Id. It is traversed, and the result is the result of
+      --  this traversal.
+
+      -----------------
+      -- Pop_Parents --
+      -----------------
+
+      procedure Pop_Parents is
+      begin
+         --  Pop the enclosing nodes of the tail recursion
+
+         for J in 1 .. Tail_Recursion_Counter loop
+            Parents_Stack.Decrement_Last;
+         end loop;
+
+         --  Pop the current node
+
+         pragma Assert (Parents_Stack.Table (Parents_Stack.Last) = Node);
+         Parents_Stack.Decrement_Last;
+      end Pop_Parents;
+
+      --------------------
+      -- Traverse_Field --
+      --------------------
+
+      function Traverse_Field (Fld : Union_Id) return Traverse_Final_Result is
+      begin
+         if Fld /= Union_Id (Empty) then
+
+            --  Descendant is a node
+
+            if Fld in Node_Range then
+               return Internal_Traverse_With_Parent (Node_Id (Fld));
+
+            --  Descendant is a list
+
+            elsif Fld in List_Range then
+               declare
+                  Elmt : Node_Id := First (List_Id (Fld));
+               begin
+                  while Present (Elmt) loop
+                     if Internal_Traverse_With_Parent (Elmt) = Abandon then
+                        return Abandon;
+                     end if;
+
+                     Next (Elmt);
+                  end loop;
+               end;
+
+            else
+               raise Program_Error;
+            end if;
+         end if;
+
+         return OK;
+      end Traverse_Field;
+
+      --  Local variables
+
+      Parent_Node : Node_Id := Parents_Stack.Table (Parents_Stack.Last);
+      Cur_Node    : Node_Id := Node;
+
+   --  Start of processing for Internal_Traverse_With_Parent
+
+   begin
+      --  If the last field is a node, we eliminate the tail recursion by
+      --  jumping back to this label. This is because concatenations are
+      --  sometimes deeply nested, as in X1&X2&...&Xn. Gen_IL ensures that the
+      --  Left_Opnd field of N_Op_Concat comes last in Traversed_Fields, so the
+      --  tail recursion is eliminated in that case. This trick prevents us
+      --  from running out of stack memory in that case. We don't bother
+      --  eliminating the tail recursion if the last field is a list.
+
+      <<Tail_Recurse>>
+
+      Parents_Stack.Append (Cur_Node);
+
+      case Process (Parent_Node, Cur_Node) is
+         when Abandon =>
+            Pop_Parents;
+            return Abandon;
+
+         when Skip =>
+            Pop_Parents;
+            return OK;
+
+         when OK =>
+            null;
+
+         when OK_Orig =>
+            Cur_Node := Original_Node (Cur_Node);
+      end case;
+
+      --  Check for empty Traversed_Fields before entering loop below, so the
+      --  tail recursive step won't go past the end.
+
+      declare
+         Cur_Field : Offset_Array_Index := Traversed_Offset_Array'First;
+         Offsets : Traversed_Offset_Array renames
+           Traversed_Fields (Nkind (Cur_Node));
+
+      begin
+         if Offsets (Traversed_Offset_Array'First) /= No_Field_Offset then
+            while Offsets (Cur_Field + 1) /= No_Field_Offset loop
+               declare
+                  F : constant Union_Id :=
+                    Get_Node_Field_Union (Cur_Node, Offsets (Cur_Field));
+
+               begin
+                  if Traverse_Field (F) = Abandon then
+                     Pop_Parents;
+                     return Abandon;
+                  end if;
+               end;
+
+               Cur_Field := Cur_Field + 1;
+            end loop;
+
+            declare
+               F : constant Union_Id :=
+                 Get_Node_Field_Union (Cur_Node, Offsets (Cur_Field));
+
+            begin
+               if F not in Node_Range then
+                  if Traverse_Field (F) = Abandon then
+                     Pop_Parents;
+                     return Abandon;
+                  end if;
+
+               elsif F /= Empty_List_Or_Node then
+                  --  Here is the tail recursion step, we reset Cur_Node and
+                  --  jump back to the start of the procedure, which has the
+                  --  same semantic effect as a call.
+
+                  Tail_Recursion_Counter := Tail_Recursion_Counter + 1;
+                  Parent_Node := Cur_Node;
+                  Cur_Node := Node_Id (F);
+                  goto Tail_Recurse;
+               end if;
+            end;
+         end if;
+      end;
+
+      Pop_Parents;
+      return OK;
+   end Internal_Traverse_With_Parent;
+
    -------------------
    -- Traverse_Func --
    -------------------
@@ -2454,6 +2646,32 @@ package body Atree is
       return OK;
    end Traverse_Func;
 
+   -------------------------------
+   -- Traverse_Func_With_Parent --
+   -------------------------------
+
+   function Traverse_Func_With_Parent
+     (Node : Node_Id) return Traverse_Final_Result
+   is
+      function Traverse is new Internal_Traverse_With_Parent (Process);
+      Result : Traverse_Final_Result;
+   begin
+      --  Ensure that the Parents stack is not currently in use; required since
+      --  it is global and hence a tree traversal with parents must be finished
+      --  before the next tree traversal with parents starts.
+
+      pragma Assert (Parents_Stack.Last = 0);
+      Parents_Stack.Set_Last (0);
+
+      Parents_Stack.Append (Parent (Node));
+      Result := Traverse (Node);
+      Parents_Stack.Decrement_Last;
+
+      pragma Assert (Parents_Stack.Last = 0);
+
+      return Result;
+   end Traverse_Func_With_Parent;
+
    -------------------
    -- Traverse_Proc --
    -------------------
@@ -2465,6 +2683,18 @@ package body Atree is
    begin
       Discard := Traverse (Node);
    end Traverse_Proc;
+
+   -------------------------------
+   -- Traverse_Proc_With_Parent --
+   -------------------------------
+
+   procedure Traverse_Proc_With_Parent (Node : Node_Id) is
+      function Traverse is new Traverse_Func_With_Parent (Process);
+      Discard : Traverse_Final_Result;
+      pragma Warnings (Off, Discard);
+   begin
+      Discard := Traverse (Node);
+   end Traverse_Proc_With_Parent;
 
    ------------
    -- Unlock --

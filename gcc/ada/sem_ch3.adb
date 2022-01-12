@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -722,6 +722,16 @@ package body Sem_Ch3 is
    --  T is the entity for an array or record being declared. This procedure
    --  sets the flags SSO_Set_Low_By_Default/SSO_Set_High_By_Default according
    --  to the setting of Opt.Default_SSO.
+
+   function Should_Build_Subtype (T : Entity_Id) return Boolean;
+   --  When analyzing components or object declarations, it is possible, in
+   --  some cases, to build subtypes for discriminated types. This is
+   --  worthwhile to avoid the backend allocating the maximum possible size for
+   --  objects of the type.
+   --  In particular, when T is limited, the discriminants and therefore the
+   --  size of an object of type T cannot change. Furthermore, if T is definite
+   --  with statically initialized defaulted discriminants, we are able and
+   --  want to build a constrained subtype of the right size.
 
    procedure Signed_Integer_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Create a new signed integer entity, and apply the constraint to obtain
@@ -2203,17 +2213,9 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  If the component is an unconstrained task or protected type with
-      --  discriminants, the component and the enclosing record are limited
-      --  and the component is constrained by its default values. Compute
-      --  its actual subtype, else it may be allocated the maximum size by
-      --  the backend, and possibly overflow.
+      --  When possible, build the default subtype
 
-      if Is_Concurrent_Type (T)
-        and then not Is_Constrained (T)
-        and then Has_Discriminants (T)
-        and then not Has_Discriminants (Current_Scope)
-      then
+      if Should_Build_Subtype (T) then
          declare
             Act_T : constant Entity_Id := Build_Default_Subtype (T, N);
 
@@ -3829,6 +3831,9 @@ package body Sem_Ch3 is
                then
                   null;
 
+               elsif Is_Record_Type (Etype (Comp)) then
+                  Check_Dynamic_Object (Etype (Comp));
+
                elsif not Discriminated_Size (Comp)
                  and then Comes_From_Source (Comp)
                then
@@ -3836,8 +3841,6 @@ package body Sem_Ch3 is
                     ("component& of non-static size will violate restriction "
                      & "No_Implicit_Heap_Allocation?", N, Comp);
 
-               elsif Is_Record_Type (Etype (Comp)) then
-                  Check_Dynamic_Object (Etype (Comp));
                end if;
 
                Next_Component (Comp);
@@ -4407,9 +4410,9 @@ package body Sem_Ch3 is
 
          --  If E is null and has been replaced by an N_Raise_Constraint_Error
          --  node (which was marked already-analyzed), we need to set the type
-         --  to something other than Any_Access in order to keep gigi happy.
+         --  to something else than Universal_Access to keep gigi happy.
 
-         if Etype (E) = Any_Access then
+         if Etype (E) = Universal_Access then
             Set_Etype (E, T);
          end if;
 
@@ -4799,14 +4802,9 @@ package body Sem_Ch3 is
             Apply_Length_Check (E, T);
          end if;
 
-      --  If the type is limited unconstrained with defaulted discriminants and
-      --  there is no expression, then the object is constrained by the
-      --  defaults, so it is worthwhile building the corresponding subtype.
+      --  When possible, build the default subtype
 
-      elsif (Is_Limited_Record (T) or else Is_Concurrent_Type (T))
-        and then not Is_Constrained (T)
-        and then Has_Discriminants (T)
-      then
+      elsif Should_Build_Subtype (T) then
          if No (E) then
             Act_T := Build_Default_Subtype (T, N);
          else
@@ -5514,6 +5512,7 @@ package body Sem_Ch3 is
             when Array_Kind =>
                Mutate_Ekind                  (Id, E_Array_Subtype);
                Copy_Array_Subtype_Attributes (Id, T);
+               Set_Packed_Array_Impl_Type    (Id, Packed_Array_Impl_Type (T));
 
             when Decimal_Fixed_Point_Kind =>
                Mutate_Ekind             (Id, E_Decimal_Fixed_Point_Subtype);
@@ -6051,13 +6050,13 @@ package body Sem_Ch3 is
    begin
       Analyze (T);
 
-      if R /= Error then
+      if R = Error then
+         Set_Error_Posted (R);
+         Set_Error_Posted (T);
+      else
          Analyze (R);
          Set_Etype (N, Etype (R));
          Resolve (R, Entity (T));
-      else
-         Set_Error_Posted (R);
-         Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
 
@@ -6783,7 +6782,7 @@ package body Sem_Ch3 is
       Append (
          Make_Parameter_Specification (Loc,
            Defining_Identifier => Make_Temporary (Loc, 'P'),
-           Parameter_Type  =>  New_Occurrence_Of (Id, Loc)),
+           Parameter_Type      => New_Occurrence_Of (Id, Loc)),
          Profile);
 
       if Nkind (Type_Def) = N_Access_Procedure_Definition then
@@ -7062,7 +7061,7 @@ package body Sem_Ch3 is
       Indic : constant Node_Id    := Subtype_Indication (Def);
 
       Corr_Record      : constant Entity_Id := Make_Temporary (Loc, 'C');
-      Corr_Decl        : Node_Id;
+      Corr_Decl        : Node_Id := Empty;
       Corr_Decl_Needed : Boolean;
       --  If the derived type has fewer discriminants than its parent, the
       --  corresponding record is also a derived type, in order to account for
@@ -9354,13 +9353,11 @@ package body Sem_Ch3 is
          declare
             Iface : Node_Id;
          begin
-            if Is_Non_Empty_List (Interface_List (Type_Def)) then
-               Iface := First (Interface_List (Type_Def));
-               while Present (Iface) loop
-                  Freeze_Before (N, Etype (Iface));
-                  Next (Iface);
-               end loop;
-            end if;
+            Iface := First (Interface_List (Type_Def));
+            while Present (Iface) loop
+               Freeze_Before (N, Etype (Iface));
+               Next (Iface);
+            end loop;
          end;
       end if;
 
@@ -14976,6 +14973,9 @@ package body Sem_Ch3 is
    -- Copy_Array_Subtype_Attributes --
    -----------------------------------
 
+   --  Note that we used to copy Packed_Array_Impl_Type too here, but we now
+   --  let it be recreated during freezing for the sake of better debug info.
+
    procedure Copy_Array_Subtype_Attributes (T1, T2 : Entity_Id) is
    begin
       Set_Size_Info (T1, T2);
@@ -14993,7 +14993,6 @@ package body Sem_Ch3 is
       Set_Convention              (T1, Convention              (T2));
       Set_Is_Limited_Composite    (T1, Is_Limited_Composite    (T2));
       Set_Is_Private_Composite    (T1, Is_Private_Composite    (T2));
-      Set_Packed_Array_Impl_Type  (T1, Packed_Array_Impl_Type  (T2));
    end Copy_Array_Subtype_Attributes;
 
    -----------------------------------
@@ -17277,7 +17276,6 @@ package body Sem_Ch3 is
             --  append the full view's original parent to the interface list,
             --  recursively call Derived_Type_Definition on the full type, and
             --  return True. If a match is not found, return False.
-            --  ??? This seems broken in the case of generic packages.
 
             ------------------------
             -- Reorder_Interfaces --
@@ -17286,6 +17284,7 @@ package body Sem_Ch3 is
             function Reorder_Interfaces return Boolean is
                Iface     : Node_Id;
                New_Iface : Node_Id;
+
             begin
                Iface := First (Interface_List (Def));
                while Present (Iface) loop
@@ -17295,7 +17294,7 @@ package body Sem_Ch3 is
 
                      New_Iface :=
                        Make_Identifier (Sloc (N), Chars (Parent_Type));
-                     Append (New_Iface, Interface_List (Def));
+                     Rewrite (Iface, New_Iface);
 
                      --  Analyze the transformed code
 
@@ -22878,6 +22877,80 @@ package body Sem_Ch3 is
            Expand_To_Stored_Constraint (E, Discriminant_Constraint (E)));
       end if;
    end Set_Stored_Constraint_From_Discriminant_Constraint;
+
+   --------------------------
+   -- Should_Build_Subtype --
+   --------------------------
+
+   function Should_Build_Subtype (T : Entity_Id) return Boolean is
+
+      function Default_Discriminant_Values_Known_At_Compile_Time
+         (T : Entity_Id) return Boolean;
+         --  For an unconstrained type T, return False if the given type has a
+         --  discriminant with default value not known at compile time. Return
+         --  True otherwise.
+
+      ---------------------------------------------------------
+      -- Default_Discriminant_Values_Known_At_Compile_Time --
+      ---------------------------------------------------------
+
+      function Default_Discriminant_Values_Known_At_Compile_Time
+         (T : Entity_Id) return Boolean
+      is
+         Discr : Entity_Id;
+         DDV : Node_Id;
+
+      begin
+
+         --  If the type has no discriminant, we know them all at compile time
+
+         if not Has_Discriminants (T) then
+            return True;
+         end if;
+
+         --  The type has discriminants, check that none of them has a default
+         --  value not known at compile time.
+
+         Discr := First_Discriminant (T);
+
+         while Present (Discr) loop
+            DDV := Discriminant_Default_Value (Discr);
+
+            if Present (DDV) and then not Compile_Time_Known_Value (DDV) then
+               return False;
+            end if;
+
+            Next_Discriminant (Discr);
+         end loop;
+
+         return True;
+      end Default_Discriminant_Values_Known_At_Compile_Time;
+
+   --  Start of processing for Should_Build_Subtype
+
+   begin
+
+      if Is_Constrained (T) then
+
+         --  We won't build a new subtype if T is constrained
+
+         return False;
+      end if;
+
+      if not Default_Discriminant_Values_Known_At_Compile_Time (T) then
+
+         --  This is a special case of definite subtypes. To allocate a
+         --  specific size to the subtype, we need to know the value at compile
+         --  time. This might not be the case if the default value is the
+         --  result of a function. In that case, the object might be definite
+         --  and limited but the needed size might not be statically known or
+         --  too tricky to obtain. In that case, we will not build the subtype.
+
+         return False;
+      end if;
+
+      return Is_Definite_Subtype (T) and then Is_Limited_View (T);
+   end Should_Build_Subtype;
 
    -------------------------------------
    -- Signed_Integer_Type_Declaration --

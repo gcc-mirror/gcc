@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,6 @@
 --  because an asynchronous signal (as used for implementing asynchronous abort
 --  of task on sjlj runtimes) cannot safely be handled while malloc is
 --  executing.
-
-pragma Compiler_Unit_Warning;
 
 with System.CRTL;
 with System.Parameters;
@@ -136,7 +134,7 @@ package body System.Memory is
       Size : size_t)
       return System.Address
    is
-      Result      : System.Address;
+      Result : System.Address;
    begin
       if Size = size_t'Last then
          raise Storage_Error with "object too large";

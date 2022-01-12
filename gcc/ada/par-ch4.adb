@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1194,7 +1194,7 @@ package body Ch4 is
      (Prefix_Node : Node_Id)
       return        Node_Id
    is
-      Attr_Node  : Node_Id;
+      Attr_Node : Node_Id;
 
    begin
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
@@ -2471,9 +2471,6 @@ package body Ch4 is
               and then Num_Concats >= Num_Concats_Threshold
             then
                declare
-                  Empty_String_Val : String_Id;
-                  --  String_Id for ""
-
                   Strlit_Concat_Val : String_Id;
                   --  Contains the folded value (which will be correct if the
                   --  "&" operators are the predefined ones).
@@ -2509,11 +2506,9 @@ package body Ch4 is
                   --  Create new folded node, and rewrite result with a concat-
                   --  enation of an empty string literal and the folded node.
 
-                  Start_String;
-                  Empty_String_Val := End_String;
                   New_Node :=
                     Make_Op_Concat (Loc,
-                      Make_String_Literal (Loc, Empty_String_Val),
+                      Make_String_Literal (Loc, Null_String_Id),
                       Make_String_Literal (Loc, Strlit_Concat_Val,
                         Is_Folded_In_Parser => True));
                   Rewrite (Node1, New_Node);
@@ -2973,7 +2968,7 @@ package body Ch4 is
                   Save_Scan_State (Scan_State);
                   Scan;   --  past FOR
 
-                  if Token = Tok_All or else Token = Tok_Some  then
+                  if Token = Tok_All or else Token = Tok_Some then
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Quantified_Expression;
 

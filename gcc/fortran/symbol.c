@@ -299,7 +299,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 
   if (ts->type == BT_UNKNOWN)
     {
-      if (error_flag && !sym->attr.untyped)
+      if (error_flag && !sym->attr.untyped && !gfc_query_suppress_errors ())
 	{
 	  const char *guessed = lookup_symbol_fuzzy (sym->name, sym);
 	  if (guessed)

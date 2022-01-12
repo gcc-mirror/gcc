@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,8 @@ pragma Assertion_Policy (Pre            => Ignore,
                          Post           => Ignore,
                          Contract_Cases => Ignore,
                          Ghost          => Ignore);
+pragma Warnings (Off, "postcondition does not mention function result");
+--  True postconditions are used to avoid inlining for GNATprove
 
 with System.Case_Util;
 
@@ -59,18 +61,23 @@ is
       (for all J in From .. To => S (J) = ' ')
    with
      Ghost,
-     Pre => From > To or else (From >= S'First and then To <= S'Last);
+     Pre  => From > To or else (From >= S'First and then To <= S'Last),
+     Post => True;
    --  Ghost function that returns True if S has only space characters from
    --  index From to index To.
 
-   function First_Non_Space_Ghost (S : String) return Positive
+   function First_Non_Space_Ghost
+     (S        : String;
+      From, To : Integer) return Positive
    with
      Ghost,
-     Pre  => not Only_Space_Ghost (S, S'First, S'Last),
-     Post => First_Non_Space_Ghost'Result in S'Range
+     Pre  => From in S'Range
+       and then To in S'Range
+       and then not Only_Space_Ghost (S, From, To),
+     Post => First_Non_Space_Ghost'Result in From .. To
        and then S (First_Non_Space_Ghost'Result) /= ' '
        and then Only_Space_Ghost
-         (S, S'First, First_Non_Space_Ghost'Result - 1);
+         (S, From, First_Non_Space_Ghost'Result - 1);
    --  Ghost function that returns the index of the first non-space character
    --  in S, which necessarily exists given the precondition on S.
 
@@ -117,14 +124,14 @@ is
        and then
          (declare
             F : constant Positive :=
-              First_Non_Space_Ghost (Str (Ptr.all .. Max));
+              First_Non_Space_Ghost (Str, Ptr.all, Max);
           begin
             (if Str (F) in '+' | '-' then
                F <= Max - 1 and then Str (F + 1) /= ' ')),
      Post =>
        (declare
           F : constant Positive :=
-            First_Non_Space_Ghost (Str (Ptr.all'Old .. Max));
+            First_Non_Space_Ghost (Str, Ptr.all'Old, Max);
         begin
           Minus = (Str (F) = '-')
             and then Ptr.all = (if Str (F) in '+' | '-' then F + 1 else F)
@@ -162,14 +169,14 @@ is
        and then
          (declare
             F : constant Positive :=
-              First_Non_Space_Ghost (Str (Ptr.all .. Max));
+              First_Non_Space_Ghost (Str, Ptr.all, Max);
           begin
             (if Str (F) = '+' then
                F <= Max - 1 and then Str (F + 1) /= ' ')),
      Post =>
        (declare
           F : constant Positive :=
-            First_Non_Space_Ghost (Str (Ptr.all'Old .. Max));
+            First_Non_Space_Ghost (Str, Ptr.all'Old, Max);
         begin
           Ptr.all = (if Str (F) = '+' then F + 1 else F)
             and then Start = F);
@@ -195,7 +202,7 @@ is
        and then Only_Number_Ghost (Str, Str'First, Last_Number_Ghost'Result);
    --  Ghost function that returns the index of the last character in S that
    --  is either a figure or underscore, which necessarily exists given the
-   --  precondition on S.
+   --  precondition on Str.
 
    function Is_Natural_Format_Ghost (Str : String) return Boolean is
      (Str /= ""
@@ -213,6 +220,50 @@ is
    --  natural number, consisting in a sequence of figures possibly separated
    --  by single underscores. It may be followed by other characters.
 
+   function Starts_As_Exponent_Format_Ghost
+     (Str  : String;
+      Real : Boolean := False) return Boolean
+   is
+     (Str'Length > 1
+      and then Str (Str'First) in 'E' | 'e'
+      and then
+        (declare
+            Plus_Sign  : constant Boolean := Str (Str'First + 1) = '+';
+            Minus_Sign : constant Boolean := Str (Str'First + 1) = '-';
+            Sign       : constant Boolean := Plus_Sign or Minus_Sign;
+         begin
+           (if Minus_Sign then Real)
+            and then (if Sign then Str'Length > 2)
+            and then
+              (declare
+                 Start : constant Natural :=
+                  (if Sign then Str'First + 2 else Str'First + 1);
+               begin
+                 Str (Start) in '0' .. '9')))
+   with
+     Ghost;
+   --  Ghost function that determines if Str is recognized as something which
+   --  might be an exponent, ie. it starts with an 'e', capitalized or not,
+   --  followed by an optional sign which can only be '-' if we are working on
+   --  real numbers (Real is True), and then a digit in decimal notation.
+
+   function Is_Opt_Exponent_Format_Ghost
+     (Str  : String;
+      Real : Boolean := False) return Boolean
+   is
+     (not Starts_As_Exponent_Format_Ghost (Str, Real)
+      or else
+        (declare
+           Start : constant Natural :=
+             (if Str (Str'First + 1) in '+' | '-' then Str'First + 2
+              else Str'First + 1);
+         begin Is_Natural_Format_Ghost (Str (Start .. Str'Last))))
+   with
+     Ghost;
+   --  Ghost function that determines if Str has the correct format for an
+   --  optional exponent, that is, either it does not start as an exponent, or
+   --  it is in a correct format for a natural number.
+
    function Scan_Natural_Ghost
      (Str : String;
       P   : Natural;
@@ -221,12 +272,34 @@ is
    with
      Ghost,
      Subprogram_Variant => (Increases => P),
-     Pre => Is_Natural_Format_Ghost (Str)
-       and then P in Str'First .. Last_Number_Ghost (Str)
-       and then Acc < Integer'Last / 10;
+     Pre => Str /= "" and then Str (Str'First) in '0' .. '9'
+       and then Str'Last < Natural'Last
+       and then P in Str'First .. Last_Number_Ghost (Str) + 1;
    --  Ghost function that recursively computes the natural number in Str, up
    --  to the first number greater or equal to Natural'Last / 10, assuming Acc
    --  has been scanned already and scanning continues at index P.
+
+   function Scan_Exponent_Ghost
+     (Str  : String;
+      Real : Boolean := False)
+      return Integer
+   is
+     (declare
+        Plus_Sign  : constant Boolean := Str (Str'First + 1) = '+';
+        Minus_Sign : constant Boolean := Str (Str'First + 1) = '-';
+        Sign       : constant Boolean := Plus_Sign or Minus_Sign;
+        Start      : constant Natural :=
+          (if Sign then Str'First + 2 else Str'First + 1);
+        Value      : constant Natural :=
+          Scan_Natural_Ghost (Str (Start .. Str'Last), Start, 0);
+      begin
+        (if Minus_Sign then -Value else Value))
+   with
+     Ghost,
+     Pre  => Str'Last < Natural'Last
+       and then Starts_As_Exponent_Format_Ghost (Str, Real),
+     Post => (if not Real then Scan_Exponent_Ghost'Result >= 0);
+   --  Ghost function that scans an exponent
 
    procedure Scan_Exponent
      (Str  : String;
@@ -238,50 +311,16 @@ is
      Pre =>
        --  Ptr.all .. Max is either an empty range, or a valid range in Str
        (Ptr.all > Max or else (Ptr.all >= Str'First and then Max <= Str'Last))
-         and then
-       Max < Natural'Last
-         and then
-       (if Ptr.all < Max and then Str (Ptr.all) in 'E' | 'e' then
-          (declare
-             Plus_Sign  : constant Boolean := Str (Ptr.all + 1) = '+';
-             Minus_Sign : constant Boolean := Str (Ptr.all + 1) = '-';
-             Sign       : constant Boolean := Plus_Sign or Minus_Sign;
-           begin
-             (if Minus_Sign and not Real then True
-              elsif Sign
-                and then (Ptr.all > Max - 2
-                            or else Str (Ptr.all + 2) not in '0' .. '9')
-              then True
-              else
-                (declare
-                   Start : constant Natural :=
-                     (if Sign then Ptr.all + 2 else Ptr.all + 1);
-                 begin
-                   Is_Natural_Format_Ghost (Str (Start .. Max)))))),
+         and then Max < Natural'Last
+         and then Is_Opt_Exponent_Format_Ghost (Str (Ptr.all .. Max), Real),
      Post =>
-       (if Ptr.all'Old < Max and then Str (Ptr.all'Old) in 'E' | 'e' then
-          (declare
-             Plus_Sign  : constant Boolean := Str (Ptr.all'Old + 1) = '+';
-             Minus_Sign : constant Boolean := Str (Ptr.all'Old + 1) = '-';
-             Sign       : constant Boolean := Plus_Sign or Minus_Sign;
-             Unchanged  : constant Boolean :=
-               Exp = 0 and Ptr.all = Ptr.all'Old;
-           begin
-             (if Minus_Sign and not Real then Unchanged
-              elsif Sign
-                and then (Ptr.all'Old > Max - 2
-                            or else Str (Ptr.all'Old + 2) not in '0' .. '9')
-              then Unchanged
-              else
-                (declare
-                   Start : constant Natural :=
-                     (if Sign then Ptr.all'Old + 2 else Ptr.all'Old + 1);
-                   Value : constant Natural :=
-                     Scan_Natural_Ghost (Str (Start .. Max), Start, 0);
-                 begin
-                   Exp = (if Minus_Sign then -Value else Value))))
-        else
-          Exp = 0 and Ptr.all = Ptr.all'Old);
+       (if Starts_As_Exponent_Format_Ghost (Str (Ptr.all'Old .. Max), Real)
+        then Exp = Scan_Exponent_Ghost (Str (Ptr.all'Old .. Max), Real)
+          and then
+          (if Str (Ptr.all'Old + 1) in '-' | '+' then
+             Ptr.all = Last_Number_Ghost (Str (Ptr.all'Old + 2 .. Max)) + 1
+           else Ptr.all = Last_Number_Ghost (Str (Ptr.all'Old + 1 .. Max)) + 1)
+        else Exp = 0 and Ptr.all = Ptr.all'Old);
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
    --  for Scan_Sign. If Ptr.all < Max and Str (Ptr.all) = 'E' or 'e', then an
    --  exponent is scanned out, with the exponent value returned in Exp, and
@@ -324,7 +363,7 @@ is
             Str (P + 1) in '0' .. '9'),
      Post =>
        P = P'Old + 1
-         and then Ptr.all = Ptr.all;
+         and then Ptr.all'Old = Ptr.all;
    --  Called if an underscore is encountered while scanning digits. Str (P)
    --  contains the underscore. Ptr is the pointer to be returned to the
    --  ultimate caller of the scan routine, Max is the maximum subscript in
@@ -349,19 +388,20 @@ private
       Acc : Natural)
       return Natural
    is
-     (if Str (P) = '_' then
+     (if P > Str'Last
+        or else Str (P) not in '0' .. '9' | '_'
+        or else Acc >= Integer'Last / 10
+      then
+        Acc
+      elsif Str (P) = '_' then
         Scan_Natural_Ghost (Str, P + 1, Acc)
       else
         (declare
            Shift_Acc : constant Natural :=
-             Acc * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+             Acc * 10 +
+               (Integer'(Character'Pos (Str (P))) -
+                  Integer'(Character'Pos ('0')));
          begin
-           (if P = Str'Last
-              or else Str (P + 1) not in '0' .. '9' | '_'
-              or else Shift_Acc >= Integer'Last / 10
-            then
-              Shift_Acc
-            else
-              Scan_Natural_Ghost (Str, P + 1, Shift_Acc))));
+           Scan_Natural_Ghost (Str, P + 1, Shift_Acc)));
 
 end System.Val_Util;

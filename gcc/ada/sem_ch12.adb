@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2248,9 +2248,7 @@ package body Sem_Ch12 is
       --  explicit box associations for the formals that are covered by an
       --  Others_Choice.
 
-      if not Is_Empty_List (Default_Formals) then
-         Append_List (Default_Formals, Formals);
-      end if;
+      Append_List (Default_Formals, Formals);
 
       return Assoc_List;
    end Analyze_Associations;
@@ -2396,7 +2394,7 @@ package body Sem_Ch12 is
       T   : Entity_Id;
       Def : Node_Id)
    is
-      Loc   : constant Source_Ptr := Sloc (Def);
+      Loc : constant Source_Ptr := Sloc (Def);
 
    begin
       --  Rewrite as a type declaration of a derived type. This ensures that
@@ -3192,7 +3190,7 @@ package body Sem_Ch12 is
 
    <<Leave>>
       if Has_Aspects (N) then
-         --  Unclear that any other aspects may appear here, snalyze them
+         --  Unclear that any other aspects may appear here, analyze them
          --  for completion, given that the grammar allows their appearance.
 
          Analyze_Aspect_Specifications (N, Pack_Id);
@@ -6079,211 +6077,6 @@ package body Sem_Ch12 is
          return Assoc;
       end if;
    end Get_Associated_Node;
-
-   ----------------------------
-   -- Build_Function_Wrapper --
-   ----------------------------
-
-   function Build_Function_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
-   is
-      Loc       : constant Source_Ptr := Sloc (Current_Scope);
-      Ret_Type  : constant Entity_Id  := Get_Instance_Of (Etype (Formal_Subp));
-      Actuals   : List_Id;
-      Decl      : Node_Id;
-      Func_Name : Node_Id;
-      Func      : Entity_Id;
-      Parm_Type : Node_Id;
-      Profile   : List_Id := New_List;
-      Spec      : Node_Id;
-      Act_F     : Entity_Id;
-      Form_F    : Entity_Id;
-      New_F     : Entity_Id;
-
-   begin
-      Func_Name := New_Occurrence_Of (Actual_Subp, Loc);
-
-      Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Mutate_Ekind (Func, E_Function);
-      Set_Is_Generic_Actual_Subprogram (Func);
-
-      Actuals := New_List;
-      Profile := New_List;
-
-      Act_F  := First_Formal (Actual_Subp);
-      Form_F := First_Formal (Formal_Subp);
-      while Present (Form_F) loop
-
-         --  Create new formal for profile of wrapper, and add a reference
-         --  to it in the list of actuals for the enclosing call. The name
-         --  must be that of the formal in the formal subprogram, because
-         --  calls to it in the generic body may use named associations.
-
-         New_F := Make_Defining_Identifier (Loc, Chars (Form_F));
-
-         Parm_Type :=
-           New_Occurrence_Of (Get_Instance_Of (Etype (Form_F)), Loc);
-
-         Append_To (Profile,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier => New_F,
-             Parameter_Type      => Parm_Type));
-
-         Append_To (Actuals, New_Occurrence_Of (New_F, Loc));
-         Next_Formal (Form_F);
-
-         if Present (Act_F) then
-            Next_Formal (Act_F);
-         end if;
-      end loop;
-
-      Spec :=
-        Make_Function_Specification (Loc,
-          Defining_Unit_Name       => Func,
-          Parameter_Specifications => Profile,
-          Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
-
-      Decl :=
-        Make_Expression_Function (Loc,
-          Specification => Spec,
-          Expression    =>
-            Make_Function_Call (Loc,
-              Name                   => Func_Name,
-              Parameter_Associations => Actuals));
-
-      return Decl;
-   end Build_Function_Wrapper;
-
-   ----------------------------
-   -- Build_Operator_Wrapper --
-   ----------------------------
-
-   function Build_Operator_Wrapper
-     (Formal_Subp : Entity_Id;
-      Actual_Subp : Entity_Id) return Node_Id
-   is
-      Loc       : constant Source_Ptr := Sloc (Current_Scope);
-      Ret_Type  : constant Entity_Id  :=
-                    Get_Instance_Of (Etype (Formal_Subp));
-      Op_Type   : constant Entity_Id  :=
-                    Get_Instance_Of (Etype (First_Formal (Formal_Subp)));
-      Is_Binary : constant Boolean    :=
-                    Present (Next_Formal (First_Formal (Formal_Subp)));
-
-      Decl    : Node_Id;
-      Expr    : Node_Id := Empty;
-      F1, F2  : Entity_Id;
-      Func    : Entity_Id;
-      Op_Name : Name_Id;
-      Spec    : Node_Id;
-      L, R    : Node_Id;
-
-   begin
-      Op_Name := Chars (Actual_Subp);
-
-      --  Create entities for wrapper function and its formals
-
-      F1 := Make_Temporary (Loc, 'A');
-      F2 := Make_Temporary (Loc, 'B');
-      L  := New_Occurrence_Of (F1, Loc);
-      R  := New_Occurrence_Of (F2, Loc);
-
-      Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Mutate_Ekind (Func, E_Function);
-      Set_Is_Generic_Actual_Subprogram (Func);
-
-      Spec :=
-        Make_Function_Specification (Loc,
-          Defining_Unit_Name       => Func,
-          Parameter_Specifications => New_List (
-            Make_Parameter_Specification (Loc,
-               Defining_Identifier => F1,
-               Parameter_Type      => New_Occurrence_Of (Op_Type, Loc))),
-          Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
-
-      if Is_Binary then
-         Append_To (Parameter_Specifications (Spec),
-            Make_Parameter_Specification (Loc,
-              Defining_Identifier => F2,
-              Parameter_Type      => New_Occurrence_Of (Op_Type, Loc)));
-      end if;
-
-      --  Build expression as a function call, or as an operator node
-      --  that corresponds to the name of the actual, starting with
-      --  binary operators.
-
-      if Op_Name not in Any_Operator_Name then
-         Expr :=
-           Make_Function_Call (Loc,
-             Name                   =>
-               New_Occurrence_Of (Actual_Subp, Loc),
-             Parameter_Associations => New_List (L));
-
-         if Is_Binary then
-            Append_To (Parameter_Associations (Expr), R);
-         end if;
-
-      --  Binary operators
-
-      elsif Is_Binary then
-         if Op_Name = Name_Op_And then
-            Expr := Make_Op_And      (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Or then
-            Expr := Make_Op_Or       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Xor then
-            Expr := Make_Op_Xor      (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Eq then
-            Expr := Make_Op_Eq       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Ne then
-            Expr := Make_Op_Ne       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Le then
-            Expr := Make_Op_Le       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Gt then
-            Expr := Make_Op_Gt       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Ge then
-            Expr := Make_Op_Ge       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Lt then
-            Expr := Make_Op_Lt       (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Add then
-            Expr := Make_Op_Add      (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Subtract then
-            Expr := Make_Op_Subtract (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Concat then
-            Expr := Make_Op_Concat   (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Multiply then
-            Expr := Make_Op_Multiply (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Divide then
-            Expr := Make_Op_Divide   (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Mod then
-            Expr := Make_Op_Mod      (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Rem then
-            Expr := Make_Op_Rem      (Loc, Left_Opnd => L, Right_Opnd => R);
-         elsif Op_Name = Name_Op_Expon then
-            Expr := Make_Op_Expon    (Loc, Left_Opnd => L, Right_Opnd => R);
-         end if;
-
-      --  Unary operators
-
-      else
-         if Op_Name = Name_Op_Add then
-            Expr := Make_Op_Plus  (Loc, Right_Opnd => L);
-         elsif Op_Name = Name_Op_Subtract then
-            Expr := Make_Op_Minus (Loc, Right_Opnd => L);
-         elsif Op_Name = Name_Op_Abs then
-            Expr := Make_Op_Abs   (Loc, Right_Opnd => L);
-         elsif Op_Name = Name_Op_Not then
-            Expr := Make_Op_Not   (Loc, Right_Opnd => L);
-         end if;
-      end if;
-
-      Decl :=
-        Make_Expression_Function (Loc,
-          Specification => Spec,
-          Expression    => Expr);
-
-      return Decl;
-   end Build_Operator_Wrapper;
 
    -----------------------------------
    -- Build_Subprogram_Decl_Wrapper --
@@ -9908,6 +9701,7 @@ package body Sem_Ch12 is
       Decl     : Node_Id;
       Decls    : List_Id;
       Inst     : Entity_Id;
+      Origin   : Entity_Id;
       Par_Inst : Node_Id;
       Par_N    : Node_Id;
 
@@ -9998,9 +9792,10 @@ package body Sem_Ch12 is
          end;
       end if;
 
-      Decl  := N;
-      Decls := List_Containing (N);
-      Par_N := Parent (Decls);
+      Decl   := N;
+      Decls  := List_Containing (N);
+      Par_N  := Parent (Decls);
+      Origin := Empty;
 
       --  Determine the proper freeze point of an instantiation
 
@@ -10029,10 +9824,13 @@ package body Sem_Ch12 is
                 not In_Same_Source_Unit (Generic_Parent (Par_Inst), Inst)
             then
                while Present (Decl) loop
-                  if (Nkind (Decl) in N_Unit_Body
+                  if ((Nkind (Decl) in N_Unit_Body
                         or else
-                      Nkind (Decl) in N_Body_Stub)
-                    and then Comes_From_Source (Decl)
+                       Nkind (Decl) in N_Body_Stub)
+                      and then Comes_From_Source (Decl))
+                    or else (Present (Origin)
+                              and then Nkind (Decl) in N_Generic_Instantiation
+                              and then Instance_Spec (Decl) /= Origin)
                   then
                      Set_Sloc (F_Node, Sloc (Decl));
                      Insert_Before (Decl, F_Node);
@@ -10056,16 +9854,19 @@ package body Sem_Ch12 is
                return;
 
             --  When the instantiation occurs in a package spec and there is
-            --  no source body which follows, not even of the package itself
-            --  then insert into the declaration list of the outer level.
+            --  no source body which follows, not even of the package itself,
+            --  then insert into the declaration list of the outer level, but
+            --  do not jump over following instantiations in this list because
+            --  they may have a body that has not materialized yet, see above.
 
             elsif Nkind (Par_N) = N_Package_Specification
               and then No (Corresponding_Body (Parent (Par_N)))
               and then Is_List_Member (Parent (Par_N))
             then
-               Decl  := Parent (Par_N);
-               Decls := List_Containing (Decl);
-               Par_N := Parent (Decls);
+               Decl   := Parent (Par_N);
+               Decls  := List_Containing (Decl);
+               Par_N  := Parent (Decls);
+               Origin := Decl;
 
             --  In a package declaration, or if no source body which follows
             --  and at library level, then insert at end of list.
@@ -10547,7 +10348,7 @@ package body Sem_Ch12 is
          Formal_Ent  : Entity_Id;
          Actual_Ent  : Entity_Id)
       is
-         Act_Pkg   : Entity_Id;
+         Act_Pkg : Entity_Id;
 
       begin
          Set_Instance_Of (Formal_Ent, Actual_Ent);
@@ -11071,7 +10872,6 @@ package body Sem_Ch12 is
         and then Expander_Active
       then
          New_Subp := Make_Temporary (Sloc (Actual), 'S');
-         Set_Defining_Unit_Name (New_Spec, New_Subp);
       else
          New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
       end if;

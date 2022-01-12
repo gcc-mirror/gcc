@@ -19,5 +19,5 @@ void foo(int a)
   g(s);
 }
 
-/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(24, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(24, 1, \&\"s\"" "gimple" } } */
 /* { dg-final { scan-tree-dump "__builtin_clear_padding" "gimple" } } */

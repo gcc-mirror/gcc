@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -448,6 +448,10 @@ package Sem_Util is
    --  Verify that the profile of nonvolatile function Func_Id does not contain
    --  effectively volatile parameters or return type for reading.
 
+   function Check_Parents (N : Node_Id; List : Elist_Id) return Boolean;
+   --  Return True if all the occurrences of subtree N referencing entities in
+   --  the given List have the right value in their Parent field.
+
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
    --  Verify the legality of reference Ref to variable Var_Id when the
    --  variable is a constituent of a single protected/task type.
@@ -623,10 +627,13 @@ package Sem_Util is
    --  aspect specifications. If From has no aspects, the routine has no
    --  effect.
 
-   function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id;
+   function Copy_Subprogram_Spec
+     (Spec     : Node_Id;
+      New_Sloc : Source_Ptr := No_Location) return Node_Id;
    --  Replicate a function or a procedure specification denoted by Spec. The
    --  resulting tree is an exact duplicate of the original tree. New entities
-   --  are created for the unit name and the formal parameters.
+   --  are created for the unit name and the formal parameters. For definition
+   --  of New_Sloc, see the comment for New_Copy_Tree.
 
    function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id;
    --  If a type is a generic actual type, return the corresponding formal in
@@ -1351,10 +1358,13 @@ package Sem_Util is
    --    CRec_Typ  - the corresponding record type of the full views
 
    function Get_Fullest_View
-     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id;
+     (E           : Entity_Id;
+      Include_PAT : Boolean := True;
+      Recurse     : Boolean := True) return Entity_Id;
    --  Get the fullest possible view of E, looking through private, limited,
    --  packed array and other implementation types. If Include_PAT is False,
-   --  don't look inside packed array types.
+   --  don't look inside packed array types. If Recurse is False, just
+   --  go down one level (so it's no longer the "fullest" view).
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if the underlying type of T is an access type, or has a
@@ -2153,16 +2163,6 @@ package Sem_Util is
    --  an array, either inside a loop of the form 'for X of A' or a quantified
    --  expression of the form 'for all/some X of A' where A is of array type.
 
-   type Is_LHS_Result is (Yes, No, Unknown);
-   function Is_LHS (N : Node_Id) return Is_LHS_Result;
-   --  Returns Yes if N is definitely used as Name in an assignment statement.
-   --  Returns No if N is definitely NOT used as a Name in an assignment
-   --  statement. Returns Unknown if we can't tell at this stage (happens in
-   --  the case where we don't know the type of N yet, and we have something
-   --  like N.A := 3, where this counts as N being used on the left side of
-   --  an assignment only if N is not an access type. If it is an access type
-   --  then it is N.all.A that is assigned, not N.
-
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,
    --  i.e. a library unit or an entity declared in a library package.
@@ -2583,12 +2583,13 @@ package Sem_Util is
    --  and returns True if so. Returns False otherwise. It is an error to call
    --  this function if N is not of an access type.
 
-   function Known_To_Be_Assigned (N : Node_Id) return Boolean;
+   function Known_To_Be_Assigned
+     (N        : Node_Id;
+      Only_LHS : Boolean := False) return Boolean;
    --  The node N is an entity reference. This function determines whether the
    --  reference is for sure an assignment of the entity, returning True if
-   --  so. This differs from May_Be_Lvalue in that it defaults in the other
-   --  direction. Cases which may possibly be assignments but are not known to
-   --  be may return True from May_Be_Lvalue, but False from this function.
+   --  so. Only_LHS will modify this behavior such that actuals for out or
+   --  in out parameters will not be considered assigned.
 
    function Last_Source_Statement (HSS : Node_Id) return Node_Id;
    --  HSS is a handled statement sequence. This function returns the last
@@ -2612,7 +2613,7 @@ package Sem_Util is
    --  follows:
    --
    --    Checks   - Save the status of Elaboration_Check
-   --    Level    - Save the declaration level of N_Id (if appicable)
+   --    Level    - Save the declaration level of N_Id (if applicable)
    --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
    --    Warnings - Save the status of Elab_Warnings
 
@@ -2626,17 +2627,6 @@ package Sem_Util is
    --  L_Typ and R_Typ are two array types. Returns True when they have the
    --  same number of dimensions, and the same static bounds for each index
    --  position.
-
-   function May_Be_Lvalue (N : Node_Id) return Boolean;
-   --  Determines if N could be an lvalue (e.g. an assignment left hand side).
-   --  An lvalue is defined as any expression which appears in a context where
-   --  a name is required by the syntax, and the identity, rather than merely
-   --  the value of the node is needed (for example, the prefix of an Access
-   --  attribute is in this category). Note that, as implied by the name, this
-   --  test is conservative. If it cannot be sure that N is NOT an lvalue, then
-   --  it returns True. It tries hard to get the answer right, but it is hard
-   --  to guarantee this in all cases. Note that it is more possible to give
-   --  correct answer if the tree is fully analyzed.
 
    function Might_Raise (N : Node_Id) return Boolean;
    --  True if evaluation of N might raise an exception. This is conservative;

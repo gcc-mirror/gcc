@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -309,7 +309,7 @@ package body Sprint is
    procedure Write_Param_Specs (N : Node_Id);
    --  Output parameter specifications for node N (which is a subprogram, or
    --  entry or entry family or access-subprogram-definition, all of which
-   --  have a Parameter_Specificatioons field).
+   --  have a Parameter_Specifications field).
 
    procedure Write_Rewrite_Str (S : String);
    --  Writes out a string (typically containing <<< or >>>}) for a node
@@ -1135,7 +1135,7 @@ package body Sprint is
          --  Note: the following code for N_Aspect_Specification is not
          --  normally used, since we deal with aspects as part of a
          --  declaration, but it is here in case we deliberately try
-         --  to print an N_Aspect_Speficiation node (e.g. from GDB).
+         --  to print an N_Aspect_Specification node (e.g. from GDB).
 
          when N_Aspect_Specification =>
             Sprint_Node (Identifier (Node));
@@ -4806,7 +4806,7 @@ package body Sprint is
       --  Set true if we output at least one parameter
 
    begin
-      --  Write out explicit specs from Parameter_Speficiations list
+      --  Write out explicit specs from Parameter_Specifications list
 
       if Specs_Present then
          Write_Str_With_Col_Check (" (");

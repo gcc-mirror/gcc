@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,14 +66,17 @@ is
    -- First_Non_Space_Ghost --
    ---------------------------
 
-   function First_Non_Space_Ghost (S : String) return Positive is
+   function First_Non_Space_Ghost
+     (S        : String;
+      From, To : Integer) return Positive
+   is
    begin
-      for J in S'Range loop
+      for J in From .. To loop
          if S (J) /= ' ' then
             return J;
          end if;
 
-         pragma Loop_Invariant (for all K in S'First .. J => S (K) = ' ');
+         pragma Loop_Invariant (for all K in From .. J => S (K) = ' ');
       end loop;
 
       raise Program_Error;
@@ -172,6 +175,9 @@ is
          Exp := 0;
          return;
       end if;
+      pragma Annotate
+        (CodePeer, False_Positive, "test always false",
+         "the slice might be empty or not start with an 'e'");
 
       --  We have an E/e, see if sign follows
 
@@ -222,7 +228,6 @@ is
          pragma Assert (Is_Natural_Format_Ghost (Rest));
 
          loop
-            pragma Assert (Str (P) = Rest (P));
             pragma Assert (Str (P) in '0' .. '9');
 
             if X < (Integer'Last / 10) then
@@ -230,17 +235,11 @@ is
             end if;
 
             pragma Loop_Invariant (X >= 0);
-            pragma Loop_Invariant (P in P'Loop_Entry .. Last);
+            pragma Loop_Invariant (P in Rest'First .. Last);
             pragma Loop_Invariant (Str (P) in '0' .. '9');
             pragma Loop_Invariant
-              (Scan_Natural_Ghost (Rest, P'Loop_Entry, 0)
-               = (if P = Max
-                    or else Rest (P + 1) not in '0' .. '9' | '_'
-                    or else X >= Integer'Last / 10
-                  then
-                    X
-                  else
-                    Scan_Natural_Ghost (Rest, P + 1, X)));
+              (Scan_Natural_Ghost (Rest, Rest'First, 0)
+               = Scan_Natural_Ghost (Rest, P + 1, X));
 
             P := P + 1;
 
@@ -252,6 +251,8 @@ is
                exit when Str (P) not in '0' .. '9';
             end if;
          end loop;
+
+         pragma Assert (P = Last + 1);
       end;
 
       if M then
@@ -298,7 +299,7 @@ is
 
       Start := P;
 
-      pragma Assert (Start = First_Non_Space_Ghost (Str (Ptr.all .. Max)));
+      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Skip past an initial plus sign
 
@@ -354,7 +355,7 @@ is
 
       Start := P;
 
-      pragma Assert (Start = First_Non_Space_Ghost (Str (Ptr.all .. Max)));
+      pragma Assert (Start = First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Remember an initial minus sign
 

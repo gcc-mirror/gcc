@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
+pragma Style_Checks ("M512");
+--  Allow long lines in this unit
 
-pragma Style_Checks (Off);
---  Allow long lines in this unit. Note this could be more specific, but we
---  keep this simple form because of bootstrap constraints ???
-
---  pragma Warnings (Off, "non-static constant in preelaborated unit");
---  We need this to be pure, and the three constants in question are not a
---  real problem, they are completely known at compile time. This pragma
---  is commented out for now, because we still want to be able to bootstrap
---  with old versions of the compiler that did not support this form. We
---  have added additional pragma Warnings (Off/On) for now ???
+pragma Warnings (Off, "non-static constant in preelaborated unit");
+--  We need package to be pure, and multiple constants in this unit will
+--  trigger the "non-static" warning - so ignore this since they are known at
+--  compile time and not a real problem for us.
 
 package body System.UTF_32 is
 
@@ -1857,9 +1852,6 @@ package body System.UTF_32 is
      (16#E0100#, 16#E01EF#),  -- (Mn)  VARIATION SELECTOR-17 .. VARIATION SELECTOR-256
      (16#F0000#, 16#FFFFD#),  -- (Co)  <Plane 15 Private Use, First> .. <Plane 15 Private Use, Last>
      (16#100000#, 16#10FFFD#));  -- (Co)  <Plane 16 Private Use, First> .. <Plane 16 Private Use, Last>
-
-   pragma Warnings (Off);
-   --  Temporary, until pragma at start can be activated ???
 
    --  The following array is parallel to the Unicode_Ranges table above. For
    --  each entry in the Unicode_Ranges table, there is a corresponding entry
@@ -6507,9 +6499,6 @@ package body System.UTF_32 is
      (16#1F250#, 16#1F251#),   -- CIRCLED IDEOGRAPH ADVANTAGE..CIRCLED IDEOGRAPH ACCEPT
      (16#1FBF0#, 16#1FBF9#),   -- SEGMENTED DIGIT ZERO..SEGMENTED DIGIT NINE
      (16#2F800#, 16#2FA1D#));  -- CJK COMPATIBILITY IDEOGRAPH-2F800..CJK COMPATIBILITY IDEOGRAPH-2FA1D
-
-   pragma Warnings (On);
-   --  Temporary until pragma Warnings at start can be activated ???
 
    type Decomposition_Mapping is record
       Item               : UTF_32;
@@ -12314,7 +12303,7 @@ package body System.UTF_32 is
       return C = Nd;
    end Is_UTF_32_Digit;
 
-    ----------------------
+   ----------------------
    -- Is_UTF_32_Letter --
    ----------------------
 

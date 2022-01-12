@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1089,7 +1089,7 @@ package body Exp_Ch11 is
    --  (protecting test only needed if not at library level)
 
    --     exceptF : aliased System.Atomic_Operations.Test_And_Set.
-   --                         .Test_And_Set_Flag := 0; --  static data
+   --                         .Test_And_Set_Flag; --  static data
    --     if not Atomic_Test_And_Set (exceptF) then
    --        Register_Exception (except'Unrestricted_Access);
    --     end if;
@@ -1321,9 +1321,7 @@ package body Exp_Ch11 is
                       Defining_Identifier => Flag_Id,
                       Aliased_Present     => True,
                       Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc),
-                      Expression          =>
-                        Make_Integer_Literal (Loc, 0));
+                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc));
                else
                   Flag_Decl :=
                     Make_Object_Declaration (Loc,

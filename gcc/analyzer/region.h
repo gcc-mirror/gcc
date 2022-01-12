@@ -189,6 +189,8 @@ public:
 
   const complexity &get_complexity () const { return m_complexity; }
 
+  bool is_named_decl_p (const char *decl_name) const;
+
  protected:
   region (complexity c, unsigned id, const region *parent, tree type);
 

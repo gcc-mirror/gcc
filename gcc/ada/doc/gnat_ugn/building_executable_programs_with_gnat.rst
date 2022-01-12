@@ -3703,6 +3703,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   * Comparison of an object or (unary or binary) operation of boolean type to
     an explicit True value.
 
+  * Import of parent package.
+
   The default is that warnings for redundant constructs are not given.
 
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -404,8 +404,6 @@ package body Exp_Attr is
               Parameter_Specifications => New_List (
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier => Obj_Id,
-                  In_Present          => True,
-                  Out_Present         => False,
                   Parameter_Type      => New_Occurrence_Of (Formal_Typ, Loc))),
               Result_Definition        =>
                 New_Occurrence_Of (Standard_Boolean, Loc)),
@@ -3786,7 +3784,7 @@ package body Exp_Attr is
       --------------
 
       when Attribute_From_Any => From_Any : declare
-         Decls  : constant List_Id   := New_List;
+         Decls : constant List_Id := New_List;
 
       begin
          Rewrite (N,

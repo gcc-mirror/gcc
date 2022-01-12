@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -513,7 +513,7 @@ package body Sem_Warn is
             --  If this is an lvalue, then definitely abandon, since
             --  this could be a direct modification of the variable.
 
-            if May_Be_Lvalue (N) then
+            if Known_To_Be_Assigned (N) then
                return Abandon;
             end if;
 
@@ -559,7 +559,7 @@ package body Sem_Warn is
            and then Present (Renamed_Object (Entity (N)))
            and then Is_Entity_Name (Renamed_Object (Entity (N)))
            and then Entity (Renamed_Object (Entity (N))) = Var
-           and then May_Be_Lvalue (N)
+           and then Known_To_Be_Assigned (N)
          then
             return Abandon;
 
@@ -1700,7 +1700,11 @@ package body Sem_Warn is
               and then ((Ekind (E1) /= E_Variable
                           and then Ekind (E1) /= E_Constant
                           and then Ekind (E1) /= E_Component)
-                         or else not Is_Task_Type (E1T))
+
+                         --  Check that E1T is not a task or a composite type
+                         --  with a task component.
+
+                         or else not Has_Task (E1T))
 
               --  For subunits, only place warnings on the main unit itself,
               --  since parent units are not completely compiled.
@@ -4596,10 +4600,11 @@ package body Sem_Warn is
                         if Nkind (Parent (LA)) in N_Parameter_Association
                                                 | N_Procedure_Call_Statement
                         then
-                           Error_Msg_NE
-                             ("?m?& modified by call, but value might not be "
-                              & "referenced", LA, Ent);
-
+                           if Warn_On_All_Unread_Out_Parameters then
+                              Error_Msg_NE
+                                ("?m?& modified by call, but value might not "
+                                 & "be referenced", LA, Ent);
+                           end if;
                         else
                            Error_Msg_NE -- CODEFIX
                              ("?m?possibly useless assignment to&, value "

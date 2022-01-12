@@ -88,7 +88,7 @@ test02()
     VERIFY( i == (&i - out) );
 }
 
-void
+constexpr bool
 test03()
 {
   int arr[2] = { 1, 2 };
@@ -117,6 +117,9 @@ test03()
   VERIFY( (j - end) == -2 );
   VERIFY( (j - i) == 0 );
 
+  if (std::is_constant_evaluated())
+    return true;
+
   try
   {
     struct S { operator const int*() const { throw 1; } };
@@ -126,7 +129,11 @@ test03()
   catch (int)
   {
   }
+
+  return true;
 }
+
+static_assert( test03() );
 
 void
 test04()

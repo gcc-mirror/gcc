@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -293,17 +293,6 @@ package body Exp_Ch3 is
    --  Returns True if there are representation clauses for type T that are not
    --  inherited. If the result is false, the init_proc and the discriminant
    --  checking functions of the parent can be reused by a derived type.
-
-   procedure Make_Controlling_Function_Wrappers
-     (Tag_Typ   : Entity_Id;
-      Decl_List : out List_Id;
-      Body_List : out List_Id);
-   --  Ada 2005 (AI-391): Makes specs and bodies for the wrapper functions
-   --  associated with inherited functions with controlling results which
-   --  are not overridden. The body of each wrapper function consists solely
-   --  of a return statement whose expression is an extension aggregate
-   --  invoking the inherited subprogram's parent subprogram and extended
-   --  with a null association list.
 
    function Make_Null_Procedure_Specs (Tag_Typ : Entity_Id) return List_Id;
    --  Ada 2005 (AI-251): Makes specs for null procedures associated with any
@@ -1045,10 +1034,10 @@ package body Exp_Ch3 is
         (Case_Id : Entity_Id;
          Variant : Node_Id) return Entity_Id
       is
-         Body_Node           : Node_Id;
-         Func_Id             : Entity_Id;
-         Parameter_List      : List_Id;
-         Spec_Node           : Node_Id;
+         Body_Node      : Node_Id;
+         Func_Id        : Entity_Id;
+         Parameter_List : List_Id;
+         Spec_Node      : Node_Id;
 
       begin
          Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -2033,6 +2022,25 @@ package body Exp_Ch3 is
                          Elmt2 => Defining_Identifier (First
                                    (Parameter_Specifications
                                       (Parent (Proc_Id)))));
+
+               --  If the type has an incomplete view, a current instance
+               --  may have an incomplete type. In that case, it must also be
+               --  replaced by the formal of the Init_Proc.
+
+               if Nkind (Parent (Rec_Type)) = N_Full_Type_Declaration
+                 and then Present (Incomplete_View (Parent (Rec_Type)))
+               then
+                  Append_Elmt (
+                    N  => Defining_Identifier
+                            (Incomplete_View (Parent (Rec_Type))),
+                    To => Map);
+                  Append_Elmt (
+                    N  => Defining_Identifier
+                            (First
+                              (Parameter_Specifications
+                                (Parent (Proc_Id)))),
+                    To => Map);
+               end if;
             end if;
 
             Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);
@@ -2877,9 +2885,7 @@ package body Exp_Ch3 is
                   Fixed_Comps    => False,
                   Variable_Comps => True);
 
-               if Is_Non_Empty_List (Init_Tags_List) then
-                  Append_List_To (Body_Stmts, Init_Tags_List);
-               end if;
+               Append_List_To (Body_Stmts, Init_Tags_List);
             end if;
          end if;
 
@@ -4133,7 +4139,7 @@ package body Exp_Ch3 is
                Set_Static_Initialization (Proc_Id, Agg);
 
                declare
-                  Comp  : Node_Id;
+                  Comp : Node_Id;
                begin
                   Comp := First (Component_Associations (Agg));
                   while Present (Comp) loop
@@ -6902,9 +6908,7 @@ package body Exp_Ch3 is
                New_Nodes := Make_DT (Base_Typ, N);
             end if;
 
-            if not Is_Empty_List (New_Nodes) then
-               Insert_List_Before (N, New_Nodes);
-            end if;
+            Insert_List_Before (N, New_Nodes);
          end;
       end if;
 
@@ -9591,18 +9595,40 @@ package body Exp_Ch3 is
       Decl_List : out List_Id;
       Body_List : out List_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (Tag_Typ);
+      Loc : constant Source_Ptr := Sloc (Tag_Typ);
+
+      function Make_Wrapper_Specification (Subp : Entity_Id) return Node_Id;
+      --  Returns a function specification with the same profile as Subp
+
+      --------------------------------
+      -- Make_Wrapper_Specification --
+      --------------------------------
+
+      function Make_Wrapper_Specification (Subp : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       =>
+               Make_Defining_Identifier (Loc,
+                 Chars => Chars (Subp)),
+             Parameter_Specifications =>
+               Copy_Parameter_List (Subp),
+             Result_Definition        =>
+               New_Occurrence_Of (Etype (Subp), Loc));
+      end Make_Wrapper_Specification;
+
       Prim_Elmt   : Elmt_Id;
       Subp        : Entity_Id;
       Actual_List : List_Id;
-      Formal_List : List_Id;
       Formal      : Entity_Id;
       Par_Formal  : Entity_Id;
+      Ext_Aggr    : Node_Id;
       Formal_Node : Node_Id;
       Func_Body   : Node_Id;
       Func_Decl   : Node_Id;
-      Func_Spec   : Node_Id;
-      Return_Stmt : Node_Id;
+      Func_Id     : Entity_Id;
+
+   --  Start of processing for Make_Controlling_Function_Wrappers
 
    begin
       Decl_List := New_List;
@@ -9674,43 +9700,10 @@ package body Exp_Ch3 is
                end;
             end if;
 
-            Formal_List := No_List;
-            Formal := First_Formal (Subp);
+            Func_Decl :=
+              Make_Subprogram_Declaration (Loc,
+                Specification => Make_Wrapper_Specification (Subp));
 
-            if Present (Formal) then
-               Formal_List := New_List;
-
-               while Present (Formal) loop
-                  Append
-                    (Make_Parameter_Specification
-                       (Loc,
-                        Defining_Identifier =>
-                          Make_Defining_Identifier (Sloc (Formal),
-                            Chars => Chars (Formal)),
-                        In_Present  => In_Present (Parent (Formal)),
-                        Out_Present => Out_Present (Parent (Formal)),
-                        Null_Exclusion_Present =>
-                          Null_Exclusion_Present (Parent (Formal)),
-                        Parameter_Type =>
-                          New_Occurrence_Of (Etype (Formal), Loc),
-                        Expression =>
-                          New_Copy_Tree (Expression (Parent (Formal)))),
-                     Formal_List);
-
-                  Next_Formal (Formal);
-               end loop;
-            end if;
-
-            Func_Spec :=
-              Make_Function_Specification (Loc,
-                Defining_Unit_Name       =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Chars (Subp)),
-                Parameter_Specifications => Formal_List,
-                Result_Definition        =>
-                  New_Occurrence_Of (Etype (Subp), Loc));
-
-            Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
             Append_To (Decl_List, Func_Decl);
 
             --  Build a wrapper body that calls the parent function. The body
@@ -9723,57 +9716,68 @@ package body Exp_Ch3 is
 
             Formal      := First_Formal (Subp);
             Par_Formal  := First_Formal (Alias (Subp));
-            Formal_Node := First (Formal_List);
+            Formal_Node :=
+              First (Parameter_Specifications (Specification (Func_Decl)));
 
             if Present (Formal) then
                Actual_List := New_List;
+
+               while Present (Formal) loop
+                  if Is_Controlling_Formal (Formal) then
+                     Append_To (Actual_List,
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark =>
+                           New_Occurrence_Of (Etype (Par_Formal), Loc),
+                         Expression   =>
+                           New_Occurrence_Of
+                             (Defining_Identifier (Formal_Node), Loc)));
+                  else
+                     Append_To
+                       (Actual_List,
+                        New_Occurrence_Of
+                          (Defining_Identifier (Formal_Node), Loc));
+                  end if;
+
+                  Next_Formal (Formal);
+                  Next_Formal (Par_Formal);
+                  Next (Formal_Node);
+               end loop;
             else
                Actual_List := No_List;
             end if;
 
-            while Present (Formal) loop
-               if Is_Controlling_Formal (Formal) then
-                  Append_To (Actual_List,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of (Etype (Par_Formal), Loc),
-                      Expression   =>
-                        New_Occurrence_Of
-                          (Defining_Identifier (Formal_Node), Loc)));
-               else
-                  Append_To
-                    (Actual_List,
-                     New_Occurrence_Of
-                       (Defining_Identifier (Formal_Node), Loc));
-               end if;
+            Ext_Aggr :=
+              Make_Extension_Aggregate (Loc,
+                Ancestor_Part       =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      New_Occurrence_Of (Alias (Subp), Loc),
+                    Parameter_Associations => Actual_List),
+                Null_Record_Present => True);
 
-               Next_Formal (Formal);
-               Next_Formal (Par_Formal);
-               Next (Formal_Node);
-            end loop;
+            --  GNATprove will use expression of an expression function as an
+            --  implicit postcondition. GNAT will not benefit from expression
+            --  function (and would struggle if we add an expression function
+            --  to freezing actions).
 
-            Return_Stmt :=
-              Make_Simple_Return_Statement (Loc,
-                Expression =>
-                  Make_Extension_Aggregate (Loc,
-                    Ancestor_Part       =>
-                      Make_Function_Call (Loc,
-                        Name                   =>
-                          New_Occurrence_Of (Alias (Subp), Loc),
-                        Parameter_Associations => Actual_List),
-                    Null_Record_Present => True));
-
-            Func_Body :=
-              Make_Subprogram_Body (Loc,
-                Specification              => New_Copy_Tree (Func_Spec),
-                Declarations               => Empty_List,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Return_Stmt)));
-
-            Set_Defining_Unit_Name
-              (Specification (Func_Body),
-                Make_Defining_Identifier (Loc, Chars (Subp)));
+            if GNATprove_Mode then
+               Func_Body :=
+                 Make_Expression_Function (Loc,
+                   Specification =>
+                     Make_Wrapper_Specification (Subp),
+                   Expression => Ext_Aggr);
+            else
+               Func_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              =>
+                     Make_Wrapper_Specification (Subp),
+                   Declarations               => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Simple_Return_Statement (Loc,
+                           Expression => Ext_Aggr))));
+            end if;
 
             Append_To (Body_List, Func_Body);
 
@@ -9781,11 +9785,12 @@ package body Exp_Ch3 is
             --  primitive operations list. We add the minimum decoration needed
             --  to override interface primitives.
 
-            Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
-            Set_Is_Wrapper (Defining_Unit_Name (Func_Spec));
+            Func_Id := Defining_Unit_Name (Specification (Func_Decl));
 
-            Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
+            Mutate_Ekind (Func_Id, E_Function);
+            Set_Is_Wrapper (Func_Id);
+
+            Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
 
       <<Next_Prim>>
@@ -9812,9 +9817,9 @@ package body Exp_Ch3 is
    begin
       Decl :=
         Predef_Spec_Or_Body (Loc,
-          Tag_Typ => Typ,
-          Name    => Eq_Name,
-          Profile => New_List (
+          Tag_Typ  => Typ,
+          Name     => Eq_Name,
+          Profile  => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Name_X),
@@ -10205,9 +10210,9 @@ package body Exp_Ch3 is
 
       Decl :=
         Predef_Spec_Or_Body (Loc,
-          Tag_Typ => Tag_Typ,
-          Name    => Chars (Renaming_Prim),
-          Profile => New_List (
+          Tag_Typ  => Tag_Typ,
+          Name     => Chars (Renaming_Prim),
+          Profile  => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Chars (Left_Op)),
@@ -10277,8 +10282,8 @@ package body Exp_Ch3 is
       Decl_List      : constant List_Id    := New_List;
       Loc            : constant Source_Ptr := Sloc (Tag_Typ);
       Formal         : Entity_Id;
-      Formal_List    : List_Id;
       New_Param_Spec : Node_Id;
+      New_Spec       : Node_Id;
       Parent_Subp    : Entity_Id;
       Prim_Elmt      : Elmt_Id;
       Subp           : Entity_Id;
@@ -10297,58 +10302,47 @@ package body Exp_Ch3 is
          if Present (Parent_Subp)
            and then Is_Null_Interface_Primitive (Parent_Subp)
          then
-            Formal_List := No_List;
+            --  The null procedure spec is copied from the inherited procedure,
+            --  except for the IS NULL (which must be added) and the overriding
+            --  indicators (which must be removed, if present).
+
+            New_Spec :=
+              Copy_Subprogram_Spec (Subprogram_Specification (Subp), Loc);
+
+            Set_Null_Present      (New_Spec, True);
+            Set_Must_Override     (New_Spec, False);
+            Set_Must_Not_Override (New_Spec, False);
+
             Formal := First_Formal (Subp);
+            New_Param_Spec := First (Parameter_Specifications (New_Spec));
 
-            if Present (Formal) then
-               Formal_List := New_List;
+            while Present (Formal) loop
 
-               while Present (Formal) loop
+               --  For controlling arguments we must change their parameter
+               --  type to reference the tagged type (instead of the interface
+               --  type).
 
-                  --  Copy the parameter spec including default expressions
+               if Is_Controlling_Formal (Formal) then
+                  if Nkind (Parameter_Type (Parent (Formal))) = N_Identifier
+                  then
+                     Set_Parameter_Type (New_Param_Spec,
+                       New_Occurrence_Of (Tag_Typ, Loc));
 
-                  New_Param_Spec :=
-                    New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
-
-                  --  Generate a new defining identifier for the new formal.
-                  --  required because New_Copy_Tree does not duplicate
-                  --  semantic fields (except itypes).
-
-                  Set_Defining_Identifier (New_Param_Spec,
-                    Make_Defining_Identifier (Sloc (Formal),
-                      Chars => Chars (Formal)));
-
-                  --  For controlling arguments we must change their
-                  --  parameter type to reference the tagged type (instead
-                  --  of the interface type)
-
-                  if Is_Controlling_Formal (Formal) then
-                     if Nkind (Parameter_Type (Parent (Formal))) = N_Identifier
-                     then
-                        Set_Parameter_Type (New_Param_Spec,
-                          New_Occurrence_Of (Tag_Typ, Loc));
-
-                     else pragma Assert
-                            (Nkind (Parameter_Type (Parent (Formal))) =
-                                                        N_Access_Definition);
-                        Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
-                          New_Occurrence_Of (Tag_Typ, Loc));
-                     end if;
+                  else pragma Assert
+                         (Nkind (Parameter_Type (Parent (Formal))) =
+                                                     N_Access_Definition);
+                     Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
+                       New_Occurrence_Of (Tag_Typ, Loc));
                   end if;
+               end if;
 
-                  Append (New_Param_Spec, Formal_List);
-
-                  Next_Formal (Formal);
-               end loop;
-            end if;
+               Next_Formal (Formal);
+               Next (New_Param_Spec);
+            end loop;
 
             Append_To (Decl_List,
               Make_Subprogram_Declaration (Loc,
-                Make_Procedure_Specification (Loc,
-                  Defining_Unit_Name       =>
-                    Make_Defining_Identifier (Loc, Chars (Subp)),
-                  Parameter_Specifications => Formal_List,
-                  Null_Present             => True)));
+                Specification => New_Spec));
          end if;
 
          Next_Elmt (Prim_Elmt);
@@ -10473,9 +10467,9 @@ package body Exp_Ch3 is
 
       if Eq_Needed then
          Eq_Spec := Predef_Spec_Or_Body (Loc,
-           Tag_Typ => Tag_Typ,
-           Name    => Eq_Name,
-           Profile => New_List (
+           Tag_Typ  => Tag_Typ,
+           Name     => Eq_Name,
+           Profile  => New_List (
              Make_Parameter_Specification (Loc,
                Defining_Identifier =>
                  Make_Defining_Identifier (Loc, Name_X),
@@ -10485,7 +10479,7 @@ package body Exp_Ch3 is
                Defining_Identifier =>
                  Make_Defining_Identifier (Loc, Name_Y),
                Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
-             Ret_Type => Standard_Boolean);
+           Ret_Type => Standard_Boolean);
          Append_To (Predef_List, Eq_Spec);
 
          if Has_Predef_Eq_Renaming then
@@ -10537,9 +10531,9 @@ package body Exp_Ch3 is
       --  Spec of _Size
 
       Append_To (Res, Predef_Spec_Or_Body (Loc,
-        Tag_Typ => Tag_Typ,
-        Name    => Name_uSize,
-        Profile => New_List (
+        Tag_Typ  => Tag_Typ,
+        Name     => Name_uSize,
+        Profile  => New_List (
           Make_Parameter_Specification (Loc,
             Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
             Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),

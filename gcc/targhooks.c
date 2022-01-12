@@ -1710,6 +1710,22 @@ default_target_can_inline_p (tree caller, tree callee)
   return callee_opts == caller_opts;
 }
 
+/* By default, return false to not need to collect any target information
+   for inlining.  Target maintainer should re-define the hook if the
+   target want to take advantage of it.  */
+
+bool
+default_need_ipa_fn_target_info (const_tree, unsigned int &)
+{
+  return false;
+}
+
+bool
+default_update_ipa_fn_target_info (unsigned int &, const gimple *)
+{
+  return false;
+}
+
 /* If the machine does not have a case insn that compares the bounds,
    this means extra overhead for dispatch tables, which raises the
    threshold for using them.  */

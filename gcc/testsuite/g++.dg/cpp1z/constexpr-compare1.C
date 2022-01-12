@@ -1,4 +1,5 @@
 // { dg-do compile { target c++17 } }
+// { dg-additional-options "-fdelete-null-pointer-checks" }
 
 inline int a = 0;
 inline int b = 0;

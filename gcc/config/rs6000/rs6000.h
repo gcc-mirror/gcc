@@ -604,6 +604,11 @@ extern int rs6000_vector_align[];
 					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64)
 
+/* Inlining allows targets to define the meanings of bits in target_info
+   field of ipa_fn_summary by itself, the used bits for rs6000 are listed
+   below.  */
+#define RS6000_FN_TARGET_INFO_HTM 1
+
 /* Whether the various reciprocal divide/square root estimate instructions
    exist, and whether we should automatically generate code for the instruction
    by default.  */

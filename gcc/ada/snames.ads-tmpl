@@ -181,12 +181,9 @@ package Snames is
    Name_uController                    : constant Name_Id := N + $;
    Name_uCPU                           : constant Name_Id := N + $;
    Name_uDispatching_Domain            : constant Name_Id := N + $;
-   Name_uEntry_Bodies                  : constant Name_Id := N + $;
-   Name_uExpunge                       : constant Name_Id := N + $;
    Name_uFinalizer                     : constant Name_Id := N + $;
    Name_uFinalizer_Old                 : constant Name_Id := N + $;
    Name_uFinalization_Controller       : constant Name_Id := N + $;
-   Name_uIdepth                        : constant Name_Id := N + $;
    Name_uInit                          : constant Name_Id := N + $;
    Name_uInit_Level                    : constant Name_Id := N + $;
    Name_uInvariant                     : constant Name_Id := N + $;
@@ -197,22 +194,18 @@ package Snames is
    Name_uPostcond_Enabled              : constant Name_Id := N + $;
    Name_uPre                           : constant Name_Id := N + $;
    Name_uPriority                      : constant Name_Id := N + $;
-   Name_uProcess_ATSD                  : constant Name_Id := N + $;
    Name_uRelative_Deadline             : constant Name_Id := N + $;
    Name_uResult                        : constant Name_Id := N + $;
    Name_uResult_Object_For_Postcond    : constant Name_Id := N + $;
    Name_uReturn_Success_For_Postcond   : constant Name_Id := N + $;
    Name_uSecondary_Stack               : constant Name_Id := N + $;
    Name_uSecondary_Stack_Size          : constant Name_Id := N + $;
-   Name_uService                       : constant Name_Id := N + $;
    Name_uSize                          : constant Name_Id := N + $;
    Name_uStack                         : constant Name_Id := N + $;
-   Name_uTags                          : constant Name_Id := N + $;
    Name_uTask                          : constant Name_Id := N + $;
    Name_uTask_Id                       : constant Name_Id := N + $;
    Name_uTask_Info                     : constant Name_Id := N + $;
    Name_uTask_Name                     : constant Name_Id := N + $;
-   Name_uTrace_Sp                      : constant Name_Id := N + $;
    Name_uType_Invariant                : constant Name_Id := N + $;
    Name_uVariants                      : constant Name_Id := N + $;
 
@@ -339,7 +332,6 @@ package Snames is
    Name_Origin                         : constant Name_Id := N + $;
    Name_Params                         : constant Name_Id := N + $;
    Name_Partition                      : constant Name_Id := N + $;
-   Name_Partition_Interface            : constant Name_Id := N + $;
    Name_Ras                            : constant Name_Id := N + $;
    Name_uCall                          : constant Name_Id := N + $;
    Name_RCI_Name                       : constant Name_Id := N + $;
@@ -349,7 +341,6 @@ package Snames is
    Name_Operation                      : constant Name_Id := N + $;
    Name_Argument                       : constant Name_Id := N + $;
    Name_Arg_Modes                      : constant Name_Id := N + $;
-   Name_Handler                        : constant Name_Id := N + $;
    Name_Target                         : constant Name_Id := N + $;
    Name_Req                            : constant Name_Id := N + $;
    Name_Obj_TypeCode                   : constant Name_Id := N + $;
@@ -425,8 +416,6 @@ package Snames is
    Name_Check_Policy                   : constant Name_Id := N + $; -- GNAT
    Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
    Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
-   Name_Compiler_Unit                  : constant Name_Id := N + $; -- GNAT
-   Name_Compiler_Unit_Warning          : constant Name_Id := N + $; -- GNAT
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
@@ -797,14 +786,12 @@ package Snames is
    Name_By_Entry                       : constant Name_Id := N + $;
    Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
-   Name_Check_All                      : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
    Name_Copy                           : constant Name_Id := N + $;
    Name_Copy_From                      : constant Name_Id := N + $;
    Name_Copy_To                        : constant Name_Id := N + $;
-   Name_D_Float                        : constant Name_Id := N + $;
    Name_Decreases                      : constant Name_Id := N + $;
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
@@ -812,12 +799,8 @@ package Snames is
    Name_Eliminated                     : constant Name_Id := N + $;
    Name_Ensures                        : constant Name_Id := N + $;
    Name_Entity                         : constant Name_Id := N + $;
-   Name_Entry_Count                    : constant Name_Id := N + $;
    Name_External_Name                  : constant Name_Id := N + $;
-   Name_First_Optional_Parameter       : constant Name_Id := N + $;
-   Name_Force                          : constant Name_Id := N + $;
    Name_Form                           : constant Name_Id := N + $;
-   Name_G_Float                        : constant Name_Id := N + $;
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
@@ -826,7 +809,6 @@ package Snames is
    Name_Gnatprove                      : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
    Name_High_Order_First               : constant Name_Id := N + $;
-   Name_IEEE_Float                     : constant Name_Id := N + $;
    Name_Ignore                         : constant Name_Id := N + $;
    Name_In_Out                         : constant Name_Id := N + $;
    Name_Increases                      : constant Name_Id := N + $;
@@ -845,13 +827,9 @@ package Snames is
    Name_Mode                           : constant Name_Id := N + $;
    Name_Modified_GPL                   : constant Name_Id := N + $;
    Name_Name                           : constant Name_Id := N + $;
-   Name_NCA                            : constant Name_Id := N + $;
    Name_New_Name                       : constant Name_Id := N + $;
    Name_No                             : constant Name_Id := N + $;
-   Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
-   Name_No_Coextensions                : constant Name_Id := N + $;
    Name_No_Dependence                  : constant Name_Id := N + $;
-   Name_No_Dynamic_Accessibility_Checks : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Elaboration_Code            : constant Name_Id := N + $;
@@ -860,7 +838,6 @@ package Snames is
    Name_No_Requeue                     : constant Name_Id := N + $;
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
    Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
-   Name_No_Standard_Allocators_After_Elaboration : constant Name_Id := N + $;
    Name_No_Task_Attributes             : constant Name_Id := N + $;
    Name_No_Task_Attributes_Package     : constant Name_Id := N + $;
    Name_No_Use_Of_Attribute            : constant Name_Id := N + $;
@@ -868,10 +845,8 @@ package Snames is
    Name_No_Use_Of_Pragma               : constant Name_Id := N + $;
    Name_No_Unroll                      : constant Name_Id := N + $;
    Name_No_Unrecognized_Aspects        : constant Name_Id := N + $;
-   Name_No_Unrecognized_Pragmas        : constant Name_Id := N + $;
    Name_No_Vector                      : constant Name_Id := N + $;
    Name_Nominal                        : constant Name_Id := N + $;
-   Name_Non_Volatile                   : constant Name_Id := N + $;
    Name_None                           : constant Name_Id := N + $;
    Name_Null_Address                   : constant Name_Id := N + $;
    Name_On                             : constant Name_Id := N + $;
@@ -901,26 +876,19 @@ package Snames is
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Strict                         : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
-   Name_Suppressed                     : constant Name_Id := N + $;
    Name_Suppressible                   : constant Name_Id := N + $;
    Name_Synchronous                    : constant Name_Id := N + $;
    Name_Task_Stack_Size_Default        : constant Name_Id := N + $;
    Name_Task_Type                      : constant Name_Id := N + $;
    Name_Time_Slicing_Enabled           : constant Name_Id := N + $;
    Name_Top_Guard                      : constant Name_Id := N + $;
-   Name_UBA                            : constant Name_Id := N + $;
-   Name_UBS                            : constant Name_Id := N + $;
-   Name_UBSB                           : constant Name_Id := N + $;
    Name_Unit_Name                      : constant Name_Id := N + $;
-   Name_Unknown                        : constant Name_Id := N + $;
    Name_Unrestricted                   : constant Name_Id := N + $;
    Name_Unroll                         : constant Name_Id := N + $;
    Name_Uppercase                      : constant Name_Id := N + $;
    Name_User                           : constant Name_Id := N + $;
    Name_Variant                        : constant Name_Id := N + $;
-   Name_VAX_Float                      : constant Name_Id := N + $;
    Name_Vector                         : constant Name_Id := N + $;
-   Name_Vtable_Ptr                     : constant Name_Id := N + $;
    Name_Warn                           : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
 
@@ -1387,10 +1355,6 @@ package Snames is
    subtype Ada_95_Reserved_Words is Name_Id
      range First_95_Reserved_Word .. Last_95_Reserved_Word;
 
-   --  Miscellaneous names used in semantic checking
-
-   Name_Raise_Exception                  : constant Name_Id := N + $;
-
    --  Additional names used by the Repinfo unit
 
    Name_Discriminant                     : constant Name_Id := N + $;
@@ -1407,9 +1371,7 @@ package Snames is
 
    Name_Cursor                           : constant Name_Id := N + $;
    Name_Element                          : constant Name_Id := N + $;
-   Name_Element_Type                     : constant Name_Id := N + $;
    Name_Has_Element                      : constant Name_Id := N + $;
-   Name_No_Element                       : constant Name_Id := N + $;
    Name_Forward_Iterator                 : constant Name_Id := N + $;
    Name_Reversible_Iterator              : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
@@ -1777,8 +1739,6 @@ package Snames is
       Pragma_Check_Policy,
       Pragma_Compile_Time_Error,
       Pragma_Compile_Time_Warning,
-      Pragma_Compiler_Unit,
-      Pragma_Compiler_Unit_Warning,
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,

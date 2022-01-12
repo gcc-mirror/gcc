@@ -17,13 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 23.2.3.n forward_list xxx [lib.forward_list.xxx]
+// C++11 23.3.4.6 Operations [forwardlist.ops]
 
 #include <forward_list>
 #include <testsuite_hooks.h>
 
 // This test verifies the following:
-//   
+//   splice_after for entire list
 void
 test01()
 {
@@ -41,7 +41,7 @@ test01()
 }
 
 // This test verifies the following:
-//   
+//   splice_after for iterator range
 void
 test02()
 {
@@ -70,7 +70,7 @@ test02()
 }
 
 // This test verifies the following:
-//   
+//   splice_after for single element
 void
 test03()
 {

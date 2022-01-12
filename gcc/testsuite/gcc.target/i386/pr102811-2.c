@@ -1,7 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mf16c -mno-avx512fp16" } */
-/* { dg-final { scan-assembler-times "pextrw" 1 } } */
-/* { dg-final { scan-assembler-times "pinsrw" 1 } } */
+/* { dg-final { scan-assembler-times "vmovd" 2 } } */
 /* { dg-final { scan-assembler-not "\\\(%rsp\\\)"} } */
 short test (_Float16 a)
 {

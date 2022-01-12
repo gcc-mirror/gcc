@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -854,8 +854,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1728,7 +1726,6 @@ is
       HT       : Hash_Table_Type;
       Node     : Node_Access;
       Inserted : Boolean;
-      pragma Unreferenced (Node, Inserted);
    begin
       Insert (HT, New_Item, Node, Inserted);
       return Set'(Controlled with HT);
@@ -1776,7 +1773,6 @@ is
 
          Tgt_Node : Node_Access;
          Success  : Boolean;
-         pragma Unreferenced (Tgt_Node, Success);
 
       --  Start of processing for Process
 

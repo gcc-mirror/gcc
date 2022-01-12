@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,9 +113,6 @@ package body Prep is
    Already_Initialized : Boolean := False;
    --  Used to avoid repetition of the part of the initialisation that needs
    --  to be done only once.
-
-   Empty_String : String_Id;
-   --  "", as a string_id
 
    String_False : String_Id;
    --  "false", as a string_id
@@ -810,9 +807,6 @@ package body Prep is
          True_Value.Value := End_String;
 
          Start_String;
-         Empty_String := End_String;
-
-         Start_String;
          Store_String_Chars ("False");
          String_False := End_String;
 
@@ -1072,7 +1066,7 @@ package body Prep is
                         Original            => Original_Name,
                         On_The_Command_Line => False,
                         Is_A_String         => False,
-                        Value               => Empty_String);
+                        Value               => Null_String_Id);
 
             else
                Value_Start := Token_Ptr;

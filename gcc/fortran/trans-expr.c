@@ -50,10 +50,10 @@ static tree
 gfc_get_character_len (tree type)
 {
   tree len;
-  
+
   gcc_assert (type && TREE_CODE (type) == ARRAY_TYPE
 	      && TYPE_STRING_FLAG (type));
-  
+
   len = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
   len = (len) ? (len) : (integer_zero_node);
   return fold_convert (gfc_charlen_type_node, len);
@@ -67,10 +67,10 @@ tree
 gfc_get_character_len_in_bytes (tree type)
 {
   tree tmp, len;
-  
+
   gcc_assert (type && TREE_CODE (type) == ARRAY_TYPE
 	      && TYPE_STRING_FLAG (type));
-  
+
   tmp = TYPE_SIZE_UNIT (TREE_TYPE (type));
   tmp = (tmp && !integer_zerop (tmp))
     ? (fold_convert (gfc_charlen_type_node, tmp)) : (NULL_TREE);
@@ -5630,6 +5630,16 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	  itype = CFI_type_other;  // FIXME: Or CFI_type_cptr ?
 	  break;
 	case BT_CLASS:
+	  if (UNLIMITED_POLY (e) && fsym->ts.type == BT_ASSUMED)
+	    {
+	      // F2017: 7.3.2.2: "An entity that is declared using the TYPE(*)
+	      // type specifier is assumed-type and is an unlimited polymorphic
+	      //  entity." The actual argument _data component is passed.
+	      itype = CFI_type_other;  // FIXME: Or CFI_type_cptr ?
+	      break;
+	    }
+	  else
+	    gcc_unreachable ();
 	case BT_PROCEDURE:
 	case BT_HOLLERITH:
 	case BT_UNION:

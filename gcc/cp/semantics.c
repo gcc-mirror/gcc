@@ -624,6 +624,8 @@ do_poplevel (tree stmt_list)
 {
   tree block = NULL;
 
+  maybe_splice_retval_cleanup (stmt_list);
+
   if (stmts_are_full_exprs_p ())
     block = poplevel (kept_level_p (), 1, 0);
 
@@ -4785,6 +4787,17 @@ expand_or_defer_fn (tree fn)
       emit_associated_thunks (fn);
 
       function_depth--;
+
+      if (DECL_IMMEDIATE_FUNCTION_P (fn))
+	{
+	  if (cgraph_node *node = cgraph_node::get (fn))
+	    {
+	      node->body_removed = true;
+	      node->analyzed = false;
+	      node->definition = false;
+	      node->force_output = false;
+	    }
+	}
     }
 }
 
