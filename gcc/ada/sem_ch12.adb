@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2248,9 +2248,7 @@ package body Sem_Ch12 is
       --  explicit box associations for the formals that are covered by an
       --  Others_Choice.
 
-      if not Is_Empty_List (Default_Formals) then
-         Append_List (Default_Formals, Formals);
-      end if;
+      Append_List (Default_Formals, Formals);
 
       return Assoc_List;
    end Analyze_Associations;
@@ -2396,7 +2394,7 @@ package body Sem_Ch12 is
       T   : Entity_Id;
       Def : Node_Id)
    is
-      Loc   : constant Source_Ptr := Sloc (Def);
+      Loc : constant Source_Ptr := Sloc (Def);
 
    begin
       --  Rewrite as a type declaration of a derived type. This ensures that
@@ -10350,7 +10348,7 @@ package body Sem_Ch12 is
          Formal_Ent  : Entity_Id;
          Actual_Ent  : Entity_Id)
       is
-         Act_Pkg   : Entity_Id;
+         Act_Pkg : Entity_Id;
 
       begin
          Set_Instance_Of (Formal_Ent, Actual_Ent);

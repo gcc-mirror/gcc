@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -410,11 +410,30 @@ package Atree is
    --  all calls to process returned either OK, OK_Orig, or Skip).
 
    generic
+      with function Process
+        (Parent_Node : Node_Id;
+         Node        : Node_Id) return Traverse_Result is <>;
+   function Traverse_Func_With_Parent
+     (Node : Node_Id) return Traverse_Final_Result;
+   pragma Inline (Traverse_Func_With_Parent);
+   --  Same as Traverse_Func except that the called function Process receives
+   --  also the Parent_Node of Node.
+
+   generic
       with function Process (N : Node_Id) return Traverse_Result is <>;
    procedure Traverse_Proc (Node : Node_Id);
    pragma Inline (Traverse_Proc);
    --  This is the same as Traverse_Func except that no result is returned,
    --  i.e. Traverse_Func is called and the result is simply discarded.
+
+   generic
+      with function Process
+        (Parent_Node : Node_Id;
+         Node        : Node_Id) return Traverse_Result is <>;
+   procedure Traverse_Proc_With_Parent (Node : Node_Id);
+   pragma Inline (Traverse_Proc_With_Parent);
+   --  Same as Traverse_Proc except that the called function Process receives
+   --  also the Parent_Node of Node.
 
    ---------------------------
    -- Node Access Functions --

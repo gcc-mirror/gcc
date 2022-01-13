@@ -4221,13 +4221,11 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
 	{
 	  /* Determine if the user can change the default long double type at
-	     compilation time.  Only C and C++ support this, and you need GLIBC
-	     2.32 or newer.  Only issue one warning.  */
+	     compilation time.  You need GLIBC 2.32 or newer to be able to
+	     change the long double type.  Only issue one warning.  */
 	  static bool warned_change_long_double;
 
-	  if (!warned_change_long_double
-	      && (!glibc_supports_ieee_128bit ()
-		  || (!lang_GNU_C () && !lang_GNU_CXX ())))
+	  if (!warned_change_long_double && !glibc_supports_ieee_128bit ())
 	    {
 	      warned_change_long_double = true;
 	      if (TARGET_IEEEQUAD)
@@ -11392,6 +11390,13 @@ rs6000_is_valid_mask (rtx mask, int *b, int *e, machine_mode mode)
     *e = ne;
 
   return true;
+}
+
+bool
+rs6000_is_valid_rotate_dot_mask (rtx mask, machine_mode mode)
+{
+  int nb, ne;
+  return rs6000_is_valid_mask (mask, &nb, &ne, mode) && nb >= ne && ne > 0;
 }
 
 /* Return whether MASK (a CONST_INT) is a valid mask for any rlwinm, rldicl,
@@ -24834,7 +24839,6 @@ rs6000_disable_incompatible_switches (void)
     const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
     const char *const name;		/* name of the switch.  */
   } flags[] = {
-    { OPTION_MASK_POWER10,	OTHER_POWER10_MASKS,	"power10"	},
     { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
     { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},

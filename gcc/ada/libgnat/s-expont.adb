@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -130,9 +130,6 @@ is
          pragma Loop_Invariant
            (Big (Result) * Big (Factor) ** Exp = Big (Left) ** Right);
          pragma Loop_Variant (Decreases => Exp);
-         pragma Annotate
-           (CodePeer, False_Positive,
-            "validity check", "confusion on generated code");
 
          if Exp rem 2 /= 0 then
             declare

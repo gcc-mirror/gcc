@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -857,7 +857,6 @@ package body System.Tasking.Protected_Objects.Operations is
       Ceiling_Violation : Boolean;
 
       Yielded : Boolean;
-      pragma Unreferenced (Yielded);
 
    begin
       if Self_Id.ATC_Nesting_Level = ATC_Level'Last then

@@ -9644,11 +9644,9 @@ objc_rewrite_function_call (tree function, tree first_param)
       && TREE_CODE (TREE_OPERAND (function, 0)) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (function, 0), 0))
 	 == FUNCTION_DECL)
-    {
-      function = build3 (OBJ_TYPE_REF, TREE_TYPE (function),
-			 TREE_OPERAND (function, 0),
-			 first_param, size_zero_node);
-    }
+    function = build3 (OBJ_TYPE_REF, TREE_TYPE (function),
+		       TREE_OPERAND (function, 0), first_param,
+		       build_int_cst (TREE_TYPE (first_param), 0));
 
   return function;
 }

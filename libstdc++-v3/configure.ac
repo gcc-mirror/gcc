@@ -90,7 +90,9 @@ AC_SYS_LARGEFILE
 GLIBCXX_CONFIGURE
 
 # Libtool setup.
-if test "x${with_newlib}" != "xyes" && test "x${with_avrlibc}" != "xyes"; then
+if test "x${with_newlib}" != "xyes" &&
+    test "x${with_avrlibc}" != "xyes" &&
+    test "x$with_headers" != "xno"; then
   AC_LIBTOOL_DLOPEN
 fi
 AM_PROG_LIBTOOL
@@ -351,7 +353,7 @@ else
 
     AC_DEFINE(HAVE_ICONV)
     AC_DEFINE(HAVE_MEMALIGN)
-  else
+  elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi
 
@@ -390,7 +392,11 @@ GCC_CHECK_UNWIND_GETIPINFO
 
 GCC_LINUX_FUTEX([AC_DEFINE(HAVE_LINUX_FUTEX, 1, [Define if futex syscall is available.])])
 
+if test "$is_hosted" = yes; then
+# TODO: remove this and change src/c++11/compatibility-atomic-c++0x.cc to
+# use <stdint.h> instead of <gstdint.h>.
 GCC_HEADER_STDINT(include/gstdint.h)
+fi
 
 GLIBCXX_ENABLE_SYMVERS([yes])
 AC_SUBST(libtool_VERSION)

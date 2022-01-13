@@ -778,7 +778,8 @@ build_vfn_ref (tree instance_ptr, tree idx)
 		   cp_build_addr_expr (aref, tf_warning_or_error));
 
   /* Remember this as a method reference, for later devirtualization.  */
-  aref = build3 (OBJ_TYPE_REF, TREE_TYPE (aref), aref, instance_ptr, idx);
+  aref = build3 (OBJ_TYPE_REF, TREE_TYPE (aref), aref, instance_ptr,
+		 fold_convert (TREE_TYPE (instance_ptr), idx));
 
   return aref;
 }

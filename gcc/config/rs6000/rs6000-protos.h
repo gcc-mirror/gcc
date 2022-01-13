@@ -73,6 +73,7 @@ extern int expand_block_move (rtx[], bool);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
+extern bool rs6000_is_valid_rotate_dot_mask (rtx mask, machine_mode mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
 extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
 extern bool rs6000_is_valid_insert_mask (rtx, rtx, machine_mode);

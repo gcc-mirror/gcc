@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1684,7 +1684,7 @@ package body Sem_Ch6 is
 
                Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_N ("cannot return a local value by reference<<", N);
-               Error_Msg_NE ("\& [<<", N, Standard_Program_Error);
+               Error_Msg_N ("\Program_Error [<<", N);
             end if;
          end if;
 

@@ -2081,6 +2081,7 @@ dnl Compute the EOF, SEEK_CUR, and SEEK_END integer constants.
 dnl
 AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
 
+if test "$is_hosted" = yes; then
   AC_CACHE_CHECK([for the value of EOF], glibcxx_cv_stdio_eof, [
   AC_COMPUTE_INT([glibcxx_cv_stdio_eof], [[EOF]],
 		 [#include <stdio.h>],
@@ -2104,6 +2105,7 @@ AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
   ])
   AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_END, $glibcxx_cv_stdio_seek_end,
 		     [Define to the value of the SEEK_END integer constant.])
+fi
 ])
 
 dnl
@@ -2923,12 +2925,16 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 	    enable_hosted_libstdcxx=yes
 	    ;;
      esac])
+  freestanding_flags=
   if test "$enable_hosted_libstdcxx" = no; then
     AC_MSG_NOTICE([Only freestanding libraries will be built])
     is_hosted=no
     hosted_define=0
     enable_abi_check=no
     enable_libstdcxx_pch=no
+    if test "x$with_headers" = xno; then
+      freestanding_flags="-ffreestanding"
+    fi
   else
     is_hosted=yes
     hosted_define=1
@@ -2936,6 +2942,8 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
   GLIBCXX_CONDITIONAL(GLIBCXX_HOSTED, test $is_hosted = yes)
   AC_DEFINE_UNQUOTED(_GLIBCXX_HOSTED, $hosted_define,
     [Define to 1 if a full hosted library is built, or 0 if freestanding.])
+  FREESTANDING_FLAGS="$freestanding_flags"
+  AC_SUBST(FREESTANDING_FLAGS)
 ])
 
 

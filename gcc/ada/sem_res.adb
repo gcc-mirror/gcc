@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -9774,7 +9774,7 @@ package body Sem_Res is
       ----------------------------
 
       procedure Resolve_Set_Membership is
-         Alt  : Node_Id;
+         Alt : Node_Id;
 
       begin
          --  If the left operand is overloaded, find type compatible with not
@@ -10185,7 +10185,7 @@ package body Sem_Res is
                        ("\\interpretation as call yields&", Arg, Typ);
                      Error_Msg_NE
                        ("\\interpretation as indexing of call yields&",
-                         Arg, Component_Type (Typ));
+                         Arg, Ctyp);
 
                   else
                      Error_Msg_N ("ambiguous operand for concatenation!", Arg);
@@ -10208,10 +10208,30 @@ package body Sem_Res is
                end;
             end if;
 
-            Resolve (Arg, Component_Type (Typ));
+            Resolve (Arg, Ctyp);
 
             if Nkind (Arg) = N_String_Literal then
-               Set_Etype (Arg, Component_Type (Typ));
+               Set_Etype (Arg, Ctyp);
+
+            elsif Is_Scalar_Type (Etype (Arg))
+              and then Compile_Time_Known_Value (Arg)
+            then
+               --  Determine if the out-of-range violation constitutes a
+               --  warning or an error according to the expression base type,
+               --  according to Ada 2022 RM 4.9 (35/2).
+
+               if Is_Out_Of_Range (Arg, Base_Type (Ctyp)) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}", CE_Range_Check_Failed,
+                     Ent => Base_Type (Ctyp),
+                     Typ => Base_Type (Ctyp));
+
+               elsif Is_Out_Of_Range (Arg, Ctyp) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}??", CE_Range_Check_Failed,
+                     Ent => Ctyp,
+                     Typ => Ctyp);
+               end if;
             end if;
 
             if Arg = Left_Opnd (N) then
@@ -11050,7 +11070,7 @@ package body Sem_Res is
       --  resolution was complete to do this, since otherwise we can't tell if
       --  we are an lvalue or not.
 
-      if May_Be_Lvalue (N) then
+      if Known_To_Be_Assigned (N) then
          Generate_Reference (Entity (S), S, 'm');
       else
          Generate_Reference (Entity (S), S, 'r');
@@ -11076,7 +11096,7 @@ package body Sem_Res is
          if Is_Entity_Name (P)
            and then Has_Deferred_Reference (Entity (P))
          then
-            if May_Be_Lvalue (N) then
+            if Known_To_Be_Assigned (N) then
                Generate_Reference (Entity (P), P, 'm');
             else
                Generate_Reference (Entity (P), P, 'r');

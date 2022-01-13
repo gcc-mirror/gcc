@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -841,7 +841,14 @@ package body Ch6 is
             begin
                --  Expression_Function case
 
-               if Token = Tok_Left_Paren
+               --  If likely an aggregate, check we are in Ada 2022 mode
+
+               if Token = Tok_Left_Bracket then
+                  Error_Msg_Ada_2022_Feature
+                    ("!aggregates as expression function", Token_Ptr);
+               end if;
+
+               if Token in Tok_Left_Paren | Tok_Left_Bracket
                  or else Likely_Expression_Function
                then
                   --  Check expression function allowed here
@@ -1144,7 +1151,7 @@ package body Ch6 is
       --------------
 
       function Real_Dot return Boolean is
-         Scan_State  : Saved_Scan_State;
+         Scan_State : Saved_Scan_State;
 
       begin
          if Token /= Tok_Dot then

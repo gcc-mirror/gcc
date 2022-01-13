@@ -641,7 +641,7 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
       rtx x = gen_rtx_REG (mode, CC_REGNUM);
       x = gen_rtx_fmt_ee (code, word_mode, x, const0_rtx);
 
-      if (dest_mode == word_mode)
+      if (dest_mode == word_mode && REG_P (dest))
 	emit_insn (gen_rtx_SET (dest, x));
       else
 	{

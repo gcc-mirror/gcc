@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -949,7 +949,7 @@ is
            (Vet (Container, Position), "bad cursor in function Key");
 
          declare
-            N  : Node_Type renames Container.Content.Nodes (Position.Node);
+            N : Node_Type renames Container.Content.Nodes (Position.Node);
          begin
             return Key (N.Element);
          end;

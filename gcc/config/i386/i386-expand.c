@@ -615,6 +615,23 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* Special case TImode to V1TImode conversions, via V2DI.  */
+  if (mode == V1TImode
+      && SUBREG_P (op1)
+      && GET_MODE (SUBREG_REG (op1)) == TImode
+      && TARGET_64BIT && TARGET_SSE
+      && can_create_pseudo_p ())
+    {
+      rtx tmp = gen_reg_rtx (V2DImode);
+      rtx lo = gen_reg_rtx (DImode);
+      rtx hi = gen_reg_rtx (DImode);
+      emit_move_insn (lo, gen_lowpart (DImode, SUBREG_REG (op1)));
+      emit_move_insn (hi, gen_highpart (DImode, SUBREG_REG (op1)));
+      emit_insn (gen_vec_concatv2di (tmp, lo, hi));
+      emit_move_insn (op0, gen_lowpart (V1TImode, tmp));
+      return;
+    }
+
   /* If operand0 is a hard register, make operand1 a pseudo.  */
   if (can_create_pseudo_p ()
       && !ix86_hardreg_mov_ok (op0, op1))
@@ -3735,6 +3752,27 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
   return dest;
 }
 
+/* Emit x86 binary operand CODE in mode MODE for SSE vector
+   instructions that can be performed using GP registers.  */
+
+static void
+ix86_emit_vec_binop (enum rtx_code code, machine_mode mode,
+		     rtx dst, rtx src1, rtx src2)
+{
+  rtx tmp;
+
+  tmp = gen_rtx_SET (dst, gen_rtx_fmt_ee (code, mode, src1, src2));
+
+  if (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode)
+      && GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    {
+      rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
+    }
+
+  emit_insn (tmp);
+}
+
 /* Expand DEST = CMP ? OP_TRUE : OP_FALSE into a sequence of logical
    operations.  This is used for both scalar and vector conditional moves.  */
 
@@ -3803,23 +3841,20 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   else if (op_false == CONST0_RTX (mode))
     {
       op_true = force_reg (mode, op_true);
-      x = gen_rtx_AND (mode, cmp, op_true);
-      emit_insn (gen_rtx_SET (dest, x));
+      ix86_emit_vec_binop (AND, mode, dest, cmp, op_true);
       return;
     }
   else if (op_true == CONST0_RTX (mode))
     {
       op_false = force_reg (mode, op_false);
       x = gen_rtx_NOT (mode, cmp);
-      x = gen_rtx_AND (mode, x, op_false);
-      emit_insn (gen_rtx_SET (dest, x));
+      ix86_emit_vec_binop (AND, mode, dest, x, op_false);
       return;
     }
   else if (INTEGRAL_MODE_P (mode) && op_true == CONSTM1_RTX (mode))
     {
       op_false = force_reg (mode, op_false);
-      x = gen_rtx_IOR (mode, cmp, op_false);
-      emit_insn (gen_rtx_SET (dest, x));
+      ix86_emit_vec_binop (IOR, mode, dest, cmp, op_false);
       return;
     }
   else if (TARGET_XOP)
@@ -3882,7 +3917,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  op_true = force_reg (mode, op_true);
 
-	  gen = gen_mmx_pblendvb64;
+	  gen = gen_mmx_pblendvb_v8qi;
 	  if (mode != V8QImode)
 	    d = gen_reg_rtx (V8QImode);
 	  op_false = gen_lowpart (V8QImode, op_false);
@@ -3896,12 +3931,20 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  op_true = force_reg (mode, op_true);
 
-	  gen = gen_mmx_pblendvb32;
+	  gen = gen_mmx_pblendvb_v4qi;
 	  if (mode != V4QImode)
 	    d = gen_reg_rtx (V4QImode);
 	  op_false = gen_lowpart (V4QImode, op_false);
 	  op_true = gen_lowpart (V4QImode, op_true);
 	  cmp = gen_lowpart (V4QImode, cmp);
+	}
+      break;
+    case E_V2QImode:
+      if (TARGET_SSE4_1)
+	{
+	  op_true = force_reg (mode, op_true);
+
+	  gen = gen_mmx_pblendvb_v2qi;
 	}
       break;
     case E_V16QImode:
@@ -3985,15 +4028,12 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       else
 	t3 = dest;
 
-      x = gen_rtx_AND (mode, op_true, cmp);
-      emit_insn (gen_rtx_SET (t2, x));
+      ix86_emit_vec_binop (AND, mode, t2, op_true, cmp);
 
       x = gen_rtx_NOT (mode, cmp);
-      x = gen_rtx_AND (mode, x, op_false);
-      emit_insn (gen_rtx_SET (t3, x));
+      ix86_emit_vec_binop (AND, mode, t3, x, op_false);
 
-      x = gen_rtx_IOR (mode, t3, t2);
-      emit_insn (gen_rtx_SET (dest, x));
+      ix86_emit_vec_binop (IOR, mode, dest, t3, t2);
     }
 }
 
@@ -4427,6 +4467,12 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      else if (code == GT && TARGET_SSE4_1)
 		gen = gen_sminv4qi3;
 	      break;
+	    case E_V2QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv2qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv2qi3;
+	      break;
 	    case E_V8HImode:
 	      if (code == GTU && TARGET_SSE4_1)
 		gen = gen_uminv8hi3;
@@ -4520,6 +4566,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V16QImode:
 	    case E_V8QImode:
 	    case E_V4QImode:
+	    case E_V2QImode:
 	    case E_V8HImode:
 	    case E_V4HImode:
 	    case E_V2HImode:
@@ -16245,10 +16292,11 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       goto half;
 
     case E_V16HFmode:
-      if (TARGET_AVX2)
+      /* For ELT == 0, vec_setv8hf_0 can save 1 vpbroadcastw.  */
+      if (TARGET_AVX2 && elt != 0)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx2_pblendph;
+	  gen_blendm = gen_avx2_pblendph_1;
 	  blendm_const = true;
 	  break;
 	}
@@ -18437,9 +18485,9 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
 	    vperm = force_reg (vmode, vperm);
 
 	    if (GET_MODE_SIZE (vmode) == 4)
-	      emit_insn (gen_mmx_pblendvb32 (target, op0, op1, vperm));
+	      emit_insn (gen_mmx_pblendvb_v4qi (target, op0, op1, vperm));
 	    else if (GET_MODE_SIZE (vmode) == 8)
-	      emit_insn (gen_mmx_pblendvb64 (target, op0, op1, vperm));
+	      emit_insn (gen_mmx_pblendvb_v8qi (target, op0, op1, vperm));
 	    else if (GET_MODE_SIZE (vmode) == 16)
 	      emit_insn (gen_sse4_1_pblendvb (target, op0, op1, vperm));
 	    else
@@ -20700,7 +20748,7 @@ expand_vec_perm_pshufb2 (struct expand_vec_perm_d *d)
   op = d->target;
   if (d->vmode != mode)
     op = gen_reg_rtx (mode);
-  emit_insn (gen_rtx_SET (op, gen_rtx_IOR (mode, l, h)));
+  ix86_emit_vec_binop (IOR, mode, op, l, h);
   if (op != d->target)
     emit_move_insn (d->target, gen_lowpart (d->vmode, op));
 

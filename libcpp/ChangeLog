@@ -1,3 +1,12 @@
+2022-01-12  Clément Chigot  <clement.chigot@atos.net>
+
+	* configure.ac: Check sizeof ino_t and dev_t.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* include/cpplib.h (INO_T_CPP): Change for AIX.
+	(DEV_T_CPP): New macro.
+	(struct cpp_dir): Use it.
+
 2021-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/89971

@@ -4,6 +4,8 @@
 ! { dg-additional-options "--param=openacc-privatization=noisy" } for
 ! testing/documenting aspects of that functionality.
 
+! { dg-additional-options -Wuninitialized }
+
 ! See also '../../c-c++-common/goacc/privatization-1-routine_gang.c'.
 !TODO More cases should be added here.
 

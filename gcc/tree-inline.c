@@ -3608,7 +3608,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	      init_stmt = gimple_build_assign (def, rhs);
 	    }
 	}
-      else
+      else if (!is_empty_type (TREE_TYPE (var)))
         init_stmt = gimple_build_assign (var, rhs);
 
       if (bb && init_stmt)

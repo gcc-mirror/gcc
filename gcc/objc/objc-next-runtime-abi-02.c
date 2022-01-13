@@ -1663,7 +1663,8 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
   method_params = tree_cons (NULL_TREE, lookup_object,
                              tree_cons (NULL_TREE, selector,
                                         method_params));
-  t = build3 (OBJ_TYPE_REF, sender_cast, sender, lookup_object, size_zero_node);
+  t = build3 (OBJ_TYPE_REF, sender_cast, sender, lookup_object,
+	      build_int_cst (TREE_TYPE (lookup_object), 0));
   ret_val =  build_function_call (input_location, t, method_params);
   if (check_for_nil)
     {
@@ -1772,7 +1773,7 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
 
   /* Build an obj_type_ref, with the correct cast for the method call.  */
   t = build3 (OBJ_TYPE_REF, sender_cast, method,
-			    lookup_object, size_zero_node);
+	      lookup_object, build_int_cst (TREE_TYPE (lookup_object), 0));
   tree ret_val = build_function_call_vec (loc, vNULL, t, parms, NULL);
   vec_free (parms);
   if (check_for_nil)

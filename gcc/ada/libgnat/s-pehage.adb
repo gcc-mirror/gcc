@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2021, AdaCore                     --
+--                     Copyright (C) 2002-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1233,7 +1233,7 @@ package body System.Perfect_Hash_Generators is
    ------------
 
    procedure Insert (Value : String) is
-      Len  : constant Natural := Value'Length;
+      Len : constant Natural := Value'Length;
 
    begin
       if Verbose then

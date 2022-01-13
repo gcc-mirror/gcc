@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2093,7 +2093,8 @@ package body Exp_Unst is
 
                                  --  Build and insert the assignment:
                                  --    ARECn.nam := nam'Address
-                                 --  or else 'Access for unconstrained array
+                                 --  or else 'Unchecked_Access for
+                                 --  unconstrained array.
 
                                  if Needs_Fat_Pointer (Ent) then
                                     Attr := Name_Unchecked_Access;

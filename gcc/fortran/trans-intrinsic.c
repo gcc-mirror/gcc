@@ -154,7 +154,9 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
     i = m->float_built_in;
   else if (precision == TYPE_PRECISION (double_type_node))
     i = m->double_built_in;
-  else if (precision == TYPE_PRECISION (long_double_type_node))
+  else if (precision == TYPE_PRECISION (long_double_type_node)
+	   && (!gfc_real16_is_float128
+	       || long_double_type_node != gfc_float128_type_node))
     i = m->long_double_built_in;
   else if (precision == TYPE_PRECISION (gfc_float128_type_node))
     {
@@ -881,7 +883,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
     {
       snprintf (name, sizeof (name), PREFIX ("%s_%c%d"), m->name,
 		ts->type == BT_COMPLEX ? 'c' : 'r',
-		ts->kind);
+		gfc_type_abi_kind (ts));
     }
 
   argtypes = NULL;
@@ -8006,10 +8008,14 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
 	  cond = gfc_evaluate_now (cond, &se->pre);
 	  /* 'block2' contains the arg2 absent case, 'block' the arg2 present
 	      case; size_var can be used in both blocks. */
-	  tree size_var = gfc_tree_array_size (&block2, arg1, e, NULL_TREE);
+	  tree size_var = gfc_create_var (TREE_TYPE (size), "size");
 	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 				 TREE_TYPE (size_var), size_var, size);
 	  gfc_add_expr_to_block (&block, tmp);
+	  size = gfc_tree_array_size (&block2, arg1, e, NULL_TREE);
+	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				 TREE_TYPE (size_var), size_var, size);
+	  gfc_add_expr_to_block (&block2, tmp);
 	  tmp = build3_v (COND_EXPR, cond, gfc_finish_block (&block),
 			  gfc_finish_block (&block2));
 	  gfc_add_expr_to_block (&se->pre, tmp);

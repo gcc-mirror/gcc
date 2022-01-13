@@ -29,13 +29,13 @@ void foo()
   return;
 }
 
-/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(1, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(2, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp4 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" { target ilp32 } } } */
-/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" { target lp64 } } } */
-/* { dg-final { scan-tree-dump "temp6 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(4, 1, 0\\)" "gimple" { target ilp32 } } } */
-/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(8, 1, 0\\)" "gimple" { target lp64 } } } */
-/* { dg-final { scan-tree-dump "temp8 = .DEFERRED_INIT \\(1, 1, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(1, 1, \&\"temp1\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(2, 1, \&\"temp2\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\(4, 1, \&\"temp3\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp4 = .DEFERRED_INIT \\(4, 1, \&\"temp4\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(4, 1, \&\"temp5\"" "gimple" { target ilp32 } } } */
+/* { dg-final { scan-tree-dump "temp5 = .DEFERRED_INIT \\(8, 1, \&\"temp5\"" "gimple" { target lp64 } } } */
+/* { dg-final { scan-tree-dump "temp6 = .DEFERRED_INIT \\(8, 1, \&\"temp6\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(4, 1, \&\"temp7\"" "gimple" { target ilp32 } } } */
+/* { dg-final { scan-tree-dump "temp7 = .DEFERRED_INIT \\(8, 1, \&\"temp7\"" "gimple" { target lp64 } } } */
+/* { dg-final { scan-tree-dump "temp8 = .DEFERRED_INIT \\(1, 1, \&\"temp8\"" "gimple" } } */

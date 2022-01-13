@@ -2649,6 +2649,8 @@ check_allocation (void)
 	      int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
 	      if (conflict_hard_regno < 0)
 		continue;
+	      if (ira_soft_conflict (a, conflict_a))
+		continue;
 
 	      conflict_nregs = hard_regno_nregs (conflict_hard_regno,
 						 ALLOCNO_MODE (conflict_a));

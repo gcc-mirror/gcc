@@ -3011,11 +3011,7 @@ expand_UNIQUE (internal_fn, gcall *stmt)
 }
 
 /* Expand the IFN_DEFERRED_INIT function:
-   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA);
-
-   if IS_VLA is false, the LHS is the DECL itself,
-   if IS_VLA is true, the LHS is a MEM_REF whose address is the pointer
-   to this DECL.
+   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, NAME of the DECL);
 
    Initialize the LHS with zero/pattern according to its second argument
    INIT_TYPE:
@@ -3071,8 +3067,8 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 
   if (!reg_lhs)
     {
-      /* If this is a VLA or the variable is not in register,
-	 expand to a memset to initialize it.  */
+      /* If the variable is not in register, expand to a memset
+	 to initialize it.  */
       mark_addressable (lhs);
       tree var_addr = build_fold_addr_expr (lhs);
 

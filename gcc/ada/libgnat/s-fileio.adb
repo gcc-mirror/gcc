@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,7 +244,7 @@ package body System.File_IO is
 
          if File.Shared_Status = Yes then
             declare
-               P   : AFCB_Ptr;
+               P : AFCB_Ptr;
 
             begin
                P := Open_Files;
@@ -576,7 +576,6 @@ package body System.File_IO is
       Default : Boolean) return Boolean
    is
       V1, V2 : Natural;
-      pragma Unreferenced (V2);
 
    begin
       Form_Parameter (Form, Keyword, V1, V2);

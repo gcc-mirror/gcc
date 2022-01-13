@@ -25,6 +25,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
+
+/* Check support for issignaling macro.
+   TODO: In the future, provide fallback implementations for IEEE types,
+   because many libc's do not have issignaling yet.  */
+#ifndef issignaling
+# define issignaling(X) 0
+#endif
+
+
 /* Prototypes.  */
 
 extern int ieee_class_helper_4 (GFC_REAL_4 *);
@@ -86,8 +95,10 @@ enum {
  \
     if (res == IEEE_QUIET_NAN) \
     { \
-      /* TODO: Handle signaling NaNs  */ \
-      return res; \
+      if (issignaling (*value)) \
+	return IEEE_SIGNALING_NAN; \
+      else \
+	return IEEE_QUIET_NAN; \
     } \
  \
     return res; \

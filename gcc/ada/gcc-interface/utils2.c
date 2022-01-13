@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1118,7 +1118,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  return result;
 	}
 
-      /* Otherwise, the base types must be the same, unless they are both fat
+      /* Otherwise, the base types must be the same, unless they are both (fat)
 	 pointer types or record types.  In the latter case, use the best type
 	 and convert both operands to that type.  */
       if (left_base_type != right_base_type)
@@ -1128,6 +1128,18 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    {
 	      gcc_assert (TYPE_MAIN_VARIANT (left_base_type)
 			  == TYPE_MAIN_VARIANT (right_base_type));
+	      best_type = left_base_type;
+	    }
+
+	  else if (POINTER_TYPE_P (left_base_type)
+		   && POINTER_TYPE_P (right_base_type))
+	    {
+	      /* Anonymous access types in Ada 2005 can point to different
+		 members of a tagged type hierarchy.  */
+	      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (left_base_type))
+			  == TYPE_MAIN_VARIANT (TREE_TYPE (right_base_type))
+			  || (TYPE_ALIGN_OK (TREE_TYPE (left_base_type))
+			      && TYPE_ALIGN_OK (TREE_TYPE (right_base_type))));
 	      best_type = left_base_type;
 	    }
 
@@ -1153,13 +1165,6 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		gcc_unreachable ();
 	    }
 
-	  else if (POINTER_TYPE_P (left_base_type)
-		   && POINTER_TYPE_P (right_base_type))
-	    {
-	      gcc_assert (TREE_TYPE (left_base_type)
-			  == TREE_TYPE (right_base_type));
-	      best_type = left_base_type;
-	    }
 	  else
 	    gcc_unreachable ();
 

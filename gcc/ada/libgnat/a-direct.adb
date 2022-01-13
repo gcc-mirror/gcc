@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,14 @@
 
 with Ada.Calendar;               use Ada.Calendar;
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
+with Ada.Containers.Vectors;
 with Ada.Directories.Validity;   use Ada.Directories.Validity;
 with Ada.Directories.Hierarchical_File_Names;
-use Ada.Directories.Hierarchical_File_Names;
+use  Ada.Directories.Hierarchical_File_Names;
 with Ada.Strings.Fixed;
 with Ada.Strings.Maps;           use Ada.Strings.Maps;
 with Ada.Strings.Unbounded;      use Ada.Strings.Unbounded;
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 
 with Interfaces.C;
@@ -78,40 +80,56 @@ package body Ada.Directories is
    --  Result returned from C_Modification_Time call when routine unable to get
    --  file modification time.
 
-   type Search_Data is record
-      Is_Valid      : Boolean := False;
-      Name          : Unbounded_String;
-      Pattern       : Regexp;
-      Filter        : Filter_Type;
-      Dir           : Dir_Type_Value := No_Dir;
-      Entry_Fetched : Boolean := False;
-      Dir_Entry     : Directory_Entry_Type;
-   end record;
-   --  The current state of a search
-
    Empty_String : constant String := "";
    --  Empty string, returned by function Extension when there is no extension
 
-   procedure Free is new Ada.Unchecked_Deallocation (Search_Data, Search_Ptr);
+   ----------------------------
+   -- Directory Search Types --
+   ----------------------------
 
-   procedure Close (Dir : Dir_Type_Value);
+   package Directory_Vectors is new
+     Ada.Containers.Vectors
+       (Index_Type   => Natural,
+        Element_Type => Directory_Entry_Type);
+   use Directory_Vectors;
+   --  Used to store the results of the directory search
+
+   type Dir_Contents_Ptr is access Directory_Vectors.Vector;
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Directory_Vectors.Vector, Dir_Contents_Ptr);
+   --  Directory_Vectors.Vector deallocation routine
+
+   type Search_State is new Ada.Finalization.Controlled with record
+      Dir_Contents : Dir_Contents_Ptr;
+      Next_Entry   : Cursor;
+   end record;
+   --  The Search_State consists of a vector of directory items that match the
+   --  search pattern and filter, and a cursor pointing to the next item of the
+   --  vector to be returned to the user.
+
+   procedure Free is new Ada.Unchecked_Deallocation (Search_State, Search_Ptr);
+   --  Search_State deallocation routine
+
+   Dir_Vector_Initial_Size : constant := 100;
+   --  Initial size for the Dir_Contents vector, sized to ensure the vector
+   --  does not need to be reallocated for reasonably sized directory searches.
+
+   ------------------------
+   -- Helper Subprograms --
+   ------------------------
 
    function File_Exists (Name : String) return Boolean;
    --  Returns True if the named file exists
 
-   procedure Fetch_Next_Entry (Search : Search_Type);
-   --  Get the next entry in a directory, setting Entry_Fetched if successful
-   --  or resetting Is_Valid if not.
-
    procedure Start_Search_Internal
-     (Search                 : in out Search_Type;
-      Directory              : String;
-      Pattern                : String;
-      Filter                 : Filter_Type := [others => True];
-      Force_Case_Insensitive : Boolean);
-   --  Similar to Start_Search except we can force a search to be
-   --  case-insensitive, which is important for detecting the name-case
-   --  equivalence for a given directory.
+     (Search           : in out Search_Type;
+      Directory        : String;
+      Pattern          : String;
+      Filter           : Filter_Type := [others => True];
+      Case_Insensitive : Boolean);
+   --  Similar to Start_Search except we can specify a case-insensitive search.
+   --  This enables detecting the name-case equivalence for a given directory.
 
    ---------------
    -- Base_Name --
@@ -136,21 +154,6 @@ package body Ada.Directories is
 
       return Simple;
    end Base_Name;
-
-   -----------
-   -- Close --
-   -----------
-
-   procedure Close (Dir : Dir_Type_Value) is
-      Discard : Integer;
-      pragma Warnings (Off, Discard);
-
-      function closedir (directory : DIRs) return Integer;
-      pragma Import (C, closedir, "__gnat_closedir");
-
-   begin
-      Discard := closedir (DIRs (Dir));
-   end Close;
 
    -------------
    -- Compose --
@@ -378,7 +381,7 @@ package body Ada.Directories is
      (New_Directory : String;
       Form          : String := "")
    is
-      C_Dir_Name : constant String := New_Directory & ASCII.NUL;
+      Dir_Name_C : constant String := New_Directory & ASCII.NUL;
 
    begin
       --  First, the invalid case
@@ -411,7 +414,7 @@ package body Ada.Directories is
                raise Use_Error with "invalid Form";
             end if;
 
-            if CRTL.mkdir (C_Dir_Name, Encoding) /= 0 then
+            if CRTL.mkdir (Dir_Name_C, Encoding) /= 0 then
                raise Use_Error with
                  "creation of new directory """ & New_Directory & """ failed";
             end if;
@@ -553,9 +556,9 @@ package body Ada.Directories is
 
       else
          declare
-            C_Dir_Name : constant String := Directory & ASCII.NUL;
+            Dir_Name_C : constant String := Directory & ASCII.NUL;
          begin
-            if rmdir (C_Dir_Name) /= 0 then
+            if rmdir (Dir_Name_C) /= 0 then
                raise Use_Error with
                  "deletion of directory """ & Directory & """ failed";
             end if;
@@ -640,10 +643,10 @@ package body Ada.Directories is
          End_Search (Search);
 
          declare
-            C_Dir_Name : constant String := Directory & ASCII.NUL;
+            Dir_Name_C : constant String := Directory & ASCII.NUL;
 
          begin
-            if rmdir (C_Dir_Name) /= 0 then
+            if rmdir (Dir_Name_C) /= 0 then
                raise Use_Error with
                  "directory tree rooted at """ &
                    Directory & """ could not be deleted";
@@ -710,141 +713,6 @@ package body Ada.Directories is
       end if;
    end Extension;
 
-   ----------------------
-   -- Fetch_Next_Entry --
-   ----------------------
-
-   procedure Fetch_Next_Entry (Search : Search_Type) is
-      Name : String (1 .. NAME_MAX);
-      Last : Natural;
-
-      Kind : File_Kind := Ordinary_File;
-      --  Initialized to avoid a compilation warning
-
-      Filename_Addr : Address;
-      Filename_Len  : aliased Integer;
-
-      Buffer : array (1 .. SIZEOF_struct_dirent_alloc) of Character;
-
-      function readdir_gnat
-        (Directory : Address;
-         Buffer    : Address;
-         Last      : not null access Integer) return Address;
-      pragma Import (C, readdir_gnat, "__gnat_readdir");
-
-   begin
-      --  Search.Value.Is_Valid is always True when Fetch_Next_Entry is called
-
-      loop
-         Filename_Addr :=
-           readdir_gnat
-             (Address (Search.Value.Dir),
-              Buffer'Address,
-              Filename_Len'Access);
-
-         --  If no matching entry is found, set Is_Valid to False
-
-         if Filename_Addr = Null_Address then
-            Search.Value.Is_Valid := False;
-            exit;
-         end if;
-
-         if Filename_Len > Name'Length then
-            raise Use_Error with "file name too long";
-         end if;
-
-         declare
-            subtype Name_String is String (1 .. Filename_Len);
-            Dent_Name : Name_String;
-            for Dent_Name'Address use Filename_Addr;
-            pragma Import (Ada, Dent_Name);
-
-         begin
-            Last := Filename_Len;
-            Name (1 .. Last) := Dent_Name;
-         end;
-
-         --  Check if the entry matches the pattern
-
-         if Match (Name (1 .. Last), Search.Value.Pattern) then
-            declare
-               C_Full_Name : constant String :=
-                               Compose (To_String (Search.Value.Name),
-                                        Name (1 .. Last)) & ASCII.NUL;
-               Full_Name   : String renames
-                               C_Full_Name
-                                 (C_Full_Name'First .. C_Full_Name'Last - 1);
-               Found       : Boolean := False;
-               Attr        : aliased File_Attributes;
-               Exists      : Integer;
-               Error       : Integer;
-
-            begin
-               Reset_Attributes (Attr'Access);
-               Exists := File_Exists_Attr (C_Full_Name'Address, Attr'Access);
-               Error  := Error_Attributes (Attr'Access);
-
-               if Error /= 0 then
-                  raise Use_Error
-                    with Full_Name & ": " & Errno_Message (Err => Error);
-               end if;
-
-               if Exists = 1 then
-                  --  Ignore special directories "." and ".."
-
-                  if (Full_Name'Length > 1
-                       and then
-                         Full_Name
-                            (Full_Name'Last - 1 .. Full_Name'Last) = "\.")
-                    or else
-                     (Full_Name'Length > 2
-                        and then
-                          Full_Name
-                            (Full_Name'Last - 2 .. Full_Name'Last) = "\..")
-                  then
-                     Exists := 0;
-                  end if;
-
-                  --  Now check if the file kind matches the filter
-
-                  if Is_Regular_File_Attr
-                       (C_Full_Name'Address, Attr'Access) = 1
-                  then
-                     if Search.Value.Filter (Ordinary_File) then
-                        Kind := Ordinary_File;
-                        Found := True;
-                     end if;
-
-                  elsif Is_Directory_Attr
-                          (C_Full_Name'Address, Attr'Access) = 1
-                  then
-                     if Search.Value.Filter (Directory) then
-                        Kind := Directory;
-                        Found := True;
-                     end if;
-
-                  elsif Search.Value.Filter (Special_File) then
-                     Kind := Special_File;
-                     Found := True;
-                  end if;
-
-                  --  If it does, update Search and return
-
-                  if Found then
-                     Search.Value.Entry_Fetched := True;
-                     Search.Value.Dir_Entry :=
-                       (Is_Valid => True,
-                        Simple   => To_Unbounded_String (Name (1 .. Last)),
-                        Full     => To_Unbounded_String (Full_Name),
-                        Kind     => Kind);
-                     exit;
-                  end if;
-               end if;
-            end;
-         end if;
-      end loop;
-   end Fetch_Next_Entry;
-
    -----------------
    -- File_Exists --
    -----------------
@@ -867,15 +735,9 @@ package body Ada.Directories is
 
    procedure Finalize (Search : in out Search_Type) is
    begin
-      if Search.Value /= null then
-
-         --  Close the directory, if one is open
-
-         if Search.Value.Dir /= No_Dir then
-            Close (Search.Value.Dir);
-         end if;
-
-         Free (Search.Value);
+      if Search.State /= null then
+         Free (Search.State.Dir_Contents);
+         Free (Search.State);
       end if;
    end Finalize;
 
@@ -910,15 +772,13 @@ package body Ada.Directories is
 
    function Full_Name (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      --  First, the invalid case
+      --  If the Directory_Entry is valid return the full name contained in the
+      --  entry record.
 
-      if not Directory_Entry.Is_Valid then
+      if not Directory_Entry.Valid then
          raise Status_Error with "invalid directory entry";
-
       else
-         --  The value to return has already been computed
-
-         return To_String (Directory_Entry.Full);
+         return To_String (Directory_Entry.Full_Name);
       end if;
    end Full_Name;
 
@@ -931,28 +791,34 @@ package body Ada.Directories is
       Directory_Entry : out Directory_Entry_Type)
    is
    begin
-      --  First, the invalid case
+      --  A Search with no state implies the user has not called Start_Search
 
-      if Search.Value = null or else not Search.Value.Is_Valid then
-         raise Status_Error with "invalid search";
+      if Search.State = null then
+         raise Status_Error with "search not started";
       end if;
 
-      --  Fetch the next entry, if needed
+      --  If the next entry is No_Element it means the search is finished and
+      --  there are no more entries to return.
 
-      if not Search.Value.Entry_Fetched then
-         Fetch_Next_Entry (Search);
+      if Search.State.Next_Entry = No_Element then
+         raise Status_Error with "no more entries";
       end if;
 
-      --  It is an error if no valid entry is found
+      --  Populate Directory_Entry with the next entry and update the search
+      --  state.
 
-      if not Search.Value.Is_Valid then
-         raise Status_Error with "no next entry";
+      Directory_Entry := Element (Search.State.Next_Entry);
+      Next (Search.State.Next_Entry);
 
-      else
-         --  Reset Entry_Fetched and return the entry
+      --  If Start_Search received a non-zero error code when trying to read
+      --  the file attributes of this entry, raise an Use_Error so the user
+      --  is aware that it was not possible to retrieve the attributes of this
+      --  entry.
 
-         Search.Value.Entry_Fetched := False;
-         Directory_Entry := Search.Value.Dir_Entry;
+      if Directory_Entry.Attr_Error_Code /= 0 then
+         raise Use_Error
+           with To_String (Directory_Entry.Full_Name) & ": " &
+             Errno_Message (Err => Directory_Entry.Attr_Error_Code);
       end if;
    end Get_Next_Entry;
 
@@ -982,14 +848,9 @@ package body Ada.Directories is
 
    function Kind (Directory_Entry : Directory_Entry_Type) return File_Kind is
    begin
-      --  First, the invalid case
-
-      if not Directory_Entry.Is_Valid then
+      if not Directory_Entry.Valid then
          raise Status_Error with "invalid directory entry";
-
       else
-         --  The value to return has already be computed
-
          return Directory_Entry.Kind;
       end if;
    end Kind;
@@ -1025,15 +886,15 @@ package body Ada.Directories is
      (Directory_Entry : Directory_Entry_Type) return Ada.Calendar.Time
    is
    begin
-      --  First, the invalid case
+      --  If the Directory_Entry is valid return the modification time
+      --  contained in the entry record. The modification time is recorded in
+      --  the entry since its cheap to query all the file the attributes in
+      --  one read when the directory is searched.
 
-      if not Directory_Entry.Is_Valid then
+      if not Directory_Entry.Valid then
          raise Status_Error with "invalid directory entry";
-
       else
-         --  The value to return has already be computed
-
-         return Modification_Time (To_String (Directory_Entry.Full));
+         return Directory_Entry.Modification_Time;
       end if;
    end Modification_Time;
 
@@ -1043,19 +904,17 @@ package body Ada.Directories is
 
    function More_Entries (Search : Search_Type) return Boolean is
    begin
-      if Search.Value = null then
+      --  If the vector cursor Search.State.Next_Entry points to an element in
+      --  Search.State.Dir_Contents then there is another entry to return.
+      --  Otherwise, we return False.
+
+      if Search.State = null then
          return False;
-
-      elsif Search.Value.Is_Valid then
-
-         --  Fetch the next entry, if needed
-
-         if not Search.Value.Entry_Fetched then
-            Fetch_Next_Entry (Search);
-         end if;
+      elsif Search.State.Next_Entry = No_Element then
+         return False;
+      else
+         return True;
       end if;
-
-      return Search.Value.Is_Valid;
    end More_Entries;
 
    ---------------------------
@@ -1115,7 +974,7 @@ package body Ada.Directories is
          Directory              => To_String (Dir_Path),
          Pattern                => Simple_Name (Test_File),
          Filter                 => [Directory => False, others => True],
-         Force_Case_Insensitive => True);
+         Case_Insensitive => True);
 
       --  We will find at least one match due to the search hitting our test
       --  file.
@@ -1237,7 +1096,7 @@ package body Ada.Directories is
    -------------------
 
    procedure Set_Directory (Directory : String) is
-      C_Dir_Name : constant String := Directory & ASCII.NUL;
+      Dir_Name_C : constant String := Directory & ASCII.NUL;
    begin
       if not Is_Valid_Path_Name (Directory) then
          raise Name_Error with
@@ -1247,7 +1106,7 @@ package body Ada.Directories is
          raise Name_Error with
            "directory """ & Directory & """ does not exist";
 
-      elsif chdir (C_Dir_Name) /= 0 then
+      elsif chdir (Dir_Name_C) /= 0 then
          raise Name_Error with
            "could not set to designated directory """ & Directory & '"';
       end if;
@@ -1344,15 +1203,13 @@ package body Ada.Directories is
    function Simple_Name
      (Directory_Entry : Directory_Entry_Type) return String is
    begin
-      --  First, the invalid case
+      --  If the Directory_Entry is valid return the simple name contained in
+      --  the entry record.
 
-      if not Directory_Entry.Is_Valid then
+      if not Directory_Entry.Valid then
          raise Status_Error with "invalid directory entry";
-
       else
-         --  The value to return has already be computed
-
-         return To_String (Directory_Entry.Simple);
+         return To_String (Directory_Entry.Name);
       end if;
    end Simple_Name;
 
@@ -1381,15 +1238,15 @@ package body Ada.Directories is
 
    function Size (Directory_Entry : Directory_Entry_Type) return File_Size is
    begin
-      --  First, the invalid case
+      --  If the Directory_Entry is valid return the size contained in the
+      --  entry record. The size is recorded in the entry since it is cheap to
+      --  query all the file the attributes in one read when the directory is
+      --  searched.
 
-      if not Directory_Entry.Is_Valid then
+      if not Directory_Entry.Valid then
          raise Status_Error with "invalid directory entry";
-
       else
-         --  The value to return has already be computed
-
-         return Size (To_String (Directory_Entry.Full));
+         return Directory_Entry.Size;
       end if;
    end Size;
 
@@ -1412,69 +1269,206 @@ package body Ada.Directories is
    ---------------------------
 
    procedure Start_Search_Internal
-     (Search                 : in out Search_Type;
-      Directory              : String;
-      Pattern                : String;
-      Filter                 : Filter_Type := [others => True];
-      Force_Case_Insensitive : Boolean)
+     (Search           : in out Search_Type;
+      Directory        : String;
+      Pattern          : String;
+      Filter           : Filter_Type := [others => True];
+      Case_Insensitive : Boolean)
    is
-      function opendir (file_name : String) return DIRs;
-      pragma Import (C, opendir, "__gnat_opendir");
+      function closedir (Directory : DIRs) return Integer
+        with Import, External_Name => "__gnat_closedir", Convention => C;
+      --  C lib function to close Directory
 
-      C_File_Name : constant String := Directory & ASCII.NUL;
-      Pat         : Regexp;
-      Dir         : Dir_Type_Value;
+      function opendir (Directory : String) return DIRs
+        with Import, External_Name => "__gnat_opendir", Convention => C;
+      --  C lib function to open Directory
+
+      function readdir_gnat
+        (Directory : Address;
+         Buffer    : Address;
+         Last      : not null access Integer) return Address
+        with Import, External_Name => "__gnat_readdir", Convention => C;
+      --  Read the next item in Directory
+
+      Dir_Name_C       : constant String := Directory & ASCII.NUL;
+      Dir_Entry_Buffer : array (1 .. SIZEOF_struct_dirent_alloc) of Character;
+      Dir_Pointer      : Dir_Type_Value;
+      File_Name_Addr   : Address;
+      File_Name_Len    : aliased Integer;
+      Pattern_Regex    : Regexp;
+
+      Call_Result      : Integer;
+      pragma Warnings (Off, Call_Result);
+      --  Result of calling a C function that returns a status
 
    begin
-      --  First, the invalid case Name_Error
+      --  Check that Directory is a valid directory
 
       if not Is_Directory (Directory) then
          raise Name_Error with
            "unknown directory """ & Simple_Name (Directory) & '"';
       end if;
 
-      --  Check the pattern
+      --  Check and compile the pattern
 
       declare
          Case_Sensitive : Boolean := Is_Path_Name_Case_Sensitive;
       begin
-         if Force_Case_Insensitive then
+         if Case_Insensitive then
             Case_Sensitive := False;
          end if;
 
-         Pat :=
-           Compile
-             (Pattern,
-              Glob           => True,
-              Case_Sensitive => Case_Sensitive);
+         Pattern_Regex :=
+           Compile (Pattern, Glob => True, Case_Sensitive => Case_Sensitive);
       exception
          when Error_In_Regexp =>
-            Free (Search.Value);
             raise Name_Error with "invalid pattern """ & Pattern & '"';
       end;
 
-      Dir := Dir_Type_Value (opendir (C_File_Name));
+      --  Open Directory
 
-      if Dir = No_Dir then
+      Dir_Pointer := Dir_Type_Value (opendir (Dir_Name_C));
+
+      if Dir_Pointer = No_Dir then
          raise Use_Error with
            "unreadable directory """ & Simple_Name (Directory) & '"';
       end if;
 
-      --  If needed, finalize Search
+      --  If needed, finalize Search. Note: we should probably raise an
+      --  exception here if Search belongs to an existing search rather than
+      --  quietly end it. However, we first need to check that it won't break
+      --  existing software.
 
       Finalize (Search);
 
-      --  Allocate the default data
+      --  Allocate and initialize the search state
 
-      Search.Value := new Search_Data;
+      Search.State := new Search_State'
+        (Ada.Finalization.Controlled with
+         Dir_Contents  => new Vector,
+         Next_Entry    => No_Element);
 
-      --  Initialize some Search components
+      --  Increase the size of the Dir_Contents vector so it does not need to
+      --  grow for most reasonable directory searches.
 
-      Search.Value.Filter   := Filter;
-      Search.Value.Name     := To_Unbounded_String (Full_Name (Directory));
-      Search.Value.Pattern  := Pat;
-      Search.Value.Dir      := Dir;
-      Search.Value.Is_Valid := True;
+      Search.State.Dir_Contents.Reserve_Capacity (Dir_Vector_Initial_Size);
+
+      --  Read the contents of Directory into Search.State
+
+      loop
+         --  Get next item in the directory
+
+         File_Name_Addr :=
+           readdir_gnat
+             (Address (Dir_Pointer),
+              Dir_Entry_Buffer'Address,
+              File_Name_Len'Access);
+
+         exit when File_Name_Addr = Null_Address;
+
+         --  If the file name matches the Pattern and the file type matches
+         --  the Filter add it to our search vector.
+
+         declare
+            subtype File_Name_String is String (1 .. File_Name_Len);
+
+            File_Name : constant File_Name_String
+              with Import, Address => File_Name_Addr;
+
+         begin
+            if Match (File_Name, Pattern_Regex) then
+               declare
+                  Path_C : constant String :=
+                             Compose (Directory, File_Name) & ASCII.NUL;
+                  Path   : String renames
+                             Path_C (Path_C'First .. Path_C'Last - 1);
+                  Found  : Boolean := False;
+                  Attr   : aliased File_Attributes;
+                  Exists : Integer;
+                  Error  : Integer;
+                  Kind   : File_Kind;
+                  Size   : File_Size;
+
+               begin
+                  --  Get the file attributes for the directory item
+
+                  Reset_Attributes (Attr'Access);
+                  Exists := File_Exists_Attr (Path_C'Address, Attr'Access);
+                  Error  := Error_Attributes (Attr'Access);
+
+                  --  If there was an error when trying to read the attributes
+                  --  of a Directory entry, record the error so it can be
+                  --  propagated to the user when they interate through the
+                  --  directory results.
+
+                  if Error /= 0 then
+                     Search.State.Dir_Contents.Append
+                       (Directory_Entry_Type'
+                          [Valid           => True,
+                           Name            => To_Unbounded_String (File_Name),
+                           Full_Name       => To_Unbounded_String (Path),
+                           Attr_Error_Code => Error,
+                           others          => <>]);
+
+                  --  Otherwise, if the file exists and matches the file kind
+                  --  Filter, add the file to the search results. We capture
+                  --  the size and modification time here as we have already
+                  --  the entry's attributes above.
+
+                  elsif Exists = 1 then
+                     if Is_Regular_File_Attr (Path_C'Address, Attr'Access) = 1
+                       and then Filter (Ordinary_File)
+                     then
+                        Found := True;
+                        Kind := Ordinary_File;
+                        Size :=
+                          File_Size
+                            (File_Length_Attr
+                               (-1, Path_C'Address, Attr'Access));
+
+                     elsif Is_Directory_Attr (Path_C'Address, Attr'Access) = 1
+                       and then Filter (File_Kind'First)
+                     then
+                        Found := True;
+                        Kind := File_Kind'First;
+                        --  File_Kind'First is used instead of Directory due
+                        --  to a name overload issue with the procedure
+                        --  parameter Directory.
+                        Size := 0;
+
+                     elsif Filter (Special_File) then
+                        Found := True;
+                        Kind := Special_File;
+                        Size := 0;
+                     end if;
+
+                     if Found then
+                        Search.State.Dir_Contents.Append
+                          (Directory_Entry_Type'
+                             [Valid             => True,
+                              Name              =>
+                                To_Unbounded_String (File_Name),
+                              Full_Name         => To_Unbounded_String (Path),
+                              Attr_Error_Code   => 0,
+                              Kind              => Kind,
+                              Modification_Time => Modification_Time (Path),
+                              Size              => Size]);
+                     end if;
+                  end if;
+               end;
+            end if;
+         end;
+      end loop;
+
+      --  Set the first entry to be returned to the user to be the first
+      --  element of the Dir_Contents vector. If no items were found, First
+      --  will return No_Element, which signals
+      Search.State.Next_Entry := Search.State.Dir_Contents.First;
+
+      --  Search is finished, close Directory
+
+      Call_Result := closedir (DIRs (Dir_Pointer));
+
    end Start_Search_Internal;
 
 end Ada.Directories;

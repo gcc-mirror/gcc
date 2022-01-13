@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32677,7 +32677,7 @@ package body Sem_Prag is
    --------------------------------------------
 
    procedure Defer_Compile_Time_Warning_Error_To_BE (N : Node_Id) is
-      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
       Compile_Time_Warnings_Errors.Append
         (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),

@@ -752,8 +752,16 @@ struct cpp_callbacks
 
 #ifdef VMS
 #define INO_T_CPP ino_t ino[3]
+#elif defined (_AIX) && SIZEOF_INO_T == 4
+#define INO_T_CPP ino64_t ino
 #else
 #define INO_T_CPP ino_t ino
+#endif
+
+#if defined (_AIX) && SIZEOF_DEV_T == 4
+#define DEV_T_CPP dev64_t dev
+#else
+#define DEV_T_CPP dev_t dev
 #endif
 
 /* Chain of directories to look for include files in.  */
@@ -790,7 +798,7 @@ struct cpp_dir
   /* The C front end uses these to recognize duplicated
      directories in the search path.  */
   INO_T_CPP;
-  dev_t dev;
+  DEV_T_CPP;
 };
 
 /* The kind of the cpp_macro.  */

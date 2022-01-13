@@ -725,7 +725,8 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
       parms->quick_push (TREE_VALUE (method_params));
 
   /* Build an obj_type_ref, with the correct cast for the method call.  */
-  t = build3 (OBJ_TYPE_REF, sender_cast, method, lookup_object, size_zero_node);
+  t = build3 (OBJ_TYPE_REF, sender_cast, method, lookup_object,
+	      build_int_cst (TREE_TYPE (lookup_object), 0));
   t = build_function_call_vec (loc, vNULL, t, parms, NULL);
   vec_free (parms);
   return t;

@@ -4,11 +4,18 @@ define(atype_letter,substr(atype_code, 0, 1))dnl
 define(atype_kind,substr(atype_code, 1))dnl
 define(get_typename2, `$1 (kind=$2)')dnl
 define(get_typename, `get_typename2(ifelse($1,i,integer,ifelse($1,r,real,ifelse($1,l,logical,ifelse($1,c,complex,unknown)))),`$2')')dnl
-define(atype_name, get_typename(atype_letter,atype_kind))dnl
+define(name_kind, ifelse(atype_kind,17,16,atype_kind))dnl
+define(atype_name, get_typename(atype_letter,name_kind))dnl
 define(name, regexp(regexp(file, `[^/]*$', `\&'), `^_\([^_]*\)_', `\1'))dnl
 define(function_name,`_gfortran_specific__'name`_'atype_code)dnl
 
-define(Q,ifelse(atype_kind,4,F,ifelse(atype_kind,8,`',ifelse(atype_kind,10,L,ifelse(atype_kind,16,L,`_'atype_kind)))))dnl
+define(Q,dnl
+ifelse(atype_kind,4,F,dnl
+ifelse(atype_kind,8,`',dnl
+ifelse(atype_kind,10,L,dnl
+ifelse(atype_kind,16,L,dnl
+ifelse(atype_kind,17,L,dnl
+`_'atype_kind))))))dnl
 
 #include "config.h"
 #include "kinds.inc"

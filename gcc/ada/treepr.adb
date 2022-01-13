@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,6 @@
 
 with Aspects;              use Aspects;
 with Atree;                use Atree;
-with Csets;                use Csets;
 with Debug;                use Debug;
 with Einfo;                use Einfo;
 with Einfo.Entities;       use Einfo.Entities;
@@ -37,6 +36,7 @@ with Namet;                use Namet;
 with Nlists;               use Nlists;
 with Output;               use Output;
 with Seinfo;               use Seinfo;
+with Sem_Eval;             use Sem_Eval;
 with Sinfo;                use Sinfo;
 with Sinfo.Nodes;          use Sinfo.Nodes;
 with Sinfo.Utils;          use Sinfo.Utils;
@@ -44,6 +44,7 @@ with Snames;               use Snames;
 with Sinput;               use Sinput;
 with Stand;                use Stand;
 with Stringt;              use Stringt;
+with System.Case_Util;     use System.Case_Util;
 with SCIL_LL;              use SCIL_LL;
 with Uintp;                use Uintp;
 with Urealp;               use Urealp;
@@ -134,9 +135,9 @@ package body Treepr is
    function From_Union is new Unchecked_Conversion (Union_Id, Uint);
    function From_Union is new Unchecked_Conversion (Union_Id, Ureal);
 
-   function Capitalize (S : String) return String;
-   procedure Capitalize (S : in out String);
-   --  Turns an identifier into Mixed_Case
+   function To_Mixed (S : String) return String;
+   --  Turns an identifier into Mixed_Case. For bootstrap reasons, we cannot
+   --  use To_Mixed function from System.Case_Util.
 
    function Image (F : Node_Or_Entity_Field) return String;
 
@@ -254,35 +255,6 @@ package body Treepr is
    --  descendants are to be printed. Prefix_Str is to be added to all
    --  printed lines.
 
-   ----------------
-   -- Capitalize --
-   ----------------
-
-   procedure Capitalize (S : in out String) is
-      Cap : Boolean := True;
-   begin
-      for J in S'Range loop
-         declare
-            Old : constant Character := S (J);
-         begin
-            if Cap then
-               S (J) := Fold_Upper (S (J));
-            else
-               S (J) := Fold_Lower (S (J));
-            end if;
-
-            Cap := Old = '_';
-         end;
-      end loop;
-   end Capitalize;
-
-   function Capitalize (S : String) return String is
-   begin
-      return Result : String (S'Range) := S do
-         Capitalize (Result);
-      end return;
-   end Capitalize;
-
    ----------
    -- Hash --
    ----------
@@ -399,7 +371,7 @@ package body Treepr is
 
          when others =>
             declare
-               Result : constant String := Capitalize (F'Img);
+               Result : constant String := To_Mixed (F'Img);
             begin
                return Result (3 .. Result'Last); -- Remove "F_"
             end;
@@ -1642,6 +1614,24 @@ package body Treepr is
             end if;
          end if;
 
+         --  If this is a discrete expression whose value is known, print that
+         --  value.
+
+         if Nkind (N) in N_Subexpr
+           and then Compile_Time_Known_Value (N)
+           and then Present (Etype (N))
+           and then Is_Discrete_Type (Etype (N))
+         then
+            if Is_Entity_Name (N) -- e.g. enumeration literal
+              or else Nkind (N) in N_Integer_Literal
+                                 | N_Character_Literal
+                                 | N_Unchecked_Type_Conversion
+            then
+               Print_Str (" val = ");
+               UI_Write (Expr_Value (N));
+            end if;
+         end if;
+
          if Nkind (N) in N_Entity then
             Write_Str (" (Entity_Id=");
          else
@@ -1694,22 +1684,8 @@ package body Treepr is
    --------------------------
 
    procedure Print_Str_Mixed_Case (S : String) is
-      Ucase : Boolean;
-
    begin
-      if Phase = Printing then
-         Ucase := True;
-
-         for J in S'Range loop
-            if Ucase then
-               Write_Char (S (J));
-            else
-               Write_Char (Fold_Lower (S (J)));
-            end if;
-
-            Ucase := (S (J) = '_');
-         end loop;
-      end if;
+      Print_Str (To_Mixed (S));
    end Print_Str_Mixed_Case;
 
    ----------------
@@ -1842,6 +1818,17 @@ package body Treepr is
       Serial_Numbers.Put (Hash_Table, Hash_Id, Next_Serial_Number);
       Next_Serial_Number := Next_Serial_Number + 1;
    end Set_Serial_Number;
+
+   --------------
+   -- To_Mixed --
+   --------------
+
+   function To_Mixed (S : String) return String is
+   begin
+      return Result : String (S'Range) := S do
+         To_Mixed (Result);
+      end return;
+   end To_Mixed;
 
    ---------------
    -- Tree_Dump --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2021, AdaCore                     --
+--                     Copyright (C) 2000-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package body GNAT.Expect is
       Str       : String;
       Filter_On : Filter_Type)
    is
-      Current_Filter  : Filter_List;
+      Current_Filter : Filter_List;
 
    begin
       if Pid.Filters_Lock = 0 then
@@ -264,7 +264,6 @@ package body GNAT.Expect is
 
    procedure Close (Descriptor : in out Process_Descriptor) is
       Status : Integer;
-      pragma Unreferenced (Status);
    begin
       Close (Descriptor, Status);
    end Close;
@@ -976,7 +975,6 @@ package body GNAT.Expect is
 
       declare
          Result : Expect_Match;
-         pragma Unreferenced (Result);
 
       begin
          --  This loop runs until the call to Expect raises Process_Died
@@ -1439,7 +1437,7 @@ package body GNAT.Expect is
       Pipe3      : not null access Pipe_Type)
    is
       Status : Boolean;
-      pragma Unreferenced (Status);
+      pragma Warnings (Off, "modified by call, but value overwritten");
 
    begin
       --  Create the pipes

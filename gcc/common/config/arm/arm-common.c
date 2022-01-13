@@ -286,7 +286,7 @@ arm_target_mode (int argc, const char **argv)
 
   if (argc % 2 != 0)
     fatal_error (input_location,
-		 "%%:target_mode_check takes an even number of parameters");
+		 "%%:%<target_mode_check%> takes an even number of parameters");
 
   while (argc)
     {
@@ -295,8 +295,8 @@ arm_target_mode (int argc, const char **argv)
       else if (strcmp (argv[0], "cpu") == 0)
 	cpu = argv[1];
       else
-	fatal_error (input_location,
-		     "unrecognized option passed to %%:target_mode_check");
+	fatal_error (input_location, "unrecognized option passed to %%:"
+		     "%<target_mode_check%%>>");
       argc -= 2;
       argv += 2;
     }
@@ -662,7 +662,7 @@ arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
 
   if (argc & 1)
     fatal_error (input_location,
-		 "%%:canon_for_mlib takes 1 or more pairs of parameters");
+		 "%%:%<canon_for_mlib%> takes 1 or more pairs of parameters");
 
   while (argc)
     {
@@ -676,7 +676,7 @@ arm_canon_arch_option_1 (int argc, const char **argv, bool arch_for_multilib)
 	abi = argv[1];
       else
 	fatal_error (input_location,
-		     "unrecognized operand to %%:canon_for_mlib");
+		     "unrecognized operand to %%:%<canon_for_mlib%>");
 
       argc -= 2;
       argv += 2;
@@ -1032,7 +1032,7 @@ arm_asm_auto_mfpu (int argc, const char **argv)
 	arch = argv[1];
       else
 	fatal_error (input_location,
-		     "unrecognized operand to %%:asm_auto_mfpu");
+		     "unrecognized operand to %%:%<asm_auto_mfpu%>");
       argc -= 2;
       argv += 2;
     }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1659,7 +1659,7 @@ package body Sem_Util is
       Typ            : Entity_Id;
       Suggest_Static : Boolean := False)
    is
-      Gen            : Entity_Id;
+      Gen : Entity_Id;
 
    begin
       --  Avoid cascaded errors
@@ -4443,6 +4443,44 @@ package body Sem_Util is
       end if;
    end Check_Nonvolatile_Function_Profile;
 
+   -------------------
+   -- Check_Parents --
+   -------------------
+
+   function Check_Parents (N : Node_Id; List : Elist_Id) return Boolean is
+
+      function Check_Node
+        (Parent_Node : Node_Id;
+         N           : Node_Id) return Traverse_Result;
+      --  Process a single node.
+
+      ----------------
+      -- Check_Node --
+      ----------------
+
+      function Check_Node
+        (Parent_Node : Node_Id;
+         N           : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Identifier
+           and then Parent (N) /= Parent_Node
+           and then Present (Entity (N))
+           and then Contains (List, Entity (N))
+         then
+            return Abandon;
+         end if;
+
+         return OK;
+      end Check_Node;
+
+      function Traverse is new Traverse_Func_With_Parent (Check_Node);
+
+   --  Start of processing for Check_Parents
+
+   begin
+      return Traverse (N) = OK;
+   end Check_Parents;
+
    -----------------------------
    -- Check_Part_Of_Reference --
    -----------------------------
@@ -6707,24 +6745,23 @@ package body Sem_Util is
                      if Present (Conc_Typ)
                        and then not Comes_From_Source (Conc_Typ)
                      then
-                        Error_Msg_NEL
-                          ("\& [<<", N, Standard_Constraint_Error, Eloc);
+                        Error_Msg ("\& [<<", Eloc, N);
 
                      else
                         if GNATprove_Mode then
-                           Error_Msg_NEL
-                             ("\& would have been raised for objects of this "
-                              & "type", N, Standard_Constraint_Error, Eloc);
+                           Error_Msg
+                             ("\Constraint_Error would have been raised"
+                              & " for objects of this type", Eloc, N);
                         else
-                           Error_Msg_NEL
-                             ("\& will be raised for objects of this type??",
-                              N, Standard_Constraint_Error, Eloc);
+                           Error_Msg
+                             ("\Constraint_Error will be raised"
+                              & " for objects of this type??", Eloc, N);
                         end if;
                      end if;
                   end;
 
                else
-                  Error_Msg_NEL ("\& [<<", N, Standard_Constraint_Error, Eloc);
+                  Error_Msg ("\Constraint_Error [<<", Eloc, N);
                end if;
 
             else
@@ -8362,7 +8399,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      Owner : Node_Id;
+      Owner : Node_Id := Empty;
 
    --  Start of processing for End_Keyword_Location
 
@@ -8980,7 +9017,7 @@ package body Sem_Util is
    function Expression_Of_Expression_Function
      (Subp : Entity_Id) return Node_Id
    is
-      Expr_Func : Node_Id;
+      Expr_Func : Node_Id := Empty;
 
    begin
       pragma Assert (Is_Expression_Function_Or_Completion (Subp));
@@ -9159,6 +9196,12 @@ package body Sem_Util is
       then
          Call_Nam := Name (Call);
 
+         --  A call to an entry family may appear as an indexed component
+
+         if Nkind (Call_Nam) = N_Indexed_Component then
+            Call_Nam := Prefix (Call_Nam);
+         end if;
+
          --  A call to a protected or task entry appears as a selected
          --  component rather than an expanded name.
 
@@ -9168,7 +9211,11 @@ package body Sem_Util is
 
          if Is_Entity_Name (Call_Nam)
            and then Present (Entity (Call_Nam))
-           and then Is_Overloadable (Entity (Call_Nam))
+           and then (Is_Generic_Subprogram (Entity (Call_Nam))
+                      or else Is_Overloadable (Entity (Call_Nam))
+                      or else Ekind (Entity (Call_Nam)) in E_Entry_Family
+                                                         | E_Subprogram_Body
+                                                         | E_Subprogram_Type)
            and then not Is_Overloaded (Call_Nam)
          then
             --  If node is name in call it is not an actual
@@ -10682,7 +10729,7 @@ package body Sem_Util is
    -------------------------------------
 
    function Get_Actual_Subtype_If_Available (N : Node_Id) return Entity_Id is
-      Typ  : constant Entity_Id := Etype (N);
+      Typ : constant Entity_Id := Etype (N);
 
    begin
       --  If what we have is an identifier that references a subprogram
@@ -10926,7 +10973,12 @@ package body Sem_Util is
    ----------------------
 
    function Get_Fullest_View
-     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id is
+     (E           : Entity_Id;
+      Include_PAT : Boolean := True;
+      Recurse     : Boolean := True) return Entity_Id
+   is
+      New_E : Entity_Id := Empty;
+
    begin
       --  Prevent cascaded errors
 
@@ -10934,47 +10986,45 @@ package body Sem_Util is
          return E;
       end if;
 
-      --  Strictly speaking, the recursion below isn't necessary, but
-      --  it's both simplest and safest.
+      --  Look at each kind of entity to see where we may need to go deeper.
 
       case Ekind (E) is
          when Incomplete_Kind =>
             if From_Limited_With (E) then
-               return Get_Fullest_View (Non_Limited_View (E), Include_PAT);
+               New_E := Non_Limited_View (E);
             elsif Present (Full_View (E)) then
-               return Get_Fullest_View (Full_View (E), Include_PAT);
+               New_E := Full_View (E);
             elsif Ekind (E) = E_Incomplete_Subtype then
-               return Get_Fullest_View (Etype (E));
+               New_E := Etype (E);
             end if;
 
          when Private_Kind =>
             if Present (Underlying_Full_View (E)) then
-               return
-                 Get_Fullest_View (Underlying_Full_View (E), Include_PAT);
+               New_E := Underlying_Full_View (E);
             elsif Present (Full_View (E)) then
-               return Get_Fullest_View (Full_View (E), Include_PAT);
+               New_E := Full_View (E);
             elsif Etype (E) /= E then
-               return Get_Fullest_View (Etype (E), Include_PAT);
+               New_E := Etype (E);
             end if;
 
          when Array_Kind =>
             if Include_PAT and then Present (Packed_Array_Impl_Type (E)) then
-               return Get_Fullest_View (Packed_Array_Impl_Type (E));
+               New_E := Packed_Array_Impl_Type (E);
             end if;
 
          when E_Record_Subtype =>
             if Present (Cloned_Subtype (E)) then
-               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+               New_E := Cloned_Subtype (E);
             end if;
 
          when E_Class_Wide_Type =>
-            return Get_Fullest_View (Root_Type (E), Include_PAT);
+            New_E := Root_Type (E);
 
          when E_Class_Wide_Subtype =>
             if Present (Equivalent_Type (E)) then
-               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+               New_E := Equivalent_Type (E);
             elsif Present (Cloned_Subtype (E)) then
-               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+               New_E := Cloned_Subtype (E);
             end if;
 
          when E_Protected_Subtype
@@ -10983,25 +11033,29 @@ package body Sem_Util is
             | E_Task_Type
          =>
             if Present (Corresponding_Record_Type (E)) then
-               return Get_Fullest_View (Corresponding_Record_Type (E),
-                                        Include_PAT);
+               New_E := Corresponding_Record_Type (E);
             end if;
 
          when E_Access_Protected_Subprogram_Type
             | E_Anonymous_Access_Protected_Subprogram_Type
          =>
             if Present (Equivalent_Type (E)) then
-               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+               New_E := Equivalent_Type (E);
             end if;
 
          when E_Access_Subtype =>
-            return Get_Fullest_View (Base_Type (E), Include_PAT);
+            New_E := Base_Type (E);
 
          when others =>
             null;
       end case;
 
-      return E;
+      --  If we found a fuller view, either return it or recurse. Otherwise,
+      --  return our input.
+
+      return (if    No (New_E) then E
+              elsif Recurse then Get_Fullest_View (New_E, Include_PAT, Recurse)
+              else  New_E);
    end Get_Fullest_View;
 
    ------------------------
@@ -16232,7 +16286,7 @@ package body Sem_Util is
          end if;
 
       --  The packages may come from the same package chain or from entirely
-      --  different hierarcies. To determine this, climb the scope stack until
+      --  different hierarchies. To determine this, climb the scope stack until
       --  a common root is found.
 
       --        (root)      (root 1)  (root 2)
@@ -18246,60 +18300,124 @@ package body Sem_Util is
       return Is_Array_Type (Container_Typ);
    end Is_Iterator_Over_Array;
 
-   ------------
-   -- Is_LHS --
-   ------------
+   --------------------------
+   -- Known_To_Be_Assigned --
+   --------------------------
 
-   --  We seem to have a lot of overlapping functions that do similar things
-   --  (testing for left hand sides or lvalues???).
+   function Known_To_Be_Assigned
+     (N        : Node_Id;
+      Only_LHS : Boolean := False) return Boolean
+   is
+      function Known_Assn (N : Node_Id) return Boolean is
+        (Known_To_Be_Assigned (N, Only_LHS));
+      --  Local function to simplify the passing of parameters for recursive
+      --  calls.
 
-   function Is_LHS (N : Node_Id) return Is_LHS_Result is
-      P : constant Node_Id := Parent (N);
+      P    : constant Node_Id := Parent (N);
+      Form : Entity_Id := Empty;
+      Call : Node_Id   := Empty;
+
+   --  Start of processing for Known_To_Be_Assigned
 
    begin
-      --  Return True if we are the left hand side of an assignment statement
+      --  Check for out parameters
 
-      if Nkind (P) = N_Assignment_Statement then
-         if Name (P) = N then
-            return Yes;
-         else
-            return No;
-         end if;
+      Find_Actual (N, Form, Call);
 
-      --  Case of prefix of indexed or selected component or slice
-
-      elsif Nkind (P) in N_Indexed_Component | N_Selected_Component | N_Slice
-        and then N = Prefix (P)
-      then
-         --  Here we have the case where the parent P is N.Q or N(Q .. R).
-         --  If P is an LHS, then N is also effectively an LHS, but there
-         --  is an important exception. If N is of an access type, then
-         --  what we really have is N.all.Q (or N.all(Q .. R)). In either
-         --  case this makes N.all a left hand side but not N itself.
-
-         --  If we don't know the type yet, this is the case where we return
-         --  Unknown, since the answer depends on the type which is unknown.
-
-         if No (Etype (N)) then
-            return Unknown;
-
-         --  We have an Etype set, so we can check it
-
-         elsif Is_Access_Type (Etype (N)) then
-            return No;
-
-         --  OK, not access type case, so just test whole expression
-
-         else
-            return Is_LHS (P);
-         end if;
-
-      --  All other cases are not left hand sides
-
-      else
-         return No;
+      if Present (Form) then
+         return Ekind (Form) /= E_In_Parameter and then not Only_LHS;
       end if;
-   end Is_LHS;
+
+      --  Otherwise look at the parent
+
+      case Nkind (P) is
+
+         --  Test left side of assignment
+
+         when N_Assignment_Statement =>
+            return N = Name (P);
+
+         --  Test prefix of component or attribute. Note that the prefix of an
+         --  explicit or implicit dereference cannot be an l-value. In the case
+         --  of a 'Read attribute, the reference can be an actual in the
+         --  argument list of the attribute.
+
+         when N_Attribute_Reference =>
+            return
+              not Only_LHS and then
+                ((N = Prefix (P)
+                   and then Name_Implies_Lvalue_Prefix (Attribute_Name (P)))
+                 or else
+                   Attribute_Name (P) = Name_Read);
+
+         --  For an expanded name, the name is an lvalue if the expanded name
+         --  is an lvalue, but the prefix is never an lvalue, since it is just
+         --  the scope where the name is found.
+
+         when N_Expanded_Name =>
+            if N = Prefix (P) then
+               return Known_Assn (P);
+            else
+               return False;
+            end if;
+
+         --  For a selected component A.B, A is certainly an lvalue if A.B is.
+         --  B is a little interesting, if we have A.B := 3, there is some
+         --  discussion as to whether B is an lvalue or not, we choose to say
+         --  it is. Note however that A is not an lvalue if it is of an access
+         --  type since this is an implicit dereference.
+
+         when N_Selected_Component =>
+            if N = Prefix (P)
+              and then Present (Etype (N))
+              and then Is_Access_Type (Etype (N))
+            then
+               return False;
+            else
+               return Known_Assn (P);
+            end if;
+
+         --  For an indexed component or slice, the index or slice bounds is
+         --  never an lvalue. The prefix is an lvalue if the indexed component
+         --  or slice is an lvalue, except if it is an access type, where we
+         --  have an implicit dereference.
+
+         when N_Indexed_Component | N_Slice =>
+            if N /= Prefix (P)
+              or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
+            then
+               return False;
+            else
+               return Known_Assn (P);
+            end if;
+
+         --  Prefix of a reference is an lvalue if the reference is an lvalue
+
+         when N_Reference =>
+            return Known_Assn (P);
+
+         --  Prefix of explicit dereference is never an lvalue
+
+         when N_Explicit_Dereference =>
+            return False;
+
+         --  Test for appearing in a conversion that itself appears in an
+         --  lvalue context, since this should be an lvalue.
+
+         when N_Type_Conversion =>
+            return Known_Assn (P);
+
+         --  Test for appearance in object renaming declaration
+
+         when N_Object_Renaming_Declaration =>
+            return not Only_LHS;
+
+         --  All other references are definitely not lvalues
+
+         when others =>
+            return False;
+      end case;
+   end Known_To_Be_Assigned;
 
    -----------------------------
    -- Is_Library_Level_Entity --
@@ -21833,7 +21951,7 @@ package body Sem_Util is
       ------------------------------------
 
       function Prefix_Has_Volatile_Components (P : Node_Id) return Boolean is
-         Typ  : constant Entity_Id := Etype (P);
+         Typ : constant Entity_Id := Etype (P);
 
       begin
          if Is_Access_Type (Typ) then
@@ -22142,121 +22260,6 @@ package body Sem_Util is
 
       return False;
    end Known_Null;
-
-   --------------------------
-   -- Known_To_Be_Assigned --
-   --------------------------
-
-   function Known_To_Be_Assigned (N : Node_Id) return Boolean is
-      P : constant Node_Id := Parent (N);
-
-   begin
-      case Nkind (P) is
-
-         --  Test left side of assignment
-
-         when N_Assignment_Statement =>
-            return N = Name (P);
-
-         --  Function call arguments are never lvalues
-
-         when N_Function_Call =>
-            return False;
-
-         --  Positional parameter for procedure or accept call
-
-         when N_Accept_Statement
-            | N_Procedure_Call_Statement
-         =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-               Act  : Node_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (P);
-
-               if No (Proc) then
-                  return False;
-               end if;
-
-               --  If we are not a list member, something is strange, so
-               --  be conservative and return False.
-
-               if not Is_List_Member (N) then
-                  return False;
-               end if;
-
-               --  We are going to find the right formal by stepping forward
-               --  through the formals, as we step backwards in the actuals.
-
-               Form := First_Formal (Proc);
-               Act  := N;
-               loop
-                  --  If no formal, something is weird, so be conservative
-                  --  and return False.
-
-                  if No (Form) then
-                     return False;
-                  end if;
-
-                  Prev (Act);
-                  exit when No (Act);
-                  Next_Formal (Form);
-               end loop;
-
-               return Ekind (Form) /= E_In_Parameter;
-            end;
-
-         --  Named parameter for procedure or accept call
-
-         when N_Parameter_Association =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (Parent (P));
-
-               if No (Proc) then
-                  return False;
-               end if;
-
-               --  Loop through formals to find the one that matches
-
-               Form := First_Formal (Proc);
-               loop
-                  --  If no matching formal, that's peculiar, some kind of
-                  --  previous error, so return False to be conservative.
-                  --  Actually this also happens in legal code in the case
-                  --  where P is a parameter association for an Extra_Formal???
-
-                  if No (Form) then
-                     return False;
-                  end if;
-
-                  --  Else test for match
-
-                  if Chars (Form) = Chars (Selector_Name (P)) then
-                     return Ekind (Form) /= E_In_Parameter;
-                  end if;
-
-                  Next_Formal (Form);
-               end loop;
-            end;
-
-         --  Test for appearing in a conversion that itself appears
-         --  in an lvalue context, since this should be an lvalue.
-
-         when N_Type_Conversion =>
-            return Known_To_Be_Assigned (P);
-
-         --  All other references are definitely not known to be modifications
-
-         when others =>
-            return False;
-      end case;
-   end Known_To_Be_Assigned;
 
    ---------------------------
    -- Last_Source_Statement --
@@ -22742,195 +22745,6 @@ package body Sem_Util is
 
       return True;
    end Matching_Static_Array_Bounds;
-
-   -------------------
-   -- May_Be_Lvalue --
-   -------------------
-
-   function May_Be_Lvalue (N : Node_Id) return Boolean is
-      P : constant Node_Id := Parent (N);
-
-   begin
-      case Nkind (P) is
-
-         --  Test left side of assignment
-
-         when N_Assignment_Statement =>
-            return N = Name (P);
-
-         --  Test prefix of component or attribute. Note that the prefix of an
-         --  explicit or implicit dereference cannot be an l-value. In the case
-         --  of a 'Read attribute, the reference can be an actual in the
-         --  argument list of the attribute.
-
-         when N_Attribute_Reference =>
-            return (N = Prefix (P)
-                     and then Name_Implies_Lvalue_Prefix (Attribute_Name (P)))
-                 or else
-                   Attribute_Name (P) = Name_Read;
-
-         --  For an expanded name, the name is an lvalue if the expanded name
-         --  is an lvalue, but the prefix is never an lvalue, since it is just
-         --  the scope where the name is found.
-
-         when N_Expanded_Name =>
-            if N = Prefix (P) then
-               return May_Be_Lvalue (P);
-            else
-               return False;
-            end if;
-
-         --  For a selected component A.B, A is certainly an lvalue if A.B is.
-         --  B is a little interesting, if we have A.B := 3, there is some
-         --  discussion as to whether B is an lvalue or not, we choose to say
-         --  it is. Note however that A is not an lvalue if it is of an access
-         --  type since this is an implicit dereference.
-
-         when N_Selected_Component =>
-            if N = Prefix (P)
-              and then Present (Etype (N))
-              and then Is_Access_Type (Etype (N))
-            then
-               return False;
-            else
-               return May_Be_Lvalue (P);
-            end if;
-
-         --  For an indexed component or slice, the index or slice bounds is
-         --  never an lvalue. The prefix is an lvalue if the indexed component
-         --  or slice is an lvalue, except if it is an access type, where we
-         --  have an implicit dereference.
-
-         when N_Indexed_Component
-            | N_Slice
-         =>
-            if N /= Prefix (P)
-              or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
-            then
-               return False;
-            else
-               return May_Be_Lvalue (P);
-            end if;
-
-         --  Prefix of a reference is an lvalue if the reference is an lvalue
-
-         when N_Reference =>
-            return May_Be_Lvalue (P);
-
-         --  Prefix of explicit dereference is never an lvalue
-
-         when N_Explicit_Dereference =>
-            return False;
-
-         --  Positional parameter for subprogram, entry, or accept call.
-         --  In older versions of Ada function call arguments are never
-         --  lvalues. In Ada 2012 functions can have in-out parameters.
-
-         when N_Accept_Statement
-            | N_Entry_Call_Statement
-            | N_Subprogram_Call
-         =>
-            if Nkind (P) = N_Function_Call and then Ada_Version < Ada_2012 then
-               return False;
-            end if;
-
-            --  The following mechanism is clumsy and fragile. A single flag
-            --  set in Resolve_Actuals would be preferable ???
-
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-               Act  : Node_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (P);
-
-               if No (Proc) then
-                  return True;
-               end if;
-
-               --  If we are not a list member, something is strange, so be
-               --  conservative and return True.
-
-               if not Is_List_Member (N) then
-                  return True;
-               end if;
-
-               --  We are going to find the right formal by stepping forward
-               --  through the formals, as we step backwards in the actuals.
-
-               Form := First_Formal (Proc);
-               Act  := N;
-               loop
-                  --  If no formal, something is weird, so be conservative and
-                  --  return True.
-
-                  if No (Form) then
-                     return True;
-                  end if;
-
-                  Prev (Act);
-                  exit when No (Act);
-                  Next_Formal (Form);
-               end loop;
-
-               return Ekind (Form) /= E_In_Parameter;
-            end;
-
-         --  Named parameter for procedure or accept call
-
-         when N_Parameter_Association =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (Parent (P));
-
-               if No (Proc) then
-                  return True;
-               end if;
-
-               --  Loop through formals to find the one that matches
-
-               Form := First_Formal (Proc);
-               loop
-                  --  If no matching formal, that's peculiar, some kind of
-                  --  previous error, so return True to be conservative.
-                  --  Actually happens with legal code for an unresolved call
-                  --  where we may get the wrong homonym???
-
-                  if No (Form) then
-                     return True;
-                  end if;
-
-                  --  Else test for match
-
-                  if Chars (Form) = Chars (Selector_Name (P)) then
-                     return Ekind (Form) /= E_In_Parameter;
-                  end if;
-
-                  Next_Formal (Form);
-               end loop;
-            end;
-
-         --  Test for appearing in a conversion that itself appears in an
-         --  lvalue context, since this should be an lvalue.
-
-         when N_Type_Conversion =>
-            return May_Be_Lvalue (P);
-
-         --  Test for appearance in object renaming declaration
-
-         when N_Object_Renaming_Declaration =>
-            return True;
-
-         --  All other references are definitely not lvalues
-
-         when others =>
-            return False;
-      end case;
-   end May_Be_Lvalue;
 
    -----------------
    -- Might_Raise --
@@ -23621,8 +23435,7 @@ package body Sem_Util is
             Elmt := First_Elmt (Decls);
             while Present (Elmt) loop
                Decl  := Node (Elmt);
-               New_E := Make_Defining_Identifier (Sloc (Decl),
-                          New_Internal_Name ('P'));
+               New_E := Make_Temporary (Sloc (Decl), 'P');
 
                if Nkind (Decl) = N_Expression_Function then
                   Decl := Specification (Decl);

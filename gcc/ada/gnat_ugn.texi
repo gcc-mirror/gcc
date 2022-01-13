@@ -11974,6 +11974,9 @@ to be non-negative
 @item 
 Comparison of an object or (unary or binary) operation of boolean type to
 an explicit True value.
+
+@item 
+Import of parent package.
 @end itemize
 
 The default is that warnings for redundant constructs are not given.
@@ -29241,8 +29244,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

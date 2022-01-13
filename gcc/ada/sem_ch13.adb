@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -593,7 +593,7 @@ package body Sem_Ch13 is
          Comp   := First_Component_Or_Discriminant (R);
          while Present (Comp) loop
             declare
-               CC   : constant Node_Id := Component_Clause (Comp);
+               CC : constant Node_Id := Component_Clause (Comp);
 
             begin
                --  Collect only component clauses whose last bit is less than
@@ -10666,8 +10666,7 @@ package body Sem_Ch13 is
                --  what happens if a return appears within a return.
 
                BTemp :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('B'));
+                 Make_Temporary (Loc, 'B');
 
                FBody :=
                  Make_Subprogram_Body (Loc,
@@ -16005,7 +16004,7 @@ package body Sem_Ch13 is
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
       begin
-         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ)  then
+         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ) then
             return False;
 
          elsif Ekind (E) = E_Constant then
@@ -17125,13 +17124,12 @@ package body Sem_Ch13 is
 
    procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id) is
       A_Id        : constant Aspect_Id := Get_Aspect_Id (ASN);
-      pragma Assert ((A_Id = Aspect_Integer_Literal) or
-                     (A_Id = Aspect_Real_Literal) or
-                     (A_Id = Aspect_String_Literal));
+      pragma Assert (A_Id in Aspect_Integer_Literal |
+                             Aspect_Real_Literal | Aspect_String_Literal);
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 
-      I            : Interp_Index;
+      I            : Interp_Index := 0;
       It           : Interp;
       Param_Type   : Entity_Id;
       Match_Found  : Boolean := False;
@@ -17544,6 +17542,22 @@ package body Sem_Ch13 is
         and then In_Same_Source_Unit (Target, N)
       then
          Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
+      end if;
+
+      --  If the unchecked conversion is between Address and an access
+      --  subprogram type, show that we shouldn't use an internal
+      --  representation for the access subprogram type.
+
+      if Is_Access_Subprogram_Type (Target)
+        and then Is_Descendant_Of_Address (Source)
+        and then In_Same_Source_Unit (Target, N)
+      then
+         Set_Can_Use_Internal_Rep (Target, False);
+      elsif Is_Access_Subprogram_Type (Source)
+        and then Is_Descendant_Of_Address (Target)
+        and then In_Same_Source_Unit (Source, N)
+      then
+         Set_Can_Use_Internal_Rep (Source, False);
       end if;
 
       --  Generate N_Validate_Unchecked_Conversion node for back end in case

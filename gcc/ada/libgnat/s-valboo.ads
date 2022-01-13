@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,8 @@ is
      (not System.Val_Util.Only_Space_Ghost (Str, Str'First, Str'Last)
         and then
       (declare
-         F : constant Positive := System.Val_Util.First_Non_Space_Ghost (Str);
+         F : constant Positive := System.Val_Util.First_Non_Space_Ghost
+           (Str, Str'First, Str'Last);
        begin
          (F <= Str'Last - 3
           and then Str (F)     in 't' | 'T'
@@ -82,7 +83,8 @@ is
      Pre  => Is_Boolean_Image_Ghost (Str),
      Post =>
        Value_Boolean'Result =
-         (Str (System.Val_Util.First_Non_Space_Ghost (Str)) in 't' | 'T');
+         (Str (System.Val_Util.First_Non_Space_Ghost
+            (Str, Str'First, Str'Last)) in 't' | 'T');
    --  Computes Boolean'Value (Str)
 
 end System.Val_Bool;

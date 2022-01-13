@@ -2149,7 +2149,7 @@ dump_expr_init_vec (cxx_pretty_printer *pp, vec<constructor_elt, va_gc> *v,
 static tree
 resolve_virtual_fun_from_obj_type_ref (tree ref)
 {
-  tree obj_type = TREE_TYPE (OBJ_TYPE_REF_OBJECT (ref));
+  tree obj_type = TREE_TYPE (OBJ_TYPE_REF_TOKEN (ref));
   HOST_WIDE_INT index = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (ref));
   tree fun = BINFO_VIRTUALS (TYPE_BINFO (TREE_TYPE (obj_type)));
   while (index)

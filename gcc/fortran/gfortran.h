@@ -2645,7 +2645,7 @@ extern gfc_logical_info gfc_logical_kinds[];
 typedef struct
 {
   mpfr_t epsilon, huge, tiny, subnormal;
-  int kind, radix, digits, min_exponent, max_exponent;
+  int kind, abi_kind, radix, digits, min_exponent, max_exponent;
   int range, precision;
 
   /* The precision of the type as reported by GET_MODE_PRECISION.  */
@@ -3501,6 +3501,12 @@ void gfc_intrinsic_init_1 (void);
 void gfc_intrinsic_done_1 (void);
 
 char gfc_type_letter (bt, bool logical_equals_int = false);
+int gfc_type_abi_kind (bt, int);
+static inline int
+gfc_type_abi_kind (gfc_typespec *ts)
+{
+  return gfc_type_abi_kind (ts->type, ts->kind);
+}
 gfc_symbol * gfc_get_intrinsic_sub_symbol (const char *);
 gfc_symbol *gfc_get_intrinsic_function_symbol (gfc_expr *);
 gfc_symbol *gfc_find_intrinsic_symbol (gfc_expr *);

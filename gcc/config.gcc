@@ -1620,7 +1620,7 @@ csky-*-*)
 	esac
 	;;
 epiphany-*-elf | epiphany-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h"
+	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file="${tmake_file} epiphany/t-epiphany"
 	case ${target} in
 	epiphany-*-rtems*)

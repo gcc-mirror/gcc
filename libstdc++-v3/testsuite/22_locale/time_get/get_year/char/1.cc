@@ -76,8 +76,8 @@ void test01()
   errorstate = good;
   iterator_type ret03 = tim_get.get_year(is_it03, end, iss, errorstate,
 					 &time03);
-  VERIFY( time03.tm_year == 3 );
-  VERIFY( errorstate == ios_base::failbit );
+  VERIFY( time03.tm_year == 197 - 1900 );
+  VERIFY( errorstate == good );
   VERIFY( *ret03 == 'd' );
 
   iss.str("71d71");

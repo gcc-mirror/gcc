@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1184,7 +1184,7 @@ package body Sem_Attr is
          function Is_Within
            (Nod      : Node_Id;
             Encl_Nod : Node_Id) return Boolean;
-         --  Subsidiary to Check_Placemenet_In_XXX. Determine whether arbitrary
+         --  Subsidiary to Check_Placement_In_XXX. Determine whether arbitrary
          --  node Nod is within enclosing node Encl_Nod.
 
          procedure Placement_Error;
@@ -5151,11 +5151,14 @@ package body Sem_Attr is
                --  Entities mentioned within the prefix of attribute 'Old must
                --  be global to the related postcondition. If this is not the
                --  case, then the scope of the local entity is nested within
-               --  that of the subprogram.
+               --  that of the subprogram. Moreover, we need to know whether
+               --  Entity (Nod) occurs in the tree rooted at the prefix to
+               --  ensure the entity is not declared within then prefix itself.
 
                elsif Is_Entity_Name (Nod)
                  and then Present (Entity (Nod))
                  and then Scope_Within (Scope (Entity (Nod)), Subp_Id)
+                 and then not In_Subtree (Entity (Nod), P)
                then
                   Error_Attr
                     ("prefix of attribute % cannot reference local entities",

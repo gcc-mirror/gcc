@@ -1987,6 +1987,12 @@ binding_cluster::maybe_get_simple_value (store_manager *mgr) const
 
 /* class store_manager.  */
 
+logger *
+store_manager::get_logger () const
+{
+  return m_mgr->get_logger ();
+}
+
 /* binding consolidation.  */
 
 const concrete_binding *
@@ -2353,6 +2359,9 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 		  const svalue *rhs_sval,
 		  uncertainty_t *uncertainty)
 {
+  logger *logger = mgr->get_logger ();
+  LOG_SCOPE (logger);
+
   remove_overlapping_bindings (mgr, lhs_reg);
 
   rhs_sval = simplify_for_binding (rhs_sval);
@@ -2405,6 +2414,18 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	      gcc_unreachable ();
 
 	    case tristate::TS_UNKNOWN:
+	      if (logger)
+		{
+		  pretty_printer *pp = logger->get_printer ();
+		  logger->start_log_line ();
+		  logger->log_partial ("possible aliasing of ");
+		  iter_base_reg->dump_to_pp (pp, true);
+		  logger->log_partial (" when writing SVAL: ");
+		  rhs_sval->dump_to_pp (pp, true);
+		  logger->log_partial (" to LHS_REG: ");
+		  lhs_reg->dump_to_pp (pp, true);
+		  logger->end_log_line ();
+		}
 	      iter_cluster->mark_region_as_unknown (mgr, iter_base_reg,
 						    uncertainty);
 	      break;
@@ -2456,13 +2477,17 @@ store::eval_alias_1 (const region *base_reg_a,
       = base_reg_a->dyn_cast_symbolic_region ())
     {
       const svalue *sval_a = sym_reg_a->get_pointer ();
-      if (sval_a->get_kind () == SK_INITIAL)
-	if (tree decl_b = base_reg_b->maybe_get_decl ())
-	  if (!is_global_var (decl_b))
-	    {
-	      /* The initial value of a pointer can't point to a local.  */
-	      return tristate::TS_FALSE;
-	    }
+      if (tree decl_b = base_reg_b->maybe_get_decl ())
+	{
+	  if (!may_be_aliased (decl_b))
+	    return tristate::TS_FALSE;
+	  if (sval_a->get_kind () == SK_INITIAL)
+	    if (!is_global_var (decl_b))
+	      {
+		/* The initial value of a pointer can't point to a local.  */
+		return tristate::TS_FALSE;
+	      }
+	}
       if (sval_a->get_kind () == SK_INITIAL
 	  && base_reg_b->get_kind () == RK_HEAP_ALLOCATED)
 	{

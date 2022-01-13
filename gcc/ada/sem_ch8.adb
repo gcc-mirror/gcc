@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5689,8 +5689,27 @@ package body Sem_Ch8 is
                      null;
 
                   else
-                     Error_Msg_N -- CODEFIX
-                       ("non-visible declaration#!", N);
+                     --  When the entity comes from a generic instance the
+                     --  normal error message machinery will give the line
+                     --  number of the generic package and the location of
+                     --  the generic instance, but not the name of the
+                     --  the instance.
+
+                     --  So, in order to give more descriptive error messages
+                     --  in this case, we include the name of the generic
+                     --  package.
+
+                     if Is_Generic_Instance (Scope (Ent)) then
+                        Error_Msg_Name_1 := Chars (Scope (Ent));
+                        Error_Msg_N -- CODEFIX
+                          ("non-visible declaration from %#!", N);
+
+                     --  Otherwise print the message normally
+
+                     else
+                        Error_Msg_N -- CODEFIX
+                          ("non-visible declaration#!", N);
+                     end if;
 
                      if Ekind (Scope (Ent)) /= E_Generic_Package then
                         Found := True;
@@ -6432,17 +6451,13 @@ package body Sem_Ch8 is
                   --  Else see if we have a left hand side
 
                   else
-                     case Is_LHS (N) is
-                        when Yes =>
+                     case Known_To_Be_Assigned (N, Only_LHS => True) is
+                        when True =>
                            Generate_Reference (E, N, 'm');
 
-                        when No =>
+                        when False =>
                            Generate_Reference (E, N, 'r');
 
-                        --  If we don't know now, generate reference later
-
-                        when Unknown =>
-                           Defer_Reference ((E, N));
                      end case;
                   end if;
                end if;
@@ -6493,7 +6508,7 @@ package body Sem_Ch8 is
 
       if Needs_Variable_Reference_Marker (N => N, Calls_OK => False) then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker
@@ -7086,15 +7101,13 @@ package body Sem_Ch8 is
       else
          Set_Entity_Or_Discriminal (N, Id);
 
-         case Is_LHS (N) is
-            when Yes =>
+         case Known_To_Be_Assigned (N, Only_LHS => True) is
+            when True =>
                Generate_Reference (Id, N, 'm');
 
-            when No =>
+            when False =>
                Generate_Reference (Id, N, 'r');
 
-            when Unknown =>
-               Defer_Reference ((Id, N));
          end case;
       end if;
 
@@ -7190,7 +7203,7 @@ package body Sem_Ch8 is
             Calls_OK => False)
       then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker

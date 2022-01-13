@@ -209,10 +209,12 @@ range_operator::fold_range (irange &r, tree type,
   unsigned num_rh = rh.num_pairs ();
 
   // If both ranges are single pairs, fold directly into the result range.
-  if (num_lh == 1 && num_rh == 1)
+  // If the number of subranges grows too high, produce a summary result as the
+  // loop becomes exponential with little benefit.  See PR 103821.
+  if ((num_lh == 1 && num_rh == 1) || num_lh * num_rh > 12)
     {
-      wi_fold_in_parts (r, type, lh.lower_bound (0), lh.upper_bound (0),
-			rh.lower_bound (0), rh.upper_bound (0));
+      wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
+			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
       return true;
     }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1194,7 +1194,7 @@ package body Ch4 is
      (Prefix_Node : Node_Id)
       return        Node_Id
    is
-      Attr_Node  : Node_Id;
+      Attr_Node : Node_Id;
 
    begin
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
@@ -2968,7 +2968,7 @@ package body Ch4 is
                   Save_Scan_State (Scan_State);
                   Scan;   --  past FOR
 
-                  if Token = Tok_All or else Token = Tok_Some  then
+                  if Token = Tok_All or else Token = Tok_Some then
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Quantified_Expression;
 

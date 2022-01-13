@@ -285,7 +285,12 @@
       gcc_unreachable ();
     }
 }
-  [(set (attr "type")
+  [(set (attr "isa")
+     (cond [(eq_attr "alternative" "6,7")
+	      (const_string "sse2")
+	   ]
+	   (const_string "*")))
+   (set (attr "type")
      (cond [(eq_attr "alternative" "2")
 	      (const_string "sselog1")
 	    (eq_attr "alternative" "3,4,5,6,7")
@@ -306,12 +311,15 @@
 		       (const_string "V4SF")
 		     (match_test "TARGET_AVX")
 		       (const_string "TI")
-		     (match_test "optimize_function_for_size_p (cfun)")
+		     (ior (not (match_test "TARGET_SSE2"))
+			  (match_test "optimize_function_for_size_p (cfun)"))
 		       (const_string "V4SF")
 		    ]
 		    (const_string "TI"))
+
 	    (and (eq_attr "alternative" "4,5")
-		 (match_test "<MODE>mode == V2HFmode"))
+		 (ior (match_test "<MODE>mode == V2HFmode")
+		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "SF")
 	   ]
 	   (const_string "SI")))
@@ -401,7 +409,7 @@
     }
 }
   [(set (attr "isa")
-	(cond [(eq_attr "alternative" "4,5,6,8,9")
+	(cond [(eq_attr "alternative" "6,8,9")
 		  (const_string "sse2")
 	       (eq_attr "alternative" "7")
 		  (const_string "sse4")
@@ -1626,7 +1634,7 @@
   "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
 
 (define_insn "negv2qi2"
-  [(set (match_operand:V2QI 0 "register_operand" "=Q,&Yw")
+  [(set (match_operand:V2QI 0 "register_operand" "=?Q,&Yw")
         (neg:V2QI
 	  (match_operand:V2QI 1 "register_operand" "0,Yw")))
    (clobber (reg:CC FLAGS_REG))]
@@ -1732,7 +1740,7 @@
    (set_attr "mode" "TI")])
 
 (define_insn "<insn>v2qi3"
-  [(set (match_operand:V2QI 0 "register_operand" "=Q,x,Yw")
+  [(set (match_operand:V2QI 0 "register_operand" "=?Q,x,Yw")
         (plusminus:V2QI
 	  (match_operand:V2QI 1 "register_operand" "<comm>0,0,Yw")
 	  (match_operand:V2QI 2 "register_operand" "Q,x,Yw")))
@@ -1816,10 +1824,10 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*<insn><mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,Yw")
-        (sat_plusminus:VI_32
-	  (match_operand:VI_32 1 "register_operand" "<comm>0,Yw")
-	  (match_operand:VI_32 2 "register_operand" "x,Yw")))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x,Yw")
+        (sat_plusminus:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "<comm>0,Yw")
+	  (match_operand:VI_16_32 2 "register_operand" "x,Yw")))]
   "TARGET_SSE2"
   "@
    p<plusminus_mnemonic><mmxvecsize>\t{%2, %0|%0, %2}
@@ -2410,10 +2418,10 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*eq<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,x")
-        (eq:VI_32
-	  (match_operand:VI_32 1 "register_operand" "%0,x")
-	  (match_operand:VI_32 2 "register_operand" "x,x")))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x,x")
+        (eq:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "%0,x")
+	  (match_operand:VI_16_32 2 "register_operand" "x,x")))]
   "TARGET_SSE2"
   "@
    pcmpeq<mmxvecsize>\t{%2, %0|%0, %2}
@@ -2438,10 +2446,10 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*gt<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,x")
-        (gt:VI_32
-	  (match_operand:VI_32 1 "register_operand" "0,x")
-	  (match_operand:VI_32 2 "register_operand" "x,x")))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x,x")
+        (gt:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "0,x")
+	  (match_operand:VI_16_32 2 "register_operand" "x,x")))]
   "TARGET_SSE2"
   "@
    pcmpgt<mmxvecsize>\t{%2, %0|%0, %2}
@@ -2465,10 +2473,10 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*xop_maskcmp<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x")
-	(match_operator:VI_32 1 "ix86_comparison_int_operator"
-	 [(match_operand:VI_32 2 "register_operand" "x")
-	  (match_operand:VI_32 3 "register_operand" "x")]))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x")
+	(match_operator:VI_16_32 1 "ix86_comparison_int_operator"
+	 [(match_operand:VI_16_32 2 "register_operand" "x")
+	  (match_operand:VI_16_32 3 "register_operand" "x")]))]
   "TARGET_XOP"
   "vpcom%Y1<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sse4arg")
@@ -2493,10 +2501,10 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*xop_maskcmp_uns<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x")
-	(match_operator:VI_32 1 "ix86_comparison_uns_operator"
-	 [(match_operand:VI_32 2 "register_operand" "x")
-	  (match_operand:VI_32 3 "register_operand" "x")]))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x")
+	(match_operator:VI_16_32 1 "ix86_comparison_uns_operator"
+	 [(match_operand:VI_16_32 2 "register_operand" "x")
+	  (match_operand:VI_16_32 3 "register_operand" "x")]))]
   "TARGET_XOP"
   "vpcom%Y1u<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "ssecmp")
@@ -2519,10 +2527,10 @@
 })
 
 (define_expand "vec_cmp<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(match_operator:VI_32 1 ""
-	  [(match_operand:VI_32 2 "register_operand")
-	   (match_operand:VI_32 3 "register_operand")]))]
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(match_operator:VI_16_32 1 ""
+	  [(match_operand:VI_16_32 2 "register_operand")
+	   (match_operand:VI_16_32 3 "register_operand")]))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -2543,10 +2551,10 @@
 })
 
 (define_expand "vec_cmpu<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(match_operator:VI_32 1 ""
-	  [(match_operand:VI_32 2 "register_operand")
-	   (match_operand:VI_32 3 "register_operand")]))]
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(match_operator:VI_16_32 1 ""
+	  [(match_operand:VI_16_32 2 "register_operand")
+	   (match_operand:VI_16_32 3 "register_operand")]))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
@@ -2572,13 +2580,13 @@
 })
 
 (define_expand "vcond<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(if_then_else:VI_32
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(if_then_else:VI_16_32
 	  (match_operator 3 ""
-	    [(match_operand:VI_32 4 "register_operand")
-	     (match_operand:VI_32 5 "register_operand")])
-	  (match_operand:VI_32 1)
-	  (match_operand:VI_32 2)))]
+	    [(match_operand:VI_16_32 4 "register_operand")
+	     (match_operand:VI_16_32 5 "register_operand")])
+	  (match_operand:VI_16_32 1)
+	  (match_operand:VI_16_32 2)))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vcond (operands);
@@ -2604,13 +2612,13 @@
 })
 
 (define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(if_then_else:VI_32
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(if_then_else:VI_16_32
 	  (match_operator 3 ""
-	    [(match_operand:VI_32 4 "register_operand")
-	     (match_operand:VI_32 5 "register_operand")])
-	  (match_operand:VI_32 1)
-	  (match_operand:VI_32 2)))]
+	    [(match_operand:VI_16_32 4 "register_operand")
+	     (match_operand:VI_16_32 5 "register_operand")])
+	  (match_operand:VI_16_32 1)
+	  (match_operand:VI_16_32 2)))]
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vcond (operands);
@@ -2632,11 +2640,11 @@
 })
 
 (define_expand "vcond_mask_<mode><mode>"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(vec_merge:VI_32
-	  (match_operand:VI_32 1 "register_operand")
-	  (match_operand:VI_32 2 "register_operand")
-	  (match_operand:VI_32 3 "register_operand")))]
+  [(set (match_operand:VI_16_32 0 "register_operand")
+	(vec_merge:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand")
+	  (match_operand:VI_16_32 2 "register_operand")
+	  (match_operand:VI_16_32 3 "register_operand")))]
   "TARGET_SSE2"
 {
   ix86_expand_sse_movcc (operands[0], operands[3],
@@ -2644,7 +2652,7 @@
   DONE;
 })
 
-(define_insn "mmx_pblendvb64"
+(define_insn "mmx_pblendvb_v8qi"
   [(set (match_operand:V8QI 0 "register_operand" "=Yr,*x,x")
 	(unspec:V8QI
 	  [(match_operand:V8QI 1 "register_operand" "0,0,x")
@@ -2664,12 +2672,12 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "TI")])
 
-(define_insn "mmx_pblendvb32"
-  [(set (match_operand:V4QI 0 "register_operand" "=Yr,*x,x")
-	(unspec:V4QI
-	  [(match_operand:V4QI 1 "register_operand" "0,0,x")
-	   (match_operand:V4QI 2 "register_operand" "Yr,*x,x")
-	   (match_operand:V4QI 3 "register_operand" "Yz,Yz,x")]
+(define_insn "mmx_pblendvb_<mode>"
+  [(set (match_operand:VI_16_32 0 "register_operand" "=Yr,*x,x")
+	(unspec:VI_16_32
+	  [(match_operand:VI_16_32 1 "register_operand" "0,0,x")
+	   (match_operand:VI_16_32 2 "register_operand" "Yr,*x,x")
+	   (match_operand:VI_16_32 3 "register_operand" "Yz,Yz,x")]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "@
@@ -2696,11 +2704,11 @@
   [(set_attr "type" "sse4arg")])
 
 (define_insn "*xop_pcmov_<mode>"
-  [(set (match_operand:VI_32 0 "register_operand" "=x")
-        (if_then_else:VI_32
-          (match_operand:VI_32 3 "register_operand" "x")
-          (match_operand:VI_32 1 "register_operand" "x")
-          (match_operand:VI_32 2 "register_operand" "x")))]
+  [(set (match_operand:VI_16_32 0 "register_operand" "=x")
+        (if_then_else:VI_16_32
+          (match_operand:VI_16_32 3 "register_operand" "x")
+          (match_operand:VI_16_32 1 "register_operand" "x")
+          (match_operand:VI_16_32 2 "register_operand" "x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")])
@@ -2744,18 +2752,10 @@
   "TARGET_MMX_WITH_SSE"
   "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
 
-(define_expand "one_cmpl<mode>2"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(xor:VI_32
-	  (match_operand:VI_32 1 "register_operand")
-	  (match_dup 2)))]
-  "TARGET_SSE2"
-  "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
-
-(define_insn "one_cmplv2qi2"
-  [(set (match_operand:V2QI 0 "register_operand" "=r,&x,&v")
-	(not:V2QI
-	  (match_operand:V2QI 1 "register_operand" "0,x,v")))]
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:VI_16_32 0 "register_operand" "=?r,&x,&v")
+	(not:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "0,x,v")))]
   ""
   "#"
   [(set_attr "isa" "*,sse2,avx512vl")
@@ -2763,32 +2763,30 @@
    (set_attr "mode" "SI,TI,TI")])
 
 (define_split
-  [(set (match_operand:V2QI 0 "general_reg_operand")
-	(not:V2QI
-	  (match_operand:V2QI 1 "general_reg_operand")))]
+  [(set (match_operand:VI_16_32 0 "general_reg_operand")
+	(not:VI_16_32
+	  (match_operand:VI_16_32 1 "general_reg_operand")))]
   "reload_completed"
   [(set (match_dup 0)
 	(not:SI (match_dup 1)))]
 {
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = lowpart_subreg (SImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (SImode, operands[0], <MODE>mode);
 })
 
 (define_split
-  [(set (match_operand:V2QI 0 "sse_reg_operand")
-	(not:V2QI
-	  (match_operand:V2QI 1 "sse_reg_operand")))]
+  [(set (match_operand:VI_16_32 0 "sse_reg_operand")
+	(not:VI_16_32
+	  (match_operand:VI_16_32 1 "sse_reg_operand")))]
   "TARGET_SSE2 && reload_completed"
-  [(set (match_dup 0)
-	(xor:V4QI
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0)
+	(xor:V16QI
 	  (match_dup 0) (match_dup 1)))]
 {
-  emit_insn
-   (gen_rtx_SET (gen_rtx_REG (V16QImode, REGNO (operands[0])),
-		 CONSTM1_RTX (V16QImode)));
-
-  operands[1] = gen_lowpart (V4QImode, operands[1]);
-  operands[0] = gen_lowpart (V4QImode, operands[0]);
+  operands[2] = CONSTM1_RTX (V16QImode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (V16QImode, operands[0], <MODE>mode);
 })
 
 (define_insn "mmx_andnot<mode>3"
@@ -2808,24 +2806,11 @@
    (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_insn "*andnot<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,x,v")
-	(and:VI_32
-	  (not:VI_32 (match_operand:VI_32 1 "register_operand" "0,x,v"))
-	  (match_operand:VI_32 2 "register_operand" "x,x,v")))]
-  "TARGET_SSE2"
-  "@
-   pandn\t{%2, %0|%0, %2}
-   vpandn\t{%2, %1, %0|%0, %1, %2}
-   vpandnd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx,avx512vl")
-   (set_attr "type" "sselog")
-   (set_attr "mode" "TI")])
-
-(define_insn "*andnotv2qi3"
-  [(set (match_operand:V2QI 0 "register_operand" "=&r,r,x,x,v")
-        (and:V2QI
-	  (not:V2QI (match_operand:V2QI 1 "register_operand" "0,r,0,x,v"))
-	  (match_operand:V2QI 2 "register_operand" "r,r,x,x,v")))
+  [(set (match_operand:VI_16_32 0 "register_operand" "=?&r,?r,x,x,v")
+        (and:VI_16_32
+	  (not:VI_16_32
+	    (match_operand:VI_16_32 1 "register_operand" "0,r,0,x,v"))
+	  (match_operand:VI_16_32 2 "register_operand" "r,r,x,x,v")))
    (clobber (reg:CC FLAGS_REG))]
   ""
   "#"
@@ -2834,10 +2819,10 @@
    (set_attr "mode" "SI,SI,TI,TI,TI")])
 
 (define_split
-  [(set (match_operand:V2QI 0 "general_reg_operand")
-        (and:V2QI
-	  (not:V2QI (match_operand:V2QI 1 "general_reg_operand"))
-	  (match_operand:V2QI 2 "general_reg_operand")))
+  [(set (match_operand:VI_16_32 0 "general_reg_operand")
+        (and:VI_16_32
+	  (not:VI_16_32 (match_operand:VI_16_32 1 "general_reg_operand"))
+	  (match_operand:VI_16_32 2 "general_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_BMI && reload_completed"
   [(parallel
@@ -2845,16 +2830,16 @@
 	   (and:SI (not:SI (match_dup 1)) (match_dup 2)))
       (clobber (reg:CC FLAGS_REG))])]
 {
-  operands[2] = gen_lowpart (SImode, operands[2]);
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[2] = lowpart_subreg (SImode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (SImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (SImode, operands[0], <MODE>mode);
 })
 
 (define_split
-  [(set (match_operand:V2QI 0 "general_reg_operand")
-        (and:V2QI
-	  (not:V2QI (match_operand:V2QI 1 "general_reg_operand"))
-	  (match_operand:V2QI 2 "general_reg_operand")))
+  [(set (match_operand:VI_16_32 0 "general_reg_operand")
+        (and:VI_16_32
+	  (not:VI_16_32 (match_operand:VI_16_32 1 "general_reg_operand"))
+	  (match_operand:VI_16_32 2 "general_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "!TARGET_BMI && reload_completed"
   [(set (match_dup 0)
@@ -2864,24 +2849,24 @@
 	   (and:SI (match_dup 0) (match_dup 2)))
       (clobber (reg:CC FLAGS_REG))])]
 {
-  operands[2] = gen_lowpart (SImode, operands[2]);
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[2] = lowpart_subreg (SImode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (SImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (SImode, operands[0], <MODE>mode);
 })
 
 (define_split
-  [(set (match_operand:V2QI 0 "sse_reg_operand")
-        (and:V2QI
-	  (not:V2QI (match_operand:V2QI 1 "sse_reg_operand"))
-	  (match_operand:V2QI 2 "sse_reg_operand")))
+  [(set (match_operand:VI_16_32 0 "sse_reg_operand")
+        (and:VI_16_32
+	  (not:VI_16_32 (match_operand:VI_16_32 1 "sse_reg_operand"))
+	  (match_operand:VI_16_32 2 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
-	(and:V4QI (not:V4QI (match_dup 1)) (match_dup 2)))]
+	(and:V16QI (not:V16QI (match_dup 1)) (match_dup 2)))]
 {
-  operands[2] = gen_lowpart (V4QImode, operands[2]);
-  operands[1] = gen_lowpart (V4QImode, operands[1]);
-  operands[0] = gen_lowpart (V4QImode, operands[0]);
+  operands[2] = lowpart_subreg (V16QImode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (V16QImode, operands[0], <MODE>mode);
 })
 
 (define_expand "mmx_<code><mode>3"
@@ -2917,24 +2902,10 @@
    (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_insn "<code><mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,x,v")
-        (any_logic:VI_32
-	  (match_operand:VI_32 1 "register_operand" "%0,x,v")
-	  (match_operand:VI_32 2 "register_operand" "x,x,v")))]
-  "TARGET_SSE2"
-  "@
-   p<logic>\t{%2, %0|%0, %2}
-   vp<logic>\t{%2, %1, %0|%0, %1, %2}
-   vp<logic>d\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx,avx512vl")
-   (set_attr "type" "sselog")
-   (set_attr "mode" "TI")])
-
-(define_insn "<code>v2qi3"
-  [(set (match_operand:V2QI 0 "register_operand" "=r,x,x,v")
-        (any_logic:V2QI
-	  (match_operand:V2QI 1 "register_operand" "%0,0,x,v")
-	  (match_operand:V2QI 2 "register_operand" "r,x,x,v")))
+  [(set (match_operand:VI_16_32 0 "register_operand" "=?r,x,x,v")
+        (any_logic:VI_16_32
+	  (match_operand:VI_16_32 1 "register_operand" "%0,0,x,v")
+	  (match_operand:VI_16_32 2 "register_operand" "r,x,x,v")))
    (clobber (reg:CC FLAGS_REG))]
   ""
   "#"
@@ -2943,10 +2914,10 @@
    (set_attr "mode" "SI,TI,TI,TI")])
 
 (define_split
-  [(set (match_operand:V2QI 0 "general_reg_operand")
-        (any_logic:V2QI
-	  (match_operand:V2QI 1 "general_reg_operand")
-	  (match_operand:V2QI 2 "general_reg_operand")))
+  [(set (match_operand:VI_16_32 0 "general_reg_operand")
+        (any_logic:VI_16_32
+	  (match_operand:VI_16_32 1 "general_reg_operand")
+	  (match_operand:VI_16_32 2 "general_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "reload_completed"
   [(parallel
@@ -2954,24 +2925,24 @@
 	   (any_logic:SI (match_dup 1) (match_dup 2)))
       (clobber (reg:CC FLAGS_REG))])]
 {
-  operands[2] = gen_lowpart (SImode, operands[2]);
-  operands[1] = gen_lowpart (SImode, operands[1]);
-  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[2] = lowpart_subreg (SImode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (SImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (SImode, operands[0], <MODE>mode);
 })
 
 (define_split
-  [(set (match_operand:V2QI 0 "sse_reg_operand")
-        (any_logic:V2QI
-	  (match_operand:V2QI 1 "sse_reg_operand")
-	  (match_operand:V2QI 2 "sse_reg_operand")))
+  [(set (match_operand:VI_16_32 0 "sse_reg_operand")
+        (any_logic:VI_16_32
+	  (match_operand:VI_16_32 1 "sse_reg_operand")
+	  (match_operand:VI_16_32 2 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
-	(any_logic:V4QI (match_dup 1) (match_dup 2)))]
+	(any_logic:V16QI (match_dup 1) (match_dup 2)))]
 {
-  operands[2] = gen_lowpart (V4QImode, operands[2]);
-  operands[1] = gen_lowpart (V4QImode, operands[1]);
-  operands[0] = gen_lowpart (V4QImode, operands[0]);
+  operands[2] = lowpart_subreg (V16QImode, operands[2], <MODE>mode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], <MODE>mode);
+  operands[0] = lowpart_subreg (V16QImode, operands[0], <MODE>mode);
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

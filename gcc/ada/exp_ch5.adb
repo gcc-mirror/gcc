@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ with Exp_Dbug;       use Exp_Dbug;
 with Exp_Pakd;       use Exp_Pakd;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Inline;         use Inline;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -2665,7 +2664,7 @@ package body Exp_Ch5 is
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             Apply_Discriminant_Check (Rhs, Typ, Lhs);
 
-         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ)  then
+         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             Apply_Length_Check (Rhs, Typ);
@@ -3876,7 +3875,6 @@ package body Exp_Ch5 is
       if Extensions_Allowed and then not Is_Discrete_Type (Etype (Expr)) then
          Rewrite (N, Expand_General_Case_Statement);
          Analyze (N);
-         Expand (N);
          return;
       end if;
 
@@ -4477,9 +4475,7 @@ package body Exp_Ch5 is
             --  entire if statement by the sequence of else statements.
 
             if No (Elsif_Parts (N)) then
-               if No (Else_Statements (N))
-                 or else Is_Empty_List (Else_Statements (N))
-               then
+               if Is_Empty_List (Else_Statements (N)) then
                   Rewrite (N,
                     Make_Null_Statement (Sloc (N)));
                else
@@ -4559,9 +4555,7 @@ package body Exp_Ch5 is
 
                Set_Else_Statements (N, New_List (New_If));
 
-               if Present (Condition_Actions (E)) then
-                  Insert_List_Before (New_If, Condition_Actions (E));
-               end if;
+               Insert_List_Before (New_If, Condition_Actions (E));
 
                Remove (E);
 
@@ -5455,9 +5449,7 @@ package body Exp_Ch5 is
       --  Condition_Actions of the iterator. Insert them now at the head of
       --  the loop.
 
-      if Present (Condition_Actions (Isc)) then
-         Insert_List_Before (N, Condition_Actions (Isc));
-      end if;
+      Insert_List_Before (N, Condition_Actions (Isc));
 
       Rewrite (N, New_Loop);
       Analyze (N);

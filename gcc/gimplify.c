@@ -1748,16 +1748,13 @@ force_labels_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
    Build a call to internal const function DEFERRED_INIT:
    1st argument: SIZE of the DECL;
    2nd argument: INIT_TYPE;
-   3rd argument: IS_VLA, 0 NO, 1 YES;
+   3rd argument: NAME of the DECL;
 
-   as LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA)
-   if IS_VLA is false, the LHS is the DECL itself,
-   if IS_VLA is true, the LHS is a MEM_REF whose address is the pointer
-   to this DECL.  */
+   as LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, NAME of the DECL).  */
+
 static void
 gimple_add_init_for_auto_var (tree decl,
 			      enum auto_init_type init_type,
-			      bool is_vla,
 			      gimple_seq *seq_p)
 {
   gcc_assert (auto_var_p (decl));
@@ -1767,13 +1764,25 @@ gimple_add_init_for_auto_var (tree decl,
 
   tree init_type_node
     = build_int_cst (integer_type_node, (int) init_type);
-  tree is_vla_node
-    = build_int_cst (integer_type_node, (int) is_vla);
+
+  tree decl_name = NULL_TREE;
+  if (DECL_NAME (decl))
+
+    decl_name = build_string_literal (IDENTIFIER_LENGTH (DECL_NAME (decl)) + 1,
+				      IDENTIFIER_POINTER (DECL_NAME (decl)));
+
+  else
+    {
+      char *decl_name_anonymous = xasprintf ("D.%u", DECL_UID (decl));
+      decl_name = build_string_literal (strlen (decl_name_anonymous) + 1,
+					decl_name_anonymous);
+      free (decl_name_anonymous);
+    }
 
   tree call = build_call_expr_internal_loc (loc, IFN_DEFERRED_INIT,
 		 			    TREE_TYPE (decl), 3,
 					    decl_size, init_type_node,
-					    is_vla_node);
+					    decl_name);
 
   gimplify_assign (decl, call, seq_p);
 }
@@ -1947,7 +1956,6 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	{
 	  gimple_add_init_for_auto_var (decl,
 					flag_auto_var_init,
-					is_vla,
 					seq_p);
 	  /* The expanding of a call to the above .DEFERRED_INIT will apply
 	     block initialization to the whole space covered by this variable.

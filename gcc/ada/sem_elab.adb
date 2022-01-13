@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -15382,7 +15382,7 @@ package body Sem_Elab is
 
                elsif Present (Vis_Decls)
                  and then List_Containing (FNode) = Vis_Decls
-                 and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
+                 and then Is_Empty_List (Prv_Decls)
                then
                   null;
 

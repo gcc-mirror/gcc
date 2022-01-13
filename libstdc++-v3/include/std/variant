@@ -44,9 +44,10 @@
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t
-#if __cplusplus == 201703L
+#ifndef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
 # include <ext/aligned_buffer.h>
-#else
+#endif
+#if __cplusplus >= 202002L
 # include <compare>
 #endif
 
@@ -54,7 +55,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 202002L && __cpp_concepts
+#ifdef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
 // P2231R1 constexpr needs constexpr unions and constrained destructors.
 # define __cpp_lib_variant 202106L
 #else

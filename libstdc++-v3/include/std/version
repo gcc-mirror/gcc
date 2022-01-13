@@ -173,7 +173,8 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 #define __cpp_lib_unordered_map_try_emplace 201411
-#if __cplusplus == 201703L || ! __cpp_concepts // N.B. updated value in C++20
+#ifndef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
+// N.B. updated value in C++20
 # define __cpp_lib_variant 202102L
 #endif
 #endif
@@ -200,6 +201,9 @@
 #endif
 #define __cpp_lib_is_nothrow_convertible 201806L
 #define __cpp_lib_remove_cvref 201711L
+#if __has_builtin(__builtin_source_location)
+# define __cpp_lib_source_location 201907L
+#endif
 #if __cpp_impl_three_way_comparison >= 201907L && __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201907L
 #endif
@@ -272,9 +276,6 @@
 # define __cpp_lib_semaphore 201907L
 #endif
 #define __cpp_lib_shift 201806L
-#if __has_builtin(__builtin_source_location)
-# define __cpp_lib_source_location 201907L
-#endif
 #if __cpp_lib_concepts
 # define __cpp_lib_span 202002L
 #endif
@@ -286,7 +287,7 @@
 # endif
 #define __cpp_lib_to_address 201711L
 #define __cpp_lib_to_array 201907L
-#if __cpp_concepts
+#ifdef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
 # define __cpp_lib_variant 202106L
 #endif
 #endif

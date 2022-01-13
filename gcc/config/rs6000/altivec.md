@@ -383,6 +383,17 @@
     }
 })
 
+(define_insn_and_split "sldoi_to_mov<mode>"
+  [(set (match_operand:VM 0 "altivec_register_operand")
+	(unspec:VM [(match_operand:VM 1 "easy_vector_constant")
+	            (match_dup 1)
+		    (match_operand:QI 2 "u5bit_cint_operand")]
+		    UNSPEC_VSLDOI))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (match_dup 1))])
+
 (define_insn "get_vrsave_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(reg:SI VRSAVE_REGNO)] UNSPEC_GET_VRSAVE))]
