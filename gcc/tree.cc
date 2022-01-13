@@ -9408,9 +9408,7 @@ build_common_tree_nodes (bool signed_char)
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_type_variant (void_type_node, 1, 0));
-  for (unsigned i = 0;
-       i < sizeof (builtin_structptr_types) / sizeof (builtin_structptr_type);
-       ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (builtin_structptr_types); ++i)
     builtin_structptr_types[i].node = builtin_structptr_types[i].base;
 
   pointer_sized_int_node = build_nonstandard_integer_type (POINTER_SIZE, 1);

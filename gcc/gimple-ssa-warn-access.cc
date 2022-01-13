@@ -2853,7 +2853,7 @@ memmodel_name (unsigned HOST_WIDE_INT val)
 {
   val = memmodel_base (val);
 
-  for (unsigned i = 0; i != sizeof memory_models / sizeof *memory_models; ++i)
+  for (unsigned i = 0; i != ARRAY_SIZE (memory_models); ++i)
     {
       if (val == memory_models[i].modval)
 	return memory_models[i].modname;

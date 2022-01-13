@@ -3420,7 +3420,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
     }
 
   rank = GFC_TYPE_ARRAY_RANK (type);
-  if (rank >= (int) (sizeof (info->dimen) / sizeof (info->dimen[0])))
+  if (rank >= (int) (ARRAY_SIZE (info->dimen)))
     return false;
 
   etype = GFC_TYPE_ARRAY_DATAPTR_TYPE (type);

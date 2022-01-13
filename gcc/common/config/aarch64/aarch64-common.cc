@@ -314,8 +314,7 @@ aarch64_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
        pop and attribute change (arm_neon headers, lto etc all cause this to
        happen quite frequently).  It is a trade-off between time and space and
        so time won.  */
-    int n_extensions
-      = sizeof (all_extensions) / sizeof (struct aarch64_option_extension);
+    int n_extensions = ARRAY_SIZE (all_extensions);
     qsort (&all_extensions_by_on, n_extensions,
 	   sizeof (struct aarch64_option_extension), opt_ext_cmp);
 }

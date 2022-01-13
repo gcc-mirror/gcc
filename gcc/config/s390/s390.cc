@@ -8769,7 +8769,7 @@ static machine_mode constant_modes[] =
   QImode,
   V1QImode
 };
-#define NR_C_MODES (sizeof (constant_modes) / sizeof (constant_modes[0]))
+#define NR_C_MODES (ARRAY_SIZE (constant_modes))
 
 struct constant
 {

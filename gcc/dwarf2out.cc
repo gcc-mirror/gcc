@@ -13532,8 +13532,7 @@ static const dwarf_qual_info_t dwarf_qual_info[] =
   { TYPE_QUAL_RESTRICT, DW_TAG_restrict_type },
   { TYPE_QUAL_ATOMIC, DW_TAG_atomic_type }
 };
-static const unsigned int dwarf_qual_info_size
-  = sizeof (dwarf_qual_info) / sizeof (dwarf_qual_info[0]);
+static const unsigned int dwarf_qual_info_size = ARRAY_SIZE (dwarf_qual_info);
 
 /* If DIE is a qualified DIE of some base DIE with the same parent,
    return the base DIE, otherwise return NULL.  Set MASK to the

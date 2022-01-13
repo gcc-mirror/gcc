@@ -1953,7 +1953,7 @@ format_floating (const directive &dir, tree arg, pointer_query &)
       &res.range.min, &res.range.max
     };
 
-    for (int i = 0; i != sizeof minmax / sizeof *minmax; ++i)
+    for (int i = 0; i != ARRAY_SIZE (minmax); ++i)
       {
 	/* Convert the GCC real value representation with the precision
 	   of the real type to the mpfr_t format rounding down in the

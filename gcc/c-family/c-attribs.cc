@@ -4952,8 +4952,7 @@ handle_access_attribute (tree node[3], tree name, tree args, int flags,
   int imode;
 
   {
-    const int nmodes =
-      sizeof attr_access::mode_names / sizeof *attr_access::mode_names;
+    const int nmodes = ARRAY_SIZE (attr_access::mode_names);
 
     for (imode = 0; imode != nmodes; ++imode)
       if (!strncmp (ps, attr_access::mode_names[imode],

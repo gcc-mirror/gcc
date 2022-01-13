@@ -1139,7 +1139,7 @@ exploded_node::get_dot_fillcolor () const
 	= {"azure", "coral", "cornsilk", "lightblue", "yellow",
 	   "honeydew", "lightpink", "lightsalmon", "palegreen1",
 	   "wheat", "seashell"};
-      const int num_colors = sizeof (colors) / sizeof (colors[0]);
+      const int num_colors = ARRAY_SIZE (colors);
       return colors[total_sm_state % num_colors];
     }
   else

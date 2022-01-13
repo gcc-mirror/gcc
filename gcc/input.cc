@@ -3724,8 +3724,7 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
     {
       /* ...and use each of the "interesting" location values as
 	 the starting location within line_table.  */
-      const int num_boundary_locations
-	= sizeof (boundary_locations) / sizeof (boundary_locations[0]);
+      const int num_boundary_locations = ARRAY_SIZE (boundary_locations);
       for (int loc_idx = 0; loc_idx < num_boundary_locations; loc_idx++)
 	{
 	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);

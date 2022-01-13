@@ -489,7 +489,7 @@ static const char * const test_data[] = {
 static void
 test_metric_conditions ()
 {
-  const int num_test_cases = sizeof (test_data) / sizeof (test_data[0]);
+  const int num_test_cases = ARRAY_SIZE (test_data);
 
   for (int i = 0; i < num_test_cases; i++)
     {

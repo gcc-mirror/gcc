@@ -4200,7 +4200,7 @@ cp_parser_new (cp_lexer *lexer)
 {
   /* Initialize the binops_by_token so that we can get the tree
      directly from the token.  */
-  for (unsigned i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
+  for (unsigned i = 0; i < ARRAY_SIZE (binops); i++)
     binops_by_token[binops[i].token_type] = binops[i];
 
   cp_parser *parser = ggc_cleared_alloc<cp_parser> ();

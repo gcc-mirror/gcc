@@ -4902,8 +4902,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
       match m;
       const char *selector_sets[] = { "construct", "device",
 				      "implementation", "user" };
-      const int selector_set_count
-	= sizeof (selector_sets) / sizeof (*selector_sets);
+      const int selector_set_count = ARRAY_SIZE (selector_sets);
       int i;
       char buf[GFC_MAX_SYMBOL_LEN + 1];
 

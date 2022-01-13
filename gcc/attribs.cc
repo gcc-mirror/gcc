@@ -499,7 +499,7 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 
   /* Iterate over the mutually exclusive attribute names and verify
      that the symbol doesn't contain it.  */
-  for (unsigned i = 0; i != sizeof attrs / sizeof *attrs; ++i)
+  for (unsigned i = 0; i != ARRAY_SIZE (attrs); ++i)
     {
       if (!attrs[i])
 	continue;
@@ -2106,7 +2106,7 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
   };
 
   for (unsigned i = 0; i != 2; ++i)
-    for (unsigned j = 0; j != sizeof whitelist / sizeof *whitelist; ++j)
+    for (unsigned j = 0; j != ARRAY_SIZE (whitelist); ++j)
       if (lookup_attribute (whitelist[j], tmpl_attrs[i])
 	  || lookup_attribute (whitelist[j], decl_attrs[i]))
 	return 0;

@@ -2619,7 +2619,7 @@ depset::entity_kind_name () const
     {"decl", "specialization", "partial", "using",
      "namespace", "redirect", "binding"};
   entity_kind kind = get_entity_kind ();
-  gcc_checking_assert (kind < sizeof (names) / sizeof(names[0]));
+  gcc_checking_assert (kind < ARRAY_SIZE (names));
   return names[kind];
 }
 
