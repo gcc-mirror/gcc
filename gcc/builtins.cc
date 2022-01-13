@@ -119,6 +119,9 @@ static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_ternary (tree, rtx, rtx);
 static rtx expand_builtin_interclass_mathfn (tree, rtx);
 static rtx expand_builtin_sincos (tree);
+static rtx expand_builtin_fegetround (tree, rtx, machine_mode);
+static rtx expand_builtin_feclear_feraise_except (tree, rtx, machine_mode,
+						  optab);
 static rtx expand_builtin_cexpi (tree, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx);
 static rtx expand_builtin_int_roundingfn_2 (tree, rtx);
@@ -2553,6 +2556,59 @@ expand_builtin_sincos (tree exp)
   emit_move_insn (op2, target2);
 
   return const0_rtx;
+}
+
+/* Expand call EXP to the fegetround builtin (from C99 fenv.h), returning the
+   result and setting it in TARGET.  Otherwise return NULL_RTX on failure.  */
+static rtx
+expand_builtin_fegetround (tree exp, rtx target, machine_mode target_mode)
+{
+  if (!validate_arglist (exp, VOID_TYPE))
+    return NULL_RTX;
+
+  insn_code icode = direct_optab_handler (fegetround_optab, SImode);
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (target == 0
+      || GET_MODE (target) != target_mode
+      || !(*insn_data[icode].operand[0].predicate) (target, target_mode))
+    target = gen_reg_rtx (target_mode);
+
+  rtx pat = GEN_FCN (icode) (target);
+  if (!pat)
+    return NULL_RTX;
+  emit_insn (pat);
+
+  return target;
+}
+
+/* Expand call EXP to either feclearexcept or feraiseexcept builtins (from C99
+   fenv.h), returning the result and setting it in TARGET.  Otherwise return
+   NULL_RTX on failure.  */
+static rtx
+expand_builtin_feclear_feraise_except (tree exp, rtx target,
+				       machine_mode target_mode, optab op_optab)
+{
+  if (!validate_arglist (exp, INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+  rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+
+  insn_code icode = direct_optab_handler (op_optab, SImode);
+  if (icode == CODE_FOR_nothing)
+    return NULL_RTX;
+
+  if (target == 0
+      || GET_MODE (target) != target_mode
+      || !(*insn_data[icode].operand[0].predicate) (target, target_mode))
+    target = gen_reg_rtx (target_mode);
+
+  rtx pat = GEN_FCN (icode) (target, op0);
+  if (!pat)
+    return NULL_RTX;
+  emit_insn (pat);
+
+  return target;
 }
 
 /* Expand a call to the internal cexpi builtin to the sincos math function.
@@ -7052,6 +7108,26 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (! flag_unsafe_math_optimizations)
 	break;
       target = expand_builtin_sincos (exp);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FEGETROUND:
+      target = expand_builtin_fegetround (exp, target, target_mode);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FECLEAREXCEPT:
+      target = expand_builtin_feclear_feraise_except (exp, target, target_mode,
+						      feclearexcept_optab);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_FERAISEEXCEPT:
+      target = expand_builtin_feclear_feraise_except (exp, target, target_mode,
+						      feraiseexcept_optab);
       if (target)
 	return target;
       break;

@@ -6087,6 +6087,23 @@ mode @var{m}, which is a scalar or vector floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{fegetround@var{m}} instruction pattern
+@item @samp{fegetround@var{m}}
+Store the current machine floating-point rounding mode into operand 0.
+Operand 0 has mode @var{m}, which is scalar.  This pattern is used to
+implement the @code{fegetround} function from the ISO C99 standard.
+
+@cindex @code{feclearexcept@var{m}} instruction pattern
+@cindex @code{feraiseexcept@var{m}} instruction pattern
+@item @samp{feclearexcept@var{m}}
+@item @samp{feraiseexcept@var{m}}
+Clears or raises the supported machine floating-point exceptions
+represented by the bits in operand 1.  Error status is stored as
+nonzero value in operand 0.  Both operands have mode @var{m}, which is
+a scalar.  These patterns are used to implement the
+@code{feclearexcept} and @code{feraiseexcept} functions from the ISO
+C99 standard.
+
 @cindex @code{exp@var{m}2} instruction pattern
 @item @samp{exp@var{m}2}
 Raise e (the base of natural logarithms) to the power of operand 1
