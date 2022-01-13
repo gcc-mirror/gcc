@@ -1657,7 +1657,8 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "general_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && reload_completed"
   [(parallel
      [(set (strict_low_part (match_dup 0))
 	   (neg:QI (match_dup 1)))
@@ -1683,7 +1684,8 @@
         (neg:V2QI
 	  (match_operand:V2QI 1 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && TARGET_SSE2 && reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0)
 	(minus:V16QI (match_dup 0) (match_dup 1)))]
@@ -1757,7 +1759,8 @@
 	  (match_operand:V2QI 1 "general_reg_operand")
 	  (match_operand:V2QI 2 "general_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && reload_completed"
   [(parallel
      [(set (strict_low_part (match_dup 0))
 	   (plusminus:QI (match_dup 1) (match_dup 2)))
@@ -1790,7 +1793,8 @@
 	  (match_operand:V2QI 1 "sse_reg_operand")
 	  (match_operand:V2QI 2 "sse_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
-  "TARGET_SSE2 && reload_completed"
+  "(!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
+   && TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
         (plusminus:V16QI (match_dup 1) (match_dup 2)))]
 {
@@ -2386,6 +2390,38 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "TI")])
+
+(define_insn_and_split "<insn>v2qi3"
+  [(set (match_operand:V2QI 0 "register_operand" "=Q")
+        (any_shift:V2QI
+	  (match_operand:V2QI 1 "register_operand" "0")
+	  (match_operand:QI 2 "nonmemory_operand" "cI")))
+   (clobber (reg:CC FLAGS_REG))]
+  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
+  "#"
+  "&& reload_completed"
+  [(parallel
+     [(set (zero_extract:HI (match_dup 3) (const_int 8) (const_int 8))
+	   (subreg:HI
+	     (any_shift:QI
+	       (subreg:QI
+	         (zero_extract:HI (match_dup 4)
+			          (const_int 8)
+				  (const_int 8)) 0)
+	       (match_dup 2)) 0))
+      (clobber (reg:CC FLAGS_REG))])
+   (parallel
+     [(set (strict_low_part (match_dup 0))
+	   (any_shift:QI (match_dup 1) (match_dup 2)))
+      (clobber (reg:CC FLAGS_REG))])]
+{
+  operands[4] = lowpart_subreg (HImode, operands[1], V2QImode);
+  operands[3] = lowpart_subreg (HImode, operands[0], V2QImode);
+  operands[1] = lowpart_subreg (QImode, operands[1], V2QImode);
+  operands[0] = lowpart_subreg (QImode, operands[0], V2QImode);
+}
+  [(set_attr "type" "multi")
+   (set_attr "mode" "QI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
