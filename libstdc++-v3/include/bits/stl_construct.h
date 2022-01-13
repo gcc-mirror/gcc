@@ -116,7 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return;
 	}
 #endif
-      ::new(static_cast<void*>(__p)) _Tp(std::forward<_Args>(__args)...);
+      ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
     }
 #else
   template<typename _T1, typename _T2>
@@ -132,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _T1>
     inline void
     _Construct_novalue(_T1* __p)
-    { ::new(static_cast<void*>(__p)) _T1; }
+    { ::new((void*)__p) _T1; }
 
   template<typename _ForwardIterator>
     _GLIBCXX20_CONSTEXPR void
