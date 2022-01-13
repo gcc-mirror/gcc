@@ -12449,7 +12449,7 @@ package body Sem_Ch13 is
                OC_Lbit (To) := OC_Lbit (From);
             end OC_Move;
 
-            --  Start of processing for Overlap_Check
+         --  Start of processing for Overlap_Check
 
          begin
             CC := First (Component_Clauses (N));

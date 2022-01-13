@@ -3581,7 +3581,7 @@ package body Freeze is
                      end if;
                   end Complain_CS;
 
-                  --  Start of processing for Alias_Atomic_Check
+               --  Start of processing for Alias_Atomic_Check
 
                begin
                   --  If object size of component type isn't known, we cannot
