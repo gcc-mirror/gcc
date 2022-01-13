@@ -511,6 +511,10 @@ public:
   }
 
   std::string as_string () const;
+
+  AsyncConstStatus get_status () const { return const_status; }
+
+  bool is_const () const { return const_status == AsyncConstStatus::CONST; }
 };
 
 // A function parameter
@@ -1216,7 +1220,7 @@ public:
     return function_body;
   }
 
-  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+  const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 
   Identifier get_function_name () const { return function_name; }
 

@@ -278,6 +278,9 @@ protected:
 
   HIR::QualifiedPathType
   lower_qual_path_type (AST::QualifiedPathType &qual_path_type);
+
+  HIR::FunctionQualifiers
+  lower_qualifiers (const AST::FunctionQualifiers &qualifiers);
 };
 
 } // namespace HIR

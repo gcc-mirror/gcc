@@ -518,6 +518,11 @@ public:
   }
 
   std::string as_string () const;
+
+  AsyncConstStatus get_const_status () const { return const_status; }
+  bool is_unsafe () const { return has_unsafe; }
+  bool is_extern () const { return has_extern; }
+  std::string get_extern_abi () const { return extern_abi; }
 };
 
 // A function parameter
@@ -1587,7 +1592,7 @@ public:
     return function_body;
   }
 
-  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+  const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 
   Identifier get_function_name () const { return function_name; }
 

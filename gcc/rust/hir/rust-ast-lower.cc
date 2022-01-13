@@ -593,5 +593,33 @@ struct_field_name_exists (std::vector<HIR::StructField> &fields,
   return false;
 }
 
+HIR::FunctionQualifiers
+ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
+{
+  HIR::FunctionQualifiers::AsyncConstStatus const_status;
+  switch (qualifiers.get_const_status ())
+    {
+    case AST::FunctionQualifiers::AsyncConstStatus::NONE:
+      const_status = HIR::FunctionQualifiers::AsyncConstStatus::NONE;
+      break;
+    case AST::FunctionQualifiers::AsyncConstStatus::CONST:
+      const_status = HIR::FunctionQualifiers::AsyncConstStatus::CONST;
+      break;
+    case AST::FunctionQualifiers::AsyncConstStatus::ASYNC:
+      const_status = HIR::FunctionQualifiers::AsyncConstStatus::ASYNC;
+      break;
+    }
+
+  Unsafety unsafety
+    = qualifiers.is_unsafe () ? Unsafety::Unsafe : Unsafety::Normal;
+  bool has_extern = qualifiers.is_extern ();
+
+  // FIXME turn this into the Rust::ABI enum
+  std::string extern_abi = qualifiers.get_extern_abi ();
+
+  return HIR::FunctionQualifiers (const_status, unsafety, has_extern,
+				  extern_abi);
+}
+
 } // namespace HIR
 } // namespace Rust

@@ -429,8 +429,8 @@ public:
       }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::FunctionQualifiers qualifiers (
-      HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
+    HIR::FunctionQualifiers qualifiers
+      = lower_qualifiers (function.get_qualifiers ());
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
@@ -439,7 +439,6 @@ public:
       {
 	generic_params = lower_generic_params (function.get_generic_params ());
       }
-
     Identifier function_name = function.get_function_name ();
     Location locus = function.get_locus ();
 
