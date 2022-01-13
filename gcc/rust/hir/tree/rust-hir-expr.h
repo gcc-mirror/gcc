@@ -47,14 +47,17 @@ protected:
     return clone_expr_with_block_impl ();
   }
 
-  bool is_expr_without_block () const final override { return false; };
-
 public:
   // Unique pointer custom clone function
   std::unique_ptr<ExprWithBlock> clone_expr_with_block () const
   {
     return std::unique_ptr<ExprWithBlock> (clone_expr_with_block_impl ());
   }
+
+  BlockType get_block_expr_type () const final override
+  {
+    return BlockType::WITH_BLOCK;
+  };
 };
 
 // Literals? Or literal base?
@@ -97,6 +100,8 @@ public:
 
   Literal &get_literal () { return literal; }
   const Literal &get_literal () const { return literal; }
+
+  ExprType get_expression_type () const override final { return ExprType::Lit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -167,6 +172,11 @@ public:
   Location get_locus () const override final { return locus; }
 
   std::unique_ptr<Expr> &get_expr () { return main_or_left_expr; }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Operator;
+  }
 };
 
 /* Unary prefix & or &mut (or && and &&mut) borrow operator. Cannot be
@@ -795,6 +805,11 @@ public:
     return expr_in_parens;
   }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Grouped;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1006,6 +1021,11 @@ public:
 
   ArrayElems *get_internal_elements () { return internal_elements.get (); };
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Array;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1019,11 +1039,6 @@ protected:
   }
 };
 
-// Aka IndexExpr (also applies to slices)
-/* Apparently a[b] is equivalent to *std::ops::Index::index(&a, b) or
- * *std::ops::Index::index_mut(&mut a, b) */
-/* Also apparently deref operations on a will be repeatedly applied to find an
- * implementation */
 class ArrayIndexExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> array_expr;
@@ -1071,6 +1086,11 @@ public:
 
   Expr *get_array_expr () { return array_expr.get (); }
   Expr *get_index_expr () { return index_expr.get (); }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::ArrayIndex;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1158,6 +1178,11 @@ public:
 
   bool is_unit () const { return tuple_elems.size () == 0; }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Tuple;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1171,17 +1196,11 @@ protected:
   }
 };
 
-// aka TupleIndexingExpr
-// HIR representation of a tuple indexing expression
 class TupleIndexExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> tuple_expr;
-  // TupleIndex is a decimal int literal with no underscores or suffix
   TupleIndex tuple_index;
-
   Location locus;
-
-  // i.e. pair.0
 
 public:
   std::string as_string () const override;
@@ -1227,6 +1246,11 @@ public:
     return tuple_expr;
   }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::TupleIdx;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1260,6 +1284,11 @@ public:
   PathInExpression &get_struct_name () { return struct_name; }
 
   std::string as_string () const override;
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Struct;
+  }
 };
 
 // Actual HIR node of the struct creator (with no fields). Not abstract!
@@ -1648,7 +1677,6 @@ class CallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> function;
   std::vector<std::unique_ptr<Expr> > params;
-
   Location locus;
 
 public:
@@ -1710,6 +1738,11 @@ public:
     return params;
   }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Call;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -1729,7 +1762,6 @@ class MethodCallExpr : public ExprWithoutBlock
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
   std::vector<std::unique_ptr<Expr> > params;
-
   Location locus;
 
 public:
@@ -1792,6 +1824,11 @@ public:
   const std::vector<std::unique_ptr<Expr> > &get_arguments () const
   {
     return params;
+  }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::MethodCall;
   }
 
 protected:
@@ -1864,6 +1901,11 @@ public:
   }
 
   Identifier get_field_name () const { return field; }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::FieldAccess;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1939,10 +1981,7 @@ public:
 class ClosureExpr : public ExprWithoutBlock
 {
   bool has_move;
-  std::vector<ClosureParam> params; // may be empty
-  /* also note a double pipe "||" can be used for empty params - does not need a
-   * space */
-
+  std::vector<ClosureParam> params;
   Location locus;
 
 protected:
@@ -1957,6 +1996,11 @@ public:
   std::string as_string () const override;
 
   Location get_locus () const override final { return locus; }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Closure;
+  }
 };
 
 // Represents a non-type-specified closure expression HIR node
@@ -2022,10 +2066,8 @@ class BlockExpr : public ExprWithBlock
 {
 public:
   AST::AttrVec inner_attrs;
-
   std::vector<std::unique_ptr<Stmt> > statements;
-  std::unique_ptr<Expr> expr; // inlined from Statements
-
+  std::unique_ptr<Expr> expr;
   bool tail_reachable;
   Location locus;
 
@@ -2108,6 +2150,11 @@ public:
   std::unique_ptr<Expr> &get_final_expr () { return expr; }
 
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Block;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2199,7 +2246,6 @@ protected:
 // HIR node representing continue expression within loops
 class ContinueExpr : public ExprWithoutBlock
 {
-  // bool has_label;
   Lifetime label;
   Location locus;
 
@@ -2222,6 +2268,11 @@ public:
 
   Lifetime &get_label () { return label; }
 
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Continue;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2237,7 +2288,6 @@ protected:
     return new ContinueExpr (*this);
   }
 };
-// TODO: merge "break" and "continue"? Or even merge in "return"?
 
 // HIR node representing break expression within loops
 class BreakExpr : public ExprWithoutBlock
@@ -2303,6 +2353,11 @@ public:
 
   std::unique_ptr<Expr> &get_expr () { return break_expr; }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Break;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2329,6 +2384,11 @@ protected:
 
 public:
   Location get_locus () const override final { return locus; }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Range;
+  }
 };
 
 // Range from (inclusive) and to (exclusive) expression HIR node object
@@ -2676,6 +2736,11 @@ public:
 
   Expr *get_expr () { return return_expr.get (); }
 
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::Return;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2697,7 +2762,6 @@ class UnsafeBlockExpr : public ExprWithBlock
 {
   // Or just have it extend BlockExpr
   std::unique_ptr<BlockExpr> expr;
-
   Location locus;
 
 public:
@@ -2736,6 +2800,11 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<BlockExpr> &get_block_expr () { return expr; }
+
+  ExprType get_expression_type () const override final
+  {
+    return ExprType::UnsafeBlock;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2784,10 +2853,7 @@ public:
 class BaseLoopExpr : public ExprWithBlock
 {
 protected:
-  // protected to allow subclasses better use of them
-  // bool has_loop_label;
   LoopLabel loop_label;
-
   std::unique_ptr<BlockExpr> loop_block;
 
 private:
@@ -2825,6 +2891,11 @@ protected:
   // move constructors
   BaseLoopExpr (BaseLoopExpr &&other) = default;
   BaseLoopExpr &operator= (BaseLoopExpr &&other) = default;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::BaseLoop;
+  }
 
 public:
   bool has_loop_label () const { return !loop_label.is_error (); }
@@ -3128,6 +3199,8 @@ public:
   Expr *get_if_condition () { return condition.get (); }
   BlockExpr *get_if_block () { return if_block.get (); }
 
+  ExprType get_expression_type () const final override { return ExprType::If; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3345,6 +3418,11 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::IfLet;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3898,6 +3976,11 @@ public:
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
   std::vector<MatchCase> &get_match_cases () { return match_arms; }
 
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Match;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3915,7 +3998,6 @@ protected:
 class AwaitExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> awaited_expr;
-
   Location locus;
 
 public:
@@ -3952,6 +4034,11 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Await;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -3964,10 +4051,8 @@ protected:
 // Async block expression HIR node (block expr that evaluates to a future)
 class AsyncBlockExpr : public ExprWithBlock
 {
-  // TODO: should this extend BlockExpr rather than be a composite of it?
   bool has_move;
   std::unique_ptr<BlockExpr> block_expr;
-
   Location locus;
 
 public:
@@ -4004,6 +4089,11 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::AsyncBlock;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
