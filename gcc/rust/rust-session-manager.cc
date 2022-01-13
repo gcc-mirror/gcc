@@ -52,7 +52,6 @@
 #include "rust-lint-scan-deadcode.h"
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
-#include "rust-hir-const-fold.h"
 #include "rust-compile.h"
 
 extern Linemap *
@@ -330,9 +329,6 @@ Session::init ()
 
   // set the default crate name
   options.set_crate_name (kDefaultCrateName);
-
-  // the constant folder uses gcc
-  ConstFold::Context::init (backend);
 }
 
 /* Initialise default options. Actually called before handle_option, unlike init

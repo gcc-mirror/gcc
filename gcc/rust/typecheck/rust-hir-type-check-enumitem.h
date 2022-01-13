@@ -63,28 +63,16 @@ public:
     if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
-    TyTy::USizeType *expected_ty
-      = new TyTy::USizeType (discriminant->get_mappings ().get_hirid ());
+    TyTy::ISizeType *expected_ty
+      = new TyTy::ISizeType (discriminant->get_mappings ().get_hirid ());
     context->insert_type (discriminant->get_mappings (), expected_ty);
 
     auto unified = expected_ty->unify (capacity_type);
     if (unified->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
-    auto backend = rust_get_backend ();
-    auto folded_discriminant
-      = ConstFold::ConstFoldExpr::fold (discriminant.get ());
-    if (backend->is_error_expression (folded_discriminant))
-      return;
-
-    size_t specified_discriminant;
-    bool ok
-      = backend->const_size_cast (folded_discriminant, &specified_discriminant);
-    rust_assert (ok);
-
-    variant
-      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-			      item.get_identifier (), specified_discriminant);
+    variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				    item.get_identifier (), &item);
   }
 
   void visit (HIR::EnumItemTuple &item) override

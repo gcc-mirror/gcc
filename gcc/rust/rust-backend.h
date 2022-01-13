@@ -74,11 +74,6 @@ public:
   virtual void debug (tree) = 0;
   virtual void debug (Bvariable *) = 0;
 
-  // const folder helpers
-  virtual bool const_size_cast (tree, size_t *) = 0;
-  virtual std::string const_size_val_to_string (tree) = 0;
-  virtual bool const_values_equal (tree, tree) = 0;
-
   static Rust::ABI get_abi_from_string (const std::string &abi, Location locus)
   {
     if (abi.compare ("rust") == 0)

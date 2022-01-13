@@ -27,6 +27,7 @@
 #include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
 #include "rust-compile-extern.h"
+#include "rust-constexpr.h"
 
 namespace Rust {
 namespace Compile {
@@ -97,7 +98,10 @@ public:
     rust_assert (ok);
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree const_type = build_qualified_type (type, TYPE_QUAL_CONST);
+
     tree value = CompileExpr::Compile (constant.get_expr (), ctx);
+    tree folded_expr = ConstCtx::fold (value);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -107,7 +111,8 @@ public:
 
     std::string ident = canonical_path->get ();
     tree const_expr
-      = ctx->get_backend ()->named_constant_expression (type, ident, value,
+      = ctx->get_backend ()->named_constant_expression (const_type, ident,
+							folded_expr,
 							constant.get_locus ());
 
     ctx->push_const (const_expr);
@@ -182,6 +187,10 @@ public:
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
+
+    // is it a const function?
+    if (function.get_qualifiers ().is_const ())
+      flags |= Backend::function_read_only;
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (

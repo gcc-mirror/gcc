@@ -19,12 +19,12 @@
 #ifndef RUST_TYTY
 #define RUST_TYTY
 
-#include "rust-backend.h"
 #include "rust-hir-map.h"
 #include "rust-hir-full.h"
 #include "rust-diagnostics.h"
 #include "rust-abi.h"
 #include "rust-common.h"
+#include "tree.h"
 
 namespace Rust {
 
@@ -1034,7 +1034,16 @@ public:
   }
 
   VariantDef (HirId id, std::string identifier, int discriminant)
-    : id (id), identifier (identifier), discriminant (discriminant)
+    : id (id), identifier (identifier), discriminant (discriminant),
+      discriminant_node (nullptr)
+  {
+    type = VariantType::NUM;
+    fields = {};
+  }
+
+  VariantDef (HirId id, std::string identifier,
+	      HIR::EnumItemDiscriminant *discriminant)
+    : id (id), identifier (identifier), discriminant_node (discriminant)
   {
     type = VariantType::NUM;
     fields = {};
@@ -1042,7 +1051,8 @@ public:
 
   VariantDef (HirId id, std::string identifier, VariantType type,
 	      std::vector<StructFieldType *> fields)
-    : id (id), identifier (identifier), type (type), fields (fields)
+    : id (id), identifier (identifier), type (type), fields (fields),
+      discriminant_node (nullptr)
   {
     discriminant = 0;
     rust_assert (type == VariantType::TUPLE || type == VariantType::STRUCT);
@@ -1073,7 +1083,12 @@ public:
   bool is_dataless_variant () const { return type == VariantType::NUM; }
 
   std::string get_identifier () const { return identifier; }
-  int get_discriminant () const { return discriminant; }
+
+  int get_discriminant () const
+  {
+    rust_assert (!is_specified_discriminant_node ());
+    return discriminant;
+  }
 
   size_t num_fields () const { return fields.size (); }
   StructFieldType *get_field_at_index (size_t index)
@@ -1107,6 +1122,17 @@ public:
 	i++;
       }
     return false;
+  }
+
+  bool is_specified_discriminant_node () const
+  {
+    return discriminant_node != nullptr;
+  }
+
+  HIR::EnumItemDiscriminant *get_discriminant_node () const
+  {
+    rust_assert (is_specified_discriminant_node ());
+    return discriminant_node;
   }
 
   std::string as_string () const
@@ -1166,6 +1192,7 @@ private:
   VariantType type;
   int discriminant; /* Either discriminant or fields are valid.  */
   std::vector<StructFieldType *> fields;
+  HIR::EnumItemDiscriminant *discriminant_node;
 };
 
 class ADTType : public BaseType, public SubstitutionRef
@@ -1595,16 +1622,16 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, tree capacity, TyVar base,
+  ArrayType (HirId ref, HIR::Expr &capacity_expr, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
-      element_type (base)
+    : BaseType (ref, ref, TypeKind::ARRAY, refs), element_type (base),
+      capacity_expr (capacity_expr)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, tree capacity, TyVar base,
+  ArrayType (HirId ref, HirId ty_ref, HIR::Expr &capacity_expr, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
-      element_type (base)
+    : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), element_type (base),
+      capacity_expr (capacity_expr)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1622,9 +1649,6 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  tree get_capacity () const { return capacity; }
-  std::string capacity_string () const;
-
   BaseType *get_element_type () const;
 
   BaseType *clone () const final override;
@@ -1634,9 +1658,11 @@ public:
     return get_element_type ()->is_concrete ();
   }
 
+  HIR::Expr &get_capacity_expr () const { return capacity_expr; }
+
 private:
-  tree capacity;
   TyVar element_type;
+  HIR::Expr &capacity_expr;
 };
 
 class BoolType : public BaseType

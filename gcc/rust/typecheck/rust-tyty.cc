@@ -1335,14 +1335,7 @@ ArrayType::accept_vis (TyConstVisitor &vis) const
 std::string
 ArrayType::as_string () const
 {
-  return "[" + get_element_type ()->as_string () + ":" + capacity_string ()
-	 + "]";
-}
-
-std::string
-ArrayType::capacity_string () const
-{
-  return rust_get_backend ()->const_size_val_to_string (get_capacity ());
+  return "[" + get_element_type ()->as_string () + ":" + "CAPACITY" + "]";
 }
 
 BaseType *
@@ -1381,8 +1374,6 @@ ArrayType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const ArrayType &> (other);
-  if (get_capacity () != other2.get_capacity ())
-    return false;
 
   auto this_element_type = get_element_type ();
   auto other_element_type = other2.get_element_type ();
@@ -1399,8 +1390,8 @@ ArrayType::get_element_type () const
 BaseType *
 ArrayType::clone () const
 {
-  return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
-			element_type, get_combined_refs ());
+  return new ArrayType (get_ref (), get_ty_ref (), capacity_expr, element_type,
+			get_combined_refs ());
 }
 
 void

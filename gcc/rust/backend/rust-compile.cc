@@ -288,21 +288,33 @@ HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 }
 
 tree
-HIRCompileBase::coercion_site (tree compiled_ref, TyTy::BaseType *actual,
-			       TyTy::BaseType *expected, Location locus)
+HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
+			       TyTy::BaseType *expected, Location lvalue_locus,
+			       Location rvalue_locus)
 {
   auto root_actual_kind = actual->get_root ()->get_kind ();
   auto root_expected_kind = expected->get_root ()->get_kind ();
 
-  if (root_expected_kind == TyTy::TypeKind::DYNAMIC
-      && root_actual_kind != TyTy::TypeKind::DYNAMIC)
+  if (root_expected_kind == TyTy::TypeKind::ARRAY
+      && root_actual_kind == TyTy::TypeKind::ARRAY)
+    {
+      tree tree_rval_type
+	= TyTyResolveCompile::compile (ctx, actual->get_root ());
+      tree tree_lval_type
+	= TyTyResolveCompile::compile (ctx, expected->get_root ());
+      if (!verify_array_capacities (tree_lval_type, tree_rval_type,
+				    lvalue_locus, rvalue_locus))
+	return error_mark_node;
+    }
+  else if (root_expected_kind == TyTy::TypeKind::DYNAMIC
+	   && root_actual_kind != TyTy::TypeKind::DYNAMIC)
     {
       const TyTy::DynamicObjectType *dyn
 	= static_cast<const TyTy::DynamicObjectType *> (expected->get_root ());
-      return coerce_to_dyn_object (compiled_ref, actual, expected, dyn, locus);
+      return coerce_to_dyn_object (rvalue, actual, expected, dyn, rvalue_locus);
     }
 
-  return compiled_ref;
+  return rvalue;
 }
 
 tree
@@ -528,6 +540,58 @@ HIRCompileBase::compute_address_for_trait_item (
   HIR::TraitItem *trait_item = ref->get_hir_trait_item ();
   return CompileTraitItem::Compile (root, trait_item, ctx, trait_item_fntype,
 				    true, locus);
+}
+
+bool
+HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
+					 Location lvalue_locus,
+					 Location rvalue_locus)
+{
+  rust_assert (ltype != NULL_TREE);
+  rust_assert (rtype != NULL_TREE);
+
+  // lets just return ok as other errors have already occurred
+  if (ltype == error_mark_node || rtype == error_mark_node)
+    return true;
+
+  tree ltype_domain = TYPE_DOMAIN (ltype);
+  if (!ltype_domain)
+    return false;
+
+  if (!TREE_CONSTANT (TYPE_MAX_VALUE (ltype_domain)))
+    return false;
+
+  auto ltype_length
+    = wi::ext (wi::to_offset (TYPE_MAX_VALUE (ltype_domain))
+		 - wi::to_offset (TYPE_MIN_VALUE (ltype_domain)) + 1,
+	       TYPE_PRECISION (TREE_TYPE (ltype_domain)),
+	       TYPE_SIGN (TREE_TYPE (ltype_domain)))
+	.to_uhwi ();
+
+  tree rtype_domain = TYPE_DOMAIN (rtype);
+  if (!rtype_domain)
+    return false;
+
+  if (!TREE_CONSTANT (TYPE_MAX_VALUE (rtype_domain)))
+    return false;
+
+  auto rtype_length
+    = wi::ext (wi::to_offset (TYPE_MAX_VALUE (rtype_domain))
+		 - wi::to_offset (TYPE_MIN_VALUE (rtype_domain)) + 1,
+	       TYPE_PRECISION (TREE_TYPE (rtype_domain)),
+	       TYPE_SIGN (TREE_TYPE (rtype_domain)))
+	.to_uhwi ();
+
+  if (ltype_length != rtype_length)
+    {
+      rust_error_at (rvalue_locus,
+		     "expected an array with a fixed size of %lu "
+		     "elements, found one with %lu elements",
+		     ltype_length, rtype_length);
+      return false;
+    }
+
+  return true;
 }
 
 } // namespace Compile

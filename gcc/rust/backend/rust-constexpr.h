@@ -1,5 +1,3 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
-
 // This file is part of GCC.
 
 // GCC is free software; you can redistribute it and/or modify it under
@@ -16,38 +14,33 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_HIR_CONST_FOLD_CTX_H
-#define RUST_HIR_CONST_FOLD_CTX_H
+#ifndef RUST_CONSTEXPR
+#define RUST_CONSTEXPR
 
-#include "rust-backend.h"
-#include "rust-hir-map.h"
+#include "rust-system.h"
+#include "tree.h"
 
 namespace Rust {
-namespace ConstFold {
+namespace Compile {
 
-class Context
+class ConstCtx
 {
 public:
-  ~Context () {}
+  static tree fold (tree);
 
-  static void init (::Backend *backend);
-
-  static Context *get ();
-
-  ::Backend *get_backend () { return backend; }
-
-  bool lookup_const (HirId id, tree *expr);
-
-  void insert_const (HirId, tree expr);
+  tree constexpr_expression (tree);
+  tree eval_binary_expression (tree);
+  tree eval_call_expression (tree);
+  tree constexpr_fn_retval (tree);
+  tree eval_store_expression (tree);
 
 private:
-  Context (::Backend *backend);
+  ConstCtx ();
 
-  ::Backend *backend;
-  std::map<HirId, tree> ctx;
+  HOST_WIDE_INT constexpr_ops_count;
 };
 
-} // namespace ConstFold
+} // namespace Compile
 } // namespace Rust
 
-#endif // RUST_HIR_CONST_FOLD_CTX_H
+#endif // RUST_CONSTEXPR

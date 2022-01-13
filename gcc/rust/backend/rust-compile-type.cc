@@ -17,8 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-type.h"
+#include "rust-compile-expr.h"
+#include "rust-constexpr.h"
 
 #include "tree.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -63,13 +66,15 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
 void
 TyTyResolveCompile::visit (const TyTy::ErrorType &)
 {
-  gcc_unreachable ();
+  translated = error_mark_node;
 }
+
 void
 TyTyResolveCompile::visit (const TyTy::InferType &)
 {
-  gcc_unreachable ();
+  translated = error_mark_node;
 }
+
 void
 TyTyResolveCompile::visit (const TyTy::ClosureType &)
 {
@@ -332,8 +337,11 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 {
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
+  tree capacity_expr = CompileExpr::Compile (&type.get_capacity_expr (), ctx);
+  tree folded_capacity_expr = ConstCtx::fold (capacity_expr);
+
   translated
-    = ctx->get_backend ()->array_type (element_type, type.get_capacity ());
+    = ctx->get_backend ()->array_type (element_type, folded_capacity_expr);
 }
 
 void

@@ -25,10 +25,12 @@
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
 #include "rust-compile-pattern.h"
+#include "rust-constexpr.h"
 
 #include "fold-const.h"
 #include "realmpfr.h"
 #include "convert.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -381,7 +383,11 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  rust_assert (ok);
 
 	  // coerce it if required
-	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+	  Location lvalue_locus
+	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	  Location rvalue_locus = argument->get_locus ();
+	  rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
+				  rvalue_locus);
 
 	  // add it to the list
 	  arguments.push_back (rvalue);
@@ -477,7 +483,11 @@ CompileExpr::visit (HIR::CallExpr &expr)
       rust_assert (ok);
 
       // coerce it if required
-      rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+      Location lvalue_locus
+	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+      Location rvalue_locus = argument->get_locus ();
+      rvalue
+	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);
@@ -604,7 +614,11 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       rust_assert (ok);
 
       // coerce it if required
-      rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+      Location lvalue_locus
+	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+      Location rvalue_locus = argument->get_locus ();
+      rvalue
+	= coercion_site (rvalue, actual, expected, lvalue_locus, rvalue_locus);
 
       // add it to the list
       args.push_back (rvalue);
@@ -1092,6 +1106,221 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
   return fold_convert_loc (location.gcc_location (), type_to_cast_to,
 			   expr_tree);
 }
+
+void
+CompileExpr::visit (HIR::ArrayExpr &expr)
+{
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+				       &tyty))
+    {
+      rust_fatal_error (expr.get_locus (),
+			"did not resolve type for this array expr");
+      return;
+    }
+
+  tree array_type = TyTyResolveCompile::compile (ctx, tyty);
+  if (TREE_CODE (array_type) != ARRAY_TYPE)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  rust_assert (tyty->get_kind () == TyTy::TypeKind::ARRAY);
+  const TyTy::ArrayType &array_tyty
+    = static_cast<const TyTy::ArrayType &> (*tyty);
+
+  HIR::ArrayElems &elements = *expr.get_internal_elements ();
+  switch (elements.get_array_expr_type ())
+    {
+      case HIR::ArrayElems::ArrayExprType::VALUES: {
+	HIR::ArrayElemsValues &elems
+	  = static_cast<HIR::ArrayElemsValues &> (elements);
+	translated
+	  = array_value_expr (expr.get_locus (), array_tyty, array_type, elems);
+      }
+      return;
+
+    case HIR::ArrayElems::ArrayExprType::COPIED:
+      HIR::ArrayElemsCopied &elems
+	= static_cast<HIR::ArrayElemsCopied &> (elements);
+      translated
+	= array_copied_expr (expr.get_locus (), array_tyty, array_type, elems);
+    }
+}
+
+tree
+CompileExpr::array_value_expr (Location expr_locus,
+			       const TyTy::ArrayType &array_tyty,
+			       tree array_type, HIR::ArrayElemsValues &elems)
+{
+  std::vector<unsigned long> indexes;
+  std::vector<tree> constructor;
+  size_t i = 0;
+  for (auto &elem : elems.get_values ())
+    {
+      tree translated_expr = CompileExpr::Compile (elem.get (), ctx);
+      constructor.push_back (translated_expr);
+      indexes.push_back (i++);
+    }
+
+  return ctx->get_backend ()->array_constructor_expression (array_type, indexes,
+							    constructor,
+							    expr_locus);
+}
+
+tree
+CompileExpr::array_copied_expr (Location expr_locus,
+				const TyTy::ArrayType &array_tyty,
+				tree array_type, HIR::ArrayElemsCopied &elems)
+{
+  //  see gcc/cp/typeck2.c:1369-1401
+  gcc_assert (TREE_CODE (array_type) == ARRAY_TYPE);
+  tree domain = TYPE_DOMAIN (array_type);
+  if (!domain)
+    return error_mark_node;
+
+  if (!TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
+    {
+      rust_error_at (expr_locus, "non const capacity domain %qT", array_type);
+      return error_mark_node;
+    }
+
+  tree capacity_expr = CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
+  if (!TREE_CONSTANT (capacity_expr))
+    {
+      rust_error_at (expr_locus, "non const num copies %qT", array_type);
+      return error_mark_node;
+    }
+
+  // get the compiled value
+  tree translated_expr = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
+
+  tree max_domain = TYPE_MAX_VALUE (domain);
+  tree min_domain = TYPE_MIN_VALUE (domain);
+
+  auto max = wi::to_offset (max_domain);
+  auto min = wi::to_offset (min_domain);
+  auto precision = TYPE_PRECISION (TREE_TYPE (domain));
+  auto sign = TYPE_SIGN (TREE_TYPE (domain));
+  unsigned HOST_WIDE_INT len
+    = wi::ext (max - min + 1, precision, sign).to_uhwi ();
+
+  // create the constructor
+  size_t idx = 0;
+  std::vector<unsigned long> indexes;
+  std::vector<tree> constructor;
+  for (unsigned HOST_WIDE_INT i = 0; i < len; i++)
+    {
+      constructor.push_back (translated_expr);
+      indexes.push_back (idx++);
+    }
+
+  return ctx->get_backend ()->array_constructor_expression (array_type, indexes,
+							    constructor,
+							    expr_locus);
+}
+
+// tree
+// CompileExpr::array_copied_expr (Location expr_locus, tree array_type,
+// 				HIR::ArrayElemsCopied &elems)
+// {
+//   // create tmp for the result
+//   fncontext fnctx = ctx->peek_fn ();
+//   Location start_location = expr_locus;
+//   Location end_location = expr_locus;
+//   tree fndecl = fnctx.fndecl;
+//   tree enclosing_scope = ctx->peek_enclosing_scope ();
+
+//   bool is_address_taken = false;
+//   tree result_var_stmt = nullptr;
+//   Bvariable *result
+//     = ctx->get_backend ()->temporary_variable (fnctx.fndecl,
+//     enclosing_scope,
+// 					       array_type, NULL,
+// 					       is_address_taken, expr_locus,
+// 					       &result_var_stmt);
+//   ctx->add_statement (result_var_stmt);
+
+//   // get the compiled value
+//   tree translated_expr = CompileExpr::Compile (elems.get_elem_to_copy (),
+//   ctx);
+
+//   // lets assign each index in the array
+//   TyTy::BaseType *capacity_tyty = nullptr;
+//   HirId capacity_ty_id
+//     = elems.get_num_copies_expr ()->get_mappings ().get_hirid ();
+//   bool ok = ctx->get_tyctx ()->lookup_type (capacity_ty_id,
+//   &capacity_tyty); rust_assert (ok); tree capacity_type =
+//   TyTyResolveCompile::compile (ctx, capacity_tyty); tree capacity_expr =
+//   CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
+
+//   // create a loop for this with assignments to array_index exprs
+//   tree index_type = capacity_type;
+//   Bvariable *idx
+//     = ctx->get_backend ()->temporary_variable (fnctx.fndecl,
+//     enclosing_scope,
+// 					       index_type, NULL,
+// 					       is_address_taken, expr_locus,
+// 					       &result_var_stmt);
+//   ctx->add_statement (result_var_stmt);
+
+//   // set index to zero
+//   tree index_lvalue = error_mark_node;
+//   tree zero = build_int_cst (index_type, 0);
+//   tree index_assignment
+//     = ctx->get_backend ()->assignment_statement (fnctx.fndecl,
+//     index_lvalue,
+// 						 zero, expr_locus);
+//   ctx->add_statement (index_assignment);
+
+//   // BEGIN loop block
+//   tree loop_body = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+// 					       start_location, end_location);
+//   ctx->push_block (loop_body);
+
+//   // loop predicate
+//   tree loop_predicate
+//     = fold_build2_loc (expr_locus.gcc_location (), GE_EXPR,
+//     boolean_type_node,
+// 		       ctx->get_backend ()->var_expression (idx, expr_locus),
+// 		       capacity_expr);
+//   tree exit_expr = fold_build1_loc (expr_locus.gcc_location (), EXIT_EXPR,
+// 				    void_type_node, loop_predicate);
+//   tree break_stmt
+//     = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
+//   ctx->add_statement (break_stmt);
+
+//   // increment index
+//   tree increment
+//     = fold_build2_loc (expr_locus.gcc_location (), POSTINCREMENT_EXPR,
+// 		       index_type,
+// 		       ctx->get_backend ()->var_expression (idx, expr_locus),
+// 		       build_int_cst (index_type, 1));
+
+//   // create index_assess
+//   tree index_access = ctx->get_backend ()->array_index_expression (
+//     ctx->get_backend ()->var_expression (result, expr_locus), increment,
+//     expr_locus);
+
+//   // create assignment to index_access
+//   tree array_assignment
+//     = ctx->get_backend ()->assignment_statement (fnctx.fndecl,
+//     index_access,
+// 						 translated_expr, expr_locus);
+//   ctx->add_statement (array_assignment);
+
+//   // END loop block
+//   ctx->pop_block ();
+
+//   tree loop_expr = ctx->get_backend ()->loop_expression (loop_body,
+//   expr_locus); tree loop_stmt
+//     = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
+//   ctx->add_statement (loop_stmt);
+
+//   // result is the tmp
+//   return ctx->get_backend ()->var_expression (result, expr_locus);
+// }
 
 } // namespace Compile
 } // namespace Rust

@@ -112,8 +112,10 @@ public:
       stmt.get_init_expr ()->get_mappings ().get_hirid (), &actual);
     rust_assert (ok);
 
+    Location lvalue_locus = stmt.get_pattern ()->get_locus ();
+    Location rvalue_locus = stmt.get_init_expr ()->get_locus ();
     TyTy::BaseType *expected = ty;
-    init = coercion_site (init, actual, expected, stmt.get_locus ());
+    init = coercion_site (init, actual, expected, lvalue_locus, rvalue_locus);
 
     auto fnctx = ctx->peek_fn ();
     if (ty->is_unit ())

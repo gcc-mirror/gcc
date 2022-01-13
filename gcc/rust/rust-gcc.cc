@@ -137,45 +137,6 @@ public:
 
   tree char_type () { return char_type_node; }
 
-  bool const_size_cast (tree expr, size_t *result)
-  {
-    rust_assert (TREE_CONSTANT (expr));
-
-    unsigned char buf[sizeof (size_t) + 1];
-    memset (buf, 0, sizeof (buf));
-
-    int ret = native_encode_expr (expr, buf, sizeof (buf), 0);
-    if (ret <= 0)
-      return false;
-
-    size_t *tmp = (size_t *) buf;
-    *result = *tmp;
-    return true;
-  }
-
-  std::string const_size_val_to_string (tree expr)
-  {
-    rust_assert (TREE_CONSTANT (expr));
-
-    unsigned char buf[sizeof (size_t) + 1];
-    memset (buf, 0, sizeof (buf));
-
-    int ret = native_encode_expr (expr, buf, sizeof (buf), 0);
-    rust_assert (ret > 0);
-
-    size_t *ptr = (size_t *) buf;
-    return std::to_string (*ptr);
-  }
-
-  bool const_values_equal (tree a, tree b)
-  {
-    return operand_equal_p (a, b, OEP_ONLY_CONST | OEP_PURE_SAME);
-    // printf ("comparing!\n");
-    // debug_tree (a->get_tree ());
-    // debug_tree (b->get_tree ());
-    // printf ("ok = %s\n", ok ? "true" : "false");
-  }
-
   tree wchar_type ()
   {
     tree wchar = make_unsigned_type (32);
@@ -1672,6 +1633,9 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
   /* Construct a new tree and build an expression from it. */
   auto new_tree = fold_build2_loc (location.gcc_location (), tree_code,
 				   tree_type, left_tree, right_tree);
+  TREE_CONSTANT (new_tree)
+    = TREE_CONSTANT (left_tree) && TREE_CONSTANT (right_tree);
+
   if (floating_point && extended_type != NULL_TREE)
     new_tree = convert (original_type, new_tree);
   return new_tree;

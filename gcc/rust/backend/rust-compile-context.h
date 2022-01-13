@@ -27,7 +27,6 @@
 #include "rust-compile-tyty.h"
 #include "rust-ast-full.h"
 #include "rust-hir-full.h"
-#include "rust-hir-const-fold-ctx.h"
 #include "rust-mangle.h"
 
 namespace Rust {
@@ -45,8 +44,7 @@ public:
   Context (::Backend *backend)
     : backend (backend), resolver (Resolver::Resolver::get ()),
       tyctx (Resolver::TypeCheckContext::get ()),
-      mappings (Analysis::Mappings::get ()),
-      const_ctx (ConstFold::Context::get ()), mangler (Mangler ())
+      mappings (Analysis::Mappings::get ()), mangler (Mangler ())
   {
     // insert the builtins
     auto builtins = resolver->get_builtin_types ();
@@ -110,7 +108,6 @@ public:
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
   Analysis::Mappings *get_mappings () { return mappings; }
-  ConstFold::Context *get_const_ctx () { return const_ctx; }
 
   void push_block (tree scope)
   {
@@ -315,7 +312,6 @@ private:
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
-  ConstFold::Context *const_ctx;
   std::set<HirId> builtin_range;
   Mangler mangler;
 
