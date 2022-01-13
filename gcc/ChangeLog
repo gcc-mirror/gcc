@@ -1,3 +1,91 @@
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	PR target/103861
+	* config/i386/i386-expand.c (ix86_emit_vec_binop): New static function.
+	(ix86_expand_sse_movcc): Use ix86_emit_vec_binop instead of gen_rtx_X
+	when constructing vector logic RTXes.
+	(expand_vec_perm_pshufb2): Ditto.
+	* config/i386/mmx.md (negv2qi): Disparage GPR alternative a bit.
+	(<plusminus:insn>v2qi3): Ditto.
+	(vcond<mode><mode>): Re-enable for TARGET_SSE2.
+	(vcondu<mode><mode>): Ditto.
+	(vcond_mask_<mode><mode>): Ditto.
+	(one_cmpl<VI_32:mode>2): Remove expander.
+	(one_cmpl<VI_16_32:mode>2): Rename from one_cmplv2qi.
+	Use VI_16_32 mode iterator.
+	(one_cmpl<VI_16_32:mode>2 splitters): Use VI_16_32 mode iterator.
+	Use lowpart_subreg instead of gen_lowpart to create subreg.
+	(*andnot<VI_16_32:mode>3): Merge from "*andnot<VI_32:mode>" and
+	"*andnotv2qi3" insn patterns using VI_16_32 mode iterator.
+	Disparage GPR alternative a bit.  Add CC clobber.
+	(*andnot<VI_16_32:mode>3 splitters): Use VI_16_32 mode iterator.
+	Use lowpart_subreg instead of gen_lowpart to create subreg.
+	(*<any_logic:code><VI_16_32:mode>3): Merge from
+	"*<any_logic:code><VI_32:mode>" and "*<any_logic:code>v2qi3" insn patterns
+	using VI_16_32 mode iterator.  Disparage GPR alternative a bit.
+	Add CC clobber.
+	(*<any_logic:code><VI_16_32:mode>3 splitters):Use VI_16_32 mode
+	iterator.  Use lowpart_subreg instead of gen_lowpart to create subreg.
+
+2022-01-12  Clément Chigot  <clement.chigot@atos.net>
+
+	* configure.ac: Check sizeof ino_t and dev_t.
+	(HOST_STAT_FOR_64BIT_INODES): New AC_DEFINE to provide stat
+	syscall being able to handle 64bit inodes.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* incpath.c (HOST_STAT_FOR_64BIT_INODES): New define.
+	(remove_duplicates): Use it.
+
+2022-01-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103551
+	* tree-vrp.c (execute_ranger_vrp): Always set EDGE_EXECUTABLE.
+
+2022-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103990
+	* tree-pass.h (tail_merge_optimize): Drop unused argument.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-pre.c (pass_pre::execute): Retain TODO_cleanup_cfg
+	and adjust call to tail_merge_optimize.
+
+2022-01-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect-analyze-loop): Handle scenario where target
+	does not add autovectorize_vector_modes.
+
+2022-01-12  Martin Liska  <mliska@suse.cz>
+
+	* config/aarch64/aarch64.c (aarch64_parse_boolean_options): Use
+	%qs where possible.
+	(aarch64_parse_sve_width_string): Likewise.
+	(aarch64_override_options_internal): Likewise.
+	(aarch64_print_hint_for_extensions): Likewise.
+	(aarch64_validate_sls_mitigation): Likewise.
+	(aarch64_handle_attr_arch): Likewise.
+	(aarch64_handle_attr_cpu): Likewise.
+	(aarch64_handle_attr_tune): Likewise.
+	(aarch64_handle_attr_isa_flags): Likewise.
+
+2022-01-12  Martin Liska  <mliska@suse.cz>
+
+	* config.gcc: Include elfos.h before ${tm_file}.
+
+2022-01-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c: Quote identifiers in parameters to error
+	and internal_error, and remove extraneous spaces with punctuation.
+	* config/cris/cris.h (CRIS_ASSERT): When passing on stringified
+	expression to internal_error, pass it as a parameter instead of
+	appending it to the format part.
+
+2022-01-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_postdbr_cmpelim): Parenthesize
+	parameter to as_a.
+
 2022-01-11  qing zhao  <qing.zhao@oracle.com>
 
 	* gimplify.c (gimple_add_init_for_auto_var): Delete the 3rd argument.

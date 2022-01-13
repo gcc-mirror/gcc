@@ -1,3 +1,26 @@
+2022-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103940
+	* engine.cc (impl_sm_context::impl_sm_context): Add
+	"unknown_side_effects" param and use it to initialize
+	new m_unknown_side_effects field.
+	(impl_sm_context::unknown_side_effects_p): New.
+	(impl_sm_context::m_unknown_side_effects): New.
+	(exploded_node::on_stmt): Pass unknown_side_effects to sm_ctxt
+	ctor.
+	* sm-taint.cc: Include "stringpool.h" and "attribs.h".
+	(tainted_size::tainted_size): Drop "dir" param.
+	(tainted_size::get_kind): Drop "FINAL".
+	(tainted_size::emit): Likewise.
+	(tainted_size::m_dir): Drop unused field.
+	(class tainted_access_attrib_size): New subclass.
+	(taint_state_machine::on_stmt): Call check_for_tainted_size_arg on
+	external functions with unknown side effects.
+	(taint_state_machine::check_for_tainted_size_arg): New.
+	(region_model::check_region_for_taint): Drop "dir" param from
+	tainted_size ctor.
+	* sm.h (sm_context::unknown_side_effects_p): New.
+
 2022-01-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102692

@@ -1,3 +1,10 @@
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/103480
+	* tree.c (move): If expr is xvalue_p, just return expr without
+	build_static_cast.
+
 2022-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101597

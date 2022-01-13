@@ -1,3 +1,82 @@
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103941
+	* gcc.target/i386/pr103861-3.c (dg-options): Add -fno-vect-cost-model.
+
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103935
+	* g++.dg/vect/slp-pr98855.cc: Compile only for x86 targets.
+
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	PR target/103861
+	* g++.target/i386/pr100637-1b.C (dg-options):
+	Use -msse2 instead of -msse4.1.
+	* g++.target/i386/pr100637-1w.C (dg-options): Ditto.
+	* g++.target/i386/pr103861-1.C (dg-options): Ditto.
+	* gcc.target/i386/pr100637-4b.c (dg-options): Ditto.
+	* gcc.target/i386/pr103861-4.c (dg-options): Ditto.
+	* gcc.target/i386/pr100637-1b.c: Remove scan-assembler
+	directives for logic instructions.
+	* gcc.target/i386/pr100637-1w.c: Ditto.
+	* gcc.target/i386/warn-vect-op-2.c:
+	Update dg-warning for vector logic operation.
+
+2022-01-12  Michael Meissner  <meissner@the-meissners.org>
+
+	PR testsuite/102935
+	* gcc.target/powerpc/pr101384-1.c: Update insn regexp for power9
+	and power10.
+
+2022-01-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83541
+	* g++.dg/pr83541.C: New.
+
+2022-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103940
+	* gcc.dg/analyzer/taint-size-access-attr-1.c: New test.
+
+2022-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-exchange-1.c: New test.
+	* gcc.target/nvptx/atomic-exchange-2.c: New test.
+	* gcc.target/nvptx/atomic-exchange-3.c: New test.
+	* gcc.target/nvptx/atomic-exchange-4.c: New test.
+
+2022-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic_fetch-1.c: Rewrite.
+	* gcc.target/nvptx/atomic_fetch-2.c: Rewrite.
+
+2022-01-12  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: Fix comment.
+
+2022-01-12  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: Adjust flags.
+
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/103480
+	* g++.dg/warn/Wuseless-cast2.C: New test.
+
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101530
+	* c-c++-common/builtin-shufflevector-3.c: Add -Wno-psabi to
+	dg-options.
+
+2022-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76174
+	* gcc.dg/tree-ssa/pr76174.c: New testcase.
+
 2022-01-11  qing zhao  <qing.zhao@oracle.com>
 
 	* c-c++-common/auto-init-1.c: Adjust testcase to reflect the 3rd

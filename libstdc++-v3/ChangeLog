@@ -1,3 +1,19 @@
+2022-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/to_chars/103955.cc: Add explicit dg-do
+	directive.
+
+2022-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103955
+	* src/c++17/floating_to_chars.cc (__floating_to_chars_hex):
+	Track the excess precision separately from the effective
+	precision.  Avoid overflow in bounds check by splitting it into
+	two checks.
+	(__floating_to_chars_precision): Avoid overflow in bounds checks
+	similarly.
+	* testsuite/20_util/to_chars/103955.cc: New test.
+
 2022-01-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103726

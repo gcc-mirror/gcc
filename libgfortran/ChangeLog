@@ -1,3 +1,8 @@
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (POWER_IEEE128): Use __GLIBC_PREREQ in a separate
+	#if directive inside of #if ... && defined __GLIBC_PREREQ.
+
 2022-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/transfer.c (unformatted_read, unformatted_write): When
