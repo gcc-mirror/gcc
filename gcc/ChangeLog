@@ -1,3 +1,18 @@
+2022-01-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98348
+	* config/i386/sse.md (*<avx512>_ucmp<mode>3_1): Change from
+	define_split to define_insn_and_split.
+	(*avx2_eq<mode>3): Removed.
+	(<avx512>_eq<mode>3<mask_scalar_merge_name>): Adjust pattern
+	(<avx512>_eq<mode>3<mask_scalar_merge_name>_1): Rename to ..
+	(*<avx512>_eq<mode>3<mask_scalar_merge_name>_1): .. this, and
+	adjust pattern.
+	(*avx2_gt<mode>3): Removed.
+	(<avx512>_gt<mode>3<mask_scalar_merge_name>): Change from
+	define_insn to define_expand, and adjust pattern.
+	(UNSPEC_MASKED_EQ, UNSPEC_MASKED_GT): Removed.
+
 2022-01-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/103603

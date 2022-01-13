@@ -1,3 +1,30 @@
+2022-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103831
+	* g++.dg/cpp2a/concepts-class3.C: New test.
+	* g++.dg/template/non-dependent18.C: New test.
+
+2022-01-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98348
+	* gcc.target/i386/avx512bw-vpcmpeqb-1.c: Adjust testcase.
+	* gcc.target/i386/avx512bw-vpcmpeqw-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtb-1.c: Ditto.
+	* gcc.target/i386/avx512bw-vpcmpgtw-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512f-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtd-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-1.c: Ditto.
+	* gcc.target/i386/bitwise_mask_op-2.c: Ditto.
+
 2022-01-10  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
