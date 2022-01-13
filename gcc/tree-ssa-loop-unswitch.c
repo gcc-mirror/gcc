@@ -79,6 +79,30 @@ along with GCC; see the file COPYING3.  If not see
    tree-ssa-loop-im.c ensures that all the suitable conditions are in this
    shape.  */
 
+/* Loop unswitching algorithm for innermost loops works in the following steps:
+
+   1) Number of instructions is estimated for each BB that belongs to a loop.
+   2) Unswitching candidates are found for gcond and gswitch statements
+      (note that unswitching precicate for a gswitch actually corresponds
+       to a non-default edge - can contain multiple cases).
+   3) The so called unswitinch predicates are stored in a cache where gimple_uid
+      is an index to the cache.
+   4) We consider one by one the unswitching candidate and calculate BBs that
+      will be reachable in the unswitch version.
+   5) A selected predicate is chosen and we simplify CFG (dead edges) in both
+      versions of the loop.  We utilize both Ranger for condition simplification
+      and also symbol equivalence.  The folded if conditions are replaced with
+      true/false values, while for gswitch we mark the corresponding edge
+      with a pass-defined unreachable flag.
+   6) Every time we unswitch a loop, we save unswitch_predicate to a vector
+      together with information if true or false edge was taken.  Doing that
+      we have a so called PREDICATE_PATH that is utilized for simplification
+      of the cloned loop.
+   7) The process is repeated until we reach a growth threshold or all
+      unswitching opportunities are taken.
+
+*/
+
 /* A tuple that holds GIMPLE condition and value range for an unswitching
    predicate.  */
 
