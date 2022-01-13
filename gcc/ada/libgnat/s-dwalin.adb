@@ -1544,7 +1544,7 @@ package body System.Dwarf_Lines is
                exit when Ar_Start = Null_Address and Ar_Len = 0;
 
                Len   := uint32 (Ar_Len);
-               Start := uint32 (Ar_Start - C.Low);
+               Start := uint32 (Address'(Ar_Start - C.Low));
 
                --  Search START in the array
 
@@ -1764,7 +1764,8 @@ package body System.Dwarf_Lines is
 
       if C.Cache /= null then
          declare
-            Addr_Off         : constant uint32 := uint32 (Addr - C.Low);
+            Addr_Off : constant uint32 := uint32 (Address'(Addr - C.Low));
+
             First, Last, Mid : Natural;
          begin
             First := C.Cache'First;

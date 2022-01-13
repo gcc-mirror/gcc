@@ -2215,13 +2215,14 @@ package body Sem_Type is
                   return It2;
                end if;
 
-            --  An immediately visible operator hides a use-visible user-
-            --  defined operation. This disambiguation cannot take place
-            --  earlier because the visibility of the predefined operator
-            --  can only be established when operand types are known.
+            --  RM 8.4(10): an immediately visible operator hides a use-visible
+            --  user-defined operation that is a homograph. This disambiguation
+            --  cannot take place earlier because visibility of the predefined
+            --  operator can only be established when operand types are known.
 
             elsif Ekind (User_Subp) = E_Function
               and then Ekind (Predef_Subp) = E_Operator
+              and then Operator_Matches_Spec (Predef_Subp, User_Subp)
               and then Nkind (N) in N_Op
               and then not Is_Overloaded (Right_Opnd (N))
               and then
