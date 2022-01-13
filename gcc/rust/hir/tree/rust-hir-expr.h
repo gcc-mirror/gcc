@@ -816,6 +816,12 @@ protected:
 class ArrayElems
 {
 public:
+  enum ArrayExprType
+  {
+    VALUES,
+    COPIED,
+  };
+
   virtual ~ArrayElems () {}
 
   // Unique pointer custom clone ArrayElems function
@@ -827,6 +833,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+
+  virtual ArrayExprType get_array_expr_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -875,6 +883,11 @@ public:
 
   std::vector<std::unique_ptr<Expr> > &get_values () { return values; }
 
+  ArrayElems::ArrayExprType get_array_expr_type () const override final
+  {
+    return ArrayElems::ArrayExprType::VALUES;
+  }
+
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
   {
@@ -922,6 +935,11 @@ public:
   Expr *get_elem_to_copy () { return elem_to_copy.get (); }
 
   Expr *get_num_copies_expr () { return num_copies.get (); }
+
+  ArrayElems::ArrayExprType get_array_expr_type () const override final
+  {
+    return ArrayElems::ArrayExprType::COPIED;
+  }
 
 protected:
   ArrayElemsCopied *clone_array_elems_impl () const override
