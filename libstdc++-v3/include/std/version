@@ -51,7 +51,9 @@
 
 #if _GLIBCXX_HOSTED
 # define __cpp_lib_allocator_traits_is_always_equal 201411
+#if __cplusplus < 201703L // N.B. updated value in C++20
 # define __cpp_lib_shared_ptr_arrays 201611L
+#endif
 #endif
 
 #if !defined(__STRICT_ANSI__)
@@ -167,7 +169,7 @@
 # define __cpp_lib_scoped_lock 201703
 # define __cpp_lib_shared_mutex 201505L
 #endif
-#define __cpp_lib_shared_ptr_weak_type 201606
+#define __cpp_lib_shared_ptr_weak_type 201606L
 #define __cpp_lib_string_view 201803L
 #if _GLIBCXX_HAVE_USELOCALE
 # define __cpp_lib_to_chars 201611L
@@ -275,7 +277,9 @@
 #if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 # define __cpp_lib_semaphore 201907L
 #endif
+#define __cpp_lib_shared_ptr_arrays 201707L
 #define __cpp_lib_shift 201806L
+#define __cpp_lib_smart_ptr_for_overwrite 202002L
 #if __cpp_lib_concepts
 # define __cpp_lib_span 202002L
 #endif
