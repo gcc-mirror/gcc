@@ -23,7 +23,7 @@ endif
 if LIBGFOR_USE_SYMVER_SUN
 version_arg = -Wl,-M,gfortran.ver-sun
 version_dep = gfortran.ver-sun gfortran.ver
-gfortran.map-sun : gfortran.ver \
+gfortran.ver-sun : gfortran.ver \
 		$(top_srcdir)/../contrib/make_sunver.pl \
 		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \

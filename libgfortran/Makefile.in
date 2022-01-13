@@ -719,7 +719,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -7616,7 +7615,7 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 @LIBGFOR_USE_SYMVER_TRUE@gfortran.ver: $(srcdir)/gfortran.map kinds.inc
 @LIBGFOR_USE_SYMVER_TRUE@	$(EGREP) -v '#(#| |$$)' $< | \
 @LIBGFOR_USE_SYMVER_TRUE@	  $(PREPROCESS) -P -include config.h -include kinds.inc - > $@ || (rm -f $@ ; exit 1)
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.map-sun : gfortran.ver \
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@gfortran.ver-sun : gfortran.ver \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
