@@ -1633,12 +1633,20 @@
   "TARGET_MMX_WITH_SSE"
   "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
 
+(define_expand "neg<mode>2"
+  [(set (match_operand:VI_32 0 "register_operand")
+	(minus:VI_32
+	  (match_dup 2)
+	  (match_operand:VI_32 1 "register_operand")))]
+  "TARGET_SSE2"
+  "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
+
 (define_insn "negv2qi2"
   [(set (match_operand:V2QI 0 "register_operand" "=?Q,&Yw")
         (neg:V2QI
 	  (match_operand:V2QI 1 "register_operand" "0,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  ""
+  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
   "#"
   [(set_attr "isa" "*,sse2")
    (set_attr "type" "multi")
@@ -1664,10 +1672,10 @@
 				  (const_int 8)) 0)) 0))
       (clobber (reg:CC FLAGS_REG))])]
 {
-  operands[3] = gen_lowpart (HImode, operands[1]);
-  operands[2] = gen_lowpart (HImode, operands[0]);
-  operands[1] = gen_lowpart (QImode, operands[1]);
-  operands[0] = gen_lowpart (QImode, operands[0]);
+  operands[3] = lowpart_subreg (HImode, operands[1], V2QImode);
+  operands[2] = lowpart_subreg (HImode, operands[0], V2QImode);
+  operands[1] = lowpart_subreg (QImode, operands[1], V2QImode);
+  operands[0] = lowpart_subreg (QImode, operands[0], V2QImode);
 })
 
 (define_split
@@ -1678,11 +1686,11 @@
   "reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 0)
-	(minus:V4QI (match_dup 0) (match_dup 1)))]
+	(minus:V16QI (match_dup 0) (match_dup 1)))]
 {
-  operands[2] = CONST0_RTX (V4QImode);
-  operands[1] = gen_lowpart (V4QImode, operands[1]);
-  operands[0] = gen_lowpart (V4QImode, operands[0]);
+  operands[2] = CONST0_RTX (V16QImode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], V2QImode);
+  operands[0] = lowpart_subreg (V16QImode, operands[0], V2QImode);
 })
 
 (define_expand "mmx_<insn><mode>3"
@@ -1718,14 +1726,6 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "neg<mode>2"
-  [(set (match_operand:VI_32 0 "register_operand")
-	(minus:VI_32
-	  (match_dup 2)
-	  (match_operand:VI_32 1 "register_operand")))]
-  "TARGET_SSE2"
-  "operands[2] = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));")
-
 (define_insn "<insn><mode>3"
   [(set (match_operand:VI_32 0 "register_operand" "=x,Yw")
         (plusminus:VI_32
@@ -1745,7 +1745,7 @@
 	  (match_operand:V2QI 1 "register_operand" "<comm>0,0,Yw")
 	  (match_operand:V2QI 2 "register_operand" "Q,x,Yw")))
    (clobber (reg:CC FLAGS_REG))]
-  ""
+  "!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun)"
   "#"
   [(set_attr "isa" "*,sse2_noavx,avx")
    (set_attr "type" "multi,sseadd,sseadd")
@@ -1776,12 +1776,12 @@
 				  (const_int 8)) 0)) 0))
       (clobber (reg:CC FLAGS_REG))])]
 {
-  operands[5] = gen_lowpart (HImode, operands[2]);
-  operands[4] = gen_lowpart (HImode, operands[1]);
-  operands[3] = gen_lowpart (HImode, operands[0]);
-  operands[2] = gen_lowpart (QImode, operands[2]);
-  operands[1] = gen_lowpart (QImode, operands[1]);
-  operands[0] = gen_lowpart (QImode, operands[0]);
+  operands[5] = lowpart_subreg (HImode, operands[2], V2QImode);
+  operands[4] = lowpart_subreg (HImode, operands[1], V2QImode);
+  operands[3] = lowpart_subreg (HImode, operands[0], V2QImode);
+  operands[2] = lowpart_subreg (QImode, operands[2], V2QImode);
+  operands[1] = lowpart_subreg (QImode, operands[1], V2QImode);
+  operands[0] = lowpart_subreg (QImode, operands[0], V2QImode);
 })
 
 (define_split
@@ -1792,11 +1792,11 @@
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_SSE2 && reload_completed"
   [(set (match_dup 0)
-        (plusminus:V4QI (match_dup 1) (match_dup 2)))]
+        (plusminus:V16QI (match_dup 1) (match_dup 2)))]
 {
-  operands[2] = gen_lowpart (V4QImode, operands[2]);
-  operands[1] = gen_lowpart (V4QImode, operands[1]);
-  operands[0] = gen_lowpart (V4QImode, operands[0]);
+  operands[2] = lowpart_subreg (V16QImode, operands[2], V2QImode);
+  operands[1] = lowpart_subreg (V16QImode, operands[1], V2QImode);
+  operands[0] = lowpart_subreg (V16QImode, operands[0], V2QImode);
 })
 
 (define_expand "mmx_<insn><mode>3"
