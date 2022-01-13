@@ -2219,10 +2219,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  && gfc_intrinsic_func_interface (p, 1) == MATCH_ERROR)
 	return false;
 
-      if (p->expr_type == EXPR_FUNCTION)
+      if (p->symtree && (p->value.function.isym || p->ts.type == BT_UNKNOWN))
 	{
-	  if (p->symtree)
-	    isym = gfc_find_function (p->symtree->n.sym->name);
+	  isym = gfc_find_function (p->symtree->n.sym->name);
 	  if (isym && isym->elemental)
 	    scalarize_intrinsic_call (p, false);
 	}
