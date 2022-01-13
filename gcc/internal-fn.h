@@ -230,6 +230,10 @@ extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 						    tree, tree, int);
 extern bool internal_check_ptrs_fn_supported_p (internal_fn, tree,
 						poly_uint64, unsigned int);
+#define VECT_PARTIAL_BIAS_UNSUPPORTED 127
+
+extern signed char internal_len_load_store_bias (internal_fn ifn,
+						 machine_mode);
 
 extern void expand_addsub_overflow (location_t, tree_code, tree, tree, tree,
 				    bool, bool, bool, bool, tree *);

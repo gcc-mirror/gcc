@@ -2696,9 +2696,9 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
 static void
 expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
-  rtx mem, target, mask;
+  class expand_operand ops[4];
+  tree type, lhs, rhs, maskt, biast;
+  rtx mem, target, mask, bias;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
@@ -2723,11 +2723,20 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   if (optab == len_load_optab)
-    create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
-				 TYPE_UNSIGNED (TREE_TYPE (maskt)));
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 3);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[3], bias, QImode);
+      expand_insn (icode, 4, ops);
+    }
   else
-    create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (icode, 3, ops);
+    {
+      create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      expand_insn (icode, 3, ops);
+    }
+
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
 }
@@ -2741,9 +2750,9 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
-  rtx mem, reg, mask;
+  class expand_operand ops[4];
+  tree type, lhs, rhs, maskt, biast;
+  rtx mem, reg, mask, bias;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
@@ -2766,11 +2775,19 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_fixed_operand (&ops[0], mem);
   create_input_operand (&ops[1], reg, TYPE_MODE (type));
   if (optab == len_store_optab)
-    create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
-				 TYPE_UNSIGNED (TREE_TYPE (maskt)));
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 4);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[3], bias, QImode);
+      expand_insn (icode, 4, ops);
+    }
   else
-    create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (icode, 3, ops);
+    {
+      create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      expand_insn (icode, 3, ops);
+    }
 }
 
 #define expand_mask_store_optab_fn expand_partial_store_optab_fn
@@ -4321,6 +4338,30 @@ internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
   rtx length_rtx = immed_wide_int_const (length, mode);
   return (insn_operand_matches (icode, 3, length_rtx)
 	  && insn_operand_matches (icode, 4, GEN_INT (align)));
+}
+
+/* Return the supported bias for IFN which is either IFN_LEN_LOAD
+   or IFN_LEN_STORE.  For now we only support the biases of 0 and -1
+   (in case 0 is not an allowable length for len_load or len_store).
+   If none of the biases match what the backend provides, return
+   VECT_PARTIAL_BIAS_UNSUPPORTED.  */
+
+signed char
+internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
+{
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+
+  if (icode != CODE_FOR_nothing)
+    {
+      /* For now we only support biases of 0 or -1.  Try both of them.  */
+      if (insn_operand_matches (icode, 3, GEN_INT (0)))
+	return 0;
+      if (insn_operand_matches (icode, 3, GEN_INT (-1)))
+	return -1;
+    }
+
+  return VECT_PARTIAL_BIAS_UNSUPPORTED;
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */
