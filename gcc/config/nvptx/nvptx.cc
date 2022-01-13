@@ -76,6 +76,7 @@
 #include "intl.h"
 #include "opts.h"
 #include "tree-pretty-print.h"
+#include "rtl-iter.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2785,6 +2786,27 @@ static void
 nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 {
   nvptx_print_address_operand (file, addr, mode);
+}
+
+static nvptx_data_area
+nvptx_mem_data_area (const_rtx x)
+{
+  gcc_assert (GET_CODE (x) == MEM);
+
+  const_rtx addr = XEXP (x, 0);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, addr, ALL)
+    if (SYMBOL_REF_P (*iter))
+      return SYMBOL_DATA_AREA (*iter);
+
+  return DATA_AREA_GENERIC;
+}
+
+bool
+nvptx_mem_maybe_shared_p (const_rtx x)
+{
+  nvptx_data_area area = nvptx_mem_data_area (x);
+  return area == DATA_AREA_SHARED || area == DATA_AREA_GENERIC;
 }
 
 /* Print an operand, X, to FILE, with an optional modifier in CODE.

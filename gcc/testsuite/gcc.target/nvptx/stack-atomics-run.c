@@ -39,6 +39,10 @@ main (void)
   if (b != 1)
     __builtin_abort ();
 
-  
+  a = 1;
+  __atomic_store_n (&a, 0, MEMMODEL_RELAXED);
+  if (a != 0)
+    __builtin_abort ();
+
   return 0;
 }
