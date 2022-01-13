@@ -1,3 +1,11 @@
+2022-01-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97953
+	* gcc.dg/pr97953.c: New testcase.
+
 2021-12-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
