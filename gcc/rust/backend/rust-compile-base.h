@@ -37,8 +37,7 @@ protected:
 
   Context *get_context () { return ctx; }
 
-  void compile_function_body (tree fndecl,
-			      std::unique_ptr<HIR::BlockExpr> &function_body,
+  void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
 			      bool has_return_type);
 
   bool compile_locals_for_block (Resolver::Rib &rib, tree fndecl,

@@ -207,11 +207,11 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 // Shared methods in compilation
 
 void
-HIRCompileBase::compile_function_body (
-  tree fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
-  bool has_return_type)
+HIRCompileBase::compile_function_body (tree fndecl,
+				       HIR::BlockExpr &function_body,
+				       bool has_return_type)
 {
-  for (auto &s : function_body->get_statements ())
+  for (auto &s : function_body.get_statements ())
     {
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
@@ -222,12 +222,12 @@ HIRCompileBase::compile_function_body (
 	}
     }
 
-  if (function_body->has_expr ())
+  if (function_body.has_expr ())
     {
       // the previous passes will ensure this is a valid return
       // or a valid trailing expression
       tree compiled_expr
-	= CompileExpr::Compile (function_body->expr.get (), ctx);
+	= CompileExpr::Compile (function_body.expr.get (), ctx);
 
       if (compiled_expr != nullptr)
 	{
@@ -238,7 +238,7 @@ HIRCompileBase::compile_function_body (
 
 	      auto ret = ctx->get_backend ()->return_statement (
 		fndecl, retstmts,
-		function_body->get_final_expr ()->get_locus ());
+		function_body.get_final_expr ()->get_locus ());
 	      ctx->add_statement (ret);
 	    }
 	  else

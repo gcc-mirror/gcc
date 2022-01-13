@@ -288,7 +288,7 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    compile_function_body (fndecl, function.get_definition (),
+    compile_function_body (fndecl, *function.get_definition ().get (),
 			   function.has_function_return_type ());
 
     ctx->pop_block ();
@@ -548,7 +548,7 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    compile_function_body (fndecl, func.get_block_expr (),
+    compile_function_body (fndecl, *func.get_block_expr ().get (),
 			   function.has_return_type ());
 
     ctx->pop_block ();
