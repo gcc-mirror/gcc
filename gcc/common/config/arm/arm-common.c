@@ -296,7 +296,7 @@ arm_target_mode (int argc, const char **argv)
 	cpu = argv[1];
       else
 	fatal_error (input_location, "unrecognized option passed to %%:"
-		     "%<target_mode_check%%>>");
+		     "%<target_mode_check%>");
       argc -= 2;
       argv += 2;
     }
