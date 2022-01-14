@@ -16627,7 +16627,7 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
   /* If this is a pointer comparison, ignore for now even
      valid equalities where one pointer is the offset zero
      of one object and the other to one past end of another one.  */
-  else if (!INTEGRAL_TYPE_P (type))
+  else if (!folding_initializer && !INTEGRAL_TYPE_P (type))
     ;
   /* Assume that automatic variables can't be adjacent to global
      variables.  */
