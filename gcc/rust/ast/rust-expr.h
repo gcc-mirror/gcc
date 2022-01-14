@@ -2326,7 +2326,8 @@ class BlockExpr : public ExprWithBlock
   std::vector<Attribute> inner_attrs;
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
-  Location locus;
+  Location start_locus;
+  Location end_locus;
   bool marked_for_strip = false;
 
 public:
@@ -2341,18 +2342,19 @@ public:
   BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr,
 	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, Location locus)
+	     std::vector<Attribute> outer_attribs, Location start_locus,
+	     Location end_locus)
     : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      locus (locus)
+      start_locus (start_locus), end_locus (end_locus)
   {}
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), outer_attrs (other.outer_attrs),
-      inner_attrs (other.inner_attrs), locus (other.locus),
-      marked_for_strip (other.marked_for_strip)
+      inner_attrs (other.inner_attrs), start_locus (other.start_locus),
+      end_locus (other.end_locus), marked_for_strip (other.marked_for_strip)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2368,7 +2370,8 @@ public:
   {
     ExprWithBlock::operator= (other);
     inner_attrs = other.inner_attrs;
-    locus = other.locus;
+    start_locus = other.start_locus;
+    end_locus = other.end_locus;
     marked_for_strip = other.marked_for_strip;
     outer_attrs = other.outer_attrs;
 
@@ -2395,7 +2398,10 @@ public:
     return std::unique_ptr<BlockExpr> (clone_block_expr_impl ());
   }
 
-  Location get_locus () const override final { return locus; }
+  Location get_locus () const override final { return start_locus; }
+
+  Location get_start_locus () const { return start_locus; }
+  Location get_end_locus () const { return end_locus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

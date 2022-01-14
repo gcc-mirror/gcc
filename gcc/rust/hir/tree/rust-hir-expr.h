@@ -2069,7 +2069,8 @@ public:
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr;
   bool tail_reachable;
-  Location locus;
+  Location start_locus;
+  Location end_locus;
 
   std::string as_string () const override;
 
@@ -2085,17 +2086,19 @@ public:
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
-	     Location locus)
+	     Location start_locus, Location end_locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
-      tail_reachable (tail_reachable), locus (locus)
+      tail_reachable (tail_reachable), start_locus (start_locus),
+      end_locus (end_locus)
   {}
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other)
     : ExprWithBlock (other), /*statements(other.statements),*/
-      inner_attrs (other.inner_attrs), locus (other.locus)
+      inner_attrs (other.inner_attrs), start_locus (other.start_locus),
+      end_locus (other.end_locus)
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
@@ -2113,7 +2116,8 @@ public:
     // statements = other.statements;
     expr = other.expr->clone_expr ();
     inner_attrs = other.inner_attrs;
-    locus = other.locus;
+    start_locus = other.end_locus;
+    end_locus = other.end_locus;
     // outer_attrs = other.outer_attrs;
 
     statements.reserve (other.statements.size ());
@@ -2133,19 +2137,15 @@ public:
     return std::unique_ptr<BlockExpr> (clone_block_expr_impl ());
   }
 
-  Location get_locus () const override final { return locus; }
+  Location get_locus () const override final { return start_locus; }
+
+  Location get_start_locus () const { return start_locus; }
+
+  Location get_end_locus () const { return end_locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   bool is_final_stmt (Stmt *stmt) { return statements.back ().get () == stmt; }
-
-  Location get_closing_locus ()
-  {
-    if (statements.size () == 0)
-      return get_locus ();
-
-    return statements[statements.size () - 1]->get_locus ();
-  }
 
   std::unique_ptr<Expr> &get_final_expr () { return expr; }
 
