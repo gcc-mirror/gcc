@@ -3051,7 +3051,8 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   vector_modes[0] = autodetected_vector_mode;
   mode_i = 0;
 
-  bool supports_partial_vectors = partial_vectors_supported_p ();
+  bool supports_partial_vectors =
+    partial_vectors_supported_p () && param_vect_partial_vector_usage != 0;
   poly_uint64 first_vinfo_vf = LOOP_VINFO_VECT_FACTOR (first_loop_vinfo);
 
   while (1)
