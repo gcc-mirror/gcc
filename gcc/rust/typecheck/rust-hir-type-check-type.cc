@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-hir-type-check-expr.h"
 
 namespace Rust {
 namespace Resolver {
@@ -573,6 +574,28 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 
   translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
 					    std::move (specified_bounds));
+}
+
+void
+TypeCheckType::visit (HIR::ArrayType &type)
+{
+  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr (), false);
+  if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  TyTy::BaseType *expected_ty = nullptr;
+  bool ok = context->lookup_builtin ("usize", &expected_ty);
+  rust_assert (ok);
+  context->insert_type (type.get_size_expr ()->get_mappings (), expected_ty);
+
+  auto unified = expected_ty->unify (capacity_type);
+  if (unified->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
+  translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
+				    *type.get_size_expr (),
+				    TyTy::TyVar (base->get_ref ()));
 }
 
 } // namespace Resolver

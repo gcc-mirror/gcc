@@ -851,13 +851,6 @@ public:
 
   void visit (const ArrayType &type) override
   {
-    // need to check the base types and capacity
-    if (type.get_capacity () != base->get_capacity ())
-      {
-	BaseCmp::visit (type);
-	return;
-      }
-
     // check base type
     const BaseType *base_element = base->get_element_type ();
     const BaseType *other_element = type.get_element_type ();

@@ -64,9 +64,6 @@ public:
 
     infered = type->unify (expr_type);
     context->insert_type (constant.get_mappings (), infered);
-
-    // notify the constant folder of this
-    ConstFold::ConstFoldItem::fold (constant);
   }
 
   void visit (HIR::LetStmt &stmt) override
@@ -98,7 +95,7 @@ public:
 	if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 	  return;
 
-	context->insert_type (stmt.get_mappings (), unified_ty);
+	context->insert_type (stmt.get_mappings (), specified_ty);
       }
     else
       {

@@ -27,6 +27,7 @@
 #include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
 #include "rust-compile-extern.h"
+#include "rust-constexpr.h"
 
 namespace Rust {
 namespace Compile {
@@ -90,24 +91,96 @@ public:
 
   void visit (HIR::ConstantItem &constant) override
   {
+    // resolve the type
     TyTy::BaseType *resolved_type = nullptr;
     bool ok
       = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
 					&resolved_type);
     rust_assert (ok);
 
-    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
-
+    // canonical path
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
       constant.get_mappings ().get_crate_num (),
       constant.get_mappings ().get_nodeid (), &canonical_path);
     rust_assert (ok);
-
     std::string ident = canonical_path->get ();
+
+    // types
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree const_type = build_qualified_type (type, TYPE_QUAL_CONST);
+
+    HIR::Expr *const_value_expr = constant.get_expr ();
+    bool is_block_expr
+      = const_value_expr->get_expression_type () == HIR::Expr::ExprType::Block;
+
+    // compile the expression
+    tree folded_expr = error_mark_node;
+    if (!is_block_expr)
+      {
+	tree value = CompileExpr::Compile (constant.get_expr (), ctx);
+	folded_expr = ConstCtx::fold (value);
+      }
+    else
+      {
+	// in order to compile a block expr we want to reuse as much existing
+	// machineary that we already have. This means the best approach is to
+	// make a _fake_ function with a block so it can hold onto temps then
+	// use our constexpr code to fold it completely or error_mark_node
+	Backend::typed_identifier receiver;
+	tree compiled_fn_type = ctx->get_backend ()->function_type (
+	  receiver, {},
+	  {Backend::typed_identifier ("_", const_type, constant.get_locus ())},
+	  NULL, constant.get_locus ());
+
+	tree fndecl
+	  = ctx->get_backend ()->function (compiled_fn_type, ident, "",
+					   Backend::function_read_only,
+					   constant.get_locus ());
+
+	tree enclosing_scope = NULL_TREE;
+	HIR::BlockExpr *function_body
+	  = static_cast<HIR::BlockExpr *> (constant.get_expr ());
+	Location start_location = function_body->get_locus ();
+	Location end_location = function_body->get_closing_locus ();
+
+	tree code_block
+	  = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+					start_location, end_location);
+	ctx->push_block (code_block);
+
+	bool address_is_taken = false;
+	tree ret_var_stmt = NULL_TREE;
+	Bvariable *return_address = ctx->get_backend ()->temporary_variable (
+	  fndecl, code_block, const_type, NULL, address_is_taken,
+	  constant.get_locus (), &ret_var_stmt);
+
+	ctx->add_statement (ret_var_stmt);
+	ctx->push_fn (fndecl, return_address);
+
+	compile_function_body (fndecl, *function_body, true);
+
+	ctx->pop_block ();
+
+	auto body = ctx->get_backend ()->block_statement (code_block);
+	if (!ctx->get_backend ()->function_set_body (fndecl, body))
+	  {
+	    rust_error_at (constant.get_locus (),
+			   "failed to set body to constant function");
+	    return;
+	  }
+
+	ctx->pop_fn ();
+
+	// lets fold it into a call expr
+	tree call = build_call_array_loc (constant.get_locus ().gcc_location (),
+					  const_type, fndecl, 0, NULL);
+	folded_expr = ConstCtx::fold (call);
+      }
+
     tree const_expr
-      = ctx->get_backend ()->named_constant_expression (type, ident, value,
+      = ctx->get_backend ()->named_constant_expression (const_type, ident,
+							folded_expr,
 							constant.get_locus ());
 
     ctx->push_const (const_expr);
@@ -182,6 +255,10 @@ public:
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
+
+    // is it a const function?
+    if (function.get_qualifiers ().is_const ())
+      flags |= Backend::function_read_only;
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -288,7 +365,7 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    compile_function_body (fndecl, function.get_definition (),
+    compile_function_body (fndecl, *function.get_definition ().get (),
 			   function.has_function_return_type ());
 
     ctx->pop_block ();

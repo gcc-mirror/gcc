@@ -290,7 +290,9 @@ public:
       expr.get_rhs ()->get_mappings ().get_hirid (), &actual);
     rust_assert (ok);
 
-    rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+    rvalue
+      = coercion_site (rvalue, actual, expected, expr.get_lhs ()->get_locus (),
+		       expr.get_rhs ()->get_locus ());
 
     tree assignment
       = ctx->get_backend ()->assignment_statement (fn.fndecl, lvalue, rvalue,
@@ -332,56 +334,7 @@ public:
 						     expr.get_locus ());
   }
 
-  void visit (HIR::ArrayExpr &expr) override
-  {
-    TyTy::BaseType *tyty = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-					 &tyty))
-      {
-	rust_fatal_error (expr.get_locus (),
-			  "did not resolve type for this array expr");
-	return;
-      }
-
-    rust_assert (tyty->get_kind () == TyTy::TypeKind::ARRAY);
-    TyTy::ArrayType *array_tyty = static_cast<TyTy::ArrayType *> (tyty);
-    capacity_expr = array_tyty->get_capacity ();
-
-    tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
-    rust_assert (array_type != nullptr);
-
-    expr.get_internal_elements ()->accept_vis (*this);
-    std::vector<unsigned long> indexes;
-    for (size_t i = 0; i < constructor.size (); i++)
-      indexes.push_back (i);
-
-    translated
-      = ctx->get_backend ()->array_constructor_expression (array_type, indexes,
-							   constructor,
-							   expr.get_locus ());
-  }
-
-  void visit (HIR::ArrayElemsValues &elems) override
-  {
-    for (auto &elem : elems.get_values ())
-      {
-	tree translated_expr = CompileExpr::Compile (elem.get (), ctx);
-	constructor.push_back (translated_expr);
-      }
-  }
-
-  void visit (HIR::ArrayElemsCopied &elems) override
-  {
-    tree translated_expr
-      = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
-
-    size_t capacity;
-    bool ok = ctx->get_backend ()->const_size_cast (capacity_expr, &capacity);
-    rust_assert (ok);
-
-    for (size_t i = 0; i < capacity; ++i)
-      constructor.push_back (translated_expr);
-  }
+  void visit (HIR::ArrayExpr &expr) override;
 
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override;
 
@@ -605,13 +558,17 @@ public:
     std::vector<tree> arguments;
     for (size_t i = 0; i < struct_expr.get_fields ().size (); i++)
       {
-	auto &argument = struct_expr.get_fields ().at (i);
-	auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
-
 	// assignments are coercion sites so lets convert the rvalue if
 	// necessary
 	auto respective_field = variant->get_field_at_index (i);
 	auto expected = respective_field->get_field_type ();
+
+	// process arguments
+	auto &argument = struct_expr.get_fields ().at (i);
+	auto lvalue_locus
+	  = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	auto rvalue_locus = argument->get_locus ();
+	auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
 
 	TyTy::BaseType *actual = nullptr;
 	bool ok = ctx->get_tyctx ()->lookup_type (
@@ -621,8 +578,8 @@ public:
 	// compile/torture/struct_base_init_1.rs
 	if (ok)
 	  {
-	    rvalue = coercion_site (rvalue, actual, expected,
-				    argument->get_locus ());
+	    rvalue = coercion_site (rvalue, actual, expected, lvalue_locus,
+				    rvalue_locus);
 	  }
 
 	// add it to the list
@@ -998,15 +955,19 @@ protected:
 
   tree type_cast_expression (tree type_to_cast_to, tree expr, Location locus);
 
+  tree array_value_expr (Location expr_locus, const TyTy::ArrayType &array_tyty,
+			 tree array_type, HIR::ArrayElemsValues &elems);
+
+  tree array_copied_expr (Location expr_locus,
+			  const TyTy::ArrayType &array_tyty, tree array_type,
+			  HIR::ArrayElemsCopied &elems);
+
 private:
   CompileExpr (Context *ctx)
-    : HIRCompileBase (ctx), translated (error_mark_node),
-      capacity_expr (nullptr)
+    : HIRCompileBase (ctx), translated (error_mark_node)
   {}
 
   tree translated;
-  tree capacity_expr;
-  std::vector<tree> constructor;
 };
 
 } // namespace Compile

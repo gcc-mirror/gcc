@@ -806,19 +806,9 @@ public:
 	return;
       }
 
-    auto backend = rust_get_backend ();
-
-    // need to check the base types and capacity
-    if (!backend->const_values_equal (type.get_capacity (),
-				      base->get_capacity ()))
-      {
-	BaseCastRules::visit (type);
-	return;
-      }
-
-    resolved
-      = new ArrayType (type.get_ref (), type.get_ty_ref (),
-		       type.get_capacity (), TyVar (base_resolved->get_ref ()));
+    resolved = new ArrayType (type.get_ref (), type.get_ty_ref (),
+			      type.get_capacity_expr (),
+			      TyVar (base_resolved->get_ref ()));
   }
 
 private:

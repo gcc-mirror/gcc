@@ -37,15 +37,15 @@ protected:
 
   Context *get_context () { return ctx; }
 
-  void compile_function_body (tree fndecl,
-			      std::unique_ptr<HIR::BlockExpr> &function_body,
+  void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
 			      bool has_return_type);
 
   bool compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 				 std::vector<Bvariable *> &locals);
 
-  tree coercion_site (tree compiled_ref, TyTy::BaseType *actual,
-		      TyTy::BaseType *expected, Location locus);
+  tree coercion_site (tree rvalue, TyTy::BaseType *actual,
+		      TyTy::BaseType *expected, Location lvalue_locus,
+		      Location rvalue_locus);
 
   tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
 			     const TyTy::BaseType *expected,
@@ -57,6 +57,9 @@ protected:
     std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
       &receiver_bounds,
     const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus);
+
+  bool verify_array_capacities (tree ltype, tree rtype, Location ltype_locus,
+				Location rtype_locus);
 };
 
 } // namespace Compile

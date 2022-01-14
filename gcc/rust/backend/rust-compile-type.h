@@ -63,13 +63,14 @@ public:
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)
-    : ctx (ctx), trait_object_mode (trait_object_mode), translated (nullptr),
-      recursion_count (0)
+    : ctx (ctx), trait_object_mode (trait_object_mode),
+      translated (error_mark_node), recursion_count (0)
   {}
 
   Context *ctx;
   bool trait_object_mode;
   tree translated;
+
   size_t recursion_count;
 
   static const size_t kDefaultRecusionLimit = 5;

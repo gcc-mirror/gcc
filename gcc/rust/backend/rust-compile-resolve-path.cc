@@ -95,11 +95,24 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
 
       // make the ctor for the union
-      mpz_t val;
-      mpz_init_set_ui (val, variant->get_discriminant ());
-      tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
-      tree qualifier
-	= double_int_to_tree (t, mpz_get_double_int (t, val, true));
+      tree qualifier = error_mark_node;
+      if (variant->is_specified_discriminant_node ())
+	{
+	  auto discrim_node = variant->get_discriminant_node ();
+	  auto &discrim_expr = discrim_node->get_discriminant_expression ();
+
+	  tree discrim_expr_node
+	    = CompileExpr::Compile (discrim_expr.get (), ctx);
+	  tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+	  qualifier = folded_discrim_expr;
+	}
+      else
+	{
+	  mpz_t val;
+	  mpz_init_set_ui (val, variant->get_discriminant ());
+	  tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+	  qualifier = double_int_to_tree (t, mpz_get_double_int (t, val, true));
+	}
 
       return ctx->get_backend ()->constructor_expression (compiled_adt_type,
 							  true, {qualifier},

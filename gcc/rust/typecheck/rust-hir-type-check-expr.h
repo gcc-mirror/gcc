@@ -27,7 +27,6 @@
 #include "rust-hir-type-check-struct-field.h"
 #include "rust-hir-path-probe.h"
 #include "rust-substitution-mapper.h"
-#include "rust-hir-const-fold.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
@@ -728,17 +727,17 @@ public:
 	     It is a constant, but for fold it to get a tree.  */
 	  std::string capacity_str
 	    = std::to_string (expr.get_literal ().as_string ().size ());
-	  HIR::LiteralExpr literal_capacity (capacity_mapping, capacity_str,
-					     HIR::Literal::LitType::INT,
-					     PrimitiveCoreType::CORETYPE_USIZE,
-					     expr.get_locus ());
+	  HIR::LiteralExpr *literal_capacity
+	    = new HIR::LiteralExpr (capacity_mapping, capacity_str,
+				    HIR::Literal::LitType::INT,
+				    PrimitiveCoreType::CORETYPE_USIZE,
+				    expr.get_locus ());
 
 	  // mark the type for this implicit node
-	  context->insert_type (capacity_mapping,
-				new TyTy::USizeType (
-				  capacity_mapping.get_hirid ()));
-
-	  tree capacity = ConstFold::ConstFoldExpr::fold (&literal_capacity);
+	  TyTy::BaseType *expected_ty = nullptr;
+	  ok = context->lookup_builtin ("usize", &expected_ty);
+	  rust_assert (ok);
+	  context->insert_type (capacity_mapping, expected_ty);
 
 	  Analysis::NodeMapping array_mapping (crate_num, UNKNOWN_NODEID,
 					       mappings->get_next_hir_id (
@@ -746,7 +745,8 @@ public:
 					       UNKNOWN_LOCAL_DEFID);
 
 	  TyTy::ArrayType *array
-	    = new TyTy::ArrayType (array_mapping.get_hirid (), capacity,
+	    = new TyTy::ArrayType (array_mapping.get_hirid (),
+				   *literal_capacity,
 				   TyTy::TyVar (u8->get_ref ()));
 	  context->insert_type (array_mapping, array);
 
@@ -979,77 +979,75 @@ public:
 
   void visit (HIR::ArrayExpr &expr) override
   {
-    HIR::ArrayElems *elements = expr.get_internal_elements ();
-    root_array_expr_locus = expr.get_locus ();
+    HIR::ArrayElems &elements = *expr.get_internal_elements ();
 
-    elements->accept_vis (*this);
-    if (infered_array_elems == nullptr)
-      return;
-    if (folded_array_capacity == nullptr)
-      return;
+    HIR::Expr *capacity_expr = nullptr;
+    TyTy::BaseType *element_type = nullptr;
+    switch (elements.get_array_expr_type ())
+      {
+	case HIR::ArrayElems::ArrayExprType::COPIED: {
+	  HIR::ArrayElemsCopied &elems
+	    = static_cast<HIR::ArrayElemsCopied &> (elements);
+	  element_type
+	    = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
+
+	  auto capacity_type
+	    = TypeCheckExpr::Resolve (elems.get_num_copies_expr (), false);
+
+	  TyTy::BaseType *expected_ty = nullptr;
+	  bool ok = context->lookup_builtin ("usize", &expected_ty);
+	  rust_assert (ok);
+	  context->insert_type (elems.get_num_copies_expr ()->get_mappings (),
+				expected_ty);
+
+	  auto unified = expected_ty->unify (capacity_type);
+	  if (unified->get_kind () == TyTy::TypeKind::ERROR)
+	    return;
+
+	  capacity_expr = elems.get_num_copies_expr ();
+	}
+	break;
+
+	case HIR::ArrayElems::ArrayExprType::VALUES: {
+	  HIR::ArrayElemsValues &elems
+	    = static_cast<HIR::ArrayElemsValues &> (elements);
+
+	  std::vector<TyTy::BaseType *> types;
+	  for (auto &elem : elems.get_values ())
+	    {
+	      types.push_back (TypeCheckExpr::Resolve (elem.get (), false));
+	    }
+
+	  element_type = TyTy::TyVar::get_implicit_infer_var (expr.get_locus ())
+			   .get_tyty ();
+	  for (auto &type : types)
+	    {
+	      element_type = element_type->unify (type);
+	    }
+
+	  auto crate_num = mappings->get_current_crate ();
+	  Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
+					 mappings->get_next_hir_id (crate_num),
+					 UNKNOWN_LOCAL_DEFID);
+	  std::string capacity_str = std::to_string (elems.get_num_elements ());
+	  capacity_expr
+	    = new HIR::LiteralExpr (mapping, capacity_str,
+				    HIR::Literal::LitType::INT,
+				    PrimitiveCoreType::CORETYPE_USIZE,
+				    Location ());
+
+	  // mark the type for this implicit node
+	  TyTy::BaseType *expected_ty = nullptr;
+	  bool ok = context->lookup_builtin ("usize", &expected_ty);
+	  rust_assert (ok);
+	  context->insert_type (mapping, expected_ty);
+	}
+	break;
+      }
 
     infered
-      = new TyTy::ArrayType (expr.get_mappings ().get_hirid (),
-			     folded_array_capacity,
-			     TyTy::TyVar (infered_array_elems->get_ref ()));
-  }
-
-  void visit (HIR::ArrayElemsValues &elems) override
-  {
-    std::vector<TyTy::BaseType *> types;
-
-    for (auto &elem : elems.get_values ())
-      {
-	types.push_back (TypeCheckExpr::Resolve (elem.get (), false));
-      }
-
-    infered_array_elems
-      = TyTy::TyVar::get_implicit_infer_var (root_array_expr_locus).get_tyty ();
-
-    for (auto &type : types)
-      {
-	infered_array_elems = infered_array_elems->unify (type);
-      }
-    for (auto &elem : types)
-      {
-	infered_array_elems->append_reference (elem->get_ref ());
-      }
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
-				   mappings->get_next_hir_id (crate_num),
-				   UNKNOWN_LOCAL_DEFID);
-    std::string capacity_str = std::to_string (elems.get_num_elements ());
-    HIR::LiteralExpr implicit_literal_capacity (
-      mapping, capacity_str, HIR::Literal::LitType::INT,
-      PrimitiveCoreType::CORETYPE_USIZE, Location ());
-
-    // mark the type for this implicit node
-    context->insert_type (mapping, new TyTy::USizeType (mapping.get_hirid ()));
-
-    folded_array_capacity
-      = ConstFold::ConstFoldExpr::fold (&implicit_literal_capacity);
-  }
-
-  void visit (HIR::ArrayElemsCopied &elems) override
-  {
-    auto capacity_type
-      = TypeCheckExpr::Resolve (elems.get_num_copies_expr (), false);
-
-    TyTy::USizeType *expected_ty = new TyTy::USizeType (
-      elems.get_num_copies_expr ()->get_mappings ().get_hirid ());
-    context->insert_type (elems.get_num_copies_expr ()->get_mappings (),
-			  expected_ty);
-
-    auto unified = expected_ty->unify (capacity_type);
-    if (unified->get_kind () == TyTy::TypeKind::ERROR)
-      return;
-
-    folded_array_capacity
-      = ConstFold::ConstFoldExpr::fold (elems.get_num_copies_expr ());
-
-    infered_array_elems
-      = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
+      = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), *capacity_expr,
+			     TyTy::TyVar (element_type->get_ref ()));
   }
 
   // empty struct
@@ -1547,8 +1545,7 @@ protected:
 
 private:
   TypeCheckExpr (bool inside_loop)
-    : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
-      folded_array_capacity (nullptr), inside_loop (inside_loop)
+    : TypeCheckBase (), infered (nullptr), inside_loop (inside_loop)
   {}
 
   // Beware: currently returns Tyty::ErrorType or nullptr in case of error.
@@ -1617,14 +1614,8 @@ private:
   /* The return value of TypeCheckExpr::Resolve */
   TyTy::BaseType *infered;
 
-  /* The return value of visit(ArrayElemsValues&) and visit(ArrayElemsCopied&)
-     Stores the type of array elements, if `expr` is ArrayExpr. */
-  TyTy::BaseType *infered_array_elems;
-  tree folded_array_capacity;
-  Location root_array_expr_locus;
-
   bool inside_loop;
-}; // namespace Resolver
+};
 
 } // namespace Resolver
 } // namespace Rust

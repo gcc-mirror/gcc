@@ -166,12 +166,46 @@ class ExprWithoutBlock;
 // Base expression HIR node - abstract
 class Expr
 {
-  // TODO: move outer attribute data to derived classes?
   AST::AttrVec outer_attrs;
-
   Analysis::NodeMapping mappings;
 
 public:
+  enum BlockType
+  {
+    WITH_BLOCK,
+    WITHOUT_BLOCK,
+  };
+
+  enum ExprType
+  {
+    Lit,
+    Operator,
+    Grouped,
+    Array,
+    ArrayIndex,
+    Tuple,
+    TupleIdx,
+    Struct,
+    Call,
+    MethodCall,
+    FieldAccess,
+    Closure,
+    Block,
+    Continue,
+    Break,
+    Range,
+    Return,
+    UnsafeBlock,
+    BaseLoop,
+    If,
+    IfLet,
+    Match,
+    Await,
+    AsyncBlock,
+    Ident,
+    Path,
+  };
+
   const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
 
   // Unique pointer custom clone function
@@ -179,11 +213,6 @@ public:
   {
     return std::unique_ptr<Expr> (clone_expr_impl ());
   }
-
-  /* TODO: public methods that could be useful:
-   *  - get_type() - returns type of expression. set_type() may also be useful
-   * for some?
-   *  - evaluate() - evaluates expression if constant? can_evaluate()? */
 
   /* HACK: downcasting without dynamic_cast (if possible) via polymorphism -
    * overrided in subclasses of ExprWithoutBlock */
@@ -196,15 +225,16 @@ public:
 
   virtual Location get_locus () const = 0;
 
-  // HACK: strictly not needed, but faster than full downcast clone
-  virtual bool is_expr_without_block () const = 0;
-
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
   // Clone function implementation as pure virtual method
   virtual Expr *clone_expr_impl () const = 0;
+
+  virtual BlockType get_block_expr_type () const = 0;
+
+  virtual ExprType get_expression_type () const = 0;
 
 protected:
   // Constructor
@@ -242,8 +272,6 @@ protected:
     return clone_expr_without_block_impl ();
   }
 
-  bool is_expr_without_block () const final override { return true; };
-
 public:
   // Unique pointer custom clone function
   std::unique_ptr<ExprWithoutBlock> clone_expr_without_block () const
@@ -257,6 +285,11 @@ public:
   {
     return clone_expr_without_block_impl ();
   }
+
+  BlockType get_block_expr_type () const final override
+  {
+    return BlockType::WITHOUT_BLOCK;
+  };
 };
 
 /* HACK: IdentifierExpr, delete when figure out identifier vs expr problem in
@@ -293,6 +326,11 @@ public:
   }
 
   Identifier get_identifier () const { return ident; }
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Ident;
+  }
 
 protected:
   // Clone method implementation
@@ -760,13 +798,16 @@ protected:
   {}
 
 public:
-  // TODO: think of a better and less hacky way to allow this
-
   /* Replaces the outer attributes of this path expression with the given outer
    * attributes. */
   void replace_outer_attrs (AST::AttrVec outer_attrs)
   {
     set_outer_attrs (std::move (outer_attrs));
+  }
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::Path;
   }
 };
 } // namespace HIR
