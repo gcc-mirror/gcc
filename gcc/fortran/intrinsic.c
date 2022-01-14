@@ -4420,7 +4420,7 @@ do_sort:
   FOR_EACH_VEC_ELT (dummy_args, idx, f)
     {
       a = ordered_actual_args[idx];
-      if (a && a->label != NULL && f->ts.type)
+      if (a && a->label != NULL)
 	{
 	  gfc_error ("ALTERNATE RETURN not permitted at %L", where);
 	  return false;
