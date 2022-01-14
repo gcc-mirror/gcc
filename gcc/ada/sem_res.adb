@@ -7346,7 +7346,7 @@ package body Sem_Res is
                --  loops, as this would create complex actions inside
                --  the condition, that are not handled by GNATprove.
 
-               elsif In_While_Loop_Condition (N) then
+               elsif In_Statement_Condition_With_Actions (N) then
                   Cannot_Inline
                     ("cannot inline & (in while loop condition)?", N, Nam_UA);
 
