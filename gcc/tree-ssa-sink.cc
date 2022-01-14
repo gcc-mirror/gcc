@@ -208,6 +208,12 @@ select_best_block (basic_block early_bb,
       temp_bb = get_immediate_dominator (CDI_DOMINATORS, temp_bb);
     }
 
+  /* Placing a statement before a setjmp-like function would be invalid
+     (it cannot be reevaluated when execution follows an abnormal edge).
+     If we selected a block with abnormal predecessors, just punt.  */
+  if (bb_has_abnormal_pred (best_bb))
+    return early_bb;
+
   /* If we found a shallower loop nest, then we always consider that
      a win.  This will always give us the most control dependent block
      within that loop nest.  */
