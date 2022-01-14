@@ -14,22 +14,27 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-load_lib "gcc-defs.exp"
+load_lib "target-supports.exp"
 
 proc gcc_src_run_maintainers_verify_sh {} {
-    set script maintainers-verify.sh
+    set script check-MAINTAINERS.py
 
     global srcdir
     set rootdir $srcdir/../..
     set contrib $rootdir/contrib
-
     set maintainers $rootdir/MAINTAINERS
 
-    set verify_output [exec $contrib/$script $maintainers]
-    if { "$verify_output"  == "" } {
+    if { ![check_effective_target_python3] } {
+      unsupported "$script python3 is missing"
+      return
+    }
+
+    set result [remote_exec host $contrib/$script $maintainers]
+    set status [lindex $result 0]
+    if { $status == 0 } then {
 	pass "$script"
     } else {
-	send_log "$verify_output\n"
+	send_log "$result\n"
 	fail "$script"
     }
 }
@@ -40,4 +45,3 @@ if ![gcc_parallel_test_run_p maintainers] {
 gcc_parallel_test_enable 0
 gcc_src_run_maintainers_verify_sh
 gcc_parallel_test_enable 1
-

@@ -11722,3 +11722,15 @@ proc check_effective_target___OPTIMIZE__ {} {
 	#endif
     } [current_compiler_flags]]
 }
+
+# Return 1 if python3 is available.
+
+proc check_effective_target_python3 { } {
+    set result [remote_exec host "python3 --version"]
+    set status [lindex $result 0]
+    if { $status == 0 } then {
+        return 1;
+    } else {
+        return 0;
+    }
+}
