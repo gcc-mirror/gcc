@@ -1330,9 +1330,7 @@ package body Inline is
          return;
       end if;
 
-      if Present (Declarations (N))
-        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
-      then
+      if Has_Excluded_Declaration (Spec_Id, Declarations (N)) then
          return;
       end if;
 
@@ -2622,9 +2620,7 @@ package body Inline is
 
       --  Check excluded declarations
 
-      elsif Present (Declarations (N))
-        and then Has_Excluded_Declaration (Spec_Id, Declarations (N))
-      then
+      elsif Has_Excluded_Declaration (Spec_Id, Declarations (N)) then
          return;
 
       --  Check excluded statements. There is no need to protect us against
@@ -4388,9 +4384,7 @@ package body Inline is
             return True;
 
          elsif Nkind (S) = N_Block_Statement then
-            if Present (Declarations (S))
-              and then Has_Excluded_Declaration (Subp, Declarations (S))
-            then
+            if Has_Excluded_Declaration (Subp, Declarations (S)) then
                return True;
 
             elsif Present (Handled_Statement_Sequence (S)) then
