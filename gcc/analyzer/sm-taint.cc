@@ -860,15 +860,19 @@ taint_state_machine::combine_states (state_t s0, state_t s1) const
     return s0;
   if (s0 == m_tainted || s1 == m_tainted)
     return m_tainted;
-  if (s0 == m_stop)
-    return s1;
-  if (s1 == m_stop)
-    return s0;
   if (s0 == m_start)
     return s1;
   if (s1 == m_start)
     return s0;
-  gcc_unreachable ();
+  if (s0 == m_stop)
+    return s1;
+  if (s1 == m_stop)
+    return s0;
+  /* The only remaining combinations are one of has_ub and has_lb
+     (in either order).  */
+  gcc_assert ((s0 == m_has_lb && s1 == m_has_ub)
+	      || (s0 == m_has_ub && s1 == m_has_lb));
+  return m_tainted;
 }
 
 /* Check for calls to external functions marked with
