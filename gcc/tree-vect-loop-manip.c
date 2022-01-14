@@ -421,6 +421,7 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_controls *dest_rgm,
 static tree
 vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 				 gimple_seq *preheader_seq,
+				 gimple_seq *header_seq,
 				 gimple_stmt_iterator loop_cond_gsi,
 				 rgroup_controls *rgc, tree niters,
 				 tree niters_skip, bool might_wrap_p)
@@ -664,6 +665,19 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 
       vect_set_loop_control (loop, ctrl, init_ctrl, next_ctrl);
     }
+
+  int partial_load_bias = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+  if (partial_load_bias != 0)
+    {
+      tree adjusted_len = rgc->bias_adjusted_ctrl;
+      gassign *minus = gimple_build_assign (adjusted_len, PLUS_EXPR,
+					    rgc->controls[0],
+					    build_int_cst
+					    (TREE_TYPE (rgc->controls[0]),
+					     partial_load_bias));
+      gimple_seq_add_stmt (header_seq, minus);
+    }
+
   return next_ctrl;
 }
 
@@ -744,6 +758,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 	/* Set up all controls for this group.  */
 	test_ctrl = vect_set_loop_controls_directly (loop, loop_vinfo,
 						     &preheader_seq,
+						     &header_seq,
 						     loop_cond_gsi, rgc,
 						     niters, niters_skip,
 						     might_wrap_p);

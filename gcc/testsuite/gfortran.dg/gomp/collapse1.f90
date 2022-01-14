@@ -24,7 +24,7 @@ subroutine collapse1
     end do
   !$omp parallel do collapse(2) shared(j)
     do i = 1, 3
-      do j = 4, 6		! { dg-error "iteration variable present on clause other than PRIVATE or LASTPRIVATE" }
+      do j = 4, 6		! { dg-error "iteration variable present on clause other than PRIVATE, LASTPRIVATE or ALLOCATE" }
       end do
     end do
   !$omp parallel do collapse(2)

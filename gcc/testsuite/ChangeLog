@@ -1,3 +1,379 @@
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* g++.dg/cpp0x/variadic-mem_fn2.C: Catch warning about missing
+	template keyword.
+	* g++.dg/template/dependent-name17.C: New test.
+	* g++.dg/template/dependent-name18.C: New test.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.target/i386/pr103861.c (shl,ashr,lshr): New tests.
+
+2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-1.f90: New test.
+	* gfortran.dg/gomp/allocate-2.f90: New test.
+	* gfortran.dg/gomp/allocate-3.f90: New test.
+	* gfortran.dg/gomp/collapse1.f90: Update error message.
+	* gfortran.dg/gomp/openmp-simd-4.f90: Likewise.
+	* gfortran.dg/gomp/clauses-1.f90: Uncomment allocate clause.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83072
+	PR tree-optimization/83073
+	PR tree-optimization/97909
+	* gcc.dg/pr83072-2.c: New.
+	* gcc.dg/pr83073.c: New.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/96707
+	* g++.dg/pr96707.C: New.
+
+2022-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67804
+	* gfortran.dg/pr93604.f90: Adjust to changed diagnostics.
+	* gfortran.dg/pr67804.f90: New test.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104003
+	* g++.target/i386/pr103861-1-sse4.C: New test.
+	* g++.target/i386/pr103861-1-xop.C: Ditto.
+
+2022-01-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-round3.h: New.
+	* gcc.target/powerpc/sse4_1-roundpd.c: New.
+	* gcc.target/powerpc/sse4_1-roundps.c: New.
+	* gcc.target/powerpc/sse4_1-roundsd.c: New.
+	* gcc.target/powerpc/sse4_1-roundss.c: New.
+
+2022-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR c/104002
+	* c-c++-common/builtin-shufflevector-3.c: Move ...
+	* c-c++-common/torture/builtin-shufflevector-3.c: ... here.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/routine-6.c: Merge into...
+	* c-c++-common/goacc/routine-5.c: ... this, and document current
+	C/C++ difference.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/builtin-goacc-parlevel-id-size.c: Document
+	current '-Wuninitialized' diagnostics.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-kernels.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-parallel.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-routine.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-kernels.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-parallel.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-routine.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-if-clause.c: Likewise.
+	* gfortran.dg/goacc/array-with-dt-1.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-2.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-3.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-4.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-5.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-3.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-4.f90: Likewise.
+	* gfortran.dg/goacc/derived-classtypes-1.f95: Likewise.
+	* gfortran.dg/goacc/derived-types-2.f90: Likewise.
+	* gfortran.dg/goacc/host_data-tree.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/modules.f95: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-kernels.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-parallel.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-routine.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-kernels.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-parallel.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-routine.f90: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/pr93464.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-if-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-use-device-clause.f95: Likewise.
+	* gfortran.dg/goacc/wait.f90: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: New.
+	* c-c++-common/goacc/classify-kernels-parloops.c: Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Test
+	'--param openacc-kernels=decompose'.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Update.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Remove.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-parloops.f95: New.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Test
+	'--param openacc-kernels=decompose'.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-1.c: Enhance.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2022-01-13  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/94790
+	* gcc.target/i386/pr94790-1.c: New test.
+	* gcc.target/i386/pr94790-2.c: Ditto.
+
+2022-01-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/sldoi_to_mov.c: New test.
+
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103941
+	* gcc.target/i386/pr103861-3.c (dg-options): Add -fno-vect-cost-model.
+
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103935
+	* g++.dg/vect/slp-pr98855.cc: Compile only for x86 targets.
+
+2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	PR target/103861
+	* g++.target/i386/pr100637-1b.C (dg-options):
+	Use -msse2 instead of -msse4.1.
+	* g++.target/i386/pr100637-1w.C (dg-options): Ditto.
+	* g++.target/i386/pr103861-1.C (dg-options): Ditto.
+	* gcc.target/i386/pr100637-4b.c (dg-options): Ditto.
+	* gcc.target/i386/pr103861-4.c (dg-options): Ditto.
+	* gcc.target/i386/pr100637-1b.c: Remove scan-assembler
+	directives for logic instructions.
+	* gcc.target/i386/pr100637-1w.c: Ditto.
+	* gcc.target/i386/warn-vect-op-2.c:
+	Update dg-warning for vector logic operation.
+
+2022-01-12  Michael Meissner  <meissner@the-meissners.org>
+
+	PR testsuite/102935
+	* gcc.target/powerpc/pr101384-1.c: Update insn regexp for power9
+	and power10.
+
+2022-01-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83541
+	* g++.dg/pr83541.C: New.
+
+2022-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103940
+	* gcc.dg/analyzer/taint-size-access-attr-1.c: New test.
+
+2022-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-exchange-1.c: New test.
+	* gcc.target/nvptx/atomic-exchange-2.c: New test.
+	* gcc.target/nvptx/atomic-exchange-3.c: New test.
+	* gcc.target/nvptx/atomic-exchange-4.c: New test.
+
+2022-01-12  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic_fetch-1.c: Rewrite.
+	* gcc.target/nvptx/atomic_fetch-2.c: Rewrite.
+
+2022-01-12  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: Fix comment.
+
+2022-01-12  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: Adjust flags.
+
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/103480
+	* g++.dg/warn/Wuseless-cast2.C: New test.
+
+2022-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/101530
+	* c-c++-common/builtin-shufflevector-3.c: Add -Wno-psabi to
+	dg-options.
+
+2022-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/76174
+	* gcc.dg/tree-ssa/pr76174.c: New testcase.
+
+2022-01-11  qing zhao  <qing.zhao@oracle.com>
+
+	* c-c++-common/auto-init-1.c: Adjust testcase to reflect the 3rd
+	argument change of function .DEFERRED_INIT.
+	* c-c++-common/auto-init-10.c: Likewise.
+	* c-c++-common/auto-init-11.c: Likewise.
+	* c-c++-common/auto-init-12.c: Likewise.
+	* c-c++-common/auto-init-13.c: Likewise.
+	* c-c++-common/auto-init-14.c: Likewise.
+	* c-c++-common/auto-init-15.c: Likewise.
+	* c-c++-common/auto-init-16.c: Likewise.
+	* c-c++-common/auto-init-2.c: Likewise.
+	* c-c++-common/auto-init-3.c: Likewise.
+	* c-c++-common/auto-init-4.c: Likewise.
+	* c-c++-common/auto-init-5.c: Likewise.
+	* c-c++-common/auto-init-6.c: Likewise.
+	* c-c++-common/auto-init-7.c: Likewise.
+	* c-c++-common/auto-init-8.c: Likewise.
+	* c-c++-common/auto-init-9.c: Likewise.
+	* c-c++-common/auto-init-esra.c: Likewise.
+	* c-c++-common/auto-init-padding-1.c: Likewise.
+	* gcc.target/aarch64/auto-init-2.c: Likewise.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/pr47614.f: Don't use -mcpu=power4 for
+	powerpc64le*-*-linux*.
+
+2022-01-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* g++.target/i386/pr100637-1b.C (dg-options):
+	Use -msse4 instead of -msse2.
+	* g++.target/i386/pr100637-1w.C (dg-options): Ditto.
+	* g++.target/i386/pr103861-1.C: New test.
+	* gcc.target/i386/pr100637-4b.c (dg-options):
+	Use -msse4 instead of -msse2.
+	* gcc.target/i386/pr103861-4.c: New test.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* g++.dg/opt/pr101597.C: New test.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101537
+	PR c/103881
+	* c-c++-common/pr101537.c: New test.
+	* c-c++-common/pr103881.c: New test.
+
+2022-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103831
+	* g++.dg/cpp2a/concepts-class3.C: New test.
+	* g++.dg/template/non-dependent18.C: New test.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* gcc.dg/builtin-dynamic-object-size-0.c: Add new tests.
+	* gcc.dg/builtin-object-size-1.c (test1)
+	[__builtin_object_size]: Adjust expected output for dynamic
+	object sizes.
+	* gcc.dg/builtin-object-size-2.c (test1)
+	[__builtin_object_size]: Likewise.
+	* gcc.dg/builtin-object-size-3.c (test1)
+	[__builtin_object_size]: Likewise.
+	* gcc.dg/builtin-object-size-4.c (test1)
+	[__builtin_object_size]: Likewise.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* gcc.dg/builtin-dynamic-object-size-0.c: Add new tests.
+	* gcc.dg/builtin-object-size-1.c (test1)
+	[__builtin_object_size]: Alter expected result for dynamic
+	object size.
+	* gcc.dg/builtin-object-size-2.c (test1)
+	[__builtin_object_size]: Likewise.
+	* gcc.dg/builtin-object-size-3.c (test1)
+	[__builtin_object_size]: Likewise.
+	* gcc.dg/builtin-object-size-4.c (test1)
+	[__builtin_object_size]: Likewise.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* gcc.dg/builtin-dynamic-object-size-0.c (test_parmsz_simple,
+	test_parmsz_scaled, test_parmsz_unknown): New functions.
+	(main): Call them.  Add new arguments argc and argv.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR middle-end/70090
+	* gcc.dg/builtin-dynamic-object-size-0.c: New tests.
+	* gcc.dg/builtin-dynamic-object-size-10.c: Add comment.
+	* gcc.dg/builtin-dynamic-object-size-5-main.c: New file.
+	* gcc.dg/builtin-dynamic-object-size-5.c: Use it and change test
+	to dg-do run.
+	* gcc.dg/builtin-object-size-5.c [!N]: Define N.
+	(test1, test2, test3, test4) [__builtin_object_size]: Expect
+	exact result for __builtin_dynamic_object_size.
+	* gcc.dg/builtin-object-size-1.c [__builtin_object_size]: Expect
+	exact size expressions for __builtin_dynamic_object_size.
+	* gcc.dg/builtin-object-size-2.c [__builtin_object_size]:
+	Likewise.
+	* gcc.dg/builtin-object-size-3.c [__builtin_object_size]:
+	Likewise.
+	* gcc.dg/builtin-object-size-4.c [__builtin_object_size]:
+	Likewise.
+
+2022-01-11  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103961
+	* gcc.dg/pr103961.c: New test case.
+
+2022-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102692
+	* gcc.dg/analyzer/pr102692.c: New test.
+
+2022-01-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/mult-highpart.c: New test case.
+
+2022-01-11  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102239
+	* gcc.target/powerpc/pr102239.c: New test.
+
+2022-01-11  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR testsuite/103820
+	* gcc.dg/tree-ssa/recip-3.c: Adjust.
+
+2022-01-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/53652
+	* gcc.target/i386/pr53652-1.c: New test.
+
 2022-01-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103861

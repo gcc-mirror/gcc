@@ -4,6 +4,8 @@
 ! { dg-additional-options "--param=openacc-privatization=noisy" } for
 ! testing/documenting aspects of that functionality.
 
+! { dg-additional-options -Wuninitialized }
+
 ! See also '../../c-c++-common/goacc/privatization-1-compute.c'.
 !TODO More cases should be added here.
 
@@ -11,13 +13,13 @@
 ! passed to 'incr' may be unset, and in that case, it will be set to [...]",
 ! so to maintain compatibility with earlier Tcl releases, we manually
 ! initialize counter variables:
-! { dg-line l_dummy[variable c_compute 0] }
+! { dg-line l_dummy[variable c_compute 0 c_function 0] }
 ! { dg-message "dummy" "" { target iN-VAl-Id } l_dummy } to avoid
 ! "WARNING: dg-line var l_dummy defined, but not used".
 
 module m
 contains
-  subroutine f (i, j, a)
+  subroutine f (i, j, a) ! { dg-line l_function[incr c_function] }
     implicit none
     integer :: i, j, a
     integer :: x, y
@@ -35,6 +37,12 @@ contains
           ! (See C/C++ example.)
 
           a = g (i, j, a, c)
+          ! { dg-warning {'i' is used uninitialized} {} { target *-*-* } .-1 }
+          !   { dg-note {'i' was declared here} {} { target *-*-* } l_function$c_function }
+          ! { dg-warning {'j' is used uninitialized} {} { target *-*-* } .-3 }
+          !   { dg-note {'j' was declared here} {} { target *-*-* } l_function$c_function }
+          ! { dg-warning {'a' is used uninitialized} {} { target *-*-* } .-5 }
+          !   { dg-note {'a' was declared here} {} { target *-*-* } l_function$c_function }
           x = a
           !$acc atomic write ! ... to force 'TREE_ADDRESSABLE'.
           y = a

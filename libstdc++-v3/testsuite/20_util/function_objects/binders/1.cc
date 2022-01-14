@@ -17,6 +17,7 @@
 
 // 20.3.6 Binders
 
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 #include <functional>

@@ -6989,12 +6989,15 @@ c_common_mark_addressable_vec (tree t)
     }
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
-      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
+      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR
+      && TREE_CODE (t) != TARGET_EXPR)
     return;
   if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
     TREE_ADDRESSABLE (t) = 1;
   if (TREE_CODE (t) == COMPOUND_LITERAL_EXPR)
     TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (t)) = 1;
+  else if (TREE_CODE (t) == TARGET_EXPR)
+    TREE_ADDRESSABLE (TARGET_EXPR_SLOT (t)) = 1;
 }
 
 

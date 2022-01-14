@@ -36,8 +36,8 @@ subroutine foo (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp distribute parallel do &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -46,8 +46,8 @@ subroutine foo (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) if(simd: i1) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) nontemporal(ntm) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) order(concurrent)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) order(concurrent) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -55,8 +55,8 @@ subroutine foo (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp distribute simd &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  safelen(8) simdlen(4) aligned(q: 32) reduction(+:r) if(i1) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -81,8 +81,8 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp distribute parallel do &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4) copyin(t)
-  ! FIXME/TODO: allocate (p)
+  !$omp&  lastprivate (l) schedule(static, 4) copyin(t) &
+  !$omp&  allocate (p)
   do i = 1, 64
     ll = ll +1
   end do
@@ -90,8 +90,8 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp distribute parallel do &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent)
-  ! FIXME/TODO: allocate (p)
+  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
+  !$omp&  allocate (p)
   do i = 1, 64
     ll = ll +1
   end do
@@ -100,8 +100,8 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) if(simd: i1) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) nontemporal(ntm) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) copyin(t) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -110,8 +110,8 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) if(simd: i1) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) nontemporal(ntm) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -119,8 +119,8 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp distribute simd &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  safelen(8) simdlen(4) aligned(q: 32) reduction(+:r) if(i1) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -140,8 +140,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
 
   !$omp do simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) linear (ll:1) reduction(+:r) schedule(static, 4) collapse(1) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) nontemporal(ntm) if(i1) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) nontemporal(ntm) if(i1) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -149,16 +149,16 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
 
   !$omp parallel do &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
-  !$omp&  proc_bind(spread) lastprivate (l) linear (ll:1) ordered schedule(static, 4) collapse(1)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  proc_bind(spread) lastprivate (l) linear (ll:1) ordered schedule(static, 4) collapse(1) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
 
   !$omp parallel do &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
-  !$omp&  proc_bind(spread) lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  proc_bind(spread) lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -166,16 +166,16 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel do simd &
   !$omp&  private (p) firstprivate (f) if (i2) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
   !$omp&  proc_bind(spread) lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) nontemporal(ntm) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) nontemporal(ntm) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
 
   !$omp parallel sections &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
-  !$omp&  proc_bind(spread) lastprivate (l)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  proc_bind(spread) lastprivate (l) &
+  !$omp&  allocate (f)
     !$omp section
       block; end block
     !$omp section
@@ -185,16 +185,16 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp target parallel &
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
-  !$omp&  depend(inout: dd(0)) in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  depend(inout: dd(0)) in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   !$omp end target parallel nowait
 
   !$omp target parallel do &
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) linear (ll:1) ordered schedule(static, 4) collapse(1) depend(inout: dd(0)) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -204,8 +204,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) depend(inout: dd(0)) order(concurrent) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -216,8 +216,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) &
   !$omp&  safelen(8) simdlen(4) aligned(q: 32) depend(inout: dd(0)) nontemporal(ntm) if (simd: i3) order(concurrent) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -226,15 +226,15 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp target teams &
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  shared(s) default(shared) reduction(+:r) num_teams(nte - 1:nte) thread_limit(tl) depend(inout: dd(0)) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   !$omp end target teams nowait
 
   !$omp target teams distribute &
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) order(concurrent) &
-  !$omp&  collapse(1) dist_schedule(static, 16) depend(inout: dd(0)) in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  collapse(1) dist_schedule(static, 16) depend(inout: dd(0)) in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
   end do
   !$omp end target teams distribute nowait
@@ -245,8 +245,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) depend(inout: dd(0)) order(concurrent) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -259,8 +259,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
   !$omp&  safelen(8) simdlen(4) aligned(q: 32) depend(inout: dd(0)) nontemporal(ntm) if (simd: i3) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -271,8 +271,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent) &
   !$omp&  safelen(8) simdlen(4) aligned(q: 32) depend(inout: dd(0)) nontemporal(ntm) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -282,34 +282,34 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  safelen(8) simdlen(4) lastprivate (l) linear(ll: 1) aligned(q: 32) reduction(+:r) &
   !$omp&  depend(inout: dd(0)) nontemporal(ntm) if(simd:i3) order(concurrent) &
-  !$omp&  in_reduction(+:r2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc:f)
+  !$omp&  in_reduction(+:r2) &
+  !$omp&  allocate (omp_default_mem_alloc:f)
   do i = 1, 64
     ll = ll + 1
   end do
   !$omp end target simd nowait
 
-  !$omp taskgroup task_reduction(+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction(+:r2) &
+  !$omp&  allocate (r2)
   !$omp taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction(+:r)
-  ! FIXME/TODO: allocate (r)
+  !$omp taskgroup task_reduction(+:r) &
+  !$omp&  allocate (r)
   !$omp taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(i1) &
   !$omp&  final(fi) mergeable nogroup priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) in_reduction(+:r) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -319,8 +319,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) if(taskloop: i1) &
   !$omp&  final(fi) priority (pp) safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(+:r) if (simd: i3) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll + 1
   end do
@@ -328,8 +328,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp target depend(inout: dd(0)) in_reduction(+:r2)
   !$omp teams distribute &
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) &
-  !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do i = 1, 64
   end do
   !$omp end target nowait
@@ -339,8 +339,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -352,8 +352,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -363,8 +363,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp teams distribute simd &
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if(i3) nontemporal(ntm)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if(i3) nontemporal(ntm) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -374,8 +374,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  lastprivate (l) schedule(static, 4) copyin(t) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -384,8 +384,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
-  !$omp&  lastprivate (l) schedule(static, 4)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  lastprivate (l) schedule(static, 4) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -395,8 +395,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm) copyin(t) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -406,8 +406,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) num_threads (nth) proc_bind(spread) &
   !$omp&  lastprivate (l) schedule(static, 4) order(concurrent) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if (simd: i3) nontemporal(ntm) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -415,68 +415,68 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp teams distribute simd &
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) &
   !$omp&  collapse(1) dist_schedule(static, 16) order(concurrent) &
-  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if(i3) nontemporal(ntm)
-  ! FIXME/TODO: allocate(f)
+  !$omp&  safelen(8) simdlen(4) aligned(q: 32) if(i3) nontemporal(ntm) &
+  !$omp&  allocate(f)
   do i = 1, 64
     ll = ll +1
   end do
 
   !$omp parallel master &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r) &
-  !$omp&  num_threads (nth) proc_bind(spread) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) &
+  !$omp&  allocate (f)
   !$omp end parallel master
 
   !$omp parallel masked &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r) &
-  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) filter (d) &
+  !$omp&  allocate (f)
   !$omp end parallel masked
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp master taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) final(fi) mergeable priority (pp) &
-  !$omp&  reduction(default, +:r) in_reduction(+:r2)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  reduction(default, +:r) in_reduction(+:r2) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp masked taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
-  !$omp&  if(taskloop: i1) final(fi) mergeable priority (pp) reduction(default, +:r) in_reduction(+:r2) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  if(taskloop: i1) final(fi) mergeable priority (pp) reduction(default, +:r) in_reduction(+:r2) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp master taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) &
-  !$omp&  order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp masked taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2) nontemporal(ntm) &
-  !$omp&  order(concurrent) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  order(concurrent) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -485,8 +485,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel master taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) final(fi) mergeable priority (pp) &
-  !$omp&  reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -494,8 +494,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel masked taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) final(fi) mergeable priority (pp) &
-  !$omp&  reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  reduction(default, +:r) if (parallel: i2) num_threads (nth) proc_bind(spread) copyin(t) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -504,8 +504,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) if (parallel: i2) &
-  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -514,14 +514,14 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied &
   !$omp&  if(taskloop: i1) if(simd: i2) final(fi) mergeable priority (pp) &
   !$omp&  safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) nontemporal(ntm) if (parallel: i2) &
-  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) order(concurrent) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  num_threads (nth) proc_bind(spread) copyin(t) order(concurrent) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp master taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) &
   !$omp&  untied if(i1) final(fi) mergeable priority (pp) reduction(default, +:r) in_reduction(+:r2)
@@ -530,8 +530,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp masked taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) &
   !$omp&  untied if(i1) final(fi) mergeable priority (pp) reduction(default, +:r) in_reduction(+:r2) filter (d)
@@ -540,25 +540,25 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp master taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) &
   !$omp&  final(fi) mergeable priority (pp) safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) &
-  !$omp&  in_reduction(+:r2) nontemporal(ntm) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  in_reduction(+:r2) nontemporal(ntm) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
   !$omp end taskgroup
 
-  !$omp taskgroup task_reduction (+:r2)
-  ! FIXME/TODO: allocate (r2)
+  !$omp taskgroup task_reduction (+:r2) &
+  !$omp&  allocate (r2)
   !$omp masked taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied &
   !$omp&  if(i1) final(fi) mergeable priority (pp) safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) &
-  !$omp&  in_reduction(+:r2) nontemporal(ntm) order(concurrent) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  in_reduction(+:r2) nontemporal(ntm) order(concurrent) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -566,8 +566,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
 
   !$omp parallel master taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied &
-  !$omp&  if(i1) final(fi) mergeable priority (pp) reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  if(i1) final(fi) mergeable priority (pp) reduction(default, +:r) num_threads (nth) proc_bind(spread) copyin(t) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -575,8 +575,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel masked taskloop &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied &
   !$omp&  if(i1) final(fi) mergeable priority (pp) reduction(default, +:r) num_threads (nth) proc_bind(spread) &
-  !$omp&  copyin(t) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  copyin(t) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -584,8 +584,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel master taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied &
   !$omp&  if(i1) final(fi) mergeable priority (pp) safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) &
-  !$omp&  nontemporal(ntm) num_threads (nth) proc_bind(spread)copyin(t) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  nontemporal(ntm) num_threads (nth) proc_bind(spread)copyin(t) order(concurrent) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -593,8 +593,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp parallel masked taskloop simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) &
   !$omp&  final(fi) mergeable priority (pp) safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) &
-  !$omp&  nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t) order(concurrent) filter (d)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  nontemporal(ntm) num_threads (nth) proc_bind(spread) copyin(t) order(concurrent) filter (d) &
+  !$omp&  allocate (f)
   do i = 1, 64
     ll = ll +1
   end do
@@ -607,31 +607,31 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
 
   !$omp parallel loop &
   !$omp&  private (p) firstprivate (f) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
-  !$omp&  proc_bind(spread) lastprivate (l) collapse(1) bind(parallel) order(concurrent) if (parallel: i2)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  proc_bind(spread) lastprivate (l) collapse(1) bind(parallel) order(concurrent) if (parallel: i2) &
+  !$omp&  allocate (f)
   do l = 1, 64
     ll = ll + 1
   end do
 
   !$omp parallel loop &
   !$omp&  private (p) firstprivate (f) default(shared) shared(s) copyin(t) reduction(+:r) num_threads (nth) &
-  !$omp&  proc_bind(spread) lastprivate (l) collapse(1) if (parallel: i2)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  proc_bind(spread) lastprivate (l) collapse(1) if (parallel: i2) &
+  !$omp&  allocate (f)
   do l = 1, 64
     ll = ll + 1
   end do
 
   !$omp teams loop &
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) &
-  !$omp&  collapse(1) lastprivate (l) bind(teams)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  collapse(1) lastprivate (l) bind(teams) &
+  !$omp&  allocate (f)
   do l = 1, 64
   end do
 
   !$omp teams loop &
   !$omp&  private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) &
-  !$omp&  collapse(1) lastprivate (l) order(concurrent)
-  ! FIXME/TODO: allocate (f)
+  !$omp&  collapse(1) lastprivate (l) order(concurrent) &
+  !$omp&  allocate (f)
   do l = 1, 64
   end do
 
@@ -639,8 +639,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp&  device(d) map (tofrom: m) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
   !$omp&  depend(inout: dd(0)) lastprivate (l) order(concurrent) collapse(1) in_reduction(+:r2) &
-  !$omp&  if (target: i1) if (parallel: i2)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  if (target: i1) if (parallel: i2) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do l = 1, 64
   end do
   !$omp end target parallel loop nowait
@@ -648,8 +648,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp target teams loop &
   !$omp&  device(d) map (tofrom: m) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) depend(inout: dd(0)) &
-  !$omp&  lastprivate (l) bind(teams) collapse(1) in_reduction(+:r2) if (target: i1)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  lastprivate (l) bind(teams) collapse(1) in_reduction(+:r2) if (target: i1) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do l = 1, 64
   end do
   !$omp end target teams loop nowait
@@ -657,8 +657,8 @@ subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   !$omp target teams loop &
   !$omp&  device(d) map (tofrom: m) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp) &
   !$omp&  shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) depend(inout: dd(0)) &
-  !$omp&  lastprivate (l) order(concurrent) collapse(1) in_reduction(+:r2) if (target: i1)
-  ! FIXME/TODO: allocate (omp_default_mem_alloc: f)
+  !$omp&  lastprivate (l) order(concurrent) collapse(1) in_reduction(+:r2) if (target: i1) &
+  !$omp&  allocate (omp_default_mem_alloc: f)
   do l = 1, 64
   end do
   !$omp end target teams loop nowait

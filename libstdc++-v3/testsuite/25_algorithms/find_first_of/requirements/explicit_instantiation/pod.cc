@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++11 } }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
 
@@ -37,4 +38,4 @@ namespace std
   template iterator_type find_first_of(iterator_type, iterator_type,
 				       iterator_type, iterator_type,
 				       predicate_type);
-} 
+}

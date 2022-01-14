@@ -880,6 +880,10 @@ Wmissing-requires
 C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
 Warn about likely missing requires keyword.
 
+Wmissing-template-keyword
+C++ ObjC++ Var(warn_missing_template_keyword) Init(1) Warning
+Warn when the template keyword is missing after a member access token in a dependent member access expression if that member is a template.
+
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for.

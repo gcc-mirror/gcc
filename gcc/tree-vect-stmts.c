@@ -8416,9 +8416,15 @@ vectorizable_store (vec_info *vinfo,
 						   gsi);
 		      vec_oprnd = var;
 		    }
+
+		  signed char biasval =
+		    LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+
+		  tree bias = build_int_cst (intQI_type_node, biasval);
 		  gcall *call
-		    = gimple_build_call_internal (IFN_LEN_STORE, 4, dataref_ptr,
-						  ptr, final_len, vec_oprnd);
+		    = gimple_build_call_internal (IFN_LEN_STORE, 5, dataref_ptr,
+						  ptr, final_len, vec_oprnd,
+						  bias);
 		  gimple_call_set_nothrow (call, true);
 		  vect_finish_stmt_generation (vinfo, stmt_info, call, gsi);
 		  new_stmt = call;
@@ -9724,22 +9730,29 @@ vectorizable_load (vec_info *vinfo,
 					       vec_num * j + i);
 			tree ptr = build_int_cst (ref_type,
 						  align * BITS_PER_UNIT);
+
+			machine_mode vmode = TYPE_MODE (vectype);
+			opt_machine_mode new_ovmode
+			  = get_len_load_store_mode (vmode, true);
+			machine_mode new_vmode = new_ovmode.require ();
+			tree qi_type = unsigned_intQI_type_node;
+
+			signed char biasval =
+			  LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+
+			tree bias = build_int_cst (intQI_type_node, biasval);
+
 			gcall *call
-			  = gimple_build_call_internal (IFN_LEN_LOAD, 3,
+			  = gimple_build_call_internal (IFN_LEN_LOAD, 4,
 							dataref_ptr, ptr,
-							final_len);
+							final_len, bias);
 			gimple_call_set_nothrow (call, true);
 			new_stmt = call;
 			data_ref = NULL_TREE;
 
 			/* Need conversion if it's wrapped with VnQI.  */
-			machine_mode vmode = TYPE_MODE (vectype);
-			opt_machine_mode new_ovmode
-			  = get_len_load_store_mode (vmode, true);
-			machine_mode new_vmode = new_ovmode.require ();
 			if (vmode != new_vmode)
 			  {
-			    tree qi_type = unsigned_intQI_type_node;
 			    tree new_vtype
 			      = build_vector_type_for_mode (qi_type, new_vmode);
 			    tree var = vect_get_new_ssa_name (new_vtype,

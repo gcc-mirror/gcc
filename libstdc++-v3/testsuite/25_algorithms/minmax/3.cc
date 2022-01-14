@@ -24,8 +24,11 @@
 #include <testsuite_hooks.h>
 
 struct compare_counter
-  : std::binary_function<int, int, bool>
 {
+  typedef int result_type;
+  typedef int first_argument_type;
+  typedef bool second_argument_type;
+
   static int count;
   
   bool operator()(int a, int b) const

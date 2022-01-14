@@ -103,6 +103,9 @@ if test $ac_cv_type_uchar = yes; then
   [Define if <sys/types.h> defines \`uchar'.])
 fi
 
+AC_CHECK_SIZEOF(ino_t)
+AC_CHECK_SIZEOF(dev_t)
+
 # g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which exposes a different
 # iconv() prototype.
 AC_LANG_PUSH([C++])

@@ -1,3 +1,79 @@
+2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c: New test.
+	* testsuite/libgomp.fortran/allocate-1.f90: New test.
+	* libgomp.texi: Remove string that says that allocate clause
+	support is for C/C++ only.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/on_device_arch.h
+	(any_device_arch, any_device_arch_intel_mic): New.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device_any_intel_mic): New.
+	* testsuite/libgomp.c-c++-common/target-45.c: Use it.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/102192
+	* testsuite/libgomp.oacc-fortran/routine-10.f90: Document current
+	'-Wuninitialized' diagnostics.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Document
+	current '-Wuninitialized' diagnostics.
+	* testsuite/libgomp.oacc-fortran/data-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gemm-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gemm.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70643.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr96628-part1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reference-reductions.f90:
+	Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/address-space-1.c: Remove 'dg-xfail-run-if'
+	for 'offload_device_intel_mic'.
+
+2022-01-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Remove GCN
+	offloading execution XFAIL.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Update.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
 2022-01-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/target-45.c: Iterate over all devices.

@@ -2649,6 +2649,28 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  }
 	      }
 	  break;
+	case OMP_LIST_ALLOCATE:
+	  for (; n != NULL; n = n->next)
+	    if (n->sym->attr.referenced)
+	      {
+		tree t = gfc_trans_omp_variable (n->sym, false);
+		if (t != error_mark_node)
+		  {
+		    tree node = build_omp_clause (input_location,
+						  OMP_CLAUSE_ALLOCATE);
+		    OMP_CLAUSE_DECL (node) = t;
+		    if (n->expr)
+		      {
+			tree allocator_;
+			gfc_init_se (&se, NULL);
+			gfc_conv_expr (&se, n->expr);
+			allocator_ = gfc_evaluate_now (se.expr, block);
+			OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
+		      }
+		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+		  }
+	      }
+	  break;
 	case OMP_LIST_LINEAR:
 	  {
 	    gfc_expr *last_step_expr = NULL;
@@ -6260,6 +6282,71 @@ gfc_split_omp_clauses (gfc_code *code,
 	== (GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_DO))
        && !is_loop)
     clausesa[GFC_OMP_SPLIT_DO].nowait = true;
+
+   /* Distribute allocate clause to do, parallel, distribute, teams, target
+      and taskloop.  The code below itereates over variables in the
+      allocate list and checks if that available is also in any
+      privatization clause on those construct.  If yes, then we add it
+      to the list of 'allocate'ed variables for that construct.  If a
+      variable is found in none of them then we issue an error.  */
+
+   if (code->ext.omp_clauses->lists[OMP_LIST_ALLOCATE])
+     {
+       gfc_omp_namelist *alloc_nl, *priv_nl;
+       gfc_omp_namelist *tails[GFC_OMP_SPLIT_NUM];
+       for (alloc_nl = code->ext.omp_clauses->lists[OMP_LIST_ALLOCATE];
+	   alloc_nl; alloc_nl = alloc_nl->next)
+	 {
+	   bool found = false;
+	   for (int i = GFC_OMP_SPLIT_DO; i <= GFC_OMP_SPLIT_TASKLOOP; i++)
+	     {
+	       gfc_omp_namelist *p;
+	       int list;
+	       for (list = 0; list < OMP_LIST_NUM; list++)
+		 {
+		   switch (list)
+		   {
+		     case OMP_LIST_PRIVATE:
+		     case OMP_LIST_FIRSTPRIVATE:
+		     case OMP_LIST_LASTPRIVATE:
+		     case OMP_LIST_REDUCTION:
+		     case OMP_LIST_REDUCTION_INSCAN:
+		     case OMP_LIST_REDUCTION_TASK:
+		     case OMP_LIST_IN_REDUCTION:
+		     case OMP_LIST_TASK_REDUCTION:
+		     case OMP_LIST_LINEAR:
+		       for (priv_nl = clausesa[i].lists[list]; priv_nl;
+			    priv_nl = priv_nl->next)
+			 if (alloc_nl->sym == priv_nl->sym)
+			   {
+			     found = true;
+			     p = gfc_get_omp_namelist ();
+			     p->sym = alloc_nl->sym;
+			     p->expr = alloc_nl->expr;
+			     p->where = alloc_nl->where;
+			     if (clausesa[i].lists[OMP_LIST_ALLOCATE] == NULL)
+			       {
+				 clausesa[i].lists[OMP_LIST_ALLOCATE] = p;
+				 tails[i] = p;
+			       }
+			     else
+			       {
+				 tails[i]->next = p;
+				 tails[i] = tails[i]->next;
+			       }
+			   }
+		       break;
+		     default:
+		       break;
+		   }
+		 }
+	     }
+	   if (!found)
+	     gfc_error ("%qs specified in 'allocate' clause at %L but not "
+			"in an explicit privatization clause",
+			alloc_nl->sym->name, &alloc_nl->where);
+	 }
+     }
 }
 
 static tree

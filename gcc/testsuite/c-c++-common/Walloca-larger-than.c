@@ -16,6 +16,6 @@ void warn_alloca_too_large (void)
 {
   sink (alloca (1));
   sink (alloca (128));
-  sink (alloca (129));    // { dh-warning "\\\[-Walloca-larger-than" }
-  sink (alloca (1024));   // { dh-warning "\\\[-Walloca-larger-than" }
+  sink (alloca (129));    // { dg-warning "\\\[-Walloca-larger-than" }
+  sink (alloca (1024));   // { dg-warning "\\\[-Walloca-larger-than" }
 }

@@ -154,7 +154,9 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
     i = m->float_built_in;
   else if (precision == TYPE_PRECISION (double_type_node))
     i = m->double_built_in;
-  else if (precision == TYPE_PRECISION (long_double_type_node))
+  else if (precision == TYPE_PRECISION (long_double_type_node)
+	   && (!gfc_real16_is_float128
+	       || long_double_type_node != gfc_float128_type_node))
     i = m->long_double_built_in;
   else if (precision == TYPE_PRECISION (gfc_float128_type_node))
     {
@@ -881,7 +883,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
     {
       snprintf (name, sizeof (name), PREFIX ("%s_%c%d"), m->name,
 		ts->type == BT_COMPLEX ? 'c' : 'r',
-		ts->kind);
+		gfc_type_abi_kind (ts));
     }
 
   argtypes = NULL;

@@ -4442,7 +4442,6 @@ pass_pre::execute (function *fun)
   if (todo & TODO_cleanup_cfg)
     {
       cleanup_tree_cfg ();
-      todo &= ~TODO_cleanup_cfg;
       need_crit_edge_split = true;
     }
 
@@ -4458,9 +4457,8 @@ pass_pre::execute (function *fun)
      It should either:
      - call merge_blocks after each tail merge iteration
      - call merge_blocks after all tail merge iterations
-     - mark TODO_cleanup_cfg when necessary
-     - share the cfg cleanup with fini_pre.  */
-  todo |= tail_merge_optimize (todo, need_crit_edge_split);
+     - mark TODO_cleanup_cfg when necessary.  */
+  todo |= tail_merge_optimize (need_crit_edge_split);
 
   free_rpo_vn ();
 

@@ -4123,7 +4123,7 @@ get_repl_default_def_ssa_name (struct access *racc, tree reg_type)
 static void
 generate_subtree_deferred_init (struct access *access,
 				tree init_type,
-				tree is_vla,
+				tree decl_name,
 				gimple_stmt_iterator *gsi,
 				location_t loc)
 {
@@ -4135,7 +4135,7 @@ generate_subtree_deferred_init (struct access *access,
 	  gimple *call
 	    = gimple_build_call_internal (IFN_DEFERRED_INIT, 3,
 					  TYPE_SIZE_UNIT (TREE_TYPE (repl)),
-					  init_type, is_vla);
+					  init_type, decl_name);
 	  gimple_call_set_lhs (call, repl);
 	  gsi_insert_before (gsi, call, GSI_SAME_STMT);
 	  update_stmt (call);
@@ -4144,7 +4144,7 @@ generate_subtree_deferred_init (struct access *access,
 	}
       if (access->first_child)
 	generate_subtree_deferred_init (access->first_child, init_type,
-					is_vla, gsi, loc);
+					decl_name, gsi, loc);
 
       access = access ->next_sibling;
     }
@@ -4152,7 +4152,7 @@ generate_subtree_deferred_init (struct access *access,
 }
 
 /* For a call to .DEFERRED_INIT:
-   var = .DEFERRED_INIT (size_of_var, init_type, is_vla);
+   var = .DEFERRED_INIT (size_of_var, init_type, name_of_var);
    examine the LHS variable VAR and replace it with a scalar replacement if
    there is one, also replace the RHS call to a call to .DEFERRED_INIT of
    the corresponding scalar relacement variable.  Examine the subtree and
@@ -4164,7 +4164,7 @@ sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs = gimple_call_lhs (stmt);
   tree init_type = gimple_call_arg (stmt, 1);
-  tree is_vla = gimple_call_arg (stmt, 2);
+  tree decl_name = gimple_call_arg (stmt, 2);
 
   struct access *lhs_access = get_access_for_expr (lhs);
   if (!lhs_access)
@@ -4185,7 +4185,7 @@ sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)
 
   if (lhs_access->first_child)
     generate_subtree_deferred_init (lhs_access->first_child,
-				    init_type, is_vla, gsi, loc);
+				    init_type, decl_name, gsi, loc);
   if (lhs_access->grp_covered)
     {
       unlink_stmt_vdef (stmt);

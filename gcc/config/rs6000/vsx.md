@@ -5632,7 +5632,8 @@
 (define_expand "len_load_v16qi"
   [(match_operand:V16QI 0 "vlogical_operand")
    (match_operand:V16QI 1 "memory_operand")
-   (match_operand:QI 2 "gpc_reg_operand")]
+   (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
   rtx mem = XEXP (operands[1], 0);
@@ -5646,6 +5647,7 @@
   [(match_operand:V16QI 0 "memory_operand")
    (match_operand:V16QI 1 "vlogical_operand")
    (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")
   ]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {

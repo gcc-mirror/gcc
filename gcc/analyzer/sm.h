@@ -271,6 +271,9 @@ public:
     return NULL;
   }
 
+  /* Are we handling an external function with unknown side effects?  */
+  virtual bool unknown_side_effects_p () const { return false; }
+
 protected:
   sm_context (int sm_idx, const state_machine &sm)
   : m_sm_idx (sm_idx), m_sm (sm) {}

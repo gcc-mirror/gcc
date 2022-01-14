@@ -38,6 +38,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace tr1
 {
+// Ignore warnings about std::unary_function and std::binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// Class template hash.
   // Declaration of default hash functor std::tr1::hash.  The types for
   // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
@@ -56,6 +60,7 @@ namespace tr1
       operator()(_Tp* __p) const
       { return reinterpret_cast<size_t>(__p); }
     };
+#pragma GCC diagnostic pop
 
   /// Explicit specializations for integer types.
 #define _TR1_hashtable_define_trivial_hash(_Tp) 	\

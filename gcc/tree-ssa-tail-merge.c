@@ -1724,7 +1724,7 @@ update_debug_stmts (void)
 /* Runs tail merge optimization.  */
 
 unsigned int
-tail_merge_optimize (unsigned int todo, bool need_crit_edge_split)
+tail_merge_optimize (bool need_crit_edge_split)
 {
   int nr_bbs_removed_total = 0;
   int nr_bbs_removed;
@@ -1814,5 +1814,5 @@ tail_merge_optimize (unsigned int todo, bool need_crit_edge_split)
 
   timevar_pop (TV_TREE_TAIL_MERGE);
 
-  return todo;
+  return 0;
 }

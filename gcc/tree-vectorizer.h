@@ -555,6 +555,10 @@ struct rgroup_controls {
 
   /* A vector of nV controls, in iteration order.  */
   vec<tree> controls;
+
+  /* In case of len_load and len_store with a bias there is only one
+     rgroup.  This holds the adjusted loop length for the this rgroup.  */
+  tree bias_adjusted_ctrl;
 };
 
 typedef auto_vec<rgroup_controls> vec_loop_masks;
@@ -759,6 +763,11 @@ public:
      epilogue of loop.  */
   bool epil_using_partial_vectors_p;
 
+  /* The bias for len_load and len_store.  For now, only 0 and -1 are
+     supported.  -1 must be used when a backend does not support
+     len_load/len_store with a length of zero.  */
+  signed char partial_load_store_bias;
+
   /* When we have grouped data accesses with gaps, we may introduce invalid
      memory accesses.  We peel the last iteration of the loop to prevent
      this.  */
@@ -824,6 +833,7 @@ public:
 #define LOOP_VINFO_USING_PARTIAL_VECTORS_P(L) (L)->using_partial_vectors_p
 #define LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P(L)                             \
   (L)->epil_using_partial_vectors_p
+#define LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS(L) (L)->partial_load_store_bias
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
 #define LOOP_VINFO_MASKS(L)                (L)->masks

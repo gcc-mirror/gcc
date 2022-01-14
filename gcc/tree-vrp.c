@@ -4332,6 +4332,7 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p)
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 
+  set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun);
   rvrp_folder folder (ranger);
   folder.substitute_and_fold ();

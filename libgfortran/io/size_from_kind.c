@@ -49,6 +49,10 @@ size_from_real_kind (int kind)
     case 16:
       return sizeof (GFC_REAL_16);
 #endif
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      return sizeof (GFC_REAL_17);
+#endif
     default:
       return kind;
     }
@@ -75,6 +79,10 @@ size_from_complex_kind (int kind)
 #ifdef HAVE_GFC_COMPLEX_16
     case 16:
       return sizeof (GFC_COMPLEX_16);
+#endif
+#ifdef HAVE_GFC_COMPLEX_17
+    case 17:
+      return sizeof (GFC_COMPLEX_17);
 #endif
     default:
       return 2 * kind;

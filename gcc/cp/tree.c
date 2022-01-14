@@ -1304,6 +1304,8 @@ move (tree expr)
 {
   tree type = TREE_TYPE (expr);
   gcc_assert (!TYPE_REF_P (type));
+  if (xvalue_p (expr))
+    return expr;
   type = cp_build_reference_type (type, /*rval*/true);
   return build_static_cast (input_location, type, expr,
 			    tf_warning_or_error);

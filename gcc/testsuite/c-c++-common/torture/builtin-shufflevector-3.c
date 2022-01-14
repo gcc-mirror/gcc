@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-Wno-psabi" } */
 
 typedef int __attribute__((__vector_size__ (sizeof(int)*4))) V;
 

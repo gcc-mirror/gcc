@@ -14,6 +14,6 @@ long double foo()
   return result;
 }
 
-/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(4, 2, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(8, 2, 0\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\((8|12|16), 2, 0\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(4, 2, \&\"temp1\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(8, 2, \&\"temp2\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\((8|12|16), 2, \&\"temp3\"" "gimple" } } */

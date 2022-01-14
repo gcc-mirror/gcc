@@ -1607,10 +1607,16 @@ ira_loop_border_costs::move_between_loops_cost () const
 
 /* Return true if subloops that contain allocnos for A's register can
    use a different assignment from A.  ALLOCATED_P is true for the case
-   in which allocation succeeded for A.  */
+   in which allocation succeeded for A.  EXCLUDE_OLD_RELOAD is true if
+   we should always return false for non-LRA targets.  (This is a hack
+   and should be removed along with old reload.)  */
 inline bool
-ira_subloop_allocnos_can_differ_p (ira_allocno_t a, bool allocated_p = true)
+ira_subloop_allocnos_can_differ_p (ira_allocno_t a, bool allocated_p = true,
+				   bool exclude_old_reload = true)
 {
+  if (exclude_old_reload && !ira_use_lra_p)
+    return false;
+
   auto regno = ALLOCNO_REGNO (a);
 
   if (pic_offset_table_rtx != NULL

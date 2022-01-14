@@ -1,3 +1,27 @@
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* c.opt: Added -Wmissing-template-keyword.
+
+2022-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR c/104002
+	* c-common.c (c_common_mark_addressable_vec): Handle TARGET_EXPR.
+
+2022-01-12  Martin Liska  <mliska@suse.cz>
+
+	PR target/103804
+	* c-attribs.c (handle_optimize_attribute): Do not call
+	cl_optimization_compare if we seen an error.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101537
+	PR c/103881
+	* c-warn.c (conversion_warning): Handle BIT_AND_EXPR, BIT_IOR_EXPR
+	and BIT_XOR_EXPR.
+
 2022-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/101530
