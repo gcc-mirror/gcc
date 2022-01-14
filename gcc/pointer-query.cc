@@ -1914,36 +1914,41 @@ handle_component_ref (tree cref, gimple *stmt, bool addr, int ostype,
   gcc_assert (TREE_CODE (cref) == COMPONENT_REF);
 
   const tree base = TREE_OPERAND (cref, 0);
+  const tree field = TREE_OPERAND (cref, 1);
+  access_ref base_ref = *pref;
+
+  /* Unconditionally determine the size of the base object (it could
+     be smaller than the referenced member when the object is stored
+     in a buffer with an insufficient size).  */
+  if (!compute_objsize_r (base, stmt, addr, 0, &base_ref, snlim, qry))
+    return false;
+
+  /* Add the offset of the member to the offset into the object computed
+     so far.  */
+  tree offset = byte_position (field);
+  if (TREE_CODE (offset) == INTEGER_CST)
+    base_ref.add_offset (wi::to_offset (offset));
+  else
+    base_ref.add_max_offset ();
+
+  if (!base_ref.ref)
+    /* PREF->REF may have been already set to an SSA_NAME earlier
+       to provide better context for diagnostics.  In that case,
+       leave it unchanged.  */
+    base_ref.ref = base;
+
   const tree base_type = TREE_TYPE (base);
   if (TREE_CODE (base_type) == UNION_TYPE)
     /* In accesses through union types consider the entire unions
        rather than just their members.  */
     ostype = 0;
 
-  tree field = TREE_OPERAND (cref, 1);
-
   if (ostype == 0)
     {
       /* In OSTYPE zero (for raw memory functions like memcpy), use
 	 the maximum size instead if the identity of the enclosing
 	 object cannot be determined.  */
-      if (!compute_objsize_r (base, stmt, addr, ostype, pref, snlim, qry))
-	return false;
-
-      /* Otherwise, use the size of the enclosing object and add
-	 the offset of the member to the offset computed so far.  */
-      tree offset = byte_position (field);
-      if (TREE_CODE (offset) == INTEGER_CST)
-	pref->add_offset (wi::to_offset (offset));
-      else
-	pref->add_max_offset ();
-
-      if (!pref->ref)
-	/* PREF->REF may have been already set to an SSA_NAME earlier
-	   to provide better context for diagnostics.  In that case,
-	   leave it unchanged.  */
-	pref->ref = base;
-
+      *pref = base_ref;
       return true;
     }
 
@@ -1958,6 +1963,11 @@ handle_component_ref (tree cref, gimple *stmt, bool addr, int ostype,
     }
 
   set_component_ref_size (cref, pref);
+
+  if (base_ref.size_remaining () < pref->size_remaining ())
+    /* Use the base object if it's smaller than the member.  */
+    *pref = base_ref;
+
   return true;
 }
 
