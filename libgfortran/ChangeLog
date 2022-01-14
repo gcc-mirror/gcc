@@ -1,3 +1,10 @@
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/104006
+	* Makefile.am (gfortran.map-sun): Rename target to ...
+	(gfortran.ver-sun): ... this.
+	* Makefile.in: Regenerated.
+
 2022-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgfortran.h (POWER_IEEE128): Use __GLIBC_PREREQ in a separate

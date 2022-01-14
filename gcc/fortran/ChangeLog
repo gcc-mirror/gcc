@@ -1,3 +1,30 @@
+2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle OMP_LIST_ALLOCATE.
+	* gfortran.h (OMP_LIST_ALLOCATE): New enum value.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_ALLOCATE.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_ALLOCATE
+	(OMP_PARALLEL_CLAUSES, OMP_DO_CLAUSES, OMP_SECTIONS_CLAUSES)
+	(OMP_TASK_CLAUSES, OMP_TASKLOOP_CLAUSES, OMP_TARGET_CLAUSES)
+	(OMP_TEAMS_CLAUSES, OMP_DISTRIBUTE_CLAUSES)
+	(OMP_SINGLE_CLAUSES): Add OMP_CLAUSE_ALLOCATE.
+	(OMP_TASKGROUP_CLAUSES): New.
+	(gfc_match_omp_taskgroup): Use OMP_TASKGROUP_CLAUSES instead of
+	OMP_CLAUSE_TASK_REDUCTION.
+	(resolve_omp_clauses): Handle OMP_LIST_ALLOCATE.
+	(resolve_omp_do): Avoid warning when loop iteration variable is
+	in allocate clause.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle translation of
+	allocate clause.
+	(gfc_split_omp_clauses): Update for OMP_LIST_ALLOCATE.
+
+2022-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67804
+	* primary.c (gfc_match_structure_constructor): Recover from errors
+	that occurred while checking for a valid structure constructor in
+	a DATA statement.
+
 2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* libgfortran.h (unit_convert): Add flags.

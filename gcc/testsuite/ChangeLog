@@ -1,3 +1,157 @@
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* g++.dg/cpp0x/variadic-mem_fn2.C: Catch warning about missing
+	template keyword.
+	* g++.dg/template/dependent-name17.C: New test.
+	* g++.dg/template/dependent-name18.C: New test.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* gcc.target/i386/pr103861.c (shl,ashr,lshr): New tests.
+
+2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-1.f90: New test.
+	* gfortran.dg/gomp/allocate-2.f90: New test.
+	* gfortran.dg/gomp/allocate-3.f90: New test.
+	* gfortran.dg/gomp/collapse1.f90: Update error message.
+	* gfortran.dg/gomp/openmp-simd-4.f90: Likewise.
+	* gfortran.dg/gomp/clauses-1.f90: Uncomment allocate clause.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83072
+	PR tree-optimization/83073
+	PR tree-optimization/97909
+	* gcc.dg/pr83072-2.c: New.
+	* gcc.dg/pr83073.c: New.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/96707
+	* g++.dg/pr96707.C: New.
+
+2022-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67804
+	* gfortran.dg/pr93604.f90: Adjust to changed diagnostics.
+	* gfortran.dg/pr67804.f90: New test.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104003
+	* g++.target/i386/pr103861-1-sse4.C: New test.
+	* g++.target/i386/pr103861-1-xop.C: Ditto.
+
+2022-01-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-round3.h: New.
+	* gcc.target/powerpc/sse4_1-roundpd.c: New.
+	* gcc.target/powerpc/sse4_1-roundps.c: New.
+	* gcc.target/powerpc/sse4_1-roundsd.c: New.
+	* gcc.target/powerpc/sse4_1-roundss.c: New.
+
+2022-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR c/104002
+	* c-c++-common/builtin-shufflevector-3.c: Move ...
+	* c-c++-common/torture/builtin-shufflevector-3.c: ... here.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/routine-6.c: Merge into...
+	* c-c++-common/goacc/routine-5.c: ... this, and document current
+	C/C++ difference.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/builtin-goacc-parlevel-id-size.c: Document
+	current '-Wuninitialized' diagnostics.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-kernels.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-parallel.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-1-routine.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-kernels.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-parallel.c: Likewise.
+	* c-c++-common/goacc/nested-reductions-2-routine.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-firstprivate-clause.c: Likewise.
+	* c-c++-common/goacc/uninit-if-clause.c: Likewise.
+	* gfortran.dg/goacc/array-with-dt-1.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-2.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-3.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-4.f90: Likewise.
+	* gfortran.dg/goacc/array-with-dt-5.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-1.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-2.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-3.f90: Likewise.
+	* gfortran.dg/goacc/derived-chartypes-4.f90: Likewise.
+	* gfortran.dg/goacc/derived-classtypes-1.f95: Likewise.
+	* gfortran.dg/goacc/derived-types-2.f90: Likewise.
+	* gfortran.dg/goacc/host_data-tree.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+	* gfortran.dg/goacc/modules.f95: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-kernels.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-parallel.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-1-routine.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-kernels.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-parallel.f90: Likewise.
+	* gfortran.dg/goacc/nested-reductions-2-routine.f90: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/pr93464.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-firstprivate-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-if-clause.f95: Likewise.
+	* gfortran.dg/goacc/uninit-use-device-clause.f95: Likewise.
+	* gfortran.dg/goacc/wait.f90: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: New.
+	* c-c++-common/goacc/classify-kernels-parloops.c: Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	Likewise.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Test
+	'--param openacc-kernels=decompose'.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Update.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Remove.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-parloops.f95: New.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Test
+	'--param openacc-kernels=decompose'.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-1.c: Enhance.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+
+2022-01-13  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/94790
+	* gcc.target/i386/pr94790-1.c: New test.
+	* gcc.target/i386/pr94790-2.c: Ditto.
+
+2022-01-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/sldoi_to_mov.c: New test.
+
 2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103941

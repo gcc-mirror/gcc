@@ -1,3 +1,139 @@
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* doc/invoke.texi: Documentation for Wmissing-template-keyword.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103861
+	* config/i386/i386.md (*ashlqi_ext<mode>_2): New insn pattern.
+	(*<any_shiftrt:insn>qi_ext<mode>_2): Ditto.
+	* config/i386/mmx.md (<any_shift:insn>v2qi):
+	New insn_and_split pattern.
+
+2022-01-13  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* internal-fn.c (expand_partial_load_optab_fn): Add bias.
+	(expand_partial_store_optab_fn): Likewise.
+	(internal_len_load_store_bias): New function.
+	* internal-fn.h (VECT_PARTIAL_BIAS_UNSUPPORTED): New define.
+	(internal_len_load_store_bias): New function.
+	* tree-vect-loop-manip.c (vect_set_loop_controls_directly): Set bias.
+	(vect_set_loop_condition_partial_vectors): Add header_seq parameter.
+	* tree-vect-loop.c (vect_verify_loop_lens): Verify bias.
+	(vect_estimate_min_profitable_iters): Account for bias.
+	(vect_get_loop_len): Add bias-adjusted length.
+	* tree-vect-stmts.c (vectorizable_store): Use.
+	(vectorizable_load): Use.
+	* tree-vectorizer.h (struct rgroup_controls): Add bias-adjusted length.
+	(LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS): New macro.
+	* config/rs6000/vsx.md: Use const0 bias predicate.
+	* doc/md.texi: Document bias value.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/83072
+	PR tree-optimization/83073
+	PR tree-optimization/97909
+	* fold-const.c (expr_not_equal_to): Use a multi-range class.
+
+2022-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/96707
+	* range-op.cc (operator_rshift::lhs_op1_relation): New.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (negv2qi): Disparage GPR alternative a bit.
+	Disable for TARGET_PARTIAL_REG_STALL unless optimizing for size.
+	(negv2qi splitters): Use lowpart_subreg instead of
+	gen_lowpart to create subreg.
+	(<plusminus:insn>v2qi3): Disparage GPR alternative a bit.
+	Disable for TARGET_PARTIAL_REG_STALL unless optimizing for size.
+	(<plusminus:insn>v2qi3 splitters): Use lowpart_subreg instead of
+	gen_lowpart to create subreg.
+	* config/i386/i386.md (*subqi_ext<mode>_2): Move.
+
+2022-01-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104003
+	* config/i386/mmx.md (*xop_pcmov_<mode>): Use VI_16_32 mode iterator.
+
+2022-01-13  Martin Liska  <mliska@suse.cz>
+
+	* common/config/arm/arm-common.c (arm_target_mode): Wrap
+	keywords with %<, %> and remove trailing punctuation char.
+	(arm_canon_arch_option_1): Likewise.
+	(arm_asm_auto_mfpu): Likewise.
+	* config/arm/arm-builtins.c (arm_expand_builtin): Likewise.
+	* config/arm/arm.c (arm_options_perform_arch_sanity_checks): Likewise.
+	(use_vfp_abi): Likewise.
+	(aapcs_vfp_is_call_or_return_candidate): Likewise.
+	(arm_handle_cmse_nonsecure_entry): Likewise.
+	(arm_handle_cmse_nonsecure_call): Likewise.
+	(thumb1_md_asm_adjust): Likewise.
+
+2022-01-13  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_round_pd, _mm_round_ps,
+	_mm_round_sd, _mm_round_ss, _MM_FROUND_TO_NEAREST_INT,
+	_MM_FROUND_TO_ZERO, _MM_FROUND_TO_POS_INF, _MM_FROUND_TO_NEG_INF,
+	_MM_FROUND_CUR_DIRECTION, _MM_FROUND_RAISE_EXC, _MM_FROUND_NO_EXC,
+	_MM_FROUND_NINT, _MM_FROUND_FLOOR, _MM_FROUND_CEIL, _MM_FROUND_TRUNC,
+	_MM_FROUND_RINT, _MM_FROUND_NEARBYINT): New.
+	(_mm_ceil_pd, _mm_ceil_ps, _mm_ceil_sd, _mm_ceil_ss, _mm_floor_pd,
+	_mm_floor_ps, _mm_floor_sd, _mm_floor_ss): Convert from function to
+	macro.
+
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103989
+	* tree-inline.c (setup_one_parameter): Don't copy parms with
+	empty type.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-streamer-out.c (pack_ts_base_value_fields): Don't pack
+	'TYPE_ADDR_SPACE' for offloading.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Don't unpack
+	'TYPE_ADDR_SPACE' for offloading.
+
+2022-01-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-kernels-decompose.cc (add_wait): New function, split out
+	of...
+	(add_async_clauses_and_wait): ...here. Call new outlined function.
+	(decompose_kernels_region_body): Add wait at the end of
+	explicitly-asynchronous kernels regions.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* omp-oacc-kernels-decompose.cc (maybe_build_inner_data_region):
+	Mark variables used in synthesized data clauses as addressable.
+
+2022-01-13  Martin Liska  <mliska@suse.cz>
+
+	* config/epiphany/epiphany.c (epiphany_mode_priority):
+	Use gcc_unreachable for not handled cases.
+
+2022-01-13  Martin Liska  <mliska@suse.cz>
+
+	* config/epiphany/epiphany.c (epiphany_handle_interrupt_attribute):
+	Use %qs format specifier.
+	(epiphany_override_options): Wrap keyword in %<, %>.
+
+2022-01-13  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/94790
+	* config/i386/i386.md (*xor2andn): New define_insn_and_split.
+
+2022-01-13  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/altivec.md (sldoi_to_mov<mode>): New.
+
 2022-01-12  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100637

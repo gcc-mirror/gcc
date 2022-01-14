@@ -1,3 +1,22 @@
+2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70417
+	* parser.c (cp_parser_id_expression): Handle
+	-Wmissing-template-keyword.
+	(struct saved_token_sentinel): Add modes to control what happens
+	on destruction.
+	(cp_parser_statement): Adjust.
+	(cp_parser_skip_entire_template_parameter_list): New function that
+	skips an entire template parameter list.
+	(cp_parser_require_end_of_template_parameter_list): Rename old
+	cp_parser_skip_to_end_of_template_parameter_list.
+	(cp_parser_skip_to_end_of_template_parameter_list): Refactor to be
+	called from one of the above two functions.
+	(cp_parser_lambda_declarator_opt)
+	(cp_parser_explicit_template_declaration)
+	(cp_parser_enclosed_template_argument_list): Adjust.
+
 2022-01-12  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

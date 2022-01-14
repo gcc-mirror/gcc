@@ -1,3 +1,8 @@
+2022-01-13  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Simplify the script as pre-auto-ChangeLog era
+	is 14 months old.
+
 2022-01-11  Martin Liska  <mliska@suse.cz>
 
 	* check-MAINTAINERS.py: Use sys.argv[1] as path to MAINTAINERS.
