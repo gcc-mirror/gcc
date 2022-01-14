@@ -5352,7 +5352,26 @@ else
   GDC="$ac_cv_prog_GDC"
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the D compiler works" >&5
+$as_echo_n "checking whether the D compiler works... " >&6; }
+if ${acx_cv_d_compiler_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat >conftest.d <<EOF
+module conftest; int main() { return 0; }
+EOF
+acx_cv_d_compiler_works=no
 if test "x$GDC" != xno; then
+  errors=`(${GDC} -I"$srcdir"/d -c conftest.d) 2>&1 || echo failure`
+  if test x"$errors" = x && test -f conftest.$ac_objext; then
+    acx_cv_d_compiler_works=yes
+  fi
+  rm -f conftest.*
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_d_compiler_works" >&5
+$as_echo "$acx_cv_d_compiler_works" >&6; }
+if test "x$GDC" != xno && test x$acx_cv_d_compiler_works != xno; then
   have_gdc=yes
 else
   have_gdc=no
@@ -19640,7 +19659,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19643 "configure"
+#line 19662 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19746,7 +19765,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19749 "configure"
+#line 19768 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
