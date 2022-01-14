@@ -2804,8 +2804,9 @@ fixup_deferred_exception_variants (tree type, tree raises)
 
   /* Though sucky, this walk will process the canonical variants
      first.  */
+  tree prev = NULL_TREE;
   for (tree variant = TYPE_MAIN_VARIANT (type);
-       variant; variant = TYPE_NEXT_VARIANT (variant))
+       variant; prev = variant, variant = TYPE_NEXT_VARIANT (variant))
     if (TYPE_RAISES_EXCEPTIONS (variant) == original)
       {
 	gcc_checking_assert (variant != TYPE_MAIN_VARIANT (type));
@@ -2815,18 +2816,27 @@ fixup_deferred_exception_variants (tree type, tree raises)
 	    cp_cv_quals var_quals = TYPE_QUALS (variant);
 	    cp_ref_qualifier rqual = type_memfn_rqual (variant);
 
+	    /* If VARIANT would become a dup (cp_check_qualified_type-wise)
+	       of an existing variant in the variant list of TYPE after its
+	       exception specification has been parsed, elide it.  Otherwise,
+	       build_cp_fntype_variant could use it, leading to "canonical
+	       types differ for identical types."  */
 	    tree v = TYPE_MAIN_VARIANT (type);
 	    for (; v; v = TYPE_NEXT_VARIANT (v))
-	      if (TYPE_CANONICAL (v) == v
-		  && cp_check_qualified_type (v, variant, var_quals,
-					      rqual, cr, false))
-		break;
+	      if (cp_check_qualified_type (v, variant, var_quals,
+					   rqual, cr, false))
+		{
+		  /* The main variant will not match V, so PREV will never
+		     be null.  */
+		  TYPE_NEXT_VARIANT (prev) = TYPE_NEXT_VARIANT (variant);
+		  break;
+		}
 	    TYPE_RAISES_EXCEPTIONS (variant) = raises;
 
 	    if (!v)
 	      v = build_cp_fntype_variant (TYPE_CANONICAL (variant),
 					   rqual, cr, false);
-	    TYPE_CANONICAL (variant) = v;
+	    TYPE_CANONICAL (variant) = TYPE_CANONICAL (v);
 	  }
 	else
 	  TYPE_RAISES_EXCEPTIONS (variant) = raises;
