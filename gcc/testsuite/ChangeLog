@@ -1,3 +1,9 @@
+2022-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101615
+	PR tree-optimization/103995
+	* gcc.dg/vect/bb-slp-pr101615-2.c: New testcase.
+
 2022-01-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
