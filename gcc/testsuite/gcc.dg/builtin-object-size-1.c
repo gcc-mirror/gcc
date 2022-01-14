@@ -603,6 +603,32 @@ test9 (unsigned cond)
 #endif
 }
 
+void
+__attribute__ ((noinline))
+test10 (void)
+{
+  static char buf[255];
+  unsigned int i, len = sizeof (buf);
+  char *p = buf;
+
+  for (i = 0 ; i < sizeof (buf) ; i++)
+    {
+      if (len < 2)
+	{
+#ifdef __builtin_object_size
+	  if (__builtin_object_size (p - 3, 0) != sizeof (buf) - i + 3)
+	    abort ();
+#else
+	  if (__builtin_object_size (p - 3, 0) != sizeof (buf))
+	    abort ();
+#endif
+	  break;
+	}
+      p++;
+      len--;
+    }
+}
+
 int
 main (void)
 {
@@ -617,5 +643,6 @@ main (void)
   test7 ();
   test8 ();
   test9 (1);
+  test10 ();
   exit (0);
 }

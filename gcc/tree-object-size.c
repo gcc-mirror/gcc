@@ -1054,7 +1054,8 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	      ptr = gimple_assign_rhs1 (def);
 
 	      if (((object_size_type & OST_DYNAMIC)
-		   || tree_fits_shwi_p (offset))
+		   || (tree_fits_shwi_p (offset)
+		       && compare_tree_int (offset, offset_limit) <= 0))
 		  && compute_builtin_object_size (ptr, object_size_type,
 						  psize))
 		{
@@ -1346,8 +1347,18 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
       /* size_for_offset doesn't make sense for -1 size, but it does for size 0
 	 since the wholesize could be non-zero and a negative offset could give
 	 a non-zero size.  */
-      if (!size_unknown_p (bytes, 0))
+      if (size_unknown_p (bytes, 0))
+	;
+      else if ((object_size_type & OST_DYNAMIC)
+	       || compare_tree_int (op1, offset_limit) <= 0)
 	bytes = size_for_offset (bytes, op1, wholesize);
+      /* In the static case, with a negative offset, the best estimate for
+	 minimum size is size_unknown but for maximum size, the wholesize is a
+	 better estimate than size_unknown.  */
+      else if (object_size_type & OST_MINIMUM)
+	bytes = size_unknown (object_size_type);
+      else
+	bytes = wholesize;
     }
   else
     bytes = wholesize = size_unknown (object_size_type);
