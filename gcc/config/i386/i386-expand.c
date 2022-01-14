@@ -6211,8 +6211,7 @@ ix86_expand_v1ti_to_ti (rtx x)
   rtx result = gen_reg_rtx (TImode);
   if (TARGET_SSE2)
     {
-      rtx temp = gen_reg_rtx (V2DImode);
-      emit_move_insn (temp, gen_lowpart (V2DImode, x));
+      rtx temp = force_reg (V2DImode, gen_lowpart (V2DImode, x));
       rtx lo = gen_lowpart (DImode, result);
       emit_insn (gen_vec_extractv2didi (lo, temp, const0_rtx));
       rtx hi = gen_highpart (DImode, result);
@@ -6227,18 +6226,16 @@ ix86_expand_v1ti_to_ti (rtx x)
 static rtx
 ix86_expand_ti_to_v1ti (rtx x)
 {
-  rtx result = gen_reg_rtx (V1TImode);
   if (TARGET_SSE2)
     {
       rtx lo = gen_lowpart (DImode, x);
       rtx hi = gen_highpart (DImode, x);
       rtx tmp = gen_reg_rtx (V2DImode);
       emit_insn (gen_vec_concatv2di (tmp, lo, hi));
-      emit_move_insn (result, gen_lowpart (V1TImode, tmp));
+      return force_reg (V1TImode, gen_lowpart (V1TImode, tmp));
     }
-  else
-    emit_move_insn (result, gen_lowpart (V1TImode, x));
-  return result;
+
+  return force_reg (V1TImode, gen_lowpart (V1TImode, x));
 }
 
 /* Expand V1TI mode shift (of rtx_code CODE) by constant.  */
@@ -6285,8 +6282,7 @@ ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
     emit_insn (gen_sse2_lshrv1ti3 (tmp1, op1, GEN_INT (64)));
 
   /* tmp2 is operands[1] shifted by 64, in V2DImode.  */
-  rtx tmp2 = gen_reg_rtx (V2DImode);
-  emit_move_insn (tmp2, gen_lowpart (V2DImode, tmp1));
+  rtx tmp2 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp1));
 
   /* tmp3 will be the V2DImode result.  */
   rtx tmp3 = gen_reg_rtx (V2DImode);
@@ -6301,8 +6297,7 @@ ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
   else
     {
       /* tmp4 is operands[1], in V2DImode.  */
-      rtx tmp4 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, op1));
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, op1));
 
       rtx tmp5 = gen_reg_rtx (V2DImode);
       if (code == ASHIFT)
@@ -6320,8 +6315,7 @@ ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
     }
 
   /* Convert the result back to V1TImode and store in operands[0].  */
-  rtx tmp7 = gen_reg_rtx (V1TImode);
-  emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp3));
+  rtx tmp7 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
   emit_move_insn (operands[0], tmp7);
 }
 
@@ -6356,19 +6350,15 @@ ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
 
   if ((bits & 31) == 0)
     {
-      rtx tmp1 = gen_reg_rtx (V4SImode);
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      rtx tmp3 = gen_reg_rtx (V1TImode);
-
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       if (bits == 32)
 	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x93)));
       else if (bits == 64)
 	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x4e)));
       else
 	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x39)));
-      emit_move_insn (tmp3, gen_lowpart (V1TImode, tmp2));
-      emit_move_insn (operands[0], tmp3);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp2));
       return;
     }
 
@@ -6385,8 +6375,7 @@ ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
       return;
     }
 
-  rtx op1_v4si = gen_reg_rtx (V4SImode);
-  emit_move_insn (op1_v4si, gen_lowpart (V4SImode, op1));
+  rtx op1_v4si = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
 
   rtx lobits;
   rtx hibits;
@@ -6423,13 +6412,12 @@ ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
   rtx tmp1 = gen_reg_rtx (V4SImode);
   rtx tmp2 = gen_reg_rtx (V4SImode);
   rtx tmp3 = gen_reg_rtx (V4SImode);
-  rtx tmp4 = gen_reg_rtx (V1TImode);
 
   emit_insn (gen_ashlv4si3 (tmp1, lobits, GEN_INT (bits & 31)));
   emit_insn (gen_lshrv4si3 (tmp2, hibits, GEN_INT (32 - (bits & 31))));
   emit_insn (gen_iorv4si3 (tmp3, tmp1, tmp2));
-  emit_move_insn (tmp4, gen_lowpart (V1TImode, tmp3));
-  emit_move_insn (operands[0], tmp4);
+
+  emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp3));
 }
 
 /* Expand V1TI mode ashiftrt by constant.  */
@@ -6459,67 +6447,72 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
   if (bits == 127)
     {
       /* Two operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg(V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
       emit_insn (gen_ashrv4si3 (tmp3, tmp2, GEN_INT (31)));
 
-      rtx tmp4 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp4, gen_lowpart (V1TImode, tmp3));
-      emit_move_insn (operands[0], tmp4);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp3));
       return;
     }
 
   if (bits == 64)
     {
       /* Three operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg(V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
       emit_insn (gen_ashrv4si3 (tmp3, tmp2, GEN_INT (31)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
-      rtx tmp5 = gen_reg_rtx (V2DImode);
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp1));
+      rtx tmp5 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp6 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, tmp1));
-      emit_move_insn (tmp5, gen_lowpart (V2DImode, tmp3));
       emit_insn (gen_vec_interleave_highv2di (tmp6, tmp4, tmp5));
 
-      rtx tmp7 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp6));
-      emit_move_insn (operands[0], tmp7);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp6));
       return;
     }
 
   if (bits == 96)
     {
       /* Three operations.  */
-      rtx tmp3 = gen_reg_rtx (V2DImode);
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg(V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (31)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
+      rtx tmp3 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp1));
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp2));
       rtx tmp5 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp3, gen_lowpart (V2DImode, tmp1));
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, tmp2));
       emit_insn (gen_vec_interleave_highv2di (tmp5, tmp3, tmp4));
 
-      rtx tmp6 = gen_reg_rtx (V4SImode);
+      rtx tmp6 = force_reg(V4SImode, gen_lowpart (V4SImode, tmp5));
       rtx tmp7 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp6, gen_lowpart (V4SImode, tmp5));
       emit_insn (gen_sse2_pshufd (tmp7, tmp6, GEN_INT (0xfd)));
 
-      rtx tmp8 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp8, gen_lowpart (V1TImode, tmp7));
-      emit_move_insn (operands[0], tmp8);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp7));
+      return;
+    }
+
+  if (bits >= 111)
+    {
+      /* Three operations.  */
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
+      rtx tmp2 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (bits - 96)));
+
+      rtx tmp3 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp2));
+      rtx tmp4 = gen_reg_rtx (V8HImode);
+      emit_insn (gen_sse2_pshufhw (tmp4, tmp3, GEN_INT (0xfe)));
+
+      rtx tmp5 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp4));
+      rtx tmp6 = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (tmp6, tmp5, GEN_INT (0xfe)));
+
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp6));
       return;
     }
 
@@ -6528,9 +6521,8 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       /* Three operations.  */
       if (bits == 32)
 	{
-	  rtx tmp1 = gen_reg_rtx (V4SImode);
+	  rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
 	  rtx tmp2 = gen_reg_rtx (V4SImode);
-	  emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
 	  emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (31)));
 
 	  rtx tmp3 = gen_reg_rtx (V1TImode);
@@ -6538,29 +6530,22 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
 
 	  if (TARGET_AVX2)
 	    {
-	      rtx tmp4 = gen_reg_rtx (V4SImode);
+	      rtx tmp4 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp3));
 	      rtx tmp5 = gen_reg_rtx (V4SImode);
-	      emit_move_insn (tmp4, gen_lowpart (V4SImode, tmp3));
 	      emit_insn (gen_avx2_pblenddv4si (tmp5, tmp2, tmp4,
 					       GEN_INT (7)));
 
-	      rtx tmp6 = gen_reg_rtx (V1TImode);
-	      emit_move_insn (tmp6, gen_lowpart (V1TImode, tmp5));
-	      emit_move_insn (operands[0], tmp6);
+	      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp5));
 	    }
 	  else
 	    {
-	      rtx tmp4 = gen_reg_rtx (V8HImode);
-	      rtx tmp5 = gen_reg_rtx (V8HImode);
+	      rtx tmp4 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp2));
+	      rtx tmp5 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp3));
 	      rtx tmp6 = gen_reg_rtx (V8HImode);
-	      emit_move_insn (tmp4, gen_lowpart (V8HImode, tmp2));
-	      emit_move_insn (tmp5, gen_lowpart (V8HImode, tmp3));
 	      emit_insn (gen_sse4_1_pblendw (tmp6, tmp4, tmp5,
 					     GEN_INT (0x3f)));
 
-	      rtx tmp7 = gen_reg_rtx (V1TImode);
-	      emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp6));
-	      emit_move_insn (operands[0], tmp7);
+	      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp6));
 	    }
 	  return;
 	}
@@ -6568,9 +6553,8 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       /* Three operations.  */
       if (bits == 8 || bits == 16 || bits == 24)
 	{
-	  rtx tmp1 = gen_reg_rtx (V4SImode);
+	  rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
 	  rtx tmp2 = gen_reg_rtx (V4SImode);
-	  emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
 	  emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (bits)));
 
 	  rtx tmp3 = gen_reg_rtx (V1TImode);
@@ -6578,29 +6562,22 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
 
 	  if (TARGET_AVX2)
 	    {
-	      rtx tmp4 = gen_reg_rtx (V4SImode);
+	      rtx tmp4 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp3));
 	      rtx tmp5 = gen_reg_rtx (V4SImode);
-	      emit_move_insn (tmp4, gen_lowpart (V4SImode, tmp3));
 	      emit_insn (gen_avx2_pblenddv4si (tmp5, tmp2, tmp4,
 					       GEN_INT (7)));
 
-	      rtx tmp6 = gen_reg_rtx (V1TImode);
-	      emit_move_insn (tmp6, gen_lowpart (V1TImode, tmp5));
-	      emit_move_insn (operands[0], tmp6);
+	      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp5));
 	    }
 	  else
 	    {
-	      rtx tmp4 = gen_reg_rtx (V8HImode);
-	      rtx tmp5 = gen_reg_rtx (V8HImode);
+	      rtx tmp4 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp2));
+	      rtx tmp5 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp3));
 	      rtx tmp6 = gen_reg_rtx (V8HImode);
-	      emit_move_insn (tmp4, gen_lowpart (V8HImode, tmp2));
-	      emit_move_insn (tmp5, gen_lowpart (V8HImode, tmp3));
 	      emit_insn (gen_sse4_1_pblendw (tmp6, tmp4, tmp5,
 					     GEN_INT (0x3f)));
 
-	      rtx tmp7 = gen_reg_rtx (V1TImode);
-	      emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp6));
-	      emit_move_insn (operands[0], tmp7);
+	      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp6));
 	    }
 	  return;
 	}
@@ -6609,38 +6586,31 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
   if (bits > 96)
     {
       /* Four operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (bits - 96)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
       emit_insn (gen_ashrv4si3 (tmp3, tmp1, GEN_INT (31)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
-      rtx tmp5 = gen_reg_rtx (V2DImode);
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp2));
+      rtx tmp5 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp6 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, tmp2));
-      emit_move_insn (tmp5, gen_lowpart (V2DImode, tmp3));
       emit_insn (gen_vec_interleave_highv2di (tmp6, tmp4, tmp5));
 
-      rtx tmp7 = gen_reg_rtx (V4SImode);
+      rtx tmp7 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp6));
       rtx tmp8 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp7, gen_lowpart (V4SImode, tmp6));
       emit_insn (gen_sse2_pshufd (tmp8, tmp7, GEN_INT (0xfd)));
 
-      rtx tmp9 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp9, gen_lowpart (V1TImode, tmp8));
-      emit_move_insn (operands[0], tmp9);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp8));
       return;
     }
 
   if (TARGET_SSE4_1 && (bits == 48 || bits == 80))
     {
       /* Four operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
@@ -6649,26 +6619,21 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp4 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp4, op1, GEN_INT (bits)));
 
-      rtx tmp5 = gen_reg_rtx (V8HImode);
-      rtx tmp6 = gen_reg_rtx (V8HImode);
+      rtx tmp5 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp3));
+      rtx tmp6 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp4));
       rtx tmp7 = gen_reg_rtx (V8HImode);
-      emit_move_insn (tmp5, gen_lowpart (V8HImode, tmp3));
-      emit_move_insn (tmp6, gen_lowpart (V8HImode, tmp4));
       emit_insn (gen_sse4_1_pblendw (tmp7, tmp5, tmp6,
 				     GEN_INT (bits == 48 ? 0x1f : 0x07)));
 
-      rtx tmp8 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp8, gen_lowpart (V1TImode, tmp7));
-      emit_move_insn (operands[0], tmp8);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp7));
       return;
     }
 
   if ((bits & 7) == 0)
     {
       /* Five operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
@@ -6677,93 +6642,75 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp4 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp4, op1, GEN_INT (bits)));
 
-      rtx tmp5 = gen_reg_rtx (V1TImode);
+      rtx tmp5 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
       rtx tmp6 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp5, gen_lowpart (V1TImode, tmp3));
       emit_insn (gen_sse2_ashlv1ti3 (tmp6, tmp5, GEN_INT (128 - bits)));
 
-      rtx tmp7 = gen_reg_rtx (V2DImode);
-      rtx tmp8 = gen_reg_rtx (V2DImode);
+      rtx tmp7 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp4));
+      rtx tmp8 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp6));
       rtx tmp9 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp7, gen_lowpart (V2DImode, tmp4));
-      emit_move_insn (tmp8, gen_lowpart (V2DImode, tmp6));
       emit_insn (gen_iorv2di3 (tmp9, tmp7, tmp8));
 
-      rtx tmp10 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp10, gen_lowpart (V1TImode, tmp9));
-      emit_move_insn (operands[0], tmp10);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp9));
       return;
     }
 
   if (TARGET_AVX2 && bits < 32)
     {
       /* Six operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (bits)));
 
       rtx tmp3 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp3, op1, GEN_INT (64)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, op1));
       rtx tmp5 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, op1));
       emit_insn (gen_lshrv2di3 (tmp5, tmp4, GEN_INT (bits)));
 
-      rtx tmp6 = gen_reg_rtx (V2DImode);
+      rtx tmp6 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp7 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp6, gen_lowpart (V2DImode, tmp3));
       emit_insn (gen_ashlv2di3 (tmp7, tmp6, GEN_INT (64 - bits)));
 
       rtx tmp8 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp8, tmp5, tmp7));
 
-      rtx tmp9 = gen_reg_rtx (V4SImode);
+      rtx tmp9 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp8));
       rtx tmp10 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp9, gen_lowpart (V4SImode, tmp8));
       emit_insn (gen_avx2_pblenddv4si (tmp10, tmp2, tmp9, GEN_INT (7)));
 
-      rtx tmp11 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp11, gen_lowpart (V1TImode, tmp10));
-      emit_move_insn (operands[0], tmp11);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp10));
       return;
     }
 
   if (TARGET_SSE4_1 && bits < 15)
     {
       /* Six operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_ashrv4si3 (tmp2, tmp1, GEN_INT (bits)));
 
       rtx tmp3 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp3, op1, GEN_INT (64)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, op1));
       rtx tmp5 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, op1));
       emit_insn (gen_lshrv2di3 (tmp5, tmp4, GEN_INT (bits)));
 
-      rtx tmp6 = gen_reg_rtx (V2DImode);
+      rtx tmp6 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp7 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp6, gen_lowpart (V2DImode, tmp3));
       emit_insn (gen_ashlv2di3 (tmp7, tmp6, GEN_INT (64 - bits)));
 
       rtx tmp8 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp8, tmp5, tmp7));
 
-      rtx tmp9 = gen_reg_rtx (V8HImode);
-      rtx tmp10 = gen_reg_rtx (V8HImode);
+      rtx tmp9 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp2));
+      rtx tmp10 = force_reg (V8HImode, gen_lowpart (V8HImode, tmp8));
       rtx tmp11 = gen_reg_rtx (V8HImode);
-      emit_move_insn (tmp9, gen_lowpart (V8HImode, tmp2));
-      emit_move_insn (tmp10, gen_lowpart (V8HImode, tmp8));
       emit_insn (gen_sse4_1_pblendw (tmp11, tmp9, tmp10, GEN_INT (0x3f)));
 
-      rtx tmp12 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp12, gen_lowpart (V1TImode, tmp11));
-      emit_move_insn (operands[0], tmp12);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp11));
       return;
     }
 
@@ -6773,14 +6720,12 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp1 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp1, op1, GEN_INT (64)));
 
-      rtx tmp2 = gen_reg_rtx (V2DImode);
+      rtx tmp2 = force_reg (V2DImode, gen_lowpart (V2DImode, op1));
       rtx tmp3 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp2, gen_lowpart (V2DImode, op1));
       emit_insn (gen_lshrv2di3 (tmp3, tmp2, GEN_INT (1)));
 
-      rtx tmp4 = gen_reg_rtx (V2DImode);
+      rtx tmp4 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp1));
       rtx tmp5 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp4, gen_lowpart (V2DImode, tmp1));
       emit_insn (gen_ashlv2di3 (tmp5, tmp4, GEN_INT (63)));
 
       rtx tmp6 = gen_reg_rtx (V2DImode);
@@ -6789,31 +6734,26 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp7 = gen_reg_rtx (V2DImode);
       emit_insn (gen_lshrv2di3 (tmp7, tmp2, GEN_INT (63)));
 
-      rtx tmp8 = gen_reg_rtx (V4SImode);
+      rtx tmp8 = force_reg (V4SImode, gen_lowpart (V4SImode, tmp7));
       rtx tmp9 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp8, gen_lowpart (V4SImode, tmp7));
       emit_insn (gen_sse2_pshufd (tmp9, tmp8, GEN_INT (0xbf)));
 
-      rtx tmp10 = gen_reg_rtx (V2DImode);
+      rtx tmp10 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp9));
       rtx tmp11 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp10, gen_lowpart (V2DImode, tmp9));
       emit_insn (gen_ashlv2di3 (tmp11, tmp10, GEN_INT (31)));
 
       rtx tmp12 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp12, tmp6, tmp11));
 
-      rtx tmp13 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp13, gen_lowpart (V1TImode, tmp12));
-      emit_move_insn (operands[0], tmp13);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp12));
       return;
     }
 
   if (bits > 64)
     {
       /* Eight operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
@@ -6822,39 +6762,32 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp4 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp4, op1, GEN_INT (64)));
 
-      rtx tmp5 = gen_reg_rtx (V2DImode);
+      rtx tmp5 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp4));
       rtx tmp6 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp5, gen_lowpart (V2DImode, tmp4));
       emit_insn (gen_lshrv2di3 (tmp6, tmp5, GEN_INT (bits - 64)));
 
-      rtx tmp7 = gen_reg_rtx (V1TImode);
+      rtx tmp7 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
       rtx tmp8 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp3));
       emit_insn (gen_sse2_ashlv1ti3 (tmp8, tmp7, GEN_INT (64)));
  
-      rtx tmp9 = gen_reg_rtx (V2DImode);
+      rtx tmp9 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp10 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp9, gen_lowpart (V2DImode, tmp3));
       emit_insn (gen_ashlv2di3 (tmp10, tmp9, GEN_INT (128 - bits)));
 
-      rtx tmp11 = gen_reg_rtx (V2DImode);
+      rtx tmp11 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp8));
       rtx tmp12 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp11, gen_lowpart (V2DImode, tmp8));
       emit_insn (gen_iorv2di3 (tmp12, tmp10, tmp11));
 
       rtx tmp13 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp13, tmp6, tmp12));
 
-      rtx tmp14 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp14, gen_lowpart (V1TImode, tmp13));
-      emit_move_insn (operands[0], tmp14);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp13));
     }
   else
     {
       /* Nine operations.  */
-      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp1 = force_reg (V4SImode, gen_lowpart (V4SImode, op1));
       rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
       emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0xff)));
 
       rtx tmp3 = gen_reg_rtx (V4SImode);
@@ -6863,35 +6796,29 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp4 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_lshrv1ti3 (tmp4, op1, GEN_INT (64)));
 
-      rtx tmp5 = gen_reg_rtx (V2DImode);
+      rtx tmp5 = force_reg (V2DImode, gen_lowpart (V2DImode, op1));
       rtx tmp6 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp5, gen_lowpart (V2DImode, op1));
       emit_insn (gen_lshrv2di3 (tmp6, tmp5, GEN_INT (bits)));
 
-      rtx tmp7 = gen_reg_rtx (V2DImode);
+      rtx tmp7 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp4));
       rtx tmp8 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp7, gen_lowpart (V2DImode, tmp4));
       emit_insn (gen_ashlv2di3 (tmp8, tmp7, GEN_INT (64 - bits)));
 
       rtx tmp9 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp9, tmp6, tmp8));
 
-      rtx tmp10 = gen_reg_rtx (V1TImode);
+      rtx tmp10 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
       rtx tmp11 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp10, gen_lowpart (V1TImode, tmp3));
       emit_insn (gen_sse2_ashlv1ti3 (tmp11, tmp10, GEN_INT (64)));
 
-      rtx tmp12 = gen_reg_rtx (V2DImode);
+      rtx tmp12 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp11));
       rtx tmp13 = gen_reg_rtx (V2DImode);
-      emit_move_insn (tmp12, gen_lowpart (V2DImode, tmp11));
       emit_insn (gen_ashlv2di3 (tmp13, tmp12, GEN_INT (64 - bits)));
 
       rtx tmp14 = gen_reg_rtx (V2DImode);
       emit_insn (gen_iorv2di3 (tmp14, tmp9, tmp13));
 
-      rtx tmp15 = gen_reg_rtx (V1TImode);
-      emit_move_insn (tmp15, gen_lowpart (V1TImode, tmp14));
-      emit_move_insn (operands[0], tmp15);
+      emit_move_insn (operands[0], gen_lowpart (V1TImode, tmp14));
     }
 }
 
