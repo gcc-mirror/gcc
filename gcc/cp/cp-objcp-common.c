@@ -313,6 +313,13 @@ cxx_block_may_fallthru (const_tree stmt)
       return false;
 
     case IF_STMT:
+      if (IF_STMT_CONSTEXPR_P (stmt))
+	{
+	  if (integer_nonzerop (IF_COND (stmt)))
+	    return block_may_fallthru (THEN_CLAUSE (stmt));
+	  if (integer_zerop (IF_COND (stmt)))
+	    return block_may_fallthru (ELSE_CLAUSE (stmt));
+	}
       if (block_may_fallthru (THEN_CLAUSE (stmt)))
 	return true;
       return block_may_fallthru (ELSE_CLAUSE (stmt));
