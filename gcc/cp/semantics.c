@@ -7942,7 +7942,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				t = TREE_OPERAND (t, 0);
 			    }
 			}
-		      while (TREE_CODE (t) == COMPONENT_REF);
+		      while (TREE_CODE (t) == COMPONENT_REF
+			     || TREE_CODE (t) == ARRAY_REF);
 
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			  && OMP_CLAUSE_MAP_IMPLICIT (c)
