@@ -5653,6 +5653,7 @@ gimple_verify_flow_info (void)
 	}
 
       /* Verify that body of basic block BB is free of control flow.  */
+      bool seen_nondebug_stmt = false;
       for (; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -5673,6 +5674,38 @@ gimple_verify_flow_info (void)
 		     gimple_label_label (label_stmt), bb->index);
 	      err = 1;
 	    }
+
+	  /* Check that no statements appear between a returns_twice call
+	     and its associated abnormal edge.  */
+	  if (gimple_code (stmt) == GIMPLE_CALL
+	      && gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+	    {
+	      const char *misplaced = NULL;
+	      /* TM is an exception: it points abnormal edges just after the
+		 call that starts a transaction, i.e. it must end the BB.  */
+	      if (gimple_call_builtin_p (stmt, BUILT_IN_TM_START))
+		{
+		  if (single_succ_p (bb)
+		      && bb_has_abnormal_pred (single_succ (bb))
+		      && !gsi_one_nondebug_before_end_p (gsi))
+		    misplaced = "not last";
+		}
+	      else
+		{
+		  if (seen_nondebug_stmt
+		      && bb_has_abnormal_pred (bb))
+		    misplaced = "not first";
+		}
+	      if (misplaced)
+		{
+		  error ("returns_twice call is %s in basic block %d",
+			 misplaced, bb->index);
+		  print_gimple_stmt (stderr, stmt, 0, TDF_SLIM);
+		  err = 1;
+		}
+	    }
+	  if (!is_gimple_debug (stmt))
+	    seen_nondebug_stmt = true;
 	}
 
       gsi = gsi_last_nondebug_bb (bb);
