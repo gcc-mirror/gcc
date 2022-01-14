@@ -10724,14 +10724,24 @@ package body Sem_Util is
                Set_Is_Itype (Atyp);
                Analyze (Decl, Suppress => All_Checks);
                Set_Associated_Node_For_Itype (Atyp, N);
-               Set_Has_Delayed_Freeze (Atyp, False);
+               if Expander_Active then
+                  Set_Has_Delayed_Freeze (Atyp, False);
 
-               --  We need to freeze the actual subtype immediately. This is
-               --  needed, because otherwise this Itype will not get frozen
-               --  at all, and it is always safe to freeze on creation because
-               --  any associated types must be frozen at this point.
+                  --  We need to freeze the actual subtype immediately. This is
+                  --  needed because otherwise this Itype will not get frozen
+                  --  at all; it is always safe to freeze on creation because
+                  --  any associated types must be frozen at this point.
 
-               Freeze_Itype (Atyp, N);
+                  --  On the other hand, if we are performing preanalysis on
+                  --  a conjured-up copy of a name (see calls to
+                  --  Preanalyze_Range in sem_ch5.adb) then we don't want
+                  --  to freeze Atyp, now or ever. In this case, the tree
+                  --  we eventually pass to the back end should contain no
+                  --  references to Atyp (and a freeze node would contain
+                  --  such a reference). That's why Expander_Active is tested.
+
+                  Freeze_Itype (Atyp, N);
+               end if;
                return Atyp;
 
             --  Otherwise we did not build a declaration, so return original
