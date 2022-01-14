@@ -649,7 +649,6 @@ taint_state_machine::alt_get_inherited_state (const sm_state_map &map,
 	      return arg_state;
 	    }
 	  default:
-	    gcc_unreachable ();
 	    break;
 	  }
       }
