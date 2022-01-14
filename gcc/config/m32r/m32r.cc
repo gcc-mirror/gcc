@@ -2098,7 +2098,7 @@ m32r_print_operand (FILE * file, rtx x, int code)
 	  fprintf (file, "@(");
 	  /* Handle possible auto-increment.  Since it is pre-increment and
 	     we have already done it, we can just use an offset of four.  */
-	  /* ??? This is taken from rs6000.c I think.  I don't think it is
+	  /* ??? This is taken from rs6000.cc I think.  I don't think it is
 	     currently necessary, but keep it around.  */
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)

@@ -50,7 +50,7 @@ const char gfc_msg_fault[] = N_("Array reference out of bounds");
 /* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
    parser works in gfortran, loc->lb->location contains only the line number
    and LOCATION_COLUMN is 0; hence, the column has to be added when generating
-   locations for 'tree'.  Cf. error.c's gfc_format_decoder.  */
+   locations for 'tree'.  Cf. error.cc's gfc_format_decoder.  */
 
 location_t
 gfc_get_location (locus *loc)
@@ -2252,7 +2252,7 @@ trans_code (gfc_code * code, tree cond)
 
 /* Translate an executable statement with condition, cond.  The condition is
    used by gfc_trans_do to test for IO result conditions inside implied
-   DO loops of READ and WRITE statements.  See build_dt in trans-io.c.  */
+   DO loops of READ and WRITE statements.  See build_dt in trans-io.cc.  */
 
 tree
 gfc_trans_code_cond (gfc_code * code, tree cond)

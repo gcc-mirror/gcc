@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    the linking phase is present, or if `-xfoo' is in effect.  Note that
    a lack of source files or -l options disables linking.
 
-   This program was originally made out of gcc/cp/g++spec.c, but the
+   This program was originally made out of gcc/cp/g++spec.cc, but the
    way it builds the new argument list was rewritten so it is much
    easier to maintain, improve the way it decides to add or not add
    extra arguments, etc.  And several improvements were made in the
@@ -287,7 +287,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  break;
 
 	case OPT__help:
-	  /* Let gcc.c handle this, as it has a really
+	  /* Let gcc.cc handle this, as it has a really
 	     cool facility for handling --help and --verbose --help.  */
 	  return;
 

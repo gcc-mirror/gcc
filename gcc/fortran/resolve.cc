@@ -2127,7 +2127,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	}
 
       /* Expressions are assigned a default ts.type of BT_PROCEDURE in
-	 primary.c (match_actual_arg). If above code determines that it
+	 primary.cc (match_actual_arg). If above code determines that it
 	 is a  variable instead, it needs to be resolved as it was not
 	 done at the beginning of this function.  */
       save_need_full_assumed_size = need_full_assumed_size;
@@ -2161,7 +2161,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	      /* Intrinsics are still PROC_UNKNOWN here.  However,
 		 since same file external procedures are not resolvable
 		 in gfortran, it is a good deal easier to leave them to
-		 intrinsic.c.  */
+		 intrinsic.cc.  */
 	      if (ptype != PROC_UNKNOWN
 		  && ptype != PROC_DUMMY
 		  && ptype != PROC_EXTERNAL
@@ -2402,7 +2402,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
    reference being resolved must correspond to the type of gsymbol.
    Otherwise, the new symbol is equipped with the attributes of the
    reference.  The corresponding code that is called in creating
-   global entities is parse.c.
+   global entities is parse.cc.
 
    In addition, for all but -std=legacy, the gsymbols are used to
    check the interfaces of external procedures from the same file.
@@ -6044,7 +6044,7 @@ check_host_association (gfc_expr *e)
   bool retval = e->expr_type == EXPR_FUNCTION;
 
   /*  If the expression is the result of substitution in
-      interface.c(gfc_extend_expr) because there is no way in
+      interface.cc(gfc_extend_expr) because there is no way in
       which the host association can be wrong.  */
   if (e->symtree == NULL
 	|| e->symtree->n.sym == NULL
@@ -6789,7 +6789,7 @@ resolve_typebound_function (gfc_expr* e)
       get_declared_from_expr (&class_ref, NULL, e, false);
 
       /* Trim away the extraneous references that emerge from nested
-	 use of interface.c (extend_expr).  */
+	 use of interface.cc (extend_expr).  */
       if (class_ref && class_ref->next)
 	{
 	  gfc_free_ref_list (class_ref->next);
@@ -6920,7 +6920,7 @@ resolve_typebound_subroutine (gfc_code *code)
       code->expr1->ref = gfc_copy_ref (expr->ref);
 
       /* Trim away the extraneous references that emerge from nested
-	 use of interface.c (extend_expr).  */
+	 use of interface.cc (extend_expr).  */
       get_declared_from_expr (&class_ref, NULL, code->expr1, false);
       if (class_ref && class_ref->next)
 	{
@@ -7152,7 +7152,7 @@ gfc_resolve_expr (gfc_expr *e)
 	   && e->symtree->n.sym->attr.dummy)
     {
       /* Deal with submodule specification expressions that are not
-	 found to be referenced in module.c(read_cleanup).  */
+	 found to be referenced in module.cc(read_cleanup).  */
       fixup_unique_dummy (e);
     }
 
@@ -9103,7 +9103,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* Finally resolve if this is an array or not.  */
   if (sym->attr.dimension && target->rank == 0)
     {
-      /* primary.c makes the assumption that a reference to an associate
+      /* primary.cc makes the assumption that a reference to an associate
 	 name followed by a left parenthesis is an array reference.  */
       if (sym->ts.type != BT_CHARACTER)
 	gfc_error ("Associate-name %qs at %L is used as array",
@@ -9249,7 +9249,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
 	  sym->ts.deferred = 1;
 
-	  /* This is reset in trans-stmt.c after the assignment
+	  /* This is reset in trans-stmt.cc after the assignment
 	     of the target expression to the associate name.  */
 	  sym->attr.allocatable = 1;
 	}
@@ -14375,7 +14375,7 @@ resolve_typebound_procedures (gfc_symbol* derived)
 }
 
 
-/* Add a derived type to the dt_list.  The dt_list is used in trans-types.c
+/* Add a derived type to the dt_list.  The dt_list is used in trans-types.cc
    to give all identical derived types the same backend_decl.  */
 static void
 add_dt_to_dt_list (gfc_symbol *derived)
@@ -16965,7 +16965,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
    derived type shall not have components with default initialization nor
    shall two objects of an equivalence group be initialized.
    Either all or none of the objects shall have an protected attribute.
-   The simple constraints are done in symbol.c(check_conflict) and the rest
+   The simple constraints are done in symbol.cc(check_conflict) and the rest
    are implemented here.  */
 
 static void

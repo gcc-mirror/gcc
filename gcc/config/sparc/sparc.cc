@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for SPARC.
+/* Subroutines for insn-output.cc for SPARC.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -12376,7 +12376,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	 output_sibcall that we are in a leaf function.  */
       sparc_leaf_function_p = crtl->uses_only_leaf_regs = 1;
 
-      /* This will cause final.c to invoke leaf_renumber_regs so we
+      /* This will cause final.cc to invoke leaf_renumber_regs so we
 	 must behave as if we were in a not-yet-leafified function.  */
       int_arg_first = SPARC_INCOMING_INT_ARG_FIRST;
     }
@@ -12581,7 +12581,7 @@ sparc_asan_shadow_offset (void)
   return TARGET_ARCH64 ? (HOST_WIDE_INT_1 << 43) : (HOST_WIDE_INT_1 << 29);
 }
 
-/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
 static void

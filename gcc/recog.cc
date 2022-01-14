@@ -61,9 +61,9 @@ struct target_recog *this_target_recog = &default_target_recog;
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
-   the functions in optabs.c and expmed.c (most of the time).
+   the functions in optabs.cc and expmed.cc (most of the time).
    This should be 1 if all valid insns need to be recognized,
-   such as in reginfo.c and final.c and reload.c.
+   such as in reginfo.cc and final.cc and reload.cc.
 
    init_recog and init_recog_no_volatile are responsible for setting this.  */
 
@@ -86,7 +86,7 @@ static operand_alternative asm_op_alt[MAX_RECOG_OPERANDS
 int which_alternative;
 
 /* Nonzero after end of reload pass.
-   Set to 1 or 0 by toplev.c.
+   Set to 1 or 0 by toplev.cc.
    Controls the significance of (SUBREG (MEM)).  */
 
 int reload_completed;
@@ -2397,7 +2397,7 @@ offsettable_nonstrict_memref_p (rtx op)
    We do check that it is valid for narrower modes.
 
    If STRICTP is nonzero, we require a strictly valid address,
-   for the sake of use in reload.c.  */
+   for the sake of use in reload.cc.  */
 
 bool
 offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
@@ -3174,7 +3174,7 @@ constrain_operands (int strict, alternative_mask alternatives)
 		break;
 
 		/* No need to check general_operand again;
-		   it was done in insn-recog.c.  Well, except that reload
+		   it was done in insn-recog.cc.  Well, except that reload
 		   doesn't check the validity of its replacements, but
 		   that should only matter when there's a bug.  */
 	      case 'g':

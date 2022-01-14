@@ -5206,9 +5206,9 @@ main (int argc, char **argv)
   parser p (r, gimple);
 
   if (gimple)
-    write_header (stdout, "gimple-match-head.c");
+    write_header (stdout, "gimple-match-head.cc");
   else
-    write_header (stdout, "generic-match-head.c");
+    write_header (stdout, "generic-match-head.cc");
 
   /* Go over all predicates defined with patterns and perform
      lowering and code generation.  */

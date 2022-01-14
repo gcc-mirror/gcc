@@ -1396,7 +1396,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  sparseset_set_bit (allocnos_processed, num);
 
 		  if (allocno_saved_at_call[num] != last_call_num)
-		    /* Here we are mimicking caller-save.c behavior
+		    /* Here we are mimicking caller-save.cc behavior
 		       which does not save hard register at a call if
 		       it was saved on previous call in the same basic
 		       block and the hard register was not mentioned

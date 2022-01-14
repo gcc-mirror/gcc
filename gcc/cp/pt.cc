@@ -6765,7 +6765,7 @@ has_value_dependent_address (tree op)
 /* The next set of functions are used for providing helpful explanatory
    diagnostics for failed overload resolution.  Their messages should be
    indented by two spaces for consistency with the messages in
-   call.c  */
+   call.cc  */
 
 static int
 unify_success (bool /*explain_p*/)
@@ -10963,7 +10963,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
 
   if (tinst_depth >= max_tinst_depth)
     {
-      /* Tell error.c not to try to instantiate any templates.  */
+      /* Tell error.cc not to try to instantiate any templates.  */
       at_eof = 2;
       fatal_error (input_location,
 		   "template instantiation depth exceeds maximum of %d"

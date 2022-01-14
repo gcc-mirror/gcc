@@ -708,7 +708,7 @@ frame_related_constant_load (rtx reg, HOST_WIDE_INT constant, bool related)
     insn = emit_move_insn (reg, cst);
   else
     {
-      /* We don't call split_load_immediate here, since dwarf2out.c can get
+      /* We don't call split_load_immediate here, since dwarf2out.cc can get
 	 confused about some of the more clever sequences it can generate.  */
       insn = emit_insn (gen_movsi_high (reg, cst));
       if (related)

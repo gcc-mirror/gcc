@@ -1,4 +1,4 @@
-/* real.c - software floating point emulation.
+/* real.cc - software floating point emulation.
    Copyright (C) 1993-2022 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson <rth@redhat.com>

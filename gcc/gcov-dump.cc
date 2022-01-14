@@ -26,7 +26,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include <getopt.h>
 #define IN_GCOV (-1)
 #include "gcov-io.h"
-#include "gcov-io.c"
+#include "gcov-io.cc"
 
 static void dump_gcov_file (const char *);
 static void print_prefix (const char *, unsigned, gcov_position_t);

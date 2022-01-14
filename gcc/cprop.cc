@@ -1310,7 +1310,7 @@ local_cprop_pass (void)
 /* Similar to get_condition, only the resulting condition must be
    valid at JUMP, instead of at EARLIEST.
 
-   This differs from noce_get_condition in ifcvt.c in that we prefer not to
+   This differs from noce_get_condition in ifcvt.cc in that we prefer not to
    settle for the condition variable in the jump instruction being integral.
    We prefer to be able to record the value of a user variable, rather than
    the value of a temporary used in a condition.  This could be solved by
@@ -1909,7 +1909,7 @@ one_cprop_pass (void)
 
 /* All the passes implemented in this file.  Each pass has its
    own gate and execute function, and at the end of the file a
-   pass definition for passes.c.
+   pass definition for passes.cc.
 
    We do not construct an accurate cfg in functions which call
    setjmp, so none of these passes runs if the function calls

@@ -798,7 +798,7 @@ ix86_target_macros (void)
 
 
 /* Register target pragmas.  We need to add the hook for parsing #pragma GCC
-   option here rather than in i386.c since it will pull in various preprocessor
+   option here rather than in i386.cc since it will pull in various preprocessor
    functions, and those are not present in languages like fortran without a
    preprocessor.  */
 

@@ -2993,8 +2993,8 @@ c_omp_predetermined_mapping (tree decl)
 /* For OpenACC, the OMP_CLAUSE_MAP_KIND of an OMP_CLAUSE_MAP is used internally
    to distinguish clauses as seen by the user.  Return the "friendly" clause
    name for error messages etc., where possible.  See also
-   c/c-parser.c:c_parser_oacc_data_clause and
-   cp/parser.c:cp_parser_oacc_data_clause.  */
+   c/c-parser.cc:c_parser_oacc_data_clause and
+   cp/parser.cc:cp_parser_oacc_data_clause.  */
 
 const char *
 c_omp_map_clause_name (tree clause, bool oacc)

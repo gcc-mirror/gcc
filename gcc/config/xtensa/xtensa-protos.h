@@ -30,7 +30,7 @@ extern bool xtensa_b4constu (HOST_WIDE_INT);
 extern bool xtensa_mask_immediate (HOST_WIDE_INT);
 extern bool xtensa_mem_offset (unsigned, machine_mode);
 
-/* Functions within xtensa.c that we reference.  */
+/* Functions within xtensa.cc that we reference.  */
 #ifdef RTX_CODE
 extern int xt_true_regnum (rtx);
 extern int xtensa_valid_move (machine_mode, rtx *);

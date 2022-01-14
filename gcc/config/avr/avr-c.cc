@@ -17,7 +17,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* Not included in avr.c since this requires C front end.  */
+/* Not included in avr.cc since this requires C front end.  */
 
 #define IN_TARGET_CODE 1
 
@@ -254,7 +254,7 @@ avr_register_target_pragmas (void)
   gcc_assert (ADDR_SPACE_GENERIC == ADDR_SPACE_RAM);
 
   /* Register address spaces.  The order must be the same as in the respective
-     enum from avr.h (or designated initializers must be used in avr.c).
+     enum from avr.h (or designated initializers must be used in avr.cc).
      We always register all address spaces even if some of them make no
      sense for some targets.  Diagnose for non-supported spaces will be
      emit by TARGET_ADDR_SPACE_DIAGNOSE_USAGE.  */
@@ -457,7 +457,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 #if defined (WITH_DOUBLE_COMPARISON)
 #if WITH_DOUBLE_COMPARISON == 2 || WITH_DOUBLE_COMPARISON == 3
   /* The number of states a DFmode comparison libcall might take and
-     reflects what avr.c:FLOAT_LIB_COMPARE_RETURNS_BOOL returns for
+     reflects what avr.cc:FLOAT_LIB_COMPARE_RETURNS_BOOL returns for
      DFmode.  GCC's default is 3-state, but some libraries like LibF7
      implement true / false (2-state).  */
   cpp_define_formatted (pfile, "__WITH_DOUBLE_COMPARISON__=%d",

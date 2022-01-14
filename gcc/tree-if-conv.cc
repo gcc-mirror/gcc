@@ -1029,7 +1029,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
       return false;
     }
 
-  /* tree-into-ssa.c uses GF_PLF_1, so avoid it, because
+  /* tree-into-ssa.cc uses GF_PLF_1, so avoid it, because
      in between if_convertible_loop_p and combine_blocks
      we can perform loop versioning.  */
   gimple_set_plf (stmt, GF_PLF_2, false);

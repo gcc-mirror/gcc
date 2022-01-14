@@ -369,7 +369,7 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
   return describe_cache (level1, level2);
 }
 
-/* This will be called by the spec parser in gcc.c when it sees
+/* This will be called by the spec parser in gcc.cc when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be
    called with either "arch [32|64]" or "tune [32|64]" as argument
    depending on if -march=native or -mtune=native is to be substituted.

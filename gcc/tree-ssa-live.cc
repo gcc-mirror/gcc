@@ -417,7 +417,7 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
   bool unused = !TREE_USED (scope);
   int nsubblocks = 0;
 
-  /* For ipa-polymorphic-call.c purposes, preserve blocks:
+  /* For ipa-polymorphic-call.cc purposes, preserve blocks:
      1) with BLOCK_ABSTRACT_ORIGIN of a ctor/dtor or their clones  */
   if (inlined_polymorphic_ctor_dtor_block_p (scope, true))
     {

@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "analyzer/analyzer-selftests.h"
 
-/* This function needed to be split out from selftest.c as it references
+/* This function needed to be split out from selftest.cc as it references
    tests from the whole source tree, and so is within
    OBJS in Makefile.in, whereas selftest.o is within OBJS-libcommon.
    This allows us to embed tests within files in OBJS-libcommon without
@@ -45,7 +45,7 @@ selftest::run_tests ()
   /* Makefile.in has -fself-test=$(srcdir)/testsuite/selftests, so that
      flag_self_test contains the path to the selftest subdirectory of the
      source tree (without a trailing slash).  Copy it up to
-     path_to_selftest_files, to avoid selftest.c depending on
+     path_to_selftest_files, to avoid selftest.cc depending on
      option-handling.  */
   path_to_selftest_files = flag_self_test;
 

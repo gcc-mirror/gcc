@@ -2817,7 +2817,7 @@ objc_build_component_ref (tree datum, tree component)
 }
 
 /* Recursively copy inheritance information rooted at BINFO.  To do this,
-   we emulate the song and dance performed by cp/tree.c:copy_binfo().  */
+   we emulate the song and dance performed by cp/tree.cc:copy_binfo().  */
 
 static tree
 objc_copy_binfo (tree binfo)
@@ -2844,7 +2844,7 @@ objc_copy_binfo (tree binfo)
 }
 
 /* Record superclass information provided in BASETYPE for ObjC class REF.
-   This is loosely based on cp/decl.c:xref_basetypes().  */
+   This is loosely based on cp/decl.cc:xref_basetypes().  */
 
 static void
 objc_xref_basetypes (tree ref, tree basetype)
@@ -5490,7 +5490,7 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
 /* The 'objc_finish_message_expr' routine is called from within
    'objc_build_message_expr' for non-template functions.  In the case of
    C++ template functions, it is called from 'build_expr_from_tree'
-   (in decl2.c) after RECEIVER and METHOD_PARAMS have been expanded.
+   (in decl2.cc) after RECEIVER and METHOD_PARAMS have been expanded.
 
    If the method_prototype_avail argument is NULL, then we warn
    if the method being used is deprecated.  If it is not NULL, instead
@@ -9962,10 +9962,10 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
   }
 
   /* { */
-  /* Done by c-parser.c.  */
+  /* Done by c-parser.cc.  */
 
   /* type object; */
-  /* Done by c-parser.c.  */
+  /* Done by c-parser.cc.  */
 
   /* Disable warnings that 'object' is unused.  For example the code
 
@@ -10296,7 +10296,7 @@ objc_finish_foreach_loop (location_t location, tree object_expression, tree coll
 #endif
 
   /* } */
-  /* Done by c-parser.c  */
+  /* Done by c-parser.cc  */
 }
 
 /* --- SUPPORT FOR FORMAT ARG CHECKING --- */

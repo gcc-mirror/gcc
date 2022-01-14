@@ -1,7 +1,7 @@
 /* Generate from machine description:
    - prototype declarations for operand predicates (tm-preds.h)
    - function definitions of operand predicates, if defined new-style
-     (insn-preds.c)
+     (insn-preds.cc)
    Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1548,7 +1548,7 @@ write_tm_preds_h (void)
   puts ("#endif /* tm-preds.h */");
 }
 
-/* Write insn-preds.c.
+/* Write insn-preds.cc.
    N.B. the list of headers to include was copied from genrecog; it
    may not be ideal.
 

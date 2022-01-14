@@ -295,7 +295,7 @@ alloc_mem (void)
 
   /* Allocate the available expressions hash table.  We don't want to
      make the hash table too small, but unnecessarily making it too large
-     also doesn't help.  The i/4 is a gcse.c relic, and seems like a
+     also doesn't help.  The i/4 is a gcse.cc relic, and seems like a
      reasonable choice.  */
   expr_table = new hash_table<expr_hasher> (MAX (i / 4, 13));
 

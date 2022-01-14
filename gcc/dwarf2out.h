@@ -1,4 +1,4 @@
-/* dwarf2out.h - Various declarations for functions found in dwarf2out.c
+/* dwarf2out.h - Various declarations for functions found in dwarf2out.cc
    Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -108,7 +108,7 @@ struct GTY(()) dw_fde_node {
   /* True iff dw_fde_second_begin label is in text_section or
      cold_text_section.  */
   unsigned second_in_std_section : 1;
-  /* True if Rule 18 described in dwarf2cfi.c is in action, i.e. for dynamic
+  /* True if Rule 18 described in dwarf2cfi.cc is in action, i.e. for dynamic
      stack realignment in between pushing of hard frame pointer to stack
      and setting hard frame pointer to stack pointer.  The register save for
      hard frame pointer register should be emitted only on the latter
@@ -313,7 +313,7 @@ struct GTY(()) dw_discr_list_node {
   int dw_discr_range;
 };
 
-/* Interface from dwarf2out.c to dwarf2cfi.c.  */
+/* Interface from dwarf2out.cc to dwarf2cfi.cc.  */
 extern struct dw_loc_descr_node *build_cfa_loc
   (dw_cfa_location *, poly_int64);
 extern struct dw_loc_descr_node *build_cfa_aligned_loc
@@ -329,7 +329,7 @@ extern unsigned long size_of_locs (dw_loc_descr_ref);
 extern void output_loc_sequence (dw_loc_descr_ref, int);
 extern void output_loc_sequence_raw (dw_loc_descr_ref);
 
-/* Interface from dwarf2cfi.c to dwarf2out.c.  */
+/* Interface from dwarf2cfi.cc to dwarf2out.cc.  */
 extern void lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc,
 			  dw_cfa_location *remember);
 extern bool cfa_equal_p (const dw_cfa_location *, const dw_cfa_location *);

@@ -147,7 +147,7 @@ try_simplify_condjump (basic_block cbranch_block)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (jump_block) != BB_PARTITION (jump_dest_block)
       || (cbranch_jump_edge->flags & EDGE_CROSSING))
@@ -628,7 +628,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return;
@@ -674,7 +674,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return;
@@ -734,7 +734,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (b) != BB_PARTITION (c))
     return NULL;
@@ -1180,7 +1180,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 
   /* If this is a CALL_INSN, compare register usage information.
      If we don't check this on stack register machines, the two
-     CALL_INSNs might be merged leaving reg-stack.c with mismatching
+     CALL_INSNs might be merged leaving reg-stack.cc with mismatching
      numbers of stack registers in the same basic block.
      If we don't check this on machines with delay slots, a delay slot may
      be filled that clobbers a parameter expected by the subroutine.
@@ -2194,7 +2194,7 @@ try_crossjump_bb (int mode, basic_block bb)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (EDGE_PRED (bb, 0)->src) !=
 					BB_PARTITION (EDGE_PRED (bb, 1)->src)

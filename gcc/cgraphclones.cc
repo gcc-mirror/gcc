@@ -469,7 +469,7 @@ static GTY(()) hash_map<const char *, unsigned> *clone_fn_ids;
    each NAME) unspecified number.  If clone numbering is not needed
    then the two argument clone_function_name should be used instead.
    Should not be called directly except for by
-   lto-partition.c:privatize_symbol_name_1.  */
+   lto-partition.cc:privatize_symbol_name_1.  */
 
 tree
 clone_function_name_numbered (const char *name, const char *suffix)

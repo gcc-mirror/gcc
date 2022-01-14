@@ -791,7 +791,7 @@ lra_final_code_change (void)
 	  if (GET_CODE (pat) == USE && XEXP (pat, 0) == const1_rtx)
 	    {
 	      /* Remove markers to eliminate critical edges for jump insn
-		 output reloads (see code in ira.c::ira).  */
+		 output reloads (see code in ira.cc::ira).  */
 	      lra_invalidate_insn_data (insn);
 	      delete_insn (insn);
 	      continue;

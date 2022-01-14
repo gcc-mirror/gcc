@@ -2671,7 +2671,7 @@ rx_expand_builtin (tree exp,
 }
 
 /* Place an element into a constructor or destructor section.
-   Like default_ctor_section_asm_out_constructor in varasm.c
+   Like default_ctor_section_asm_out_constructor in varasm.cc
    except that it uses .init_array (or .fini_array) and it
    handles constructor priorities.  */
 

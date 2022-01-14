@@ -125,7 +125,7 @@ add_env_var_paths (const char *env_var, incpath_kind chain)
     }
 }
 
-/* Append the standard include chain defined in cppdefault.c.  */
+/* Append the standard include chain defined in cppdefault.cc.  */
 static void
 add_standard_paths (const char *sysroot, const char *iprefix,
 		    const char *imultilib, int cxx_stdinc)

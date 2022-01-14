@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in cr16.c
+/* Prototypes for exported functions defined in cr16.cc
    Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 

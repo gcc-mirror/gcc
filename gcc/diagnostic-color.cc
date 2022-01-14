@@ -205,7 +205,7 @@ should_colorize (void)
 #ifdef __MINGW32__
   /* For consistency reasons, one should check the handle returned by
      _get_osfhandle(_fileno(stderr)) because the function
-     pp_write_text_to_stream() in pretty-print.c calls fputs() on
+     pp_write_text_to_stream() in pretty-print.cc calls fputs() on
      that stream.  However, the code below for non-Windows doesn't seem
      to care about it either...  */
   HANDLE h;

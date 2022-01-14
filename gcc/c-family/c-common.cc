@@ -1324,7 +1324,7 @@ c_build_vec_convert (location_t loc1, tree expr, location_t loc2, tree type,
   return ret;
 }
 
-/* Like tree.c:get_narrower, but retain conversion from C++0x scoped enum
+/* Like tree.cc:get_narrower, but retain conversion from C++0x scoped enum
    to integral type.  */
 
 tree
@@ -1950,7 +1950,7 @@ warning_candidate_p (tree x)
   if (TREE_CODE (x) == BLOCK)
     return false;
 
-  /* VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.c
+  /* VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.cc
      (lvalue_p) crash on TRY/CATCH. */
   if (TREE_TYPE (x) == NULL_TREE || VOID_TYPE_P (TREE_TYPE (x)))
     return false;

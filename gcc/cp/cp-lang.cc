@@ -103,7 +103,7 @@ static void cxx_omp_finish_decl_inits (void);
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-/* Lang hook routines common to C++ and ObjC++ appear in cp/cp-objcp-common.c;
+/* Lang hook routines common to C++ and ObjC++ appear in cp/cp-objcp-common.cc;
    there should be very few routines below.  */
 
 /* The following function does something real, but only in Objective-C++.  */
@@ -226,7 +226,7 @@ get_template_argument_pack_elems_folded (const_tree t)
 }
 
 /* The C++ version of the enum_underlying_base_type langhook.
-   See also cp/semantics.c (finish_underlying_type).  */
+   See also cp/semantics.cc (finish_underlying_type).  */
 
 static
 tree cxx_enum_underlying_base_type (const_tree type)

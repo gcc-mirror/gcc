@@ -322,7 +322,7 @@ lto_main (void)
      Because it is called as a front end, TV_PHASE_PARSING and
      TV_PARSE_GLOBAL are active, and we need to turn them off while
      doing LTO.  Later we turn them back on so they are active up in
-     toplev.c.  */
+     toplev.cc.  */
 
   /* Initialize the LTO front end.  */
   lto_fe_init ();

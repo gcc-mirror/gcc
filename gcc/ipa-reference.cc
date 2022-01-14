@@ -1318,7 +1318,7 @@ make_pass_ipa_reference (gcc::context *ctxt)
   return new pass_ipa_reference (ctxt);
 }
 
-/* Reset all state within ipa-reference.c so that we can rerun the compiler
+/* Reset all state within ipa-reference.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

@@ -107,7 +107,7 @@ gen_peephole (md_rtx_info *info)
   if (ninsns > 1)
     printf ("  delete_for_peephole (NEXT_INSN (ins1), insn);\n");
 
-  /* See reload1.c for insertion of NOTE which guarantees that this
+  /* See reload1.cc for insertion of NOTE which guarantees that this
      cannot be zero.  */
   printf ("  return NEXT_INSN (insn);\n");
 

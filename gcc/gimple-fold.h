@@ -165,7 +165,7 @@ gimple_build_round_up (gimple_seq *seq, tree type, tree old_size,
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
 extern bool gimple_stmt_integer_valued_real_p (gimple *, int = 0);
 
-/* In gimple-match.c.  */
+/* In gimple-match.cc.  */
 extern tree gimple_simplify (enum tree_code, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 extern tree gimple_simplify (enum tree_code, tree, tree, tree,

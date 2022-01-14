@@ -1079,7 +1079,7 @@ free_true_name (true_name *t)
 
 /* Module reading and writing.  */
 
-/* The following are versions similar to the ones in scanner.c, but
+/* The following are versions similar to the ones in scanner.cc, but
    for dealing with compressed module files.  */
 
 static gzFile

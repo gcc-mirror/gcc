@@ -2534,7 +2534,7 @@ gnat_stable_expr_p (tree exp)
   return TREE_CONSTANT (exp) || code == NULL_EXPR || code == SAVE_EXPR;
 }
 
-/* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.c
+/* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.cc
    but we know how to handle our own nodes.  */
 
 tree
@@ -2633,7 +2633,7 @@ gnat_protect_expr (tree exp)
 		    save_expr (build_unary_op (ADDR_EXPR, NULL_TREE, exp)));
 }
 
-/* This is equivalent to stabilize_reference_1 in tree.c but we take an extra
+/* This is equivalent to stabilize_reference_1 in tree.cc but we take an extra
    argument to force evaluation of everything.  */
 
 static tree
@@ -2703,7 +2703,7 @@ gnat_stabilize_reference_1 (tree e, void *data)
   return result;
 }
 
-/* This is equivalent to stabilize_reference in tree.c but we know how to
+/* This is equivalent to stabilize_reference in tree.cc but we know how to
    handle our own nodes and we take extra arguments.  FORCE says whether to
    force evaluation of everything in REF.  INIT is set to the first arm of
    a COMPOUND_EXPR present in REF, if any.  */
@@ -2837,7 +2837,7 @@ gnat_rewrite_reference (tree ref, rewrite_fn func, void *data, tree *init)
   return result;
 }
 
-/* This is equivalent to get_inner_reference in expr.c but it returns the
+/* This is equivalent to get_inner_reference in expr.cc but it returns the
    ultimate containing object only if the reference (lvalue) is constant,
    i.e. if it doesn't depend on the context in which it is evaluated.  */
 

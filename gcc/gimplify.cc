@@ -251,7 +251,7 @@ static hash_map<tree, tree> *oacc_declare_returns;
 static enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t, bool);
 
-/* Shorter alias name for the above function for use in gimplify.c
+/* Shorter alias name for the above function for use in gimplify.cc
    only.  */
 
 static inline void
@@ -5111,7 +5111,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   computed at runtime), then partition the constructor into
 	   constant and non-constant parts.  Block copy the constant
 	   parts in, then generate code for the non-constant parts.  */
-	/* TODO.  There's code in cp/typeck.c to do this.  */
+	/* TODO.  There's code in cp/typeck.cc to do this.  */
 
 	if (int_size_in_bytes (TREE_TYPE (ctor)) < 0)
 	  /* store_constructor will ignore the clearing of variable-sized
@@ -11856,7 +11856,7 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
 			   DECL_ATTRIBUTES (current_function_decl)))
     {
       /* Declare simd is a maybe case, it is supposed to be added only to the
-	 omp-simd-clone.c added clones and not to the base function.  */
+	 omp-simd-clone.cc added clones and not to the base function.  */
       declare_simd_cnt = cnt++;
       if (scores)
 	codes.safe_push (OMP_SIMD);
@@ -14195,7 +14195,7 @@ gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 	      /* Fortran arrays with descriptors must map that descriptor when
 		 doing standalone "attach" operations (in OpenACC).  In that
 		 case GOMP_MAP_TO_PSET appears by itself with no preceding
-		 clause (see trans-openmp.c:gfc_trans_omp_clauses).  */
+		 clause (see trans-openmp.cc:gfc_trans_omp_clauses).  */
 	      break;
 	    case GOMP_MAP_POINTER:
 	      /* TODO PR92929: we may see these here, but they'll always follow
@@ -14750,7 +14750,7 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
 
    GIMPLE_TEST_F points to a function that takes a tree T and
        returns nonzero if T is in the GIMPLE form requested by the
-       caller.  The GIMPLE predicates are in gimple.c.
+       caller.  The GIMPLE predicates are in gimple.cc.
 
    FALLBACK tells the function what sort of a temporary we want if
        gimplification cannot produce an expression that complies with
@@ -16475,7 +16475,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   have_va_type = targetm.canonical_va_list_type (have_va_type);
   if (have_va_type == NULL_TREE
       && POINTER_TYPE_P (TREE_TYPE (valist)))
-    /* Handle 'Case 1: Not an array type' from c-common.c/build_va_arg.  */
+    /* Handle 'Case 1: Not an array type' from c-common.cc/build_va_arg.  */
     have_va_type
       = targetm.canonical_va_list_type (TREE_TYPE (TREE_TYPE (valist)));
   gcc_assert (have_va_type != NULL_TREE);

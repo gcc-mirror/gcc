@@ -691,7 +691,7 @@ bool
 lshift_cheap_p (bool speed_p)
 {
   /* FIXME: This should be made target dependent via this "this_target"
-     mechanism, similar to e.g. can_copy_init_p in gcse.c.  */
+     mechanism, similar to e.g. can_copy_init_p in gcse.cc.  */
   static bool init[2] = { false, false };
   static bool cheap[2] = { true, true };
 

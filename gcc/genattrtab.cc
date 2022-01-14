@@ -300,8 +300,8 @@ static rtx min_fn		   (rtx);
 
 /* This gen* file is unique, in that it writes out multiple files.
 
-   Before GCC 4.8, insn-attrtab.c was written out containing many large
-   functions and tables.  This made insn-attrtab.c _the_ bottle-neck in
+   Before GCC 4.8, insn-attrtab.cc was written out containing many large
+   functions and tables.  This made insn-attrtab.cc _the_ bottle-neck in
    a parallel build, and even made it impossible to build GCC on machines
    with relatively small RAM space (PR other/29442).  Therefore, the
    atrribute functions/tables are now written out to three separate
@@ -4782,7 +4782,7 @@ write_const_num_delay_slots (FILE *outf)
     }
 }
 
-/* Synthetic attributes used by insn-automata.c and the scheduler.
+/* Synthetic attributes used by insn-automata.cc and the scheduler.
    These are primarily concerned with (define_insn_reservation)
    patterns.  */
 

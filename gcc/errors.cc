@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* warning, error, and fatal.  These definitions are suitable for use
    in the generator programs; the compiler has a more elaborate suite
-   of diagnostic printers, found in diagnostic.c.  */
+   of diagnostic printers, found in diagnostic.cc.  */
 
 #ifdef HOST_GENERATOR_FILE
 #include "config.h"
@@ -102,8 +102,8 @@ internal_error (const char *format, ...)
 
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
-   is used by fancy_abort() to print `Internal compiler error in expr.c'
-   instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  This
+   is used by fancy_abort() to print `Internal compiler error in expr.cc'
+   instead of `Internal compiler error in ../../GCC/gcc/expr.cc'.  This
    version is meant to be used for the gen* programs and therefor need not
    handle subdirectories.  */
 
@@ -126,7 +126,7 @@ trim_filename (const char *name)
 
 /* "Fancy" abort.  Reports where in the compiler someone gave up.
    This file is used only by build programs, so we're not as polite as
-   the version in diagnostic.c.  */
+   the version in diagnostic.cc.  */
 void
 fancy_abort (const char *file, int line, const char *func)
 {

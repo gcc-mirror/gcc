@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for VAX.
+/* Subroutines for insn-output.cc for VAX.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1948,7 +1948,7 @@ vax_mode_dependent_address_p (const_rtx x, addr_space_t as ATTRIBUTE_UNUSED)
 {
   rtx xfoo0, xfoo1;
 
-  /* Auto-increment cases are now dealt with generically in recog.c.  */
+  /* Auto-increment cases are now dealt with generically in recog.cc.  */
   if (GET_CODE (x) != PLUS)
     return false;
 

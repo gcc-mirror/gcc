@@ -273,7 +273,7 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
 }
 
 
-/* Called from avr.c:avr_option_override().
+/* Called from avr.cc:avr_option_override().
    Parse argument of -mlog= and set respective fields in avr_log.  */
 
 void

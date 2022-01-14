@@ -1,4 +1,4 @@
-/* C++-specific tree lowering bits; see also c-gimplify.c and gimple.c.
+/* C++-specific tree lowering bits; see also c-gimplify.cc and gimple.cc.
 
    Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
@@ -553,7 +553,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	   gimplify_modify_expr gimplifies the RHS before the LHS, but that
 	   isn't quite strong enough in two cases:
 
-	   1) gimplify.c wants to leave a CALL_EXPR on the RHS, which would
+	   1) gimplify.cc wants to leave a CALL_EXPR on the RHS, which would
 	   mean it's evaluated after the LHS.
 
 	   2) the value calculation of the RHS is also sequenced before the

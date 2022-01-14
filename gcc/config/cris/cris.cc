@@ -2022,7 +2022,7 @@ cris_address_cost (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
      The metric used here is (the number of cycles needed) / 2,
      where we consider equal a cycle for a word of code and a cycle to
      read memory.  FIXME: Adding "+ 1" to all values would avoid
-     returning 0, as tree-ssa-loop-ivopts.c as of r128272 "normalizes"
+     returning 0, as tree-ssa-loop-ivopts.cc as of r128272 "normalizes"
      0 to 1, thereby giving equal costs to [rN + rM] and [rN].
      Unfortunately(?) such a hack would expose other pessimizations,
      at least with g++.dg/tree-ssa/ivopts-1.C, adding insns to the
@@ -2217,7 +2217,7 @@ cris_side_effect_mode_ok (enum rtx_code code, rtx *ops,
 }
 
 /* Queue an .ident string in the queue of top-level asm statements.
-   If the front-end is done, we must be being called from toplev.c.
+   If the front-end is done, we must be being called from toplev.cc.
    In that case, do nothing.  */
 void 
 cris_asm_output_ident (const char *string)
@@ -2441,7 +2441,7 @@ cris_init_machine_status (void)
 }
 
 /* Split a 2 word move (DI or presumably DF) into component parts.
-   Originally a copy of gen_split_move_double in m32r.c.  */
+   Originally a copy of gen_split_move_double in m32r.cc.  */
 
 rtx
 cris_split_movdx (rtx *operands)
@@ -3270,7 +3270,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 
   insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, vec));
 
-  /* Because dwarf2out.c handles the insns in a parallel as a sequence,
+  /* Because dwarf2out.cc handles the insns in a parallel as a sequence,
      we need to keep the stack adjustment separate, after the
      MEM-setters.  Else the stack-adjustment in the second component of
      the parallel would be mishandled; the offsets for the SETs that

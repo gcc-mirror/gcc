@@ -2823,7 +2823,7 @@ write_init_ovld_table (void)
     }
 }
 
-/* Write everything to the initialization file (rs6000-builtins.c).
+/* Write everything to the initialization file (rs6000-builtins.cc).
    Return 1 if successful, 0 otherwise.  */
 static int
 write_init_file (void)

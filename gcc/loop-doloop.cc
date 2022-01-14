@@ -91,7 +91,7 @@ doloop_condition_get (rtx_insn *doloop_pat)
 	             (additional clobbers and uses)])
 
      The branch must be the first entry of the parallel (also required
-     by jump.c), and the second entry of the parallel must be a set of
+     by jump.cc), and the second entry of the parallel must be a set of
      the loop counter register.  Some targets (IA-64) wrap the set of
      the loop counter in an if_then_else too.
 

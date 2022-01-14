@@ -1,5 +1,5 @@
 /* Insert USEs in instructions that require mode switching.
-   This should probably be merged into mode-switching.c .
+   This should probably be merged into mode-switching.cc .
    Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 

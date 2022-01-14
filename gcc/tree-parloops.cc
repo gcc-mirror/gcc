@@ -2867,7 +2867,7 @@ create_parallel_loop (class loop *loop, tree loop_fn, tree data,
   /* Emit GIMPLE_OMP_FOR.  */
   if (oacc_kernels_p)
     /* Parallelized OpenACC kernels constructs use gang parallelism.  See also
-       omp-offload.c:execute_oacc_loop_designation.  */
+       omp-offload.cc:execute_oacc_loop_designation.  */
     t = build_omp_clause (loc, OMP_CLAUSE_GANG);
   else
     {

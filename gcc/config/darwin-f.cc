@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    However, we can define do-nothing stubs of said hooks as
    we are not interested in objc include files in Fortran.
 
-   The hooks original purpose (see also darwin-c.c):
+   The hooks original purpose (see also darwin-c.cc):
     * darwin_register_objc_includes
       Register the GNU objective-C runtime include path if STDINC.
 

@@ -1850,7 +1850,7 @@ visium_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
+   This macro is used in only one place: `memory_address' in explow.cc.
 
    OLDX is the address as it was before break_out_memory_refs was called.
    In some cases it is useful to look at this to decide what needs to be done.

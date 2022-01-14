@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
    be incorrect for (4) or (5).
 
    An incorrect result here does not cause incorrect results out the
-   back end, because the expander in expr.c validizes the address.  However
+   back end, because the expander in expr.cc validizes the address.  However
    it would be nice to improve the handling here in order to produce more
    precise results.  */
 

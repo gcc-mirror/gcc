@@ -2421,7 +2421,7 @@
 
 
 ;;
-;; Divide stubs.  These exist to work around a bug in expmed.c, which
+;; Divide stubs.  These exist to work around a bug in expmed.cc, which
 ;; will not attempt to convert a divide by constant into a multiply
 ;; unless there is a pattern for a divide of the same mode.  The end
 ;; result is a 32-bit divide turns into 64-bit multiply.

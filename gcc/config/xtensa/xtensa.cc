@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
+/* Subroutines for insn-output.cc for Tensilica's Xtensa architecture.
    Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -2243,7 +2243,7 @@ xtensa_option_override (void)
 
   /* Use CONST16 in the absence of L32R.
      Set it in the TARGET_OPTION_OVERRIDE to avoid dependency on xtensa
-     configuration in the xtensa-common.c  */
+     configuration in the xtensa-common.cc  */
 
   if (!TARGET_L32R)
     target_flags |= MASK_CONST16;

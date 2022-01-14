@@ -1020,7 +1020,7 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
 	 set, the handler of the TRY_CATCH_EXPR is another cleanup which ought
 	 to be in an enclosing scope, but needs to be implemented at this level
 	 to avoid a nesting violation (see wrap_temporary_cleanups in
-	 cp/decl.c).  Since it's logically at an outer level, we should call
+	 cp/decl.cc).  Since it's logically at an outer level, we should call
 	 terminate before we get to it, so strip it away before adding the
 	 MUST_NOT_THROW filter.  */
       gimple_stmt_iterator gsi = gsi_start (finally);

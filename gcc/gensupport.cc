@@ -747,7 +747,7 @@ change_subst_attribute (class queue_elem *elem,
    represented by SUBST_ELEM and this attribute has value SUBST_TRUE.
    DEFINE_SUBST isn't applied to patterns without such attribute.  In other
    words, we suppose the default value of the attribute to be 'no' since it is
-   always generated automatically in read-rtl.c.  */
+   always generated automatically in read-rtl.cc.  */
 static bool
 has_subst_attribute (class queue_elem *elem, class queue_elem *subst_elem)
 {
@@ -2846,7 +2846,7 @@ traverse_c_tests (htab_trav callback, void *info)
 }
 
 /* Helper functions for define_predicate and define_special_predicate
-   processing.  Shared between genrecog.c and genpreds.c.  */
+   processing.  Shared between genrecog.cc and genpreds.cc.  */
 
 static htab_t predicate_table;
 struct pred_data *first_predicate;
@@ -2918,7 +2918,7 @@ add_predicate (struct pred_data *pred)
 }
 
 /* This array gives the initial content of the predicate table.  It
-   has entries for all predicates defined in recog.c.  */
+   has entries for all predicates defined in recog.cc.  */
 
 struct std_pred_table
 {
@@ -2992,7 +2992,7 @@ init_predicate_table (void)
     }
 }
 
-/* These functions allow linkage with print-rtl.c.  Also, some generators
+/* These functions allow linkage with print-rtl.cc.  Also, some generators
    like to annotate their output with insn names.  */
 
 /* Holds an array of names indexed by insn_code_number.  */

@@ -1096,7 +1096,7 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
 
 	  /* Calls containing dead arguments cannot be deleted,
 	     modify_call_stmt will instead remove just the argument later on.
-	     If isra_track_scalar_value_uses in ipa-sra.c is extended to look
+	     If isra_track_scalar_value_uses in ipa-sra.cc is extended to look
 	     through const functions, we will need to do so here too.  */
 	  if (is_gimple_call (stmt)
 	      || (m_id->blocks_to_copy
@@ -1197,7 +1197,7 @@ ipa_param_body_adjustments::remap_with_debug_expressions (tree *t)
 
      It is perhaps simpler to handle the SSA_NAME cases directly and only
      invoke walk_tree on more complex expressions.  When
-     remap_with_debug_expressions is called from tree-inline.c, a to-be-reset
+     remap_with_debug_expressions is called from tree-inline.cc, a to-be-reset
      SSA_NAME can be an operand to such expressions and the entire debug
      variable we are remapping should be reset.  This is signaled by walk_tree
      returning error_mark_node and done by setting *t to NULL.  */

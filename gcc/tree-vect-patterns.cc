@@ -3019,7 +3019,7 @@ apply_binop_and_append_stmt (vec_info *vinfo,
    and simple arithmetic operations to be vectorized.  Record the statements
    produced in STMT_VINFO and return the last statement in the sequence or
    NULL if it's not possible to synthesize such a multiplication.
-   This function mirrors the behavior of expand_mult_const in expmed.c but
+   This function mirrors the behavior of expand_mult_const in expmed.cc but
    works on tree-ssa form.  */
 
 static gimple *
@@ -3184,7 +3184,7 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
 
 /* Detect multiplication by constant and convert it into a sequence of
    shifts and additions, subtractions, negations.  We reuse the
-   choose_mult_variant algorithms from expmed.c
+   choose_mult_variant algorithms from expmed.cc
 
    Input/Output:
 

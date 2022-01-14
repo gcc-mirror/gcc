@@ -551,9 +551,9 @@ extern GTY(()) tree x86_mfence;
 
 /* -march=native handling only makes sense with compiler running on
    an x86 or x86_64 chip.  If changing this condition, also change
-   the condition in driver-i386.c.  */
+   the condition in driver-i386.cc.  */
 #if defined(__i386__) || defined(__x86_64__)
-/* In driver-i386.c.  */
+/* In driver-i386.cc.  */
 extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define EXTRA_SPEC_FUNCTIONS \
   { "local_cpu_detect", host_detect_local_cpu },
@@ -873,7 +873,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Standard register usage.  */
 
-/* This processor has special stack-like registers.  See reg-stack.c
+/* This processor has special stack-like registers.  See reg-stack.cc
    for details.  */
 
 #define STACK_REGS
@@ -1662,7 +1662,7 @@ typedef struct ix86_args {
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 					\
@@ -1724,7 +1724,7 @@ typedef struct ix86_args {
    The other macros defined here are used only in TARGET_LEGITIMATE_ADDRESS_P,
    except for CONSTANT_ADDRESS_P which is usually machine-independent.
 
-   See legitimize_pic_address in i386.c for details as to what
+   See legitimize_pic_address in i386.cc for details as to what
    constitutes a legitimate address when -fpic is used.  */
 
 #define MAX_REGS_PER_ADDRESS 2
@@ -1732,7 +1732,7 @@ typedef struct ix86_args {
 #define CONSTANT_ADDRESS_P(X)  constant_address_p (X)
 
 /* If defined, a C expression to determine the base term of address X.
-   This macro is used in only one place: `find_base_term' in alias.c.
+   This macro is used in only one place: `find_base_term' in alias.cc.
 
    It is always safe for this macro to not be defined.  It exists so
    that alias analysis can understand machine-dependent addresses.
@@ -2204,7 +2204,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define DEFAULT_LARGE_SECTION_THRESHOLD 65536
 
 /* Which processor to tune code generation for.  These must be in sync
-   with processor_target_table in i386.c.  */ 
+   with processor_target_table in i386.cc.  */ 
 
 enum processor_type
 {
@@ -2602,7 +2602,7 @@ struct GTY(()) machine_frame_state
   HOST_WIDE_INT sp_realigned_offset;
 };
 
-/* Private to winnt.c.  */
+/* Private to winnt.cc.  */
 struct seh_frame_state;
 
 enum function_type

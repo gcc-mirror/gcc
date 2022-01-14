@@ -153,7 +153,7 @@ should_replace_address (int old_num_changes, rtx mem, rtx_insn *insn)
   /* If the addresses have equivalent cost, prefer the new address
      if it has the highest `set_src_cost'.  That has the potential of
      eliminating the most insns without additional costs, and it
-     is the same that cse.c used to do.  */
+     is the same that cse.cc used to do.  */
   if (gain == 0)
     {
       gain = set_src_cost (XEXP (mem, 0), VOIDmode, speed);

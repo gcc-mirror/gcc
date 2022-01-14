@@ -739,7 +739,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
   else
     post_ld_pass (false); /* No LTO objects were found, no temp file.  */
 }
-/* Entry point for linker invoation.  Called from main in collect2.c.
+/* Entry point for linker invoation.  Called from main in collect2.cc.
    LD_ARGV is an array of arguments for the linker.  */
 
 static void

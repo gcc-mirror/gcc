@@ -87,7 +87,7 @@ remap_filename (file_prefix_map *maps, const char *filename)
 }
 
 /* NOTE: if adding another -f*-prefix-map option then don't forget to
-   ignore it in DW_AT_producer (dwarf2out.c).  */
+   ignore it in DW_AT_producer (dwarf2out.cc).  */
 
 /* Linked lists of file_prefix_map structures.  */
 static file_prefix_map *macro_prefix_maps; /* -fmacro-prefix-map  */

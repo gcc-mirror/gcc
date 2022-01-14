@@ -1463,7 +1463,7 @@ mcore_expand_insv (rtx operands[])
   int mask;
   rtx mreg, sreg, ereg;
 
-  /* To get width 1 insv, the test in store_bit_field() (expmed.c, line 191)
+  /* To get width 1 insv, the test in store_bit_field() (expmed.cc, line 191)
      for width==1 must be removed.  Look around line 368.  This is something
      we really want the md part to do.  */
   if (width == 1 && GET_CODE (operands[3]) == CONST_INT)
@@ -2021,7 +2021,7 @@ mcore_expand_prolog (void)
   output_stack_adjust (-1, fi.growth[growth++]);	/* Grows it.  */
 
   /* If we have a parameter passed partially in regs and partially in memory,
-     the registers will have been stored to memory already in function.c.  So
+     the registers will have been stored to memory already in function.cc.  So
      we only need to do something here for varargs functions.  */
   if (fi.arg_size != 0 && crtl->args.pretend_args_size == 0)
     {

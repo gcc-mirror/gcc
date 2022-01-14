@@ -143,12 +143,12 @@ get_ultimate_base_class (type_p s)
 const input_file **gt_files;
 size_t num_gt_files;
 
-/* Table of headers to be included in gtype-desc.c that are generated
+/* Table of headers to be included in gtype-desc.cc that are generated
    during the build.  These are identified as "./<filename>.h".  */
 const char **build_headers;
 size_t num_build_headers;
 
-/* A number of places use the name of this "gengtype.c" file for a
+/* A number of places use the name of this "gengtype.cc" file for a
    location for things that we can't rely on the source to define.
    Make sure we can still use pointer comparison on filenames.  */
 input_file* this_file;
@@ -1726,7 +1726,7 @@ open_base_files (void)
     base_files[i] = create_file (lang_dir_names[i],
 				 xasprintf ("gtype-%s.h", lang_dir_names[i]));
 
-  /* gtype-desc.c is a little special, so we create it here.  */
+  /* gtype-desc.cc is a little special, so we create it here.  */
   {
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
@@ -1753,7 +1753,7 @@ open_base_files (void)
     const char *const *ifp;
     outf_p gtype_desc_c;
 
-    gtype_desc_c = create_file ("GCC", "gtype-desc.c");
+    gtype_desc_c = create_file ("GCC", "gtype-desc.cc");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
     for (int j = 0; j < (int) num_build_headers; j++)
@@ -1978,42 +1978,42 @@ struct file_rule_st files_rules[] = {
     REG_EXTENDED, NULL_REGEX,
     "gt-c-family-$3.h", "c-family/$3.h", NULL_FRULACT},
 
-  /* Both c-lang.h & c-tree.h gives gt-c-c-decl.h for c-decl.c !  */
+  /* Both c-lang.h & c-tree.h gives gt-c-c-decl.h for c-decl.cc !  */
   { DIR_PREFIX_REGEX "c/c-lang\\.h$",
-    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.c", NULL_FRULACT},
+    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.cc", NULL_FRULACT},
 
   { DIR_PREFIX_REGEX "c/c-tree\\.h$",
-    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.c", NULL_FRULACT},
+    REG_EXTENDED, NULL_REGEX, "gt-c-c-decl.h", "c/c-decl.cc", NULL_FRULACT},
 
-  /* cp/cp-tree.h gives gt-cp-tree.h for cp/tree.c !  */
+  /* cp/cp-tree.h gives gt-cp-tree.h for cp/tree.cc !  */
   { DIR_PREFIX_REGEX "cp/cp-tree\\.h$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-cp-tree.h", "cp/tree.c", NULL_FRULACT },
+    "gt-cp-tree.h", "cp/tree.cc", NULL_FRULACT },
 
-  /* cp/decl.h & cp/decl.c gives gt-cp-decl.h for cp/decl.c !  */
+  /* cp/decl.h & cp/decl.cc gives gt-cp-decl.h for cp/decl.cc !  */
   { DIR_PREFIX_REGEX "cp/decl\\.[ch]$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-cp-decl.h", "cp/decl.c", NULL_FRULACT },
+    "gt-cp-decl.h", "cp/decl.cc", NULL_FRULACT },
 
-  /* cp/name-lookup.h gives gt-cp-name-lookup.h for cp/name-lookup.c !  */
+  /* cp/name-lookup.h gives gt-cp-name-lookup.h for cp/name-lookup.cc !  */
   { DIR_PREFIX_REGEX "cp/name-lookup\\.h$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-cp-name-lookup.h", "cp/name-lookup.c", NULL_FRULACT },
+    "gt-cp-name-lookup.h", "cp/name-lookup.cc", NULL_FRULACT },
 
-  /* cp/parser.h gives gt-cp-parser.h for cp/parser.c !  */
+  /* cp/parser.h gives gt-cp-parser.h for cp/parser.cc !  */
   { DIR_PREFIX_REGEX "cp/parser\\.h$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-cp-parser.h", "cp/parser.c", NULL_FRULACT },
+    "gt-cp-parser.h", "cp/parser.cc", NULL_FRULACT },
 
-  /* objc/objc-act.h gives gt-objc-objc-act.h for objc/objc-act.c !  */
+  /* objc/objc-act.h gives gt-objc-objc-act.h for objc/objc-act.cc !  */
   { DIR_PREFIX_REGEX "objc/objc-act\\.h$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-objc-objc-act.h", "objc/objc-act.c", NULL_FRULACT },
+    "gt-objc-objc-act.h", "objc/objc-act.cc", NULL_FRULACT },
 
-  /* objc/objc-map.h gives gt-objc-objc-map.h for objc/objc-map.c !  */
+  /* objc/objc-map.h gives gt-objc-objc-map.h for objc/objc-map.cc !  */
   { DIR_PREFIX_REGEX "objc/objc-map\\.h$",
     REG_EXTENDED, NULL_REGEX,
-    "gt-objc-objc-map.h", "objc/objc-map.c", NULL_FRULACT },
+    "gt-objc-objc-map.h", "objc/objc-map.cc", NULL_FRULACT },
 
   /* General cases.  For header *.h and source *.c or *.cc files, we
    * need special actions to handle the language.  */
@@ -2030,7 +2030,7 @@ struct file_rule_st files_rules[] = {
   { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.cc$",
     REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.cc", source_dot_c_frul},
 
-  /* Common header files get "gtype-desc.c" as their output_name,
+  /* Common header files get "gtype-desc.cc" as their output_name,
    * while language specific header files are handled specially.  So
    * we need the header_dot_h_frul action.  */
   { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.h$",
@@ -2044,7 +2044,7 @@ struct file_rule_st files_rules[] = {
 };
 
 /* Special file rules action for handling *.h header files.  It gives
-   "gtype-desc.c" for common headers and corresponding output
+   "gtype-desc.cc" for common headers and corresponding output
    files for language-specific header files.  */
 static outf_p
 header_dot_h_frul (input_file* inpf, char**poutname,
@@ -2072,11 +2072,11 @@ header_dot_h_frul (input_file* inpf, char**poutname,
   else
     {
       /* The header is common to all front-end languages.  So
-	 output_name is "gtype-desc.c" file.  The calling function
+	 output_name is "gtype-desc.cc" file.  The calling function
 	 get_output_file_with_visibility will find its outf_p.  */
       free (*poutname);
-      *poutname = xstrdup ("gtype-desc.c");
-      DBGPRINTF ("special 'gtype-desc.c' for inpname %s",
+      *poutname = xstrdup ("gtype-desc.cc");
+      DBGPRINTF ("special 'gtype-desc.cc' for inpname %s",
 		 get_input_file_name (inpf));
       return NULL;
     }

@@ -73,7 +73,7 @@ do {									\
 #define ASM_SPEC_COMMON "-u %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets for
-   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
+   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.cc to
    provide the default assembler options if the user uses -mcpu=native, so if
    you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC

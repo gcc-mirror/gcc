@@ -190,7 +190,7 @@ begin_move_insn (rtx_insn *insn, rtx_insn *last)
 
       /* split_edge () creates BB before E->DEST.  Keep in mind, that
 	 this operation extends scheduling region till the end of BB.
-	 Hence, we need to shift NEXT_TAIL, so haifa-sched.c won't go out
+	 Hence, we need to shift NEXT_TAIL, so haifa-sched.cc won't go out
 	 of the scheduling region.  */
       current_sched_info->next_tail = NEXT_INSN (BB_END (bb));
       gcc_assert (current_sched_info->next_tail);
@@ -417,7 +417,7 @@ add_deps_for_risky_insns (rtx_insn *head, rtx_insn *tail)
 	    case IRISKY:
 	    case PRISKY_CANDIDATE:
 	      /* ??? We could implement better checking PRISKY_CANDIDATEs
-		 analogous to sched-rgn.c.  */
+		 analogous to sched-rgn.cc.  */
 	      /* We cannot change the mode of the backward
 		 dependency because REG_DEP_ANTI has the lowest
 		 rank.  */
@@ -691,7 +691,7 @@ advance_target_bb (basic_block bb, rtx_insn *insn)
 	  && control_flow_insn_p (insn)
 	  /* We handle interblock movement of the speculation check
 	     or over a speculation check in
-	     haifa-sched.c: move_block_after_check ().  */
+	     haifa-sched.cc: move_block_after_check ().  */
 	  && !IS_SPECULATION_BRANCHY_CHECK_P (insn)
 	  && !IS_SPECULATION_BRANCHY_CHECK_P (BB_END (bb)))
 	{

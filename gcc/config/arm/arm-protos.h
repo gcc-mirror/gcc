@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in arm.c and pe.c
+/* Prototypes for exported functions defined in arm.cc and pe.c
    Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
@@ -391,15 +391,15 @@ extern void arm_emit_eabi_attribute (const char *, int, int);
 extern void arm_reset_previous_fndecl (void);
 extern void save_restore_target_globals (tree);
 
-/* Defined in gcc/common/config/arm-common.c.  */
+/* Defined in gcc/common/config/arm-common.cc.  */
 extern const char *arm_rewrite_selected_cpu (const char *name);
 
-/* Defined in gcc/common/config/arm-c.c.  */
+/* Defined in gcc/common/config/arm-c.cc.  */
 extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
-/* Defined in arm-d.c  */
+/* Defined in arm-d.cc  */
 extern void arm_d_target_versions (void);
 extern void arm_d_register_target_info (void);
 

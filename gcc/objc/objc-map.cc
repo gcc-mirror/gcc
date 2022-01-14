@@ -1,4 +1,4 @@
-/* objc-map.c -- Implementation of map data structures for ObjC compiler
+/* objc-map.cc -- Implementation of map data structures for ObjC compiler
    Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Written by Nicola Pero <nicola.pero@meta-innovation.com>
 

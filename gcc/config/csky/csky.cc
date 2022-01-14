@@ -5694,7 +5694,7 @@ csky_expand_prologue (void)
 
       /* If we have a parameter passed partially in regs and partially
 	 in memory, the registers will have been stored to memory already
-	 in function.c.  So we only need to copy varargs from registers
+	 in function.cc.  So we only need to copy varargs from registers
 	 to stack.  */
       if (cfun->machine->uses_anonymous_args)
 	{

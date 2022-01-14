@@ -70,7 +70,7 @@ name of the include file.
 
 @item
 A variable record to record any additional files that the
-@file{options.c} or @file{options-save.c} file should include.  This
+@file{options.cc} or @file{options-save.cc} file should include.  This
 is useful to provide
 inline functions needed for target variables and/or @code{#ifdef}
 sequences to properly set up the initialization.  These records have

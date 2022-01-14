@@ -2449,7 +2449,7 @@ maybe_emit_vtables (tree ctype, vec<tree> &consteval_vtables)
     }
 
   /* For abstract classes, the destructor has been removed from the
-     vtable (in class.c's build_vtbl_initializer).  For a compiler-
+     vtable (in class.cc's build_vtbl_initializer).  For a compiler-
      generated destructor, it hence might not have been generated in
      this translation unit - and with '#pragma interface' it might
      never get generated.  */

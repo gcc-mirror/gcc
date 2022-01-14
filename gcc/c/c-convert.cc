@@ -45,12 +45,12 @@ along with GCC; see the file COPYING3.  If not see
 
    Here is a list of all the functions that assume that widening and
    narrowing is always done with a NOP_EXPR:
-     In convert.c, convert_to_integer.
-     In c-typeck.c, build_binary_op (boolean ops), and
+     In convert.cc, convert_to_integer.
+     In c-typeck.cc, build_binary_op (boolean ops), and
 	c_common_truthvalue_conversion.
-     In expr.c: expand_expr, for operands of a MULT_EXPR.
-     In fold-const.c: fold.
-     In tree.c: get_narrower and get_unwidened.  */
+     In expr.cc: expand_expr, for operands of a MULT_EXPR.
+     In fold-const.cc: fold.
+     In tree.cc: get_narrower and get_unwidened.  */
 
 /* Subroutines of `convert'.  */
 

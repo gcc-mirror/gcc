@@ -803,7 +803,7 @@ remap_freqcounting_preds_after_dup (vec<ipa_freqcounting_predicate, va_gc> *v,
 }
 
 
-/* Hook that is called by cgraph.c when a node is duplicated.  */
+/* Hook that is called by cgraph.cc when a node is duplicated.  */
 void
 ipa_fn_summary_t::duplicate (cgraph_node *src,
 			     cgraph_node *dst,
@@ -963,7 +963,7 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 }
 
 
-/* Hook that is called by cgraph.c when a node is duplicated.  */
+/* Hook that is called by cgraph.cc when a node is duplicated.  */
 
 void
 ipa_call_summary_t::duplicate (struct cgraph_edge *src,
@@ -4962,7 +4962,7 @@ make_pass_ipa_fn_summary (gcc::context *ctxt)
   return new pass_ipa_fn_summary (ctxt);
 }
 
-/* Reset all state within ipa-fnsummary.c so that we can rerun the compiler
+/* Reset all state within ipa-fnsummary.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

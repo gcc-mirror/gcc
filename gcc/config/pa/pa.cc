@@ -1,6 +1,6 @@
-/* Subroutines for insn-output.c for HPPA.
+/* Subroutines for insn-output.cc for HPPA.
    Copyright (C) 1992-2022 Free Software Foundation, Inc.
-   Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
+   Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.cc
 
 This file is part of GCC.
 
@@ -1026,7 +1026,7 @@ mem_shadd_or_shadd_rtx_p (rtx x)
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
+   This macro is used in only one place: `memory_address' in explow.cc.
 
    OLDX is the address as it was before break_out_memory_refs was called.
    In some cases it is useful to look at this to decide what needs to be done.
@@ -10038,7 +10038,7 @@ som_output_text_section_asm_op (const char *data ATTRIBUTE_UNUSED)
 	     function has been completed.  So, we are changing to the
 	     text section to output debugging information.  Thus, we
 	     need to forget that we are in the text section so that
-	     varasm.c will call us when text_section is selected again.  */
+	     varasm.cc will call us when text_section is selected again.  */
 	  gcc_assert (!cfun || !cfun->machine
 		      || cfun->machine->in_nsubspa == 2);
 	  in_section = NULL;

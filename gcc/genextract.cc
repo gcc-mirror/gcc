@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    The string for each operand describes that path to the operand and
    contains `0' through `9' when going into an expression and `a' through
    `z' then 'A' through to 'Z' when going into a vector.  We assume here that
-   only the first operand of an rtl expression is a vector.  genrecog.c makes
+   only the first operand of an rtl expression is a vector.  genrecog.cc makes
    the same assumption (and uses the same representation) and it is currently
    true.  */
 

@@ -233,7 +233,7 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 /* Build code to test an error condition and call generate_error if needed.
    Note: This builds calls to generate_error in the runtime library function.
    The function generate_error is dependent on certain parameters in the
-   st_parameter_common flags to be set. (See libgfortran/runtime/error.c)
+   st_parameter_common flags to be set. (See libgfortran/runtime/error.cc)
    Therefore, the code to set these flags must be generated before
    this function is used.  */
 

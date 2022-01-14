@@ -71,7 +71,7 @@ static const struct default_options aarch_option_optimization_table[] =
    -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
    If either of -march or -mtune is given, they override their
    respective component of -mcpu.  This logic is implemented
-   in config/aarch64/aarch64.c:aarch64_override_options.  */
+   in config/aarch64/aarch64.cc:aarch64_override_options.  */
 
 bool
 aarch64_handle_option (struct gcc_options *opts,

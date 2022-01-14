@@ -3746,7 +3746,7 @@ test_one_liner_labels ()
    }
 
   /* TODO: example of formatted printing (needs to be in
-     gcc-rich-location.c due to Makefile.in issues).  */
+     gcc-rich-location.cc due to Makefile.in issues).  */
 }
 
 /* Run the various one-liner tests.  */

@@ -889,7 +889,7 @@ PATCHLEVEL_c := \
   $(shell echo $(BASEVER_c) | sed -e 's/^[0-9]*\.[0-9]*\.\([0-9]*\)$$/\1/')
 
 
-# For use in version.c - double quoted strings, with appropriate
+# For use in version.cc - double quoted strings, with appropriate
 # surrounding punctuation and spaces, and with the datestamp and
 # development phase collapsed to the empty string in release mode
 # (i.e. if DEVPHASE_c is empty and PATCHLEVEL_c is 0).  The space
@@ -1771,12 +1771,12 @@ TREECHECKING = @TREECHECKING@
 FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
- insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
- insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
- insn-latencytab.c insn-opinit.c insn-opinit.h insn-preds.c insn-constants.h \
- tm-preds.h tm-constrs.h checksum-options gimple-match.c generic-match.c \
- tree-check.h min-insn-modes.c insn-modes.c insn-modes.h insn-modes-inline.h \
- genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
+ insn-output.cc insn-recog.cc insn-emit.cc insn-extract.cc insn-peep.cc \
+ insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
+ insn-latencytab.cc insn-opinit.cc insn-opinit.h insn-preds.cc insn-constants.h \
+ tm-preds.h tm-constrs.h checksum-options gimple-match.cc generic-match.cc \
+ tree-check.h min-insn-modes.cc insn-modes.cc insn-modes.h insn-modes-inline.h \
+ genrtl.h gt-*.h gtype-*.h gtype-desc.cc gtyp-input.list \
  case-cfn-macros.h cfn-operators.pd \
  xgcc$(exeext) cpp$(exeext) $(FULL_DRIVER_NAME) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
@@ -2214,7 +2214,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 
 srcextra: gcc.srcextra lang.srcextra
 
-gcc.srcextra: gengtype-lex.c
+gcc.srcextra: gengtype-lex.cc
 	-cp -p $^ $(srcdir)
 
 AR_OBJS = file-find.o
@@ -2246,10 +2246,10 @@ CFLAGS-gcc-nm.o += $(DRIVER_DEFINES) \
 
 # ??? the implicit rules dont trigger if the source file has a different name
 # so copy instead
-gcc-ranlib.c: gcc-ar.c
+gcc-ranlib.cc: gcc-ar.cc
 	cp $^ $@
 
-gcc-nm.c: gcc-ar.c
+gcc-nm.cc: gcc-ar.cc
 	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o vec.o ggc-none.o \
@@ -2277,7 +2277,7 @@ CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
 CFLAGS-c-family/c-pch.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
-default-c.o: config/default-c.c
+default-c.o: config/default-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
@@ -2288,7 +2288,7 @@ prefix.o: $(BASEVER)
 
 # Files used by the D language front end.
 
-default-d.o: config/default-d.c
+default-d.o: config/default-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
@@ -2329,13 +2329,13 @@ s-options: $(ALL_OPT_FILES) Makefile $(srcdir)/opt-gather.awk
 	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
 
-options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+options.cc: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/optc-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
 	       -f $(srcdir)/optc-gen.awk \
 	       -v header_name="config.h system.h coretypes.h options.h tm.h" < $< > $@
 
-options-save.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
+options-save.cc: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
     $(srcdir)/optc-save-gen.awk
 	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opt-read.awk \
 	       -f $(srcdir)/optc-save-gen.awk \
@@ -2350,7 +2350,7 @@ s-options-h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opt-read.awk \
 	$(SHELL) $(srcdir)/../move-if-change tmp-options.h options.h
 	$(STAMP) $@
 
-dumpvers: dumpvers.c
+dumpvers: dumpvers.cc
 
 # lto-compress.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-lto-compress.o += $(ZLIBINC) $(ZSTD_INC)
@@ -2386,9 +2386,9 @@ $(common_out_object_file): $(common_out_file)
 # and compile them.
 
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  insn-emit.c insn-recog.c insn-extract.c insn-output.c insn-peep.c \
-  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
-  insn-latencytab.c insn-preds.c gimple-match.c generic-match.c \
+  insn-emit.cc insn-recog.cc insn-extract.cc insn-output.cc insn-peep.cc \
+  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
+  insn-latencytab.cc insn-preds.cc gimple-match.cc generic-match.cc \
   insn-target-def.h
 
 # Dependencies for the md file.  The first time through, we just assume
@@ -2412,13 +2412,13 @@ s-mddeps: $(md_file) $(MD_INCLUDES) build/genmddeps$(build_exeext)
 simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 			  insn-config.h insn-flags.h insn-target-def.h
 
-simple_rtl_generated_c	= insn-automata.c insn-emit.c \
-			  insn-extract.c insn-output.c \
-			  insn-peep.c insn-recog.c
+simple_rtl_generated_c	= insn-automata.cc insn-emit.cc \
+			  insn-extract.cc insn-output.cc \
+			  insn-peep.cc insn-recog.cc
 
 simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
 
-simple_generated_c	= $(simple_rtl_generated_c) insn-enums.c
+simple_generated_c	= $(simple_rtl_generated_c) insn-enums.cc
 
 $(simple_generated_h:insn-%.h=s-%) \
 $(simple_generated_c:insn-%.c=s-%): s-%: $(MD_DEPS)
@@ -2450,30 +2450,30 @@ s-check : build/gencheck$(build_exeext)
 	$(STAMP) s-check
 
 # genattrtab produces three files: tmp-{attrtab.c,dfatab.c,latencytab.c}
-insn-attrtab.c insn-dfatab.c insn-latencytab.c: s-attrtab ; @true
+insn-attrtab.cc insn-dfatab.cc insn-latencytab.cc: s-attrtab ; @true
 s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext) \
   insn-conditions.md
 	$(RUN_GEN) build/genattrtab$(build_exeext) $(md_file) insn-conditions.md \
 		-Atmp-attrtab.c -Dtmp-dfatab.c -Ltmp-latencytab.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-attrtab.c    insn-attrtab.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-dfatab.c     insn-dfatab.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-latencytab.c insn-latencytab.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-attrtab.cc    insn-attrtab.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-dfatab.cc     insn-dfatab.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-latencytab.cc insn-latencytab.cc
 	$(STAMP) s-attrtab
 
 # genopinit produces two files.
-insn-opinit.c insn-opinit.h: s-opinit ; @true
+insn-opinit.cc insn-opinit.h: s-opinit ; @true
 s-opinit: $(MD_DEPS) build/genopinit$(build_exeext) insn-conditions.md
 	$(RUN_GEN) build/genopinit$(build_exeext) $(md_file) \
 	  insn-conditions.md -htmp-opinit.h -ctmp-opinit.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.h insn-opinit.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.c insn-opinit.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.cc insn-opinit.cc
 	$(STAMP) s-opinit
 
 # gencondmd doesn't use the standard naming convention.
-build/gencondmd.c: s-conditions; @true
+build/gencondmd.cc: s-conditions; @true
 s-conditions: $(MD_DEPS) build/genconditions$(build_exeext)
 	$(RUN_GEN) build/genconditions$(build_exeext) $(md_file) > tmp-condmd.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-condmd.c build/gencondmd.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-condmd.c build/gencondmd.cc
 	$(STAMP) s-conditions
 
 insn-conditions.md: s-condmd; @true
@@ -2493,14 +2493,14 @@ s-genrtl-h: build/gengenrtl$(build_exeext)
 	$(SHELL) $(srcdir)/../move-if-change tmp-genrtl.h genrtl.h
 	$(STAMP) s-genrtl-h
 
-insn-modes.c: s-modes; @true
+insn-modes.cc: s-modes; @true
 insn-modes.h: s-modes-h; @true
 insn-modes-inline.h: s-modes-inline-h; @true
-min-insn-modes.c: s-modes-m; @true
+min-insn-modes.cc: s-modes-m; @true
 
 s-modes: build/genmodes$(build_exeext)
 	$(RUN_GEN) build/genmodes$(build_exeext) > tmp-modes.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-modes.c insn-modes.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-modes.c insn-modes.cc
 	$(STAMP) s-modes
 
 s-modes-h: build/genmodes$(build_exeext)
@@ -2516,10 +2516,10 @@ s-modes-inline-h: build/genmodes$(build_exeext)
 
 s-modes-m: build/genmodes$(build_exeext)
 	$(RUN_GEN) build/genmodes$(build_exeext) -m > tmp-min-modes.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.c min-insn-modes.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-min-modes.c min-insn-modes.cc
 	$(STAMP) s-modes-m
 
-insn-preds.c: s-preds; @true
+insn-preds.cc: s-preds; @true
 tm-preds.h: s-preds-h; @true
 tm-constrs.h: s-constrs-h; @true
 
@@ -2529,7 +2529,7 @@ mddump: $(BUILD_RTL) $(MD_DEPS) build/genmddump$(build_exeext)
 
 s-preds: $(MD_DEPS) build/genpreds$(build_exeext)
 	$(RUN_GEN) build/genpreds$(build_exeext) $(md_file) > tmp-preds.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-preds.c insn-preds.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-preds.c insn-preds.cc
 	$(STAMP) s-preds
 
 s-preds-h: $(MD_DEPS) build/genpreds$(build_exeext)
@@ -2631,25 +2631,25 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	  false; \
 	fi
 
-gimple-match.c: s-match gimple-match-head.c ; @true
-generic-match.c: s-match generic-match-head.c ; @true
+gimple-match.cc: s-match gimple-match-head.cc ; @true
+generic-match.cc: s-match generic-match-head.cc ; @true
 
 s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 	$(RUN_GEN) build/genmatch$(build_exeext) --gimple $(srcdir)/match.pd \
-	    > tmp-gimple-match.c
+	    > tmp-gimple-match.cc
 	$(RUN_GEN) build/genmatch$(build_exeext) --generic $(srcdir)/match.pd \
-	    > tmp-generic-match.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-gimple-match.c \
-	    					gimple-match.c
-	$(SHELL) $(srcdir)/../move-if-change tmp-generic-match.c \
-	    					generic-match.c
+	    > tmp-generic-match.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-gimple-match.cc \
+	    					gimple-match.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-generic-match.cc \
+	    					generic-match.cc
 	$(STAMP) s-match
 
 GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/wide-int.h $(srcdir)/alias.h \
-  $(srcdir)/coverage.c  $(srcdir)/rtl.h \
+  $(srcdir)/coverage.cc  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
@@ -2659,70 +2659,70 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/symtab-thunks.h $(srcdir)/symtab-thunks.cc \
   $(srcdir)/symtab-clones.h \
-  $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
-  $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
-  $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
-  $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.c $(srcdir)/dbxout.c \
-  $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.c \
+  $(srcdir)/reload.h $(srcdir)/caller-save.cc $(srcdir)/symtab.cc \
+  $(srcdir)/alias.cc $(srcdir)/bitmap.cc $(srcdir)/cselib.cc $(srcdir)/cgraph.cc \
+  $(srcdir)/ipa-prop.cc $(srcdir)/ipa-cp.cc $(srcdir)/ipa-utils.h \
+  $(srcdir)/ipa-param-manipulation.h $(srcdir)/ipa-sra.cc $(srcdir)/dbxout.cc \
+  $(srcdir)/ipa-modref.h $(srcdir)/ipa-modref.cc \
   $(srcdir)/ipa-modref-tree.h \
   $(srcdir)/signop.h \
-  $(srcdir)/diagnostic-spec.h $(srcdir)/diagnostic-spec.c \
+  $(srcdir)/diagnostic-spec.h $(srcdir)/diagnostic-spec.cc \
   $(srcdir)/dwarf2out.h \
-  $(srcdir)/dwarf2asm.c \
-  $(srcdir)/dwarf2cfi.c \
-  $(srcdir)/dwarf2ctf.c \
-  $(srcdir)/dwarf2out.c \
+  $(srcdir)/dwarf2asm.cc \
+  $(srcdir)/dwarf2cfi.cc \
+  $(srcdir)/dwarf2ctf.cc \
+  $(srcdir)/dwarf2out.cc \
   $(srcdir)/ctfc.h \
-  $(srcdir)/ctfout.c \
-  $(srcdir)/btfout.c \
-  $(srcdir)/tree-vect-generic.c \
+  $(srcdir)/ctfout.cc \
+  $(srcdir)/btfout.cc \
+  $(srcdir)/tree-vect-generic.cc \
   $(srcdir)/gimple-isel.cc \
-  $(srcdir)/dojump.c $(srcdir)/emit-rtl.h \
-  $(srcdir)/emit-rtl.c $(srcdir)/except.h $(srcdir)/explow.c $(srcdir)/expr.c \
+  $(srcdir)/dojump.cc $(srcdir)/emit-rtl.h \
+  $(srcdir)/emit-rtl.cc $(srcdir)/except.h $(srcdir)/explow.cc $(srcdir)/expr.cc \
   $(srcdir)/expr.h \
-  $(srcdir)/function.c $(srcdir)/except.c \
-  $(srcdir)/ggc-tests.c \
-  $(srcdir)/gcse.c $(srcdir)/godump.c \
-  $(srcdir)/lists.c $(srcdir)/optabs-libfuncs.c \
-  $(srcdir)/profile.c $(srcdir)/mcf.c \
-  $(srcdir)/reg-stack.c $(srcdir)/cfgrtl.c \
-  $(srcdir)/stor-layout.c \
-  $(srcdir)/stringpool.c $(srcdir)/tree.c $(srcdir)/varasm.c \
+  $(srcdir)/function.cc $(srcdir)/except.cc \
+  $(srcdir)/ggc-tests.cc \
+  $(srcdir)/gcse.cc $(srcdir)/godump.cc \
+  $(srcdir)/lists.cc $(srcdir)/optabs-libfuncs.cc \
+  $(srcdir)/profile.cc $(srcdir)/mcf.cc \
+  $(srcdir)/reg-stack.cc $(srcdir)/cfgrtl.cc \
+  $(srcdir)/stor-layout.cc \
+  $(srcdir)/stringpool.cc $(srcdir)/tree.cc $(srcdir)/varasm.cc \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \
-  $(srcdir)/tree-ssanames.c $(srcdir)/tree-eh.c $(srcdir)/tree-ssa-address.c \
-  $(srcdir)/tree-cfg.c $(srcdir)/tree-ssa-loop-ivopts.c \
-  $(srcdir)/tree-dfa.c \
-  $(srcdir)/tree-iterator.c $(srcdir)/gimple-expr.c \
+  $(srcdir)/tree-ssanames.cc $(srcdir)/tree-eh.cc $(srcdir)/tree-ssa-address.cc \
+  $(srcdir)/tree-cfg.cc $(srcdir)/tree-ssa-loop-ivopts.cc \
+  $(srcdir)/tree-dfa.cc \
+  $(srcdir)/tree-iterator.cc $(srcdir)/gimple-expr.cc \
   $(srcdir)/tree-chrec.h \
-  $(srcdir)/tree-scalar-evolution.c \
+  $(srcdir)/tree-scalar-evolution.cc \
   $(srcdir)/tree-ssa-operands.h \
-  $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
+  $(srcdir)/tree-profile.cc $(srcdir)/tree-nested.cc \
   $(srcdir)/omp-offload.h \
-  $(srcdir)/omp-general.c \
-  $(srcdir)/omp-low.c \
-  $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c \
-  $(srcdir)/cgraphclones.c \
-  $(srcdir)/tree-phinodes.c \
+  $(srcdir)/omp-general.cc \
+  $(srcdir)/omp-low.cc \
+  $(srcdir)/targhooks.cc $(out_file) $(srcdir)/passes.cc \
+  $(srcdir)/cgraphclones.cc \
+  $(srcdir)/tree-phinodes.cc \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/tree-ssanames.h \
   $(srcdir)/tree-vrp.h \
   $(srcdir)/value-range.h \
   $(srcdir)/ipa-prop.h \
-  $(srcdir)/trans-mem.c \
+  $(srcdir)/trans-mem.cc \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-predicate.h \
   $(srcdir)/ipa-fnsummary.h \
-  $(srcdir)/vtable-verify.c \
-  $(srcdir)/asan.c \
-  $(srcdir)/ubsan.c \
-  $(srcdir)/tsan.c \
-  $(srcdir)/sanopt.c \
-  $(srcdir)/sancov.c \
-  $(srcdir)/ipa-devirt.c \
+  $(srcdir)/vtable-verify.cc \
+  $(srcdir)/asan.cc \
+  $(srcdir)/ubsan.cc \
+  $(srcdir)/tsan.cc \
+  $(srcdir)/sanopt.cc \
+  $(srcdir)/sancov.cc \
+  $(srcdir)/ipa-devirt.cc \
   $(srcdir)/internal-fn.h \
-  $(srcdir)/calls.c \
+  $(srcdir)/calls.cc \
   $(srcdir)/omp-general.h \
   @all_gtfiles@
 
@@ -2745,7 +2745,7 @@ ALL_GTFILES_H := $(sort $(GTFILES_H) $(GTFILES_LANG_H))
 # write it out to a file (taking care not to do that in a way that
 # overflows a command line!) and then have gengtype read the file in.
 
-$(ALL_GTFILES_H) gtype-desc.c gtype-desc.h gtype.state: s-gtype ; @true
+$(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h gtype.state: s-gtype ; @true
 
 ### Common flags to gengtype [e.g. -v or -B backupdir]
 GENGTYPE_FLAGS= 
@@ -2772,10 +2772,10 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        $(simple_generated_h) specs.h \
        tree-check.h genrtl.h insn-modes.h insn-modes-inline.h \
        tm-preds.h tm-constrs.h \
-       $(ALL_GTFILES_H) gtype-desc.c gtype-desc.h version.h \
+       $(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h version.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       gimple-match.c generic-match.c \
+       gimple-match.cc generic-match.cc \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
        case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
@@ -2789,77 +2789,77 @@ build/%.o :  # dependencies provided by explicit rule later
 
 # Header dependencies for the programs that generate source code.
 # These are library modules...
-build/errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
-build/gensupport.o: gensupport.c $(BCONFIG_H) $(SYSTEM_H) 		\
+build/errors.o : errors.cc $(BCONFIG_H) $(SYSTEM_H) errors.h
+build/gensupport.o: gensupport.cc $(BCONFIG_H) $(SYSTEM_H) 		\
   $(CORETYPES_H) $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) errors.h		\
   $(HASHTAB_H) $(READ_MD_H) $(GENSUPPORT_H) $(HASH_TABLE_H)
-build/ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) 	\
+build/ggc-none.o : ggc-none.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) 	\
   $(GGC_H)
-build/min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H)	\
+build/min-insn-modes.o : min-insn-modes.cc $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H)
-build/print-rtl.o: print-rtl.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
+build/print-rtl.o: print-rtl.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(GTM_H) $(RTL_BASE_H)
-build/read-md.o: read-md.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
+build/read-md.o: read-md.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(HASHTAB_H) errors.h $(READ_MD_H)
-build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
+build/read-rtl.o: read-rtl.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) $(HASHTAB_H) $(READ_MD_H)		\
   $(GENSUPPORT_H)
-build/rtl.o: rtl.c $(BCONFIG_H) $(CORETYPES_H) $(GTM_H) $(SYSTEM_H)	\
+build/rtl.o: rtl.cc $(BCONFIG_H) $(CORETYPES_H) $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
-build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(VEC_H)	\
+build/vec.o : vec.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(VEC_H)	\
   $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H) $(HASH_TABLE_H)
-build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H)		\
+build/hash-table.o : hash-table.cc $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/sort.o : sort.cc $(BCONFIG_H) $(SYSTEM_H)
-build/inchash.o : inchash.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
+build/inchash.o : inchash.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(HASHTAB_H) inchash.h
-build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
+build/gencondmd.o : build/gencondmd.cc $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) $(GTM_H) insn-constants.h				\
   $(filter-out insn-flags.h, $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(REGS_H) \
   $(RECOG_H) output.h $(FLAGS_H) $(RESOURCE_H) toplev.h $(DIAGNOSTIC_CORE_H) reload.h 	\
   $(EXCEPT_H) tm-constrs.h)
 # This pulls in tm-pred.h which contains inline functions wrapping up
 # predicates from the back-end so those functions must be discarded.
-# No big deal since gencondmd.c is a dummy file for non-GCC compilers.
+# No big deal since gencondmd.cc is a dummy file for non-GCC compilers.
 build/gencondmd.o : \
   BUILD_CFLAGS := $(filter-out -fkeep-inline-functions, $(BUILD_CFLAGS))
 
 # ...these are the programs themselves.
-build/genattr.o : genattr.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genattr.o : genattr.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genattr-common.o : genattr-common.c $(RTL_BASE_H) $(BCONFIG_H)	\
+build/genattr-common.o : genattr-common.cc $(RTL_BASE_H) $(BCONFIG_H)	\
   $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
+build/genattrtab.o : genattrtab.cc $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(GGC_H)	\
   $(READ_MD_H) $(GENSUPPORT_H) $(FNMATCH_H)
-build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
+build/genautomata.o : genautomata.cc $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(VEC_H)	\
   $(HASHTAB_H) $(GENSUPPORT_H) $(FNMATCH_H)
-build/gencheck.o : gencheck.c all-tree.def $(BCONFIG_H) $(GTM_H)	\
+build/gencheck.o : gencheck.cc all-tree.def $(BCONFIG_H) $(GTM_H)	\
 	$(SYSTEM_H) $(CORETYPES_H) tree.def c-family/c-common.def	\
 	$(lang_tree_files) gimple.def
-build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
-build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genchecksum.o : genchecksum.cc $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
+build/gencodes.o : gencodes.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H)
-build/genconditions.o : genconditions.c $(RTL_BASE_H) $(BCONFIG_H)	\
+build/genconditions.o : genconditions.cc $(RTL_BASE_H) $(BCONFIG_H)	\
   $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(HASHTAB_H)		\
   $(READ_MD_H) $(GENSUPPORT_H)
-build/genconfig.o : genconfig.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genconfig.o : genconfig.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H)
-build/genconstants.o : genconstants.c $(BCONFIG_H) $(SYSTEM_H)		\
+build/genconstants.o : genconstants.cc $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) errors.h $(READ_MD_H)
-build/genemit.o : genemit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genemit.o : genemit.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H) internal-fn.def
-build/genenums.o : genenums.c $(BCONFIG_H) $(SYSTEM_H)			\
+build/genenums.o : genenums.cc $(BCONFIG_H) $(SYSTEM_H)			\
   $(CORETYPES_H) errors.h $(READ_MD_H)
-build/genextract.o : genextract.c $(RTL_BASE_H) $(BCONFIG_H)		\
+build/genextract.o : genextract.cc $(RTL_BASE_H) $(BCONFIG_H)		\
   $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genflags.o : genflags.c $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
+build/genflags.o : genflags.cc $(RTL_BASE_H) $(OBSTACK_H) $(BCONFIG_H)	\
   $(SYSTEM_H) $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/gentarget-def.o : gentarget-def.c $(BCONFIG_H) $(SYSTEM_H)	\
+build/gentarget-def.o : gentarget-def.cc $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) $(RTL_BASE_H) errors.h $(READ_MD_H)		\
   $(GENSUPPORT_H) $(HASH_TABLE_H) target-insns.def
-build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
+build/gengenrtl.o : gengenrtl.cc $(BCONFIG_H) $(SYSTEM_H) rtl.def
 
 # The gengtype generator program is special: Two versions are built.
 # One is for the build machine, and one is for the host to allow
@@ -2872,21 +2872,21 @@ build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
 GENGTYPE_OBJS = gengtype.o gengtype-parse.o gengtype-state.o \
   gengtype-lex.o errors.o
 
-gengtype-lex.o build/gengtype-lex.o : gengtype-lex.c gengtype.h $(SYSTEM_H)
+gengtype-lex.o build/gengtype-lex.o : gengtype-lex.cc gengtype.h $(SYSTEM_H)
 CFLAGS-gengtype-lex.o += -DHOST_GENERATOR_FILE
 build/gengtype-lex.o: $(BCONFIG_H)
 
-gengtype-parse.o build/gengtype-parse.o : gengtype-parse.c gengtype.h \
+gengtype-parse.o build/gengtype-parse.o : gengtype-parse.cc gengtype.h \
   $(SYSTEM_H)
 CFLAGS-gengtype-parse.o += -DHOST_GENERATOR_FILE
 build/gengtype-parse.o: $(BCONFIG_H)
 
-gengtype-state.o build/gengtype-state.o: gengtype-state.c $(SYSTEM_H) \
+gengtype-state.o build/gengtype-state.o: gengtype-state.cc $(SYSTEM_H) \
   gengtype.h errors.h version.h $(HASHTAB_H) $(OBSTACK_H) \
   $(XREGEX_H)
 CFLAGS-gengtype-state.o += -DHOST_GENERATOR_FILE
 build/gengtype-state.o: $(BCONFIG_H)
-gengtype.o build/gengtype.o : gengtype.c $(SYSTEM_H) gengtype.h 	\
+gengtype.o build/gengtype.o : gengtype.cc $(SYSTEM_H) gengtype.h 	\
   rtl.def insn-notes.def errors.h version.h     		\
   $(HASHTAB_H) $(OBSTACK_H) $(XREGEX_H)
 CFLAGS-gengtype.o += -DHOST_GENERATOR_FILE
@@ -2894,30 +2894,30 @@ build/gengtype.o: $(BCONFIG_H)
 
 CFLAGS-errors.o += -DHOST_GENERATOR_FILE
 
-build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
+build/genmddeps.o: genmddeps.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   errors.h $(READ_MD_H)
-build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\
+build/genmodes.o : genmodes.cc $(BCONFIG_H) $(SYSTEM_H) errors.h		\
   $(HASHTAB_H) machmode.def $(extra_modes_file)
-build/genopinit.o : genopinit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genopinit.o : genopinit.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H) optabs.def
-build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genoutput.o : genoutput.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genpeep.o : genpeep.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H) toplev.h		\
   $(DIAGNOSTIC_CORE_H)
-build/genpreds.o : genpreds.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genpreds.o : genpreds.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H) $(OBSTACK_H)
-build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genrecog.o : genrecog.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)		\
   $(HASH_TABLE_H) inchash.h
-build/genhooks.o : genhooks.c $(TARGET_DEF) $(C_TARGET_DEF)		\
+build/genhooks.o : genhooks.cc $(TARGET_DEF) $(C_TARGET_DEF)		\
   $(COMMON_TARGET_DEF) $(D_TARGET_DEF) $(BCONFIG_H) $(SYSTEM_H) errors.h
-build/genmddump.o : genmddump.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
+build/genmddump.o : genmddump.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) $(GTM_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)
-build/genmatch.o : genmatch.c $(BCONFIG_H) $(SYSTEM_H) \
+build/genmatch.o : genmatch.cc $(BCONFIG_H) $(SYSTEM_H) \
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-map.h $(GGC_H) is-a.h \
   tree.def builtins.def internal-fn.def case-cfn-macros.h $(CPPLIB_H)
-build/gencfn-macros.o : gencfn-macros.c $(BCONFIG_H) $(SYSTEM_H)	\
+build/gencfn-macros.o : gencfn-macros.cc $(BCONFIG_H) $(SYSTEM_H)	\
   $(CORETYPES_H) errors.h $(HASH_TABLE_H) hash-set.h builtins.def	\
   internal-fn.def
 
@@ -3004,7 +3004,7 @@ s-omp-device-properties-h: @omp_device_property_deps@
 # Generated source files for gengtype.  Prepend inclusion of
 # config.h/bconfig.h because AIX requires _LARGE_FILES to be defined before
 # any system header is included.
-gengtype-lex.c : gengtype-lex.l
+gengtype-lex.cc : gengtype-lex.l
 	-$(FLEX) $(FLEXFLAGS) -o$@ $< && { \
 	  echo '#ifdef HOST_GENERATOR_FILE' > $@.tmp; \
 	  echo '#include "config.h"'       >> $@.tmp; \
@@ -3047,13 +3047,13 @@ CFLAGS-cppdefault.o += $(PREPROCESSOR_DEFINES)
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
-# genversion.c is run on the build machine to generate version.h
+# genversion.cc is run on the build machine to generate version.h
 CFLAGS-build/genversion.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
 	-DBUGURL=$(BUGURL_s)
 
-build/genversion.o: genversion.c $(BCONFIG_H) $(SYSTEM_H) $(srcdir)/DATESTAMP
+build/genversion.o: genversion.cc $(BCONFIG_H) $(SYSTEM_H) $(srcdir)/DATESTAMP
 
 build/genversion$(build_exeext): build/genversion.o
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
@@ -3078,7 +3078,7 @@ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 		hash-table.o ggc-none.o\
 		$(LIBS) -o $@
 
-GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \
+GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.cc $(GCOV_IO_H) \
   $(srcdir)/../libgcc/libgcov-driver.c $(srcdir)/../libgcc/libgcov-driver-system.c \
   $(srcdir)/../libgcc/libgcov-merge.c $(srcdir)/../libgcc/libgcov.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(CONFIG_H) version.h intl.h $(DIAGNOSTIC_H)
@@ -3513,7 +3513,7 @@ mostlyclean: lang.mostlyclean
 	-rm -f build/*
 	-rm -f mddeps.mk
 # Delete other built files.
-	-rm -f specs.h options.c options.h options-save.c
+	-rm -f specs.h options.cc options.h options-save.cc
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
@@ -3547,7 +3547,7 @@ clean: mostlyclean lang.clean
 	-rm -f libgcc_s*
 	-rm -f libunwind*
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
-	-rm -f options.c options.h optionlist
+	-rm -f options.cc options.h optionlist
 	-rm -f cs-*
 	-rm -f doc/*.dvi
 	-rm -f doc/*.pdf
@@ -4313,7 +4313,7 @@ qmtest-gui: ${QMTEST_DIR}/context
 
 .PHONY: qmtest-g++
 
-# Run Paranoia on real.c.
+# Run Paranoia on real.cc.
 
 paranoia.o: $(srcdir)/../contrib/paranoia.cc $(CONFIG_H) $(SYSTEM_H) $(TREE_H)
 	g++ -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)

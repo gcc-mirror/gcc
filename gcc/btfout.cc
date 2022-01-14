@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file contains routines to output the BPF Type Format (BTF). The BTF
    debug format is very similar to CTF; as a result, the structure of this file
-   closely resembles that of ctfout.c, and the same CTF container objects are
+   closely resembles that of ctfout.cc, and the same CTF container objects are
    used.  */
 
 #include "config.h"

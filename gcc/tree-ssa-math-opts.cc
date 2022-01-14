@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
    divisions, and they tend to be in the same basic block, so insert_bb
    is called very few times.
 
-   If we did this using domwalk.c, an efficient implementation would have
+   If we did this using domwalk.cc, an efficient implementation would have
    to work on all the variables in a single pass, because we could not
    work on just a subset of the dominator tree, as we do now, and the
    cost would also be something like O(n_statements * n_basic_blocks).

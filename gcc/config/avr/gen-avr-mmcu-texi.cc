@@ -23,7 +23,7 @@
 
 #define IN_GEN_AVR_MMCU_TEXI
 
-#include "avr-devices.c"
+#include "avr-devices.cc"
 
 static const avr_mcu_t*
 mcus[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
@@ -166,9 +166,9 @@ int main (void)
 	  "gcc/doc/include/fdl.texi.\n\n");
 
   printf ("@c This file is generated automatically using\n");
-  printf ("@c gcc/config/avr/gen-avr-mmcu-texi.c from:\n");
+  printf ("@c gcc/config/avr/gen-avr-mmcu-texi.cc from:\n");
   printf ("@c	 gcc/config/avr/avr-arch.h\n");
-  printf ("@c	 gcc/config/avr/avr-devices.c\n");
+  printf ("@c	 gcc/config/avr/avr-devices.cc\n");
   printf ("@c	 gcc/config/avr/avr-mcus.def\n\n");
 
   printf ("@c Please do not edit manually.\n\n");

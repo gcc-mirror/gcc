@@ -5,7 +5,7 @@
 
    Copyright (C) 1998-2022 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
-   formerly in parse.y and pt.c.
+   formerly in parse.y and pt.cc.
 
    This file is part of GCC.
 
@@ -8009,7 +8009,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
 	    /* For attach/detach clauses, set OMP_CLAUSE_SIZE (representing a
 	       bias) to zero here, so it is not set erroneously to the pointer
-	       size later on in gimplify.c.  */
+	       size later on in gimplify.cc.  */
 	    OMP_CLAUSE_SIZE (c) = size_zero_node;
 	  if (REFERENCE_REF_P (t)
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
@@ -10781,7 +10781,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
     }
 
   /* Avoid -Wunused-value warnings here, the whole construct has side-effects
-     and even if it might be wrapped from fold-const.c or c-omp.c wrapped
+     and even if it might be wrapped from fold-const.cc or c-omp.cc wrapped
      in some tree that appears to be unused, the value is not unused.  */
   warning_sentinel w (warn_unused_value);
   finish_expr_stmt (stmt);

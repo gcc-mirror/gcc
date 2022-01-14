@@ -903,7 +903,7 @@ promote_ssa_mode (const_tree name, int *punsignedp)
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
   /* Partitions holding parms and results must be promoted as expected
-     by function.c.  */
+     by function.cc.  */
   if (SSA_NAME_VAR (name)
       && (TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
 	  || TREE_CODE (SSA_NAME_VAR (name)) == RESULT_DECL))
@@ -1264,7 +1264,7 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
 
   /* We will need to ensure that the address we return is aligned to
      REQUIRED_ALIGN.  At this point in the compilation, we don't always
-     know the final value of the STACK_DYNAMIC_OFFSET used in function.c
+     know the final value of the STACK_DYNAMIC_OFFSET used in function.cc
      (it might depend on the size of the outgoing parameter lists, for
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */

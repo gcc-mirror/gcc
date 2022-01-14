@@ -1400,7 +1400,7 @@ dbxout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
   /* NYI for non-dwarf.  */
 }
 
-/* Debug information for a global DECL.  Called from toplev.c after
+/* Debug information for a global DECL.  Called from toplev.cc after
    compilation proper has finished.  */
 static void
 dbxout_late_global_decl (tree decl)
@@ -3324,7 +3324,7 @@ dbxout_common_check (tree decl, int *value)
 
      ??? DECL_THREAD_LOCAL_P check prevents problems with improper .stabs
      for thread-local symbols.  Can be handled via same mechanism as used
-     in dwarf2out.c.  */
+     in dwarf2out.cc.  */
   if (!VAR_P (decl)
       || !TREE_STATIC (decl)
       || !DECL_HAS_VALUE_EXPR_P (decl)

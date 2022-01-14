@@ -942,7 +942,7 @@ lto_input_ts_block_tree_pointers (class lto_input_block *ib,
     BLOCK_ABSTRACT_ORIGIN (expr) = DECL_ORIGIN (BLOCK_ABSTRACT_ORIGIN (expr));
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
+     dwarf2out.cc.  */
 
   /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
      streaming time.  */

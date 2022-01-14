@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This implements the loop invariant motion pass.  It is very simple
    (no calls, no loads/stores, etc.).  This should be sufficient to cleanup
    things like address arithmetics -- other more complicated invariants should
-   be eliminated on GIMPLE either in tree-ssa-loop-im.c or in tree-ssa-pre.c.
+   be eliminated on GIMPLE either in tree-ssa-loop-im.cc or in tree-ssa-pre.cc.
 
    We proceed loop by loop -- it is simpler than trying to handle things
    globally and should not lose much.  First we inspect all sets inside loop

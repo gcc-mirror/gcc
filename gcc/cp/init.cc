@@ -2340,7 +2340,7 @@ is_class_type (tree type, int or_else)
    @@ Prints out lousy diagnostics for operator <typename>
    @@ fields.
 
-   @@ This function should be rewritten and placed in search.c.  */
+   @@ This function should be rewritten and placed in search.cc.  */
 
 tree
 build_offset_ref (tree type, tree member, bool address_p,
@@ -3260,7 +3260,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 		 to make sure it doesn't exceed the implementation-defined
 		 maximum, as required by C++ 14 (in C++ 11 this requirement
 		 isn't explicitly stated but it's enforced anyway -- see
-		 grokdeclarator in cp/decl.c).  */
+		 grokdeclarator in cp/decl.cc).  */
 	      if (complain & tf_error)
 		{
 		  size = cp_fully_fold (size);

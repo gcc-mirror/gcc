@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This file contains subroutines used only from the file reload1.c.
+/* This file contains subroutines used only from the file reload1.cc.
    It knows how to scan one insn for operands and values
    that need to be copied into registers to make valid code.
    It also finds other operands and values which are valid
@@ -1120,7 +1120,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  && LOAD_EXTEND_OP (GET_MODE (in)) == UNKNOWN
 	  && MEM_P (in))
 	/* This is supposed to happen only for paradoxical subregs made by
-	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
+	   combine.cc.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
 	gcc_assert (known_le (GET_MODE_SIZE (GET_MODE (in)),
 			      GET_MODE_SIZE (inmode)));
 
@@ -3120,7 +3120,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			 On machines that extend byte operations and we have a
 			 SUBREG where both the inner and outer modes are no wider
 			 than a word and the inner mode is narrower, is integral,
-			 and gets extended when loaded from memory, combine.c has
+			 and gets extended when loaded from memory, combine.cc has
 			 made assumptions about the behavior of the machine in such
 			 register access.  If the data is, in fact, in memory we
 			 must always load using the size assumed to be in the
@@ -5909,7 +5909,7 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 
 	 Note that this is actually conservative:  it would be slightly more
 	 efficient to use the value of SPILL_INDIRECT_LEVELS from
-	 reload1.c here.  */
+	 reload1.cc here.  */
 
       find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
 			    opnum, ADDR_TYPE (type), ind_levels, insn);
@@ -5930,7 +5930,7 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 	    return 1;
 	  }
 
-#if 0 /* This might screw code in reload1.c to delete prior output-reload
+#if 0 /* This might screw code in reload1.cc to delete prior output-reload
 	 that feeds this insn.  */
 	if (reg_equiv_mem (regno) != 0)
 	  {
@@ -6412,7 +6412,7 @@ find_replacement (rtx *loc)
    References contained within the substructure at LOC do not count.
    LOC may be zero, meaning don't ignore anything.
 
-   This is similar to refers_to_regno_p in rtlanal.c except that we
+   This is similar to refers_to_regno_p in rtlanal.cc except that we
    look at equivalences for pseudos that didn't get hard registers.  */
 
 static int
@@ -6531,7 +6531,7 @@ refers_to_regno_for_reload_p (unsigned int regno, unsigned int endregno,
    contains a MEM (we don't bother checking for memory addresses that can't
    conflict because we expect this to be a rare case.
 
-   This function is similar to reg_overlap_mentioned_p in rtlanal.c except
+   This function is similar to reg_overlap_mentioned_p in rtlanal.cc except
    that we look at equivalences for pseudos that didn't get hard registers.  */
 
 int
@@ -6656,7 +6656,7 @@ refers_to_mem_for_reload_p (rtx x)
    MODE is the machine mode of the value we want an equivalence for.
    If GOAL is nonzero and not VOIDmode, then it must have mode MODE.
 
-   This function is used by jump.c as well as in the reload pass.
+   This function is used by jump.cc as well as in the reload pass.
 
    If GOAL is the sum of the stack pointer and a constant, we treat it
    as if it were a constant except that sp is required to be unchanging.  */

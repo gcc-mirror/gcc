@@ -797,7 +797,7 @@ compute_inlined_call_time (struct cgraph_edge *edge,
   else
     time = time >> 11;
 
-  /* This calculation should match one in ipa-inline-analysis.c
+  /* This calculation should match one in ipa-inline-analysis.cc
      (estimate_edge_size_and_time).  */
   time -= (sreal)ipa_call_summaries->get (edge)->call_stmt_time * freq;
   time += caller_time;
@@ -2862,7 +2862,7 @@ inline_always_inline_functions (struct cgraph_node *node)
 	{
 	  /* Set inlined to true if the callee is marked "always_inline" but
 	     is not inlinable.  This will allow flagging an error later in
-	     expand_call_inline in tree-inline.c.  */
+	     expand_call_inline in tree-inline.cc.  */
 	  if (lookup_attribute ("always_inline",
 				 DECL_ATTRIBUTES (callee->decl)) != NULL)
 	    inlined = true;

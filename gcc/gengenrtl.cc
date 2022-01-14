@@ -130,7 +130,7 @@ always_void_p (int idx)
 
 /* Return nonzero if the RTL code given by index IDX is one that we should
    generate a gen_rtx_raw_FOO macro for, not gen_rtx_FOO (because gen_rtx_FOO
-   is a wrapper in emit-rtl.c).  */
+   is a wrapper in emit-rtl.cc).  */
 
 static int
 special_rtx (int idx)

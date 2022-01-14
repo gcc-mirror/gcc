@@ -964,7 +964,7 @@ microblaze_legitimate_pic_operand (rtx x)
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
-   This is used from only one place: `memory_address' in explow.c.
+   This is used from only one place: `memory_address' in explow.cc.
 
    OLDX is the address as it was before break_out_memory_refs was
    called.  In some cases it is useful to look at this to decide what
@@ -2767,7 +2767,7 @@ microblaze_function_prologue (FILE * file)
   const char *fnname;
   long fsiz = current_frame_info.total_size;
 
-  /* Get the function name the same way that toplev.c does before calling
+  /* Get the function name the same way that toplev.cc does before calling
      assemble_start_function.  This is needed so that the name used here
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
@@ -3069,7 +3069,7 @@ microblaze_function_epilogue (FILE *file)
 {
   const char *fnname;
 
-  /* Get the function name the same way that toplev.c does before calling
+  /* Get the function name the same way that toplev.cc does before calling
      assemble_start_function.  This is needed so that the name used here
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
@@ -3271,7 +3271,7 @@ microblaze_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 /*
   Encode info about sections into the RTL based on a symbol's declaration.
   The default definition of this hook, default_encode_section_info in 
-  `varasm.c', sets a number of commonly-useful bits in SYMBOL_REF_FLAGS. */
+  `varasm.cc', sets a number of commonly-useful bits in SYMBOL_REF_FLAGS. */
 
 static void
 microblaze_encode_section_info (tree decl, rtx rtl, int first)
@@ -3357,7 +3357,7 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   emit_insn (gen_indirect_jump (temp2));
 
   /* Run just enough of rest_of_compilation.  This sequence was
-     "borrowed" from rs6000.c.  */
+     "borrowed" from rs6000.cc.  */
   insn = get_insns ();
   shorten_branches (insn);
   assemble_start_function (thunk_fndecl, fnname);
@@ -3511,7 +3511,7 @@ microblaze_eh_return (rtx op0)
 
 /* Queue an .ident string in the queue of top-level asm statements.
    If the string size is below the threshold, put it into .sdata2.
-   If the front-end is done, we must be being called from toplev.c.
+   If the front-end is done, we must be being called from toplev.cc.
    In that case, do nothing.  */
 void 
 microblaze_asm_output_ident (const char *string)

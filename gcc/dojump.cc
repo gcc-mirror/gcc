@@ -472,7 +472,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
       }
 
     case COMPOUND_EXPR:
-      /* Lowered by gimplify.c.  */
+      /* Lowered by gimplify.cc.  */
       gcc_unreachable ();
 
     case MINUS_EXPR:

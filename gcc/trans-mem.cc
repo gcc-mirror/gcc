@@ -80,7 +80,7 @@
 	    __tm_abort;
 	}
 
-  During initial gimplification (gimplify.c) the TRANSACTION_EXPR node is
+  During initial gimplification (gimplify.cc) the TRANSACTION_EXPR node is
   trivially replaced with a GIMPLE_TRANSACTION node.
 
   During pass_lower_tm, we examine the body of transactions looking
@@ -2765,7 +2765,7 @@ collect_bb2reg (struct tm_region *region, void *data)
 // as we have no info within the program that suggests that the blocks cannot
 // be shared.
 //
-// ??? There is currently a hack inside tree-ssa-pre.c to work around the
+// ??? There is currently a hack inside tree-ssa-pre.cc to work around the
 // only known instance of this block sharing.
 
 static vec<tm_region *>

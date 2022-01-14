@@ -42,11 +42,11 @@ enum ipa_hints_vals {
      win.  */
   INLINE_HINT_in_scc = 16,
   /* If function is declared inline by user, it may be good idea to inline
-     it.  Set by simple_edge_hints in ipa-inline-analysis.c.  */
+     it.  Set by simple_edge_hints in ipa-inline-analysis.cc.  */
   INLINE_HINT_declared_inline = 32,
   /* Programs are usually still organized for non-LTO compilation and thus
      if functions are in different modules, inlining may not be so important. 
-     Set by simple_edge_hints in ipa-inline-analysis.c.   */
+     Set by simple_edge_hints in ipa-inline-analysis.cc.   */
   INLINE_HINT_cross_module = 64,
   /* We know that the callee is hot by profile.  */
   INLINE_HINT_known_hot = 128,
@@ -403,7 +403,7 @@ public:
 
 extern fast_call_summary <ipa_call_summary *, va_heap> *ipa_call_summaries;
 
-/* In ipa-fnsummary.c  */
+/* In ipa-fnsummary.cc  */
 void ipa_debug_fn_summary (struct cgraph_node *);
 void ipa_dump_fn_summaries (FILE *f);
 void ipa_dump_fn_summary (FILE *f, struct cgraph_node *node);

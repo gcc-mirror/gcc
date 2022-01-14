@@ -1351,7 +1351,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	 if args[i].reg is nonzero.
 
 	 These decisions are driven by the FUNCTION_... macros and must agree
-	 with those made by function.c.  */
+	 with those made by function.cc.  */
 
       /* See if this argument should be passed by invisible reference.  */
       function_arg_info arg (type, argpos < n_named_args);
@@ -1548,7 +1548,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
       /* ??? Traditionally we've passed TYPE_MODE here, instead of the
 	 promoted_mode used for function_arg above.  However, the
-	 corresponding handling of incoming arguments in function.c
+	 corresponding handling of incoming arguments in function.cc
 	 does pass the promoted mode.  */
       arg.mode = TYPE_MODE (type);
       targetm.calls.function_arg_advance (args_so_far, arg);
@@ -3669,7 +3669,7 @@ expand_call (tree exp, rtx target, int ignore)
 	}
 
       /* For calls to `setjmp', etc., inform
-	 function.c:setjmp_warnings that it should complain if
+	 function.cc:setjmp_warnings that it should complain if
 	 nonvolatile values are live.  For functions that cannot
 	 return, inform flow that control does not fall through.  */
 
@@ -4526,7 +4526,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
 	  NO_DEFER_POP;
 
-	  /* Indicate argument access so that alias.c knows that these
+	  /* Indicate argument access so that alias.cc knows that these
 	     values are live.  */
 	  if (argblock)
 	    use = plus_constant (Pmode, argblock,
@@ -4535,7 +4535,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    continue;
 	  else
 	    {
-	      /* When arguments are pushed, trying to tell alias.c where
+	      /* When arguments are pushed, trying to tell alias.cc where
 		 exactly this argument is won't work, because the
 		 auto-increment causes confusion.  So we merely indicate
 		 that we access something with a known mode somewhere on
@@ -4685,7 +4685,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   targetm.calls.end_call_args ();
 
-  /* For calls to `setjmp', etc., inform function.c:setjmp_warnings
+  /* For calls to `setjmp', etc., inform function.cc:setjmp_warnings
      that it should complain if nonvolatile values are live.  For
      functions that cannot return, inform flow that control does not
      fall through.  */

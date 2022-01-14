@@ -12823,7 +12823,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
     {
       /* We exclusively use decls to locate things.  Make sure there's
 	 no mismatch between the two specialization tables we keep.
-	 pt.c optimizes instantiation lookup using a complicated
+	 pt.cc optimizes instantiation lookup using a complicated
 	 heuristic.  We don't attempt to replicate that algorithm, but
 	 observe its behaviour and reproduce it upon read back.  */
 
@@ -14879,7 +14879,7 @@ module_state::read_cluster (unsigned snum)
 	}
 
     }
-  /* Look, function.c's interface to cfun does too much for us, we
+  /* Look, function.cc's interface to cfun does too much for us, we
      just need to restore the old value.  I do not want to go
      redesigning that API right now.  */
 #undef cfun

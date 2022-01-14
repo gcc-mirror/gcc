@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Legacy warning!  Please add no further builtin simplifications here
    (apart from pure constant folding) - builtin simplifications should go
-   to match.pd or gimple-fold.c instead.  */
+   to match.pd or gimple-fold.cc instead.  */
 
 #include "config.h"
 #include "system.h"
@@ -1038,7 +1038,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
       set_mem_alias_set (stack, setjmp_alias_set);
 
       /* Pick up FP, label, and SP from the block and jump.  This code is
-	 from expand_goto in stmt.c; see there for detailed comments.  */
+	 from expand_goto in stmt.cc; see there for detailed comments.  */
       if (targetm.have_nonlocal_goto ())
 	/* We have to pass a value to the nonlocal_goto pattern that will
 	   get copied into the static_chain pointer, but it does not matter
@@ -9628,7 +9628,7 @@ validate_arg (const_tree arg, enum tree_code code)
    VOID_TYPE.
 
    This is the GIMPLE version of validate_arglist.  Eventually we want to
-   completely convert builtins.c to work from GIMPLEs and the tree based
+   completely convert builtins.cc to work from GIMPLEs and the tree based
    validate_arglist will then be removed.  */
 
 bool
@@ -10989,7 +10989,7 @@ access_ref::offset_bounded () const
 }
 
 /* If CALLEE has known side effects, fill in INFO and return true.
-   See tree-ssa-structalias.c:find_func_aliases
+   See tree-ssa-structalias.cc:find_func_aliases
    for the list of builtins we might need to handle here.  */
 
 attr_fnspec

@@ -14786,7 +14786,7 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
 static machine_mode
 get_mode_wider_vector (machine_mode o)
 {
-  /* ??? Rely on the ordering that genmodes.c gives to vectors.  */
+  /* ??? Rely on the ordering that genmodes.cc gives to vectors.  */
   machine_mode n = GET_MODE_WIDER_MODE (o).require ();
   gcc_assert (GET_MODE_NUNITS (o) == GET_MODE_NUNITS (n) * 2);
   gcc_assert (GET_MODE_SIZE (o) == GET_MODE_SIZE (n));

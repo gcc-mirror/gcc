@@ -848,7 +848,7 @@ msp430_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (boundary > align
       && !integer_zerop (TYPE_SIZE (type)))
     {
-      /* FIXME: This is where this function diverts from targhooks.c:
+      /* FIXME: This is where this function diverts from targhooks.cc:
 	 std_gimplify_va_arg_expr().  It works, but I do not know why...  */
       if (! POINTER_TYPE_P (type))
 	{
@@ -4426,7 +4426,7 @@ msp430_incoming_return_addr_rtx (void)
 
 /* If the path to the MSP430-GCC support files has been found by examining
    an environment variable (see msp430_check_env_var_for_devices in
-   msp430-devices.c), or -mdevices-csv-loc=, register this path as an include
+   msp430-devices.cc), or -mdevices-csv-loc=, register this path as an include
    directory so the user can #include msp430.h without needing to specify the
    path to the support files with -I.  */
 void

@@ -1054,7 +1054,7 @@ arm_asm_auto_mfpu (int argc, const char **argv)
   bitmap_and (fpubits, fpubits, target_isa);
 
   /* The logic below is essentially identical to that in
-     arm.c:arm_identify_fpu_from_isa(), but that only works in the main
+     arm.cc:arm_identify_fpu_from_isa(), but that only works in the main
      part of the compiler.  */
 
   /* If there are no FPU capability bits, we just pass -mfpu=softvfp.  */

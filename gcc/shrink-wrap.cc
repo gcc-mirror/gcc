@@ -549,7 +549,7 @@ handle_simple_exit (edge e)
 
   if (e->flags & EDGE_SIBCALL)
     {
-      /* Tell function.c to take no further action on this edge.  */
+      /* Tell function.cc to take no further action on this edge.  */
       e->flags |= EDGE_IGNORE;
 
       e->flags &= ~EDGE_FALLTHRU;

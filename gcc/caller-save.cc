@@ -173,7 +173,7 @@ reg_restore_code (int reg, machine_mode mode)
 /* Initialize for caller-save.
 
    Look at all the hard registers that are used by a call and for which
-   reginfo.c has not already excluded from being used across a call.
+   reginfo.cc has not already excluded from being used across a call.
 
    Ensure that we can find a mode to save the register and that there is a
    simple insn to save and restore the register.  This latter check avoids
@@ -520,7 +520,7 @@ setup_save_areas (void)
 	  CLEAR_HARD_REG_SET (this_insn_sets);
 	  note_stores (insn, mark_set_regs, &this_insn_sets);
 	  /* Sibcalls are considered to set the return value,
-	     compare df-scan.c:df_get_call_refs.  */
+	     compare df-scan.cc:df_get_call_refs.  */
 	  if (SIBLING_CALL_P (insn) && crtl->return_rtx)
 	    mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 

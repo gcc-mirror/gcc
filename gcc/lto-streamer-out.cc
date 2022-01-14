@@ -644,7 +644,7 @@ private:
 /* Return true if type can not be merged with structurally same tree in
    other translation unit.  During stream out this information is propagated
    to all trees referring to T and they are not streamed with additional
-   information needed by the tree merging in lto-common.c (in particular,
+   information needed by the tree merging in lto-common.cc (in particular,
    scc hash codes are not streamed).
 
    TRANSLATION_UNIT_DECL is handled specially since references to it does
@@ -1116,7 +1116,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
       /* Do not follow BLOCK_NONLOCALIZED_VARS.  We cannot handle debug
 	 information for early inlined BLOCKs so drop it on the floor instead
-	 of ICEing in dwarf2out.c.  */
+	 of ICEing in dwarf2out.cc.  */
 
       /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
 	 streaming time.  */
@@ -2960,7 +2960,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
 
-  /* This behaves like assemble_name_raw in varasm.c, performing the
+  /* This behaves like assemble_name_raw in varasm.cc, performing the
      same name manipulations that ASM_OUTPUT_LABELREF does. */
   name = IDENTIFIER_POINTER ((*targetm.asm_out.mangle_assembler_name) (name));
 

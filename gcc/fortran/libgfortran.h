@@ -169,7 +169,7 @@ typedef enum
 #define GFC_STDOUT_UNIT_NUMBER 6
 #define GFC_STDERR_UNIT_NUMBER 0
 
-/* F2003 onward. For std < F2003, error caught in array.c(gfc_match_array_ref).  */
+/* F2003 onward. For std < F2003, error caught in array.cc(gfc_match_array_ref).  */
 #define GFC_MAX_DIMENSIONS 15
 
 #define GFC_DTYPE_RANK_MASK 0x0F

@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* class.c -- This file contains the front end functions needed to service
+/* class.cc -- This file contains the front end functions needed to service
               the implementation of Fortran 2003 polymorphism and other
               object-oriented features.  */
 
@@ -2761,7 +2761,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->attr.access = ACCESS_PRIVATE;
 
 	      /* Build a minimal expression to make use of
-		 target-memory.c/gfc_element_size for 'size'.  Special handling
+		 target-memory.cc/gfc_element_size for 'size'.  Special handling
 		 for character arrays, that are not constant sized: to support
 		 len (str) * kind, only the kind information is stored in the
 		 vtab.  */

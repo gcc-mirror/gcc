@@ -1009,7 +1009,7 @@ c_common_type (tree t1, tree t2)
     return t2;
 }
 
-/* Wrapper around c_common_type that is used by c-common.c and other
+/* Wrapper around c_common_type that is used by c-common.cc and other
    front end optimizations that remove promotions.  ENUMERAL_TYPEs
    are allowed here and are converted to their compatible integer types.
    BOOLEAN_TYPEs are allowed here and return either boolean_type_node or
@@ -14996,7 +14996,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
 	    /* For attach/detach clauses, set OMP_CLAUSE_SIZE (representing a
 	       bias) to zero here, so it is not set erroneously to the pointer
-	       size later on in gimplify.c.  */
+	       size later on in gimplify.cc.  */
 	    OMP_CLAUSE_SIZE (c) = size_zero_node;
 	  while (TREE_CODE (t) == INDIRECT_REF
 		 || TREE_CODE (t) == ARRAY_REF)

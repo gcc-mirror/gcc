@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This source file contains "main" for the compiler driver.
-   All of the real work is done within gcc.c; we implement "main"
+   All of the real work is done within gcc.cc; we implement "main"
    in here for the "gcc" binary so that gcc.o can be used in
    libgccjit.so.  */
 
@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc.h"
 
 /* Implement the top-level "main" within the driver in terms of
-   driver::main (implemented in gcc.c).  */
+   driver::main (implemented in gcc.cc).  */
 
 extern int main (int, char **);
 

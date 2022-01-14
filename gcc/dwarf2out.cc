@@ -1078,7 +1078,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 
   do_frame = dwarf2out_do_frame ();
 
-  /* ??? current_function_func_begin_label is also used by except.c for
+  /* ??? current_function_func_begin_label is also used by except.cc for
      call-site information.  We must emit this label if it might be used.  */
   if (!do_frame
       && (!flag_exceptions
@@ -18061,7 +18061,7 @@ struct loc_descr_context
    that can be factorized in order to reduce the size of the output debug
    information.  This is the whole point of DWARF procedures.
 
-   Thanks to stor-layout.c, size and offset expressions in GENERIC trees are
+   Thanks to stor-layout.cc, size and offset expressions in GENERIC trees are
    already factorized into functions ("size functions") in order to handle very
    big and complex types.  Such functions are quite simple: they have integral
    arguments, they return an integral result and their body contains only a
@@ -20497,7 +20497,7 @@ rtl_for_decl_location (tree decl)
      rarely enough that it is not a major problem, but it *is* a problem, and
      I'd like to fix it.
 
-     A future version of dwarf2out.c may generate two additional attributes for
+     A future version of dwarf2out.cc may generate two additional attributes for
      any given DW_TAG_formal_parameter DIE which will describe the "passed
      type" and the "passed location" for the given formal parameter in addition
      to the attributes we now generate to indicate the "declared type" and the
@@ -20573,7 +20573,7 @@ rtl_for_decl_location (tree decl)
       /* If the parm was passed in registers, but lives on the stack, then
 	 make a big endian correction if the mode of the type of the
 	 parameter is not the same as the mode of the rtl.  */
-      /* ??? This is the same series of checks that are made in dbxout.c before
+      /* ??? This is the same series of checks that are made in dbxout.cc before
 	 we reach the big endian correction code there.  It isn't clear if all
 	 of these checks are necessary here, but keeping them all is the safe
 	 thing to do.  */
@@ -23807,7 +23807,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	{
 	  /* DWARF requires here a location expression that computes the
 	     address of the enclosing subprogram's frame base.  The machinery
-	     in tree-nested.c is supposed to store this specific address in the
+	     in tree-nested.cc is supposed to store this specific address in the
 	     last field of the FRAME record.  */
 	  const tree frame_type
 	    = TREE_TYPE (TREE_TYPE (fun->static_chain_decl));
@@ -24640,7 +24640,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	           && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))))
 	{
 	  /* When optimization is enabled (via -O) some parts of the compiler
-	     (e.g. jump.c and cse.c) may try to delete CODE_LABEL insns which
+	     (e.g. jump.cc and cse.cc) may try to delete CODE_LABEL insns which
 	     represent source-level labels which were explicitly declared by
 	     the user.  This really shouldn't be happening though, so catch
 	     it if it ever does happen.  */
@@ -27133,7 +27133,7 @@ is_trivial_indirect_ref (tree expr)
 }
 
 /* Output debug information for global decl DECL.  Called from
-   toplev.c after compilation proper has finished.  */
+   toplev.cc after compilation proper has finished.  */
 
 static void
 dwarf2out_late_global_decl (tree decl)
@@ -27170,7 +27170,7 @@ dwarf2out_late_global_decl (tree decl)
     }
 }
 
-/* Output debug information for type decl DECL.  Called from toplev.c
+/* Output debug information for type decl DECL.  Called from toplev.cc
    and from language front ends (to record built-in types).  */
 static void
 dwarf2out_type_decl (tree decl, int local)
@@ -27548,7 +27548,7 @@ dwarf_file_hasher::hash (dwarf_file_data *p)
 }
 
 /* Lookup FILE_NAME (in the list of filenames that we know about here in
-   dwarf2out.c) and return its "index".  The index of each (known) filename is
+   dwarf2out.cc) and return its "index".  The index of each (known) filename is
    just a unique number which is associated with only that one filename.  We
    need such numbers for the sake of generating labels (in the .debug_sfnames
    section) and references to those files numbers (in the .debug_srcinfo
@@ -28660,7 +28660,7 @@ dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
     }
 }
 
-/* Called from debug_define in toplev.c.  The `buffer' parameter contains
+/* Called from debug_define in toplev.cc.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
@@ -28687,7 +28687,7 @@ dwarf2out_define (unsigned int lineno ATTRIBUTE_UNUSED,
     }
 }
 
-/* Called from debug_undef in toplev.c.  The `buffer' parameter contains
+/* Called from debug_undef in toplev.cc.  The `buffer' parameter contains
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
@@ -33054,7 +33054,7 @@ dwarf2out_early_finish (const char *filename)
   switch_to_section (text_section);
 }
 
-/* Reset all state within dwarf2out.c so that we can rerun the compiler
+/* Reset all state within dwarf2out.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

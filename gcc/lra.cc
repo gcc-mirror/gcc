@@ -1901,7 +1901,7 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 	  FOR_EACH_EDGE (e, ei, BLOCK_FOR_INSN (insn)->succs)
 	    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	      {
-		/* We already made the edge no-critical in ira.c::ira */
+		/* We already made the edge no-critical in ira.cc::ira */
 		lra_assert (!EDGE_CRITICAL_P (e));
 		rtx_insn *curr, *tmp = BB_HEAD (e->dest);
 		if (LABEL_P (tmp))

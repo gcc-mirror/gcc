@@ -463,7 +463,7 @@ static const struct option_map option_map[] =
     { "--no-", NULL, "-f", false, true }
   };
 
-/* Helper function for gcc.c's driver::suggest_option, for populating the
+/* Helper function for gcc.cc's driver::suggest_option, for populating the
    vec of suggestions for misspelled options.
 
    option_map above provides various prefixes for spelling command-line

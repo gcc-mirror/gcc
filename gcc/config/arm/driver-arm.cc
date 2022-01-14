@@ -40,7 +40,7 @@ struct vendor
 
 #include "arm-native.h"
 
-/* This will be called by the spec parser in gcc.c when it sees
+/* This will be called by the spec parser in gcc.cc when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "arch", "cpu" or "tune" as argument depending on if
    -march=native, -mcpu=native or -mtune=native is to be substituted.

@@ -1,6 +1,6 @@
 /* Next Runtime (ABI-0/1) private.
    Copyright (C) 2011-2022 Free Software Foundation, Inc.
-   Contributed by Iain Sandoe (split from objc-act.c)
+   Contributed by Iain Sandoe (split from objc-act.cc)
 
 This file is part of GCC.
 
@@ -2275,7 +2275,7 @@ generate_objc_symtab_decl (void)
    executable image, preserving unix archive semantics.
 
    At present (4.8), the only targets implementing this are Darwin; these
-   use top level asms to implement a scheme (see config/darwin-c.c).  The
+   use top level asms to implement a scheme (see config/darwin-c.cc).  The
    latter method is a hack, but compatible with LTO see also PR48109 for
    further discussion and other possible methods.  */
 

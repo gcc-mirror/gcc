@@ -119,7 +119,7 @@
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
 
-/* var-tracking.c assumes that tree code with the same value as VALUE rtx code
+/* var-tracking.cc assumes that tree code with the same value as VALUE rtx code
    has no chance to appear in REG_EXPR/MEM_EXPRs and isn't a decl.
    Currently the value is the same as IDENTIFIER_NODE, which has such
    a property.  If this compile time assertion ever fails, make sure that

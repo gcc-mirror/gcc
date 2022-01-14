@@ -104,7 +104,7 @@ static void df_insn_info_delete (unsigned int);
 /* Indexed by hardware reg number, is true if that register is ever
    used in the current function.
 
-   In df-scan.c, this is set up to record the hard regs used
+   In df-scan.cc, this is set up to record the hard regs used
    explicitly.  Reload adds in the hard regs used for holding pseudo
    regs.  Final uses it to generate the code in the function prologue
    and epilogue to save and restore registers as needed.  */
@@ -938,7 +938,7 @@ df_insn_delete (rtx_insn *insn)
   bb = BLOCK_FOR_INSN (insn);
 
   /* ??? bb can be NULL after pass_free_cfg.  At that point, DF should
-     not exist anymore (as mentioned in df-core.c: "The only requirement
+     not exist anymore (as mentioned in df-core.cc: "The only requirement
      [for DF] is that there be a correct control flow graph."  Clearly
      that isn't the case after pass_free_cfg.  But DF is freed much later
      because some back-ends want to use DF info even though the CFG is

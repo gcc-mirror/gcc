@@ -531,10 +531,10 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
   if (filename == NULL && function == NULL)
     return 0;
 
-  /* Skip functions in diagnostic.c.  */
+  /* Skip functions in diagnostic.cc.  */
   if (*pcount == 0
       && filename != NULL
-      && strcmp (lbasename (filename), "diagnostic.c") == 0)
+      && strcmp (lbasename (filename), "diagnostic.cc") == 0)
     return 0;
 
   /* Print up to 20 functions.  We could make this a --param, but
@@ -1437,8 +1437,8 @@ num_digits (int value)
 
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
-   is used by fancy_abort() to print `Internal compiler error in expr.c'
-   instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  */
+   is used by fancy_abort() to print `Internal compiler error in expr.cc'
+   instead of `Internal compiler error in ../../GCC/gcc/expr.cc'.  */
 
 const char *
 trim_filename (const char *name)

@@ -702,7 +702,7 @@ xstormy16_mode_dependent_address_p (const_rtx x,
       && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (x, 1), 6))
     return true;
 
-  /* Auto-increment addresses are now treated generically in recog.c.  */
+  /* Auto-increment addresses are now treated generically in recog.cc.  */
   return false;
 }
 

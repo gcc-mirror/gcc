@@ -316,7 +316,7 @@ stmt_local_def (gimple *stmt)
       || gimple_has_side_effects (stmt)
       || gimple_could_trap_p_1 (stmt, false, false)
       || gimple_vuse (stmt) != NULL_TREE
-      /* Copied from tree-ssa-ifcombine.c:bb_no_side_effects_p():
+      /* Copied from tree-ssa-ifcombine.cc:bb_no_side_effects_p():
 	 const calls don't match any of the above, yet they could
 	 still have some side-effects - they could contain
 	 gimple_could_trap_p statements, like floating point

@@ -150,7 +150,7 @@ bool flag_stack_usage_info = false
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
 ; generated assembly code (perhaps while debugging the compiler itself).
-; Currently, this switch is only used by dwarf2out.c; however, it is intended
+; Currently, this switch is only used by dwarf2out.cc; however, it is intended
 ; to be a catchall for printing debug information in the assembler file.
 Variable
 int flag_debug_asm

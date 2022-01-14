@@ -30,13 +30,13 @@ along with GCC; see the file COPYING3.  If not see
    TRY_CATCH_EXPR, TRY_FINALLY_EXPR, EH_ELSE_EXPR, WITH_CLEANUP_EXPR,
    CLEANUP_POINT_EXPR, CATCH_EXPR, and EH_FILTER_EXPR.
 
-   During initial gimplification (gimplify.c) these are lowered to the
+   During initial gimplification (gimplify.cc) these are lowered to the
    GIMPLE_TRY, GIMPLE_CATCH, GIMPLE_EH_ELSE, and GIMPLE_EH_FILTER
    nodes.  The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are
    converted into GIMPLE_TRY_FINALLY nodes; the others are a more
    direct 1-1 conversion.
 
-   During pass_lower_eh (tree-eh.c) we record the nested structure
+   During pass_lower_eh (tree-eh.cc) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.
    We expand the eh_protect_cleanup_actions langhook into MUST_NOT_THROW
    regions at this time.  We can then flatten the statements within
@@ -53,7 +53,7 @@ along with GCC; see the file COPYING3.  If not see
    select the action to perform among different CATCH and EH_FILTER
    regions.
 
-   During pass_lower_eh_dispatch (tree-eh.c), which is run after
+   During pass_lower_eh_dispatch (tree-eh.cc), which is run after
    all inlining is complete, we are able to run assign_filter_values,
    which allows us to map the set of types manipulated by all of the
    CATCH and EH_FILTER regions to a set of integers.  This set of integers
@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
    the runtime (__builtin_eh_filter) and the set of integers we computed
    in assign_filter_values.
 
-   During pass_lower_resx (tree-eh.c), which is run near the end
+   During pass_lower_resx (tree-eh.cc), which is run near the end
    of optimization, we expand RESX statements.  If the eh region
    that is outer to the RESX statement is a MUST_NOT_THROW, then
    the RESX expands to some form of abort statement.  If the eh
@@ -74,7 +74,7 @@ along with GCC; see the file COPYING3.  If not see
    up the call chain, so we call back into the exception runtime
    (__builtin_unwind_resume).
 
-   During pass_expand (cfgexpand.c), we generate REG_EH_REGION notes
+   During pass_expand (cfgexpand.cc), we generate REG_EH_REGION notes
    that create an rtl to eh_region mapping that corresponds to the
    gimple to eh_region mapping that had been recorded in the
    THROW_STMT_TABLE.
@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
    calls into the runtime to register and unregister the current stack
    frame are emitted at this time.
 
-   During pass_convert_to_eh_region_ranges (except.c), we transform
+   During pass_convert_to_eh_region_ranges (except.cc), we transform
    the REG_EH_REGION notes attached to individual insns into
    non-overlapping ranges of insns bounded by NOTE_INSN_EH_REGION_BEG
    and NOTE_INSN_EH_REGION_END.  Each insn within such ranges has the
@@ -101,12 +101,12 @@ along with GCC; see the file COPYING3.  If not see
    within the current function.
 
    Finally, during assembly generation, we call
-   output_function_exception_table (except.c) to emit the tables with
+   output_function_exception_table (except.cc) to emit the tables with
    which the exception runtime can determine if a given stack frame
    handles a given exception, and if so what filter value to provide
    to the function when the non-local control transfer is effected.
    If the target uses dwarf2 unwinding to implement exceptions, then
-   output_call_frame_info (dwarf2out.c) emits the required unwind data.  */
+   output_call_frame_info (dwarf2out.cc) emits the required unwind data.  */
 
 
 #include "config.h"
@@ -358,7 +358,7 @@ init_eh_for_function (void)
 }
 
 /* Routines to generate the exception tree somewhat directly.
-   These are used from tree-eh.c when processing exception related
+   These are used from tree-eh.cc when processing exception related
    nodes during tree optimization.  */
 
 static eh_region

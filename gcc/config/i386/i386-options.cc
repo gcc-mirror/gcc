@@ -3074,7 +3074,7 @@ ix86_set_func_type (tree fndecl)
 
 	  ix86_optimize_mode_switching[X86_DIRFLAG] = 1;
 
-	  /* Only dwarf2out.c can handle -WORD(AP) as a pointer argument.  */
+	  /* Only dwarf2out.cc can handle -WORD(AP) as a pointer argument.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	    sorry ("only DWARF debug format is supported for interrupt "
 		   "service routine");

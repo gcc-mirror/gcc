@@ -4289,7 +4289,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       if (upper && type == AR_FULL && as && as->type == AS_ASSUMED_SIZE)
 	{
 	  /* An error message will be emitted in
-	     check_assumed_size_reference (resolve.c).  */
+	     check_assumed_size_reference (resolve.cc).  */
 	  return &gfc_bad_expr;
 	}
 

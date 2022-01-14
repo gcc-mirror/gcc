@@ -160,12 +160,12 @@ along with GCC; see the file COPYING3.  If not see
 
    When pipelining, we reschedule the blocks from which insns were pipelined
    to get a tighter schedule.  On Itanium, we also perform bundling via
-   the same routine from ia64.c.
+   the same routine from ia64.cc.
 
    Dependence analysis changes
    ===========================
 
-   We augmented the sched-deps.c with hooks that get called when a particular
+   We augmented the sched-deps.cc with hooks that get called when a particular
    dependence is found in a particular part of an insn.  Using these hooks, we
    can do several actions such as: determine whether an insn can be moved through
    another (has_dependence_p, moveup_expr); find out whether an insn can be
@@ -177,7 +177,7 @@ along with GCC; see the file COPYING3.  If not see
    Initialization changes
    ======================
 
-   There are parts of haifa-sched.c, sched-deps.c, and sched-rgn.c that are
+   There are parts of haifa-sched.cc, sched-deps.cc, and sched-rgn.cc that are
    reused in all of the schedulers.  We have split up the initialization of data
    of such parts into different functions prefixed with scheduler type and
    postfixed with the type of data initialized: {,sel_,haifa_}sched_{init,finish},
@@ -441,7 +441,7 @@ extern struct code_motion_path_driver_info_def move_op_hooks, fur_hooks;
 
 /* True if/when we want to emulate Haifa scheduler in the common code.
    This is used in sched_rgn_local_init and in various places in
-   sched-deps.c.  */
+   sched-deps.cc.  */
 int sched_emulate_haifa_p;
 
 /* GLOBAL_LEVEL is used to discard information stored in basic block headers
@@ -976,7 +976,7 @@ vinsn_writes_one_of_regs_p (vinsn_t vi, regset used_regs,
    Returns NO_REGS for call insns because some targets have constraints on
    destination register of a call insn.
 
-   Code adopted from regrename.c::build_def_use.  */
+   Code adopted from regrename.cc::build_def_use.  */
 static enum reg_class
 get_reg_class (rtx_insn *insn)
 {
@@ -1284,7 +1284,7 @@ static int reg_rename_this_tick;
    for single rhs since we moving it up and merging along different
    paths.
 
-   Some code is adapted from regrename.c (regrename_optimize).
+   Some code is adapted from regrename.cc (regrename_optimize).
    If original register is available, function returns it.
    Otherwise it performs the checks, so the new register should
    comply with the following:
@@ -1471,7 +1471,7 @@ choose_best_pseudo_reg (regset used_regs,
 	    {
 	      /* Don't let register cross a call if it doesn't already
 		 cross one.  This condition is written in accordance with
-		 that in sched-deps.c sched_analyze_reg().  */
+		 that in sched-deps.cc sched_analyze_reg().  */
 	      if (!reg_rename_p->crossed_call_abis
 		  || REG_N_CALLS_CROSSED (orig_regno) > 0)
 		return gen_rtx_REG (mode, orig_regno);
@@ -1544,7 +1544,7 @@ verify_target_availability (expr_t expr, regset used_regs,
        in which successors target register is actually available.
 
        The last condition handles the case when a dependence from a call insn
-       was created in sched-deps.c for insns with destination registers that
+       was created in sched-deps.cc for insns with destination registers that
        never crossed a call before, but do cross one after our code motion.
 
        FIXME: in the latter case, we just uselessly called find_used_regs,
@@ -1739,7 +1739,7 @@ can_speculate_dep_p (ds_t ds)
     return false;
 
   {
-    /* FIXME: make sched-deps.c produce only those non-hard dependencies,
+    /* FIXME: make sched-deps.cc produce only those non-hard dependencies,
        that we can overcome.  */
     ds_t spec_mask = spec_info->mask;
 
@@ -3403,7 +3403,7 @@ sel_rank_for_schedule (const void *x, const void *y)
     return val;
 
   if (spec_info != NULL && spec_info->mask != 0)
-    /* This code was taken from haifa-sched.c: rank_for_schedule ().  */
+    /* This code was taken from haifa-sched.cc: rank_for_schedule ().  */
     {
       ds_t ds1, ds2;
       dw_t dw1, dw2;

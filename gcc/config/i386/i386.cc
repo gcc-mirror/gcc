@@ -1438,7 +1438,7 @@ ix86_function_arg_regno_p (int regno)
 		 && regno < FIRST_MMX_REG + MMX_REGPARM_MAX));
 
   /* TODO: The function should depend on current function ABI but
-     builtins.c would need updating then. Therefore we use the
+     builtins.cc would need updating then. Therefore we use the
      default ABI.  */
   call_abi = ix86_cfun_abi ();
 
@@ -3648,7 +3648,7 @@ ix86_function_value_regno_p (const unsigned int regno)
     case ST0_REG:
     case ST1_REG:
       /* TODO: The function should depend on current function ABI but
-       builtins.c would need updating then. Therefore we use the
+       builtins.cc would need updating then. Therefore we use the
        default ABI.  */
       if (TARGET_64BIT && ix86_cfun_abi () == MS_ABI)
 	return false;
@@ -6854,7 +6854,7 @@ ix86_compute_frame_layout (void)
   if (TARGET_SEH)
     {
       /* Force the frame pointer to point at or below the lowest register save
-	 area, see the SEH code in config/i386/winnt.c for the rationale.  */
+	 area, see the SEH code in config/i386/winnt.cc for the rationale.  */
       frame->hard_frame_pointer_offset = frame->sse_reg_save_offset;
 
       /* If we can leave the frame pointer where it is, do so; however return
@@ -11974,7 +11974,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
+   This macro is used in only one place: `memory_address' in explow.cc.
 
    OLDX is the address as it was before break_out_memory_refs was called.
    In some cases it is useful to look at this to decide what needs to be done.
@@ -11988,7 +11988,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
    nothing needs to be done because REG can certainly go in a general reg.
 
    When -fpic is used, special handling is needed for symbolic references.
-   See comments by legitimize_pic_address in i386.c for details.  */
+   See comments by legitimize_pic_address in i386.cc for details.  */
 
 static rtx
 ix86_legitimize_address (rtx x, rtx, machine_mode mode)
@@ -12334,7 +12334,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
     }
 }
 
-/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
 static void ATTRIBUTE_UNUSED

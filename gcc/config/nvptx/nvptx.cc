@@ -6793,7 +6793,7 @@ nvptx_goacc_expand_var_decl (tree var)
 		    var, "gang");
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      /* 'dumpfile.c:dump_loc' */
+	      /* 'dumpfile.cc:dump_loc' */
 	      fprintf (dump_file, "%s:%d:%d: ", LOCATION_FILE (loc),
 		       LOCATION_LINE (loc), LOCATION_COLUMN (loc));
 	      fprintf (dump_file, "%s: ", "note");

@@ -379,7 +379,7 @@ pack_ts_block_value_fields (struct output_block *ob,
   /* BLOCK_NUMBER is recomputed.  */
   /* Stream BLOCK_SOURCE_LOCATION for the limited cases we can handle - those
      that represent inlined function scopes.
-     For the rest them on the floor instead of ICEing in dwarf2out.c.  */
+     For the rest them on the floor instead of ICEing in dwarf2out.cc.  */
   if (inlined_function_outer_scope_p (expr))
     stream_output_location (ob, bp, BLOCK_SOURCE_LOCATION (expr));
   else
@@ -808,7 +808,7 @@ write_ts_block_tree_pointers (struct output_block *ob, tree expr)
 
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
+     dwarf2out.cc.  */
 
   /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
      streaming time.  */

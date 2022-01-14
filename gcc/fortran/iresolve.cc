@@ -1598,7 +1598,7 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
   else
     {
       /* b->rank == 1 and a->rank == 2 here, all other cases have
-	 been caught in check.c.   */
+	 been caught in check.cc.   */
       if (a->shape)
 	{
 	  f->shape = gfc_get_shape (f->rank);
@@ -3258,7 +3258,7 @@ gfc_resolve_alarm_sub (gfc_code *c)
 
   /* handler can be either BT_INTEGER or BT_PROCEDURE.
      In all cases, the status argument is of default integer kind
-     (enforced in check.c) so that the function suffix is fixed.  */
+     (enforced in check.cc) so that the function suffix is fixed.  */
   if (handler->ts.type == BT_INTEGER)
     {
       if (handler->ts.kind != gfc_c_int_kind)

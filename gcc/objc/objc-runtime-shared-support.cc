@@ -1,6 +1,6 @@
 /* Support routines shared by all runtimes.
    Copyright (C) 2011-2022 Free Software Foundation, Inc.
-   Contributed by Iain Sandoe (partially split from objc-act.c)
+   Contributed by Iain Sandoe (partially split from objc-act.cc)
 
 This file is part of GCC.
 

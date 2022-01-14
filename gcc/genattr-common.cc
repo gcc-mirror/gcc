@@ -1,6 +1,6 @@
 /* Generate attribute information shared between driver and core
    compilers (insn-attr-common.h) from machine description.  Split out
-   of genattr.c.
+   of genattr.cc.
    Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

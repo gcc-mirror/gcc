@@ -4778,7 +4778,7 @@ rl78_asm_ctor_dtor (rtx symbol, int priority, bool is_ctor)
   if (priority != DEFAULT_INIT_PRIORITY)
     {
       /* This section of the function is based upon code copied
-	 from: gcc/varasm.c:get_cdtor_priority_section().  */
+	 from: gcc/varasm.cc:get_cdtor_priority_section().  */
       char buf[18];
 
       sprintf (buf, "%s.%.5u", is_ctor ? ".ctors" : ".dtors",

@@ -2402,7 +2402,7 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	 handling since the MEM may be BLKmode which normally
 	 prevents an entry from being made.  Pure calls are
 	 marked by a USE which mentions BLKmode memory.
-	 See calls.c:emit_call_1.  */
+	 See calls.cc:emit_call_1.  */
       if (MEM_P (XEXP (x, 0))
 	  && ! MEM_VOLATILE_P (XEXP (x, 0)))
 	{
@@ -3586,7 +3586,7 @@ fold_rtx (rtx x, rtx_insn *insn)
 	     is known to be of similar form, we may be able to replace the
 	     operation with a combined operation.  This may eliminate the
 	     intermediate operation if every use is simplified in this way.
-	     Note that the similar optimization done by combine.c only works
+	     Note that the similar optimization done by combine.cc only works
 	     if the intermediate operation's result has only one reference.  */
 
 	  if (REG_P (folded_arg0)

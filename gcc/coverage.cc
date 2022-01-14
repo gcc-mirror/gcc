@@ -53,7 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "file-prefix-map.h"
 
-#include "gcov-io.c"
+#include "gcov-io.cc"
 
 struct GTY((chain_next ("%h.next"))) coverage_data
 {

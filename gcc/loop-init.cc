@@ -331,7 +331,7 @@ fix_loop_structure (bitmap changed_bbs)
   return number_of_loops (cfun) - old_nloops;
 }
 
-/* The RTL loop superpass.  The actual passes are subpasses.  See passes.c for
+/* The RTL loop superpass.  The actual passes are subpasses.  See passes.cc for
    more on that.  */
 
 namespace {

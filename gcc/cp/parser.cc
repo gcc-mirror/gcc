@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The lexer.  */
 
 /* The cp_lexer_* routines mediate between the lexer proper (in libcpp
-   and c-lex.c) and the C++ parser.  */
+   and c-lex.cc) and the C++ parser.  */
 
 /* The various kinds of non integral constant we encounter. */
 enum non_integral_constant {
@@ -4339,7 +4339,7 @@ cp_parser_identifier (cp_parser* parser)
    However, C99 6.4.5p4 says that this results in a wide string literal.
    We follow C99 here, for consistency with the C front end.
 
-   This code is largely lifted from lex_string() in c-lex.c.
+   This code is largely lifted from lex_string() in c-lex.cc.
 
    FUTURE: ObjC++ will need to handle @-strings here.  */
 static cp_expr

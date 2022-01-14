@@ -798,7 +798,7 @@ recording::context::get_int_type (int num_bytes, int is_signed)
   /* We can't use a switch here since some of the values are macros affected
      by options; e.g. i386.h has
        #define LONG_TYPE_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
-     Compare with tree.c's make_or_reuse_type.  Note that the _SIZE macros
+     Compare with tree.cc's make_or_reuse_type.  Note that the _SIZE macros
      are in bits, rather than bytes.
   */
   const int num_bits = num_bytes * 8;

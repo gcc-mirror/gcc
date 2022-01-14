@@ -28,7 +28,7 @@ The files in this collection (df*.c,df.h) provide a general framework
 for solving dataflow problems.  The global dataflow is performed using
 a good implementation of iterative dataflow analysis.
 
-The file df-problems.c provides problem instance for the most common
+The file df-problems.cc provides problem instance for the most common
 dataflow problems: reaching defs, upward exposed uses, live variables,
 uninitialized variables, def-use chains, and use-def chains.  However,
 the interface allows other dataflow problems to be defined as well.
@@ -240,7 +240,7 @@ keep the dataflow information up to data (if this is really what is
 needed) it to formulate a problem specific solution.
 
 There are fine grained calls for creating and deleting references from
-instructions in df-scan.c.  However, these are not currently connected
+instructions in df-scan.cc.  However, these are not currently connected
 to the engine that resolves the dataflow equations.
 
 

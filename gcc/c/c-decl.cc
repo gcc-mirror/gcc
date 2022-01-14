@@ -225,7 +225,7 @@ struct GTY(()) lang_identifier {
   struct c_binding *label_binding;  /* labels */
 };
 
-/* Validate c-lang.c's assumptions.  */
+/* Validate c-lang.cc's assumptions.  */
 extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 [(sizeof(struct lang_identifier) == C_SIZEOF_STRUCT_LANG_IDENTIFIER) ? 1 : -1];
 
@@ -1367,7 +1367,7 @@ pop_scope (void)
 	  gcc_fallthrough ();
 	  /* Parameters go in DECL_ARGUMENTS, not BLOCK_VARS, and have
 	     already been put there by store_parm_decls.  Unused-
-	     parameter warnings are handled by function.c.
+	     parameter warnings are handled by function.cc.
 	     error_mark_node obviously does not go in BLOCK_VARS and
 	     does not get unused-variable warnings.  */
 	case PARM_DECL:
@@ -5527,7 +5527,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       if (TREE_PUBLIC (decl))
 	c_determine_visibility (decl);
 
-      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
+      /* This is a no-op in c-lang.cc or something real in objc-act.cc.  */
       if (c_dialect_objc ())
 	objc_check_decl (decl);
 

@@ -1920,7 +1920,7 @@ maybe_add_sra_candidate (tree var)
       reject (var, msg);
       return false;
     }
-  if (/* Fix for PR 41089.  tree-stdarg.c needs to have va_lists intact but
+  if (/* Fix for PR 41089.  tree-stdarg.cc needs to have va_lists intact but
 	 we also want to schedule it rather late.  Thus we ignore it in
 	 the early pass. */
       (sra_mode == SRA_MODE_EARLY_INTRA

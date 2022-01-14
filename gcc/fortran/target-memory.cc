@@ -652,7 +652,7 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
 
 
 /* --------------------------------------------------------------- */
-/* Two functions used by trans-common.c to write overlapping
+/* Two functions used by trans-common.cc to write overlapping
    equivalence initializers to a buffer.  This is added to the union
    and the original initializers freed.  */
 

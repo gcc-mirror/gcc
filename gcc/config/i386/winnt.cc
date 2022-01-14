@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for Windows NT.
+/* Subroutines for insn-output.cc for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
    Copyright (C) 1995-2022 Free Software Foundation, Inc.
 
@@ -194,7 +194,7 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
 	return NULL_TREE;
 
       /* Quit if we hit an incomplete type.  Error is reported
-	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
+	 by convert_arguments in c-typeck.cc or cp/typeck.cc.  */
       FOREACH_FUNCTION_ARGS(type, arg, args_iter)
 	{
 	  HOST_WIDE_INT parm_size;
@@ -278,7 +278,7 @@ i386_pe_mangle_decl_assembler_name (tree decl, tree id)
   return (new_id ? new_id : id);
 }
 
-/* This hook behaves the same as varasm.c/assemble_name(), but
+/* This hook behaves the same as varasm.cc/assemble_name(), but
    generates the name into memory rather than outputting it to
    a file stream.  */
 
@@ -319,7 +319,7 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
     }
 
   /* Mark the decl so we can tell from the rtl whether the object is
-     dllexport'd or dllimport'd.  tree.c: merge_dllimport_decl_attributes
+     dllexport'd or dllimport'd.  tree.cc: merge_dllimport_decl_attributes
      handles dllexport/dllimport override semantics.  */
   flags = (SYMBOL_REF_FLAGS (symbol) &
 	   ~(SYMBOL_FLAG_DLLIMPORT | SYMBOL_FLAG_DLLEXPORT));

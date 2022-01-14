@@ -702,7 +702,7 @@ alpha_scalar_mode_supported_p (scalar_mode mode)
     case E_HImode:
     case E_SImode:
     case E_DImode:
-    case E_TImode: /* via optabs.c */
+    case E_TImode: /* via optabs.cc */
       return true;
 
     case E_SFmode:

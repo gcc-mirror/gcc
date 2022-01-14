@@ -1,4 +1,4 @@
-/* fp-test.c - Check that all floating-point operations are available.
+/* fp-test.cc - Check that all floating-point operations are available.
    Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Contributed by Ronald F. Guilmette <rfg@monkeys.com>.
 

@@ -307,7 +307,7 @@ copy_early_debug_info (const char *infile, const char *outfile)
   int err;
 
   /* The simple_object code can handle extracting the debug sections.
-     This code is based on that in lto-wrapper.c.  */
+     This code is based on that in lto-wrapper.cc.  */
   int infd = open (infile, O_RDONLY | O_BINARY);
   if (infd == -1)
     return false;

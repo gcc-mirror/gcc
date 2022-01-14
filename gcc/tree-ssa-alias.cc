@@ -94,7 +94,7 @@ along with GCC; see the file COPYING3.  If not see
 
    More low-level disambiguators are available and documented in
    this file.  Low-level disambiguators dealing with points-to
-   information are in tree-ssa-structalias.c.  */
+   information are in tree-ssa-structalias.cc.  */
 
 static int nonoverlapping_refs_since_match_p (tree, tree, tree, tree, bool);
 static bool nonoverlapping_component_refs_p (const_tree, const_tree);

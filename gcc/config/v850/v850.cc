@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for NEC V850 series
+/* Subroutines for insn-output.cc for NEC V850 series
    Copyright (C) 1996-2022 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -89,7 +89,7 @@ F (rtx x)
 /* Mark all the subexpressions of the PARALLEL rtx PAR as
    frame-related.  Return PAR.
 
-   dwarf2out.c:dwarf2out_frame_debug_expr ignores sub-expressions of a
+   dwarf2out.cc:dwarf2out_frame_debug_expr ignores sub-expressions of a
    PARALLEL rtx other than the first if they do not have the
    FRAME_RELATED flag set on them.  */
 

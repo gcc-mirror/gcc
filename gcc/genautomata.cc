@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
    `gen_final_presence_set', `gen_absence_set',
    `gen_final_absence_set', `gen_automaton', `gen_automata_option',
    `gen_reserv', `gen_insn_reserv' are called from file
-   `genattrtab.c'.  They transform RTL constructions describing
+   `genattrtab.cc'.  They transform RTL constructions describing
    automata in .md file into internal representation convenient for
    further processing.
 

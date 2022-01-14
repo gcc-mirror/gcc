@@ -382,7 +382,7 @@ cpp_destroy (cpp_reader *pfile)
 
    There are two tables of these.  builtin_array holds all the
    "builtin" macros: these are handled by builtin_macro() in
-   macro.c.  Builtin is somewhat of a misnomer -- the property of
+   macro.cc.  Builtin is somewhat of a misnomer -- the property of
    interest is that these macros require special code to compute their
    expansions.  The value is a "cpp_builtin_type" enumerator.
 
@@ -412,7 +412,7 @@ static const struct builtin_macro builtin_array[] =
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),
   B("__COUNTER__",	 BT_COUNTER,       true),
   /* Make sure to update the list of built-in
-     function-like macros in traditional.c:
+     function-like macros in traditional.cc:
      fun_like_macro() when adding more following */
   B("__has_attribute",	 BT_HAS_ATTRIBUTE, true),
   B("__has_c_attribute", BT_HAS_STD_ATTRIBUTE, true),
@@ -848,7 +848,7 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   if (CPP_OPTION (pfile, warn_unused_macros))
     cpp_forall_identifiers (pfile, _cpp_warn_if_unused_macro, NULL);
 
-  /* lex.c leaves the final buffer on the stack.  This it so that
+  /* lex.cc leaves the final buffer on the stack.  This it so that
      it returns an unending stream of CPP_EOFs to the client.  If we
      popped the buffer, we'd dereference a NULL buffer pointer and
      segfault.  It's nice to allow the client to do worry-free excess

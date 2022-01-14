@@ -1319,7 +1319,7 @@ sel_insn_rtx_cost (rtx_insn *insn)
 }
 
 /* Return the cost of the VI.
-   !!! FIXME: Unify with haifa-sched.c: insn_sched_cost ().  */
+   !!! FIXME: Unify with haifa-sched.cc: insn_sched_cost ().  */
 int
 sel_vinsn_cost (vinsn_t vi)
 {
@@ -2678,7 +2678,7 @@ setup_id_reg_sets (idata_t id, insn_t insn)
     {
       unsigned int regno = DF_REF_REGNO (def);
 
-      /* Post modifies are treated like clobbers by sched-deps.c.  */
+      /* Post modifies are treated like clobbers by sched-deps.cc.  */
       if (DF_REF_FLAGS_IS_SET (def, (DF_REF_MUST_CLOBBER
                                      | DF_REF_PRE_POST_MODIFY)))
         SET_REGNO_REG_SET (IDATA_REG_CLOBBERS (id), regno);
@@ -2688,7 +2688,7 @@ setup_id_reg_sets (idata_t id, insn_t insn)
 
 #ifdef STACK_REGS
 	  /* For stack registers, treat writes to them as writes
-	     to the first one to be consistent with sched-deps.c.  */
+	     to the first one to be consistent with sched-deps.cc.  */
 	  if (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG))
 	    SET_REGNO_REG_SET (IDATA_REG_SETS (id), FIRST_STACK_REG);
 #endif
@@ -2713,7 +2713,7 @@ setup_id_reg_sets (idata_t id, insn_t insn)
 
 #ifdef STACK_REGS
 	  /* For stack registers, treat reads from them as reads from
-	     the first one to be consistent with sched-deps.c.  */
+	     the first one to be consistent with sched-deps.cc.  */
 	  if (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG))
 	    SET_REGNO_REG_SET (IDATA_REG_USES (id), FIRST_STACK_REG);
 #endif
@@ -3124,7 +3124,7 @@ static struct
   deps_t dc;
 
   /* A variable to track which part of rtx we are scanning in
-     sched-deps.c: sched_analyze_insn ().  */
+     sched-deps.cc: sched_analyze_insn ().  */
   deps_where_t where;
 
   /* Current producer.  */
@@ -3428,7 +3428,7 @@ has_dependence_p (expr_t expr, insn_t pred, ds_t **has_dep_pp)
     has_dependence_data.has_dep_p[DEPS_IN_INSN] = DEP_ANTI;
 
   /* Do not allow stores to memory to move through checks.  Currently
-     we don't move this to sched-deps.c as the check doesn't have
+     we don't move this to sched-deps.cc as the check doesn't have
      obvious places to which this dependence can be attached.
      FIMXE: this should go to a hook.  */
   if (EXPR_LHS (expr)
@@ -4872,7 +4872,7 @@ sel_num_cfg_preds_gt_1 (insn_t insn)
 }
 
 /* Returns true when BB should be the end of an ebb.  Adapted from the
-   code in sched-ebb.c.  */
+   code in sched-ebb.cc.  */
 bool
 bb_ends_ebb_p (basic_block bb)
 {
@@ -4882,7 +4882,7 @@ bb_ends_ebb_p (basic_block bb)
   if (next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
       || bitmap_bit_p (forced_ebb_heads, next_bb->index)
       || (LABEL_P (BB_HEAD (next_bb))
-	  /* NB: LABEL_NUSES () is not maintained outside of jump.c.
+	  /* NB: LABEL_NUSES () is not maintained outside of jump.cc.
 	     Work around that.  */
 	  && !single_pred_p (next_bb)))
     return true;

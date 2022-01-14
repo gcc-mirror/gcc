@@ -195,7 +195,7 @@ along with GCC; see the file COPYING3.  If not see
        at the top of the variables of the stack.
 
    Note that the real variable layout is done in expand_used_vars in
-   cfgexpand.c.  As far as Address Sanitizer is concerned, it lays out
+   cfgexpand.cc.  As far as Address Sanitizer is concerned, it lays out
    stack variables as well as the different red zones, emits some
    prologue code to populate the shadow memory as to poison (mark as
    non-accessible) the regions of the red zones and mark the regions of

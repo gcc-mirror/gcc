@@ -17,7 +17,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>. 
 
-   It is expected that more hunks of gcse.c and postreload-gcse.c should
+   It is expected that more hunks of gcse.cc and postreload-gcse.cc should
    migrate into this file.  */
 
 #include "config.h"

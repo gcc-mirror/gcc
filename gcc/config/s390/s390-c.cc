@@ -20,7 +20,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.
 
-   Based on gcc/config/rs6000/rs6000-c.c.
+   Based on gcc/config/rs6000/rs6000-c.cc.
 
    In GCC terms this file belongs to the frontend.  It will be
    compiled with -DIN_GCC_FRONTEND.  With that rtl.h cannot be

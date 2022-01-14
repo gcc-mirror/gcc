@@ -1,4 +1,4 @@
-/* jit-builtins.c -- Handling of builtin functions during JIT-compilation.
+/* jit-builtins.cc -- Handling of builtin functions during JIT-compilation.
    Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -230,7 +230,7 @@ builtins_manager::make_builtin_function (enum built_in_function builtin_id)
   if (builtin_id == BUILT_IN_COS || builtin_id == BUILT_IN_SIN)
     (void)get_builtin_function_by_id (BUILT_IN_CEXPI);
 
-  /* builtins.c:expand_builtin_cexpi can optimize the various
+  /* builtins.cc:expand_builtin_cexpi can optimize the various
      CEXP builtins to SINCOS builtins, and hence we may require
      SINCOS builtins latter.
 

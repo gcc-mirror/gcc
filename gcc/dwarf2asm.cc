@@ -857,7 +857,7 @@ dw2_asm_output_delta_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
   fputs ("\t.uleb128 ", asm_out_file);
   assemble_name (asm_out_file, lab1);
   putc ('-', asm_out_file);
-  /* dwarf2out.c might give us a label expression (e.g. .LVL548-1)
+  /* dwarf2out.cc might give us a label expression (e.g. .LVL548-1)
      as second argument.  If so, make it a subexpression, to make
      sure the substraction is done in the right order.  */
   if (strchr (lab2, '-') != NULL)

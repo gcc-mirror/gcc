@@ -46,7 +46,7 @@ static void objcxx_init_ts (void);
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
-/* Lang hook routines common to C++ and ObjC++ appear in cp/cp-objcp-common.c;
+/* Lang hook routines common to C++ and ObjC++ appear in cp/cp-objcp-common.cc;
    there should be very few (if any) routines below.  */
 
 tree

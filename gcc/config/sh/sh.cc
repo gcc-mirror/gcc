@@ -640,7 +640,7 @@ static const struct attribute_spec sh_attribute_table[] =
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
 
 /* The tas.b instruction sets the 7th bit in the byte, i.e. 0x80.  This value
-   is used by optabs.c atomic op expansion code as well as in sync.md.  */
+   is used by optabs.cc atomic op expansion code as well as in sync.md.  */
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 0x80
 
@@ -8123,7 +8123,7 @@ sh_struct_value_rtx (tree fndecl, int incoming ATTRIBUTE_UNUSED)
    mode like PROMOTE_MODE does.
    ??? PROMOTE_MODE is ignored for non-scalar types.  The set of types
    tested here has to be kept in sync with the one in
-   explow.c:promote_mode.  */
+   explow.cc:promote_mode.  */
 static rtx
 sh_function_value (const_tree valtype,
 		   const_tree fn_decl_or_type,
@@ -11823,7 +11823,7 @@ sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno)
 
 /* Given an insn check if it contains any post/pre inc/dec mem operands and
    add the REG_INC notes accordingly.
-   FIXME: This function is very similar to lra.c (add_auto_inc_notes).
+   FIXME: This function is very similar to lra.cc (add_auto_inc_notes).
    FIXME: This function is currently used by peephole2 patterns because
 	  the peephole2 pass does not preserve REG_INC notes.  If the notes
 	  are dropped the following passes will do wrong things.  */

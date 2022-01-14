@@ -574,7 +574,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
 
   /* Splitting functions brings the target out of comdat group; this will
      lead to code duplication if the function is reused by other unit.
-     Limit this duplication.  This is consistent with limit in tree-sra.c  
+     Limit this duplication.  This is consistent with limit in tree-sra.cc  
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
       && current->split_size >= (unsigned int) param_max_inline_insns_auto + 10)

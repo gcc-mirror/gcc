@@ -4462,7 +4462,7 @@ nios2_pragma_target_parse (tree args, tree pop_target)
    We are just using this hook to add some additional error checking to
    the default behavior.  GCC does not provide a target hook for merging
    the target options, and only correctly handles merging empty vs non-empty
-   option data; see merge_decls() in c-decl.c.
+   option data; see merge_decls() in c-decl.cc.
    So here we require either that at least one of the decls has empty
    target options, or that the target options/data be identical.  */
 static tree

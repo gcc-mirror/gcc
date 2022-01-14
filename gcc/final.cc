@@ -156,7 +156,7 @@ static int override_discriminator;
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
 
-extern const int length_unit_log; /* This is defined in insn-attrtab.c.  */
+extern const int length_unit_log; /* This is defined in insn-attrtab.cc.  */
 
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't die.
@@ -267,7 +267,7 @@ app_enable (void)
 }
 
 /* Disable APP processing of subsequent output.
-   Called from varasm.c before most kinds of output.  */
+   Called from varasm.cc before most kinds of output.  */
 
 void
 app_disable (void)
@@ -829,7 +829,7 @@ make_pass_compute_alignments (gcc::context *ctxt)
    In order to do this, it needs proper length information, which it obtains
    by calling shorten_branches.  This cannot be collapsed with
    shorten_branches itself into a single pass unless we also want to integrate
-   reorg.c, since the branch splitting exposes new instructions with delay
+   reorg.cc, since the branch splitting exposes new instructions with delay
    slots.  */
 
 void
@@ -2439,7 +2439,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
     case CODE_LABEL:
       /* The target port might emit labels in the output function for
-	 some insn, e.g. sh.c output_branchy_insn.  */
+	 some insn, e.g. sh.cc output_branchy_insn.  */
       if (CODE_LABEL_NUMBER (insn) <= max_labelno)
 	{
 	  align_flags alignment = LABEL_TO_ALIGNMENT (insn);
@@ -2948,7 +2948,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 
 
 /* Map DECLs to instance discriminators.  This is allocated and
-   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   defined in ada/gcc-interfaces/trans.cc, when compiling with -gnateS.
    Mappings from this table are saved and restored for LTO, so
    link-time compilation will have this map set, at least in
    partitions containing at least one DECL with an associated instance

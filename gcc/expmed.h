@@ -1,4 +1,4 @@
-/* Target-dependent costs for expmed.c.
+/* Target-dependent costs for expmed.cc.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

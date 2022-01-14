@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* f95-lang.c-- GCC backend interface stuff */
+/* f95-lang.cc-- GCC backend interface stuff */
 
 /* declare required prototypes: */
 

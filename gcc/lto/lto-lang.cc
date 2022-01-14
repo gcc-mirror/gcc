@@ -583,7 +583,7 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
-/* Cribbed from c-common.c.  */
+/* Cribbed from c-common.cc.  */
 
 static void
 def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
@@ -1204,7 +1204,7 @@ static tree
 lto_getdecls (void)
 {
   /* We have our own write_globals langhook, hence the getdecls
-     langhook shouldn't be used, except by dbxout.c, so we can't
+     langhook shouldn't be used, except by dbxout.cc, so we can't
      just abort here.  */
   return NULL_TREE;
 }
@@ -1349,7 +1349,7 @@ lto_init (void)
   /* Assign names to the builtin types, otherwise they'll end up
      as __unknown__ in debug info.
      ???  We simply need to stop pre-seeding the streamer cache.
-     Below is modeled after from c-common.c:c_common_nodes_and_builtins  */
+     Below is modeled after from c-common.cc:c_common_nodes_and_builtins  */
 #define NAME_TYPE(t,n) \
   if (t) \
     TYPE_NAME (t) = build_decl (UNKNOWN_LOCATION, TYPE_DECL, \

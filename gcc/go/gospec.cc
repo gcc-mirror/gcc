@@ -1,4 +1,4 @@
-/* gospec.c -- Specific flags and argument handling of the gcc Go front end.
+/* gospec.cc -- Specific flags and argument handling of the gcc Go front end.
    Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

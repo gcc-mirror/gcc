@@ -3073,7 +3073,7 @@ check_extern_c_conflict (tree decl)
 }
 
 /* Returns a list of C-linkage decls with the name NAME.  Used in
-   c-family/c-pragma.c to implement redefine_extname pragma.  */
+   c-family/c-pragma.cc to implement redefine_extname pragma.  */
 
 tree
 c_linkage_bindings (tree name)

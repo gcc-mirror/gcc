@@ -1931,7 +1931,7 @@ interesting_frame_related_regno (unsigned int regno)
 {
   /* Saves apparently of r0 are actually saving LR.  It doesn't make
      sense to substitute the regno here to test save_reg_p (LR_REGNO).
-     We *know* LR needs saving, and dwarf2cfi.c is able to deduce that
+     We *know* LR needs saving, and dwarf2cfi.cc is able to deduce that
      (set (mem) (r0)) is saving LR from a prior (set (r0) (lr)) marked
      as frame related.  */
   if (regno == 0)
@@ -4922,7 +4922,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 	 a REG_CFA_DEF_CFA note.  This must happen on the insn that
 	 restores the frame pointer, r31.  We may have already emitted
 	 a REG_CFA_DEF_CFA note, but that's OK;  A duplicate is
-	 discarded by dwarf2cfi.c/dwarf2out.c, and in any case would
+	 discarded by dwarf2cfi.cc/dwarf2out.cc, and in any case would
 	 be harmless if emitted.  */
       if (frame_pointer_needed)
 	{

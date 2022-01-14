@@ -2849,7 +2849,7 @@ is_strlen_related_p (tree src, tree len)
 }
 
 /* Called by handle_builtin_stxncpy_strncat and by
-   gimple_fold_builtin_strncpy in gimple-fold.c.
+   gimple_fold_builtin_strncpy in gimple-fold.cc.
    Check to see if the specified bound is a) equal to the size of
    the destination DST and if so, b) if it's immediately followed by
    DST[CNT - 1] = '\0'.  If a) holds and b) does not, warn.  Otherwise,

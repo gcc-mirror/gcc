@@ -1413,7 +1413,7 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
   parser->error = false;
 }
 
-/* CPP's options (initialized by c-opts.c).  */
+/* CPP's options (initialized by c-opts.cc).  */
 extern cpp_options *cpp_opts;
 
 /* Save the warning flags which are controlled by __extension__.  */

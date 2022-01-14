@@ -3755,7 +3755,7 @@ static void
 gcn_init_libfuncs (void)
 {
   /* BITS_PER_UNIT * 2 is 64 bits, which causes
-     optabs-libfuncs.c:gen_int_libfunc to omit TImode (i.e 128 bits)
+     optabs-libfuncs.cc:gen_int_libfunc to omit TImode (i.e 128 bits)
      libcalls that we need to support operations for that type.  Initialise
      them here instead.  */
   set_optab_libfunc (udiv_optab, TImode, "__udivti3");

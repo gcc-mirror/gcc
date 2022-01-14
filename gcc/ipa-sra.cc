@@ -2723,7 +2723,7 @@ isra_read_node_info (struct lto_input_block *ib, cgraph_node *node,
 }
 
 /* Read IPA-SRA summaries from a section in file FILE_DATA of length LEN with
-   data DATA.  TODO: This function was copied almost verbatim from ipa-prop.c,
+   data DATA.  TODO: This function was copied almost verbatim from ipa-prop.cc,
    it should be possible to unify them somehow.  */
 
 static void

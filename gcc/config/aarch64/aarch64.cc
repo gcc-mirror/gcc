@@ -3622,7 +3622,7 @@ aarch64_regmode_natural_size (machine_mode mode)
      and similarly for predicates.  We can't independently modify
      anything smaller than that.  */
   /* ??? For now, only do this for variable-width SVE registers.
-     Doing it for constant-sized registers breaks lower-subreg.c.  */
+     Doing it for constant-sized registers breaks lower-subreg.cc.  */
   /* ??? And once that's fixed, we should probably have similar
      code for Advanced SIMD.  */
   if (!aarch64_sve_vg.is_constant ())
@@ -13909,7 +13909,7 @@ cost_plus:
     /* We can expand signed mod by power of 2 using a NEGS, two parallel
        ANDs and a CSNEG.  Assume here that CSNEG is the same as the cost of
        an unconditional negate.  This case should only ever be reached through
-       the set_smod_pow2_cheap check in expmed.c.  */
+       the set_smod_pow2_cheap check in expmed.cc.  */
       if (CONST_INT_P (XEXP (x, 1))
 	  && exact_log2 (INTVAL (XEXP (x, 1))) > 0
 	  && (mode == SImode || mode == DImode))
@@ -14699,7 +14699,7 @@ aarch64_sched_first_cycle_multipass_dfa_lookahead (void)
 
 
 /* Implement TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD as
-   autopref_multipass_dfa_lookahead_guard from haifa-sched.c.  It only
+   autopref_multipass_dfa_lookahead_guard from haifa-sched.cc.  It only
    has an effect if PARAM_SCHED_AUTOPREF_QUEUE_DEPTH > 0.  */
 
 static int
@@ -18010,7 +18010,7 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 
   /* If what we're processing is the current pragma string then the
      target option node is already stored in target_option_current_node
-     by aarch64_pragma_target_parse in aarch64-c.c.  Use that to avoid
+     by aarch64_pragma_target_parse in aarch64-c.cc.  Use that to avoid
      having to re-parse the string.  This is especially useful to keep
      arm_neon.h compile times down since that header contains a lot
      of intrinsics enclosed in pragmas.  */
@@ -19340,7 +19340,7 @@ aarch64_short_vector_p (const_tree type,
 
    Note that MODE itself is not sufficient in determining whether a type
    is such a composite type or not.  This is because
-   stor-layout.c:compute_record_mode may have already changed the MODE
+   stor-layout.cc:compute_record_mode may have already changed the MODE
    (BLKmode) of a RECORD_TYPE TYPE to some other mode.  For example, a
    structure with only one field may have its MODE set to the mode of the
    field.  Also an integer mode whose size matches the size of the
@@ -22205,7 +22205,7 @@ aarch64_float_const_representable_p (rtx x)
   gcc_assert (mantissa <= 15);
 
   /* GCC internally does not use IEEE754-like encoding (where normalized
-     significands are in the range [1, 2).  GCC uses [0.5, 1) (see real.c).
+     significands are in the range [1, 2).  GCC uses [0.5, 1) (see real.cc).
      Our mantissa values are shifted 4 places to the left relative to
      normalized IEEE754 so we must modify the exponent returned by REAL_EXP
      by 5 places to correct for GCC's representation.  */

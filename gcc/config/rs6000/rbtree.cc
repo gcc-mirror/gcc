@@ -1,4 +1,4 @@
-/* Partial red-black tree implementation for rs6000-gen-builtins.c.
+/* Partial red-black tree implementation for rs6000-gen-builtins.cc.
    Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 

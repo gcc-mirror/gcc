@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Reset a BOZ to a zero value.  This is used to prevent run-on errors
-   from resolve.c(resolve_function).  */
+   from resolve.cc(resolve_function).  */
 
 static void
 reset_boz (gfc_expr *x)
@@ -1356,7 +1356,7 @@ gfc_check_all_any (gfc_expr *mask, gfc_expr *dim)
 
 
 /* Limited checking for ALLOCATED intrinsic.  Additional checking
-   is performed in intrinsic.c(sort_actual), because ALLOCATED
+   is performed in intrinsic.cc(sort_actual), because ALLOCATED
    has two mutually exclusive non-optional arguments.  */
 
 bool

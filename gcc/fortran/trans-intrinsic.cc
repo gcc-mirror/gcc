@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* trans-intrinsic.c-- generate GENERIC trees for calls to intrinsics.  */
+/* trans-intrinsic.cc-- generate GENERIC trees for calls to intrinsics.  */
 
 #include "config.h"
 #include "system.h"
@@ -7358,7 +7358,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 
     case EXPR_ARRAY:
       /* Obtain the string length from the function used by
-         trans-array.c(gfc_trans_array_constructor).  */
+         trans-array.cc(gfc_trans_array_constructor).  */
       len = NULL_TREE;
       get_array_ctor_strlen (&se->pre, arg->value.constructor, &len);
       break;
@@ -9495,7 +9495,7 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
   se->expr = convert (gfc_get_int_type (gfc_index_integer_kind), se->expr);
 
   /* Create a temporary variable for loc return value.  Without this,
-     we get an error an ICE in gcc/expr.c(expand_expr_addr_expr_1).  */
+     we get an error an ICE in gcc/expr.cc(expand_expr_addr_expr_1).  */
   temp_var = gfc_create_var (gfc_get_int_type (gfc_index_integer_kind), NULL);
   gfc_add_modify (&se->pre, temp_var, se->expr);
   se->expr = temp_var;
@@ -11948,7 +11948,7 @@ conv_intrinsic_event_query (gfc_code *code)
 
 
 /* This is a peculiar case because of the need to do dependency checking.
-   It is called via trans-stmt.c(gfc_trans_call), where it is picked out as
+   It is called via trans-stmt.cc(gfc_trans_call), where it is picked out as
    a special case and this function called instead of
    gfc_conv_procedure_call.  */
 void

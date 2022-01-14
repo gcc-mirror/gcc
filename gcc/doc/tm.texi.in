@@ -240,7 +240,7 @@ between the two is that @code{LIB_SPEC} is used at the end of the
 command given to the linker.
 
 If this macro is not defined, a default is provided that
-loads the standard C library from the usual place.  See @file{gcc.c}.
+loads the standard C library from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac LIBGCC_SPEC
@@ -287,7 +287,7 @@ difference between the two is that @code{STARTFILE_SPEC} is used at
 the very beginning of the command given to the linker.
 
 If this macro is not defined, a default is provided that loads the
-standard C startup file from the usual place.  See @file{gcc.c}.
+standard C startup file from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac ENDFILE_SPEC
@@ -392,7 +392,7 @@ The default value of this macro is empty string.
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
-change is made to the link command line within @file{gcc.c}.  Therefore,
+change is made to the link command line within @file{gcc.cc}.  Therefore,
 define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
 the effect you need.  Overriding this macro may be avoidable by overriding
@@ -1435,7 +1435,7 @@ The string can contain more than one keyword.  If so, separate them with
 spaces, and write first any length keyword, then @code{unsigned} if
 appropriate, and finally @code{int}.  The string must exactly match one
 of the data type names defined in the function
-@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.c}.
+@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.cc}.
 You may not omit @code{int} or change the order---that would cause the
 compiler to crash on startup.
 
@@ -1963,7 +1963,7 @@ they must be consecutively numbered.  Furthermore, the existing
 support for stack-like registers is specific to the 80387 floating
 point coprocessor.  If you have a new architecture that uses
 stack-like registers, you will need to do substantial work on
-@file{reg-stack.c} and write your machine description to cooperate
+@file{reg-stack.cc} and write your machine description to cooperate
 with it, as well as defining these macros.
 
 @defmac STACK_REGS
@@ -2479,7 +2479,7 @@ on the stack, e.g., by @code{alloca}.
 
 The default value for this macro is @code{STACK_POINTER_OFFSET} plus the
 length of the outgoing arguments.  The default is correct for most
-machines.  See @file{function.c} for details.
+machines.  See @file{function.cc} for details.
 @end defmac
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
@@ -4074,9 +4074,9 @@ preserve functionality of inline assembly constructs using the
 
 @defmac FIND_BASE_TERM (@var{x})
 A C expression to determine the base term of address @var{x},
-or to provide a simplified version of @var{x} from which @file{alias.c}
+or to provide a simplified version of @var{x} from which @file{alias.cc}
 can easily find the base term.  This macro is used in only two places:
-@code{find_base_value} and @code{find_base_term} in @file{alias.c}.
+@code{find_base_value} and @code{find_base_term} in @file{alias.cc}.
 
 It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
@@ -4745,11 +4745,11 @@ section}, which holds initialized writable data; and the @dfn{bss
 section}, which holds uninitialized data.  Some systems have other kinds
 of sections.
 
-@file{varasm.c} provides several well-known sections, such as
+@file{varasm.cc} provides several well-known sections, such as
 @code{text_section}, @code{data_section} and @code{bss_section}.
 The normal way of controlling a @code{@var{foo}_section} variable
 is to define the associated @code{@var{FOO}_SECTION_ASM_OP} macro,
-as described below.  The macros are only read once, when @file{varasm.c}
+as described below.  The macros are only read once, when @file{varasm.cc}
 initializes itself, so their values must be run-time constants.
 They may however depend on command-line flags.
 
@@ -4769,7 +4769,7 @@ in @code{TARGET_ASM_INIT_SECTIONS}.  The same is true of
 create a distinct @code{readonly_data_section}, the default is to
 reuse @code{text_section}.
 
-All the other @file{varasm.c} sections are optional, and are null
+All the other @file{varasm.cc} sections are optional, and are null
 if the target does not provide them.
 
 @defmac TEXT_SECTION_ASM_OP
@@ -5300,7 +5300,7 @@ A C statement (sans semicolon) to output to the stdio stream
 is the alignment specified as the number of bits.
 
 Try to use function @code{asm_output_aligned_bss} defined in file
-@file{varasm.c} when defining this macro.  If unable, use the expression
+@file{varasm.cc} when defining this macro.  If unable, use the expression
 @code{assemble_name (@var{stream}, @var{name})} to output the name itself;
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
@@ -5631,7 +5631,7 @@ requires changes to @var{decl}, such as putting it in a separate section.
 A C expression which evaluates to true if the target supports one-only
 semantics.
 
-If you don't define this macro, @file{varasm.c} provides a default
+If you don't define this macro, @file{varasm.cc} provides a default
 definition.  If @code{MAKE_DECL_ONE_ONLY} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
 you want to control one-only symbol support with a compiler flag, or if
@@ -6241,7 +6241,7 @@ being output.
 @defmacx IMMEDIATE_PREFIX
 If defined, C string expressions to be used for the @samp{%R}, @samp{%L},
 @samp{%U}, and @samp{%I} options of @code{asm_fprintf} (see
-@file{final.c}).  These are useful when a single @file{md} file must
+@file{final.cc}).  These are useful when a single @file{md} file must
 support multiple assembler formats.  In that case, the various @file{tm.h}
 files can define these macros differently.
 @end defmac

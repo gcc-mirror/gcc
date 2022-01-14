@@ -78,7 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 struct omp_context
 {
   /* This field must be at the beginning, as we do "inheritance": Some
-     callback functions for tree-inline.c (e.g., omp_copy_decl)
+     callback functions for tree-inline.cc (e.g., omp_copy_decl)
      receive a copy_body_data pointer that is up-casted to an
      omp_context pointer.  */
   copy_body_data cb;
@@ -11866,7 +11866,7 @@ check_combined_parallel (gimple_stmt_iterator *gsi_p,
 struct omp_taskcopy_context
 {
   /* This field must be at the beginning, as we do "inheritance": Some
-     callback functions for tree-inline.c (e.g., omp_copy_decl)
+     callback functions for tree-inline.cc (e.g., omp_copy_decl)
      receive a copy_body_data pointer that is up-casted to an
      omp_context pointer.  */
   copy_body_data cb;
@@ -14361,7 +14361,7 @@ lower_omp (gimple_seq *body, omp_context *ctx)
   for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
     lower_omp_1 (&gsi, ctx);
   /* During gimplification, we haven't folded statments inside offloading
-     or taskreg regions (gimplify.c:maybe_fold_stmt); do that now.  */
+     or taskreg regions (gimplify.cc:maybe_fold_stmt); do that now.  */
   if (target_nesting_level || taskreg_nesting_level)
     for (gsi = gsi_start (*body); !gsi_end_p (gsi); gsi_next (&gsi))
       fold_stmt (&gsi);

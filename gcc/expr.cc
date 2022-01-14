@@ -8154,7 +8154,7 @@ safe_from_p (const_rtx x, tree exp, int top_p)
 
 	case WITH_CLEANUP_EXPR:
 	case CLEANUP_POINT_EXPR:
-	  /* Lowered by gimplify.c.  */
+	  /* Lowered by gimplify.cc.  */
 	  gcc_unreachable ();
 
 	case SAVE_EXPR:
@@ -9166,7 +9166,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	 reduction and doing it this way will produce better code if the
 	 frame pointer or argument pointer is eliminated.
 
-	 fold-const.c will ensure that the constant is always in the inner
+	 fold-const.cc will ensure that the constant is always in the inner
 	 PLUS_EXPR, so the only case we need to do anything about is if
 	 sp, ap, or fp is our second argument, in which case we must swap
 	 the innermost first argument and our second argument.  */
@@ -11777,7 +11777,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case GOTO_EXPR:
     case SWITCH_EXPR:
     case ASM_EXPR:
-      /* Expanded in cfgexpand.c.  */
+      /* Expanded in cfgexpand.cc.  */
       gcc_unreachable ();
 
     case TRY_CATCH_EXPR:
@@ -11785,7 +11785,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case EH_FILTER_EXPR:
     case TRY_FINALLY_EXPR:
     case EH_ELSE_EXPR:
-      /* Lowered by tree-eh.c.  */
+      /* Lowered by tree-eh.cc.  */
       gcc_unreachable ();
 
     case WITH_CLEANUP_EXPR:
@@ -11804,7 +11804,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case LOOP_EXPR:
     case EXIT_EXPR:
     case COMPOUND_LITERAL_EXPR:
-      /* Lowered by gimplify.c.  */
+      /* Lowered by gimplify.cc.  */
       gcc_unreachable ();
 
     case FDESC_EXPR:

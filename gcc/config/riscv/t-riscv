@@ -1,25 +1,25 @@
-riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.c $(CONFIG_H) \
+riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.cc $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) $(RECOG_H) langhooks.h \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(srcdir)/config/riscv/riscv-ftypes.def \
   $(srcdir)/config/riscv/riscv-modes.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/riscv/riscv-builtins.c
+		$(srcdir)/config/riscv/riscv-builtins.cc
 
-riscv-sr.o: $(srcdir)/config/riscv/riscv-sr.c $(CONFIG_H) \
+riscv-sr.o: $(srcdir)/config/riscv/riscv-sr.cc $(CONFIG_H) \
   $(SYSTEM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/riscv/riscv-sr.c
+		$(srcdir)/config/riscv/riscv-sr.cc
 
-riscv-c.o: $(srcdir)/config/riscv/riscv-c.c $(CONFIG_H) $(SYSTEM_H) \
+riscv-c.o: $(srcdir)/config/riscv/riscv-c.cc $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H) $(TARGET_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/riscv/riscv-c.c
+		$(srcdir)/config/riscv/riscv-c.cc
 
-riscv-d.o: $(srcdir)/config/riscv/riscv-d.c
+riscv-d.o: $(srcdir)/config/riscv/riscv-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.c
+riscv-shorten-memrefs.o: $(srcdir)/config/riscv/riscv-shorten-memrefs.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

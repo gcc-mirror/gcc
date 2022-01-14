@@ -122,7 +122,7 @@ next_operator (gfc_intrinsic_op t)
 
 
 /* Call the INTRINSIC_PARENTHESES function.  This is both
-   used explicitly, as below, or by resolve.c to generate
+   used explicitly, as below, or by resolve.cc to generate
    temporaries.  */
 
 gfc_expr *

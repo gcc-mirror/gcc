@@ -71,7 +71,7 @@ along with GCC; see the file COPYING3.  If not see
    of the register class needed for each reload, and make sure that
    we allocate enough reload registers of each class.
 
-   The file reload.c contains the code that checks one insn for
+   The file reload.cc contains the code that checks one insn for
    validity and reports the reloads that it needs.  This file
    is in charge of scanning the entire rtl code, accumulating the
    reload needs, spilling, assigning reload registers to use for
@@ -7301,7 +7301,7 @@ emit_input_reload_insns (class insn_chain *chain, struct reload *rl,
 
       /* If OLDEQUIV is a pseudo with a MEM, get the real MEM
 	 and similarly for OLD.
-	 See comments in get_secondary_reload in reload.c.  */
+	 See comments in get_secondary_reload in reload.cc.  */
       /* If it is a pseudo that cannot be replaced with its
 	 equivalent MEM, we must fall back to reload_in, which
 	 will have all the necessary substitutions registered.

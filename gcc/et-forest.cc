@@ -770,7 +770,7 @@ et_root (struct et_node *node)
 
 namespace selftest {
 
-/* Selftests for et-forest.c.  */
+/* Selftests for et-forest.cc.  */
 
 /* Perform sanity checks for a tree consisting of a single node.  */
 

@@ -103,7 +103,7 @@ tree
 objcp_end_compound_stmt (tree stmt, int flags ATTRIBUTE_UNUSED)
 {
   /* The following has been snarfed from
-     cp/semantics.c:finish_compound_stmt().  */
+     cp/semantics.cc:finish_compound_stmt().  */
   if (TREE_CODE (stmt) == BIND_EXPR)
     BIND_EXPR_BODY (stmt) = do_poplevel (BIND_EXPR_BODY (stmt));
   else if (STATEMENT_LIST_NO_SCOPE (stmt))

@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* trans-expr.c-- generate GENERIC trees for gfc_expr.  */
+/* trans-expr.cc-- generate GENERIC trees for gfc_expr.  */
 
 #include "config.h"
 #include "system.h"
@@ -424,13 +424,13 @@ gfc_vptr_size_get (tree vptr)
 
 /* IF ts is null (default), search for the last _class ref in the chain
    of references of the expression and cut the chain there.  Although
-   this routine is similiar to class.c:gfc_add_component_ref (), there
+   this routine is similiar to class.cc:gfc_add_component_ref (), there
    is a significant difference: gfc_add_component_ref () concentrates
    on an array ref that is the last ref in the chain and is oblivious
    to the kind of refs following.
    ELSE IF ts is non-null the cut is at the class entity or component
    that is followed by an array reference, which is not an element.
-   These calls come from trans-array.c:build_class_array_ref, which
+   These calls come from trans-array.cc:build_class_array_ref, which
    handles scalarized class array references.*/
 
 gfc_expr *
@@ -1647,7 +1647,7 @@ gfc_trans_class_array_init_assign (gfc_expr *rhs, gfc_expr *lhs, gfc_expr *obj)
   gfc_add_component_ref (ppc, "_copy");
   ppc_code = gfc_get_code (EXEC_CALL);
   ppc_code->resolved_sym = ppc->symtree->n.sym;
-  /* Although '_copy' is set to be elemental in class.c, it is
+  /* Although '_copy' is set to be elemental in class.cc, it is
      not staying that way.  Find out why, sometime....  */
   ppc_code->resolved_sym->attr.elemental = 1;
   ppc_code->ext.actual = actual;
@@ -3189,7 +3189,7 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
    with the first node being one.  */
 #define POWI_TABLE_SIZE 256
 
-/* The table is from builtins.c.  */
+/* The table is from builtins.cc.  */
 static const unsigned char powi_table[POWI_TABLE_SIZE] =
   {
       0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
@@ -7016,7 +7016,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 deallocated for non-variable scalars, array arguments to elemental
 	 procedures, and array arguments with descriptor to non-elemental
 	 procedures.  As bounds information for descriptorless arrays is no
-	 longer available here, they are dealt with in trans-array.c
+	 longer available here, they are dealt with in trans-array.cc
 	 (gfc_conv_array_parameter).  */
       if (e && (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
 	    && e->ts.u.derived->attr.alloc_comp
@@ -7394,7 +7394,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (ts.u.cl->length == NULL)
 	{
 	  /* Assumed character length results are not allowed by C418 of the 2003
-	     standard and are trapped in resolve.c; except in the case of SPREAD
+	     standard and are trapped in resolve.cc; except in the case of SPREAD
 	     (and other intrinsics?) and dummy functions.  In the case of SPREAD,
 	     we take the character length of the first argument for the result.
 	     For dummies, we have to look through the formal argument list for
@@ -10847,7 +10847,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
      the shape of the result is unknown and, in any case, the function must
      correctly take care of the reallocation internally. For intrinsic
      calls, the array data is freed and the library takes care of allocation.
-     TODO: Add logic of trans-array.c: gfc_alloc_allocatable_for_assignment
+     TODO: Add logic of trans-array.cc: gfc_alloc_allocatable_for_assignment
      to the library.  */
   if (flag_realloc_lhs
 	&& gfc_is_reallocatable_lhs (expr1)

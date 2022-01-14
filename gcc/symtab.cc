@@ -310,7 +310,7 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
 	}
       /* If we change assembler name, also all transparent aliases must
 	 be updated.  There are three kinds - those having same assembler name,
-	 those being renamed in varasm.c and weakref being renamed by the
+	 those being renamed in varasm.cc and weakref being renamed by the
 	 assembler.  */
       if (node)
 	{

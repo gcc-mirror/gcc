@@ -395,7 +395,7 @@ cp_common_type (tree t1, tree t2)
       /* For __intN types, either the type is __int128 (and is lower
 	 priority than the types checked above, but higher than other
 	 128-bit types) or it's known to not be the same size as other
-	 types (enforced in toplev.c).  Prefer the unsigned type. */
+	 types (enforced in toplev.cc).  Prefer the unsigned type. */
       for (i = 0; i < NUM_INT_N_ENTS; i ++)
 	{
 	  if (int_n_enabled_p [i]
@@ -948,7 +948,7 @@ strip_array_domain (tree type)
   return cp_build_type_attribute_variant (t2, TYPE_ATTRIBUTES (type));
 }
 
-/* Wrapper around cp_common_type that is used by c-common.c and other
+/* Wrapper around cp_common_type that is used by c-common.cc and other
    front end optimizations that remove promotions.  
 
    Return the common type for two arithmetic types T1 and T2 under the
@@ -2584,7 +2584,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
 {
   location_t loc = cp_expr_loc_or_input_loc (t);
 
-  /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
+  /* For MIN_EXPR or MAX_EXPR, fold-const.cc has arranged things so that
      the first operand is always the one to be used if both operands
      are equal, so we know what conditional expression this used to be.  */
   if (TREE_CODE (t) == MIN_EXPR || TREE_CODE (t) == MAX_EXPR)
@@ -10529,7 +10529,7 @@ check_return_expr (tree retval, bool *no_warning)
       current_function_returns_value = 1;
       /* And signal caller that TREE_NO_WARNING should be set on the
 	 RETURN_EXPR to avoid control reaches end of non-void function
-	 warnings in tree-cfg.c.  */
+	 warnings in tree-cfg.cc.  */
       *no_warning = true;
     }
   /* Check for a return statement with a value in a function that

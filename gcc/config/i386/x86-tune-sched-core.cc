@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Model decoder of Core 2/i7.
-   Below hooks for multipass scheduling (see haifa-sched.c:max_issue)
+   Below hooks for multipass scheduling (see haifa-sched.cc:max_issue)
    track the instruction fetch block boundaries and make sure that long
    (9+ bytes) instructions are assigned to D0.  */
 

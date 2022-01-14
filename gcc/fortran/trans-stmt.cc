@@ -2182,7 +2182,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       gfc_init_se (&se, NULL);
 
-      /* resolve.c converts some associate names to allocatable so that
+      /* resolve.cc converts some associate names to allocatable so that
 	 allocation can take place automatically in gfc_trans_assignment.
 	 The frontend prevents them from being either allocated,
 	 deallocated or reallocated.  */
@@ -7337,7 +7337,7 @@ gfc_trans_deallocate (gfc_code *code)
 		   && TREE_CODE (TREE_TYPE (TREE_TYPE (se.expr)))
 			== RECORD_TYPE)
 	    {
-	      /* class.c(finalize_component) generates these, when a
+	      /* class.cc(finalize_component) generates these, when a
 		 finalizable entity has a non-allocatable derived type array
 		 component, which has allocatable components. Obtain the
 		 derived type of the array and deallocate the allocatable

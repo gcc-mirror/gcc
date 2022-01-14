@@ -109,7 +109,7 @@ along with GCC; see the file COPYING3.  If not see
   are defined in gcc/vtable-verify.h.  These data structures are
   shared with the code in the C++ front end that collects the class
   hierarchy & vtable information and generates the vtable map
-  variables (see cp/vtable-class-hierarchy.c).  This tree pass should
+  variables (see cp/vtable-class-hierarchy.cc).  This tree pass should
   run just before the gimple is converted to RTL.
 
   Some implementation details for this pass:

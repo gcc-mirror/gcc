@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    and manipulating them in the doubly-linked chain of insns.
 
    The patterns of the insns are created by machine-dependent
-   routines in insn-emit.c, which is generated automatically from
+   routines in insn-emit.cc, which is generated automatically from
    the machine description.  These routines make the individual rtx's
    of the pattern with `gen_rtx_fmt_ee' and others in genrtl.[ch],
    which are automatically generated from rtl.def; what is machine
@@ -489,7 +489,7 @@ gen_raw_REG (machine_mode mode, unsigned int regno)
 
 /* There are some RTL codes that require special attention; the generation
    functions do the raw handling.  If you add to this list, modify
-   special_rtx in gengenrtl.c as well.  */
+   special_rtx in gengenrtl.cc as well.  */
 
 rtx_expr_list *
 gen_rtx_EXPR_LIST (machine_mode mode, rtx expr, rtx expr_list)
@@ -1541,7 +1541,7 @@ maybe_set_max_label_num (rtx_code_label *x)
    representation is returned.
 
    This function handles the cases in common between gen_lowpart, below,
-   and two variants in cse.c and combine.c.  These are the cases that can
+   and two variants in cse.cc and combine.cc.  These are the cases that can
    be safely handled at all points in the compilation.
 
    If this is not a case we can handle, return 0.  */

@@ -35,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 
    There are two functions available elsewhere that provide
    slightly different flavours of variables.  Namely:
-     expr.c (gfc_get_variable_expr)
-     symbol.c (gfc_lval_expr_from_sym)
+     expr.cc (gfc_get_variable_expr)
+     symbol.cc (gfc_lval_expr_from_sym)
    TODO: Merge these functions, if possible.  */
 
 /* Get a new expression node.  */
@@ -3464,7 +3464,7 @@ check_restricted (gfc_expr *e)
 	break;
 
       /* gfc_is_formal_arg broadcasts that a formal argument list is being
-	 processed in resolve.c(resolve_formal_arglist).  This is done so
+	 processed in resolve.cc(resolve_formal_arglist).  This is done so
 	 that host associated dummy array indices are accepted (PR23446).
 	 This mechanism also does the same for the specification expressions
 	 of array-valued functions.  */
@@ -4819,7 +4819,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
 }
 
 /* Apply an initialization expression to a typespec. Can be used for symbols or
-   components. Similar to add_init_expr_to_sym in decl.c; could probably be
+   components. Similar to add_init_expr_to_sym in decl.cc; could probably be
    combined with some effort.  */
 
 void

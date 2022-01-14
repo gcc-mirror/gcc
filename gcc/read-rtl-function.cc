@@ -1,4 +1,4 @@
-/* read-rtl-function.c - Reader for RTL function dumps
+/* read-rtl-function.cc - Reader for RTL function dumps
    Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -515,7 +515,7 @@ function_reader::create_function ()
 
   cfun->curr_properties = (PROP_cfg | PROP_rtl);
 
-  /* Do we need this to force cgraphunit.c to output the function? */
+  /* Do we need this to force cgraphunit.cc to output the function? */
   DECL_EXTERNAL (fndecl) = 0;
   DECL_PRESERVE_P (fndecl) = 1;
 
@@ -1148,7 +1148,7 @@ function_reader::extra_parsing_for_operand_code_0 (rtx x, int idx)
 	  if (SYMBOL_REF_HAS_BLOCK_INFO_P (x))
 	    {
 	      /* Emulate the allocation normally done by
-		 varasm.c:create_block_symbol.  */
+		 varasm.cc:create_block_symbol.  */
 	      unsigned int size = RTX_HDR_SIZE + sizeof (struct block_symbol);
 	      rtx new_x = (rtx) ggc_internal_alloc (size);
 
@@ -1212,7 +1212,7 @@ function_reader::extra_parsing_for_operand_code_0 (rtx x, int idx)
 }
 
 /* Implementation of rtx_reader::handle_any_trailing_information.
-   Handle the various additional information that print-rtl.c can
+   Handle the various additional information that print-rtl.cc can
    write after the regular fields, when parsing X.  */
 
 void

@@ -1,4 +1,4 @@
-/* run-rtl-passes.c - Run RTL passes directly from frontend
+/* run-rtl-passes.cc - Run RTL passes directly from frontend
    Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -45,7 +45,7 @@ run_rtl_passes (char *initial_pass_name)
   cfun->pass_startwith = initial_pass_name;
   max_regno = max_reg_num ();
 
-  /* cgraphunit.c normally handles this.  */
+  /* cgraphunit.cc normally handles this.  */
   switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
 

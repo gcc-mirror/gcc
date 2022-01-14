@@ -4897,7 +4897,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See  the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if ((BB_END (then_bb)
        && JUMP_P (BB_END (then_bb))
@@ -5018,7 +5018,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See  the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if ((BB_END (then_bb)
        && JUMP_P (BB_END (then_bb))

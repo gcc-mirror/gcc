@@ -110,7 +110,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* First, some functions that were used before GCC got a control flow graph.
-   These functions are now only used here in reorg.c, and have therefore
+   These functions are now only used here in reorg.cc, and have therefore
    been moved here to avoid inadvertent misuse elsewhere in the compiler.  */
 
 /* Return the last label to mark the same position as LABEL.  Return LABEL
@@ -3112,7 +3112,7 @@ relax_delay_slots (rtx_insn *first)
 
 		  /* We have just removed a BARRIER, which means that the block
 		     number of the next insns has effectively been changed (see
-		     find_basic_block in resource.c), so clear it.  */
+		     find_basic_block in resource.cc), so clear it.  */
 		  clear_hashed_info_until_next_barrier (direct_label);
 		}
 
@@ -3142,7 +3142,7 @@ relax_delay_slots (rtx_insn *first)
 
 	      /* Be careful how we do this to avoid deleting code or
 		 labels that are momentarily dead.  See similar optimization
-		 in jump.c.
+		 in jump.cc.
 
 		 We also need to ensure we properly handle the case when
 		 invert_jump fails.  */
@@ -3157,7 +3157,7 @@ relax_delay_slots (rtx_insn *first)
 
 		  /* We have just removed a BARRIER, which means that the block
 		     number of the next insns has effectively been changed (see
-		     find_basic_block in resource.c), so clear it.  */
+		     find_basic_block in resource.cc), so clear it.  */
 		  if (from)
 		    clear_hashed_info_until_next_barrier (from);
 
@@ -3420,7 +3420,7 @@ relax_delay_slots (rtx_insn *first)
 	    {
 	      /* Be careful how we do this to avoid deleting code or labels
 		 that are momentarily dead.  See similar optimization in
-		 jump.c  */
+		 jump.cc  */
 	      if (old_label)
 		++LABEL_NUSES (old_label);
 
@@ -3437,7 +3437,7 @@ relax_delay_slots (rtx_insn *first)
 
 		  /* We have just removed a BARRIER, which means that the block
 		     number of the next insns has effectively been changed (see
-		     find_basic_block in resource.c), so clear it.  */
+		     find_basic_block in resource.cc), so clear it.  */
 		  rtx_insn *from = delete_related_insns (next);
 		  if (from)
 		    clear_hashed_info_until_next_barrier (from);

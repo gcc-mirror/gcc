@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This file handles the generation of rtl code from tree structure
-   above the level of expressions, using subroutines in exp*.c and emit-rtl.c.
+   above the level of expressions, using subroutines in exp*.c and emit-rtl.cc.
    The functions whose names start with `expand_' are called by the
    expander to generate RTL instructions for various kinds of constructs.  */
 
@@ -736,7 +736,7 @@ conditional_probability (profile_probability target_prob,
    Then, a table with the target labels is emitted.
 
    The process is unaware of the CFG.  The caller has to fix up
-   the CFG itself.  This is done in cfgexpand.c.  */     
+   the CFG itself.  This is done in cfgexpand.cc.  */     
 
 static void
 emit_case_dispatch_table (tree index_expr, tree index_type,

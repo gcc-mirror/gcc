@@ -26,7 +26,7 @@
 #include "tm.h"
 #include "c-family/c-common.h"
 
-/* copy defines in c-cppbuiltin.c */
+/* copy defines in c-cppbuiltin.cc */
 # define builtin_define(TXT) cpp_define (pfile, TXT)
 # define builtin_assert(TXT) cpp_assert (pfile, TXT)
 

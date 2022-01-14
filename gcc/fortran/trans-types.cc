@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* trans-types.c -- gfortran backend types */
+/* trans-types.cc -- gfortran backend types */
 
 #include "config.h"
 #include "system.h"

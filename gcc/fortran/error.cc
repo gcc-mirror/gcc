@@ -1096,7 +1096,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	return true;
       }
     default:
-      /* Fall through info the middle-end decoder, as e.g. stor-layout.c
+      /* Fall through info the middle-end decoder, as e.g. stor-layout.cc
 	 etc. diagnostics can use the FE printer while the FE is still
 	 active.  */
       return default_tree_printer (pp, text, spec, precision, wide,

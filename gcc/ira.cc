@@ -147,7 +147,7 @@ along with GCC; see the file COPYING3.  If not see
        following subpasses:
 
        * First, IRA builds regions and creates allocnos (file
-         ira-build.c) and initializes most of their attributes.
+         ira-build.cc) and initializes most of their attributes.
 
        * Then IRA finds an allocno class for each allocno and
          calculates its initial (non-accumulated) cost of memory and
@@ -156,26 +156,26 @@ along with GCC; see the file COPYING3.  If not see
        * IRA creates live ranges of each allocno, calculates register
          pressure for each pressure class in each region, sets up
          conflict hard registers for each allocno and info about calls
-         the allocno lives through (file ira-lives.c).
+         the allocno lives through (file ira-lives.cc).
 
        * IRA removes low register pressure loops from the regions
-         mostly to speed IRA up (file ira-build.c).
+         mostly to speed IRA up (file ira-build.cc).
 
        * IRA propagates accumulated allocno info from lower region
          allocnos to corresponding upper region allocnos (file
-         ira-build.c).
+         ira-build.cc).
 
-       * IRA creates all caps (file ira-build.c).
+       * IRA creates all caps (file ira-build.cc).
 
        * Having live-ranges of allocnos and their classes, IRA creates
          conflicting allocnos for each allocno.  Conflicting allocnos
          are stored as a bit vector or array of pointers to the
          conflicting allocnos whatever is more profitable (file
-         ira-conflicts.c).  At this point IRA creates allocno copies.
+         ira-conflicts.cc).  At this point IRA creates allocno copies.
 
      o Coloring.  Now IRA has all necessary info to start graph coloring
        process.  It is done in each region on top-down traverse of the
-       region tree (file ira-color.c).  There are following subpasses:
+       region tree (file ira-color.cc).  There are following subpasses:
 
        * Finding profitable hard registers of corresponding allocno
          class for each allocno.  For example, only callee-saved hard
@@ -280,7 +280,7 @@ along with GCC; see the file COPYING3.  If not see
        memory).  In this case IRA creates and uses a new
        pseudo-register inside the region and adds code to move allocno
        values on the region's borders.  This is done during top-down
-       traversal of the regions (file ira-emit.c).  In some
+       traversal of the regions (file ira-emit.cc).  In some
        complicated cases IRA can create a new allocno to move allocno
        values (e.g. when a swap of values stored in two hard-registers
        is needed).  At this stage, the new allocno is marked as
@@ -302,20 +302,20 @@ along with GCC; see the file COPYING3.  If not see
 
      o Flattening internal representation.  After changing code, IRA
        transforms its internal representation for several regions into
-       one region representation (file ira-build.c).  This process is
+       one region representation (file ira-build.cc).  This process is
        called IR flattening.  Such process is more complicated than IR
        rebuilding would be, but is much faster.
 
      o After IR flattening, IRA tries to assign hard registers to all
        spilled allocnos.  This is implemented by a simple and fast
        priority coloring algorithm (see function
-       ira_reassign_conflict_allocnos::ira-color.c).  Here new allocnos
+       ira_reassign_conflict_allocnos::ira-color.cc).  Here new allocnos
        created during the code change pass can be assigned to hard
        registers.
 
      o At the end IRA calls the reload pass.  The reload pass
        communicates with IRA through several functions in file
-       ira-color.c to improve its decisions in
+       ira-color.cc to improve its decisions in
 
        * sharing stack slots for the spilled pseudos based on IRA info
          about pseudo-register conflicts.
@@ -328,7 +328,7 @@ along with GCC; see the file COPYING3.  If not see
          in places where the pseudo-register lives.
 
    IRA uses a lot of data representing the target processors.  These
-   data are initialized in file ira.c.
+   data are initialized in file ira.cc.
 
    If function has no loops (or the loops are ignored when
    -fira-algorithm=CB is used), we have classic Chaitin-Briggs
@@ -417,7 +417,7 @@ class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
    reload, cost of the allocnos assigned to hard-registers, cost of
    the allocnos assigned to memory, cost of loads, stores and register
    move insns generated for pseudo-register live range splitting (see
-   ira-emit.c).  */
+   ira-emit.cc).  */
 int64_t ira_overall_cost, overall_cost_before;
 int64_t ira_reg_cost, ira_mem_cost;
 int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
@@ -965,7 +965,7 @@ setup_uniform_class_p (void)
    calculations efforts we introduce allocno classes which contain
    unique non-empty sets of allocatable hard-registers.
 
-   Pseudo class cost calculation in ira-costs.c is very expensive.
+   Pseudo class cost calculation in ira-costs.cc is very expensive.
    Therefore we are trying to decrease number of classes involved in
    such calculation.  Register classes used in the cost calculation
    are called important classes.  They are allocno classes and other
@@ -977,7 +977,7 @@ setup_uniform_class_p (void)
    registers are the same for the both classes).  The important
    classes will contain GENERAL_REGS and LEGACY_REGS.  It is done
    because a machine description insn constraint may refers for
-   LEGACY_REGS and code in ira-costs.c is mostly base on investigation
+   LEGACY_REGS and code in ira-costs.cc is mostly base on investigation
    of the insn constraints.  */
 static void
 setup_allocno_and_important_classes (void)
@@ -3464,7 +3464,7 @@ def_dominates_uses (int regno)
      for non-local goto, regs defined on function entry) then def_info
      is NULL and the reg is always live before any use.  We might
      reasonably return true in that case, but since the only call
-     of this function is currently here in ira.c when we are looking
+     of this function is currently here in ira.cc when we are looking
      at a defining insn we can't have an artificial def as that would
      bump DF_REG_DEF_COUNT.  */
   gcc_assert (DF_REG_DEF_COUNT (regno) == 1 && def_info != NULL);

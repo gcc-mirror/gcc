@@ -1,6 +1,6 @@
 /* Pretty formatting of GENERIC trees in C syntax.
    Copyright (C) 2001-2022 Free Software Foundation, Inc.
-   Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
+   Adapted from c-pretty-print.cc by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
 
@@ -188,7 +188,7 @@ print_generic_expr_to_str (tree t)
 /* Dump NAME, an IDENTIFIER_POINTER, sanitized so that D<num> sequences
    in it are replaced with Dxxxx, as long as they are at the start or
    preceded by $ and at the end or followed by $.  See make_fancy_name
-   in tree-sra.c.  */
+   in tree-sra.cc.  */
 
 static void
 dump_fancy_name (pretty_printer *pp, tree name)
@@ -2118,7 +2118,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
 	     in such a way that the two INTEGER_CST nodes for "5" have
 	     different values but identical types.  In the latter
-	     case, the 5 is multiplied by sizeof (int) in c-common.c
+	     case, the 5 is multiplied by sizeof (int) in c-common.cc
 	     (pointer_int_sum) to convert it to a byte address, and
 	     yet the type of the node is left unchanged.  Argh.  What
 	     is consistent though is that the number value corresponds

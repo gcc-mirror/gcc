@@ -212,7 +212,7 @@ output_objc_section_asm_op (const char *directive)
       else
 	for (i = 0; i < ARRAY_SIZE (tomarkv2); i++)
 	  switch_to_section (darwin_sections[tomarkv2[i]]);
-      /* Make sure we don't get varasm.c out of sync with us.  */
+      /* Make sure we don't get varasm.cc out of sync with us.  */
       switch_to_section (saved_in_section);
     }
   output_section_asm_op (directive);
@@ -2346,7 +2346,7 @@ fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"
      They must be made at least one byte, and the section containing must be
      marked as unsuitable for section-anchors (see storage allocators below).
 
-     For non-zero objects this output is handled by varasm.c.
+     For non-zero objects this output is handled by varasm.cc.
   */
   if (!size)
     {
@@ -2605,7 +2605,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
 	pub, weak, one, (unsigned long)DECL_INITIAL (decl));
 #endif
 
-  /* ObjC metadata can get put in BSS because varasm.c decides it's BSS
+  /* ObjC metadata can get put in BSS because varasm.cc decides it's BSS
      before the target has a chance to comment.  */
   if ((meta = is_objc_metadata (decl)))
     {
@@ -2730,7 +2730,7 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
 	TREE_PUBLIC (decl), weak, one, (unsigned long)DECL_INITIAL (decl));
 #endif
 
-  /* ObjC metadata can get put in BSS because varasm.c decides it's BSS
+  /* ObjC metadata can get put in BSS because varasm.cc decides it's BSS
      before the target has a chance to comment.  */
   if ((meta = is_objc_metadata (decl)))
     {
@@ -2806,7 +2806,7 @@ fprintf (fp, "# adloc: %s (%lld,%d) ro %d cst %d stat %d one %d pub %d"
 	weak , (unsigned long)DECL_INITIAL (decl));
 #endif
 
-  /* ObjC metadata can get put in BSS because varasm.c decides it's BSS
+  /* ObjC metadata can get put in BSS because varasm.cc decides it's BSS
      before the target has a chance to comment.  */
   if ((meta = is_objc_metadata (decl)))
     {

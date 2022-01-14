@@ -63,7 +63,7 @@ obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
-cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+cc1objplus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
 	$(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS)
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final \
@@ -85,31 +85,31 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
 
 # Objective C++ language specific files.
 
-objcp/objc-runtime-shared-support.o: objc/objc-runtime-shared-support.c
+objcp/objc-runtime-shared-support.o: objc/objc-runtime-shared-support.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.c
+objcp/objc-gnu-runtime-abi-01.o: objc/objc-gnu-runtime-abi-01.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c
+objcp/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.c
+objcp/objc-next-runtime-abi-02.o: objc/objc-next-runtime-abi-02.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objcp-act.o: objc/objc-act.c
+objcp/objcp-act.o: objc/objc-act.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objc-encoding.o: objc/objc-encoding.c
+objcp/objc-encoding.o: objc/objc-encoding.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-objcp/objc-map.o: objc/objc-map.c
+objcp/objc-map.o: objc/objc-map.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

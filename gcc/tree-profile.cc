@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Generate basic block profile instrumentation and auxiliary files.
-   Tree-based version.  See profile.c for overview.  */
+   Tree-based version.  See profile.cc for overview.  */
 
 #include "config.h"
 #include "system.h"
@@ -720,7 +720,7 @@ tree_profiling (void)
       ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
 
   /* This is a small-ipa pass that gets called only once, from
-     cgraphunit.c:ipa_passes().  */
+     cgraphunit.cc:ipa_passes().  */
   gcc_assert (symtab->state == IPA_SSA);
 
   init_node_map (true);

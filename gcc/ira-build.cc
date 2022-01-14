@@ -488,7 +488,7 @@ ira_create_allocno (int regno, bool cap_p,
       if (loop_tree_node->regno_allocno_map[regno] == NULL)
 	/* Remember that we can create temporary allocnos to break
 	   cycles in register shuffle on region borders (see
-	   ira-emit.c).  */
+	   ira-emit.cc).  */
 	loop_tree_node->regno_allocno_map[regno] = a;
     }
   ALLOCNO_CAP (a) = NULL;
@@ -2211,7 +2211,7 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
 #ifdef STACK_REGS
 /* Return TRUE if LOOP has a complex enter or exit edge.  We don't
    form a region from such loop if the target use stack register
-   because reg-stack.c cannot deal with such edges.  */
+   because reg-stack.cc cannot deal with such edges.  */
 static bool
 loop_with_complex_edge_p (class loop *loop)
 {
@@ -3319,7 +3319,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	= regno_top_level_allocno_map[REGNO (allocno_emit_reg (cp->second))];
       node = cp->loop_tree_node;
       if (node == NULL)
-	keep_p = true; /* It copy generated in ira-emit.c.  */
+	keep_p = true; /* It copy generated in ira-emit.cc.  */
       else
 	{
 	  /* Check that the copy was not propagated from level on

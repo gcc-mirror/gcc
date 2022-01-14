@@ -19,9 +19,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Instruction scheduling pass.  This file, along with sched-deps.c,
+/* Instruction scheduling pass.  This file, along with sched-deps.cc,
    contains the generic parts.  The actual entry point for
-   the normal instruction scheduling pass is found in sched-rgn.c.
+   the normal instruction scheduling pass is found in sched-rgn.cc.
 
    We compute insn priorities based on data dependencies.  Flow
    analysis only creates a fraction of the data-dependencies we must
@@ -317,7 +317,7 @@ bool adding_bb_to_current_region_p = true;
 /* Implement a circular buffer to delay instructions until sufficient
    time has passed.  For the new pipeline description interface,
    MAX_INSN_QUEUE_INDEX is a power of two minus one which is not less
-   than maximal time of instruction execution computed by genattr.c on
+   than maximal time of instruction execution computed by genattr.cc on
    the base maximal time of functional unit reservations and getting a
    result.  This is the longest time an insn may be queued.  */
 
@@ -1510,20 +1510,20 @@ dep_cost (dep_t link)
   return dep_cost_1 (link, 0);
 }
 
-/* Use this sel-sched.c friendly function in reorder2 instead of increasing
+/* Use this sel-sched.cc friendly function in reorder2 instead of increasing
    INSN_PRIORITY explicitly.  */
 void
 increase_insn_priority (rtx_insn *insn, int amount)
 {
   if (!sel_sched_p ())
     {
-      /* We're dealing with haifa-sched.c INSN_PRIORITY.  */
+      /* We're dealing with haifa-sched.cc INSN_PRIORITY.  */
       if (INSN_PRIORITY_KNOWN (insn))
 	  INSN_PRIORITY (insn) += amount;
     }
   else
     {
-      /* In sel-sched.c INSN_PRIORITY is not kept up to date.
+      /* In sel-sched.cc INSN_PRIORITY is not kept up to date.
 	 Use EXPR_PRIORITY instead. */
       sel_add_to_insn_priority (insn, amount);
     }
@@ -7579,7 +7579,7 @@ try_ready (rtx_insn *next)
      has speculative pattern.
 
      We can't assert (!(new_ts & HARD_DEP) || new_ts == old_ts) here because
-     control-speculative NEXT could have been discarded by sched-rgn.c
+     control-speculative NEXT could have been discarded by sched-rgn.cc
      (the same case as when discarded by can_schedule_ready_p ()).  */
 
   if ((new_ts & SPECULATIVE)
@@ -7637,7 +7637,7 @@ try_ready (rtx_insn *next)
   if (new_ts & (HARD_DEP | DEP_POSTPONED))
     {
       /* We can't assert (QUEUE_INDEX (next) == QUEUE_NOWHERE) here because
-	 control-speculative NEXT could have been discarded by sched-rgn.c
+	 control-speculative NEXT could have been discarded by sched-rgn.cc
 	 (the same case as when discarded by can_schedule_ready_p ()).  */
       /*gcc_assert (QUEUE_INDEX (next) == QUEUE_NOWHERE);*/
 
@@ -8272,7 +8272,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 
   /* TODO: The actual probability can be determined and is computed as
      'todo_spec' variable in create_check_block_twin and
-     in sel-sched.c `check_ds' in create_speculation_check.  */
+     in sel-sched.cc `check_ds' in create_speculation_check.  */
   e->probability = profile_probability::very_unlikely ();
   rec->count = e->count ();
   e2->probability = e->probability.invert ();
@@ -8286,7 +8286,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
   if (BB_PARTITION (second_bb) != BB_PARTITION (rec))
     /* Partition type is the same, if it is "unpartitioned".  */
     {
-      /* Rewritten from cfgrtl.c.  */
+      /* Rewritten from cfgrtl.cc.  */
       if (crtl->has_bb_partition && targetm_common.have_named_sections)
 	{
 	  /* We don't need the same note for the check because

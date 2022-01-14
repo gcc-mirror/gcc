@@ -1,4 +1,4 @@
-/* context.c - Holder for global state
+/* context.cc - Holder for global state
    Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

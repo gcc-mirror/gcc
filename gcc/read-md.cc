@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GENERATOR_FILE
 
-/* Minimal reimplementation of errors.c for use by RTL frontend
+/* Minimal reimplementation of errors.cc for use by RTL frontend
    within cc1.  */
 
 int have_error = 0;

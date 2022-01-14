@@ -22,8 +22,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     - adding new CPU into:
 	- adding PROCESSOR_XXX to processor_type (in i386.h)
 	- possibly adding XXX into CPU attribute in i386.md
-	- adding XXX to processor_alias_table (in i386.c)
-    - introducing ix86_XXX_cost in i386.c
+	- adding XXX to processor_alias_table (in i386.cc)
+    - introducing ix86_XXX_cost in i386.cc
 	- Stringop generation table can be build based on test_stringop
 	- script (once rest of tuning is complete)
     - designing a scheduler model in

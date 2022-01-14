@@ -12643,7 +12643,7 @@ vfp3_const_double_index (rtx x)
   /* The value of 5 here would be 4 if GCC used IEEE754-like encoding (where
      normalized significands are in the range [1, 2). (Our mantissa is shifted
      left 4 places at this point relative to normalized IEEE754 values).  GCC
-     internally uses [0.5, 1) (see real.c), so the exponent returned from
+     internally uses [0.5, 1) (see real.cc), so the exponent returned from
      REAL_EXP must be altered.  */
   exponent = 5 - exponent;
 
@@ -20801,7 +20801,7 @@ shift_op (rtx op, HOST_WIDE_INT *amountp)
    is) or not (and must be printed with an octal escape) must be made
    with reference to the *host* character set -- the situation is
    similar to that discussed in the comments above pp_c_char in
-   c-pretty-print.c.  */
+   c-pretty-print.cc.  */
 
 #define MAX_ASCII_LEN 51
 
@@ -24969,7 +24969,7 @@ thumb2_final_prescan_insn (rtx_insn *insn)
 	break;
     }
   /* Restore recog_data (getting the attributes of other insns can
-     destroy this array, but final.c assumes that it remains intact
+     destroy this array, but final.cc assumes that it remains intact
      across this call).  */
   extract_constrain_insn_cached (first_insn);
 }
@@ -25258,7 +25258,7 @@ arm_final_prescan_insn (rtx_insn *insn)
 	}
 
       /* Restore recog_data (getting the attributes of other insns can
-	 destroy this array, but final.c assumes that it remains intact
+	 destroy this array, but final.cc assumes that it remains intact
 	 across this call.  */
       extract_constrain_insn_cached (insn);
     }
@@ -28039,7 +28039,7 @@ arm_asm_output_labelref (FILE *stream, const char *name)
    the tag name in a comment so that anyone reading the assembler output
    will know which tag is being set.
 
-   This function is not static because arm-c.c needs it too.  */
+   This function is not static because arm-c.cc needs it too.  */
 
 void
 arm_emit_eabi_attribute (const char *name, int num, int val)
@@ -29326,7 +29326,7 @@ arm_small_register_classes_for_mode_p (machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  SImode shifts use normal
    ARM insns and therefore guarantee that the shift count is modulo 256.
-   DImode shifts (those implemented by lib1funcs.S or by optabs.c)
+   DImode shifts (those implemented by lib1funcs.S or by optabs.cc)
    guarantee no particular behavior for out-of-range counts.  */
 
 static unsigned HOST_WIDE_INT

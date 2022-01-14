@@ -358,7 +358,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
      flags are enabled or disabled implicitly, based on compiler
      defaults, configuration choices, and on the presence of certain
      related command-line options.  Many, but not all, of these
-     implicit behaviors can be found in file "rs6000.c", the
+     implicit behaviors can be found in file "rs6000.cc", the
      rs6000_option_override_internal() function.
 
      In general, each of the flags may be automatically enabled in

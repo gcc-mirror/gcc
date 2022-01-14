@@ -149,7 +149,7 @@ write_one_condition (void **slot, void * ARG_UNUSED (dummy))
 }
 
 /* Write out the complete conditions table, its size, and a flag
-   indicating that gensupport.c can now do insn elision.  */
+   indicating that gensupport.cc can now do insn elision.  */
 static void
 write_conditions (void)
 {

@@ -1421,7 +1421,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  if (flag_complex_method == 0)
 	  {
 	    /* Keep this algorithm in sync with
-	       tree-complex.c:expand_complex_div_straight().
+	       tree-complex.cc:expand_complex_div_straight().
 
 	       Expand complex division to scalars, straightforward algorithm.
 	       a / b = ((ar*br + ai*bi)/t) + i((ai*br - ar*bi)/t)
@@ -1446,7 +1446,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  else
 	  {
 	    /* Keep this algorithm in sync with
-               tree-complex.c:expand_complex_div_wide().
+               tree-complex.cc:expand_complex_div_wide().
 
 	       Expand complex division to scalars, modified algorithm to minimize
 	       overflow with wide input ranges.  */
@@ -11847,7 +11847,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	 Note that only CEIL_DIV_EXPR and FLOOR_DIV_EXPR are rewritten now.
 	 At one time others generated faster code, it's not clear if they do
-	 after the last round to changes to the DIV code in expmed.c.  */
+	 after the last round to changes to the DIV code in expmed.cc.  */
       if ((code == CEIL_DIV_EXPR || code == FLOOR_DIV_EXPR)
 	  && multiple_of_p (type, arg0, arg1))
 	return fold_build2_loc (loc, EXACT_DIV_EXPR, type,
@@ -13582,7 +13582,7 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
   else if (warning_suppressed_p (expr) && (DECL_P (expr) || EXPR_P (expr)))
     {
       /* Allow the no-warning bit to be set.  Perhaps we shouldn't allow
-	 that and change builtins.c etc. instead - see PR89543.  */
+	 that and change builtins.cc etc. instead - see PR89543.  */
       size_t sz = tree_size (expr);
       buf = XALLOCAVAR (union tree_node, sz);
       memcpy ((char *) buf, expr, sz);

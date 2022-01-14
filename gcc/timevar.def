@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* This file contains timing variable definitions, used by timevar.h
-   and timevar.c.
+   and timevar.cc.
 
    Syntax:
 

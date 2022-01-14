@@ -4457,7 +4457,7 @@ curr_insn_transform (bool check_only_p)
 		  /* Generate reloads for different output and matched
 		     input registers.  This is the easiest way to avoid
 		     creation of non-existing register conflicts in
-		     lra-lives.c.  */
+		     lra-lives.cc.  */
 		  match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
 				&after, TRUE);
 		}

@@ -480,7 +480,7 @@ get_chain_decl (struct nesting_info *info)
       DECL_CONTEXT (decl) = info->context;
       DECL_ARG_TYPE (decl) = type;
 
-      /* Tell tree-inline.c that we never write to this variable, so
+      /* Tell tree-inline.cc that we never write to this variable, so
 	 it can copy-prop the replacement value immediately.  */
       TREE_READONLY (decl) = 1;
 
@@ -906,7 +906,7 @@ walk_all_functions (walk_stmt_fn callback_stmt, walk_tree_fn callback_op,
    trying to inline to use for checking whether any argument is variably
    modified by anything in it.
 
-   It would be better to do this in tree-inline.c so that we could give
+   It would be better to do this in tree-inline.cc so that we could give
    the appropriate warning for why a function can't be inlined, but that's
    too late since the nesting structure has already been flattened and
    adding a flag just to record this fact seems a waste of a flag.  */

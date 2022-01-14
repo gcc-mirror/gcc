@@ -2684,7 +2684,7 @@ static sbitmap *hoist_vbeout;
 
 /* ??? We could compute post dominators and run this algorithm in
    reverse to perform tail merging, doing so would probably be
-   more effective than the tail merging code in jump.c.
+   more effective than the tail merging code in jump.cc.
 
    It's unclear if tail merging could be run in parallel with
    code hoisting.  It would be nice.  */
@@ -4124,7 +4124,7 @@ make_pass_rtl_hoist (gcc::context *ctxt)
   return new pass_rtl_hoist (ctxt);
 }
 
-/* Reset all state within gcse.c so that we can rerun the compiler
+/* Reset all state within gcse.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

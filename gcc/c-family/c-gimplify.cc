@@ -705,7 +705,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
       }
 
     case DECL_EXPR:
-      /* This is handled mostly by gimplify.c, but we have to deal with
+      /* This is handled mostly by gimplify.cc, but we have to deal with
 	 not warning about int x = x; as it is a GCC extension to turn off
 	 this warning but only if warn_init_self is zero.  */
       if (VAR_P (DECL_EXPR_DECL (*expr_p))

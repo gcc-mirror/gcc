@@ -791,7 +791,7 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
   gcc_assert (ts);
 
   /* We have already matched '/' - now look for a constant list, as with
-     top_val_list from decl.c, but append the result to an array.  */
+     top_val_list from decl.cc, but append the result to an array.  */
   if (gfc_match ("/") == MATCH_YES)
     {
       gfc_error ("Empty old style initializer list at %C");
@@ -1277,7 +1277,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
   /* Module functions have to be left in their own namespace because
      they have potentially (almost certainly!) already been referenced.
      In this sense, they are rather like external functions.  This is
-     fixed up in resolve.c(resolve_entries), where the symbol name-
+     fixed up in resolve.cc(resolve_entries), where the symbol name-
      space is set to point to the master function, so that the fake
      result mechanism can work.  */
   if (module_fcn_entry)
@@ -1494,7 +1494,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
   int is_c_interop = 0;
   bool retval = true;
 
-  /* We check implicitly typed variables in symbol.c:gfc_set_default_type().
+  /* We check implicitly typed variables in symbol.cc:gfc_set_default_type().
      Don't repeat the checks here.  */
   if (sym->attr.implicit_type)
     return true;
@@ -3808,7 +3808,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	continue;
 
       c1 = gfc_find_component (pdt, param->name, false, true, NULL);
-      /* An error should already have been thrown in resolve.c
+      /* An error should already have been thrown in resolve.cc
 	 (resolve_fl_derived0).  */
       if (!pdt->attr.use_assoc && !c1)
 	goto error_return;
@@ -4699,7 +4699,7 @@ get_kind:
 
 
 /* Match an IMPLICIT NONE statement.  Actually, this statement is
-   already matched in parse.c, or we would not end up here in the
+   already matched in parse.cc, or we would not end up here in the
    first place.  So the only thing we need to check, is if there is
    trailing garbage.  If not, the match is successful.  */
 
@@ -6568,7 +6568,7 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
      matching for the new declaration can be done.  The numbers and
      names of the arguments are checked here. The interface formal
      arguments are retained in formal_arglist and the characteristics
-     are compared in resolve.c(resolve_fl_procedure).  See the remark
+     are compared in resolve.cc(resolve_fl_procedure).  See the remark
      in get_proc_name about the eventual need to copy the formal_arglist
      and populate the formal namespace of the interface symbol.  */
   if (progname->attr.module_procedure
@@ -6711,7 +6711,7 @@ ok:
 
   /* gfc_error_now used in following and return with MATCH_YES because
      doing otherwise results in a cascade of extraneous errors and in
-     some cases an ICE in symbol.c(gfc_release_symbol).  */
+     some cases an ICE in symbol.cc(gfc_release_symbol).  */
   if (progname->attr.module_procedure && progname->attr.host_assoc)
     {
       bool arg_count_mismatch = false;
@@ -7573,7 +7573,7 @@ cleanup:
 }
 
 
-/* This is mostly a copy of parse.c(add_global_procedure) but modified to
+/* This is mostly a copy of parse.cc(add_global_procedure) but modified to
    pass the name of the entry, rather than the gfc_current_block name, and
    to return false upon finding an existing global entry.  */
 
@@ -10147,7 +10147,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
       if (!gfc_add_is_bind_c (attr, NULL, &gfc_current_locus, 0))
 	return MATCH_ERROR;
 
-      /* TODO: attr conflicts need to be checked, probably in symbol.c.  */
+      /* TODO: attr conflicts need to be checked, probably in symbol.cc.  */
     }
   else if (gfc_match (" , abstract") == MATCH_YES)
     {
@@ -11698,7 +11698,7 @@ const ext_attr_t ext_attr_list[] = {
       __attributes(( attribute-list ))
    matches then
       !GCC$ ATTRIBUTES attribute-list ::
-   Cf. c-parser.c's c_parser_attributes; the data can then directly be
+   Cf. c-parser.cc's c_parser_attributes; the data can then directly be
    saved into a TREE.
 
    As there is absolutely no risk of confusion, we should never return

@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Output xcoff-format symbol table data.  The main functionality is contained
-   in dbxout.c.  This file implements the sdbout-like parts of the xcoff
+   in dbxout.cc.  This file implements the sdbout-like parts of the xcoff
    interface.  Many functions are very similar to their counterparts in
    the former sdbout.c file.  */
 
@@ -155,7 +155,7 @@ static const struct xcoff_type_number xcoff_type_numbers[] = {
 };
 
 /* Returns an XCOFF fundamental type number for DECL (assumed to be a
-   TYPE_DECL), or 0 if dbxout.c should assign a type number normally.  */
+   TYPE_DECL), or 0 if dbxout.cc should assign a type number normally.  */
 int
 xcoff_assign_fundamental_type_number (tree decl)
 {

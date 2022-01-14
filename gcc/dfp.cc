@@ -366,7 +366,7 @@ decimal_from_binary (REAL_VALUE_TYPE *to, const REAL_VALUE_TYPE *from)
   decimal_real_from_string (to, string);
 }
 
-/* Helper function to real.c:do_compare() to handle decimal internal
+/* Helper function to real.cc:do_compare() to handle decimal internal
    representation including when one of the operands is still in the
    binary internal representation.  */
 

@@ -281,7 +281,7 @@ static GTY(()) vec<tree, va_gc> *builtin_decls;
 static GTY((deletable)) tree free_block_chain;
 
 /* A hash table of packable types.  It is modelled on the generic type
-   hash table in tree.c, which must thus be used as a reference.  */
+   hash table in tree.cc, which must thus be used as a reference.  */
 
 struct GTY((for_user)) packable_type_hash
 {
@@ -304,7 +304,7 @@ struct packable_type_hasher : ggc_cache_ptr_hash<packable_type_hash>
 static GTY ((cache)) hash_table<packable_type_hasher> *packable_type_hash_table;
 
 /* A hash table of padded types.  It is modelled on the generic type
-   hash table in tree.c, which must thus be used as a reference.  */
+   hash table in tree.cc, which must thus be used as a reference.  */
 
 struct GTY((for_user)) pad_type_hash
 {
@@ -367,7 +367,7 @@ add_deferred_decl_context (tree decl, Entity_Id gnat_scope, int force_global);
 static void add_deferred_type_context (struct deferred_decl_context_node *n,
 				       tree type);
 
-/* Initialize data structures of the utils.c module.  */
+/* Initialize data structures of the utils.cc module.  */
 
 void
 init_gnat_utils (void)
@@ -385,7 +385,7 @@ init_gnat_utils (void)
   pad_type_hash_table = hash_table<pad_type_hasher>::create_ggc (512);
 }
 
-/* Destroy data structures of the utils.c module.  */
+/* Destroy data structures of the utils.cc module.  */
 
 void
 destroy_gnat_utils (void)

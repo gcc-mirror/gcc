@@ -1,4 +1,4 @@
-/* go-backend.c -- Go frontend interface to gcc backend.
+/* go-backend.cc -- Go frontend interface to gcc backend.
    Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

@@ -645,7 +645,7 @@ default_function_section (tree decl, enum node_frequency freq,
 /* Return the section for function DECL.
 
    If DECL is NULL_TREE, return the text section.  We can be passed
-   NULL_TREE under some circumstances by dbxout.c at least.
+   NULL_TREE under some circumstances by dbxout.cc at least.
 
    If FORCE_COLD is true, return cold function section ignoring
    the frequency info of cgraph_node.  */
@@ -698,7 +698,7 @@ function_section_1 (tree decl, bool force_cold)
 /* Return the section for function DECL.
 
    If DECL is NULL_TREE, return the text section.  We can be passed
-   NULL_TREE under some circumstances by dbxout.c at least.  */
+   NULL_TREE under some circumstances by dbxout.cc at least.  */
 
 section *
 function_section (tree decl)
@@ -2387,7 +2387,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
     output_addressed_constants (DECL_INITIAL (decl), 0);
 
-  /* dbxout.c needs to know this.  */
+  /* dbxout.cc needs to know this.  */
   if (sect && (sect->common.flags & SECTION_CODE) != 0)
     DECL_IN_TEXT_SECTION (decl) = 1;
 
@@ -2569,7 +2569,7 @@ assemble_external (tree decl ATTRIBUTE_UNUSED)
 #if 0
   /* This function should only be called if we are expanding, or have
      expanded, to RTL.
-     Ideally, only final.c would be calling this function, but it is
+     Ideally, only final.cc would be calling this function, but it is
      not clear whether that would break things somehow.  See PR 17982
      for further discussion.  */
   gcc_assert (state == EXPANSION
@@ -8482,7 +8482,7 @@ handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
      everything in .vtable_map_vars at the end.
 
      A fix could be made in
-     gcc/config/i386/winnt.c: i386_pe_unique_section.  */
+     gcc/config/i386/winnt.cc: i386_pe_unique_section.  */
   if (TARGET_PECOFF)
     {
       char *name;

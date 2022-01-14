@@ -23,14 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
    We first assign initial value to each symbol by gfc_assign_data_value
    during resolving DATA statement. Refer to check_data_variable and
-   traverse_data_list in resolve.c.
+   traverse_data_list in resolve.cc.
 
    The complexity exists in the handling of array section, implied do
    and array of struct appeared in DATA statement.
 
    We call gfc_conv_structure, gfc_con_array_array_initializer,
-   etc., to convert the initial value. Refer to trans-expr.c and
-   trans-array.c.  */
+   etc., to convert the initial value. Refer to trans-expr.cc and
+   trans-array.cc.  */
 
 #include "config.h"
 #include "system.h"
@@ -80,7 +80,7 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
 }
 
 /* Find if there is a constructor which component is equal to COM.
-   TODO: remove this, use symbol.c(gfc_find_component) instead.  */
+   TODO: remove this, use symbol.cc(gfc_find_component) instead.  */
 
 static gfc_constructor *
 find_con_by_component (gfc_component *com, gfc_constructor_base base)

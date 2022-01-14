@@ -3747,7 +3747,7 @@ do_coloring (void)
 
 
 
-/* Move spill/restore code, which are to be generated in ira-emit.c,
+/* Move spill/restore code, which are to be generated in ira-emit.cc,
    to less frequent points (if it is profitable) by reassigning some
    allocnos (in loop with subloops containing in another loop) to
    memory which results in longer live-range where the corresponding
@@ -3956,7 +3956,7 @@ update_curr_costs (ira_allocno_t a)
 /* Try to assign hard registers to the unassigned allocnos and
    allocnos conflicting with them or conflicting with allocnos whose
    regno >= START_REGNO.  The function is called after ira_flattening,
-   so more allocnos (including ones created in ira-emit.c) will have a
+   so more allocnos (including ones created in ira-emit.cc) will have a
    chance to get a hard register.  We use simple assignment algorithm
    based on priorities.  */
 void

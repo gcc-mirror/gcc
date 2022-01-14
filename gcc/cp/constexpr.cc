@@ -6550,7 +6550,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	}
       /* fall through */
     case CONST_DECL:
-      /* We used to not check lval for CONST_DECL, but darwin.c uses
+      /* We used to not check lval for CONST_DECL, but darwin.cc uses
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;

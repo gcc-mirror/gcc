@@ -384,7 +384,7 @@ add_expr_commutative (const_tree t1, const_tree t2, hash &hstate)
    previously accumulated hash value VAL.  If two hashable_expr
    values compare equal with hashable_expr_equal_p, they must
    hash to the same value, given an identical value of VAL.
-   The logic is intended to follow inchash::add_expr in tree.c.  */
+   The logic is intended to follow inchash::add_expr in tree.cc.  */
 
 static void
 add_hashable_expr (const struct hashable_expr *expr, hash &hstate)
@@ -555,7 +555,7 @@ equal_mem_array_ref_p (tree t0, tree t1)
 /* Compare two hashable_expr structures for equivalence.  They are
    considered equivalent when the expressions they denote must
    necessarily be equal.  The logic is intended to follow that of
-   operand_equal_p in fold-const.c */
+   operand_equal_p in fold-const.cc */
 
 static bool
 hashable_expr_equal_p (const struct hashable_expr *expr0,

@@ -105,7 +105,7 @@ private
      (C, Adjust_Context_For_Raise, "__gnat_adjust_context_for_raise");
    --  Target specific hook performing adjustments to the signal's machine
    --  context, to be called before an exception may be raised from a signal
-   --  handler. This service is provided by init.c, together with the
+   --  handler. This service is provided by init.cc, together with the
    --  non-tasking signal handler.
 
 end System.Interrupt_Management;

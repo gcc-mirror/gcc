@@ -41,7 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #define AMASK_LOCKPFTCHOK  0x1000       /* Safe to prefetch lock cache
 					   block.  */
 
-/* This will be called by the spec parser in gcc.c when it sees
+/* This will be called by the spec parser in gcc.cc when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "cpu" or "tune" as argument depending on if -mcpu=native
    or -mtune=native is to be substituted.

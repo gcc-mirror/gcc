@@ -18,7 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 
-/* This program is used to produce insn-recog.c, which contains a
+/* This program is used to produce insn-recog.cc, which contains a
    function called `recog' plus its subroutines.  These functions
    contain a decision tree that recognizes whether an rtx, the
    argument given to recog, is a valid instruction.
@@ -28,7 +28,7 @@
    for the pattern that matched.  This is the same as the order in the
    machine description of the entry that matched.  This number can be
    used as an index into various insn_* tables, such as insn_template,
-   insn_outfun, and insn_n_operands (found in insn-output.c).
+   insn_outfun, and insn_n_operands (found in insn-output.cc).
 
    The third argument to recog is an optional pointer to an int.  If
    present, recog will accept a pattern if it matches except for
@@ -37,7 +37,7 @@
    CLOBBERs that need to be added (it should be initialized to zero by
    the caller).  If it is set nonzero, the caller should allocate a
    PARALLEL of the appropriate size, copy the initial entries, and
-   call add_clobbers (found in insn-emit.c) to fill in the CLOBBERs.
+   call add_clobbers (found in insn-emit.cc) to fill in the CLOBBERs.
 
    This program also generates the function `split_insns', which
    returns 0 if the rtl could not be split, or it returns the split
@@ -93,14 +93,14 @@
       former case and MINUS and DImode in the latter case.
 
       The main aim of this phase is to reduce the compile time of the
-      insn-recog.c code and to reduce the amount of object code in
+      insn-recog.cc code and to reduce the amount of object code in
       insn-recog.o.
 
    4. Split the matching trees into functions, trying to limit the
       size of each function to a sensible amount.
 
       Again, the main aim of this phase is to reduce the compile time
-      of insn-recog.c.  (It doesn't help with the size of insn-recog.o.)
+      of insn-recog.cc.  (It doesn't help with the size of insn-recog.o.)
 
    5. Write out C++ code for each function.  */
 
@@ -627,7 +627,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 
 	/* Allowing non-lvalues in destinations -- particularly CONST_INT --
 	   while not likely to occur at runtime, results in less efficient
-	   code from insn-recog.c.  */
+	   code from insn-recog.cc.  */
 	if (set && pred && pred->allows_non_lvalue)
 	  error_at (info->loc, "destination operand %d allows non-lvalue",
 		    XINT (pattern, 0));
@@ -4302,7 +4302,7 @@ write_header (void)
   puts ("\
    is set nonzero, the caller should allocate a PARALLEL of the\n\
    appropriate size, copy the initial entries, and call add_clobbers\n\
-   (found in insn-emit.c) to fill in the CLOBBERs.\n\
+   (found in insn-emit.cc) to fill in the CLOBBERs.\n\
 ");
 
   puts ("\n\
@@ -5386,7 +5386,7 @@ main (int argc, const char **argv)
 	  match_pattern (&split_root, &info, pattern, acceptance);
 
 	  /* Declare the gen_split routine that we'll call if the
-	     pattern matches.  The definition comes from insn-emit.c.  */
+	     pattern matches.  The definition comes from insn-emit.cc.  */
 	  printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
 		  info.index);
 	  break;
@@ -5398,7 +5398,7 @@ main (int argc, const char **argv)
 	  match_pattern (&peephole2_root, &info, pattern, acceptance);
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
-	     pattern matches.  The definition comes from insn-emit.c.  */
+	     pattern matches.  The definition comes from insn-emit.cc.  */
 	  printf ("extern rtx_insn *gen_peephole2_%d (rtx_insn *, rtx *);\n",
 		  info.index);
 	  break;

@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
    targets that define PREFERRED_STACK_BOUNDARY more aligned than
    STACK_BOUNDARY (e.g. x86), or if not all registers can be pushed
    (e.g. x86 fp regs) which would ordinarily have to be implemented
-   as a sub/mov pair due to restrictions in calls.c.
+   as a sub/mov pair due to restrictions in calls.cc.
 
    Propagation stops when any of the insns that need adjusting are
    (a) no longer valid because we've exceeded their range, (b) a

@@ -604,7 +604,7 @@ gtymarker_opt (void)
 
 
 
-/* Declarators. The logic here is largely lifted from c-parser.c.
+/* Declarators. The logic here is largely lifted from c-parser.cc.
    Note that we do not have to process abstract declarators, which can
    appear only in parameter type lists or casts (but see absdecl,
    above).  Also, type qualifiers are thrown out in gengtype-lex.l so

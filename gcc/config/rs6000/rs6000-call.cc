@@ -3335,7 +3335,7 @@ rs6000_invalid_builtin (enum rs6000_gen_builtins fncode)
 }
 
 /* Target hook for early folding of built-ins, shamelessly stolen
-   from ia64.c.  */
+   from ia64.cc.  */
 
 tree
 rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
@@ -5493,7 +5493,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
      IBM extended double (KFmode) or long double is IEEE 128-bit (TFmode).
      It is simpler if we only define one variant of the built-in function,
      and switch the code when defining it, rather than defining two built-
-     ins and using the overload table in rs6000-c.c to switch between the
+     ins and using the overload table in rs6000-c.cc to switch between the
      two.  If we don't have the proper assembler, don't do this switch
      because CODE_FOR_*kf* and CODE_FOR_*tf* will be CODE_FOR_nothing.  */
   if (FLOAT128_IEEE_P (TFmode))
@@ -6122,7 +6122,7 @@ rs6000_init_builtins (void)
      format is IBM extended double.
 
      For IEEE 128-bit floating point, always create the type __ieee128.  If the
-     user used -mfloat128, rs6000-c.c will create a define from __float128 to
+     user used -mfloat128, rs6000-c.cc will create a define from __float128 to
      __ieee128.  */
   if (TARGET_FLOAT128_TYPE)
     {

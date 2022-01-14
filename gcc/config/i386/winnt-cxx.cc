@@ -47,7 +47,7 @@ i386_pe_type_dllimport_p (tree decl)
     return false;
   
   /* Overrides of the class dllimport decls by out-of-class definitions are 
-     handled by tree.c:merge_dllimport_decl_attributes.   */
+     handled by tree.cc:merge_dllimport_decl_attributes.   */
   return true;
 }
 
@@ -144,7 +144,7 @@ i386_pe_adjust_class_at_definition (tree t)
 	 that signals that the address of this symbol is not a compile-time
 	 constant.   Any subsequent out-of-class declaration of members wil
 	 cause the DECL_DLLIMPORT_P flag to be unset.
-	 (See  tree.c: merge_dllimport_decl_attributes).
+	 (See  tree.cc: merge_dllimport_decl_attributes).
 	 That is just right since out-of class declarations can only be a
 	 definition.   */
 

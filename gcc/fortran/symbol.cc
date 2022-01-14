@@ -357,7 +357,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 }
 
 
-/* This function is called from parse.c(parse_progunit) to check the
+/* This function is called from parse.cc(parse_progunit) to check the
    type of the function is not implicitly typed in the host namespace
    and to implicitly type the function result, if necessary.  */
 
@@ -995,7 +995,7 @@ gfc_add_ext_attribute (symbol_attribute *attr, ext_attr_id_t ext_attr,
 }
 
 
-/* Called from decl.c (attr_decl1) to check attributes, when declared
+/* Called from decl.cc (attr_decl1) to check attributes, when declared
    separately.  */
 
 bool

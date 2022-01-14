@@ -9434,7 +9434,7 @@ frv_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 #define TLS_BIAS (2048 - 16)
 
-/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
 static void

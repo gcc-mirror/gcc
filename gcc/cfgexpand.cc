@@ -4056,7 +4056,7 @@ expand_gimple_stmt (gimple *stmt)
 /* A subroutine of expand_gimple_basic_block.  Expand one GIMPLE_CALL
    that has CALL_EXPR_TAILCALL set.  Returns non-null if we actually
    generated a tail call (something that might be denied by the ABI
-   rules governing the call; see calls.c).
+   rules governing the call; see calls.cc).
 
    Sets CAN_FALLTHRU if we generated a *conditional* tail call, and
    can still reach the rest of BB.  The case here is __builtin_sqrt,

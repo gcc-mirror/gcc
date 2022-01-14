@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Conditional constant propagation (CCP) is based on the SSA
-   propagation engine (tree-ssa-propagate.c).  Constant assignments of
+   propagation engine (tree-ssa-propagate.cc).  Constant assignments of
    the form VAR = CST are propagated from the assignments into uses of
    VAR, which in turn may generate new constants.  The simulation uses
    a four level lattice to keep track of constant values associated

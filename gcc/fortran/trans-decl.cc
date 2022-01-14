@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* trans-decl.c -- Handling of backend function and variable decls, etc */
+/* trans-decl.cc -- Handling of backend function and variable decls, etc */
 
 #include "config.h"
 #include "system.h"
@@ -171,7 +171,7 @@ tree gfor_fndecl_caf_random_init;
 
 
 /* Math functions.  Many other math functions are handled in
-   trans-intrinsic.c.  */
+   trans-intrinsic.cc.  */
 
 gfc_powdecl_list gfor_fndecl_math_powi[4][3];
 tree gfor_fndecl_math_ishftc4;
@@ -2896,7 +2896,7 @@ trans_function_start (gfc_symbol * sym)
 
   allocate_struct_function (fndecl, false);
 
-  /* function.c requires a push at the start of the function.  */
+  /* function.cc requires a push at the start of the function.  */
   pushlevel ();
 }
 
@@ -4495,7 +4495,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		if (el->sym != el->sym->result)
 		  break;
 	    }
-	  /* TODO: move to the appropriate place in resolve.c.  */
+	  /* TODO: move to the appropriate place in resolve.cc.  */
 	  if (warn_return_type > 0 && el == NULL)
 	    gfc_warning (OPT_Wreturn_type,
 			 "Return value of function %qs at %L not set",
@@ -5982,7 +5982,7 @@ generate_local_decl (gfc_symbol * sym)
     }
   else if (sym->attr.flavor == FL_PROCEDURE)
     {
-      /* TODO: move to the appropriate place in resolve.c.  */
+      /* TODO: move to the appropriate place in resolve.cc.  */
       if (warn_return_type > 0
 	  && sym->attr.function
 	  && sym->result
@@ -7723,7 +7723,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       if (result == NULL_TREE || artificial_result_decl)
 	{
-	  /* TODO: move to the appropriate place in resolve.c.  */
+	  /* TODO: move to the appropriate place in resolve.cc.  */
 	  if (warn_return_type > 0 && sym == sym->result)
 	    gfc_warning (OPT_Wreturn_type,
 			 "Return value of function %qs at %L not set",

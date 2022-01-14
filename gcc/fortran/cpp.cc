@@ -178,7 +178,7 @@ cpp_define_builtins (cpp_reader *pfile)
   /* The defines below are necessary for the TARGET_* macros.
 
      FIXME:  Note that builtin_define_std() actually is a function
-     in c-cppbuiltin.c which uses flags undefined for Fortran.
+     in c-cppbuiltin.cc which uses flags undefined for Fortran.
      Let's skip this for now. If needed, one needs to look into it
      once more.  */
 
@@ -189,7 +189,7 @@ cpp_define_builtins (cpp_reader *pfile)
   /* FIXME: Pandora's Box
     Using the macros below results in multiple breakages:
      - mingw will fail to compile this file as dependent macros
-       assume to be used in c-cppbuiltin.c only. Further, they use
+       assume to be used in c-cppbuiltin.cc only. Further, they use
        flags only valid/defined in C (same as noted above).
        [config/i386/mingw32.h, config/i386/cygming.h]
      - other platforms (not as popular) break similarly

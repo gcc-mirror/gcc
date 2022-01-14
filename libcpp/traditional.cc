@@ -80,7 +80,7 @@ enum ls {ls_none = 0,		/* Normal state.  */
 	 ls_answer		/* In answer to predicate.  */
 };
 
-/* Lexing TODO: Maybe handle space in escaped newlines.  Stop lex.c
+/* Lexing TODO: Maybe handle space in escaped newlines.  Stop lex.cc
    from recognizing comments and directives during its lexing pass.  */
 
 static const uchar *skip_whitespace (cpp_reader *, const uchar *, int);

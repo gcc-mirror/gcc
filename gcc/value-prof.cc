@@ -75,7 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 
    For a -fprofile-generate run, the statements for which values should be
    recorded, are instrumented in instrument_values().  The instrumentation
-   is done by helper functions that can be found in tree-profile.c, where
+   is done by helper functions that can be found in tree-profile.cc, where
    new types of histograms can be added if necessary.
 
    After a -fprofile-use, the value profiling data is read back in by
@@ -93,7 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 
    Limitations / FIXME / TODO:
    * Only one histogram of each type can be associated with a statement.
-   * Some value profile transformations are done in builtins.c (?!)
+   * Some value profile transformations are done in builtins.cc (?!)
    * Updating of histograms needs some TLC.
    * The value profiling code could be used to record analysis results
      from non-profiling (e.g. VRP).

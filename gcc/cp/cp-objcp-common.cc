@@ -100,7 +100,7 @@ cp_tree_size (enum tree_code code)
 /* Returns true if T is a variably modified type, in the sense of C99.
    FN is as passed to variably_modified_p.
    This routine needs only check cases that cannot be handled by the
-   language-independent logic in tree.c.  */
+   language-independent logic in tree.cc.  */
 
 bool
 cp_var_mod_type_p (tree type, tree fn)
@@ -280,7 +280,7 @@ cp_unit_size_without_reusable_padding (tree type)
   return TYPE_SIZE_UNIT (type);
 }
 
-/* Stubs to keep c-opts.c happy.  */
+/* Stubs to keep c-opts.cc happy.  */
 void
 push_file_scope (void)
 {
@@ -291,7 +291,7 @@ pop_file_scope (void)
 {
 }
 
-/* c-pragma.c needs to query whether a decl has extern "C" linkage.  */
+/* c-pragma.cc needs to query whether a decl has extern "C" linkage.  */
 bool
 has_c_linkage (const_tree decl)
 {
@@ -356,7 +356,7 @@ cp_pushdecl (tree decl)
 }
 
 /* Get the global value binding of NAME.  Called directly from
-   c-common.c, not via a hook. */
+   c-common.cc, not via a hook. */
 
 tree
 identifier_global_value (tree name)

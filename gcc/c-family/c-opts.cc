@@ -895,7 +895,7 @@ c_common_post_options (const char **pfilename)
     warn_enum_compare = c_dialect_cxx () ? 1 : 0;
 
   /* -Wpacked-bitfield-compat is on by default for the C languages.  The
-     warning is issued in stor-layout.c which is not part of the front-end so
+     warning is issued in stor-layout.cc which is not part of the front-end so
      we need to selectively turn it on here.  */
   if (warn_packed_bitfield_compat == -1)
     warn_packed_bitfield_compat = 1;
@@ -1819,7 +1819,7 @@ set_std_cxx23 (int iso)
 }
 
 /* Args to -d specify what to dump.  Silently ignore
-   unrecognized options; they may be aimed at toplev.c.  */
+   unrecognized options; they may be aimed at toplev.cc.  */
 static void
 handle_OPT_d (const char *arg)
 {

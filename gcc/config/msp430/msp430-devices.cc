@@ -98,7 +98,7 @@ extract_devices_dir_from_exec_prefix (char **devices_loc)
   char *gcc_exec_prefix = *devices_loc;
   int len = strlen (gcc_exec_prefix);
 
-  /* Copied from gcc.c.  */
+  /* Copied from gcc.cc.  */
   if (len > (int) sizeof ("/lib/gcc/") - 1
       && (IS_DIR_SEPARATOR (gcc_exec_prefix[len-1])))
     {

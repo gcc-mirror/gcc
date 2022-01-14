@@ -205,7 +205,7 @@ class operands_scanner
     void finalize_ssa_defs ();
 };
 
-/* Accessor to tree-ssa-operands.c caches.  */
+/* Accessor to tree-ssa-operands.cc caches.  */
 static inline struct ssa_operands *
 gimple_ssa_operands (const struct function *fun)
 {

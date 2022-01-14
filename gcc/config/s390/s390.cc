@@ -651,9 +651,9 @@ s390_init_builtins (void)
   tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
   tree c_uint64_type_node;
 
-  /* The uint64_type_node from tree.c is not compatible to the C99
+  /* The uint64_type_node from tree.cc is not compatible to the C99
      uint64_t data type.  What we want is c_uint64_type_node from
-     c-common.c.  But since backend code is not supposed to interface
+     c-common.cc.  But since backend code is not supposed to interface
      with the frontend we recreate it here.  */
   if (TARGET_64BIT)
     c_uint64_type_node = long_unsigned_type_node;
@@ -4769,7 +4769,7 @@ s390_expand_plus_operand (rtx target, rtx src,
 	}
 
       /* According to the way these invalid addresses are generated
-	 in reload.c, it should never happen (at least on s390) that
+	 in reload.cc, it should never happen (at least on s390) that
 	 *neither* of the PLUS components, after find_replacements
 	 was applied, is an address register.  */
       if (sum1 == scratch && sum2 == scratch)
@@ -7509,7 +7509,7 @@ s390_expand_atomic (machine_mode mode, enum rtx_code code,
 					       NULL_RTX, 1, OPTAB_DIRECT), 1);
 }
 
-/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
 static void s390_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -15812,7 +15812,7 @@ s390_valid_target_attribute_inner_p (tree args,
       int num_pragma_values;
       int i;
 
-      /* Note: attribs.c:decl_attributes prepends the values from
+      /* Note: attribs.cc:decl_attributes prepends the values from
 	 current_target_pragma to the list of target attributes.  To determine
 	 whether we're looking at a value of the attribute or the pragma we
 	 assume that the first [list_length (current_target_pragma)] values in
@@ -15933,7 +15933,7 @@ s390_valid_target_attribute_inner_p (tree args,
 	  if (cl_options[opt].cl_uinteger)
 	    {
 	      /* Unsigned integer argument.  Code based on the function
-		 decode_cmdline_option () in opts-common.c.  */
+		 decode_cmdline_option () in opts-common.cc.  */
 	      value = integral_argument (p + opt_len);
 	    }
 	  else

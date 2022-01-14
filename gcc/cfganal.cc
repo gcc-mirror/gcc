@@ -701,7 +701,7 @@ post_order_compute (int *post_order, bool include_entry_exit,
 
 /* Helper routine for inverted_post_order_compute
    flow_dfs_compute_reverse_execute, and the reverse-CFG
-   deapth first search in dominance.c.
+   deapth first search in dominance.cc.
    BB has to belong to a region of CFG
    unreachable by inverted traversal from the exit.
    i.e. there's no control flow path from ENTRY to EXIT

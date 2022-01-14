@@ -203,7 +203,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used, md_rtx_info *info)
     case CONST_FIXED:
     case CONST_WIDE_INT:
       /* These shouldn't be written in MD files.  Instead, the appropriate
-	 routines in varasm.c should be called.  */
+	 routines in varasm.cc should be called.  */
       gcc_unreachable ();
 
     default:
@@ -865,7 +865,7 @@ main (int argc, const char **argv)
 #include "internal-fn.def"
 
   /* Assign sequential codes to all entries in the machine description
-     in parallel with the tables in insn-output.c.  */
+     in parallel with the tables in insn-output.cc.  */
 
   printf ("/* Generated automatically by the program `genemit'\n\
 from the machine description file `md'.  */\n\n");

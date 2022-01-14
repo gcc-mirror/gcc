@@ -8850,7 +8850,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   /* We could test all of the various optabs involved, but the fact of the
      matter is that (with the exception of i486 vs i586 and xadd) all targets
      that support any atomic operaton optab also implements compare-and-swap.
-     Let optabs.c take care of expanding any compare-and-swap loop.  */
+     Let optabs.cc take care of expanding any compare-and-swap loop.  */
   if (!can_compare_and_swap_p (imode, true) || !can_atomic_load_p (imode))
     return false;
 
@@ -10637,7 +10637,7 @@ make_pass_expand_omp_ssa (gcc::context *ctxt)
   return new pass_expand_omp_ssa (ctxt);
 }
 
-/* Called from tree-cfg.c::make_edges to create cfg edges for all relevant
+/* Called from tree-cfg.cc::make_edges to create cfg edges for all relevant
    GIMPLE_* codes.  */
 
 bool

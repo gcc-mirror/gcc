@@ -1,6 +1,6 @@
 /* GNU Runtime ABI version 8
    Copyright (C) 2011-2022 Free Software Foundation, Inc.
-   Contributed by Iain Sandoe (split from objc-act.c)
+   Contributed by Iain Sandoe (split from objc-act.cc)
 
 This file is part of GCC.
 

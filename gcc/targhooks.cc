@@ -412,7 +412,7 @@ default_translate_mode_attribute (machine_mode mode)
    By default we guess this means that any C type is supported.  If
    we can't map the mode back to a type that would be available in C,
    then reject it.  Special case, here, is the double-word arithmetic
-   supported by optabs.c.  */
+   supported by optabs.cc.  */
 
 bool
 default_scalar_mode_supported_p (scalar_mode mode)

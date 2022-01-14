@@ -66,7 +66,7 @@ nds32_rtx_costs_speed_prefer (rtx x ATTRIBUTE_UNUSED,
   switch (code)
     {
     case USE:
-      /* Used in combine.c as a marker.  */
+      /* Used in combine.cc as a marker.  */
       *total = 0;
       return true;
 
@@ -418,7 +418,7 @@ nds32_rtx_costs_size_prefer (rtx x,
       return false;
 
     case USE:
-      /* Used in combine.c as a marker.  */
+      /* Used in combine.cc as a marker.  */
       *total = 0;
       break;
 
@@ -506,7 +506,7 @@ nds32_init_rtx_costs (void)
 /* This target hook describes the relative costs of RTL expressions.
    Return 'true' when all subexpressions of x have been processed.
    Return 'false' to sum the costs of sub-rtx, plus cost of this operation.
-   Refer to gcc/rtlanal.c for more information.  */
+   Refer to gcc/rtlanal.cc for more information.  */
 bool
 nds32_rtx_costs_impl (rtx x,
 		      machine_mode mode ATTRIBUTE_UNUSED,

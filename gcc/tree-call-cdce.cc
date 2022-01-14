@@ -663,7 +663,7 @@ gen_conditions_for_pow (gcall *pow_call, vec<gimple *> conds,
    assumption is that single precision float type is always SF mode,
    and double type is DF mode.  This function is quite
    implementation specific, so it may not be suitable to be part of
-   builtins.c.  This needs to be revisited later to see if it can
+   builtins.cc.  This needs to be revisited later to see if it can
    be leveraged in x87 assembly expansion.  */
 
 static inp_domain

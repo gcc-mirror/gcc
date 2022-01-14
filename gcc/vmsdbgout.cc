@@ -1303,7 +1303,7 @@ full_name (const char *filename)
 }
 
 /* Lookup a filename (in the list of filenames that we know about here in
-   vmsdbgout.c) and return its "index".  The index of each (known) filename is
+   vmsdbgout.cc) and return its "index".  The index of each (known) filename is
    just a unique number which is associated with only that one filename.  We
    need such numbers for the sake of generating labels  and references
    to those files numbers.  If the filename given as an argument is not

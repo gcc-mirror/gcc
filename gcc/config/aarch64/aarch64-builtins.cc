@@ -3177,7 +3177,7 @@ aarch64_resolve_overloaded_memtag (location_t loc,
   return NULL_TREE;
 }
 
-/* Called at aarch64_resolve_overloaded_builtin in aarch64-c.c.  */
+/* Called at aarch64_resolve_overloaded_builtin in aarch64-c.cc.  */
 tree
 aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
 					    void *pass_params)

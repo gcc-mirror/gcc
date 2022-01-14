@@ -202,7 +202,7 @@ static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 #define MIN_FATAL_STATUS 1
 
-/* Flag set by cppspec.c to 1.  */
+/* Flag set by cppspec.cc to 1.  */
 int is_cpp_driver;
 
 /* Flag set to nonzero if an @file argument has been supplied to gcc.  */
@@ -4584,9 +4584,9 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgfortran:
     case OPT_static_libphobos:
     case OPT_static_libstdc__:
-      /* These are always valid, since gcc.c itself understands the
-	 first two, gfortranspec.c understands -static-libgfortran,
-	 d-spec.cc understands -static-libphobos, and g++spec.c
+      /* These are always valid, since gcc.cc itself understands the
+	 first two, gfortranspec.cc understands -static-libgfortran,
+	 d-spec.cc understands -static-libphobos, and g++spec.cc
 	 understands -static-libstdc++ */
       validated = true;
       break;
@@ -4945,7 +4945,7 @@ process_command (unsigned int decoded_options_count,
 #endif
     }
 
-  /* Handle -gtoggle as it would later in toplev.c:process_options to
+  /* Handle -gtoggle as it would later in toplev.cc:process_options to
      make the debug-level-gt spec function work as expected.  */
   if (flag_gtoggle)
     {
@@ -11057,7 +11057,7 @@ quote_spec_arg (char *orig)
   return quote_spec (orig);
 }
 
-/* Restore all state within gcc.c to the initial state, so that the driver
+/* Restore all state within gcc.cc to the initial state, so that the driver
    code can be safely re-run in-process.
 
    Many const char * variables are referenced by static specs (see
@@ -11068,7 +11068,7 @@ quote_spec_arg (char *orig)
    values (often implicitly 0).
 
    Free the various obstacks in this file, along with "opts_obstack"
-   from opts.c.
+   from opts.cc.
 
    This function also restores any environment variables that were changed.  */
 
@@ -11103,7 +11103,7 @@ driver::finalize ()
   greatest_status = 1;
 
   obstack_free (&obstack, NULL);
-  obstack_free (&opts_obstack, NULL); /* in opts.c */
+  obstack_free (&opts_obstack, NULL); /* in opts.cc */
   obstack_free (&collect_obstack, NULL);
 
   link_command_spec = LINK_COMMAND_SPEC;

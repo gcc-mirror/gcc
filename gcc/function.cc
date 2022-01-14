@@ -105,7 +105,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Nonzero once virtual register instantiation has been done.
    assign_stack_local uses frame_pointer_rtx when this is nonzero.
-   calls.c:emit_library_call_value_1 uses it to set up
+   calls.cc:emit_library_call_value_1 uses it to set up
    post-instantiation libcalls.  */
 int virtuals_instantiated;
 
@@ -5399,7 +5399,7 @@ expand_function_end (void)
 
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
     {
-      /* Let except.c know where it should emit the call to unregister
+      /* Let except.cc know where it should emit the call to unregister
 	 the function context for sjlj exceptions.  */
       if (flag_exceptions)
 	sjlj_emit_function_exit_after (get_last_insn ());

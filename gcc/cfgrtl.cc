@@ -490,7 +490,7 @@ public:
 unsigned int
 pass_free_cfg::execute (function *)
 {
-  /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
+  /* The resource.cc machinery uses DF but the CFG isn't guaranteed to be
      valid at that point so it would be too late to call df_analyze.  */
   if (DELAY_SLOTS && optimize > 0 && flag_delayed_branch)
     {
@@ -954,7 +954,7 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See  the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;
@@ -1043,7 +1043,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See  the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (src) != BB_PARTITION (target))
     return NULL;
@@ -3755,7 +3755,7 @@ make_pass_outof_cfg_layout_mode (gcc::context *ctxt)
    bits are the STAY_IN_CFGLAYOUT_MODE bits.  The tracer pass was moved
    to GIMPLE a long time ago, but it doesn't relink the basic block
    chain.  It could do that (to give better initial RTL) if this function
-   is made IR-agnostic (and moved to cfganal.c or cfg.c while at it).  */
+   is made IR-agnostic (and moved to cfganal.cc or cfg.cc while at it).  */
 
 void
 relink_block_chain (bool stay_in_cfglayout_mode)
@@ -4744,7 +4744,7 @@ cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
      be optimizable (or blocks that appear to be mergeable), but which really
      must be left untouched (they are required to make it safely across
      partition boundaries).  See  the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
+     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
 
   if (BB_PARTITION (a) != BB_PARTITION (b))
     return false;

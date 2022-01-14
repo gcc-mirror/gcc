@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for Matsushita MN10300 series
+/* Subroutines for insn-output.cc for Matsushita MN10300 series
    Copyright (C) 1996-2022 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -1787,7 +1787,7 @@ mn10300_symbolic_operand (rtx op,
 
 /* Try machine dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
+   This macro is used in only one place: `memory_address' in explow.cc.
 
    OLDX is the address as it was before break_out_memory_refs was called.
    In some cases it is useful to look at this to decide what needs to be done.
@@ -1928,7 +1928,7 @@ mn10300_legitimate_pic_operand_p (rtx x)
 
    Note it is still possible to use reg+reg addressing modes,
    it's just much more difficult.  For a discussion of a possible
-   workaround and solution, see the comments in pa.c before the
+   workaround and solution, see the comments in pa.cc before the
    function record_unscaled_index_insn_codes.  */
 
 static bool

@@ -1391,7 +1391,7 @@ arc_override_options (void)
 #undef ARC_OPT
 
   /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
-     specific flags are set in arc-common.c.  The architecture forces
+     specific flags are set in arc-common.cc.  The architecture forces
      the default hardware configurations in, regardless what command
      line options are saying.  The CPU optional hw options can be
      turned on or off.  */
@@ -4472,7 +4472,7 @@ static int output_sdata = 0;
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-/* In final.c:output_asm_insn:
+/* In final.cc:output_asm_insn:
     'l' : label
     'a' : address
     'c' : constant address if CONSTANT_ADDRESS_P
@@ -5455,7 +5455,7 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 	}
 
       /* Restore recog_operand.  Getting the attributes of other insns can
-	 destroy this array, but final.c assumes that it remains intact
+	 destroy this array, but final.cc assumes that it remains intact
 	 across this call; since the insn has been recognized already we
 	 call insn_extract direct.  */
       extract_insn_cached (insn);
@@ -6542,7 +6542,7 @@ arc_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   arg_num = ROUND_ADVANCE_CUM (arg_num, arg.mode, arg.type);
   ret = GPR_REST_ARG_REGS (arg_num);
 
-  /* ICEd at function.c:2361, and ret is copied to data->partial */
+  /* ICEd at function.cc:2361, and ret is copied to data->partial */
     ret = (ret >= words ? 0 : ret * UNITS_PER_WORD);
 
   return ret;
@@ -9517,12 +9517,12 @@ conditionalize_nonjump (rtx pat, rtx cond, rtx insn, bool annulled)
 	}
     }
 
-  /* dwarf2out.c:dwarf2out_frame_debug_expr doesn't know
+  /* dwarf2out.cc:dwarf2out_frame_debug_expr doesn't know
      what to do with COND_EXEC.  */
   if (RTX_FRAME_RELATED_P (insn))
     {
       /* If this is the delay slot insn of an anulled branch,
-	 dwarf2out.c:scan_trace understands the anulling semantics
+	 dwarf2out.cc:scan_trace understands the anulling semantics
 	 without the COND_EXEC.  */
       gcc_assert (annulled);
       rtx note = alloc_reg_note (REG_FRAME_RELATED_EXPR, pat,

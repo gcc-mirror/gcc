@@ -542,7 +542,7 @@ __gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 	 before the faulting address is accessible.  Unfortunately, Linux
 	 seems to have no way of giving us the faulting address.
 
-	 In old versions of init.c, we had a test of the page before the
+	 In old versions of init.cc, we had a test of the page before the
 	 stack pointer:
 
 	   ((volatile char *)
@@ -1237,7 +1237,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   if (__gnat_resignal_p (sigargs [1]))
     return SS$_RESIGNAL;
 #ifndef IN_RTS
-  /* toplev.c handles this for compiler.  */
+  /* toplev.cc handles this for compiler.  */
   if (sigargs [1] == SS$_HPARITH)
     return SS$_RESIGNAL;
 #endif

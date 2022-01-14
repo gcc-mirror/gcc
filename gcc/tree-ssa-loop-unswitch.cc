@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
      }
 
    Inv is considered invariant iff the values it compares are both invariant;
-   tree-ssa-loop-im.c ensures that all the suitable conditions are in this
+   tree-ssa-loop-im.cc ensures that all the suitable conditions are in this
    shape.  */
 
 static class loop *tree_unswitch_loop (class loop *, basic_block, tree);

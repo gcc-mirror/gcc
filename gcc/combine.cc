@@ -1514,7 +1514,7 @@ setup_incoming_promotions (rtx_insn *first)
       uns3 = TYPE_UNSIGNED (DECL_ARG_TYPE (arg));
 
       /* The mode and signedness of the argument as it is actually passed,
-         see assign_parm_setup_reg in function.c.  */
+         see assign_parm_setup_reg in function.cc.  */
       mode3 = promote_function_mode (TREE_TYPE (arg), mode1, &uns3,
 				     TREE_TYPE (cfun->decl), 0);
 
@@ -5907,7 +5907,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	  return gen_int_mode (c, mode);
       }
 
-      /* Similarly to what we do in simplify-rtx.c, a truncate of a register
+      /* Similarly to what we do in simplify-rtx.cc, a truncate of a register
 	 whose value is a comparison can be replaced with a subreg if
 	 STORE_FLAG_VALUE permits.  */
       if (HWI_COMPUTABLE_MODE_P (mode)
@@ -13043,7 +13043,7 @@ count_rtxs (rtx x)
 
 /* Utility function for following routine.  Called when X is part of a value
    being stored into last_set_value.  Sets last_set_table_tick
-   for each register mentioned.  Similar to mention_regs in cse.c  */
+   for each register mentioned.  Similar to mention_regs in cse.cc  */
 
 static void
 update_table_tick (rtx x)

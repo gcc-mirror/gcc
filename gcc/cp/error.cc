@@ -1931,7 +1931,7 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
   tree name = DECL_NAME (t);
 
   /* We can get here with a decl that was synthesized by language-
-     independent machinery (e.g. coverage.c) in which case it won't
+     independent machinery (e.g. coverage.cc) in which case it won't
      have a lang_specific structure attached and DECL_CONSTRUCTOR_P
      will crash.  In this case it is safe just to print out the
      literal name.  */

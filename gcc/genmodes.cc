@@ -1614,7 +1614,7 @@ emit_mode_inner (void)
   print_closer ();
 }
 
-/* Emit mode_unit_size array into insn-modes.c file.  */
+/* Emit mode_unit_size array into insn-modes.cc file.  */
 static void
 emit_mode_unit_size (void)
 {
@@ -1632,7 +1632,7 @@ emit_mode_unit_size (void)
   print_closer ();
 }
 
-/* Emit mode_unit_precision array into insn-modes.c file.  */
+/* Emit mode_unit_precision array into insn-modes.cc file.  */
 static void
 emit_mode_unit_precision (void)
 {

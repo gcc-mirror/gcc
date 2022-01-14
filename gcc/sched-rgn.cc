@@ -2802,7 +2802,7 @@ debug_rgn_dependencies (int from_bb)
 }
 
 /* Print dependencies information for instructions between HEAD and TAIL.
-   ??? This function would probably fit best in haifa-sched.c.  */
+   ??? This function would probably fit best in haifa-sched.cc.  */
 void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 {
   rtx_insn *insn;

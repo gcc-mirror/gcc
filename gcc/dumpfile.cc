@@ -2211,7 +2211,7 @@ test_impl_location ()
     dump_location_t loc;
     const int expected_line = __LINE__ - 1;
     ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
-			     "dumpfile.c", expected_line, "test_impl_location");
+			     "dumpfile.cc", expected_line, "test_impl_location");
   }
 
   /* Constructing from a gimple.  */
@@ -2219,7 +2219,7 @@ test_impl_location ()
     dump_location_t loc ((gimple *)NULL);
     const int expected_line = __LINE__ - 1;
     ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
-			     "dumpfile.c", expected_line, "test_impl_location");
+			     "dumpfile.cc", expected_line, "test_impl_location");
   }
 
   /* Constructing from an rtx_insn.  */
@@ -2227,7 +2227,7 @@ test_impl_location ()
     dump_location_t loc ((rtx_insn *)NULL);
     const int expected_line = __LINE__ - 1;
     ASSERT_IMPL_LOCATION_EQ (loc.get_impl_location (),
-			     "dumpfile.c", expected_line, "test_impl_location");
+			     "dumpfile.cc", expected_line, "test_impl_location");
   }
 }
 
@@ -2313,7 +2313,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2335,7 +2335,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (0), "tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2357,7 +2357,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
 	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2379,7 +2379,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
 	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;\n");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2401,7 +2401,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
 	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/0");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2461,7 +2461,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
 	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2483,7 +2483,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2505,7 +2505,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
 	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				       "dumpfile.c", expected_impl_line,
+				       "dumpfile.cc", expected_impl_line,
 				       "test_capture_of_dump_calls");
 	    }
 	}
@@ -2525,7 +2525,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
 	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				       "dumpfile.c", expected_impl_line,
+				       "dumpfile.cc", expected_impl_line,
 				       "test_capture_of_dump_calls");
 	    }
 	}
@@ -2545,7 +2545,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
 	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				       "dumpfile.c", expected_impl_line,
+				       "dumpfile.cc", expected_impl_line,
 				       "test_capture_of_dump_calls");
 	    }
 	}
@@ -2565,7 +2565,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
 	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				       "dumpfile.c", expected_impl_line,
+				       "dumpfile.cc", expected_impl_line,
 				       "test_capture_of_dump_calls");
 	    }
 	}
@@ -2587,7 +2587,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/0");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2607,7 +2607,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TEXT (info->get_item (0), "42");
 	    ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				     "dumpfile.c", expected_impl_line,
+				     "dumpfile.cc", expected_impl_line,
 				     "test_capture_of_dump_calls");
 	  }
       }
@@ -2698,7 +2698,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      ASSERT_EQ (info->num_items (), 1);
 	      ASSERT_IS_TEXT (info->get_item (0), "msg 7\n");
 	      ASSERT_IMPL_LOCATION_EQ (info->get_impl_location (),
-				       "dumpfile.c", expected_impl_line,
+				       "dumpfile.cc", expected_impl_line,
 				       "test_capture_of_dump_calls");
 	    }
 	}

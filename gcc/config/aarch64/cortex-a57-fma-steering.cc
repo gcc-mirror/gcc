@@ -49,7 +49,7 @@
    of FMUL or FMADD/FMSUB.
 
    This pass ensure that registers are renamed so that these conditions hold.
-   We reuse the existing register renaming facility from regrename.c to build
+   We reuse the existing register renaming facility from regrename.cc to build
    dependency chains and expose candidate registers for renaming.
 
 
@@ -241,7 +241,7 @@ private:
 
 /* Rename the register HEAD->regno in all the insns in the chain HEAD to any
    register not in the set UNAVAILABLE.  Adapted from rename_chains in
-   regrename.c.  */
+   regrename.cc.  */
 
 static bool
 rename_single_chain (du_head_p head, HARD_REG_SET *unavailable)

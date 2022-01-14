@@ -1821,7 +1821,7 @@ release_function_body (tree decl)
 /* Release memory used to represent body of function.
    Use this only for functions that are released before being translated to
    target code (i.e. RTL).  Functions that are compiled to RTL and beyond
-   are free'd in final.c via free_after_compilation().
+   are free'd in final.cc via free_after_compilation().
    KEEP_ARGUMENTS are useful only if you want to rebuild body as thunk.  */
 
 void
@@ -4073,7 +4073,7 @@ cgraph_node::get_fun () const
   return fun;
 }
 
-/* Reset all state within cgraph.c so that we can rerun the compiler
+/* Reset all state within cgraph.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

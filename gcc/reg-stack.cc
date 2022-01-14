@@ -146,7 +146,7 @@
 
    This asm takes two inputs, which are popped by the fyl2xp1 opcode,
    and replaces them with one output.  The user must code the "st(1)"
-   clobber for reg-stack.c to know that fyl2xp1 pops both inputs.
+   clobber for reg-stack.cc to know that fyl2xp1 pops both inputs.
 
 	asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 

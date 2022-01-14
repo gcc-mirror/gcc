@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This program does not use gensupport.c because it does not need to
+/* This program does not use gensupport.cc because it does not need to
    look at insn patterns, only (define_constants), and we want to
    minimize dependencies.  */
 

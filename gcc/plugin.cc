@@ -766,7 +766,7 @@ init_one_plugin (void **slot, void * ARG_UNUSED (info))
 #endif	/* ENABLE_PLUGIN  */
 
 /* Main plugin initialization function.  Called from compile_file() in
-   toplev.c.  */
+   toplev.cc.  */
 
 void
 initialize_plugins (void)

@@ -108,7 +108,7 @@ along with GCC; see the file COPYING3.  If not see
   structures used for collecting the class hierarchy data and
   building/maintaining the vtable map variable data are defined in
   gcc/vtable-verify.h, because they are used both here and in
-  gcc/vtable-verify.c.  */
+  gcc/vtable-verify.cc.  */
 
 #include "config.h"
 #include "system.h"

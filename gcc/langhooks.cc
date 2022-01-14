@@ -104,7 +104,7 @@ lhd_post_options (const char ** ARG_UNUSED (pfilename))
   return false;
 }
 
-/* Called from by print-tree.c.  */
+/* Called from by print-tree.cc.  */
 
 void
 lhd_print_tree_nothing (FILE * ARG_UNUSED (file),

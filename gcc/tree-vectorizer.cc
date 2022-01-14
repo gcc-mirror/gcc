@@ -27,31 +27,31 @@ along with GCC; see the file COPYING3.  If not see
   (3) BB vectorizer (out-of-loops), aka SLP
 
   The rest of the vectorizer's code is organized as follows:
-  - tree-vect-loop.c - loop specific parts such as reductions, etc. These are
+  - tree-vect-loop.cc - loop specific parts such as reductions, etc. These are
     used by drivers (1) and (2).
-  - tree-vect-loop-manip.c - vectorizer's loop control-flow utilities, used by
+  - tree-vect-loop-manip.cc - vectorizer's loop control-flow utilities, used by
     drivers (1) and (2).
-  - tree-vect-slp.c - BB vectorization specific analysis and transformation,
+  - tree-vect-slp.cc - BB vectorization specific analysis and transformation,
     used by drivers (2) and (3).
-  - tree-vect-stmts.c - statements analysis and transformation (used by all).
-  - tree-vect-data-refs.c - vectorizer specific data-refs analysis and
+  - tree-vect-stmts.cc - statements analysis and transformation (used by all).
+  - tree-vect-data-refs.cc - vectorizer specific data-refs analysis and
     manipulations (used by all).
-  - tree-vect-patterns.c - vectorizable code patterns detector (used by all)
+  - tree-vect-patterns.cc - vectorizable code patterns detector (used by all)
 
   Here's a poor attempt at illustrating that:
 
-     tree-vectorizer.c:
+     tree-vectorizer.cc:
      loop_vect()  loop_aware_slp()  slp_vect()
           |        /           \          /
           |       /             \        /
-          tree-vect-loop.c  tree-vect-slp.c
+          tree-vect-loop.cc  tree-vect-slp.cc
                 | \      \  /      /   |
                 |  \      \/      /    |
                 |   \     /\     /     |
                 |    \   /  \   /      |
-         tree-vect-stmts.c  tree-vect-data-refs.c
+         tree-vect-stmts.cc  tree-vect-data-refs.cc
                        \      /
-                    tree-vect-patterns.c
+                    tree-vect-patterns.cc
 */
 
 #include "config.h"

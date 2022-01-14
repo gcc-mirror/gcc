@@ -911,7 +911,7 @@ copy_phi_node_args (unsigned first_new_block)
 }
 
 
-/* The same as cfgloopmanip.c:duplicate_loop_body_to_header_edge, but also
+/* The same as cfgloopmanip.cc:duplicate_loop_body_to_header_edge, but also
    updates the PHI nodes at start of the copied region.  In order to
    achieve this, only loops whose exits all lead to the same location
    are handled.

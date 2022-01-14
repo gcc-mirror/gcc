@@ -37,7 +37,7 @@ static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
 static tree make_alias_for_thunk (tree);
 
-/* Called once to initialize method.c.  */
+/* Called once to initialize method.cc.  */
 
 void
 init_method (void)

@@ -3052,7 +3052,7 @@ nds32_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 /* This target hook describes the relative costs of RTL expressions.
    Return 'true' when all subexpressions of x have been processed.
    Return 'false' to sum the costs of sub-rtx, plus cost of this operation.
-   Refer to gcc/rtlanal.c for more information.  */
+   Refer to gcc/rtlanal.cc for more information.  */
 static bool
 nds32_rtx_costs (rtx x,
 		 machine_mode mode,
@@ -4219,7 +4219,7 @@ nds32_init_builtins (void)
 static tree
 nds32_builtin_decl (unsigned code, bool initialize_p)
 {
-  /* Implement in nds32-intrinsic.c.  */
+  /* Implement in nds32-intrinsic.cc.  */
   return nds32_builtin_decl_impl (code, initialize_p);
 }
 

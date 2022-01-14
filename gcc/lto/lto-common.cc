@@ -507,7 +507,7 @@ gimple_register_canonical_type_1 (tree t, hashval_t hash)
    This is used by LTO to merge structurally equivalent types for
    type-based aliasing purposes across different TUs and languages.
 
-   ???  This merging does not exactly match how the tree.c middle-end
+   ???  This merging does not exactly match how the tree.cc middle-end
    functions will assign TYPE_CANONICAL when new types are created
    during optimization (which at least happens for pointer and array
    types).  */

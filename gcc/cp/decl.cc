@@ -4268,7 +4268,7 @@ make_unbound_class_template_raw (tree context, tree name, tree parm_list)
    The calls to set_global_binding below should be
    eliminated.  Built-in types should not be looked up name; their
    names are keywords that the parser can recognize.  However, there
-   is code in c-common.c that uses identifier_global_value to look up
+   is code in c-common.cc that uses identifier_global_value to look up
    built-in types by name.  */
 
 void
@@ -4610,7 +4610,7 @@ cxx_init_decl_processing (void)
     else
       new_eh_spec = noexcept_false_spec;
 
-    /* Ensure attribs.c is initialized.  */
+    /* Ensure attribs.cc is initialized.  */
     init_attributes ();
 
     extvisattr = build_tree_list (get_identifier ("externally_visible"),
@@ -9721,7 +9721,7 @@ check_class_member_definition_namespace (tree decl)
   /* These checks only apply to member functions and static data
      members.  */
   gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
-  /* We check for problems with specializations in pt.c in
+  /* We check for problems with specializations in pt.cc in
      check_specialization_namespace, where we can issue better
      diagnostics.  */
   if (processing_specialization)
@@ -18098,7 +18098,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
       id = TREE_VALUE (TREE_VALUE (attr));
       /* Look up the name to find the cleanup function to call.  It is
 	 important to use lookup_name here because that is what is
-	 used in c-common.c:handle_cleanup_attribute when performing
+	 used in c-common.cc:handle_cleanup_attribute when performing
 	 initial checks on the attribute.  Note that those checks
 	 include ensuring that the function found is not an overloaded
 	 function, or an object with an overloaded call operator,

@@ -1,4 +1,4 @@
-/* genmddeps.c - creates a makefile dependency fragment for the md file.
+/* genmddeps.cc - creates a makefile dependency fragment for the md file.
    Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it

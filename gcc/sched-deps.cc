@@ -4269,7 +4269,7 @@ add_dependence_1 (rtx_insn *insn, rtx_insn *elem, enum reg_note dep_type)
       ds = DEP_ANTI;
     }
 
-  /* When add_dependence is called from inside sched-deps.c, we expect
+  /* When add_dependence is called from inside sched-deps.cc, we expect
      cur_insn to be non-null.  */
   internal = cur_insn != NULL;
   if (internal)

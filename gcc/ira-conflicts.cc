@@ -309,7 +309,7 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p, rtx_insn *insn,
   aclass = ALLOCNO_CLASS (a);
   if (only_regs_p && insn != NULL_RTX
       && reg_class_size[rclass] <= ira_reg_class_max_nregs [rclass][mode])
-    /* It is already taken into account in ira-costs.c.  */
+    /* It is already taken into account in ira-costs.cc.  */
     return false;
   index = ira_class_hard_reg_index[aclass][allocno_preferenced_hard_regno];
   if (index < 0)

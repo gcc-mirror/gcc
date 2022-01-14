@@ -70,7 +70,7 @@ static const struct default_options avr_option_optimization_table[] =
 
 /* Implement `TARGET_HANDLE_OPTION'.  */
 
-/* This is the same logic that driver-avr.c:avr_double_lib() applies
+/* This is the same logic that driver-avr.cc:avr_double_lib() applies
    during DRIVER_SELF_SPECS, but this time we complain about -mdouble=
    and -mlong-double= that are not provided by --with-double= resp.
    --with-long-double=  */

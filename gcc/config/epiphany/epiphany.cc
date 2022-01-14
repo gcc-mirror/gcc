@@ -1512,7 +1512,7 @@ epiphany_function_value (const_tree ret_type,
   /* We must change the mode like PROMOTE_MODE does.
      ??? PROMOTE_MODE is ignored for non-scalar types.
      The set of types tested here has to be kept in sync
-     with the one in explow.c:promote_mode.  */
+     with the one in explow.cc:promote_mode.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) < 4
       && (TREE_CODE (ret_type) == INTEGER_TYPE

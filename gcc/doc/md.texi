@@ -784,7 +784,7 @@ diagnosis when special predicates are used.
 @cindex generic predicates
 
 These are the generic predicates available to all back ends.  They are
-defined in @file{recog.c}.  The first category of predicates allow
+defined in @file{recog.cc}.  The first category of predicates allow
 only constant, or @dfn{immediate}, operands.
 
 @defun immediate_operand
@@ -2618,7 +2618,7 @@ now roughly the same as @samp{m} when not used together with @samp{<}
 or @samp{>}.
 @end table
 
-@item M32C---@file{config/m32c/m32c.c}
+@item M32C---@file{config/m32c/m32c.cc}
 @table @code
 @item Rsp
 @itemx Rfb
@@ -8468,7 +8468,7 @@ original operation had sufficient precision to prevent overflow.
 @end itemize
 
 Further canonicalization rules are defined in the function
-@code{commutative_operand_precedence} in @file{gcc/rtlanal.c}.
+@code{commutative_operand_precedence} in @file{gcc/rtlanal.cc}.
 
 @end ifset
 @ifset INTERNALS

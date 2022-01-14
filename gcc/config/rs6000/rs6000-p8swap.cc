@@ -66,7 +66,7 @@
    and stores may be removed.
 
    This pass uses some of the infrastructure and logical ideas from
-   the "web" pass in web.c.  We create maximal webs of computations
+   the "web" pass in web.cc.  We create maximal webs of computations
    fitting the description above using union-find.  Each such web is
    then optimized by removing its unnecessary xxswapdi instructions.
 
@@ -142,7 +142,7 @@
    constant pool, we can replace M with M' as above at no cost
    beyond adding a constant pool entry.  */
 
-/* This is based on the union-find logic in web.c.  web_entry_base is
+/* This is based on the union-find logic in web.cc.  web_entry_base is
    defined in df.h.  */
 class swap_web_entry : public web_entry_base
 {

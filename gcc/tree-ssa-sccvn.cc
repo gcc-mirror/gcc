@@ -6276,7 +6276,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 
       /* If this now constitutes a copy duplicate points-to
 	 and range info appropriately.  This is especially
-	 important for inserted code.  See tree-ssa-copy.c
+	 important for inserted code.  See tree-ssa-copy.cc
 	 for similar code.  */
       if (sprime
 	  && TREE_CODE (sprime) == SSA_NAME)

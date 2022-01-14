@@ -5319,7 +5319,7 @@ ia64_function_value_regno_p (const unsigned int regno)
           || (regno >= FR_RET_FIRST && regno <= FR_RET_LAST));
 }
 
-/* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
+/* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
 static void
@@ -5936,7 +5936,7 @@ ia64_secondary_reload_class (enum reg_class rclass,
 	 enabled, because paradoxical subregs are not accepted by
 	 register_operand when INSN_SCHEDULING is defined.  Or alternatively,
 	 stop the paradoxical subreg stupidity in the *_operand functions
-	 in recog.c.  */
+	 in recog.cc.  */
       if (GET_CODE (x) == MEM
 	  && (GET_MODE (x) == SImode || GET_MODE (x) == HImode
 	      || GET_MODE (x) == QImode))
@@ -9226,7 +9226,7 @@ bundling (FILE *dump, int verbose, rtx_insn *prev_head_insn, rtx_insn *tail)
 	if (verbose >= 2 && dump)
 	  {
 	    /* This structure is taken from generated code of the
-	       pipeline hazard recognizer (see file insn-attrtab.c).
+	       pipeline hazard recognizer (see file insn-attrtab.cc).
 	       Please don't forget to change the structure if a new
 	       automaton is added to .md file.  */
 	    struct DFA_chip

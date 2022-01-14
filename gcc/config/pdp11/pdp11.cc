@@ -66,7 +66,7 @@ static void decode_pdp11_d (const struct real_format *,
 			    REAL_VALUE_TYPE *, const long *);
 
 /* These two are taken from the corresponding vax descriptors
-   in real.c, changing only the encode/decode routine pointers.  */
+   in real.cc, changing only the encode/decode routine pointers.  */
 const struct real_format pdp11_f_format =
   {
     encode_pdp11_f,

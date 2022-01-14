@@ -831,7 +831,7 @@ EXPORTED_CONST format_kind_info darwin_additional_format_types[] = {
 /* Support routines to dump the class references for NeXT ABI v1, aka
    32-bits ObjC-2.0, as top-level asms.
    The following two functions should only be called from
-   objc/objc-next-runtime-abi-01.c.  */
+   objc/objc-next-runtime-abi-01.cc.  */
 
 static void
 darwin_objc_declare_unresolved_class_reference (const char *name)

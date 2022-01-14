@@ -523,7 +523,7 @@ link to such information in the front end's own manual.
 Details of source file suffixes for that language and @option{-x
 @var{lang}} options supported, in @file{gcc/doc/invoke.texi}.
 @item
-Entries in @code{default_compilers} in @file{gcc.c} for source file
+Entries in @code{default_compilers} in @file{gcc.cc} for source file
 suffixes for that language.
 @item
 Preferably testsuites, which may be under @file{gcc/testsuite} or
@@ -607,7 +607,7 @@ This file registers the set of switches that the front end accepts on
 the command line, and their @option{--help} text.  @xref{Options}.
 @item lang-specs.h
 This file provides entries for @code{default_compilers} in
-@file{gcc.c} which override the default of giving an error that a
+@file{gcc.cc} which override the default of giving an error that a
 compiler for that language is not installed.
 @item @var{language}-tree.def
 This file, which need not exist, defines any language-specific tree
@@ -666,7 +666,7 @@ be used to create a file @file{@var{language}/Makefile} from
 everything from the single @file{gcc/Makefile} is preferred.
 @item gtfiles
 If defined, a space-separated list of files that should be scanned by
-@file{gengtype.c} to generate the garbage collection tables and routines for
+@file{gengtype.cc} to generate the garbage collection tables and routines for
 this language.  This excludes the files that are common to all front
 ends.  @xref{Type Information}.
 

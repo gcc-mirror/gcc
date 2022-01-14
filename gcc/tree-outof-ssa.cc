@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dojump.h"
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
-   should be in cfgexpand.c.  */
+   should be in cfgexpand.cc.  */
 #include "explow.h"
 #include "expr.h"
 

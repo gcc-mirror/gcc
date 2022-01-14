@@ -851,7 +851,7 @@ get_call_fndecl (const rtx_insn *insn)
 /* Return the value of the integer term in X, if one is apparent;
    otherwise return 0.
    Only obvious integer terms are detected.
-   This is used in cse.c with the `related_value' field.  */
+   This is used in cse.cc with the `related_value' field.  */
 
 HOST_WIDE_INT
 get_integer_term (const_rtx x)
@@ -3079,7 +3079,7 @@ side_effects_p (const_rtx x)
       return 0;
 
     case CLOBBER:
-      /* Reject CLOBBER with a non-VOID mode.  These are made by combine.c
+      /* Reject CLOBBER with a non-VOID mode.  These are made by combine.cc
 	 when some combination can't be done.  If we see one, don't think
 	 that we can simplify the expression.  */
       return (GET_MODE (x) != VOIDmode);
@@ -4362,7 +4362,7 @@ subreg_nregs (const_rtx x)
 }
 
 /* Return the number of registers that a subreg REG with REGNO
-   expression refers to.  This is a copy of the rtlanal.c:subreg_nregs
+   expression refers to.  This is a copy of the rtlanal.cc:subreg_nregs
    changed so that the regno can be passed in. */
 
 unsigned int
@@ -4591,7 +4591,7 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       total = factor * factor * COSTS_N_INSNS (7);
       break;
     case USE:
-      /* Used in combine.c as a marker.  */
+      /* Used in combine.cc as a marker.  */
       total = 0;
       break;
     default:
@@ -5877,7 +5877,7 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
   /* If we are comparing a register with zero, see if the register is set
      in the previous insn to a COMPARE or a comparison operation.  Perform
      the same tests as a function of STORE_FLAG_VALUE as find_comparison_args
-     in cse.c  */
+     in cse.cc  */
 
   while ((GET_RTX_CLASS (code) == RTX_COMPARE
 	  || GET_RTX_CLASS (code) == RTX_COMM_COMPARE)

@@ -3431,7 +3431,7 @@ parse_union (void)
           c->ts.type = BT_DERIVED;
           c->ts.u.derived = gfc_new_block;
           /* Normally components get their initialization expressions when they
-             are created in decl.c (build_struct) so we can look through the
+             are created in decl.cc (build_struct) so we can look through the
              flat component list for initializers during resolution. Unions and
              maps create components along with their type definitions so we
              have to generate initializers here. */
@@ -6405,7 +6405,7 @@ set_syms_host_assoc (gfc_symbol *sym)
       /* Derived types with PRIVATE components that are declared in
 	 modules other than the parent module must not be changed to be
 	 PUBLIC. The 'use-assoc' attribute must be reset so that the
-	 test in symbol.c(gfc_find_component) works correctly. This is
+	 test in symbol.cc(gfc_find_component) works correctly. This is
 	 not necessary for PRIVATE symbols since they are not read from
 	 the module.  */
       memset(parent1, '\0', sizeof(parent1));
@@ -6939,7 +6939,7 @@ done:
 
   /* Dump the global symbol ist.  We only do this here because part
      of it is generated after mangling the identifiers in
-     trans-decl.c.  */
+     trans-decl.cc.  */
 
   if (flag_dump_fortran_global)
     gfc_dump_global_symbols (stdout);

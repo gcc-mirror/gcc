@@ -310,7 +310,7 @@ package System.OS_Interface is
    --  sigaltstack in QNX
 
    Alternate_Stack_Size : constant := 0;
-   --  This must be kept in sync with init.c:__gnat_alternate_stack
+   --  This must be kept in sync with init.cc:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target

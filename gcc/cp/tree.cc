@@ -5542,7 +5542,7 @@ cp_save_expr (tree expr)
   return save_expr (expr);
 }
 
-/* Initialize tree.c.  */
+/* Initialize tree.cc.  */
 
 void
 init_tree (void)
@@ -6000,7 +6000,7 @@ cp_free_lang_data (tree t)
     DECL_CHAIN (t) = NULL_TREE;
 }
 
-/* Stub for c-common.  Please keep in sync with c-decl.c.
+/* Stub for c-common.  Please keep in sync with c-decl.cc.
    FIXME: If address space support is target specific, then this
    should be a C target hook.  But currently this is not possible,
    because this function is called via REGISTER_TARGET_PRAGMAS.  */

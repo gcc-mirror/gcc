@@ -3781,7 +3781,7 @@ compare_actual_expr (gfc_expr *e1, gfc_expr *e2)
       || e1->symtree->n.sym != e2->symtree->n.sym)
     return false;
 
-  /* TODO: improve comparison, see expr.c:show_ref().  */
+  /* TODO: improve comparison, see expr.cc:show_ref().  */
   for (r1 = e1->ref, r2 = e2->ref; r1 && r2; r1 = r1->next, r2 = r2->next)
     {
       if (r1->type != r2->type)

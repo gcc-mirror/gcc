@@ -1,4 +1,4 @@
-/* Subroutines for insn-output.c for Motorola 68000 family.
+/* Subroutines for insn-output.cc for Motorola 68000 family.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2706,7 +2706,7 @@ m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
      optimizations, sometimes cannot later fix this.  As a consequence,
      additional register may be allocated resulting in a spill.
      For reference, see args processing loops in
-     calls.c:emit_library_call_value_1.
+     calls.cc:emit_library_call_value_1.
      For testcase, see gcc.target/m68k/tls-{gd, ld}.c  */
   x = m68k_wrap_symbol (x, reloc, m68k_get_gp (), NULL_RTX);
 
@@ -6494,7 +6494,7 @@ m68k_sched_adjust_cost (rtx_insn *insn, int, rtx_insn *def_insn, int cost,
   if (sched_cfv4_bypass_data.scale == 1)
     /* Handle ColdFire V4 bypass for indexed address with 1x scale.  */
     {
-      /* haifa-sched.c: insn_cost () calls bypass_p () just before
+      /* haifa-sched.cc: insn_cost () calls bypass_p () just before
 	 targetm.sched.adjust_cost ().  Hence, we can be relatively sure
 	 that the data in sched_cfv4_bypass_data is up to date.  */
       gcc_assert (sched_cfv4_bypass_data.pro == def_insn
@@ -6517,7 +6517,7 @@ m68k_sched_adjust_cost (rtx_insn *insn, int, rtx_insn *def_insn, int cost,
      as their true dependence (default) latency is better to be set to 0
      to workaround alias analysis limitations.
      This is, in fact, a machine independent tweak, so, probably,
-     it should be moved to haifa-sched.c: insn_cost ().  */
+     it should be moved to haifa-sched.cc: insn_cost ().  */
   delay = min_insn_conflict_delay (sched_adjust_cost_state, def_insn, insn);
   if (delay > cost)
     cost = delay;
@@ -6798,7 +6798,7 @@ m68k_sched_md_init (FILE *sched_dump ATTRIBUTE_UNUSED,
     }
 
   if (sched_ib.enabled_p)
-    /* haifa-sched.c: schedule_block () calls advance_cycle () just before
+    /* haifa-sched.cc: schedule_block () calls advance_cycle () just before
        the first cycle.  Workaround that.  */
     sched_ib.filled = -2;
 }

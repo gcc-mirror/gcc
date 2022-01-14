@@ -96,8 +96,8 @@ along with GCC; see the file COPYING3.  If not see
    Third phase - materialization of clones, call statement updates.
    ============================================
 
-   This stage is currently performed by call graph code (mainly in cgraphunit.c
-   and tree-inline.c) according to instructions inserted to the call graph by
+   This stage is currently performed by call graph code (mainly in cgraphunit.cc
+   and tree-inline.cc) according to instructions inserted to the call graph by
    the second stage.  */
 
 #include "config.h"
@@ -6626,7 +6626,7 @@ make_pass_ipa_cp (gcc::context *ctxt)
   return new pass_ipa_cp (ctxt);
 }
 
-/* Reset all state within ipa-cp.c so that we can rerun the compiler
+/* Reset all state within ipa-cp.cc so that we can rerun the compiler
    within the same process.  For use by toplev::finalize.  */
 
 void

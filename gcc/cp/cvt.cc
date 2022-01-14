@@ -52,12 +52,12 @@ static void diagnose_ref_binding (location_t, tree, tree, tree);
 
    Here is a list of all the functions that assume that widening and
    narrowing is always done with a NOP_EXPR:
-     In convert.c, convert_to_integer[_maybe_fold].
-     In c-typeck.c, build_binary_op_nodefault (boolean ops),
+     In convert.cc, convert_to_integer[_maybe_fold].
+     In c-typeck.cc, build_binary_op_nodefault (boolean ops),
 	and c_common_truthvalue_conversion.
-     In expr.c: expand_expr, for operands of a MULT_EXPR.
-     In fold-const.c: fold.
-     In tree.c: get_narrower and get_unwidened.
+     In expr.cc: expand_expr, for operands of a MULT_EXPR.
+     In fold-const.cc: fold.
+     In tree.cc: get_narrower and get_unwidened.
 
    C++: in multiple-inheritance, converting between pointers may involve
    adjusting them by a delta stored within the class definition.  */
@@ -1386,9 +1386,9 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
             /* Emit a warning (if enabled) when the "effect-less" INDIRECT_REF
                operation is stripped off. Note that we don't warn about
                - an expression with TREE_NO_WARNING set. (For an example of
-                 such expressions, see build_over_call in call.c.)
+                 such expressions, see build_over_call in call.cc.)
                - automatic dereferencing of references, since the user cannot
-                 control it. (See also warn_if_unused_value() in c-common.c.)  */
+                 control it. (See also warn_if_unused_value() in c-common.cc.)  */
             if (warn_unused_value
 		&& implicit != ICV_CAST
                 && (complain & tf_warning)
@@ -1711,7 +1711,7 @@ convert_force (tree type, tree expr, int convtype, tsubst_flags_t complain)
   if (code == POINTER_TYPE)
     return convert_to_pointer_force (type, e, complain);
 
-  /* From typeck.c convert_for_assignment */
+  /* From typeck.cc convert_for_assignment */
   if (((TYPE_PTR_P (TREE_TYPE (e)) && TREE_CODE (e) == ADDR_EXPR
 	&& TREE_CODE (TREE_TYPE (TREE_TYPE (e))) == METHOD_TYPE)
        || integer_zerop (e)
@@ -2008,7 +2008,7 @@ type_promotes_to (tree type)
 
 /* The routines below this point are carefully written to conform to
    the standard.  They use the same terminology, and follow the rules
-   closely.  Although they are used only in pt.c at the moment, they
+   closely.  Although they are used only in pt.cc at the moment, they
    should presumably be used everywhere in the future.  */
 
 /* True iff EXPR can be converted to TYPE via a qualification conversion.

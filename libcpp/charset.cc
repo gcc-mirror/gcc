@@ -1,7 +1,7 @@
 /* CPP Library - charsets
    Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
-   Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
+   Broken out of c-lex.cc Apr 2003, adding valid C99 UCN ranges.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1581,7 +1581,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	{
 	  encoding_rich_location rich_loc (pfile);
 
-	  /* diagnostic.c does not support "%03o".  When it does, this
+	  /* diagnostic.cc does not support "%03o".  When it does, this
 	     code can use %03o directly in the diagnostic again.  */
 	  char buf[32];
 	  sprintf(buf, "%03o", (int) c);

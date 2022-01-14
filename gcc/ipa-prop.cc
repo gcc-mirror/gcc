@@ -4375,7 +4375,7 @@ ipa_set_node_agg_value_chain (struct cgraph_node *node,
   s->agg_values = aggvals;
 }
 
-/* Hook that is called by cgraph.c when an edge is removed.  Adjust reference
+/* Hook that is called by cgraph.cc when an edge is removed.  Adjust reference
    count data structures accordingly.  */
 
 void

@@ -1,6 +1,6 @@
 /* Match-and-simplify patterns for shared GENERIC and GIMPLE folding.
-   This file is consumed by genmatch which produces gimple-match.c
-   and generic-match.c from it.
+   This file is consumed by genmatch which produces gimple-match.cc
+   and generic-match.cc from it.
 
    Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
@@ -1523,7 +1523,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
-/* A few cases of fold-const.c negate_expr_p predicate.  */
+/* A few cases of fold-const.cc negate_expr_p predicate.  */
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
@@ -1629,7 +1629,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && (int_fits_type_p (@1, TREE_TYPE (@0))
 	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
-       /* ???  This transform conflicts with fold-const.c doing
+       /* ???  This transform conflicts with fold-const.cc doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
 	  in c).  This folds extension into the BIT_AND_EXPR.
@@ -4008,9 +4008,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Only optimize constant conditions when the selected branch
    has the same type as the COND_EXPR.  This avoids optimizing
    away "c ? x : throw", where the throw has a void type.
-   Note that we cannot throw away the fold-const.c variant nor
+   Note that we cannot throw away the fold-const.cc variant nor
    this one as we depend on doing this transform before possibly
-   A ? B : B -> B triggers and the fold-const.c one can optimize
+   A ? B : B -> B triggers and the fold-const.cc one can optimize
    0 ? A : B to B even if A has side-effects.  Something
    genmatch cannot handle.  */
 (simplify
@@ -5744,7 +5744,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
-   ADD_OVERFLOW detection in tree-ssa-math-opts.c.
+   ADD_OVERFLOW detection in tree-ssa-math-opts.cc.
    CONVERT?(CONVERT?(A) + CST) CMP A  ->  A CMP' CST' */
 (for cmp (lt le ge gt)
      out (gt gt le le)
@@ -5764,7 +5764,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				- wi::to_wide (@1)); })))))
 
 /* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
-   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.c
+   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.cc
    expects the long form, so we restrict the transformation for now.  */
 (for cmp (gt le)
  (simplify

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* dependency.c -- Expression dependency analysis code.  */
+/* dependency.cc -- Expression dependency analysis code.  */
 /* There's probably quite a bit of duplication in this file.  We currently
    have different dependency checking functions for different types
    if dependencies.  Ideally these would probably be merged.  */
