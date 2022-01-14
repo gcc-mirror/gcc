@@ -1241,12 +1241,19 @@ constant_pointer_difference (tree p1, tree p2)
    memset (p + 4, ' ', 3);
    into
    memcpy (p, "abcd   ", 7);
-   call if the latter can be stored by pieces during expansion.  */
+   call if the latter can be stored by pieces during expansion.
+
+   Also canonicalize __atomic_fetch_op (p, x, y) op x
+   to __atomic_op_fetch (p, x, y) or
+   __atomic_op_fetch (p, x, y) iop x
+   to __atomic_fetch_op (p, x, y) when possible (also __sync).  */
 
 static bool
 simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 {
   gimple *stmt1, *stmt2 = gsi_stmt (*gsi_p);
+  enum built_in_function other_atomic = END_BUILTINS;
+  enum tree_code atomic_op = ERROR_MARK;
   tree vuse = gimple_vuse (stmt2);
   if (vuse == NULL)
     return false;
@@ -1448,6 +1455,310 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	    }
 	}
       break;
+
+ #define CASE_ATOMIC(NAME, OTHER, OP) \
+    case BUILT_IN_##NAME##_1:						\
+    case BUILT_IN_##NAME##_2:						\
+    case BUILT_IN_##NAME##_4:						\
+    case BUILT_IN_##NAME##_8:						\
+    case BUILT_IN_##NAME##_16:						\
+      atomic_op = OP;							\
+      other_atomic							\
+	= (enum built_in_function) (BUILT_IN_##OTHER##_1		\
+				    + (DECL_FUNCTION_CODE (callee2)	\
+				       - BUILT_IN_##NAME##_1));		\
+      goto handle_atomic_fetch_op;
+
+    CASE_ATOMIC (ATOMIC_FETCH_ADD, ATOMIC_ADD_FETCH, PLUS_EXPR)
+    CASE_ATOMIC (ATOMIC_FETCH_SUB, ATOMIC_SUB_FETCH, MINUS_EXPR)
+    CASE_ATOMIC (ATOMIC_FETCH_AND, ATOMIC_AND_FETCH, BIT_AND_EXPR)
+    CASE_ATOMIC (ATOMIC_FETCH_XOR, ATOMIC_XOR_FETCH, BIT_XOR_EXPR)
+    CASE_ATOMIC (ATOMIC_FETCH_OR, ATOMIC_OR_FETCH, BIT_IOR_EXPR)
+
+    CASE_ATOMIC (SYNC_FETCH_AND_ADD, SYNC_ADD_AND_FETCH, PLUS_EXPR)
+    CASE_ATOMIC (SYNC_FETCH_AND_SUB, SYNC_SUB_AND_FETCH, MINUS_EXPR)
+    CASE_ATOMIC (SYNC_FETCH_AND_AND, SYNC_AND_AND_FETCH, BIT_AND_EXPR)
+    CASE_ATOMIC (SYNC_FETCH_AND_XOR, SYNC_XOR_AND_FETCH, BIT_XOR_EXPR)
+    CASE_ATOMIC (SYNC_FETCH_AND_OR, SYNC_OR_AND_FETCH, BIT_IOR_EXPR)
+
+    CASE_ATOMIC (ATOMIC_ADD_FETCH, ATOMIC_FETCH_ADD, MINUS_EXPR)
+    CASE_ATOMIC (ATOMIC_SUB_FETCH, ATOMIC_FETCH_SUB, PLUS_EXPR)
+    CASE_ATOMIC (ATOMIC_XOR_FETCH, ATOMIC_FETCH_XOR, BIT_XOR_EXPR)
+
+    CASE_ATOMIC (SYNC_ADD_AND_FETCH, SYNC_FETCH_AND_ADD, MINUS_EXPR)
+    CASE_ATOMIC (SYNC_SUB_AND_FETCH, SYNC_FETCH_AND_SUB, PLUS_EXPR)
+    CASE_ATOMIC (SYNC_XOR_AND_FETCH, SYNC_FETCH_AND_XOR, BIT_XOR_EXPR)
+
+#undef CASE_ATOMIC
+
+    handle_atomic_fetch_op:
+      if (gimple_call_num_args (stmt2) >= 2 && gimple_call_lhs (stmt2))
+	{
+	  tree lhs2 = gimple_call_lhs (stmt2), lhsc = lhs2;
+	  tree arg = gimple_call_arg (stmt2, 1);
+	  gimple *use_stmt, *cast_stmt = NULL;
+	  use_operand_p use_p;
+	  tree ndecl = builtin_decl_explicit (other_atomic);
+
+	  if (ndecl == NULL_TREE || !single_imm_use (lhs2, &use_p, &use_stmt))
+	    break;
+
+	  if (gimple_assign_cast_p (use_stmt))
+	    {
+	      cast_stmt = use_stmt;
+	      lhsc = gimple_assign_lhs (cast_stmt);
+	      if (lhsc == NULL_TREE
+		  || !INTEGRAL_TYPE_P (TREE_TYPE (lhsc))
+		  || (TYPE_PRECISION (TREE_TYPE (lhsc))
+		      != TYPE_PRECISION (TREE_TYPE (lhs2)))
+		  || !single_imm_use (lhsc, &use_p, &use_stmt))
+		{
+		  use_stmt = cast_stmt;
+		  cast_stmt = NULL;
+		  lhsc = lhs2;
+		}
+	    }
+
+	  bool ok = false;
+	  tree oarg = NULL_TREE;
+	  enum tree_code ccode = ERROR_MARK;
+	  tree crhs1 = NULL_TREE, crhs2 = NULL_TREE;
+	  if (is_gimple_assign (use_stmt)
+	      && gimple_assign_rhs_code (use_stmt) == atomic_op)
+	    {
+	      if (gimple_assign_rhs1 (use_stmt) == lhsc)
+		oarg = gimple_assign_rhs2 (use_stmt);
+	      else if (atomic_op != MINUS_EXPR)
+		oarg = gimple_assign_rhs1 (use_stmt);
+	    }
+	  else if (atomic_op == MINUS_EXPR
+		   && is_gimple_assign (use_stmt)
+		   && gimple_assign_rhs_code (use_stmt) == PLUS_EXPR
+		   && TREE_CODE (arg) == INTEGER_CST
+		   && (TREE_CODE (gimple_assign_rhs2 (use_stmt))
+		       == INTEGER_CST))
+	    {
+	      tree a = fold_convert (TREE_TYPE (lhs2), arg);
+	      tree o = fold_convert (TREE_TYPE (lhs2),
+				     gimple_assign_rhs2 (use_stmt));
+	      if (wi::to_wide (a) == wi::neg (wi::to_wide (o)))
+		ok = true;
+	    }
+	  else if (atomic_op == BIT_AND_EXPR || atomic_op == BIT_IOR_EXPR)
+	    ;
+	  else if (gimple_code (use_stmt) == GIMPLE_COND)
+	    {
+	      ccode = gimple_cond_code (use_stmt);
+	      crhs1 = gimple_cond_lhs (use_stmt);
+	      crhs2 = gimple_cond_rhs (use_stmt);
+	    }
+	  else if (is_gimple_assign (use_stmt))
+	    {
+	      if (gimple_assign_rhs_class (use_stmt) == GIMPLE_BINARY_RHS)
+		{
+		  ccode = gimple_assign_rhs_code (use_stmt);
+		  crhs1 = gimple_assign_rhs1 (use_stmt);
+		  crhs2 = gimple_assign_rhs2 (use_stmt);
+		}
+	      else if (gimple_assign_rhs_code (use_stmt) == COND_EXPR)
+		{
+		  tree cond = gimple_assign_rhs1 (use_stmt);
+		  if (COMPARISON_CLASS_P (cond))
+		    {
+		      ccode = TREE_CODE (cond);
+		      crhs1 = TREE_OPERAND (cond, 0);
+		      crhs2 = TREE_OPERAND (cond, 1);
+		    }
+		}
+	    }
+	  if (ccode == EQ_EXPR || ccode == NE_EXPR)
+	    {
+	      /* Deal with x - y == 0 or x ^ y == 0
+		 being optimized into x == y and x + cst == 0
+		 into x == -cst.  */
+	      tree o = NULL_TREE;
+	      if (crhs1 == lhsc)
+		o = crhs2;
+	      else if (crhs2 == lhsc)
+		o = crhs1;
+	      if (o && atomic_op != PLUS_EXPR)
+		oarg = o;
+	      else if (o
+		       && TREE_CODE (o) == INTEGER_CST
+		       && TREE_CODE (arg) == INTEGER_CST)
+		{
+		  tree a = fold_convert (TREE_TYPE (lhs2), arg);
+		  o = fold_convert (TREE_TYPE (lhs2), o);
+		  if (wi::to_wide (a) == wi::neg (wi::to_wide (o)))
+		    ok = true;
+		}
+	    }
+	  if (oarg && !ok)
+	    {
+	      if (operand_equal_p (arg, oarg, 0))
+		ok = true;
+	      else if (TREE_CODE (arg) == SSA_NAME
+		       && TREE_CODE (oarg) == SSA_NAME)
+		{
+		  tree oarg2 = oarg;
+		  if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (oarg)))
+		    {
+		      gimple *g = SSA_NAME_DEF_STMT (oarg);
+		      oarg2 = gimple_assign_rhs1 (g);
+		      if (TREE_CODE (oarg2) != SSA_NAME
+			  || !INTEGRAL_TYPE_P (TREE_TYPE (oarg2))
+			  || (TYPE_PRECISION (TREE_TYPE (oarg2))
+			      != TYPE_PRECISION (TREE_TYPE (oarg))))
+			oarg2 = oarg;
+		    }
+		  if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (arg)))
+		    {
+		      gimple *g = SSA_NAME_DEF_STMT (arg);
+		      tree rhs1 = gimple_assign_rhs1 (g);
+		      /* Handle e.g.
+			 x.0_1 = (long unsigned int) x_4(D);
+			 _2 = __atomic_fetch_add_8 (&vlong, x.0_1, 0);
+			 _3 = (long int) _2;
+			 _7 = x_4(D) + _3;  */
+		      if (rhs1 == oarg || rhs1 == oarg2)
+			ok = true;
+		      /* Handle e.g.
+			 x.18_1 = (short unsigned int) x_5(D);
+			 _2 = (int) x.18_1;
+			 _3 = __atomic_fetch_xor_2 (&vshort, _2, 0);
+			 _4 = (short int) _3;
+			 _8 = x_5(D) ^ _4;
+			 This happens only for char/short.  */
+		      else if (TREE_CODE (rhs1) == SSA_NAME
+			       && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+			       && (TYPE_PRECISION (TREE_TYPE (rhs1))
+				   == TYPE_PRECISION (TREE_TYPE (lhs2))))
+			{
+			  g = SSA_NAME_DEF_STMT (rhs1);
+			  if (gimple_assign_cast_p (g)
+			      && (gimple_assign_rhs1 (g) == oarg
+				  || gimple_assign_rhs1 (g) == oarg2))
+			    ok = true;
+			}
+		    }
+		  if (!ok && arg == oarg2)
+		    /* Handle e.g.
+		       _1 = __sync_fetch_and_add_4 (&v, x_5(D));
+		       _2 = (int) _1;
+		       x.0_3 = (int) x_5(D);
+		       _7 = _2 + x.0_3;  */
+		    ok = true;
+		}
+	    }
+
+	  if (ok)
+	    {
+	      tree new_lhs = make_ssa_name (TREE_TYPE (lhs2));
+	      gimple_call_set_lhs (stmt2, new_lhs);
+	      gimple_call_set_fndecl (stmt2, ndecl);
+	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	      if (ccode == ERROR_MARK)
+		gimple_assign_set_rhs_with_ops (&gsi, cast_stmt
+						? NOP_EXPR : SSA_NAME,
+						new_lhs);
+	      else
+		{
+		  crhs1 = new_lhs;
+		  crhs2 = build_zero_cst (TREE_TYPE (lhs2));
+		  if (gimple_code (use_stmt) == GIMPLE_COND)
+		    {
+		      gcond *cond_stmt = as_a <gcond *> (use_stmt);
+		      gimple_cond_set_lhs (cond_stmt, crhs1);
+		      gimple_cond_set_rhs (cond_stmt, crhs2);
+		    }
+		  else if (gimple_assign_rhs_class (use_stmt)
+			   == GIMPLE_BINARY_RHS)
+		    {
+		      gimple_assign_set_rhs1 (use_stmt, crhs1);
+		      gimple_assign_set_rhs2 (use_stmt, crhs2);
+		    }
+		  else
+		    {
+		      gcc_checking_assert (gimple_assign_rhs_code (use_stmt)
+					   == COND_EXPR);
+		      tree cond = build2 (ccode, boolean_type_node,
+					  crhs1, crhs2);
+		      gimple_assign_set_rhs1 (use_stmt, cond);
+		    }
+		}
+	      update_stmt (use_stmt);
+	      if (atomic_op != BIT_AND_EXPR
+		  && atomic_op != BIT_IOR_EXPR
+		  && !stmt_ends_bb_p (stmt2))
+		{
+		  /* For the benefit of debug stmts, emit stmt(s) to set
+		     lhs2 to the value it had from the new builtin.
+		     E.g. if it was previously:
+		     lhs2 = __atomic_fetch_add_8 (ptr, arg, 0);
+		     emit:
+		     new_lhs = __atomic_add_fetch_8 (ptr, arg, 0);
+		     lhs2 = new_lhs - arg;
+		     We also keep cast_stmt if any in the IL for
+		     the same reasons.
+		     These stmts will be DCEd later and proper debug info
+		     will be emitted.
+		     This is only possible for reversible operations
+		     (+/-/^) and without -fnon-call-exceptions.  */
+		  gsi = gsi_for_stmt (stmt2);
+		  tree type = TREE_TYPE (lhs2);
+		  if (TREE_CODE (arg) == INTEGER_CST)
+		    arg = fold_convert (type, arg);
+		  else if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
+		    {
+		      tree narg = make_ssa_name (type);
+		      gimple *g = gimple_build_assign (narg, NOP_EXPR, arg);
+		      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+		      arg = narg;
+		    }
+		  enum tree_code rcode;
+		  switch (atomic_op)
+		    {
+		    case PLUS_EXPR: rcode = MINUS_EXPR; break;
+		    case MINUS_EXPR: rcode = PLUS_EXPR; break;
+		    case BIT_XOR_EXPR: rcode = atomic_op; break;
+		    default: gcc_unreachable ();
+		    }
+		  gimple *g = gimple_build_assign (lhs2, rcode, new_lhs, arg);
+		  gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+		  update_stmt (stmt2);
+		}
+	      else
+		{
+		  /* For e.g.
+		     lhs2 = __atomic_fetch_or_8 (ptr, arg, 0);
+		     after we change it to
+		     new_lhs = __atomic_or_fetch_8 (ptr, arg, 0);
+		     there is no way to find out the lhs2 value (i.e.
+		     what the atomic memory contained before the operation),
+		     values of some bits are lost.  We have checked earlier
+		     that we don't have any non-debug users except for what
+		     we are already changing, so we need to reset the
+		     debug stmts and remove the cast_stmt if any.  */
+		  imm_use_iterator iter;
+		  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs2)
+		    if (use_stmt != cast_stmt)
+		      {
+			gcc_assert (is_gimple_debug (use_stmt));
+			gimple_debug_bind_reset_value (use_stmt);
+			update_stmt (use_stmt);
+		      }
+		  if (cast_stmt)
+		    {
+		      gsi = gsi_for_stmt (cast_stmt);
+		      gsi_remove (&gsi, true);
+		    }
+		  update_stmt (stmt2);
+		  release_ssa_name (lhs2);
+		}
+	    }
+	}
+      break;
+
     default:
       break;
     }
