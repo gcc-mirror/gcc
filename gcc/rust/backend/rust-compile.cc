@@ -60,7 +60,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;
   Location start_location = expr.get_locus ();
-  Location end_location = expr.get_closing_locus ();
+  Location end_location = expr.get_end_locus ();
   auto body_mappings = expr.get_mappings ();
 
   Resolver::Rib *rib = nullptr;

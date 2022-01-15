@@ -7347,6 +7347,8 @@ Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
 	  return nullptr;
 	}
 
+      t = lexer.peek_token ();
+
       if (expr_or_stmt.stmt != nullptr)
 	{
 	  stmts.push_back (std::move (expr_or_stmt.stmt));
@@ -7357,9 +7359,9 @@ Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
 	  expr = std::move (expr_or_stmt.expr);
 	  break;
 	}
-
-      t = lexer.peek_token ();
     }
+
+  Location end_locus = t->get_locus ();
 
   if (!skip_token (RIGHT_CURLY))
     {
@@ -7378,8 +7380,8 @@ Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
 
   return std::unique_ptr<AST::BlockExpr> (
     new AST::BlockExpr (std::move (stmts), std::move (expr),
-			std::move (inner_attrs), std::move (outer_attrs),
-			locus));
+			std::move (inner_attrs), std::move (outer_attrs), locus,
+			end_locus));
 }
 
 /* Parses a "grouped" expression (expression in parentheses), used to control

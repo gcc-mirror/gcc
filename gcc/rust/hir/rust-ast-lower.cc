@@ -101,7 +101,8 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
 			  std::unique_ptr<HIR::ExprWithoutBlock> (tail_expr),
 			  tail_reachable, expr.get_inner_attrs (),
-			  expr.get_outer_attrs (), expr.get_locus ());
+			  expr.get_outer_attrs (), expr.get_start_locus (),
+			  expr.get_end_locus ());
 
   terminated = block_did_terminate;
 }

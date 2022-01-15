@@ -264,7 +264,7 @@ public:
     tree enclosing_scope = NULL_TREE;
     HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
-    Location end_location = function_body->get_closing_locus ();
+    Location end_location = function_body->get_end_locus ();
 
     tree code_block
       = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
@@ -524,7 +524,7 @@ public:
     tree enclosing_scope = NULL_TREE;
     HIR::BlockExpr *function_body = func.get_block_expr ().get ();
     Location start_location = function_body->get_locus ();
-    Location end_location = function_body->get_closing_locus ();
+    Location end_location = function_body->get_end_locus ();
 
     tree code_block
       = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
