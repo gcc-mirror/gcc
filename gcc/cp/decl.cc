@@ -6817,6 +6817,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
     {
       tree str_init = init;
       tree stripped_str_init = stripped_init;
+      reshape_iter stripd = {};
 
       /* Strip one level of braces if and only if they enclose a single
 	 element (as allowed by [dcl.init.string]).  */
@@ -6824,7 +6825,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	  && TREE_CODE (stripped_str_init) == CONSTRUCTOR
 	  && CONSTRUCTOR_NELTS (stripped_str_init) == 1)
 	{
-	  str_init = (*CONSTRUCTOR_ELTS (stripped_str_init))[0].value;
+	  stripd.cur = CONSTRUCTOR_ELT (stripped_str_init, 0);
+	  str_init = stripd.cur->value;
 	  stripped_str_init = tree_strip_any_location_wrapper (str_init);
 	}
 
@@ -6833,7 +6835,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	 array types (one value per array element).  */
       if (TREE_CODE (stripped_str_init) == STRING_CST)
 	{
-	  if (has_designator_problem (d, complain))
+	  if ((first_initializer_p && has_designator_problem (d, complain))
+	      || (stripd.cur && has_designator_problem (&stripd, complain)))
 	    return error_mark_node;
 	  d->cur++;
 	  return str_init;
@@ -9555,22 +9558,11 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
   if (initial_value)
     {
       /* An array of character type can be initialized from a
-	 brace-enclosed string constant.
-
-	 FIXME: this code is duplicated from reshape_init. Probably
-	 we should just call reshape_init here?  */
-      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
-	  && TREE_CODE (initial_value) == CONSTRUCTOR
-	  && !vec_safe_is_empty (CONSTRUCTOR_ELTS (initial_value)))
-	{
-	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initial_value);
-	  tree value = (*v)[0].value;
-	  STRIP_ANY_LOCATION_WRAPPER (value);
-
-	  if (TREE_CODE (value) == STRING_CST
-	      && v->length () == 1)
-	    initial_value = value;
-	}
+	 brace-enclosed string constant so call reshape_init to
+	 remove the optional braces from a braced string literal.  */
+      if (BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+	initial_value = reshape_init (*ptype, initial_value,
+				      tf_warning_or_error);
 
       /* If any of the elements are parameter packs, we can't actually
 	 complete this type now because the array size is dependent.  */
