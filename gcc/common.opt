@@ -552,6 +552,14 @@ Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
 
+Wuse-after-free
+Common Var(warn_use_after_free) Warning
+Warn for uses of pointers to deallocated strorage.
+
+Wuse-after-free=
+Common Joined RejectNegative UInteger Var(warn_use_after_free) Warning IntegerRange(0, 3)
+Warn for uses of pointers to deallocated strorage.
+
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.

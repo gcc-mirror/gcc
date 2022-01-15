@@ -53,6 +53,7 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "demangle.h"
+#include "attr-fnspec.h"
 #include "pointer-query.h"
 
 /* Return true if tree node X has an associated location.  */
@@ -2071,6 +2072,7 @@ class pass_waccess : public gimple_opt_pass
   opt_pass *clone () { return new pass_waccess (m_ctxt); }
 
   virtual bool gate (function *);
+
   virtual unsigned int execute (function *);
 
 private:
@@ -2084,14 +2086,14 @@ private:
   /* Check a call to a built-in function.  */
   bool check_builtin (gcall *);
 
-  /* Check a call to an ordinary function.  */
-  bool check_call (gcall *);
+  /* Check a call to an ordinary function for invalid accesses.  */
+  bool check_call_access (gcall *);
 
   /* Check statements in a basic block.  */
-  void check (basic_block);
+  void check_block (basic_block);
 
   /* Check a call to a function.  */
-  void check (gcall *);
+  void check_call (gcall *);
 
   /* Check a call to the named built-in function.  */
   void check_alloca (gcall *);
@@ -2109,10 +2111,27 @@ private:
   bool maybe_warn_memmodel (gimple *, tree, tree, const unsigned char *);
   void check_atomic_memmodel (gimple *, tree, tree, const unsigned char *);
 
+  /* Check for uses of indeterminate pointers.  */
+  void check_pointer_uses (gimple *, tree);
+
+  /* Return the argument that a call returns.  */
+  tree gimple_call_return_arg (gcall *);
+
+  void warn_invalid_pointer (tree, gimple *, gimple *, bool, bool = false);
+
+  /* Return true if use follows an invalidating statement.  */
+  bool use_after_inval_p (gimple *, gimple *);
+
   /* A pointer_query object and its cache to store information about
      pointers and their targets in.  */
   pointer_query m_ptr_qry;
   pointer_query::cache_type m_var_cache;
+
+  /* A bit is set for each basic block whose statements have been assigned
+     valid UIDs.  */
+  bitmap m_bb_uids_set;
+  /* The current function.  */
+  function *m_func;
 };
 
 /* Construct the pass.  */
@@ -2120,7 +2139,9 @@ private:
 pass_waccess::pass_waccess (gcc::context *ctxt)
   : gimple_opt_pass (pass_data_waccess, ctxt),
     m_ptr_qry (NULL, &m_var_cache),
-    m_var_cache ()
+    m_var_cache (),
+    m_bb_uids_set (),
+    m_func ()
 {
 }
 
@@ -3071,6 +3092,15 @@ pass_waccess::check_builtin (gcall *stmt)
       check_read_access (stmt, call_arg (stmt, 0));
       return true;
 
+    case BUILT_IN_FREE:
+    case BUILT_IN_REALLOC:
+      {
+	tree arg = call_arg (stmt, 0);
+	if (TREE_CODE (arg) == SSA_NAME)
+	  check_pointer_uses (stmt, arg);
+      }
+      return true;
+
     case BUILT_IN_GETTEXT:
     case BUILT_IN_PUTS:
     case BUILT_IN_PUTS_UNLOCKED:
@@ -3175,6 +3205,7 @@ pass_waccess::check_builtin (gcall *stmt)
 	return true;
       break;
     }
+
   return false;
 }
 
@@ -3504,7 +3535,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
    accesses.  Return true if a call has been handled.  */
 
 bool
-pass_waccess::check_call (gcall *stmt)
+pass_waccess::check_call_access (gcall *stmt)
 {
   tree fntype = gimple_call_fntype (stmt);
   if (!fntype)
@@ -3692,33 +3723,420 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
     }
 }
 
+/* Return true if either USE_STMT's basic block (that of a pointer's use)
+   is dominated by INVAL_STMT's (that of a pointer's invalidating statement,
+   or if they're in the same block, USE_STMT follows INVAL_STMT.  */
+
+bool
+pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt)
+{
+  basic_block inval_bb = gimple_bb (inval_stmt);
+  basic_block use_bb = gimple_bb (use_stmt);
+
+  if (inval_bb != use_bb)
+    return dominated_by_p (CDI_DOMINATORS, use_bb, inval_bb);
+
+  if (bitmap_set_bit (m_bb_uids_set, inval_bb->index))
+    /* The first time this basic block is visited assign increasing ids
+       to consecutive statements in it.  Use the ids to determine which
+       precedes which.  This avoids the linear traversal on subsequent
+       visits to the same block.  */
+    for (auto si = gsi_start_bb (inval_bb); !gsi_end_p (si);
+	 gsi_next_nondebug (&si))
+      {
+	gimple *stmt = gsi_stmt (si);
+	unsigned uid = inc_gimple_stmt_max_uid (m_func);
+	gimple_set_uid (stmt, uid);
+      }
+
+  return gimple_uid (inval_stmt) < gimple_uid (use_stmt);
+}
+
+/* Issue a warning for the USE_STMT of pointer PTR rendered invalid
+   by INVAL_STMT.  PTR may be null when it's been optimized away.
+   MAYBE is true to issue the "maybe" kind of warning.  EQUALITY is
+   true when the pointer is used in an equality expression.  */
+
+void
+pass_waccess::warn_invalid_pointer (tree ptr, gimple *use_stmt,
+				    gimple *inval_stmt,
+				    bool maybe,
+				    bool equality /* = false */)
+{
+  /* Avoid printing the unhelpful "<unknown>" in the diagnostics.  */
+  if (ptr && TREE_CODE (ptr) == SSA_NAME
+      && (!SSA_NAME_VAR (ptr) || DECL_ARTIFICIAL (SSA_NAME_VAR (ptr))))
+    ptr = NULL_TREE;
+
+  location_t use_loc = gimple_location (use_stmt);
+  if (use_loc == UNKNOWN_LOCATION)
+    {
+      use_loc = cfun->function_end_locus;
+      if (!ptr)
+	/* Avoid issuing a warning with no context other than
+	   the function.  That would make it difficult to debug
+	   in any but very simple cases.  */
+	return;
+    }
+
+  if (is_gimple_call (inval_stmt))
+    {
+      if ((equality && warn_use_after_free < 3)
+	  || (maybe && warn_use_after_free < 2)
+	  || warning_suppressed_p (use_stmt, OPT_Wuse_after_free))
+	return;
+
+      const tree inval_decl = gimple_call_fndecl (inval_stmt);
+
+      if ((ptr && warning_at (use_loc, OPT_Wuse_after_free,
+			      (maybe
+			       ? G_("pointer %qE may be used after %qD")
+			       : G_("pointer %qE used after %qD")),
+			      ptr, inval_decl))
+	  || (!ptr && warning_at (use_loc, OPT_Wuse_after_free,
+			      (maybe
+			       ? G_("pointer may be used after %qD")
+			       : G_("pointer used after %qD")),
+				  inval_decl)))
+	{
+	  location_t loc = gimple_location (inval_stmt);
+	  inform (loc, "call to %qD here", inval_decl);
+	  suppress_warning (use_stmt, OPT_Wuse_after_free);
+	}
+      return;
+    }
+}
+
+/* If STMT is a call to either the standard realloc or to a user-defined
+   reallocation function returns its LHS and set *PTR to the reallocated
+   pointer.  Otherwise return null.  */
+
+static tree
+get_realloc_lhs (gimple *stmt, tree *ptr)
+{
+  if (gimple_call_builtin_p (stmt, BUILT_IN_REALLOC))
+    {
+      *ptr = gimple_call_arg (stmt, 0);
+      return gimple_call_lhs (stmt);
+    }
+
+  gcall *call = dyn_cast<gcall *>(stmt);
+  if (!call)
+    return NULL_TREE;
+
+  tree fnattr = NULL_TREE;
+  tree fndecl = gimple_call_fndecl (call);
+  if (fndecl)
+    fnattr = DECL_ATTRIBUTES (fndecl);
+  else
+    {
+      tree fntype = gimple_call_fntype (stmt);
+      if (!fntype)
+	return NULL_TREE;
+      fnattr = TYPE_ATTRIBUTES (fntype);
+    }
+
+  if (!fnattr)
+    return NULL_TREE;
+
+  for (tree ats = fnattr;  (ats = lookup_attribute ("*dealloc", ats));
+       ats = TREE_CHAIN (ats))
+    {
+      tree args = TREE_VALUE (ats);
+      if (!args)
+	continue;
+
+      tree alloc = TREE_VALUE (args);
+      if (!alloc)
+	continue;
+
+      if (alloc == DECL_NAME (fndecl))
+	{
+	  unsigned argno = 0;
+	  if (tree index = TREE_CHAIN (args))
+	    argno = TREE_INT_CST_LOW (TREE_VALUE (index)) - 1;
+	  *ptr = gimple_call_arg (stmt, argno);
+	  return gimple_call_lhs (stmt);
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Warn if STMT is a call to a deallocation function that's not a match
+   for the REALLOC_STMT call.  Return true if warned.  */
+
+static bool
+maybe_warn_mismatched_realloc (tree ptr, gimple *realloc_stmt, gimple *stmt)
+{
+  if (!is_gimple_call (stmt))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  if (!fndecl)
+    return false;
+
+  unsigned argno = fndecl_dealloc_argno (fndecl);
+  if (call_nargs (stmt) <= argno)
+    return false;
+
+  if (matching_alloc_calls_p (realloc_stmt, fndecl))
+    return false;
+
+  /* Avoid printing the unhelpful "<unknown>" in the diagnostics.  */
+  if (ptr && TREE_CODE (ptr) == SSA_NAME
+      && (!SSA_NAME_VAR (ptr) || DECL_ARTIFICIAL (SSA_NAME_VAR (ptr))))
+    ptr = NULL_TREE;
+
+  location_t loc = gimple_location (stmt);
+  tree realloc_decl = gimple_call_fndecl (realloc_stmt);
+  tree dealloc_decl = gimple_call_fndecl (stmt);
+  if (ptr && !warning_at (loc, OPT_Wmismatched_dealloc,
+			  "%qD called on pointer %qE passed to mismatched "
+			  "allocation function %qD",
+			  dealloc_decl, ptr, realloc_decl))
+    return false;
+  if (!ptr && !warning_at (loc, OPT_Wmismatched_dealloc,
+			   "%qD called on a pointer passed to mismatched "
+			   "reallocation function %qD",
+			   dealloc_decl, realloc_decl))
+    return false;
+
+  inform (gimple_location (realloc_stmt),
+	  "call to %qD", realloc_decl);
+  return true;
+}
+
+/* Return true if P and Q point to the same object, and false if they
+   either don't or their relationship cannot be determined.  */
+
+static bool
+pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
+{
+  if (!ptr_derefs_may_alias_p (p, q))
+    return false;
+
+  /* TODO: Work harder to rule out relatedness.  */
+  access_ref pref, qref;
+  if (!qry.get_ref (p, stmt, &pref, 0)
+      || !qry.get_ref (q, stmt, &qref, 0))
+    return true;
+
+  return pref.ref == qref.ref;
+}
+
+/* For a STMT either a call to a deallocation function or a clobber, warn
+   for uses of the pointer PTR it was called with (including its copies
+   or others derived from it by pointer arithmetic).  */
+
+void
+pass_waccess::check_pointer_uses (gimple *stmt, tree ptr)
+{
+  gcc_assert (TREE_CODE (ptr) == SSA_NAME);
+
+  const bool check_dangling = !is_gimple_call (stmt);
+  basic_block stmt_bb = gimple_bb (stmt);
+
+  /* If STMT is a reallocation function set to the reallocated pointer
+     and the LHS of the call, respectively.  */
+  tree realloc_ptr = NULL_TREE;
+  tree realloc_lhs = get_realloc_lhs (stmt, &realloc_ptr);
+
+  auto_bitmap visited;
+
+  auto_vec<tree> pointers;
+  pointers.safe_push (ptr);
+
+  /* Starting with PTR, iterate over POINTERS added by the loop, and
+     either warn for their uses in basic blocks dominated by the STMT
+     or in statements that follow it in the same basic block, or add
+     them to POINTERS if they point into the same object as PTR (i.e.,
+     are obtained by pointer arithmetic on PTR).  */
+  for (unsigned i = 0; i != pointers.length (); ++i)
+    {
+      tree ptr = pointers[i];
+      if (TREE_CODE (ptr) == SSA_NAME
+	  && !bitmap_set_bit (visited, SSA_NAME_VERSION (ptr)))
+	/* Avoid revisiting the same pointer.  */
+	continue;
+
+      use_operand_p use_p;
+      imm_use_iterator iter;
+      FOR_EACH_IMM_USE_FAST (use_p, iter, ptr)
+	{
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (use_stmt == stmt || is_gimple_debug (use_stmt))
+	    continue;
+
+	  if (realloc_lhs)
+	    {
+	      /* Check to see if USE_STMT is a mismatched deallocation
+		 call for the pointer passed to realloc.  That's a bug
+		 regardless of the pointer's value and so warn.  */
+	      if (maybe_warn_mismatched_realloc (*use_p->use, stmt, use_stmt))
+		continue;
+
+	      /* Pointers passed to realloc that are used in basic blocks
+		 where the realloc call is known to have failed are valid.
+		 Ignore pointers that nothing is known about.  Those could
+		 have escaped along with their nullness.  */
+	      value_range vr;
+	      if (m_ptr_qry.rvals->range_of_expr (vr, realloc_lhs, use_stmt))
+		{
+		  if (vr.zero_p ())
+		    continue;
+
+		  if (!pointers_related_p (stmt, ptr, realloc_ptr, m_ptr_qry))
+		    continue;
+		}
+	    }
+
+	  if (check_dangling
+	      && gimple_code (use_stmt) == GIMPLE_RETURN)
+	    /* Avoid interfering with -Wreturn-local-addr (which runs only
+	       with optimization enabled so it won't diagnose cases that
+	       would be caught here when optimization is disabled).  */
+	    continue;
+
+	  bool equality = false;
+	  if (is_gimple_assign (use_stmt))
+	    {
+	      tree_code code = gimple_assign_rhs_code (use_stmt);
+	      equality = code == EQ_EXPR || code == NE_EXPR;
+	    }
+	  else if (gcond *cond = dyn_cast<gcond *>(use_stmt))
+	    {
+	      tree_code code = gimple_cond_code (cond);
+	      equality = code == EQ_EXPR || code == NE_EXPR;
+	    }
+
+	  /* Warn if USE_STMT is dominated by the deallocation STMT.
+	     Otherwise, add the pointer to POINTERS so that the uses
+	     of any other pointers derived from it can be checked.  */
+	  if (use_after_inval_p (stmt, use_stmt))
+	    {
+	      /* TODO: Handle PHIs but careful of false positives.  */
+	      if (gimple_code (use_stmt) != GIMPLE_PHI)
+		{
+		  basic_block use_bb = gimple_bb (use_stmt);
+		  bool this_maybe
+		    = !dominated_by_p (CDI_POST_DOMINATORS, use_bb, stmt_bb);
+		  warn_invalid_pointer (*use_p->use, use_stmt, stmt,
+					this_maybe, equality);
+		  continue;
+		}
+	    }
+
+	  if (is_gimple_assign (use_stmt))
+	    {
+	      tree lhs = gimple_assign_lhs (use_stmt);
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  tree_code rhs_code = gimple_assign_rhs_code (use_stmt);
+		  if (rhs_code == POINTER_PLUS_EXPR || rhs_code == SSA_NAME)
+		    pointers.safe_push (lhs);
+		}
+	      continue;
+	    }
+
+	  if (gcall *call = dyn_cast <gcall *>(use_stmt))
+	    {
+	      if (gimple_call_return_arg (call))
+		if (tree lhs = gimple_call_lhs (call))
+		  if (TREE_CODE (lhs) == SSA_NAME)
+		    pointers.safe_push (lhs);
+	      continue;
+	    }
+	}
+    }
+}
+
 /* Check call STMT for invalid accesses.  */
 
 void
-pass_waccess::check (gcall *stmt)
+pass_waccess::check_call (gcall *stmt)
 {
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     check_builtin (stmt);
 
-  if (is_gimple_call (stmt))
-    check_call (stmt);
+  if (tree callee = gimple_call_fndecl (stmt))
+    {
+      /* Check for uses of the pointer passed to either a standard
+	 or a user-defined deallocation function.  */
+      unsigned argno = fndecl_dealloc_argno (callee);
+      if (argno < (unsigned) call_nargs (stmt))
+	{
+	  tree arg = call_arg (stmt, argno);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    check_pointer_uses (stmt, arg);
+	}
+    }
+
+  check_call_access (stmt);
 
   maybe_check_dealloc_call (stmt);
-
   check_nonstring_args (stmt);
 }
+
 
 /* Check basic block BB for invalid accesses.  */
 
 void
-pass_waccess::check (basic_block bb)
+pass_waccess::check_block (basic_block bb)
 {
   /* Iterate over statements, looking for function calls.  */
-  for (auto si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+  for (auto si = gsi_start_bb (bb); !gsi_end_p (si);
+       gsi_next_nondebug (&si))
     {
-      if (gcall *call = dyn_cast <gcall *> (gsi_stmt (si)))
-	check (call);
+      gimple *stmt = gsi_stmt (si);
+      if (gcall *call = dyn_cast <gcall *> (stmt))
+	check_call (call);
     }
+}
+
+/* Return the argument that the call STMT to a built-in function returns
+   (including with an offset) or null if it doesn't.  */
+
+tree
+pass_waccess::gimple_call_return_arg (gcall *call)
+{
+  /* Check for attribute fn spec to see if the function returns one
+     of its arguments.  */
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  unsigned int argno;
+  if (!fnspec.returns_arg (&argno))
+    {
+      if (gimple_call_num_args (call) < 1)
+	return NULL_TREE;
+
+      if (!gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+	return NULL_TREE;
+
+      tree fndecl = gimple_call_fndecl (call);
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_MEMPCPY:
+	case BUILT_IN_MEMPCPY_CHK:
+	case BUILT_IN_MEMCHR:
+	case BUILT_IN_STRCHR:
+	case BUILT_IN_STRRCHR:
+	case BUILT_IN_STRSTR:
+	case BUILT_IN_STPCPY:
+	case BUILT_IN_STPCPY_CHK:
+	case BUILT_IN_STPNCPY:
+	case BUILT_IN_STPNCPY_CHK:
+	  argno = 0;
+	  break;
+
+	default:
+	  return NULL_TREE;
+	}
+    }
+
+  if (gimple_call_num_args (call) <= argno)
+    return NULL_TREE;
+
+  return gimple_call_arg (call, argno);
 }
 
 /* Check function FUN for invalid accesses.  */
@@ -3726,12 +4144,21 @@ pass_waccess::check (basic_block bb)
 unsigned
 pass_waccess::execute (function *fun)
 {
+  calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+
   /* Create a new ranger instance and associate it with FUN.  */
   m_ptr_qry.rvals = enable_ranger (fun);
+  m_func = fun;
+
+  auto_bitmap bb_uids_set (&bitmap_default_obstack);
+  m_bb_uids_set = bb_uids_set;
+
+  set_gimple_stmt_max_uid (m_func, 0);
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
-    check (bb);
+    check_block (bb);
 
   if (dump_file)
     m_ptr_qry.dump (dump_file, (dump_flags & TDF_DETAILS) != 0);
@@ -3743,6 +4170,10 @@ pass_waccess::execute (function *fun)
   disable_ranger (fun);
   m_ptr_qry.rvals = NULL;
 
+  m_bb_uids_set = NULL;
+
+  free_dominance_info (CDI_POST_DOMINATORS);
+  free_dominance_info (CDI_DOMINATORS);
   return 0;
 }
 
