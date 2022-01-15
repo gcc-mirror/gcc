@@ -16018,9 +16018,13 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
       if (GET_CODE (src) == UNSPEC)
 	{
-	  gcc_assert (REG_P (dst)
-		      && FP_REGNO_P (REGNO (dst))
-		      && XINT (src, 1) == UNSPEC_MMA_ASSEMBLE_ACC);
+	  gcc_assert (XINT (src, 1) == UNSPEC_VSX_ASSEMBLE
+		      || XINT (src, 1) == UNSPEC_MMA_ASSEMBLE_ACC);
+          gcc_assert (REG_P (dst));
+          if (GET_MODE (src) == PXImode)
+            gcc_assert (FP_REGNO_P (REGNO (dst)));
+          if (GET_MODE (src) == POImode)
+            gcc_assert (VSX_REGNO_P (REGNO (dst)));
 
 	  reg_mode = GET_MODE (XVECEXP (src, 0, 0));
 	  int nvecs = XVECLEN (src, 0);
@@ -16033,7 +16037,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
 	  /* We are writing an accumulator register, so we have to
 	     prime it after we've written it.  */
-	  emit_insn (gen_mma_xxmtacc (dst, dst));
+	  if (TARGET_MMA
+	      && GET_MODE (dst) == PXImode && FP_REGNO_P (REGNO (dst)))
+	    emit_insn (gen_mma_xxmtacc (dst, dst));
 
 	  return;
 	}

@@ -36,7 +36,8 @@
 ;; Constants for creating unspecs
 
 (define_c_enum "unspec"
-  [UNSPEC_MMA_ASSEMBLE_ACC
+  [UNSPEC_VSX_ASSEMBLE
+   UNSPEC_MMA_ASSEMBLE_ACC
    UNSPEC_MMA_PMXVBF16GER2
    UNSPEC_MMA_PMXVBF16GER2NN
    UNSPEC_MMA_PMXVBF16GER2NP
@@ -350,19 +351,31 @@
 
 (define_expand "vsx_assemble_pair"
   [(match_operand:POI 0 "vsx_register_operand")
-   (match_operand:V16QI 1 "input_operand")
-   (match_operand:V16QI 2 "input_operand")]
+   (match_operand:V16QI 1 "mma_assemble_input_operand")
+   (match_operand:V16QI 2 "mma_assemble_input_operand")]
   "TARGET_MMA"
 {
-  rtx dst;
+  rtx src = gen_rtx_UNSPEC (POImode,
+                            gen_rtvec (2, operands[1], operands[2]),
+                            UNSPEC_VSX_ASSEMBLE);
+  emit_move_insn (operands[0], src);
+  DONE;
+})
 
-  /* Let the compiler know the code below fully defines our output value.  */
-  emit_clobber (operands[0]);
-
-  dst = simplify_gen_subreg (V16QImode, operands[0], POImode, 0);
-  emit_move_insn (dst, operands[1]);
-  dst = simplify_gen_subreg (V16QImode, operands[0], POImode, 16);
-  emit_move_insn (dst, operands[2]);
+(define_insn_and_split "*vsx_assemble_pair"
+  [(set (match_operand:POI 0 "vsx_register_operand" "=wa")
+        (unspec:POI [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
+		     (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
+                     UNSPEC_VSX_ASSEMBLE))]
+  "TARGET_MMA"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx src = gen_rtx_UNSPEC (POImode,
+                            gen_rtvec (2, operands[1], operands[2]),
+                            UNSPEC_VSX_ASSEMBLE);
+  rs6000_split_multireg_move (operands[0], src);
   DONE;
 })
 
