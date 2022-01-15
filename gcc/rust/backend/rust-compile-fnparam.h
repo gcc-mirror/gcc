@@ -24,10 +24,8 @@
 namespace Rust {
 namespace Compile {
 
-class CompileFnParam : public HIRCompileBase
+class CompileFnParam : public HIRCompileBase, public HIR::HIRPatternVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static Bvariable *compile (Context *ctx, tree fndecl,
 			     HIR::FunctionParam *param, tree decl_type,
@@ -57,6 +55,18 @@ public:
       = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
   }
 
+  // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::GroupedPattern &) override {}
+  void visit (HIR::LiteralPattern &) override {}
+  void visit (HIR::PathInExpression &) override {}
+  void visit (HIR::QualifiedPathInExpression &) override {}
+  void visit (HIR::RangePattern &) override {}
+  void visit (HIR::ReferencePattern &) override {}
+  void visit (HIR::SlicePattern &) override {}
+  void visit (HIR::StructPattern &) override {}
+  void visit (HIR::TuplePattern &) override {}
+  void visit (HIR::TupleStructPattern &) override {}
+
 private:
   CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus)
     : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
@@ -69,7 +79,7 @@ private:
   Bvariable *compiled_param;
 };
 
-class CompileSelfParam : public HIRCompileBase
+class CompileSelfParam : public HIRCompileBase, public HIR::HIRStmtVisitor
 {
 public:
   static Bvariable *compile (Context *ctx, tree fndecl, HIR::SelfParam &self,

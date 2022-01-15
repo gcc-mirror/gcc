@@ -315,6 +315,179 @@ public:
   virtual void visit (BareFunctionType &) override {}
 };
 
+class HIRExternalItemVisitor
+{
+public:
+  virtual void visit (ExternalStaticItem &item) = 0;
+  virtual void visit (ExternalFunctionItem &item) = 0;
+};
+
+class HIRTraitItemVisitor
+{
+public:
+  virtual void visit (TraitItemFunc &item) = 0;
+  virtual void visit (TraitItemConst &item) = 0;
+  virtual void visit (TraitItemType &item) = 0;
+};
+
+class HIRVisItemVisitor
+{
+public:
+  virtual void visit (Module &module) = 0;
+  virtual void visit (ExternCrate &crate) = 0;
+  virtual void visit (UseDeclaration &use_decl) = 0;
+  virtual void visit (Function &function) = 0;
+  virtual void visit (TypeAlias &type_alias) = 0;
+  virtual void visit (StructStruct &struct_item) = 0;
+  virtual void visit (TupleStruct &tuple_struct) = 0;
+  virtual void visit (Enum &enum_item) = 0;
+  virtual void visit (Union &union_item) = 0;
+  virtual void visit (ConstantItem &const_item) = 0;
+  virtual void visit (StaticItem &static_item) = 0;
+  virtual void visit (Trait &trait) = 0;
+  virtual void visit (ImplBlock &impl) = 0;
+  virtual void visit (ExternBlock &block) = 0;
+};
+
+class HIRImplVisitor
+{
+public:
+  virtual void visit (Function &function) = 0;
+  virtual void visit (ConstantItem &const_item) = 0;
+  virtual void visit (TypeAlias &type_alias) = 0;
+};
+
+class HIRTypeVisitor
+{
+public:
+  virtual void visit (TypePathSegmentFunction &segment) = 0;
+  virtual void visit (TypePath &path) = 0;
+  virtual void visit (QualifiedPathInType &path) = 0;
+  virtual void visit (TraitBound &bound) = 0;
+  virtual void visit (ImplTraitType &type) = 0;
+  virtual void visit (TraitObjectType &type) = 0;
+  virtual void visit (ParenthesisedType &type) = 0;
+  virtual void visit (ImplTraitTypeOneBound &type) = 0;
+  virtual void visit (TupleType &type) = 0;
+  virtual void visit (NeverType &type) = 0;
+  virtual void visit (RawPointerType &type) = 0;
+  virtual void visit (ReferenceType &type) = 0;
+  virtual void visit (ArrayType &type) = 0;
+  virtual void visit (SliceType &type) = 0;
+  virtual void visit (InferredType &type) = 0;
+  virtual void visit (BareFunctionType &type) = 0;
+};
+
+class HIRStmtVisitor
+{
+public:
+  virtual void visit (EnumItemTuple &) = 0;
+  virtual void visit (EnumItemStruct &) = 0;
+  virtual void visit (EnumItem &item) = 0;
+  virtual void visit (TupleStruct &tuple_struct) = 0;
+  virtual void visit (EnumItemDiscriminant &) = 0;
+  virtual void visit (TypePathSegmentFunction &segment) = 0;
+  virtual void visit (TypePath &path) = 0;
+  virtual void visit (QualifiedPathInType &path) = 0;
+  virtual void visit (Module &module) = 0;
+  virtual void visit (ExternCrate &crate) = 0;
+  virtual void visit (UseDeclaration &use_decl) = 0;
+  virtual void visit (Function &function) = 0;
+  virtual void visit (TypeAlias &type_alias) = 0;
+  virtual void visit (StructStruct &struct_item) = 0;
+  virtual void visit (Enum &enum_item) = 0;
+  virtual void visit (Union &union_item) = 0;
+  virtual void visit (ConstantItem &const_item) = 0;
+  virtual void visit (StaticItem &static_item) = 0;
+  virtual void visit (Trait &trait) = 0;
+  virtual void visit (ImplBlock &impl) = 0;
+  virtual void visit (ExternBlock &block) = 0;
+  virtual void visit (EmptyStmt &stmt) = 0;
+  virtual void visit (LetStmt &stmt) = 0;
+  virtual void visit (ExprStmtWithoutBlock &stmt) = 0;
+  virtual void visit (ExprStmtWithBlock &stmt) = 0;
+};
+
+class HIRExpressionVisitor
+{
+public:
+  // These are StructExprField
+  // Added because of CompileStructExprField
+  virtual void visit (StructExprFieldIdentifier &field) = 0;
+  virtual void visit (StructExprFieldIdentifierValue &field) = 0;
+  virtual void visit (StructExprFieldIndexValue &field) = 0;
+
+  virtual void visit (HIR::QualifiedPathInExpression &expr) = 0;
+  virtual void visit (HIR::PathInExpression &expr) = 0;
+  virtual void visit (ClosureExprInnerTyped &) = 0;
+  virtual void visit (ClosureExprInner &expr) = 0;
+  virtual void visit (StructExprStructFields &) = 0;
+  virtual void visit (StructExprStruct &) = 0;
+  virtual void visit (IdentifierExpr &ident_expr) = 0;
+  virtual void visit (LiteralExpr &expr) = 0;
+  virtual void visit (BorrowExpr &expr) = 0;
+  virtual void visit (DereferenceExpr &expr) = 0;
+  virtual void visit (ErrorPropagationExpr &expr) = 0;
+  virtual void visit (NegationExpr &expr) = 0;
+  virtual void visit (ArithmeticOrLogicalExpr &expr) = 0;
+  virtual void visit (ComparisonExpr &expr) = 0;
+  virtual void visit (LazyBooleanExpr &expr) = 0;
+  virtual void visit (TypeCastExpr &expr) = 0;
+  virtual void visit (AssignmentExpr &expr) = 0;
+  virtual void visit (CompoundAssignmentExpr &expr) = 0;
+  virtual void visit (GroupedExpr &expr) = 0;
+  virtual void visit (ArrayExpr &expr) = 0;
+  virtual void visit (ArrayIndexExpr &expr) = 0;
+  virtual void visit (TupleExpr &expr) = 0;
+  virtual void visit (TupleIndexExpr &expr) = 0;
+  virtual void visit (CallExpr &expr) = 0;
+  virtual void visit (MethodCallExpr &expr) = 0;
+  virtual void visit (FieldAccessExpr &expr) = 0;
+  virtual void visit (BlockExpr &expr) = 0;
+  virtual void visit (ContinueExpr &expr) = 0;
+  virtual void visit (BreakExpr &expr) = 0;
+  virtual void visit (RangeFromToExpr &expr) = 0;
+  virtual void visit (RangeFromExpr &expr) = 0;
+  virtual void visit (RangeToExpr &expr) = 0;
+  virtual void visit (RangeFullExpr &expr) = 0;
+  virtual void visit (RangeFromToInclExpr &expr) = 0;
+  virtual void visit (RangeToInclExpr &expr) = 0;
+  virtual void visit (ReturnExpr &expr) = 0;
+  virtual void visit (UnsafeBlockExpr &expr) = 0;
+  virtual void visit (LoopExpr &expr) = 0;
+  virtual void visit (WhileLoopExpr &expr) = 0;
+  virtual void visit (WhileLetLoopExpr &expr) = 0;
+  virtual void visit (ForLoopExpr &expr) = 0;
+  virtual void visit (IfExpr &expr) = 0;
+  virtual void visit (IfExprConseqElse &expr) = 0;
+  virtual void visit (IfExprConseqIf &expr) = 0;
+  virtual void visit (IfExprConseqIfLet &expr) = 0;
+  virtual void visit (IfLetExpr &expr) = 0;
+  virtual void visit (IfLetExprConseqElse &expr) = 0;
+  virtual void visit (IfLetExprConseqIf &expr) = 0;
+  virtual void visit (IfLetExprConseqIfLet &expr) = 0;
+  virtual void visit (MatchExpr &expr) = 0;
+  virtual void visit (AwaitExpr &expr) = 0;
+  virtual void visit (AsyncBlockExpr &expr) = 0;
+};
+
+class HIRPatternVisitor
+{
+public:
+  virtual void visit (GroupedPattern &) = 0;
+  virtual void visit (IdentifierPattern &) = 0;
+  virtual void visit (LiteralPattern &) = 0;
+  virtual void visit (PathInExpression &) = 0;
+  virtual void visit (QualifiedPathInExpression &) = 0;
+  virtual void visit (RangePattern &) = 0;
+  virtual void visit (ReferencePattern &) = 0;
+  virtual void visit (SlicePattern &) = 0;
+  virtual void visit (StructPattern &) = 0;
+  virtual void visit (TuplePattern &) = 0;
+  virtual void visit (TupleStructPattern &) = 0;
+  virtual void visit (WildcardPattern &) = 0;
+};
+
 } // namespace HIR
 } // namespace Rust
 

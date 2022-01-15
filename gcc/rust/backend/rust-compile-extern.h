@@ -25,10 +25,9 @@
 namespace Rust {
 namespace Compile {
 
-class CompileExternItem : public HIRCompileBase
+class CompileExternItem : public HIRCompileBase,
+			  public HIR::HIRExternalItemVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static void compile (HIR::ExternalItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr)

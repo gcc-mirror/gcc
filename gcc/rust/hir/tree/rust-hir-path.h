@@ -323,6 +323,8 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   bool opening_scope_resolution () { return has_opening_scope_resolution; }
 
@@ -706,6 +708,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   size_t get_num_segments () const { return segments.size (); }
 
@@ -829,6 +832,8 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   QualifiedPathType &get_path_type () { return path_type; }
 
@@ -927,6 +932,7 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   QualifiedPathType &get_path_type () { return path_type; }
 

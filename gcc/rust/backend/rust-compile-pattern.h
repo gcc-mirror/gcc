@@ -21,10 +21,9 @@
 namespace Rust {
 namespace Compile {
 
-class CompilePatternCaseLabelExpr : public HIRCompileBase
+class CompilePatternCaseLabelExpr : public HIRCompileBase,
+				    public HIR::HIRPatternVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static tree Compile (HIR::Pattern *pattern, tree associated_case_label,
 		       Context *ctx)
@@ -35,14 +34,20 @@ public:
   }
 
   void visit (HIR::PathInExpression &pattern) override;
-
   void visit (HIR::StructPattern &pattern) override;
-
   void visit (HIR::TupleStructPattern &pattern) override;
-
   void visit (HIR::WildcardPattern &pattern) override;
 
-private:
+  // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::GroupedPattern &) override {}
+  void visit (HIR::IdentifierPattern &) override {}
+  void visit (HIR::LiteralPattern &) override {}
+  void visit (HIR::QualifiedPathInExpression &) override {}
+  void visit (HIR::RangePattern &) override {}
+  void visit (HIR::ReferencePattern &) override {}
+  void visit (HIR::SlicePattern &) override {}
+  void visit (HIR::TuplePattern &) override {}
+
   CompilePatternCaseLabelExpr (Context *ctx, tree associated_case_label)
     : HIRCompileBase (ctx), case_label_expr (error_mark_node),
       associated_case_label (associated_case_label)
@@ -52,10 +57,9 @@ private:
   tree associated_case_label;
 };
 
-class CompilePatternBindings : public HIRCompileBase
+class CompilePatternBindings : public HIRCompileBase,
+			       public HIR::HIRPatternVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static void Compile (HIR::Pattern *pattern, tree match_scrutinee_expr,
 		       Context *ctx)
@@ -65,8 +69,19 @@ public:
   }
 
   void visit (HIR::StructPattern &pattern) override;
-
   void visit (HIR::TupleStructPattern &pattern) override;
+
+  // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::GroupedPattern &) override {}
+  void visit (HIR::IdentifierPattern &) override {}
+  void visit (HIR::LiteralPattern &) override {}
+  void visit (HIR::PathInExpression &) override {}
+  void visit (HIR::QualifiedPathInExpression &) override {}
+  void visit (HIR::RangePattern &) override {}
+  void visit (HIR::ReferencePattern &) override {}
+  void visit (HIR::SlicePattern &) override {}
+  void visit (HIR::TuplePattern &) override {}
+  void visit (HIR::WildcardPattern &) override {}
 
 private:
   CompilePatternBindings (Context *ctx, tree match_scrutinee_expr)

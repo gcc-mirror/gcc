@@ -52,6 +52,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -132,6 +133,7 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -170,6 +172,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -353,6 +356,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -418,6 +422,7 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -699,6 +704,7 @@ public:
   Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   PathInExpression &get_path () { return path; }
   StructPatternElements &get_struct_pattern_elems () { return elems; }
@@ -927,6 +933,7 @@ public:
   Location get_locus () const override { return path.get_locus (); }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   PathInExpression &get_path () { return path; }
 
@@ -1116,6 +1123,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -1178,6 +1186,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {
@@ -1242,6 +1251,7 @@ public:
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRPatternVisitor &vis) override;
 
   Analysis::NodeMapping get_pattern_mappings () const override final
   {

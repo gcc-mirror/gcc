@@ -29,8 +29,6 @@ namespace Compile {
 // this is a proxy for HIR::ImplItem's back to use the normel HIR::Item path
 class CompileInherentImplItem : public CompileItem
 {
-  using Rust::Compile::CompileItem::visit;
-
 public:
   static tree Compile (HIR::ImplItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
@@ -54,10 +52,8 @@ private:
   {}
 };
 
-class CompileTraitItem : public HIRCompileBase
+class CompileTraitItem : public HIRCompileBase, public HIR::HIRTraitItemVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static tree Compile (HIR::TraitItem *item, Context *ctx,
 		       TyTy::BaseType *concrete, bool is_query_mode = false,
@@ -74,8 +70,9 @@ public:
   }
 
   void visit (HIR::TraitItemConst &constant) override;
-
   void visit (HIR::TraitItemFunc &func) override;
+
+  void visit (HIR::TraitItemType &typ) override {}
 
 private:
   CompileTraitItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
