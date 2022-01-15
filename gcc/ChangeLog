@@ -1,3 +1,14 @@
+2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-param-manipulation.c (ipa_dump_adjusted_parameters): Dump
+	reverse flag as "reverse" for the sake of consistency.
+	* ipa-sra.c: Fix copyright year.
+	(ipa_sra_function_summaries::duplicate): Copy the reverse flag.
+	(dump_isra_access): Tweak dump line.
+	(isra_write_node_summary): Write the reverse flag.
+	(isra_read_node_info): Read it.
+	(pull_accesses_from_callee): Test its consistency and copy it.
+
 2022-01-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

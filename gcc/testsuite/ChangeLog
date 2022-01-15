@@ -1,3 +1,9 @@
+2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto25.adb: New test.
+	* gnat.dg/opt96.adb: Likewise.
+	* gnat.dg/opt96_pkg.ads, gnat.dg/opt96_pkg.adb: New helper.
+
 2022-01-13  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
