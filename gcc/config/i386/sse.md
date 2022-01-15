@@ -4956,7 +4956,7 @@
 	      ]
 	      (const_string "TI")))])
 
-(define_insn "*<code><mode>3"
+(define_insn "<code><mode>3"
   [(set (match_operand:MODEF 0 "register_operand" "=x,x,v,v")
 	(any_logic:MODEF
 	  (match_operand:MODEF 1 "register_operand" "%0,x,v,v")
