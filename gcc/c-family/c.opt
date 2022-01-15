@@ -548,6 +548,14 @@ Wdangling-else
 C ObjC C++ ObjC++ Var(warn_dangling_else) Warning LangEnabledBy(C ObjC C++ ObjC++,Wparentheses)
 Warn about dangling else.
 
+Wdangling-pointer
+C ObjC C++ LTO ObjC++ Alias(Wdangling-pointer=, 2, 0) Warning
+Warn for uses of pointers to auto variables whose lifetime has ended.
+
+Wdangling-pointer=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) IntegerRange(0, 2)
+Warn for uses of pointers to auto variables whose lifetime has ended.
+
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
 Warn about __TIME__, __DATE__ and __TIMESTAMP__ usage.

@@ -341,7 +341,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
 -Wconversion  -Wno-coverage-mismatch  -Wno-cpp @gol
--Wdangling-else  -Wdate-time @gol
+-Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}  @gol
+-Wdate-time @gol
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers @gol
@@ -4389,6 +4390,8 @@ Warn about overriding virtual functions that are not marked with the
 @opindex Wno-use-after-free
 Warn about uses of pointers to dynamically allocated objects that have
 been rendered indeterminate by a call to a deallocation function.
+The warning is enabled at all optimization levels but may yield different
+results with optimization than without.
 
 @table @gcctabopt
 @item -Wuse-after-free=1
@@ -5714,6 +5717,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcatch-value @r{(C++ and Objective-C++ only)}  @gol
 -Wchar-subscripts  @gol
 -Wcomment  @gol
+-Wdangling-pointer=2  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wformat   @gol
@@ -8586,6 +8590,62 @@ looks like this:
 @end smallexample
 
 This warning is enabled by @option{-Wparentheses}.
+
+@item -Wdangling-pointer
+@itemx -Wdangling-pointer=@var{n}
+@opindex Wdangling-pointer
+@opindex Wno-dangling-pointer
+Warn about uses of pointers (or C++ references) to objects with automatic
+storage duration after their lifetime has ended.  This includes local
+variables declared in nested blocks, compound literals and other unnamed
+temporary objects.  In addition, warn about storing the address of such
+objects in escaped pointers.  The warning is enabled at all optimization
+levels but may yield different results with optimization than without.
+
+@table @gcctabopt
+@item -Wdangling-pointer=1
+At level 1 the warning diagnoses only unconditional uses of dangling pointers.
+For example
+@smallexample
+int f (int c1, int c2, x)
+@{
+  char *p = strchr ((char[])@{ c1, c2 @}, c3);
+  return p ? *p : 'x';   // warning: dangling pointer to a compound literal
+@}
+@end smallexample
+In the following function the store of the address of the local variable
+@code{x} in the escaped pointer @code{*p} also triggers the warning.
+@smallexample
+void g (int **p)
+@{
+  int x = 7;
+  *p = &x;   // warning: storing the address of a local variable in *p
+@}
+@end smallexample
+
+@item -Wdangling-pointer=2
+At level 2, in addition to unconditional uses the warning also diagnoses
+conditional uses of dangling pointers.
+
+For example, because the array @var{a} in the following function is out of
+scope when the pointer @var{s} that was set to point is used, the warning
+triggers at this level.
+
+@smallexample
+void f (char *s)
+@{
+  if (!s)
+    @{
+      char a[12] = "tmpname";
+      s = a;
+    @}
+  strcat (s, ".tmp");   // warning: dangling pointer to a may be used
+  ...
+@}
+@end smallexample
+@end table
+
+@option{-Wdangling-pointer=2} is included in @option{-Wall}.
 
 @item -Wdate-time
 @opindex Wdate-time

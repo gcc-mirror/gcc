@@ -2069,9 +2069,11 @@ class pass_waccess : public gimple_opt_pass
 
   ~pass_waccess ();
 
-  opt_pass *clone () { return new pass_waccess (m_ctxt); }
+  opt_pass *clone ();
 
   virtual bool gate (function *);
+
+  void set_pass_param (unsigned, bool);
 
   virtual unsigned int execute (function *);
 
@@ -2088,6 +2090,9 @@ private:
 
   /* Check a call to an ordinary function for invalid accesses.  */
   bool check_call_access (gcall *);
+
+  /* Check a non-call statement.  */
+  void check_stmt (gimple *);
 
   /* Check statements in a basic block.  */
   void check_block (basic_block);
@@ -2112,26 +2117,41 @@ private:
   void check_atomic_memmodel (gimple *, tree, tree, const unsigned char *);
 
   /* Check for uses of indeterminate pointers.  */
-  void check_pointer_uses (gimple *, tree);
+  void check_pointer_uses (gimple *, tree, tree = NULL_TREE, bool = false);
 
   /* Return the argument that a call returns.  */
   tree gimple_call_return_arg (gcall *);
+  tree gimple_call_return_arg_ref (gcall *);
 
-  void warn_invalid_pointer (tree, gimple *, gimple *, bool, bool = false);
+  /* Check a call for uses of a dangling pointer arguments.  */
+  void check_call_dangling (gcall *);
+
+  /* Check uses of a dangling pointer or those derived from it.  */
+  void check_dangling_uses (tree, tree, bool = false, bool = false);
+  void check_dangling_uses ();
+  void check_dangling_stores ();
+  void check_dangling_stores (basic_block, hash_set<tree> &, auto_bitmap &);
+
+  void warn_invalid_pointer (tree, gimple *, gimple *, tree, bool, bool = false);
 
   /* Return true if use follows an invalidating statement.  */
-  bool use_after_inval_p (gimple *, gimple *);
+  bool use_after_inval_p (gimple *, gimple *, bool = false);
 
   /* A pointer_query object and its cache to store information about
      pointers and their targets in.  */
   pointer_query m_ptr_qry;
   pointer_query::cache_type m_var_cache;
-
+  /* Mapping from DECLs and their clobber statements in the function.  */
+  hash_map<tree, gimple *> m_clobbers;
   /* A bit is set for each basic block whose statements have been assigned
      valid UIDs.  */
   bitmap m_bb_uids_set;
   /* The current function.  */
   function *m_func;
+  /* True to run checks for uses of dangling pointers.  */
+  bool m_check_dangling_p;
+  /* True to run checks early on in the optimization pipeline.  */
+  bool m_early_checks_p;
 };
 
 /* Construct the pass.  */
@@ -2140,9 +2160,20 @@ pass_waccess::pass_waccess (gcc::context *ctxt)
   : gimple_opt_pass (pass_data_waccess, ctxt),
     m_ptr_qry (NULL, &m_var_cache),
     m_var_cache (),
+    m_clobbers (),
     m_bb_uids_set (),
-    m_func ()
+    m_func (),
+    m_check_dangling_p (),
+    m_early_checks_p ()
 {
+}
+
+/* Return a copy of the pass with RUN_NUMBER one greater than THIS.  */
+
+opt_pass*
+pass_waccess::clone ()
+{
+  return new pass_waccess (m_ctxt);
 }
 
 /* Release pointer_query cache.  */
@@ -2150,6 +2181,14 @@ pass_waccess::pass_waccess (gcc::context *ctxt)
 pass_waccess::~pass_waccess ()
 {
   m_ptr_qry.flush_cache ();
+}
+
+void
+pass_waccess::set_pass_param (unsigned int n, bool early)
+{
+  gcc_assert (n == 0);
+
+  m_early_checks_p = early;
 }
 
 /* Return true when any checks performed by the pass are enabled.  */
@@ -2340,6 +2379,9 @@ maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
 void
 pass_waccess::check_alloca (gcall *stmt)
 {
+  if (m_early_checks_p)
+    return;
+
   if ((warn_vla_limit >= HOST_WIDE_INT_MAX
        && warn_alloc_size_limit < warn_vla_limit)
       || (warn_alloca_limit >= HOST_WIDE_INT_MAX
@@ -2361,6 +2403,13 @@ pass_waccess::check_alloca (gcall *stmt)
 void
 pass_waccess::check_alloc_size_call (gcall *stmt)
 {
+  if (m_early_checks_p)
+    return;
+
+  if (gimple_call_num_args (stmt) < 1)
+    /* Avoid invalid calls to functions without a prototype.  */
+    return;
+
   tree fndecl = gimple_call_fndecl (stmt);
   if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
@@ -2413,6 +2462,9 @@ pass_waccess::check_alloc_size_call (gcall *stmt)
 void
 pass_waccess::check_strcat (gcall *stmt)
 {
+  if (m_early_checks_p)
+    return;
+
   if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
 
@@ -2438,6 +2490,9 @@ pass_waccess::check_strcat (gcall *stmt)
 void
 pass_waccess::check_strncat (gcall *stmt)
 {
+  if (m_early_checks_p)
+    return;
+
   if (!warn_stringop_overflow && !warn_stringop_overread)
     return;
 
@@ -2507,6 +2562,9 @@ pass_waccess::check_strncat (gcall *stmt)
 void
 pass_waccess::check_stxcpy (gcall *stmt)
 {
+  if (m_early_checks_p)
+    return;
+
   tree dst = call_arg (stmt, 0);
   tree src = call_arg (stmt, 1);
 
@@ -2545,7 +2603,7 @@ pass_waccess::check_stxcpy (gcall *stmt)
 void
 pass_waccess::check_stxncpy (gcall *stmt)
 {
-  if (!warn_stringop_overflow)
+  if (m_early_checks_p || !warn_stringop_overflow)
     return;
 
   tree dst = call_arg (stmt, 0);
@@ -2569,7 +2627,7 @@ pass_waccess::check_stxncpy (gcall *stmt)
 void
 pass_waccess::check_strncmp (gcall *stmt)
 {
-  if (!warn_stringop_overread)
+  if (m_early_checks_p || !warn_stringop_overread)
     return;
 
   tree arg1 = call_arg (stmt, 0);
@@ -2674,6 +2732,9 @@ pass_waccess::check_strncmp (gcall *stmt)
 void
 pass_waccess::check_memop_access (gimple *stmt, tree dest, tree src, tree size)
 {
+  if (m_early_checks_p)
+    return;
+
   /* For functions like memset and memcpy that operate on raw memory
      try to determine the size of the largest source and destination
      object using type-0 Object Size regardless of the object size
@@ -2695,7 +2756,7 @@ pass_waccess::check_read_access (gimple *stmt, tree src,
 				 tree bound /* = NULL_TREE */,
 				 int ost /* = 1 */)
 {
-  if (!warn_stringop_overread)
+  if (m_early_checks_p || !warn_stringop_overread)
     return;
 
   if (bound && !useless_type_conversion_p (size_type_node, TREE_TYPE (bound)))
@@ -2938,7 +2999,7 @@ pass_waccess::check_atomic_memmodel (gimple *stmt, tree ord_sucs,
   if (warning_suppressed_p (stmt, OPT_Winvalid_memory_model))
     return;
 
-  if (maybe_warn_memmodel (stmt, ord_sucs, ord_fail, valid))
+  if (!maybe_warn_memmodel (stmt, ord_sucs, ord_fail, valid))
     return;
 
   suppress_warning (stmt, OPT_Winvalid_memory_model);
@@ -3094,11 +3155,12 @@ pass_waccess::check_builtin (gcall *stmt)
 
     case BUILT_IN_FREE:
     case BUILT_IN_REALLOC:
-      {
-	tree arg = call_arg (stmt, 0);
-	if (TREE_CODE (arg) == SSA_NAME)
-	  check_pointer_uses (stmt, arg);
-      }
+      if (!m_early_checks_p)
+	{
+	  tree arg = call_arg (stmt, 0);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    check_pointer_uses (stmt, arg);
+	}
       return true;
 
     case BUILT_IN_GETTEXT:
@@ -3725,16 +3787,67 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
 
 /* Return true if either USE_STMT's basic block (that of a pointer's use)
    is dominated by INVAL_STMT's (that of a pointer's invalidating statement,
-   or if they're in the same block, USE_STMT follows INVAL_STMT.  */
+   which is either a clobber or a deallocation call), or if they're in
+   the same block, USE_STMT follows INVAL_STMT.  */
 
 bool
-pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt)
+pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt,
+				 bool last_block /* = false */)
 {
+  tree clobvar =
+    gimple_clobber_p (inval_stmt) ? gimple_assign_lhs (inval_stmt) : NULL_TREE;
+
   basic_block inval_bb = gimple_bb (inval_stmt);
   basic_block use_bb = gimple_bb (use_stmt);
 
+  if (!inval_bb || !use_bb)
+    return false;
+
   if (inval_bb != use_bb)
-    return dominated_by_p (CDI_DOMINATORS, use_bb, inval_bb);
+    {
+      if (dominated_by_p (CDI_DOMINATORS, use_bb, inval_bb))
+	return true;
+
+      if (!clobvar || !last_block)
+	return false;
+
+      /* Proceed only when looking for uses of dangling pointers.  */
+      auto gsi = gsi_for_stmt (use_stmt);
+
+      auto_bitmap visited;
+
+      /* A use statement in the last basic block in a function or one that
+	 falls through to it is after any other prior clobber of the used
+	 variable unless it's followed by a clobber of the same variable. */
+      basic_block bb = use_bb;
+      while (bb != inval_bb
+	     && single_succ_p (bb)
+	     && !(single_succ_edge (bb)->flags & (EDGE_EH|EDGE_DFS_BACK)))
+	{
+	  if (!bitmap_set_bit (visited, bb->index))
+	    /* Avoid cycles. */
+	    return true;
+
+	  for (; !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
+	    {
+	      gimple *stmt = gsi_stmt (gsi);
+	      if (gimple_clobber_p (stmt))
+		{
+		  if (clobvar == gimple_assign_lhs (stmt))
+		    /* The use is followed by a clobber.  */
+		    return false;
+		}
+	    }
+
+	  bb = single_succ (bb);
+	  gsi = gsi_start_bb (bb);
+	}
+
+      /* The use is one of a dangling pointer if a clobber of the variable
+	 [the pointer points to] has not been found before the function exit
+	 point.  */
+      return bb == EXIT_BLOCK_PTR_FOR_FN (cfun);
+    }
 
   if (bitmap_set_bit (m_bb_uids_set, inval_bb->index))
     /* The first time this basic block is visited assign increasing ids
@@ -3752,27 +3865,30 @@ pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt)
   return gimple_uid (inval_stmt) < gimple_uid (use_stmt);
 }
 
-/* Issue a warning for the USE_STMT of pointer PTR rendered invalid
-   by INVAL_STMT.  PTR may be null when it's been optimized away.
-   MAYBE is true to issue the "maybe" kind of warning.  EQUALITY is
-   true when the pointer is used in an equality expression.  */
+/* Issue a warning for the USE_STMT of pointer or reference REF rendered
+   invalid by INVAL_STMT.  REF may be null when it's been optimized away.
+   When nonnull, INVAL_STMT is the deallocation function that rendered
+   the pointer or reference dangling.  Otherwise, VAR is the auto variable
+   (including an unnamed temporary such as a compound literal) whose
+   lifetime's rended it dangling.  MAYBE is true to issue the "maybe"
+   kind of warning.  EQUALITY is true when the pointer is used in
+   an equality expression.  */
 
 void
-pass_waccess::warn_invalid_pointer (tree ptr, gimple *use_stmt,
-				    gimple *inval_stmt,
-				    bool maybe,
-				    bool equality /* = false */)
+pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
+				    gimple *inval_stmt, tree var,
+				    bool maybe, bool equality /* = false */)
 {
   /* Avoid printing the unhelpful "<unknown>" in the diagnostics.  */
-  if (ptr && TREE_CODE (ptr) == SSA_NAME
-      && (!SSA_NAME_VAR (ptr) || DECL_ARTIFICIAL (SSA_NAME_VAR (ptr))))
-    ptr = NULL_TREE;
+  if (ref && TREE_CODE (ref) == SSA_NAME
+      && (!SSA_NAME_VAR (ref) || DECL_ARTIFICIAL (SSA_NAME_VAR (ref))))
+    ref = NULL_TREE;
 
   location_t use_loc = gimple_location (use_stmt);
   if (use_loc == UNKNOWN_LOCATION)
     {
-      use_loc = cfun->function_end_locus;
-      if (!ptr)
+      use_loc = m_func->function_end_locus;
+      if (!ref)
 	/* Avoid issuing a warning with no context other than
 	   the function.  That would make it difficult to debug
 	   in any but very simple cases.  */
@@ -3788,12 +3904,12 @@ pass_waccess::warn_invalid_pointer (tree ptr, gimple *use_stmt,
 
       const tree inval_decl = gimple_call_fndecl (inval_stmt);
 
-      if ((ptr && warning_at (use_loc, OPT_Wuse_after_free,
+      if ((ref && warning_at (use_loc, OPT_Wuse_after_free,
 			      (maybe
 			       ? G_("pointer %qE may be used after %qD")
 			       : G_("pointer %qE used after %qD")),
-			      ptr, inval_decl))
-	  || (!ptr && warning_at (use_loc, OPT_Wuse_after_free,
+			      ref, inval_decl))
+	  || (!ref && warning_at (use_loc, OPT_Wuse_after_free,
 			      (maybe
 			       ? G_("pointer may be used after %qD")
 			       : G_("pointer used after %qD")),
@@ -3804,6 +3920,52 @@ pass_waccess::warn_invalid_pointer (tree ptr, gimple *use_stmt,
 	  suppress_warning (use_stmt, OPT_Wuse_after_free);
 	}
       return;
+    }
+
+  if ((maybe && warn_dangling_pointer < 2)
+      || warning_suppressed_p (use_stmt, OPT_Wdangling_pointer_))
+    return;
+
+  if (DECL_NAME (var))
+    {
+      if ((ref
+	   && warning_at (use_loc, OPT_Wdangling_pointer_,
+			  (maybe
+			   ? G_("dangling pointer %qE to %qD may be used")
+			   : G_("using dangling pointer %qE to %qD")),
+			  ref, var))
+	  || (!ref
+	      && warning_at (use_loc, OPT_Wdangling_pointer_,
+			     (maybe
+			      ? G_("dangling pointer to %qD may be used")
+			      : G_("using a dangling pointer to %qD")),
+			     var)))
+	inform (DECL_SOURCE_LOCATION (var),
+		"%qD declared here", var);
+      suppress_warning (use_stmt, OPT_Wdangling_pointer_);
+      return;
+    }
+
+  if ((ref
+       && warning_at (use_loc, OPT_Wdangling_pointer_,
+		      (maybe
+		       ? G_("dangling pointer %qE to an unnamed temporary "
+			    "may be used")
+		       : G_("using dangling pointer %qE to an unnamed "
+			    "temporary")),
+		      ref, var))
+      || (!ref
+	  && warning_at (use_loc, OPT_Wdangling_pointer_,
+			 (maybe
+			  ? G_("dangling pointer to an unnamed temporary "
+			       "may be used")
+			  : G_("using a dangling pointer to an unnamed "
+			       "temporary")),
+			 var)))
+    {
+      inform (DECL_SOURCE_LOCATION (var),
+	      "unnamed temporary defined here");
+      suppress_warning (use_stmt, OPT_Wdangling_pointer_);
     }
 }
 
@@ -3927,10 +4089,14 @@ pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
 
 /* For a STMT either a call to a deallocation function or a clobber, warn
    for uses of the pointer PTR it was called with (including its copies
-   or others derived from it by pointer arithmetic).  */
+   or others derived from it by pointer arithmetic).  If STMT is a clobber,
+   VAR is the decl of the clobbered variable.  When MAYBE is true use
+   a "maybe" form of diagnostic.  */
 
 void
-pass_waccess::check_pointer_uses (gimple *stmt, tree ptr)
+pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
+				  tree var /* = NULL_TREE */,
+				  bool maybe /* = false */)
 {
   gcc_assert (TREE_CODE (ptr) == SSA_NAME);
 
@@ -4013,18 +4179,25 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr)
 	  /* Warn if USE_STMT is dominated by the deallocation STMT.
 	     Otherwise, add the pointer to POINTERS so that the uses
 	     of any other pointers derived from it can be checked.  */
-	  if (use_after_inval_p (stmt, use_stmt))
+	  if (use_after_inval_p (stmt, use_stmt, check_dangling))
 	    {
-	      /* TODO: Handle PHIs but careful of false positives.  */
-	      if (gimple_code (use_stmt) != GIMPLE_PHI)
+	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
-		  basic_block use_bb = gimple_bb (use_stmt);
-		  bool this_maybe
-		    = !dominated_by_p (CDI_POST_DOMINATORS, use_bb, stmt_bb);
-		  warn_invalid_pointer (*use_p->use, use_stmt, stmt,
-					this_maybe, equality);
-		  continue;
+		  tree lhs = gimple_phi_result (use_stmt);
+		  if (TREE_CODE (lhs) == SSA_NAME)
+		    {
+		      pointers.safe_push (lhs);
+		      continue;
+		    }
 		}
+
+	      basic_block use_bb = gimple_bb (use_stmt);
+	      bool this_maybe
+		= (maybe
+		   || !dominated_by_p (CDI_POST_DOMINATORS, use_bb, stmt_bb));
+	      warn_invalid_pointer (*use_p->use, use_stmt, stmt, var,
+				    this_maybe, equality);
+	      continue;
 	    }
 
 	  if (is_gimple_assign (use_stmt))
@@ -4059,25 +4232,99 @@ pass_waccess::check_call (gcall *stmt)
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     check_builtin (stmt);
 
-  if (tree callee = gimple_call_fndecl (stmt))
-    {
-      /* Check for uses of the pointer passed to either a standard
-	 or a user-defined deallocation function.  */
-      unsigned argno = fndecl_dealloc_argno (callee);
-      if (argno < (unsigned) call_nargs (stmt))
-	{
-	  tree arg = call_arg (stmt, argno);
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    check_pointer_uses (stmt, arg);
-	}
-    }
+  if (!m_early_checks_p)
+    if (tree callee = gimple_call_fndecl (stmt))
+      {
+	/* Check for uses of the pointer passed to either a standard
+	   or a user-defined deallocation function.  */
+	unsigned argno = fndecl_dealloc_argno (callee);
+	if (argno < (unsigned) call_nargs (stmt))
+	  {
+	    tree arg = call_arg (stmt, argno);
+	    if (TREE_CODE (arg) == SSA_NAME)
+	      check_pointer_uses (stmt, arg);
+	  }
+      }
 
   check_call_access (stmt);
+  check_call_dangling (stmt);
+
+  if (m_early_checks_p)
+    return;
 
   maybe_check_dealloc_call (stmt);
   check_nonstring_args (stmt);
 }
 
+
+/* Return true of X is a DECL with automatic storage duration.  */
+
+static inline bool
+is_auto_decl (tree x)
+{
+  return DECL_P (x) && !DECL_EXTERNAL (x) && !TREE_STATIC (x);
+}
+
+/* Check non-call STMT for invalid accesses.  */
+
+void
+pass_waccess::check_stmt (gimple *stmt)
+{
+  if (m_check_dangling_p && gimple_clobber_p (stmt))
+    {
+      /* Ignore clobber statemts in blocks with exceptional edges.  */
+      basic_block bb = gimple_bb (stmt);
+      edge e = EDGE_PRED (bb, 0);
+      if (e->flags & EDGE_EH)
+	return;
+
+      tree var = gimple_assign_lhs (stmt);
+      m_clobbers.put (var, stmt);
+      return;
+    }
+
+  if (is_gimple_assign (stmt))
+    {
+      /* Clobbered unnamed temporaries such as compound literals can be
+	 revived.  Check for an assignment to one and remove it from
+	 M_CLOBBERS.  */
+      tree lhs = gimple_assign_lhs (stmt);
+      while (handled_component_p (lhs))
+	lhs = TREE_OPERAND (lhs, 0);
+
+      if (is_auto_decl (lhs))
+	m_clobbers.remove (lhs);
+      return;
+    }
+
+  if (greturn *ret = dyn_cast <greturn *> (stmt))
+    {
+      if (optimize && flag_isolate_erroneous_paths_dereference)
+	/* Avoid interfering with -Wreturn-local-addr (which runs only
+	   with optimization enabled).  */
+	return;
+
+      tree arg = gimple_return_retval (ret);
+      if (!arg || TREE_CODE (arg) != ADDR_EXPR)
+	return;
+
+      arg = TREE_OPERAND (arg, 0);
+      while (handled_component_p (arg))
+	arg = TREE_OPERAND (arg, 0);
+
+      if (!is_auto_decl (arg))
+	return;
+
+      gimple **pclobber = m_clobbers.get (arg);
+      if (!pclobber)
+	return;
+
+      if (!use_after_inval_p (*pclobber, stmt))
+	return;
+
+      warn_invalid_pointer (NULL_TREE, stmt, *pclobber, arg, false);
+    }
+}
 
 /* Check basic block BB for invalid accesses.  */
 
@@ -4091,6 +4338,8 @@ pass_waccess::check_block (basic_block bb)
       gimple *stmt = gsi_stmt (si);
       if (gcall *call = dyn_cast <gcall *> (stmt))
 	check_call (call);
+      else
+	check_stmt (stmt);
     }
 }
 
@@ -4139,6 +4388,262 @@ pass_waccess::gimple_call_return_arg (gcall *call)
   return gimple_call_arg (call, argno);
 }
 
+/* Return the decl referenced by the argument that the call STMT to
+   a built-in function returns (including with an offset) or null if
+   it doesn't.  */
+
+tree
+pass_waccess::gimple_call_return_arg_ref (gcall *call)
+{
+  if (tree arg = gimple_call_return_arg (call))
+    {
+      access_ref aref;
+      if (m_ptr_qry.get_ref (arg, call, &aref, 0)
+	  && DECL_P (aref.ref))
+	return aref.ref;
+    }
+
+  return NULL_TREE;
+}
+
+/* Check for and diagnose all uses of the dangling pointer VAR to the auto
+   object DECL whose lifetime has ended.  OBJREF is true when VAR denotes
+   an access to a DECL that may have been clobbered.  */
+
+void
+pass_waccess::check_dangling_uses (tree var, tree decl, bool maybe /* = false */,
+				   bool objref /* = false */)
+{
+  if (!decl || !is_auto_decl (decl))
+    return;
+
+  gimple **pclob = m_clobbers.get (decl);
+  if (!pclob)
+    return;
+
+  if (!objref)
+    {
+      check_pointer_uses (*pclob, var, decl, maybe);
+      return;
+    }
+
+  gimple *use_stmt = SSA_NAME_DEF_STMT (var);
+  if (!use_after_inval_p (*pclob, use_stmt, true))
+    return;
+
+  basic_block use_bb = gimple_bb (use_stmt);
+  basic_block clob_bb = gimple_bb (*pclob);
+  maybe = maybe || !dominated_by_p (CDI_POST_DOMINATORS, use_bb, clob_bb);
+  warn_invalid_pointer (var, use_stmt, *pclob, decl, maybe, false);
+}
+
+/* Diagnose stores in BB and (recursively) its predecessors of the addresses
+   of local variables into nonlocal pointers that are left dangling after
+   the function returns.  BBS is a bitmap of basic blocks visited.  */
+
+void
+pass_waccess::check_dangling_stores (basic_block bb,
+				     hash_set<tree> &stores,
+				     auto_bitmap &bbs)
+{
+  if (!bitmap_set_bit (bbs, bb->index))
+    /* Avoid cycles. */
+    return;
+
+  /* Iterate backwards over the statements looking for a store of
+     the address of a local variable into a nonlocal pointer.  */
+  for (auto gsi = gsi_last_nondebug_bb (bb); ; gsi_prev_nondebug (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (!stmt)
+	break;
+
+      if (is_gimple_call (stmt)
+	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
+	/* Avoid looking before nonconst, nonpure calls since those might
+	   use the escaped locals.  */
+	return;
+
+      if (!is_gimple_assign (stmt) || gimple_clobber_p (stmt))
+	continue;
+
+      access_ref lhs_ref;
+      tree lhs = gimple_assign_lhs (stmt);
+      if (!m_ptr_qry.get_ref (lhs, stmt, &lhs_ref, 0))
+	continue;
+
+      if (is_auto_decl (lhs_ref.ref))
+	continue;
+
+      if (DECL_P (lhs_ref.ref))
+	{
+	  if (!POINTER_TYPE_P (TREE_TYPE (lhs_ref.ref))
+	      || lhs_ref.deref > 0)
+	    continue;
+	}
+      else if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
+	{
+	  /* Avoid looking at or before stores into unknown objects.  */
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
+	  if (!gimple_nop_p (def_stmt))
+	    return;
+	}
+      else if (TREE_CODE (lhs_ref.ref) == MEM_REF)
+	{
+	  tree arg = TREE_OPERAND (lhs_ref.ref, 0);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    {
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
+	      if (!gimple_nop_p (def_stmt))
+		return;
+	    }
+	}
+      else
+	continue;
+
+      if (stores.add (lhs_ref.ref))
+	continue;
+
+      /* FIXME: Handle stores of alloca() and VLA.  */
+      access_ref rhs_ref;
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (!m_ptr_qry.get_ref (rhs, stmt, &rhs_ref, 0)
+	  || rhs_ref.deref != -1)
+	continue;
+
+      if (!is_auto_decl (rhs_ref.ref))
+	continue;
+
+      location_t loc = gimple_location (stmt);
+      if (warning_at (loc, OPT_Wdangling_pointer_,
+		      "storing the address of local variable %qD in %qE",
+		      rhs_ref.ref, lhs))
+	{
+	  location_t loc = DECL_SOURCE_LOCATION (rhs_ref.ref);
+	  inform (loc, "%qD declared here", rhs_ref.ref);
+
+	  if (DECL_P (lhs_ref.ref))
+	    loc = DECL_SOURCE_LOCATION (lhs_ref.ref);
+	  else if (EXPR_HAS_LOCATION (lhs_ref.ref))
+	    loc = EXPR_LOCATION (lhs_ref.ref);
+
+	  if (loc != UNKNOWN_LOCATION)
+	    inform (loc, "%qE declared here", lhs_ref.ref);
+	}
+    }
+
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      basic_block pred = e->src;
+      check_dangling_stores (pred, stores, bbs);
+    }
+}
+
+/* Diagnose stores of the addresses of local variables into nonlocal
+   pointers that are left dangling after the function returns.  */
+
+void
+pass_waccess::check_dangling_stores ()
+{
+  auto_bitmap bbs;
+  hash_set<tree> stores;
+  check_dangling_stores (EXIT_BLOCK_PTR_FOR_FN (m_func), stores, bbs);
+}
+
+/* Check for and diagnose uses of dangling pointers to auto objects
+   whose lifetime has ended.  */
+
+void
+pass_waccess::check_dangling_uses ()
+{
+  tree var;
+  unsigned i;
+  FOR_EACH_SSA_NAME (i, var, m_func)
+    {
+      /* For each SSA_NAME pointer VAR find the DECL it points to.
+	 If the DECL is a clobbered local variable, check to see
+	 if any of VAR's uses (or those of other pointers derived
+	 from VAR) happens after the clobber.  If so, warn.  */
+      tree decl = NULL_TREE;
+
+      gimple *def_stmt = SSA_NAME_DEF_STMT (var);
+      if (is_gimple_assign (def_stmt))
+	{
+	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    {
+	      if (!POINTER_TYPE_P (TREE_TYPE (var)))
+		continue;
+	      decl = TREE_OPERAND (rhs, 0);
+	    }
+	  else
+	    {
+	      /* For other expressions, check the base DECL to see
+		 if it's been clobbered, most likely as a result of
+		 inlining a reference to it.  */
+	      decl = get_base_address (rhs);
+	      if (DECL_P (decl))
+		check_dangling_uses (var, decl, false, true);
+	      continue;
+	    }
+	}
+      else if (POINTER_TYPE_P (TREE_TYPE (var)))
+	{
+	  if (gcall *call = dyn_cast<gcall *>(def_stmt))
+	    decl = gimple_call_return_arg_ref (call);
+	  else if (gphi *phi = dyn_cast <gphi *>(def_stmt))
+	    {
+	      unsigned nargs = gimple_phi_num_args (phi);
+	      for (unsigned i = 0; i != nargs; ++i)
+		{
+		  access_ref aref;
+		  tree arg = gimple_phi_arg_def (phi, i);
+		  if (!m_ptr_qry.get_ref (arg, phi, &aref, 0)
+		      || (aref.deref == 0
+			  && POINTER_TYPE_P (TREE_TYPE (aref.ref))))
+		    continue;
+		  check_dangling_uses (var, aref.ref, true);
+		}
+	      continue;
+	    }
+	  else
+	    continue;
+	}
+
+      check_dangling_uses (var, decl);
+    }
+}
+
+/* Check CALL arguments for dangling pointers (those that have been
+   clobbered) and warn if found.  */
+
+void
+pass_waccess::check_call_dangling (gcall *call)
+{
+  unsigned nargs = gimple_call_num_args (call);
+  for (unsigned i = 0; i != nargs; ++i)
+    {
+      tree arg = gimple_call_arg (call, i);
+      if (TREE_CODE (arg) != ADDR_EXPR)
+	continue;
+
+      arg = TREE_OPERAND (arg, 0);
+      if (!DECL_P (arg))
+	continue;
+
+      gimple **pclobber = m_clobbers.get (arg);
+      if (!pclobber)
+	continue;
+
+      if (!use_after_inval_p (*pclobber, call))
+	continue;
+
+      warn_invalid_pointer (NULL_TREE, call, *pclobber, arg, false);
+    }
+}
+
 /* Check function FUN for invalid accesses.  */
 
 unsigned
@@ -4151,6 +4656,15 @@ pass_waccess::execute (function *fun)
   m_ptr_qry.rvals = enable_ranger (fun);
   m_func = fun;
 
+  /* Check for dangling pointers in the earliest run of the pass.
+     The latest point -Wdangling-pointer should run is just before
+     loop unrolling which introduces uses after clobbers.  Most cases
+     can be detected without optimization; cases where the address of
+     the local variable is passed to and then returned from a user-
+     defined function before its lifetime ends and the returned pointer
+     becomes dangling depend on inlining.  */
+  m_check_dangling_p = m_early_checks_p;
+
   auto_bitmap bb_uids_set (&bitmap_default_obstack);
   m_bb_uids_set = bb_uids_set;
 
@@ -4159,6 +4673,12 @@ pass_waccess::execute (function *fun)
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     check_block (bb);
+
+  if (m_check_dangling_p)
+    {
+      check_dangling_uses ();
+      check_dangling_stores ();
+    }
 
   if (dump_file)
     m_ptr_qry.dump (dump_file, (dump_flags & TDF_DETAILS) != 0);
@@ -4170,6 +4690,7 @@ pass_waccess::execute (function *fun)
   disable_ranger (fun);
   m_ptr_qry.rvals = NULL;
 
+  m_clobbers.empty ();
   m_bb_uids_set = NULL;
 
   free_dominance_info (CDI_POST_DOMINATORS);
