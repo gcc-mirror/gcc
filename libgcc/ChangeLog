@@ -1,3 +1,8 @@
+2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/linux-unwind.h (arc_fallback_frame_state): Use
+	DWARF_ALT_FRAME_RETURN_COLUMN macro.
+
 2022-01-04  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call _dl_find_object

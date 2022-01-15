@@ -1,3 +1,255 @@
+2022-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/22_locale/numpunct/members/char/3.cc:
+	Require pt_PT locale instead of nl_NL.
+	(test02): Use pt_PT locale instead of nl_NL.
+
+2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91260
+	PR libstdc++/91383
+	PR libstdc++/95065
+	* include/backward/binders.h (bind1st, bind2nd): Add deprecated
+	attribute.
+	* include/bits/refwrap.h (_Maybe_unary_or_binary_function):
+	Disable deprecated warnings for base classes.
+	(_Reference_wrapper_base): Likewise.
+	* include/bits/shared_ptr_base.h (_Sp_owner_less): Likewise.
+	* include/bits/stl_bvector.h (_Bit_iterator_base): Likewise.
+	* include/bits/stl_function.h (unary_function, binary_function):
+	Add deprecated attribute.
+	(unary_negate, not1, binary_negate, not2, ptr_fun)
+	(pointer_to_unary_function, pointer_to_binary_function)
+	(mem_fun_t, const_mem_fun_t, mem_fun_ref_t, const_mem_fun_ref_t)
+	(mem_fun1_t, const_mem_fun1_t, mem_fun_ref1_t)
+	(const_mem_fun1_ref_t, mem_fun, mem_fun_ref): Add deprecated
+	attributes.
+	* include/bits/stl_iterator.h: Disable deprecated warnings for
+	std::iterator base classes.
+	* include/bits/stl_iterator_base_types.h (iterator): Add
+	deprecated attribute.
+	* include/bits/stl_map.h (map::value_compare): Disable
+	deprecated warnings for base class.
+	* include/bits/stl_multimap.h (multimap::value_compare):
+	Likewise.
+	* include/bits/stl_raw_storage_iter.h (raw_storage_iterator):
+	Add deprecated attribute.
+	* include/bits/stl_tempbuf.h (get_temporary_buffer): Likewise.
+	* include/bits/stream_iterator.h: Disable deprecated warnings.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Remove unary_function base
+	classes.
+	* include/ext/functional: Disable deprecated warnings.
+	* include/ext/rope: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/std/type_traits (result_of): Add deprecated attribute.
+	* include/tr1/functional: Disable deprecated warnings.
+	* include/tr1/functional_hash.h: Likewise.
+	* testsuite/20_util/function_objects/binders/1.cc: Add
+	-Wno-disable-deprecations.
+	* testsuite/20_util/function_objects/binders/3113.cc: Likewise.
+	* testsuite/20_util/function_objects/constexpr.cc: Add
+	dg-warning.
+	* testsuite/20_util/raw_storage_iterator/base.cc: Likewise.
+	* testsuite/20_util/raw_storage_iterator/dr2127.cc: Likewise.
+	* testsuite/20_util/raw_storage_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/20_util/raw_storage_iterator/requirements/explicit_instantiation/1.cc:
+	Likewise.
+	* testsuite/20_util/raw_storage_iterator/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/reference_wrapper/24803.cc:
+	Likewise.
+	* testsuite/20_util/reference_wrapper/typedefs.cc: Enable for
+	C++20 and check for absence of nested types.
+	* testsuite/20_util/shared_ptr/comparison/less.cc: Remove
+	std::binary_function base class.
+	* testsuite/20_util/temporary_buffer.cc: Add dg-warning.
+	* testsuite/21_strings/basic_string/cons/char/69092.cc: Remove
+	std::iterator base class.
+	* testsuite/24_iterators/back_insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/front_insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/insert_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/istream_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/92285.cc:
+	Likewise.
+	* testsuite/24_iterators/istreambuf_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/ostream_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/24_iterators/reverse_iterator/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/34595.cc:
+	Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Remove std::binary_function
+	base class.
+	* testsuite/25_algorithms/all_of/requirements/explicit_instantiation/2.cc:
+	Disable deprecated warnings.
+	* testsuite/25_algorithms/all_of/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/any_of/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/any_of/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/count_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/count_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_end/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_end/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_first_of/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_first_of/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_if_not/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/find_if_not/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/for_each/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/for_each/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_partitioned/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_permutation/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_permutation/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/none_of/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/none_of/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition_copy/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/partition_point/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/random_shuffle/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/remove_copy_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/remove_copy_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/remove_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/remove_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/replace_copy_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/replace_copy_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/replace_if/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/replace_if/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/search/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/search/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/search_n/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/search_n/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/stable_partition/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/25_algorithms/transform/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/transform/requirements/explicit_instantiation/pod.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9178.cc: Add
+	dg-warning.
+	* testsuite/ext/pb_ds/example/priority_queue_erase_if.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/example/priority_queue_split_join.cc:
+	Likewise.
+	* testsuite/tr1/3_function_objects/reference_wrapper/typedefs.cc:
+	Disable deprecated warnings.
+	* testsuite/tr1/6_containers/hash/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/util/regression/trait/erase_if_fn.hpp: Remove
+	std::unary_function base classes.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper):
+	Remove std::iterator base classes.
+
+2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr.h (__cpp_lib_shared_ptr_weak_type):
+	Correct type of macro value.
+	(shared_ptr): Add additional friend declarations.
+	(make_shared, allocate_shared): Constrain existing overloads and
+	remove static_assert.
+	* include/bits/shared_ptr_base.h (__cpp_lib_smart_ptr_for_overwrite):
+	New macro.
+	(_Sp_counted_ptr_inplace<T, Alloc, Lp>): New partial
+	specialization for use with make_shared_for_overwrite.
+	(__cpp_lib_shared_ptr_arrays): Update value for C++20.
+	(_Sp_counted_array_base): New class template.
+	(_Sp_counted_array): New class template.
+	(__shared_count(_Tp*&, const _Sp_counted_array_base&, _Init)):
+	New constructor for allocating shared arrays.
+	(__shared_ptr(const _Sp_counted_array_base&, _Init)): Likewise.
+	* include/std/version (__cpp_lib_shared_ptr_weak_type): Correct
+	type.
+	(__cpp_lib_shared_ptr_arrays): Update value for C++20.
+	(__cpp_lib_smart_ptr_for_overwrite): New macro.
+	* testsuite/20_util/shared_ptr/creation/99006.cc: Adjust
+	expected errors.
+	* testsuite/20_util/shared_ptr/creation/array.cc: New test.
+	* testsuite/20_util/shared_ptr/creation/overwrite.cc: New test.
+	* testsuite/20_util/shared_ptr/creation/version.cc: New test.
+	* testsuite/20_util/unique_ptr/creation/for_overwrite.cc: Check
+	feature test macro. Test non-trivial default-initialization.
+
+2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (_Construct, _Construct_novalue):
+	Also cast away cv-qualifiers when converting pointer to void.
+	* testsuite/20_util/allocator/void.cc: Test construct function
+	with cv-qualified types.
+
+2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103992
+	* include/bits/stl_iterator.h (common_iterator): Use
+	std::construct_at instead of placement new.
+	* testsuite/24_iterators/common_iterator/1.cc: Check copy
+	construction is usable in constant expressions.
+
+2022-01-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Document new tokens
+	accepted by std::random_device constructor.
+	* doc/html/manual/status.html: Regenerate.
+
 2022-01-12  Patrick Palka  <ppalka@redhat.com>
 
 	* testsuite/20_util/to_chars/103955.cc: Add explicit dg-do

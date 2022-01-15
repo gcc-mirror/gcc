@@ -1,3 +1,134 @@
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/taint-merger.c: New test.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104029
+	* gcc.dg/analyzer/pr104029.c: New test.
+	* gcc.dg/analyzer/taint-ops.c: New test.
+
+2022-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99256
+	* gfortran.dg/altreturn_11.f90: New test.
+
+2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto25.adb: New test.
+	* gnat.dg/opt96.adb: Likewise.
+	* gnat.dg/opt96_pkg.ads, gnat.dg/opt96_pkg.adb: New helper.
+
+2022-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103782
+	* gfortran.dg/overload_4.f90: New test.
+
+2022-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101475
+	* gcc.dg/Wstringop-overflow-15.c: Remove xfails.
+	* gcc.dg/Wstringop-overflow-68.c: Adjust, remove xfails.
+	* gcc.dg/Wstringop-overflow-88.c: New test.
+
+2022-01-14  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-28.c: New test.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/Walloca-larger-than.c: Fix typo.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp0x/pr56868.cpp: Moved to...
+	* g++.dg/cpp0x/pr56868.C: ...here.
+	* gcc.dg/torture/pr57993-2.cpp: Moved to...
+	* g++.dg/torture/pr57993-2.C: ...here.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/Walloca-larger-than.C: Moved to...
+	* c-c++-common/Walloca-larger-than.c: ...here.
+
+2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/103705
+	* c-c++-common/gomp/pr103705.c: New test.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/vect/pr99149.cc: Remove executable mode.
+	* g++.dg/vect/pr99220.cc: Likewise.
+	* g++.target/i386/avx512vl-pr100738-1.C: Likewise.
+	* g++.target/i386/pr100738-1.C: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c: Likewise.
+	* gcc.target/i386/pr101796-1.c: Likewise.
+	* gcc.target/i386/pr94790-1.c: Likewise.
+	* gcc.target/i386/pr94790-2.c: Likewise.
+	* gcc.target/powerpc/mma-double-test.c: Likewise.
+	* gcc.target/powerpc/mma-single-test.c: Likewise.
+	* gdc.test/fail_compilation/constraints_aggr.d: Likewise.
+	* gdc.test/fail_compilation/constraints_defs.d: Likewise.
+	* gdc.test/fail_compilation/constraints_func1.d: Likewise.
+	* gdc.test/fail_compilation/constraints_func2.d: Likewise.
+	* gdc.test/fail_compilation/constraints_func3.d: Likewise.
+	* gdc.test/fail_compilation/constraints_func4.d: Likewise.
+	* gdc.test/fail_compilation/constraints_tmpl.d: Likewise.
+	* gdc.test/fail_compilation/imports/constraints.d: Likewise.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103991
+	* g++.dg/warn/Wreturn-type-13.C: New test.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* g++.dg/cpp1y/constexpr-89074-1.C: New test.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98737
+	* gcc.dg/tree-ssa/pr98737-1.c: New test.
+	* gcc.dg/tree-ssa/pr98737-2.c: New test.
+
+2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/cancel-1.c: New file.
+
+2022-01-14  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104009
+	* gcc.dg/builtin-object-size-1.c (test10): New test.
+	* gcc.dg/builtin-object-size-3.c (test10): Likewise.
+	(test9): Expect zero size for negative offsets.
+	* gcc.dg/builtin-object-size-4.c (test8): Likewise.
+	* gcc.dg/builtin-object-size-5.c (test7): Drop test for
+	__builtin_object_size.
+
+2022-01-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104001.c: New test.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/attr-tainted_args-1.c: New test.
+	* gcc.dg/analyzer/attr-tainted_args-misuses.c: New test.
+	* gcc.dg/analyzer/taint-CVE-2011-2210-1.c: New test.
+	* gcc.dg/analyzer/taint-CVE-2020-13143-1.c: New test.
+	* gcc.dg/analyzer/taint-CVE-2020-13143-2.c: New test.
+	* gcc.dg/analyzer/taint-CVE-2020-13143.h: New test.
+	* gcc.dg/analyzer/taint-alloc-3.c: New test.
+	* gcc.dg/analyzer/taint-alloc-4.c: New test.
+	* gcc.dg/analyzer/test-uaccess.h: New test.
+
 2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

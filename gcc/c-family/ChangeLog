@@ -1,3 +1,8 @@
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Add "tainted_args".
+	(handle_tainted_args_attribute): New.
+
 2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

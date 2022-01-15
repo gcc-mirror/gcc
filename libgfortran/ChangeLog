@@ -1,3 +1,10 @@
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/104006
+	* Makefile.am (BUILT_SOURCES): Don't include $(version_dep).
+	(clean-local): Remove $(version_dep).
+	* Makefile.in: Regenerated.
+
 2022-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/104006

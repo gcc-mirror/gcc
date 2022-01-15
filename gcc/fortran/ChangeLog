@@ -1,3 +1,15 @@
+2022-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99256
+	* intrinsic.c: Do not check formal argument type when checking
+	arguments of intrinsics for alternate return specifiers.
+
+2022-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103782
+	* expr.c (gfc_simplify_expr): Adjust logic for when to scalarize a
+	call of an intrinsic which may have been overloaded.
+
 2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle OMP_LIST_ALLOCATE.

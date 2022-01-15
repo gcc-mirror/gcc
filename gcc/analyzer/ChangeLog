@@ -1,3 +1,33 @@
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (taint_state_machine::combine_states): Handle combination
+	of has_ub and has_lb.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104029
+	* sm-taint.cc (taint_state_machine::alt_get_inherited_state):
+	Remove gcc_unreachable from default case for unary ops.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc: Include "stringpool.h", "attribs.h", and
+	"tree-dfa.h".
+	(mark_params_as_tainted): New.
+	(class tainted_args_function_custom_event): New.
+	(class tainted_args_function_info): New.
+	(exploded_graph::add_function_entry): Handle functions with
+	"tainted_args" attribute.
+	(class tainted_args_field_custom_event): New.
+	(class tainted_args_callback_custom_event): New.
+	(class tainted_args_call_info): New.
+	(add_tainted_args_callback): New.
+	(add_any_callbacks): New.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::build_initial_worklist): Find callbacks that are
+	reachable from global initializers, calling add_any_callbacks on
+	them.
+
 2022-01-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103940
