@@ -5637,6 +5637,13 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       return unchecked_convert (type, expr, notrunc_p);
     }
 
+  /* If we are converting a string constant to a pointer to character, make
+     sure that the string is not folded into an integer constant.  */
+  else if (TREE_CODE (expr) == STRING_CST
+	   && POINTER_TYPE_P (type)
+	   && TYPE_STRING_FLAG (TREE_TYPE (type)))
+    expr = build1 (VIEW_CONVERT_EXPR, type, expr);
+
   /* Otherwise, just build a VIEW_CONVERT_EXPR of the expression.  */
   else
     {
