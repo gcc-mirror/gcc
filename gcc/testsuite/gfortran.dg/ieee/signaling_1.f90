@@ -1,8 +1,10 @@
-! { dg-do run }
+! { dg-do run { xfail { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! x87 / x86-32 ABI is unsuitable for signaling NaNs
+!
 ! { dg-require-effective-target issignaling } */
 ! { dg-additional-sources signaling_1_c.c }
 ! { dg-additional-options "-w" }
-! the -w option is needed to make cc1 not report a warning for 
+! The -w option is needed to make cc1 not report a warning for 
 ! the -fintrinsic-modules-path option passed by ieee.exp
 !
 program test
