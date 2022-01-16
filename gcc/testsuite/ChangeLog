@@ -1,3 +1,19 @@
+2022-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101762
+	* gfortran.dg/pr101762.f90: New test.
+
+2022-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103777
+	* gfortran.dg/masklr_3.f90: New test.
+
 2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto25.adb: New test.
