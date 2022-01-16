@@ -1,3 +1,19 @@
+2022-01-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-11-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/102976
+	* gcc.target/powerpc/pr102976.c: New test.
+
+2022-01-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-6.c: Add second call to xxsetacc
+	built-in.  Update instruction counts.
+
 2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/lto25.adb: New test.

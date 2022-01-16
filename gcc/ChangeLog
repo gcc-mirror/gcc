@@ -1,3 +1,33 @@
+2022-01-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-11-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/102976
+	* config/rs6000/mma.md (*vsx_assemble_pair): Add early-clobber for
+	output operand.
+	(*mma_assemble_acc): Likewise.
+
+2022-01-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_VSX_ASSEMBLE): New unspec.
+	(vsx_assemble_pair): Use mma_assemble_input_operand.
+	Expand into UNSPEC_VSX_ASSEMBLE wrapper.
+	(*vsx_assemble_pair): New define_insn_and_split.
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Handle
+	UNSPEC_VSX_ASSEMBLE.
+
+2022-01-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-09-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (unspecv): Add UNSPECV_MMA_XXSETACCZ.
+	(*movpxi): Remove 'O' alternative.
+	(mma_xxsetaccz): Change to define_insn.  Use UNSPECV_MMA_XXSETACCZ.
+	Add comment.
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Handle UNSPEC_VOLATILE.
+
 2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-param-manipulation.c (ipa_dump_adjusted_parameters): Dump
