@@ -1,3 +1,71 @@
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/63272
+	* diagnostic-spec.c (nowarn_spec_t::nowarn_spec_t): Handle
+	-Wdangling-pointer.
+	* doc/invoke.texi (-Wdangling-pointer): Document new option.
+	* gimple-ssa-warn-access.cc (pass_waccess::clone): Set new member.
+	(pass_waccess::check_pointer_uses): New function.
+	(pass_waccess::gimple_call_return_arg): New function.
+	(pass_waccess::gimple_call_return_arg_ref): New function.
+	(pass_waccess::check_call_dangling): New function.
+	(pass_waccess::check_dangling_uses): New function overloads.
+	(pass_waccess::check_dangling_stores): New function.
+	(pass_waccess::check_dangling_stores): New function.
+	(pass_waccess::m_clobbers): New data member.
+	(pass_waccess::m_func): New data member.
+	(pass_waccess::m_run_number): New data member.
+	(pass_waccess::m_check_dangling_p): New data member.
+	(pass_waccess::check_alloca): Check m_early_checks_p.
+	(pass_waccess::check_alloc_size_call): Same.
+	(pass_waccess::check_strcat): Same.
+	(pass_waccess::check_strncat): Same.
+	(pass_waccess::check_stxcpy): Same.
+	(pass_waccess::check_stxncpy): Same.
+	(pass_waccess::check_strncmp): Same.
+	(pass_waccess::check_memop_access): Same.
+	(pass_waccess::check_read_access): Same.
+	(pass_waccess::check_builtin): Call check_pointer_uses.
+	(pass_waccess::warn_invalid_pointer): Add arguments.
+	(is_auto_decl): New function.
+	(pass_waccess::check_stmt): New function.
+	(pass_waccess::check_block): Call check_stmt.
+	(pass_waccess::execute): Call check_dangling_uses,
+	check_dangling_stores.  Empty m_clobbers.
+	* passes.def (pass_warn_access): Invoke pass two more times.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80532
+	* common.opt (-Wuse-after-free): New options.
+	* diagnostic-spec.c (nowarn_spec_t::nowarn_spec_t): Handle
+	OPT_Wreturn_local_addr and OPT_Wuse_after_free_.
+	* diagnostic-spec.h (NW_DANGLING): New enumerator.
+	* doc/invoke.texi (-Wuse-after-free): Document new option.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Rename...
+	(pass_waccess::check_call_access): ...to this.
+	(pass_waccess::check): Rename...
+	(pass_waccess::check_block): ...to this.
+	(pass_waccess::check_pointer_uses): New function.
+	(pass_waccess::gimple_call_return_arg): New function.
+	(pass_waccess::warn_invalid_pointer): New function.
+	(pass_waccess::check_builtin): Handle free and realloc.
+	(gimple_use_after_inval_p): New function.
+	(get_realloc_lhs): New function.
+	(maybe_warn_mismatched_realloc): New function.
+	(pointers_related_p): New function.
+	(pass_waccess::check_call): Call check_pointer_uses.
+	(pass_waccess::execute): Compute and free dominance info.
+
+2022-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Use
+	expand_simple_unop and expand_simple_binop instead of manually
+	constructing NOT, AND and IOR RTXes.  Use vector_all_ones_operand
+	consistently.  Eliminate common subexpressions and simplify code.
+	* config/i386/sse.md (<any_logic:code><MODEF:mode>3): New expander.
+	(<any_logic:code><MODEF:mode>3): Make public.
+
 2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-param-manipulation.c (ipa_dump_adjusted_parameters): Dump

@@ -1,3 +1,32 @@
+2022-01-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h: Move feature detection bools
+	and add __have_avx512bitalg, __have_avx512vbmi2,
+	__have_avx512vbmi, __have_avx512ifma, __have_avx512cd,
+	__have_avx512vnni, __have_avx512vpopcntdq.
+	(__detail::__machine_flags): New function which returns a unique
+	uint64 depending on relevant -m and -f flags.
+	(__detail::__odr_helper): New type alias for either an anonymous
+	type or a type specialized with the __machine_flags number.
+	(_SimdIntOperators): Change template parameters from _Impl to
+	_Tp, _Abi because _Impl now has an __odr_helper parameter which
+	may be _OdrEnforcer from the anonymous namespace, which makes
+	for a bad base class.
+	(many): Either add __odr_helper template parameter or mark as
+	always_inline.
+	* include/experimental/bits/simd_detail.h: Add defines for
+	AVX512BITALG, AVX512VBMI2, AVX512VBMI, AVX512IFMA, AVX512CD,
+	AVX512VNNI, AVX512VPOPCNTDQ, and AVX512VP2INTERSECT.
+	* include/experimental/bits/simd_builtin.h: Add __odr_helper
+	template parameter or mark as always_inline.
+	* include/experimental/bits/simd_fixed_size.h: Ditto.
+	* include/experimental/bits/simd_math.h: Ditto.
+	* include/experimental/bits/simd_scalar.h: Ditto.
+	* include/experimental/bits/simd_neon.h: Add __odr_helper
+	template parameter.
+	* include/experimental/bits/simd_ppc.h: Ditto.
+	* include/experimental/bits/simd_x86.h: Ditto.
+
 2022-01-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/22_locale/numpunct/members/char/3.cc:

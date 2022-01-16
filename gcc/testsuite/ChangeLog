@@ -1,3 +1,44 @@
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/63272
+	* g++.dg/warn/Wfree-nonheap-object-6.C: Disable valid warnings.
+	* g++.dg/warn/ref-temp1.C: Prune expected warning.
+	* gcc.dg/uninit-pr50476.c: Expect a new warning.
+	* c-c++-common/Wdangling-pointer-2.c: New test.
+	* c-c++-common/Wdangling-pointer-3.c: New test.
+	* c-c++-common/Wdangling-pointer-4.c: New test.
+	* c-c++-common/Wdangling-pointer-5.c: New test.
+	* c-c++-common/Wdangling-pointer-6.c: New test.
+	* c-c++-common/Wdangling-pointer.c: New test.
+	* g++.dg/warn/Wdangling-pointer-2.C: New test.
+	* g++.dg/warn/Wdangling-pointer.C: New test.
+	* gcc.dg/Wdangling-pointer-2.c: New test.
+	* gcc.dg/Wdangling-pointer.c: New test.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80532
+	* gcc.dg/Wmismatched-dealloc-2.c: Avoid -Wuse-after-free.
+	* gcc.dg/Wmismatched-dealloc-3.c: Same.
+	* gcc.dg/analyzer/file-1.c: Prune expected warning.
+	* gcc.dg/analyzer/file-2.c: Same.
+	* gcc.dg/attr-alloc_size-6.c: Disable -Wuse-after-free.
+	* gcc.dg/attr-alloc_size-7.c: Same.
+	* c-c++-common/Wuse-after-free-2.c: New test.
+	* c-c++-common/Wuse-after-free-3.c: New test.
+	* c-c++-common/Wuse-after-free-4.c: New test.
+	* c-c++-common/Wuse-after-free-5.c: New test.
+	* c-c++-common/Wuse-after-free-6.c: New test.
+	* c-c++-common/Wuse-after-free-7.c: New test.
+	* c-c++-common/Wuse-after-free.c: New test.
+	* g++.dg/warn/Wmismatched-dealloc-3.C: New test.
+	* g++.dg/warn/Wuse-after-free.C: New test.
+
+2022-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83079
+	* gfortran.dg/transfer_char_kind4.f90: New test.
+
 2022-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/taint-merger.c: New test.

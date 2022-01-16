@@ -1,3 +1,10 @@
+2022-01-15  David  <gccbugzilla@limegreensocks.com>
+
+	* config/i386/gthr-win32.c (__gthr_i486_lock_cmp_xchg):
+	Remove inlined version, Windows 95 is no longer relevant.
+	* config/i386/gthr-win32.h
+	(__GTHREAD_I486_INLINE_LOCK_PRIMITIVES): unset.
+
 2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/linux-unwind.h (arc_fallback_frame_state): Use
