@@ -11220,18 +11220,39 @@ arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
 {
   if (function != NULL)
     {
-      switch (function->id)
+      if (actual_arg.name == NULL)
 	{
-	  case GFC_ISYM_INDEX:
-	  case GFC_ISYM_LEN_TRIM:
-	    if ((actual_arg.name == NULL && arg_num == 3)
-		|| (actual_arg.name != NULL
-		    && strcmp ("kind", actual_arg.name) == 0))
-	      return false;
-	  /* Fallthrough.  */
+	  switch (function->id)
+	    {
+	      case GFC_ISYM_INDEX:
+		if (arg_num == 3)
+		  return false;
+		break;
 
-	  default:
-	    break;
+	      case GFC_ISYM_LEN_TRIM:
+		if (arg_num == 1)
+		  return false;
+
+	      /* Fallthrough.  */
+
+	      default:
+		break;
+	    }
+	}
+      else
+	{
+	  switch (function->id)
+	    {
+	      case GFC_ISYM_INDEX:
+	      case GFC_ISYM_LEN_TRIM:
+		if (strcmp ("kind", actual_arg.name) == 0)
+		  return false;
+
+	      /* Fallthrough.  */
+
+	      default:
+		break;
+	    }
 	}
     }
 
