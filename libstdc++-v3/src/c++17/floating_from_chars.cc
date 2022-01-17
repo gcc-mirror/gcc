@@ -35,6 +35,7 @@
 #include <string>
 #include <memory_resource>
 #include <cfenv>
+#include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -51,6 +52,18 @@
 #endif
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
+#endif
+
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+# define USE_LIB_FAST_FLOAT 1
+#endif
+
+#if USE_LIB_FAST_FLOAT
+# define FASTFLOAT_DEBUG_ASSERT __glibcxx_assert
+namespace
+{
+# include "fast_float/fast_float.h"
+} // anon namespace
 #endif
 
 #if _GLIBCXX_HAVE_USELOCALE
@@ -773,8 +786,12 @@ from_chars(const char* first, const char* last, float& value,
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
-#endif
-
+  else
+    {
+      static_assert(USE_LIB_FAST_FLOAT);
+      return fast_float::from_chars(first, last, value, fmt);
+    }
+#else
   errc ec = errc::invalid_argument;
 #if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
@@ -795,6 +812,7 @@ from_chars(const char* first, const char* last, float& value,
       fmt = chars_format{};
     }
   return make_result(first, len, fmt, ec);
+#endif
 }
 
 from_chars_result
@@ -804,8 +822,12 @@ from_chars(const char* first, const char* last, double& value,
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
   if (fmt == chars_format::hex)
     return __floating_from_chars_hex(first, last, value);
-#endif
-
+  else
+    {
+      static_assert(USE_LIB_FAST_FLOAT);
+      return fast_float::from_chars(first, last, value, fmt);
+    }
+#else
   errc ec = errc::invalid_argument;
 #if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
@@ -826,6 +848,7 @@ from_chars(const char* first, const char* last, double& value,
       fmt = chars_format{};
     }
   return make_result(first, len, fmt, ec);
+#endif
 }
 
 from_chars_result
