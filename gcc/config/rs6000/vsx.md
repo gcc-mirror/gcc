@@ -6586,3 +6586,19 @@
    [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
+;; Construct V1TI by vsx_concat_v2di
+(define_split
+  [(set (match_operand:V1TI 0 "vsx_register_operand")
+	(subreg:V1TI
+	  (match_operand:TI 1 "int_reg_operand") 0 ))]
+  "TARGET_P9_VECTOR && !reload_completed"
+  [(const_int 0)]
+{
+  rtx tmp1 = simplify_gen_subreg (DImode, operands[1], TImode, 0);
+  rtx tmp2 = simplify_gen_subreg (DImode, operands[1], TImode, 8);
+  rtx tmp3 = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (tmp3, tmp1, tmp2));
+  rtx tmp4 = simplify_gen_subreg (V1TImode, tmp3, V2DImode, 0);
+  emit_move_insn (operands[0], tmp4);
+  DONE;
+})
