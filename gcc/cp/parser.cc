@@ -1308,6 +1308,7 @@ struct saved_token_sentinel
   void rollback ()
   {
     cp_lexer_rollback_tokens (lexer);
+    cp_lexer_set_source_position (lexer);
     mode = STS_DONOTHING;
   }
   ~saved_token_sentinel ()
@@ -1315,7 +1316,7 @@ struct saved_token_sentinel
     if (mode == STS_COMMIT)
       cp_lexer_commit_tokens (lexer);
     else if (mode == STS_ROLLBACK)
-      cp_lexer_rollback_tokens (lexer);
+      rollback ();
 
     gcc_assert (lexer->saved_tokens.length () == len);
   }
