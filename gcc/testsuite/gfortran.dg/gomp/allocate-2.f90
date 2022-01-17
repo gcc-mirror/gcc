@@ -33,7 +33,7 @@ subroutine foo(x)
   x=5
   !$omp end parallel
 
-  !$omp parallel allocate (0: x) private(x) ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind at .1." }
+  !$omp parallel allocate (0_1: x) private(x) ! { dg-error "Expected integer expression of the 'omp_allocator_handle_kind' kind at .1." }
   x=6
   !$omp end parallel
   
