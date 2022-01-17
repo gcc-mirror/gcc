@@ -3961,31 +3961,6 @@
   DONE;
 })
 
-;; Vector reverse elements
-(define_expand "altivec_vreveti2"
-  [(set (match_operand:TI 0 "register_operand" "=v")
-	(unspec:TI [(match_operand:TI 1 "register_operand" "v")]
-		      UNSPEC_VREVEV))]
-  "TARGET_ALTIVEC"
-{
-  int i, j, size, num_elements;
-  rtvec v = rtvec_alloc (16);
-  rtx mask = gen_reg_rtx (V16QImode);
-
-  size = GET_MODE_UNIT_SIZE (TImode);
-  num_elements = GET_MODE_NUNITS (TImode);
-
-  for (j = 0; j < num_elements; j++)
-    for (i = 0; i < size; i++)
-      RTVEC_ELT (v, i + j * size)
-	= GEN_INT (i + (num_elements - 1 - j) * size);
-
-  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
-  emit_insn (gen_altivec_vperm_ti (operands[0], operands[1],
-	     operands[1], mask));
-  DONE;
-})
-
 ;; Vector reverse elements for V16QI V8HI V4SI V4SF
 (define_expand "altivec_vreve<mode>2"
   [(set (match_operand:VEC_K 0 "register_operand" "=v")

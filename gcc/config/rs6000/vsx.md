@@ -3854,8 +3854,10 @@
   rtx vec_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4230,8 +4232,10 @@
   rtx v4si_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4273,8 +4277,10 @@
   rtx df_tmp = operands[4];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4466,8 +4472,10 @@
 {
   int ele = INTVAL (operands[4]);
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SFmode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    ele = GET_MODE_NUNITS (V4SFmode) - 1 - ele;
+    ele = 3 - ele;
 
   operands[4] = GEN_INT (GET_MODE_SIZE (SFmode) * ele);
   return "xxinsertw %x0,%x2,%4";
