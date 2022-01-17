@@ -1,3 +1,19 @@
+2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/103705
+	* semantics.c (finish_omp_clauses): Also continue peeling off of
+	outer node for ARRAY_REFs.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103991
+	* cp-objcp-common.c (cxx_block_may_fallthru) <case IF_STMT>: For
+	IF_STMT_CONSTEXPR_P with constant false or true condition only
+	check if the taken clause may fall through.
+	* cp-gimplify.c (genericize_if_stmt): For consteval if, revert
+	to r12-5638^ behavior if then_ block can't fall through.  For
+	constexpr if, revert to r12-5638^ behavior.
+
 2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

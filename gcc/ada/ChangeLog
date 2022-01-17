@@ -1,3 +1,9 @@
+2022-01-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR ada/104027
+	* gnat1drv.adb (Gnat1drv): After Back_End.Gen_Or_Update_Object_File
+	goto End_Of_Program.
+
 2022-01-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_binary_op) <EQ_EXPR>: Relax a

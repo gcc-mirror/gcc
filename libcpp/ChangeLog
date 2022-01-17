@@ -1,3 +1,8 @@
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	* files.c (_cpp_find_file): Substitute a valid pointer for
+	an invalid one to avoid -Wuse-after-free.
+
 2022-01-12  Clément Chigot  <clement.chigot@atos.net>
 
 	* configure.ac: Check sizeof ino_t and dev_t.

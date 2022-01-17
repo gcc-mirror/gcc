@@ -485,7 +485,7 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 
   result->value.character.string[result->value.character.length] = '\0';
 
-  return result->value.character.length;
+  return size_character (result->value.character.length, result->ts.kind);
 }
 
 

@@ -675,6 +675,15 @@ DOT
 DOXYGEN
 BUILD_INFO_FALSE
 BUILD_INFO_TRUE
+ENABLE_BACKTRACE_FALSE
+ENABLE_BACKTRACE_TRUE
+BACKTRACE_SUPPORTS_THREADS
+BACKTRACE_USES_MALLOC
+BACKTRACE_SUPPORTED
+BACKTRACE_CPPFLAGS
+VIEW_FILE
+ALLOC_FILE
+FORMAT_FILE
 ENABLE_FILESYSTEM_TS_FALSE
 ENABLE_FILESYSTEM_TS_TRUE
 baseline_subdir_switch
@@ -947,6 +956,7 @@ enable_libstdcxx_dual_abi
 with_default_libstdcxx_abi
 enable_libstdcxx_threads
 enable_libstdcxx_filesystem_ts
+enable_libstdcxx_backtrace
 enable_cet
 with_gxx_include_dir
 enable_version_specific_runtime_libs
@@ -1653,6 +1663,8 @@ Optional Features:
                           enable C++11 threads support [default=auto]
   --enable-libstdcxx-filesystem-ts
                           turns on ISO/IEC TS 18822 support [default=auto]
+  --enable-libstdcxx-backtrace
+                          turns on libbacktrace support [default=auto]
   --enable-cet            enable Intel CET in target libraries [default=auto]
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
@@ -5539,7 +5551,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem doc po testsuite python'
+  SUBDIRS='include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace doc po testsuite python'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -12179,7 +12191,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12182 "configure"
+#line 12194 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12285,7 +12297,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12288 "configure"
+#line 12300 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15969,7 +15981,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15972 "configure"
+#line 15984 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16004,7 +16016,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16007 "configure"
+#line 16019 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16039,7 +16051,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16042 "configure"
+#line 16054 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16075,7 +16087,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16078 "configure"
+#line 16090 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16228,7 +16240,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16231 "configure"
+#line 16243 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16270,7 +16282,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16273 "configure"
+#line 16285 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -76951,6 +76963,263 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+   # Check whether --enable-libstdcxx-backtrace was given.
+if test "${enable_libstdcxx_backtrace+set}" = set; then :
+  enableval=$enable_libstdcxx_backtrace;
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) as_fn_error $? "Unknown argument to enable/disable libstdcxx-backtrace" "$LINENO" 5 ;;
+	  	        esac
+
+else
+  enable_libstdcxx_backtrace=auto
+fi
+
+
+
+  # Most of this is adapted from libsanitizer/configure.ac
+
+  BACKTRACE_CPPFLAGS=
+
+  # libbacktrace only needs atomics for int, which we've already tested
+  if test "$glibcxx_cv_atomic_int" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
+  fi
+
+  # Test for __sync support.
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking __sync extensions" >&5
+$as_echo_n "checking __sync extensions... " >&6; }
+if ${glibcxx_cv_sys_sync+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+int
+main ()
+{
+__sync_bool_compare_and_swap (&i, i, i);
+     __sync_lock_test_and_set (&i, 1);
+     __sync_lock_release (&i);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  glibcxx_cv_sys_sync=yes
+else
+  glibcxx_cv_sys_sync=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+int
+main ()
+{
+__sync_bool_compare_and_swap (&i, i, i);
+     __sync_lock_test_and_set (&i, 1);
+     __sync_lock_release (&i);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  glibcxx_cv_sys_sync=yes
+else
+  glibcxx_cv_sys_sync=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sys_sync" >&5
+$as_echo "$glibcxx_cv_sys_sync" >&6; }
+  if test "$glibcxx_cv_sys_sync" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_SYNC_FUNCTIONS=1"
+  fi
+
+  # Check for dl_iterate_phdr.
+  for ac_header in link.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "link.h" "ac_cv_header_link_h" "$ac_includes_default"
+if test "x$ac_cv_header_link_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LINK_H 1
+_ACEOF
+
+fi
+
+done
+
+  if test "$ac_cv_header_link_h" = "no"; then
+    have_dl_iterate_phdr=no
+  else
+    # When built as a GCC target library, we can't do a link test.
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <link.h>
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "dl_iterate_phdr" >/dev/null 2>&1; then :
+  have_dl_iterate_phdr=yes
+else
+  have_dl_iterate_phdr=no
+fi
+rm -f conftest*
+
+  fi
+  if test "$have_dl_iterate_phdr" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
+  fi
+
+  # Check for the fcntl function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-mingw*) have_fcntl=no ;;
+     *) have_fcntl=yes ;;
+     esac
+  else
+    ac_fn_c_check_func "$LINENO" "fcntl" "ac_cv_func_fcntl"
+if test "x$ac_cv_func_fcntl" = xyes; then :
+  have_fcntl=yes
+else
+  have_fcntl=no
+fi
+
+  fi
+  if test "$have_fcntl" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_FCNTL=1"
+  fi
+
+  ac_fn_c_check_decl "$LINENO" "strnlen" "ac_cv_have_decl_strnlen" "$ac_includes_default"
+if test "x$ac_cv_have_decl_strnlen" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_STRNLEN $ac_have_decl
+_ACEOF
+
+
+  # Check for getexecname function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-solaris2*) have_getexecname=yes ;;
+     *) have_getexecname=no ;;
+     esac
+  else
+    ac_fn_c_check_func "$LINENO" "getexecname" "ac_cv_func_getexecname"
+if test "x$ac_cv_func_getexecname" = xyes; then :
+  have_getexecname=yes
+else
+  have_getexecname=no
+fi
+
+  fi
+  if test "$have_getexecname" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_GETEXECNAME=1"
+  fi
+
+# The library needs to be able to read the executable itself.  Compile
+# a file to determine the executable format.  The awk script
+# filetype.awk prints out the file type.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking output filetype" >&5
+$as_echo_n "checking output filetype... " >&6; }
+if ${glibcxx_cv_sys_filetype+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  filetype=
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+int
+main ()
+{
+int j;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  filetype=`${AWK} -f $srcdir/../libbacktrace/filetype.awk conftest.$ac_objext`
+else
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "compiler failed
+See \`config.log' for more details" "$LINENO" 5; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+glibcxx_cv_sys_filetype=$filetype
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_sys_filetype" >&5
+$as_echo "$glibcxx_cv_sys_filetype" >&6; }
+
+# Match the file type to decide what files to compile.
+FORMAT_FILE=
+case "$glibcxx_cv_sys_filetype" in
+elf*) FORMAT_FILE="elf.lo" ;;
+*) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: could not determine output file type" >&5
+$as_echo "$as_me: WARNING: could not determine output file type" >&2;}
+   FORMAT_FILE="unknown.lo"
+   enable_libstdcxx_backtrace=no
+   ;;
+esac
+
+
+# ELF defines.
+elfsize=
+case "$glibcxx_cv_sys_filetype" in
+elf32) elfsize=32 ;;
+elf64) elfsize=64 ;;
+esac
+BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
+
+  ALLOC_FILE=alloc.lo
+
+  VIEW_FILE=read.lo
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to build libbacktrace support" >&5
+$as_echo_n "checking whether to build libbacktrace support... " >&6; }
+  if test "$enable_libstdcxx_backtrace" == "auto"; then
+    enable_libstdcxx_backtrace=no
+  fi
+  if test "$enable_libstdcxx_backtrace" == "yes"; then
+    BACKTRACE_SUPPORTED=1
+    BACKTRACE_USES_MALLOC=1
+    if test "$ac_has_gthreads" = "yes"; then
+      BACKTRACE_SUPPORTS_THREADS=1
+    else
+      BACKTRACE_SUPPORTS_THREADS=0
+    fi
+
+
+
+
+
+$as_echo "#define HAVE_STACKTRACE 1" >>confdefs.h
+
+  else
+    BACKTRACE_SUPPORTED=0
+    BACKTRACE_USES_MALLOC=0
+    BACKTRACE_SUPPORTS_THREADS=0
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_backtrace" >&5
+$as_echo "$enable_libstdcxx_backtrace" >&6; }
+
+
+
 # For Networking TS.
 for ac_header in fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h
 do :
@@ -77970,6 +78239,15 @@ else
 fi
 
 
+    if test "$enable_libstdcxx_backtrace" != no; then
+  ENABLE_BACKTRACE_TRUE=
+  ENABLE_BACKTRACE_FALSE='#'
+else
+  ENABLE_BACKTRACE_TRUE='#'
+  ENABLE_BACKTRACE_FALSE=
+fi
+
+
 
 
 cat >confcache <<\_ACEOF
@@ -78235,6 +78513,8 @@ ac_config_files="$ac_config_files scripts/extract_symvers"
 
 ac_config_files="$ac_config_files doc/xsl/customization.xsl"
 
+ac_config_files="$ac_config_files src/libbacktrace/backtrace-supported.h"
+
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.
@@ -78244,7 +78524,7 @@ ac_config_files="$ac_config_files doc/xsl/customization.xsl"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/filesystem/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile src/c++17/Makefile src/c++20/Makefile src/filesystem/Makefile src/libbacktrace/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -78477,6 +78757,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_FILESYSTEM_TS_TRUE}" && test -z "${ENABLE_FILESYSTEM_TS_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_FILESYSTEM_TS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_BACKTRACE_TRUE}" && test -z "${ENABLE_BACKTRACE_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_BACKTRACE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then
@@ -79498,6 +79782,7 @@ do
     "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
     "scripts/extract_symvers") CONFIG_FILES="$CONFIG_FILES scripts/extract_symvers" ;;
     "doc/xsl/customization.xsl") CONFIG_FILES="$CONFIG_FILES doc/xsl/customization.xsl" ;;
+    "src/libbacktrace/backtrace-supported.h") CONFIG_FILES="$CONFIG_FILES src/libbacktrace/backtrace-supported.h" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
@@ -79506,6 +79791,7 @@ do
     "src/c++17/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++17/Makefile" ;;
     "src/c++20/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++20/Makefile" ;;
     "src/filesystem/Makefile") CONFIG_FILES="$CONFIG_FILES src/filesystem/Makefile" ;;
+    "src/libbacktrace/Makefile") CONFIG_FILES="$CONFIG_FILES src/libbacktrace/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
@@ -81376,6 +81662,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "src/filesystem/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/libbacktrace/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

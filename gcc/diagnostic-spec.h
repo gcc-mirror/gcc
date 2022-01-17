@@ -41,11 +41,13 @@ public:
      NW_UNINIT = 1 << 3,
      /* Warnings about arithmetic overflow.  */
      NW_VFLOW = 1 << 4,
+     /* Warnings about dangling pointers.  */
+     NW_DANGLING = 1 << 5,
      /* All other unclassified warnings.  */
-     NW_OTHER = 1 << 5,
+     NW_OTHER = 1 << 6,
      /* All groups of warnings.  */
      NW_ALL = (NW_ACCESS | NW_LEXICAL | NW_NONNULL
-	       | NW_UNINIT | NW_VFLOW | NW_OTHER)
+	       | NW_UNINIT | NW_VFLOW | NW_DANGLING | NW_OTHER)
    };
 
   nowarn_spec_t (): m_bits () { }

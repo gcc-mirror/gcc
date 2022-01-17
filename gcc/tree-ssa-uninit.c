@@ -132,8 +132,8 @@ uninit_undefined_value_p (tree t)
    or UNKNOWN_LOCATION otherwise.  */
 
 static void
-warn_uninit (opt_code opt, tree t, tree var, const char *gmsgid,
-	     gimple *context, location_t phi_arg_loc = UNKNOWN_LOCATION)
+warn_uninit (opt_code opt, tree t, tree var, gimple *context,
+	     location_t phi_arg_loc = UNKNOWN_LOCATION)
 {
   /* Bail if the value isn't provably uninitialized.  */
   if (!has_undefined_value_p (t))
@@ -182,24 +182,70 @@ warn_uninit (opt_code opt, tree t, tree var, const char *gmsgid,
     }
 
   /* Anonymous SSA_NAMEs shouldn't be uninitialized, but ssa_undefined_value_p
-     can return true if the def stmt of an anonymous SSA_NAME is COMPLEX_EXPR
-     created for conversion from scalar to complex.  Use the underlying var of
-     the COMPLEX_EXPRs real part in that case.  See PR71581.  */
+     can return true if the def stmt of an anonymous SSA_NAME is
+     1. A COMPLEX_EXPR created for conversion from scalar to complex.  Use the
+     underlying var of the COMPLEX_EXPRs real part in that case.  See PR71581.
+
+     Or
+
+     2. A call to .DEFERRED_INIT internal function. Since the original variable
+     has been eliminated by optimziation, we need to get the variable name,
+     and variable declaration location from this call.  We recorded variable
+     name into VAR_NAME_STR, and will get location info and record warning
+     suppressed info to VAR_DEF_STMT, which is the .DEFERRED_INIT call.  */
+
+  const char *var_name_str = NULL;
+  gimple *var_def_stmt = NULL;
+
   if (!var && !SSA_NAME_VAR (t))
     {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (t);
-      if (is_gimple_assign (def_stmt)
-	  && gimple_assign_rhs_code (def_stmt) == COMPLEX_EXPR)
+      var_def_stmt = SSA_NAME_DEF_STMT (t);
+
+      if (is_gimple_assign (var_def_stmt)
+	  && gimple_assign_rhs_code (var_def_stmt) == COMPLEX_EXPR)
 	{
-	  tree v = gimple_assign_rhs1 (def_stmt);
+	  tree v = gimple_assign_rhs1 (var_def_stmt);
 	  if (TREE_CODE (v) == SSA_NAME
 	      && has_undefined_value_p (v)
-	      && zerop (gimple_assign_rhs2 (def_stmt)))
+	      && zerop (gimple_assign_rhs2 (var_def_stmt)))
 	    var = SSA_NAME_VAR (v);
+	}
+
+      if (gimple_call_internal_p (var_def_stmt, IFN_DEFERRED_INIT))
+	{
+	  /* Ignore the call to .DEFERRED_INIT that define the original
+	     var itself as the following case:
+		temp = .DEFERRED_INIT (4, 2, “alt_reloc");
+		alt_reloc = temp;
+	     In order to avoid generating warning for the fake usage
+	     at alt_reloc = temp.
+	  */
+	  tree lhs_var = NULL_TREE;
+	  tree lhs_var_name = NULL_TREE;
+	  const char *lhs_var_name_str = NULL;
+
+	  /* Get the variable name from the 3rd argument of call.  */
+	  tree var_name = gimple_call_arg (var_def_stmt, 2);
+	  var_name = TREE_OPERAND (TREE_OPERAND (var_name, 0), 0);
+	  var_name_str = TREE_STRING_POINTER (var_name);
+
+	  if (is_gimple_assign (context))
+	    {
+	      if (TREE_CODE (gimple_assign_lhs (context)) == VAR_DECL)
+		lhs_var = gimple_assign_lhs (context);
+	      else if (TREE_CODE (gimple_assign_lhs (context)) == SSA_NAME)
+		lhs_var = SSA_NAME_VAR (gimple_assign_lhs (context));
+	    }
+	  if (lhs_var
+	      && (lhs_var_name = DECL_NAME (lhs_var))
+	      && (lhs_var_name_str = IDENTIFIER_POINTER (lhs_var_name))
+	      && (strcmp (lhs_var_name_str, var_name_str) == 0))
+	    return;
+	  gcc_assert (var_name_str && var_def_stmt);
 	}
     }
 
-  if (var == NULL_TREE)
+  if (var == NULL_TREE && var_name_str == NULL)
     return;
 
   /* Avoid warning if we've already done so or if the warning has been
@@ -207,36 +253,66 @@ warn_uninit (opt_code opt, tree t, tree var, const char *gmsgid,
   if (((warning_suppressed_p (context, OPT_Wuninitialized)
 	|| (gimple_assign_single_p (context)
 	    && get_no_uninit_warning (gimple_assign_rhs1 (context)))))
-      || get_no_uninit_warning (var))
+      || (var && get_no_uninit_warning (var))
+      || (var_name_str
+	  && warning_suppressed_p (var_def_stmt, OPT_Wuninitialized)))
     return;
 
   /* Use either the location of the read statement or that of the PHI
      argument, or that of the uninitialized variable, in that order,
      whichever is valid.  */
-  location_t location;
+  location_t location = UNKNOWN_LOCATION;
   if (gimple_has_location (context))
     location = gimple_location (context);
   else if (phi_arg_loc != UNKNOWN_LOCATION)
     location = phi_arg_loc;
-  else
+  else if (var)
     location = DECL_SOURCE_LOCATION (var);
+  else if (var_name_str)
+    location = gimple_location (var_def_stmt);
+
   location = linemap_resolve_location (line_table, location,
 				       LRK_SPELLING_LOCATION, NULL);
 
   auto_diagnostic_group d;
-  if (!warning_at (location, opt, gmsgid, var))
-    return;
+  gcc_assert (opt == OPT_Wuninitialized || opt == OPT_Wmaybe_uninitialized);
+  if (var)
+    {
+      if ((opt == OPT_Wuninitialized
+	   && !warning_at (location, opt, "%qD is used uninitialized", var))
+	  || (opt == OPT_Wmaybe_uninitialized
+	      && !warning_at (location, opt, "%qD may be used uninitialized",
+			      var)))
+      return;
+    }
+  else if (var_name_str)
+    {
+      if ((opt == OPT_Wuninitialized
+	   && !warning_at (location, opt, "%qs is used uninitialized",
+			   var_name_str))
+	  || (opt == OPT_Wmaybe_uninitialized
+	      && !warning_at (location, opt, "%qs may be used uninitialized",
+			      var_name_str)))
+      return;
+    }
 
   /* Avoid subsequent warnings for reads of the same variable again.  */
-  suppress_warning (var, opt);
+  if (var)
+    suppress_warning (var, opt);
+  else if (var_name_str)
+    suppress_warning (var_def_stmt, opt);
 
   /* Issue a note pointing to the read variable unless the warning
      is at the same location.  */
-  location_t var_loc = DECL_SOURCE_LOCATION (var);
+  location_t var_loc = var ? DECL_SOURCE_LOCATION (var)
+			: gimple_location (var_def_stmt);
   if (location == var_loc)
     return;
 
-  inform (var_loc, "%qD was declared here", var);
+  if (var)
+    inform (var_loc, "%qD was declared here", var);
+  else if (var_name_str)
+    inform (var_loc, "%qs was declared here", var_name_str);
 }
 
 struct check_defs_data
@@ -379,6 +455,20 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
      to .DEFERRED_INIT function.  */
   if (gimple_call_internal_p (def_stmt, IFN_DEFERRED_INIT))
     return false;
+
+  /* For address taken variable, a temporary variable is added between
+     the variable and the call to .DEFERRED_INIT function as:
+      _1 = .DEFERRED_INIT (4, 2, &"i1"[0]);
+      i1 = _1;
+     Ignore this vdef as well.  */
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == SSA_NAME)
+    {
+      tree tmp_var = gimple_assign_rhs1 (def_stmt);
+      if (gimple_call_internal_p (SSA_NAME_DEF_STMT (tmp_var),
+				  IFN_DEFERRED_INIT))
+	return false;
+    }
 
   /* The ASAN_MARK intrinsic doesn't modify the variable.  */
   if (is_gimple_call (def_stmt))
@@ -877,8 +967,8 @@ warn_uninit_phi_uses (basic_block bb)
 	  use_stmt = NULL;
 	}
       if (use_stmt)
-	warn_uninit (OPT_Wuninitialized, def, SSA_NAME_VAR (def),
-		     "%qD is used uninitialized", use_stmt);
+	warn_uninit (OPT_Wuninitialized, def,
+		     SSA_NAME_VAR (def), use_stmt);
     }
 }
 
@@ -931,11 +1021,11 @@ warn_uninitialized_vars (bool wmaybe_uninit)
 		}
 	      tree use = USE_FROM_PTR (use_p);
 	      if (wlims.always_executed)
-		warn_uninit (OPT_Wuninitialized, use, SSA_NAME_VAR (use),
-			     "%qD is used uninitialized", stmt);
+		warn_uninit (OPT_Wuninitialized, use,
+			     SSA_NAME_VAR (use), stmt);
 	      else if (wmaybe_uninit)
-		warn_uninit (OPT_Wmaybe_uninitialized, use, SSA_NAME_VAR (use),
-			     "%qD may be used uninitialized", stmt);
+		warn_uninit (OPT_Wmaybe_uninitialized, use,
+			     SSA_NAME_VAR (use), stmt);
 	    }
 
 	  /* For limiting the alias walk below we count all
@@ -1182,7 +1272,6 @@ warn_uninitialized_phi (gphi *phi, vec<gphi *> *worklist,
 
   warn_uninit (OPT_Wmaybe_uninitialized, uninit_op,
 	       SSA_NAME_VAR (uninit_op),
-	       "%qD may be used uninitialized in this function",
 	       uninit_use_stmt, loc);
 }
 

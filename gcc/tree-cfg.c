@@ -9410,6 +9410,31 @@ gimple_switch_default_edge (function *ifun, gswitch *gs)
   return gimple_switch_edge (ifun, gs, 0);
 }
 
+/* Return true if the only executable statement in BB is a GIMPLE_COND.  */
+
+bool
+cond_only_block_p (basic_block bb)
+{
+  /* BB must have no executable statements.  */
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
+  if (phi_nodes (bb))
+    return false;
+  while (!gsi_end_p (gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	;
+      else if (gimple_code (stmt) == GIMPLE_NOP
+	       || gimple_code (stmt) == GIMPLE_PREDICT
+	       || gimple_code (stmt) == GIMPLE_COND)
+	;
+      else
+	return false;
+      gsi_next (&gsi);
+    }
+  return true;
+}
+
 
 /* Emit return warnings.  */
 

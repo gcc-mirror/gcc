@@ -1,3 +1,9 @@
+2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR c++/103705
+	* c-typeck.c (c_finish_omp_clauses): Also continue peeling off of
+	outer node for ARRAY_REFs.
+
 2022-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR objc/103639

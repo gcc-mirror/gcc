@@ -1,3 +1,213 @@
+2022-01-16  wwwhhhyyy  <hongyu.wang@intel.com>
+
+	* config/i386/i386.h (TARGET_DEST_FALSE_DEP_FOR_GLC): New macro.
+	* config/i386/sse.md (<avx512>_<complexopname>_<mode><maskc_name><round_name>):
+	Insert zero-idiom in output template when attr enabled, set new attribute to
+	true for non-mask/maskz insn.
+	(avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>):
+	Likewise.
+	(avx512dq_mul<mode>3<mask_name>): Likewise.
+	(<avx2_avx512>_permvar<mode><mask_name>): Likewise.
+	(avx2_perm<mode>_1<mask_name>): Likewise.
+	(avx512f_perm<mode>_1<mask_name>): Likewise.
+	(avx512dq_rangep<mode><mask_name><round_saeonly_name>): Likewise.
+	(avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Likewise.
+	(<avx512>_getmant<mode><mask_name><round_saeonly_name>): Likewise.
+	(avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Likewise.
+	* config/i386/subst.md (mask3_dest_false_dep_for_glc_cond): New
+	subst_attr.
+	(mask4_dest_false_dep_for_glc_cond): Likewise.
+	(mask6_dest_false_dep_for_glc_cond): Likewise.
+	(mask10_dest_false_dep_for_glc_cond): Likewise.
+	(maskc_dest_false_dep_for_glc_cond): Likewise.
+	(mask_scalar4_dest_false_dep_for_glc_cond): Likewise.
+	(mask_scalarc_dest_false_dep_for_glc_cond): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_DEST_FALSE_DEP_FOR_GLC): New
+	DEF_TUNE enabled for m_SAPPHIRERAPIDS and m_ALDERLAKE
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/63272
+	* diagnostic-spec.c (nowarn_spec_t::nowarn_spec_t): Handle
+	-Wdangling-pointer.
+	* doc/invoke.texi (-Wdangling-pointer): Document new option.
+	* gimple-ssa-warn-access.cc (pass_waccess::clone): Set new member.
+	(pass_waccess::check_pointer_uses): New function.
+	(pass_waccess::gimple_call_return_arg): New function.
+	(pass_waccess::gimple_call_return_arg_ref): New function.
+	(pass_waccess::check_call_dangling): New function.
+	(pass_waccess::check_dangling_uses): New function overloads.
+	(pass_waccess::check_dangling_stores): New function.
+	(pass_waccess::check_dangling_stores): New function.
+	(pass_waccess::m_clobbers): New data member.
+	(pass_waccess::m_func): New data member.
+	(pass_waccess::m_run_number): New data member.
+	(pass_waccess::m_check_dangling_p): New data member.
+	(pass_waccess::check_alloca): Check m_early_checks_p.
+	(pass_waccess::check_alloc_size_call): Same.
+	(pass_waccess::check_strcat): Same.
+	(pass_waccess::check_strncat): Same.
+	(pass_waccess::check_stxcpy): Same.
+	(pass_waccess::check_stxncpy): Same.
+	(pass_waccess::check_strncmp): Same.
+	(pass_waccess::check_memop_access): Same.
+	(pass_waccess::check_read_access): Same.
+	(pass_waccess::check_builtin): Call check_pointer_uses.
+	(pass_waccess::warn_invalid_pointer): Add arguments.
+	(is_auto_decl): New function.
+	(pass_waccess::check_stmt): New function.
+	(pass_waccess::check_block): Call check_stmt.
+	(pass_waccess::execute): Call check_dangling_uses,
+	check_dangling_stores.  Empty m_clobbers.
+	* passes.def (pass_warn_access): Invoke pass two more times.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/80532
+	* common.opt (-Wuse-after-free): New options.
+	* diagnostic-spec.c (nowarn_spec_t::nowarn_spec_t): Handle
+	OPT_Wreturn_local_addr and OPT_Wuse_after_free_.
+	* diagnostic-spec.h (NW_DANGLING): New enumerator.
+	* doc/invoke.texi (-Wuse-after-free): Document new option.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Rename...
+	(pass_waccess::check_call_access): ...to this.
+	(pass_waccess::check): Rename...
+	(pass_waccess::check_block): ...to this.
+	(pass_waccess::check_pointer_uses): New function.
+	(pass_waccess::gimple_call_return_arg): New function.
+	(pass_waccess::warn_invalid_pointer): New function.
+	(pass_waccess::check_builtin): Handle free and realloc.
+	(gimple_use_after_inval_p): New function.
+	(get_realloc_lhs): New function.
+	(maybe_warn_mismatched_realloc): New function.
+	(pointers_related_p): New function.
+	(pass_waccess::check_call): Call check_pointer_uses.
+	(pass_waccess::execute): Compute and free dominance info.
+
+2022-01-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Use
+	expand_simple_unop and expand_simple_binop instead of manually
+	constructing NOT, AND and IOR RTXes.  Use vector_all_ones_operand
+	consistently.  Eliminate common subexpressions and simplify code.
+	* config/i386/sse.md (<any_logic:code><MODEF:mode>3): New expander.
+	(<any_logic:code><MODEF:mode>3): Make public.
+
+2022-01-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-param-manipulation.c (ipa_dump_adjusted_parameters): Dump
+	reverse flag as "reverse" for the sake of consistency.
+	* ipa-sra.c: Fix copyright year.
+	(ipa_sra_function_summaries::duplicate): Copy the reverse flag.
+	(dump_isra_access): Tweak dump line.
+	(isra_write_node_summary): Write the reverse flag.
+	(isra_read_node_info): Read it.
+	(pull_accesses_from_callee): Test its consistency and copy it.
+
+2022-01-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/104026
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	partial_load_store_bias.
+
+2022-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101475
+	* pointer-query.cc (handle_component_ref): Use the size of
+	the enclosing object if it's smaller than the member.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-01-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>_1_slp"):
+	Mark alternative 1 output operand earlyclobbered.
+	(*sub<mode>_1_slp): Ditto.
+	(*and<mode>_1_slp): Ditto.
+	(*<code><mode>_1_slp): Ditto.
+	(*neg<mode>_1_slp): Ditto.
+	(*one_cmpl<mode>_1_slp): Ditto.
+	(*ashl<mode>3_1_slp): Ditto.
+	(*<insn><mode>3_1_slp): Ditto.
+	(*<insn><mode>3_1_slp): Ditto.
+
+2022-01-14  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/104015
+	* tree-vect-loop.c (vect_analyze_loop): Check
+	param_vect_partial_vector_usage for supports_partial_vectors.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* fold-const.c (address_compare): Punt on comparison of address of
+	one object with address of end of another object if
+	folding_initializer.
+
+2022-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/98737
+	* tree-ssa-forwprop.c (simplify_builtin_call): Canonicalize
+	__atomic_fetch_op (p, x, y) op x into __atomic_op_fetch (p, x, y)
+	and __atomic_op_fetch (p, x, y) iop x into
+	__atomic_fetch_op (p, x, y).
+
+2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (DWARF_FRAME_REGNUM): Update definition.
+	(DWARF_FRAME_RETURN_COLUMN): Use RETURN_ADDR_REGNUM macro.
+	(INCOMING_RETURN_ADDR_RTX): Likewise.
+	(DWARF_ALT_FRAME_RETURN_COLUMN): Define.
+
+2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_compute_frame_size): Remove condition when
+	computin checking accumulator regs.
+	(arc_expand_prologue): Update comments.
+	(arc_expand_epilogue): Likewise.
+
+2022-01-14  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_v1ti_to_ti): Use force_reg.
+	(ix86_expand_ti_to_v1ti): Use force_reg.
+	(ix86_expand_v1ti_shift): Use force_reg.
+	(ix86_expand_v1ti_rotate): Use force_reg.
+	(ix86_expand_v1ti_ashiftrt): Provide new three operation
+	implementations for shifts by 111..126 bits.  Use force_reg.
+
+2022-01-14  Martin Liska  <mliska@suse.cz>
+
+	* common/config/arm/arm-common.c (arm_target_mode): Fix
+	warning: unterminated quoting directive [-Wformat=].
+
+2022-01-14  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/104009
+	* tree-object-size.c (compute_builtin_object_size): Bail out on
+	negative offset.
+	(plus_stmt_object_size): Return maximum of wholesize and minimum
+	of 0 for negative offset.
+
+2022-01-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104001
+	PR target/94790
+	PR target/104014
+	* config/i386/i386.md (*xor2andn): Refine predicate of
+	operands[0] from nonimmediate_operand to
+	register_operand, remove TARGET_AVX512BW from condition.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/extend.texi (Function Attributes): Note that "tainted_args" can
+	be used on field decls.
+	(Common Function Attributes): Add entry on "tainted_args" attribute.
+
 2022-01-13  Anthony Sharp  <anthonysharp15@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

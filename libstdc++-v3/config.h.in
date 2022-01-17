@@ -66,6 +66,10 @@
 /* Define to 1 if you have the `cosl' function. */
 #undef HAVE_COSL
 
+/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
+   don't. */
+#undef HAVE_DECL_STRNLEN
+
 /* Define to 1 if you have the <dirent.h> header file. */
 #undef HAVE_DIRENT_H
 
@@ -213,6 +217,9 @@
 /* Define if link is available in <unistd.h>. */
 #undef HAVE_LINK
 
+/* Define to 1 if you have the <link.h> header file. */
+#undef HAVE_LINK_H
+
 /* Define if futex syscall is available. */
 #undef HAVE_LINUX_FUTEX
 
@@ -345,6 +352,9 @@
 
 /* Define to 1 if you have the `sqrtl' function. */
 #undef HAVE_SQRTL
+
+/* Define if the <stacktrace> header is supported. */
+#undef HAVE_STACKTRACE
 
 /* Define to 1 if you have the <stdalign.h> header file. */
 #undef HAVE_STDALIGN_H

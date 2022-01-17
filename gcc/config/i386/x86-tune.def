@@ -79,6 +79,12 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
 	  | m_BDVER | m_ZNVER | m_ALDERLAKE | m_GENERIC)
 
+/* X86_TUNE_DEST_FALSE_DEP_FOR_GLC: This knob inserts zero-idiom before
+   several insns to break false dependency on the dest register for GLC
+   micro-architecture.  */
+DEF_TUNE (X86_TUNE_DEST_FALSE_DEP_FOR_GLC,
+	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_ALDERLAKE)
+
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
    maintain just lower part of scalar values in proper format leaving the

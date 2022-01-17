@@ -11,7 +11,7 @@ int foo(int n)
        _err = bar();
      }
      _err; 
-   }); /* { dg-warning "uninitialized" "warn on _err" } */
+   });
 
    if (err == 0) return 17; 
  }

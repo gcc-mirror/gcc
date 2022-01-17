@@ -1958,31 +1958,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
-/* Return true if the only executable statement in BB is a GIMPLE_COND.  */
-
-static bool
-cond_only_block_p (basic_block bb)
-{
-  /* BB must have no executable statements.  */
-  gimple_stmt_iterator gsi = gsi_after_labels (bb);
-  if (phi_nodes (bb))
-    return false;
-  while (!gsi_end_p (gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (is_gimple_debug (stmt))
-	;
-      else if (gimple_code (stmt) == GIMPLE_NOP
-	       || gimple_code (stmt) == GIMPLE_PREDICT
-	       || gimple_code (stmt) == GIMPLE_COND)
-	;
-      else
-	return false;
-      gsi_next (&gsi);
-    }
-  return true;
-}
-
 /* Attempt to optimize (x <=> y) cmp 0 and similar comparisons.
    For strong ordering <=> try to match something like:
     <bb 2> :  // cond3_bb (== cond2_bb)

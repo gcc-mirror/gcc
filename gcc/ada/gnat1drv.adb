@@ -1429,6 +1429,11 @@ begin
             Ecode := E_Success;
             Back_End.Gen_Or_Update_Object_File;
 
+            --  Use a goto instead of calling Exit_Program so that finalization
+            --  occurs normally.
+
+            goto End_Of_Program;
+
          --  Otherwise the unit is missing a crucial piece that prevents code
          --  generation.
 

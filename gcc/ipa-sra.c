@@ -1,6 +1,5 @@
 /* Interprocedural scalar replacement of aggregates
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
-
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -21,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* IPA-SRA is an interprocedural pass that removes unused function return
    values (turning functions returning a value which is never used into void
-   functions), removes unused function parameters.  It can also replace an
+   functions) and removes unused function parameters.  It can also replace an
    aggregate parameter by a set of other parameters representing part of the
    original, turning those passed by reference into new ones which pass the
    value directly.
@@ -55,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
    transformation phase is not part of this patch but is carried out by the
    clone materialization and edge redirection itself, see comments in
    ipa-param-manipulation.h for more details.  */
-
 
 
 #include "config.h"
@@ -93,7 +91,7 @@ static void ipa_sra_summarize_function (cgraph_node *);
 #define ISRA_ARG_SIZE_LIMIT_BITS 16
 #define ISRA_ARG_SIZE_LIMIT (1 << ISRA_ARG_SIZE_LIMIT_BITS)
 /* How many parameters can feed into a call actual argument and still be
-   tracked. */
+   tracked.  */
 #define IPA_SRA_MAX_PARAM_FLOW_LEN 7
 
 /* Structure describing accesses to a specific portion of an aggregate
@@ -122,7 +120,7 @@ struct GTY(()) param_access
      transformed function - initially not set for portions of formal parameters
      that are only used as actual function arguments passed to callees.  */
   unsigned certain : 1;
-  /* Set if the access has a reversed scalar storage order.  */
+  /* Set if the access has reverse scalar storage order.  */
   unsigned reverse : 1;
 };
 
@@ -156,7 +154,7 @@ struct gensum_param_access
      arguments to a function call that can be tracked.  */
   bool nonarg;
 
-  /* Set if the access has a reversed scalar storage order.  */
+  /* Set if the access has reverse scalar storage order.  */
   bool reverse;
 };
 
@@ -219,8 +217,8 @@ struct gensum_param_desc
 };
 
 /* Properly deallocate accesses of DESC.  TODO: Since this data structure is
-   not in GC memory, this is not necessary and we can consider removing the
-   function.  */
+   allocated in GC memory, this is not necessary and we can consider removing
+   the function.  */
 
 static void
 free_param_decl_accesses (isra_param_desc *desc)
@@ -275,9 +273,9 @@ public:
   unsigned m_queued : 1;
 };
 
-/* Clean up and deallocate isra_func_summary points to.  TODO: Since this data
-   structure is not in GC memory, this is not necessary and we can consider
-   removing the destructor.  */
+/* Deallocate the memory pointed to by isra_func_summary.  TODO: Since this
+   data structure is allocated in GC memory, this is not necessary and we can
+   consider removing the destructor.  */
 
 isra_func_summary::~isra_func_summary ()
 {
@@ -286,7 +284,6 @@ isra_func_summary::~isra_func_summary ()
     free_param_decl_accesses (&(*m_parameters)[i]);
   vec_free (m_parameters);
 }
-
 
 /* Mark the function as not a candidate for any IPA-SRA transformation.  Return
    true if it was a candidate until now.  */
@@ -297,6 +294,7 @@ isra_func_summary::zap ()
   bool ret = m_candidate;
   m_candidate = false;
 
+  /* TODO: see the destructor above.  */
   unsigned len = vec_safe_length (m_parameters);
   for (unsigned i = 0; i < len; ++i)
     free_param_decl_accesses (&(*m_parameters)[i]);
@@ -306,7 +304,7 @@ isra_func_summary::zap ()
 }
 
 /* Structure to describe which formal parameters feed into a particular actual
-   arguments.  */
+   argument.  */
 
 struct isra_param_flow
 {
@@ -426,6 +424,7 @@ ipa_sra_function_summaries::duplicate (cgraph_node *, cgraph_node *,
 	  to->unit_offset = from->unit_offset;
 	  to->unit_size = from->unit_size;
 	  to->certain = from->certain;
+	  to->reverse = from->reverse;
 	  d->accesses->quick_push (to);
 	}
     }
@@ -552,7 +551,7 @@ namespace {
 
 hash_map<tree, gensum_param_desc *> *decl2desc;
 
-/* Countdown of allowed Alias analysis steps during summary building.  */
+/* Countdown of allowed Alias Analysis steps during summary building.  */
 
 int aa_walking_limit;
 
@@ -665,7 +664,7 @@ dump_isra_access (FILE *f, param_access *access)
   if (access->certain)
     fprintf (f, ", certain");
   else
-    fprintf (f, ", not-certain");
+    fprintf (f, ", not certain");
   if (access->reverse)
     fprintf (f, ", reverse");
   fprintf (f, "\n");
@@ -927,8 +926,7 @@ isra_track_scalar_value_uses (function *fun, cgraph_node *node, tree name,
 
    This function is similar to ptr_parm_has_nonarg_uses but its results are
    meant for unused parameter removal, as opposed to splitting of parameters
-   passed by reference or converting them to passed by value.
-  */
+   passed by reference or converting them to passed by value.  */
 
 static bool
 isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
@@ -968,8 +966,7 @@ isra_track_scalar_param_local_uses (function *fun, cgraph_node *node, tree parm,
    This function is similar to isra_track_scalar_param_local_uses but its
    results are meant for splitting of parameters passed by reference or turning
    them into bits passed by value, as opposed to generic unused parameter
-   removal.
- */
+   removal.  */
 
 static bool
 ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
@@ -1650,7 +1647,7 @@ record_nonregister_call_use (gensum_param_desc *desc,
 }
 
 /* Callback of walk_aliased_vdefs, just mark that there was a possible
-   modification. */
+   modification.  */
 
 static bool
 mark_maybe_modified (ao_ref *, tree, void *data)
@@ -2195,7 +2192,7 @@ static bool
 check_gensum_access (tree parm, gensum_param_desc *desc,
 		     gensum_param_access *access,
 		     HOST_WIDE_INT *nonarg_acc_size, bool *only_calls,
-		      int entry_bb_index)
+		     int entry_bb_index)
 {
   if (access->nonarg)
     {
@@ -2363,8 +2360,8 @@ process_scan_results (cgraph_node *node, struct function *fun,
      offset in this function at IPA level.
 
      TODO: Measure the overhead and the effect of just being pessimistic.
-     Maybe this is only -O3 material?
-  */
+     Maybe this is only -O3 material?  */
+
   bool pdoms_calculated = false;
   if (check_pass_throughs)
     for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
@@ -2584,6 +2581,7 @@ isra_write_node_summary (output_block *ob, cgraph_node *node)
 	  streamer_write_uhwi (ob, acc->unit_size);
 	  bitpack_d bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, acc->certain, 1);
+	  bp_pack_value (&bp, acc->reverse, 1);
 	  streamer_write_bitpack (&bp);
 	}
       streamer_write_uhwi (ob, desc->param_size_limit);
@@ -2702,6 +2700,7 @@ isra_read_node_info (struct lto_input_block *ib, cgraph_node *node,
 	  acc->unit_size = streamer_read_uhwi (ib);
 	  bitpack_d bp = streamer_read_bitpack (ib);
 	  acc->certain = bp_unpack_value (&bp, 1);
+	  acc->reverse = bp_unpack_value (&bp, 1);
 	  vec_safe_push (desc->accesses, acc);
 	}
       desc->param_size_limit = streamer_read_uhwi (ib);
@@ -3161,7 +3160,7 @@ isra_mark_caller_param_used (isra_func_summary *from_ifs, int input_idx,
 
 /* Propagate information that any parameter is not used only locally within a
    SCC across CS to the caller, which must be in the same SCC as the
-   callee. Push any callers that need to be re-processed to STACK.  */
+   callee.  Push any callers that need to be re-processed to STACK.  */
 
 static void
 propagate_used_across_scc_edge (cgraph_edge *cs, vec<cgraph_node *> *stack)
@@ -3199,7 +3198,7 @@ propagate_used_across_scc_edge (cgraph_edge *cs, vec<cgraph_node *> *stack)
 
 /* Propagate information that any parameter is not used only locally within a
    SCC (i.e. is used also elsewhere) to all callers of NODE that are in the
-   same SCC. Push any callers that need to be re-processed to STACK.  */
+   same SCC.  Push any callers that need to be re-processed to STACK.  */
 
 static bool
 propagate_used_to_scc_callers (cgraph_node *node, void *data)
@@ -3292,7 +3291,8 @@ pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
 	      && pacc->unit_size == argacc->unit_size)
 	    {
 	      if (argacc->alias_ptr_type != pacc->alias_ptr_type
-		  || !types_compatible_p (argacc->type, pacc->type))
+		  || !types_compatible_p (argacc->type, pacc->type)
+		  || argacc->reverse != pacc->reverse)
 		return "propagated access types would not match existing ones";
 
 	      exact_match = true;
@@ -3349,6 +3349,7 @@ pull_accesses_from_callee (cgraph_node *caller, isra_param_desc *param_desc,
 	  copy->type = argacc->type;
 	  copy->alias_ptr_type = argacc->alias_ptr_type;
 	  copy->certain = true;
+	  copy->reverse = argacc->reverse;
 	  vec_safe_push (param_desc->accesses, copy);
 	}
       else if (prop_kinds[j] == ACC_PROP_CERTAIN)
@@ -3609,7 +3610,6 @@ retval_used_p (cgraph_node *node, void *)
    vector of parent clone (if any) had PREV_CLONE_INDEX and was described by
    PREV_ADJUSTMENT.  If the parent clone is the original function,
    PREV_ADJUSTMENT is NULL and PREV_CLONE_INDEX is equal to BASE_INDEX.  */
-
 
 static void
 push_param_adjustments_for_index (isra_func_summary *ifs, unsigned base_index,

@@ -49,7 +49,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem doc po testsuite python])
+  m4_define([glibcxx_SUBDIRS],[include libsupc++ src src/c++98 src/c++11 src/c++17 src/c++20 src/filesystem src/libbacktrace doc po testsuite python])
   SUBDIRS='glibcxx_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
@@ -4801,6 +4801,142 @@ AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
   AC_LANG_RESTORE
 ])
 
+dnl
+dnl Check to see whether to build libstdc++_libbacktrace.a
+dnl
+dnl --enable-libstdcxx-backtrace
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
+  GLIBCXX_ENABLE(libstdcxx-backtrace,auto,,
+    [turns on libbacktrace support],
+    [permit yes|no|auto])
+
+  # Most of this is adapted from libsanitizer/configure.ac
+
+  BACKTRACE_CPPFLAGS=
+
+  # libbacktrace only needs atomics for int, which we've already tested
+  if test "$glibcxx_cv_atomic_int" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
+  fi
+
+  # Test for __sync support.
+  AC_CACHE_CHECK([__sync extensions],
+  [glibcxx_cv_sys_sync],
+  [GCC_TRY_COMPILE_OR_LINK(
+     [int i;],
+     [__sync_bool_compare_and_swap (&i, i, i);
+     __sync_lock_test_and_set (&i, 1);
+     __sync_lock_release (&i);],
+     [glibcxx_cv_sys_sync=yes],
+     [glibcxx_cv_sys_sync=no])
+  ])
+  if test "$glibcxx_cv_sys_sync" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_SYNC_FUNCTIONS=1"
+  fi
+
+  # Check for dl_iterate_phdr.
+  AC_CHECK_HEADERS(link.h)
+  if test "$ac_cv_header_link_h" = "no"; then
+    have_dl_iterate_phdr=no
+  else
+    # When built as a GCC target library, we can't do a link test.
+    AC_EGREP_HEADER([dl_iterate_phdr], [link.h], [have_dl_iterate_phdr=yes],
+		    [have_dl_iterate_phdr=no])
+  fi
+  if test "$have_dl_iterate_phdr" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
+  fi
+
+  # Check for the fcntl function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-mingw*) have_fcntl=no ;;
+     *) have_fcntl=yes ;;
+     esac
+  else
+    AC_CHECK_FUNC(fcntl, [have_fcntl=yes], [have_fcntl=no])
+  fi
+  if test "$have_fcntl" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_FCNTL=1"
+  fi
+
+  AC_CHECK_DECLS(strnlen)
+
+  # Check for getexecname function.
+  if test -n "${with_target_subdir}"; then
+     case "${host}" in
+     *-*-solaris2*) have_getexecname=yes ;;
+     *) have_getexecname=no ;;
+     esac
+  else
+    AC_CHECK_FUNC(getexecname, [have_getexecname=yes], [have_getexecname=no])
+  fi
+  if test "$have_getexecname" = "yes"; then
+    BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_GETEXECNAME=1"
+  fi
+
+# The library needs to be able to read the executable itself.  Compile
+# a file to determine the executable format.  The awk script
+# filetype.awk prints out the file type.
+AC_CACHE_CHECK([output filetype],
+[glibcxx_cv_sys_filetype],
+[filetype=
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([int i;], [int j;])],
+  [filetype=`${AWK} -f $srcdir/../libbacktrace/filetype.awk conftest.$ac_objext`],
+  [AC_MSG_FAILURE([compiler failed])])
+glibcxx_cv_sys_filetype=$filetype])
+
+# Match the file type to decide what files to compile.
+FORMAT_FILE=
+case "$glibcxx_cv_sys_filetype" in
+elf*) FORMAT_FILE="elf.lo" ;;
+*) AC_MSG_WARN([could not determine output file type])
+   FORMAT_FILE="unknown.lo"
+   enable_libstdcxx_backtrace=no
+   ;;
+esac
+AC_SUBST(FORMAT_FILE)
+
+# ELF defines.
+elfsize=
+case "$glibcxx_cv_sys_filetype" in
+elf32) elfsize=32 ;;
+elf64) elfsize=64 ;;
+esac
+BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DBACKTRACE_ELF_SIZE=$elfsize"
+
+  ALLOC_FILE=alloc.lo
+  AC_SUBST(ALLOC_FILE)
+  VIEW_FILE=read.lo
+  AC_SUBST(VIEW_FILE)
+
+  AC_MSG_CHECKING([whether to build libbacktrace support])
+  if test "$enable_libstdcxx_backtrace" == "auto"; then
+    enable_libstdcxx_backtrace=no
+  fi
+  if test "$enable_libstdcxx_backtrace" == "yes"; then
+    BACKTRACE_SUPPORTED=1
+    BACKTRACE_USES_MALLOC=1
+    if test "$ac_has_gthreads" = "yes"; then
+      BACKTRACE_SUPPORTS_THREADS=1
+    else
+      BACKTRACE_SUPPORTS_THREADS=0
+    fi
+    AC_SUBST(BACKTRACE_CPPFLAGS)
+    AC_SUBST(BACKTRACE_SUPPORTED)
+    AC_SUBST(BACKTRACE_USES_MALLOC)
+    AC_SUBST(BACKTRACE_SUPPORTS_THREADS)
+    AC_DEFINE(HAVE_STACKTRACE, 1, [Define if the <stacktrace> header is supported.])
+  else
+    BACKTRACE_SUPPORTED=0
+    BACKTRACE_USES_MALLOC=0
+    BACKTRACE_SUPPORTS_THREADS=0
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_backtrace)
+  GLIBCXX_CONDITIONAL(ENABLE_BACKTRACE, [test "$enable_libstdcxx_backtrace" != no])
+])
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

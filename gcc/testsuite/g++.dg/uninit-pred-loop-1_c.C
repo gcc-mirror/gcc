@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wuninitialized -O2" } */
+/* { dg-options "-Wuninitialized -O2 -std=c++98" } */
 
 extern int bar();
 int foo(int n, int m)
@@ -15,7 +15,7 @@ int foo(int n, int m)
      _err; 
    }); 
 
-   if (err == 0) return 17; }); /* { dg-warning "uninitialized" "warn on _err" } */
+   if (err == 0) return 17;
  }
 
  return 18;

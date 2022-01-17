@@ -4425,5 +4425,27 @@ expand_SHUFFLEVECTOR (internal_fn, gcall *)
 void
 expand_PHI (internal_fn, gcall *)
 {
-    gcc_unreachable ();
+  gcc_unreachable ();
+}
+
+void
+expand_SPACESHIP (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree rhs1 = gimple_call_arg (stmt, 0);
+  tree rhs2 = gimple_call_arg (stmt, 1);
+  tree type = TREE_TYPE (rhs1);
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx op1 = expand_normal (rhs1);
+  rtx op2 = expand_normal (rhs2);
+
+  class expand_operand ops[3];
+  create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (lhs)));
+  create_input_operand (&ops[1], op1, TYPE_MODE (type));
+  create_input_operand (&ops[2], op2, TYPE_MODE (type));
+  insn_code icode = optab_handler (spaceship_optab, TYPE_MODE (type));
+  expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }

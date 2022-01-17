@@ -1,7 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wuninitialized -ftrivial-auto-var-init=zero" } */
-/* -ftrivial-auto-var-init will make the uninitialized warning for address
-   taken auto var going away, FIXME later.  */
 
 int foo, bar;
 
@@ -20,6 +18,6 @@ void testfunc()
 
   decode_reloc(foo, &alt_reloc);
 
-  if (alt_reloc) /* { dg-warning "may be used uninitialized" "" { xfail *-*-* }  }  */
+  if (alt_reloc) /* { dg-warning "may be used uninitialized" "" }  */
     bar = 42;
 }

@@ -341,7 +341,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
 -Wconversion  -Wno-coverage-mismatch  -Wno-cpp @gol
--Wdangling-else  -Wdate-time @gol
+-Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}  @gol
+-Wdate-time @gol
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers @gol
@@ -4383,6 +4384,67 @@ annotations.
 Warn about overriding virtual functions that are not marked with the
 @code{override} keyword.
 
+@item -Wuse-after-free
+@itemx -Wuse-after-free=@var{n}
+@opindex Wuse-after-free
+@opindex Wno-use-after-free
+Warn about uses of pointers to dynamically allocated objects that have
+been rendered indeterminate by a call to a deallocation function.
+The warning is enabled at all optimization levels but may yield different
+results with optimization than without.
+
+@table @gcctabopt
+@item -Wuse-after-free=1
+At level 1 the warning attempts to diagnose only unconditional uses
+of pointers made indeterminate by a deallocation call or a successful
+call to @code{realloc}, regardless of whether or not the call resulted
+in an actual reallocatio of memory.  This includes double-@code{free}
+calls as well as uses in arithmetic and relational expressions.  Although
+undefined, uses of indeterminate pointers in equality (or inequality)
+expressions are not diagnosed at this level.
+@item -Wuse-after-free=2
+At level 2, in addition to unconditional uses, the warning also diagnoses
+conditional uses of pointers made indeterminate by a deallocation call.
+As at level 2, uses in equality (or inequality) expressions are not
+diagnosed.  For example, the second call to @code{free} in the following
+function is diagnosed at this level:
+@smallexample
+struct A @{ int refcount; void *data; @};
+
+void release (struct A *p)
+@{
+  int refcount = --p->refcount;
+  free (p);
+  if (refcount == 0)
+    free (p->data);   // warning: p may be used after free
+@}
+@end smallexample
+@item -Wuse-after-free=3
+At level 3, the warning also diagnoses uses of indeterminate pointers in
+equality expressions.  All uses of indeterminate pointers are undefined
+but equality tests sometimes appear after calls to @code{realloc} as
+an attempt to determine whether the call resulted in relocating the object
+to a different address.  They are diagnosed at a separate level to aid
+legacy code gradually transition to safe alternatives.  For example,
+the equality test in the function below is diagnosed at this level:
+@smallexample
+void adjust_pointers (int**, int);
+
+void grow (int **p, int n)
+@{
+  int **q = (int**)realloc (p, n *= 2);
+  if (q == p)
+    return;
+  adjust_pointers ((int**)q, n);
+@}
+@end smallexample
+To avoid the warning at this level, store offsets into allocated memory
+instead of pointers.  This approach obviates needing to adjust the stored
+pointers after reallocation.
+@end table
+
+@option{-Wuse-after-free=2} is included in @option{-Wall}.
+
 @item -Wuseless-cast @r{(C++ and Objective-C++ only)}
 @opindex Wuseless-cast
 @opindex Wno-useless-cast
@@ -5655,6 +5717,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wcatch-value @r{(C++ and Objective-C++ only)}  @gol
 -Wchar-subscripts  @gol
 -Wcomment  @gol
+-Wdangling-pointer=2  @gol
 -Wduplicate-decl-specifier @r{(C and Objective-C only)} @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
 -Wformat   @gol
@@ -5703,6 +5766,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
+-Wuse-after-free=3  @gol
 -Wvla-parameter @r{(C and Objective-C only)} @gol
 -Wvolatile-register-var  @gol
 -Wzero-length-bounds}
@@ -8526,6 +8590,62 @@ looks like this:
 @end smallexample
 
 This warning is enabled by @option{-Wparentheses}.
+
+@item -Wdangling-pointer
+@itemx -Wdangling-pointer=@var{n}
+@opindex Wdangling-pointer
+@opindex Wno-dangling-pointer
+Warn about uses of pointers (or C++ references) to objects with automatic
+storage duration after their lifetime has ended.  This includes local
+variables declared in nested blocks, compound literals and other unnamed
+temporary objects.  In addition, warn about storing the address of such
+objects in escaped pointers.  The warning is enabled at all optimization
+levels but may yield different results with optimization than without.
+
+@table @gcctabopt
+@item -Wdangling-pointer=1
+At level 1 the warning diagnoses only unconditional uses of dangling pointers.
+For example
+@smallexample
+int f (int c1, int c2, x)
+@{
+  char *p = strchr ((char[])@{ c1, c2 @}, c3);
+  return p ? *p : 'x';   // warning: dangling pointer to a compound literal
+@}
+@end smallexample
+In the following function the store of the address of the local variable
+@code{x} in the escaped pointer @code{*p} also triggers the warning.
+@smallexample
+void g (int **p)
+@{
+  int x = 7;
+  *p = &x;   // warning: storing the address of a local variable in *p
+@}
+@end smallexample
+
+@item -Wdangling-pointer=2
+At level 2, in addition to unconditional uses the warning also diagnoses
+conditional uses of dangling pointers.
+
+For example, because the array @var{a} in the following function is out of
+scope when the pointer @var{s} that was set to point is used, the warning
+triggers at this level.
+
+@smallexample
+void f (char *s)
+@{
+  if (!s)
+    @{
+      char a[12] = "tmpname";
+      s = a;
+    @}
+  strcat (s, ".tmp");   // warning: dangling pointer to a may be used
+  ...
+@}
+@end smallexample
+@end table
+
+@option{-Wdangling-pointer=2} is included in @option{-Wall}.
 
 @item -Wdate-time
 @opindex Wdate-time

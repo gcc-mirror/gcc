@@ -228,7 +228,7 @@ ipa_dump_adjusted_parameters (FILE *f,
 	  fprintf (f, " prefix: %s",
 		   ipa_param_prefixes[apm->param_prefix_index]);
 	  if (apm->reverse)
-	    fprintf (f, ", reverse-sso");
+	    fprintf (f, ", reverse");
 	  break;
 	}
       fprintf (f, "\n");

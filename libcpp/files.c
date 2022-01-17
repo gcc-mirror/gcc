@@ -553,12 +553,11 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		  {
 		    /* If *hash_slot is NULL, the above
 		       htab_find_slot_with_hash call just created the
-		       slot, but we aren't going to store there
-		       anything, so need to remove the newly created
-		       entry.  htab_clear_slot requires that it is
-		       non-NULL, so store there some non-NULL pointer,
-		       htab_clear_slot will overwrite it
-		       immediately.  */
+		       slot, but we aren't going to store there anything
+		       of use, so need to remove the newly created entry.
+		       htab_clear_slot requires that it is non-NULL, so
+		       store some non-NULL but valid pointer there,
+		       htab_clear_slot will immediately overwrite it.  */
 		    *hash_slot = file;
 		    htab_clear_slot (pfile->file_hash, hash_slot);
 		  }
@@ -582,7 +581,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		if (*hash_slot == NULL)
 		  {
 		    /* See comment on the above htab_clear_slot call.  */
-		    *hash_slot = file;
+		    *hash_slot = &hash_slot;
 		    htab_clear_slot (pfile->file_hash, hash_slot);
 		  }
 		return NULL;

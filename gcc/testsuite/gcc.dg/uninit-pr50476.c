@@ -7,7 +7,7 @@ int *x = 0;
 void f (void)
 {
   int y = 1;
-  x = &y;
+  x = &y;       // { dg-warning "\\\[-Wdangling-pointer" }
 }
 
 int g (void)

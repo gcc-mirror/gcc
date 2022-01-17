@@ -19,5 +19,7 @@ program p
   d = index ('xyxyz','yx', back=a, kind=8)
   b = index ('xyxyz','yx', back=a, kind=8)
   d = index ('xyxyz','yx', back=a, kind=4)
+  b = index ('xyxyz','yx',      a,      4)
+  d = index ('xyxyz','yx',      a,      8)
 end
 

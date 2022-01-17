@@ -489,6 +489,8 @@ AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
 
+GLIBCXX_ENABLE_BACKTRACE
+
 # For Networking TS.
 AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
 AC_CHECK_DECL(F_GETFL,,,[#include <fcntl.h>])
@@ -629,6 +631,7 @@ AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES([scripts/testsuite_flags],[chmod +x scripts/testsuite_flags])
 AC_CONFIG_FILES([scripts/extract_symvers],[chmod +x scripts/extract_symvers])
 AC_CONFIG_FILES([doc/xsl/customization.xsl])
+AC_CONFIG_FILES([src/libbacktrace/backtrace-supported.h])
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.
