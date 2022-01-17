@@ -1,6 +1,6 @@
 2022-01-16  Olivier Hainque  <hainque@adacore.com>
 
-	* inclhack.def (vxworks_math_h_fp_c99): New hack.
+	* inclhack.def (vxworks_posix_open): New hack.
 	* tests/base/fcntl.h: Update.
 	* fixincl.x: Regenerate.
 
