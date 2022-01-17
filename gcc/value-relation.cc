@@ -889,13 +889,14 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
   else
     {
       relation_chain *ptr = set_one_relation (bb, k, op1, op2);
-      register_transitives (bb, *ptr);
+      if (ptr)
+	register_transitives (bb, *ptr);
     }
 }
 
 // Register relation K between OP! and OP2 in block BB.
 // This creates the record and searches for existing records in the dominator
-// tree to merge with.
+// tree to merge with.  Return the record, or NULL if no record was created.
 
 relation_chain *
 dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
@@ -940,6 +941,13 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
     }
   else
     {
+      if (m_relations[bbi].m_num_relations >= param_relation_block_limit)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Not registered due to bb being full\n");
+	  return NULL;
+	}
+      m_relations[bbi].m_num_relations++;
       // Check for an existing relation further up the DOM chain.
       // By including dominating relations, The first one found in any search
       // will be the aggregate of all the previous ones.
@@ -1040,7 +1048,8 @@ dom_oracle::register_transitives (basic_block root_bb,
 	  value_relation nr (relation.kind (), r1, r2);
 	  if (nr.apply_transitive (*ptr))
 	    {
-	      set_one_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 ());
+	      if (!set_one_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 ()))
+		return;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "   Registering transitive relation ");

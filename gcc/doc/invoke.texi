@@ -15088,6 +15088,9 @@ per supernode, before terminating analysis.
 Maximum depth of logical expression evaluation ranger will look through
 when evaluating outgoing edge ranges.
 
+@item relation-block-limit
+Maximum number of relations the oracle will register in a basic block.
+
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
 With @option{--param=openacc-kernels=decompose}, OpenACC `kernels'
