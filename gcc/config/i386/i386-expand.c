@@ -2879,6 +2879,55 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
   emit_insn (gen_rtx_SET (dest, ret));
 }
 
+/* Expand floating point op0 <=> op1, i.e.
+   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : 2.  */
+
+void
+ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1)
+{
+  gcc_checking_assert (ix86_fp_comparison_strategy (GT) != IX86_FPCMP_ARITH);
+  rtx gt = ix86_expand_fp_compare (GT, op0, op1);
+  rtx l0 = gen_label_rtx ();
+  rtx l1 = gen_label_rtx ();
+  rtx l2 = TARGET_IEEE_FP ? gen_label_rtx () : NULL_RTX;
+  rtx lend = gen_label_rtx ();
+  rtx tmp;
+  rtx_insn *jmp;
+  if (l2)
+    {
+      rtx un = gen_rtx_fmt_ee (UNORDERED, VOIDmode,
+			       gen_rtx_REG (CCFPmode, FLAGS_REG), const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, un,
+				  gen_rtx_LABEL_REF (VOIDmode, l2), pc_rtx);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+      add_reg_br_prob_note (jmp, profile_probability:: very_unlikely ());
+    }
+  rtx eq = gen_rtx_fmt_ee (UNEQ, VOIDmode,
+			   gen_rtx_REG (CCFPmode, FLAGS_REG), const0_rtx);
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, eq,
+			      gen_rtx_LABEL_REF (VOIDmode, l0), pc_rtx);
+  jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  add_reg_br_prob_note (jmp, profile_probability::unlikely ());
+  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, gt,
+			      gen_rtx_LABEL_REF (VOIDmode, l1), pc_rtx);
+  jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  add_reg_br_prob_note (jmp, profile_probability::even ());
+  emit_move_insn (dest, constm1_rtx);
+  emit_jump (lend);
+  emit_label (l0);
+  emit_move_insn (dest, const0_rtx);
+  emit_jump (lend);
+  emit_label (l1);
+  emit_move_insn (dest, const1_rtx);
+  emit_jump (lend);
+  if (l2)
+    {
+      emit_label (l2);
+      emit_move_insn (dest, const2_rtx);
+    }
+  emit_label (lend);
+}
+
 /* Expand comparison setting or clearing carry flag.  Return true when
    successful and set pop for the operation.  */
 static bool

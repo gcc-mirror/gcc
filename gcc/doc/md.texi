@@ -8055,6 +8055,15 @@ inclusive and operand 1 exclusive.
 If this pattern is not defined, a call to the library function
 @code{__clear_cache} is used.
 
+@cindex @code{spaceship@var{m}3} instruction pattern
+@item @samp{spaceship@var{m}3}
+Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
+if operand 1 with mode @var{m} compares less than operand 2, equal to
+operand 2, greater than operand 2 or is unordered with operand 2.
+@var{m} should be a scalar floating point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
 @end table
 
 @end ifset
