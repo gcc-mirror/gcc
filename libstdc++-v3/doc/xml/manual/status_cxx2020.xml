@@ -10,8 +10,8 @@
 </info>
 
 <para>
-In this implementation the <literal>-std=gnu++2a</literal> or
-<literal>-std=c++2a</literal> flag must be used to enable language
+In this implementation the <literal>-std=gnu++20</literal> or
+<literal>-std=c++20</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
