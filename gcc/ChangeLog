@@ -1,3 +1,32 @@
+2022-01-16  wwwhhhyyy  <hongyu.wang@intel.com>
+
+	* config/i386/i386.h (TARGET_DEST_FALSE_DEP_FOR_GLC): New macro.
+	* config/i386/sse.md (<avx512>_<complexopname>_<mode><maskc_name><round_name>):
+	Insert zero-idiom in output template when attr enabled, set new attribute to
+	true for non-mask/maskz insn.
+	(avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>):
+	Likewise.
+	(avx512dq_mul<mode>3<mask_name>): Likewise.
+	(<avx2_avx512>_permvar<mode><mask_name>): Likewise.
+	(avx2_perm<mode>_1<mask_name>): Likewise.
+	(avx512f_perm<mode>_1<mask_name>): Likewise.
+	(avx512dq_rangep<mode><mask_name><round_saeonly_name>): Likewise.
+	(avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Likewise.
+	(<avx512>_getmant<mode><mask_name><round_saeonly_name>): Likewise.
+	(avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Likewise.
+	* config/i386/subst.md (mask3_dest_false_dep_for_glc_cond): New
+	subst_attr.
+	(mask4_dest_false_dep_for_glc_cond): Likewise.
+	(mask6_dest_false_dep_for_glc_cond): Likewise.
+	(mask10_dest_false_dep_for_glc_cond): Likewise.
+	(maskc_dest_false_dep_for_glc_cond): Likewise.
+	(mask_scalar4_dest_false_dep_for_glc_cond): Likewise.
+	(mask_scalarc_dest_false_dep_for_glc_cond): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_DEST_FALSE_DEP_FOR_GLC): New
+	DEF_TUNE enabled for m_SAPPHIRERAPIDS and m_ALDERLAKE
+
 2022-01-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/63272

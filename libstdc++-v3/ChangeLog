@@ -1,3 +1,23 @@
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+	    Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (__cpp_lib_atomic_shared_ptr):
+	New macro.
+	(_Sp_atomic): New class template.
+	(atomic<shared_ptr<T>>, atomic<weak_ptr<T>>): New partial
+	specializations.
+	* include/bits/shared_ptr_base.h (__shared_count, __weak_count)
+	(__shared_ptr, __weak_ptr): Declare _Sp_atomic as a friend.
+	* include/std/version (__cpp_lib_atomic_shared_ptr): New macro.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc: New
+	test.
+	* testsuite/20_util/weak_ptr/atomic_weak_ptr.cc: New test.
+
 2022-01-15  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd.h: Move feature detection bools

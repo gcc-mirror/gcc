@@ -1,3 +1,43 @@
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: xfail on x87.
+	* gfortran.dg/ieee/signaling_2.f90: xfail on x87.
+	* gfortran.dg/ieee/signaling_3.f90: New file.
+
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/82207
+	* gfortran.dg/ieee/ieee_10.f90: Do not create signaling NaNs.
+	* gfortran.dg/ieee/signaling_2.f90: New test.
+	* gfortran.dg/ieee/signaling_2_c.c: New file.
+
+2022-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/104037
+	* g++.old-deja/g++.robertl/eb43.C: Ad -Wno-deprecated.
+
+2022-01-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/103789
+	PR fortran/87711
+	PR fortran/97896
+	* gfortran.dg/index_5.f90: Enrich test with usages of INDEX with
+	a non-keyword KIND argument.
+	* gfortran.dg/len_trim.f90: Same for LEN_TRIM.
+	* gfortran.dg/maskl_1.f90: Same for MASKL.
+	* gfortran.dg/maskr_1.f90: Same for MASKR.
+	* gfortran.dg/scan_3.f90: Same for SCAN.
+	* gfortran.dg/verify_3.f90: Same for VERIFY.
+
+2022-01-16  wwwhhhyyy  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx2-dest-false-dep-for-glc.c: New test.
+	* gcc.target/i386/avx512dq-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512f-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512fp16-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512fp16vl-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512vl-dest-false-dep-for-glc.c: Ditto.
+
 2022-01-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/63272

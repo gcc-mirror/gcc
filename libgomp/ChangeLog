@@ -1,3 +1,11 @@
+2022-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Andrew Stubbs   <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (parse_target_attributes): Automatically set
+	the number of teams and threads if necessary.
+	(gcn_exec): Automatically set the number of gangs and workers if
+	necessary.
+
 2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-1.c: New test.

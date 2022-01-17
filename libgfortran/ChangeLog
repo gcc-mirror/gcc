@@ -1,3 +1,16 @@
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: New file.
+
+2022-01-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/82207
+	* mk-kinds-h.sh: Add values for TINY.
+	* ieee/ieee_arithmetic.F90: Call C helper functions for
+	IEEE_VALUE.
+	* ieee/ieee_helper.c: New functions ieee_value_helper_N for each
+	floating-point type.
+
 2022-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/104006
