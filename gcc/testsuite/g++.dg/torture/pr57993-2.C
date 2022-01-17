@@ -1,5 +1,7 @@
 /* This ICEd due to an incomplete fix for PR57993.  */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-return-type" } */
+
 
 extern "C"
 {
@@ -118,21 +120,21 @@ extern "C"
   Stats;
   static int All_Bicubic_Patch_Intersections (OBJECT * Object, RAY * Ray,
 					      ISTACK * Depth_Stack);
-  static int Inside_Bicubic_Patch (VECTOR IPoint, OBJECT * Object);
+  static int Inside_Bicubic_Patch (VECTOR IPoint, OBJECT * Object) { return 0; }
   static void Bicubic_Patch_Normal (VECTOR Result, OBJECT * Object,
-				    INTERSECTION * Inter);
+				    INTERSECTION * Inter) {}
   static void Bicubic_Patch_UVCoord (UV_VECT Result, OBJECT * Object,
-				     INTERSECTION * Inter);
-  static BICUBIC_PATCH *Copy_Bicubic_Patch (OBJECT * Object);
+				     INTERSECTION * Inter) {}
+  static BICUBIC_PATCH *Copy_Bicubic_Patch (OBJECT * Object) { return 0; }
   static void Translate_Bicubic_Patch (OBJECT * Object, VECTOR Vector,
-				       TRANSFORM * Trans);
+				       TRANSFORM * Trans) {}
   static void Rotate_Bicubic_Patch (OBJECT * Object, VECTOR Vector,
-				    TRANSFORM * Trans);
+				    TRANSFORM * Trans) {}
   static void Scale_Bicubic_Patch (OBJECT * Object, VECTOR Vector,
-				   TRANSFORM * Trans);
-  static void Transform_Bicubic_Patch (OBJECT * Object, TRANSFORM * Trans);
-  static void Invert_Bicubic_Patch (OBJECT * Object);
-  static void Destroy_Bicubic_Patch (OBJECT * Object);
+				   TRANSFORM * Trans) {}
+  static void Transform_Bicubic_Patch (OBJECT * Object, TRANSFORM * Trans) {}
+  static void Invert_Bicubic_Patch (OBJECT * Object) {}
+  static void Destroy_Bicubic_Patch (OBJECT * Object) {}
   static METHODS Bicubic_Patch_Methods = {
     All_Bicubic_Patch_Intersections, Inside_Bicubic_Patch,
       Bicubic_Patch_Normal, Bicubic_Patch_UVCoord,
