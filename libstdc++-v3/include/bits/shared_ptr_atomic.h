@@ -456,8 +456,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typename _Tp::element_type* _M_ptr;
       _Atomic_count _M_refcount;
 
-      static _Atomic_count::pointer
-      _S_add_ref(_Atomic_count::pointer __p)
+      static typename _Atomic_count::pointer
+      _S_add_ref(typename _Atomic_count::pointer __p)
       {
 	if (__p)
 	  {
