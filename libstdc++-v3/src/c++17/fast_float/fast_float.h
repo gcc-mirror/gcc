@@ -42,21 +42,10 @@
 #ifndef FASTFLOAT_FAST_FLOAT_H
 #define FASTFLOAT_FAST_FLOAT_H
 
-#include <system_error>
-
 namespace fast_float {
-enum chars_format {
-    scientific = 1<<0,
-    fixed = 1<<2,
-    hex = 1<<3,
-    general = fixed | scientific
-};
 
-
-struct from_chars_result {
-  const char *ptr;
-  std::errc ec;
-};
+using std::chars_format;
+using std::from_chars_result;
 
 struct parse_options {
   constexpr explicit parse_options(chars_format fmt = chars_format::general,
@@ -104,11 +93,6 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
 
 #ifndef FASTFLOAT_FLOAT_COMMON_H
 #define FASTFLOAT_FLOAT_COMMON_H
-
-#include <cfloat>
-#include <cstdint>
-#include <cassert>
-#include <cstring>
 
 #if (defined(__x86_64) || defined(__x86_64__) || defined(_M_X64)   \
        || defined(__amd64) || defined(__aarch64__) || defined(_M_ARM64) \
@@ -233,7 +217,7 @@ struct value128 {
 
 /* result might be undefined when input_num is zero */
 fastfloat_really_inline int leading_zeroes(uint64_t input_num) {
-  assert(input_num > 0);
+  FASTFLOAT_DEBUG_ASSERT(input_num > 0);
 #ifdef FASTFLOAT_VISUAL_STUDIO
   #if defined(_M_X64) || defined(_M_ARM64)
   unsigned long leading_zero = 0;
@@ -468,11 +452,6 @@ fastfloat_really_inline void to_float(bool negative, adjusted_mantissa am, T &va
 #ifndef FASTFLOAT_ASCII_NUMBER_H
 #define FASTFLOAT_ASCII_NUMBER_H
 
-#include <cctype>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
-
 
 namespace fast_float {
 
@@ -610,7 +589,7 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
     return answer;
   }
   int64_t exp_number = 0;            // explicit exponential part
-  if ((fmt & chars_format::scientific) && (p != pend) && (('e' == *p) || ('E' == *p))) {
+  if (bool(fmt & chars_format::scientific) && (p != pend) && (('e' == *p) || ('E' == *p))) {
     const char * location_of_e = p;
     ++p;
     bool neg_exp = false;
@@ -621,7 +600,7 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
       ++p;
     }
     if ((p == pend) || !is_integer(*p)) {
-      if(!(fmt & chars_format::fixed)) {
+      if(!bool(fmt & chars_format::fixed)) {
         // We are in error.
         return answer;
       }
@@ -640,7 +619,7 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
     }
   } else {
     // If it scientific and not fixed, we have to bail out.
-    if((fmt & chars_format::scientific) && !(fmt & chars_format::fixed)) { return answer; }
+    if(bool(fmt & chars_format::scientific) && !bool(fmt & chars_format::fixed)) { return answer; }
   }
   answer.lastmatch = p;
   answer.valid = true;
@@ -698,8 +677,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
 #ifndef FASTFLOAT_FAST_TABLE_H
 #define FASTFLOAT_FAST_TABLE_H
-
-#include <cstdint>
 
 namespace fast_float {
 
@@ -1399,13 +1376,6 @@ using powers = powers_template<>;
 #ifndef FASTFLOAT_DECIMAL_TO_BINARY_H
 #define FASTFLOAT_DECIMAL_TO_BINARY_H
 
-#include <cfloat>
-#include <cinttypes>
-#include <cmath>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-
 namespace fast_float {
 
 // This will compute or rather approximate w * 5**q and return a pair of 64-bit words approximating
@@ -1591,11 +1561,6 @@ adjusted_mantissa compute_float(int64_t q, uint64_t w)  noexcept  {
 
 #ifndef FASTFLOAT_BIGINT_H
 #define FASTFLOAT_BIGINT_H
-
-#include <algorithm>
-#include <cstdint>
-#include <climits>
-#include <cstring>
 
 
 namespace fast_float {
@@ -2182,11 +2147,6 @@ struct bigint {
 #ifndef FASTFLOAT_ASCII_NUMBER_H
 #define FASTFLOAT_ASCII_NUMBER_H
 
-#include <cctype>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
-
 
 namespace fast_float {
 
@@ -2412,11 +2372,6 @@ parsed_number_string parse_number_string(const char *p, const char *pend, parse_
 
 #ifndef FASTFLOAT_DIGIT_COMPARISON_H
 #define FASTFLOAT_DIGIT_COMPARISON_H
-
-#include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <iterator>
 
 
 namespace fast_float {
@@ -2834,11 +2789,6 @@ inline adjusted_mantissa digit_comp(parsed_number_string& num, adjusted_mantissa
 #ifndef FASTFLOAT_PARSE_NUMBER_H
 #define FASTFLOAT_PARSE_NUMBER_H
 
-
-#include <cmath>
-#include <cstring>
-#include <limits>
-#include <system_error>
 
 namespace fast_float {
 
