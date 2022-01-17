@@ -283,11 +283,20 @@ constexpr inline bool __have_power_vmx = __have_power_vsx;
 
 namespace __detail
 {
+  constexpr bool __handle_fpexcept =
+#ifdef math_errhandling
+    math_errhandling & MATH_ERREXCEPT;
+#elif defined __FAST_MATH__
+    false;
+#else
+    true;
+#endif
+
   constexpr std::uint_least64_t
   __floating_point_flags()
   {
     std::uint_least64_t __flags = 0;
-    if constexpr (math_errhandling & MATH_ERREXCEPT)
+    if constexpr (__handle_fpexcept)
       __flags |= 1;
 #ifdef __FAST_MATH__
     __flags |= 1 << 1;
