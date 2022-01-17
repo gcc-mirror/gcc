@@ -8245,3 +8245,57 @@ and,
  (bit_and (negate @0) integer_onep@1)
  (if (!TYPE_OVERFLOW_SANITIZED (type))
   (bit_and @0 @1)))
+
+/* Optimize
+   c1 = VEC_PERM_EXPR (a, a, mask)
+   c2 = VEC_PERM_EXPR (b, b, mask)
+   c3 = c1 op c2
+   -->
+   c = a op b
+   c3 = VEC_PERM_EXPR (c, c, mask)
+   For all integer non-div operations.  */
+(for op (plus minus mult bit_and bit_ior bit_xor
+	 lshift rshift)
+ (simplify
+  (op (vec_perm @0 @0 @2) (vec_perm @1 @1 @2))
+   (if (VECTOR_INTEGER_TYPE_P (type))
+    (vec_perm (op @0 @1) (op @0 @1) @2))))
+
+/* Similar for float arithmetic when permutation constant covers
+   all vector elements.  */
+(for op (plus minus mult)
+ (simplify
+  (op (vec_perm @0 @0 VECTOR_CST@2) (vec_perm @1 @1 VECTOR_CST@2))
+   (if (VECTOR_FLOAT_TYPE_P (type)
+	&& TYPE_VECTOR_SUBPARTS (type).is_constant ())
+    (with
+     {
+       tree perm_cst = @2;
+       vec_perm_builder builder;
+       bool full_perm_p = false;
+       if (tree_to_vec_perm_builder (&builder, perm_cst))
+	 {
+	   unsigned HOST_WIDE_INT nelts;
+
+	   nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+	   /* Create a vec_perm_indices for the VECTOR_CST.  */
+	   vec_perm_indices sel (builder, 1, nelts);
+
+	   /* Check if perm indices covers all vector elements.  */
+	   if (sel.encoding ().encoded_full_vector_p ())
+	     {
+	       auto_sbitmap seen (nelts);
+	       unsigned HOST_WIDE_INT count = 0, i;
+
+	       for (i = 0; i < nelts; i++)
+		 {
+		   if (!bitmap_set_bit (seen, sel[i].to_constant ()))
+		    break;
+		   count++;
+		 }
+	       full_perm_p = count == nelts;
+	     }
+	 }
+      }
+      (if (full_perm_p)
+	(vec_perm (op @0 @1) (op @0 @1) @2))))))
