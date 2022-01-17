@@ -195,7 +195,10 @@ copy_warning (location_t to, location_t from)
   else
     {
       if (from_spec)
-	nowarn_map->put (to, *from_spec);
+	{
+	  nowarn_spec_t tem = *from_spec;
+	  nowarn_map->put (to, tem);
+	}
       else
 	nowarn_map->remove (to);
     }
