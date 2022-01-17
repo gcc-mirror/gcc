@@ -18679,8 +18679,8 @@ if test "${enable_fully_dynamic_string+set}" = set; then :
   enableval=$enable_fully_dynamic_string;
       case "$enableval" in
        yes|no) ;;
-       *) as_fn_error $? "Argument to enable/disable fully-dynamic-string must be yes or no" "$LINENO" 5 ;;
-      esac
+       *) as_fn_error $? "Unknown argument to enable/disable fully-dynamic-string" "$LINENO" 5 ;;
+	  	        esac
 
 else
   enable_fully_dynamic_string=no

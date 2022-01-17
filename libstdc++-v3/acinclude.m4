@@ -499,19 +499,24 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
 
 
 dnl
-dnl Check for whether a fully dynamic basic_string implementation should
-dnl be turned on, that does not put empty objects in per-process static
-dnl memory (mostly useful together with shared memory allocators, see PR
-dnl libstdc++/16612 for details).
+dnl Check whether the old Copy-On-Write basic_string should allocate a new
+dnl empty representation for every default-constructed basic_string. Without
+dnl this option, COW strings share a single empty rep in static storage,
+dnl but this only works if the linker can guarantee the static storage has
+dnl a unique definition in the process. It also doesn't work if basic_string
+dnl objects are stored in shared memory (see PR libstdc++/16612).
+dnl When fully dynamic strings are enabled, the static storage is not used
+dnl and a new empty string with reference-count == 1 is allocated each time.
+dnl Enabling this changes the libstdc++.so ABI.
 dnl
 dnl --enable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 1
 dnl --disable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 0
-dnl otherwise undefined
+dnl otherwise the macro is not defined.
 dnl  +  Usage:  GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING], [
-  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory])
+  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory], [permit yes|no])
   if test $enable_fully_dynamic_string = yes; then
     enable_fully_dynamic_string_def=1
   else
