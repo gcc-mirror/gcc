@@ -19151,6 +19151,82 @@ $as_echo "#define _GLIBCXX_USE_C11_UCHAR_CXX11 1" >>confdefs.h
 
   fi
 
+  CXXFLAGS="$CXXFLAGS -fchar8_t"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for c8rtomb and mbrtoc8 in <uchar.h> with -fchar8_t" >&5
+$as_echo_n "checking for c8rtomb and mbrtoc8 in <uchar.h> with -fchar8_t... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_uchar_c8rtomb_mbrtoc8_fchar8_t=yes
+else
+  ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" >&6; }
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for c8rtomb and mbrtoc8 in <uchar.h> with -std=c++20" >&5
+$as_echo_n "checking for c8rtomb and mbrtoc8 in <uchar.h> with -std=c++20... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_uchar_c8rtomb_mbrtoc8_cxx20=yes
+else
+  ac_uchar_c8rtomb_mbrtoc8_cxx20=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  else
+    ac_uchar_c8rtomb_mbrtoc8_cxx20=no
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_uchar_c8rtomb_mbrtoc8_cxx20" >&5
+$as_echo "$ac_uchar_c8rtomb_mbrtoc8_cxx20" >&6; }
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20 1" >>confdefs.h
+
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
