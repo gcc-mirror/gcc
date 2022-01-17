@@ -2884,6 +2884,15 @@ from_chars_result from_chars_advanced(const char *first, const char *last,
   // If we called compute_float<binary_format<T>>(pns.exponent, pns.mantissa) and we have an invalid power (am.power2 < 0),
   // then we need to go the long way around again. This is very uncommon.
   if(am.power2 < 0) { am = digit_comp<T>(pns, am); }
+
+  if((pns.mantissa != 0 && am.mantissa == 0 && am.power2 == 0) || am.power2 == binary_format<T>::infinite_power()) {
+    // In case of over/underflow, return result_out_of_range and don't modify value,
+    // as per [charconv.from.chars]/1.  Note that LWG 3081 wants to modify value in
+    // this case too.
+    answer.ec = std::errc::result_out_of_range;
+    return answer;
+  }
+
   to_float(pns.negative, am, value);
   return answer;
 }
