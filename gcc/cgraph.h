@@ -764,14 +764,14 @@ struct GTY(()) cgraph_simd_clone_arg {
      variable), uniform, or vector.  */
   enum cgraph_simd_clone_arg_type arg_type;
 
+  /* Variable alignment if available, otherwise 0.  */
+  unsigned int alignment;
+
   /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_*CONSTANT_STEP this is
      the constant linear step, if arg_type is
      SIMD_CLONE_ARG_TYPE_LINEAR_*VARIABLE_STEP, this is index of
      the uniform argument holding the step, otherwise 0.  */
   HOST_WIDE_INT linear_step;
-
-  /* Variable alignment if available, otherwise 0.  */
-  unsigned int alignment;
 };
 
 /* Specific data for a SIMD function clone.  */

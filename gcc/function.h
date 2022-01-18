@@ -270,13 +270,6 @@ struct GTY(()) function {
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;
 
-  /* Different from normal TODO_flags which are handled right at the
-     beginning or the end of one pass execution, the pending_TODOs
-     are passed down in the pipeline until one of its consumers can
-     perform the requested action.  Consumers should then clear the
-     flags for the actions that they have taken.  */
-  unsigned int pending_TODOs;
-
   /* For function.cc.  */
 
   /* Points to the FUNCTION_DECL of this function.  */
@@ -337,6 +330,13 @@ struct GTY(()) function {
   /* Properties used by the pass manager.  */
   unsigned int curr_properties;
   unsigned int last_verified;
+
+  /* Different from normal TODO_flags which are handled right at the
+     beginning or the end of one pass execution, the pending_TODOs
+     are passed down in the pipeline until one of its consumers can
+     perform the requested action.  Consumers should then clear the
+     flags for the actions that they have taken.  */
+  unsigned int pending_TODOs;
 
   /* Non-null if the function does something that would prevent it from
      being copied; this applies to both versioning and inlining.  Set to
