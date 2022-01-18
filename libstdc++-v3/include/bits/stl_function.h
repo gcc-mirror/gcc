@@ -1121,7 +1121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
   template<typename _Arg, typename _Result>
-    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::function")
     inline pointer_to_unary_function<_Arg, _Result>
     ptr_fun(_Result (*__x)(_Arg))
     { return pointer_to_unary_function<_Arg, _Result>(__x); }
@@ -1148,7 +1148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
   template<typename _Arg1, typename _Arg2, typename _Result>
-    _GLIBCXX11_DEPRECATED_SUGGEST("std::mem_fn")
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::function")
     inline pointer_to_binary_function<_Arg1, _Arg2, _Result>
     ptr_fun(_Result (*__x)(_Arg1, _Arg2))
     { return pointer_to_binary_function<_Arg1, _Arg2, _Result>(__x); }
