@@ -375,7 +375,7 @@ riscv_subset_list::add (const char *subset, int major_version,
       else
 	error_at (
 	  m_loc,
-	  "%<-march=%s%>: Extension `%s' appear more than one time.",
+	  "%<-march=%s%>: extension %qs appear more than one time",
 	  m_arch,
 	  subset);
 
@@ -613,14 +613,14 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	  {
 	    if (!ISDIGIT (*(p+1)))
 	      {
-		error_at (m_loc, "%<-march=%s%>: Expect number "
-			  "after %<%dp%>.", m_arch, version);
+		error_at (m_loc, "%<-march=%s%>: expect number "
+			  "after %<%dp%>", m_arch, version);
 		return NULL;
 	      }
 	    if (!major_p)
 	      {
-		error_at (m_loc, "%<-march=%s%>: For %<%s%dp%dp?%>, version "
-			  "number with more than 2 level is not supported.",
+		error_at (m_loc, "%<-march=%s%>: for %<%s%dp%dp?%>, version "
+			  "number with more than 2 level is not supported",
 			  m_arch, ext, major, version);
 		return NULL;
 	      }
@@ -701,8 +701,8 @@ riscv_subset_list::parse_std_ext (const char *p)
 				  /* std_ext_p= */ true, &explicit_version_p);
       if (major_version != 0 || minor_version != 0)
 	{
-	  warning_at (m_loc, 0, "version of `g` will be omitted, please "
-				"specify version for individual extension.");
+	  warning_at (m_loc, 0, "version of %<g%> will be omitted, please "
+				"specify version for individual extension");
 	}
 
       /* We have special rule for G, we disallow rv32gm2p but allow rv32g_zicsr
@@ -906,7 +906,7 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 
       if (*p != '\0' && *p != '_')
 	{
-	  error_at (m_loc, "%<-march=%s%>: %s must separate with _",
+	  error_at (m_loc, "%<-march=%s%>: %s must separate with %<_%>",
 		    m_arch, ext_type_str);
 	  return NULL;
 	}
