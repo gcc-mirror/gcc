@@ -222,16 +222,16 @@ msp430_option_override (void)
 		{
 		  if (target_cpu == MSP430_CPU_MSP430X_DEFAULT)
 		    warning (0,
-			     "Unrecognized MCU name %qs, assuming that it is "
-			     "just a MSP430X with no hardware multiply.\n"
-			     "Use the %<-mcpu%> and %<-mhwmult%> options to "
-			     "set these explicitly.",
+			     "unrecognized MCU name %qs, assuming that it is "
+			     "just a MSP430X with no hardware multiply; "
+			     "use the %<-mcpu%> and %<-mhwmult%> options to "
+			     "set these explicitly",
 			     target_mcu);
 		  else
 		    warning (0,
-			     "Unrecognized MCU name %qs, assuming that it "
-			     "has no hardware multiply.\nUse the %<-mhwmult%> "
-			     "option to set this explicitly.",
+			     "unrecognized MCU name %qs, assuming that it "
+			     "has no hardware multiply; use the %<-mhwmult%> "
+			     "option to set this explicitly",
 			     target_mcu);
 		}
 
@@ -241,9 +241,9 @@ msp430_option_override (void)
 	    {
 	      if (msp430_warn_mcu)
 		warning (0,
-			 "Unrecognized MCU name %qs, assuming that it just "
-			 "supports the MSP430X ISA.\nUse the %<-mcpu%> option "
-			 "to set the ISA explicitly.",
+			 "unrecognized MCU name %qs, assuming that it just "
+			 "supports the MSP430X ISA; use the %<-mcpu%> option "
+			 "to set the ISA explicitly",
 			 target_mcu);
 	    }
 	  else if (msp430_warn_mcu)
@@ -1901,7 +1901,7 @@ msp430_attr (tree * node,
 	    /* Allow the attribute to be added - the linker script
 	       being used may still recognise this value.  */
 	    warning (OPT_Wattributes,
-		     "numeric argument of %qE attribute must be in range 0..63",
+		     "numeric argument of %qE attribute must be in range [0-63]",
 		     name);
 	  break;
 
@@ -2744,7 +2744,7 @@ msp430_expand_delay_cycles (rtx arg)
 
   if (GET_CODE (arg) != CONST_INT)
     {
-      error ("__delay_cycles() only takes constant arguments");
+      error ("%<__delay_cycles()%> only takes constant arguments");
       return NULL_RTX;
     }
 
@@ -2754,7 +2754,7 @@ msp430_expand_delay_cycles (rtx arg)
     {
       if (c < 0)
 	{
-	  error ("__delay_cycles only takes non-negative cycle counts");
+	  error ("%<__delay_cycles%> only takes non-negative cycle counts");
 	  return NULL_RTX;
 	}
     }
@@ -2775,7 +2775,7 @@ msp430_expand_delay_cycles (rtx arg)
 	  c %= 4;
 	  if ((unsigned long long) i > 0xffffffffULL)
 	    {
-	      error ("__delay_cycles is limited to 32-bit loop counts");
+	      error ("%<__delay_cycles%> is limited to 32-bit loop counts");
 	      return NULL_RTX;
 	    }
 	}
@@ -2846,7 +2846,7 @@ msp430_expand_builtin (tree exp,
 
   if (! msp430_is_interrupt_func ())
     {
-      error ("MSP430 builtin functions only work inside interrupt handlers");
+      error ("MSP430 built-in functions only work inside interrupt handlers");
       return NULL_RTX;
     }
 

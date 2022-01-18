@@ -1212,7 +1212,7 @@ xstormy16_epilogue_uses (int regno)
 void
 xstormy16_function_profiler (void)
 {
-  sorry ("function_profiler support");
+  sorry ("%<function_profiler%> support");
 }
 
 /* Update CUM to advance past argument ARG.  Once this is done,
@@ -1306,7 +1306,7 @@ xstormy16_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   tree t,u;
 
   if (xstormy16_interrupt_function_p ())
-    error ("cannot use va_start in interrupt function");
+    error ("cannot use %<va_start%> in interrupt function");
 
   f_base = TYPE_FIELDS (va_list_type_node);
   f_count = DECL_CHAIN (f_base);
@@ -2256,7 +2256,7 @@ xstormy16_handle_below100_attribute (tree *node,
     {
       if (! (TREE_PUBLIC (*node) || TREE_STATIC (*node)))
 	{
-	  warning (OPT_Wattributes, "__BELOW100__ attribute not allowed "
+	  warning (OPT_Wattributes, "%<__BELOW100__%> attribute not allowed "
 		   "with auto storage class");
 	  *no_add_attrs = true;
 	}

@@ -2477,7 +2477,7 @@ rx_expand_builtin_mvtc (tree exp)
 
   if (INTVAL (arg1) == 1)
     {
-      warning (0, "invalid control register for mvtc : %d - using 'psw'",
+      warning (0, "invalid control register for mvtc: %d - using 'psw'",
 	       (int) INTVAL (arg1));
       arg1 = const0_rtx;
     }
@@ -2602,7 +2602,7 @@ valid_psw_flag (rtx op, const char *which)
   error ("%<__builtin_rx_%s%> takes %<C%>, %<Z%>, %<S%>, %<O%>, %<I%>, "
 	 "or %<U%>", which);
   if (!mvtc_inform_done)
-    error ("use %<__builtin_rx_mvtc%> (0, ... ) to write arbitrary values to PSW");
+    error ("use %<__builtin_rx_mvtc (0, ... )%> to write arbitrary values to PSW");
   mvtc_inform_done = 1;
 
   return 0;
