@@ -392,7 +392,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __current = _M_val.load(memory_order_relaxed);
 	  while (__current & _S_lock_bit)
 	    {
+#if __cpp_lib_atomic_wait
 	      __detail::__thread_relax();
+#endif
 	      __current = _M_val.load(memory_order_relaxed);
 	    }
 
@@ -401,7 +403,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __o,
 						 memory_order_relaxed))
 	    {
+#if __cpp_lib_atomic_wait
 	      __detail::__thread_relax();
+#endif
 	      __current = __current & ~_S_lock_bit;
 	    }
 	  return reinterpret_cast<pointer>(__current);
