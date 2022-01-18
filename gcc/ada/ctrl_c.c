@@ -61,7 +61,7 @@ void __gnat_uninstall_int_handler (void);
 void
 dummy_handler () {}
 
-/* Lives in init.cc.  */
+/* Lives in init.c.  */
 extern void (*__gnat_ctrl_c_handler) (void);
 #endif
 

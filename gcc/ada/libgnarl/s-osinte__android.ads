@@ -309,7 +309,7 @@ package System.OS_Interface is
    --  The alternate signal stack for stack overflows
 
    Alternate_Stack_Size : constant := 16 * 1024;
-   --  This must be in keeping with init.cc:__gnat_alternate_stack
+   --  This must be in keeping with init.c:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target

@@ -172,7 +172,7 @@ extern "C" {
 
 #include "mingw32.h"
 
-/* Current code page and CCS encoding to use, set in initialize.cc.  */
+/* Current code page and CCS encoding to use, set in initialize.c.  */
 UINT __gnat_current_codepage;
 UINT __gnat_current_ccs_encoding;
 

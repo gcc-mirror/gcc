@@ -43,7 +43,7 @@ extern void __gnat_runtime_finalize (void);
    Note that __gnat_runtime_finalize() is called in adafinal()   */
 
 extern int __gnat_rt_init_count;
-/*  see initialize.cc  */
+/*  see initialize.c  */
 
 #if defined (__MINGW32__)
 #include "mingw32.h"

@@ -246,7 +246,7 @@
  *                     mutual exclusion
  *
  * See "Handling of gethostbyname, gethostbyaddr, getservbyname and
- * getservbyport" in socket.cc for details.
+ * getservbyport" in socket.c for details.
  */
 
 #if defined (HAVE_GETxxxBYyyy_R)

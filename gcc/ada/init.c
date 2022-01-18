@@ -542,7 +542,7 @@ __gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 	 before the faulting address is accessible.  Unfortunately, Linux
 	 seems to have no way of giving us the faulting address.
 
-	 In old versions of init.cc, we had a test of the page before the
+	 In old versions of init.c, we had a test of the page before the
 	 stack pointer:
 
 	   ((volatile char *)
