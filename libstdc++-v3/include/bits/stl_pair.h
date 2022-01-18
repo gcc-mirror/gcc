@@ -128,20 +128,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __and_<is_convertible<_U1&&, _T1>,
 		      is_convertible<_U2&&, _T2>>::value;
       }
-
-      template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _DeprConsPair()
-      {
-	using __do_converts = __and_<is_convertible<_U1&&, _T1>,
-				     is_convertible<_U2&&, _T2>>;
-	using __converts = __conditional_t<__implicit,
-					   __do_converts,
-					   __not_<__do_converts>>;
-	return __and_<is_constructible<_T1, _U1&&>,
-		      is_constructible<_T2, _U2&&>,
-		      __converts
-		     >::value;
-      }
     };
 
   template <typename _T1, typename _T2>
