@@ -86,7 +86,7 @@ void workers (void)
      { dg-bogus {note: variable 'tmpvar' adjusted for OpenACC privatization level: 'gang'} "" { target { openacc_nvidia_accel_selected && __OPTIMIZE__ } } l_compute$c_compute }
   */
   /* { dg-note {variable 'tmpref' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
     int tmpvar;
@@ -132,7 +132,7 @@ void vectors (void)
      { dg-bogus {note: variable 'tmpvar' adjusted for OpenACC privatization level: 'gang'} "" { target { openacc_nvidia_accel_selected && __OPTIMIZE__ } } l_compute$c_compute }
   */
   /* { dg-note {variable 'tmpref' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
     int tmpvar;
@@ -178,7 +178,7 @@ void gangs_workers_vectors (void)
      { dg-bogus {note: variable 'tmpvar' adjusted for OpenACC privatization level: 'gang'} "" { target { openacc_nvidia_accel_selected && __OPTIMIZE__ } } l_compute$c_compute }
   */
   /* { dg-note {variable 'tmpref' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers \\(32\\)., ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
     int tmpvar;

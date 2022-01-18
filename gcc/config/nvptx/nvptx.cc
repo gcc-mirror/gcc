@@ -5894,7 +5894,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 
       if (dims[GOMP_DIM_VECTOR] > PTX_WARP_SIZE)
 	{
-	  vector_reason = G_("using %<vector_length%> (%d) due to call to"
+	  vector_reason = G_("using %<vector_length (%d)%> due to call to"
 			     " vector-partitionable routine, ignoring %d");
 	  dims[GOMP_DIM_VECTOR] = PTX_WARP_SIZE;
 	}
@@ -5902,7 +5902,7 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
 
   if (dims[GOMP_DIM_VECTOR] == 0)
     {
-      vector_reason = G_("using %<vector_length%> (%d), ignoring runtime setting");
+      vector_reason = G_("using %<vector_length (%d)%>, ignoring runtime setting");
       dims[GOMP_DIM_VECTOR] = default_vector_length;
     }
 
@@ -5916,12 +5916,12 @@ nvptx_goacc_validate_dims_1 (tree decl, int dims[], int fn_level, unsigned used)
     warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
 		vector_reason != NULL
 		? vector_reason
-		: G_("using %<vector_length%> (%d), ignoring %d"),
+		: G_("using %<vector_length (%d)%>, ignoring %d"),
 		dims[GOMP_DIM_VECTOR], old_dims[GOMP_DIM_VECTOR]);
 
   if (dims[GOMP_DIM_WORKER] != old_dims[GOMP_DIM_WORKER])
     warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION, 0,
-		G_("using %<num_workers%> (%d), ignoring %d"),
+		G_("using %<num_workers (%d)%>, ignoring %d"),
 		dims[GOMP_DIM_WORKER], old_dims[GOMP_DIM_WORKER]);
 
   if (oacc_default_dims_p)
