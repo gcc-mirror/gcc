@@ -154,7 +154,8 @@ along with GCC; see the file COPYING3.  If not see
    http://gcc.gnu.org/projects/tree-ssa/vectorization.html
 */
 
-static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *);
+static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *,
+						unsigned *);
 static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
 					       bool *, bool *);
 
@@ -831,6 +832,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     skip_main_loop_edge (nullptr),
     skip_this_loop_edge (nullptr),
     reusable_accumulators (),
+    suggested_unroll_factor (1),
     max_vectorization_factor (0),
     mask_skip_niters (NULL_TREE),
     rgroup_compare_type (NULL_TREE),
@@ -1834,7 +1836,8 @@ vect_known_niters_smaller_than_vf (loop_vec_info loop_vinfo)
    definitely no, or -1 if it's worth retrying.  */
 
 static int
-vect_analyze_loop_costing (loop_vec_info loop_vinfo)
+vect_analyze_loop_costing (loop_vec_info loop_vinfo,
+			   unsigned *suggested_unroll_factor)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
@@ -1868,7 +1871,8 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 
   int min_profitable_iters, min_profitable_estimate;
   vect_estimate_min_profitable_iters (loop_vinfo, &min_profitable_iters,
-				      &min_profitable_estimate);
+				      &min_profitable_estimate,
+				      suggested_unroll_factor);
 
   if (min_profitable_iters < 0)
     {
@@ -2152,10 +2156,16 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
 	 vectors to the epilogue, with the main loop continuing to operate
 	 on full vectors.
 
+	 If we are unrolling we also do not want to use partial vectors. This
+	 is to avoid the overhead of generating multiple masks and also to
+	 avoid having to execute entire iterations of FALSE masked instructions
+	 when dealing with one or less full iterations.
+
 	 ??? We could then end up failing to use partial vectors if we
 	 decide to peel iterations into a prologue, and if the main loop
 	 then ends up processing fewer than VF iterations.  */
-      if (param_vect_partial_vector_usage == 1
+      if ((param_vect_partial_vector_usage == 1
+	   || loop_vinfo->suggested_unroll_factor > 1)
 	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
 	  && !vect_known_niters_smaller_than_vf (loop_vinfo))
 	LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
@@ -2222,7 +2232,8 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
    for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 static opt_result
-vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
+vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
+		     unsigned *suggested_unroll_factor)
 {
   opt_result ok = opt_result::success ();
   int res;
@@ -2381,6 +2392,12 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
   gcc_assert (LOOP_VINFO_MASKS (loop_vinfo).is_empty ());
+
+  /* Apply the suggested unrolling factor, this was determined by the backend
+     during finish_cost the first time we ran the analyzis for this
+     vector mode.  */
+  if (loop_vinfo->suggested_unroll_factor > 1)
+    LOOP_VINFO_VECT_FACTOR (loop_vinfo) *= loop_vinfo->suggested_unroll_factor;
 
   /* This is the point where we can re-start analysis with SLP forced off.  */
 start_over:
@@ -2573,7 +2590,7 @@ start_over:
     return ok;
 
   /* Check the costings of the loop make vectorizing worthwhile.  */
-  res = vect_analyze_loop_costing (loop_vinfo);
+  res = vect_analyze_loop_costing (loop_vinfo, suggested_unroll_factor);
   if (res < 0)
     {
       ok = opt_result::failure_at (vect_location,
@@ -2851,14 +2868,37 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
+  unsigned int suggested_unroll_factor = 1;
 
   /* Run the main analysis.  */
-  opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal);
+  opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal,
+					&suggested_unroll_factor);
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "***** Analysis %s with vector mode %s\n",
 		     res ? "succeeded" : " failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
+
+  if (!main_loop_vinfo && suggested_unroll_factor > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis for unrolling"
+			 " with unroll factor %d.\n",
+			 suggested_unroll_factor);
+      loop_vec_info unroll_vinfo
+	= vect_create_loop_vinfo (loop, shared, loop_form_info, main_loop_vinfo);
+      unroll_vinfo->vector_mode = vector_mode;
+      unroll_vinfo->suggested_unroll_factor = suggested_unroll_factor;
+      opt_result new_res = vect_analyze_loop_2 (unroll_vinfo, fatal, NULL);
+      if (new_res)
+	{
+	  delete loop_vinfo;
+	  loop_vinfo = unroll_vinfo;
+	}
+      else
+	delete unroll_vinfo;
+    }
 
   /* Remember the autodetected vector mode.  */
   if (vector_mode == VOIDmode)
@@ -3860,7 +3900,8 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
 static void
 vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 				    int *ret_min_profitable_niters,
-				    int *ret_min_profitable_estimate)
+				    int *ret_min_profitable_estimate,
+				    unsigned *suggested_unroll_factor)
 {
   int min_profitable_iters;
   int min_profitable_estimate;
@@ -4227,7 +4268,22 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
   /* Complete the target-specific cost calculations.  */
   finish_cost (loop_vinfo->vector_costs, loop_vinfo->scalar_costs,
-	       &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
+	       &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost,
+	       suggested_unroll_factor);
+
+  if (suggested_unroll_factor && *suggested_unroll_factor > 1
+      && LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo) != MAX_VECTORIZATION_FACTOR
+      && !known_le (LOOP_VINFO_VECT_FACTOR (loop_vinfo) *
+		    *suggested_unroll_factor,
+		    LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't unroll as unrolled vectorization factor larger"
+			 " than maximum vectorization factor: %d\n",
+			 LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo));
+      *suggested_unroll_factor = 1;
+    }
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
 
@@ -7194,10 +7250,13 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
    This only works when we see both the reduction PHI and its only consumer
    in vectorizable_reduction and there are no intermediate stmts
-   participating.  */
+   participating.  When unrolling we want each unrolled iteration to have its
+   own reduction accumulator since one of the main goals of unrolling a
+   reduction is to reduce the aggregate loop-carried latency.  */
   if (ncopies > 1
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
-      && reduc_chain_length == 1)
+      && reduc_chain_length == 1
+      && loop_vinfo->suggested_unroll_factor == 1)
     single_defuse_cycle = true;
 
   if (single_defuse_cycle || lane_reduc_code_p)
