@@ -3876,7 +3876,7 @@ package body Errout is
       --  dealing with some cases of internal names).
 
       while Name_Len > 1 and then Name_Buffer (Name_Len) in 'A' .. 'Z' loop
-         Name_Len := Name_Len  - 1;
+         Name_Len := Name_Len - 1;
       end loop;
 
       --  If we have any of the names from standard that start with the

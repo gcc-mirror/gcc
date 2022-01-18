@@ -718,7 +718,7 @@ package body Ada.Strings.Wide_Unbounded is
       Realloc_For_Chunk (Source, New_Item'Length);
 
       Source.Reference
-        (Before +  New_Item'Length .. Source.Last + New_Item'Length) :=
+        (Before + New_Item'Length .. Source.Last + New_Item'Length) :=
            Source.Reference (Before .. Source.Last);
 
       Source.Reference (Before .. Before + New_Item'Length - 1) := New_Item;

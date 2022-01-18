@@ -791,7 +791,7 @@ package body GNAT.Debug_Pools is
 
          declare
             Block_Number : constant Integer_Address :=
-                             Int_Storage /  Memory_Chunk_Size;
+                             Int_Storage / Memory_Chunk_Size;
             Ptr          : constant Validity_Bits_Ref :=
                              Validy_Htable.Get (Block_Number);
             Offset       : constant Integer_Address :=
@@ -844,7 +844,7 @@ package body GNAT.Debug_Pools is
       procedure Set_Valid (Storage : System.Address; Value : Boolean) is
          Int_Storage  : constant Integer_Address := To_Integer (Storage);
          Block_Number : constant Integer_Address :=
-                          Int_Storage /  Memory_Chunk_Size;
+                          Int_Storage / Memory_Chunk_Size;
          Ptr          : Validity_Bits_Ref := Validy_Htable.Get (Block_Number);
          Offset       : constant Integer_Address :=
                           (Int_Storage - (Block_Number * Memory_Chunk_Size)) /

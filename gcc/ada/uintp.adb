@@ -1431,7 +1431,7 @@ package body Uintp is
 
             N := N / Uint_2;
             exit when N = Uint_0;
-            Squares := Squares *  Squares;
+            Squares := Squares * Squares;
          end loop;
 
          Uintp.Release_And_Save (M, Result);
