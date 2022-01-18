@@ -2441,13 +2441,18 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
+  $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS+=$(TRASYM_DWARF_UNIX_OBJS)
+  EXTRA_GNATRTL_NONTASKING_OBJS+=$(GNATRTL_128BIT_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt
