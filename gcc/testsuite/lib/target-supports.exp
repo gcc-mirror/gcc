@@ -11735,6 +11735,18 @@ proc check_effective_target_recent_python3 { } {
     }
 }
 
+# Return 1 if python3 contains a module
+
+proc check_effective_target_python3_module { module } {
+    set result [remote_exec host "python3 -c \"import $module\""]
+    set status [lindex $result 0]
+    if { $status == 0 } then {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 # Return 1 if pytest module is available for python3.
 
 proc check_effective_target_pytest3 { } {
