@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
+#include "target.h"
 
 /* This file implements dead store elimination.
 
@@ -1190,10 +1191,12 @@ dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	{
 	  tree arg = access_node.get_call_arg (stmt);
 
-	  if (!arg)
+	  if (!arg || !POINTER_TYPE_P (TREE_TYPE (arg)))
 	    return false;
 
-	  if (integer_zerop (arg) && flag_delete_null_pointer_checks)
+	  if (integer_zerop (arg)
+	      && !targetm.addr_space.zero_address_valid
+		    (TYPE_ADDR_SPACE (TREE_TYPE (arg))))
 	    continue;
 
 	  ao_ref ref;
