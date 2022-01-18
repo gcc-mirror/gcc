@@ -1,3 +1,99 @@
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc: (USE_LIB_FAST_FLOAT):
+	Conditionally define, and use it to conditionally include
+	fast_float.
+	(from_chars): Use fast_float for float and double when
+	USE_LIB_FAST_FLOAT.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h (from_chars_advanced): In
+	case of over/underflow, return errc::result_out_of_range and don't
+	modify 'value'.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h: Apply local modifications.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: New file.
+	* src/c++17/fast_float/MERGE: New file.
+	* src/c++17/fast_float/README.md: New file, copied from the
+	fast_float repository.
+	* src/c++17/fast_float/fast_float.h: New file, an amalgamation
+	of the fast_float library.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc: Include <bit>.
+	(ascii_to_hexit, starts_with_ci): Conditionally define.
+	(__floating_from_chars_hex):  Conditionally define.
+	(from_chars): Use __floating_from_chars_hex for
+	chars_format::hex parsing of binary32/64 float/double.
+	(testsuite/20_util/from_chars/7.cc): New test.
+	* testsuite/20_util/from_chars/7.cc: New file.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): New macro.
+	* configure.ac: Use GLIBCXX_ENABLE_BACKTRACE.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/stacktrace: New header.
+	* include/std/version (__cpp_lib_stacktrace): Define.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.am: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: New file.
+	* src/libbacktrace/Makefile.in: New file.
+	* src/libbacktrace/backtrace-rename.h: New file.
+	* src/libbacktrace/backtrace-supported.h.in: New file.
+	* src/libbacktrace/config.h.in: New file.
+	* testsuite/lib/libstdc++.exp (check_effective_target_stacktrace):
+	New proc.
+	* testsuite/20_util/stacktrace/entry.cc: New test.
+	* testsuite/20_util/stacktrace/synopsis.cc: New test.
+	* testsuite/20_util/stacktrace/version.cc: New test.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Use final C++20 option
+	names.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103650
+	* include/Makefile.am: Rename LT_OBJDIR and STDC_HEADERS.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/headers/c++1998/103650.cc: New test.
+
+2022-01-17  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__floating_point_flags): Do
+	not rely on the presence of the math_errhandling macro.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic): Add typename
+	to qualified-id for dependent type.
+
 2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update.

@@ -1,3 +1,16 @@
+2022-01-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Extend.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
+2022-01-17  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: New test.
+
 2022-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Andrew Stubbs   <ams@codesourcery.com>
 

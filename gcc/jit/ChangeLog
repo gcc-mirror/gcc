@@ -1,3 +1,159 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* config-lang.in: Rename .c names to .cc.
+	* docs/_build/texinfo/libgccjit.texi: Likewise.
+	* docs/internals/index.rst: Likewise.
+	* jit-builtins.cc (builtins_manager::make_builtin_function): Likewise.
+	* jit-playback.cc (fold_const_var): Likewise.
+	(playback::context::~context): Likewise.
+	(new_field): Likewise.
+	(new_bitfield): Likewise.
+	(new_compound_type): Likewise.
+	(playback::compound_type::set_fields): Likewise.
+	(global_set_init_rvalue): Likewise.
+	(load_blob_in_ctor): Likewise.
+	(new_global_initialized): Likewise.
+	(double>): Likewise.
+	(new_string_literal): Likewise.
+	(as_truth_value): Likewise.
+	(build_call): Likewise.
+	(playback::context::build_cast): Likewise.
+	(new_array_access): Likewise.
+	(new_field_access): Likewise.
+	(dereference): Likewise.
+	(postprocess): Likewise.
+	(add_jump): Likewise.
+	(add_switch): Likewise.
+	(build_goto_operands): Likewise.
+	(playback::context::read_dump_file): Likewise.
+	(init_types): Likewise.
+	* jit-recording.cc (recording::context::get_int_type): Likewise.
+	* jit-recording.h: Likewise.
+	* libgccjit.cc (compatible_types): Likewise.
+	(gcc_jit_context_acquire): Likewise.
+	(gcc_jit_context_release): Likewise.
+	(gcc_jit_context_new_child_context): Likewise.
+	(gcc_jit_type_as_object): Likewise.
+	(gcc_jit_context_get_type): Likewise.
+	(gcc_jit_context_get_int_type): Likewise.
+	(gcc_jit_type_get_pointer): Likewise.
+	(gcc_jit_type_get_const): Likewise.
+	(gcc_jit_type_get_volatile): Likewise.
+	(gcc_jit_type_dyncast_array): Likewise.
+	(gcc_jit_type_is_bool): Likewise.
+	(gcc_jit_type_is_pointer): Likewise.
+	(gcc_jit_type_is_integral): Likewise.
+	(gcc_jit_type_dyncast_vector): Likewise.
+	(gcc_jit_type_is_struct): Likewise.
+	(gcc_jit_vector_type_get_num_units): Likewise.
+	(gcc_jit_vector_type_get_element_type): Likewise.
+	(gcc_jit_type_unqualified): Likewise.
+	(gcc_jit_type_dyncast_function_ptr_type): Likewise.
+	(gcc_jit_function_type_get_return_type): Likewise.
+	(gcc_jit_function_type_get_param_count): Likewise.
+	(gcc_jit_function_type_get_param_type): Likewise.
+	(gcc_jit_context_new_array_type): Likewise.
+	(gcc_jit_context_new_field): Likewise.
+	(gcc_jit_field_as_object): Likewise.
+	(gcc_jit_context_new_struct_type): Likewise.
+	(gcc_jit_struct_as_type): Likewise.
+	(gcc_jit_struct_set_fields): Likewise.
+	(gcc_jit_struct_get_field_count): Likewise.
+	(gcc_jit_context_new_union_type): Likewise.
+	(gcc_jit_context_new_function_ptr_type): Likewise.
+	(gcc_jit_param_as_rvalue): Likewise.
+	(gcc_jit_context_new_function): Likewise.
+	(gcc_jit_function_get_return_type): Likewise.
+	(gcc_jit_function_dump_to_dot): Likewise.
+	(gcc_jit_block_get_function): Likewise.
+	(gcc_jit_global_set_initializer_rvalue): Likewise.
+	(gcc_jit_rvalue_get_type): Likewise.
+	(gcc_jit_context_new_rvalue_from_int): Likewise.
+	(gcc_jit_context_one): Likewise.
+	(gcc_jit_context_new_rvalue_from_double): Likewise.
+	(gcc_jit_context_null): Likewise.
+	(gcc_jit_context_new_string_literal): Likewise.
+	(valid_binary_op_p): Likewise.
+	(gcc_jit_context_new_binary_op): Likewise.
+	(gcc_jit_context_new_comparison): Likewise.
+	(gcc_jit_context_new_call): Likewise.
+	(is_valid_cast): Likewise.
+	(gcc_jit_context_new_cast): Likewise.
+	(gcc_jit_object_get_context): Likewise.
+	(gcc_jit_object_get_debug_string): Likewise.
+	(gcc_jit_lvalue_access_field): Likewise.
+	(gcc_jit_rvalue_access_field): Likewise.
+	(gcc_jit_rvalue_dereference_field): Likewise.
+	(gcc_jit_rvalue_dereference): Likewise.
+	(gcc_jit_lvalue_get_address): Likewise.
+	(gcc_jit_lvalue_set_tls_model): Likewise.
+	(gcc_jit_lvalue_set_link_section): Likewise.
+	(gcc_jit_function_new_local): Likewise.
+	(gcc_jit_block_add_eval): Likewise.
+	(gcc_jit_block_add_assignment): Likewise.
+	(is_bool): Likewise.
+	(gcc_jit_block_end_with_conditional): Likewise.
+	(gcc_jit_block_add_comment): Likewise.
+	(gcc_jit_block_end_with_jump): Likewise.
+	(gcc_jit_block_end_with_return): Likewise.
+	(gcc_jit_block_end_with_void_return): Likewise.
+	(case_range_validator::case_range_validator): Likewise.
+	(case_range_validator::validate): Likewise.
+	(case_range_validator::get_wide_int): Likewise.
+	(gcc_jit_block_end_with_switch): Likewise.
+	(gcc_jit_context_set_str_option): Likewise.
+	(gcc_jit_context_set_int_option): Likewise.
+	(gcc_jit_context_set_bool_option): Likewise.
+	(gcc_jit_context_set_bool_allow_unreachable_blocks): Likewise.
+	(gcc_jit_context_set_bool_use_external_driver): Likewise.
+	(gcc_jit_context_add_command_line_option): Likewise.
+	(gcc_jit_context_add_driver_option): Likewise.
+	(gcc_jit_context_enable_dump): Likewise.
+	(gcc_jit_context_compile): Likewise.
+	(gcc_jit_context_compile_to_file): Likewise.
+	(gcc_jit_context_set_logfile): Likewise.
+	(gcc_jit_context_dump_reproducer_to_file): Likewise.
+	(gcc_jit_context_get_first_error): Likewise.
+	(gcc_jit_context_get_last_error): Likewise.
+	(gcc_jit_result_get_code): Likewise.
+	(gcc_jit_result_get_global): Likewise.
+	(gcc_jit_rvalue_set_bool_require_tail_call): Likewise.
+	(gcc_jit_type_get_aligned): Likewise.
+	(gcc_jit_type_get_vector): Likewise.
+	(gcc_jit_function_get_address): Likewise.
+	(gcc_jit_version_patchlevel): Likewise.
+	(gcc_jit_block_add_extended_asm): Likewise.
+	(gcc_jit_extended_asm_as_object): Likewise.
+	(gcc_jit_extended_asm_set_volatile_flag): Likewise.
+	(gcc_jit_extended_asm_set_inline_flag): Likewise.
+	(gcc_jit_extended_asm_add_output_operand): Likewise.
+	(gcc_jit_extended_asm_add_input_operand): Likewise.
+	(gcc_jit_extended_asm_add_clobber): Likewise.
+	* notes.txt: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* dummy-frontend.c: Moved to...
+	* dummy-frontend.cc: ...here.
+	* jit-builtins.c: Moved to...
+	* jit-builtins.cc: ...here.
+	* jit-logging.c: Moved to...
+	* jit-logging.cc: ...here.
+	* jit-playback.c: Moved to...
+	* jit-playback.cc: ...here.
+	* jit-recording.c: Moved to...
+	* jit-recording.cc: ...here.
+	* jit-result.c: Moved to...
+	* jit-result.cc: ...here.
+	* jit-spec.c: Moved to...
+	* jit-spec.cc: ...here.
+	* jit-tempdir.c: Moved to...
+	* jit-tempdir.cc: ...here.
+	* jit-w32.c: Moved to...
+	* jit-w32.cc: ...here.
+	* libgccjit.c: Moved to...
+	* libgccjit.cc: ...here.
+
 2021-12-28  Martin Liska  <mliska@suse.cz>
 
 	* docs/_build/texinfo/libgccjit.texi: Replace http:// with https.

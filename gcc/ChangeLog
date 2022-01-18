@@ -1,3 +1,2438 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+	* config.gcc: Likewise.
+	* configure: Regenerate. Likewise.
+	* configure.ac: Likewise.
+	* gengtype.cc (set_gc_used): Likewise.
+	(source_dot_c_frul): Likewise.
+	(source_dot_cc_frul): Likewise.
+	(struct file_rule_st): Likewise.
+	(close_output_files): Likewise.
+	* config/avr/t-avr: Use CXXFLAGS_* and CXX_FOR_BUILD.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+	* alias.h: Likewise.
+	* asan.cc: Likewise.
+	* auto-profile.h: Likewise.
+	* basic-block.h (struct basic_block_d): Likewise.
+	* btfout.cc: Likewise.
+	* builtins.cc (expand_builtin_longjmp): Likewise.
+	(validate_arg): Likewise.
+	(access_ref::offset_bounded): Likewise.
+	* caller-save.cc (reg_restore_code): Likewise.
+	(setup_save_areas): Likewise.
+	* calls.cc (initialize_argument_information): Likewise.
+	(expand_call): Likewise.
+	(emit_library_call_value_1): Likewise.
+	* cfg-flags.def (RTL): Likewise.
+	(SIBCALL): Likewise.
+	(CAN_FALLTHRU): Likewise.
+	* cfganal.cc (post_order_compute): Likewise.
+	* cfgcleanup.cc (try_simplify_condjump): Likewise.
+	(merge_blocks_move_predecessor_nojumps): Likewise.
+	(merge_blocks_move_successor_nojumps): Likewise.
+	(merge_blocks_move): Likewise.
+	(old_insns_match_p): Likewise.
+	(try_crossjump_bb): Likewise.
+	* cfgexpand.cc (expand_gimple_stmt): Likewise.
+	* cfghooks.cc (split_block_before_cond_jump): Likewise.
+	(profile_record_check_consistency): Likewise.
+	* cfghooks.h: Likewise.
+	* cfgrtl.cc (pass_free_cfg::execute): Likewise.
+	(rtl_can_merge_blocks): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(make_pass_outof_cfg_layout_mode): Likewise.
+	(cfg_layout_can_merge_blocks_p): Likewise.
+	* cgraph.cc (release_function_body): Likewise.
+	(cgraph_node::get_fun): Likewise.
+	* cgraph.h (struct cgraph_node): Likewise.
+	(asmname_hasher::equal): Likewise.
+	(cgraph_inline_failed_type): Likewise.
+	(thunk_adjust): Likewise.
+	(dump_callgraph_transformation): Likewise.
+	(record_references_in_initializer): Likewise.
+	(ipa_discover_variable_flags): Likewise.
+	* cgraphclones.cc (GTY): Likewise.
+	* cgraphunit.cc (symbol_table::finalize_compilation_unit): Likewise.
+	* collect-utils.h (GCC_COLLECT_UTILS_H): Likewise.
+	* collect2-aix.h (GCC_COLLECT2_AIX_H): Likewise.
+	* collect2.cc (maybe_run_lto_and_relink): Likewise.
+	* combine-stack-adj.cc: Likewise.
+	* combine.cc (setup_incoming_promotions): Likewise.
+	(combine_simplify_rtx): Likewise.
+	(count_rtxs): Likewise.
+	* common.opt: Likewise.
+	* common/config/aarch64/aarch64-common.cc: Likewise.
+	* common/config/arm/arm-common.cc (arm_asm_auto_mfpu): Likewise.
+	* common/config/avr/avr-common.cc: Likewise.
+	* common/config/i386/i386-isas.h (struct _isa_names_table): Likewise.
+	* conditions.h: Likewise.
+	* config.gcc: Likewise.
+	* config/aarch64/aarch64-builtins.cc (aarch64_resolve_overloaded_memtag): Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_classify_address): Likewise.
+	(aarch64_get_extension_string_for_isa_flags): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (function_builder::add_function): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_regmode_natural_size): Likewise.
+	(aarch64_sched_first_cycle_multipass_dfa_lookahead): Likewise.
+	(aarch64_option_valid_attribute_p): Likewise.
+	(aarch64_short_vector_p): Likewise.
+	(aarch64_float_const_representable_p): Likewise.
+	* config/aarch64/aarch64.h (DBX_REGISTER_NUMBER): Likewise.
+	(ASM_OUTPUT_POOL_EPILOGUE): Likewise.
+	(GTY): Likewise.
+	* config/aarch64/cortex-a57-fma-steering.cc: Likewise.
+	* config/aarch64/driver-aarch64.cc (contains_core_p): Likewise.
+	* config/aarch64/t-aarch64: Likewise.
+	* config/aarch64/x-aarch64: Likewise.
+	* config/aarch64/x-darwin: Likewise.
+	* config/alpha/alpha-protos.h: Likewise.
+	* config/alpha/alpha.cc (alpha_scalar_mode_supported_p): Likewise.
+	* config/alpha/alpha.h (LONG_DOUBLE_TYPE_SIZE): Likewise.
+	(enum reg_class): Likewise.
+	* config/alpha/alpha.md: Likewise.
+	* config/alpha/driver-alpha.cc (AMASK_LOCKPFTCHOK): Likewise.
+	* config/alpha/x-alpha: Likewise.
+	* config/arc/arc-protos.h (arc_eh_uses): Likewise.
+	* config/arc/arc.cc (ARC_OPT): Likewise.
+	(arc_ccfsm_advance): Likewise.
+	(arc_arg_partial_bytes): Likewise.
+	(conditionalize_nonjump): Likewise.
+	* config/arc/arc.md: Likewise.
+	* config/arc/builtins.def: Likewise.
+	* config/arc/t-arc: Likewise.
+	* config/arm/arm-c.cc (arm_resolve_overloaded_builtin): Likewise.
+	(arm_pragma_target_parse): Likewise.
+	* config/arm/arm-protos.h (save_restore_target_globals): Likewise.
+	(arm_cpu_cpp_builtins): Likewise.
+	* config/arm/arm.cc (vfp3_const_double_index): Likewise.
+	(shift_op): Likewise.
+	(thumb2_final_prescan_insn): Likewise.
+	(arm_final_prescan_insn): Likewise.
+	(arm_asm_output_labelref): Likewise.
+	(arm_small_register_classes_for_mode_p): Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/arm/driver-arm.cc: Likewise.
+	* config/arm/symbian.h: Likewise.
+	* config/arm/t-arm: Likewise.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/x-arm: Likewise.
+	* config/avr/avr-c.cc (avr_register_target_pragmas): Likewise.
+	* config/avr/avr-fixed.md: Likewise.
+	* config/avr/avr-log.cc (avr_log_vadump): Likewise.
+	* config/avr/avr-mcus.def: Likewise.
+	* config/avr/avr-modes.def (FRACTIONAL_INT_MODE): Likewise.
+	* config/avr/avr-passes.def (INSERT_PASS_BEFORE): Likewise.
+	* config/avr/avr-protos.h (make_avr_pass_casesi): Likewise.
+	* config/avr/avr.cc (avr_option_override): Likewise.
+	(avr_build_builtin_va_list): Likewise.
+	(avr_mode_dependent_address_p): Likewise.
+	(avr_function_arg_advance): Likewise.
+	(avr_asm_output_aligned_decl_common): Likewise.
+	* config/avr/avr.h (RETURN_ADDR_RTX): Likewise.
+	(SUPPORTS_INIT_PRIORITY): Likewise.
+	* config/avr/avr.md: Likewise.
+	* config/avr/builtins.def: Likewise.
+	* config/avr/gen-avr-mmcu-specs.cc (IN_GEN_AVR_MMCU_TEXI): Likewise.
+	* config/avr/gen-avr-mmcu-texi.cc (IN_GEN_AVR_MMCU_TEXI): Likewise.
+	(main): Likewise.
+	* config/avr/t-avr: Likewise.
+	* config/bfin/bfin.cc (frame_related_constant_load): Likewise.
+	* config/bpf/bpf-protos.h (GCC_BPF_PROTOS_H): Likewise.
+	* config/bpf/bpf.h (enum reg_class): Likewise.
+	* config/bpf/t-bpf: Likewise.
+	* config/c6x/c6x-protos.h (GCC_C6X_PROTOS_H): Likewise.
+	* config/cr16/cr16-protos.h: Likewise.
+	* config/cris/cris.cc (cris_address_cost): Likewise.
+	(cris_side_effect_mode_ok): Likewise.
+	(cris_init_machine_status): Likewise.
+	(cris_emit_movem_store): Likewise.
+	* config/cris/cris.h (INDEX_REG_CLASS): Likewise.
+	(enum reg_class): Likewise.
+	(struct cum_args): Likewise.
+	* config/cris/cris.opt: Likewise.
+	* config/cris/sync.md: Likewise.
+	* config/csky/csky.cc (csky_expand_prologue): Likewise.
+	* config/darwin-c.cc: Likewise.
+	* config/darwin-f.cc: Likewise.
+	* config/darwin-sections.def (zobj_const_section): Likewise.
+	* config/darwin.cc (output_objc_section_asm_op): Likewise.
+	(fprintf): Likewise.
+	* config/darwin.h (GTY): Likewise.
+	* config/elfos.h: Likewise.
+	* config/epiphany/epiphany-sched.md: Likewise.
+	* config/epiphany/epiphany.cc (epiphany_function_value): Likewise.
+	* config/epiphany/epiphany.h (GTY): Likewise.
+	(NO_FUNCTION_CSE): Likewise.
+	* config/epiphany/mode-switch-use.cc: Likewise.
+	* config/epiphany/predicates.md: Likewise.
+	* config/epiphany/t-epiphany: Likewise.
+	* config/fr30/fr30-protos.h: Likewise.
+	* config/frv/frv-protos.h: Likewise.
+	* config/frv/frv.cc (TLS_BIAS): Likewise.
+	* config/frv/frv.h (ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+	* config/ft32/ft32-protos.h: Likewise.
+	* config/gcn/gcn-hsa.h (ASM_APP_OFF): Likewise.
+	* config/gcn/gcn.cc (gcn_init_libfuncs): Likewise.
+	* config/gcn/mkoffload.cc (copy_early_debug_info): Likewise.
+	* config/gcn/t-gcn-hsa: Likewise.
+	* config/gcn/t-omp-device: Likewise.
+	* config/h8300/h8300-protos.h (GCC_H8300_PROTOS_H): Likewise.
+	(same_cmp_following_p): Likewise.
+	* config/h8300/h8300.cc (F): Likewise.
+	* config/h8300/h8300.h (struct cum_arg): Likewise.
+	(BRANCH_COST): Likewise.
+	* config/i386/cygming.h (DEFAULT_PCC_STRUCT_RETURN): Likewise.
+	* config/i386/djgpp.h (TARGET_ASM_LTO_END): Likewise.
+	* config/i386/dragonfly.h (NO_PROFILE_COUNTERS): Likewise.
+	* config/i386/driver-i386.cc (detect_caches_intel): Likewise.
+	* config/i386/freebsd.h (NO_PROFILE_COUNTERS): Likewise.
+	* config/i386/i386-c.cc (ix86_target_macros): Likewise.
+	* config/i386/i386-expand.cc (get_mode_wider_vector): Likewise.
+	* config/i386/i386-options.cc (ix86_set_func_type): Likewise.
+	* config/i386/i386-protos.h (ix86_extract_perm_from_pool_constant): Likewise.
+	(ix86_register_pragmas): Likewise.
+	(ix86_d_has_stdcall_convention): Likewise.
+	(i386_pe_seh_init_sections): Likewise.
+	* config/i386/i386.cc (ix86_function_arg_regno_p): Likewise.
+	(ix86_function_value_regno_p): Likewise.
+	(ix86_compute_frame_layout): Likewise.
+	(legitimize_pe_coff_symbol): Likewise.
+	(output_pic_addr_const): Likewise.
+	* config/i386/i386.h (defined): Likewise.
+	(host_detect_local_cpu): Likewise.
+	(CONSTANT_ADDRESS_P): Likewise.
+	(DEFAULT_LARGE_SECTION_THRESHOLD): Likewise.
+	(struct machine_frame_state): Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/lynx.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/i386/mmx.md: Likewise.
+	* config/i386/sse.md: Likewise.
+	* config/i386/t-cygming: Likewise.
+	* config/i386/t-djgpp: Likewise.
+	* config/i386/t-gnu-property: Likewise.
+	* config/i386/t-i386: Likewise.
+	* config/i386/t-intelmic: Likewise.
+	* config/i386/t-omp-device: Likewise.
+	* config/i386/winnt-cxx.cc (i386_pe_type_dllimport_p): Likewise.
+	(i386_pe_adjust_class_at_definition): Likewise.
+	* config/i386/winnt.cc (gen_stdcall_or_fastcall_suffix): Likewise.
+	(i386_pe_mangle_decl_assembler_name): Likewise.
+	(i386_pe_encode_section_info): Likewise.
+	* config/i386/x-cygwin: Likewise.
+	* config/i386/x-darwin: Likewise.
+	* config/i386/x-i386: Likewise.
+	* config/i386/x-mingw32: Likewise.
+	* config/i386/x86-tune-sched-core.cc: Likewise.
+	* config/i386/x86-tune.def: Likewise.
+	* config/i386/xm-djgpp.h (STANDARD_STARTFILE_PREFIX_1): Likewise.
+	* config/ia64/freebsd.h: Likewise.
+	* config/ia64/hpux.h (REGISTER_TARGET_PRAGMAS): Likewise.
+	* config/ia64/ia64-protos.h (ia64_except_unwind_info): Likewise.
+	* config/ia64/ia64.cc (ia64_function_value_regno_p): Likewise.
+	(ia64_secondary_reload_class): Likewise.
+	(bundling): Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ia64/ia64.md: Likewise.
+	* config/ia64/predicates.md: Likewise.
+	* config/ia64/sysv4.h: Likewise.
+	* config/ia64/t-ia64: Likewise.
+	* config/iq2000/iq2000.h (FUNCTION_MODE): Likewise.
+	* config/iq2000/iq2000.md: Likewise.
+	* config/linux.h (TARGET_HAS_BIONIC): Likewise.
+	(if): Likewise.
+	* config/m32c/m32c.cc (m32c_function_needs_enter): Likewise.
+	* config/m32c/m32c.h (MAX_REGS_PER_ADDRESS): Likewise.
+	* config/m32c/t-m32c: Likewise.
+	* config/m32r/m32r-protos.h: Likewise.
+	* config/m32r/m32r.cc (m32r_print_operand): Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/m68k/m68k-isas.def: Likewise.
+	* config/m68k/m68k-microarchs.def: Likewise.
+	* config/m68k/m68k-protos.h (strict_low_part_peephole_ok): Likewise.
+	(m68k_epilogue_uses): Likewise.
+	* config/m68k/m68k.cc (m68k_call_tls_get_addr): Likewise.
+	(m68k_sched_adjust_cost): Likewise.
+	(m68k_sched_md_init): Likewise.
+	* config/m68k/m68k.h (__transfer_from_trampoline): Likewise.
+	(enum m68k_function_kind): Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/m68k/m68kemb.h: Likewise.
+	* config/m68k/uclinux.h (ENDFILE_SPEC): Likewise.
+	* config/mcore/mcore-protos.h: Likewise.
+	* config/mcore/mcore.cc (mcore_expand_insv): Likewise.
+	(mcore_expand_prolog): Likewise.
+	* config/mcore/mcore.h (TARGET_MCORE): Likewise.
+	* config/mcore/mcore.md: Likewise.
+	* config/microblaze/microblaze-protos.h: Likewise.
+	* config/microblaze/microblaze.cc (microblaze_legitimate_pic_operand): Likewise.
+	(microblaze_function_prologue): Likewise.
+	(microblaze_function_epilogue): Likewise.
+	(microblaze_select_section): Likewise.
+	(microblaze_asm_output_mi_thunk): Likewise.
+	(microblaze_eh_return): Likewise.
+	* config/microblaze/microblaze.h: Likewise.
+	* config/microblaze/microblaze.md: Likewise.
+	* config/microblaze/t-microblaze: Likewise.
+	* config/mips/driver-native.cc: Likewise.
+	* config/mips/loongson2ef.md: Likewise.
+	* config/mips/mips-protos.h (mips_expand_vec_cmp_expr): Likewise.
+	* config/mips/mips.cc (mips_rtx_costs): Likewise.
+	(mips_output_filename): Likewise.
+	(mips_output_function_prologue): Likewise.
+	(mips_output_function_epilogue): Likewise.
+	(mips_output_mi_thunk): Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mips/t-mips: Likewise.
+	* config/mips/x-native: Likewise.
+	* config/mmix/mmix-protos.h: Likewise.
+	* config/mmix/mmix.cc (mmix_option_override): Likewise.
+	(mmix_dbx_register_number): Likewise.
+	(mmix_expand_prologue): Likewise.
+	* config/mmix/mmix.h: Likewise.
+	* config/mmix/mmix.md: Likewise.
+	* config/mmix/predicates.md: Likewise.
+	* config/mn10300/mn10300.cc (mn10300_symbolic_operand): Likewise.
+	(mn10300_legitimate_pic_operand_p): Likewise.
+	* config/mn10300/mn10300.h (enum reg_class): Likewise.
+	(NO_FUNCTION_CSE): Likewise.
+	* config/moxie/moxie-protos.h: Likewise.
+	* config/moxie/uclinux.h (TARGET_LIBC_HAS_FUNCTION): Likewise.
+	* config/msp430/msp430-devices.cc (extract_devices_dir_from_exec_prefix): Likewise.
+	* config/msp430/msp430.cc (msp430_gimplify_va_arg_expr): Likewise.
+	(msp430_incoming_return_addr_rtx): Likewise.
+	* config/msp430/msp430.h (msp430_get_linker_devices_include_path): Likewise.
+	* config/msp430/t-msp430: Likewise.
+	* config/nds32/nds32-cost.cc (nds32_rtx_costs_speed_prefer): Likewise.
+	(nds32_rtx_costs_size_prefer): Likewise.
+	(nds32_init_rtx_costs): Likewise.
+	* config/nds32/nds32-doubleword.md: Likewise.
+	* config/nds32/nds32.cc (nds32_memory_move_cost): Likewise.
+	(nds32_builtin_decl): Likewise.
+	* config/nds32/nds32.h (enum nds32_16bit_address_type): Likewise.
+	(enum nds32_isr_nested_type): Likewise.
+	(enum reg_class): Likewise.
+	* config/nds32/predicates.md: Likewise.
+	* config/nds32/t-nds32: Likewise.
+	* config/nios2/nios2.cc (nios2_pragma_target_parse): Likewise.
+	* config/nvptx/nvptx-protos.h: Likewise.
+	* config/nvptx/nvptx.cc (nvptx_goacc_expand_var_decl): Likewise.
+	* config/nvptx/nvptx.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	* config/nvptx/t-nvptx: Likewise.
+	* config/nvptx/t-omp-device: Likewise.
+	* config/pa/elf.h: Likewise.
+	* config/pa/pa-linux.h (GLOBAL_ASM_OP): Likewise.
+	* config/pa/pa-netbsd.h (GLOBAL_ASM_OP): Likewise.
+	* config/pa/pa-openbsd.h (TARGET_ASM_GLOBALIZE_LABEL): Likewise.
+	* config/pa/pa-protos.h (pa_eh_return_handler_rtx): Likewise.
+	(pa_legitimize_reload_address): Likewise.
+	(pa_can_use_return_insn): Likewise.
+	* config/pa/pa.cc (mem_shadd_or_shadd_rtx_p): Likewise.
+	(som_output_text_section_asm_op): Likewise.
+	* config/pa/pa.h (PROFILE_BEFORE_PROLOGUE): Likewise.
+	* config/pa/pa.md: Likewise.
+	* config/pa/som.h: Likewise.
+	* config/pa/t-pa: Likewise.
+	* config/pdp11/pdp11.cc (decode_pdp11_d): Likewise.
+	* config/pdp11/pdp11.h: Likewise.
+	* config/pdp11/pdp11.md: Likewise.
+	* config/pdp11/t-pdp11: Likewise.
+	* config/pru/pru.md: Likewise.
+	* config/pru/t-pru: Likewise.
+	* config/riscv/riscv-protos.h (NUM_SYMBOL_TYPES): Likewise.
+	(riscv_gpr_save_operation_p): Likewise.
+	(riscv_d_register_target_info): Likewise.
+	(riscv_init_builtins): Likewise.
+	* config/riscv/riscv.cc (riscv_output_mi_thunk): Likewise.
+	* config/riscv/riscv.h (CSW_MAX_OFFSET): Likewise.
+	* config/riscv/t-riscv: Likewise.
+	* config/rl78/rl78.cc (rl78_asm_ctor_dtor): Likewise.
+	* config/rl78/t-rl78: Likewise.
+	* config/rs6000/aix.h: Likewise.
+	* config/rs6000/aix71.h (ASM_SPEC_COMMON): Likewise.
+	* config/rs6000/aix72.h (ASM_SPEC_COMMON): Likewise.
+	* config/rs6000/aix73.h (ASM_SPEC_COMMON): Likewise.
+	* config/rs6000/darwin.h (TARGET_ASM_GLOBALIZE_LABEL): Likewise.
+	* config/rs6000/driver-rs6000.cc: Likewise.
+	* config/rs6000/freebsd.h: Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/lynx.h (ASM_OUTPUT_ALIGN): Likewise.
+	* config/rs6000/rbtree.cc: Likewise.
+	* config/rs6000/rbtree.h: Likewise.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Likewise.
+	* config/rs6000/rs6000-call.cc (rs6000_invalid_builtin): Likewise.
+	(rs6000_expand_builtin): Likewise.
+	(rs6000_init_builtins): Likewise.
+	* config/rs6000/rs6000-cpus.def: Likewise.
+	* config/rs6000/rs6000-gen-builtins.cc (write_init_ovld_table): Likewise.
+	* config/rs6000/rs6000-internal.h (ALTIVEC_REG_BIT): Likewise.
+	(quad_address_offset_p): Likewise.
+	* config/rs6000/rs6000-logue.cc (interesting_frame_related_regno): Likewise.
+	(rs6000_emit_epilogue): Likewise.
+	* config/rs6000/rs6000-overload.def: Likewise.
+	* config/rs6000/rs6000-p8swap.cc: Likewise.
+	* config/rs6000/rs6000-protos.h (GCC_RS6000_PROTOS_H): Likewise.
+	(rs6000_const_f32_to_i32): Likewise.
+	* config/rs6000/rs6000.cc (legitimate_lo_sum_address_p): Likewise.
+	(rs6000_debug_legitimize_address): Likewise.
+	(rs6000_mode_dependent_address): Likewise.
+	(rs6000_adjust_priority): Likewise.
+	(rs6000_c_mode_for_suffix): Likewise.
+	* config/rs6000/rs6000.h (defined): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/rs6000/t-linux: Likewise.
+	* config/rs6000/t-linux64: Likewise.
+	* config/rs6000/t-rs6000: Likewise.
+	* config/rs6000/x-darwin: Likewise.
+	* config/rs6000/x-darwin64: Likewise.
+	* config/rs6000/x-rs6000: Likewise.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_LABELREF): Likewise.
+	* config/rx/rx.cc (rx_expand_builtin): Likewise.
+	* config/s390/constraints.md: Likewise.
+	* config/s390/driver-native.cc: Likewise.
+	* config/s390/htmxlintrin.h: Likewise.
+	* config/s390/s390-builtins.def (B_DEF): Likewise.
+	(OB_DEF_VAR): Likewise.
+	* config/s390/s390-builtins.h: Likewise.
+	* config/s390/s390-c.cc: Likewise.
+	* config/s390/s390-opts.h: Likewise.
+	* config/s390/s390-protos.h (s390_check_symref_alignment): Likewise.
+	(s390_register_target_pragmas): Likewise.
+	* config/s390/s390.cc (s390_init_builtins): Likewise.
+	(s390_expand_plus_operand): Likewise.
+	(s390_expand_atomic): Likewise.
+	(s390_valid_target_attribute_inner_p): Likewise.
+	* config/s390/s390.h (LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/s390/t-s390: Likewise.
+	* config/s390/vx-builtins.md: Likewise.
+	* config/s390/x-native: Likewise.
+	* config/sh/divtab-sh4-300.cc (main): Likewise.
+	* config/sh/divtab-sh4.cc (main): Likewise.
+	* config/sh/divtab.cc (main): Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/sh/sh-protos.h (sh_fsca_int2sf): Likewise.
+	* config/sh/sh.cc (SYMBOL_FLAG_FUNCVEC_FUNCTION): Likewise.
+	(sh_struct_value_rtx): Likewise.
+	(sh_remove_reg_dead_or_unused_notes): Likewise.
+	* config/sh/sh.h (MIN_UNITS_PER_WORD): Likewise.
+	* config/sh/t-sh: Likewise.
+	* config/sol2-protos.h (solaris_override_options): Likewise.
+	* config/sol2.h: Likewise.
+	* config/sparc/driver-sparc.cc: Likewise.
+	* config/sparc/freebsd.h: Likewise.
+	* config/sparc/sparc-protos.h (make_pass_work_around_errata): Likewise.
+	* config/sparc/sparc.cc (sparc_output_mi_thunk): Likewise.
+	(sparc_asan_shadow_offset): Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	* config/sparc/t-sparc: Likewise.
+	* config/sparc/x-sparc: Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_mode_dependent_address_p): Likewise.
+	* config/t-darwin: Likewise.
+	* config/t-dragonfly: Likewise.
+	* config/t-freebsd: Likewise.
+	* config/t-glibc: Likewise.
+	* config/t-linux: Likewise.
+	* config/t-netbsd: Likewise.
+	* config/t-openbsd: Likewise.
+	* config/t-pnt16-warn: Likewise.
+	* config/t-sol2: Likewise.
+	* config/t-vxworks: Likewise.
+	* config/t-winnt: Likewise.
+	* config/tilegx/t-tilegx: Likewise.
+	* config/tilegx/tilegx-c.cc: Likewise.
+	* config/tilegx/tilegx-protos.h (tilegx_function_profiler): Likewise.
+	* config/tilegx/tilegx.md: Likewise.
+	* config/tilepro/t-tilepro: Likewise.
+	* config/tilepro/tilepro-c.cc: Likewise.
+	* config/v850/t-v850: Likewise.
+	* config/v850/v850-protos.h: Likewise.
+	* config/v850/v850.cc (F): Likewise.
+	* config/v850/v850.h (enum reg_class): Likewise.
+	(SLOW_BYTE_ACCESS): Likewise.
+	* config/vax/vax.cc (vax_mode_dependent_address_p): Likewise.
+	* config/vax/vax.h (enum reg_class): Likewise.
+	* config/vax/vax.md: Likewise.
+	* config/visium/visium.cc (visium_legitimate_address_p): Likewise.
+	* config/visium/visium.h: Likewise.
+	* config/vms/t-vms: Likewise.
+	* config/vms/vms-crtlmap.map: Likewise.
+	* config/vms/vms-protos.h (vms_c_get_vms_ver): Likewise.
+	* config/vx-common.h: Likewise.
+	* config/x-darwin: Likewise.
+	* config/x-hpux: Likewise.
+	* config/x-linux: Likewise.
+	* config/x-netbsd: Likewise.
+	* config/x-openbsd: Likewise.
+	* config/x-solaris: Likewise.
+	* config/xtensa/xtensa-protos.h (xtensa_mem_offset): Likewise.
+	* config/xtensa/xtensa.cc (xtensa_option_override): Likewise.
+	* config/xtensa/xtensa.h: Likewise.
+	* configure.ac: Likewise.
+	* context.cc: Likewise.
+	* convert.h: Likewise.
+	* coretypes.h: Likewise.
+	* coverage.cc: Likewise.
+	* coverage.h: Likewise.
+	* cppdefault.h (struct default_include): Likewise.
+	* cprop.cc (local_cprop_pass): Likewise.
+	(one_cprop_pass): Likewise.
+	* cse.cc (hash_rtx_cb): Likewise.
+	(fold_rtx): Likewise.
+	* ctfc.h (ctfc_get_num_vlen_bytes): Likewise.
+	* data-streamer.h (bp_unpack_var_len_int): Likewise.
+	(streamer_write_widest_int): Likewise.
+	* dbgcnt.def: Likewise.
+	* dbxout.cc (dbxout_early_global_decl): Likewise.
+	(dbxout_common_check): Likewise.
+	* dbxout.h: Likewise.
+	* debug.h (struct gcc_debug_hooks): Likewise.
+	(dump_go_spec_init): Likewise.
+	* df-core.cc: Likewise.
+	* df-scan.cc (df_insn_info_delete): Likewise.
+	(df_insn_delete): Likewise.
+	* df.h (debug_df_chain): Likewise.
+	(can_move_insns_across): Likewise.
+	* dfp.cc (decimal_from_binary): Likewise.
+	* diagnostic-color.cc: Likewise.
+	* diagnostic-event-id.h: Likewise.
+	* diagnostic-show-locus.cc (test_one_liner_labels): Likewise.
+	* diagnostic.cc (bt_callback): Likewise.
+	(num_digits): Likewise.
+	* doc/avr-mmcu.texi: Likewise.
+	* doc/cfg.texi: Likewise.
+	* doc/contrib.texi: Likewise.
+	* doc/cppinternals.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/generic.texi: Likewise.
+	* doc/gimple.texi: Likewise.
+	* doc/gty.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/loop.texi: Likewise.
+	* doc/lto.texi: Likewise.
+	* doc/match-and-simplify.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/optinfo.texi: Likewise.
+	* doc/options.texi: Likewise.
+	* doc/passes.texi: Likewise.
+	* doc/plugins.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/tm.texi.in: Likewise.
+	* doc/tree-ssa.texi: Likewise.
+	* dojump.cc (do_jump): Likewise.
+	* dojump.h: Likewise.
+	* dumpfile.cc (test_impl_location): Likewise.
+	(test_capture_of_dump_calls): Likewise.
+	* dumpfile.h (enum dump_kind): Likewise.
+	(class dump_location_t): Likewise.
+	(dump_enabled_p): Likewise.
+	(enable_rtl_dump_file): Likewise.
+	(dump_combine_total_stats): Likewise.
+	* dwarf2asm.cc (dw2_asm_output_delta_uleb128): Likewise.
+	* dwarf2ctf.h (ctf_debug_finish): Likewise.
+	* dwarf2out.cc (dwarf2out_begin_prologue): Likewise.
+	(struct loc_descr_context): Likewise.
+	(rtl_for_decl_location): Likewise.
+	(gen_subprogram_die): Likewise.
+	(gen_label_die): Likewise.
+	(is_trivial_indirect_ref): Likewise.
+	(dwarf2out_late_global_decl): Likewise.
+	(dwarf_file_hasher::hash): Likewise.
+	(dwarf2out_end_source_file): Likewise.
+	(dwarf2out_define): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	* dwarf2out.h (struct dw_fde_node): Likewise.
+	(struct dw_discr_list_node): Likewise.
+	(output_loc_sequence_raw): Likewise.
+	* emit-rtl.cc (gen_raw_REG): Likewise.
+	(maybe_set_max_label_num): Likewise.
+	* emit-rtl.h (struct rtl_data): Likewise.
+	* errors.cc (internal_error): Likewise.
+	(trim_filename): Likewise.
+	* et-forest.cc: Likewise.
+	* except.cc (init_eh_for_function): Likewise.
+	* explow.cc (promote_ssa_mode): Likewise.
+	(get_dynamic_stack_size): Likewise.
+	* explow.h: Likewise.
+	* expmed.h: Likewise.
+	* expr.cc (safe_from_p): Likewise.
+	(expand_expr_real_2): Likewise.
+	(expand_expr_real_1): Likewise.
+	* file-prefix-map.cc (remap_filename): Likewise.
+	* final.cc (app_enable): Likewise.
+	(make_pass_compute_alignments): Likewise.
+	(final_scan_insn_1): Likewise.
+	(final_scan_insn): Likewise.
+	* fixed-value.h (fixed_from_string): Likewise.
+	* flag-types.h (NO_DEBUG): Likewise.
+	(DWARF2_DEBUG): Likewise.
+	(VMS_DEBUG): Likewise.
+	(BTF_DEBUG): Likewise.
+	(enum ctf_debug_info_levels): Likewise.
+	* fold-const.cc (const_binop): Likewise.
+	(fold_binary_loc): Likewise.
+	(fold_checksum_tree): Likewise.
+	* fp-test.cc: Likewise.
+	* function.cc (expand_function_end): Likewise.
+	* function.h (struct function): Likewise.
+	* fwprop.cc (should_replace_address): Likewise.
+	* gcc-main.cc: Likewise.
+	* gcc-rich-location.h (class gcc_rich_location): Likewise.
+	* gcc-symtab.h: Likewise.
+	* gcc.cc (MIN_FATAL_STATUS): Likewise.
+	(driver_handle_option): Likewise.
+	(quote_spec_arg): Likewise.
+	(driver::finalize): Likewise.
+	* gcc.h (set_input): Likewise.
+	* gcov-dump.cc: Likewise.
+	* gcov.cc (solve_flow_graph): Likewise.
+	* gcse-common.cc: Likewise.
+	* gcse.cc (make_pass_rtl_hoist): Likewise.
+	* genattr-common.cc: Likewise.
+	* genattrtab.cc (min_fn): Likewise.
+	(write_const_num_delay_slots): Likewise.
+	* genautomata.cc: Likewise.
+	* genconditions.cc (write_one_condition): Likewise.
+	* genconstants.cc: Likewise.
+	* genemit.cc (gen_exp): Likewise.
+	* generic-match-head.cc: Likewise.
+	* genextract.cc: Likewise.
+	* gengenrtl.cc (always_void_p): Likewise.
+	* gengtype-parse.cc (gtymarker_opt): Likewise.
+	* gengtype-state.cc (state_writer::state_writer): Likewise.
+	(write_state_trailer): Likewise.
+	(equals_type_number): Likewise.
+	(read_state): Likewise.
+	* gengtype.cc (open_base_files): Likewise.
+	(struct file_rule_st): Likewise.
+	(header_dot_h_frul): Likewise.
+	* gengtype.h: Likewise.
+	* genmatch.cc (main): Likewise.
+	* genmddeps.cc: Likewise.
+	* genmodes.cc (emit_mode_inner): Likewise.
+	(emit_mode_unit_size): Likewise.
+	* genpeep.cc (gen_peephole): Likewise.
+	* genpreds.cc (write_tm_preds_h): Likewise.
+	* genrecog.cc (validate_pattern): Likewise.
+	(write_header): Likewise.
+	(main): Likewise.
+	* gensupport.cc (change_subst_attribute): Likewise.
+	(traverse_c_tests): Likewise.
+	(add_predicate): Likewise.
+	(init_predicate_table): Likewise.
+	* gensupport.h (struct optab_pattern): Likewise.
+	(get_num_insn_codes): Likewise.
+	(maybe_eval_c_test): Likewise.
+	(struct pred_data): Likewise.
+	* ggc-internal.h: Likewise.
+	* gimple-fold.cc (maybe_fold_reference): Likewise.
+	(get_range_strlen_tree): Likewise.
+	* gimple-fold.h (gimple_stmt_integer_valued_real_p): Likewise.
+	* gimple-low.cc: Likewise.
+	* gimple-match-head.cc (directly_supported_p): Likewise.
+	* gimple-pretty-print.h: Likewise.
+	* gimple-ssa-sprintf.cc (format_percent): Likewise.
+	(adjust_range_for_overflow): Likewise.
+	* gimple-streamer.h: Likewise.
+	* gimple.h (struct GTY): Likewise.
+	(is_gimple_resx): Likewise.
+	* gimplify.cc (gimplify_expr): Likewise.
+	(gimplify_init_constructor): Likewise.
+	(omp_construct_selector_matches): Likewise.
+	(gimplify_omp_target_update): Likewise.
+	(gimplify_omp_ordered): Likewise.
+	(gimplify_va_arg_expr): Likewise.
+	* graphite-isl-ast-to-gimple.cc (should_copy_to_new_region): Likewise.
+	* haifa-sched.cc (increase_insn_priority): Likewise.
+	(try_ready): Likewise.
+	(sched_create_recovery_edges): Likewise.
+	* ifcvt.cc (find_if_case_1): Likewise.
+	(find_if_case_2): Likewise.
+	* inchash.h: Likewise.
+	* incpath.cc (add_env_var_paths): Likewise.
+	* input.cc (dump_location_info): Likewise.
+	(assert_loceq): Likewise.
+	(test_lexer_string_locations_concatenation_1): Likewise.
+	(test_lexer_string_locations_concatenation_2): Likewise.
+	(test_lexer_string_locations_concatenation_3): Likewise.
+	* input.h (BUILTINS_LOCATION): Likewise.
+	(class string_concat_db): Likewise.
+	* internal-fn.cc (expand_MUL_OVERFLOW): Likewise.
+	(expand_LOOP_VECTORIZED): Likewise.
+	* ipa-cp.cc (make_pass_ipa_cp): Likewise.
+	* ipa-fnsummary.cc (remap_freqcounting_preds_after_dup): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(make_pass_ipa_fn_summary): Likewise.
+	* ipa-fnsummary.h (enum ipa_hints_vals): Likewise.
+	* ipa-free-lang-data.cc (fld_simplified_type): Likewise.
+	(free_lang_data_in_decl): Likewise.
+	* ipa-inline.cc (compute_inlined_call_time): Likewise.
+	(inline_always_inline_functions): Likewise.
+	* ipa-inline.h (free_growth_caches): Likewise.
+	(inline_account_function_p): Likewise.
+	* ipa-modref.cc (modref_access_analysis::analyze_stmt): Likewise.
+	(modref_eaf_analysis::analyze_ssa_name): Likewise.
+	* ipa-param-manipulation.cc (ipa_param_body_adjustments::mark_dead_statements): Likewise.
+	(ipa_param_body_adjustments::remap_with_debug_expressions): Likewise.
+	* ipa-prop.cc (ipa_set_node_agg_value_chain): Likewise.
+	* ipa-prop.h (IPA_UNDESCRIBED_USE): Likewise.
+	(unadjusted_ptr_and_unit_offset): Likewise.
+	* ipa-reference.cc (make_pass_ipa_reference): Likewise.
+	* ipa-reference.h (GCC_IPA_REFERENCE_H): Likewise.
+	* ipa-split.cc (consider_split): Likewise.
+	* ipa-sra.cc (isra_read_node_info): Likewise.
+	* ipa-utils.h (struct ipa_dfs_info): Likewise.
+	(recursive_call_p): Likewise.
+	(ipa_make_function_pure): Likewise.
+	* ira-build.cc (ira_create_allocno): Likewise.
+	(ira_flattening): Likewise.
+	* ira-color.cc (do_coloring): Likewise.
+	(update_curr_costs): Likewise.
+	* ira-conflicts.cc (process_regs_for_copy): Likewise.
+	* ira-int.h (struct ira_emit_data): Likewise.
+	(ira_prohibited_mode_move_regs): Likewise.
+	(ira_get_dup_out_num): Likewise.
+	(ira_destroy): Likewise.
+	(ira_tune_allocno_costs): Likewise.
+	(ira_implicitly_set_insn_hard_regs): Likewise.
+	(ira_build_conflicts): Likewise.
+	(ira_color): Likewise.
+	* ira-lives.cc (process_bb_node_lives): Likewise.
+	* ira.cc (class ira_spilled_reg_stack_slot): Likewise.
+	(setup_uniform_class_p): Likewise.
+	(def_dominates_uses): Likewise.
+	* ira.h (ira_nullify_asm_goto): Likewise.
+	* langhooks.cc (lhd_post_options): Likewise.
+	* langhooks.h (class substring_loc): Likewise.
+	(struct lang_hooks_for_tree_inlining): Likewise.
+	(struct lang_hooks_for_types): Likewise.
+	(struct lang_hooks): Likewise.
+	* libfuncs.h (synchronize_libfunc): Likewise.
+	* loop-doloop.cc (doloop_condition_get): Likewise.
+	* loop-init.cc (fix_loop_structure): Likewise.
+	* loop-invariant.cc: Likewise.
+	* lower-subreg.h: Likewise.
+	* lra-constraints.cc (curr_insn_transform): Likewise.
+	* lra-int.h (struct lra_insn_reg): Likewise.
+	(lra_undo_inheritance): Likewise.
+	(lra_setup_reload_pseudo_preferenced_hard_reg): Likewise.
+	(lra_split_hard_reg_for): Likewise.
+	(lra_coalesce): Likewise.
+	(lra_final_code_change): Likewise.
+	* lra-spills.cc (lra_final_code_change): Likewise.
+	* lra.cc (lra_process_new_insns): Likewise.
+	* lto-compress.h (struct lto_compression_stream): Likewise.
+	* lto-streamer-out.cc (DFS::DFS_write_tree_body): Likewise.
+	(write_symbol): Likewise.
+	* lto-streamer.h (enum LTO_tags): Likewise.
+	(lto_value_range_error): Likewise.
+	(lto_append_block): Likewise.
+	(lto_streamer_hooks_init): Likewise.
+	(stream_read_tree_ref): Likewise.
+	(lto_prepare_function_for_streaming): Likewise.
+	(select_what_to_stream): Likewise.
+	(omp_lto_input_declare_variant_alt): Likewise.
+	(cl_optimization_stream_in): Likewise.
+	* lto-wrapper.cc (append_compiler_options): Likewise.
+	* machmode.def: Likewise.
+	* machmode.h (struct int_n_data_t): Likewise.
+	* main.cc (main): Likewise.
+	* match.pd: Likewise.
+	* omp-builtins.def (BUILT_IN_GOMP_CRITICAL_NAME_END): Likewise.
+	(BUILT_IN_GOMP_LOOP_ULL_ORDERED_RUNTIME_NEXT): Likewise.
+	* omp-expand.cc (expand_omp_atomic_fetch_op): Likewise.
+	(make_pass_expand_omp_ssa): Likewise.
+	* omp-low.cc (struct omp_context): Likewise.
+	(struct omp_taskcopy_context): Likewise.
+	(lower_omp): Likewise.
+	* omp-oacc-neuter-broadcast.cc (omp_sese_active_worker_call): Likewise.
+	(mask_name): Likewise.
+	(omp_sese_dump_pars): Likewise.
+	(worker_single_simple): Likewise.
+	* omp-offload.cc (omp_finish_file): Likewise.
+	(execute_oacc_loop_designation): Likewise.
+	* optabs-query.cc (lshift_cheap_p): Likewise.
+	* optc-gen.awk: Likewise.
+	* optc-save-gen.awk: Likewise.
+	* optinfo-emit-json.cc (optrecord_json_writer::optrecord_json_writer): Likewise.
+	* opts-common.cc: Likewise.
+	* output.h (app_enable): Likewise.
+	(output_operand_lossage): Likewise.
+	(insn_current_reference_address): Likewise.
+	(get_insn_template): Likewise.
+	(output_quoted_string): Likewise.
+	* pass_manager.h (struct register_pass_info): Likewise.
+	* plugin.cc: Likewise.
+	* plugin.def (PLUGIN_ANALYZER_INIT): Likewise.
+	* plugin.h (invoke_plugin_callbacks): Likewise.
+	* pointer-query.cc (handle_mem_ref): Likewise.
+	* postreload-gcse.cc (alloc_mem): Likewise.
+	* predict.h (enum prediction): Likewise.
+	(add_reg_br_prob_note): Likewise.
+	* prefix.h: Likewise.
+	* profile.h (get_working_sets): Likewise.
+	* read-md.cc: Likewise.
+	* read-md.h (struct mapping): Likewise.
+	(class md_reader): Likewise.
+	(class noop_reader): Likewise.
+	* read-rtl-function.cc (function_reader::create_function): Likewise.
+	(function_reader::extra_parsing_for_operand_code_0): Likewise.
+	* read-rtl.cc (initialize_iterators): Likewise.
+	* real.cc: Likewise.
+	* real.h (struct real_value): Likewise.
+	(format_helper::format_helper): Likewise.
+	(real_hash): Likewise.
+	(real_can_shorten_arithmetic): Likewise.
+	* recog.cc (struct target_recog): Likewise.
+	(offsettable_nonstrict_memref_p): Likewise.
+	(constrain_operands): Likewise.
+	* recog.h (MAX_RECOG_ALTERNATIVES): Likewise.
+	(which_op_alt): Likewise.
+	(struct insn_gen_fn): Likewise.
+	* reg-notes.def (REG_NOTE): Likewise.
+	* reg-stack.cc: Likewise.
+	* regs.h (reg_is_parm_p): Likewise.
+	* regset.h: Likewise.
+	* reload.cc (push_reload): Likewise.
+	(find_reloads): Likewise.
+	(find_reloads_address_1): Likewise.
+	(find_replacement): Likewise.
+	(refers_to_regno_for_reload_p): Likewise.
+	(refers_to_mem_for_reload_p): Likewise.
+	* reload.h (push_reload): Likewise.
+	(deallocate_reload_reg): Likewise.
+	* reload1.cc (emit_input_reload_insns): Likewise.
+	* reorg.cc (relax_delay_slots): Likewise.
+	* rtl.def (UNKNOWN): Likewise.
+	(SEQUENCE): Likewise.
+	(BARRIER): Likewise.
+	(ASM_OPERANDS): Likewise.
+	(EQ_ATTR_ALT): Likewise.
+	* rtl.h (struct GTY): Likewise.
+	(LABEL_NAME): Likewise.
+	(LABEL_ALT_ENTRY_P): Likewise.
+	(SUBREG_BYTE): Likewise.
+	(get_stack_check_protect): Likewise.
+	(dump_rtx_statistics): Likewise.
+	(unwrap_const_vec_duplicate): Likewise.
+	(subreg_promoted_mode): Likewise.
+	(gen_lowpart_common): Likewise.
+	(operand_subword): Likewise.
+	(immed_wide_int_const): Likewise.
+	(decide_function_section): Likewise.
+	(active_insn_p): Likewise.
+	(delete_related_insns): Likewise.
+	(try_split): Likewise.
+	(val_signbit_known_clear_p): Likewise.
+	(simplifiable_subregs): Likewise.
+	(set_insn_deleted): Likewise.
+	(subreg_get_info): Likewise.
+	(remove_free_EXPR_LIST_node): Likewise.
+	(finish_subregs_of_mode): Likewise.
+	(get_mem_attrs): Likewise.
+	(lookup_constant_def): Likewise.
+	(rtx_to_tree_code): Likewise.
+	(hash_rtx): Likewise.
+	(condjump_in_parallel_p): Likewise.
+	(validate_subreg): Likewise.
+	(make_compound_operation): Likewise.
+	(schedule_ebbs): Likewise.
+	(print_inline_rtx): Likewise.
+	(fixup_args_size_notes): Likewise.
+	(expand_dec): Likewise.
+	(prepare_copy_insn): Likewise.
+	(mark_elimination): Likewise.
+	(valid_mode_changes_for_regno): Likewise.
+	(make_debug_expr_from_rtl): Likewise.
+	(delete_vta_debug_insns): Likewise.
+	(simplify_using_condition): Likewise.
+	(set_insn_locations): Likewise.
+	(fatal_insn_not_found): Likewise.
+	(word_register_operation_p): Likewise.
+	* rtlanal.cc (get_call_fndecl): Likewise.
+	(side_effects_p): Likewise.
+	(subreg_nregs): Likewise.
+	(rtx_cost): Likewise.
+	(canonicalize_condition): Likewise.
+	* rtlanal.h (rtx_properties::try_to_add_note): Likewise.
+	* run-rtl-passes.cc (run_rtl_passes): Likewise.
+	* sanitizer.def (BUILT_IN_ASAN_VERSION_MISMATCH_CHECK): Likewise.
+	* sched-deps.cc (add_dependence_1): Likewise.
+	* sched-ebb.cc (begin_move_insn): Likewise.
+	(add_deps_for_risky_insns): Likewise.
+	(advance_target_bb): Likewise.
+	* sched-int.h (reemit_notes): Likewise.
+	(struct _haifa_insn_data): Likewise.
+	(HID): Likewise.
+	(DEP_CANCELLED): Likewise.
+	(debug_ds): Likewise.
+	(number_in_ready): Likewise.
+	(schedule_ebbs_finish): Likewise.
+	(find_modifiable_mems): Likewise.
+	* sched-rgn.cc (debug_rgn_dependencies): Likewise.
+	* sel-sched-dump.cc (dump_lv_set): Likewise.
+	* sel-sched-dump.h: Likewise.
+	* sel-sched-ir.cc (sel_insn_rtx_cost): Likewise.
+	(setup_id_reg_sets): Likewise.
+	(has_dependence_p): Likewise.
+	(sel_num_cfg_preds_gt_1): Likewise.
+	(bb_ends_ebb_p): Likewise.
+	* sel-sched-ir.h (struct _list_node): Likewise.
+	(struct idata_def): Likewise.
+	(bb_next_bb): Likewise.
+	* sel-sched.cc (vinsn_writes_one_of_regs_p): Likewise.
+	(choose_best_pseudo_reg): Likewise.
+	(verify_target_availability): Likewise.
+	(can_speculate_dep_p): Likewise.
+	(sel_rank_for_schedule): Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Likewise.
+	* selftest.h (class auto_fix_quotes): Likewise.
+	* shrink-wrap.cc (handle_simple_exit): Likewise.
+	* shrink-wrap.h: Likewise.
+	* simplify-rtx.cc (simplify_context::simplify_associative_operation): Likewise.
+	(simplify_context::simplify_gen_vec_select): Likewise.
+	* spellcheck-tree.h: Likewise.
+	* spellcheck.h: Likewise.
+	* statistics.h (struct function): Likewise.
+	* stmt.cc (conditional_probability): Likewise.
+	* stmt.h: Likewise.
+	* stor-layout.h: Likewise.
+	* streamer-hooks.h: Likewise.
+	* stringpool.h: Likewise.
+	* symtab.cc (symbol_table::change_decl_assembler_name): Likewise.
+	* target.def (HOOK_VECTOR_END): Likewise.
+	(type.): Likewise.
+	* target.h (union cumulative_args_t): Likewise.
+	(by_pieces_ninsns): Likewise.
+	(class predefined_function_abi): Likewise.
+	* targhooks.cc (default_translate_mode_attribute): Likewise.
+	* timevar.def: Likewise.
+	* timevar.h (class timer): Likewise.
+	* toplev.h (enable_rtl_dump_file): Likewise.
+	* trans-mem.cc (collect_bb2reg): Likewise.
+	* tree-call-cdce.cc (gen_conditions_for_pow): Likewise.
+	* tree-cfg.cc (remove_bb): Likewise.
+	(verify_gimple_debug): Likewise.
+	(remove_edge_and_dominated_blocks): Likewise.
+	(push_fndecl): Likewise.
+	* tree-cfgcleanup.h (GCC_TREE_CFGCLEANUP_H): Likewise.
+	* tree-complex.cc (expand_complex_multiplication): Likewise.
+	(expand_complex_div_straight): Likewise.
+	* tree-core.h (enum tree_index): Likewise.
+	(enum operand_equal_flag): Likewise.
+	* tree-eh.cc (honor_protect_cleanup_actions): Likewise.
+	* tree-if-conv.cc (if_convertible_gimple_assign_stmt_p): Likewise.
+	* tree-inline.cc (initialize_inlined_parameters): Likewise.
+	* tree-inline.h (force_value_to_type): Likewise.
+	* tree-nested.cc (get_chain_decl): Likewise.
+	(walk_all_functions): Likewise.
+	* tree-object-size.h: Likewise.
+	* tree-outof-ssa.cc: Likewise.
+	* tree-parloops.cc (create_parallel_loop): Likewise.
+	* tree-pretty-print.cc (print_generic_expr_to_str): Likewise.
+	(dump_generic_node): Likewise.
+	* tree-profile.cc (tree_profiling): Likewise.
+	* tree-sra.cc (maybe_add_sra_candidate): Likewise.
+	* tree-ssa-address.cc: Likewise.
+	* tree-ssa-alias.cc: Likewise.
+	* tree-ssa-alias.h (ao_ref::max_size_known_p): Likewise.
+	(dump_alias_stats): Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-coalesce.h: Likewise.
+	* tree-ssa-live.cc (remove_unused_scope_block_p): Likewise.
+	* tree-ssa-loop-manip.cc (copy_phi_node_args): Likewise.
+	* tree-ssa-loop-unswitch.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-operands.cc (class operands_scanner): Likewise.
+	* tree-ssa-pre.cc: Likewise.
+	* tree-ssa-reassoc.cc (optimize_ops_list): Likewise.
+	(debug_range_entry): Likewise.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): Likewise.
+	* tree-ssa-sccvn.h (TREE_SSA_SCCVN_H): Likewise.
+	* tree-ssa-scopedtables.cc (add_expr_commutative): Likewise.
+	(equal_mem_array_ref_p): Likewise.
+	* tree-ssa-strlen.cc (is_strlen_related_p): Likewise.
+	* tree-ssa-strlen.h (get_range_strlen_dynamic): Likewise.
+	* tree-ssa-tail-merge.cc (stmt_local_def): Likewise.
+	* tree-ssa-ter.h: Likewise.
+	* tree-ssa-threadupdate.h (enum bb_dom_status): Likewise.
+	* tree-streamer-in.cc (lto_input_ts_block_tree_pointers): Likewise.
+	* tree-streamer-out.cc (pack_ts_block_value_fields): Likewise.
+	(write_ts_block_tree_pointers): Likewise.
+	* tree-streamer.h (struct streamer_tree_cache_d): Likewise.
+	(streamer_read_tree_bitfields): Likewise.
+	(streamer_write_integer_cst): Likewise.
+	* tree-vect-patterns.cc (apply_binop_and_append_stmt): Likewise.
+	(vect_synth_mult_by_constant): Likewise.
+	* tree-vect-stmts.cc (vectorizable_operation): Likewise.
+	* tree-vectorizer.cc: Likewise.
+	* tree-vectorizer.h (class auto_purge_vect_location): Likewise.
+	(vect_update_inits_of_drs): Likewise.
+	(vect_get_mask_type_for_stmt): Likewise.
+	(vect_rgroup_iv_might_wrap_p): Likewise.
+	(cse_and_gimplify_to_preheader): Likewise.
+	(vect_free_slp_tree): Likewise.
+	(vect_pattern_recog): Likewise.
+	(vect_stmt_dominates_stmt_p): Likewise.
+	* tree.cc (initialize_tree_contains_struct): Likewise.
+	(need_assembler_name_p): Likewise.
+	(type_with_interoperable_signedness): Likewise.
+	* tree.def (SWITCH_EXPR): Likewise.
+	* tree.h (TYPE_SYMTAB_ADDRESS): Likewise.
+	(poly_int_tree_p): Likewise.
+	(inlined_function_outer_scope_p): Likewise.
+	(tree_code_for_canonical_type_merging): Likewise.
+	* value-prof.cc: Likewise.
+	* value-prof.h (get_nth_most_common_value): Likewise.
+	(find_func_by_profile_id): Likewise.
+	* value-range.cc (vrp_operand_equal_p): Likewise.
+	* value-range.h: Likewise.
+	* var-tracking.cc: Likewise.
+	* varasm.cc (default_function_section): Likewise.
+	(function_section_1): Likewise.
+	(assemble_variable): Likewise.
+	(handle_vtv_comdat_section): Likewise.
+	* vec.h (struct vec_prefix): Likewise.
+	* vmsdbgout.cc (full_name): Likewise.
+	* vtable-verify.cc: Likewise.
+	* vtable-verify.h (struct vtv_graph_node): Likewise.
+	* xcoffout.cc: Likewise.
+	* xcoffout.h (DEBUG_SYMS_TEXT): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* adjust-alignment.c: Moved to...
+	* adjust-alignment.cc: ...here.
+	* alias.c: Moved to...
+	* alias.cc: ...here.
+	* alloc-pool.c: Moved to...
+	* alloc-pool.cc: ...here.
+	* asan.c: Moved to...
+	* asan.cc: ...here.
+	* attribs.c: Moved to...
+	* attribs.cc: ...here.
+	* auto-inc-dec.c: Moved to...
+	* auto-inc-dec.cc: ...here.
+	* auto-profile.c: Moved to...
+	* auto-profile.cc: ...here.
+	* bb-reorder.c: Moved to...
+	* bb-reorder.cc: ...here.
+	* bitmap.c: Moved to...
+	* bitmap.cc: ...here.
+	* btfout.c: Moved to...
+	* btfout.cc: ...here.
+	* builtins.c: Moved to...
+	* builtins.cc: ...here.
+	* caller-save.c: Moved to...
+	* caller-save.cc: ...here.
+	* calls.c: Moved to...
+	* calls.cc: ...here.
+	* ccmp.c: Moved to...
+	* ccmp.cc: ...here.
+	* cfg.c: Moved to...
+	* cfg.cc: ...here.
+	* cfganal.c: Moved to...
+	* cfganal.cc: ...here.
+	* cfgbuild.c: Moved to...
+	* cfgbuild.cc: ...here.
+	* cfgcleanup.c: Moved to...
+	* cfgcleanup.cc: ...here.
+	* cfgexpand.c: Moved to...
+	* cfgexpand.cc: ...here.
+	* cfghooks.c: Moved to...
+	* cfghooks.cc: ...here.
+	* cfgloop.c: Moved to...
+	* cfgloop.cc: ...here.
+	* cfgloopanal.c: Moved to...
+	* cfgloopanal.cc: ...here.
+	* cfgloopmanip.c: Moved to...
+	* cfgloopmanip.cc: ...here.
+	* cfgrtl.c: Moved to...
+	* cfgrtl.cc: ...here.
+	* cgraph.c: Moved to...
+	* cgraph.cc: ...here.
+	* cgraphbuild.c: Moved to...
+	* cgraphbuild.cc: ...here.
+	* cgraphclones.c: Moved to...
+	* cgraphclones.cc: ...here.
+	* cgraphunit.c: Moved to...
+	* cgraphunit.cc: ...here.
+	* collect-utils.c: Moved to...
+	* collect-utils.cc: ...here.
+	* collect2-aix.c: Moved to...
+	* collect2-aix.cc: ...here.
+	* collect2.c: Moved to...
+	* collect2.cc: ...here.
+	* combine-stack-adj.c: Moved to...
+	* combine-stack-adj.cc: ...here.
+	* combine.c: Moved to...
+	* combine.cc: ...here.
+	* common/common-targhooks.c: Moved to...
+	* common/common-targhooks.cc: ...here.
+	* common/config/aarch64/aarch64-common.c: Moved to...
+	* common/config/aarch64/aarch64-common.cc: ...here.
+	* common/config/alpha/alpha-common.c: Moved to...
+	* common/config/alpha/alpha-common.cc: ...here.
+	* common/config/arc/arc-common.c: Moved to...
+	* common/config/arc/arc-common.cc: ...here.
+	* common/config/arm/arm-common.c: Moved to...
+	* common/config/arm/arm-common.cc: ...here.
+	* common/config/avr/avr-common.c: Moved to...
+	* common/config/avr/avr-common.cc: ...here.
+	* common/config/bfin/bfin-common.c: Moved to...
+	* common/config/bfin/bfin-common.cc: ...here.
+	* common/config/bpf/bpf-common.c: Moved to...
+	* common/config/bpf/bpf-common.cc: ...here.
+	* common/config/c6x/c6x-common.c: Moved to...
+	* common/config/c6x/c6x-common.cc: ...here.
+	* common/config/cr16/cr16-common.c: Moved to...
+	* common/config/cr16/cr16-common.cc: ...here.
+	* common/config/cris/cris-common.c: Moved to...
+	* common/config/cris/cris-common.cc: ...here.
+	* common/config/csky/csky-common.c: Moved to...
+	* common/config/csky/csky-common.cc: ...here.
+	* common/config/default-common.c: Moved to...
+	* common/config/default-common.cc: ...here.
+	* common/config/epiphany/epiphany-common.c: Moved to...
+	* common/config/epiphany/epiphany-common.cc: ...here.
+	* common/config/fr30/fr30-common.c: Moved to...
+	* common/config/fr30/fr30-common.cc: ...here.
+	* common/config/frv/frv-common.c: Moved to...
+	* common/config/frv/frv-common.cc: ...here.
+	* common/config/gcn/gcn-common.c: Moved to...
+	* common/config/gcn/gcn-common.cc: ...here.
+	* common/config/h8300/h8300-common.c: Moved to...
+	* common/config/h8300/h8300-common.cc: ...here.
+	* common/config/i386/i386-common.c: Moved to...
+	* common/config/i386/i386-common.cc: ...here.
+	* common/config/ia64/ia64-common.c: Moved to...
+	* common/config/ia64/ia64-common.cc: ...here.
+	* common/config/iq2000/iq2000-common.c: Moved to...
+	* common/config/iq2000/iq2000-common.cc: ...here.
+	* common/config/lm32/lm32-common.c: Moved to...
+	* common/config/lm32/lm32-common.cc: ...here.
+	* common/config/m32r/m32r-common.c: Moved to...
+	* common/config/m32r/m32r-common.cc: ...here.
+	* common/config/m68k/m68k-common.c: Moved to...
+	* common/config/m68k/m68k-common.cc: ...here.
+	* common/config/mcore/mcore-common.c: Moved to...
+	* common/config/mcore/mcore-common.cc: ...here.
+	* common/config/microblaze/microblaze-common.c: Moved to...
+	* common/config/microblaze/microblaze-common.cc: ...here.
+	* common/config/mips/mips-common.c: Moved to...
+	* common/config/mips/mips-common.cc: ...here.
+	* common/config/mmix/mmix-common.c: Moved to...
+	* common/config/mmix/mmix-common.cc: ...here.
+	* common/config/mn10300/mn10300-common.c: Moved to...
+	* common/config/mn10300/mn10300-common.cc: ...here.
+	* common/config/msp430/msp430-common.c: Moved to...
+	* common/config/msp430/msp430-common.cc: ...here.
+	* common/config/nds32/nds32-common.c: Moved to...
+	* common/config/nds32/nds32-common.cc: ...here.
+	* common/config/nios2/nios2-common.c: Moved to...
+	* common/config/nios2/nios2-common.cc: ...here.
+	* common/config/nvptx/nvptx-common.c: Moved to...
+	* common/config/nvptx/nvptx-common.cc: ...here.
+	* common/config/or1k/or1k-common.c: Moved to...
+	* common/config/or1k/or1k-common.cc: ...here.
+	* common/config/pa/pa-common.c: Moved to...
+	* common/config/pa/pa-common.cc: ...here.
+	* common/config/pdp11/pdp11-common.c: Moved to...
+	* common/config/pdp11/pdp11-common.cc: ...here.
+	* common/config/pru/pru-common.c: Moved to...
+	* common/config/pru/pru-common.cc: ...here.
+	* common/config/riscv/riscv-common.c: Moved to...
+	* common/config/riscv/riscv-common.cc: ...here.
+	* common/config/rs6000/rs6000-common.c: Moved to...
+	* common/config/rs6000/rs6000-common.cc: ...here.
+	* common/config/rx/rx-common.c: Moved to...
+	* common/config/rx/rx-common.cc: ...here.
+	* common/config/s390/s390-common.c: Moved to...
+	* common/config/s390/s390-common.cc: ...here.
+	* common/config/sh/sh-common.c: Moved to...
+	* common/config/sh/sh-common.cc: ...here.
+	* common/config/sparc/sparc-common.c: Moved to...
+	* common/config/sparc/sparc-common.cc: ...here.
+	* common/config/tilegx/tilegx-common.c: Moved to...
+	* common/config/tilegx/tilegx-common.cc: ...here.
+	* common/config/tilepro/tilepro-common.c: Moved to...
+	* common/config/tilepro/tilepro-common.cc: ...here.
+	* common/config/v850/v850-common.c: Moved to...
+	* common/config/v850/v850-common.cc: ...here.
+	* common/config/vax/vax-common.c: Moved to...
+	* common/config/vax/vax-common.cc: ...here.
+	* common/config/visium/visium-common.c: Moved to...
+	* common/config/visium/visium-common.cc: ...here.
+	* common/config/xstormy16/xstormy16-common.c: Moved to...
+	* common/config/xstormy16/xstormy16-common.cc: ...here.
+	* common/config/xtensa/xtensa-common.c: Moved to...
+	* common/config/xtensa/xtensa-common.cc: ...here.
+	* compare-elim.c: Moved to...
+	* compare-elim.cc: ...here.
+	* config/aarch64/aarch64-bti-insert.c: Moved to...
+	* config/aarch64/aarch64-bti-insert.cc: ...here.
+	* config/aarch64/aarch64-builtins.c: Moved to...
+	* config/aarch64/aarch64-builtins.cc: ...here.
+	* config/aarch64/aarch64-c.c: Moved to...
+	* config/aarch64/aarch64-c.cc: ...here.
+	* config/aarch64/aarch64-d.c: Moved to...
+	* config/aarch64/aarch64-d.cc: ...here.
+	* config/aarch64/aarch64.c: Moved to...
+	* config/aarch64/aarch64.cc: ...here.
+	* config/aarch64/cortex-a57-fma-steering.c: Moved to...
+	* config/aarch64/cortex-a57-fma-steering.cc: ...here.
+	* config/aarch64/driver-aarch64.c: Moved to...
+	* config/aarch64/driver-aarch64.cc: ...here.
+	* config/aarch64/falkor-tag-collision-avoidance.c: Moved to...
+	* config/aarch64/falkor-tag-collision-avoidance.cc: ...here.
+	* config/aarch64/host-aarch64-darwin.c: Moved to...
+	* config/aarch64/host-aarch64-darwin.cc: ...here.
+	* config/alpha/alpha.c: Moved to...
+	* config/alpha/alpha.cc: ...here.
+	* config/alpha/driver-alpha.c: Moved to...
+	* config/alpha/driver-alpha.cc: ...here.
+	* config/arc/arc-c.c: Moved to...
+	* config/arc/arc-c.cc: ...here.
+	* config/arc/arc.c: Moved to...
+	* config/arc/arc.cc: ...here.
+	* config/arc/driver-arc.c: Moved to...
+	* config/arc/driver-arc.cc: ...here.
+	* config/arm/aarch-common.c: Moved to...
+	* config/arm/aarch-common.cc: ...here.
+	* config/arm/arm-builtins.c: Moved to...
+	* config/arm/arm-builtins.cc: ...here.
+	* config/arm/arm-c.c: Moved to...
+	* config/arm/arm-c.cc: ...here.
+	* config/arm/arm-d.c: Moved to...
+	* config/arm/arm-d.cc: ...here.
+	* config/arm/arm.c: Moved to...
+	* config/arm/arm.cc: ...here.
+	* config/arm/driver-arm.c: Moved to...
+	* config/arm/driver-arm.cc: ...here.
+	* config/avr/avr-c.c: Moved to...
+	* config/avr/avr-c.cc: ...here.
+	* config/avr/avr-devices.c: Moved to...
+	* config/avr/avr-devices.cc: ...here.
+	* config/avr/avr-log.c: Moved to...
+	* config/avr/avr-log.cc: ...here.
+	* config/avr/avr.c: Moved to...
+	* config/avr/avr.cc: ...here.
+	* config/avr/driver-avr.c: Moved to...
+	* config/avr/driver-avr.cc: ...here.
+	* config/avr/gen-avr-mmcu-specs.c: Moved to...
+	* config/avr/gen-avr-mmcu-specs.cc: ...here.
+	* config/avr/gen-avr-mmcu-texi.c: Moved to...
+	* config/avr/gen-avr-mmcu-texi.cc: ...here.
+	* config/bfin/bfin.c: Moved to...
+	* config/bfin/bfin.cc: ...here.
+	* config/bpf/bpf.c: Moved to...
+	* config/bpf/bpf.cc: ...here.
+	* config/bpf/coreout.c: Moved to...
+	* config/bpf/coreout.cc: ...here.
+	* config/c6x/c6x.c: Moved to...
+	* config/c6x/c6x.cc: ...here.
+	* config/cr16/cr16.c: Moved to...
+	* config/cr16/cr16.cc: ...here.
+	* config/cris/cris.c: Moved to...
+	* config/cris/cris.cc: ...here.
+	* config/csky/csky.c: Moved to...
+	* config/csky/csky.cc: ...here.
+	* config/darwin-c.c: Moved to...
+	* config/darwin-c.cc: ...here.
+	* config/darwin-d.c: Moved to...
+	* config/darwin-d.cc: ...here.
+	* config/darwin-driver.c: Moved to...
+	* config/darwin-driver.cc: ...here.
+	* config/darwin-f.c: Moved to...
+	* config/darwin-f.cc: ...here.
+	* config/darwin.c: Moved to...
+	* config/darwin.cc: ...here.
+	* config/default-c.c: Moved to...
+	* config/default-c.cc: ...here.
+	* config/default-d.c: Moved to...
+	* config/default-d.cc: ...here.
+	* config/dragonfly-d.c: Moved to...
+	* config/dragonfly-d.cc: ...here.
+	* config/epiphany/epiphany.c: Moved to...
+	* config/epiphany/epiphany.cc: ...here.
+	* config/epiphany/mode-switch-use.c: Moved to...
+	* config/epiphany/mode-switch-use.cc: ...here.
+	* config/epiphany/resolve-sw-modes.c: Moved to...
+	* config/epiphany/resolve-sw-modes.cc: ...here.
+	* config/fr30/fr30.c: Moved to...
+	* config/fr30/fr30.cc: ...here.
+	* config/freebsd-d.c: Moved to...
+	* config/freebsd-d.cc: ...here.
+	* config/frv/frv.c: Moved to...
+	* config/frv/frv.cc: ...here.
+	* config/ft32/ft32.c: Moved to...
+	* config/ft32/ft32.cc: ...here.
+	* config/gcn/driver-gcn.c: Moved to...
+	* config/gcn/driver-gcn.cc: ...here.
+	* config/gcn/gcn-run.c: Moved to...
+	* config/gcn/gcn-run.cc: ...here.
+	* config/gcn/gcn-tree.c: Moved to...
+	* config/gcn/gcn-tree.cc: ...here.
+	* config/gcn/gcn.c: Moved to...
+	* config/gcn/gcn.cc: ...here.
+	* config/gcn/mkoffload.c: Moved to...
+	* config/gcn/mkoffload.cc: ...here.
+	* config/glibc-c.c: Moved to...
+	* config/glibc-c.cc: ...here.
+	* config/glibc-d.c: Moved to...
+	* config/glibc-d.cc: ...here.
+	* config/h8300/h8300.c: Moved to...
+	* config/h8300/h8300.cc: ...here.
+	* config/host-darwin.c: Moved to...
+	* config/host-darwin.cc: ...here.
+	* config/host-hpux.c: Moved to...
+	* config/host-hpux.cc: ...here.
+	* config/host-linux.c: Moved to...
+	* config/host-linux.cc: ...here.
+	* config/host-netbsd.c: Moved to...
+	* config/host-netbsd.cc: ...here.
+	* config/host-openbsd.c: Moved to...
+	* config/host-openbsd.cc: ...here.
+	* config/host-solaris.c: Moved to...
+	* config/host-solaris.cc: ...here.
+	* config/i386/djgpp.c: Moved to...
+	* config/i386/djgpp.cc: ...here.
+	* config/i386/driver-i386.c: Moved to...
+	* config/i386/driver-i386.cc: ...here.
+	* config/i386/driver-mingw32.c: Moved to...
+	* config/i386/driver-mingw32.cc: ...here.
+	* config/i386/gnu-property.c: Moved to...
+	* config/i386/gnu-property.cc: ...here.
+	* config/i386/host-cygwin.c: Moved to...
+	* config/i386/host-cygwin.cc: ...here.
+	* config/i386/host-i386-darwin.c: Moved to...
+	* config/i386/host-i386-darwin.cc: ...here.
+	* config/i386/host-mingw32.c: Moved to...
+	* config/i386/host-mingw32.cc: ...here.
+	* config/i386/i386-builtins.c: Moved to...
+	* config/i386/i386-builtins.cc: ...here.
+	* config/i386/i386-c.c: Moved to...
+	* config/i386/i386-c.cc: ...here.
+	* config/i386/i386-d.c: Moved to...
+	* config/i386/i386-d.cc: ...here.
+	* config/i386/i386-expand.c: Moved to...
+	* config/i386/i386-expand.cc: ...here.
+	* config/i386/i386-features.c: Moved to...
+	* config/i386/i386-features.cc: ...here.
+	* config/i386/i386-options.c: Moved to...
+	* config/i386/i386-options.cc: ...here.
+	* config/i386/i386.c: Moved to...
+	* config/i386/i386.cc: ...here.
+	* config/i386/intelmic-mkoffload.c: Moved to...
+	* config/i386/intelmic-mkoffload.cc: ...here.
+	* config/i386/msformat-c.c: Moved to...
+	* config/i386/msformat-c.cc: ...here.
+	* config/i386/winnt-cxx.c: Moved to...
+	* config/i386/winnt-cxx.cc: ...here.
+	* config/i386/winnt-d.c: Moved to...
+	* config/i386/winnt-d.cc: ...here.
+	* config/i386/winnt-stubs.c: Moved to...
+	* config/i386/winnt-stubs.cc: ...here.
+	* config/i386/winnt.c: Moved to...
+	* config/i386/winnt.cc: ...here.
+	* config/i386/x86-tune-sched-atom.c: Moved to...
+	* config/i386/x86-tune-sched-atom.cc: ...here.
+	* config/i386/x86-tune-sched-bd.c: Moved to...
+	* config/i386/x86-tune-sched-bd.cc: ...here.
+	* config/i386/x86-tune-sched-core.c: Moved to...
+	* config/i386/x86-tune-sched-core.cc: ...here.
+	* config/i386/x86-tune-sched.c: Moved to...
+	* config/i386/x86-tune-sched.cc: ...here.
+	* config/ia64/ia64-c.c: Moved to...
+	* config/ia64/ia64-c.cc: ...here.
+	* config/ia64/ia64.c: Moved to...
+	* config/ia64/ia64.cc: ...here.
+	* config/iq2000/iq2000.c: Moved to...
+	* config/iq2000/iq2000.cc: ...here.
+	* config/linux.c: Moved to...
+	* config/linux.cc: ...here.
+	* config/lm32/lm32.c: Moved to...
+	* config/lm32/lm32.cc: ...here.
+	* config/m32c/m32c-pragma.c: Moved to...
+	* config/m32c/m32c-pragma.cc: ...here.
+	* config/m32c/m32c.c: Moved to...
+	* config/m32c/m32c.cc: ...here.
+	* config/m32r/m32r.c: Moved to...
+	* config/m32r/m32r.cc: ...here.
+	* config/m68k/m68k.c: Moved to...
+	* config/m68k/m68k.cc: ...here.
+	* config/mcore/mcore.c: Moved to...
+	* config/mcore/mcore.cc: ...here.
+	* config/microblaze/microblaze-c.c: Moved to...
+	* config/microblaze/microblaze-c.cc: ...here.
+	* config/microblaze/microblaze.c: Moved to...
+	* config/microblaze/microblaze.cc: ...here.
+	* config/mips/driver-native.c: Moved to...
+	* config/mips/driver-native.cc: ...here.
+	* config/mips/frame-header-opt.c: Moved to...
+	* config/mips/frame-header-opt.cc: ...here.
+	* config/mips/mips-d.c: Moved to...
+	* config/mips/mips-d.cc: ...here.
+	* config/mips/mips.c: Moved to...
+	* config/mips/mips.cc: ...here.
+	* config/mmix/mmix.c: Moved to...
+	* config/mmix/mmix.cc: ...here.
+	* config/mn10300/mn10300.c: Moved to...
+	* config/mn10300/mn10300.cc: ...here.
+	* config/moxie/moxie.c: Moved to...
+	* config/moxie/moxie.cc: ...here.
+	* config/msp430/driver-msp430.c: Moved to...
+	* config/msp430/driver-msp430.cc: ...here.
+	* config/msp430/msp430-c.c: Moved to...
+	* config/msp430/msp430-c.cc: ...here.
+	* config/msp430/msp430-devices.c: Moved to...
+	* config/msp430/msp430-devices.cc: ...here.
+	* config/msp430/msp430.c: Moved to...
+	* config/msp430/msp430.cc: ...here.
+	* config/nds32/nds32-cost.c: Moved to...
+	* config/nds32/nds32-cost.cc: ...here.
+	* config/nds32/nds32-fp-as-gp.c: Moved to...
+	* config/nds32/nds32-fp-as-gp.cc: ...here.
+	* config/nds32/nds32-intrinsic.c: Moved to...
+	* config/nds32/nds32-intrinsic.cc: ...here.
+	* config/nds32/nds32-isr.c: Moved to...
+	* config/nds32/nds32-isr.cc: ...here.
+	* config/nds32/nds32-md-auxiliary.c: Moved to...
+	* config/nds32/nds32-md-auxiliary.cc: ...here.
+	* config/nds32/nds32-memory-manipulation.c: Moved to...
+	* config/nds32/nds32-memory-manipulation.cc: ...here.
+	* config/nds32/nds32-pipelines-auxiliary.c: Moved to...
+	* config/nds32/nds32-pipelines-auxiliary.cc: ...here.
+	* config/nds32/nds32-predicates.c: Moved to...
+	* config/nds32/nds32-predicates.cc: ...here.
+	* config/nds32/nds32-relax-opt.c: Moved to...
+	* config/nds32/nds32-relax-opt.cc: ...here.
+	* config/nds32/nds32-utils.c: Moved to...
+	* config/nds32/nds32-utils.cc: ...here.
+	* config/nds32/nds32.c: Moved to...
+	* config/nds32/nds32.cc: ...here.
+	* config/netbsd-d.c: Moved to...
+	* config/netbsd-d.cc: ...here.
+	* config/netbsd.c: Moved to...
+	* config/netbsd.cc: ...here.
+	* config/nios2/nios2.c: Moved to...
+	* config/nios2/nios2.cc: ...here.
+	* config/nvptx/mkoffload.c: Moved to...
+	* config/nvptx/mkoffload.cc: ...here.
+	* config/nvptx/nvptx-c.c: Moved to...
+	* config/nvptx/nvptx-c.cc: ...here.
+	* config/nvptx/nvptx.c: Moved to...
+	* config/nvptx/nvptx.cc: ...here.
+	* config/openbsd-d.c: Moved to...
+	* config/openbsd-d.cc: ...here.
+	* config/or1k/or1k.c: Moved to...
+	* config/or1k/or1k.cc: ...here.
+	* config/pa/pa-d.c: Moved to...
+	* config/pa/pa-d.cc: ...here.
+	* config/pa/pa.c: Moved to...
+	* config/pa/pa.cc: ...here.
+	* config/pdp11/pdp11.c: Moved to...
+	* config/pdp11/pdp11.cc: ...here.
+	* config/pru/pru-passes.c: Moved to...
+	* config/pru/pru-passes.cc: ...here.
+	* config/pru/pru-pragma.c: Moved to...
+	* config/pru/pru-pragma.cc: ...here.
+	* config/pru/pru.c: Moved to...
+	* config/pru/pru.cc: ...here.
+	* config/riscv/riscv-builtins.c: Moved to...
+	* config/riscv/riscv-builtins.cc: ...here.
+	* config/riscv/riscv-c.c: Moved to...
+	* config/riscv/riscv-c.cc: ...here.
+	* config/riscv/riscv-d.c: Moved to...
+	* config/riscv/riscv-d.cc: ...here.
+	* config/riscv/riscv-shorten-memrefs.c: Moved to...
+	* config/riscv/riscv-shorten-memrefs.cc: ...here.
+	* config/riscv/riscv-sr.c: Moved to...
+	* config/riscv/riscv-sr.cc: ...here.
+	* config/riscv/riscv.c: Moved to...
+	* config/riscv/riscv.cc: ...here.
+	* config/rl78/rl78-c.c: Moved to...
+	* config/rl78/rl78-c.cc: ...here.
+	* config/rl78/rl78.c: Moved to...
+	* config/rl78/rl78.cc: ...here.
+	* config/rs6000/driver-rs6000.c: Moved to...
+	* config/rs6000/driver-rs6000.cc: ...here.
+	* config/rs6000/host-darwin.c: Moved to...
+	* config/rs6000/host-darwin.cc: ...here.
+	* config/rs6000/host-ppc64-darwin.c: Moved to...
+	* config/rs6000/host-ppc64-darwin.cc: ...here.
+	* config/rs6000/rbtree.c: Moved to...
+	* config/rs6000/rbtree.cc: ...here.
+	* config/rs6000/rs6000-c.c: Moved to...
+	* config/rs6000/rs6000-c.cc: ...here.
+	* config/rs6000/rs6000-call.c: Moved to...
+	* config/rs6000/rs6000-call.cc: ...here.
+	* config/rs6000/rs6000-d.c: Moved to...
+	* config/rs6000/rs6000-d.cc: ...here.
+	* config/rs6000/rs6000-gen-builtins.c: Moved to...
+	* config/rs6000/rs6000-gen-builtins.cc: ...here.
+	* config/rs6000/rs6000-linux.c: Moved to...
+	* config/rs6000/rs6000-linux.cc: ...here.
+	* config/rs6000/rs6000-logue.c: Moved to...
+	* config/rs6000/rs6000-logue.cc: ...here.
+	* config/rs6000/rs6000-p8swap.c: Moved to...
+	* config/rs6000/rs6000-p8swap.cc: ...here.
+	* config/rs6000/rs6000-pcrel-opt.c: Moved to...
+	* config/rs6000/rs6000-pcrel-opt.cc: ...here.
+	* config/rs6000/rs6000-string.c: Moved to...
+	* config/rs6000/rs6000-string.cc: ...here.
+	* config/rs6000/rs6000.c: Moved to...
+	* config/rs6000/rs6000.cc: ...here.
+	* config/rx/rx.c: Moved to...
+	* config/rx/rx.cc: ...here.
+	* config/s390/driver-native.c: Moved to...
+	* config/s390/driver-native.cc: ...here.
+	* config/s390/s390-c.c: Moved to...
+	* config/s390/s390-c.cc: ...here.
+	* config/s390/s390-d.c: Moved to...
+	* config/s390/s390-d.cc: ...here.
+	* config/s390/s390.c: Moved to...
+	* config/s390/s390.cc: ...here.
+	* config/sh/divtab-sh4-300.c: Moved to...
+	* config/sh/divtab-sh4-300.cc: ...here.
+	* config/sh/divtab-sh4.c: Moved to...
+	* config/sh/divtab-sh4.cc: ...here.
+	* config/sh/divtab.c: Moved to...
+	* config/sh/divtab.cc: ...here.
+	* config/sh/sh-c.c: Moved to...
+	* config/sh/sh-c.cc: ...here.
+	* config/sh/sh.c: Moved to...
+	* config/sh/sh.cc: ...here.
+	* config/sol2-c.c: Moved to...
+	* config/sol2-c.cc: ...here.
+	* config/sol2-cxx.c: Moved to...
+	* config/sol2-cxx.cc: ...here.
+	* config/sol2-d.c: Moved to...
+	* config/sol2-d.cc: ...here.
+	* config/sol2-stubs.c: Moved to...
+	* config/sol2-stubs.cc: ...here.
+	* config/sol2.c: Moved to...
+	* config/sol2.cc: ...here.
+	* config/sparc/driver-sparc.c: Moved to...
+	* config/sparc/driver-sparc.cc: ...here.
+	* config/sparc/sparc-c.c: Moved to...
+	* config/sparc/sparc-c.cc: ...here.
+	* config/sparc/sparc-d.c: Moved to...
+	* config/sparc/sparc-d.cc: ...here.
+	* config/sparc/sparc.c: Moved to...
+	* config/sparc/sparc.cc: ...here.
+	* config/stormy16/stormy16.c: Moved to...
+	* config/stormy16/stormy16.cc: ...here.
+	* config/tilegx/mul-tables.c: Moved to...
+	* config/tilegx/mul-tables.cc: ...here.
+	* config/tilegx/tilegx-c.c: Moved to...
+	* config/tilegx/tilegx-c.cc: ...here.
+	* config/tilegx/tilegx.c: Moved to...
+	* config/tilegx/tilegx.cc: ...here.
+	* config/tilepro/mul-tables.c: Moved to...
+	* config/tilepro/mul-tables.cc: ...here.
+	* config/tilepro/tilepro-c.c: Moved to...
+	* config/tilepro/tilepro-c.cc: ...here.
+	* config/tilepro/tilepro.c: Moved to...
+	* config/tilepro/tilepro.cc: ...here.
+	* config/v850/v850-c.c: Moved to...
+	* config/v850/v850-c.cc: ...here.
+	* config/v850/v850.c: Moved to...
+	* config/v850/v850.cc: ...here.
+	* config/vax/vax.c: Moved to...
+	* config/vax/vax.cc: ...here.
+	* config/visium/visium.c: Moved to...
+	* config/visium/visium.cc: ...here.
+	* config/vms/vms-c.c: Moved to...
+	* config/vms/vms-c.cc: ...here.
+	* config/vms/vms-f.c: Moved to...
+	* config/vms/vms-f.cc: ...here.
+	* config/vms/vms.c: Moved to...
+	* config/vms/vms.cc: ...here.
+	* config/vxworks-c.c: Moved to...
+	* config/vxworks-c.cc: ...here.
+	* config/vxworks.c: Moved to...
+	* config/vxworks.cc: ...here.
+	* config/winnt-c.c: Moved to...
+	* config/winnt-c.cc: ...here.
+	* config/xtensa/xtensa.c: Moved to...
+	* config/xtensa/xtensa.cc: ...here.
+	* context.c: Moved to...
+	* context.cc: ...here.
+	* convert.c: Moved to...
+	* convert.cc: ...here.
+	* coverage.c: Moved to...
+	* coverage.cc: ...here.
+	* cppbuiltin.c: Moved to...
+	* cppbuiltin.cc: ...here.
+	* cppdefault.c: Moved to...
+	* cppdefault.cc: ...here.
+	* cprop.c: Moved to...
+	* cprop.cc: ...here.
+	* cse.c: Moved to...
+	* cse.cc: ...here.
+	* cselib.c: Moved to...
+	* cselib.cc: ...here.
+	* ctfc.c: Moved to...
+	* ctfc.cc: ...here.
+	* ctfout.c: Moved to...
+	* ctfout.cc: ...here.
+	* data-streamer-in.c: Moved to...
+	* data-streamer-in.cc: ...here.
+	* data-streamer-out.c: Moved to...
+	* data-streamer-out.cc: ...here.
+	* data-streamer.c: Moved to...
+	* data-streamer.cc: ...here.
+	* dbgcnt.c: Moved to...
+	* dbgcnt.cc: ...here.
+	* dbxout.c: Moved to...
+	* dbxout.cc: ...here.
+	* dce.c: Moved to...
+	* dce.cc: ...here.
+	* ddg.c: Moved to...
+	* ddg.cc: ...here.
+	* debug.c: Moved to...
+	* debug.cc: ...here.
+	* df-core.c: Moved to...
+	* df-core.cc: ...here.
+	* df-problems.c: Moved to...
+	* df-problems.cc: ...here.
+	* df-scan.c: Moved to...
+	* df-scan.cc: ...here.
+	* dfp.c: Moved to...
+	* dfp.cc: ...here.
+	* diagnostic-color.c: Moved to...
+	* diagnostic-color.cc: ...here.
+	* diagnostic-show-locus.c: Moved to...
+	* diagnostic-show-locus.cc: ...here.
+	* diagnostic-spec.c: Moved to...
+	* diagnostic-spec.cc: ...here.
+	* diagnostic.c: Moved to...
+	* diagnostic.cc: ...here.
+	* dojump.c: Moved to...
+	* dojump.cc: ...here.
+	* dominance.c: Moved to...
+	* dominance.cc: ...here.
+	* domwalk.c: Moved to...
+	* domwalk.cc: ...here.
+	* double-int.c: Moved to...
+	* double-int.cc: ...here.
+	* dse.c: Moved to...
+	* dse.cc: ...here.
+	* dumpfile.c: Moved to...
+	* dumpfile.cc: ...here.
+	* dwarf2asm.c: Moved to...
+	* dwarf2asm.cc: ...here.
+	* dwarf2cfi.c: Moved to...
+	* dwarf2cfi.cc: ...here.
+	* dwarf2ctf.c: Moved to...
+	* dwarf2ctf.cc: ...here.
+	* dwarf2out.c: Moved to...
+	* dwarf2out.cc: ...here.
+	* early-remat.c: Moved to...
+	* early-remat.cc: ...here.
+	* edit-context.c: Moved to...
+	* edit-context.cc: ...here.
+	* emit-rtl.c: Moved to...
+	* emit-rtl.cc: ...here.
+	* errors.c: Moved to...
+	* errors.cc: ...here.
+	* et-forest.c: Moved to...
+	* et-forest.cc: ...here.
+	* except.c: Moved to...
+	* except.cc: ...here.
+	* explow.c: Moved to...
+	* explow.cc: ...here.
+	* expmed.c: Moved to...
+	* expmed.cc: ...here.
+	* expr.c: Moved to...
+	* expr.cc: ...here.
+	* fibonacci_heap.c: Moved to...
+	* fibonacci_heap.cc: ...here.
+	* file-find.c: Moved to...
+	* file-find.cc: ...here.
+	* file-prefix-map.c: Moved to...
+	* file-prefix-map.cc: ...here.
+	* final.c: Moved to...
+	* final.cc: ...here.
+	* fixed-value.c: Moved to...
+	* fixed-value.cc: ...here.
+	* fold-const-call.c: Moved to...
+	* fold-const-call.cc: ...here.
+	* fold-const.c: Moved to...
+	* fold-const.cc: ...here.
+	* fp-test.c: Moved to...
+	* fp-test.cc: ...here.
+	* function-tests.c: Moved to...
+	* function-tests.cc: ...here.
+	* function.c: Moved to...
+	* function.cc: ...here.
+	* fwprop.c: Moved to...
+	* fwprop.cc: ...here.
+	* gcc-ar.c: Moved to...
+	* gcc-ar.cc: ...here.
+	* gcc-main.c: Moved to...
+	* gcc-main.cc: ...here.
+	* gcc-rich-location.c: Moved to...
+	* gcc-rich-location.cc: ...here.
+	* gcc.c: Moved to...
+	* gcc.cc: ...here.
+	* gcov-dump.c: Moved to...
+	* gcov-dump.cc: ...here.
+	* gcov-io.c: Moved to...
+	* gcov-io.cc: ...here.
+	* gcov-tool.c: Moved to...
+	* gcov-tool.cc: ...here.
+	* gcov.c: Moved to...
+	* gcov.cc: ...here.
+	* gcse-common.c: Moved to...
+	* gcse-common.cc: ...here.
+	* gcse.c: Moved to...
+	* gcse.cc: ...here.
+	* genattr-common.c: Moved to...
+	* genattr-common.cc: ...here.
+	* genattr.c: Moved to...
+	* genattr.cc: ...here.
+	* genattrtab.c: Moved to...
+	* genattrtab.cc: ...here.
+	* genautomata.c: Moved to...
+	* genautomata.cc: ...here.
+	* gencfn-macros.c: Moved to...
+	* gencfn-macros.cc: ...here.
+	* gencheck.c: Moved to...
+	* gencheck.cc: ...here.
+	* genchecksum.c: Moved to...
+	* genchecksum.cc: ...here.
+	* gencodes.c: Moved to...
+	* gencodes.cc: ...here.
+	* genconditions.c: Moved to...
+	* genconditions.cc: ...here.
+	* genconfig.c: Moved to...
+	* genconfig.cc: ...here.
+	* genconstants.c: Moved to...
+	* genconstants.cc: ...here.
+	* genemit.c: Moved to...
+	* genemit.cc: ...here.
+	* genenums.c: Moved to...
+	* genenums.cc: ...here.
+	* generic-match-head.c: Moved to...
+	* generic-match-head.cc: ...here.
+	* genextract.c: Moved to...
+	* genextract.cc: ...here.
+	* genflags.c: Moved to...
+	* genflags.cc: ...here.
+	* gengenrtl.c: Moved to...
+	* gengenrtl.cc: ...here.
+	* gengtype-parse.c: Moved to...
+	* gengtype-parse.cc: ...here.
+	* gengtype-state.c: Moved to...
+	* gengtype-state.cc: ...here.
+	* gengtype.c: Moved to...
+	* gengtype.cc: ...here.
+	* genhooks.c: Moved to...
+	* genhooks.cc: ...here.
+	* genmatch.c: Moved to...
+	* genmatch.cc: ...here.
+	* genmddeps.c: Moved to...
+	* genmddeps.cc: ...here.
+	* genmddump.c: Moved to...
+	* genmddump.cc: ...here.
+	* genmodes.c: Moved to...
+	* genmodes.cc: ...here.
+	* genopinit.c: Moved to...
+	* genopinit.cc: ...here.
+	* genoutput.c: Moved to...
+	* genoutput.cc: ...here.
+	* genpeep.c: Moved to...
+	* genpeep.cc: ...here.
+	* genpreds.c: Moved to...
+	* genpreds.cc: ...here.
+	* genrecog.c: Moved to...
+	* genrecog.cc: ...here.
+	* gensupport.c: Moved to...
+	* gensupport.cc: ...here.
+	* gentarget-def.c: Moved to...
+	* gentarget-def.cc: ...here.
+	* genversion.c: Moved to...
+	* genversion.cc: ...here.
+	* ggc-common.c: Moved to...
+	* ggc-common.cc: ...here.
+	* ggc-none.c: Moved to...
+	* ggc-none.cc: ...here.
+	* ggc-page.c: Moved to...
+	* ggc-page.cc: ...here.
+	* ggc-tests.c: Moved to...
+	* ggc-tests.cc: ...here.
+	* gimple-builder.c: Moved to...
+	* gimple-builder.cc: ...here.
+	* gimple-expr.c: Moved to...
+	* gimple-expr.cc: ...here.
+	* gimple-fold.c: Moved to...
+	* gimple-fold.cc: ...here.
+	* gimple-iterator.c: Moved to...
+	* gimple-iterator.cc: ...here.
+	* gimple-laddress.c: Moved to...
+	* gimple-laddress.cc: ...here.
+	* gimple-loop-jam.c: Moved to...
+	* gimple-loop-jam.cc: ...here.
+	* gimple-low.c: Moved to...
+	* gimple-low.cc: ...here.
+	* gimple-match-head.c: Moved to...
+	* gimple-match-head.cc: ...here.
+	* gimple-pretty-print.c: Moved to...
+	* gimple-pretty-print.cc: ...here.
+	* gimple-ssa-backprop.c: Moved to...
+	* gimple-ssa-backprop.cc: ...here.
+	* gimple-ssa-evrp-analyze.c: Moved to...
+	* gimple-ssa-evrp-analyze.cc: ...here.
+	* gimple-ssa-evrp.c: Moved to...
+	* gimple-ssa-evrp.cc: ...here.
+	* gimple-ssa-isolate-paths.c: Moved to...
+	* gimple-ssa-isolate-paths.cc: ...here.
+	* gimple-ssa-nonnull-compare.c: Moved to...
+	* gimple-ssa-nonnull-compare.cc: ...here.
+	* gimple-ssa-split-paths.c: Moved to...
+	* gimple-ssa-split-paths.cc: ...here.
+	* gimple-ssa-sprintf.c: Moved to...
+	* gimple-ssa-sprintf.cc: ...here.
+	* gimple-ssa-store-merging.c: Moved to...
+	* gimple-ssa-store-merging.cc: ...here.
+	* gimple-ssa-strength-reduction.c: Moved to...
+	* gimple-ssa-strength-reduction.cc: ...here.
+	* gimple-ssa-warn-alloca.c: Moved to...
+	* gimple-ssa-warn-alloca.cc: ...here.
+	* gimple-ssa-warn-restrict.c: Moved to...
+	* gimple-ssa-warn-restrict.cc: ...here.
+	* gimple-streamer-in.c: Moved to...
+	* gimple-streamer-in.cc: ...here.
+	* gimple-streamer-out.c: Moved to...
+	* gimple-streamer-out.cc: ...here.
+	* gimple-walk.c: Moved to...
+	* gimple-walk.cc: ...here.
+	* gimple-warn-recursion.c: Moved to...
+	* gimple-warn-recursion.cc: ...here.
+	* gimple.c: Moved to...
+	* gimple.cc: ...here.
+	* gimplify-me.c: Moved to...
+	* gimplify-me.cc: ...here.
+	* gimplify.c: Moved to...
+	* gimplify.cc: ...here.
+	* godump.c: Moved to...
+	* godump.cc: ...here.
+	* graph.c: Moved to...
+	* graph.cc: ...here.
+	* graphds.c: Moved to...
+	* graphds.cc: ...here.
+	* graphite-dependences.c: Moved to...
+	* graphite-dependences.cc: ...here.
+	* graphite-isl-ast-to-gimple.c: Moved to...
+	* graphite-isl-ast-to-gimple.cc: ...here.
+	* graphite-optimize-isl.c: Moved to...
+	* graphite-optimize-isl.cc: ...here.
+	* graphite-poly.c: Moved to...
+	* graphite-poly.cc: ...here.
+	* graphite-scop-detection.c: Moved to...
+	* graphite-scop-detection.cc: ...here.
+	* graphite-sese-to-poly.c: Moved to...
+	* graphite-sese-to-poly.cc: ...here.
+	* graphite.c: Moved to...
+	* graphite.cc: ...here.
+	* haifa-sched.c: Moved to...
+	* haifa-sched.cc: ...here.
+	* hash-map-tests.c: Moved to...
+	* hash-map-tests.cc: ...here.
+	* hash-set-tests.c: Moved to...
+	* hash-set-tests.cc: ...here.
+	* hash-table.c: Moved to...
+	* hash-table.cc: ...here.
+	* hooks.c: Moved to...
+	* hooks.cc: ...here.
+	* host-default.c: Moved to...
+	* host-default.cc: ...here.
+	* hw-doloop.c: Moved to...
+	* hw-doloop.cc: ...here.
+	* hwint.c: Moved to...
+	* hwint.cc: ...here.
+	* ifcvt.c: Moved to...
+	* ifcvt.cc: ...here.
+	* inchash.c: Moved to...
+	* inchash.cc: ...here.
+	* incpath.c: Moved to...
+	* incpath.cc: ...here.
+	* init-regs.c: Moved to...
+	* init-regs.cc: ...here.
+	* input.c: Moved to...
+	* input.cc: ...here.
+	* internal-fn.c: Moved to...
+	* internal-fn.cc: ...here.
+	* intl.c: Moved to...
+	* intl.cc: ...here.
+	* ipa-comdats.c: Moved to...
+	* ipa-comdats.cc: ...here.
+	* ipa-cp.c: Moved to...
+	* ipa-cp.cc: ...here.
+	* ipa-devirt.c: Moved to...
+	* ipa-devirt.cc: ...here.
+	* ipa-fnsummary.c: Moved to...
+	* ipa-fnsummary.cc: ...here.
+	* ipa-icf-gimple.c: Moved to...
+	* ipa-icf-gimple.cc: ...here.
+	* ipa-icf.c: Moved to...
+	* ipa-icf.cc: ...here.
+	* ipa-inline-analysis.c: Moved to...
+	* ipa-inline-analysis.cc: ...here.
+	* ipa-inline-transform.c: Moved to...
+	* ipa-inline-transform.cc: ...here.
+	* ipa-inline.c: Moved to...
+	* ipa-inline.cc: ...here.
+	* ipa-modref-tree.c: Moved to...
+	* ipa-modref-tree.cc: ...here.
+	* ipa-modref.c: Moved to...
+	* ipa-modref.cc: ...here.
+	* ipa-param-manipulation.c: Moved to...
+	* ipa-param-manipulation.cc: ...here.
+	* ipa-polymorphic-call.c: Moved to...
+	* ipa-polymorphic-call.cc: ...here.
+	* ipa-predicate.c: Moved to...
+	* ipa-predicate.cc: ...here.
+	* ipa-profile.c: Moved to...
+	* ipa-profile.cc: ...here.
+	* ipa-prop.c: Moved to...
+	* ipa-prop.cc: ...here.
+	* ipa-pure-const.c: Moved to...
+	* ipa-pure-const.cc: ...here.
+	* ipa-ref.c: Moved to...
+	* ipa-ref.cc: ...here.
+	* ipa-reference.c: Moved to...
+	* ipa-reference.cc: ...here.
+	* ipa-split.c: Moved to...
+	* ipa-split.cc: ...here.
+	* ipa-sra.c: Moved to...
+	* ipa-sra.cc: ...here.
+	* ipa-utils.c: Moved to...
+	* ipa-utils.cc: ...here.
+	* ipa-visibility.c: Moved to...
+	* ipa-visibility.cc: ...here.
+	* ipa.c: Moved to...
+	* ipa.cc: ...here.
+	* ira-build.c: Moved to...
+	* ira-build.cc: ...here.
+	* ira-color.c: Moved to...
+	* ira-color.cc: ...here.
+	* ira-conflicts.c: Moved to...
+	* ira-conflicts.cc: ...here.
+	* ira-costs.c: Moved to...
+	* ira-costs.cc: ...here.
+	* ira-emit.c: Moved to...
+	* ira-emit.cc: ...here.
+	* ira-lives.c: Moved to...
+	* ira-lives.cc: ...here.
+	* ira.c: Moved to...
+	* ira.cc: ...here.
+	* jump.c: Moved to...
+	* jump.cc: ...here.
+	* langhooks.c: Moved to...
+	* langhooks.cc: ...here.
+	* lcm.c: Moved to...
+	* lcm.cc: ...here.
+	* lists.c: Moved to...
+	* lists.cc: ...here.
+	* loop-doloop.c: Moved to...
+	* loop-doloop.cc: ...here.
+	* loop-init.c: Moved to...
+	* loop-init.cc: ...here.
+	* loop-invariant.c: Moved to...
+	* loop-invariant.cc: ...here.
+	* loop-iv.c: Moved to...
+	* loop-iv.cc: ...here.
+	* loop-unroll.c: Moved to...
+	* loop-unroll.cc: ...here.
+	* lower-subreg.c: Moved to...
+	* lower-subreg.cc: ...here.
+	* lra-assigns.c: Moved to...
+	* lra-assigns.cc: ...here.
+	* lra-coalesce.c: Moved to...
+	* lra-coalesce.cc: ...here.
+	* lra-constraints.c: Moved to...
+	* lra-constraints.cc: ...here.
+	* lra-eliminations.c: Moved to...
+	* lra-eliminations.cc: ...here.
+	* lra-lives.c: Moved to...
+	* lra-lives.cc: ...here.
+	* lra-remat.c: Moved to...
+	* lra-remat.cc: ...here.
+	* lra-spills.c: Moved to...
+	* lra-spills.cc: ...here.
+	* lra.c: Moved to...
+	* lra.cc: ...here.
+	* lto-cgraph.c: Moved to...
+	* lto-cgraph.cc: ...here.
+	* lto-compress.c: Moved to...
+	* lto-compress.cc: ...here.
+	* lto-opts.c: Moved to...
+	* lto-opts.cc: ...here.
+	* lto-section-in.c: Moved to...
+	* lto-section-in.cc: ...here.
+	* lto-section-out.c: Moved to...
+	* lto-section-out.cc: ...here.
+	* lto-streamer-in.c: Moved to...
+	* lto-streamer-in.cc: ...here.
+	* lto-streamer-out.c: Moved to...
+	* lto-streamer-out.cc: ...here.
+	* lto-streamer.c: Moved to...
+	* lto-streamer.cc: ...here.
+	* lto-wrapper.c: Moved to...
+	* lto-wrapper.cc: ...here.
+	* main.c: Moved to...
+	* main.cc: ...here.
+	* mcf.c: Moved to...
+	* mcf.cc: ...here.
+	* mode-switching.c: Moved to...
+	* mode-switching.cc: ...here.
+	* modulo-sched.c: Moved to...
+	* modulo-sched.cc: ...here.
+	* multiple_target.c: Moved to...
+	* multiple_target.cc: ...here.
+	* omp-expand.c: Moved to...
+	* omp-expand.cc: ...here.
+	* omp-general.c: Moved to...
+	* omp-general.cc: ...here.
+	* omp-low.c: Moved to...
+	* omp-low.cc: ...here.
+	* omp-offload.c: Moved to...
+	* omp-offload.cc: ...here.
+	* omp-simd-clone.c: Moved to...
+	* omp-simd-clone.cc: ...here.
+	* opt-suggestions.c: Moved to...
+	* opt-suggestions.cc: ...here.
+	* optabs-libfuncs.c: Moved to...
+	* optabs-libfuncs.cc: ...here.
+	* optabs-query.c: Moved to...
+	* optabs-query.cc: ...here.
+	* optabs-tree.c: Moved to...
+	* optabs-tree.cc: ...here.
+	* optabs.c: Moved to...
+	* optabs.cc: ...here.
+	* opts-common.c: Moved to...
+	* opts-common.cc: ...here.
+	* opts-global.c: Moved to...
+	* opts-global.cc: ...here.
+	* opts.c: Moved to...
+	* opts.cc: ...here.
+	* passes.c: Moved to...
+	* passes.cc: ...here.
+	* plugin.c: Moved to...
+	* plugin.cc: ...here.
+	* postreload-gcse.c: Moved to...
+	* postreload-gcse.cc: ...here.
+	* postreload.c: Moved to...
+	* postreload.cc: ...here.
+	* predict.c: Moved to...
+	* predict.cc: ...here.
+	* prefix.c: Moved to...
+	* prefix.cc: ...here.
+	* pretty-print.c: Moved to...
+	* pretty-print.cc: ...here.
+	* print-rtl-function.c: Moved to...
+	* print-rtl-function.cc: ...here.
+	* print-rtl.c: Moved to...
+	* print-rtl.cc: ...here.
+	* print-tree.c: Moved to...
+	* print-tree.cc: ...here.
+	* profile-count.c: Moved to...
+	* profile-count.cc: ...here.
+	* profile.c: Moved to...
+	* profile.cc: ...here.
+	* read-md.c: Moved to...
+	* read-md.cc: ...here.
+	* read-rtl-function.c: Moved to...
+	* read-rtl-function.cc: ...here.
+	* read-rtl.c: Moved to...
+	* read-rtl.cc: ...here.
+	* real.c: Moved to...
+	* real.cc: ...here.
+	* realmpfr.c: Moved to...
+	* realmpfr.cc: ...here.
+	* recog.c: Moved to...
+	* recog.cc: ...here.
+	* ree.c: Moved to...
+	* ree.cc: ...here.
+	* reg-stack.c: Moved to...
+	* reg-stack.cc: ...here.
+	* regcprop.c: Moved to...
+	* regcprop.cc: ...here.
+	* reginfo.c: Moved to...
+	* reginfo.cc: ...here.
+	* regrename.c: Moved to...
+	* regrename.cc: ...here.
+	* regstat.c: Moved to...
+	* regstat.cc: ...here.
+	* reload.c: Moved to...
+	* reload.cc: ...here.
+	* reload1.c: Moved to...
+	* reload1.cc: ...here.
+	* reorg.c: Moved to...
+	* reorg.cc: ...here.
+	* resource.c: Moved to...
+	* resource.cc: ...here.
+	* rtl-error.c: Moved to...
+	* rtl-error.cc: ...here.
+	* rtl-tests.c: Moved to...
+	* rtl-tests.cc: ...here.
+	* rtl.c: Moved to...
+	* rtl.cc: ...here.
+	* rtlanal.c: Moved to...
+	* rtlanal.cc: ...here.
+	* rtlhash.c: Moved to...
+	* rtlhash.cc: ...here.
+	* rtlhooks.c: Moved to...
+	* rtlhooks.cc: ...here.
+	* rtx-vector-builder.c: Moved to...
+	* rtx-vector-builder.cc: ...here.
+	* run-rtl-passes.c: Moved to...
+	* run-rtl-passes.cc: ...here.
+	* sancov.c: Moved to...
+	* sancov.cc: ...here.
+	* sanopt.c: Moved to...
+	* sanopt.cc: ...here.
+	* sbitmap.c: Moved to...
+	* sbitmap.cc: ...here.
+	* sched-deps.c: Moved to...
+	* sched-deps.cc: ...here.
+	* sched-ebb.c: Moved to...
+	* sched-ebb.cc: ...here.
+	* sched-rgn.c: Moved to...
+	* sched-rgn.cc: ...here.
+	* sel-sched-dump.c: Moved to...
+	* sel-sched-dump.cc: ...here.
+	* sel-sched-ir.c: Moved to...
+	* sel-sched-ir.cc: ...here.
+	* sel-sched.c: Moved to...
+	* sel-sched.cc: ...here.
+	* selftest-diagnostic.c: Moved to...
+	* selftest-diagnostic.cc: ...here.
+	* selftest-rtl.c: Moved to...
+	* selftest-rtl.cc: ...here.
+	* selftest-run-tests.c: Moved to...
+	* selftest-run-tests.cc: ...here.
+	* selftest.c: Moved to...
+	* selftest.cc: ...here.
+	* sese.c: Moved to...
+	* sese.cc: ...here.
+	* shrink-wrap.c: Moved to...
+	* shrink-wrap.cc: ...here.
+	* simplify-rtx.c: Moved to...
+	* simplify-rtx.cc: ...here.
+	* sparseset.c: Moved to...
+	* sparseset.cc: ...here.
+	* spellcheck-tree.c: Moved to...
+	* spellcheck-tree.cc: ...here.
+	* spellcheck.c: Moved to...
+	* spellcheck.cc: ...here.
+	* sreal.c: Moved to...
+	* sreal.cc: ...here.
+	* stack-ptr-mod.c: Moved to...
+	* stack-ptr-mod.cc: ...here.
+	* statistics.c: Moved to...
+	* statistics.cc: ...here.
+	* stmt.c: Moved to...
+	* stmt.cc: ...here.
+	* stor-layout.c: Moved to...
+	* stor-layout.cc: ...here.
+	* store-motion.c: Moved to...
+	* store-motion.cc: ...here.
+	* streamer-hooks.c: Moved to...
+	* streamer-hooks.cc: ...here.
+	* stringpool.c: Moved to...
+	* stringpool.cc: ...here.
+	* substring-locations.c: Moved to...
+	* substring-locations.cc: ...here.
+	* symtab.c: Moved to...
+	* symtab.cc: ...here.
+	* target-globals.c: Moved to...
+	* target-globals.cc: ...here.
+	* targhooks.c: Moved to...
+	* targhooks.cc: ...here.
+	* timevar.c: Moved to...
+	* timevar.cc: ...here.
+	* toplev.c: Moved to...
+	* toplev.cc: ...here.
+	* tracer.c: Moved to...
+	* tracer.cc: ...here.
+	* trans-mem.c: Moved to...
+	* trans-mem.cc: ...here.
+	* tree-affine.c: Moved to...
+	* tree-affine.cc: ...here.
+	* tree-call-cdce.c: Moved to...
+	* tree-call-cdce.cc: ...here.
+	* tree-cfg.c: Moved to...
+	* tree-cfg.cc: ...here.
+	* tree-cfgcleanup.c: Moved to...
+	* tree-cfgcleanup.cc: ...here.
+	* tree-chrec.c: Moved to...
+	* tree-chrec.cc: ...here.
+	* tree-complex.c: Moved to...
+	* tree-complex.cc: ...here.
+	* tree-data-ref.c: Moved to...
+	* tree-data-ref.cc: ...here.
+	* tree-dfa.c: Moved to...
+	* tree-dfa.cc: ...here.
+	* tree-diagnostic.c: Moved to...
+	* tree-diagnostic.cc: ...here.
+	* tree-dump.c: Moved to...
+	* tree-dump.cc: ...here.
+	* tree-eh.c: Moved to...
+	* tree-eh.cc: ...here.
+	* tree-emutls.c: Moved to...
+	* tree-emutls.cc: ...here.
+	* tree-if-conv.c: Moved to...
+	* tree-if-conv.cc: ...here.
+	* tree-inline.c: Moved to...
+	* tree-inline.cc: ...here.
+	* tree-into-ssa.c: Moved to...
+	* tree-into-ssa.cc: ...here.
+	* tree-iterator.c: Moved to...
+	* tree-iterator.cc: ...here.
+	* tree-loop-distribution.c: Moved to...
+	* tree-loop-distribution.cc: ...here.
+	* tree-nested.c: Moved to...
+	* tree-nested.cc: ...here.
+	* tree-nrv.c: Moved to...
+	* tree-nrv.cc: ...here.
+	* tree-object-size.c: Moved to...
+	* tree-object-size.cc: ...here.
+	* tree-outof-ssa.c: Moved to...
+	* tree-outof-ssa.cc: ...here.
+	* tree-parloops.c: Moved to...
+	* tree-parloops.cc: ...here.
+	* tree-phinodes.c: Moved to...
+	* tree-phinodes.cc: ...here.
+	* tree-predcom.c: Moved to...
+	* tree-predcom.cc: ...here.
+	* tree-pretty-print.c: Moved to...
+	* tree-pretty-print.cc: ...here.
+	* tree-profile.c: Moved to...
+	* tree-profile.cc: ...here.
+	* tree-scalar-evolution.c: Moved to...
+	* tree-scalar-evolution.cc: ...here.
+	* tree-sra.c: Moved to...
+	* tree-sra.cc: ...here.
+	* tree-ssa-address.c: Moved to...
+	* tree-ssa-address.cc: ...here.
+	* tree-ssa-alias.c: Moved to...
+	* tree-ssa-alias.cc: ...here.
+	* tree-ssa-ccp.c: Moved to...
+	* tree-ssa-ccp.cc: ...here.
+	* tree-ssa-coalesce.c: Moved to...
+	* tree-ssa-coalesce.cc: ...here.
+	* tree-ssa-copy.c: Moved to...
+	* tree-ssa-copy.cc: ...here.
+	* tree-ssa-dce.c: Moved to...
+	* tree-ssa-dce.cc: ...here.
+	* tree-ssa-dom.c: Moved to...
+	* tree-ssa-dom.cc: ...here.
+	* tree-ssa-dse.c: Moved to...
+	* tree-ssa-dse.cc: ...here.
+	* tree-ssa-forwprop.c: Moved to...
+	* tree-ssa-forwprop.cc: ...here.
+	* tree-ssa-ifcombine.c: Moved to...
+	* tree-ssa-ifcombine.cc: ...here.
+	* tree-ssa-live.c: Moved to...
+	* tree-ssa-live.cc: ...here.
+	* tree-ssa-loop-ch.c: Moved to...
+	* tree-ssa-loop-ch.cc: ...here.
+	* tree-ssa-loop-im.c: Moved to...
+	* tree-ssa-loop-im.cc: ...here.
+	* tree-ssa-loop-ivcanon.c: Moved to...
+	* tree-ssa-loop-ivcanon.cc: ...here.
+	* tree-ssa-loop-ivopts.c: Moved to...
+	* tree-ssa-loop-ivopts.cc: ...here.
+	* tree-ssa-loop-manip.c: Moved to...
+	* tree-ssa-loop-manip.cc: ...here.
+	* tree-ssa-loop-niter.c: Moved to...
+	* tree-ssa-loop-niter.cc: ...here.
+	* tree-ssa-loop-prefetch.c: Moved to...
+	* tree-ssa-loop-prefetch.cc: ...here.
+	* tree-ssa-loop-split.c: Moved to...
+	* tree-ssa-loop-split.cc: ...here.
+	* tree-ssa-loop-unswitch.c: Moved to...
+	* tree-ssa-loop-unswitch.cc: ...here.
+	* tree-ssa-loop.c: Moved to...
+	* tree-ssa-loop.cc: ...here.
+	* tree-ssa-math-opts.c: Moved to...
+	* tree-ssa-math-opts.cc: ...here.
+	* tree-ssa-operands.c: Moved to...
+	* tree-ssa-operands.cc: ...here.
+	* tree-ssa-phiopt.c: Moved to...
+	* tree-ssa-phiopt.cc: ...here.
+	* tree-ssa-phiprop.c: Moved to...
+	* tree-ssa-phiprop.cc: ...here.
+	* tree-ssa-pre.c: Moved to...
+	* tree-ssa-pre.cc: ...here.
+	* tree-ssa-propagate.c: Moved to...
+	* tree-ssa-propagate.cc: ...here.
+	* tree-ssa-reassoc.c: Moved to...
+	* tree-ssa-reassoc.cc: ...here.
+	* tree-ssa-sccvn.c: Moved to...
+	* tree-ssa-sccvn.cc: ...here.
+	* tree-ssa-scopedtables.c: Moved to...
+	* tree-ssa-scopedtables.cc: ...here.
+	* tree-ssa-sink.c: Moved to...
+	* tree-ssa-sink.cc: ...here.
+	* tree-ssa-strlen.c: Moved to...
+	* tree-ssa-strlen.cc: ...here.
+	* tree-ssa-structalias.c: Moved to...
+	* tree-ssa-structalias.cc: ...here.
+	* tree-ssa-tail-merge.c: Moved to...
+	* tree-ssa-tail-merge.cc: ...here.
+	* tree-ssa-ter.c: Moved to...
+	* tree-ssa-ter.cc: ...here.
+	* tree-ssa-threadbackward.c: Moved to...
+	* tree-ssa-threadbackward.cc: ...here.
+	* tree-ssa-threadedge.c: Moved to...
+	* tree-ssa-threadedge.cc: ...here.
+	* tree-ssa-threadupdate.c: Moved to...
+	* tree-ssa-threadupdate.cc: ...here.
+	* tree-ssa-uncprop.c: Moved to...
+	* tree-ssa-uncprop.cc: ...here.
+	* tree-ssa-uninit.c: Moved to...
+	* tree-ssa-uninit.cc: ...here.
+	* tree-ssa.c: Moved to...
+	* tree-ssa.cc: ...here.
+	* tree-ssanames.c: Moved to...
+	* tree-ssanames.cc: ...here.
+	* tree-stdarg.c: Moved to...
+	* tree-stdarg.cc: ...here.
+	* tree-streamer-in.c: Moved to...
+	* tree-streamer-in.cc: ...here.
+	* tree-streamer-out.c: Moved to...
+	* tree-streamer-out.cc: ...here.
+	* tree-streamer.c: Moved to...
+	* tree-streamer.cc: ...here.
+	* tree-switch-conversion.c: Moved to...
+	* tree-switch-conversion.cc: ...here.
+	* tree-tailcall.c: Moved to...
+	* tree-tailcall.cc: ...here.
+	* tree-vect-data-refs.c: Moved to...
+	* tree-vect-data-refs.cc: ...here.
+	* tree-vect-generic.c: Moved to...
+	* tree-vect-generic.cc: ...here.
+	* tree-vect-loop-manip.c: Moved to...
+	* tree-vect-loop-manip.cc: ...here.
+	* tree-vect-loop.c: Moved to...
+	* tree-vect-loop.cc: ...here.
+	* tree-vect-patterns.c: Moved to...
+	* tree-vect-patterns.cc: ...here.
+	* tree-vect-slp-patterns.c: Moved to...
+	* tree-vect-slp-patterns.cc: ...here.
+	* tree-vect-slp.c: Moved to...
+	* tree-vect-slp.cc: ...here.
+	* tree-vect-stmts.c: Moved to...
+	* tree-vect-stmts.cc: ...here.
+	* tree-vector-builder.c: Moved to...
+	* tree-vector-builder.cc: ...here.
+	* tree-vectorizer.c: Moved to...
+	* tree-vectorizer.cc: ...here.
+	* tree-vrp.c: Moved to...
+	* tree-vrp.cc: ...here.
+	* tree.c: Moved to...
+	* tree.cc: ...here.
+	* tsan.c: Moved to...
+	* tsan.cc: ...here.
+	* typed-splay-tree.c: Moved to...
+	* typed-splay-tree.cc: ...here.
+	* ubsan.c: Moved to...
+	* ubsan.cc: ...here.
+	* valtrack.c: Moved to...
+	* valtrack.cc: ...here.
+	* value-prof.c: Moved to...
+	* value-prof.cc: ...here.
+	* var-tracking.c: Moved to...
+	* var-tracking.cc: ...here.
+	* varasm.c: Moved to...
+	* varasm.cc: ...here.
+	* varpool.c: Moved to...
+	* varpool.cc: ...here.
+	* vec-perm-indices.c: Moved to...
+	* vec-perm-indices.cc: ...here.
+	* vec.c: Moved to...
+	* vec.cc: ...here.
+	* vmsdbgout.c: Moved to...
+	* vmsdbgout.cc: ...here.
+	* vr-values.c: Moved to...
+	* vr-values.cc: ...here.
+	* vtable-verify.c: Moved to...
+	* vtable-verify.cc: ...here.
+	* web.c: Moved to...
+	* web.cc: ...here.
+	* xcoffout.c: Moved to...
+	* xcoffout.cc: ...here.
+
+2022-01-17  qing zhao  <qing.zhao@oracle.com>
+
+	* tree-ssa-uninit.c (warn_uninit): Delete the 4th parameter. Handle
+	.DEFERRED_INIT call with an anonymous SSA_NAME specially.
+	(check_defs): Handle .DEFERRED_INIT call with an anonymous SSA_NAME
+	specially.
+	(warn_uninit_phi_uses): Delete the 4th actual when call warn_uninit.
+	(warn_uninitialized_vars): Likewise.
+	(warn_uninitialized_phi): Likewise.
+
+2022-01-17  Jason Merrill  <jason@redhat.com>
+
+	* diagnostic.h (struct diagnostic_context): Add includes_seen.
+	* diagnostic.c (diagnostic_initialize): Initialize it.
+	(diagnostic_finish): Clean it up.
+	(includes_seen): New function.
+	(diagnostic_report_current_module): Use it.
+
+2022-01-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101292
+	* diagnostic-spec.c (copy_warning): Make sure to not
+	reference old hashtable content on possible resize.
+	* warning-control.cc (copy_warning): Likewise.
+
+2022-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103973
+	* tree-cfg.h (cond_only_block_p): Declare.
+	* tree-ssa-phiopt.c (cond_only_block_p): Move function to ...
+	* tree-cfg.c (cond_only_block_p): ... here.  No longer static.
+	* optabs.def (spaceship_optab): New optab.
+	* internal-fn.def (SPACESHIP): New internal function.
+	* internal-fn.h (expand_SPACESHIP): Declare.
+	* internal-fn.c (expand_PHI): Formatting fix.
+	(expand_SPACESHIP): New function.
+	* tree-ssa-math-opts.c (optimize_spaceship): New function.
+	(math_opts_dom_walker::after_dom_children): Use it.
+	* config/i386/i386.md (spaceship<mode>3): New define_expand.
+	* config/i386/i386-protos.h (ix86_expand_fp_spaceship): Declare.
+	* config/i386/i386-expand.c (ix86_expand_fp_spaceship): New function.
+	* doc/md.texi (spaceship@var{m}3): Document.
+
+2022-01-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vreveti2): Remove.
+	* config/rs6000/vsx.md (*vsx_extract_si, *vsx_extract_si_<uns>float_df,
+	*vsx_extract_si_<uns>float_<mode>, *vsx_insert_extract_v4sf_p9): Use
+	known constant values to simplify code.
+
+2022-01-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103124
+	* config/rs6000/vsx.md (split pattern for TI to V1TI move): Defined.
+
 2022-01-16  wwwhhhyyy  <hongyu.wang@intel.com>
 
 	* config/i386/i386.h (TARGET_DEST_FALSE_DEP_FOR_GLC): New macro.

@@ -1,3 +1,17 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Support renaming of .cc files.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Rename .c names to .cc.
+	* gcc_update: Likewise.
+	* paranoia.cc: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* maintainers-verify.sh: Removed.
+
 2022-01-13  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: Simplify the script as pre-auto-ChangeLog era

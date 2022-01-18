@@ -1,3 +1,236 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* check.cc (gfc_check_all_any): Rename .c names to .cc.
+	* class.cc (find_intrinsic_vtab): Likewise.
+	* config-lang.in: Likewise.
+	* cpp.cc (cpp_define_builtins): Likewise.
+	* data.cc (get_array_index): Likewise.
+	* decl.cc (match_clist_expr): Likewise.
+	(get_proc_name): Likewise.
+	(gfc_verify_c_interop_param): Likewise.
+	(gfc_get_pdt_instance): Likewise.
+	(gfc_match_formal_arglist): Likewise.
+	(gfc_get_type_attr_spec): Likewise.
+	* dependency.cc: Likewise.
+	* error.cc (gfc_format_decoder): Likewise.
+	* expr.cc (check_restricted): Likewise.
+	(gfc_build_default_init_expr): Likewise.
+	* f95-lang.cc: Likewise.
+	* gfc-internals.texi: Likewise.
+	* gfortran.h (enum match): Likewise.
+	(enum procedure_type): Likewise.
+	(enum oacc_routine_lop): Likewise.
+	(gfc_get_pdt_instance): Likewise.
+	(gfc_end_source_files): Likewise.
+	(gfc_mpz_set_hwi): Likewise.
+	(gfc_get_option_string): Likewise.
+	(gfc_find_sym_in_expr): Likewise.
+	(gfc_errors_to_warnings): Likewise.
+	(gfc_real_4_kind): Likewise.
+	(gfc_free_finalizer): Likewise.
+	(gfc_sym_get_dummy_args): Likewise.
+	(gfc_check_intrinsic_standard): Likewise.
+	(gfc_free_case_list): Likewise.
+	(gfc_resolve_oacc_routines): Likewise.
+	(gfc_check_vardef_context): Likewise.
+	(gfc_free_association_list): Likewise.
+	(gfc_implicit_pure_function): Likewise.
+	(gfc_ref_dimen_size): Likewise.
+	(gfc_compare_actual_formal): Likewise.
+	(gfc_resolve_wait): Likewise.
+	(gfc_dt_upper_string): Likewise.
+	(gfc_generate_module_code): Likewise.
+	(gfc_delete_bbt): Likewise.
+	(debug): Likewise.
+	(gfc_build_block_ns): Likewise.
+	(gfc_dep_difference): Likewise.
+	(gfc_invalid_null_arg): Likewise.
+	(gfc_is_finalizable): Likewise.
+	(gfc_fix_implicit_pure): Likewise.
+	(gfc_is_size_zero_array): Likewise.
+	(gfc_is_reallocatable_lhs): Likewise.
+	* gfortranspec.cc: Likewise.
+	* interface.cc (compare_actual_expr): Likewise.
+	* intrinsic.cc (add_functions): Likewise.
+	* iresolve.cc (gfc_resolve_matmul): Likewise.
+	(gfc_resolve_alarm_sub): Likewise.
+	* iso-c-binding.def: Likewise.
+	* lang-specs.h: Likewise.
+	* libgfortran.h (GFC_STDERR_UNIT_NUMBER): Likewise.
+	* match.cc (gfc_match_label): Likewise.
+	(gfc_match_symbol): Likewise.
+	(match_derived_type_spec): Likewise.
+	(copy_ts_from_selector_to_associate): Likewise.
+	* match.h (gfc_match_call): Likewise.
+	(gfc_get_common): Likewise.
+	(gfc_match_omp_end_single): Likewise.
+	(gfc_match_volatile): Likewise.
+	(gfc_match_bind_c): Likewise.
+	(gfc_match_literal_constant): Likewise.
+	(gfc_match_init_expr): Likewise.
+	(gfc_match_array_constructor): Likewise.
+	(gfc_match_end_interface): Likewise.
+	(gfc_match_print): Likewise.
+	(gfc_match_expr): Likewise.
+	* matchexp.cc (next_operator): Likewise.
+	* mathbuiltins.def: Likewise.
+	* module.cc (free_true_name): Likewise.
+	* openmp.cc (gfc_resolve_omp_parallel_blocks): Likewise.
+	(gfc_omp_save_and_clear_state): Likewise.
+	* parse.cc (parse_union): Likewise.
+	(set_syms_host_assoc): Likewise.
+	* resolve.cc (resolve_actual_arglist): Likewise.
+	(resolve_elemental_actual): Likewise.
+	(check_host_association): Likewise.
+	(resolve_typebound_function): Likewise.
+	(resolve_typebound_subroutine): Likewise.
+	(gfc_resolve_expr): Likewise.
+	(resolve_assoc_var): Likewise.
+	(resolve_typebound_procedures): Likewise.
+	(resolve_equivalence_derived): Likewise.
+	* simplify.cc (simplify_bound): Likewise.
+	* symbol.cc (gfc_set_default_type): Likewise.
+	(gfc_add_ext_attribute): Likewise.
+	* target-memory.cc (gfc_target_interpret_expr): Likewise.
+	* target-memory.h (gfc_target_interpret_expr): Likewise.
+	* trans-array.cc (gfc_get_cfi_dim_sm): Likewise.
+	(gfc_conv_shift_descriptor_lbound): Likewise.
+	(gfc_could_be_alias): Likewise.
+	(gfc_get_dataptr_offset): Likewise.
+	* trans-const.cc: Likewise.
+	* trans-decl.cc (trans_function_start): Likewise.
+	(gfc_trans_deferred_vars): Likewise.
+	(generate_local_decl): Likewise.
+	(gfc_generate_function_code): Likewise.
+	* trans-expr.cc (gfc_vptr_size_get): Likewise.
+	(gfc_trans_class_array_init_assign): Likewise.
+	(POWI_TABLE_SIZE): Likewise.
+	(gfc_conv_procedure_call): Likewise.
+	(gfc_trans_arrayfunc_assign): Likewise.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_len): Likewise.
+	(gfc_conv_intrinsic_loc): Likewise.
+	(conv_intrinsic_event_query): Likewise.
+	* trans-io.cc (gfc_build_st_parameter): Likewise.
+	* trans-openmp.cc (gfc_omp_check_optional_argument): Likewise.
+	(gfc_omp_unshare_expr_r): Likewise.
+	(gfc_trans_omp_array_section): Likewise.
+	(gfc_trans_omp_clauses): Likewise.
+	* trans-stmt.cc (trans_associate_var): Likewise.
+	(gfc_trans_deallocate): Likewise.
+	* trans-stmt.h (gfc_trans_class_init_assign): Likewise.
+	(gfc_trans_deallocate): Likewise.
+	(gfc_trans_oacc_declare): Likewise.
+	* trans-types.cc: Likewise.
+	* trans-types.h (enum gfc_packed): Likewise.
+	* trans.cc (N_): Likewise.
+	(trans_code): Likewise.
+	* trans.h (gfc_build_compare_string): Likewise.
+	(gfc_conv_expr_type): Likewise.
+	(gfc_trans_deferred_vars): Likewise.
+	(getdecls): Likewise.
+	(gfc_get_array_descr_info): Likewise.
+	(gfc_omp_firstprivatize_type_sizes): Likewise.
+	(GTY): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* arith.c: Moved to...
+	* arith.cc: ...here.
+	* array.c: Moved to...
+	* array.cc: ...here.
+	* bbt.c: Moved to...
+	* bbt.cc: ...here.
+	* check.c: Moved to...
+	* check.cc: ...here.
+	* class.c: Moved to...
+	* class.cc: ...here.
+	* constructor.c: Moved to...
+	* constructor.cc: ...here.
+	* convert.c: Moved to...
+	* convert.cc: ...here.
+	* cpp.c: Moved to...
+	* cpp.cc: ...here.
+	* data.c: Moved to...
+	* data.cc: ...here.
+	* decl.c: Moved to...
+	* decl.cc: ...here.
+	* dependency.c: Moved to...
+	* dependency.cc: ...here.
+	* dump-parse-tree.c: Moved to...
+	* dump-parse-tree.cc: ...here.
+	* error.c: Moved to...
+	* error.cc: ...here.
+	* expr.c: Moved to...
+	* expr.cc: ...here.
+	* f95-lang.c: Moved to...
+	* f95-lang.cc: ...here.
+	* frontend-passes.c: Moved to...
+	* frontend-passes.cc: ...here.
+	* gfortranspec.c: Moved to...
+	* gfortranspec.cc: ...here.
+	* interface.c: Moved to...
+	* interface.cc: ...here.
+	* intrinsic.c: Moved to...
+	* intrinsic.cc: ...here.
+	* io.c: Moved to...
+	* io.cc: ...here.
+	* iresolve.c: Moved to...
+	* iresolve.cc: ...here.
+	* match.c: Moved to...
+	* match.cc: ...here.
+	* matchexp.c: Moved to...
+	* matchexp.cc: ...here.
+	* misc.c: Moved to...
+	* misc.cc: ...here.
+	* module.c: Moved to...
+	* module.cc: ...here.
+	* openmp.c: Moved to...
+	* openmp.cc: ...here.
+	* options.c: Moved to...
+	* options.cc: ...here.
+	* parse.c: Moved to...
+	* parse.cc: ...here.
+	* primary.c: Moved to...
+	* primary.cc: ...here.
+	* resolve.c: Moved to...
+	* resolve.cc: ...here.
+	* scanner.c: Moved to...
+	* scanner.cc: ...here.
+	* simplify.c: Moved to...
+	* simplify.cc: ...here.
+	* st.c: Moved to...
+	* st.cc: ...here.
+	* symbol.c: Moved to...
+	* symbol.cc: ...here.
+	* target-memory.c: Moved to...
+	* target-memory.cc: ...here.
+	* trans-array.c: Moved to...
+	* trans-array.cc: ...here.
+	* trans-common.c: Moved to...
+	* trans-common.cc: ...here.
+	* trans-const.c: Moved to...
+	* trans-const.cc: ...here.
+	* trans-decl.c: Moved to...
+	* trans-decl.cc: ...here.
+	* trans-expr.c: Moved to...
+	* trans-expr.cc: ...here.
+	* trans-intrinsic.c: Moved to...
+	* trans-intrinsic.cc: ...here.
+	* trans-io.c: Moved to...
+	* trans-io.cc: ...here.
+	* trans-openmp.c: Moved to...
+	* trans-openmp.cc: ...here.
+	* trans-stmt.c: Moved to...
+	* trans-stmt.cc: ...here.
+	* trans-types.c: Moved to...
+	* trans-types.cc: ...here.
+	* trans.c: Moved to...
+	* trans.cc: ...here.
+
+2022-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_requires): Don't "sorry" dynamic_allocators.
+
 2022-01-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/83079

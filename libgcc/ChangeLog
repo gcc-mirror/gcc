@@ -1,3 +1,7 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Rename .c names to .cc.
+
 2022-01-15  David  <gccbugzilla@limegreensocks.com>
 
 	* config/i386/gthr-win32.c (__gthr_i486_lock_cmp_xchg):

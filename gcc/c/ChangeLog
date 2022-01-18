@@ -1,3 +1,52 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* c-convert.cc: Likewise.
+	* c-decl.cc (struct lang_identifier): Likewise.
+	(pop_scope): Likewise.
+	(finish_decl): Likewise.
+	* c-objc-common.h (GCC_C_OBJC_COMMON): Likewise.
+	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Likewise.
+	* c-parser.h (GCC_C_PARSER_H): Likewise.
+	* c-tree.h (c_keyword_starts_typename): Likewise.
+	(finish_declspecs): Likewise.
+	(c_get_alias_set): Likewise.
+	(enum c_oracle_request): Likewise.
+	(tag_exists_p): Likewise.
+	(set_c_expr_source_range): Likewise.
+	* c-typeck.cc (c_common_type): Likewise.
+	(c_finish_omp_clauses): Likewise.
+	* config-lang.in: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-aux-info.c: Moved to...
+	* c-aux-info.cc: ...here.
+	* c-convert.c: Moved to...
+	* c-convert.cc: ...here.
+	* c-decl.c: Moved to...
+	* c-decl.cc: ...here.
+	* c-errors.c: Moved to...
+	* c-errors.cc: ...here.
+	* c-fold.c: Moved to...
+	* c-fold.cc: ...here.
+	* c-lang.c: Moved to...
+	* c-lang.cc: ...here.
+	* c-objc-common.c: Moved to...
+	* c-objc-common.cc: ...here.
+	* c-parser.c: Moved to...
+	* c-parser.cc: ...here.
+	* c-typeck.c: Moved to...
+	* c-typeck.cc: ...here.
+	* gccspec.c: Moved to...
+	* gccspec.cc: ...here.
+	* gimple-parser.c: Moved to...
+	* gimple-parser.cc: ...here.
+
+2022-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't "sorry" dynamic_allocators.
+
 2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c++/103705
