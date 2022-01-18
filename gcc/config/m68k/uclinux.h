@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
-/* Override the default LIB_SPEC from gcc.c.  We don't currently support
+/* Override the default LIB_SPEC from gcc.cc.  We don't currently support
    profiling, or libg.a.  */
 #undef LIB_SPEC
 #define LIB_SPEC \

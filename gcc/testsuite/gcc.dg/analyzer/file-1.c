@@ -13,6 +13,9 @@ test_1 (const char *path)
   /* { dg-message "second 'fclose' here; first 'fclose' was at \\(5\\)" "second fclose" { target *-*-* } .-1 } */
 }
 
+/* Swallow -Wuse-after-free issued for the same problem
+   { dg-prune-output "-Wuse-after-free" } */
+
 void
 test_2 (const char *src, const char *dst)
 {

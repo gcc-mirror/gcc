@@ -131,7 +131,7 @@ do {								\
 #define REGISTER_TARGET_PRAGMAS() \
   c_register_pragma (0, "builtin", ia64_hpux_handle_builtin_pragma)
 
-/* Tell ia64.c that we are using the HP linker and we should delay output of
+/* Tell ia64.cc that we are using the HP linker and we should delay output of
    function extern declarations so that we don't output them for functions
    which are never used (and may not be defined).  */
 

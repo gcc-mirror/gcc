@@ -463,7 +463,7 @@ typedef unsigned char uchar;
 /* On targets that don't need polynomial offsets, target-specific code
    should be able to treat poly_int like a normal constant, with a
    conversion operator going from the former to the latter.  We also
-   allow this for gencondmd.c for all targets, so that we can treat
+   allow this for gencondmd.cc for all targets, so that we can treat
    machine_modes as enums without causing build failures.  */
 #if (defined (IN_TARGET_CODE) \
      && (defined (USE_ENUM_MODES) || NUM_POLY_INT_COEFFS == 1))

@@ -1,4 +1,4 @@
-/* Header file for tree-ssa-coalesce.c exports.
+/* Header file for tree-ssa-coalesce.cc exports.
    Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

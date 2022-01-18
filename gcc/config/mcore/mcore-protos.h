@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in mcore.c
+/* Prototypes for exported functions defined in mcore.cc
    Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Nick Clifton (nickc@redhat.com)
 

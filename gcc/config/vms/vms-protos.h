@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* vms-c.c  */
+/* vms-c.cc  */
 extern void vms_c_register_pragma (void);
 extern void vms_c_common_override_options (void);
 extern int vms_c_get_crtl_ver (void);
 extern int vms_c_get_vms_ver (void);
 
-/* vms.c  */
+/* vms.cc  */
 void vms_patch_builtins (void);
 
 #ifdef TREE_CODE

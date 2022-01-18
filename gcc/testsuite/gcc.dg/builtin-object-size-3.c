@@ -581,7 +581,7 @@ test9 (unsigned cond)
   if (__builtin_object_size (&p[-4], 2) != (cond ? 6 : 10))
     abort ();
 #else
-  if (__builtin_object_size (&p[-4], 2) != 6)
+  if (__builtin_object_size (&p[-4], 2) != 0)
     abort ();
 #endif
 
@@ -592,7 +592,7 @@ test9 (unsigned cond)
   if (__builtin_object_size (p, 2) != ((cond ? 2 : 6) + cond))
     abort ();
 #else
-  if (__builtin_object_size (p, 2) != 2)
+  if (__builtin_object_size (p, 2) != 0)
     abort ();
 #endif
 
@@ -605,10 +605,35 @@ test9 (unsigned cond)
       != sizeof (y) - __builtin_offsetof (struct A, c) - 8 + cond)
     abort ();
 #else
-  if (__builtin_object_size (p, 2)
-      != sizeof (y) - __builtin_offsetof (struct A, c) - 8)
+  if (__builtin_object_size (p, 2) != 0)
     abort ();
 #endif
+}
+
+void
+__attribute__ ((noinline))
+test10 (void)
+{
+  static char buf[255];
+  unsigned int i, len = sizeof (buf);
+  char *p = buf;
+
+  for (i = 0 ; i < sizeof (buf) ; i++)
+    {
+      if (len < 2)
+	{
+#ifdef __builtin_object_size
+	  if (__builtin_object_size (p - 3, 2) != sizeof (buf) - i + 3)
+	    abort ();
+#else
+	  if (__builtin_object_size (p - 3, 2) != 0)
+	    abort ();
+#endif
+	  break;
+	}
+      p++;
+      len--;
+    }
 }
 
 int
@@ -625,5 +650,6 @@ main (void)
   test7 ();
   test8 ();
   test9 (1);
+  test10 ();
   exit (0);
 }

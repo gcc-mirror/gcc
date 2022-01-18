@@ -126,7 +126,7 @@ deterministic_p (const gasm *asm_stmt)
 /* Update this model for the asm STMT, using CTXT to report any
    diagnostics.
 
-   Compare with cfgexpand.c: expand_asm_stmt.  */
+   Compare with cfgexpand.cc: expand_asm_stmt.  */
 
 void
 region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)

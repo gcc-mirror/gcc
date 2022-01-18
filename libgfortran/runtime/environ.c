@@ -499,78 +499,79 @@ do_parse (void)
 
   unit_count = 0;
 
-  start = p;
-
   /* Parse the string.  First, let's look for a default.  */
-  tok = next_token ();
   endian = 0;
-
-  switch (tok)
+  while (1)
     {
-    case NATIVE:
-      endian = GFC_CONVERT_NATIVE;
-      break;
+      start = p;
+      tok = next_token ();
+      switch (tok)
+	{
+	case NATIVE:
+	  endian = GFC_CONVERT_NATIVE;
+	  break;
 
-    case SWAP:
-      endian = GFC_CONVERT_SWAP;
-      break;
+	case SWAP:
+	  endian = GFC_CONVERT_SWAP;
+	  break;
 
-    case BIG:
-      endian = GFC_CONVERT_BIG;
-      break;
+	case BIG:
+	  endian = GFC_CONVERT_BIG;
+	  break;
 
-    case LITTLE:
-      endian = GFC_CONVERT_LITTLE;
-      break;
+	case LITTLE:
+	  endian = GFC_CONVERT_LITTLE;
+	  break;
 
 #ifdef HAVE_GFC_REAL_17
-    case R16_IEEE:
-      endian = GFC_CONVERT_R16_IEEE;
-      break;
+	case R16_IEEE:
+	  endian = GFC_CONVERT_R16_IEEE;
+	  break;
 
-    case R16_IBM:
-      endian = GFC_CONVERT_R16_IBM;
-      break;
+	case R16_IBM:
+	  endian = GFC_CONVERT_R16_IBM;
+	  break;
 #endif
-    case INTEGER:
-      /* A leading digit means that we are looking at an exception.
-	 Reset the position to the beginning, and continue processing
-	 at the exception list.  */
-      p = start;
-      goto exceptions;
-      break;
+	case INTEGER:
+	  /* A leading digit means that we are looking at an exception.
+	     Reset the position to the beginning, and continue processing
+	     at the exception list.  */
+	  p = start;
+	  goto exceptions;
+	  break;
 
-    case END:
-      goto end;
-      break;
+	case END:
+	  goto end;
+	  break;
 
-    default:
-      goto error;
-      break;
+	default:
+	  goto error;
+	  break;
     }
 
-  tok = next_token ();
-  switch (tok)
-    {
-    case ';':
-      def = endian;
-      break;
+      tok = next_token ();
+      switch (tok)
+	{
+	case ';':
+	  def = def == GFC_CONVERT_NONE ? endian : def | endian;
+	  break;
 
-    case ':':
-      /* This isn't a default after all.  Reset the position to the
-	 beginning, and continue processing at the exception list.  */
-      p = start;
-      goto exceptions;
-      break;
+	case ':':
+	  /* This isn't a default after all.  Reset the position to the
+	     beginning, and continue processing at the exception list.  */
+	  p = start;
+	  goto exceptions;
+	  break;
 
-    case END:
-      def = endian;
-      goto end;
-      break;
+	case END:
+	  def = def == GFC_CONVERT_NONE ? endian : def | endian;
+	  goto end;
+	  break;
 
-    default:
-      goto error;
-      break;
+	default:
+	  goto error;
+	  break;
+	}
     }
 
  exceptions:

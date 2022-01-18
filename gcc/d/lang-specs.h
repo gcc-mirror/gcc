@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This is the contribution to the `default_compilers' array in gcc.c
+/* This is the contribution to the `default_compilers' array in gcc.cc
    for the D language.  */
 
 {".d", "@d", 0, 1, 0 },

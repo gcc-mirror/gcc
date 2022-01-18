@@ -203,10 +203,10 @@ extern tree create_concat_name (Entity_Id gnat_entity, const char *suffix);
    the name followed by "___" and the specified suffix.  */
 extern tree concat_name (tree gnu_name, const char *suffix);
 
-/* Initialize data structures of the decl.c module.  */
+/* Initialize data structures of the decl.cc module.  */
 extern void init_gnat_decl (void);
 
-/* Destroy data structures of the decl.c module.  */
+/* Destroy data structures of the decl.cc module.  */
 extern void destroy_gnat_decl (void);
 
 /* Highest number in the front-end node table.  */
@@ -563,10 +563,10 @@ extern tree convert_to_index_type (tree expr);
 /* Routines created solely for the tree translator's sake. Their prototypes
    can be changed as desired.  */
 
-/* Initialize data structures of the utils.c module.  */
+/* Initialize data structures of the utils.cc module.  */
 extern void init_gnat_utils (void);
 
-/* Destroy data structures of the utils.c module.  */
+/* Destroy data structures of the utils.cc module.  */
 extern void destroy_gnat_utils (void);
 
 /* GNAT_ENTITY is a GNAT tree node for a defining identifier.
@@ -904,7 +904,7 @@ extern tree build_call_raise_range (int msg, Node_Id gnat_node, char kind,
 				    tree index, tree first, tree last);
 
 /* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
-   same as build_constructor in the language-independent tree.c.  */
+   same as build_constructor in the language-independent tree.cc.  */
 extern tree gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v);
 
 /* Return a COMPONENT_REF to access FIELD in RECORD, or NULL_EXPR and generate
@@ -943,7 +943,7 @@ extern tree build_allocator (tree type, tree init, tree result_type,
    should not be allocated in a register.  Returns true if successful.  */
 extern bool gnat_mark_addressable (tree t);
 
-/* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.c
+/* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.cc
    but we know how to handle our own nodes.  */
 extern tree gnat_save_expr (tree exp);
 
@@ -952,7 +952,7 @@ extern tree gnat_save_expr (tree exp);
    its subsequent reuse(s) except through its potential reevaluation.  */
 extern tree gnat_protect_expr (tree exp);
 
-/* This is equivalent to stabilize_reference in tree.c but we know how to
+/* This is equivalent to stabilize_reference in tree.cc but we know how to
    handle our own nodes and we take extra arguments.  FORCE says whether to
    force evaluation of everything in REF.  INIT is set to the first arm of
    a COMPOUND_EXPR present in REF, if any.  */
@@ -965,7 +965,7 @@ typedef tree (*rewrite_fn) (tree, void *);
 extern tree gnat_rewrite_reference (tree ref, rewrite_fn func, void *data,
 				    tree *init);
 
-/* This is equivalent to get_inner_reference in expr.c but it returns the
+/* This is equivalent to get_inner_reference in expr.cc but it returns the
    ultimate containing object only if the reference (lvalue) is constant,
    i.e. if it doesn't depend on the context in which it is evaluated.  */
 extern tree get_inner_constant_reference (tree exp);

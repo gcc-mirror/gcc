@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
 
-/* Like the definition in gcc.c, but for purposes of uClinux, every link is
+/* Like the definition in gcc.cc, but for purposes of uClinux, every link is
    static.  */
 #define MFWRAP_SPEC " %{fmudflap|fmudflapth: \
  --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\

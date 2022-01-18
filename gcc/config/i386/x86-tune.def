@@ -22,8 +22,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     - adding new CPU into:
 	- adding PROCESSOR_XXX to processor_type (in i386.h)
 	- possibly adding XXX into CPU attribute in i386.md
-	- adding XXX to processor_alias_table (in i386.c)
-    - introducing ix86_XXX_cost in i386.c
+	- adding XXX to processor_alias_table (in i386.cc)
+    - introducing ix86_XXX_cost in i386.cc
 	- Stringop generation table can be build based on test_stringop
 	- script (once rest of tuning is complete)
     - designing a scheduler model in
@@ -78,6 +78,12 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
 	  "sse_partial_reg_converts_dependency",
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
 	  | m_BDVER | m_ZNVER | m_ALDERLAKE | m_GENERIC)
+
+/* X86_TUNE_DEST_FALSE_DEP_FOR_GLC: This knob inserts zero-idiom before
+   several insns to break false dependency on the dest register for GLC
+   micro-architecture.  */
+DEF_TUNE (X86_TUNE_DEST_FALSE_DEP_FOR_GLC,
+	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_ALDERLAKE)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may

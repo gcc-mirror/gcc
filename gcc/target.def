@@ -423,7 +423,7 @@ function's arguments that this function should pop is available in\n\
 DEFHOOK
 (init_sections,
  "Define this hook if you need to do something special to set up the\n\
-@file{varasm.c} sections, or if your target has some special sections\n\
+@file{varasm.cc} sections, or if your target has some special sections\n\
 of its own that you need to create.\n\
 \n\
 GCC calls this hook after processing the command line, but before writing\n\
@@ -918,7 +918,7 @@ DEFHOOK_UNDOC
    ASM_OUTPUT_LABELREF, returning result as an IDENTIFIER_NODE.  */
 DEFHOOK
 (mangle_assembler_name,
- "Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s\n\
+ "Given a symbol @var{name}, perform same mangling as @code{varasm.cc}'s\n\
 @code{assemble_name}, but in memory rather than to a file stream, returning\n\
 result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The\n\
 default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and\n\
@@ -929,7 +929,7 @@ then prepends the @code{USER_LABEL_PREFIX}, if any.",
 HOOK_VECTOR_END (asm_out)
 
 /* Functions relating to instruction scheduling.  All of these
-   default to null pointers, which haifa-sched.c looks for and handles.  */
+   default to null pointers, which haifa-sched.cc looks for and handles.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_SCHED_"
 HOOK_VECTOR (TARGET_SCHED, sched)
@@ -2182,7 +2182,7 @@ the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  You can also\n\
 add @code{handle_dll_attribute} in the attribute table for your port\n\
 to perform initial processing of the @samp{dllimport} and\n\
 @samp{dllexport} attributes.  This is done in @file{i386/cygwin.h} and\n\
-@file{i386/i386.c}, for example.",
+@file{i386/i386.cc}, for example.",
  tree, (tree olddecl, tree newdecl),
  merge_decl_attributes)
 
@@ -2565,7 +2565,7 @@ ordinary types as @samp{@w{U @var{n} @var{name} @var{code}}}, where\n\
 @var{name} is the name used for the type qualifier in source code,\n\
 @var{n} is the length of @var{name} as above, and @var{code} is the\n\
 code used to represent the unqualified version of this type.  (See\n\
-@code{write_builtin_type} in @file{cp/mangle.c} for the list of\n\
+@code{write_builtin_type} in @file{cp/mangle.cc} for the list of\n\
 codes.)  In both cases the spaces are for clarity; do not include any\n\
 spaces in your string.\n\
 \n\
@@ -2585,7 +2585,7 @@ DEFHOOK
 (init_libfuncs,
  "This hook should declare additional library routines or rename\n\
 existing ones, using the functions @code{set_optab_libfunc} and\n\
-@code{init_one_libfunc} defined in @file{optabs.c}.\n\
+@code{init_one_libfunc} defined in @file{optabs.cc}.\n\
 @code{init_optabs} calls this macro after initializing all the normal\n\
 library routines.\n\
 \n\
@@ -3123,7 +3123,7 @@ encode more than one bit of information, but this practice is now\n\
 discouraged; use @code{SYMBOL_REF_FLAGS}.\n\
 \n\
 The default definition of this hook, @code{default_encode_section_info}\n\
-in @file{varasm.c}, sets a number of commonly-useful bits in\n\
+in @file{varasm.cc}, sets a number of commonly-useful bits in\n\
 @code{SYMBOL_REF_FLAGS}.  Check whether the default does what you need\n\
 before overriding it.",
  void, (tree decl, rtx rtl, int new_decl_p),
@@ -3442,7 +3442,7 @@ must work.\n\
 The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
-code in @file{optabs.c}.",
+code in @file{optabs.cc}.",
  bool, (scalar_mode mode),
  default_scalar_mode_supported_p)
 
@@ -3964,7 +3964,7 @@ allocation.",
  rtx, (rtx hard_reg), NULL)
 
 /* Return nonzero if evaluating UNSPEC X might cause a trap.
-   FLAGS has the same meaning as in rtlanal.c: may_trap_p_1.  */
+   FLAGS has the same meaning as in rtlanal.cc: may_trap_p_1.  */
 DEFHOOK
 (unspec_may_trap_p,
  "This target hook returns nonzero if @var{x}, an @code{unspec} or\n\
@@ -4135,7 +4135,7 @@ DEFHOOK
  "This hook performs target-specific gimplification of\n\
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the\n\
 arguments to @code{va_arg}; the latter two are as in\n\
-@code{gimplify.c:gimplify_expr}.",
+@code{gimplify.cc:gimplify_expr}.",
  tree, (tree valist, tree type, gimple_seq *pre_p, gimple_seq *post_p),
  std_gimplify_va_arg_expr)
 
@@ -5568,7 +5568,7 @@ Normally, this is not needed.",
  bool, (const_tree field, machine_mode mode),
  default_member_type_forces_blk)
 
-/* See tree-ssa-math-opts.c:divmod_candidate_p for conditions
+/* See tree-ssa-math-opts.cc:divmod_candidate_p for conditions
    that gate the divod transform.  */
 DEFHOOK
 (expand_divmod_libfunc,
@@ -5697,7 +5697,7 @@ However, this default behavior is not correct on some machines, such as\n\
 the DEC Alpha, that store short integers in floating-point registers\n\
 differently than in integer registers.  On those machines, the default\n\
 widening will not work correctly and you must define this hook to\n\
-suppress that widening in some cases.  See the file @file{alpha.c} for\n\
+suppress that widening in some cases.  See the file @file{alpha.cc} for\n\
 details.\n\
 \n\
 With LRA, the default is to use @var{mode} unmodified.",

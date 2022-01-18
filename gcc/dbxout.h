@@ -1,4 +1,4 @@
-/* dbxout.h - Various declarations for functions found in dbxout.c
+/* dbxout.h - Various declarations for functions found in dbxout.cc
    Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

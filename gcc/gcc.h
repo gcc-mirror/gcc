@@ -1,4 +1,4 @@
-/* Header file for modules that link with gcc.c
+/* Header file for modules that link with gcc.cc
    Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -69,7 +69,7 @@ struct spec_function
   const char *(*func) (int, const char **);
 };
 
-/* These are exported by gcc.c.  */
+/* These are exported by gcc.cc.  */
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
 extern void set_input (const char *);
@@ -91,7 +91,7 @@ extern void dbg_options (unsigned int in_decoded_options_count,
 			 struct cl_decoded_option *in_decoded_options);
 
 
-/* Spec files linked with gcc.c must provide definitions for these.  */
+/* Spec files linked with gcc.cc must provide definitions for these.  */
 
 extern void lang_register_spec_functions (void);
 

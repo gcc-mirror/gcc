@@ -32,8 +32,9 @@ void test01()
   typedef istreambuf_iterator<char> test_iterator;
   typedef char_traits<char>::off_type off_type;
 
-  // This is the base class required since LWG 445, which differs from C++03:
-  typedef iterator<input_iterator_tag, char, off_type, char*, char>
+  // This is the base class required since LWG 445, which differs from C++03.
+  // We derive from this unconditionally, then override 'reference' for C++03.
+  typedef iterator<input_iterator_tag, char, off_type, char*, char> // { dg-warning "is deprecated" "" { target c++17 } }
     base_iterator;
 
   istringstream isstream("this tag");

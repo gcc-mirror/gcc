@@ -4042,7 +4042,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr_alternative "length"
      [(cond
 	[(eq_attr "iscompact" "false") (const_int 4)
-	; We have to mention (match_dup 3) to convince genattrtab.c that this
+	; We have to mention (match_dup 3) to convince genattrtab.cc that this
 	; is a varying length insn.
 	 (eq (symbol_ref "1+1") (const_int 2)) (const_int 2)
 	 (gt (minus (match_dup 3) (pc)) (const_int 42)) (const_int 4)]
@@ -4663,7 +4663,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
       return \"trap_s %0\";
     }
 
-  /* Keep this message in sync with the one in arc.c:arc_expand_builtin,
+  /* Keep this message in sync with the one in arc.cc:arc_expand_builtin,
      because *.md files do not get scanned by exgettext.  */
   fatal_error (input_location,
 	       \"operand to trap_s should be an unsigned 6-bit value\");
@@ -4844,7 +4844,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "arc_can_use_return_insn ()"
   "")
 
- ;; Comment in final.c (insn_current_reference_address) says
+ ;; Comment in final.cc (insn_current_reference_address) says
  ;; forward branch addresses are calculated from the next insn after branch
  ;; and for backward branches, it is calculated from the branch insn start.
  ;; The shortening logic here is tuned to accomodate this behavior
@@ -5223,7 +5223,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ;; subdf alternative that matches a zero operand 1, which then can allow
 ;; to use bxor to flip the high bit of an integer register.
 ;; ??? we actually can't use the floating point hardware for neg, because
-;; this would not work right for -0.  OTOH optabs.c has already code
+;; this would not work right for -0.  OTOH optabs.cc has already code
 ;; to synthesyze negate by flipping the sign bit.
 
 ;;V2 instructions

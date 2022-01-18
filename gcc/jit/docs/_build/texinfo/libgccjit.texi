@@ -14959,12 +14959,12 @@ extension for legacy reasons.
 @itemize *
 
 @item 
-@code{libgccjit.c} implements the API entrypoints.  It performs error
+@code{libgccjit.cc} implements the API entrypoints.  It performs error
 checking, then calls into classes of the gcc::jit::recording namespace
-within @code{jit-recording.c} and @code{jit-recording.h}.
+within @code{jit-recording.cc} and @code{jit-recording.h}.
 
 @item 
-The gcc::jit::recording classes (within @code{jit-recording.c} and
+The gcc::jit::recording classes (within @code{jit-recording.cc} and
 @code{jit-recording.h}) record the API calls that are made:
 
 @quotation
@@ -15004,7 +15004,7 @@ The gcc::jit::recording classes (within @code{jit-recording.c} and
 
 @item 
 When the context is compiled, the gcc::jit::playback classes (within
-@code{jit-playback.c} and @code{jit-playback.h}) replay the API calls
+@code{jit-playback.cc} and @code{jit-playback.h}) replay the API calls
 within langhook:parse_file:
 
 @quotation
@@ -15038,10 +15038,10 @@ Client Code   . Generated .            libgccjit.so
     ──────────────────────────>      .               .
               .           .    │     .               .
               .           .    V     .               .
-              .           .    ──> libgccjit.c       .
+              .           .    ──> libgccjit.cc       .
               .           .        │ (error-checking).
               .           .        │                 .
-              .           .        ──> jit-recording.c
+              .           .        ──> jit-recording.cc
               .           .              (record API calls)
               .           .    <───────              .
               .           .    │     .               .
@@ -15068,7 +15068,7 @@ Client Code   . Generated .            libgccjit.so
               .           .          .    │          .
 ..........................................│..................VVVVVVVVVVVVV...
               .           .          .    │          .       No GC in here
-              .           .          .    │ jit-playback.c
+              .           .          .    │ jit-playback.cc
               .           .          .    │   (playback of API calls)
               .           .          .    ───────────────> creation of functions,
               .           .          .               .     types, expression trees
@@ -15425,9 +15425,9 @@ It should not be possible for client code to cause an internal compiler
 error.  If this @emph{does} happen, the root cause should be isolated (perhaps
 using @ref{5d,,gcc_jit_context_dump_reproducer_to_file()}) and the cause
 should be rejected via additional checking.  The checking ideally should
-be within the libgccjit API entrypoints in libgccjit.c, since this is as
+be within the libgccjit API entrypoints in libgccjit.cc, since this is as
 close as possible to the error; failing that, a good place is within
-@code{recording::context::validate ()} in jit-recording.c.
+@code{recording::context::validate ()} in jit-recording.cc.
 
 @node Submitting patches,,Design notes,Internals
 @anchor{internals/index submitting-patches}@anchor{392}

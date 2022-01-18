@@ -67,10 +67,12 @@ static_assert(std::bit_or<void>()(1,2)==3, "");
 static_assert(std::bit_xor<void>()(1,1)==0, "");
 static_assert(std::bit_not<void>()(std::bit_not<void>()(0))==0, "");
 
-static_assert(std::unary_negate<std::logical_not<int>>
-	      (std::logical_not<int>())(1), "");
-static_assert(std::not1(std::logical_not<int>())(1), "");
+static_assert(std::unary_negate< // { dg-warning "is deprecated" "" { target c++17 } }
+	      std::logical_not<int>
+	      >(std::logical_not<int>())(1), "");
+static_assert(std::not1(std::logical_not<int>())(1), ""); // { dg-warning "is deprecated" "" { target c++17 } }
 
-static_assert(std::binary_negate<std::logical_and<int>>
-	      (std::logical_and<int>())(0,0), "");
-static_assert(std::not2(std::logical_and<int>())(0,0), "");
+static_assert(std::binary_negate< // { dg-warning "is deprecated" "" { target c++17 } }
+	      std::logical_and<int>
+	      >(std::logical_and<int>())(0,0), "");
+static_assert(std::not2(std::logical_and<int>())(0,0), ""); // { dg-warning "is deprecated" "" { target c++17 } }

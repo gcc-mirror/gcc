@@ -1118,7 +1118,7 @@ ieee_arithmetic.mod: ieee_arithmetic.lo
 	:
 
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
-	$(gfor_built_specific2_src) $(gfor_misc_specifics) $(version_dep)
+	$(gfor_built_specific2_src) $(gfor_misc_specifics)
 
 prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
 	$(gfor_helper_src) $(gfor_ieee_src) $(gfor_io_headers) $(gfor_specific_src)
@@ -1356,7 +1356,7 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 endif
 
 clean-local:
-	-rm -rf include
+	-rm -rf include $(version_dep)
 
 EXTRA_DIST = $(m4_files)
 

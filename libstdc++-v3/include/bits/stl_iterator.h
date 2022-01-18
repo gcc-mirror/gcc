@@ -105,6 +105,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 #endif
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   // 24.4.1 Reverse iterators
   /**
    *  Bidirectional and random access iterators have corresponding reverse
@@ -990,6 +994,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int)
       { return *this; }
     };
+
+#pragma GCC diagnostic pop
 
   /**
    *  @param __x  A container of arbitrary type.
@@ -1907,14 +1913,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if constexpr (is_trivially_default_constructible_v<_It>)
 	      _M_it = std::move(__x._M_it);
 	    else
-	      ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	      std::construct_at(std::__addressof(_M_it), __x._M_it);
 	  }
 	else if (_M_index == 1)
 	  {
 	    if constexpr (is_trivially_default_constructible_v<_Sent>)
 	      _M_sent = std::move(__x._M_sent);
 	    else
-	      ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	      std::construct_at(std::__addressof(_M_sent), __x._M_sent);
 	  }
       }
 
@@ -1928,14 +1934,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if constexpr (is_trivially_default_constructible_v<_It>)
 	    _M_it = std::move(__x._M_it);
 	  else
-	    ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	    std::construct_at(std::__addressof(_M_it), __x._M_it);
 	}
       else if (_M_index == 1)
 	{
 	  if constexpr (is_trivially_default_constructible_v<_Sent>)
 	    _M_sent = std::move(__x._M_sent);
 	  else
-	    ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	    std::construct_at(std::__addressof(_M_sent), __x._M_sent);
 	}
     }
 

@@ -16,6 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-gnu-property.o: $(srcdir)/config/i386/gnu-property.c
+gnu-property.o: $(srcdir)/config/i386/gnu-property.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)

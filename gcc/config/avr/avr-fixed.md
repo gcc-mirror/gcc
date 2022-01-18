@@ -170,7 +170,7 @@
 ;** Saturated Negation and Absolute Value
 ;******************************************************************************
 
-;; Fixme: This will always result in 0.  Dunno why simplify-rtx.c says
+;; Fixme: This will always result in 0.  Dunno why simplify-rtx.cc says
 ;;   "unknown" on how to optimize this.  libgcc call would be in order,
 ;;   but the performance is *PLAIN* *HORROR* because the optimizers don't
 ;;   manage to optimize out MEMCPY that's sprincled all over fixed-bit.c  */
