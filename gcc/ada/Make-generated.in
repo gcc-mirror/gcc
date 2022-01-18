@@ -53,7 +53,7 @@ ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada
 	touch ada/stamp-snames
 
 ada/sdefault.adb: ada/stamp-sdefault ; @true
-ada/stamp-sdefault : $(srcdir)/ada/version.cc Makefile
+ada/stamp-sdefault : $(srcdir)/ada/version.c Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
 	$(ECHO) "with Osint; use Osint;" >>tmp-sdefault.adb
 	$(ECHO) "package body Sdefault is" >>tmp-sdefault.adb

@@ -147,8 +147,8 @@ host_os=@host_os@
 target_cpu_default = @target_cpu_default@
 xmake_file = @xmake_file@
 tmake_file = @tmake_file@
-#version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.cc`
-#mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.cc`
+#version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
+#mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
 # Directory where sources are, from where we are.
 VPATH = $(srcdir)/ada
@@ -222,7 +222,7 @@ endif
 all.indirect: Makefile ../gnat1$(exeext)
 
 # IN_GCC is meant to distinguish between code compiled into GCC itself, i.e.
-# for the host, and the rest.  But we also use it for the tools (link.cc) and
+# for the host, and the rest.  But we also use it for the tools (link.c) and
 # even break the host/target wall by using it for the library (targext.c).
 # autoconf inserts -DCROSS_DIRECTORY_STRUCTURE if we are building a cross
 # compiler which does not use the native libraries and headers.
@@ -240,7 +240,7 @@ ALL_COMPILERFLAGS = $(ALL_CFLAGS)
 # This is where we get libiberty.a from.
 LIBIBERTY = ../../libiberty/libiberty.a
 
-# We need to link against libbacktrace because diagnostic.cc in
+# We need to link against libbacktrace because diagnostic.c in
 # libcommon.a uses it.
 LIBBACKTRACE = ../../libbacktrace/.libs/libbacktrace.a
 
@@ -296,10 +296,6 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(INCLUDES) $< $(OUTPUT_OPTION)
 
-.cc.o:
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
-	  $(INCLUDES) $< $(OUTPUT_OPTION)
-
 .adb.o:
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -307,7 +303,7 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # how to regenerate this file
-Makefile: ../config.status $(srcdir)/ada/gcc-interface/Makefile.in $(srcdir)/ada/Makefile.in $(srcdir)/ada/version.cc
+Makefile: ../config.status $(srcdir)/ada/gcc-interface/Makefile.in $(srcdir)/ada/Makefile.in $(srcdir)/ada/version.c
 	cd ..; \
 	LANGUAGES="$(CONFIG_LANGUAGES)" \
 	CONFIG_HEADERS= \
@@ -415,7 +411,6 @@ ifeq ($(TOOLSCASE),native)
   vpath %.ads ../$(RTSDIR) ../
   vpath %.adb ../$(RTSDIR) ../
   vpath %.c   ../$(RTSDIR) ../
-  vpath %.cc  ../$(RTSDIR) ../
   vpath %.h   ../$(RTSDIR) ../
 endif
 
@@ -425,7 +420,6 @@ ifeq ($(TOOLSCASE),cross)
   vpath %.ads ../
   vpath %.adb ../
   vpath %.c   ../
-  vpath %.cc  ../
   vpath %.h   ../
 endif
 
@@ -909,44 +903,44 @@ ADA_RTL_DSO_DIR = $(toolexeclibdir)
 # need to keep the frame pointer in tracebak.o to pop the stack properly on
 # some targets.
 
-tracebak.o  : tracebak.cc
+tracebak.o  : tracebak.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
 	      $(INCLUDES) $(NO_OMIT_ADAFLAGS) $< $(OUTPUT_OPTION)
 
-adadecode.o : adadecode.cc adadecode.h
-aux-io.o  : aux-io.cc
-argv.o    : argv.cc
+adadecode.o : adadecode.c adadecode.h
+aux-io.o  : aux-io.c
+argv.o    : argv.c
 cal.o     : cal.c
 deftarg.o : deftarg.c
 errno.o   : errno.c
-exit.o    : adaint.h exit.cc
-expect.o  : expect.cc
-final.o   : final.cc
-rtfinal.o : rtfinal.cc
-rtinit.o  : rtinit.cc
-locales.o : locales.cc
-mkdir.o   : mkdir.cc
-socket.o  : socket.cc gsocket.h
+exit.o    : adaint.h exit.c
+expect.o  : expect.c
+final.o   : final.c
+rtfinal.o : rtfinal.c
+rtinit.o  : rtinit.c
+locales.o : locales.c
+mkdir.o   : mkdir.c
+socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
-raise.o   : raise.cc raise.h
-sigtramp-armdroid.o      : sigtramp-armdroid.cc sigtramp.h
+raise.o   : raise.c raise.h
+sigtramp-armdroid.o      : sigtramp-armdroid.c sigtramp.h
 sigtramp-armvxworks.o    : sigtramp-armvxworks.c sigtramp.h
-sigtramp-ios.o           : sigtramp-ios.cc sigtramp.h
-sigtramp-vxworks.o       : sigtramp-vxworks.cc $(VX_SIGTRAMP_EXTRA_SRCS)
+sigtramp-ios.o           : sigtramp-ios.c sigtramp.h
+sigtramp-vxworks.o       : sigtramp-vxworks.c $(VX_SIGTRAMP_EXTRA_SRCS)
 sigtramp-vxworks-vxsim.o : sigtramp-vxworks-vxsim.c $(VX_SIGTRAMP_EXTRA_SRCS)
 terminals.o : terminals.c
-vx_stack_info.o : vx_stack_info.cc
+vx_stack_info.o : vx_stack_info.c
 
 raise-gcc.o : raise-gcc.c raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		-iquote $(srcdir) -iquote $(ftop_srcdir)/libgcc \
 		$(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-cio.o     : cio.cc
+cio.o     : cio.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-init.o    : init.cc adaint.h raise.h
+init.o    : init.c adaint.h raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -954,11 +948,11 @@ init-vxsim.o : init-vxsim.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-initialize.o : initialize.cc raise.h
+initialize.o : initialize.c raise.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-link.o : link.cc
+link.o : link.c
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
 		$< $(OUTPUT_OPTION)

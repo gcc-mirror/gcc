@@ -2856,7 +2856,7 @@ LIBGNAT_TARGET_PAIRS += \
 
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
 # library.  LIBGNAT_OBJS is the list of object files for libgnat.
-# thread.cc is special as put into GNATRTL_TASKING_OBJS
+# thread.c is special as put into GNATRTL_TASKING_OBJS
 LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
   cal.o cio.o cstreams.o ctrl_c.o					\
   env.o errno.o exit.o expect.o final.o rtfinal.o rtinit.o		\
@@ -2870,7 +2870,7 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
 #  GNAT_RTL_SRCS.  Right now we count on being able to build GNATRTL_OBJS
 #  from ADA_INCLUDE_SRCS.
 
-LIBGNAT_SRCS = $(patsubst %.o,%.cc,$(LIBGNAT_OBJS))			\
+LIBGNAT_SRCS = $(patsubst %.o,%.c,$(LIBGNAT_OBJS))			\
   adadecode.h adaint.h env.h gsocket.h raise.h standard.ads.h		\
   runtime.h $(EXTRA_LIBGNAT_SRCS)
 
@@ -2920,7 +2920,7 @@ setup-rts: force
 	$(MKDIR) $(RTSDIR)
 	$(CHMOD) u+w $(RTSDIR)
 # Copy target independent sources
-	$(foreach f,$(ADA_INCLUDE_SRCS) $(LIBGNAT_SRCS) libgnarl/thread.cc, \
+	$(foreach f,$(ADA_INCLUDE_SRCS) $(LIBGNAT_SRCS) libgnarl/thread.c, \
 	  $(LN_S) $(GNAT_SRC)/$(f) $(RTSDIR) ;) true
 # Remove files not used
 	$(RM) $(patsubst %,$(RTSDIR)/%,$(ADA_EXCLUDE_FILES))
@@ -2941,7 +2941,7 @@ setup-rts: force
 	do \
 	  if [ -f $(RTSDIR)/$$f ]; then echo $$f >> $(RTSDIR)/libgnarl.lst; fi \
 	done
-	@echo thread.cc >> $(RTSDIR)/libgnarl.lst
+	@echo thread.c >> $(RTSDIR)/libgnarl.lst
 	@for f in \
 	  $(foreach F,$(GNATRTL_NONTASKING_OBJS),$(subst $(objext),.ads,$(F))) \
 	  $(foreach F,$(GNATRTL_NONTASKING_OBJS),$(subst $(objext),.adb,$(F))); \

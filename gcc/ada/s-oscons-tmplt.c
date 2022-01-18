@@ -1976,7 +1976,7 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
  || defined(__DragonFly__) || defined(__QNX__)
 /** On these platforms use system provided monotonic clock instead of
  ** the default CLOCK_REALTIME. We then need to set up cond var attributes
- ** appropriately (see thread.cc).
+ ** appropriately (see thread.c).
  **
  ** Note that AIX 5.2 does not support CLOCK_MONOTONIC timestamps for
  ** pthread_cond_timedwait (and does not have pthread_condattr_setclock),
