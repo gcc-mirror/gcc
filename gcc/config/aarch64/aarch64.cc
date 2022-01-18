@@ -24747,6 +24747,7 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
 						       &expr_offset2);
       if (!expr_base1
 	  || !expr_base2
+	  || !DECL_P (expr_base1)
 	  || !operand_equal_p (expr_base1, expr_base2, OEP_ADDRESS_OF))
 	return false;
 
