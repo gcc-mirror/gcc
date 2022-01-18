@@ -489,7 +489,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (&p[-4], 3) != (cond ? 6 : 10))
     abort ();
 #else
-  if (__builtin_object_size (&p[-4], 3) != 6)
+  if (__builtin_object_size (&p[-4], 3) != 0)
     abort ();
 #endif
 
@@ -500,7 +500,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (p, 3) != ((cond ? 2 : 6) + cond))
     abort ();
 #else
-  if (__builtin_object_size (p, 3) != 2)
+  if (__builtin_object_size (p, 3) != 0)
     abort ();
 #endif
 
@@ -512,7 +512,7 @@ test8 (unsigned cond)
   if (__builtin_object_size (p, 3) != sizeof (y.c) - 8 + cond)
     abort ();
 #else
-  if (__builtin_object_size (p, 3) != sizeof (y.c) - 8)
+  if (__builtin_object_size (p, 3) != 0)
     abort ();
 #endif
 }

@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in avr.c
+/* Prototypes for exported functions defined in avr.cc
    
    Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
@@ -161,7 +161,7 @@ extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 
-/* From avr-log.c */
+/* From avr-log.cc */
 
 #define avr_dump(...) avr_vdump (NULL, __FUNCTION__, __VA_ARGS__)
 #define avr_edump(...) avr_vdump (stderr, __FUNCTION__, __VA_ARGS__)

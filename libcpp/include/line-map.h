@@ -83,7 +83,7 @@ enum lc_reason
 
    This key only has meaning in relation to a line_maps instance.  Within
    gcc there is a single line_maps instance: "line_table", declared in
-   gcc/input.h and defined in gcc/input.c.
+   gcc/input.h and defined in gcc/input.cc.
 
    The values of the keys are intended to be internal to libcpp,
    but for ease-of-understanding the implementation, they are currently
@@ -792,6 +792,9 @@ public:
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 
+  /* True if we've seen a #line or # 44 "file" directive.  */
+  bool seen_line_directive;
+
   /* Highest location_t "given out".  */
   location_t highest_location;
 
@@ -814,9 +817,6 @@ public:
   /* The special location value that is used as spelling location for
      built-in tokens.  */
   location_t builtin_location;
-
-  /* True if we've seen a #line or # 44 "file" directive.  */
-  bool seen_line_directive;
 
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
@@ -1816,16 +1816,16 @@ protected:
   int m_column_override;
 
   bool m_have_expanded_location;
+  bool m_seen_impossible_fixit;
+  bool m_fixits_cannot_be_auto_applied;
+  bool m_escape_on_output;
+
   expanded_location m_expanded_location;
 
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
 
-  bool m_seen_impossible_fixit;
-  bool m_fixits_cannot_be_auto_applied;
-
   const diagnostic_path *m_path;
-  bool m_escape_on_output;
 };
 
 /* A struct for the result of range_label::get_text: a NUL-terminated buffer
@@ -2106,8 +2106,8 @@ enum location_aspect
 
 /* The rich_location class requires a way to expand location_t instances.
    We would directly use expand_location_to_spelling_point, which is
-   implemented in gcc/input.c, but we also need to use it for rich_location
-   within genmatch.c.
+   implemented in gcc/input.cc, but we also need to use it for rich_location
+   within genmatch.cc.
    Hence we require client code of libcpp to implement the following
    symbol.  */
 extern expanded_location

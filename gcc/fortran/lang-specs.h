@@ -16,10 +16,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* This is the contribution to the `default_compilers' array in gcc.c
+/* This is the contribution to the `default_compilers' array in gcc.cc
    for the f95 language.  */
 
-/* Identical to gcc.c (cpp_options), but omitting %(cpp_unique_options)
+/* Identical to gcc.cc (cpp_options), but omitting %(cpp_unique_options)
    and -fpch-preprocess on -save-temps.  */
 #define CPP_ONLY_OPTIONS    "%1 %{m*} %{f*} %{g*:%{!g0:%{g*} \
 			     %{!fno-working-directory:-fworking-directory}}} \

@@ -1009,7 +1009,7 @@ function_builder::add_function (const function_instance &instance,
      consistent numbering scheme for function codes between the C and C++
      frontends, so that everything ties up in LTO.
 
-     Currently, tree-streamer-in.c:unpack_ts_function_decl_value_fields
+     Currently, tree-streamer-in.cc:unpack_ts_function_decl_value_fields
      validates that tree nodes returned by TARGET_BUILTIN_DECL are non-NULL and
      some node other than error_mark_node. This is a holdover from when builtin
      decls were streamed by code rather than by value.

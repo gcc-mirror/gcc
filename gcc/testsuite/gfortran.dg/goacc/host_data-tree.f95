@@ -1,10 +1,14 @@
 ! { dg-additional-options "-fdump-tree-original -fdump-tree-gimple" }
 
+! { dg-additional-options -Wuninitialized }
+
 program test
   implicit none
   integer, pointer :: p
+  ! { dg-note {'p' was declared here} {} { target *-*-* } .-1 }
 
   !$acc host_data use_device(p)
+  ! { dg-warning {'p' is used uninitialized} {} { target *-*-* } .-1 }
   ! { dg-final { scan-tree-dump-times "(?n)#pragma acc host_data use_device_ptr\\(p\\)$" 1 "original" } }
   ! { dg-final { scan-tree-dump-times "(?n)#pragma omp target oacc_host_data use_device_ptr\\(p\\)$" 1 "gimple" } }
   !$acc end host_data

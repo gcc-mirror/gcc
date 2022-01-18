@@ -162,7 +162,7 @@ private:
   template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
 
-  // ?? These stubs are for ipa-prop.c which use a value_range in a
+  // ?? These stubs are for ipa-prop.cc which use a value_range in a
   // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
   // instead of picking up the gt_ggc_mx (T *) version.
   friend void gt_ggc_mx (int_range<1> *&);

@@ -32,7 +32,7 @@ test01()
 {
   char buf[sizeof(MoveOnly)*2];
   MoveOnly* addr = (MoveOnly*)buf;
-  std::raw_storage_iterator<MoveOnly*, MoveOnly> iter(addr);
+  std::raw_storage_iterator<MoveOnly*, MoveOnly> iter(addr); // { dg-warning "is deprecated" "" { target c++17 } }
   *iter++ = MoveOnly{1};
   *iter++ = MoveOnly{2};
   VERIFY( addr[0].i == 1 );

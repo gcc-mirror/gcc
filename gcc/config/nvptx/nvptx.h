@@ -36,7 +36,7 @@
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
-/* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
+/* Avoid the default in ../../gcc.cc, which adds "-pthread", which is not
    supported for nvptx.  */
 #define GOMP_SELF_SPECS ""
 

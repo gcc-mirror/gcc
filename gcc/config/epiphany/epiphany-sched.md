@@ -77,7 +77,7 @@
   "issue,issue+int,issue+int,issue+int,int")
 
 ;; Loads have a latency of two.
-;; Note that we fix up the latency of post_modify in epiphany.c:epiphany_adjust_cost
+;; Note that we fix up the latency of post_modify in epiphany.cc:epiphany_adjust_cost
 
 (define_insn_reservation "load" 3
   (and (eq_attr "pipe_model" "epiphany")

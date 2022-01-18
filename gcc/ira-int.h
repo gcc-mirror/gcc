@@ -479,7 +479,7 @@ typedef struct ira_emit_data *ira_emit_data_t;
 struct ira_emit_data
 {
   /* TRUE if the allocno assigned to memory was a destination of
-     removed move (see ira-emit.c) at loop exit because the value of
+     removed move (see ira-emit.cc) at loop exit because the value of
      the corresponding pseudo-register is not changed inside the
      loop.  */
   unsigned int mem_optimized_dest_p : 1;
@@ -493,7 +493,7 @@ struct ira_emit_data
   /* Final rtx representation of the allocno.  */
   rtx reg;
   /* Non NULL if we remove restoring value from given allocno to
-     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
+     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.cc) because the
      allocno value is not changed inside the loop.  */
   ira_allocno_t mem_optimized_dest;
 };
@@ -632,7 +632,7 @@ extern class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 /* Correspondingly overall cost of the allocation, cost of the
    allocnos assigned to hard-registers, cost of the allocnos assigned
    to memory, cost of loads, stores and register move insns generated
-   for pseudo-register live range splitting (see ira-emit.c).  */
+   for pseudo-register live range splitting (see ira-emit.cc).  */
 extern int64_t ira_overall_cost;
 extern int64_t ira_reg_cost, ira_mem_cost;
 extern int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
@@ -969,7 +969,7 @@ extern class target_ira_int *this_target_ira_int;
 #define ira_prohibited_mode_move_regs \
   (this_target_ira_int->x_ira_prohibited_mode_move_regs)
 
-/* ira.c: */
+/* ira.cc: */
 
 extern void *ira_allocate (size_t);
 extern void ira_free (void *addr);
@@ -982,7 +982,7 @@ extern void ira_init_register_move_cost (machine_mode);
 extern alternative_mask ira_setup_alts (rtx_insn *);
 extern int ira_get_dup_out_num (int, alternative_mask, bool &);
 
-/* ira-build.c */
+/* ira-build.cc */
 
 /* The current loop tree node and its regno allocno map.  */
 extern ira_loop_tree_node_t ira_curr_loop_tree_node;
@@ -1041,13 +1041,13 @@ extern void ira_flattening (int, int);
 extern bool ira_build (void);
 extern void ira_destroy (void);
 
-/* ira-costs.c */
+/* ira-costs.cc */
 extern void ira_init_costs_once (void);
 extern void ira_init_costs (void);
 extern void ira_costs (void);
 extern void ira_tune_allocno_costs (void);
 
-/* ira-lives.c */
+/* ira-lives.cc */
 
 extern void ira_rebuild_start_finish_chains (void);
 extern void ira_print_live_range_list (FILE *, live_range_t);
@@ -1062,11 +1062,11 @@ extern void ira_finish_allocno_live_ranges (void);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *,
 					       alternative_mask);
 
-/* ira-conflicts.c */
+/* ira-conflicts.cc */
 extern void ira_debug_conflicts (bool);
 extern void ira_build_conflicts (void);
 
-/* ira-color.c */
+/* ira-color.cc */
 extern ira_allocno_t ira_soft_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_debug_hard_regs_forest (void);
 extern int ira_loop_edge_freq (ira_loop_tree_node_t, int, bool);
@@ -1075,7 +1075,7 @@ extern void ira_initiate_assign (void);
 extern void ira_finish_assign (void);
 extern void ira_color (void);
 
-/* ira-emit.c */
+/* ira-emit.cc */
 extern void ira_initiate_emit_data (void);
 extern void ira_finish_emit_data (void);
 extern void ira_emit (bool);

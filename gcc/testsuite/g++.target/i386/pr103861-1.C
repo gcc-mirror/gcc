@@ -1,6 +1,6 @@
 /* PR target/103861 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse4" } */
+/* { dg-options "-O2 -msse2" } */
 
 typedef unsigned char __attribute__((__vector_size__ (2))) __v2qu;
 typedef char __attribute__((__vector_size__ (2))) __v2qi;

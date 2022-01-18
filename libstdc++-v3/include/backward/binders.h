@@ -131,6 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::bind")
     inline binder1st<_Operation>
     bind1st(const _Operation& __fn, const _Tp& __x)
     {
@@ -166,6 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// One of the @link binders binder functors@endlink.
   template<typename _Operation, typename _Tp>
+    _GLIBCXX11_DEPRECATED_SUGGEST("std::bind")
     inline binder2nd<_Operation>
     bind2nd(const _Operation& __fn, const _Tp& __x)
     {

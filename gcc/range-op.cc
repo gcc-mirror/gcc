@@ -1941,8 +1941,24 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_kind rel = VREL_NONE) const;
+  virtual enum tree_code lhs_op1_relation (const irange &lhs,
+					   const irange &op1,
+					   const irange &op2) const;
 } op_rshift;
 
+
+enum tree_code
+operator_rshift::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				   const irange &op1,
+				   const irange &op2) const
+{
+  // If both operands range are >= 0, then the LHS <= op1.
+  if (!op1.undefined_p () && !op2.undefined_p ()
+      && wi::ge_p (op1.lower_bound (), 0, TYPE_SIGN (op1.type ()))
+      && wi::ge_p (op2.lower_bound (), 0, TYPE_SIGN (op2.type ())))
+    return LE_EXPR;
+  return VREL_NONE;
+}
 
 bool
 operator_lshift::fold_range (irange &r, tree type,

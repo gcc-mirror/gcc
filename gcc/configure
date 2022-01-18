@@ -592,7 +592,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="tree.c"
+ac_unique_file="tree.cc"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -5352,7 +5352,26 @@ else
   GDC="$ac_cv_prog_GDC"
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the D compiler works" >&5
+$as_echo_n "checking whether the D compiler works... " >&6; }
+if ${acx_cv_d_compiler_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat >conftest.d <<EOF
+module conftest; int main() { return 0; }
+EOF
+acx_cv_d_compiler_works=no
 if test "x$GDC" != xno; then
+  errors=`(${GDC} -I"$srcdir"/d -c conftest.d) 2>&1 || echo failure`
+  if test x"$errors" = x && test -f conftest.$ac_objext; then
+    acx_cv_d_compiler_works=yes
+  fi
+  rm -f conftest.*
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_d_compiler_works" >&5
+$as_echo "$acx_cv_d_compiler_works" >&6; }
+if test "x$GDC" != xno && test x$acx_cv_d_compiler_works != xno; then
   have_gdc=yes
 else
   have_gdc=no
@@ -6300,6 +6319,85 @@ rm -rf conftest*
   fi
 
 
+fi
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of ino_t" >&5
+$as_echo_n "checking size of ino_t... " >&6; }
+if ${ac_cv_sizeof_ino_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_cxx_compute_int "$LINENO" "(long int) (sizeof (ino_t))" "ac_cv_sizeof_ino_t"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_ino_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (ino_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_ino_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_ino_t" >&5
+$as_echo "$ac_cv_sizeof_ino_t" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_INO_T $ac_cv_sizeof_ino_t
+_ACEOF
+
+
+# The cast to long int works around a bug in the HP C Compiler
+# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+# This bug is HP SR number 8606223364.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of dev_t" >&5
+$as_echo_n "checking size of dev_t... " >&6; }
+if ${ac_cv_sizeof_dev_t+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if ac_fn_cxx_compute_int "$LINENO" "(long int) (sizeof (dev_t))" "ac_cv_sizeof_dev_t"        "$ac_includes_default"; then :
+
+else
+  if test "$ac_cv_type_dev_t" = yes; then
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error 77 "cannot compute sizeof (dev_t)
+See \`config.log' for more details" "$LINENO" 5; }
+   else
+     ac_cv_sizeof_dev_t=0
+   fi
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_dev_t" >&5
+$as_echo "$ac_cv_sizeof_dev_t" >&6; }
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_DEV_T $ac_cv_sizeof_dev_t
+_ACEOF
+
+
+
+# Select the right stat being able to handle 64bit inodes, if needed.
+if test "$enable_largefile" != no; then
+  case "$host, $build" in
+    *-*-aix*,*|*,*-*-aix*)
+      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+
+$as_echo "#define HOST_STAT_FOR_64BIT_INODES stat64x" >>confdefs.h
+
+      fi;;
+  esac
 fi
 
 
@@ -8297,7 +8395,7 @@ fi
   test -n "$AWK" && break
 done
 
-# We need awk to create options.c and options.h.
+# We need awk to create options.cc and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") as_fn_error $? "can't build without awk, bailing out" "$LINENO" 5 ;;
@@ -12025,7 +12123,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 # On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
 # FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname
-# in collect2.c, <fcntl.h> isn't visible, but the configure test below needs
+# in collect2.cc, <fcntl.h> isn't visible, but the configure test below needs
 # to undef these macros to get the correct value for HAVE_DECL_LDGETNAME.
 for ac_func in ldgetname
 do
@@ -12601,7 +12699,7 @@ if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
 if test x$out_file = x
-then out_file=$cpu_type/$cpu_type.c; fi
+then out_file=$cpu_type/$cpu_type.cc; fi
 
 if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
@@ -13253,8 +13351,8 @@ do
 done
 tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
-out_object_file=`basename $out_file .c`.o
-common_out_object_file=`basename $common_out_file .c`.o
+out_object_file=`basename $out_file .cc`.o
+common_out_object_file=`basename $common_out_file .cc`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -19561,7 +19659,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19564 "configure"
+#line 19662 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19667,7 +19765,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19670 "configure"
+#line 19768 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -32221,7 +32319,7 @@ _ACEOF
 
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
-# of jit/jit-playback.c.
+# of jit/jit-playback.cc.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
 echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF

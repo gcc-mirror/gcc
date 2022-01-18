@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 // Copyright (C) 2007-2022 Free Software Foundation, Inc.

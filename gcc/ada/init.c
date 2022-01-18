@@ -1237,7 +1237,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
   if (__gnat_resignal_p (sigargs [1]))
     return SS$_RESIGNAL;
 #ifndef IN_RTS
-  /* toplev.c handles this for compiler.  */
+  /* toplev.cc handles this for compiler.  */
   if (sigargs [1] == SS$_HPARITH)
     return SS$_RESIGNAL;
 #endif

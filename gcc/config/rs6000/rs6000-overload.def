@@ -1516,7 +1516,7 @@
     VEXPTEFP
 
 ; There are no actual builtins for vec_extract.  There is special handling for
-; this in altivec_resolve_overloaded_builtin in rs6000-c.c, where the call
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
 ; is replaced by "pointer tricks."  The single overload here causes
 ; __builtin_vec_extract to be registered with the front end so this can
 ; happen.
@@ -1733,7 +1733,7 @@
     VGNB
 
 ; There are no actual builtins for vec_insert.  There is special handling for
-; this in altivec_resolve_overloaded_builtin in rs6000-c.c, where the call
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
 ; is replaced by "pointer tricks."  The single overload here causes
 ; __builtin_vec_insert to be registered with the front end so this can happen.
 [VEC_INSERT, vec_insert, __builtin_vec_insert]
@@ -2480,7 +2480,7 @@
   void __builtin_vec_mtvscr (vui);
     MTVSCR  MTVSCR_VUI
 
-; Note that the entries for VEC_MUL are currently ignored.  See rs6000-c.c:
+; Note that the entries for VEC_MUL are currently ignored.  See rs6000-c.cc:
 ; altivec_resolve_overloaded_builtin, where there is special-case code for
 ; VEC_MUL.  TODO: Is this really necessary?  Investigate.  Seven missing
 ; prototypes here...no corresponding builtins.  Also added "vmulld" in P10
@@ -3017,7 +3017,7 @@
     VPRTYBQ  VPRTYBQ_U
 
 ; There are no actual builtins for vec_promote.  There is special handling for
-; this in altivec_resolve_overloaded_builtin in rs6000-c.c, where the call
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
 ; is replaced by a constructor.  The single overload here causes
 ; __builtin_vec_promote to be registered with the front end so that can happen.
 [VEC_PROMOTE, vec_promote, __builtin_vec_promote]
@@ -3587,7 +3587,7 @@
     VXXSPLTI32DX_V4SF
 
 ; There are no actual builtins for vec_splats.  There is special handling for
-; this in altivec_resolve_overloaded_builtin in rs6000-c.c, where the call
+; this in altivec_resolve_overloaded_builtin in rs6000-c.cc, where the call
 ; is replaced by a constructor.  The single overload here causes
 ; __builtin_vec_splats to be registered with the front end so that can happen.
 [VEC_SPLATS, vec_splats, __builtin_vec_splats]

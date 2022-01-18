@@ -17,6 +17,8 @@
 # Verify various kinds of gcov output: line counts, branch percentages,
 # and call return percentages.  None of this is language-specific.
 
+load_lib "target-supports.exp"
+
 global GCOV
 
 #
@@ -274,11 +276,8 @@ proc run-gcov-pytest { args } {
     set testcase [remote_download host $testcase]
     set result [remote_exec host $GCOV "$testcase -i"]
 
-    set pytest_cmd "python3 -m pytest --color=no -rap -s --tb=no"
-    set result [remote_exec host "$pytest_cmd --version"]
-    set status [lindex $result 0]
-    if { $status != 0 } then {
-      unsupported "$subdir/$testcase run-gcov-pytest python3 pytest missing"
+    if { ![check_effective_target_pytest3] } {
+      unsupported "$script pytest python3 is missing"
       return
     }
 

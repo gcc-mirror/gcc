@@ -1,6 +1,6 @@
 CFLAGS-mkoffload.o += $(DRIVER_DEFINES) -DGCC_INSTALL_NAME=\"$(GCC_INSTALL_NAME)\"
 
-mkoffload.o: $(srcdir)/config/i386/intelmic-mkoffload.c
+mkoffload.o: $(srcdir)/config/i386/intelmic-mkoffload.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 ALL_HOST_OBJS += mkoffload.o

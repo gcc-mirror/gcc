@@ -493,7 +493,7 @@ tree gfc_build_compare_string (tree, tree, tree, tree, int, enum tree_code);
    when a POST chain may be created, and what the returned expression may be
    used for.  Note that character strings have special handling.  This
    should not be a problem as most statements/operations only deal with
-   numeric/logical types.  See the implementations in trans-expr.c
+   numeric/logical types.  See the implementations in trans-expr.cc
    for details of the individual functions.  */
 
 void gfc_conv_expr (gfc_se * se, gfc_expr * expr);
@@ -504,7 +504,7 @@ void gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr,
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
 
-/* trans-expr.c */
+/* trans-expr.cc */
 tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
@@ -791,18 +791,18 @@ void gfc_process_block_locals (gfc_namespace*);
 /* Output initialization/clean-up code that was deferred.  */
 void gfc_trans_deferred_vars (gfc_symbol*, gfc_wrapped_block *);
 
-/* In f95-lang.c.  */
+/* In f95-lang.cc.  */
 tree pushdecl (tree);
 tree pushdecl_top_level (tree);
 void pushlevel (void);
 tree poplevel (int, int);
 tree getdecls (void);
 
-/* In trans-types.c.  */
+/* In trans-types.cc.  */
 struct array_descr_info;
 bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 
-/* In trans-openmp.c */
+/* In trans-openmp.cc */
 bool gfc_omp_is_allocatable_or_ptr (const_tree);
 tree gfc_omp_check_optional_argument (tree, bool);
 tree gfc_omp_array_data (tree, bool);
@@ -825,7 +825,7 @@ bool gfc_omp_private_outer_ref (tree);
 struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
 
-/* In trans-intrinsic.c.  */
+/* In trans-intrinsic.cc.  */
 void gfc_conv_intrinsic_mvbits (gfc_se *, gfc_actual_arglist *,
 				gfc_loopinfo *);
 
@@ -900,7 +900,7 @@ extern GTY(()) tree gfor_fndecl_co_sum;
 extern GTY(()) tree gfor_fndecl_caf_is_present;
 
 /* Math functions.  Many other math functions are handled in
-   trans-intrinsic.c.  */
+   trans-intrinsic.cc.  */
 
 typedef struct GTY(()) gfc_powdecl_list {
   tree integer;

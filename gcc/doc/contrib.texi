@@ -668,7 +668,7 @@ entire Debian archive.
 
 @item
 David Miller for his direction via the steering committee, lots of
-SPARC work, improvements in jump.c and interfacing with the Linux kernel
+SPARC work, improvements in jump.cc and interfacing with the Linux kernel
 developers.
 
 @item

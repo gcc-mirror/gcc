@@ -10,8 +10,8 @@
 </info>
 
 <para>
-In this implementation the <literal>-std=gnu++2a</literal> or
-<literal>-std=c++2a</literal> flag must be used to enable language
+In this implementation the <literal>-std=gnu++20</literal> or
+<literal>-std=c++20</literal> flag must be used to enable language
 and library
 features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
@@ -114,24 +114,22 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Making <code>std::string</code> constexpr </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0980r1.pdf">
         P0980R1 </link>
       </entry>
-      <entry/>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_constexpr_string &gt;= 201907L</code> </entry>
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Making <code>std::vector</code> constexpr </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1004r2.pdf">
         P1004R2 </link>
       </entry>
-      <entry/>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_constexpr_vector &gt;= 201907L</code> </entry>
     </row>
 
@@ -299,7 +297,7 @@ or any notes about the implementation.
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf">
         P0466R5 </link>
       </entry>
-      <entry align="center"> 12 </entry>
+      <entry align="center"> 12.1 </entry>
       <entry>
         <informaltable colsep="0" rowsep="0" rowheader="norowheader" frame="none"><tgroup cols="1"><tbody>
         <row><entry> <code>__cpp_lib_is_layout_compatible &gt;= 201907L</code> </entry></row>
@@ -397,13 +395,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Atomic <code>shared_ptr</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0718r2.html">
         P0718R2 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code> __cpp_lib_atomic_shared_ptr &gt;= 201711L</code> </entry>
     </row>
 
@@ -893,13 +890,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Extending <code>make_shared</code> to Support Arrays </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0674r1.html">
         P0674R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_shared_ptr_arrays &gt;= 201707L</code> </entry>
     </row>
 
@@ -936,13 +932,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Smart pointer creation with default initialization </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1020r1.html">
         P1020R1 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry> <code>__cpp_lib_smart_ptr_for_overwrite &gt;= 201811L</code> </entry>
     </row>
 
@@ -1079,13 +1074,12 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Reviewing Deprecated Facilities of C++17 for C++20 </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0619r4.html">
         P0619R4 </link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 12.1 </entry>
       <entry />
     </row>
 

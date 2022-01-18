@@ -56,8 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 /************************[  Target stuff  ]***********************************/
 
 /* Define the actual types of some ANSI-mandated types.  
-   Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.c,
-   c-common.c, and config/<arch>/<arch>.h.  */
+   Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.cc,
+   c-common.cc, and config/<arch>/<arch>.h.  */
 
 /* Earlier headers may get this wrong for FreeBSD.
    We use the GCC defaults instead.  */

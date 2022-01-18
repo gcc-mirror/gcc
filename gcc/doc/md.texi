@@ -784,7 +784,7 @@ diagnosis when special predicates are used.
 @cindex generic predicates
 
 These are the generic predicates available to all back ends.  They are
-defined in @file{recog.c}.  The first category of predicates allow
+defined in @file{recog.cc}.  The first category of predicates allow
 only constant, or @dfn{immediate}, operands.
 
 @defun immediate_operand
@@ -2618,7 +2618,7 @@ now roughly the same as @samp{m} when not used together with @samp{<}
 or @samp{>}.
 @end table
 
-@item M32C---@file{config/m32c/m32c.c}
+@item M32C---@file{config/m32c/m32c.cc}
 @table @code
 @item Rsp
 @itemx Rfb
@@ -5214,25 +5214,43 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load the number of vector elements specified by operand 2 from memory
-operand 1 into vector register operand 0, setting the other elements of
+Load (operand 2 - operand 3) elements from vector memory operand 1
+into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
-target prefers.  If operand 2 exceeds the number of elements in mode
-@var{m}, the behavior is undefined.  If the target prefers the length
-to be measured in bytes rather than elements, it should only implement
-this pattern for vectors of @code{QI} elements.
+target prefers.  Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes rather than
+elements, it should only implement this pattern for vectors of @code{QI}
+elements.
 
 This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store the number of vector elements specified by operand 2 from vector
-register operand 1 into memory operand 0, leaving the other elements of
+Store (operand 2 - operand 3) vector elements from vector register operand 1
+into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
-If operand 2 exceeds the number of elements in mode @var{m}, the behavior
-is undefined.  If the target prefers the length to be measured in bytes
+Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
 rather than elements, it should only implement this pattern for vectors
 of @code{QI} elements.
 
@@ -8037,6 +8055,15 @@ inclusive and operand 1 exclusive.
 If this pattern is not defined, a call to the library function
 @code{__clear_cache} is used.
 
+@cindex @code{spaceship@var{m}3} instruction pattern
+@item @samp{spaceship@var{m}3}
+Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
+if operand 1 with mode @var{m} compares less than operand 2, equal to
+operand 2, greater than operand 2 or is unordered with operand 2.
+@var{m} should be a scalar floating point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
 @end table
 
 @end ifset
@@ -8441,7 +8468,7 @@ original operation had sufficient precision to prevent overflow.
 @end itemize
 
 Further canonicalization rules are defined in the function
-@code{commutative_operand_precedence} in @file{gcc/rtlanal.c}.
+@code{commutative_operand_precedence} in @file{gcc/rtlanal.cc}.
 
 @end ifset
 @ifset INTERNALS

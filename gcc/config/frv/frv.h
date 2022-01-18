@@ -1525,7 +1525,7 @@ do {									\
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 
-/* This is for final.c, because it is used by ASM_DECLARE_OBJECT_NAME.  */
+/* This is for final.cc, because it is used by ASM_DECLARE_OBJECT_NAME.  */
 extern int size_directive_output;
 
 /* Like `ASM_OUTPUT_ALIGNED_LOCAL' except that it takes an additional

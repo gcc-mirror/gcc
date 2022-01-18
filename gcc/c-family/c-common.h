@@ -1,4 +1,4 @@
-/* Definitions for c-common.c.
+/* Definitions for c-common.cc.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -249,7 +249,7 @@ enum rid
      is for __int13.  */
 
   /* Note that the range to use is RID_FIRST_INT_N through
-     RID_FIRST_INT_N + NUM_INT_N_ENTS - 1 and c-parser.c has a list of
+     RID_FIRST_INT_N + NUM_INT_N_ENTS - 1 and c-parser.cc has a list of
      all RID_INT_N_* in a case statement.  */
 
   RID_INT_N_0,
@@ -829,10 +829,10 @@ extern const struct attribute_spec c_common_format_attribute_table[];
 
 extern tree (*make_fname_decl) (location_t, tree, int);
 
-/* In c-decl.c and cp/tree.c.  FIXME.  */
+/* In c-decl.cc and cp/tree.cc.  FIXME.  */
 extern void c_register_addr_space (const char *str, addr_space_t as);
 
-/* In c-common.c.  */
+/* In c-common.cc.  */
 extern bool in_late_binary_op;
 extern const char *c_addr_space_name (addr_space_t as);
 extern tree identifier_global_value (tree);
@@ -1006,7 +1006,7 @@ extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
 
 /* These functions must be defined by each front-end which implements
-   a variant of the C language.  They are used in c-common.c.  */
+   a variant of the C language.  They are used in c-common.cc.  */
 
 extern tree build_unary_op (location_t, enum tree_code, tree, bool);
 extern tree build_binary_op (location_t, enum tree_code, tree, tree, bool);
@@ -1044,7 +1044,7 @@ extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
 extern tree finish_label_address_expr (tree, location_t);
 
 /* Same function prototype, but the C and C++ front ends have
-   different implementations.  Used in c-common.c.  */
+   different implementations.  Used in c-common.cc.  */
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
@@ -1141,7 +1141,7 @@ class substring_loc;
 extern const char *c_get_substring_location (const substring_loc &substr_loc,
 					     location_t *out_loc);
 
-/* In c-gimplify.c.  */
+/* In c-gimplify.cc.  */
 typedef struct bc_state
 {
   tree bc_label[2];
@@ -1154,11 +1154,11 @@ extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 extern tree c_build_bind_expr (location_t, tree, tree);
 
-/* In c-lex.c.  */
+/* In c-lex.cc.  */
 extern enum cpp_ttype
 conflict_marker_get_final_tok_kind (enum cpp_ttype tok1_kind);
 
-/* In c-pch.c  */
+/* In c-pch.cc  */
 extern void pch_init (void);
 extern void pch_cpp_save_state (void);
 extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
@@ -1171,7 +1171,7 @@ extern void c_common_pch_pragma (cpp_reader *pfile, const char *);
 /* In *-checksum.c */
 extern const unsigned char executable_checksum[16];
 
-/* In c-cppbuiltin.c  */
+/* In c-cppbuiltin.cc  */
 extern void builtin_define_std (const char *macro);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
@@ -1181,14 +1181,14 @@ extern void fe_file_change (const line_map_ordinary *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
 			   rich_location *richloc);
 
-/* In c-ppoutput.c  */
+/* In c-ppoutput.cc  */
 extern void init_pp_output (FILE *);
 extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const line_map_ordinary *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
-/* In c-omp.c  */
+/* In c-omp.cc  */
 typedef wide_int_bitmask omp_clause_mask;
 
 #define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
@@ -1400,7 +1400,7 @@ extern bool valid_array_size_p (location_t, const_tree, tree, bool = true);
 extern void invalid_array_size_error (location_t, cst_size_error,
 				      const_tree, const_tree);
 
-/* In c-warn.c.  */
+/* In c-warn.cc.  */
 extern void constant_expression_warning (tree);
 extern void constant_expression_error (tree);
 extern void overflow_warning (location_t, tree, tree = NULL_TREE);
@@ -1466,7 +1466,7 @@ extern tree do_warn_duplicated_branches_r (tree *, int *, void *);
 extern void warn_for_multistatement_macros (location_t, location_t,
 					    location_t, enum rid);
 
-/* In c-attribs.c.  */
+/* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);
 extern tree handle_deprecated_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
@@ -1481,7 +1481,7 @@ extern tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 extern tree build_attr_access_from_parms (tree, bool);
 
-/* In c-format.c.  */
+/* In c-format.cc.  */
 extern bool valid_format_string_type_p (tree);
 
 /* A bitmap of flags to positional_argument.  */

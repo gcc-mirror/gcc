@@ -1,4 +1,4 @@
-/* Definitions for condition code handling in final.c and output routines.
+/* Definitions for condition code handling in final.cc and output routines.
    Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

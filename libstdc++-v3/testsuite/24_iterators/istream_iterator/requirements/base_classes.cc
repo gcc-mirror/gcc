@@ -30,7 +30,7 @@ void test01()
 
   // Check for required base class.
   typedef istream_iterator<long> test_iterator;
-  typedef iterator<input_iterator_tag, long, ptrdiff_t, const long*, 
+  typedef iterator<input_iterator_tag, long, ptrdiff_t, const long*, // { dg-warning "is deprecated" "" { target c++17 } }
     		   const long&> base_iterator;
   test_iterator  r_it;
   base_iterator* base __attribute__((unused)) = &r_it;

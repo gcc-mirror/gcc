@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IPA_UNDESCRIBED_USE -1
 
-/* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
+/* ipa-prop.cc stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite.  They were originally proposed in a paper called
@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
    parameter or can apply one simple binary operation to it (such jump
    functions are called polynomial).
 
-   Jump functions are computed in ipa-prop.c by function
+   Jump functions are computed in ipa-prop.cc by function
    update_call_notes_after_inlining.  Some information can be lost and jump
    functions degraded accordingly when inlining, see
    update_call_notes_after_inlining in the same file.  */
@@ -1184,11 +1184,11 @@ bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 
-/* From tree-sra.c:  */
+/* From tree-sra.cc:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
-/* In ipa-cp.c  */
+/* In ipa-cp.cc  */
 void ipa_cp_c_finalize (void);
 
 #endif /* IPA_PROP_H */

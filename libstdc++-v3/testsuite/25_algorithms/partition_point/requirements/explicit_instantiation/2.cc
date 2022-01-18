@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile { target c++11 } }
 
 // 2008-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
@@ -33,4 +34,4 @@ namespace std
   typedef std::pointer_to_unary_function<value_type, bool> predicate_type;
 
   template iterator_type partition_point(iterator_type, iterator_type, predicate_type);
-} 
+}

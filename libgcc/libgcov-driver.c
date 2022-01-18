@@ -79,7 +79,7 @@ static int gcov_error (const char *, ...);
 static void gcov_error_exit (void);
 #endif
 
-#include "gcov-io.c"
+#include "gcov-io.cc"
 
 #define GCOV_PROF_PREFIX "libgcov profiling error:%s:"
 

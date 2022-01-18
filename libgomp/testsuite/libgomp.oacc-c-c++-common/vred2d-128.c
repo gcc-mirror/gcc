@@ -1,5 +1,7 @@
 /* Test large vector lengths.  */
 
+/* { dg-additional-options -Wuninitialized } */
+
 #include <assert.h>
 
 #define n 10000
@@ -8,7 +10,7 @@ int a1[n], a2[n];
 #define gentest(name, outer, inner)		\
   void name ()					\
   {						\
-  long i, j, t1, t2, t3;			\
+  long i, j, t1, t2, t3; /* { dg-line vars } */	\
   _Pragma(outer)				\
   for (i = 0; i < n; i++)			\
     {						\
@@ -32,15 +34,47 @@ int a1[n], a2[n];
 
 gentest (test1, "acc parallel loop gang vector_length (128) firstprivate (t1, t2)",
 	 "acc loop vector reduction(+:t1) reduction(-:t2)")
+/* { dg-warning {'t1' is used uninitialized} {} { target *-*-* } .-1 }
+   { dg-note {'t1' was declared here} {} { target *-*-* } vars }
+   { dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-4 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
+/* { dg-warning {'t2' is used uninitialized} {} { target *-*-* } .-5 }
+   { dg-note {'t2' was declared here} {} { target *-*-* } vars }
+   { DUP_dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-8 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
 
 gentest (test2, "acc parallel loop gang vector_length (128) firstprivate (t1, t2)",
 	 "acc loop worker vector reduction(+:t1) reduction(-:t2)")
+/* { dg-warning {'t1' is used uninitialized} {} { target *-*-* } .-1 }
+   { DUP_dg-note {'t1' was declared here} {} { target *-*-* } vars }
+   { dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-4 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
+/* { dg-warning {'t2' is used uninitialized} {} { target *-*-* } .-5 }
+   { DUP_dg-note {'t2' was declared here} {} { target *-*-* } vars }
+   { DUP_dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-8 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
 
 gentest (test3, "acc parallel loop gang worker vector_length (128) firstprivate (t1, t2)",
 	 "acc loop vector reduction(+:t1) reduction(-:t2)")
+/* { dg-warning {'t1' is used uninitialized} {} { target *-*-* } .-1 }
+   { DUP_dg-note {'t1' was declared here} {} { target *-*-* } vars }
+   { dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-4 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
+/* { dg-warning {'t2' is used uninitialized} {} { target *-*-* } .-5 }
+   { DUP_dg-note {'t2' was declared here} {} { target *-*-* } vars }
+   { DUP_dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-8 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
 
 gentest (test4, "acc parallel loop firstprivate (t1, t2)",
 	 "acc loop reduction(+:t1) reduction(-:t2)")
+/* { dg-warning {'t1' is used uninitialized} {} { target *-*-* } .-1 }
+   { DUP_dg-note {'t1' was declared here} {} { target *-*-* } vars }
+   { dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-4 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
+/* { dg-warning {'t2' is used uninitialized} {} { target *-*-* } .-5 }
+   { DUP_dg-note {'t2' was declared here} {} { target *-*-* } vars }
+   { DUP_dg-note {in expansion of macro 'gentest'} {} { target { ! offloading_enabled } } .-8 }
+     TODO See PR101551 for 'offloading_enabled' differences.  */
 
 
 int

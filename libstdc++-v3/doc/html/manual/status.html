@@ -325,6 +325,19 @@ particular release.
           instruction to read from an on-chip hardware random number generator.
           These tokens are only valid for x86 and x86_64 targets when both
           the assembler and CPU support the corresponding instruction.
+        </dd><dt><span class="term"><code class="literal">"darn"</code></span></dt><dd>
+          Use the Power ISA-3.0 <code class="literal">DARN</code>
+          ("Deliver A Random Number")
+          instruction to read from an on-chip hardware random number generator.
+          This token is only valid for 64-bit powerpc targets when both
+          the assembler and CPU support the corresponding instruction.
+        </dd><dt><span class="term"><code class="literal">"hw"</code>, </span><span class="term"><code class="literal">"hardware"</code></span></dt><dd>
+          Use any available CPU
+          instruction to read from an on-chip hardware random number generator.
+          This is equivalent to trying each of the following and using the
+          first that is supported:
+          <code class="literal">"rdseed"</code><code class="literal">"rdrand"</code><code class="literal">"darn"</code></dd><dt><span class="term"><code class="literal">"arc4random"</code>, </span><span class="term"><code class="literal">"getentropy"</code></span></dt><dd>
+          Use the named C library function, if available on the target.
         </dd><dt><span class="term"><code class="literal">"/dev/urandom"</code>, </span><span class="term"><code class="literal">"/dev/random"</code></span></dt><dd>
           Use the named character special file to read random bytes from.
           These tokens are only valid when the device files are present
@@ -576,13 +589,13 @@ this feature (if it has been implemented).
 The "SD-6 Feature Test" column shows the corresponding macro or header from
 <a class="link" href="https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations" target="_top">SD-6:
 Feature-testing recommendations for C++</a>.
-</p><div class="table"><a id="table.cxx17_features"></a><p class="title"><strong>Table 1.5. C++ 2017 Library Features</strong></p><div class="table-contents"><table class="table" summary="C++ 2017 Library Features" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Library Feature</th><th align="left">Proposal</th><th align="left">Status</th><th align="left">SD-6 Feature Test</th></tr></thead><tbody><tr bgcolor="#C8B0B0"><td align="left">
+</p><div class="table"><a id="table.cxx17_features"></a><p class="title"><strong>Table 1.5. C++ 2017 Library Features</strong></p><div class="table-contents"><table class="table" summary="C++ 2017 Library Features" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /><col align="left" class="c3" /><col align="left" class="c4" /></colgroup><thead><tr><th align="left">Library Feature</th><th align="left">Proposal</th><th align="left">Status</th><th align="left">SD-6 Feature Test</th></tr></thead><tbody><tr><td align="left">
 	<code class="code">constexpr std::hardware_{constructive,destructive}_interference_size</code>
       </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0154r1.html" target="_top">
 	P0154R1
 	</a>
-      </td><td align="center"> No </td><td align="left"> <code class="code">__cpp_lib_hardware_interference_size &gt;= 201603</code> </td></tr><tr><td align="left"> Core Issue 1776: Replacement of class objects containing reference members</td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_hardware_interference_size &gt;= 201603</code> </td></tr><tr><td align="left"> Core Issue 1776: Replacement of class objects containing reference members</td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0137r1.html" target="_top">
 	P0137R1
 	</a>
@@ -757,7 +770,7 @@ Feature-testing recommendations for C++</a>.
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0426r1.html" target="_top">
 	P0426R1
 	</a>
-      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_constexpr_char_traits &gt;= 201611 </code></td></tr><tr><td align="left"> Integrating <code class="code">std::string_view</code> and <code class="code">std::string</code> </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"><code class="code"> __cpp_lib_constexpr_string &gt;= 201611 </code></td></tr><tr><td align="left"> Integrating <code class="code">std::string_view</code> and <code class="code">std::string</code> </td><td align="left">
 	<a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0254r2.pdf" target="_top">
 	P0254R2
 	</a>
@@ -906,7 +919,7 @@ since C++14 and the implementation is complete.
 	<span class="emphasis"><em>21</em></span>
       </td><td colspan="3" align="left">
 	<span class="emphasis"><em>Language support</em></span>
-      </td></tr><tr><td align="left">21.1</td><td align="left">General</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.2</td><td align="left">Common definitions</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3</td><td align="left">Implementation properties</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.1</td><td align="left">General</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.2</td><td align="left">Header <code class="code">&lt;limits&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.3</td><td align="left">Floating-point type properties</td><td align="left"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">21.3.3.1</td><td align="left"><code class="code">float_round_style</code></td><td align="left">N</td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">21.3.3.2</td><td align="left"><code class="code">float_denorm_style</code></td><td align="left">N</td><td align="left"> </td></tr><tr><td align="left">21.3.4</td><td align="left">Class template <code class="code">numeric_limits</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.3.5</td><td align="left">Header <code class="code">&lt;climits&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.3.6</td><td align="left">Header <code class="code">&lt;cfloat&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.4</td><td align="left">Integer types</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.4.1</td><td align="left">Header <code class="code">&lt;cstdint&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr bgcolor="#B0B0B0"><td align="left">21.5</td><td align="left">Start and termination</td><td align="left">Partial</td><td align="left">C library dependency for quick_exit, at_quick_exit</td></tr><tr><td align="left">21.6</td><td align="left">Dynamic memory management</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.6.1</td><td align="left">Header <code class="code">&lt;new&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.6.2</td><td align="left">Storage allocation and deallocation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.6.3</td><td align="left">Storage allocation errors</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.6.4</td><td align="left">Pointer optimization barrier</td><td align="left">Y</td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">21.6.5</td><td align="left">Hardware interference size</td><td align="left">N</td><td align="left"> </td></tr><tr><td align="left">21.7</td><td align="left">Type identification</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8</td><td align="left">Exception handling</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.8.1</td><td align="left">Header <code class="code">&lt;exception&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.8.2</td><td align="left">Class exception</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.3</td><td align="left">Class bad_exception</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.4</td><td align="left">Abnormal termination</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.5</td><td align="left"><code class="code">uncaught_exceptions</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.6</td><td align="left">Exception Propagation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.7</td><td align="left"><code class="code">nested_exception</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.9</td><td align="left">Initializer lists</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.10</td><td align="left">Other runtime support</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
+      </td></tr><tr><td align="left">21.1</td><td align="left">General</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.2</td><td align="left">Common definitions</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3</td><td align="left">Implementation properties</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.1</td><td align="left">General</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.2</td><td align="left">Header <code class="code">&lt;limits&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.3.3</td><td align="left">Floating-point type properties</td><td align="left"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">21.3.3.1</td><td align="left"><code class="code">float_round_style</code></td><td align="left">N</td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">21.3.3.2</td><td align="left"><code class="code">float_denorm_style</code></td><td align="left">N</td><td align="left"> </td></tr><tr><td align="left">21.3.4</td><td align="left">Class template <code class="code">numeric_limits</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.3.5</td><td align="left">Header <code class="code">&lt;climits&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.3.6</td><td align="left">Header <code class="code">&lt;cfloat&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.4</td><td align="left">Integer types</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.4.1</td><td align="left">Header <code class="code">&lt;cstdint&gt;</code> synopsis</td><td align="left">Y</td><td align="left"> </td></tr><tr bgcolor="#B0B0B0"><td align="left">21.5</td><td align="left">Start and termination</td><td align="left">Partial</td><td align="left">C library dependency for quick_exit, at_quick_exit</td></tr><tr><td align="left">21.6</td><td align="left">Dynamic memory management</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.6.1</td><td align="left">Header <code class="code">&lt;new&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.6.2</td><td align="left">Storage allocation and deallocation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.6.3</td><td align="left">Storage allocation errors</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.6.4</td><td align="left">Pointer optimization barrier</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.6.5</td><td align="left">Hardware interference size</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.7</td><td align="left">Type identification</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8</td><td align="left">Exception handling</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.8.1</td><td align="left">Header <code class="code">&lt;exception&gt;</code> synopsis</td><td align="left"> </td><td align="left"> </td></tr><tr><td align="left">21.8.2</td><td align="left">Class exception</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.3</td><td align="left">Class bad_exception</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.4</td><td align="left">Abnormal termination</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.5</td><td align="left"><code class="code">uncaught_exceptions</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.6</td><td align="left">Exception Propagation</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.8.7</td><td align="left"><code class="code">nested_exception</code></td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.9</td><td align="left">Initializer lists</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">21.10</td><td align="left">Other runtime support</td><td align="left">Y</td><td align="left"> </td></tr><tr><td align="left">
 	<span class="emphasis"><em>22</em></span>
       </td><td colspan="3" align="left">
 	<span class="emphasis"><em>Diagnostics</em></span>
@@ -1233,8 +1246,8 @@ since C++14 and the implementation is complete.
                   vectorizable types with <code class="code">sizeof(T)</code> &lt; 4
                 </td><td align="left">"-mavx512bw" and "-mavx512vl"</td></tr></tbody></table></div></div><p><br class="table-break" />
      </p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="status.iso.2020"></a>C++ 2020</h3></div></div></div><p>
-In this implementation the <code class="literal">-std=gnu++2a</code> or
-<code class="literal">-std=c++2a</code> flag must be used to enable language
+In this implementation the <code class="literal">-std=gnu++20</code> or
+<code class="literal">-std=c++20</code> flag must be used to enable language
 and library
 features. See <a class="link" href="using.html#manual.intro.using.flags" title="Command Options">dialect</a>
 options. The pre-defined symbol
@@ -1272,13 +1285,13 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_is_constant_evaluated &gt;= 201811L</code> </td></tr><tr><td align="left">  More constexpr containers </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0784r7.html" target="_top">
         P0784R7 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_dynamic_alloc &gt;= 201907L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Making <code class="code">std::string</code> constexpr </td><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_dynamic_alloc &gt;= 201907L</code> </td></tr><tr><td align="left">  Making <code class="code">std::string</code> constexpr </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0980r1.pdf" target="_top">
         P0980R1 </a>
-      </td><td align="left"> </td><td align="left"> <code class="code">__cpp_lib_constexpr_string &gt;= 201907L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Making <code class="code">std::vector</code> constexpr </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_string &gt;= 201907L</code> </td></tr><tr><td align="left">  Making <code class="code">std::vector</code> constexpr </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1004r2.pdf" target="_top">
         P1004R2 </a>
-      </td><td align="left"> </td><td align="left"> <code class="code">__cpp_lib_constexpr_vector &gt;= 201907L</code> </td></tr><tr><td align="left">  Constexpr in <code class="code">std::pointer_traits</code> </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_vector &gt;= 201907L</code> </td></tr><tr><td align="left">  Constexpr in <code class="code">std::pointer_traits</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1006r1.pdf" target="_top">
         P1006R1 </a>
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_constexpr_memory &gt;= 201811L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  constexpr for <code class="code">&lt;numeric&gt;</code> algorithms </td><td align="left">
@@ -1327,7 +1340,7 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_bounded_array_traits &gt;= 201902L</code> </td></tr><tr><td align="left"> Layout-compatibility and pointer-interconvertibility traits </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0466r5.pdf" target="_top">
         P0466R5 </a>
-      </td><td align="center"> 12 </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left">
         <div class="informaltable"><table class="informaltable" border="0"><colgroup><col /></colgroup><tbody><tr><td> <code class="code">__cpp_lib_is_layout_compatible &gt;= 201907L</code> </td></tr><tr><td> <code class="code">__cpp_lib_is_pointer_interconvertible &gt;= 201907L</code> </td></tr></tbody></table></div>
       </td></tr><tr><td align="left">  Integrating feature-test macros into the C++ WD </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0941r2.html" target="_top">
@@ -1355,10 +1368,10 @@ or any notes about the implementation.
       </td><td align="center"> 9.1 </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  The Curious Case of Padding Bits, Featuring Atomic Compare-and-Exchange </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0528r3.html" target="_top">
         P0528R3 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Atomic <code class="code">shared_ptr</code> </td><td align="left">
+      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  Atomic <code class="code">shared_ptr</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0718r2.html" target="_top">
         P0718R2 </a>
-      </td><td align="center"> </td><td align="left"> <code class="code"> __cpp_lib_atomic_shared_ptr &gt;= 201711L</code> </td></tr><tr><td align="left"> std::stop_token and std::jthread </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code"> __cpp_lib_atomic_shared_ptr &gt;= 201711L</code> </td></tr><tr><td align="left"> std::stop_token and std::jthread </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0660r10.pdf" target="_top">
         P0660R10 </a>
       </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_jthread &gt;= 201907L</code> </td></tr><tr><td align="left"> Rename <code class="code">condition_variable_any</code> interruptible wait methods </td><td align="left">
@@ -1507,10 +1520,10 @@ or any notes about the implementation.
       </td></tr><tr><td align="left">  Utility to convert a pointer to a raw pointer </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0653r2.html" target="_top">
         P0653R2 </a>
-      </td><td align="center"> 8.1 </td><td align="left"> <code class="code">__cpp_lib_to_address &gt;= 201711L</code> (since 9.4, see Note 1) </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Extending <code class="code">make_shared</code> to Support Arrays </td><td align="left">
+      </td><td align="center"> 8.1 </td><td align="left"> <code class="code">__cpp_lib_to_address &gt;= 201711L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  Extending <code class="code">make_shared</code> to Support Arrays </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0674r1.html" target="_top">
         P0674R1 </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_shared_ptr_arrays &gt;= 201707L</code> </td></tr><tr><td align="left">  Efficient sized delete for variable sized classes </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_shared_ptr_arrays &gt;= 201707L</code> </td></tr><tr><td align="left">  Efficient sized delete for variable sized classes </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0722r3.html" target="_top">
         P0722R3 </a>
       </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_destroying_delete &gt;= 201806L</code> </td></tr><tr><td align="left">  Utility functions to implement uses-allocator construction </td><td align="left">
@@ -1521,10 +1534,10 @@ or any notes about the implementation.
       </td></tr><tr><td align="left">  <code class="code">std::assume_aligned</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1007r3.pdf" target="_top">
         P1007R3 </a>
-      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_assume_aligned &gt;= 201811L</code> (since 9.4, see Note 1) </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Smart pointer creation with default initialization </td><td align="left">
+      </td><td align="center"> 9.1 </td><td align="left"> <code class="code">__cpp_lib_assume_aligned &gt;= 201811L</code> (since 9.4, see Note 1) </td></tr><tr><td align="left">  Smart pointer creation with default initialization </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1020r1.html" target="_top">
         P1020R1 </a>
-      </td><td align="center"> </td><td align="left"> <code class="code">__cpp_lib_smart_ptr_for_overwrite &gt;= 201811L</code> </td></tr><tr><td align="left">  Make stateful allocator propagation more consistent for <code class="code">operator+(basic_string)</code> </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> <code class="code">__cpp_lib_smart_ptr_for_overwrite &gt;= 201811L</code> </td></tr><tr><td align="left">  Make stateful allocator propagation more consistent for <code class="code">operator+(basic_string)</code> </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1165r1.html" target="_top">
         P1165R1 </a>
       </td><td align="center"> 10.1 </td><td align="left"> </td></tr><tr><td align="left">
@@ -1566,10 +1579,10 @@ or any notes about the implementation.
       </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_int_pow2 &gt;= 202002L</code> </td></tr><tr><td align="left"> Safe integral comparisons </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p0586r2.html" target="_top">
         P0586R2 </a>
-      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_integer_comparison_functions &gt;= 202002L</code> </td></tr><tr bgcolor="#C8B0B0"><td align="left">  Reviewing Deprecated Facilities of C++17 for C++20 </td><td align="left">
+      </td><td align="center"> 10.1 </td><td align="left"> <code class="code">__cpp_lib_integer_comparison_functions &gt;= 202002L</code> </td></tr><tr><td align="left">  Reviewing Deprecated Facilities of C++17 for C++20 </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0619r4.html" target="_top">
         P0619R4 </a>
-      </td><td align="center"> </td><td align="left"> </td></tr><tr><td align="left">  <code class="code">fpos</code> Requirements </td><td align="left">
+      </td><td align="center"> 12.1 </td><td align="left"> </td></tr><tr><td align="left">  <code class="code">fpos</code> Requirements </td><td align="left">
         <a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0759r1.html" target="_top">
         P0759R1 </a>
       </td><td align="center"> — </td><td align="left"> </td></tr><tr><td align="left">  Add <code class="code">shift</code> to <code class="code">&lt;algorithm&gt;</code> </td><td align="left">

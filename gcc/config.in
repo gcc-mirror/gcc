@@ -2372,6 +2372,18 @@
 #endif
 
 
+/* The size of `dev_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_DEV_T
+#endif
+
+
+/* The size of `ino_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_INO_T
+#endif
+
+
 /* The size of `int', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_INT

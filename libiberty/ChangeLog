@@ -1,3 +1,7 @@
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	* regex.c: Suppress -Wuse-after-free.
+
 2021-12-30  Lancelot SIX  <lsix@lancelotsix.com>
 
 	* cp-demangle.c (d_clone_suffix): Support digits in clone tag

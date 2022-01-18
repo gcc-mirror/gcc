@@ -219,7 +219,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Y @tab Some are only stubs
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
-@item @code{allocate} clause @tab P @tab initial support in C/C++ only
+@item @code{allocate} clause @tab P @tab initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
       @tab P @tab Reverse offload unsupported

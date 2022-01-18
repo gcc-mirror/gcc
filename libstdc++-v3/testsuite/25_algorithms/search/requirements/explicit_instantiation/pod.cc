@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
@@ -31,9 +32,9 @@ namespace std
   typedef value_type* 		iterator_type;
   typedef std::pointer_to_binary_function<value_type, value_type, bool> predicate_type;
 
-  template iterator_type search(iterator_type, iterator_type, 
+  template iterator_type search(iterator_type, iterator_type,
 				iterator_type, iterator_type);
 
-  template iterator_type search(iterator_type, iterator_type, 
+  template iterator_type search(iterator_type, iterator_type,
 				iterator_type, iterator_type, predicate_type);
-} 
+}

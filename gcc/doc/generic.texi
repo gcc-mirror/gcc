@@ -912,7 +912,7 @@ tree_contains_struct[FOO_DECL][TS_DECL_MINIMAL] = 1;
 @end smallexample
 
 For @code{DECL} nodes that are part of the middle-end, the setup code
-goes into @file{tree.c}.
+goes into @file{tree.cc}.
 
 @item Add macros to access any new fields and flags
 
@@ -933,7 +933,7 @@ structures, something like the following should be used
 @end smallexample
 
 Reading them from the generated @file{all-tree.def} file (which in
-turn includes all the @file{tree.def} files), @file{gencheck.c} is
+turn includes all the @file{tree.def} files), @file{gencheck.cc} is
 used during GCC's build to generate the @code{*_CHECK} macros for all
 tree codes.
 
@@ -2371,8 +2371,8 @@ label the critical section.
 
 This does not represent any OpenMP directive, it is an artificial
 marker to indicate the end of the body of an OpenMP@. It is used
-by the flow graph (@code{tree-cfg.c}) and OpenMP region
-building code (@code{omp-low.c}).
+by the flow graph (@code{tree-cfg.cc}) and OpenMP region
+building code (@code{omp-low.cc}).
 
 @item OMP_CONTINUE
 

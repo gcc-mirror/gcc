@@ -89,6 +89,7 @@ test6 (void)
     abort ();
 }
 
+#ifdef __builtin_object_size
 void
 test7 (void)
 {
@@ -97,5 +98,6 @@ test7 (void)
   if (__builtin_object_size (p + 2, 0) != 0)
     abort ();
 }
+#endif
 
 /* { dg-final { scan-assembler-not "abort" } } */

@@ -88,7 +88,7 @@ REG_N_SETS (int regno)
 /* Given a REG, return TRUE if the reg is a PARM_DECL, FALSE otherwise.  */
 extern bool reg_is_parm_p (rtx);
 
-/* Functions defined in regstat.c.  */
+/* Functions defined in regstat.cc.  */
 extern void regstat_init_n_sets_and_refs (void);
 extern void regstat_free_n_sets_and_refs (void);
 extern void regstat_compute_ri (void);

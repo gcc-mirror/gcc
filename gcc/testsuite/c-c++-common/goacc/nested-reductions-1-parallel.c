@@ -2,11 +2,16 @@
 
 /* See also 'gfortran.dg/goacc/nested-reductions-1-parallel.f90'. */
 
+/* { dg-additional-options -Wuninitialized } */
+
 void acc_parallel (void)
 {
   int i, j, k, sum, diff;
 
   #pragma acc parallel
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   {
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
@@ -74,6 +79,9 @@ void acc_parallel_loop (void)
   int i, j, k, l, sum, diff;
 
   #pragma acc parallel loop
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   for (int h = 0; h < 10; ++h)
   {
     #pragma acc loop reduction(+:sum)
@@ -143,6 +151,9 @@ void acc_parallel_reduction (void)
   int i, j, k, sum, diff;
 
   #pragma acc parallel reduction(+:sum)
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   {
     for (i = 0; i < 10; i++)
       for (j = 0; j < 10; j++)
@@ -233,6 +244,9 @@ void acc_parallel_loop_reduction (void)
   int i, j, k, sum, diff;
 
   #pragma acc parallel loop reduction(+:sum)
+  /* implicit 'copy (sum, diff)'
+     { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+     { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 } */
   for (int h = 0; h < 10; ++h)
   {
     for (i = 0; i < 10; i++)

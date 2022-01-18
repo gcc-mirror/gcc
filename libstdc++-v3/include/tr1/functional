@@ -264,6 +264,10 @@ namespace tr1
       typedef void type;
     };
 
+// Ignore warnings about std::unary_function and std::binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
     struct _Derives_from_unary_function : __sfinae_types
@@ -2089,6 +2093,7 @@ namespace tr1
       typedef _Res (*_Invoker_type)(const _Any_data&, _ArgTypes...);
       _Invoker_type _M_invoker;
   };
+#pragma GCC diagnostic pop
 
   template<typename _Res, typename... _ArgTypes>
     function<_Res(_ArgTypes...)>::

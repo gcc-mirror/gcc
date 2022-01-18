@@ -29,7 +29,7 @@
 /* Run-time Target Specification.  */
 #define TARGET_MCORE
 
-/* Get tree.c to declare a target-specific specialization of
+/* Get tree.cc to declare a target-specific specialization of
    merge_decl_attributes.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
@@ -482,7 +482,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) < AP_REG || (unsigned) reg_renumber[(REGNO)] < AP_REG)

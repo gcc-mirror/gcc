@@ -12,8 +12,10 @@ program foo
    real x
    real(8) y
 
-   x = ieee_value(x, ieee_signaling_nan)
-   if (.not. ieee_is_nan(x)) stop 1
+   ! At this point it is unclear what the behavior should be
+   ! for -ffpe-trap=invalid with a signaling NaN
+   !x = ieee_value(x, ieee_signaling_nan)
+   !if (.not. ieee_is_nan(x)) stop 1
    x = ieee_value(x, ieee_quiet_nan)
    if (.not. ieee_is_nan(x)) stop 2
 
@@ -22,8 +24,10 @@ program foo
    x = ieee_value(x, ieee_negative_inf)
    if (ieee_is_finite(x)) stop 4
 
-   y = ieee_value(y, ieee_signaling_nan)
-   if (.not. ieee_is_nan(y)) stop 5
+   ! At this point it is unclear what the behavior should be
+   ! for -ffpe-trap=invalid with a signaling NaN
+   !y = ieee_value(y, ieee_signaling_nan)
+   !if (.not. ieee_is_nan(y)) stop 5
    y = ieee_value(y, ieee_quiet_nan)
    if (.not. ieee_is_nan(y)) stop 6
 

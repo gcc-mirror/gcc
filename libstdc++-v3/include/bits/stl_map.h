@@ -126,6 +126,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
     public:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       class value_compare
       : public std::binary_function<value_type, value_type, bool>
       {
@@ -140,6 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	bool operator()(const value_type& __x, const value_type& __y) const
 	{ return comp(__x.first, __y.first); }
       };
+#pragma GCC diagnostic pop
 
     private:
       /// This turns a red-black tree into a [multi]map.

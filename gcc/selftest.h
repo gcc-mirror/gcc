@@ -143,8 +143,8 @@ class auto_fix_quotes
    of situations:
    - line_table->default_range_bits: some frontends use a non-zero value
    and others use zero
-   - the fallback modes within line-map.c: there are various threshold
-   values for location_t beyond line-map.c changes
+   - the fallback modes within line-map.cc: there are various threshold
+   values for location_t beyond line-map.cc changes
    behavior (disabling of the range-packing optimization, disabling
    of column-tracking).  We can exercise these by starting the line_table
    at interesting values at or near these thresholds.

@@ -1,3 +1,4 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile { target c++11 } }
 
 // 2011-01-13  Paolo Carlini  <paolo.carlini@oracle.com>

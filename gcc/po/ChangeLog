@@ -1,3 +1,7 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* EXCLUDES: Rename .c names to .cc.
+
 2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* EXCLUDES: Remove d/dmd sources from list.

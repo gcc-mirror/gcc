@@ -1,6 +1,6 @@
 /* PR target/100637 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse4" } */
+/* { dg-options "-O2 -msse2" } */
 
 typedef unsigned short __attribute__((__vector_size__ (4))) __v2hu;
 typedef short __attribute__((__vector_size__ (4))) __v2hi;

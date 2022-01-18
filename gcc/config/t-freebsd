@@ -16,6 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-freebsd-d.o: $(srcdir)/config/freebsd-d.c
+freebsd-d.o: $(srcdir)/config/freebsd-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
