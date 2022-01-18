@@ -728,10 +728,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	else
 	  _M_construct(__str.begin(), __str.end(), std::forward_iterator_tag());
       }
+#endif // C++11
 
+#if __cplusplus >= 202100L
       basic_string(nullptr_t) = delete;
       basic_string& operator=(nullptr_t) = delete;
-#endif // C++11
+#endif // C++23
 
       /**
        *  @brief  Construct string as copy of a range.
