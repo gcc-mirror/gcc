@@ -3307,7 +3307,7 @@ rs6000_invalid_builtin (enum rs6000_gen_builtins fncode)
 	     "-mvsx");
       break;
     case ENB_IEEE128_HW:
-      error ("%qs requires ISA 3.0 IEEE 128-bit floating point", name);
+      error ("%qs requires quad-precision floating-point arithmetic", name);
       break;
     case ENB_DFP:
       error ("%qs requires the %qs option", name, "-mhard-dfp");
