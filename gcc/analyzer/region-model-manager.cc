@@ -209,6 +209,7 @@ const svalue *
 region_model_manager::get_or_create_constant_svalue (tree cst_expr)
 {
   gcc_assert (cst_expr);
+  gcc_assert (CONSTANT_CLASS_P (cst_expr));
 
   constant_svalue **slot = m_constants_map.get (cst_expr);
   if (slot)
@@ -426,7 +427,23 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
   /* Constants.  */
   if (tree cst = arg->maybe_get_constant ())
     if (tree result = fold_unary (op, type, cst))
-      return get_or_create_constant_svalue (result);
+      {
+	if (CONSTANT_CLASS_P (result))
+	  return get_or_create_constant_svalue (result);
+
+	/* fold_unary can return casts of constants; try to handle them.  */
+	if (op != NOP_EXPR
+		 && type
+		 && TREE_CODE (result) == NOP_EXPR
+		 && CONSTANT_CLASS_P (TREE_OPERAND (result, 0)))
+	  {
+	    const svalue *inner_cst
+	      = get_or_create_constant_svalue (TREE_OPERAND (result, 0));
+	    return get_or_create_cast (type,
+				       get_or_create_cast (TREE_TYPE (result),
+							   inner_cst));
+	  }
+      }
 
   return NULL;
 }
