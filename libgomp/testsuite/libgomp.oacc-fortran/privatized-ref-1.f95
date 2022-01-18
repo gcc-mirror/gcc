@@ -96,7 +96,7 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop gang ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
@@ -120,7 +120,7 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop gang worker ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
@@ -144,7 +144,7 @@ contains
     real, intent(out) :: res(:)
 
     !$acc parallel copyout(res) num_gangs(64) num_workers(64)
-    ! { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
+    ! { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } .-1 }
 
     !$acc loop collapse(2) gang worker vector private(t1) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }

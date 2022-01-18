@@ -69,7 +69,7 @@ void workers (void)
 #pragma acc parallel copyout(res) num_gangs(64) num_workers(64) /* { dg-line l_compute[incr c_compute] } */
   /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
 #pragma acc loop gang /* { dg-line l_loop[incr c_loop] } */
@@ -105,7 +105,7 @@ void vectors (void)
 #pragma acc parallel copyout(res) num_gangs(64) num_workers(64) /* { dg-line l_compute[incr c_compute] } */
   /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
 #pragma acc loop gang worker /* { dg-line l_loop[incr c_loop] } */
@@ -141,7 +141,7 @@ void gangs_workers_vectors (void)
 #pragma acc parallel copyout(res) num_gangs(64) num_workers(64) /* { dg-line l_compute[incr c_compute] } */
   /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-  /* { dg-warning "using num_workers \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
+  /* { dg-warning "using .num_workers. \\(32\\), ignoring 64" "" { target openacc_nvidia_accel_selected } l_compute$c_compute } */
   {
     int i, j;
 #pragma acc loop collapse(2) gang worker vector /* { dg-line l_loop[incr c_loop] } */

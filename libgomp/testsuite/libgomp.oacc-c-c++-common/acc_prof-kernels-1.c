@@ -189,7 +189,7 @@ int main()
     int x[N];
 #pragma acc kernels \
   num_gangs (30) num_workers (3) vector_length (5)
-    /* { dg-prune-output "using vector_length \\(32\\), ignoring 5" } */
+    /* { dg-prune-output "using .vector_length. \\(32\\), ignoring 5" } */
     {
       for (int i = 0; i < N; ++i)
 	x[i] = i * i;
@@ -214,7 +214,7 @@ int main()
     int x[N];
 #pragma acc kernels \
   num_gangs (num_gangs) num_workers (num_workers) vector_length (vector_length)
-    /* { dg-prune-output "using vector_length \\(32\\), ignoring runtime setting" } */
+    /* { dg-prune-output "using .vector_length. \\(32\\), ignoring runtime setting" } */
     {
       for (int i = 0; i < N; ++i)
 	x[i] = i * i;

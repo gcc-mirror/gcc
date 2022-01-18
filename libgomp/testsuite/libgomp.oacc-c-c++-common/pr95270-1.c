@@ -16,7 +16,7 @@ main ()
 
   /* Test attach/detach directives.  */
 #pragma acc enter data attach(data_p)
-#pragma acc serial copyout(ptrbits) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
+#pragma acc serial copyout(ptrbits) /* { dg-warning "using .vector_length. \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
   {
     ptrbits = (uintptr_t) data_p;
   }
@@ -28,7 +28,7 @@ main ()
 
   /* Test attach/detach API call.  */
   acc_attach ((void **) &data_p);
-#pragma acc serial copyout(ptrbits) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
+#pragma acc serial copyout(ptrbits) /* { dg-warning "using .vector_length. \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
   {
     ptrbits = (uintptr_t) data_p;
   }

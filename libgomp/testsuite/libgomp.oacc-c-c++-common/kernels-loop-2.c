@@ -24,7 +24,7 @@ main (void)
   /* Parallelism dimensions: variable.  */
 #pragma acc kernels copyout (b[0:N]) \
   num_gangs (3 + a[3]) num_workers (5 + a[5]) vector_length (7 + a[7])
-  /* { dg-prune-output "using vector_length \\(32\\), ignoring runtime setting" } */
+  /* { dg-prune-output "using .vector_length. \\(32\\), ignoring runtime setting" } */
   {
     for (COUNTERTYPE i = 0; i < N; i++)
       b[i] = i * 4;
@@ -33,7 +33,7 @@ main (void)
   /* Parallelism dimensions: literal.  */
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) \
   num_gangs (3) num_workers (5) vector_length (7)
-  /* { dg-prune-output "using vector_length \\(32\\), ignoring 7" } */
+  /* { dg-prune-output "using .vector_length. \\(32\\), ignoring 7" } */
   {
     for (COUNTERTYPE ii = 0; ii < N; ii++)
       c[ii] = a[ii] + b[ii];

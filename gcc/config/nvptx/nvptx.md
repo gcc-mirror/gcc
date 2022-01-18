@@ -1410,7 +1410,7 @@
    (match_operand 3 "" "")]
   ""
 {
-  sorry ("target cannot support nonlocal goto.");
+  sorry ("target cannot support nonlocal goto");
   emit_insn (gen_nop ());
   DONE;
 })
@@ -1419,7 +1419,7 @@
   [(const_int 0)]
   ""
 {
-  sorry ("target cannot support nonlocal goto.");
+  sorry ("target cannot support nonlocal goto");
 })
 
 (define_expand "allocate_stack"
@@ -1438,7 +1438,7 @@
   /* The ptx documentation specifies an alloca intrinsic (for 32 bit
      only)  but notes it is not implemented.  The assembler emits a
      confused error message.  Issue a blunt one now instead.  */
-  sorry ("target cannot support alloca.");
+  sorry ("target cannot support alloca");
   emit_insn (gen_nop ());
   DONE;
 })

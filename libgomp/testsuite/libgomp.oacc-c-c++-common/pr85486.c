@@ -31,7 +31,7 @@ main (void)
 
   int err = 0;
 
-#pragma acc parallel copy (ary) VECTOR_LENGTH /* { dg-warning "using vector_length \\(32\\) due to call to vector-partitionable routine, ignoring 128" } */
+#pragma acc parallel copy (ary) VECTOR_LENGTH /* { dg-warning "using .vector_length. \\(32\\) due to call to vector-partitionable routine, ignoring 128" } */
   {
     Vector (&ary[0][0], m * n, (1 << 24) - (1 << 16));
   }

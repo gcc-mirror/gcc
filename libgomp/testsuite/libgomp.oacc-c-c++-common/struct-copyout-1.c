@@ -23,7 +23,7 @@ main (int argc, char *argv[])
 
   #pragma acc enter data copyin(t.s)
 
-  #pragma acc serial present(t.s) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
+  #pragma acc serial present(t.s) /* { dg-warning "using .vector_length. \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */
   {
     t.s.a = 5;
     t.s.b = 6;

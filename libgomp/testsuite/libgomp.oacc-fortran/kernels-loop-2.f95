@@ -16,7 +16,7 @@ program main
   ! Parallelism dimensions: variable.
   !$acc kernels copyout (b(0:n-1)) &
   !$acc num_gangs (3 + a(3)) num_workers (5 + a(5)) vector_length (7 + a(7))
-  ! { dg-prune-output "using vector_length \\(32\\), ignoring runtime setting" }
+  ! { dg-prune-output "using .vector_length. \\(32\\), ignoring runtime setting" }
   do i = 0, n -1
      b(i) = i * 4
   end do
@@ -25,7 +25,7 @@ program main
   ! Parallelism dimensions: literal.
   !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) &
   !$acc num_gangs (3) num_workers (5) vector_length (7)
-  ! { dg-prune-output "using vector_length \\(32\\), ignoring 7" }
+  ! { dg-prune-output "using .vector_length. \\(32\\), ignoring 7" }
   do ii = 0, n - 1
      c(ii) = a(ii) + b(ii)
   end do
