@@ -772,6 +772,15 @@ package body Scng is
             if UI_Scale = 0 then
                Int_Literal_Value := UI_Num_Value;
 
+            --  When the exponent is large, computing is expected to take a
+            --  rather unreasonable time. We generate an error so that it
+            --  does not appear that the compiler has gotten stuck. Such a
+            --  large exponent is most likely a typo anyway.
+
+            elsif UI_Scale >= 800_000 then
+               Error_Msg_SC ("exponent too large");
+               Int_Literal_Value := No_Uint;
+
             --  Avoid doing possibly expensive calculations in cases like
             --  parsing 163E800_000# when semantics will not be done anyway.
             --  This is especially useful when parsing garbled input.
