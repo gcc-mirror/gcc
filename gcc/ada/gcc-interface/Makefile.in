@@ -350,6 +350,13 @@ ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
   endif
 endif
 
+# The x86_64-linux-gnux32 compiler is actually an x32 compiler
+ifeq ($(strip $(filter-out x86_64 linux-gnux32%, $(target_cpu) $(target_os))),)
+  ifneq ($(strip $(MULTISUBDIR)),/64)
+    target_cpu:=x32
+  endif
+endif
+
 # The SuSE PowerPC64/Linux compiler is actually a 32-bit PowerPC compiler
 ifeq ($(strip $(filter-out powerpc64 suse linux%, $(target_cpu) $(target_vendor) $(target_os))),)
   target_cpu:=powerpc
