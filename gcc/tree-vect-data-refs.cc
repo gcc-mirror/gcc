@@ -3172,8 +3172,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	    break;
 
 	  /* Check that the DR_INITs are compile-time constants.  */
-	  if (TREE_CODE (DR_INIT (dra)) != INTEGER_CST
-	      || TREE_CODE (DR_INIT (drb)) != INTEGER_CST)
+	  if (!tree_fits_shwi_p (DR_INIT (dra))
+	      || !tree_fits_shwi_p (DR_INIT (drb)))
 	    break;
 
 	  /* Different .GOMP_SIMD_LANE calls still give the same lane,
@@ -3203,15 +3203,18 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	    {
 	      /* If init_b == init_a + the size of the type * k, we have an
 		 interleaving, and DRA is accessed before DRB.  */
-	      HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
+	      unsigned HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
 	      if (type_size_a == 0
-		  || (init_b - init_a) % type_size_a != 0)
+		  || (((unsigned HOST_WIDE_INT)init_b - init_a)
+		      % type_size_a != 0))
 		break;
 
 	      /* If we have a store, the accesses are adjacent.  This splits
 		 groups into chunks we support (we don't support vectorization
 		 of stores with gaps).  */
-	      if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
+	      if (!DR_IS_READ (dra)
+		  && (((unsigned HOST_WIDE_INT)init_b - init_prev)
+		      != type_size_a))
 		break;
 
 	      /* If the step (if not zero or non-constant) is smaller than the
@@ -3222,7 +3225,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 		  unsigned HOST_WIDE_INT step
 		    = absu_hwi (tree_to_shwi (DR_STEP (dra)));
 		  if (step != 0
-		      && step <= (unsigned HOST_WIDE_INT)(init_b - init_a))
+		      && step <= ((unsigned HOST_WIDE_INT)init_b - init_a))
 		    break;
 		}
 	    }
