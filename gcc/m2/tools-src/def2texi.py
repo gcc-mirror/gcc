@@ -3,7 +3,7 @@
 # def2texi.py creates texi library documentation for all exported procedures.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
-# Copyright (C) 2000-2021 Free Software Foundation, Inc.
+# Copyright (C) 2000-2022 Free Software Foundation, Inc.
 # This file is part of GNU Modula-2.
 #
 # GNU Modula-2 is free software; you can redistribute it and/or modify
@@ -378,7 +378,7 @@ def displayModules(up, dir, build, source):
 
 
 def displayCopyright ():
-    print("@c Copyright (C) 2000-2019 Free Software Foundation, Inc.")
+    print("@c Copyright (C) 2000-2022 Free Software Foundation, Inc.")
     print("@c This file is part of GNU Modula-2.")
     print("""
 @c Permission is granted to copy, distribute and/or modify this document

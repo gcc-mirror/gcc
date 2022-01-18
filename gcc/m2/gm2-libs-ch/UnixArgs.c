@@ -1,6 +1,6 @@
 /* UnixArgs.c provide access to the underlying argv, argc.
 
-Copyright (C) 2010-2021 Free Software Foundation, Inc.
+Copyright (C) 2010-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

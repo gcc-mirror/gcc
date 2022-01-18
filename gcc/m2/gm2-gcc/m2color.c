@@ -1,6 +1,6 @@
 /* m2color.c interface to gcc colorization.
 
-Copyright (C) 2019-2021 Free Software Foundation, Inc.
+Copyright (C) 2019-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
