@@ -4557,7 +4557,7 @@ test_prediction_value_range ()
 /* Run all of the selfests within this file.  */
 
 void
-predict_c_tests ()
+predict_cc_tests ()
 {
   test_prediction_value_range ();
 }

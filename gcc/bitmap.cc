@@ -2976,7 +2976,7 @@ test_aligned_chunk (unsigned num_bits)
 /* Run all of the selftests within this file.  */
 
 void
-bitmap_c_tests ()
+bitmap_cc_tests ()
 {
   test_gc_alloc ();
   test_set_range ();

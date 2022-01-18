@@ -1007,7 +1007,7 @@ test_merge ()
 
 
 void
-ipa_modref_tree_c_tests ()
+ipa_modref_tree_cc_tests ()
 {
   test_insert_search_collapse ();
   test_merge ();

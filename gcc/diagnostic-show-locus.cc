@@ -5658,7 +5658,7 @@ test_line_numbers_multiline_range ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_show_locus_c_tests ()
+diagnostic_show_locus_cc_tests ()
 {
   test_line_span ();
 

@@ -396,7 +396,7 @@ test_completion_garbage (option_proposer &proposer)
 /* Run all of the selftests within this file.  */
 
 void
-opt_proposer_c_tests ()
+opt_suggestions_cc_tests ()
 {
   option_proposer proposer;
 

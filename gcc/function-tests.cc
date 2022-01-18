@@ -687,7 +687,7 @@ test_expansion_to_rtl ()
 /* Run all of the selftests within this file.  */
 
 void
-function_tests_c_tests ()
+function_tests_cc_tests ()
 {
   test_fndecl_int_void ();
   test_fndecl_float_intchar ();

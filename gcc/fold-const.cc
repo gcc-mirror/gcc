@@ -16784,7 +16784,7 @@ test_vec_duplicate_folding ()
 /* Run all of the selftests within this file.  */
 
 void
-fold_const_c_tests ()
+fold_const_cc_tests ()
 {
   test_arithmetic_folding ();
   test_vector_folding ();

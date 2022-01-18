@@ -3885,7 +3885,7 @@ void test_cpp_utf8 ()
 /* Run all of the selftests within this file.  */
 
 void
-input_c_tests ()
+input_cc_tests ()
 {
   test_linenum_comparisons ();
   test_should_have_column_data_p ();

@@ -33058,7 +33058,7 @@ dwarf2out_early_finish (const char *filename)
    within the same process.  For use by toplev::finalize.  */
 
 void
-dwarf2out_c_finalize (void)
+dwarf2out_cc_finalize (void)
 {
   last_var_location_insn = NULL;
   cached_next_real_insn = NULL;

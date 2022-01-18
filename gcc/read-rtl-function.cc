@@ -2204,7 +2204,7 @@ test_loading_repeat ()
 /* Run all of the selftests within this file.  */
 
 void
-read_rtl_function_c_tests ()
+read_rtl_function_cc_tests ()
 {
   test_edge_flags ();
   test_parsing_regnos ();

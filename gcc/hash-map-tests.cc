@@ -467,7 +467,7 @@ test_nonzero_empty_key ()
 /* Run all of the selftests within this file.  */
 
 void
-hash_map_tests_c_tests ()
+hash_map_tests_cc_tests ()
 {
   test_map_of_strings_to_int ();
   test_map_of_int_to_strings ();

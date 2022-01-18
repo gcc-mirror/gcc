@@ -1189,6 +1189,6 @@ tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
 /* In ipa-cp.cc  */
-void ipa_cp_c_finalize (void);
+void ipa_cp_cc_finalize (void);
 
 #endif /* IPA_PROP_H */

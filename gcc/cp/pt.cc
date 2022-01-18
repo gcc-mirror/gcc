@@ -30581,7 +30581,7 @@ test_type_dependent_expression_p ()
 /* Run all of the selftests within this file.  */
 
 void
-cp_pt_c_tests ()
+cp_pt_cc_tests ()
 {
   test_build_non_dependent_expr ();
   test_type_dependent_expression_p ();

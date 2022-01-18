@@ -8641,8 +8641,8 @@ namespace selftest {
 
   /* Declarations for specific families of tests within cp,
      by source file, in alphabetical order.  */
-  extern void cp_pt_c_tests ();
-  extern void cp_tree_c_tests (void);
+  extern void cp_pt_cc_tests ();
+  extern void cp_tree_cc_tests (void);
 } // namespace selftest
 #endif /* #if CHECKING_P */
 

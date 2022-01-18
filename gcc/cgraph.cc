@@ -4077,7 +4077,7 @@ cgraph_node::get_fun () const
    within the same process.  For use by toplev::finalize.  */
 
 void
-cgraph_c_finalize (void)
+cgraph_cc_finalize (void)
 {
   nested_function_info::release ();
   thunk_info::release ();
@@ -4261,7 +4261,7 @@ test_symbol_table_test ()
 /* Run all of the selftests within this file.  */
 
 void
-cgraph_c_tests ()
+cgraph_cc_tests ()
 {
   test_symbol_table_test ();
 }

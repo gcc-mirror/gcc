@@ -72,7 +72,7 @@ test_str_to_int ()
 /* Run all of the selftests within this file.  */
 
 void
-typed_splay_tree_c_tests ()
+typed_splay_tree_cc_tests ()
 {
   test_str_to_int ();
 }

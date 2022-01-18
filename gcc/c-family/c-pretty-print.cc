@@ -2999,7 +2999,7 @@ test_location_wrappers ()
 /* Run all of the selftests within this file.  */
 
 void
-c_pretty_print_c_tests ()
+c_pretty_print_cc_tests ()
 {
   test_location_wrappers ();
 }

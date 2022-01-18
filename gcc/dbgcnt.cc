@@ -272,7 +272,7 @@ test_sorted_dbg_counters ()
 }
 
 void
-dbgcnt_c_tests ()
+dbgcnt_cc_tests ()
 {
   test_sorted_dbg_counters ();
 }
