@@ -614,7 +614,7 @@ nds32_check_isr_attrs_conflict (tree func_decl, tree func_attrs)
     partial_save_p = 1;
 
   if ((save_all_p + partial_save_p) > 1)
-    error ("multiple save reg attributes to function %qD", func_decl);
+    error ("multiple save register attributes to function %qD", func_decl);
 
   /* We must check at MOST one attribute to set nested-type.  */
   if (lookup_attribute ("nested", func_attrs))
