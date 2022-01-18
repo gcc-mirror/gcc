@@ -794,7 +794,8 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 
   if (const repeated_svalue *repeated_sval
 	= parent_svalue->dyn_cast_repeated_svalue ())
-    return get_or_create_cast (type, repeated_sval->get_inner_svalue ());
+    if (type)
+      return get_or_create_cast (type, repeated_sval->get_inner_svalue ());
 
   return NULL;
 }
