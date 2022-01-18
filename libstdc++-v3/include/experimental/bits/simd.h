@@ -283,20 +283,34 @@ constexpr inline bool __have_power_vmx = __have_power_vsx;
 
 namespace __detail
 {
-  constexpr bool __handle_fpexcept =
 #ifdef math_errhandling
-    math_errhandling & MATH_ERREXCEPT;
-#elif defined __FAST_MATH__
-    false;
-#else
-    true;
+  // Determines _S_handle_fpexcept from math_errhandling if it is defined and expands to a constant
+  // expression. math_errhandling may expand to an extern symbol, in which case a constexpr value
+  // must be guessed.
+  template <int = math_errhandling>
+    constexpr bool __handle_fpexcept_impl(int)
+    { return math_errhandling & MATH_ERREXCEPT; }
 #endif
+
+  // Fallback if math_errhandling doesn't work: with fast-math assume floating-point exceptions are
+  // ignored, otherwise implement correct exception behavior.
+  constexpr bool __handle_fpexcept_impl(float)
+  {
+#if defined __FAST_MATH__
+    return false;
+#else
+    return true;
+#endif
+  }
+
+  /// True if math functions must raise floating-point exceptions as specified by C17.
+  static constexpr bool _S_handle_fpexcept = __handle_fpexcept_impl(0);
 
   constexpr std::uint_least64_t
   __floating_point_flags()
   {
     std::uint_least64_t __flags = 0;
-    if constexpr (__handle_fpexcept)
+    if constexpr (_S_handle_fpexcept)
       __flags |= 1;
 #ifdef __FAST_MATH__
     __flags |= 1 << 1;
