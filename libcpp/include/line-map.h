@@ -792,6 +792,9 @@ public:
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 
+  /* True if we've seen a #line or # 44 "file" directive.  */
+  bool seen_line_directive;
+
   /* Highest location_t "given out".  */
   location_t highest_location;
 
@@ -814,9 +817,6 @@ public:
   /* The special location value that is used as spelling location for
      built-in tokens.  */
   location_t builtin_location;
-
-  /* True if we've seen a #line or # 44 "file" directive.  */
-  bool seen_line_directive;
 
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
@@ -1816,16 +1816,16 @@ protected:
   int m_column_override;
 
   bool m_have_expanded_location;
+  bool m_seen_impossible_fixit;
+  bool m_fixits_cannot_be_auto_applied;
+  bool m_escape_on_output;
+
   expanded_location m_expanded_location;
 
   static const int MAX_STATIC_FIXIT_HINTS = 2;
   semi_embedded_vec <fixit_hint *, MAX_STATIC_FIXIT_HINTS> m_fixit_hints;
 
-  bool m_seen_impossible_fixit;
-  bool m_fixits_cannot_be_auto_applied;
-
   const diagnostic_path *m_path;
-  bool m_escape_on_output;
 };
 
 /* A struct for the result of range_label::get_text: a NUL-terminated buffer
