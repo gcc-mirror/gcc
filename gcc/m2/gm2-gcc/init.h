@@ -1,4 +1,4 @@
-/* init.h header file for init.c.
+/* init.h header file for init.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

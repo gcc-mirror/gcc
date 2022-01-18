@@ -1,4 +1,4 @@
-/* m2decl.c provides an interface to GCC decl trees.
+/* m2decl.cc provides an interface to GCC decl trees.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

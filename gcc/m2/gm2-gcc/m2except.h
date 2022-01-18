@@ -1,4 +1,4 @@
-/* m2except.h header file for m2except.c.
+/* m2except.h header file for m2except.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

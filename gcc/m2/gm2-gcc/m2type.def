@@ -1,4 +1,4 @@
-(* m2type.def definition module for m2type.c.
+(* m2type.def definition module for m2type.cc.
 
 Copyright (C) 2011-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.

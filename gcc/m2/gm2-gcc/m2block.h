@@ -1,4 +1,4 @@
-/* m2block.h header file for m2block.c.
+/* m2block.h header file for m2block.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

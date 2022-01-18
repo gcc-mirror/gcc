@@ -1,4 +1,4 @@
-/* m2statement.h header file for m2statement.c.
+/* m2statement.h header file for m2statement.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

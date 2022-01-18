@@ -1,6 +1,6 @@
-/* m2misc.c miscellaneous tree debugging functions.
+/* m2color.cc interface to gcc colorization.
 
-Copyright (C) 2012-2022 Free Software Foundation, Inc.
+Copyright (C) 2019-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -19,38 +19,42 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define m2color_c
+#include "m2color.h"
+
 #include "gcc-consolidation.h"
+#include "diagnostic-color.h"
 
-#include "../m2-tree.h"
-#include "tree-iterator.h"
 
-#define m2misc_c
-#include "m2block.h"
-#include "m2misc.h"
-#include "m2tree.h"
-
-/* DebugTree - display the tree, t.  */
-
-void
-m2misc_DebugTree (tree t)
+const char *m2color_colorize_start (bool show_color, char *name, unsigned int name_len)
 {
-  debug_tree (t);
+  return colorize_start (show_color, name, name_len);
 }
 
-/* DebugTree - display the tree, t.  */
 
-void
-m2misc_DebugTreeChain (tree t)
+const char *m2color_colorize_stop (bool show_color)
 {
-  for (; (t != NULL); t = TREE_CHAIN (t))
-    debug_tree (t);
+  return colorize_stop (show_color);
 }
 
-/* DebugTree - display the tree, t.  */
 
-void
-m2misc_printStmt (void)
+const char *m2color_open_quote (void)
 {
-  if (m2block_cur_stmt_list () != NULL)
-    debug_tree (m2block_cur_stmt_list ());
+  return open_quote;
+}
+
+
+const char *m2color_close_quote (void)
+{
+  return close_quote;
+}
+
+
+void _M2_m2color_init ()
+{
+}
+
+
+void _M2_m2color_finish ()
+{
 }

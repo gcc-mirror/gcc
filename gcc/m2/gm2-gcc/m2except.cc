@@ -1,4 +1,4 @@
-/* m2except.c implements the construction of exception trees.
+/* m2except.cc implements the construction of exception trees.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

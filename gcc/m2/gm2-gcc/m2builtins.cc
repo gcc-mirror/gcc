@@ -1,4 +1,4 @@
-/* m2builtins.c provides an interface to the GCC builtins.
+/* m2builtins.cc provides an interface to the GCC builtins.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

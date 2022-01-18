@@ -1,4 +1,4 @@
-/* m2assert.h header file for m2assert.c and assertion macros.
+/* m2assert.h header file for m2assert.cc and assertion macros.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

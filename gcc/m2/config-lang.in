@@ -42,16 +42,16 @@ lang_requires_boot_languages=c++
 # Do not build by default.
 build_by_default="no"
 
-gtfiles="\$(srcdir)/m2/gm2-lang.c \
+gtfiles="\$(srcdir)/m2/gm2-lang.cc \
          \$(srcdir)/m2/gm2-lang.h \
-         \$(srcdir)/m2/gm2-gcc/rtegraph.c \
-         \$(srcdir)/m2/gm2-gcc/m2block.c \
-         \$(srcdir)/m2/gm2-gcc/m2builtins.c \
-         \$(srcdir)/m2/gm2-gcc/m2decl.c \
-         \$(srcdir)/m2/gm2-gcc/m2except.c \
-         \$(srcdir)/m2/gm2-gcc/m2expr.c \
-         \$(srcdir)/m2/gm2-gcc/m2statement.c \
-         \$(srcdir)/m2/gm2-gcc/m2type.c"
+         \$(srcdir)/m2/gm2-gcc/rtegraph.cc \
+         \$(srcdir)/m2/gm2-gcc/m2block.cc \
+         \$(srcdir)/m2/gm2-gcc/m2builtins.cc \
+         \$(srcdir)/m2/gm2-gcc/m2decl.cc \
+         \$(srcdir)/m2/gm2-gcc/m2except.cc \
+         \$(srcdir)/m2/gm2-gcc/m2expr.cc \
+         \$(srcdir)/m2/gm2-gcc/m2statement.cc \
+         \$(srcdir)/m2/gm2-gcc/m2type.cc"
 
 outputs=" \
          m2/config-make \

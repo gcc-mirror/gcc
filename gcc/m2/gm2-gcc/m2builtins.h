@@ -1,4 +1,4 @@
-/* m2builtins.h header file for m2builtins.c.
+/* m2builtins.h header file for m2builtins.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

@@ -1,6 +1,6 @@
-/* m2rte.c a plugin to detect runtime exceptions at compiletime.
+/* m2rte.cc a plugin to detect runtime exceptions at compiletime.
 
-Copyright (C) 2017-2021 Free Software Foundation, Inc.
+Copyright (C) 2017-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

@@ -1,4 +1,4 @@
-/* m2top.c provides top level scoping functions.
+/* m2top.cc provides top level scoping functions.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

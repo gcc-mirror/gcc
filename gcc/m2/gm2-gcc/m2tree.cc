@@ -1,4 +1,4 @@
-/* m2tree.c provides a simple interface to GCC tree queries and skips.
+/* m2tree.cc provides a simple interface to GCC tree queries and skips.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

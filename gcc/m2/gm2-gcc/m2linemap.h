@@ -1,4 +1,4 @@
-/* m2linemap.h header file for m2linemap.c.
+/* m2linemap.h header file for m2linemap.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

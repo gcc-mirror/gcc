@@ -1,4 +1,4 @@
-/* gm2spec.c specific flags and argument handling within GNU Modula-2.
+/* gm2spec.cc specific flags and argument handling within GNU Modula-2.
 
 Copyright (C) 2007-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

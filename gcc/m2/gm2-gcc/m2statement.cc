@@ -1,4 +1,4 @@
-/* m2statement.c provides an interface to GCC statement trees.
+/* m2statement.cc provides an interface to GCC statement trees.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

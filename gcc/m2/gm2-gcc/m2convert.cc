@@ -1,4 +1,4 @@
-/* m2convert.c provides GCC tree conversion for the Modula-2 language.
+/* m2convert.cc provides GCC tree conversion for the Modula-2 language.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

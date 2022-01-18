@@ -1,4 +1,4 @@
-/* m2misc.h header file for m2misc.c.
+/* m2misc.h header file for m2misc.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

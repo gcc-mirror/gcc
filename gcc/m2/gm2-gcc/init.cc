@@ -1,4 +1,4 @@
-/* init.c initializes the modules of the GNU Modula-2 front end.
+/* init.cc initializes the modules of the GNU Modula-2 front end.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

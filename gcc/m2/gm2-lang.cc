@@ -1,4 +1,4 @@
-/* Language-dependent hooks for GNU Modula-2.
+/* gm2-lang.cc language-dependent hooks for GNU Modula-2.
 
 Copyright (C) 2002-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

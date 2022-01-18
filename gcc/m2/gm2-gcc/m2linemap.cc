@@ -1,4 +1,4 @@
-/* m2linemap.c provides an interface to GCC linemaps.
+/* m2linemap.cc provides an interface to GCC linemaps.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

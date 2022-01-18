@@ -1,4 +1,4 @@
-(* m2block.def definition module for m2block.c.
+(* m2block.def definition module for m2block.cc.
 
 Copyright (C) 2011-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.

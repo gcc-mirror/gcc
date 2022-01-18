@@ -1,4 +1,4 @@
-/* m2expr.h header file for m2expr.c.
+/* m2expr.h header file for m2expr.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

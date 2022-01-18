@@ -1,4 +1,4 @@
-/* m2block.c provides an interface to maintaining block structures.
+/* m2block.cc provides an interface to maintaining block structures.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

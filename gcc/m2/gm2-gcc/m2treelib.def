@@ -1,4 +1,4 @@
-(* m2treelib.def definition module for m2treelib.c.
+(* m2treelib.def definition module for m2treelib.cc.
 
 Copyright (C) 2011-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.

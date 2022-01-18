@@ -95,7 +95,7 @@ LIBSTDCXX=../$(TARGET_SUBDIR)/libstdc++-v3/src/.libs/libstdc++.a
 
 SRC_PREFIX=G
 
-m2/gm2spec.o: $(srcdir)/m2/gm2spec.c $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
+m2/gm2spec.o: $(srcdir)/m2/gm2spec.cc $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
                m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS) \
                $(generated_files) $(C_TREE_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
@@ -104,7 +104,7 @@ m2/gm2spec.o: $(srcdir)/m2/gm2spec.c $(SYSTEM_H) $(GCC_H) $(CONFIG_H) \
          $(DRIVER_DEFINES) \
 		-DLIBSUBDIR=\"$(libsubdir)\" \
                 -DPREFIX=\"$(prefix)\" \
-                -c $(srcdir)/m2/gm2spec.c $(OUTPUT_OPTION))
+                -c $(srcdir)/m2/gm2spec.cc $(OUTPUT_OPTION))
 
 m2/gm2version.c: gm2version-check; @true
 
@@ -393,10 +393,10 @@ m2.install-plugin: installdirs
 	$(INSTALL_PROGRAM) plugin/m2rte$(exeext).so $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
 	chmod a+x $(DESTDIR)$(plugin_resourcesdir)/m2rte$(exeext).so
 
-plugin/m2rte$(exeext).so: $(srcdir)/m2/plugin/m2rte.c $(TARGET_H) $(PLUGIN_HEADERS) \
+plugin/m2rte$(exeext).so: $(srcdir)/m2/plugin/m2rte.cc $(TARGET_H) $(PLUGIN_HEADERS) \
                           $(srcdir)/flags.h gtype-m2.h m2/gm2config.h
 	test -d plugin || mkdir plugin
-	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.c
+	$(PLUGINCC) $(PLUGINCFLAGS) -fno-rtti -I. -I$(srcdir) -I$(srcdir)/m2 -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/../include -I$(srcdir)/../libcpp/include -Wall $(GMPINC) -Wno-literal-suffix -fPIC -c -o plugin/m2rte.o $(srcdir)/m2/plugin/m2rte.cc
 	$(PLUGINCC) $(PLUGINCFLAGS) $(PLUGINLIBS) -fno-rtti plugin/m2rte.o -shared -o $@
 
 
@@ -595,17 +595,17 @@ gm2-gcc/m2builtins.o : $(srcdir)/m2/gm2-gcc/m2builtins.c $(CONFIG_H) $(TREE_H) $
 gm2-gcc/m2except.o : $(srcdir)/m2/gm2-gcc/m2except.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
                      $(srcdir)/flags.h gtype-m2.h gt-m2-m2except.h m2/gm2config.h $(generated_files)
 
-m2/gm2-gcc/%.o: $(srcdir)/m2/gm2-gcc/%.c $(BUILD-BOOT-H) $(TIMEVAR_H) m2/gm2config.h $(CONFIG_H) \
-                                         $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
-                                         $(srcdir)/flags.h gtype-m2.h m2/gm2config.h \
-                                         $(generated_files)
+m2/gm2-gcc/%.o: $(srcdir)/m2/gm2-gcc/%.cc $(BUILD-BOOT-H) $(TIMEVAR_H) m2/gm2config.h $(CONFIG_H) \
+                                          $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
+                                          $(srcdir)/flags.h gtype-m2.h m2/gm2config.h \
+                                          $(generated_files)
 	$(COMPILER) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
+m2/gm2-lang.o: $(srcdir)/m2/gm2-lang.cc $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) $(PLUGIN_HEADERS) \
                $(srcdir)/flags.h m2/gm2config.h gt-m2-gm2-lang.h $(generated_files)
 	$(COMPILER) -c -g -I$(GM2GCC) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-m2/stor-layout.o: $(srcdir)/stor-layout.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) \
+m2/stor-layout.o: $(srcdir)/stor-layout.cc $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) \
                   $(PLUGIN_HEADERS) $(srcdir)/flags.h m2/gm2config.h $(generated_files)
 	$(COMPILER) -c -DSET_WORD_SIZE=INT_TYPE_SIZE $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
@@ -613,7 +613,7 @@ m2/m2pp.o : $(srcdir)/m2/m2pp.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) $(PLU
             $(srcdir)/flags.h gtype-m2.h m2/gm2config.h $(generated_files)
 	$(COMPILER) -c -g -DGM2 $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-m2/gm2-gcc/rtegraph.o: $(srcdir)/m2/gm2-gcc/rtegraph.c $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) \
+m2/gm2-gcc/rtegraph.o: $(srcdir)/m2/gm2-gcc/rtegraph.cc $(CONFIG_H) $(TREE_H) $(RTL_H) $(TARGET_H) \
                        $(PLUGIN_HEADERS) $(srcdir)/flags.h gtype-m2.h gt-m2-rtegraph.h m2/gm2config.h \
                        $(generated_files)
 	$(COMPILER) -c -g -I$(GM2GCC) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)

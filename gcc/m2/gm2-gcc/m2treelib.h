@@ -1,4 +1,4 @@
-/* m2treelib.h header file for m2treelib.c.
+/* m2treelib.h header file for m2treelib.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

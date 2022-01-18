@@ -1,4 +1,4 @@
-/* m2tree.h header file for m2tree.c.
+/* m2tree.h header file for m2tree.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

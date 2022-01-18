@@ -1,4 +1,4 @@
-/* m2treelib.c provides call trees, modify_expr and miscelaneous.
+/* m2treelib.cc provides call trees, modify_expr and miscelaneous.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

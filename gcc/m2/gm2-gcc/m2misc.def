@@ -1,4 +1,4 @@
-(* m2misc.def definition module for m2misc.c.
+(* m2misc.def definition module for m2misc.cc.
 
 Copyright (C) 2011-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.

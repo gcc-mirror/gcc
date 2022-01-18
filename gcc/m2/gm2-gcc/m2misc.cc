@@ -1,4 +1,4 @@
-/* m2assert.c provides a simple assertion for location.
+/* m2misc.cc miscellaneous tree debugging functions.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
@@ -21,21 +21,36 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gcc-consolidation.h"
 
-#include "../gm2-lang.h"
 #include "../m2-tree.h"
+#include "tree-iterator.h"
 
-#define m2assert_c
-#include "m2assert.h"
-#include "m2options.h"
+#define m2misc_c
+#include "m2block.h"
+#include "m2misc.h"
+#include "m2tree.h"
+
+/* DebugTree - display the tree, t.  */
 
 void
-m2assert_AssertLocation (location_t location)
+m2misc_DebugTree (tree t)
 {
-  /* internally the compiler will use unknown location and
-     builtins_location so we ignore these values.  */
-  if (location == BUILTINS_LOCATION || location == UNKNOWN_LOCATION)
-    return;
+  debug_tree (t);
+}
 
-  if (M2Options_OverrideLocation (location) != location)
-    internal_error ("the location value is corrupt");
+/* DebugTree - display the tree, t.  */
+
+void
+m2misc_DebugTreeChain (tree t)
+{
+  for (; (t != NULL); t = TREE_CHAIN (t))
+    debug_tree (t);
+}
+
+/* DebugTree - display the tree, t.  */
+
+void
+m2misc_printStmt (void)
+{
+  if (m2block_cur_stmt_list () != NULL)
+    debug_tree (m2block_cur_stmt_list ());
 }

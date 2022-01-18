@@ -1,4 +1,4 @@
-/* m2convert.h header file for m2convert.c.
+/* m2convert.h header file for m2convert.cc.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

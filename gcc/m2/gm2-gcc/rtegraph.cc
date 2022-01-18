@@ -1,4 +1,4 @@
-/* rtegraph.c graph and nodes used by m2rte.
+/* rtegraph.cc graph and nodes used by m2rte.
 
 Copyright (C) 2019-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

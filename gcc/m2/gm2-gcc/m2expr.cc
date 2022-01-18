@@ -1,4 +1,4 @@
-/* m2expr.c provides an interface to GCC expression trees.
+/* m2expr.cc provides an interface to GCC expression trees.
 
 Copyright (C) 2012-2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
