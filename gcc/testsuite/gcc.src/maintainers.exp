@@ -24,8 +24,8 @@ proc gcc_src_run_maintainers_verify_sh {} {
     set contrib $rootdir/contrib
     set maintainers $rootdir/MAINTAINERS
 
-    if { ![check_effective_target_python3] } {
-      unsupported "$script python3 is missing"
+    if { ![check_effective_target_recent_python3] } {
+      unsupported "$script recent python3 is missing"
       return
     }
 
