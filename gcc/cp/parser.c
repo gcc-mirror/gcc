@@ -17728,7 +17728,7 @@ cp_parser_template_name (cp_parser* parser,
 			: parser->context->object_type);
 	  if (scope && TYPE_P (scope)
 	      && (!CLASS_TYPE_P (scope)
-		  || (check_dependency_p && dependent_type_p (scope))))
+		  || (check_dependency_p && dependent_scope_p (scope))))
 	    {
 	      /* We're optimizing away the call to cp_parser_lookup_name, but
 		 we still need to do this.  */
@@ -17739,8 +17739,8 @@ cp_parser_template_name (cp_parser* parser,
     }
 
   /* cp_parser_lookup_name clears OBJECT_TYPE.  */
-  const bool scoped_p = ((parser->scope ? parser->scope
-			  : parser->context->object_type) != NULL_TREE);
+  tree scope = (parser->scope ? parser->scope
+		: parser->context->object_type);
 
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
@@ -17752,6 +17752,19 @@ cp_parser_template_name (cp_parser* parser,
 				token->location);
 
   decl = strip_using_decl (decl);
+
+  /* 13.3 [temp.names] A < is interpreted as the delimiter of a
+    template-argument-list if it follows a name that is not a
+    conversion-function-id and
+    - that follows the keyword template or a ~ after a nested-name-specifier or
+    in a class member access expression, or
+    - for which name lookup finds the injected-class-name of a class template
+    or finds any declaration of a template, or
+    - that is an unqualified name for which name lookup either finds one or
+    more functions or finds nothing, or
+    - that is a terminal name in a using-declarator (9.9), in a declarator-id
+    (9.3.4), or in a type-only context other than a nested-name-specifier
+    (13.8).  */
 
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
@@ -17772,11 +17785,7 @@ cp_parser_template_name (cp_parser* parser,
     }
   else
     {
-      /* The standard does not explicitly indicate whether a name that
-	 names a set of overloaded declarations, some of which are
-	 templates, is a template-name.  However, such a name should
-	 be a template-name; otherwise, there is no way to form a
-	 template-id for the overloaded templates.  */
+      /* Look through an overload set for any templates.  */
       bool found = false;
 
       for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (decl));
@@ -17784,16 +17793,14 @@ cp_parser_template_name (cp_parser* parser,
 	if (TREE_CODE (*iter) == TEMPLATE_DECL)
 	  found = true;
 
+      /* "an unqualified name for which name lookup either finds one or more
+	 functions or finds nothing".  */
       if (!found
 	  && (cxx_dialect > cxx17)
-	  && !scoped_p
+	  && !scope
 	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS)
 	  && tag_type == none_type)
 	{
-	  /* [temp.names] says "A name is also considered to refer to a template
-	     if it is an unqualified-id followed by a < and name lookup finds
-	     either one or more functions or finds nothing."  */
-
 	  /* The "more functions" case.  Just use the OVERLOAD as normally.
 	     We don't use is_overloaded_fn here to avoid considering
 	     BASELINKs.  */
@@ -17805,6 +17812,13 @@ cp_parser_template_name (cp_parser* parser,
 	  else if (decl == error_mark_node)
 	    return identifier;
 	}
+
+      /* "that follows the keyword template"..."in a type-only context" */
+      if (!found && scope
+	  && (template_keyword_p || tag_type != none_type)
+	  && TYPE_P (scope) && dependent_type_p (scope)
+	  && cp_parser_nth_token_starts_template_argument_list_p (parser, 1))
+	return identifier;
 
       if (!found)
 	{
