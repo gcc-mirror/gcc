@@ -2029,7 +2029,12 @@ inline_small_functions (void)
       struct cgraph_edge *next = NULL;
       bool has_speculative = false;
 
-      if (!opt_for_fn (node->decl, optimize))
+      if (!opt_for_fn (node->decl, optimize)
+	  /* With -Og we do not want to perform IPA inlining of small
+	     functions since there are no scalar cleanups after it
+	     that would realize the anticipated win.  All abstraction
+	     is removed during early inlining.  */
+	  || opt_for_fn (node->decl, optimize_debug))
 	continue;
 
       if (dump_file)
