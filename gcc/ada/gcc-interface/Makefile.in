@@ -348,6 +348,13 @@ ifeq ($(strip $(filter-out %x86_64, $(target_cpu))),)
   endif
 endif
 
+# The x86_64-linux-gnux32 compiler is actually an x32 compiler
+ifeq ($(strip $(filter-out x86_64 linux-gnux32%, $(target_cpu) $(target_os))),)
+  ifneq ($(strip $(MULTISUBDIR)),/64)
+    target_cpu:=x32
+  endif
+endif
+
 # Configuration of host tools
 
 # Under linux, host tools need to be linked with -ldl
