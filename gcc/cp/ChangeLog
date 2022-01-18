@@ -1,3 +1,30 @@
+2022-01-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* parser.c (cp_parser_decl_specifier_seq): Replace %<decl-specifier%>
+	with %qD.
+
+2022-01-17  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-01-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* parser.c (cp_parser_decl_specifier_seq): Replace %<decl-specifier%>
+	with %qD.
+
+2022-01-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-01-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103758
+	* parser.c (cp_parser_decl_specifier_seq): Replace %<decl-specifier%>
+	with %qD.
+
 2022-01-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
