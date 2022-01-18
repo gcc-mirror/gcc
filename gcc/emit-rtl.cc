@@ -6097,6 +6097,13 @@ init_emit_regs (void)
   if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
     pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 
+  /* Process stack-limiting command-line options.  */
+  if (opt_fstack_limit_symbol_arg != NULL)
+    stack_limit_rtx
+      = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt_fstack_limit_symbol_arg));
+  if (opt_fstack_limit_register_no >= 0)
+    stack_limit_rtx = gen_rtx_REG (Pmode, opt_fstack_limit_register_no);
+
   for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
     {
       mode = (machine_mode) i;
@@ -6176,13 +6183,6 @@ init_emit_once (void)
 #endif
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
-
-  /* Process stack-limiting command-line options.  */
-  if (opt_fstack_limit_symbol_arg != NULL)
-    stack_limit_rtx 
-      = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (opt_fstack_limit_symbol_arg));
-  if (opt_fstack_limit_register_no >= 0)
-    stack_limit_rtx = gen_rtx_REG (Pmode, opt_fstack_limit_register_no);
 
   /* Don't use gen_rtx_CONST_INT here since gen_rtx_CONST_INT in this case
      tries to use these variables.  */
