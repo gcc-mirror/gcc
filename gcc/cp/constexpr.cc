@@ -7821,7 +7821,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else if (TREE_CODE (t) != CONSTRUCTOR)
+      else if (TREE_CODE (t) == CONSTRUCTOR)
+	;
+      else if (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_CLEANUP (t))
+	r = get_target_expr (r);
+      else
 	{
 	  r = get_target_expr_sfinae (r, tf_warning_or_error | tf_no_cleanup);
 	  TREE_CONSTANT (r) = true;
