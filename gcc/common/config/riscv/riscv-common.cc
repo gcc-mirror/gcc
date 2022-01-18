@@ -901,8 +901,8 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 	}
 
       add (subset, major_version, minor_version, explicit_version_p, false);
-      free (subset);
       p += end_of_version - subset;
+      free (subset);
 
       if (*p != '\0' && *p != '_')
 	{
