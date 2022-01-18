@@ -96,6 +96,8 @@ public:
   virtual void dump (FILE *, basic_block) const = 0;
   virtual void dump (FILE *) const = 0;
   void debug () const;
+protected:
+  void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
 };
 
 // This class represents an equivalency set, and contains a link to the next
