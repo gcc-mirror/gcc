@@ -1644,8 +1644,7 @@ auto_profile (void)
        function before annotation, so the profile inside bar@loc_foo2
        will be useful.  */
     autofdo::stmt_set promoted_stmts;
-    for (int i = 0; i < opt_for_fn (node->decl,
-				    param_early_inliner_max_iterations); i++)
+    for (int i = 0; i < 10; i++)
       {
         if (!flag_value_profile_transformations
             || !autofdo::afdo_vpt_for_early_inline (&promoted_stmts))
