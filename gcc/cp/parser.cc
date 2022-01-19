@@ -1308,7 +1308,8 @@ struct saved_token_sentinel
   void rollback ()
   {
     cp_lexer_rollback_tokens (lexer);
-    cp_lexer_set_source_position (lexer);
+    cp_lexer_set_source_position_from_token
+      (cp_lexer_previous_token (lexer));
     mode = STS_DONOTHING;
   }
   ~saved_token_sentinel ()
