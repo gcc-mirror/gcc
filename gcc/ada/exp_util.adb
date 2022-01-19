@@ -4049,11 +4049,13 @@ package body Exp_Util is
 
    --  function F return String is
    --     Pref : String renames Task_Name;
-   --     T1   : String := Index1'Image (Val1);
+   --     T1   : constant String := Index1'Image (Val1);
    --     ...
-   --     Tn   : String := Indexn'Image (Valn);
-   --     Len  : Integer := Pref'Length + T1'Length + ... + Tn'Length + n + 1;
+   --     Tn   : constant String := Indexn'Image (Valn);
+   --     Len  : constant Integer :=
+   --       Pref'Length + T1'Length + ... + Tn'Length + n + 1;
    --     --  Len includes commas and the end parentheses
+   --
    --     Res  : String (1 .. Len);
    --     Pos  : Integer := Pref'Length;
    --
@@ -4124,8 +4126,9 @@ package body Exp_Util is
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Pref,
-             Object_Definition => New_Occurrence_Of (Standard_String, Loc),
-             Expression =>
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Expression          =>
                Make_String_Literal (Loc,
                  Strval => String_From_Name_Buffer)));
 
@@ -4148,6 +4151,7 @@ package body Exp_Util is
            Make_Object_Declaration (Loc,
              Defining_Identifier => T,
              Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
+             Constant_Present    => True,
              Expression          =>
                Make_Attribute_Reference (Loc,
                  Attribute_Name => Name_Image,
@@ -4425,6 +4429,7 @@ package body Exp_Util is
       Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Len,
+          Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
           Expression          => Sum));
 
@@ -4530,7 +4535,8 @@ package body Exp_Util is
          Append_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Pref,
-             Object_Definition => New_Occurrence_Of (Standard_String, Loc),
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
              Expression =>
                Make_String_Literal (Loc,
                  Strval => String_From_Name_Buffer)));
