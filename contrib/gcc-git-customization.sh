@@ -27,6 +27,7 @@ git config alias.gcc-undescr \!"f() { o=\$(git config --get gcc-config.upstream)
 
 git config alias.gcc-verify '!f() { "`git rev-parse --show-toplevel`/contrib/gcc-changelog/git_check_commit.py" $@; } ; f'
 git config alias.gcc-backport '!f() { "`git rev-parse --show-toplevel`/contrib/git-backport.py" $@; } ; f'
+git config alias.gcc-fix-changelog '!f() { "`git rev-parse --show-toplevel`/contrib/git-fix-changelog.py" $@; } ; f'
 git config alias.gcc-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/mklog.py" $@; } ; f'
 git config alias.gcc-commit-mklog '!f() { "`git rev-parse --show-toplevel`/contrib/git-commit-mklog.py" "$@"; }; f'
 
