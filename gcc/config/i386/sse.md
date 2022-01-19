@@ -28437,7 +28437,7 @@
 	    [(match_operand:BLK 0 "memory_operand" "m")]
 	    AESDECENCWIDEKL))])]
   "TARGET_WIDEKL"
-  "aes<aeswideklvariant>\t{%0}"
+  "aes<aeswideklvariant>\t%0"
   [(set_attr "type" "other")])
 
 ;; Modes handled by broadcast patterns.  NB: Allow V64QI and V32HI with
