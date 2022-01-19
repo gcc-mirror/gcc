@@ -100,6 +100,12 @@ static void noce_emit_move_insn (rtx, rtx);
 static rtx_insn *block_has_only_trap (basic_block);
 static void need_cmov_or_rewire (basic_block, hash_set<rtx_insn *> *,
 				 hash_map<rtx_insn *, int> *);
+static bool noce_convert_multiple_sets_1 (struct noce_if_info *,
+					  hash_set<rtx_insn *> *,
+					  hash_map<rtx_insn *, int> *,
+					  auto_vec<rtx> *,
+					  auto_vec<rtx> *,
+					  auto_vec<rtx_insn *> *, int *);
 
 /* Count the number of non-jump active insns in BB.  */
 
@@ -3256,9 +3262,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   rtx x = XEXP (cond, 0);
   rtx y = XEXP (cond, 1);
 
-  rtx cc_cmp = cond_exec_get_condition (jump);
-  rtx rev_cc_cmp = cond_exec_get_condition (jump, /* get_reversed */ true);
-
   /* The true targets for a conditional move.  */
   auto_vec<rtx> targets;
   /* The temporaries introduced to allow us to not consider register
@@ -3266,12 +3269,138 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   auto_vec<rtx> temporaries;
   /* The insns we've emitted.  */
   auto_vec<rtx_insn *> unmodified_insns;
-  int count = 0;
 
   hash_set<rtx_insn *> need_no_cmov;
   hash_map<rtx_insn *, int> rewired_src;
 
   need_cmov_or_rewire (then_bb, &need_no_cmov, &rewired_src);
+
+  int last_needs_comparison = -1;
+
+  bool ok = noce_convert_multiple_sets_1
+    (if_info, &need_no_cmov, &rewired_src, &targets, &temporaries,
+     &unmodified_insns, &last_needs_comparison);
+  if (!ok)
+      return false;
+
+  /* If there are insns that overwrite part of the initial
+     comparison, we can still omit creating temporaries for
+     the last of them.
+     As the second try will always create a less expensive,
+     valid sequence, we do not need to compare and can discard
+     the first one.  */
+  if (last_needs_comparison != -1)
+    {
+      end_sequence ();
+      start_sequence ();
+      ok = noce_convert_multiple_sets_1
+	(if_info, &need_no_cmov, &rewired_src, &targets, &temporaries,
+	 &unmodified_insns, &last_needs_comparison);
+      /* Actually we should not fail anymore if we reached here,
+	 but better still check.  */
+      if (!ok)
+	  return false;
+    }
+
+  /* We must have seen some sort of insn to insert, otherwise we were
+     given an empty BB to convert, and we can't handle that.  */
+  gcc_assert (!unmodified_insns.is_empty ());
+
+  /* Now fixup the assignments.  */
+  for (unsigned i = 0; i < targets.length (); i++)
+    if (targets[i] != temporaries[i])
+      noce_emit_move_insn (targets[i], temporaries[i]);
+
+  /* Actually emit the sequence if it isn't too expensive.  */
+  rtx_insn *seq = get_insns ();
+
+  if (!targetm.noce_conversion_profitable_p (seq, if_info))
+    {
+      end_sequence ();
+      return FALSE;
+    }
+
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    set_used_flags (insn);
+
+  /* Mark all our temporaries and targets as used.  */
+  for (unsigned i = 0; i < targets.length (); i++)
+    {
+      set_used_flags (temporaries[i]);
+      set_used_flags (targets[i]);
+    }
+
+  set_used_flags (cond);
+  set_used_flags (x);
+  set_used_flags (y);
+
+  unshare_all_rtl_in_chain (seq);
+  end_sequence ();
+
+  if (!seq)
+    return FALSE;
+
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    if (JUMP_P (insn)
+	|| recog_memoized (insn) == -1)
+      return FALSE;
+
+  emit_insn_before_setloc (seq, if_info->jump,
+			   INSN_LOCATION (unmodified_insns.last ()));
+
+  /* Clean up THEN_BB and the edges in and out of it.  */
+  remove_edge (find_edge (test_bb, join_bb));
+  remove_edge (find_edge (then_bb, join_bb));
+  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
+  delete_basic_block (then_bb);
+  num_true_changes++;
+
+  /* Maybe merge blocks now the jump is simple enough.  */
+  if (can_merge_blocks_p (test_bb, join_bb))
+    {
+      merge_blocks (test_bb, join_bb);
+      num_true_changes++;
+    }
+
+  num_updated_if_blocks++;
+  if_info->transform_name = "noce_convert_multiple_sets";
+  return TRUE;
+}
+
+/* This goes through all relevant insns of IF_INFO->then_bb and tries to
+   create conditional moves.  In case a simple move sufficis the insn
+   should be listed in NEED_NO_CMOV.  The rewired-src cases should be
+   specified via REWIRED_SRC.  TARGETS, TEMPORARIES and UNMODIFIED_INSNS
+   are specified and used in noce_convert_multiple_sets and should be passed
+   to this function..  */
+
+static bool
+noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
+			      hash_set<rtx_insn *> *need_no_cmov,
+			      hash_map<rtx_insn *, int> *rewired_src,
+			      auto_vec<rtx> *targets,
+			      auto_vec<rtx> *temporaries,
+			      auto_vec<rtx_insn *> *unmodified_insns,
+			      int *last_needs_comparison)
+{
+  basic_block then_bb = if_info->then_bb;
+  rtx_insn *jump = if_info->jump;
+  rtx_insn *cond_earliest;
+
+  /* Decompose the condition attached to the jump.  */
+  rtx cond = noce_get_condition (jump, &cond_earliest, false);
+
+  rtx cc_cmp = cond_exec_get_condition (jump);
+  rtx rev_cc_cmp = cond_exec_get_condition (jump, /* get_reversed */ true);
+
+  rtx_insn *insn;
+  int count = 0;
+
+  targets->truncate (0);
+  temporaries->truncate (0);
+  unmodified_insns->truncate (0);
+
+  bool second_try = *last_needs_comparison != -1;
 
   FOR_BB_INSNS (then_bb, insn)
     {
@@ -3286,9 +3415,9 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
       rtx temp;
 
       rtx new_val = SET_SRC (set);
-      if (int *ii = rewired_src.get (insn))
-	new_val = simplify_replace_rtx (new_val, targets[*ii],
-					temporaries[*ii]);
+      if (int *ii = rewired_src->get (insn))
+	new_val = simplify_replace_rtx (new_val, (*targets)[*ii],
+					(*temporaries)[*ii]);
       rtx old_val = target;
 
       /* As we are transforming
@@ -3316,8 +3445,12 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	 Therefore we introduce a temporary every time we are about to
 	 overwrite a variable used in the check.  Costing of a sequence with
 	 these is going to be inaccurate so only use temporaries when
-	 needed.  */
-      if (reg_overlap_mentioned_p (target, cond))
+	 needed.
+
+	 If performing a second try, we know how many insns require a
+	 temporary.  For the last of these, we can omit creating one.  */
+      if (reg_overlap_mentioned_p (target, cond)
+	  && (!second_try || count < *last_needs_comparison))
 	temp = gen_reg_rtx (GET_MODE (target));
       else
 	temp = target;
@@ -3325,7 +3458,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
       /* We have identified swap-style idioms before.  A normal
 	 set will need to be a cmov while the first instruction of a swap-style
 	 idiom can be a regular move.  This helps with costing.  */
-      bool need_cmov = !need_no_cmov.contains (insn);
+      bool need_cmov = !need_no_cmov->contains (insn);
 
       /* If we had a non-canonical conditional jump (i.e. one where
 	 the fallthrough is to the "else" case) we need to reverse
@@ -3400,6 +3533,8 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	{
 	  seq = seq1;
 	  temp_dest = temp_dest1;
+	  if (!second_try)
+	    *last_needs_comparison = count;
 	}
       else if (seq2 != NULL_RTX)
 	{
@@ -3418,75 +3553,15 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
       /* Bookkeeping.  */
       count++;
-      targets.safe_push (target);
-      temporaries.safe_push (temp_dest);
-      unmodified_insns.safe_push (insn);
+      targets->safe_push (target);
+      temporaries->safe_push (temp_dest);
+      unmodified_insns->safe_push (insn);
     }
 
-  /* We must have seen some sort of insn to insert, otherwise we were
-     given an empty BB to convert, and we can't handle that.  */
-  gcc_assert (!unmodified_insns.is_empty ());
-
-  /* Now fixup the assignments.  */
-  for (int i = 0; i < count; i++)
-    if (targets[i] != temporaries[i])
-      noce_emit_move_insn (targets[i], temporaries[i]);
-
-  /* Actually emit the sequence if it isn't too expensive.  */
-  rtx_insn *seq = get_insns ();
-
-  if (!targetm.noce_conversion_profitable_p (seq, if_info))
-    {
-      end_sequence ();
-      return FALSE;
-    }
-
-  for (insn = seq; insn; insn = NEXT_INSN (insn))
-    set_used_flags (insn);
-
-  /* Mark all our temporaries and targets as used.  */
-  for (int i = 0; i < count; i++)
-    {
-      set_used_flags (temporaries[i]);
-      set_used_flags (targets[i]);
-    }
-
-  set_used_flags (cond);
-  set_used_flags (x);
-  set_used_flags (y);
-
-  unshare_all_rtl_in_chain (seq);
-  end_sequence ();
-
-  if (!seq)
-    return FALSE;
-
-  for (insn = seq; insn; insn = NEXT_INSN (insn))
-    if (JUMP_P (insn)
-	|| recog_memoized (insn) == -1)
-      return FALSE;
-
-  emit_insn_before_setloc (seq, if_info->jump,
-			   INSN_LOCATION (unmodified_insns.last ()));
-
-  /* Clean up THEN_BB and the edges in and out of it.  */
-  remove_edge (find_edge (test_bb, join_bb));
-  remove_edge (find_edge (then_bb, join_bb));
-  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
-  delete_basic_block (then_bb);
-  num_true_changes++;
-
-  /* Maybe merge blocks now the jump is simple enough.  */
-  if (can_merge_blocks_p (test_bb, join_bb))
-    {
-      merge_blocks (test_bb, join_bb);
-      num_true_changes++;
-    }
-
-  num_updated_if_blocks++;
-  if_info->transform_name = "noce_convert_multiple_sets";
-  return TRUE;
+  return true;
 }
+
+
 
 /* Return true iff basic block TEST_BB is comprised of only
    (SET (REG) (REG)) insns suitable for conversion to a series
