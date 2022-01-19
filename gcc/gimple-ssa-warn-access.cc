@@ -4082,7 +4082,9 @@ pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
   access_ref pref, qref;
   if (!qry.get_ref (p, stmt, &pref, 0)
       || !qry.get_ref (q, stmt, &qref, 0))
-    return true;
+    /* GET_REF() only rarely fails.  When it does, it's likely because
+       it involves a self-referential PHI.  Return a conservative result.  */
+    return false;
 
   return pref.ref == qref.ref;
 }
