@@ -4048,13 +4048,13 @@ package body Exp_Util is
    --  The generated function has the following structure:
 
    --  function F return String is
-   --     Pref : string renames Task_Name;
+   --     Pref : String renames Task_Name;
    --     T1   : String := Index1'Image (Val1);
    --     ...
-   --     Tn   : String := indexn'image (Valn);
-   --     Len  : Integer := T1'Length + ... + Tn'Length + n + 1;
-   --     --  Len includes commas and the end parentheses.
-   --     Res  : String (1..Len);
+   --     Tn   : String := Indexn'Image (Valn);
+   --     Len  : Integer := Pref'Length + T1'Length + ... + Tn'Length + n + 1;
+   --     --  Len includes commas and the end parentheses
+   --     Res  : String (1 .. Len);
    --     Pos  : Integer := Pref'Length;
    --
    --  begin
