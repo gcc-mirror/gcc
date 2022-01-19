@@ -5958,6 +5958,9 @@ rs6000_machine_from_flags (void)
 
     case PROCESSOR_PPCE6500:
       return "e6500";
+
+    default:
+      break;
     }
 
   HOST_WIDE_INT flags = rs6000_isa_flags;
