@@ -92,12 +92,13 @@ static_assert(is_same<atomic_uint_fast64_t, _Atomic(uint_fast64_t)>);
 #endif
 static_assert(is_same<atomic_intptr_t,  _Atomic(intptr_t)>);
 static_assert(is_same<atomic_uintptr_t, _Atomic(uintptr_t)>);
-static_assert(is_same<atomic_size_t,    _Atomic(size_t)>);
-static_assert(is_same<atomic_ptrdiff_t, _Atomic(ptrdiff_t)>);
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 static_assert(is_same<atomic_intmax_t,  _Atomic(intmax_t)>);
 static_assert(is_same<atomic_uintmax_t, _Atomic(uintmax_t)>);
 #endif
+#include <stddef.h>
+static_assert(is_same<atomic_size_t,    _Atomic(size_t)>);
+static_assert(is_same<atomic_ptrdiff_t, _Atomic(ptrdiff_t)>);
 
 static_assert( requires (::atomic_int* i, int* e) {
   ::atomic_is_lock_free(i);
