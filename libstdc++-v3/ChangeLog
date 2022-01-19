@@ -1,3 +1,87 @@
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104099
+	* include/bits/basic_string.h (basic_string(nullptr_t)): Only
+	define for C++23.
+	(operator=(nullptr_t)): Likewise.
+	* include/bits/cow_string.h: Likewise.
+	* include/std/string_view (basic_string_view(nullptr_t)):
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/nullptr.cc: Adjust
+	expected error. Add examples that become ill-formed in C++23.
+	* testsuite/21_strings/basic_string_view/cons/char/nonnull.cc:
+	Adjust expected errors.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/nonnull.cc:
+	Likewise.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104098
+	* include/bits/stl_iterator.h (reverse_iterator): Check
+	__cpp_lib_concepts instead of __cplusplus.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101124
+	* include/bits/stl_pair.h (pair): Adjust constraints on
+	deprecated constructors accepting literal zero as null pointer
+	constant. Improve wording of deprecated attribute.
+	* testsuite/20_util/pair/cons/99957.cc: Check that deprecated
+	constructors do not cause ambiguities for copyable types.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_function.h (ptr_fun): Fix suggestion for
+	non-deprecated alternative.
+
+2022-01-18  Tom Honermann  <tom@honermann.net>
+
+	* acinclude.m4: Define config macros if uchar.h provides
+	c8rtomb() and mbrtoc8().
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_compatibility/uchar.h (c8rtomb, mbrtoc8): Define.
+	* include/c_global/cuchar (c8rtomb, mbrtoc8): Likewise.
+	* include/c_std/cuchar (c8rtomb, mbrtoc8): Likewise.
+	* testsuite/21_strings/headers/cuchar/functions_std_cxx20.cc:
+	New test.
+	* testsuite/21_strings/headers/cuchar/functions_std_fchar8_t.cc:
+	New test.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Install new header.
+	* include/Makefile.in: Regenerate.
+	* include/c_compatibility/stdatomic.h: New file.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: New test.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104080
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h (FASTFLOAT_IS_BIG_ENDIAN):
+	Define in terms of __BYTE_ORDER__.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104080
+	* src/c++17/fast_float/LOCAL_PATCHES: UPDATE.
+	* src/c++17/fast_float/fast_float.h (round): Use explicit
+	template argument list for std::min.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status.
+	* doc/xml/manual/status_cxx2020.xml: Use 12.1 instead of 12 for
+	upcoming release.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING): Improve
+	comments.
+	* configure: Regenerate.
+
 2022-01-17  Patrick Palka  <ppalka@redhat.com>
 
 	* src/c++17/floating_from_chars.cc: (USE_LIB_FAST_FLOAT):

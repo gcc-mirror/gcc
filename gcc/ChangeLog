@@ -1,3 +1,231 @@
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	* ipa-split.cc (visit_bb): Fix comment before the
+	warning/error attribute checking code.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/coreout.cc (bpf_core_reloc_add): Do not account
+	for base strtab offset yet as it may change.
+	(output_asm_btfext_core_reloc): Do so here instead.
+	(output_btfext_core_sections): Likewise.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/coreout.cc (output_btfext_header): Account for
+	4-byte record size in core_relo_len.
+	(output_btfext_core_sections): Only write record size once.
+	* config/bpf/coreout.h (btf_ext_section_header): Delete unused
+	member.
+
+2022-01-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_multiletter_ext): Move pointer
+	arithmetic ahead of `free'.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104007
+	* gimplify.cc (gimple_push_cleanup): Handle eh_only in conditional
+	context.
+
+2022-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/103163
+	* emit-rtl.cc (init_emit_regs): Initialize stack_limit_rtx here...
+	(init_emit_once): ...not here.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* collect2.cc (scan_libraries): Fix -Wformat-diag issues.
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_expand_builtin): Likewise.
+	* config/arc/arc.md: Likewise.
+	* config/avr/avr.cc (avr_section_type_flags): Likewise.
+	* config/bfin/bfin.cc (bfin_option_override): Likewise.
+	(bfin_handle_longcall_attribute): Likewise.
+	* config/cris/cris.h (FUNCTION_PROFILER): Likewise.
+	* config/frv/frv.cc (frv_expand_builtin): Likewise.
+	* config/ia64/ia64-c.cc (ia64_hpux_handle_builtin_pragma): Likewise.
+	* config/iq2000/iq2000.cc (save_restore_insns): Likewise.
+	(iq2000_print_operand_address): Likewise.
+	(iq2000_print_operand): Likewise.
+	* config/m32c/m32c-pragma.cc (m32c_pragma_memregs): Likewise.
+	(m32c_pragma_address): Likewise.
+	* config/m68k/m68k.cc (m68k_handle_fndecl_attribute): Likewise.
+	* config/mips/mips.cc (mips_handle_interrupt_attr): Likewise.
+	(mips_set_compression_mode): Likewise.
+	* config/mmix/mmix.cc (mmix_function_profiler): Likewise.
+	(mmix_print_operand): Likewise.
+	(mmix_output_shiftvalue_op_from_str): Likewise.
+	(mmix_output_shifted_value): Likewise.
+	* config/msp430/driver-msp430.cc (msp430_select_hwmult_lib): Likewise.
+	* config/msp430/msp430.cc (msp430_option_override): Likewise.
+	(msp430_attr): Likewise.
+	(msp430_expand_delay_cycles): Likewise.
+	(msp430_expand_builtin): Likewise.
+	* config/rs6000/aix73.h: Likewise.
+	* config/rs6000/rtems.h (INVALID_64BIT): Likewise.
+	* config/rx/rx.cc (rx_expand_builtin_mvtc): Likewise.
+	(valid_psw_flag): Likewise.
+	* config/sh/sh.cc (parse_validate_atomic_model_option): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_function_profiler): Likewise.
+	(xstormy16_expand_builtin_va_start): Likewise.
+	(xstormy16_handle_below100_attribute): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/vms/vms-c.cc (vms_pragma_nostandard): Fix -Wformat-diag
+	warning.
+	(vms_pragma_standard): Likewise.
+	(vms_pragma_extern_prefix): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/xtensa/xtensa.cc (print_operand): Fix warnings.
+	(print_operand_address): Likewise.
+	(xtensa_multibss_section_type_flags): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.cc (rs6000_invalid_builtin): Change
+	wording of an error message.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/v850/v850-c.cc (pop_data_area): Fix -Wformat-diag
+	warning.
+	(ghs_pragma_section): Likewise.
+	(ghs_pragma_interrupt): Likewise.
+	(ghs_pragma_starttda): Likewise.
+	(ghs_pragma_startsda): Likewise.
+	(ghs_pragma_startzda): Likewise.
+	(ghs_pragma_endtda): Likewise.
+	(ghs_pragma_endsda): Likewise.
+	(ghs_pragma_endzda): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/nds32/nds32-intrinsic.cc (nds32_expand_builtin_impl):
+	Fix warnings.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32-isr.cc (nds32_check_isr_attrs_conflict): Likewise.
+	* config/nds32/nds32.cc (nds32_print_operand): Likewise.
+	(nds32_insert_attributes): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/nvptx/nvptx.cc (nvptx_goacc_validate_dims_1): Wrap
+	keyword.
+	* config/nvptx/nvptx.md: Remove trailing dot.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::add):
+	Wrap keywords with quotes and remove trailing dots.
+	(riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	(riscv_subset_list::parse_multiletter_ext): Likewise.
+	* config/riscv/riscv.cc (riscv_handle_type_attribute): Likewise.
+
+2022-01-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Pass new
+	argument suggested_unroll_factor.
+	(vect_analyze_loop_costing): Likewise.
+	(_loop_vec_info::_loop_vec_info): Initialize new member
+	suggested_unroll_factor.
+	(vect_determine_partial_vectors_and_peeling): Make epilogue of unrolled
+	main loop use partial vectors.
+	(vect_analyze_loop_2): Pass and use new argument
+	suggested_unroll_factor.
+	(vect_analyze_loop_1): Change to intialize local
+	suggested_unroll_factor and use it.
+	(vectorizable_reduction): Don't use single_defuse_cycle when unrolling.
+	* tree-vectorizer.h (_loop_vec_info::_loop_vec_info): Add new member
+	suggested_unroll_factor.
+	(vector_costs::vector_costs): Add new member m_suggested_unroll_factor.
+	(vector_costs::suggested_unroll_factor): New getter function.
+	(finish_cost): Set return argument suggested_unroll_factor.
+
+2022-01-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104038
+	* doc/invoke.texi (relation-block-limit): New.
+	* params.opt (relation-block-limit): New.
+	* value-relation.cc (dom_oracle::register_relation): Check for NULL
+	record before invoking transitive registery.
+	(dom_oracle::set_one_relation): Check limit before creating record.
+	(dom_oracle::register_transitives): Stop when no record created.
+	* value-relation.h (relation_chain_head::m_num_relations): New.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* ipa-inline.cc (inline_small_functions): Do not enqueue call
+	edges originating in functions compiled with -Og.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* passes.def (pass_all_optimizations_g): Remove pass_modref
+	and pass_local_pure_const.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc: Fix -Wformat-diag warnings.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390-c.cc (s390_expand_overloaded_builtin): Wrap
+	keyword in quotes.
+	(s390_resolve_overloaded_builtin): Remove trailing dot.
+	* config/s390/s390.cc (s390_const_operand_ok): Use - for range.
+	(s390_expand_builtin): Remove trailing dot.
+	(s390_emit_prologue): Likewise, use semicolon.
+	(s390_option_override_internal): Update keyword.
+	* varasm.cc (do_assemble_alias): Wrap keyword in quotes.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.cc (rs6000_expand_builtin): Wrap
+	keywords and use %qs instead of %<%s%>.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103987
+	* tree-ssa-dse.cc (dse_optimize_call): Properly guard modref
+	query with a pointer check.
+
+2022-01-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104005
+	* config/aarch64/aarch64.cc (aarch64_check_consecutive_mems):
+	When using MEM_EXPR, require the base to be a decl.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	* cgraph.h (struct cgraph_simd_clone_arg): Re-arrange fields to
+	avoid padding.
+	* function.h (struct function): Likewise.
+
+2022-01-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/install.texi: Update prerequisites for GNAT
+
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101941
+	* ipa-split.cc (visit_bb): Disallow function calls where
+	the function has either error or warning attribute.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104064
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses): Check
+	DR_INIT fits in a signed HWI, represent the difference from the
+	first DR in unsigned.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Rename .c names to .cc.

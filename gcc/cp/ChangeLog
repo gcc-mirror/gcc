@@ -1,3 +1,25 @@
+2022-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104055
+	* constexpr.cc (cxx_eval_outermost_constant_expr): If t is a
+	TARGET_EXPR with TARGET_EXPR_CLEANUP, use get_target_expr rather
+	than get_target_expr_sfinae with tf_no_cleanup, and don't set
+	TREE_CONSTANT.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/104025
+	* parser.cc (saved_token_sentinel::rollback): Call
+	cp_lexer_set_source_position.
+	(~saved_token_sentinel): Call rollback.
+
+2022-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104074
+	* pt.cc (invalid_nontype_parm_type_p): Use WILDCARD_TYPE_P so
+	that we return false for DEPENDENT_OPERATOR_TYPE too.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

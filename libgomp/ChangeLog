@@ -1,3 +1,23 @@
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Update keyword
+	in dg-warning.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
 2022-01-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Extend.

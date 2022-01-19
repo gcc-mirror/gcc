@@ -1,3 +1,116 @@
+2022-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104055
+	* g++.dg/cpp2a/consteval27.C: New test.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp: Change 2a to 20.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/104025
+	* g++.dg/warn/pr104025.C: New test.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-section-1.c: Adjust expected record size
+	occurrences.
+
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104089
+	* gcc.dg/analyzer/pr104089.c: New test.
+
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104062
+	* gcc.dg/analyzer/pr104062.c: New test.
+
+2022-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104074
+	* g++.dg/cpp1z/nontype-auto20.C: New test.
+
+2022-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103692
+	* gfortran.dg/pr102520.f90: Adjust error messages.
+	* gfortran.dg/pr103692.f90: New test.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104007
+	* g++.dg/eh/new2.C: New test.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: Update scanned
+	pattern.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: Likewise.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* g++.dg/opt/pr103989.C: New testcase.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103987
+	* gcc.dg/torture/pr103987.c: New testcase.
+
+2022-01-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104005
+	* gcc.target/aarch64/pr104005.c: New test.
+
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101941
+	* gcc.c-torture/compile/pr101941-1.c: New test.
+	* gcc.dg/tree-ssa/pr101941-1.c: New test.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.src/maintainers.exp: Use
+	check_effective_target_python3_module for checking of unicode
+	module.
+	* lib/target-supports.exp: Add
+	check_effective_target_python3_module.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.misc-tests/options.exp: Include renamed file.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.src/maintainers.exp: Use the new
+	check_effective_target_recent_python3.
+	* lib/target-supports.exp: Check for Python3 version >= 3.6.
+
+2022-01-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103973
+	* g++.target/i386/pr103973-1.C: Change scan-assembler from
+	"\tucomisd" to "\t\[v\]?ucomisd".
+	* g++.target/i386/pr103973-11.C: Ditto.
+	* g++.target/i386/pr103973-13.C: Ditto.
+	* g++.target/i386/pr103973-15.C: Ditto.
+	* g++.target/i386/pr103973-3.C: Ditto.
+	* g++.target/i386/pr103973-5.C: Ditto.
+	* g++.target/i386/pr103973-7.C: Ditto.
+	* g++.target/i386/pr103973-9.C: Ditto.
+	* gcc.target/i386/pr103973-1.c: Ditto.
+	* gcc.target/i386/pr103973-11.c: Ditto.
+	* gcc.target/i386/pr103973-13.c: Ditto.
+	* gcc.target/i386/pr103973-15.c: Ditto.
+	* gcc.target/i386/pr103973-3.c: Ditto.
+	* gcc.target/i386/pr103973-5.c: Ditto.
+	* gcc.target/i386/pr103973-7.c: Ditto.
+	* gcc.target/i386/pr103973-9.c: Ditto.
+
 2022-01-17  qing zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/auto-init-uninit-16.c (testfunc): Delete xfail to reflect
