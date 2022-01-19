@@ -83,7 +83,7 @@ static rtx_insn *last_active_insn (basic_block, int);
 static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
 static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
 static basic_block block_fallthru (basic_block);
-static rtx cond_exec_get_condition (rtx_insn *);
+static rtx cond_exec_get_condition (rtx_insn *, bool);
 static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block *);
@@ -427,7 +427,7 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 /* Return the condition for a jump.  Do not do any special processing.  */
 
 static rtx
-cond_exec_get_condition (rtx_insn *jump)
+cond_exec_get_condition (rtx_insn *jump, bool get_reversed = false)
 {
   rtx test_if, cond;
 
@@ -439,8 +439,10 @@ cond_exec_get_condition (rtx_insn *jump)
 
   /* If this branches to JUMP_LABEL when the condition is false,
      reverse the condition.  */
-  if (GET_CODE (XEXP (test_if, 2)) == LABEL_REF
-      && label_ref_label (XEXP (test_if, 2)) == JUMP_LABEL (jump))
+  if (get_reversed
+      || (GET_CODE (XEXP (test_if, 2)) == LABEL_REF
+	  && label_ref_label (XEXP (test_if, 2))
+	  == JUMP_LABEL (jump)))
     {
       enum rtx_code rev = reversed_comparison_code (cond, jump);
       if (rev == UNKNOWN)
@@ -3152,6 +3154,50 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   return false;
 }
 
+/* Helper function to emit a cmov sequence encapsulated in
+   start_sequence () and end_sequence ().  If NEED_CMOV is true
+   we call noce_emit_cmove to create a cmove sequence.  Otherwise emit
+   a simple move.  If successful, store the first instruction of the
+   sequence in TEMP_DEST and the sequence costs in SEQ_COST.  */
+
+static rtx_insn*
+try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
+		    rtx cond, rtx new_val, rtx old_val, bool need_cmov,
+		    unsigned *cost, rtx *temp_dest,
+		    rtx cc_cmp = NULL, rtx rev_cc_cmp = NULL)
+{
+  rtx_insn *seq = NULL;
+  *cost = 0;
+
+  rtx x = XEXP (cond, 0);
+  rtx y = XEXP (cond, 1);
+  rtx_code cond_code = GET_CODE (cond);
+
+  start_sequence ();
+
+  if (need_cmov)
+    *temp_dest = noce_emit_cmove (if_info, temp, cond_code,
+				  x, y, new_val, old_val, cc_cmp, rev_cc_cmp);
+  else
+    {
+      *temp_dest = temp;
+      if (if_info->then_else_reversed)
+	noce_emit_move_insn (temp, old_val);
+      else
+	noce_emit_move_insn (temp, new_val);
+    }
+
+  if (*temp_dest != NULL_RTX)
+    {
+      seq = get_insns ();
+      *cost = seq_cost (seq, if_info->speed_p);
+    }
+
+  end_sequence ();
+
+  return seq;
+}
+
 /* We have something like:
 
      if (x > y)
@@ -3209,7 +3255,9 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   rtx cond = noce_get_condition (jump, &cond_earliest, false);
   rtx x = XEXP (cond, 0);
   rtx y = XEXP (cond, 1);
-  rtx_code cond_code = GET_CODE (cond);
+
+  rtx cc_cmp = cond_exec_get_condition (jump);
+  rtx rev_cc_cmp = cond_exec_get_condition (jump, /* get_reversed */ true);
 
   /* The true targets for a conditional move.  */
   auto_vec<rtx> targets;
@@ -3323,30 +3371,50 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	  old_val = lowpart_subreg (dst_mode, old_val, src_mode);
 	}
 
-      rtx temp_dest = NULL_RTX;
+      /* Try emitting a conditional move passing the backend the
+	 canonicalized comparison.  The backend is then able to
+	 recognize expressions like
 
-      if (need_cmov)
+	   if (x > y)
+	     y = x;
+
+	 as min/max and emit an insn, accordingly.  */
+      unsigned cost1 = 0, cost2 = 0;
+      rtx_insn *seq, *seq1, *seq2;
+      rtx temp_dest = NULL_RTX, temp_dest1 = NULL_RTX, temp_dest2 = NULL_RTX;
+
+      seq1 = try_emit_cmove_seq (if_info, temp, cond,
+				 new_val, old_val, need_cmov,
+				 &cost1, &temp_dest1);
+
+      /* Here, we try to pass the backend a non-canonicalized cc comparison
+	 as well.  This allows the backend to emit a cmov directly without
+	 creating an additional compare for each.  If successful, costing
+	 is easier and this sequence is usually preferred.  */
+      seq2 = try_emit_cmove_seq (if_info, target, cond,
+				 new_val, old_val, need_cmov,
+				 &cost2, &temp_dest2, cc_cmp, rev_cc_cmp);
+
+      /* Check which version is less expensive.  */
+      if (seq1 != NULL_RTX && (cost1 <= cost2 || seq2 == NULL_RTX))
 	{
-	  /* Actually emit the conditional move.  */
-	  temp_dest = noce_emit_cmove (if_info, temp, cond_code,
-				       x, y, new_val, old_val);
-
-	  /* If we failed to expand the conditional move, drop out and don't
-	     try to continue.  */
-	  if (temp_dest == NULL_RTX)
-	    {
-	      end_sequence ();
-	      return FALSE;
-	    }
+	  seq = seq1;
+	  temp_dest = temp_dest1;
+	}
+      else if (seq2 != NULL_RTX)
+	{
+	  seq = seq2;
+	  temp_dest = temp_dest2;
 	}
       else
 	{
-	  if (if_info->then_else_reversed)
-	    noce_emit_move_insn (temp, old_val);
-	  else
-	    noce_emit_move_insn (temp, new_val);
-	  temp_dest = temp;
+	  /* Nothing worked, bail out.  */
+	  end_sequence ();
+	  return FALSE;
 	}
+
+      /* End the sub sequence and emit to the main sequence.  */
+      emit_insn (seq);
 
       /* Bookkeeping.  */
       count++;
@@ -3361,7 +3429,8 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
   /* Now fixup the assignments.  */
   for (int i = 0; i < count; i++)
-    noce_emit_move_insn (targets[i], temporaries[i]);
+    if (targets[i] != temporaries[i])
+      noce_emit_move_insn (targets[i], temporaries[i]);
 
   /* Actually emit the sequence if it isn't too expensive.  */
   rtx_insn *seq = get_insns ();
