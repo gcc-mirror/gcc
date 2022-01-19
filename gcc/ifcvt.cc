@@ -98,6 +98,8 @@ static int dead_or_predicable (basic_block, basic_block, basic_block,
 			       edge, int);
 static void noce_emit_move_insn (rtx, rtx);
 static rtx_insn *block_has_only_trap (basic_block);
+static void need_cmov_or_rewire (basic_block, hash_set<rtx_insn *> *,
+				 hash_map<rtx_insn *, int> *);
 
 /* Count the number of non-jump active insns in BB.  */
 
@@ -3209,6 +3211,11 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   auto_vec<rtx_insn *> unmodified_insns;
   int count = 0;
 
+  hash_set<rtx_insn *> need_no_cmov;
+  hash_map<rtx_insn *, int> rewired_src;
+
+  need_cmov_or_rewire (then_bb, &need_no_cmov, &rewired_src);
+
   FOR_BB_INSNS (then_bb, insn)
     {
       /* Skip over non-insns.  */
@@ -3219,26 +3226,49 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
       gcc_checking_assert (set);
 
       rtx target = SET_DEST (set);
-      rtx temp = gen_reg_rtx (GET_MODE (target));
+      rtx temp;
+
       rtx new_val = SET_SRC (set);
+      if (int *ii = rewired_src.get (insn))
+	new_val = simplify_replace_rtx (new_val, targets[*ii],
+					temporaries[*ii]);
       rtx old_val = target;
 
-      /* If we were supposed to read from an earlier write in this block,
-	 we've changed the register allocation.  Rewire the read.  While
-	 we are looking, also try to catch a swap idiom.  */
-      for (int i = count - 1; i >= 0; --i)
-	if (reg_overlap_mentioned_p (new_val, targets[i]))
-	  {
-	    /* Catch a "swap" style idiom.  */
-	    if (find_reg_note (insn, REG_DEAD, new_val) != NULL_RTX)
-	      /* The write to targets[i] is only live until the read
-		 here.  As the condition codes match, we can propagate
-		 the set to here.  */
-	      new_val = SET_SRC (single_set (unmodified_insns[i]));
-	    else
-	      new_val = temporaries[i];
-	    break;
-	  }
+      /* As we are transforming
+	 if (x > y)
+	   {
+	     a = b;
+	     c = d;
+	   }
+	 into
+	   a = (x > y) ...
+	   c = (x > y) ...
+
+	 we potentially check x > y before every set.
+	 Even though the check might be removed by subsequent passes, this means
+	 that we cannot transform
+	   if (x > y)
+	     {
+	       x = y;
+	       ...
+	     }
+	 into
+	   x = (x > y) ...
+	   ...
+	 since this would invalidate x and the following to-be-removed checks.
+	 Therefore we introduce a temporary every time we are about to
+	 overwrite a variable used in the check.  Costing of a sequence with
+	 these is going to be inaccurate so only use temporaries when
+	 needed.  */
+      if (reg_overlap_mentioned_p (target, cond))
+	temp = gen_reg_rtx (GET_MODE (target));
+      else
+	temp = target;
+
+      /* We have identified swap-style idioms before.  A normal
+	 set will need to be a cmov while the first instruction of a swap-style
+	 idiom can be a regular move.  This helps with costing.  */
+      bool need_cmov = !need_no_cmov.contains (insn);
 
       /* If we had a non-canonical conditional jump (i.e. one where
 	 the fallthrough is to the "else" case) we need to reverse
@@ -3281,16 +3311,29 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	  old_val = lowpart_subreg (dst_mode, old_val, src_mode);
 	}
 
-      /* Actually emit the conditional move.  */
-      rtx temp_dest = noce_emit_cmove (if_info, temp, cond_code,
+      rtx temp_dest = NULL_RTX;
+
+      if (need_cmov)
+	{
+	  /* Actually emit the conditional move.  */
+	  temp_dest = noce_emit_cmove (if_info, temp, cond_code,
 				       x, y, new_val, old_val);
 
-      /* If we failed to expand the conditional move, drop out and don't
-	 try to continue.  */
-      if (temp_dest == NULL_RTX)
+	  /* If we failed to expand the conditional move, drop out and don't
+	     try to continue.  */
+	  if (temp_dest == NULL_RTX)
+	    {
+	      end_sequence ();
+	      return FALSE;
+	    }
+	}
+      else
 	{
-	  end_sequence ();
-	  return FALSE;
+	  if (if_info->then_else_reversed)
+	    noce_emit_move_insn (temp, old_val);
+	  else
+	    noce_emit_move_insn (temp, new_val);
+	  temp_dest = temp;
 	}
 
       /* Bookkeeping.  */
@@ -3812,6 +3855,89 @@ check_cond_move_block (basic_block bb,
     }
 
   return TRUE;
+}
+
+/* Find local swap-style idioms in BB and mark the first insn (1)
+   that is only a temporary as not needing a conditional move as
+   it is going to be dead afterwards anyway.
+
+     (1) int tmp = a;
+	 a = b;
+	 b = tmp;
+
+	 ifcvt
+	 -->
+
+	 tmp = a;
+	 a = cond ? b : a_old;
+	 b = cond ? tmp : b_old;
+
+    Additionally, store the index of insns like (2) when a subsequent
+    SET reads from their destination.
+
+    (2) int c = a;
+	int d = c;
+
+	ifcvt
+	-->
+
+	c = cond ? a : c_old;
+	d = cond ? d : c;     // Need to use c rather than c_old here.
+*/
+
+static void
+need_cmov_or_rewire (basic_block bb,
+		     hash_set<rtx_insn *> *need_no_cmov,
+		     hash_map<rtx_insn *, int> *rewired_src)
+{
+  rtx_insn *insn;
+  int count = 0;
+  auto_vec<rtx_insn *> insns;
+  auto_vec<rtx> dests;
+
+  /* Iterate over all SETs, storing the destinations
+     in DEST.
+     - If we hit a SET that reads from a destination
+       that we have seen before and the corresponding register
+       is dead afterwards, the register does not need to be
+       moved conditionally.
+     - If we encounter a previously changed register,
+       rewire the read to the original source.  */
+  FOR_BB_INSNS (bb, insn)
+    {
+      rtx set, src, dest;
+
+      if (!active_insn_p (insn))
+	continue;
+
+      set = single_set (insn);
+      if (set == NULL_RTX)
+	continue;
+
+      src = SET_SRC (set);
+      if (SUBREG_P (src))
+	src = SUBREG_REG (src);
+      dest = SET_DEST (set);
+
+      /* Check if the current SET's source is the same
+	 as any previously seen destination.
+	 This is quadratic but the number of insns in BB
+	 is bounded by PARAM_MAX_RTL_IF_CONVERSION_INSNS.  */
+      if (REG_P (src))
+	for (int i = count - 1; i >= 0; --i)
+	  if (reg_overlap_mentioned_p (src, dests[i]))
+	    {
+	      if (find_reg_note (insn, REG_DEAD, src) != NULL_RTX)
+		need_no_cmov->add (insns[i]);
+	      else
+		rewired_src->put (insn, i);
+	    }
+
+      insns.safe_push (insn);
+      dests.safe_push (dest);
+
+      count++;
+    }
 }
 
 /* Given a basic block BB suitable for conditional move conversion,
