@@ -4979,9 +4979,22 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
   /* Handle the case where we can reduce wider vectors to narrower ones.  */
   tree vectype = STMT_VINFO_VECTYPE (reduc_info);
   tree old_vectype = TREE_TYPE (accumulator->reduc_input);
+  unsigned HOST_WIDE_INT m;
   if (!constant_multiple_p (TYPE_VECTOR_SUBPARTS (old_vectype),
-			    TYPE_VECTOR_SUBPARTS (vectype)))
+			    TYPE_VECTOR_SUBPARTS (vectype), &m))
     return false;
+  /* Check the intermediate vector types are available.  */
+  while (m > 2)
+    {
+      m /= 2;
+      tree intermediate_vectype = get_related_vectype_for_scalar_type
+	(TYPE_MODE (vectype), TREE_TYPE (vectype),
+	 exact_div (TYPE_VECTOR_SUBPARTS (old_vectype), m));
+      if (!intermediate_vectype
+	  || !directly_supported_p (STMT_VINFO_REDUC_CODE (reduc_info),
+				    intermediate_vectype))
+	return false;
+    }
 
   /* Non-SLP reductions might apply an adjustment after the reduction
      operation, in order to simplify the initialization of the accumulator.
