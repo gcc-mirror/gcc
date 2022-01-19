@@ -3,4 +3,4 @@
 int foo()
 {
 }
-/* { dg-error "Extension `f' appear more than one time." "" { target *-*-* } 0 } */
+/* { dg-error "extension 'f' appear more than one time" "" { target *-*-* } 0 } */
