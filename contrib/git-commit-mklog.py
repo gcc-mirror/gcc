@@ -37,6 +37,8 @@ if __name__ == '__main__':
                         help='Add the specified PRs (comma separated)')
     parser.add_argument('-p', '--fill-up-bug-titles', action='store_true',
                         help='Download title of mentioned PRs')
+    parser.add_argument('--co',
+                        help='Add Co-Authored-By trailer (comma separated)')
     args, unknown_args = parser.parse_known_args()
 
     myenv['GCC_FORCE_MKLOG'] = '1'
@@ -48,6 +50,10 @@ if __name__ == '__main__':
 
     if mklog_args:
         myenv['GCC_MKLOG_ARGS'] = ' '.join(mklog_args)
+
+    if args.co:
+        for author in args.co.split(','):
+            unknown_args.append(f'--trailer "Co-Authored-By: {author}"')
 
     commit_args = ' '.join(unknown_args)
     subprocess.run(f'git commit {commit_args}', shell=True, env=myenv)
