@@ -1,3 +1,20 @@
+2022-01-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103695
+	PR fortran/102621
+
+	Backport from mainline:
+
+	2022-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h (struct gfc_namespace) Add omp_affinity_iterator
+	field.
+	* dump-parse-tree.c (show_iterator): Use it.
+	* openmp.c (gfc_match_iterator): Likewise.
+	(resolve_omp_clauses): Likewise.
+	* trans-decl.c (gfc_finish_var_decl): Likewise.
+	* trans-openmp.c (handle_iterator): Likewise.
+
 2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* openmp.c (gfc_match_omp_requires): Don't "sorry" dynamic_allocators.

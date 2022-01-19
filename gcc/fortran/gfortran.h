@@ -2101,6 +2101,9 @@ typedef struct gfc_namespace
   /* !$ACC ROUTINE clauses.  */
   gfc_omp_clauses *oacc_routine_clauses;
 
+  /* !$ACC TASK AFFINITY iterator symbols.  */
+  gfc_symbol *omp_affinity_iterators;
+
   /* !$ACC ROUTINE names.  */
   gfc_oacc_routine_name *oacc_routine_names;
 
