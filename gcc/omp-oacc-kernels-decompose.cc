@@ -1255,6 +1255,16 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
       gsi_next (&gsi_n);
 
       gimple *stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) == GIMPLE_DEBUG)
+	{
+	  if (flag_compare_debug_opt || flag_compare_debug)
+	    /* Let the usual '-fcompare-debug' analysis bail out, as
+	       necessary.  */
+	    ;
+	  else
+	    sorry_at (loc, "%qs not yet supported",
+		      gimple_code_name[gimple_code (stmt)]);
+	}
       gimple *omp_for = top_level_omp_for_in_stmt (stmt);
       bool is_unconditional_oacc_for_loop = false;
       if (omp_for != NULL)
