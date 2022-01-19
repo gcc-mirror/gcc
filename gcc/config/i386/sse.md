@@ -24281,5 +24281,5 @@
 	    [(match_operand:BLK 0 "memory_operand" "m")]
 	    AESDECENCWIDEKL))])]
   "TARGET_WIDEKL"
-  "aes<aeswideklvariant>\t{%0}"
+  "aes<aeswideklvariant>\t%0"
   [(set_attr "type" "other")])
