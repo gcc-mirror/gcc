@@ -6539,7 +6539,7 @@
 {
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <maskc_dest_false_dep_for_glc_cond>)
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "v<complexopname><ssemodesuffix>\t{<round_maskc_op3>%2, %1, %0<maskc_operand3>|%0<maskc_operand3>, %1, %2<round_maskc_op3>}";
 }
   [(set_attr "type" "ssemul")
@@ -6750,7 +6750,7 @@
 {
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <mask_scalarc_dest_false_dep_for_glc_cond>)
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "v<complexopname>sh\t{<round_scalarc_mask_op3>%2, %1, %0<mask_scalarc_operand3>|%0<mask_scalarc_operand3>, %1, %2<round_scalarc_mask_op3>}";
 }
   [(set_attr "type" "ssemul")
@@ -15222,7 +15222,7 @@
       && <mask3_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1])
       && !reg_mentioned_p (operands[0], operands[2]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vpmullq\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}";
 }
   [(set_attr "type" "sseimul")
@@ -24658,7 +24658,7 @@
       && <mask3_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1])
       && !reg_mentioned_p (operands[0], operands[2]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vperm<ssemodesuffix>\t{%1, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1}";
 }
   [(set_attr "type" "sselog")
@@ -24900,7 +24900,7 @@
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <mask6_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vperm<ssemodesuffix>\t{%2, %1, %0<mask_operand6>|%0<mask_operand6>, %1, %2}";
 }
   [(set_attr "type" "sselog")
@@ -24975,7 +24975,7 @@
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <mask10_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vperm<ssemodesuffix>\t{%2, %1, %0<mask_operand10>|%0<mask_operand10>, %1, %2}";
 }
   [(set_attr "type" "sselog")
@@ -26880,7 +26880,7 @@
       && <mask4_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1])
       && !reg_mentioned_p (operands[0], operands[2]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vrange<ssemodesuffix>\t{%3, <round_saeonly_mask_op4>%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2<round_saeonly_mask_op4>, %3}";
 }
   [(set_attr "type" "sse")
@@ -26903,7 +26903,7 @@
       && <mask_scalar4_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1])
       && !reg_mentioned_p (operands[0], operands[2]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vrange<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}";
 }
   [(set_attr "type" "sse")
@@ -26949,7 +26949,7 @@
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <mask3_dest_false_dep_for_glc_cond>
       && MEM_P (operands[1]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vgetmant<ssemodesuffix>\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}";
 }
   [(set_attr "prefix" "evex")
@@ -26971,7 +26971,7 @@
       && <mask_scalar4_dest_false_dep_for_glc_cond>
       && !reg_mentioned_p (operands[0], operands[1])
       && !reg_mentioned_p (operands[0], operands[2]))
-    output_asm_insn ("vxorps\t{%x0, %x0, %x0}", operands);
+    output_asm_insn ("vxorps\t%x0, %x0, %x0", operands);
   return "vgetmant<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %<iptr>2<round_saeonly_scalar_mask_op4>, %3}";
 }
    [(set_attr "prefix" "evex")
