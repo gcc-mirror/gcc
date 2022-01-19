@@ -30,8 +30,10 @@ endif
 
 if ENABLE_BACKTRACE
 backtrace_dir = libbacktrace
+backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
 else
 backtrace_dir =
+backtrace_supported_h =
 endif
 
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
@@ -402,7 +404,15 @@ stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
 	fi; \
 	echo `date` > stamp-debug;
 
-build-debug: stamp-debug
+if ENABLE_BACKTRACE
+${debugdir}/$(backtrace_supported_h): $(backtrace_supported_h) stamp-debug
+	cp $< $@
+debug_backtrace_supported_h = ${debugdir}/$(backtrace_supported_h)
+else
+debug_backtrace_supported_h =
+endif
+
+build-debug: stamp-debug $(debug_backtrace_supported_h)
 	  (cd ${debugdir}; \
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \
