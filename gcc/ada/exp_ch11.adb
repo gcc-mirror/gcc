@@ -1246,7 +1246,7 @@ package body Exp_Ch11 is
       Append_To (L,
         Make_Character_Literal (Loc,
           Chars              => Name_uA,
-          Char_Literal_Value => UI_From_Int (Character'Pos ('A'))));
+          Char_Literal_Value => UI_From_CC (Get_Char_Code ('A'))));
 
       --  Name_Length component: Nam'Length
 

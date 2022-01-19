@@ -2010,7 +2010,7 @@ package body Exp_Prag is
             Rewrite (Expression (Lang_Char),
               Make_Character_Literal (Loc,
                 Chars              => Name_uC,
-                Char_Literal_Value => UI_From_Int (Character'Pos ('C'))));
+                Char_Literal_Value => UI_From_CC (Get_Char_Code ('C'))));
             Analyze (Expression (Lang_Char));
 
             --  Change the value of Foreign_Data

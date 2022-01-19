@@ -2245,12 +2245,12 @@ package body Sem_Res is
          elsif Nkind (N) = N_String_Literal
                  and then Is_Character_Type (Typ)
          then
-            Set_Character_Literal_Name (Char_Code (Character'Pos ('A')));
+            Set_Character_Literal_Name (Get_Char_Code ('A'));
             Rewrite (N,
               Make_Character_Literal (Sloc (N),
                 Chars => Name_Find,
                 Char_Literal_Value =>
-                  UI_From_Int (Character'Pos ('A'))));
+                  UI_From_CC (Get_Char_Code ('A'))));
             Set_Etype (N, Any_Character);
             Set_Is_Static_Expression (N);
 

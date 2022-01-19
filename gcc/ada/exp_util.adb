@@ -4183,7 +4183,7 @@ package body Exp_Util is
 
       Build_Task_Image_Prefix (Loc, Len, Res, Pos, Pref, Sum, Decls, Stats);
 
-      Set_Character_Literal_Name (Char_Code (Character'Pos ('(')));
+      Set_Character_Literal_Name (Get_Char_Code ('('));
 
       Append_To (Stats,
         Make_Assignment_Statement (Loc,
@@ -4194,7 +4194,7 @@ package body Exp_Util is
           Expression =>
             Make_Character_Literal (Loc,
               Chars              => Name_Find,
-              Char_Literal_Value => UI_From_Int (Character'Pos ('(')))));
+              Char_Literal_Value => UI_From_CC (Get_Char_Code ('(')))));
 
       Append_To (Stats,
         Make_Assignment_Statement (Loc,
@@ -4244,7 +4244,7 @@ package body Exp_Util is
                           Expressions    =>
                             New_List (Make_Integer_Literal (Loc, 1))))));
 
-            Set_Character_Literal_Name (Char_Code (Character'Pos (',')));
+            Set_Character_Literal_Name (Get_Char_Code (','));
 
             Append_To (Stats,
               Make_Assignment_Statement (Loc,
@@ -4254,7 +4254,7 @@ package body Exp_Util is
                 Expression =>
                   Make_Character_Literal (Loc,
                     Chars              => Name_Find,
-                    Char_Literal_Value => UI_From_Int (Character'Pos (',')))));
+                    Char_Literal_Value => UI_From_CC (Get_Char_Code (',')))));
 
             Append_To (Stats,
               Make_Assignment_Statement (Loc,
@@ -4266,7 +4266,7 @@ package body Exp_Util is
          end if;
       end loop;
 
-      Set_Character_Literal_Name (Char_Code (Character'Pos (')')));
+      Set_Character_Literal_Name (Get_Char_Code (')'));
 
       Append_To (Stats,
         Make_Assignment_Statement (Loc,
@@ -4277,7 +4277,7 @@ package body Exp_Util is
            Expression =>
              Make_Character_Literal (Loc,
                Chars              => Name_Find,
-               Char_Literal_Value => UI_From_Int (Character'Pos (')')))));
+               Char_Literal_Value => UI_From_CC (Get_Char_Code (')')))));
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Array_Image;
 
@@ -4569,7 +4569,7 @@ package body Exp_Util is
 
       Build_Task_Image_Prefix (Loc, Len, Res, Pos, Pref, Sum, Decls, Stats);
 
-      Set_Character_Literal_Name (Char_Code (Character'Pos ('.')));
+      Set_Character_Literal_Name (Get_Char_Code ('.'));
 
       --  Res (Pos) := '.';
 
@@ -4582,7 +4582,7 @@ package body Exp_Util is
              Make_Character_Literal (Loc,
                Chars => Name_Find,
                Char_Literal_Value =>
-                 UI_From_Int (Character'Pos ('.')))));
+                 UI_From_CC (Get_Char_Code ('.')))));
 
       Append_To (Stats,
         Make_Assignment_Statement (Loc,
