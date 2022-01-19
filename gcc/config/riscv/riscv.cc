@@ -3309,8 +3309,8 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	      && strcmp (string, "machine"))
 	    {
 	      warning (OPT_Wattributes,
-		       "argument to %qE attribute is not %<user%>, %<supervisor%>, "
-		       "or %<machine%>", name);
+		       "argument to %qE attribute is not %<\"user\"%>, %<\"supervisor\"%>, "
+		       "or %<\"machine\"%>", name);
 	      *no_add_attrs = true;
 	    }
 	}
