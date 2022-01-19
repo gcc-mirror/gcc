@@ -4234,6 +4234,11 @@ pass_waccess::check_call (gcall *stmt)
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     check_builtin (stmt);
 
+  /* .ASAN_MARK doesn't access any vars, only modifies shadow memory.  */
+  if (gimple_call_internal_p (stmt)
+      && gimple_call_internal_fn (stmt) == IFN_ASAN_MARK)
+    return;
+
   if (!m_early_checks_p)
     if (tree callee = gimple_call_fndecl (stmt))
       {
