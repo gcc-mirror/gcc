@@ -195,7 +195,7 @@ package body Sem_Ch13 is
    --  returned for non-scalar types.
    --
    --  Note: the RM seems to suggest that string types can also have static
-   --  predicates. But that really makes lttle sense as very few useful
+   --  predicates. But that really makes little sense as very few useful
    --  predicates can be constructed for strings. Remember that:
    --
    --     "ABC" < "DEF"
