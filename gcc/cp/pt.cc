@@ -10660,7 +10660,7 @@ keep_template_parm (tree t, void* data)
   int level;
   int index;
   template_parm_level_and_index (t, &level, &index);
-  if (level > ftpi->max_depth)
+  if (level == 0 || level > ftpi->max_depth)
     return 0;
 
   if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
@@ -14799,20 +14799,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
-	    tree sub_args = args;
-	    if (tree auto_node = type_uses_auto (type))
-	      {
-		/* Mask off any template args past the variable's context so we
-		   don't replace the auto with an unrelated argument.  */
-		int nouter = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
-		int extra = TMPL_ARGS_DEPTH (args) - nouter;
-		if (extra > 0)
-		  /* This should never happen with the new lambda instantiation
-		     model, but keep the handling just in case.  */
-		  gcc_assert (!CHECKING_P),
-		  sub_args = strip_innermost_template_args (args, extra);
-	      }
-	    type = tsubst (type, sub_args, complain, in_decl);
+	    type = tsubst (type, args, complain, in_decl);
 	    /* Substituting the type might have recursively instantiated this
 	       same alias (c++/86171).  */
 	    if (gen_tmpl && DECL_ALIAS_TEMPLATE_P (gen_tmpl)
@@ -15564,6 +15551,19 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case TEMPLATE_TYPE_PARM:
+      if (template_placeholder_p (t))
+	{
+	  tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (t);
+	  tmpl = tsubst_copy (tmpl, args, complain, in_decl);
+	  if (TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
+	    tmpl = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (tmpl);
+
+	  if (tmpl != CLASS_PLACEHOLDER_TEMPLATE (t))
+	    return make_template_placeholder (tmpl);
+	  else
+	    return t;
+	}
+      /* Fall through.  */
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
@@ -15737,7 +15737,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		 of a constrained placeholder.  */;
 	    else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
 		     && !PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t)
-		     && !CLASS_PLACEHOLDER_TEMPLATE (t)
 		     && (arg = TEMPLATE_TYPE_PARM_INDEX (t),
 			 r = TEMPLATE_PARM_DESCENDANTS (arg))
 		     && (TEMPLATE_PARM_LEVEL (r)
@@ -15756,19 +15755,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		TYPE_REFERENCE_TO (r) = NULL_TREE;
 
                 if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-		  {
+		  if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t))
 		    /* Propagate constraints on placeholders since they are
 		       only instantiated during satisfaction.  */
-		    if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t))
-		      PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r) = ci;
-		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
-		      {
-			pl = tsubst_copy (pl, args, complain, in_decl);
-			if (TREE_CODE (pl) == TEMPLATE_TEMPLATE_PARM)
-			  pl = TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (pl);
-			CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
-		      }
-		  }
+		    PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r) = ci;
 
 		if (TREE_CODE (r) == TEMPLATE_TEMPLATE_PARM)
 		  /* We have reduced the level of the template
@@ -28492,18 +28482,18 @@ make_args_non_dependent (vec<tree, va_gc> *args)
 }
 
 /* Returns a type which represents 'auto' or 'decltype(auto)'.  We use a
-   TEMPLATE_TYPE_PARM with a level one deeper than the actual template
-   parms.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
+   TEMPLATE_TYPE_PARM with a level one deeper than the actual template parms,
+   by default.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
 
 static tree
-make_auto_1 (tree name, bool set_canonical)
+make_auto_1 (tree name, bool set_canonical,
+	     int level = current_template_depth + 1)
 {
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (input_location, TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
-    (0, current_template_depth + 1, current_template_depth + 1,
-     TYPE_NAME (au), NULL_TREE);
+    (0, level, level, TYPE_NAME (au), NULL_TREE);
   if (set_canonical)
     TYPE_CANONICAL (au) = canonical_type_parameter (au);
   DECL_ARTIFICIAL (TYPE_NAME (au)) = 1;
@@ -28526,12 +28516,14 @@ make_auto (void)
   return make_auto_1 (auto_identifier, true);
 }
 
-/* Return a C++17 deduction placeholder for class template TMPL.  */
+/* Return a C++17 deduction placeholder for class template TMPL.
+   There are represented as an 'auto' with the special level 0 and
+   CLASS_PLACEHOLDER_TEMPLATE set.  */
 
 tree
 make_template_placeholder (tree tmpl)
 {
-  tree t = make_auto_1 (auto_identifier, false);
+  tree t = make_auto_1 (auto_identifier, false, /*level=*/0);
   CLASS_PLACEHOLDER_TEMPLATE (t) = tmpl;
   /* Our canonical type depends on the placeholder.  */
   TYPE_CANONICAL (t) = canonical_type_parameter (t);
