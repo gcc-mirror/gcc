@@ -7394,6 +7394,7 @@ package body Sem_Res is
          end if;
 
          Resolve (Alt_Expr, Typ);
+         Check_Unset_Reference (Alt_Expr);
          Alt_Typ := Etype (Alt_Expr);
 
          --  When the expression is of a scalar subtype different from the
@@ -9317,6 +9318,9 @@ package body Sem_Res is
 
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Result_Type);
+      Check_Unset_Reference (Condition);
+      Check_Unset_Reference (Then_Expr);
+
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
@@ -9332,6 +9336,8 @@ package body Sem_Res is
          else
             Resolve (Else_Expr, Result_Type);
          end if;
+
+         Check_Unset_Reference (Else_Expr);
 
          Apply_Check (Else_Expr);
 
