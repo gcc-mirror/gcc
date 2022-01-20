@@ -17911,7 +17911,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     case IX86_BUILTIN_SHUFPD:
       arg2 = gimple_call_arg (stmt, 2);
-      if (TREE_CODE (arg2) == INTEGER_CST)
+      if (TREE_CODE (arg2) == INTEGER_CST && gimple_call_lhs (stmt))
 	{
 	  location_t loc = gimple_location (stmt);
 	  unsigned HOST_WIDE_INT imask = TREE_INT_CST_LOW (arg2);
