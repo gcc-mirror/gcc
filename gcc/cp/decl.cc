@@ -7235,7 +7235,12 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      /* In C++20, the call to build_aggr_init could have created
 		 an INIT_EXPR with a CONSTRUCTOR as the RHS to handle
 		 A(1, 2).  */
-	      init = TREE_OPERAND (init_code, 1);
+	      tree rhs = TREE_OPERAND (init_code, 1);
+	      if (processing_template_decl && TREE_CODE (rhs) == TARGET_EXPR)
+		/* Avoid leaking TARGET_EXPR into template trees.  */
+		rhs = build_implicit_conv_flags (type, init, flags);
+	      init = rhs;
+
 	      init_code = NULL_TREE;
 	      /* Don't call digest_init; it's unnecessary and will complain
 		 about aggregate initialization of non-aggregate classes.  */
