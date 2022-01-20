@@ -1,3 +1,25 @@
+2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ada/103538
+	* gcc-interface/Makefile.in (target_cpu): Set to x32 for
+	x86_64-linux-gnux32.
+
+2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ada/103538
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS): Add
+	$(TRASYM_DWARF_UNIX_PAIRS),
+	s-tsmona.adb<libgnat/s-tsmona__linux.adb,
+	$(GNATRTL_128BIT_PAIRS).
+	(EXTRA_GNATRTL_NONTASKING_OBJS): Add $(TRASYM_DWARF_UNIX_OBJS)
+	and $(GNATRTL_128BIT_OBJS).
+
 2021-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (validate_size): Do not issue an error if the
