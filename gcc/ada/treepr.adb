@@ -1229,7 +1229,7 @@ package body Treepr is
 
          else
             Sfile := Get_Source_File_Index (Sloc (N));
-            Print_Int (Int (Sloc (N)) - Int (Source_Text (Sfile)'First));
+            Print_Int (Int (Sloc (N) - Source_Text (Sfile)'First));
             Write_Str ("  ");
             Write_Location (Sloc (N));
          end if;

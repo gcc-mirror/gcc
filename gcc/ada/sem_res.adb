@@ -11754,7 +11754,7 @@ package body Sem_Res is
 
                   Error_Msg
                     ("literal out of range of type Standard.Character",
-                     Source_Ptr (Int (Loc) + J));
+                     Loc + Source_Ptr (J));
                   return;
                end if;
             end loop;
@@ -11783,7 +11783,7 @@ package body Sem_Res is
 
                   Error_Msg
                     ("literal out of range of type Standard.Wide_Character",
-                     Source_Ptr (Int (Loc) + J));
+                     Loc + Source_Ptr (J));
                   return;
                end if;
             end loop;

@@ -130,11 +130,7 @@ package body Scng is
 
    procedure Check_End_Of_Line is
       Len : constant Int :=
-              Int (Scan_Ptr) -
-                Int (Current_Line_Start) -
-                  Wide_Char_Byte_Count;
-
-   --  Start of processing for Check_End_Of_Line
+              Int (Scan_Ptr - Current_Line_Start) - Wide_Char_Byte_Count;
 
    begin
       if Style_Check then
