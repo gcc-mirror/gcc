@@ -216,7 +216,7 @@ extern void ira_restore_scratches (FILE *dump_file);
 extern void ira_nullify_asm_goto (rtx_insn *insn);
 
 /* ira-costs.cc */
-extern void ira_costs_c_finalize (void);
+extern void ira_costs_cc_finalize (void);
 
 /* ira-lives.cc */
 extern rtx non_conflicting_reg_copy_p (rtx_insn *);

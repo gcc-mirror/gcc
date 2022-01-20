@@ -310,7 +310,7 @@ test_dumping_repeat ()
 /* Run all of the selftests within this file.  */
 
 void
-rtl_tests_c_tests ()
+rtl_tests_cc_tests ()
 {
   test_dumping_regs ();
   test_dumping_insns ();

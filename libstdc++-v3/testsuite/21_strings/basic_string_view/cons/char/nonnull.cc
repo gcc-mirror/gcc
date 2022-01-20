@@ -25,5 +25,6 @@ test01()
 {
   std::string_view s((const char*)nullptr); // { dg-warning "\\\[-Wnonnull" }
   std::string_view t((char*)nullptr);	    // { dg-warning "\\\[-Wnonnull" }
-  std::string_view u(nullptr);		    // { dg-error "deleted" }
+  std::string_view u(nullptr);		    // { dg-warning "\\\[-Wnonnull" "" { target c++20_down } }
+// { dg-error "deleted" "P2166R1" { target c++23 } 0 }
 }

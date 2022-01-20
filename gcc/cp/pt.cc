@@ -26931,16 +26931,14 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 	}
       return false;
     }
-  else if (TREE_CODE (type) == TYPENAME_TYPE)
-    return false;
-  else if (TREE_CODE (type) == DECLTYPE_TYPE)
-    return false;
   else if (TREE_CODE (type) == NULLPTR_TYPE)
     return false;
-  /* A bound template template parm could later be instantiated to have a valid
-     nontype parm type via an alias template.  */
-  else if (cxx_dialect >= cxx11
-	   && TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+  else if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
+	   && cxx_dialect < cxx11)
+    /* Fall through; before C++11 alias templates, a bound ttp
+       always instantiates into a class type.  */;
+  else if (WILDCARD_TYPE_P (type))
+    /* Any other wildcard type not already handled above is allowed.  */
     return false;
   else if (TREE_CODE (type) == COMPLEX_TYPE)
     /* Fall through.  */;
@@ -30583,7 +30581,7 @@ test_type_dependent_expression_p ()
 /* Run all of the selftests within this file.  */
 
 void
-cp_pt_c_tests ()
+cp_pt_cc_tests ()
 {
   test_build_non_dependent_expr ();
   test_type_dependent_expression_p ();

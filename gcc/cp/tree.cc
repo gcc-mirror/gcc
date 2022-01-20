@@ -6167,7 +6167,7 @@ test_lvalue_kind ()
 /* Run all of the selftests within this file.  */
 
 void
-cp_tree_c_tests ()
+cp_tree_cc_tests ()
 {
   test_lvalue_kind ();
 }

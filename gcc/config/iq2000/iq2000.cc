@@ -1864,7 +1864,7 @@ save_restore_insns (int store_p)
 
   if (gp_offset < 0 || end_offset < 0)
     internal_error
-      ("gp_offset (%ld) or end_offset (%ld) is less than zero",
+      ("%<gp_offset%> (%ld) or %<end_offset%> (%ld) is less than zero",
        (long) gp_offset, (long) end_offset);
 
   else if (gp_offset < 32768)
@@ -2890,7 +2890,7 @@ static void
 iq2000_print_operand_address (FILE * file, machine_mode mode, rtx addr)
 {
   if (!addr)
-    error ("PRINT_OPERAND_ADDRESS, null pointer");
+    error ("%<PRINT_OPERAND_ADDRESS%>, null pointer");
 
   else
     switch (GET_CODE (addr))
@@ -3045,7 +3045,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
 	  break;
 
 	default:
-	  error ("PRINT_OPERAND: Unknown punctuation %<%c%>", letter);
+	  error ("%<PRINT_OPERAND%>: Unknown punctuation %<%c%>", letter);
 	  break;
 	}
 
@@ -3054,7 +3054,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
 
   if (! op)
     {
-      error ("PRINT_OPERAND null pointer");
+      error ("%<PRINT_OPERAND%> null pointer");
       return;
     }
 

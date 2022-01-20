@@ -8459,7 +8459,7 @@ simplify_const_poly_int_tests<N>::run ()
 /* Run all of the selftests within this file.  */
 
 void
-simplify_rtx_c_tests ()
+simplify_rtx_cc_tests ()
 {
   test_scalar_ops ();
   test_vector_ops ();

@@ -872,7 +872,7 @@ test_disconnected_nodes ()
 /* Run all of the selftests within this file.  */
 
 void
-et_forest_c_tests ()
+et_forest_cc_tests ()
 {
   test_single_node ();
   test_simple_tree ();

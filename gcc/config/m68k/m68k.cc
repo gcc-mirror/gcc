@@ -803,7 +803,7 @@ m68k_handle_fndecl_attribute (tree *node, tree name,
   if (!TARGET_FIDOA
       && !strcmp (IDENTIFIER_POINTER (name), "interrupt_thread"))
     {
-      error ("interrupt_thread is available only on fido");
+      error ("%<interrupt_thread%> is available only on fido");
       *no_add_attrs = true;
     }
 

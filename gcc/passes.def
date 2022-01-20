@@ -372,6 +372,9 @@ along with GCC; see the file COPYING3.  If not see
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
+      /* The idea is that with -Og we do not perform any IPA optimization
+	 so post-IPA work should be restricted to semantically required
+	 passes and all optimization work is done early.  */
       NEXT_PASS (pass_remove_cgraph_callee_edges);
       NEXT_PASS (pass_strip_predict_hints, false /* early_p */);
       /* Lower remaining pieces of GIMPLE.  */
@@ -399,8 +402,6 @@ along with GCC; see the file COPYING3.  If not see
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
-      NEXT_PASS (pass_local_pure_const);
-      NEXT_PASS (pass_modref);
       /* uncprop replaces constants by SSA names.  This makes analysis harder
 	 and thus it should be run last.  */
       NEXT_PASS (pass_uncprop);

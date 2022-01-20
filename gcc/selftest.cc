@@ -412,7 +412,7 @@ test_locate_file ()
 /* Run all of the selftests within this file.  */
 
 void
-selftest_c_tests ()
+selftest_cc_tests ()
 {
   test_libiberty ();
   test_assertions ();

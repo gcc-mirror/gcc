@@ -15203,7 +15203,7 @@ test_escaped_strings (void)
 /* Run all of the selftests within this file.  */
 
 void
-tree_c_tests ()
+tree_cc_tests ()
 {
   test_integer_constants ();
   test_identifiers ();

@@ -2044,6 +2044,50 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 	      namespace std in <cuchar>.])
   fi
 
+  CXXFLAGS="$CXXFLAGS -fchar8_t"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -fchar8_t])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_fchar8_t)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for -fchar8_t.])
+  fi
+
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -std=c++20])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_cxx20=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_cxx20=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_cxx20=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_cxx20)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for C++20.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])

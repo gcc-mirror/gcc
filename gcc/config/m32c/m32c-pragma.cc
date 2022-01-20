@@ -51,14 +51,14 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
 
 	  type = pragma_lex (&val);
 	  if (type != CPP_EOF)
-	    warning (0, "junk at end of #pragma GCC memregs [0..16]");
+	    warning (0, "junk at end of %<#pragma GCC memregs%> [0-16]");
 
 	  if (i >= 0 && i <= 16)
 	    {
 	      if (!ok_to_change_target_memregs)
 		{
 		  warning (0,
-			   "#pragma GCC memregs must precede any function decls");
+			   "%<#pragma GCC memregs%> must precede any function declarations");
 		  return;
 		}
 	      target_memregs = i;
@@ -66,14 +66,14 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
 	    }
 	  else
 	    {
-	      warning (0, "#pragma GCC memregs takes a number [0..16]");
+	      warning (0, "%<#pragma GCC memregs%> takes a number [0-16]");
 	    }
 
 	  return;
 	}
     }
 
-  error ("#pragma GCC memregs takes a number [0..16]");
+  error ("%<#pragma GCC memregs%> takes a number [0-16]");
 }
 
 /* Implements the "pragma ADDRESS" pragma.  This pragma takes a
@@ -101,12 +101,12 @@ m32c_pragma_address (cpp_reader * reader ATTRIBUTE_UNUSED)
 	  type = pragma_lex (&var);
 	  if (type != CPP_EOF)
 	    {
-	      error ("junk at end of #pragma ADDRESS");
+	      error ("junk at end of %<#pragma ADDRESS%>");
 	    }
 	  return;
 	}
     }
-  error ("malformed #pragma ADDRESS variable address");
+  error ("malformed %<#pragma ADDRESS%> variable address");
 }
 
 /* Implements REGISTER_TARGET_PRAGMAS.  */

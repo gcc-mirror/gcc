@@ -850,6 +850,7 @@ c_compatibility_headers = \
 	${c_compatibility_srcdir}/fenv.h \
 	${c_compatibility_srcdir}/tgmath.h \
 	${c_compatibility_srcdir}/math.h \
+	${c_compatibility_srcdir}/stdatomic.h \
 	${c_compatibility_srcdir}/stdlib.h
 endif
 

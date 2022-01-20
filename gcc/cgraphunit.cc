@@ -2535,7 +2535,7 @@ symbol_table::finalize_compilation_unit (void)
    within the same process.  For use by toplev::finalize.  */
 
 void
-cgraphunit_c_finalize (void)
+cgraphunit_cc_finalize (void)
 {
   gcc_assert (cgraph_new_nodes.length () == 0);
   cgraph_new_nodes.truncate (0);

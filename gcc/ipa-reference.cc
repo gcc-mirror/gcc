@@ -1322,7 +1322,7 @@ make_pass_ipa_reference (gcc::context *ctxt)
    within the same process.  For use by toplev::finalize.  */
 
 void
-ipa_reference_c_finalize (void)
+ipa_reference_cc_finalize (void)
 {
   if (ipa_ref_opt_sum_summaries != NULL)
     {

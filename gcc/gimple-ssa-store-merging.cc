@@ -5633,7 +5633,7 @@ verify_clear_bit_region_be (void)
 /* Run all of the selftests within this file.  */
 
 void
-store_merging_c_tests (void)
+store_merging_cc_tests (void)
 {
   verify_shift_bytes_in_array_left ();
   verify_shift_bytes_in_array_right ();

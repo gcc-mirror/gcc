@@ -317,7 +317,10 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
-  if (ret_type || !parallel_p)
+  if (nunits == 1)
+    /* Do not diagnose decomposing single element vectors.  */
+    ;
+  else if (ret_type || !parallel_p)
     warning_at (loc, OPT_Wvector_operation_performance,
 		"vector operation will be expanded piecewise");
   else

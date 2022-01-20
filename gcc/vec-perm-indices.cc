@@ -371,7 +371,7 @@ test_vec_perm_12 (void)
 /* Run selftests for this file.  */
 
 void
-vec_perm_indices_c_tests ()
+vec_perm_indices_cc_tests ()
 {
   test_vec_perm_12 ();
 }

@@ -6630,7 +6630,7 @@ make_pass_ipa_cp (gcc::context *ctxt)
    within the same process.  For use by toplev::finalize.  */
 
 void
-ipa_cp_c_finalize (void)
+ipa_cp_cc_finalize (void)
 {
   base_count = profile_count::uninitialized ();
   overall_size = 0;

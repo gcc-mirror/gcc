@@ -5490,7 +5490,7 @@ pass_ipa_modref::execute (function *)
 /* Summaries must stay alive until end of compilation.  */
 
 void
-ipa_modref_c_finalize ()
+ipa_modref_cc_finalize ()
 {
   if (optimization_summaries)
     ggc_delete (optimization_summaries);

@@ -73,7 +73,7 @@ struct GTY(()) modref_summary
 
 modref_summary *get_modref_function_summary (cgraph_node *func);
 modref_summary *get_modref_function_summary (gcall *call, bool *interposed);
-void ipa_modref_c_finalize ();
+void ipa_modref_cc_finalize ();
 void ipa_merge_modref_summary_after_inlining (cgraph_edge *e);
 
 /* All flags that are implied by the ECF_CONST functions.  */

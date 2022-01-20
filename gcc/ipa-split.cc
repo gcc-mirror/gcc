@@ -931,8 +931,8 @@ visit_bb (basic_block bb, basic_block return_bb,
 		    break;
 		  }
 
-	      /* Calls that function has either the warning or error
-	         attribute on it should not be split off into another
+	      /* Calls to functions (which have the warning or error
+		 attribute on them) should not be split off into another
 		 function.  */
 	      if (lookup_attribute ("warning", DECL_ATTRIBUTES (decl))
 		   || lookup_attribute ("error", DECL_ATTRIBUTES (decl)))

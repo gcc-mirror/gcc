@@ -1,3 +1,556 @@
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets_1): New function.
+	(noce_convert_multiple_sets): Call function a second time if we can
+	improve the first try.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (cond_exec_get_condition): New parameter to allow getting the
+	reversed comparison.
+	(try_emit_cmove_seq): New function to facilitate creating a cmov
+	sequence.
+	(noce_convert_multiple_sets): Create two sequences and use the less
+	expensive one.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* rtl.h (struct rtx_comparison): New struct that holds an rtx
+	comparison.
+	* config/rs6000/rs6000.cc (rs6000_emit_minmax): Use struct instead of
+	single parameters.
+	(rs6000_emit_swsqrt): Likewise.
+	* expmed.cc (expand_sdiv_pow2): Likewise.
+	(emit_store_flag): Likewise.
+	* expr.cc (expand_cond_expr_using_cmove): Likewise.
+	(expand_expr_real_2): Likewise.
+	* ifcvt.cc (noce_emit_cmove): Add compare and reversed compare
+	parameters.
+	* optabs.cc (emit_conditional_move_1): New function.
+	(expand_doubleword_shift_condmove): Use struct.
+	(emit_conditional_move): Use struct and allow to call directly
+	without going through preparation steps.
+	* optabs.h (emit_conditional_move): Use struct.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (bb_ok_for_noce_convert_multiple_sets): Estimate insns costs.
+	(noce_process_if_block): Use potential costs.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets): Allow constants.
+	(bb_ok_for_noce_convert_multiple_sets): Likewise.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (need_cmov_or_rewire): New function.
+	(noce_convert_multiple_sets): Call it.
+
+2022-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.cc (attribute_c_tests): Rename to...
+	(attribs_cc_tests): ...this.
+	* bitmap.cc (bitmap_c_tests): Rename to...
+	(bitmap_cc_tests): ...this.
+	* cgraph.cc (cgraph_c_finalize): Rename to...
+	(cgraph_cc_finalize): ...this.
+	(cgraph_c_tests): Rename to...
+	(cgraph_cc_tests): ...this.
+	* cgraph.h (cgraph_c_finalize): Rename to...
+	(cgraph_cc_finalize): ...this.
+	(cgraphunit_c_finalize): Rename to...
+	(cgraphunit_cc_finalize): ...this.
+	* cgraphunit.cc (cgraphunit_c_finalize): Rename to...
+	(cgraphunit_cc_finalize): ...this.
+	* convert.cc (convert_c_tests): Rename to...
+	(convert_cc_tests): ...this.
+	* dbgcnt.cc (dbgcnt_c_tests): Rename to...
+	(dbgcnt_cc_tests): ...this.
+	* diagnostic-show-locus.cc (diagnostic_show_locus_c_tests): Rename to...
+	(diagnostic_show_locus_cc_tests): ...this.
+	* diagnostic.cc (diagnostic_c_tests): Rename to...
+	(diagnostic_cc_tests): ...this.
+	* dumpfile.cc (dumpfile_c_tests): Rename to...
+	(dumpfile_cc_tests): ...this.
+	* dwarf2out.cc (dwarf2out_c_finalize): Rename to...
+	(dwarf2out_cc_finalize): ...this.
+	* dwarf2out.h (dwarf2out_c_finalize): Rename to...
+	(dwarf2out_cc_finalize): ...this.
+	* edit-context.cc (edit_context_c_tests): Rename to...
+	(edit_context_cc_tests): ...this.
+	* et-forest.cc (et_forest_c_tests): Rename to...
+	(et_forest_cc_tests): ...this.
+	* fibonacci_heap.cc (fibonacci_heap_c_tests): Rename to...
+	(fibonacci_heap_cc_tests): ...this.
+	* fold-const.cc (fold_const_c_tests): Rename to...
+	(fold_const_cc_tests): ...this.
+	* function-tests.cc (function_tests_c_tests): Rename to...
+	(function_tests_cc_tests): ...this.
+	* gcse.cc (gcse_c_finalize): Rename to...
+	(gcse_cc_finalize): ...this.
+	* gcse.h (gcse_c_finalize): Rename to...
+	(gcse_cc_finalize): ...this.
+	* ggc-tests.cc (ggc_tests_c_tests): Rename to...
+	(ggc_tests_cc_tests): ...this.
+	* gimple-ssa-store-merging.cc (store_merging_c_tests): Rename to...
+	(store_merging_cc_tests): ...this.
+	* gimple.cc (gimple_c_tests): Rename to...
+	(gimple_cc_tests): ...this.
+	* hash-map-tests.cc (hash_map_tests_c_tests): Rename to...
+	(hash_map_tests_cc_tests): ...this.
+	* hash-set-tests.cc (hash_set_tests_c_tests): Rename to...
+	(hash_set_tests_cc_tests): ...this.
+	* input.cc (input_c_tests): Rename to...
+	(input_cc_tests): ...this.
+	* ipa-cp.cc (ipa_cp_c_finalize): Rename to...
+	(ipa_cp_cc_finalize): ...this.
+	* ipa-fnsummary.cc (ipa_fnsummary_c_finalize): Rename to...
+	(ipa_fnsummary_cc_finalize): ...this.
+	* ipa-fnsummary.h (ipa_fnsummary_c_finalize): Rename to...
+	(ipa_fnsummary_cc_finalize): ...this.
+	* ipa-modref-tree.cc (ipa_modref_tree_c_tests): Rename to...
+	(ipa_modref_tree_cc_tests): ...this.
+	* ipa-modref-tree.h (modref_c_tests): Delete bogus decl.
+	* ipa-modref.cc (ipa_modref_c_finalize): Rename to...
+	(ipa_modref_cc_finalize): ...this.
+	* ipa-modref.h (ipa_modref_c_finalize): Rename to...
+	(ipa_modref_cc_finalize): ...this.
+	* ipa-prop.h (ipa_cp_c_finalize): Rename to...
+	(ipa_cp_cc_finalize): ...this.
+	* ipa-reference.cc (ipa_reference_c_finalize): Rename to...
+	(ipa_reference_cc_finalize): ...this.
+	* ipa-reference.h (ipa_reference_c_finalize): Rename to...
+	(ipa_reference_cc_finalize): ...this.
+	* ira-costs.cc (ira_costs_c_finalize): Rename to...
+	(ira_costs_cc_finalize): ...this.
+	* ira.h (ira_costs_c_finalize): Rename to...
+	(ira_costs_cc_finalize): ...this.
+	* opt-suggestions.cc (opt_proposer_c_tests): Rename to...
+	(opt_suggestions_cc_tests): ...this.
+	* opts.cc (opts_c_tests): Rename to...
+	(opts_cc_tests): ...this.
+	* predict.cc (predict_c_tests): Rename to...
+	(predict_cc_tests): ...this.
+	* pretty-print.cc (pretty_print_c_tests): Rename to...
+	(pretty_print_cc_tests): ...this.
+	* read-rtl-function.cc (read_rtl_function_c_tests): Rename to...
+	(read_rtl_function_cc_tests): ...this.
+	* rtl-tests.cc (rtl_tests_c_tests): Rename to...
+	(rtl_tests_cc_tests): ...this.
+	* sbitmap.cc (sbitmap_c_tests): Rename to...
+	(sbitmap_cc_tests): ...this.
+	* selftest-run-tests.cc (selftest::run_tests): Update calls for
+	_c_ to _cc_ function renamings; fix names of attribs and
+	opt-suggestions tests.
+	* selftest.cc (selftest_c_tests): Rename to...
+	(selftest_cc_tests): ...this.
+	* selftest.h (attribute_c_tests): Rename to...
+	(attribs_cc_tests): ...this.
+	(bitmap_c_tests): Rename to...
+	(bitmap_cc_tests): ...this.
+	(cgraph_c_tests): Rename to...
+	(cgraph_cc_tests): ...this.
+	(convert_c_tests): Rename to...
+	(convert_cc_tests): ...this.
+	(diagnostic_c_tests): Rename to...
+	(diagnostic_cc_tests): ...this.
+	(diagnostic_show_locus_c_tests): Rename to...
+	(diagnostic_show_locus_cc_tests): ...this.
+	(dumpfile_c_tests): Rename to...
+	(dumpfile_cc_tests): ...this.
+	(edit_context_c_tests): Rename to...
+	(edit_context_cc_tests): ...this.
+	(et_forest_c_tests): Rename to...
+	(et_forest_cc_tests): ...this.
+	(fibonacci_heap_c_tests): Rename to...
+	(fibonacci_heap_cc_tests): ...this.
+	(fold_const_c_tests): Rename to...
+	(fold_const_cc_tests): ...this.
+	(function_tests_c_tests): Rename to...
+	(function_tests_cc_tests): ...this.
+	(ggc_tests_c_tests): Rename to...
+	(ggc_tests_cc_tests): ...this.
+	(gimple_c_tests): Rename to...
+	(gimple_cc_tests): ...this.
+	(hash_map_tests_c_tests): Rename to...
+	(hash_map_tests_cc_tests): ...this.
+	(hash_set_tests_c_tests): Rename to...
+	(hash_set_tests_cc_tests): ...this.
+	(input_c_tests): Rename to...
+	(input_cc_tests): ...this.
+	(opts_c_tests): Rename to...
+	(opts_cc_tests): ...this.
+	(predict_c_tests): Rename to...
+	(predict_cc_tests): ...this.
+	(pretty_print_c_tests): Rename to...
+	(pretty_print_cc_tests): ...this.
+	(read_rtl_function_c_tests): Rename to...
+	(read_rtl_function_cc_tests): ...this.
+	(rtl_tests_c_tests): Rename to...
+	(rtl_tests_cc_tests): ...this.
+	(sbitmap_c_tests): Rename to...
+	(sbitmap_cc_tests): ...this.
+	(selftest_c_tests): Rename to...
+	(selftest_cc_tests): ...this.
+	(simplify_rtx_c_tests): Rename to...
+	(simplify_rtx_cc_tests): ...this.
+	(spellcheck_c_tests): Rename to...
+	(spellcheck_cc_tests): ...this.
+	(spellcheck_tree_c_tests): Rename to...
+	(spellcheck_tree_cc_tests): ...this.
+	(sreal_c_tests): Rename to...
+	(sreal_cc_tests): ...this.
+	(store_merging_c_tests): Rename to...
+	(store_merging_cc_tests): ...this.
+	(tree_c_tests): Rename to...
+	(tree_cc_tests): ...this.
+	(tree_cfg_c_tests): Rename to...
+	(tree_cfg_cc_tests): ...this.
+	(typed_splay_tree_c_tests): Rename to...
+	(typed_splay_tree_cc_tests): ...this.
+	(vec_c_tests): Rename to...
+	(vec_cc_tests): ...this.
+	(vec_perm_indices_c_tests): Rename to...
+	(vec_perm_indices_cc_tests): ..this.
+	(opt_proposer_c_tests): Rename to...
+	(opt_suggestions_cc_tests): ...this.
+	(dbgcnt_c_tests): Rename to...
+	(dbgcnt_cc_tests): ...this.
+	(ipa_modref_tree_c_tests): Rename to...
+	(ipa_modref_tree_cc_tests): ...this.
+	* simplify-rtx.cc (simplify_rtx_c_tests): Rename to...
+	(simplify_rtx_cc_tests): ...this.
+	* spellcheck-tree.cc (spellcheck_tree_c_tests): Rename to...
+	(spellcheck_tree_cc_tests): ...this.
+	* spellcheck.cc (spellcheck_c_tests): Rename to...
+	(spellcheck_cc_tests): ...this.
+	* sreal.cc (sreal_c_tests): Rename to...
+	(sreal_cc_tests): ...this.
+	* toplev.cc (toplev::finalize): Update calls for _c_ to _cc_
+	function renamings.
+	* tree-cfg.cc (tree_cfg_c_tests): Rename to...
+	(tree_cfg_cc_tests): ...this.
+	* tree.cc (tree_c_tests): Rename to...
+	(tree_cc_tests): ...this.
+	* typed-splay-tree.cc (typed_splay_tree_c_tests): Rename to...
+	(typed_splay_tree_cc_tests): ...this.
+	* vec-perm-indices.cc (vec_perm_indices_c_tests): Rename to...
+	(vec_perm_indices_cc_tests): ...this.
+	* vec.cc (vec_c_tests): Rename to...
+	(vec_cc_tests): ...this.
+
+2022-01-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/103997
+	* tree-vect-loop.cc (vect_analyze_loop): Fix mode skipping for epilogue
+	vectorization.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* match.pd (x %[fl] y -> x % y): New simplification for
+	unsigned integral types.
+	* optabs-tree.cc (optab_for_tree_code): Return unknown_optab
+	for {CEIL,FLOOR,ROUND}_{DIV,MOD}_EXPR with VECTOR_TYPE.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104112
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Check
+	for required intermediate vector types.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Add default:.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Remove -Wno-error=format-diag.
+	* configure: Regenerate.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* config/riscv/riscv.cc (riscv_handle_type_attribute):
+	Update one -Wformat-diag string in warning message.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104103
+	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Don't check
+	.ASAN_MARK calls.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* fold-const.cc (address_compare): Consider different STRING_CSTs
+	with the same lengths that memcmp the same as equal, not different.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*aes<aeswideklvariant>u*): Use %0 instead of
+	{%0}.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_goacc_validate_dims_1): Update
+	warning messages.
+
+2022-01-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/104090
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Use also
+	rs6000_cpu.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104104
+	* config/i386/sse.md
+	(<avx512>_<complexopname>_<mode><maskc_name><round_name>,
+	avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>,
+	avx512dq_mul<mode>3<mask_name>, <avx2_avx512>_permvar<mode><mask_name>,
+	avx2_perm<mode>_1<mask_name>, avx512f_perm<mode>_1<mask_name>,
+	avx512dq_rangep<mode><mask_name><round_saeonly_name>,
+	avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>,
+	<avx512>_getmant<mode><mask_name><round_saeonly_name>,
+	avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Use vxorps\t%x0, %x0, %x0 instead of vxorps\t{%x0, %x0, %x0}.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104069
+	* gimple-ssa-warn-access.cc (pointers_related_p): Return false for
+	an unknown result as documented.
+
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	* ipa-split.cc (visit_bb): Fix comment before the
+	warning/error attribute checking code.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/coreout.cc (bpf_core_reloc_add): Do not account
+	for base strtab offset yet as it may change.
+	(output_asm_btfext_core_reloc): Do so here instead.
+	(output_btfext_core_sections): Likewise.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/coreout.cc (output_btfext_header): Account for
+	4-byte record size in core_relo_len.
+	(output_btfext_core_sections): Only write record size once.
+	* config/bpf/coreout.h (btf_ext_section_header): Delete unused
+	member.
+
+2022-01-18  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::parse_multiletter_ext): Move pointer
+	arithmetic ahead of `free'.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104007
+	* gimplify.cc (gimple_push_cleanup): Handle eh_only in conditional
+	context.
+
+2022-01-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/103163
+	* emit-rtl.cc (init_emit_regs): Initialize stack_limit_rtx here...
+	(init_emit_once): ...not here.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* collect2.cc (scan_libraries): Fix -Wformat-diag issues.
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_expand_builtin): Likewise.
+	* config/arc/arc.md: Likewise.
+	* config/avr/avr.cc (avr_section_type_flags): Likewise.
+	* config/bfin/bfin.cc (bfin_option_override): Likewise.
+	(bfin_handle_longcall_attribute): Likewise.
+	* config/cris/cris.h (FUNCTION_PROFILER): Likewise.
+	* config/frv/frv.cc (frv_expand_builtin): Likewise.
+	* config/ia64/ia64-c.cc (ia64_hpux_handle_builtin_pragma): Likewise.
+	* config/iq2000/iq2000.cc (save_restore_insns): Likewise.
+	(iq2000_print_operand_address): Likewise.
+	(iq2000_print_operand): Likewise.
+	* config/m32c/m32c-pragma.cc (m32c_pragma_memregs): Likewise.
+	(m32c_pragma_address): Likewise.
+	* config/m68k/m68k.cc (m68k_handle_fndecl_attribute): Likewise.
+	* config/mips/mips.cc (mips_handle_interrupt_attr): Likewise.
+	(mips_set_compression_mode): Likewise.
+	* config/mmix/mmix.cc (mmix_function_profiler): Likewise.
+	(mmix_print_operand): Likewise.
+	(mmix_output_shiftvalue_op_from_str): Likewise.
+	(mmix_output_shifted_value): Likewise.
+	* config/msp430/driver-msp430.cc (msp430_select_hwmult_lib): Likewise.
+	* config/msp430/msp430.cc (msp430_option_override): Likewise.
+	(msp430_attr): Likewise.
+	(msp430_expand_delay_cycles): Likewise.
+	(msp430_expand_builtin): Likewise.
+	* config/rs6000/aix73.h: Likewise.
+	* config/rs6000/rtems.h (INVALID_64BIT): Likewise.
+	* config/rx/rx.cc (rx_expand_builtin_mvtc): Likewise.
+	(valid_psw_flag): Likewise.
+	* config/sh/sh.cc (parse_validate_atomic_model_option): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_function_profiler): Likewise.
+	(xstormy16_expand_builtin_va_start): Likewise.
+	(xstormy16_handle_below100_attribute): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/vms/vms-c.cc (vms_pragma_nostandard): Fix -Wformat-diag
+	warning.
+	(vms_pragma_standard): Likewise.
+	(vms_pragma_extern_prefix): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/xtensa/xtensa.cc (print_operand): Fix warnings.
+	(print_operand_address): Likewise.
+	(xtensa_multibss_section_type_flags): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.cc (rs6000_invalid_builtin): Change
+	wording of an error message.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/v850/v850-c.cc (pop_data_area): Fix -Wformat-diag
+	warning.
+	(ghs_pragma_section): Likewise.
+	(ghs_pragma_interrupt): Likewise.
+	(ghs_pragma_starttda): Likewise.
+	(ghs_pragma_startsda): Likewise.
+	(ghs_pragma_startzda): Likewise.
+	(ghs_pragma_endtda): Likewise.
+	(ghs_pragma_endsda): Likewise.
+	(ghs_pragma_endzda): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/nds32/nds32-intrinsic.cc (nds32_expand_builtin_impl):
+	Fix warnings.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32-isr.cc (nds32_check_isr_attrs_conflict): Likewise.
+	* config/nds32/nds32.cc (nds32_print_operand): Likewise.
+	(nds32_insert_attributes): Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/nvptx/nvptx.cc (nvptx_goacc_validate_dims_1): Wrap
+	keyword.
+	* config/nvptx/nvptx.md: Remove trailing dot.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::add):
+	Wrap keywords with quotes and remove trailing dots.
+	(riscv_subset_list::parsing_subset_version): Likewise.
+	(riscv_subset_list::parse_std_ext): Likewise.
+	(riscv_subset_list::parse_multiletter_ext): Likewise.
+	* config/riscv/riscv.cc (riscv_handle_type_attribute): Likewise.
+
+2022-01-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Pass new
+	argument suggested_unroll_factor.
+	(vect_analyze_loop_costing): Likewise.
+	(_loop_vec_info::_loop_vec_info): Initialize new member
+	suggested_unroll_factor.
+	(vect_determine_partial_vectors_and_peeling): Make epilogue of unrolled
+	main loop use partial vectors.
+	(vect_analyze_loop_2): Pass and use new argument
+	suggested_unroll_factor.
+	(vect_analyze_loop_1): Change to intialize local
+	suggested_unroll_factor and use it.
+	(vectorizable_reduction): Don't use single_defuse_cycle when unrolling.
+	* tree-vectorizer.h (_loop_vec_info::_loop_vec_info): Add new member
+	suggested_unroll_factor.
+	(vector_costs::vector_costs): Add new member m_suggested_unroll_factor.
+	(vector_costs::suggested_unroll_factor): New getter function.
+	(finish_cost): Set return argument suggested_unroll_factor.
+
+2022-01-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104038
+	* doc/invoke.texi (relation-block-limit): New.
+	* params.opt (relation-block-limit): New.
+	* value-relation.cc (dom_oracle::register_relation): Check for NULL
+	record before invoking transitive registery.
+	(dom_oracle::set_one_relation): Check limit before creating record.
+	(dom_oracle::register_transitives): Stop when no record created.
+	* value-relation.h (relation_chain_head::m_num_relations): New.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* ipa-inline.cc (inline_small_functions): Do not enqueue call
+	edges originating in functions compiled with -Og.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* passes.def (pass_all_optimizations_g): Remove pass_modref
+	and pass_local_pure_const.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc: Fix -Wformat-diag warnings.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390-c.cc (s390_expand_overloaded_builtin): Wrap
+	keyword in quotes.
+	(s390_resolve_overloaded_builtin): Remove trailing dot.
+	* config/s390/s390.cc (s390_const_operand_ok): Use - for range.
+	(s390_expand_builtin): Remove trailing dot.
+	(s390_emit_prologue): Likewise, use semicolon.
+	(s390_option_override_internal): Update keyword.
+	* varasm.cc (do_assemble_alias): Wrap keyword in quotes.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/rs6000-call.cc (rs6000_expand_builtin): Wrap
+	keywords and use %qs instead of %<%s%>.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103987
+	* tree-ssa-dse.cc (dse_optimize_call): Properly guard modref
+	query with a pointer check.
+
+2022-01-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104005
+	* config/aarch64/aarch64.cc (aarch64_check_consecutive_mems):
+	When using MEM_EXPR, require the base to be a decl.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	* cgraph.h (struct cgraph_simd_clone_arg): Re-arrange fields to
+	avoid padding.
+	* function.h (struct function): Likewise.
+
+2022-01-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/install.texi: Update prerequisites for GNAT
+
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101941
+	* ipa-split.cc (visit_bb): Disallow function calls where
+	the function has either error or warning attribute.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104064
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses): Check
+	DR_INIT fits in a signed HWI, represent the difference from the
+	first DR in unsigned.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Rename .c names to .cc.

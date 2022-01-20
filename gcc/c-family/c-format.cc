@@ -5424,7 +5424,7 @@ test_type_mismatch_range_labels ()
 /* Run all of the selftests within this file.  */
 
 void
-c_format_c_tests ()
+c_format_cc_tests ()
 {
   test_get_modifier_for_format_len ();
   test_get_format_for_type_printf ();

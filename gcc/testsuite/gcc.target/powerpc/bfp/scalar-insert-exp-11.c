@@ -16,5 +16,5 @@ insert_exponent (__ieee128 *significand_p,
   __ieee128 significand = *significand_p;
   unsigned long long int exponent = *exponent_p;
 
-  return scalar_insert_exp (significand, exponent); /* { dg-error "requires ISA 3.0 IEEE 128-bit floating point" } */
+  return scalar_insert_exp (significand, exponent); /* { dg-error "requires quad-precision floating-point arithmetic" } */
 }

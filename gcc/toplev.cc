@@ -2355,19 +2355,19 @@ toplev::finalize (void)
   rtl_initialized = false;
   this_target_rtl->target_specific_initialized = false;
 
-  /* Needs to be called before cgraph_c_finalize since it uses symtab.  */
-  ipa_reference_c_finalize ();
-  ipa_fnsummary_c_finalize ();
-  ipa_modref_c_finalize ();
+  /* Needs to be called before cgraph_cc_finalize since it uses symtab.  */
+  ipa_reference_cc_finalize ();
+  ipa_fnsummary_cc_finalize ();
+  ipa_modref_cc_finalize ();
   ipa_edge_modifications_finalize ();
 
-  cgraph_c_finalize ();
-  cgraphunit_c_finalize ();
+  cgraph_cc_finalize ();
+  cgraphunit_cc_finalize ();
   symtab_thunks_cc_finalize ();
-  dwarf2out_c_finalize ();
-  gcse_c_finalize ();
-  ipa_cp_c_finalize ();
-  ira_costs_c_finalize ();
+  dwarf2out_cc_finalize ();
+  gcse_cc_finalize ();
+  ipa_cp_cc_finalize ();
+  ira_costs_cc_finalize ();
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

@@ -2392,7 +2392,7 @@ void
 print_operand (FILE *file, rtx x, int letter)
 {
   if (!x)
-    error ("PRINT_OPERAND null pointer");
+    error ("%<PRINT_OPERAND%> null pointer");
 
   switch (letter)
     {
@@ -2549,7 +2549,7 @@ void
 print_operand_address (FILE *file, rtx addr)
 {
   if (!addr)
-    error ("PRINT_OPERAND_ADDRESS, null pointer");
+    error ("%<PRINT_OPERAND_ADDRESS%>, null pointer");
 
   switch (GET_CODE (addr))
     {
@@ -3662,7 +3662,7 @@ xtensa_multibss_section_type_flags (tree decl, const char *name, int reloc)
 	flags |= SECTION_BSS;  /* @nobits */
       else
 	warning (0, "only uninitialized variables can be placed in a "
-		 ".bss section");
+		 "%<.bss%> section");
     }
 
   return flags;

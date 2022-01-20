@@ -1,3 +1,10 @@
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	* include/line-map.h (class line_maps): Re-arrange fields
+	to minimize padding.
+	(class rich_location): Likewise.
+	* line-map.cc (rich_location::rich_location): Adjust.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Rename .c names to .cc.

@@ -3712,7 +3712,7 @@ test_get_option_html_page ()
 /* Run all of the selftests within this file.  */
 
 void
-opts_c_tests ()
+opts_cc_tests ()
 {
   test_get_option_html_page ();
 }

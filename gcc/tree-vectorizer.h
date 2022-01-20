@@ -642,6 +642,13 @@ public:
      about the reductions that generated them.  */
   hash_map<tree, vect_reusable_accumulator> reusable_accumulators;
 
+  /* The number of times that the target suggested we unroll the vector loop
+     in order to promote more ILP.  This value will be used to re-analyze the
+     loop for vectorization and if successful the value will be folded into
+     vectorization_factor (and therefore exactly divides
+     vectorization_factor).  */
+  unsigned int suggested_unroll_factor;
+
   /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
      if there is no particular limit.  */
   unsigned HOST_WIDE_INT max_vectorization_factor;
@@ -1465,6 +1472,7 @@ public:
   unsigned int epilogue_cost () const;
   unsigned int outside_cost () const;
   unsigned int total_cost () const;
+  unsigned int suggested_unroll_factor () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1484,6 +1492,9 @@ protected:
   /* The costs of the three regions, indexed by vect_cost_model_location.  */
   unsigned int m_costs[3];
 
+  /* The suggested unrolling factor determined at finish_cost.  */
+  unsigned int m_suggested_unroll_factor;
+
   /* True if finish_cost has been called.  */
   bool m_finished;
 };
@@ -1496,6 +1507,7 @@ vector_costs::vector_costs (vec_info *vinfo, bool costing_for_scalar)
   : m_vinfo (vinfo),
     m_costing_for_scalar (costing_for_scalar),
     m_costs (),
+    m_suggested_unroll_factor(1),
     m_finished (false)
 {
 }
@@ -1542,6 +1554,15 @@ inline unsigned int
 vector_costs::total_cost () const
 {
   return body_cost () + outside_cost ();
+}
+
+/* Return the suggested unroll factor.  */
+
+inline unsigned int
+vector_costs::suggested_unroll_factor () const
+{
+  gcc_checking_assert (m_finished);
+  return m_suggested_unroll_factor;
 }
 
 #define VECT_MAX_COST 1000
@@ -1720,12 +1741,14 @@ add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 static inline void
 finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
 	     unsigned *prologue_cost, unsigned *body_cost,
-	     unsigned *epilogue_cost)
+	     unsigned *epilogue_cost, unsigned *suggested_unroll_factor = NULL)
 {
   costs->finish_cost (scalar_costs);
   *prologue_cost = costs->prologue_cost ();
   *body_cost = costs->body_cost ();
   *epilogue_cost = costs->epilogue_cost ();
+  if (suggested_unroll_factor)
+    *suggested_unroll_factor = costs->suggested_unroll_factor ();
 }
 
 inline void

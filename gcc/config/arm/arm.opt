@@ -272,6 +272,16 @@ mfix-cmse-cve-2021-35465
 Target Var(fix_vlldm) Init(2)
 Mitigate issues with VLLDM on some M-profile devices (CVE-2021-35465).
 
+mfix-cortex-a57-aes-1742098
+Target Var(fix_aes_erratum_1742098) Init(2) Save
+Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72.
+Arm erratum #1742098
+
+mfix-cortex-a72-aes-1655431
+Target Alias(mfix-cortex-a57-aes-1742098)
+Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72.
+Arm erratum #1655431
+
 munaligned-access
 Target Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.

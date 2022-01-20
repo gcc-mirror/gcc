@@ -42,6 +42,10 @@
 # error This file should not be compiled for this configuration.
 #endif
 
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#  define __constinit [[clang::require_constant_initialization]]
+#endif
+
 namespace
 {
   struct io_error_category final : std::error_category

@@ -2655,7 +2655,7 @@ test_attribute_exclusions ()
 }
 
 void
-attribute_c_tests ()
+attribs_cc_tests ()
 {
   test_attribute_exclusions ();
 }
