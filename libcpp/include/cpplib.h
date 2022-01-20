@@ -319,15 +319,16 @@ enum cpp_main_search
   CMS_system,  /* Search the system INCLUDE path.  */
 };
 
-/* The possible bidirectional control characters checking levels, from least
-   restrictive to most.  */
+/* The possible bidirectional control characters checking levels.  */
 enum cpp_bidirectional_level {
   /* No checking.  */
-  bidirectional_none,
+  bidirectional_none = 0,
   /* Only detect unpaired uses of bidirectional control characters.  */
-  bidirectional_unpaired,
+  bidirectional_unpaired = 1,
   /* Detect any use of bidirectional control characters.  */
-  bidirectional_any
+  bidirectional_any = 2,
+  /* Also warn about UCNs.  */
+  bidirectional_ucn = 4
 };
 
 /* This structure is nested inside struct cpp_reader, and

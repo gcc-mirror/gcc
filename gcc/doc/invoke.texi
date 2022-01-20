@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
 -Wno-attribute-warning  @gol
--Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]} @gol
+-Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]} @gol
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
@@ -7803,7 +7803,7 @@ Attributes considered include @code{alloc_align}, @code{alloc_size},
 This is the default.  You can disable these warnings with either
 @option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
 
-@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]}
+@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
 @opindex Wbidi-chars=
 @opindex Wbidi-chars
 @opindex Wno-bidi-chars
@@ -7819,6 +7819,10 @@ There are three levels of warning supported by GCC@.  The default is
 bidi contexts.  @option{-Wbidi-chars=none} turns the warning off.
 @option{-Wbidi-chars=any} warns about any use of bidirectional control
 characters.
+
+By default, this warning does not warn about UCNs.  It is, however, possible
+to turn on such checking by using @option{-Wbidi-chars=unpaired,ucn} or
+@option{-Wbidi-chars=any,ucn}.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare

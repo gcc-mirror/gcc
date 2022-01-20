@@ -1560,8 +1560,11 @@ class unpaired_bidi_rich_location : public rich_location
 static void
 maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
 {
-  if (CPP_OPTION (pfile, cpp_warn_bidirectional) == bidirectional_unpaired
-      && bidi::vec.count () > 0)
+  const auto warn_bidi = CPP_OPTION (pfile, cpp_warn_bidirectional);
+  if (bidi::vec.count () > 0
+      && (warn_bidi & bidirectional_unpaired
+	  && (!bidi::current_ctx_ucn_p ()
+	      || (warn_bidi & bidirectional_ucn))))
     {
       const location_t loc
 	= linemap_position_for_column (pfile->line_table,
@@ -1597,7 +1600,7 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 
   const auto warn_bidi = CPP_OPTION (pfile, cpp_warn_bidirectional);
 
-  if (warn_bidi != bidirectional_none)
+  if (warn_bidi & (bidirectional_unpaired|bidirectional_any))
     {
       rich_location rich_loc (pfile->line_table, loc);
       rich_loc.set_escape_on_output (true);
@@ -1605,10 +1608,10 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
       /* It seems excessive to warn about a PDI/PDF that is closing
 	 an opened context because we've already warned about the
 	 opening character.  Except warn when we have a UCN x UTF-8
-	 mismatch.  */
+	 mismatch, if UCN checking is enabled.  */
       if (kind == bidi::current_ctx ())
 	{
-	  if (warn_bidi == bidirectional_unpaired
+	  if (warn_bidi == (bidirectional_unpaired|bidirectional_ucn)
 	      && bidi::current_ctx_ucn_p () != ucn_p)
 	    {
 	      rich_loc.add_range (bidi::current_ctx_loc ());
@@ -1617,7 +1620,8 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 			      "a context by \"%s\"", bidi::to_str (kind));
 	    }
 	}
-      else if (warn_bidi == bidirectional_any)
+      else if (warn_bidi & bidirectional_any
+	       && (!ucn_p || (warn_bidi & bidirectional_ucn)))
 	{
 	  if (kind == bidi::kind::PDF || kind == bidi::kind::PDI)
 	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,

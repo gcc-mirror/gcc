@@ -1,6 +1,6 @@
 /* PR preprocessor/103026 */
 /* { dg-do compile } */
-/* { dg-options "-Wbidi-chars=any" } */
+/* { dg-options "-Wbidi-chars=any,ucn" } */
 /* Test LTR/RTL chars.  */
 
 /* LTR<‎> */
