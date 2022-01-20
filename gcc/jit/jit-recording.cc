@@ -1707,8 +1707,8 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_DUMP_SUMMARY",
   "GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING",
   "GCC_JIT_BOOL_OPTION_SELFCHECK_GC",
-  "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
-  "GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR"
+  "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES",
+  "GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR",
 };
 
 static const char * const
@@ -2746,7 +2746,7 @@ static const char * const get_type_strings[] = {
 
   "complex float", /* GCC_JIT_TYPE_COMPLEX_FLOAT */
   "complex double", /* GCC_JIT_TYPE_COMPLEX_DOUBLE */
-  "complex long double"  /* GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE */
+  "complex long double",  /* GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE */
 
   "__uint8_t",    /* GCC_JIT_TYPE_UINT8_T */
   "__uint16_t",   /* GCC_JIT_TYPE_UINT16_T */
