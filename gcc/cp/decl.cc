@@ -6569,16 +6569,22 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  tree ictx = DECL_CONTEXT (field);
 	  if (!same_type_ignoring_top_level_qualifiers_p (ictx, type))
 	    {
-	      gcc_assert (ANON_AGGR_TYPE_P (ictx));
 	      /* Find the anon aggr that is a direct member of TYPE.  */
-	      while (true)
+	      while (ANON_AGGR_TYPE_P (ictx))
 		{
 		  tree cctx = TYPE_CONTEXT (ictx);
 		  if (same_type_ignoring_top_level_qualifiers_p (cctx, type))
-		    break;
+		    goto found;
 		  ictx = cctx;
 		}
-	      /* And then the TYPE member with that anon aggr type.  */
+
+	      /* Not found, e.g. FIELD is a member of a base class.  */
+	      if (complain & tf_error)
+		error ("%qD is not a direct member of %qT", field, type);
+	      return error_mark_node;
+
+	    found:
+	      /* Now find the TYPE member with that anon aggr type.  */
 	      tree aafield = TYPE_FIELDS (type);
 	      for (; aafield; aafield = TREE_CHAIN (aafield))
 		if (TREE_TYPE (aafield) == ictx)
