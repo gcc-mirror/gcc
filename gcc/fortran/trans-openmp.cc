@@ -2483,7 +2483,7 @@ static tree
 handle_iterator (gfc_namespace *ns, stmtblock_t *iter_block, tree block)
 {
   tree list = NULL_TREE;
-  for (gfc_symbol *sym = ns->proc_name; sym; sym = sym->tlink)
+  for (gfc_symbol *sym = ns->omp_affinity_iterators; sym; sym = sym->tlink)
     {
       gfc_constructor *c;
       gfc_se se;
