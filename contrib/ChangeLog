@@ -1,3 +1,13 @@
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style_lib.py: Skip Python files.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Use it.
+	* git-fix-changelog.py: New file.
+	* gcc-git-customization.sh: Add new alias git gcc-fix-changelog.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: Support renaming of .cc files.

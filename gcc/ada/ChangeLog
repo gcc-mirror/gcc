@@ -1,3 +1,19 @@
+2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ada/103538
+	* gcc-interface/Makefile.in (target_cpu): Set to x32 for
+	x86_64-linux-gnux32.
+
+2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ada/103538
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS): Add
+	$(TRASYM_DWARF_UNIX_PAIRS),
+	s-tsmona.adb<libgnat/s-tsmona__linux.adb,
+	$(GNATRTL_128BIT_PAIRS).
+	(EXTRA_GNATRTL_NONTASKING_OBJS): Add $(TRASYM_DWARF_UNIX_OBJS)
+	and $(GNATRTL_128BIT_OBJS).
+
 2022-01-18  Martin Liska  <mliska@suse.cz>
 
 	* adaint.c: Revert filename changes in comments.

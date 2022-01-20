@@ -1,3 +1,328 @@
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets_1): New function.
+	(noce_convert_multiple_sets): Call function a second time if we can
+	improve the first try.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (cond_exec_get_condition): New parameter to allow getting the
+	reversed comparison.
+	(try_emit_cmove_seq): New function to facilitate creating a cmov
+	sequence.
+	(noce_convert_multiple_sets): Create two sequences and use the less
+	expensive one.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* rtl.h (struct rtx_comparison): New struct that holds an rtx
+	comparison.
+	* config/rs6000/rs6000.cc (rs6000_emit_minmax): Use struct instead of
+	single parameters.
+	(rs6000_emit_swsqrt): Likewise.
+	* expmed.cc (expand_sdiv_pow2): Likewise.
+	(emit_store_flag): Likewise.
+	* expr.cc (expand_cond_expr_using_cmove): Likewise.
+	(expand_expr_real_2): Likewise.
+	* ifcvt.cc (noce_emit_cmove): Add compare and reversed compare
+	parameters.
+	* optabs.cc (emit_conditional_move_1): New function.
+	(expand_doubleword_shift_condmove): Use struct.
+	(emit_conditional_move): Use struct and allow to call directly
+	without going through preparation steps.
+	* optabs.h (emit_conditional_move): Use struct.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (bb_ok_for_noce_convert_multiple_sets): Estimate insns costs.
+	(noce_process_if_block): Use potential costs.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets): Allow constants.
+	(bb_ok_for_noce_convert_multiple_sets): Likewise.
+
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* ifcvt.cc (need_cmov_or_rewire): New function.
+	(noce_convert_multiple_sets): Call it.
+
+2022-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* attribs.cc (attribute_c_tests): Rename to...
+	(attribs_cc_tests): ...this.
+	* bitmap.cc (bitmap_c_tests): Rename to...
+	(bitmap_cc_tests): ...this.
+	* cgraph.cc (cgraph_c_finalize): Rename to...
+	(cgraph_cc_finalize): ...this.
+	(cgraph_c_tests): Rename to...
+	(cgraph_cc_tests): ...this.
+	* cgraph.h (cgraph_c_finalize): Rename to...
+	(cgraph_cc_finalize): ...this.
+	(cgraphunit_c_finalize): Rename to...
+	(cgraphunit_cc_finalize): ...this.
+	* cgraphunit.cc (cgraphunit_c_finalize): Rename to...
+	(cgraphunit_cc_finalize): ...this.
+	* convert.cc (convert_c_tests): Rename to...
+	(convert_cc_tests): ...this.
+	* dbgcnt.cc (dbgcnt_c_tests): Rename to...
+	(dbgcnt_cc_tests): ...this.
+	* diagnostic-show-locus.cc (diagnostic_show_locus_c_tests): Rename to...
+	(diagnostic_show_locus_cc_tests): ...this.
+	* diagnostic.cc (diagnostic_c_tests): Rename to...
+	(diagnostic_cc_tests): ...this.
+	* dumpfile.cc (dumpfile_c_tests): Rename to...
+	(dumpfile_cc_tests): ...this.
+	* dwarf2out.cc (dwarf2out_c_finalize): Rename to...
+	(dwarf2out_cc_finalize): ...this.
+	* dwarf2out.h (dwarf2out_c_finalize): Rename to...
+	(dwarf2out_cc_finalize): ...this.
+	* edit-context.cc (edit_context_c_tests): Rename to...
+	(edit_context_cc_tests): ...this.
+	* et-forest.cc (et_forest_c_tests): Rename to...
+	(et_forest_cc_tests): ...this.
+	* fibonacci_heap.cc (fibonacci_heap_c_tests): Rename to...
+	(fibonacci_heap_cc_tests): ...this.
+	* fold-const.cc (fold_const_c_tests): Rename to...
+	(fold_const_cc_tests): ...this.
+	* function-tests.cc (function_tests_c_tests): Rename to...
+	(function_tests_cc_tests): ...this.
+	* gcse.cc (gcse_c_finalize): Rename to...
+	(gcse_cc_finalize): ...this.
+	* gcse.h (gcse_c_finalize): Rename to...
+	(gcse_cc_finalize): ...this.
+	* ggc-tests.cc (ggc_tests_c_tests): Rename to...
+	(ggc_tests_cc_tests): ...this.
+	* gimple-ssa-store-merging.cc (store_merging_c_tests): Rename to...
+	(store_merging_cc_tests): ...this.
+	* gimple.cc (gimple_c_tests): Rename to...
+	(gimple_cc_tests): ...this.
+	* hash-map-tests.cc (hash_map_tests_c_tests): Rename to...
+	(hash_map_tests_cc_tests): ...this.
+	* hash-set-tests.cc (hash_set_tests_c_tests): Rename to...
+	(hash_set_tests_cc_tests): ...this.
+	* input.cc (input_c_tests): Rename to...
+	(input_cc_tests): ...this.
+	* ipa-cp.cc (ipa_cp_c_finalize): Rename to...
+	(ipa_cp_cc_finalize): ...this.
+	* ipa-fnsummary.cc (ipa_fnsummary_c_finalize): Rename to...
+	(ipa_fnsummary_cc_finalize): ...this.
+	* ipa-fnsummary.h (ipa_fnsummary_c_finalize): Rename to...
+	(ipa_fnsummary_cc_finalize): ...this.
+	* ipa-modref-tree.cc (ipa_modref_tree_c_tests): Rename to...
+	(ipa_modref_tree_cc_tests): ...this.
+	* ipa-modref-tree.h (modref_c_tests): Delete bogus decl.
+	* ipa-modref.cc (ipa_modref_c_finalize): Rename to...
+	(ipa_modref_cc_finalize): ...this.
+	* ipa-modref.h (ipa_modref_c_finalize): Rename to...
+	(ipa_modref_cc_finalize): ...this.
+	* ipa-prop.h (ipa_cp_c_finalize): Rename to...
+	(ipa_cp_cc_finalize): ...this.
+	* ipa-reference.cc (ipa_reference_c_finalize): Rename to...
+	(ipa_reference_cc_finalize): ...this.
+	* ipa-reference.h (ipa_reference_c_finalize): Rename to...
+	(ipa_reference_cc_finalize): ...this.
+	* ira-costs.cc (ira_costs_c_finalize): Rename to...
+	(ira_costs_cc_finalize): ...this.
+	* ira.h (ira_costs_c_finalize): Rename to...
+	(ira_costs_cc_finalize): ...this.
+	* opt-suggestions.cc (opt_proposer_c_tests): Rename to...
+	(opt_suggestions_cc_tests): ...this.
+	* opts.cc (opts_c_tests): Rename to...
+	(opts_cc_tests): ...this.
+	* predict.cc (predict_c_tests): Rename to...
+	(predict_cc_tests): ...this.
+	* pretty-print.cc (pretty_print_c_tests): Rename to...
+	(pretty_print_cc_tests): ...this.
+	* read-rtl-function.cc (read_rtl_function_c_tests): Rename to...
+	(read_rtl_function_cc_tests): ...this.
+	* rtl-tests.cc (rtl_tests_c_tests): Rename to...
+	(rtl_tests_cc_tests): ...this.
+	* sbitmap.cc (sbitmap_c_tests): Rename to...
+	(sbitmap_cc_tests): ...this.
+	* selftest-run-tests.cc (selftest::run_tests): Update calls for
+	_c_ to _cc_ function renamings; fix names of attribs and
+	opt-suggestions tests.
+	* selftest.cc (selftest_c_tests): Rename to...
+	(selftest_cc_tests): ...this.
+	* selftest.h (attribute_c_tests): Rename to...
+	(attribs_cc_tests): ...this.
+	(bitmap_c_tests): Rename to...
+	(bitmap_cc_tests): ...this.
+	(cgraph_c_tests): Rename to...
+	(cgraph_cc_tests): ...this.
+	(convert_c_tests): Rename to...
+	(convert_cc_tests): ...this.
+	(diagnostic_c_tests): Rename to...
+	(diagnostic_cc_tests): ...this.
+	(diagnostic_show_locus_c_tests): Rename to...
+	(diagnostic_show_locus_cc_tests): ...this.
+	(dumpfile_c_tests): Rename to...
+	(dumpfile_cc_tests): ...this.
+	(edit_context_c_tests): Rename to...
+	(edit_context_cc_tests): ...this.
+	(et_forest_c_tests): Rename to...
+	(et_forest_cc_tests): ...this.
+	(fibonacci_heap_c_tests): Rename to...
+	(fibonacci_heap_cc_tests): ...this.
+	(fold_const_c_tests): Rename to...
+	(fold_const_cc_tests): ...this.
+	(function_tests_c_tests): Rename to...
+	(function_tests_cc_tests): ...this.
+	(ggc_tests_c_tests): Rename to...
+	(ggc_tests_cc_tests): ...this.
+	(gimple_c_tests): Rename to...
+	(gimple_cc_tests): ...this.
+	(hash_map_tests_c_tests): Rename to...
+	(hash_map_tests_cc_tests): ...this.
+	(hash_set_tests_c_tests): Rename to...
+	(hash_set_tests_cc_tests): ...this.
+	(input_c_tests): Rename to...
+	(input_cc_tests): ...this.
+	(opts_c_tests): Rename to...
+	(opts_cc_tests): ...this.
+	(predict_c_tests): Rename to...
+	(predict_cc_tests): ...this.
+	(pretty_print_c_tests): Rename to...
+	(pretty_print_cc_tests): ...this.
+	(read_rtl_function_c_tests): Rename to...
+	(read_rtl_function_cc_tests): ...this.
+	(rtl_tests_c_tests): Rename to...
+	(rtl_tests_cc_tests): ...this.
+	(sbitmap_c_tests): Rename to...
+	(sbitmap_cc_tests): ...this.
+	(selftest_c_tests): Rename to...
+	(selftest_cc_tests): ...this.
+	(simplify_rtx_c_tests): Rename to...
+	(simplify_rtx_cc_tests): ...this.
+	(spellcheck_c_tests): Rename to...
+	(spellcheck_cc_tests): ...this.
+	(spellcheck_tree_c_tests): Rename to...
+	(spellcheck_tree_cc_tests): ...this.
+	(sreal_c_tests): Rename to...
+	(sreal_cc_tests): ...this.
+	(store_merging_c_tests): Rename to...
+	(store_merging_cc_tests): ...this.
+	(tree_c_tests): Rename to...
+	(tree_cc_tests): ...this.
+	(tree_cfg_c_tests): Rename to...
+	(tree_cfg_cc_tests): ...this.
+	(typed_splay_tree_c_tests): Rename to...
+	(typed_splay_tree_cc_tests): ...this.
+	(vec_c_tests): Rename to...
+	(vec_cc_tests): ...this.
+	(vec_perm_indices_c_tests): Rename to...
+	(vec_perm_indices_cc_tests): ..this.
+	(opt_proposer_c_tests): Rename to...
+	(opt_suggestions_cc_tests): ...this.
+	(dbgcnt_c_tests): Rename to...
+	(dbgcnt_cc_tests): ...this.
+	(ipa_modref_tree_c_tests): Rename to...
+	(ipa_modref_tree_cc_tests): ...this.
+	* simplify-rtx.cc (simplify_rtx_c_tests): Rename to...
+	(simplify_rtx_cc_tests): ...this.
+	* spellcheck-tree.cc (spellcheck_tree_c_tests): Rename to...
+	(spellcheck_tree_cc_tests): ...this.
+	* spellcheck.cc (spellcheck_c_tests): Rename to...
+	(spellcheck_cc_tests): ...this.
+	* sreal.cc (sreal_c_tests): Rename to...
+	(sreal_cc_tests): ...this.
+	* toplev.cc (toplev::finalize): Update calls for _c_ to _cc_
+	function renamings.
+	* tree-cfg.cc (tree_cfg_c_tests): Rename to...
+	(tree_cfg_cc_tests): ...this.
+	* tree.cc (tree_c_tests): Rename to...
+	(tree_cc_tests): ...this.
+	* typed-splay-tree.cc (typed_splay_tree_c_tests): Rename to...
+	(typed_splay_tree_cc_tests): ...this.
+	* vec-perm-indices.cc (vec_perm_indices_c_tests): Rename to...
+	(vec_perm_indices_cc_tests): ...this.
+	* vec.cc (vec_c_tests): Rename to...
+	(vec_cc_tests): ...this.
+
+2022-01-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/103997
+	* tree-vect-loop.cc (vect_analyze_loop): Fix mode skipping for epilogue
+	vectorization.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* match.pd (x %[fl] y -> x % y): New simplification for
+	unsigned integral types.
+	* optabs-tree.cc (optab_for_tree_code): Return unknown_optab
+	for {CEIL,FLOOR,ROUND}_{DIV,MOD}_EXPR with VECTOR_TYPE.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104112
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Check
+	for required intermediate vector types.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Add default:.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Remove -Wno-error=format-diag.
+	* configure: Regenerate.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* config/riscv/riscv.cc (riscv_handle_type_attribute):
+	Update one -Wformat-diag string in warning message.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104103
+	* gimple-ssa-warn-access.cc (pass_waccess::check_call): Don't check
+	.ASAN_MARK calls.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* fold-const.cc (address_compare): Consider different STRING_CSTs
+	with the same lengths that memcmp the same as equal, not different.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*aes<aeswideklvariant>u*): Use %0 instead of
+	{%0}.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_goacc_validate_dims_1): Update
+	warning messages.
+
+2022-01-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/104090
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Use also
+	rs6000_cpu.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104104
+	* config/i386/sse.md
+	(<avx512>_<complexopname>_<mode><maskc_name><round_name>,
+	avx512fp16_<complexopname>sh_v8hf<mask_scalarc_name><round_scalarcz_name>,
+	avx512dq_mul<mode>3<mask_name>, <avx2_avx512>_permvar<mode><mask_name>,
+	avx2_perm<mode>_1<mask_name>, avx512f_perm<mode>_1<mask_name>,
+	avx512dq_rangep<mode><mask_name><round_saeonly_name>,
+	avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>,
+	<avx512>_getmant<mode><mask_name><round_saeonly_name>,
+	avx512f_vgetmant<mode><mask_scalar_name><round_saeonly_scalar_name>):
+	Use vxorps\t%x0, %x0, %x0 instead of vxorps\t{%x0, %x0, %x0}.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104069
+	* gimple-ssa-warn-access.cc (pointers_related_p): Return false for
+	an unknown result as documented.
+
 2022-01-18  Andrew Pinski  <apinski@marvell.com>
 
 	* ipa-split.cc (visit_bb): Fix comment before the

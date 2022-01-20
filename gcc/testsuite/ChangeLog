@@ -1,3 +1,94 @@
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/ifcvt-4.c: Remove s390-specific check.
+	* gcc.target/s390/ifcvt-two-insns-bool.c: New test.
+	* gcc.target/s390/ifcvt-two-insns-int.c: New test.
+	* gcc.target/s390/ifcvt-two-insns-long.c: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* gfortran.dg/pr102860.f90: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104115
+	* gcc.dg/tree-ssa/evrp-trans2.c: New test.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104112
+	* gcc.dg/vect/pr104112-1.c: New testcase.
+	* gcc.dg/vect/pr104112-2.c: New testcase.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/boolcomplex-1.c: Moved to...
+	* g++.dg/ext/boolcomplex-1.C: ...here.
+	* g++.dg/opt/pr47639.c: Moved to...
+	* g++.dg/opt/pr47639.C: ...here.
+	* g++.dg/pr83979.c: Moved to...
+	* g++.dg/pr83979.C: ...here.
+	* g++.dg/tm/asm-1.c: Moved to...
+	* g++.dg/tm/asm-1.C: ...here.
+	* g++.dg/vect/pr71483.c: Moved to...
+	* g++.dg/vect/pr71483.cc: ...here.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* gcc.dg/tree-ssa/pr89074.c: New test.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/102833
+	* gcc.dg/vect/bb-slp-17.c: Require vect64.
+
+2022-01-19  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR testsuite/104021
+	* gcc.dg/vect/tsvc/tsvc.h: Do not include malloc.h on dragonfly
+	and use posix_memalign ().
+
+2022-01-19  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR testsuite/104022
+	* g++.dg/gcov/pr16855.C: xfail the count lines for DTORs on dragonfly.
+	* g++.dg/gcov/pr16855-priority.C: Ditto.  Adjust source layout so that
+	dejagnu xfail expressions work.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/104109
+	* lib/gcov.exp: Fix pytest detection unsupported message.
+
+2022-01-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/104015
+	* gcc.dg/vect/slp-perm-9.c: Adjust.
+	* gcc.target/powerpc/pr104015-1.c: New test.
+	* gcc.target/powerpc/pr104015-2.c: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104104
+	* gcc.target/i386/pr104104.c: New test.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104076
+	* g++.dg/warn/Wdangling-pointer-3.C: New test.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104103
+	* gcc.dg/torture/pr57147-2.c: Prune out expected warning.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104069
+	* gcc.dg/Wuse-after-free.c: New test.
+
 2022-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104055

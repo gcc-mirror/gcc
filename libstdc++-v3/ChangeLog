@@ -1,3 +1,52 @@
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Remove -gdwarf-4
+	from default flags.
+	* configure: Regenerate.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104123
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: Include
+	<stddef.h>.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/testsuite_flags.in: Add src/libbacktrace/.libs to
+	linker search paths.
+	* src/Makefile.am: Fix src/debug/libbacktrace build.
+	* src/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: Use per-library CPPFLAGS
+	variable. Use symlinks for the source files.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2022-01-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__floating_point_flags): Do
+	not rely on math_errhandling to expand to a constant expression.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecations.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (get_temporary_buffer): Change
+	_GLIBCXX14_DEPRECATED to _GLIBCXX17_DEPRECATED.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (_PCC::_DeprConsPair): Remove unused
+	function.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104101
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count::lock):
+	Only use __thread_relax if __cpp_lib_atomic_wait is defined.
+
 2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104099

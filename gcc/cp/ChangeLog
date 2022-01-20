@@ -1,3 +1,21 @@
+2022-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-lang.cc (selftest::run_cp_tests): Update calls for .c to .cc
+	renaming.
+	* cp-tree.h (cp_pt_c_tests): Rename to...
+	(cp_pt_cc_tests): ...this.
+	(cp_tree_c_tests): Rename to...
+	(cp_tree_cc_tests): ...this.
+	* pt.cc (cp_pt_c_tests): Rename to...
+	(cp_pt_cc_tests): ...this.
+	* tree.cc (cp_tree_c_tests): Rename to...
+	(cp_tree_cc_tests): ...this.
+
+2022-01-19  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (saved_token_sentinel::rollback): Use
+	cp_lexer_previous_token.
+
 2022-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104055
