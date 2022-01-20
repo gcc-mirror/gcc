@@ -539,7 +539,7 @@ package body Treepr is
          return;
       end if;
 
-      if E = No_Elist then
+      if No (E) then
          Write_Str ("<no elist>");
 
       elsif Is_Empty_Elmt_List (E) then

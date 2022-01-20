@@ -5473,11 +5473,11 @@ package body Sem_Ch6 is
       --  Restore the limited views in the spec, if any, to let the back end
       --  process it without running into circularities.
 
-      if Exch_Views /= No_Elist then
+      if Present (Exch_Views) then
          Restore_Limited_Views (Exch_Views);
       end if;
 
-      if Mask_Types /= No_Elist then
+      if Present (Mask_Types) then
          Unmask_Unfrozen_Types (Mask_Types);
       end if;
 

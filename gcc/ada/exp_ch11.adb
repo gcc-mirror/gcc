@@ -813,7 +813,7 @@ package body Exp_Ch11 is
                   --  case we have to generate possible diagnostics.
 
                elsif Has_Local_Raise (Handler)
-                 and then Local_Raise_Statements (Handler) /= No_Elist
+                 and then Present (Local_Raise_Statements (Handler))
                then
                   Relmt := First_Elmt (Local_Raise_Statements (Handler));
                   while Present (Relmt) loop
@@ -1528,7 +1528,7 @@ package body Exp_Ch11 is
             H := Find_Local_Handler (Entity (Name (N)), N);
 
             if Present (H) then
-               if Local_Raise_Statements (H) = No_Elist then
+               if No (Local_Raise_Statements (H)) then
                   Set_Local_Raise_Statements (H, New_Elmt_List);
                end if;
 

@@ -2101,7 +2101,7 @@ package body Exp_Ch5 is
             --  from the Rhs by selected component because they are invisible
             --  in the type of the right-hand side.
 
-            if Stored_Constraint (R_Typ) /= No_Elist then
+            if Present (Stored_Constraint (R_Typ)) then
                declare
                   Assign    : Node_Id;
                   Discr_Val : Elmt_Id;

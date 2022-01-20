@@ -3414,7 +3414,7 @@ package body Sem_Util is
                   end if;
 
                else
-                  if Identifiers_List = No_Elist then
+                  if No (Identifiers_List) then
                      Identifiers_List := New_Elmt_List;
                   end if;
 
@@ -3438,7 +3438,7 @@ package body Sem_Util is
             Elmt : Elmt_Id;
 
          begin
-            if List = No_Elist then
+            if No (List) then
                return False;
             end if;
 
@@ -3745,7 +3745,7 @@ package body Sem_Util is
 
                            Collect_Identifiers (Comp_Expr);
 
-                           if Writable_Actuals_List /= No_Elist then
+                           if Present (Writable_Actuals_List) then
 
                               --  As suggested by Robert, at current stage we
                               --  report occurrences of this case as warnings.
@@ -3908,7 +3908,7 @@ package body Sem_Util is
       --  Check violation of RM 6.20/3 in aggregates
 
       if Present (Aggr_Error_Node)
-        and then Writable_Actuals_List /= No_Elist
+        and then Present (Writable_Actuals_List)
       then
          Error_Msg_N
            ("value may be affected by call in other component because they "
@@ -3919,8 +3919,8 @@ package body Sem_Util is
 
       --  Check if some writable argument of a function is referenced
 
-      if Writable_Actuals_List /= No_Elist
-        and then Identifiers_List /= No_Elist
+      if Present (Writable_Actuals_List)
+        and then Present (Identifiers_List)
       then
          declare
             Elmt_1 : Elmt_Id;

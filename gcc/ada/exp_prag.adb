@@ -1054,7 +1054,7 @@ package body Exp_Prag is
          Result : constant List_Id := New_List;
          Elmt   : Elmt_Id;
       begin
-         if Elmts = No_Elist then
+         if No (Elmts) then
             return Result;
          end if;
 

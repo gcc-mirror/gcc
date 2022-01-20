@@ -5849,7 +5849,7 @@ package body Sem_Ch3 is
          --  Inherit Subprograms_For_Type from the full view, if present
 
          if Present (Full_View (T))
-           and then Subprograms_For_Type (Full_View (T)) /= No_Elist
+           and then Present (Subprograms_For_Type (Full_View (T)))
          then
             Set_Subprograms_For_Type
               (Id, Subprograms_For_Type (Full_View (T)));

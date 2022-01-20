@@ -10224,7 +10224,7 @@ package body Sem_Ch12 is
       Prim      : Node_Id;
 
    begin
-      if Prims_List /= No_Elist then
+      if Present (Prims_List) then
          Prim_Elmt := First_Elmt (Prims_List);
          while Present (Prim_Elmt) loop
             Prim := Node (Prim_Elmt);
