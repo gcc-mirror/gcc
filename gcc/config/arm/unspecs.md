@@ -159,6 +159,9 @@
   UNSPEC_VCDE		; Custom Datapath Extension instruction.
   UNSPEC_VCDEA		; Custom Datapath Extension instruction.
   UNSPEC_DLS		; Used for DLS (Do Loop Start), Armv8.1-M Mainline instruction
+  UNSPEC_PAC_NOP	; Represents PAC signing LR
+  UNSPEC_PACBTI_NOP	; Represents PAC signing LR + valid landing pad
+  UNSPEC_AUT_NOP	; Represents PAC verifying LR
 ])
 
 
