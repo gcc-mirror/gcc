@@ -28,20 +28,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 #include <getopt.h>
 
-char *getopt_optarg;
-int getopt_optind;
-int getopt_opterr;
-int getopt_optopt;
+char *cgetopt_optarg;
+int cgetopt_optind;
+int cgetopt_opterr;
+int cgetopt_optopt;
 
 char
-getopt_getopt (int argc, char *argv[], char *optstring)
+cgetopt_getopt (int argc, char *argv[], char *optstring)
 {
   char r = getopt (argc, argv, optstring);
 
-  getopt_optarg = optarg;
-  getopt_optind = optind;
-  getopt_opterr = opterr;
-  getopt_optopt = optopt;
+  cgetopt_optarg = optarg;
+  cgetopt_optind = optind;
+  cgetopt_opterr = opterr;
+  cgetopt_optopt = optopt;
 
   if (r == (char)-1)
     return (char)0;
@@ -49,29 +49,29 @@ getopt_getopt (int argc, char *argv[], char *optstring)
 }
 
 int
-getopt_getopt_long (int argc, char *argv[], char *optstring,
+cgetopt_getopt_long (int argc, char *argv[], char *optstring,
                     const struct option *longopts, int *longindex)
 {
   int r = getopt_long (argc, argv, optstring, longopts, longindex);
 
-  getopt_optarg = optarg;
-  getopt_optind = optind;
-  getopt_opterr = opterr;
-  getopt_optopt = optopt;
+  cgetopt_optarg = optarg;
+  cgetopt_optind = optind;
+  cgetopt_opterr = opterr;
+  cgetopt_optopt = optopt;
 
   return r;
 }
 
 int
-getopt_getopt_long_only (int argc, char *argv[], char *optstring,
+cgetopt_getopt_long_only (int argc, char *argv[], char *optstring,
                          const struct option *longopts, int *longindex)
 {
   int r = getopt_long_only (argc, argv, optstring, longopts, longindex);
 
-  getopt_optarg = optarg;
-  getopt_optind = optind;
-  getopt_opterr = opterr;
-  getopt_optopt = optopt;
+  cgetopt_optarg = optarg;
+  cgetopt_optind = optind;
+  cgetopt_opterr = opterr;
+  cgetopt_optopt = optopt;
 
   return r;
 }
