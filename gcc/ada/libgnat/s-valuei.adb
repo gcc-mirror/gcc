@@ -29,9 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Val_Util; use System.Val_Util;
-
 package body System.Value_I is
+
+   --  Ghost code, loop invariants and assertions in this unit are meant for
+   --  analysis only, not for run-time checking, as it would be too costly
+   --  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+   pragma Assertion_Policy (Ghost              => Ignore,
+                            Loop_Invariant     => Ignore,
+                            Assert             => Ignore,
+                            Assert_And_Cut     => Ignore,
+                            Subprogram_Variant => Ignore);
 
    ------------------
    -- Scan_Integer --
@@ -46,26 +54,35 @@ package body System.Value_I is
       Uval : Uns;
       --  Unsigned result
 
-      Minus : Boolean := False;
+      Minus : Boolean;
       --  Set to True if minus sign is present, otherwise to False
 
-      Start : Positive;
+      Unused_Start : Positive;
       --  Saves location of first non-blank (not used in this case)
 
+      Non_Blank : constant Positive :=
+        First_Non_Space_Ghost (Str, Ptr.all, Max)
+      with Ghost;
+      Fst_Num   : constant Positive :=
+        (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
+         else Non_Blank)
+      with Ghost;
+
    begin
-      Scan_Sign (Str, Ptr, Max, Minus, Start);
+      Scan_Sign (Str, Ptr, Max, Minus, Unused_Start);
 
       if Str (Ptr.all) not in '0' .. '9' then
-         Ptr.all := Start;
+         Ptr.all := Unused_Start;
          Bad_Value (Str);
       end if;
 
       Scan_Raw_Unsigned (Str, Ptr, Max, Uval);
+      pragma Assert (Uval = Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max));
 
       --  Deal with overflow cases, and also with largest negative number
 
       if Uval > Uns (Int'Last) then
-         if Minus and then Uval = Uns (-(Int'First)) then
+         if Minus and then Uval = Uns (Int'Last) + 1 then
             Res := Int'First;
          else
             Bad_Value (Str);
@@ -106,9 +123,31 @@ package body System.Value_I is
          declare
             V : Int;
             P : aliased Integer := Str'First;
+
+            Non_Blank : constant Positive := First_Non_Space_Ghost
+              (Str, Str'First, Str'Last)
+            with Ghost;
+            Fst_Num   : constant Positive :=
+              (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
+               else Non_Blank)
+              with Ghost;
          begin
-            Scan_Integer (Str, P'Access, Str'Last, V);
+            pragma Assert
+              (Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
+
+            declare
+               P_Acc : constant not null access Integer := P'Access;
+            begin
+               Scan_Integer (Str, P_Acc, Str'Last, V);
+            end;
+
+            pragma Assert
+              (P = Raw_Unsigned_Last_Ghost (Str, Fst_Num, Str'Last));
+
             Scan_Trailing_Blanks (Str, P);
+
+            pragma Assert
+              (Is_Value_Integer_Ghost (Slide_If_Necessary (Str), V));
             return V;
          end;
       end if;
