@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fnon-call-exceptions" }
+// { dg-options "-fnon-call-exceptions -Wno-psabi" }
 
 typedef int __attribute__ ((vector_size (8))) vec;
 
