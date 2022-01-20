@@ -400,6 +400,19 @@ path_range_query::compute_ranges_in_phis (basic_block bb)
   bitmap_ior_into (m_has_cache_entry, phi_set);
 }
 
+// Return TRUE if relations may be invalidated after crossing edge E.
+
+bool
+path_range_query::relations_may_be_invalidated (edge e)
+{
+  // As soon as the path crosses a back edge, we can encounter
+  // definitions of SSA_NAMEs that may have had a use in the path
+  // already, so this will then be a new definition.  The relation
+  // code is all designed around seeing things in dominator order, and
+  // crossing a back edge in the path violates this assumption.
+  return (e->flags & EDGE_DFS_BACK);
+}
+
 // Compute ranges defined in the current block, or exported to the
 // next block.
 
@@ -440,6 +453,22 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   // Solve imports that are exported to the next block.
   basic_block next = next_bb ();
   edge e = find_edge (bb, next);
+
+  if (m_resolve && relations_may_be_invalidated (e))
+    {
+      if (DEBUG_SOLVER)
+	fprintf (dump_file,
+		 "Resetting relations as they may be invalidated in %d->%d.\n",
+		 e->src->index, e->dest->index);
+
+      path_oracle *p = get_path_oracle ();
+      p->reset_path ();
+      // ?? Instead of nuking the root oracle altogether, we could
+      // reset the path oracle to search for relations from the top of
+      // the loop with the root oracle.  Something for future development.
+      p->set_root_oracle (nullptr);
+    }
+
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
       tree name = ssa_name (i);
@@ -742,9 +771,19 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   return true;
 }
 
+// If possible, register the relation on the incoming edge E into PHI.
+
 void
-path_range_query::maybe_register_phi_relation (gphi *phi, tree arg)
+path_range_query::maybe_register_phi_relation (gphi *phi, edge e)
 {
+  tree arg = gimple_phi_arg_def (phi, e->dest_idx);
+
+  if (!gimple_range_ssa_p (arg))
+    return;
+
+  if (relations_may_be_invalidated (e))
+    return;
+
   basic_block bb = gimple_bb (phi);
   tree result = gimple_phi_result (phi);
 
@@ -754,7 +793,7 @@ path_range_query::maybe_register_phi_relation (gphi *phi, tree arg)
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  from bb%d:", bb->index);
+    fprintf (dump_file, "maybe_register_phi_relation in bb%d:", bb->index);
 
   get_path_oracle ()->killing_def (result);
   m_oracle->register_relation (entry_bb (), EQ_EXPR, arg, result);
@@ -787,10 +826,7 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
       for (size_t i = 0; i < nargs; ++i)
 	if (e_in == gimple_phi_arg_edge (phi, i))
 	  {
-	    tree arg = gimple_phi_arg_def (phi, i);
-
-	    if (gimple_range_ssa_p (arg))
-	      maybe_register_phi_relation (phi, arg);
+	    maybe_register_phi_relation (phi, e_in);
 	    break;
 	  }
     }

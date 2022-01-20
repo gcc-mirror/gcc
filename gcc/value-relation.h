@@ -229,6 +229,7 @@ public:
   relation_kind query_relation (basic_block, tree, tree);
   relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
   void reset_path ();
+  void set_root_oracle (relation_oracle *oracle) { m_root = oracle; }
   void dump (FILE *, basic_block) const;
   void dump (FILE *) const;
 private:

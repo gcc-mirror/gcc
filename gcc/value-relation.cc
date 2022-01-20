@@ -1251,7 +1251,7 @@ relation_oracle::debug () const
 
 path_oracle::path_oracle (relation_oracle *oracle)
 {
-  m_root = oracle;
+  set_root_oracle (oracle);
   bitmap_obstack_initialize (&m_bitmaps);
   obstack_init (&m_chain_obstack);
 
@@ -1385,7 +1385,7 @@ path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
       value_relation vr (k, ssa1, ssa2);
       fprintf (dump_file, " Registering value_relation (path_oracle) ");
       vr.dump (dump_file);
-      fprintf (dump_file, " (bb%d)\n", bb->index);
+      fprintf (dump_file, " (root: bb%d)\n", bb->index);
     }
 
   if (k == EQ_EXPR)
