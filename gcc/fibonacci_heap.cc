@@ -279,7 +279,7 @@ test_struct_key ()
 /* Run all of the selftests within this file.  */
 
 void
-fibonacci_heap_c_tests ()
+fibonacci_heap_cc_tests ()
 {
   test_empty_heap ();
   test_basic_heap_operations ();

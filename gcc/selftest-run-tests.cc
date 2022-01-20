@@ -55,67 +55,67 @@ selftest::run_tests ()
      run the tests for lowest-level code first.  */
 
   /* Sanity-check for selftests themselves.  */
-  selftest_c_tests ();
+  selftest_cc_tests ();
 
   /* Low-level data structures.  */
-  bitmap_c_tests ();
-  sbitmap_c_tests ();
-  dumpfile_c_tests ();
-  et_forest_c_tests ();
-  hash_map_tests_c_tests ();
-  hash_set_tests_c_tests ();
-  vec_c_tests ();
-  pretty_print_c_tests ();
+  bitmap_cc_tests ();
+  sbitmap_cc_tests ();
+  dumpfile_cc_tests ();
+  et_forest_cc_tests ();
+  hash_map_tests_cc_tests ();
+  hash_set_tests_cc_tests ();
+  vec_cc_tests ();
+  pretty_print_cc_tests ();
   wide_int_cc_tests ();
-  ggc_tests_c_tests ();
-  sreal_c_tests ();
-  fibonacci_heap_c_tests ();
-  typed_splay_tree_c_tests ();
-  opt_proposer_c_tests ();
-  opts_c_tests ();
+  ggc_tests_cc_tests ();
+  sreal_cc_tests ();
+  fibonacci_heap_cc_tests ();
+  typed_splay_tree_cc_tests ();
+  opt_suggestions_cc_tests ();
+  opts_cc_tests ();
   json_cc_tests ();
-  cgraph_c_tests ();
+  cgraph_cc_tests ();
   optinfo_emit_json_cc_tests ();
   opt_problem_cc_tests ();
   ordered_hash_map_tests_cc_tests ();
   splay_tree_cc_tests ();
 
   /* Mid-level data structures.  */
-  input_c_tests ();
-  vec_perm_indices_c_tests ();
-  tree_c_tests ();
-  convert_c_tests ();
-  gimple_c_tests ();
-  rtl_tests_c_tests ();
-  read_rtl_function_c_tests ();
+  input_cc_tests ();
+  vec_perm_indices_cc_tests ();
+  tree_cc_tests ();
+  convert_cc_tests ();
+  gimple_cc_tests ();
+  rtl_tests_cc_tests ();
+  read_rtl_function_cc_tests ();
   digraph_cc_tests ();
   tristate_cc_tests ();
-  ipa_modref_tree_c_tests ();
+  ipa_modref_tree_cc_tests ();
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
-  diagnostic_show_locus_c_tests ();
-  diagnostic_c_tests ();
+  diagnostic_show_locus_cc_tests ();
+  diagnostic_cc_tests ();
   diagnostic_format_json_cc_tests ();
-  edit_context_c_tests ();
-  fold_const_c_tests ();
-  spellcheck_c_tests ();
-  spellcheck_tree_c_tests ();
-  tree_cfg_c_tests ();
+  edit_context_cc_tests ();
+  fold_const_cc_tests ();
+  spellcheck_cc_tests ();
+  spellcheck_tree_cc_tests ();
+  tree_cfg_cc_tests ();
   tree_diagnostic_path_cc_tests ();
-  attribute_c_tests ();
+  attribs_cc_tests ();
 
   /* This one relies on most of the above.  */
-  function_tests_c_tests ();
+  function_tests_cc_tests ();
 
   /* Run any target-specific selftests.  */
   if (targetm.run_target_selftests)
     targetm.run_target_selftests ();
 
-  store_merging_c_tests ();
-  predict_c_tests ();
-  simplify_rtx_c_tests ();
-  dbgcnt_c_tests ();
+  store_merging_cc_tests ();
+  predict_cc_tests ();
+  simplify_rtx_cc_tests ();
+  dbgcnt_cc_tests ();
 
   /* Run any lang-specific selftests.  */
   lang_hooks.run_lang_selftests ();

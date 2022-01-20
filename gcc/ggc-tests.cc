@@ -462,7 +462,7 @@ namespace selftest {
 /* Run all of the selftests within this file.  */
 
 void
-ggc_tests_c_tests ()
+ggc_tests_cc_tests ()
 {
   test_basic_struct ();
   test_length ();

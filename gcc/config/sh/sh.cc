@@ -728,7 +728,7 @@ parse_validate_atomic_model_option (const char* str)
 	  goto got_mode_name;
 	}
 
-    err_ret ("invalid atomic model name \"%s\"", tokens.front ().c_str ());
+    err_ret ("invalid atomic model name %qs", tokens.front ().c_str ());
 got_mode_name:;
   }
 
@@ -742,11 +742,11 @@ got_mode_name:;
 	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
 	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());
 	  if (offset_str.empty () || ret.tcb_gbr_offset == -1)
-	    err_ret ("could not parse gbr-offset value \"%s\" in atomic model "
+	    err_ret ("could not parse gbr-offset value %qs in atomic model "
 		     "option", offset_str.c_str ());
 	}
       else
-	err_ret ("unknown parameter \"%s\" in atomic model option",
+	err_ret ("unknown parameter %qs in atomic model option",
 		 tokens[i].c_str ());
     }
 

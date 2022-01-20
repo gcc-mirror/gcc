@@ -6885,6 +6885,7 @@ gimple_push_cleanup (tree var, tree cleanup, bool eh_only, gimple_seq *pre_p,
 	  cleanup = build3 (COND_EXPR, void_type_node, flag, cleanup, NULL);
 	  gimplify_stmt (&cleanup, &cleanup_stmts);
 	  wce = gimple_build_wce (cleanup_stmts);
+	  gimple_wce_set_cleanup_eh_only (wce, eh_only);
 
 	  gimplify_seq_add_stmt (&gimplify_ctxp->conditional_cleanups, ffalse);
 	  gimplify_seq_add_stmt (&gimplify_ctxp->conditional_cleanups, wce);

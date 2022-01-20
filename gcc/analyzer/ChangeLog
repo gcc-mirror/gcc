@@ -1,3 +1,19 @@
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104089
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_constant_svalue): Assert that
+	we have a CONSTANT_CLASS_P.
+	(region_model_manager::maybe_fold_unaryop): Only fold a constant
+	when fold_unary's result is a constant or a cast of a constant.
+
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104062
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_sub_svalue): Avoid casting to
+	NULL type when folding access to repeated svalue.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* analyzer.cc (is_special_named_call_p): Rename .c names to .cc.

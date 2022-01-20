@@ -1519,7 +1519,7 @@ mips_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	{
 	  warning (OPT_Wattributes,
 		   "argument to %qE attribute is neither eic, nor "
-		   "vector=<line>", name);
+		   "%<vector=<line>%>", name);
 	  *no_add_attrs = true;
 	}
       else if (startswith (TREE_STRING_POINTER (cst), "vector="))
@@ -1535,7 +1535,7 @@ mips_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	    {
 	      warning (OPT_Wattributes,
 		       "interrupt vector to %qE attribute is not "
-		       "vector=(sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5)",
+		       "%<vector=(sw0|sw1|hw0|hw1|hw2|hw3|hw4|hw5)%>",
 		       name);
 	      *no_add_attrs = true;
 	    }
@@ -19712,7 +19712,7 @@ mips_set_compression_mode (unsigned int compression_mode)
 	sorry ("MIPS16 %<-mxgot%> code");
 
       if (TARGET_HARD_FLOAT_ABI && !TARGET_OLDABI)
-	sorry ("hard-float MIPS16 code for ABIs other than o32 and o64");
+	sorry ("%<hard-float%> MIPS16 code for ABIs other than o32 and o64");
 
       if (TARGET_MSA)
 	sorry ("MSA MIPS16 code");

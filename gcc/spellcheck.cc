@@ -515,7 +515,7 @@ test_metric_conditions ()
 /* Run all of the selftests within this file.  */
 
 void
-spellcheck_c_tests ()
+spellcheck_cc_tests ()
 {
   test_edit_distances ();
   test_get_edit_distance_cutoff ();

@@ -4604,7 +4604,16 @@ word_register_operation_p (const_rtx x)
       return true;
     }
 }
-    
+
+/* Holds an rtx comparison to simplify passing many parameters pertaining to a
+   single comparison.  */
+
+struct rtx_comparison {
+  rtx_code code;
+  rtx op0, op1;
+  machine_mode mode;
+};
+
 /* gtype-desc.cc.  */
 extern void gt_ggc_mx (rtx &);
 extern void gt_pch_nx (rtx &);

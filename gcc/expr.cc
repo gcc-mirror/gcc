@@ -8824,8 +8824,9 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
     op2 = gen_lowpart (mode, op2);
 
   /* Try to emit the conditional move.  */
-  insn = emit_conditional_move (temp, comparison_code,
-				op00, op01, comparison_mode,
+  insn = emit_conditional_move (temp,
+				{ comparison_code, op00, op01,
+				  comparison_mode },
 				op1, op2, mode,
 				unsignedp);
 
@@ -9716,8 +9717,9 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    start_sequence ();
 
 	    /* Try to emit the conditional move.  */
-	    insn = emit_conditional_move (target, comparison_code,
-					  op0, cmpop1, mode,
+	    insn = emit_conditional_move (target,
+					  { comparison_code,
+					    op0, cmpop1, mode },
 					  op0, op1, mode,
 					  unsignedp);
 

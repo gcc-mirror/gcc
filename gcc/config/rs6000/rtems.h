@@ -82,7 +82,7 @@
 #define	RS6000_ABI_NAME "linux"
 
 /* Copy and paste from linux64.h and freebsd64.h */
-#define INVALID_64BIT "-m%s not supported in this configuration"
+#define INVALID_64BIT "%<-m%s%> not supported in this configuration"
 
 /* A lot of copy and paste from linux64.h and freebsd64.h */
 #undef	SUBSUBTARGET_OVERRIDE_OPTIONS

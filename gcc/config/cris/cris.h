@@ -663,7 +663,7 @@ struct cum_args {int regs;};
 /* Node: Profiling */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
- error ("no FUNCTION_PROFILER for CRIS")
+ error ("no %<FUNCTION_PROFILER%> for CRIS")
 
 /* FIXME: Some of the undefined macros might be mandatory.  If so, fix
    documentation.  */

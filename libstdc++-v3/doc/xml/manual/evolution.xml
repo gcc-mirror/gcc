@@ -1034,6 +1034,20 @@ Dynamic exception specifications should be replaced with <code>noexcept</code>.
 </para>
 
 <para>
+C++98 adaptable function utilities
+(<code>std::bind1st</code>, <code>std::unary_function</code>,
+<code>std::ptr_fun</code>, <code>std::mem_fun_ref</code> etc.)
+were deprecated for C++11.
+<code>std::iterator</code>, <code>std::raw_storage_iterator</code>,
+<code>get_temporary_buffer</code>, and <code>std::not_fun</code>
+were deprecated for C++17.
+</para>
+
+<para>
+Non-standard <code>std::pair</code> constructors were deprecated.
+</para>
+
+<para>
 The <literal>bitmap</literal>, <literal>mt</literal>, and <literal>pool</literal>
 options for <option>--enable-libstdcxx-allocator</option> were removed.
 For the <literal>new</literal> option, <classname>std::allocator</classname>

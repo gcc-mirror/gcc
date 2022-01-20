@@ -1308,6 +1308,8 @@ struct saved_token_sentinel
   void rollback ()
   {
     cp_lexer_rollback_tokens (lexer);
+    cp_lexer_set_source_position_from_token
+      (cp_lexer_previous_token (lexer));
     mode = STS_DONOTHING;
   }
   ~saved_token_sentinel ()
@@ -1315,7 +1317,7 @@ struct saved_token_sentinel
     if (mode == STS_COMMIT)
       cp_lexer_commit_tokens (lexer);
     else if (mode == STS_ROLLBACK)
-      cp_lexer_rollback_tokens (lexer);
+      rollback ();
 
     gcc_assert (lexer->saved_tokens.length () == len);
   }
@@ -18572,7 +18574,7 @@ cp_parser_template_name (cp_parser* parser,
 			: parser->context->object_type);
 	  if (scope && TYPE_P (scope)
 	      && (!CLASS_TYPE_P (scope)
-		  || (check_dependency_p && dependent_type_p (scope))))
+		  || (check_dependency_p && dependent_scope_p (scope))))
 	    {
 	      /* We're optimizing away the call to cp_parser_lookup_name, but
 		 we still need to do this.  */
@@ -18665,9 +18667,9 @@ cp_parser_template_name (cp_parser* parser,
 	    found = true;
 	}
 
-      /* "in a type-only context" */
+      /* "that follows the keyword template"..."in a type-only context" */
       if (!found && scope
-	  && tag_type != none_type
+	  && (template_keyword_p || tag_type != none_type)
 	  && dependentish_scope_p (scope)
 	  && cp_parser_nth_token_starts_template_argument_list_p (parser, 1))
 	found = true;
@@ -18678,7 +18680,7 @@ cp_parser_template_name (cp_parser* parser,
 	  cp_parser_error (parser, "expected template-name");
 	  return error_mark_node;
 	}
-      else if (decl == error_mark_node)
+      else if (!DECL_P (decl) && !is_overloaded_fn (decl))
 	/* Repeat the lookup at instantiation time.  */
 	decl = identifier;
     }

@@ -78,7 +78,8 @@ case ${query} in
       ;;
     --cxxldflags)
       SECTIONLDFLAGS="@SECTION_LDFLAGS@ @LIBICONV@
-                      -L${BUILD_DIR}/src/filesystem/.libs"
+                      -L${BUILD_DIR}/src/filesystem/.libs
+                      -L${BUILD_DIR}/src/libbacktrace/.libs"
       echo ${SECTIONLDFLAGS}
       ;;
     *)

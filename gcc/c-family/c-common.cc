@@ -9096,7 +9096,7 @@ test_fold_for_warn ()
 /* Run all of the selftests within this file.  */
 
 static void
-c_common_c_tests ()
+c_common_cc_tests ()
 {
   test_fold_for_warn ();
 }
@@ -9106,10 +9106,10 @@ c_common_c_tests ()
 void
 c_family_tests (void)
 {
-  c_common_c_tests ();
-  c_format_c_tests ();
-  c_indentation_c_tests ();
-  c_pretty_print_c_tests ();
+  c_common_cc_tests ();
+  c_format_cc_tests ();
+  c_indentation_cc_tests ();
+  c_pretty_print_cc_tests ();
   c_spellcheck_cc_tests ();
 }
 

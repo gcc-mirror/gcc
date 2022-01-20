@@ -12094,9 +12094,10 @@ index_rnglists (void)
       if (r->label && r->idx != DW_RANGES_IDX_SKELETON)
 	r->idx = rnglist_idx++;
 
-      if (!have_multiple_function_sections)
-	continue;
       int block_num = r->num;
+      if ((HAVE_AS_LEB128 || block_num < 0)
+	  && !have_multiple_function_sections)
+	continue;
       if (HAVE_AS_LEB128 && (r->label || r->maybe_new_sec))
 	base = false;
       if (block_num > 0)
@@ -33058,7 +33059,7 @@ dwarf2out_early_finish (const char *filename)
    within the same process.  For use by toplev::finalize.  */
 
 void
-dwarf2out_c_finalize (void)
+dwarf2out_cc_finalize (void)
 {
   last_var_location_insn = NULL;
   cached_next_real_insn = NULL;

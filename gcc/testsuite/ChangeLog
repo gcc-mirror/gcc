@@ -1,3 +1,207 @@
+2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/ifcvt-4.c: Remove s390-specific check.
+	* gcc.target/s390/ifcvt-two-insns-bool.c: New test.
+	* gcc.target/s390/ifcvt-two-insns-int.c: New test.
+	* gcc.target/s390/ifcvt-two-insns-long.c: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* gfortran.dg/pr102860.f90: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104115
+	* gcc.dg/tree-ssa/evrp-trans2.c: New test.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104112
+	* gcc.dg/vect/pr104112-1.c: New testcase.
+	* gcc.dg/vect/pr104112-2.c: New testcase.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/boolcomplex-1.c: Moved to...
+	* g++.dg/ext/boolcomplex-1.C: ...here.
+	* g++.dg/opt/pr47639.c: Moved to...
+	* g++.dg/opt/pr47639.C: ...here.
+	* g++.dg/pr83979.c: Moved to...
+	* g++.dg/pr83979.C: ...here.
+	* g++.dg/tm/asm-1.c: Moved to...
+	* g++.dg/tm/asm-1.C: ...here.
+	* g++.dg/vect/pr71483.c: Moved to...
+	* g++.dg/vect/pr71483.cc: ...here.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	* gcc.dg/tree-ssa/pr89074.c: New test.
+
+2022-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/102833
+	* gcc.dg/vect/bb-slp-17.c: Require vect64.
+
+2022-01-19  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR testsuite/104021
+	* gcc.dg/vect/tsvc/tsvc.h: Do not include malloc.h on dragonfly
+	and use posix_memalign ().
+
+2022-01-19  Rimvydas Jasinskas  <rimvydas.jas@gmail.com>
+
+	PR testsuite/104022
+	* g++.dg/gcov/pr16855.C: xfail the count lines for DTORs on dragonfly.
+	* g++.dg/gcov/pr16855-priority.C: Ditto.  Adjust source layout so that
+	dejagnu xfail expressions work.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/104109
+	* lib/gcov.exp: Fix pytest detection unsupported message.
+
+2022-01-19  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/104015
+	* gcc.dg/vect/slp-perm-9.c: Adjust.
+	* gcc.target/powerpc/pr104015-1.c: New test.
+	* gcc.target/powerpc/pr104015-2.c: New test.
+
+2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104104
+	* gcc.target/i386/pr104104.c: New test.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104076
+	* g++.dg/warn/Wdangling-pointer-3.C: New test.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104103
+	* gcc.dg/torture/pr57147-2.c: Prune out expected warning.
+
+2022-01-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104069
+	* gcc.dg/Wuse-after-free.c: New test.
+
+2022-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104055
+	* g++.dg/cpp2a/consteval27.C: New test.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp: Change 2a to 20.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/104025
+	* g++.dg/warn/pr104025.C: New test.
+
+2022-01-18  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-section-1.c: Adjust expected record size
+	occurrences.
+
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104089
+	* gcc.dg/analyzer/pr104089.c: New test.
+
+2022-01-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104062
+	* gcc.dg/analyzer/pr104062.c: New test.
+
+2022-01-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104074
+	* g++.dg/cpp1z/nontype-auto20.C: New test.
+
+2022-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103692
+	* gfortran.dg/pr102520.f90: Adjust error messages.
+	* gfortran.dg/pr103692.f90: New test.
+
+2022-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104007
+	* g++.dg/eh/new2.C: New test.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: Update scanned
+	pattern.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: Likewise.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/103989
+	* g++.dg/opt/pr103989.C: New testcase.
+
+2022-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103987
+	* gcc.dg/torture/pr103987.c: New testcase.
+
+2022-01-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/104005
+	* gcc.target/aarch64/pr104005.c: New test.
+
+2022-01-18  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/101941
+	* gcc.c-torture/compile/pr101941-1.c: New test.
+	* gcc.dg/tree-ssa/pr101941-1.c: New test.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.src/maintainers.exp: Use
+	check_effective_target_python3_module for checking of unicode
+	module.
+	* lib/target-supports.exp: Add
+	check_effective_target_python3_module.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.misc-tests/options.exp: Include renamed file.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.src/maintainers.exp: Use the new
+	check_effective_target_recent_python3.
+	* lib/target-supports.exp: Check for Python3 version >= 3.6.
+
+2022-01-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103973
+	* g++.target/i386/pr103973-1.C: Change scan-assembler from
+	"\tucomisd" to "\t\[v\]?ucomisd".
+	* g++.target/i386/pr103973-11.C: Ditto.
+	* g++.target/i386/pr103973-13.C: Ditto.
+	* g++.target/i386/pr103973-15.C: Ditto.
+	* g++.target/i386/pr103973-3.C: Ditto.
+	* g++.target/i386/pr103973-5.C: Ditto.
+	* g++.target/i386/pr103973-7.C: Ditto.
+	* g++.target/i386/pr103973-9.C: Ditto.
+	* gcc.target/i386/pr103973-1.c: Ditto.
+	* gcc.target/i386/pr103973-11.c: Ditto.
+	* gcc.target/i386/pr103973-13.c: Ditto.
+	* gcc.target/i386/pr103973-15.c: Ditto.
+	* gcc.target/i386/pr103973-3.c: Ditto.
+	* gcc.target/i386/pr103973-5.c: Ditto.
+	* gcc.target/i386/pr103973-7.c: Ditto.
+	* gcc.target/i386/pr103973-9.c: Ditto.
+
 2022-01-17  qing zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/auto-init-uninit-16.c (testfunc): Delete xfail to reflect

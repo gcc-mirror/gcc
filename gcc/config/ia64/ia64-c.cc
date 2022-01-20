@@ -47,7 +47,7 @@ ia64_hpux_handle_builtin_pragma (cpp_reader *pfile ATTRIBUTE_UNUSED)
 	type = pragma_lex (&x);
     }
   if (type != CPP_EOF)
-    warning (OPT_Wpragmas, "malformed #pragma builtin");
+    warning (OPT_Wpragmas, "malformed %<#pragma builtin%>");
 }
 
 /* List of standard math functions which do not set matherr by default

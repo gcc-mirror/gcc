@@ -12,5 +12,5 @@ get_significand (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return (long long int) __builtin_vec_scalar_extract_sig (source); /* { dg-error "requires ISA 3.0 IEEE 128-bit floating point" } */
+  return (long long int) __builtin_vec_scalar_extract_sig (source); /* { dg-error "requires quad-precision floating-point arithmetic" } */
 }

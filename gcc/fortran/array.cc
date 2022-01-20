@@ -1883,6 +1883,9 @@ gfc_expand_constructor (gfc_expr *e, bool fatal)
   gfc_expr *f;
   bool rc;
 
+  if (gfc_is_size_zero_array (e))
+    return true;
+
   /* If we can successfully get an array element at the max array size then
      the array is too big to expand, so we just return.  */
   f = gfc_get_array_element (e, flag_max_array_constructor);

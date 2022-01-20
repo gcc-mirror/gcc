@@ -445,6 +445,16 @@ The <code class="function">std::unexpected</code> function and related typedef a
 accessors for the unexpected handler are deprecated for C++11 and later.
 Dynamic exception specifications should be replaced with <code class="code">noexcept</code>.
 </p><p>
+C++98 adaptable function utilities
+(<code class="code">std::bind1st</code>, <code class="code">std::unary_function</code>,
+<code class="code">std::ptr_fun</code>, <code class="code">std::mem_fun_ref</code> etc.)
+were deprecated for C++11.
+<code class="code">std::iterator</code>, <code class="code">std::raw_storage_iterator</code>,
+<code class="code">get_temporary_buffer</code>, and <code class="code">std::not_fun</code>
+were deprecated for C++17.
+</p><p>
+Non-standard <code class="code">std::pair</code> constructors were deprecated.
+</p><p>
 The <code class="literal">bitmap</code>, <code class="literal">mt</code>, and <code class="literal">pool</code>
 options for <code class="option">--enable-libstdcxx-allocator</code> were removed.
 For the <code class="literal">new</code> option, <code class="classname">std::allocator</code>

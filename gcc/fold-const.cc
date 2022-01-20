@@ -16587,6 +16587,15 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 	       || TREE_CODE (base1) == SSA_NAME
 	       || TREE_CODE (base1) == STRING_CST))
     equal = (base0 == base1);
+  /* Assume different STRING_CSTs with the same content will be
+     merged.  */
+  if (equal == 0
+      && TREE_CODE (base0) == STRING_CST
+      && TREE_CODE (base1) == STRING_CST
+      && TREE_STRING_LENGTH (base0) == TREE_STRING_LENGTH (base1)
+      && memcmp (TREE_STRING_POINTER (base0), TREE_STRING_POINTER (base1),
+		 TREE_STRING_LENGTH (base0)) == 0)
+    equal = 1;
   if (equal == 1)
     {
       if (code == EQ_EXPR
@@ -16775,7 +16784,7 @@ test_vec_duplicate_folding ()
 /* Run all of the selftests within this file.  */
 
 void
-fold_const_c_tests ()
+fold_const_cc_tests ()
 {
   test_arithmetic_folding ();
   test_vector_folding ();

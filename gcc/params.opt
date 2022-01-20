@@ -915,6 +915,10 @@ Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 9
 Maximum depth of logical expression evaluation ranger will look through when
 evaluating outgoing edge ranges.
 
+-param=relation-block-limit=
+Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
+Maximum number of relations the oracle will register in a basic block.
+
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
 Maximum depth of a loop nest to fully value-number optimistically.

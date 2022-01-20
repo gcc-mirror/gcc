@@ -2568,7 +2568,7 @@ asmname_hasher::equal (symtab_node *n, const_tree t)
 }
 
 /* In cgraph.cc  */
-void cgraph_c_finalize (void);
+void cgraph_cc_finalize (void);
 void release_function_body (tree);
 cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 
@@ -2579,7 +2579,7 @@ const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
 cgraph_inline_failed_type_t cgraph_inline_failed_type (cgraph_inline_failed_t);
 
 /* In cgraphunit.cc  */
-void cgraphunit_c_finalize (void);
+void cgraphunit_cc_finalize (void);
 int tp_first_run_node_cmp (const void *pa, const void *pb);
 
 /* In symtab-thunks.cc  */

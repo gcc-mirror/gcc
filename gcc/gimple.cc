@@ -3510,7 +3510,7 @@ test_return_without_value ()
 /* Run all of the selftests within this file.  */
 
 void
-gimple_c_tests ()
+gimple_cc_tests ()
 {
   test_assign_single ();
   test_assign_binop ();

@@ -10220,7 +10220,7 @@ test_fully_connected ()
 /* Run all of the selftests within this file.  */
 
 void
-tree_cfg_c_tests ()
+tree_cfg_cc_tests ()
 {
   test_linear_chain ();
   test_diamond ();

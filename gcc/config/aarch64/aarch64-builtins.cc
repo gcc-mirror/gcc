@@ -1943,7 +1943,7 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
 	}
       else
 	error_at (EXPR_LOCATION (exp),
-		  "total size and element size must be a non-zero "
+		  "total size and element size must be a nonzero "
 		  "constant immediate");
       /* Don't generate any RTL.  */
       return const0_rtx;

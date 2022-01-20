@@ -977,7 +977,7 @@ void
 mmix_function_profiler (FILE *stream ATTRIBUTE_UNUSED,
 			int labelno ATTRIBUTE_UNUSED)
 {
-  sorry ("function_profiler support for MMIX");
+  sorry ("%<function_profiler%> support for MMIX");
 }
 
 /* Worker function for TARGET_SETUP_INCOMING_VARARGS.  For the moment,
@@ -1763,7 +1763,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
 
     default:
       /* Presumably there's a missing case above if we get here.  */
-      internal_error ("MMIX Internal: Missing %qc case in mmix_print_operand", code);
+      internal_error ("MMIX Internal: Missing %qc case in %<mmix_print_operand%>", code);
     }
 
   switch (GET_CODE (modified_x))
@@ -2591,7 +2591,7 @@ mmix_output_shiftvalue_op_from_str (FILE *stream,
     {
       char s[sizeof ("0xffffffffffffffff")];
       sprintf (s, "%#" PRIx64, value);
-      internal_error ("MMIX Internal: %s is not a shiftable int", s);
+      internal_error ("MMIX Internal: %s is not a shiftable integer", s);
     }
 
   for (i = 0; i < 4; i++)
@@ -2650,7 +2650,7 @@ mmix_output_shifted_value (FILE *stream, int64_t value)
     {
       char s[16+2+1];
       sprintf (s, "%#" PRIx64, value);
-      internal_error ("MMIX Internal: %s is not a shiftable int", s);
+      internal_error ("MMIX Internal: %s is not a shiftable integer", s);
     }
 
   for (i = 0; i < 4; i++)

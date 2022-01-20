@@ -425,12 +425,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     { build_minus_one_cst (type); })))
 
 /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
-   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
-(simplify
- (floor_div @0 @1)
- (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-      && TYPE_UNSIGNED (type))
-  (trunc_div @0 @1)))
+   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  Similarly
+   for MOD instead of DIV.  */
+(for floor_divmod (floor_div floor_mod)
+     trunc_divmod (trunc_div trunc_mod)
+ (simplify
+  (floor_divmod @0 @1)
+  (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+       && TYPE_UNSIGNED (type))
+   (trunc_divmod @0 @1))))
 
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */

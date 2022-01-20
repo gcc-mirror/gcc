@@ -4966,7 +4966,7 @@ make_pass_ipa_fn_summary (gcc::context *ctxt)
    within the same process.  For use by toplev::finalize.  */
 
 void
-ipa_fnsummary_c_finalize (void)
+ipa_fnsummary_cc_finalize (void)
 {
   ipa_free_fn_summary ();
 }

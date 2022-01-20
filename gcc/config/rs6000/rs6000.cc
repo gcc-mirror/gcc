@@ -5935,6 +5935,34 @@ const char *rs6000_machine;
 const char *
 rs6000_machine_from_flags (void)
 {
+  /* For some CPUs, the machine cannot be determined by ISA flags.  We have to
+     check them first.  */
+  switch (rs6000_cpu)
+    {
+    case PROCESSOR_PPC8540:
+    case PROCESSOR_PPC8548:
+      return "e500";
+
+    case PROCESSOR_PPCE300C2:
+    case PROCESSOR_PPCE300C3:
+      return "e300";
+
+    case PROCESSOR_PPCE500MC:
+      return "e500mc";
+
+    case PROCESSOR_PPCE500MC64:
+      return "e500mc64";
+
+    case PROCESSOR_PPCE5500:
+      return "e5500";
+
+    case PROCESSOR_PPCE6500:
+      return "e6500";
+
+    default:
+      break;
+    }
+
   HOST_WIDE_INT flags = rs6000_isa_flags;
 
   /* Disable the flags that should never influence the .machine selection.  */
@@ -16345,10 +16373,10 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     c = GEU;
 
   if (code == SMAX || code == UMAX)
-    target = emit_conditional_move (dest, c, op0, op1, mode,
+    target = emit_conditional_move (dest, { c, op0, op1, mode },
 				    op0, op1, mode, 0);
   else
-    target = emit_conditional_move (dest, c, op0, op1, mode,
+    target = emit_conditional_move (dest, { c, op0, op1, mode },
 				    op1, op0, mode, 0);
   gcc_assert (target);
   if (target != dest)
@@ -22741,7 +22769,7 @@ rs6000_emit_swsqrt (rtx dst, rtx src, bool recip)
 
       if (mode == SFmode)
 	{
-	  rtx target = emit_conditional_move (e, GT, src, zero, mode,
+	  rtx target = emit_conditional_move (e, { GT, src, zero, mode },
 					      e, zero, mode, 0);
 	  if (target != e)
 	    emit_move_insn (e, target);

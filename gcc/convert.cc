@@ -1199,7 +1199,7 @@ test_convert_to_integer_maybe_fold ()
 /* Run all of the selftests within this file.  */
 
 void
-convert_c_tests ()
+convert_cc_tests ()
 {
   test_convert_to_integer_maybe_fold ();
 }

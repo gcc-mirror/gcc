@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mvsx" } */
 
 #include <altivec.h>
 vector signed int foo1 (vector signed int a) {

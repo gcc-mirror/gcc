@@ -2613,7 +2613,7 @@ static void test_utf8 ()
 /* Run all of the selftests within this file.  */
 
 void
-pretty_print_c_tests ()
+pretty_print_cc_tests ()
 {
   test_basic_printing ();
   test_pp_format ();

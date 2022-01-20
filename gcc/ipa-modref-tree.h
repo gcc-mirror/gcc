@@ -738,8 +738,6 @@ struct GTY((user)) modref_tree
   }
 };
 
-void modref_c_tests ();
-
 void gt_ggc_mx (modref_tree <int>* const&);
 void gt_ggc_mx (modref_tree <tree_node*>* const&);
 void gt_pch_nx (modref_tree <int>* const&);
