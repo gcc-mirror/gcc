@@ -26609,44 +26609,6 @@ prefixed_paddi_p (rtx_insn *insn)
   return (iform == INSN_FORM_PCREL_EXTERNAL || iform == INSN_FORM_PCREL_LOCAL);
 }
 
-/* Whether an instruction is a prefixed XXSPLTI* instruction.  This is called
-   from the prefixed attribute processing.  */
-
-bool
-prefixed_xxsplti_p (rtx_insn *insn)
-{
-  rtx set = single_set (insn);
-  if (!set)
-    return false;
-
-  rtx dest = SET_DEST (set);
-  rtx src = SET_SRC (set);
-  machine_mode mode = GET_MODE (dest);
-
-  if (!REG_P (dest) && !SUBREG_P (dest))
-    return false;
-
-  if (GET_CODE (src) == UNSPEC)
-    {
-      int unspec = XINT (src, 1);
-      return (unspec == UNSPEC_XXSPLTIW
-	      || unspec == UNSPEC_XXSPLTIDP
-	      || unspec == UNSPEC_XXSPLTI32DX);
-    }
-
-  vec_const_128bit_type vsx_const;
-  if (vec_const_128bit_to_bytes (src, mode, &vsx_const))
-    {
-      if (constant_generates_xxspltiw (&vsx_const))
-	return true;
-
-      if (constant_generates_xxspltidp (&vsx_const))
-	return true;
-    }
-
-  return false;
-}
-
 /* Whether the next instruction needs a 'p' prefix issued before the
    instruction is printed out.  */
 static bool prepend_p_to_next_insn;
