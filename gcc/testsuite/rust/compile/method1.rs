@@ -8,6 +8,6 @@ pub fn main() {
     a = Foo(123);
 
     a.test();
-    // { dg-error "failed to resolve method" "" { target *-*-* } .-1 }
+    // { dg-error "failed to resolve method for .test." "" { target *-*-* } .-1 }
     // { dg-error {failed to type resolve expression} "" { target *-*-* } .-2 }
 }

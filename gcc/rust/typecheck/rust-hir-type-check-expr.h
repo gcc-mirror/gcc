@@ -299,17 +299,10 @@ public:
       = MethodResolution::Select (candidates, receiver_tyty, adjustments);
     if (resolved_candidate == nullptr)
       {
-	if (candidates.size () > 1)
-	  {
-	    // not sure if this is the correct error here
-	    ReportMultipleCandidateError::Report (
-	      candidates, expr.get_method_name ().get_segment (),
-	      expr.get_method_name ().get_locus ());
-	  }
-	else
-	  {
-	    rust_error_at (expr.get_locus (), "failed to resolve method");
-	  }
+	rust_error_at (
+	  expr.get_method_name ().get_locus (),
+	  "failed to resolve method for %<%s%>",
+	  expr.get_method_name ().get_segment ().as_string ().c_str ());
 	return;
       }
 
