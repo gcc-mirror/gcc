@@ -2694,10 +2694,15 @@ package body Exp_Prag is
       --  If pragma is not enabled, rewrite as Null statement. If pragma is
       --  disabled, it has already been rewritten as a Null statement.
       --
-      --  Likewise, do this in CodePeer mode, because the expanded code is too
+      --  Likewise, ignore structural variants for execution.
+      --
+      --  Also do this in CodePeer mode, because the expanded code is too
       --  complicated for CodePeer to analyse.
 
-      if Is_Ignored (N) or else CodePeer_Mode then
+      if Is_Ignored (N)
+        or else Chars (Last_Var) = Name_Structural
+        or else CodePeer_Mode
+      then
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
          return;
@@ -3058,10 +3063,12 @@ package body Exp_Prag is
 
       Loc : constant Source_Ptr := Sloc (Prag);
 
-      Aggr         : Node_Id;
+      Aggr         : constant Node_Id :=
+        Expression (First (Pragma_Argument_Associations (Prag)));
       Formal_Map   : Elist_Id;
       Last         : Node_Id;
-      Last_Variant : Node_Id;
+      Last_Variant : constant Node_Id :=
+        Nlists.Last (Component_Associations (Aggr));
       Proc_Bod     : Node_Id;
       Proc_Decl    : Node_Id;
       Proc_Id      : Entity_Id;
@@ -3069,13 +3076,14 @@ package body Exp_Prag is
       Variant      : Node_Id;
 
    begin
-      --  Do nothing if pragma is not present or is disabled
+      --  Do nothing if pragma is not present or is disabled.
+      --  Also ignore structural variants for execution.
 
-      if Is_Ignored (Prag) then
+      if Is_Ignored (Prag)
+        or else Chars (Nlists.Last (Choices (Last_Variant))) = Name_Structural
+      then
          return;
       end if;
-
-      Aggr := Expression (First (Pragma_Argument_Associations (Prag)));
 
       --  The expansion of Subprogram Variant is quite distributed as it
       --  produces various statements to capture and compare the arguments.
@@ -3115,7 +3123,6 @@ package body Exp_Prag is
 
       Last         := Proc_Decl;
       Curr_Decls   := New_List;
-      Last_Variant := Nlists.Last (Component_Associations (Aggr));
 
       Variant := First (Component_Associations (Aggr));
       while Present (Variant) loop

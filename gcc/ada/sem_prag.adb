@@ -19423,7 +19423,8 @@ package body Sem_Prag is
                if Chars (Variant) = No_Name then
                   Error_Pragma_Arg_Ident ("expect name `Increases`", Variant);
 
-               elsif Chars (Variant) not in Name_Decreases | Name_Increases
+               elsif Chars (Variant) not in
+                    Name_Decreases | Name_Increases | Name_Structural
                then
                   declare
                      Name : String := Get_Name_String (Chars (Variant));
@@ -19448,11 +19449,24 @@ package body Sem_Prag is
                         Error_Pragma_Arg_Ident
                           ("expect name `Decreases`", Variant);
 
+                     elsif Name'Length >= 4
+                       and then Name (1 .. 4) = "stru"
+                     then
+                        Error_Pragma_Arg_Ident
+                          ("expect name `Structural`", Variant);
+
                      else
                         Error_Pragma_Arg_Ident
-                          ("expect name `Increases` or `Decreases`", Variant);
+                          ("expect name `Increases`, `Decreases`,"
+                           & " or `Structural`", Variant);
                      end if;
                   end;
+
+               elsif Chars (Variant) = Name_Structural
+                 and then List_Length (Pragma_Argument_Associations (N)) > 1
+               then
+                  Error_Pragma_Arg_Ident
+                    ("Structural variant shall be the only variant", Variant);
                end if;
 
                --  Preanalyze_Assert_Expression, but without enforcing any of
@@ -19460,9 +19474,12 @@ package body Sem_Prag is
 
                Preanalyze_Assert_Expression (Expression (Variant));
 
-               --  Expression of a discrete type is allowed
+               --  Expression of a discrete type is allowed. Nothing to
+               --  check for structural variants.
 
-               if Is_Discrete_Type (Etype (Expression (Variant))) then
+               if Chars (Variant) = Name_Structural
+                 or else Is_Discrete_Type (Etype (Expression (Variant)))
+               then
                   null;
 
                --  Expression of a Big_Integer type (or its ghost variant) is
@@ -24227,13 +24244,16 @@ package body Sem_Prag is
          -- Subprogram_Variant --
          ------------------------
 
-         --  pragma Subprogram_Variant ( SUBPROGRAM_VARIANT_ITEM
-         --                           {, SUBPROGRAM_VARIANT_ITEM } );
+         --  pragma Subprogram_Variant ( SUBPROGRAM_VARIANT_LIST );
 
-         --  SUBPROGRAM_VARIANT_ITEM ::=
-         --    CHANGE_DIRECTION => discrete_EXPRESSION
-
-         --  CHANGE_DIRECTION ::= Increases | Decreases
+         --  SUBPROGRAM_VARIANT_LIST ::= STRUCTURAL_SUBPROGRAM_VARIANT_ITEM
+         --                            | NUMERIC_SUBPROGRAM_VARIANT_ITEMS
+         --  NUMERIC_SUBPROGRAM_VARIANT_ITEMS ::=
+         --    NUMERIC_SUBPROGRAM_VARIANT_ITEM
+         --      {, NUMERIC_SUBPROGRAM_VARIANT_ITEM}
+         --  NUMERIC_SUBPROGRAM_VARIANT_ITEM ::= CHANGE_DIRECTION => EXPRESSION
+         --  STRUCTURAL_SUBPROGRAM_VARIANT_ITEM ::= Structural => EXPRESSION
+         --  CHANGE_DIRECTION        ::= Increases | Decreases
 
          --  Characteristics:
 
@@ -29435,9 +29455,9 @@ package body Sem_Prag is
          --  Check placement of OTHERS if available (SPARK RM 6.1.3(1))
 
          if Nkind (Direction) = N_Identifier then
-            if Chars (Direction) /= Name_Decreases
-                 and then
-               Chars (Direction) /= Name_Increases
+            if Chars (Direction) not in Name_Decreases
+                                      | Name_Increases
+                                      | Name_Structural
             then
                Error_Msg_N ("wrong direction", Direction);
             end if;
@@ -29452,9 +29472,12 @@ package body Sem_Prag is
 
          Preanalyze_Assert_Expression (Expr);
 
-         --  Expression of a discrete type is allowed
+         --  Expression of a discrete type is allowed. Nothing more to check
+         --  for structural variants.
 
-         if Is_Discrete_Type (Etype (Expr)) then
+         if Is_Discrete_Type (Etype (Expr))
+              or else Chars (Direction) = Name_Structural
+         then
             null;
 
          --  Expression of a Big_Integer type (or its ghost variant) is only
@@ -29561,6 +29584,14 @@ package body Sem_Prag is
          Variant := First (Component_Associations (Variants));
          while Present (Variant) loop
             Analyze_Variant (Variant);
+
+            if Chars (First (Choices (Variant))) = Name_Structural
+              and then List_Length (Component_Associations (Variants)) > 1
+            then
+               Error_Msg_N
+                 ("Structural variant shall be the only variant", Variant);
+            end if;
+
             Next (Variant);
          end loop;
 

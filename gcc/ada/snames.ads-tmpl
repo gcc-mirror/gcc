@@ -875,6 +875,7 @@ package Snames is
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Strict                         : constant Name_Id := N + $;
+   Name_Structural                     : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
    Name_Suppressible                   : constant Name_Id := N + $;
    Name_Synchronous                    : constant Name_Id := N + $;
