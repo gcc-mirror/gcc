@@ -2346,6 +2346,11 @@ public:
     return decl.get_function_name ();
   }
 
+  TraitItemKind get_item_kind () const override final
+  {
+    return TraitItemKind::FUNC;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemFunc *clone_trait_item_impl () const override
@@ -2419,6 +2424,11 @@ public:
   }
 
   const std::string trait_identifier () const override final { return name; }
+
+  TraitItemKind get_item_kind () const override final
+  {
+    return TraitItemKind::CONST;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2494,6 +2504,11 @@ public:
   }
 
   const std::string trait_identifier () const override final { return name; }
+
+  TraitItemKind get_item_kind () const override final
+  {
+    return TraitItemKind::TYPE;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method

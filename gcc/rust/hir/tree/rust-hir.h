@@ -677,6 +677,14 @@ protected:
 // Item used in trait declarations - abstract base class
 class TraitItem
 {
+public:
+  enum TraitItemKind
+  {
+    FUNC,
+    CONST,
+    TYPE
+  };
+
 protected:
   // Constructor
   TraitItem (Analysis::NodeMapping mappings) : mappings (mappings) {}
@@ -701,6 +709,8 @@ public:
   virtual const std::string trait_identifier () const = 0;
 
   const Analysis::NodeMapping get_mappings () const { return mappings; }
+
+  virtual TraitItemKind get_item_kind () const = 0;
 };
 
 class ImplItem
