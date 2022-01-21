@@ -1790,11 +1790,28 @@
 	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
+	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
+	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
+			 operands);
+	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
+	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
-      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
-  [(set_attr "atomic" "true")])
+  [(set_attr "atomic" "true")
+   (set_attr "predicable" "false")])
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")	;; output
@@ -1806,6 +1823,19 @@
 	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%2;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\tatom%A1.exch.b%T0\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1823,6 +1853,22 @@
 	(match_dup 1))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "add%t0"   "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1840,6 +1886,22 @@
 	(match_dup 1))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "add%t0"   "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1860,6 +1922,22 @@
 	(match_dup 1))]
   "<MODE>mode == SImode || TARGET_SM35"
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0"     "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "<logic>.b%T0" "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0"     "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"       "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
