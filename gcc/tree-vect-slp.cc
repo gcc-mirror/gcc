@@ -5906,9 +5906,8 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      profitable_subgraphs.safe_push (instance);
 	    }
 
-	  /* When we're vectorizing an if-converted loop body with the
-	     very-cheap cost model make sure we vectorized all if-converted
-	     code.  */
+	  /* When we're vectorizing an if-converted loop body make sure
+	     we vectorized all if-converted code.  */
 	  if (!profitable_subgraphs.is_empty ()
 	      && orig_loop)
 	    {
@@ -5924,7 +5923,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 		      gimple_set_visited (gsi_stmt (gsi), false);
 		      continue;
 		    }
-		  if (flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
+		  if (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED)
 		    continue;
 
 		  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))
