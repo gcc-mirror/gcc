@@ -51,7 +51,7 @@
 
 #if _GLIBCXX_HOSTED
 # define __cpp_lib_allocator_traits_is_always_equal 201411
-#if __cplusplus < 201703L // N.B. updated value in C++20
+#if __cplusplus <= 201703L // N.B. updated value in C++20
 # define __cpp_lib_shared_ptr_arrays 201611L
 #endif
 #endif
