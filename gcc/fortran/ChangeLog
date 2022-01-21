@@ -1,3 +1,12 @@
+2022-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103692
+	* array.c (gfc_expand_constructor): Handle zero-sized array
+	constructors.
+
 2022-01-13  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
