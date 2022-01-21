@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range.h"
 #include "gimple-range.h"
 #include "gimple-range-path.h"
+#include "cfganal.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
@@ -384,6 +385,7 @@ ch_base::copy_headers (function *fun)
   auto_vec<loop_p> candidates;
   auto_vec<std::pair<edge, loop_p> > copied;
 
+  mark_dfs_back_edges ();
   path_range_query *query = new path_range_query;
   for (auto loop : loops_list (cfun, 0))
     {
