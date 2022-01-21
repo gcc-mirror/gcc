@@ -1,3 +1,16 @@
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (__constinit): Define as
+	equivalent attribute for Clang.
+	* src/c++11/future.cc (__constinit): Likewise.
+	* src/c++11/system_error.cc (__constinit): Likewise.
+	* src/c++17/memory_resource.cc (__constinit): Likewise.
+
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/testsuite_flags.in: Only add src/filesystem/.libs and
+	src/libbacktrace/.libs to LDFLAGS if those directories exist.
+
 2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Remove -gdwarf-4

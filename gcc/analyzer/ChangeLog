@@ -1,3 +1,27 @@
+2022-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94362
+	* constraint-manager.cc (bound::ensure_closed): Convert param to
+	enum bound_kind.
+	(range::constrained_to_single_element): Likewise.
+	(range::add_bound): New.
+	(constraint_manager::add_constraint): Handle SVAL + OFFSET
+	compared to a constant.
+	(constraint_manager::get_ec_bounds): Rewrite in terms of
+	range::add_bound.
+	(constraint_manager::eval_condition): Reject if range::add_bound
+	fails.
+	(selftest::test_constant_comparisons): Add test coverage for
+	various impossible combinations of integer comparisons.
+	* constraint-manager.h (enum bound_kind): New.
+	(struct bound): Likewise.
+	(bound::ensure_closed): Convert to param to enum bound_kind.
+	(struct range): Convert to...
+	(class range): ...this, making fields private.
+	(range::add_bound): New decls.
+	* region-model.cc (region_model::add_constraint): Fail if
+	constraint_manager::add_constraint fails.
+
 2022-01-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104089

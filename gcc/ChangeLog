@@ -1,3 +1,113 @@
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gimple-fold.cc (get_symbol_constant_value): Only return
+	values of compatible type to the symbol.
+
+2022-01-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (relation_oracle::valid_equivs): Query and add
+	if valid members of a set.
+	(equiv_oracle::register_equiv): Call valid_equivs rather than
+	bitmap direct operations.
+	(path_oracle::register_equiv): Ditto.
+	* value-relation.h (relation_oracle::valid_equivs): New prototype.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/100784
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Check for
+	LHS before folding __builtin_ia32_shufpd and friends.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (aes_op_protect): Allow moves from core
+	registers and from memory.
+	(aes_op_protect_misalign_load): New pattern.
+	(aes_op_protect_neon_vld1v16qi): New pattern.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AESMC:crypto_pattern>_protected):
+	New pattern.
+	(aarch32_crypto_aese_fused_protected): Likewise.
+	(aarch32_crypto_aesd_fused_protected): Likewise.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AES:crypto_pattern>): Convert
+	to define_expand.  Add mitigation for the Cortex-A AES erratum
+	when enabled.
+	(*crypto_<CRYPTO_AES:crypto_pattern>_insn): New pattern, based
+	on original crypto_<CRYPTO_AES:crypto_pattern> insn.
+	(aes_op_protect): New pattern.
+	* config/arm/unspecs.md (unspec): Add UNSPEC_AES_PROTECT.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (quirk_aes_1742098): New quirk feature
+	(ALL_QUIRKS): Add it.
+	(cortex-a57, cortex-a72): Enable it.
+	(cortex-a57.cortex-a53, cortex-a72.cortex-a53): Likewise.
+	* config/arm/arm.opt (mfix-cortex-a57-aes-1742098): New command-line
+	option.
+	(mfix-cortex-a72-aes-1655431): New option alias.
+	* config/arm/arm.cc (arm_option_override): Handle default settings
+	for AES erratum switch.
+	* doc/invoke.texi (Arm Options): Document new options.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CYRPTO_AES:crypto_pattern>): Use
+	<crypto_mode> rather than hard-coding the mode.
+	(crypto_<CRYPTO_AESMC:crypto_pattern>): Fix white space.
+	(crypto_<CRYPTO_AES:crypto_pattern>): Likewise.
+	(*aarch32_crypto_aese_fused): Likewise.
+	(*aarch32_crypto_aesd_fused): Likewise.
+	(crypto_<CRYPTO_BINARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_TERNARY:crypto_pattern>): Likewise.
+	(crypto_sha1h_lb): Likewise.
+	(crypto_vmullp64): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>_lb): Likewise.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AESMC:crypto_pattern>): Add
+	iterator to pattern name to disambiguate.
+	(crypto_<CRYPTO_AES:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_BINARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_TERNARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>_lb): Likewise.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/104135
+	* emit-rtl.cc (make_insn_raw): Fix -Wformat-diag warnings.
+	* rtl.cc: Partially disable -Wformat-diag for RTL checking
+	error messages.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103874
+	* dwarf2out.cc (index_rnglists): For !HAVE_AS_LEB128 and
+	block_num > 0, index entry even if !have_multiple_function_sections.
+
+2022-01-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103771
+	* tree-vect-stmts.cc (supportable_narrowing_operation): Enhance
+	integral mode mask pack by multi steps which takes
+	vec_pack_sbool_trunc_optab as start when elements number is
+	less than BITS_PER_UNITS.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104114
+	* tree-vect-generic.cc (expand_vector_piecewise): Do not diagnose
+	single element vector decomposition.
+
 2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* ifcvt.cc (noce_convert_multiple_sets_1): New function.
