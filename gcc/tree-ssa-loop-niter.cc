@@ -1579,8 +1579,21 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
      { IVbase - STEP, +, STEP } != bound
      Here, biasing IVbase by 1 step makes 'bound' be the value before wrap.
      */
-  niter->control.base = fold_build2 (MINUS_EXPR, niter_type,
-				     niter->control.base, niter->control.step);
+  tree base_type = TREE_TYPE (niter->control.base);
+  if (POINTER_TYPE_P (base_type))
+    {
+      tree utype = unsigned_type_for (base_type);
+      niter->control.base
+	= fold_build2 (MINUS_EXPR, utype,
+		       fold_convert (utype, niter->control.base),
+		       fold_convert (utype, niter->control.step));
+      niter->control.base = fold_convert (base_type, niter->control.base);
+    }
+  else
+    niter->control.base
+      = fold_build2 (MINUS_EXPR, base_type, niter->control.base,
+		     niter->control.step);
+
   span = fold_build2 (MULT_EXPR, niter_type, niter->niter,
 		      fold_convert (niter_type, niter->control.step));
   niter->bound = fold_build2 (PLUS_EXPR, niter_type, span,
