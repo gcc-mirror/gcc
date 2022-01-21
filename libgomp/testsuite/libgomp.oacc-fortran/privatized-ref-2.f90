@@ -53,12 +53,10 @@ contains
     integer :: array(nn)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
-    ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'test\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     array = [(-i, i = 1, nn)]
+    !$acc end parallel
+    !$acc parallel copy(array)
     !$acc loop gang private(array) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'array' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
@@ -66,6 +64,13 @@ contains
     do i = 1, 10
       array(i) = i
     end do
+    !$acc end parallel
+    !$acc parallel copyin(array) ! { dg-line l_compute[incr c_compute] }
+    ! { dg-note {variable 'test\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     if (any (array /= [(-i, i = 1, nn)])) error stop 1
     !$acc end parallel
   end subroutine foo
@@ -74,14 +79,10 @@ contains
     integer :: array(:)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
-    ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'test\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'A\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_compute$c_compute }
     array = [(-2*i, i = 1, size(array))]
+    !$acc end parallel
+    !$acc parallel copy(array)
     !$acc loop gang private(array) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'array\.[0-9]+' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
@@ -91,6 +92,11 @@ contains
     do i = 1, 10
       array(i) = 9*i
     end do
+    !$acc end parallel
+    !$acc parallel copyin(array) ! { dg-line l_compute[incr c_compute] }
+    ! { dg-note {variable 'test\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'A\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_compute$c_compute }
+    ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     if (any (array /= [(-2*i, i = 1, 10)])) error stop 2
     !$acc end parallel
   end subroutine bar
@@ -100,6 +106,8 @@ contains
 
     !$acc parallel copyout(str)
     str = "abcdefghij"
+    !$acc end parallel
+    !$acc parallel copy(str)
     !$acc loop gang private(str) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'str' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
@@ -110,6 +118,8 @@ contains
     do i = 1, 10
       str(i:i) = achar(ichar('A') + i)
     end do
+    !$acc end parallel
+    !$acc parallel copyin(str)
     if (str /= "abcdefghij") error stop 3
     !$acc end parallel
   end
@@ -122,10 +132,14 @@ contains
 ! ***************************************
     !!$acc parallel copyout(str)
     str = "abcdefghij"
+    !!$acc end parallel
+    !!$acc parallel copy(str)
     !!$acc loop gang private(str)
     !do i = 1, 10
     !  str(i:i) = achar(ichar('A') + i)
     !end do
+    !!$acc end parallel
+    !!$acc parallel copyin(str)
     if (str /= "abcdefghij") error stop 5
     !!$acc end parallel
   end
@@ -135,6 +149,8 @@ contains
 
     !$acc parallel copyout(scalar)
     scalar = "abcdefghi-12345"
+    !$acc end parallel
+    !$acc parallel copy(scalar)
     !$acc loop gang private(scalar) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'scalar' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "" { target *-*-* } l_loop$c_loop }
@@ -145,7 +161,9 @@ contains
       scalar(i:i) = achar(ichar('A') + i)
     end do
     !$acc end parallel
+    !$acc parallel copyin(scalar)
     if (scalar /= "abcdefghi-12345") error stop 6
+    !$acc end parallel
   end subroutine foobar
   subroutine foobar15 (scalar)
     integer :: i
@@ -153,11 +171,15 @@ contains
 
     !$acc parallel copyout(scalar)
     scalar = "abcdefghi-12345"
+    !$acc end parallel
+    !$acc parallel copy(scalar)
     !$acc loop gang private(scalar)
     do i = 1, 15
       scalar(i:i) = achar(ichar('A') + i)
     end do
     !$acc end parallel
+    !$acc parallel copyin(scalar)
     if (scalar /= "abcdefghi-12345") error stop 1
+    !$acc end parallel
   end subroutine foobar15
 end
