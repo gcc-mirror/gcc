@@ -928,6 +928,8 @@ public:
     return return_type;
   }
 
+  FunctionQualifiers get_function_qualifiers () { return function_qualifiers; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

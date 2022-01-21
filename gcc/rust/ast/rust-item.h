@@ -21,6 +21,7 @@
 
 #include "rust-ast.h"
 #include "rust-path.h"
+#include "rust-common.h"
 
 namespace Rust {
 namespace AST {
@@ -487,12 +488,6 @@ struct FunctionQualifiers
 public:
   /* Whether the function is neither const nor async, const only, or async
    * only. */
-  enum AsyncConstStatus
-  {
-    NONE,
-    CONST,
-    ASYNC
-  };
 
 private:
   AsyncConstStatus const_status;
@@ -705,34 +700,17 @@ protected:
 // A method (function belonging to a type)
 class Method : public InherentImplItem, public TraitImplItem
 {
-  // moved from impl items for consistency
   std::vector<Attribute> outer_attrs;
   Visibility vis;
-
   FunctionQualifiers qualifiers;
   Identifier method_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
-
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
   SelfParam self_param;
-
-  // bool has_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_return_type;
-  // FunctionReturnType return_type;
-  std::unique_ptr<Type> return_type; // inlined
-
-  // bool has_where_clause;
+  std::vector<FunctionParam> function_params;
+  std::unique_ptr<Type> return_type;
   WhereClause where_clause;
-
   std::unique_ptr<BlockExpr> function_body;
-
   Location locus;
-
   NodeId node_id;
 
 public:
@@ -746,7 +724,7 @@ public:
   // Creates an error state method.
   static Method create_error ()
   {
-    return Method ("", FunctionQualifiers (FunctionQualifiers::NONE, true),
+    return Method ("", FunctionQualifiers (NONE, true),
 		   std::vector<std::unique_ptr<GenericParam>> (),
 		   SelfParam::create_error (), std::vector<FunctionParam> (),
 		   nullptr, WhereClause::create_empty (), nullptr,
@@ -903,6 +881,8 @@ public:
   NodeId get_node_id () const { return node_id; }
 
   Location get_locus () const override final { return locus; }
+
+  FunctionQualifiers get_qualifiers () { return qualifiers; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1439,11 +1419,6 @@ protected:
   }
 };
 
-// Parameters used in a function - TODO inline?
-/*struct FunctionParams {
-    std::vector<FunctionParam> function_params;
-};*/
-
 class LetStmt;
 
 // Rust function declaration AST node
@@ -1451,23 +1426,11 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
-
-  // bool has_generics;
-  // Generics generic_params;
-  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
-
-  // bool has_function_params;
-  // FunctionParams function_params;
-  std::vector<FunctionParam> function_params; // inlined
-
-  // bool has_function_return_type;
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
+  std::vector<FunctionParam> function_params;
   std::unique_ptr<Type> return_type;
-
-  // bool has_where_clause;
   WhereClause where_clause;
-
   std::unique_ptr<BlockExpr> function_body;
-
   Location locus;
 
 public:
@@ -2841,6 +2804,8 @@ public:
 
   // TODO: is this better? Or is a "vis_block" better?
   WhereClause &get_where_clause () { return where_clause; }
+
+  FunctionQualifiers get_qualifiers () { return qualifiers; }
 };
 
 // Actual trait item function declaration within traits
@@ -3067,6 +3032,8 @@ public:
 
   SelfParam &get_self_param () { return self_param; }
   const SelfParam &get_self_param () const { return self_param; }
+
+  FunctionQualifiers get_qualifiers () { return qualifiers; }
 };
 
 // Actual trait item method declaration within traits

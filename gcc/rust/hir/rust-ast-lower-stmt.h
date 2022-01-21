@@ -356,8 +356,8 @@ public:
     // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
-    HIR::FunctionQualifiers qualifiers (
-      HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
+    HIR::FunctionQualifiers qualifiers
+      = lower_qualifiers (function.get_qualifiers ());
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need

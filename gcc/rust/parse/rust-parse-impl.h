@@ -2602,8 +2602,7 @@ template <typename ManagedTokenSource>
 AST::FunctionQualifiers
 Parser<ManagedTokenSource>::parse_function_qualifiers ()
 {
-  AST::FunctionQualifiers::AsyncConstStatus const_status
-    = AST::FunctionQualifiers::NONE;
+  AsyncConstStatus const_status = NONE;
   // bool has_const = false;
   bool has_unsafe = false;
   bool has_extern = false;
@@ -2615,11 +2614,11 @@ Parser<ManagedTokenSource>::parse_function_qualifiers ()
     {
     case CONST:
       lexer.skip_token ();
-      const_status = AST::FunctionQualifiers::CONST;
+      const_status = CONST_FN;
       break;
     case ASYNC:
       lexer.skip_token ();
-      const_status = AST::FunctionQualifiers::ASYNC;
+      const_status = ASYNC_FN;
       break;
     default:
       // const status is still none

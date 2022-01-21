@@ -477,24 +477,12 @@ public:
 // Qualifiers for function, i.e. const, unsafe, extern etc.
 struct FunctionQualifiers
 {
-public:
-  /* Whether the function is neither const nor async, const only, or async
-   * only. */
-  enum AsyncConstStatus
-  {
-    NONE,
-    CONST,
-    ASYNC
-  };
-
 private:
   AsyncConstStatus const_status;
   Unsafety unsafety;
   bool has_extern;
   std::string extern_abi; // e.g. extern "C" fn() -> i32 {}
   // TODO: maybe ensure that extern_abi only exists if extern exists?
-
-  // should this store location info?
 
 public:
   FunctionQualifiers (AsyncConstStatus const_status, Unsafety unsafety,
@@ -514,7 +502,7 @@ public:
 
   AsyncConstStatus get_status () const { return const_status; }
 
-  bool is_const () const { return const_status == AsyncConstStatus::CONST; }
+  bool is_const () const { return const_status == AsyncConstStatus::CONST_FN; }
 };
 
 // A function parameter

@@ -2040,10 +2040,10 @@ FunctionQualifiers::as_string () const
     case NONE:
       // do nothing
       break;
-    case CONST:
+    case CONST_FN:
       str += "const ";
       break;
-    case ASYNC:
+    case ASYNC_FN:
       str += "async ";
       break;
     default:

@@ -135,8 +135,8 @@ public:
   {
     bool is_variadic = false;
     std::vector<HIR::LifetimeParam> lifetime_params;
-    HIR::FunctionQualifiers qualifiers (
-      HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
+    HIR::FunctionQualifiers qualifiers
+      = lower_qualifiers (fntype.get_function_qualifiers ());
 
     std::vector<HIR::MaybeNamedParam> named_params;
     for (auto &param : fntype.get_function_params ())
