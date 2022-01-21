@@ -829,6 +829,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST arm_md_asm_adjust
+
+#undef TARGET_STACK_PROTECT_GUARD
+#define TARGET_STACK_PROTECT_GUARD arm_stack_protect_guard
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -3176,6 +3179,26 @@ arm_option_override_internal (struct gcc_options *opts,
   if (TARGET_THUMB2_P (opts->x_target_flags))
     opts->x_inline_asm_unified = true;
 
+  if (arm_stack_protector_guard == SSP_GLOBAL
+      && opts->x_arm_stack_protector_guard_offset_str)
+    {
+      error ("incompatible options %'-mstack-protector-guard=global%' and"
+	     "%'-mstack-protector-guard-offset=%qs%'",
+	     arm_stack_protector_guard_offset_str);
+    }
+
+  if (opts->x_arm_stack_protector_guard_offset_str)
+    {
+      char *end;
+      const char *str = arm_stack_protector_guard_offset_str;
+      errno = 0;
+      long offs = strtol (arm_stack_protector_guard_offset_str, &end, 0);
+      if (!*str || *end || errno)
+	error ("%qs is not a valid offset in %qs", str,
+	       "-mstack-protector-guard-offset=");
+      arm_stack_protector_guard_offset = offs;
+    }
+
 #ifdef SUBTARGET_OVERRIDE_INTERNAL_OPTIONS
   SUBTARGET_OVERRIDE_INTERNAL_OPTIONS;
 #endif
@@ -3852,6 +3875,9 @@ arm_option_reconfigure_globals (void)
       else
 	target_thread_pointer = TP_SOFT;
     }
+
+  if (!TARGET_HARD_TP && arm_stack_protector_guard == SSP_TLSREG)
+    error("%'-mstack-protector-guard=tls%' needs a hardware TLS register");
 }
 
 /* Perform some validation between the desired architecture and the rest of the
@@ -8114,6 +8140,23 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg, rtx pic_reg,
     }
 
   return orig;
+}
+
+
+/* Generate insns that produce the address of the stack canary */
+rtx
+arm_stack_protect_tls_canary_mem (bool reload)
+{
+  rtx tp = gen_reg_rtx (SImode);
+  if (reload)
+    emit_insn (gen_reload_tp_hard (tp));
+  else
+    emit_insn (gen_load_tp_hard (tp));
+
+  rtx reg = gen_reg_rtx (SImode);
+  rtx offset = GEN_INT (arm_stack_protector_guard_offset);
+  emit_set_insn (reg, gen_rtx_PLUS (SImode, tp, offset));
+  return gen_rtx_MEM (SImode, reg);
 }
 
 
@@ -34083,6 +34126,18 @@ arm_run_selftests (void)
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::arm_run_selftests
 #endif /* CHECKING_P */
+
+/* Implement TARGET_STACK_PROTECT_GUARD. In case of a
+   global variable based guard use the default else
+   return a null tree.  */
+static tree
+arm_stack_protect_guard (void)
+{
+  if (arm_stack_protector_guard == SSP_GLOBAL)
+    return default_stack_protect_guard ();
+
+  return NULL_TREE;
+}
 
 /* Worker function for TARGET_MD_ASM_ADJUST, while in thumb1 mode.
    Unlike the arm version, we do NOT implement asm flag outputs.  */
