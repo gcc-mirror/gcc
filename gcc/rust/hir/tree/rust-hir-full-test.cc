@@ -3453,7 +3453,7 @@ TraitFunctionDecl::as_string () const
   str += "\n Function params: ";
   if (is_method ())
     {
-      str += self.as_string ();
+      str += self.as_string () + (has_params () ? ", " : "");
     }
 
   if (has_params ())
@@ -3463,7 +3463,7 @@ TraitFunctionDecl::as_string () const
 	  str += "\n  " + param.as_string ();
 	}
     }
-  else
+  else if (!is_method ())
     {
       str += "none";
     }

@@ -474,6 +474,9 @@ public:
 
   void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
+  void iterate_trait_items (
+    std::function<bool (HIR::TraitItem *item, HIR::Trait *)> cb);
+
   bool is_impl_item (HirId id)
   {
     HirId parent_impl_block_id = UNKNOWN_HIRID;

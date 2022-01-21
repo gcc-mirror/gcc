@@ -719,5 +719,24 @@ Mappings::iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb)
     }
 }
 
+void
+Mappings::iterate_trait_items (
+  std::function<bool (HIR::TraitItem *, HIR::Trait *)> cb)
+{
+  for (auto it = hirTraitItemMappings.begin ();
+       it != hirTraitItemMappings.end (); it++)
+    {
+      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
+	{
+	  HirId trait_item_id = iy->first;
+	  HIR::TraitItem *trait_item = iy->second;
+	  HIR::Trait *trait = lookup_trait_item_mapping (trait_item_id);
+
+	  if (!cb (trait_item, trait))
+	    return;
+	}
+    }
+}
+
 } // namespace Analysis
 } // namespace Rust
