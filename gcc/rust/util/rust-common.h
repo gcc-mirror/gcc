@@ -41,6 +41,13 @@ enum Polarity
   Negative
 };
 
+enum AsyncConstStatus
+{
+  NONE,
+  CONST_FN,
+  ASYNC_FN
+};
+
 } // namespace Rust
 
 #endif // RUST_COMMON
