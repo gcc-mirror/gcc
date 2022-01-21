@@ -1926,8 +1926,17 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      if (dt == vect_constant_def
 		  || dt == vect_external_def)
 		{
-		  /* We can always build those.  Might want to sort last
-		     or defer building.  */
+		  /* Check whether we can build the invariant.  If we can't
+		     we never will be able to.  */
+		  tree type = TREE_TYPE (chains[0][n].op);
+		  if (!GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
+		      && (TREE_CODE (type) == BOOLEAN_TYPE
+			  || !can_duplicate_and_interleave_p (vinfo, group_size,
+							      type)))
+		    {
+		      matches[0] = false;
+		      goto out;
+		    }
 		  vec<tree> ops;
 		  ops.create (group_size);
 		  for (lane = 0; lane < group_size; ++lane)
