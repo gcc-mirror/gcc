@@ -682,7 +682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_scoped_lock 201703
+#define __cpp_lib_scoped_lock 201703L
   /** @brief A scoped lock type for multiple lockable objects.
    *
    * A scoped_lock controls mutex ownership within a scope, releasing

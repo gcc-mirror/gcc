@@ -291,7 +291,9 @@ get_symbol_constant_value (tree sym)
       if (val)
 	{
 	  val = canonicalize_constructor_val (unshare_expr (val), sym);
-	  if (val && is_gimple_min_invariant (val))
+	  if (val
+	      && is_gimple_min_invariant (val)
+	      && useless_type_conversion_p (TREE_TYPE (sym), TREE_TYPE (val)))
 	    return val;
 	  else
 	    return NULL_TREE;

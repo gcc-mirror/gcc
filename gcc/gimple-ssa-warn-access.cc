@@ -3953,15 +3953,14 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 			    "may be used")
 		       : G_("using dangling pointer %qE to an unnamed "
 			    "temporary")),
-		      ref, var))
+		      ref))
       || (!ref
 	  && warning_at (use_loc, OPT_Wdangling_pointer_,
 			 (maybe
 			  ? G_("dangling pointer to an unnamed temporary "
 			       "may be used")
 			  : G_("using a dangling pointer to an unnamed "
-			       "temporary")),
-			 var)))
+			       "temporary")))))
     {
       inform (DECL_SOURCE_LOCATION (var),
 	      "unnamed temporary defined here");

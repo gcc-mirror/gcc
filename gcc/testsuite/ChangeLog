@@ -1,3 +1,93 @@
+2022-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94362
+	* gcc.dg/analyzer/pr94362-1.c: New test.
+	* gcc.dg/analyzer/pr94362-2.c: New test.
+
+2022-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103685
+	* gcc.dg/analyzer/torture/pr103685.c: New test.
+
+2022-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103695
+	PR fortran/102621
+	* gfortran.dg/gomp/affinity-clause-3.f90: Adjust pattern.
+	* gfortran.dg/gomp/pr102621.f90: New.
+	* gfortran.dg/gomp/pr103695.f90: New.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101405
+	* g++.dg/cpp2a/desig20.C: New test.
+
+2022-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102338
+	* g++.dg/cpp1y/noexcept2.C: New test.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103631
+	* g++.dg/cpp2a/nontype-class51.C: New test.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gcc.dg/torture/pr100786.c: New testcase.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102517
+	* gcc.target/aarch64/cpymem-q-reg_1.c: Allow ld1 and st1 for the
+	memcpy expansion.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/91911
+	PR c++/103672
+	* g++.dg/cpp1z/class-deduction101.C: New test.
+	* g++.dg/cpp1z/class-deduction101a.C: New test.
+	* g++.dg/cpp1z/class-deduction101b.C: New test.
+	* g++.dg/cpp1z/class-deduction102.C: New test.
+	* g++.dg/cpp1z/class-deduction102a.C: New test.
+	* g++.dg/cpp1z/class-deduction102b.C: New test.
+	* g++.dg/cpp1z/class-deduction103.C: New test.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/other/pr88187.C: Adjust expected C++17 diagnostic.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/crypto-vaese-erratum1.c: New test.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103874
+	* gcc.dg/debug/dwarf2/pr103874.c: New test.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/pr47639.C: Add -Wno-psabi to dg-options.
+
+2022-01-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/mask-pack-prefer128.c: New test.
+	* gcc.target/i386/mask-pack-prefer256.c: New test.
+	* gcc.target/i386/pr103771.c: New test.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* g++.dg/parse/no-typename1.C: Remove expected error.
+	* g++.dg/template/nested7.C: New test.
+
+2022-01-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sldoi_to_mov.c: Require VSX.
+
 2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.dg/ifcvt-4.c: Remove s390-specific check.

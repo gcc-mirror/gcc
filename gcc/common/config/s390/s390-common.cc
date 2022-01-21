@@ -116,13 +116,19 @@ s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 
 /* -fsplit-stack uses a field in the TCB, available with glibc-2.23.
    We don't verify it, since earlier versions just have padding at
-   its place, which works just as well.  */
+   its place, which works just as well.  For other libc implementations
+   we disable the feature entirely to avoid corrupting the TCB.  */
 
 static bool
-s390_supports_split_stack (bool report ATTRIBUTE_UNUSED,
-			   struct gcc_options *opts ATTRIBUTE_UNUSED)
+s390_supports_split_stack (bool report,
+			   struct gcc_options *opts)
 {
-  return true;
+  if (opts->x_linux_libc == LIBC_GLIBC)
+    return true;
+
+  if (report)
+    error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
+  return false;
 }
 
 #undef TARGET_DEFAULT_TARGET_FLAGS

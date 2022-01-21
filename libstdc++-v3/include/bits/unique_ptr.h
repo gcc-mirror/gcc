@@ -945,7 +945,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if __cplusplus >= 201402L
-#define __cpp_lib_make_unique 201304
+#define __cpp_lib_make_unique 201304L
 
   /// @cond undocumented
 namespace __detail

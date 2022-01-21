@@ -179,7 +179,9 @@ expand_reg_data (int old)
    will have unique held value.  */
 rtx
 lra_create_new_reg_with_unique_value (machine_mode md_mode, rtx original,
-				      enum reg_class rclass, const char *title)
+				      enum reg_class rclass,
+				      HARD_REG_SET *exclude_start_hard_regs,
+				      const char *title)
 {
   machine_mode mode;
   rtx new_reg;
@@ -214,19 +216,23 @@ lra_create_new_reg_with_unique_value (machine_mode md_mode, rtx original,
     }
   expand_reg_data (max_reg_num ());
   setup_reg_classes (REGNO (new_reg), rclass, NO_REGS, rclass);
+  if (exclude_start_hard_regs != NULL)
+    lra_reg_info[REGNO (new_reg)].exclude_start_hard_regs
+      = *exclude_start_hard_regs;
   return new_reg;
 }
 
 /* Analogous to the previous function but also inherits value of
    ORIGINAL.  */
 rtx
-lra_create_new_reg (machine_mode md_mode, rtx original,
-		    enum reg_class rclass, const char *title)
+lra_create_new_reg (machine_mode md_mode, rtx original, enum reg_class rclass,
+		    HARD_REG_SET *exclude_start_hard_regs, const char *title)
 {
   rtx new_reg;
 
   new_reg
-    = lra_create_new_reg_with_unique_value (md_mode, original, rclass, title);
+    = lra_create_new_reg_with_unique_value (md_mode, original, rclass,
+					    exclude_start_hard_regs, title);
   if (original != NULL_RTX && REG_P (original))
     lra_assign_reg_val (REGNO (original), REGNO (new_reg));
   return new_reg;
@@ -1319,6 +1325,7 @@ initialize_lra_reg_info_element (int i)
   lra_reg_info[i].no_stack_p = false;
 #endif
   CLEAR_HARD_REG_SET (lra_reg_info[i].conflict_hard_regs);
+  CLEAR_HARD_REG_SET (lra_reg_info[i].exclude_start_hard_regs);
   lra_reg_info[i].preferred_hard_regno1 = -1;
   lra_reg_info[i].preferred_hard_regno2 = -1;
   lra_reg_info[i].preferred_hard_regno_profit1 = 0;
@@ -2042,7 +2049,8 @@ lra_substitute_pseudo_within_insn (rtx_insn *insn, int old_regno,
 static rtx
 get_scratch_reg (rtx original)
 {
-  return lra_create_new_reg (GET_MODE (original), original, ALL_REGS, NULL);
+  return lra_create_new_reg (GET_MODE (original), original, ALL_REGS,
+			     NULL, NULL);
 }
 
 /* Remove all insn scratches in INSN.  */

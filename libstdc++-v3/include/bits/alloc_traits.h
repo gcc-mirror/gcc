@@ -43,7 +43,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
-#define __cpp_lib_allocator_traits_is_always_equal 201411
+#define __cpp_lib_allocator_traits_is_always_equal 201411L
 
   /// @cond undocumented
   struct __allocator_traits_base

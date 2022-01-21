@@ -96,6 +96,8 @@ public:
   virtual void dump (FILE *, basic_block) const = 0;
   virtual void dump (FILE *) const = 0;
   void debug () const;
+protected:
+  void valid_equivs (bitmap b, const_bitmap equivs, basic_block bb);
 };
 
 // This class represents an equivalency set, and contains a link to the next
@@ -227,6 +229,7 @@ public:
   relation_kind query_relation (basic_block, tree, tree);
   relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
   void reset_path ();
+  void set_root_oracle (relation_oracle *oracle) { m_root = oracle; }
   void dump (FILE *, basic_block) const;
   void dump (FILE *) const;
 private:

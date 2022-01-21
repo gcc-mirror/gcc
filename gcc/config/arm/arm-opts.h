@@ -69,4 +69,10 @@ enum arm_tls_type {
   TLS_GNU,
   TLS_GNU2
 };
+
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard {
+  SSP_TLSREG,                  /* per-thread canary in TLS register */
+  SSP_GLOBAL                   /* global canary */
+};
 #endif

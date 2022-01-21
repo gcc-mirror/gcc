@@ -1302,10 +1302,10 @@ show_code (int level, gfc_code *c)
 static void
 show_iterator (gfc_namespace *ns)
 {
-  for (gfc_symbol *sym = ns->proc_name; sym; sym = sym->tlink)
+  for (gfc_symbol *sym = ns->omp_affinity_iterators; sym; sym = sym->tlink)
     {
       gfc_constructor *c;
-      if (sym != ns->proc_name)
+      if (sym != ns->omp_affinity_iterators)
 	fputc (',', dumpfile);
       fputs (sym->name, dumpfile);
       fputc ('=', dumpfile);

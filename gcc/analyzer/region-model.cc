@@ -2801,8 +2801,9 @@ region_model::add_constraint (const svalue *lhs,
   if (add_constraints_from_binop (lhs, op, rhs, &out, ctxt))
     return out;
 
-  /* Store the constraint.  */
-  m_constraints->add_constraint (lhs, op, rhs);
+  /* Attempt to store the constraint.  */
+  if (!m_constraints->add_constraint (lhs, op, rhs))
+    return false;
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can

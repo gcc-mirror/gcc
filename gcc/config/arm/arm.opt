@@ -321,3 +321,25 @@ Generate code which uses the core registers only (r0-r14).
 mfdpic
 Target Mask(FDPIC)
 Enable Function Descriptor PIC mode.
+
+mstack-protector-guard=
+Target RejectNegative Joined Enum(stack_protector_guard) Var(arm_stack_protector_guard) Init(SSP_GLOBAL)
+Use given stack-protector guard.
+
+Enum
+Name(stack_protector_guard) Type(enum stack_protector_guard)
+Valid arguments to -mstack-protector-guard=:
+
+EnumValue
+Enum(stack_protector_guard) String(tls) Value(SSP_TLSREG)
+
+EnumValue
+Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
+
+mstack-protector-guard-offset=
+Target Joined RejectNegative String Var(arm_stack_protector_guard_offset_str)
+Use an immediate to offset from the TLS register. This option is for use with
+fstack-protector-guard=tls and not for use in user-land code.
+
+TargetVariable
+long arm_stack_protector_guard_offset = 0

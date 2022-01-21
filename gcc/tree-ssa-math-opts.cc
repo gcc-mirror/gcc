@@ -4608,6 +4608,10 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
   if (bits < prec || bits >= 2 * prec)
     return false;
 
+  /* For the time being, require operands to have the same sign.  */
+  if (unsignedp != TYPE_UNSIGNED (TREE_TYPE (mop2)))
+    return false;
+
   machine_mode mode = TYPE_MODE (optype);
   optab tab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
   if (optab_handler (tab, mode) == CODE_FOR_nothing)

@@ -823,6 +823,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpure-code @gol
 -mcmse @gol
 -mfix-cmse-cve-2021-35465 @gol
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset} @gol
 -mfdpic}
 
 @emph{AVR Options}
@@ -21365,6 +21366,16 @@ in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
 @code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
 @option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{tls} for a
+canary accessible via the TLS register. The option
+@option{-mstack-protector-guard-offset=} is for use with
+@option{-fstack-protector-guard=tls} and not for use in user-land code.
 
 @item -mfdpic
 @itemx -mno-fdpic

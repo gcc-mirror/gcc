@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr operator value_type() const noexcept { return value; }
 #if __cplusplus > 201103L
 
-#define __cpp_lib_integral_constant_callable 201304
+#define __cpp_lib_integral_constant_callable 201304L
 
       constexpr value_type operator()() const noexcept { return value; }
 #endif
@@ -91,7 +91,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_bool_constant 201505
+# define __cpp_lib_bool_constant 201505L
   /// Alias template for compile-time boolean constant types.
   /// @since C++17
   template<bool __v>
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool __and_v = __and_<_Bn...>::value;
   /// @endcond
 
-#define __cpp_lib_logical_traits 201510
+#define __cpp_lib_logical_traits 201510L
 
   template<typename... _Bn>
     struct conjunction
@@ -548,7 +548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_function<_Tp&&>
     : public false_type { };
 
-#define __cpp_lib_is_null_pointer 201309
+#define __cpp_lib_is_null_pointer 201309L
 
   template<typename>
     struct __is_null_pointer_helper
@@ -1594,7 +1594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
-#define __cpp_lib_transformation_trait_aliases 201304
+#define __cpp_lib_transformation_trait_aliases 201304L
 
   /// Alias template for remove_const
   template<typename _Tp>
@@ -2403,7 +2403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Sfinae-friendly result_of implementation:
 
-#define __cpp_lib_result_of_sfinae 201210
+#define __cpp_lib_result_of_sfinae 201210L
 
   /// @cond undocumented
   struct __invoke_memfun_ref { };
@@ -2631,7 +2631,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++14
 
 #if __cplusplus >= 201703L || !defined(__STRICT_ANSI__) // c++17 or gnu++11
-#define __cpp_lib_void_t 201411
+#define __cpp_lib_void_t 201411L
   /// A metafunction that always yields void, used for detecting valid types.
   template<typename...> using void_t = void;
 #endif
@@ -2768,7 +2768,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 
 #if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
-#define __cpp_lib_is_swappable 201603
+#define __cpp_lib_is_swappable 201603L
   /// Metafunctions used for detecting swappable types: p0185r1
 
   /// is_swappable
@@ -3015,7 +3015,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_is_invocable 201703
+# define __cpp_lib_is_invocable 201703L
 
   /// std::invoke_result
   template<typename _Functor, typename... _ArgTypes>
@@ -3296,7 +3296,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
 /// @}
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
-# define __cpp_lib_has_unique_object_representations 201606
+# define __cpp_lib_has_unique_object_representations 201606L
   /// has_unique_object_representations
   /// @since C++17
   template<typename _Tp>
@@ -3316,7 +3316,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #endif
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-# define __cpp_lib_is_aggregate 201703
+# define __cpp_lib_is_aggregate 201703L
   /// is_aggregate
   /// @since C++17
   template<typename _Tp>

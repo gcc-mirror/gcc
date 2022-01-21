@@ -243,7 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
-#define __cpp_lib_transparent_operators 201510
+#define __cpp_lib_transparent_operators 201510L
 
   template<>
     struct plus<void>

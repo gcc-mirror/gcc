@@ -23,8 +23,10 @@ int main ()
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
   
-#pragma acc parallel num_workers(32) vector_length(32) copy(ary) copy(ondev) \
-	    copyout(workersize)
+#define NW 32
+#define VL 32
+#pragma acc parallel num_workers(NW) vector_length(VL) \
+	    copy(ary) copy(ondev)
   /* { dg-note {variable 'ix' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
   /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } .-3 } */
   {
@@ -48,8 +50,13 @@ int main ()
 	else
 	  ary[ix] = ix;
       }
-    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
   }
+  workersize = NW;
+#ifdef ACC_DEVICE_TYPE_radeon
+  /* AMD GCN has an upper limit of 'num_workers(16)'.  */
+  if (workersize > 16)
+    workersize = 16;
+#endif
 
   for (ix = 0; ix < N; ix++)
     {

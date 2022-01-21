@@ -1,3 +1,35 @@
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101405
+	* decl.cc (reshape_init_class): Reject designator for a member of
+	another class.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/91911
+	PR c++/103672
+	* pt.cc (keep_template_parm): Punt on a level 0 template parm.
+	(tsubst_decl) <case VAR_DECL>: Remove !CHECKING_P safeguard.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Handle CTAD placeholders
+	specially.
+	(make_auto_1): Add defaulted 'level' parameter.
+	(make_template_placeholder): Pass 0 as 'level' to make_auto_1.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (grokdeclarator): Diagnose a CTAD placeholder as
+	function return type even when !funcdecl_p.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	PR c++/104134
+	* error.cc (dump_aggr_type): Partially disable the warning.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* parser.cc (cp_parser_template_name): Use dependent_scope_p.
+
 2022-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-lang.cc (selftest::run_cp_tests): Update calls for .c to .cc
