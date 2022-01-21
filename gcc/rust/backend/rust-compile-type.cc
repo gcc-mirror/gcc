@@ -281,7 +281,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
   tree named_struct
     = ctx->get_backend ()->named_type (type.get_name (), type_record,
 				       ctx->get_mappings ()->lookup_location (
-					 type.get_ty_ref ()));
+					 type.get_ref ()));
 
   ctx->push_type (named_struct);
   translated = named_struct;
