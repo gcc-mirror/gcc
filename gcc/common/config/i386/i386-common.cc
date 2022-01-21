@@ -1714,16 +1714,21 @@ ix86_option_init_struct (struct gcc_options *opts)
    field in the TCB, so they cannot be used together.  */
 
 static bool
-ix86_supports_split_stack (bool report ATTRIBUTE_UNUSED,
+ix86_supports_split_stack (bool report,
 			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
+#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
+  if (opts->x_linux_libc != LIBC_GLIBC)
+#endif
+    {
+      if (report)
+	error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
+      return false;
+    }
+
   bool ret = true;
 
-#ifndef TARGET_THREAD_SPLIT_STACK_OFFSET
-  if (report)
-    error ("%<-fsplit-stack%> currently only supported on GNU/Linux");
-  ret = false;
-#else
+#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
   if (!HAVE_GAS_CFI_PERSONALITY_DIRECTIVE)
     {
       if (report)
