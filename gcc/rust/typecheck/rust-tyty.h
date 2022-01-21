@@ -1930,7 +1930,10 @@ public:
 
   std::string as_string () const override;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final
+  {
+    return "&" + get_base ()->get_name ();
+  }
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors,
@@ -1978,7 +1981,10 @@ public:
 
   std::string as_string () const override;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final
+  {
+    return "*" + get_base ()->get_name ();
+  }
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (const BaseType *other, bool emit_errors,
