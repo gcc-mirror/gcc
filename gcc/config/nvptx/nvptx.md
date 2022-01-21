@@ -58,6 +58,7 @@
    UNSPECV_BARSYNC
    UNSPECV_MEMBAR
    UNSPECV_MEMBAR_CTA
+   UNSPECV_MEMBAR_GL
    UNSPECV_DIM_POS
 
    UNSPECV_FORK
@@ -1930,6 +1931,22 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_CTA))]
   ""
   "\\tmembar.cta;"
+  [(set_attr "predicable" "false")])
+
+(define_expand "nvptx_membar_gl"
+  [(set (match_dup 0)
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_GL))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*nvptx_membar_gl"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_GL))]
+  ""
+  "\\tmembar.gl;"
   [(set_attr "predicable" "false")])
 
 (define_insn "nvptx_nounroll"

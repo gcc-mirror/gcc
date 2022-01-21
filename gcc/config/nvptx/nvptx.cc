@@ -5622,6 +5622,8 @@ enum nvptx_builtins
   NVPTX_BUILTIN_VECTOR_ADDR,
   NVPTX_BUILTIN_CMP_SWAP,
   NVPTX_BUILTIN_CMP_SWAPLL,
+  NVPTX_BUILTIN_MEMBAR_GL,
+  NVPTX_BUILTIN_MEMBAR_CTA,
   NVPTX_BUILTIN_MAX
 };
 
@@ -5652,6 +5654,7 @@ nvptx_init_builtins (void)
 #define UINT unsigned_type_node
 #define LLUINT long_long_unsigned_type_node
 #define PTRVOID ptr_type_node
+#define VOID void_type_node
 
   DEF (SHUFFLE, "shuffle", (UINT, UINT, UINT, UINT, NULL_TREE));
   DEF (SHUFFLELL, "shufflell", (LLUINT, LLUINT, UINT, UINT, NULL_TREE));
@@ -5661,6 +5664,8 @@ nvptx_init_builtins (void)
        (PTRVOID, ST, UINT, UINT, NULL_TREE));
   DEF (CMP_SWAP, "cmp_swap", (UINT, PTRVOID, UINT, UINT, NULL_TREE));
   DEF (CMP_SWAPLL, "cmp_swapll", (LLUINT, PTRVOID, LLUINT, LLUINT, NULL_TREE));
+  DEF (MEMBAR_GL, "membar_gl", (VOID, VOID, NULL_TREE));
+  DEF (MEMBAR_CTA, "membar_cta", (VOID, VOID, NULL_TREE));
 
 #undef DEF
 #undef ST
@@ -5695,6 +5700,14 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     case NVPTX_BUILTIN_CMP_SWAP:
     case NVPTX_BUILTIN_CMP_SWAPLL:
       return nvptx_expand_cmp_swap (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_MEMBAR_GL:
+      emit_insn (gen_nvptx_membar_gl ());
+      return NULL_RTX;
+
+    case NVPTX_BUILTIN_MEMBAR_CTA:
+      emit_insn (gen_nvptx_membar_cta ());
+      return NULL_RTX;
 
     default: gcc_unreachable ();
     }
@@ -6243,7 +6256,7 @@ nvptx_lockless_update (location_t loc, gimple_stmt_iterator *gsi,
 
 static tree
 nvptx_lockfull_update (location_t loc, gimple_stmt_iterator *gsi,
-		       tree ptr, tree var, tree_code op)
+		       tree ptr, tree var, tree_code op, int level)
 {
   tree var_type = TREE_TYPE (var);
   tree swap_fn = nvptx_builtin_decl (NVPTX_BUILTIN_CMP_SWAP, true);
@@ -6295,8 +6308,17 @@ nvptx_lockfull_update (location_t loc, gimple_stmt_iterator *gsi,
   lock_loop->any_estimate = true;
   add_loop (lock_loop, entry_bb->loop_father);
 
-  /* Build and insert the reduction calculation.  */
+  /* Build the pre-barrier.  */
   gimple_seq red_seq = NULL;
+  enum nvptx_builtins barrier_builtin
+    = (level == GOMP_DIM_GANG
+       ? NVPTX_BUILTIN_MEMBAR_GL
+       : NVPTX_BUILTIN_MEMBAR_CTA);
+  tree barrier_fn = nvptx_builtin_decl (barrier_builtin, true);
+  tree barrier_expr = build_call_expr_loc (loc, barrier_fn, 0);
+  gimplify_stmt (&barrier_expr, &red_seq);
+
+  /* Build the reduction calculation.  */
   tree acc_in = make_ssa_name (var_type);
   tree ref_in = build_simple_mem_ref (ptr);
   TREE_THIS_VOLATILE (ref_in) = 1;
@@ -6310,6 +6332,11 @@ nvptx_lockfull_update (location_t loc, gimple_stmt_iterator *gsi,
   TREE_THIS_VOLATILE (ref_out) = 1;
   gimplify_assign (ref_out, acc_out, &red_seq);
 
+  /* Build the post-barrier.  */
+  barrier_expr = build_call_expr_loc (loc, barrier_fn, 0);
+  gimplify_stmt (&barrier_expr, &red_seq);
+
+  /* Insert the reduction calculation.  */
   gsi_insert_seq_before (gsi, red_seq, GSI_SAME_STMT);
 
   /* Build & insert the unlock sequence.  */
@@ -6330,7 +6357,7 @@ nvptx_lockfull_update (location_t loc, gimple_stmt_iterator *gsi,
 
 static tree
 nvptx_reduction_update (location_t loc, gimple_stmt_iterator *gsi,
-			tree ptr, tree var, tree_code op)
+			tree ptr, tree var, tree_code op, int level)
 {
   tree type = TREE_TYPE (var);
   tree size = TYPE_SIZE (type);
@@ -6339,7 +6366,7 @@ nvptx_reduction_update (location_t loc, gimple_stmt_iterator *gsi,
       || size == TYPE_SIZE (long_long_unsigned_type_node))
     return nvptx_lockless_update (loc, gsi, ptr, var, op);
   else
-    return nvptx_lockfull_update (loc, gsi, ptr, var, op);
+    return nvptx_lockfull_update (loc, gsi, ptr, var, op, level);
 }
 
 /* NVPTX implementation of GOACC_REDUCTION_SETUP.  */
@@ -6531,7 +6558,7 @@ nvptx_goacc_reduction_fini (gcall *call, offload_attrs *oa)
 	  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 	  seq = NULL;
 	  r = nvptx_reduction_update (gimple_location (call), &gsi,
-				      accum, var, op);
+				      accum, var, op, level);
 	}
     }
 
