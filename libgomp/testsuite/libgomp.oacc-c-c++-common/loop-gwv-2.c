@@ -46,14 +46,17 @@ int main ()
   int ary[N];
   int ix;
   int exit = 0;
-  int gangsize = 0, workersize = 0, vectorsize = 0;
+  int gangsize, workersize, vectorsize;
   int *gangdist, *workerdist, *vectordist;
 
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
 
-#pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-	    copy(ary) copyout(gangsize, workersize, vectorsize)
+#define NG 32
+#define NW 32
+#define VL 32
+#pragma acc parallel num_gangs(NG) num_workers(NW) vector_length(VL) \
+	    copy(ary)
   /* { dg-note {variable 'ix' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
   {
 #pragma acc loop gang worker vector
@@ -71,11 +74,23 @@ int main ()
 
 	ary[ix] = (g << 16) | (w << 8) | v;
       }
-
-    gangsize = __builtin_goacc_parlevel_size (GOMP_DIM_GANG);
-    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
-    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
+  gangsize = NG;
+  workersize = NW;
+  vectorsize = VL;
+#if defined ACC_DEVICE_TYPE_host
+  gangsize = 1;
+  workersize = 1;
+  vectorsize = 1;
+#elif defined ACC_DEVICE_TYPE_radeon
+  /* AMD GCN has an upper limit of 'num_workers(16)'.  */
+  if (workersize > 16)
+    workersize = 16;
+  /* AMD GCN uses the autovectorizer for the vector dimension: the use
+     of a function call in vector-partitioned code in this test is not
+     currently supported.  */
+  vectorsize = 1;
+#endif
 
   gangdist = (int *) __builtin_alloca (gangsize * sizeof (int));
   workerdist = (int *) __builtin_alloca (workersize * sizeof (int));
@@ -91,6 +106,11 @@ int main ()
       int g = (ary[ix] >> 16) & 255;
       int w = (ary[ix] >> 8) & 255;
       int v = ary[ix] & 255;
+
+      if (g >= gangsize
+	  || w >= workersize
+	  || v >= vectorsize)
+	__builtin_abort ();
 
       gangdist[g]++;
       workerdist[w]++;
