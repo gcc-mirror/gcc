@@ -1465,10 +1465,11 @@ setup_reg_class_nregs (void)
 
 
 
-/* Set up IRA_PROHIBITED_CLASS_MODE_REGS and IRA_CLASS_SINGLETON.
-   This function is called once IRA_CLASS_HARD_REGS has been initialized.  */
+/* Set up IRA_PROHIBITED_CLASS_MODE_REGS, IRA_EXCLUDE_CLASS_MODE_REGS, and
+   IRA_CLASS_SINGLETON.  This function is called once IRA_CLASS_HARD_REGS has
+   been initialized.  */
 static void
-setup_prohibited_class_mode_regs (void)
+setup_prohibited_and_exclude_class_mode_regs (void)
 {
   int j, k, hard_regno, cl, last_hard_regno, count;
 
@@ -1480,6 +1481,7 @@ setup_prohibited_class_mode_regs (void)
 	  count = 0;
 	  last_hard_regno = -1;
 	  CLEAR_HARD_REG_SET (ira_prohibited_class_mode_regs[cl][j]);
+	  CLEAR_HARD_REG_SET (ira_exclude_class_mode_regs[cl][j]);
 	  for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
 	    {
 	      hard_regno = ira_class_hard_regs[cl][k];
@@ -1491,6 +1493,10 @@ setup_prohibited_class_mode_regs (void)
 		{
 		  last_hard_regno = hard_regno;
 		  count++;
+		}
+	      else
+		{
+		  SET_HARD_REG_BIT (ira_exclude_class_mode_regs[cl][j], hard_regno);
 		}
 	    }
 	  ira_class_singleton[cl][j] = (count == 1 ? last_hard_regno : -1);
@@ -1707,7 +1713,7 @@ ira_init (void)
   setup_alloc_regs (flag_omit_frame_pointer != 0);
   setup_class_subset_and_memory_move_costs ();
   setup_reg_class_nregs ();
-  setup_prohibited_class_mode_regs ();
+  setup_prohibited_and_exclude_class_mode_regs ();
   find_reg_classes ();
   clarify_prohibited_class_mode_regs ();
   setup_hard_regno_aclass ();

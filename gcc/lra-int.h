@@ -73,6 +73,9 @@ public:
   /* The following fields are defined only for pseudos.	 */
   /* Hard registers with which the pseudo conflicts.  */
   HARD_REG_SET conflict_hard_regs;
+  /* Pseudo allocno class hard registers which cannot be a start hard register
+     of the pseudo.  */
+  HARD_REG_SET exclude_start_hard_regs;
   /* We assign hard registers to reload pseudos which can occur in few
      places.  So two hard register preferences are enough for them.
      The following fields define the preferred hard registers.	If
@@ -292,8 +295,11 @@ extern void lra_push_insn_and_update_insn_regno_info (rtx_insn *);
 extern rtx_insn *lra_pop_insn (void);
 extern unsigned int lra_insn_stack_length (void);
 
+extern rtx lra_create_new_reg (machine_mode, rtx, enum reg_class, HARD_REG_SET *,
+			       const char *);
 extern rtx lra_create_new_reg_with_unique_value (machine_mode, rtx,
-						 enum reg_class, const char *);
+						 enum reg_class, HARD_REG_SET *,
+						 const char *);
 extern void lra_set_regno_unique_value (int);
 extern void lra_invalidate_insn_data (rtx_insn *);
 extern void lra_set_insn_deleted (rtx_insn *);
