@@ -4309,7 +4309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201402L
 
-#define __cpp_lib_string_udls 201304
+#define __cpp_lib_string_udls 201304L
 
   inline namespace literals
   {

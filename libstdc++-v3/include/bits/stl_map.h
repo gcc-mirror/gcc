@@ -695,7 +695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif // C++17
 
 #if __cplusplus > 201402L
-#define __cpp_lib_map_try_emplace 201411
+#define __cpp_lib_map_try_emplace 201411L
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
        *

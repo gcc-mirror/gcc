@@ -639,7 +639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return reverse_iterator<_Iterator>(__i); }
 
 # if __cplusplus >= 201402L
-#  define __cpp_lib_make_reverse_iterator 201402
+#  define __cpp_lib_make_reverse_iterator 201402L
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 2285. make_reverse_iterator

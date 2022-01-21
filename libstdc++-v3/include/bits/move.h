@@ -130,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201402L
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2296. std::addressof should be constexpr
-# define __cpp_lib_addressof_constexpr 201603
+# define __cpp_lib_addressof_constexpr 201603L
 #endif
   /**
    *  @brief Returns the actual address of the object or function

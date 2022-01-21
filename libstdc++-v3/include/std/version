@@ -36,7 +36,7 @@
 
 // c++03
 #if _GLIBCXX_HOSTED
-# define __cpp_lib_incomplete_container_elements 201505
+# define __cpp_lib_incomplete_container_elements 201505L
 #endif
 
 #if !defined(__STRICT_ANSI__)
@@ -46,11 +46,11 @@
 
 #if __cplusplus >= 201103L
 // c++11
-#define __cpp_lib_is_null_pointer 201309
-#define __cpp_lib_result_of_sfinae 201210
+#define __cpp_lib_is_null_pointer 201309L
+#define __cpp_lib_result_of_sfinae 201210L
 
 #if _GLIBCXX_HOSTED
-# define __cpp_lib_allocator_traits_is_always_equal 201411
+# define __cpp_lib_allocator_traits_is_always_equal 201411L
 #if __cplusplus <= 201703L // N.B. updated value in C++20
 # define __cpp_lib_shared_ptr_arrays 201611L
 #endif
@@ -58,10 +58,10 @@
 
 #if !defined(__STRICT_ANSI__)
 // gnu++11
-# define __cpp_lib_is_swappable 201603
-# define __cpp_lib_void_t 201411
+# define __cpp_lib_is_swappable 201603L
+# define __cpp_lib_void_t 201411L
 # if _GLIBCXX_HOSTED
-#  define __cpp_lib_enable_shared_from_this 201603
+#  define __cpp_lib_enable_shared_from_this 201603L
 # endif
 #endif
 
@@ -73,100 +73,100 @@
 #if __cpp_impl_coroutine
 # define __cpp_lib_coroutine 201902L
 #endif
-#define __cpp_lib_integral_constant_callable 201304
+#define __cpp_lib_integral_constant_callable 201304L
 #define __cpp_lib_is_final 201402L
-#define __cpp_lib_transformation_trait_aliases 201304
+#define __cpp_lib_transformation_trait_aliases 201304L
 
 #if _GLIBCXX_HOSTED
-# define __cpp_lib_chrono_udls 201304
-# define __cpp_lib_complex_udls 201309
-# define __cpp_lib_exchange_function 201304
-# define __cpp_lib_generic_associative_lookup 201304
-# define __cpp_lib_integer_sequence 201304
-# define __cpp_lib_make_reverse_iterator 201402
-# define __cpp_lib_make_unique 201304
+# define __cpp_lib_chrono_udls 201304L
+# define __cpp_lib_complex_udls 201309L
+# define __cpp_lib_exchange_function 201304L
+# define __cpp_lib_generic_associative_lookup 201304L
+# define __cpp_lib_integer_sequence 201304L
+# define __cpp_lib_make_reverse_iterator 201402L
+# define __cpp_lib_make_unique 201304L
 # ifndef _GLIBCXX_DEBUG // PR libstdc++/70303
 #  define __cpp_lib_null_iterators 201304L
 # endif
-# define __cpp_lib_quoted_string_io 201304
-# define __cpp_lib_robust_nonmodifying_seq_ops 201304
+# define __cpp_lib_quoted_string_io 201304L
+# define __cpp_lib_robust_nonmodifying_seq_ops 201304L
 # ifdef _GLIBCXX_HAS_GTHREADS
 #  define __cpp_lib_shared_timed_mutex 201402L
 # endif
-# define __cpp_lib_string_udls 201304
-# define __cpp_lib_transparent_operators 201510
+# define __cpp_lib_string_udls 201304L
+# define __cpp_lib_transparent_operators 201510L
 # define __cpp_lib_tuple_element_t 201402L
 # define __cpp_lib_tuples_by_type 201304L
 #endif
 
 #if __cplusplus >= 201703L
 // c++17
-#define __cpp_lib_addressof_constexpr 201603
-#define __cpp_lib_atomic_is_always_lock_free 201603
-#define __cpp_lib_bool_constant 201505
-#define __cpp_lib_byte 201603
+#define __cpp_lib_addressof_constexpr 201603L
+#define __cpp_lib_atomic_is_always_lock_free 201603L
+#define __cpp_lib_bool_constant 201505L
+#define __cpp_lib_byte 201603L
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
-# define __cpp_lib_has_unique_object_representations 201606
+# define __cpp_lib_has_unique_object_representations 201606L
 #endif
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-# define __cpp_lib_is_aggregate 201703
+# define __cpp_lib_is_aggregate 201703L
 #endif
-#define __cpp_lib_is_invocable 201703
-#define __cpp_lib_is_swappable 201603
+#define __cpp_lib_is_invocable 201703L
+#define __cpp_lib_is_swappable 201603L
 #ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
-# define __cpp_lib_launder 201606
+# define __cpp_lib_launder 201606L
 #endif
-#define __cpp_lib_logical_traits 201510
+#define __cpp_lib_logical_traits 201510L
 #define __cpp_lib_type_trait_variable_templates 201510L
 #define __cpp_lib_uncaught_exceptions 201411L
-#define __cpp_lib_void_t 201411
+#define __cpp_lib_void_t 201411L
 
 #if _GLIBCXX_HOSTED
 #define __cpp_lib_any 201606L
-#define __cpp_lib_apply 201603
+#define __cpp_lib_apply 201603L
 #if __cplusplus == 201703L // N.B. updated value in C++20
 # define __cpp_lib_array_constexpr 201803L
 #endif
-#define __cpp_lib_as_const 201510
-#define __cpp_lib_boyer_moore_searcher 201603
-#define __cpp_lib_chrono 201611
-#define __cpp_lib_clamp 201603
+#define __cpp_lib_as_const 201510L
+#define __cpp_lib_boyer_moore_searcher 201603L
+#define __cpp_lib_chrono 201611L
+#define __cpp_lib_clamp 201603L
 #if __cplusplus == 201703L // N.B. updated value in C++20
 # if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 #  define __cpp_lib_constexpr_char_traits 201611L
 #  define __cpp_lib_constexpr_string 201611L
 # endif
 #endif
-#define __cpp_lib_enable_shared_from_this 201603
+#define __cpp_lib_enable_shared_from_this 201603L
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
-#define __cpp_lib_filesystem 201703
-#define __cpp_lib_gcd 201606
-#define __cpp_lib_gcd_lcm 201606
+#define __cpp_lib_filesystem 201703L
+#define __cpp_lib_gcd 201606L
+#define __cpp_lib_gcd_lcm 201606L
 #ifdef __GCC_DESTRUCTIVE_SIZE
 # define __cpp_lib_hardware_interference_size 201703L
 #endif
-#define __cpp_lib_hypot 201603
+#define __cpp_lib_hypot 201603L
 #define __cpp_lib_invoke 201411L
-#define __cpp_lib_lcm 201606
-#define __cpp_lib_make_from_tuple 201606
-#define __cpp_lib_map_try_emplace 201411
+#define __cpp_lib_lcm 201606L
+#define __cpp_lib_make_from_tuple 201606L
+#define __cpp_lib_map_try_emplace 201411L
 #define __cpp_lib_math_special_functions 201603L
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_memory_resource 201603L
 #else
 # define __cpp_lib_memory_resource 1
 #endif
-#define __cpp_lib_node_extract 201606
-#define __cpp_lib_nonmember_container_access 201411
-#define __cpp_lib_not_fn 201603
+#define __cpp_lib_node_extract 201606L
+#define __cpp_lib_nonmember_container_access 201411L
+#define __cpp_lib_not_fn 201603L
 #if __cplusplus == 201703L // N.B. updated value in C++20
 # define __cpp_lib_optional 201606L
 #endif
 #define __cpp_lib_parallel_algorithm 201603L
 #define __cpp_lib_raw_memory_algorithms 201606L
-#define __cpp_lib_sample 201603
+#define __cpp_lib_sample 201603L
 #ifdef _GLIBCXX_HAS_GTHREADS
-# define __cpp_lib_scoped_lock 201703
+# define __cpp_lib_scoped_lock 201703L
 # define __cpp_lib_shared_mutex 201505L
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606L
@@ -174,7 +174,7 @@
 #if _GLIBCXX_HAVE_USELOCALE
 # define __cpp_lib_to_chars 201611L
 #endif
-#define __cpp_lib_unordered_map_try_emplace 201411
+#define __cpp_lib_unordered_map_try_emplace 201411L
 #ifndef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
 // N.B. updated value in C++20
 # define __cpp_lib_variant 202102L

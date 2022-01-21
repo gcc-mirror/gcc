@@ -1843,7 +1843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool __unpack_std_tuple<_Trait, _Tp, const tuple<_Up...>&>
       = _Trait<_Tp, const _Up&...>::value;
 
-# define __cpp_lib_apply 201603
+# define __cpp_lib_apply 201603L
 
   template <typename _Fn, typename _Tuple, size_t... _Idx>
     constexpr decltype(auto)
@@ -1865,7 +1865,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _Indices{});
     }
 
-#define __cpp_lib_make_from_tuple  201606
+#define __cpp_lib_make_from_tuple  201606L
 
   template <typename _Tp, typename _Tuple, size_t... _Idx>
     constexpr _Tp
