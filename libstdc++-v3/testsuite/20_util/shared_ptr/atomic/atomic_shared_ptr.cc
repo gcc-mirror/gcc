@@ -16,6 +16,9 @@
 
 #include <testsuite_hooks.h>
 
+// Check constexpr constructor.
+constinit std::atomic<std::shared_ptr<int>> a;
+
 void
 test_is_lock_free()
 {
