@@ -57,11 +57,6 @@ private:
 		const Analysis::NodeMapping &mappings, Location locus,
 		bool is_qualified_path);
 
-  tree query_compile (HirId ref, TyTy::BaseType *lookup,
-		      const HIR::PathIdentSegment &final_segment,
-		      const Analysis::NodeMapping &mappings,
-		      Location expr_locus, bool is_qualified_path);
-
   tree resolved;
 };
 

@@ -370,7 +370,7 @@ class TypeCheckImplItemWithTrait : public TypeCheckImplItem
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static const TraitItemReference &
+  static const TraitItemReference *
   Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item, TyTy::BaseType *self,
 	   TraitReference &trait_reference,
 	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
@@ -383,11 +383,14 @@ public:
 
   void visit (HIR::ConstantItem &constant) override
   {
-    resolved_trait_item = trait_reference.lookup_trait_item (
-      constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
+    // resolved_trait_item = trait_reference.lookup_trait_item (
+    //   constant.get_identifier (), TraitItemReference::TraitItemType::CONST);
+    trait_reference.lookup_trait_item_by_type (
+      constant.get_identifier (), TraitItemReference::TraitItemType::CONST,
+      &resolved_trait_item);
 
     // unknown trait item
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       {
 	RichLocation r (constant.get_locus ());
 	r.add_range (trait_reference.get_locus ());
@@ -401,14 +404,14 @@ public:
     TyTy::BaseType *lookup;
     if (!context->lookup_type (constant.get_mappings ().get_hirid (), &lookup))
       return;
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       return;
 
     // check the types are compatible
-    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true, false))
+    if (!resolved_trait_item->get_tyty ()->can_eq (lookup, true))
       {
 	RichLocation r (constant.get_locus ());
-	r.add_range (resolved_trait_item.get_locus ());
+	r.add_range (resolved_trait_item->get_locus ());
 
 	rust_error_at (
 	  r, "constant %<%s%> has an incompatible type for trait %<%s%>",
@@ -419,11 +422,14 @@ public:
 
   void visit (HIR::TypeAlias &type) override
   {
-    resolved_trait_item = trait_reference.lookup_trait_item (
-      type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
+    // resolved_trait_item = trait_reference.lookup_trait_item (
+    //   type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE);
+    trait_reference.lookup_trait_item_by_type (
+      type.get_new_type_name (), TraitItemReference::TraitItemType::TYPE,
+      &resolved_trait_item);
 
     // unknown trait item
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       {
 	RichLocation r (type.get_locus ());
 	r.add_range (trait_reference.get_locus ());
@@ -437,14 +443,14 @@ public:
     TyTy::BaseType *lookup;
     if (!context->lookup_type (type.get_mappings ().get_hirid (), &lookup))
       return;
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       return;
 
     // check the types are compatible
-    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true, false))
+    if (!resolved_trait_item->get_tyty ()->can_eq (lookup, true))
       {
 	RichLocation r (type.get_locus ());
-	r.add_range (resolved_trait_item.get_locus ());
+	r.add_range (resolved_trait_item->get_locus ());
 
 	rust_error_at (
 	  r, "type alias %<%s%> has an incompatible type for trait %<%s%>",
@@ -456,19 +462,22 @@ public:
     // generic substitutions to the type itself
     TyTy::ProjectionType *projection = new TyTy::ProjectionType (
       type.get_mappings ().get_hirid (), lookup, &trait_reference,
-      resolved_trait_item.get_mappings ().get_defid (), substitutions);
+      resolved_trait_item->get_mappings ().get_defid (), substitutions);
 
     context->insert_type (type.get_mappings (), projection);
-    resolved_trait_item.associated_type_set (projection);
+    resolved_trait_item->associated_type_set (projection);
   }
 
   void visit (HIR::Function &function) override
   {
-    resolved_trait_item = trait_reference.lookup_trait_item (
-      function.get_function_name (), TraitItemReference::TraitItemType::FN);
+    // resolved_trait_item = trait_reference.lookup_trait_item (
+    //   function.get_function_name (), TraitItemReference::TraitItemType::FN);
+    trait_reference.lookup_trait_item_by_type (
+      function.get_function_name (), TraitItemReference::TraitItemType::FN,
+      &resolved_trait_item);
 
     // unknown trait item
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (trait_reference.get_locus ());
@@ -482,16 +491,16 @@ public:
     TyTy::BaseType *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       return;
-    if (resolved_trait_item.is_error ())
+    if (resolved_trait_item->is_error ())
       return;
 
     rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
-    rust_assert (resolved_trait_item.get_tyty ()->get_kind ()
+    rust_assert (resolved_trait_item->get_tyty ()->get_kind ()
 		 == TyTy::TypeKind::FNDEF);
 
     TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
     TyTy::FnType *trait_item_fntype
-      = static_cast<TyTy::FnType *> (resolved_trait_item.get_tyty ());
+      = static_cast<TyTy::FnType *> (resolved_trait_item->get_tyty ());
 
     // sets substitute self into the trait_item_ref->tyty
     TyTy::SubstitutionParamMapping *self_mapping = nullptr;
@@ -515,10 +524,10 @@ public:
       = trait_item_fntype->handle_substitions (implicit_self_substs);
 
     // check the types are compatible
-    if (!trait_item_fntype->can_eq (fntype, true, false))
+    if (!trait_item_fntype->can_eq (fntype, true))
       {
 	RichLocation r (function.get_locus ());
-	r.add_range (resolved_trait_item.get_locus ());
+	r.add_range (resolved_trait_item->get_locus ());
 
 	rust_error_at (
 	  r, "method %<%s%> has an incompatible type for trait %<%s%>",
@@ -533,7 +542,7 @@ private:
     TraitReference &trait_reference,
     std::vector<TyTy::SubstitutionParamMapping> substitutions)
     : TypeCheckImplItem (parent, self), trait_reference (trait_reference),
-      resolved_trait_item (TraitItemReference::error_node ()),
+      resolved_trait_item (&TraitItemReference::error_node ()),
       substitutions (substitutions)
   {
     rust_assert (is_trait_impl_block ());
@@ -542,7 +551,7 @@ private:
   bool is_trait_impl_block () const { return !trait_reference.is_error (); }
 
   TraitReference &trait_reference;
-  TraitItemReference &resolved_trait_item;
+  TraitItemReference *resolved_trait_item;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 

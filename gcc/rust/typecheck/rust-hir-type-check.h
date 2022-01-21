@@ -251,7 +251,7 @@ public:
 
     for (auto &item : it->second)
       {
-	if (item.first->can_eq (self, false, false))
+	if (item.first->can_eq (self, false))
 	  {
 	    *mapping = item.second;
 	    return true;

@@ -25,9 +25,6 @@
 #include "rust-hir-map.h"
 #include "rust-hir-type-check.h"
 
-extern ::Backend *
-rust_get_backend ();
-
 namespace Rust {
 namespace TyTy {
 

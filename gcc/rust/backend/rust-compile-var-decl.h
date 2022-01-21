@@ -49,6 +49,7 @@ public:
 
     address_taken_context->lookup_addess_taken (
       stmt.get_mappings ().get_hirid (), &address_taken);
+
     translated_type = TyTyResolveCompile::compile (ctx, resolved_type);
     stmt.get_pattern ()->accept_vis (*this);
   }

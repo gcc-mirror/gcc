@@ -122,7 +122,7 @@ public:
 	    if (query == candidate)
 	      continue;
 
-	    if (query->can_eq (candidate, false, false))
+	    if (query->can_eq (candidate, false))
 	      possible_collision (it->second, iy->second);
 	  }
       }

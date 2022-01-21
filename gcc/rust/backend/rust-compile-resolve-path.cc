@@ -152,10 +152,10 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   // let the query system figure it out
   return query_compile (ref, lookup, final_segment, mappings, expr_locus,
 			is_qualified_path);
-} // namespace Compile
+}
 
 tree
-ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
+HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const HIR::PathIdentSegment &final_segment,
 			       const Analysis::NodeMapping &mappings,
 			       Location expr_locus, bool is_qualified_path)
@@ -194,13 +194,11 @@ ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  rust_assert (ok);
 
 	  if (!lookup->has_subsititions_defined ())
-	    return CompileInherentImplItem::Compile (self, resolved_item, ctx,
-						     true, nullptr, true,
-						     expr_locus);
+	    return CompileInherentImplItem::Compile (resolved_item, ctx, true,
+						     nullptr, true, expr_locus);
 	  else
-	    return CompileInherentImplItem::Compile (self, resolved_item, ctx,
-						     true, lookup, true,
-						     expr_locus);
+	    return CompileInherentImplItem::Compile (resolved_item, ctx, true,
+						     lookup, true, expr_locus);
 	}
       else
 	{
@@ -278,12 +276,12 @@ ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      rust_assert (ok);
 
 	      if (!lookup->has_subsititions_defined ())
-		return CompileInherentImplItem::Compile (self, impl_item, ctx,
-							 true, nullptr, true,
+		return CompileInherentImplItem::Compile (impl_item, ctx, true,
+							 nullptr, true,
 							 expr_locus);
 	      else
-		return CompileInherentImplItem::Compile (self, impl_item, ctx,
-							 true, lookup, true,
+		return CompileInherentImplItem::Compile (impl_item, ctx, true,
+							 lookup, true,
 							 expr_locus);
 
 	      lookup->set_ty_ref (impl_item->get_impl_mappings ().get_hirid ());

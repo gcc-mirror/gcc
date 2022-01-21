@@ -32,6 +32,8 @@ struct PathProbeCandidate
 {
   enum CandidateType
   {
+    ERROR,
+
     ENUM_VARIANT,
 
     IMPL_CONST,
@@ -108,6 +110,19 @@ struct PathProbeCandidate
     return type == TRAIT_ITEM_CONST || type == TRAIT_TYPE_ALIAS
 	   || type == TRAIT_FUNC;
   }
+
+  bool is_full_trait_item_candidate () const
+  {
+    return is_trait_candidate () && item.trait.impl == nullptr;
+  }
+
+  static PathProbeCandidate get_error ()
+  {
+    return PathProbeCandidate (ERROR, nullptr, Location (),
+			       ImplItemCandidate{nullptr, nullptr});
+  }
+
+  bool is_error () const { return type == ERROR; }
 };
 
 class PathProbeType : public TypeCheckBase
@@ -268,7 +283,7 @@ protected:
     bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
     rust_assert (ok);
 
-    if (!receiver->can_eq (impl_block_ty, false, false))
+    if (!receiver->can_eq (impl_block_ty, false))
       return;
 
     // lets visit the impl_item
@@ -462,6 +477,7 @@ public:
       {
 	switch (c.type)
 	  {
+	  case PathProbeCandidate::CandidateType::ERROR:
 	  case PathProbeCandidate::CandidateType::ENUM_VARIANT:
 	    gcc_unreachable ();
 	    break;
