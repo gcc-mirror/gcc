@@ -1,3 +1,12 @@
+2022-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103692
+	* gfortran.dg/pr102520.f90: Adjust error messages.
+	* gfortran.dg/pr103692.f90: New test.
+
 2022-01-17  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
