@@ -9136,6 +9136,10 @@ package body Sem_Res is
       --  Expr is an expression with compile-time-known value. This returns the
       --  literal node that reprsents that value.
 
+      -------------------
+      -- OK_For_Static --
+      -------------------
+
       function OK_For_Static (Act : Node_Id) return Boolean is
       begin
          case Nkind (Act) is
@@ -9161,6 +9165,10 @@ package body Sem_Res is
          return False;
       end OK_For_Static;
 
+      -----------------------
+      -- All_OK_For_Static --
+      -----------------------
+
       function All_OK_For_Static return Boolean is
          Act : Node_Id := First (Actions (N));
       begin
@@ -9174,6 +9182,10 @@ package body Sem_Res is
 
          return True;
       end All_OK_For_Static;
+
+      -----------------
+      -- Get_Literal --
+      -----------------
 
       function Get_Literal (Expr : Node_Id) return Node_Id is
          pragma Assert (Compile_Time_Known_Value (Expr));
@@ -9198,7 +9210,11 @@ package body Sem_Res is
          return Result;
       end Get_Literal;
 
+      --  Local variables
+
       Loc : constant Source_Ptr := Sloc (N);
+
+   --  Start of processing for Resolve_Expression_With_Actions
 
    begin
       Set_Etype (N, Typ);
