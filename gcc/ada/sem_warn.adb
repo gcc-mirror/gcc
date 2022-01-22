@@ -2007,6 +2007,11 @@ package body Sem_Warn is
                               then
                                  return True;
                               end if;
+
+                           --  Prevent the search from going too far
+
+                           elsif Is_Body_Or_Package_Declaration (Nod) then
+                              exit;
                            end if;
 
                            Nod := Parent (Nod);
