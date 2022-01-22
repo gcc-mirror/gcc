@@ -812,6 +812,17 @@ namespace __detail
       return __pos->second;
     }
 
+  // Partial specialization for unordered_map<const T, U>, see PR 104174.
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits, bool __uniq>
+    struct _Map_base<const _Key, pair<const _Key, _Val>,
+		     _Alloc, _Select1st, _Equal, _Hash,
+		     _RangeHash, _Unused, _RehashPolicy, _Traits, __uniq>
+    : _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal, _Hash,
+		_RangeHash, _Unused, _RehashPolicy, _Traits, __uniq>
+    { };
+
   /**
    *  Primary class template _Insert_base.
    *
