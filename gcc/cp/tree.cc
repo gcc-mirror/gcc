@@ -557,8 +557,7 @@ bool
 is_local_temp (tree decl)
 {
   return (VAR_P (decl) && DECL_ARTIFICIAL (decl)
-	  && !TREE_STATIC (decl)
-	  && DECL_FUNCTION_SCOPE_P (decl));
+	  && !TREE_STATIC (decl));
 }
 
 /* Set various status flags when building an AGGR_INIT_EXPR object T.  */

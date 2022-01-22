@@ -931,13 +931,9 @@ static void
 cp_genericize_target_expr (tree *stmt_p)
 {
   tree slot = TARGET_EXPR_SLOT (*stmt_p);
-  /* If TARGET_EXPR is created for some global var initializer, the slot
-     will have NULL and so is_local_temp will return false for it.  If
-     this is a ssdf, set DECL_CONTEXT now.  */
-  if (DECL_CONTEXT (slot) == NULL_TREE)
-    DECL_CONTEXT (slot) = current_function_decl;
   cp_genericize_init (&TARGET_EXPR_INITIAL (*stmt_p),
 		      TARGET_EXPR_INITIAL (*stmt_p), slot);
+  gcc_assert (!DECL_INITIAL (slot));
 }
 
 /* Genericization context.  */
