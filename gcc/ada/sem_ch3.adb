@@ -20185,20 +20185,14 @@ package body Sem_Ch3 is
          =>
             return not Comes_From_Source (Exp)
               and then
-                --  If the conversion has been rewritten, check Original_Node
+                --  If the conversion has been rewritten, check Original_Node;
+                --  otherwise, check the expression of the compiler-generated
+                --  conversion (which is a conversion that we want to ignore
+                --  for purposes of the limited-initialization restrictions).
 
-                ((Original_Node (Exp) /= Exp
-                   and then
-                     OK_For_Limited_Init_In_05 (Typ, Original_Node (Exp)))
-
-                  --  Otherwise, check the expression of the compiler-generated
-                  --  conversion (which is a conversion that we want to ignore
-                  --  for purposes of the limited-initialization restrictions).
-
-                  or else
-                    (Original_Node (Exp) = Exp
-                      and then
-                        OK_For_Limited_Init_In_05 (Typ, Expression (Exp))));
+                (if Is_Rewrite_Substitution (Exp)
+                 then OK_For_Limited_Init_In_05 (Typ, Original_Node (Exp))
+                 else OK_For_Limited_Init_In_05 (Typ, Expression (Exp)));
 
          when N_Explicit_Dereference
             | N_Indexed_Component
@@ -20547,7 +20541,7 @@ package body Sem_Ch3 is
             --  its Original_Node points to the old Discr and the access type
             --  for Discr_Type has already been created.
 
-            if Original_Node (Discr) /= Discr then
+            if Is_Rewrite_Substitution (Discr) then
                Discr_Type := Etype (Discriminant_Type (Discr));
             else
                Discr_Type :=

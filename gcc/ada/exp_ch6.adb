@@ -3932,7 +3932,7 @@ package body Exp_Ch6 is
             --  First verify the actual is internal
 
             elsif not Comes_From_Source (Prev)
-              and then Original_Node (Prev) = Prev
+              and then not Is_Rewrite_Substitution (Prev)
 
               --  Next check that the actual is a constant
 

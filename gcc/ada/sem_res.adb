@@ -2472,7 +2472,7 @@ package body Sem_Res is
       --  Declare_Expression and requires scope management.
 
       if Nkind (N) = N_Expression_With_Actions then
-         if Comes_From_Source (N) and then N = Original_Node (N) then
+         if Comes_From_Source (N) and then not Is_Rewrite_Substitution (N) then
             Resolve_Declare_Expression (N, Typ);
          else
             Resolve (Expression (N), Typ);

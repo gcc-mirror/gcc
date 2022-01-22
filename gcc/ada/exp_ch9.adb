@@ -6338,7 +6338,7 @@ package body Exp_Ch9 is
 
             when N_Expression_With_Actions =>
                --  this may occur in the case of a Count attribute reference
-               if Original_Node (N) /= N
+               if Is_Rewrite_Substitution (N)
                  and then Is_Pure_Barrier (Original_Node (N)) /= Abandon
                then
                   return Skip;

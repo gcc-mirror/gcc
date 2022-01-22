@@ -10435,7 +10435,7 @@ package body Sem_Util is
          Discrim_Value_Status := Static_Expr;
       else
          if Ada_Version >= Ada_2022 then
-            if Original_Node (Discrim_Value) /= Discrim_Value
+            if Is_Rewrite_Substitution (Discrim_Value)
                and then Nkind (Discrim_Value) = N_Type_Conversion
                and then Etype (Original_Node (Discrim_Value))
                       = Etype (Expression (Discrim_Value))

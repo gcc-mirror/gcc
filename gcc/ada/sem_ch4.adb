@@ -772,7 +772,7 @@ package body Sem_Ch4 is
                --  type.
 
                else
-                  if Original_Node (N) /= N
+                  if Is_Rewrite_Substitution (N)
                     and then Nkind (Original_Node (N)) = N_Allocator
                   then
                      declare
