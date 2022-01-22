@@ -7673,6 +7673,7 @@ package body Sem_Res is
       end if;
 
       Resolve (Expr, Typ);
+      Check_Unset_Reference (Expr);
    end Resolve_Declare_Expression;
 
    -----------------------------------------
@@ -10586,6 +10587,7 @@ package body Sem_Res is
 
    begin
       Resolve (Expr, Target_Typ);
+      Check_Unset_Reference (Expr);
 
       --  A qualified expression requires an exact match of the type, class-
       --  wide matching is not allowed. However, if the qualifying type is

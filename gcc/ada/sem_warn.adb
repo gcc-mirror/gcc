@@ -2244,13 +2244,11 @@ package body Sem_Warn is
                Check_Unset_Reference (Pref);
             end;
 
-         --  For type conversions, qualifications, or expressions with actions,
-         --  examine the expression.
+         --  Type conversions can appear in assignment statements both
+         --  as variable names and as expressions. We examine their own
+         --  expressions only when processing their parent node.
 
-         when N_Expression_With_Actions
-            | N_Qualified_Expression
-            | N_Type_Conversion
-         =>
+         when N_Type_Conversion =>
             Check_Unset_Reference (Expression (N));
 
          --  For explicit dereference, always check prefix, which will generate
