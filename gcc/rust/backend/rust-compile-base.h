@@ -60,6 +60,17 @@ protected:
 
   bool verify_array_capacities (tree ltype, tree rtype, Location ltype_locus,
 				Location rtype_locus);
+
+  tree query_compile (HirId ref, TyTy::BaseType *lookup,
+		      const HIR::PathIdentSegment &final_segment,
+		      const Analysis::NodeMapping &mappings,
+		      Location expr_locus, bool is_qualified_path);
+
+  tree resolve_adjustements (std::vector<Resolver::Adjustment> &adjustments,
+			     tree expression, Location locus);
+
+  tree resolve_deref_adjustment (Resolver::Adjustment &adjustment,
+				 tree expression, Location locus);
 };
 
 } // namespace Compile

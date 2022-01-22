@@ -251,53 +251,10 @@ public:
 
     context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
 
-    // in order to probe of the correct type paths we need the root type, which
-    // strips any references
-    const TyTy::BaseType *root = receiver_tyty->get_root ();
-
-    // https://doc.rust-lang.org/reference/expressions/method-call-expr.html
-    // method resolution is complex in rust once we start handling generics and
-    // traits. For now we only support looking up the valid name in impl blocks
-    // which is simple. There will need to be adjustments to ensure we can turn
-    // the receiver into borrowed references etc
-
-    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
-    bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
-
-    bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
-    bool probe_bounds = true;
-    bool probe_impls = !receiver_is_generic;
-    bool ignore_mandatory_trait_items = !receiver_is_generic;
-
-    auto probe_type = probe_impls ? receiver_tyty : root;
-    auto candidates
-      = PathProbeType::Probe (probe_type,
-			      expr.get_method_name ().get_segment (),
-			      probe_impls, probe_bounds,
-			      ignore_mandatory_trait_items);
-    if (candidates.empty ())
-      {
-	if (probe_impls)
-	  {
-	    candidates
-	      = PathProbeType::Probe (root,
-				      expr.get_method_name ().get_segment (),
-				      probe_impls, probe_bounds,
-				      ignore_mandatory_trait_items);
-	  }
-
-	if (candidates.empty ())
-	  {
-	    rust_error_at (expr.get_locus (),
-			   "failed to resolve the PathExprSegment to any item");
-	    return;
-	  }
-      }
-
-    std::vector<Adjustment> adjustments;
-    PathProbeCandidate *resolved_candidate
-      = MethodResolution::Select (candidates, receiver_tyty, adjustments);
-    if (resolved_candidate == nullptr)
+    auto candidate
+      = MethodResolver::Probe (receiver_tyty,
+			       expr.get_method_name ().get_segment ());
+    if (candidate.is_error ())
       {
 	rust_error_at (
 	  expr.get_method_name ().get_locus (),
@@ -308,28 +265,29 @@ public:
 
     // Get the adjusted self
     Adjuster adj (receiver_tyty);
-    TyTy::BaseType *adjusted_self = adj.adjust_type (adjustments);
+    TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
     // mark the required tree addressable
-    if (Adjuster::needs_address (adjustments))
+    if (Adjuster::needs_address (candidate.adjustments))
       AddressTakenResolver::SetAddressTaken (*expr.get_receiver ().get ());
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
-					std::move (adjustments));
+					std::move (candidate.adjustments));
 
-    TyTy::BaseType *lookup_tyty = resolved_candidate->ty;
+    PathProbeCandidate &resolved_candidate = candidate.candidate;
+    TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
     NodeId resolved_node_id
-      = resolved_candidate->is_impl_candidate ()
-	  ? resolved_candidate->item.impl.impl_item->get_impl_mappings ()
+      = resolved_candidate.is_impl_candidate ()
+	  ? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
 	      .get_nodeid ()
-	  : resolved_candidate->item.trait.item_ref->get_mappings ()
+	  : resolved_candidate.item.trait.item_ref->get_mappings ()
 	      .get_nodeid ();
 
     if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_candidate->locus);
+	r.add_range (resolved_candidate.locus);
 	rust_error_at (r, "associated impl item is not a method");
 	return;
       }
@@ -339,11 +297,13 @@ public:
     if (!fn->is_method ())
       {
 	RichLocation r (expr.get_method_name ().get_locus ());
-	r.add_range (resolved_candidate->locus);
+	r.add_range (resolved_candidate.locus);
 	rust_error_at (r, "associated function is not a method");
 	return;
       }
 
+    auto root = receiver_tyty->get_root ();
+    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
     if (root->get_kind () == TyTy::TypeKind::ADT)
       {
 	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
@@ -369,7 +329,7 @@ public:
 	    // always be at the end of the list
 
 	    auto s = fn->get_self_type ()->get_root ();
-	    rust_assert (s->can_eq (adt, false, false));
+	    rust_assert (s->can_eq (adt, false));
 	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
 	    const TyTy::ADTType *self_adt
 	      = static_cast<const TyTy::ADTType *> (s);
@@ -418,6 +378,8 @@ public:
 					 expr.get_method_name ().get_locus ());
 	  }
       }
+
+    // ADT expected but got PARAM
 
     TyTy::BaseType *function_ret_tyty
       = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self,
@@ -1320,10 +1282,6 @@ protected:
 			     HIR::OperatorExpr &expr, TyTy::BaseType *lhs,
 			     TyTy::BaseType *rhs)
   {
-    // in order to probe of the correct type paths we need the root type, which
-    // strips any references
-    const TyTy::BaseType *root = lhs->get_root ();
-
     // look up lang item for arithmetic type
     std::string associated_item_name
       = Analysis::RustLangItem::ToString (lang_item_type);
@@ -1335,48 +1293,18 @@ protected:
     if (!lang_item_defined)
       return false;
 
-    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
-    bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
-    bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
-    bool probe_bounds = true;
-    bool probe_impls = !receiver_is_generic;
-    bool ignore_mandatory_trait_items = !receiver_is_generic;
+    auto segment = HIR::PathIdentSegment (associated_item_name);
+    auto candidate
+      = MethodResolver::Probe (lhs,
+			       HIR::PathIdentSegment (associated_item_name));
 
-    auto probe_type = probe_impls ? lhs : root;
-    auto candidates
-      = PathProbeType::Probe (probe_type,
-			      HIR::PathIdentSegment (associated_item_name),
-			      probe_impls, probe_bounds,
-			      ignore_mandatory_trait_items);
-    if (candidates.empty ())
-      {
-	if (probe_impls)
-	  {
-	    candidates = PathProbeType::Probe (
-	      root, HIR::PathIdentSegment (associated_item_name), probe_impls,
-	      probe_bounds, ignore_mandatory_trait_items);
-	  }
-
-	if (candidates.empty ())
-	  return false;
-      }
-
-    // autoderef to find the relevant method
-    std::vector<Adjustment> adjustments;
-    PathProbeCandidate *resolved_candidate
-      = MethodResolution::Select (candidates, lhs, adjustments);
-    if (resolved_candidate == nullptr)
-      return false;
-
-    bool have_implementation_for_lang_item = resolved_candidate != nullptr;
+    bool have_implementation_for_lang_item = !candidate.is_error ();
     if (!have_implementation_for_lang_item)
       return false;
 
-    // mark the required tree addressable
+    // Get the adjusted self
     Adjuster adj (lhs);
-    TyTy::BaseType *receiver_adjusted_self_ty = adj.adjust_type (adjustments);
-    if (Adjuster::needs_address (adjustments))
-      AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
+    TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
     // is this the case we are recursive
     // handle the case where we are within the impl block for this lang_item
@@ -1410,8 +1338,7 @@ protected:
 		  = trait_reference->get_mappings ().get_defid ()
 		    == respective_lang_item_id;
 		bool self_is_lang_item_self
-		  = fntype->get_self_type ()->is_equal (
-		    *receiver_adjusted_self_ty);
+		  = fntype->get_self_type ()->is_equal (*adjusted_self);
 		bool recursive_operator_overload
 		  = is_lang_item_impl && self_is_lang_item_self;
 
@@ -1421,19 +1348,24 @@ protected:
 	  }
       }
 
-    // now its just like a method-call-expr
-    context->insert_receiver (expr.get_mappings ().get_hirid (), lhs);
+    // mark the required tree addressable
+    if (Adjuster::needs_address (candidate.adjustments))
+      AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
-					std::move (adjustments));
+					std::move (candidate.adjustments));
 
-    TyTy::BaseType *lookup_tyty = resolved_candidate->ty;
+    // now its just like a method-call-expr
+    context->insert_receiver (expr.get_mappings ().get_hirid (), lhs);
+
+    PathProbeCandidate &resolved_candidate = candidate.candidate;
+    TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
     NodeId resolved_node_id
-      = resolved_candidate->is_impl_candidate ()
-	  ? resolved_candidate->item.impl.impl_item->get_impl_mappings ()
+      = resolved_candidate.is_impl_candidate ()
+	  ? resolved_candidate.item.impl.impl_item->get_impl_mappings ()
 	      .get_nodeid ()
-	  : resolved_candidate->item.trait.item_ref->get_mappings ()
+	  : resolved_candidate.item.trait.item_ref->get_mappings ()
 	      .get_nodeid ();
 
     rust_assert (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF);
@@ -1441,6 +1373,8 @@ protected:
     TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
     rust_assert (fn->is_method ());
 
+    auto root = lhs->get_root ();
+    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
     if (root->get_kind () == TyTy::TypeKind::ADT)
       {
 	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
@@ -1466,7 +1400,7 @@ protected:
 	    // always be at the end of the list
 
 	    auto s = fn->get_self_type ()->get_root ();
-	    rust_assert (s->can_eq (adt, false, false));
+	    rust_assert (s->can_eq (adt, false));
 	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
 	    const TyTy::ADTType *self_adt
 	      = static_cast<const TyTy::ADTType *> (s);
@@ -1508,7 +1442,7 @@ protected:
     TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
     rust_assert (type->num_params () > 0);
     auto fnparam = type->param_at (0);
-    fnparam.second->unify (receiver_adjusted_self_ty); // typecheck the self
+    fnparam.second->unify (adjusted_self); // typecheck the self
     if (rhs == nullptr)
       {
 	rust_assert (type->num_params () == 1);

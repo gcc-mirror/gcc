@@ -29,14 +29,25 @@ class Adjustment
 public:
   enum AdjustmentType
   {
+    ERROR,
+
     IMM_REF,
     MUT_REF,
     DEREF_REF
   };
 
+  // ctor for all adjustments except derefs
   Adjustment (AdjustmentType type, const TyTy::BaseType *expected)
-    : type (type), expected (expected)
+    : Adjustment (type, expected, nullptr, nullptr, AdjustmentType::ERROR)
   {}
+
+  static Adjustment get_op_overload_deref_adjustment (
+    const TyTy::BaseType *expected, TyTy::FnType *fn, HIR::ImplItem *deref_item,
+    Adjustment::AdjustmentType requires_ref_adjustment)
+  {
+    return Adjustment (Adjustment::DEREF_REF, expected, fn, deref_item,
+		       requires_ref_adjustment);
+  }
 
   AdjustmentType get_type () const { return type; }
 
@@ -52,6 +63,8 @@ public:
   {
     switch (type)
       {
+      case AdjustmentType::ERROR:
+	return "ERROR";
       case AdjustmentType::IMM_REF:
 	return "IMM_REF";
       case AdjustmentType::MUT_REF:
@@ -63,9 +76,41 @@ public:
     return "";
   }
 
+  static Adjustment get_error () { return Adjustment{ERROR, nullptr}; }
+
+  bool is_error () const { return type == ERROR; }
+
+  bool is_deref_adjustment () const { return type == DEREF_REF; }
+
+  bool has_operator_overload () const { return deref_operator_fn != nullptr; }
+
+  TyTy::FnType *get_deref_operator_fn () const { return deref_operator_fn; }
+
+  AdjustmentType get_deref_adjustment_type () const
+  {
+    return requires_ref_adjustment;
+  }
+
+  HIR::ImplItem *get_deref_hir_item () const { return deref_item; }
+
 private:
+  Adjustment (AdjustmentType type, const TyTy::BaseType *expected,
+	      TyTy::FnType *deref_operator_fn, HIR::ImplItem *deref_item,
+	      Adjustment::AdjustmentType requires_ref_adjustment)
+    : type (type), expected (expected), deref_operator_fn (deref_operator_fn),
+      deref_item (deref_item), requires_ref_adjustment (requires_ref_adjustment)
+  {}
+
   AdjustmentType type;
   const TyTy::BaseType *expected;
+
+  // - only used for deref operator_overloads
+  //
+  // the fn that we are calling
+  TyTy::FnType *deref_operator_fn;
+  HIR::ImplItem *deref_item;
+  // operator overloads can requre a reference
+  Adjustment::AdjustmentType requires_ref_adjustment;
 };
 
 class Adjuster
@@ -73,56 +118,11 @@ class Adjuster
 public:
   Adjuster (const TyTy::BaseType *ty) : base (ty) {}
 
-  static bool needs_address (const std::vector<Adjustment> &adjustments)
-  {
-    for (auto &adjustment : adjustments)
-      {
-	switch (adjustment.get_type ())
-	  {
-	  case Adjustment::AdjustmentType::IMM_REF:
-	  case Adjustment::AdjustmentType::MUT_REF:
-	    return true;
+  TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments);
 
-	  default:
-	    break;
-	  }
-      }
+  static bool needs_address (const std::vector<Adjustment> &adjustments);
 
-    return false;
-  }
-
-  TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments)
-  {
-    TyTy::BaseType *ty = base->clone ();
-    for (auto &adjustment : adjustments)
-      {
-	switch (adjustment.get_type ())
-	  {
-	  case Adjustment::AdjustmentType::IMM_REF:
-	    ty = new TyTy::ReferenceType (ty->get_ref (),
-					  TyTy::TyVar (ty->get_ref ()),
-					  Mutability::Imm);
-	    break;
-
-	  case Adjustment::AdjustmentType::MUT_REF:
-	    ty = new TyTy::ReferenceType (ty->get_ref (),
-					  TyTy::TyVar (ty->get_ref ()),
-					  Mutability::Mut);
-	    break;
-
-	  case Adjustment::AdjustmentType::DEREF_REF:
-	    // FIXME this really needs to support deref lang-item operator
-	    // overloads
-	    rust_assert (ty->get_kind () == TyTy::TypeKind::REF);
-	    const TyTy::ReferenceType *rr
-	      = static_cast<const TyTy::ReferenceType *> (ty);
-	    ty = rr->get_base ();
-
-	    break;
-	  }
-      }
-    return ty;
-  }
+  static Adjustment try_deref_type (const TyTy::BaseType *ty);
 
 private:
   const TyTy::BaseType *base;

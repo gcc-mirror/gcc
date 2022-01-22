@@ -395,8 +395,7 @@ public:
       }
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (self_lookup, impl_item.get (), ctx,
-					compile_fns);
+      CompileInherentImplItem::Compile (impl_item.get (), ctx, compile_fns);
   }
 
   void visit (HIR::ExternBlock &extern_block) override

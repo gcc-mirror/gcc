@@ -113,15 +113,14 @@ public:
 
     bool is_trait_impl_block = !trait_reference->is_error ();
 
-    std::vector<std::reference_wrapper<const TraitItemReference>>
-      trait_item_refs;
+    std::vector<const TraitItemReference *> trait_item_refs;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
 	if (!is_trait_impl_block)
 	  TypeCheckImplItem::Resolve (&impl_block, impl_item.get (), self);
 	else
 	  {
-	    auto &trait_item_ref
+	    auto trait_item_ref
 	      = TypeCheckImplItemWithTrait::Resolve (&impl_block,
 						     impl_item.get (), self,
 						     *trait_reference,
@@ -141,12 +140,11 @@ public:
 	for (auto &trait_item_ref : trait_reference->get_trait_items ())
 	  {
 	    bool found = false;
-	    for (const TraitItemReference &implemented_trait_item :
-		 trait_item_refs)
+	    for (auto implemented_trait_item : trait_item_refs)
 	      {
 		std::string trait_item_name = trait_item_ref.get_identifier ();
 		std::string impl_item_name
-		  = implemented_trait_item.get_identifier ();
+		  = implemented_trait_item->get_identifier ();
 		found = trait_item_name.compare (impl_item_name) == 0;
 		if (found)
 		  break;

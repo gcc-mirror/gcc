@@ -528,9 +528,8 @@ HIRCompileBase::compute_address_for_trait_item (
 	  lookup_fntype = lookup_fntype->handle_substitions (mappings);
 	}
 
-      return CompileInherentImplItem::Compile (root, associated_function, ctx,
-					       true, lookup_fntype, true,
-					       locus);
+      return CompileInherentImplItem::Compile (associated_function, ctx, true,
+					       lookup_fntype, true, locus);
     }
 
   // we can only compile trait-items with a body

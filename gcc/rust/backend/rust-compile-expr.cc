@@ -23,7 +23,6 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
-#include "rust-hir-dot-operator.h"
 #include "rust-compile-pattern.h"
 #include "rust-constexpr.h"
 
@@ -574,25 +573,9 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     expr.get_mappings ().get_hirid (), &adjustments);
   rust_assert (ok);
 
-  for (auto &adjustment : *adjustments)
-    {
-      switch (adjustment.get_type ())
-	{
-	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  self = ctx->get_backend ()->address_expression (
-	    self, expr.get_receiver ()->get_locus ());
-	  break;
-
-	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  tree expected_type
-	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-	  self = ctx->get_backend ()->indirect_expression (
-	    expected_type, self, true, /* known_valid*/
-	    expr.get_receiver ()->get_locus ());
-	  break;
-	}
-    }
+  // apply adjustments for the fn call
+  self = resolve_adjustements (*adjustments, self,
+			       expr.get_receiver ()->get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -737,11 +720,10 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   if (resolved_item != nullptr)
     {
       if (!fntype->has_subsititions_defined ())
-	return CompileInherentImplItem::Compile (receiver, resolved_item, ctx,
-						 true);
+	return CompileInherentImplItem::Compile (resolved_item, ctx, true);
 
-      return CompileInherentImplItem::Compile (receiver, resolved_item, ctx,
-					       true, fntype);
+      return CompileInherentImplItem::Compile (resolved_item, ctx, true,
+					       fntype);
     }
 
   // it might be resolved to a trait item
@@ -785,24 +767,20 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
     }
   else
     {
-      std::vector<Resolver::Adjustment> adjustments;
-      Resolver::PathProbeCandidate *candidate
-	= Resolver::MethodResolution::Select (candidates, root, adjustments);
-
       // FIXME this will be a case to return error_mark_node, there is
       // an error scenario where a Trait Foo has a method Bar, but this
       // receiver does not implement this trait or has an incompatible
       // implementation and we should just return error_mark_node
-      rust_assert (candidate != nullptr);
-      rust_assert (candidate->is_impl_candidate ());
 
-      HIR::ImplItem *impl_item = candidate->item.impl.impl_item;
+      rust_assert (candidates.size () == 1);
+      auto &candidate = candidates.at (0);
+      rust_assert (candidate.is_impl_candidate ());
+
+      HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
       if (!fntype->has_subsititions_defined ())
-	return CompileInherentImplItem::Compile (receiver, impl_item, ctx,
-						 true);
+	return CompileInherentImplItem::Compile (impl_item, ctx, true);
 
-      return CompileInherentImplItem::Compile (receiver, impl_item, ctx, true,
-					       fntype);
+      return CompileInherentImplItem::Compile (impl_item, ctx, true, fntype);
     }
 }
 
@@ -868,29 +846,8 @@ CompileExpr::resolve_operator_overload (
     expr.get_mappings ().get_hirid (), &adjustments);
   rust_assert (ok);
 
-  // FIXME refactor this out
-  tree self = lhs;
-  for (auto &adjustment : *adjustments)
-    {
-      switch (adjustment.get_type ())
-	{
-	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  self
-	    = ctx->get_backend ()->address_expression (self,
-						       lhs_expr->get_locus ());
-	  break;
-
-	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  tree expected_type
-	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-	  self
-	    = ctx->get_backend ()->indirect_expression (expected_type, self,
-							true, /* known_valid*/
-							lhs_expr->get_locus ());
-	  break;
-	}
-    }
+  // apply adjustments for the fn call
+  tree self = resolve_adjustements (*adjustments, lhs, lhs_expr->get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -1221,106 +1178,82 @@ CompileExpr::array_copied_expr (Location expr_locus,
 							    expr_locus);
 }
 
-// tree
-// CompileExpr::array_copied_expr (Location expr_locus, tree array_type,
-// 				HIR::ArrayElemsCopied &elems)
-// {
-//   // create tmp for the result
-//   fncontext fnctx = ctx->peek_fn ();
-//   Location start_location = expr_locus;
-//   Location end_location = expr_locus;
-//   tree fndecl = fnctx.fndecl;
-//   tree enclosing_scope = ctx->peek_enclosing_scope ();
+tree
+HIRCompileBase::resolve_adjustements (
+  std::vector<Resolver::Adjustment> &adjustments, tree expression,
+  Location locus)
+{
+  tree e = expression;
+  for (auto &adjustment : adjustments)
+    {
+      switch (adjustment.get_type ())
+	{
+	case Resolver::Adjustment::AdjustmentType::ERROR:
+	  return error_mark_node;
 
-//   bool is_address_taken = false;
-//   tree result_var_stmt = nullptr;
-//   Bvariable *result
-//     = ctx->get_backend ()->temporary_variable (fnctx.fndecl,
-//     enclosing_scope,
-// 					       array_type, NULL,
-// 					       is_address_taken, expr_locus,
-// 					       &result_var_stmt);
-//   ctx->add_statement (result_var_stmt);
+	case Resolver::Adjustment::AdjustmentType::IMM_REF:
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  e = ctx->get_backend ()->address_expression (e, locus);
+	  break;
 
-//   // get the compiled value
-//   tree translated_expr = CompileExpr::Compile (elems.get_elem_to_copy (),
-//   ctx);
+	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	  e = resolve_deref_adjustment (adjustment, e, locus);
+	  break;
+	}
+    }
 
-//   // lets assign each index in the array
-//   TyTy::BaseType *capacity_tyty = nullptr;
-//   HirId capacity_ty_id
-//     = elems.get_num_copies_expr ()->get_mappings ().get_hirid ();
-//   bool ok = ctx->get_tyctx ()->lookup_type (capacity_ty_id,
-//   &capacity_tyty); rust_assert (ok); tree capacity_type =
-//   TyTyResolveCompile::compile (ctx, capacity_tyty); tree capacity_expr =
-//   CompileExpr::Compile (elems.get_num_copies_expr (), ctx);
+  return e;
+}
 
-//   // create a loop for this with assignments to array_index exprs
-//   tree index_type = capacity_type;
-//   Bvariable *idx
-//     = ctx->get_backend ()->temporary_variable (fnctx.fndecl,
-//     enclosing_scope,
-// 					       index_type, NULL,
-// 					       is_address_taken, expr_locus,
-// 					       &result_var_stmt);
-//   ctx->add_statement (result_var_stmt);
+tree
+HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
+					  tree expression, Location locus)
+{
+  rust_assert (adjustment.is_deref_adjustment ());
 
-//   // set index to zero
-//   tree index_lvalue = error_mark_node;
-//   tree zero = build_int_cst (index_type, 0);
-//   tree index_assignment
-//     = ctx->get_backend ()->assignment_statement (fnctx.fndecl,
-//     index_lvalue,
-// 						 zero, expr_locus);
-//   ctx->add_statement (index_assignment);
+  tree expected_type
+    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+  if (!adjustment.has_operator_overload ())
+    {
+      return ctx->get_backend ()->indirect_expression (expected_type,
+						       expression,
+						       true, /* known_valid*/
+						       locus);
+    }
 
-//   // BEGIN loop block
-//   tree loop_body = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
-// 					       start_location, end_location);
-//   ctx->push_block (loop_body);
+  TyTy::FnType *lookup = adjustment.get_deref_operator_fn ();
+  HIR::ImplItem *resolved_item = adjustment.get_deref_hir_item ();
 
-//   // loop predicate
-//   tree loop_predicate
-//     = fold_build2_loc (expr_locus.gcc_location (), GE_EXPR,
-//     boolean_type_node,
-// 		       ctx->get_backend ()->var_expression (idx, expr_locus),
-// 		       capacity_expr);
-//   tree exit_expr = fold_build1_loc (expr_locus.gcc_location (), EXIT_EXPR,
-// 				    void_type_node, loop_predicate);
-//   tree break_stmt
-//     = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
-//   ctx->add_statement (break_stmt);
+  tree fn_address = error_mark_node;
+  if (!lookup->has_subsititions_defined ())
+    fn_address = CompileInherentImplItem::Compile (resolved_item, ctx, true,
+						   nullptr, true, locus);
+  else
+    fn_address = CompileInherentImplItem::Compile (resolved_item, ctx, true,
+						   lookup, true, locus);
 
-//   // increment index
-//   tree increment
-//     = fold_build2_loc (expr_locus.gcc_location (), POSTINCREMENT_EXPR,
-// 		       index_type,
-// 		       ctx->get_backend ()->var_expression (idx, expr_locus),
-// 		       build_int_cst (index_type, 1));
+  // does it need a reference to call
+  tree adjusted_argument = expression;
+  bool needs_borrow = adjustment.get_deref_adjustment_type ()
+		      != Resolver::Adjustment::AdjustmentType::ERROR;
+  if (needs_borrow)
+    {
+      adjusted_argument
+	= ctx->get_backend ()->address_expression (expression, locus);
+    }
 
-//   // create index_assess
-//   tree index_access = ctx->get_backend ()->array_index_expression (
-//     ctx->get_backend ()->var_expression (result, expr_locus), increment,
-//     expr_locus);
+  // make the call
+  auto fncontext = ctx->peek_fn ();
+  tree deref_call
+    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
+					    {adjusted_argument}, nullptr,
+					    locus);
 
-//   // create assignment to index_access
-//   tree array_assignment
-//     = ctx->get_backend ()->assignment_statement (fnctx.fndecl,
-//     index_access,
-// 						 translated_expr, expr_locus);
-//   ctx->add_statement (array_assignment);
-
-//   // END loop block
-//   ctx->pop_block ();
-
-//   tree loop_expr = ctx->get_backend ()->loop_expression (loop_body,
-//   expr_locus); tree loop_stmt
-//     = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
-//   ctx->add_statement (loop_stmt);
-
-//   // result is the tmp
-//   return ctx->get_backend ()->var_expression (result, expr_locus);
-// }
+  // do the indirect expression
+  return ctx->get_backend ()->indirect_expression (expected_type, deref_call,
+						   true, /* known_valid*/
+						   locus);
+}
 
 } // namespace Compile
 } // namespace Rust
