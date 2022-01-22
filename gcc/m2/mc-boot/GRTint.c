@@ -357,10 +357,10 @@ static Vector FindPendingVector (unsigned int vec)
 
 static void AddFd (Selective_SetOfFd *s, int *max, int fd)
 {
-  (*max) = static_cast<int> (Max (fd, (*max)));
+  (*max) = Max (fd, (*max));
   if ((*s) == NULL)
     {
-      (*s) = static_cast<Selective_SetOfFd> (Selective_InitSet ());
+      (*s) = Selective_InitSet ();
       Selective_FdZero ((*s));
     }
   /* printf('%d, ', fd)  */
@@ -477,10 +477,10 @@ static void SubTime (unsigned int *s, unsigned int *m, Selective_Timeval a, Sele
   Assertion_Assert (bm < Microseconds);
   if (IsGreaterEqual (a, b))
     {
-      (*s) = static_cast<unsigned int> (as-bs);
+      (*s) = as-bs;
       if (am >= bm)
         {
-          (*m) = static_cast<unsigned int> (am-bm);
+          (*m) = am-bm;
           Assertion_Assert ((*m) < Microseconds);
         }
       else
@@ -557,7 +557,7 @@ static unsigned int activatePending (unsigned int untilInterrupt, RTint_Dispatch
               case time_:
                 if (untilInterrupt && ((*t) != NULL))
                   {
-                    r = static_cast<int> (Selective_GetTimeOfDay (after));
+                    r = Selective_GetTimeOfDay (after);
                     Assertion_Assert (r == 0);
                     if (Debugging)
                       {
@@ -576,7 +576,7 @@ static unsigned int activatePending (unsigned int untilInterrupt, RTint_Dispatch
                             DumpPendingQueue ();
                             libc_printf ((const char *) "time has expired calling dispatcher\\n", 37);
                           }
-                        (*t) = static_cast<Selective_Timeval> (Selective_KillTime ((*t)));  /* so we dont activate this again from our select.  */
+                        (*t) = Selective_KillTime ((*t));  /* so we dont activate this again from our select.  */
                         RTco_signal (lock);  /* so we dont activate this again from our select.  */
                         if (Debugging)
                           {
@@ -617,7 +617,7 @@ static void init (void)
 {
   COROUTINES_PROTECTION p;
 
-  lock = static_cast<int> (RTco_initSemaphore (1));
+  lock = RTco_initSemaphore (1);
   RTco_wait (lock);
   Exists = static_cast<Vector> (NULL);
   for (p=COROUTINES_UnassignedPriority; p<=7; p++)
@@ -643,7 +643,7 @@ extern "C" unsigned int RTint_InitInputVector (int fd, unsigned int pri)
       libc_printf ((const char *) "InitInputVector fd = %d priority = %d\\n", 39, fd, pri);
     }
   RTco_wait (lock);
-  v = static_cast<Vector> (FindVector (fd, static_cast<VectorType> (input)));
+  v = FindVector (fd, static_cast<VectorType> (input));
   if (v == NULL)
     {
       Storage_ALLOCATE ((void **) &v, sizeof (_T1));
@@ -679,7 +679,7 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
   Vector v;
 
   RTco_wait (lock);
-  v = static_cast<Vector> (FindVector (fd, static_cast<VectorType> (output)));
+  v = FindVector (fd, static_cast<VectorType> (output));
   if (v == NULL)
     {
       Storage_ALLOCATE ((void **) &v, sizeof (_T1));
@@ -739,8 +739,8 @@ extern "C" unsigned int RTint_InitTimeVector (unsigned int micro, unsigned int s
       v->pending = static_cast<Vector> (NULL);
       v->exists = Exists;
       v->no = VecNo;
-      v->rel = static_cast<Selective_Timeval> (Selective_InitTime (secs+DebugTime, micro));
-      v->abs_ = static_cast<Selective_Timeval> (Selective_InitTime (0, 0));
+      v->rel = Selective_InitTime (secs+DebugTime, micro);
+      v->abs_ = Selective_InitTime (0, 0);
       v->queued = FALSE;
       Exists = v;
     }
@@ -762,7 +762,7 @@ extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, uns
 
   Assertion_Assert (micro < Microseconds);
   RTco_wait (lock);
-  v = static_cast<Vector> (FindVectorNo (vec));
+  v = FindVectorNo (vec);
   if (v == NULL)
     {
       M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 286, (const char *) "ReArmTimeVector", 15, (const char *) "cannot find vector supplied", 27);
@@ -787,7 +787,7 @@ extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsi
   Vector v;
 
   RTco_wait (lock);
-  v = static_cast<Vector> (FindVectorNo (vec));
+  v = FindVectorNo (vec);
   if (v == NULL)
     {
       M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 312, (const char *) "GetTimeVector", 13, (const char *) "cannot find vector supplied", 27);
@@ -813,7 +813,7 @@ extern "C" void * RTint_AttachVector (unsigned int vec, void * p)
   void * l;
 
   RTco_wait (lock);
-  v = static_cast<Vector> (FindVectorNo (vec));
+  v = FindVectorNo (vec);
   if (v == NULL)
     {
       M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 339, (const char *) "AttachVector", 12, (const char *) "cannot find vector supplied", 27);
@@ -848,11 +848,11 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
   int r;
 
   RTco_wait (lock);
-  v = static_cast<Vector> (FindPendingVector (vec));
+  v = FindPendingVector (vec);
   if (v == NULL)
     {
       /* avoid dangling else.  */
-      v = static_cast<Vector> (FindVectorNo (vec));
+      v = FindVectorNo (vec);
       if (v == NULL)
         {
           M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 372, (const char *) "IncludeVector", 13, (const char *) "cannot find vector supplied", 27);
@@ -866,7 +866,7 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
           if ((v->type == time_) && ! v->queued)
             {
               v->queued = TRUE;
-              r = static_cast<int> (Selective_GetTimeOfDay (v->abs_));
+              r = Selective_GetTimeOfDay (v->abs_);
               Assertion_Assert (r == 0);
               Selective_GetTime (v->abs_, &s, &m);
               Assertion_Assert (m < Microseconds);
@@ -899,7 +899,7 @@ extern "C" void RTint_ExcludeVector (unsigned int vec)
   Vector u;
 
   RTco_wait (lock);
-  v = static_cast<Vector> (FindPendingVector (vec));
+  v = FindPendingVector (vec);
   if (v == NULL)
     {
       M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTint.mod", 77, 415, (const char *) "ExcludeVector", 13, (const char *) "cannot find pending vector supplied", 35);
@@ -969,7 +969,7 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
       t = NULL;
       i = NULL;
       o = NULL;
-      t = static_cast<Selective_Timeval> (Selective_InitTime (static_cast<unsigned int> (INT_MAX), 0));
+      t = Selective_InitTime (static_cast<unsigned int> (INT_MAX), 0);
       p = static_cast<unsigned int> (7);
       found = FALSE;
       while (p > pri)
@@ -1023,17 +1023,17 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
       if (((! found && (maxFd == -1)) && (i == NULL)) && (o == NULL))
         {
           /* no file descriptors to be selected upon.  */
-          t = static_cast<Selective_Timeval> (Selective_KillTime (t));
+          t = Selective_KillTime (t);
           RTco_signal (lock);
-          return;
+          return ;
         }
       else
         {
           Selective_GetTime (t, &s, &m);
           Assertion_Assert (m < Microseconds);
-          b4 = static_cast<Selective_Timeval> (Selective_InitTime (0, 0));
-          after = static_cast<Selective_Timeval> (Selective_InitTime (0, 0));
-          r = static_cast<int> (Selective_GetTimeOfDay (b4));
+          b4 = Selective_InitTime (0, 0);
+          after = Selective_InitTime (0, 0);
+          r = Selective_GetTimeOfDay (b4);
           Assertion_Assert (r == 0);
           SubTime (&s, &m, t, b4);
           Selective_SetTime (t, s, m);
@@ -1047,21 +1047,21 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
               {
                 libc_printf ((const char *) "select (.., .., .., %u.%06u)\\n", 30, s, m);
               }
-            r = static_cast<int> (RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t)));
+            r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t));
             if (r == -1)
               {
                 libc_perror ((const char *) "select", 6);
-                r = static_cast<int> (RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, NULL));
+                r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, NULL);
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select timeout argument is faulty", 33);
                   }
-                r = static_cast<int> (RTco_select (maxFd+1, reinterpret_cast<void *> (i), NULL, NULL, reinterpret_cast<void *> (t)));
+                r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), NULL, NULL, reinterpret_cast<void *> (t));
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select output fd argument is faulty", 35);
                   }
-                r = static_cast<int> (RTco_select (maxFd+1, NULL, reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t)));
+                r = RTco_select (maxFd+1, NULL, reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t));
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select input fd argument is faulty", 34);
@@ -1077,23 +1077,23 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
         {}  /* empty.  */
       if (t != NULL)
         {
-          t = static_cast<Selective_Timeval> (Selective_KillTime (t));
+          t = Selective_KillTime (t);
         }
       if (after != NULL)
         {
-          t = static_cast<Selective_Timeval> (Selective_KillTime (after));
+          t = Selective_KillTime (after);
         }
       if (b4 != NULL)
         {
-          t = static_cast<Selective_Timeval> (Selective_KillTime (b4));
+          t = Selective_KillTime (b4);
         }
       if (i != NULL)
         {
-          i = static_cast<Selective_SetOfFd> (Selective_KillSet (i));
+          i = Selective_KillSet (i);
         }
       if (o != NULL)
         {
-          o = static_cast<Selective_SetOfFd> (Selective_KillSet (o));
+          o = Selective_KillSet (o);
         }
     }
   RTco_signal (lock);

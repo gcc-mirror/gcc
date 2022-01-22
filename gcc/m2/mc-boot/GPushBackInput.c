@@ -204,7 +204,7 @@ extern "C" FIO_File PushBackInput_Open (const char *a_, unsigned int _a_high)
 
   Init ();
   StrLib_StrCopy ((const char *) a, _a_high, (char *) &FileName.array[0], MaxFileName);
-  return static_cast<FIO_File> (FIO_OpenToRead ((const char *) a, _a_high));
+  return FIO_OpenToRead ((const char *) a, _a_high);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -232,12 +232,12 @@ extern "C" char PushBackInput_GetCh (FIO_File f)
     {
       if ((FIO_EOF (f)) || (! (FIO_IsNoError (f))))
         {
-          ch = static_cast<char> (ASCII_nul);
+          ch = ASCII_nul;
         }
       else
         {
           do {
-            ch = static_cast<char> (FIO_ReadChar (f));
+            ch = FIO_ReadChar (f);
           } while (! (((ch != ASCII_cr) || (FIO_EOF (f))) || (! (FIO_IsNoError (f)))));
           if (ch == ASCII_lf)
             {
@@ -294,7 +294,7 @@ extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  l = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  l = StrLib_StrLen ((const char *) a, _a_high);
   while (l > 0)
     {
       l -= 1;
@@ -315,7 +315,7 @@ extern "C" void PushBackInput_PutStr (DynamicStrings_String s)
 {
   unsigned int i;
 
-  i = static_cast<unsigned int> (DynamicStrings_Length (s));
+  i = DynamicStrings_Length (s);
   while (i > 0)
     {
       i -= 1;
@@ -459,7 +459,7 @@ extern "C" unsigned int PushBackInput_GetColumnPosition (void)
     }
   else
     {
-      return static_cast<unsigned int> (Column-StackPtr);
+      return Column-StackPtr;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

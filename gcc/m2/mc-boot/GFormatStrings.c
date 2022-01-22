@@ -203,7 +203,7 @@ static void doDSdbEnter (void)
 
 static void doDSdbExit (DynamicStrings_String s)
 {
-  s = static_cast<DynamicStrings_String> (DynamicStrings_PopAllocationExemption (TRUE, s));
+  s = DynamicStrings_PopAllocationExemption (TRUE, s);
 }
 
 
@@ -284,17 +284,17 @@ static unsigned int toHex (char ch)
 {
   if ((ch >= '0') && (ch <= '9'))
     {
-      return static_cast<unsigned int> ( ((unsigned int) (ch))- ((unsigned int) ('0')));
+      return ((unsigned int) (ch))- ((unsigned int) ('0'));
     }
   else if ((ch >= 'A') && (ch <= 'F'))
     {
       /* avoid dangling else.  */
-      return static_cast<unsigned int> (( ((unsigned int) (ch))- ((unsigned int) ('A')))+10);
+      return ( ((unsigned int) (ch))- ((unsigned int) ('A')))+10;
     }
   else
     {
       /* avoid dangling else.  */
-      return static_cast<unsigned int> (( ((unsigned int) (ch))- ((unsigned int) ('a')))+10);
+      return ( ((unsigned int) (ch))- ((unsigned int) ('a')))+10;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -307,7 +307,7 @@ static unsigned int toHex (char ch)
 
 static unsigned int toOct (char ch)
 {
-  return static_cast<unsigned int> ( ((unsigned int) (ch))- ((unsigned int) ('0')));
+  return ((unsigned int) (ch))- ((unsigned int) ('0'));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -342,11 +342,11 @@ static DynamicStrings_String FormatString (DynamicStrings_String fmt, int *start
   DSdbEnter ();
   if ((*startpos) >= 0)
     {
-      s = static_cast<DynamicStrings_String> (PerformFormatString (fmt, startpos, in, (const unsigned char *) w, _w_high));
+      s = PerformFormatString (fmt, startpos, in, (const unsigned char *) w, _w_high);
     }
   else
     {
-      s = static_cast<DynamicStrings_String> (DynamicStrings_Dup (in));
+      s = DynamicStrings_Dup (in);
     }
   DSdbExit (s);
   return s;
@@ -381,7 +381,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
 
   while ((*startpos) >= 0)
     {
-      nextperc = static_cast<int> (DynamicStrings_Index (fmt, '%', static_cast<unsigned int> ((*startpos))));
+      nextperc = DynamicStrings_Index (fmt, '%', static_cast<unsigned int> ((*startpos)));
       afterperc = nextperc;
       if (nextperc >= 0)
         {
@@ -395,7 +395,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
             {
               left = FALSE;
             }
-          ch = static_cast<char> (DynamicStrings_char (fmt, afterperc));
+          ch = DynamicStrings_char (fmt, afterperc);
           if (ch == '0')
             {
               leader = '0';
@@ -407,9 +407,9 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
           width = static_cast<int> (0);
           while (IsDigit (ch))
             {
-              width = static_cast<int> ((width*10)+((int ) ( ((unsigned int) (ch))- ((unsigned int) ('0')))));
+              width = (width*10)+((int ) ( ((unsigned int) (ch))- ((unsigned int) ('0'))));
               afterperc += 1;
-              ch = static_cast<char> (DynamicStrings_char (fmt, afterperc));
+              ch = DynamicStrings_char (fmt, afterperc);
             }
           if ((ch == 'c') || (ch == 's'))
             {
@@ -417,12 +417,12 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               if (ch == 'c')
                 {
                   ch2 = static_cast<char> (w[0]);
-                  p = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "", 0), ch2));
+                  p = DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "", 0), ch2);
                 }
               else
                 {
                   Cast ((unsigned char *) &p, (sizeof (p)-1), (const unsigned char *) w, _w_high);
-                  p = static_cast<DynamicStrings_String> (DynamicStrings_Dup (p));
+                  p = DynamicStrings_Dup (p);
                 }
               if ((width > 0) && (((int ) (DynamicStrings_Length (p))) < width))
                 {
@@ -430,20 +430,20 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
                   if (left)
                     {
                       /* place trailing spaces after, p.  */
-                      p = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (p, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " ", 1)), static_cast<unsigned int> (width-((int ) (DynamicStrings_Length (p))))))));
+                      p = DynamicStrings_ConCat (p, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " ", 1)), static_cast<unsigned int> (width-((int ) (DynamicStrings_Length (p)))))));
                     }
                   else
                     {
                       /* padd string, p, with leading spaces.  */
-                      p = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " ", 1)), static_cast<unsigned int> (width-((int ) (DynamicStrings_Length (p))))), DynamicStrings_Mark (p)));
+                      p = DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " ", 1)), static_cast<unsigned int> (width-((int ) (DynamicStrings_Length (p))))), DynamicStrings_Mark (p));
                     }
                 }
               /* include string, p, into, in.  */
               if (nextperc > 0)
                 {
-                  in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc)));
+                  in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
                 }
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, p));
+              in = DynamicStrings_ConCat (in, p);
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -453,8 +453,8 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* avoid dangling else.  */
               afterperc += 1;
               Cast ((unsigned char *) &c, (sizeof (c)-1), (const unsigned char *) w, _w_high);
-              in = static_cast<DynamicStrings_String> (Copy (fmt, in, (*startpos), nextperc));
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, StringConvert_IntegerToString (c, static_cast<unsigned int> (width), leader, FALSE, 10, FALSE)));
+              in = Copy (fmt, in, (*startpos), nextperc);
+              in = DynamicStrings_ConCat (in, StringConvert_IntegerToString (c, static_cast<unsigned int> (width), leader, FALSE, 10, FALSE));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -464,8 +464,8 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* avoid dangling else.  */
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc)));
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 16, TRUE)));
+              in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
+              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 16, TRUE));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -475,8 +475,8 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* avoid dangling else.  */
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc)));
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 10, FALSE)));
+              in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
+              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 10, FALSE));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -488,10 +488,10 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               /* copy format string.  */
               if (nextperc > 0)
                 {
-                  in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc)));
+                  in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
                 }
               /* and the character after the %.  */
-              in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_InitStringChar (ch))));
+              in = DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_InitStringChar (ch)));
             }
           (*startpos) = afterperc;
         }
@@ -520,12 +520,12 @@ static DynamicStrings_String Copy (DynamicStrings_String fmt, DynamicStrings_Str
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (end > 0)
         {
-          in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_Slice (fmt, start, end))));
+          in = DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_Slice (fmt, start, end)));
         }
       else if (end < 0)
         {
           /* avoid dangling else.  */
-          in = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_Slice (fmt, start, 0))));
+          in = DynamicStrings_ConCat (in, DynamicStrings_Mark (DynamicStrings_Slice (fmt, start, 0)));
         }
     }
   return in;
@@ -554,17 +554,17 @@ static DynamicStrings_String HandlePercent (DynamicStrings_String fmt, DynamicSt
       prevpos = startpos;
       while ((startpos >= 0) && (prevpos < ((int ) (DynamicStrings_Length (fmt)))))
         {
-          startpos = static_cast<int> (DynamicStrings_Index (fmt, '%', static_cast<unsigned int> (startpos)));
+          startpos = DynamicStrings_Index (fmt, '%', static_cast<unsigned int> (startpos));
           if (startpos >= prevpos)
             {
               if (startpos > 0)
                 {
-                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Slice (fmt, prevpos, startpos))));
+                  s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Slice (fmt, prevpos, startpos)));
                 }
               startpos += 1;
               if ((DynamicStrings_char (fmt, startpos)) == '%')
                 {
-                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (s, '%'));
+                  s = DynamicStrings_ConCatChar (s, '%');
                   startpos += 1;
                 }
               prevpos = startpos;
@@ -572,7 +572,7 @@ static DynamicStrings_String HandlePercent (DynamicStrings_String fmt, DynamicSt
         }
       if (prevpos < ((int ) (DynamicStrings_Length (fmt))))
         {
-          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Slice (fmt, prevpos, 0))));
+          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Slice (fmt, prevpos, 0)));
         }
       return s;
     }
@@ -591,8 +591,8 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf0 (DynamicStrings_String f
   DynamicStrings_String s;
 
   DSdbEnter ();
-  fmt = static_cast<DynamicStrings_String> (FormatStrings_HandleEscape (fmt));
-  s = static_cast<DynamicStrings_String> (HandlePercent (fmt, DynamicStrings_InitString ((const char *) "", 0), 0));
+  fmt = FormatStrings_HandleEscape (fmt);
+  s = HandlePercent (fmt, DynamicStrings_InitString ((const char *) "", 0), 0);
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -615,10 +615,10 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String f
   memcpy (w, w_, _w_high+1);
 
   DSdbEnter ();
-  fmt = static_cast<DynamicStrings_String> (FormatStrings_HandleEscape (fmt));
+  fmt = FormatStrings_HandleEscape (fmt);
   i = static_cast<int> (0);
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w, _w_high));
-  s = static_cast<DynamicStrings_String> (HandlePercent (fmt, s, i));
+  s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w, _w_high);
+  s = HandlePercent (fmt, s, i);
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -642,11 +642,11 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf2 (DynamicStrings_String f
   memcpy (w2, w2_, _w2_high+1);
 
   DSdbEnter ();
-  fmt = static_cast<DynamicStrings_String> (FormatStrings_HandleEscape (fmt));
+  fmt = FormatStrings_HandleEscape (fmt);
   i = static_cast<int> (0);
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high));
-  s = static_cast<DynamicStrings_String> (HandlePercent (fmt, s, i));
+  s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
+  s = HandlePercent (fmt, s, i);
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -672,12 +672,12 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf3 (DynamicStrings_String f
   memcpy (w3, w3_, _w3_high+1);
 
   DSdbEnter ();
-  fmt = static_cast<DynamicStrings_String> (FormatStrings_HandleEscape (fmt));
+  fmt = FormatStrings_HandleEscape (fmt);
   i = static_cast<int> (0);
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high));
-  s = static_cast<DynamicStrings_String> (HandlePercent (fmt, s, i));
+  s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high);
+  s = HandlePercent (fmt, s, i);
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -705,13 +705,13 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String f
   memcpy (w4, w4_, _w4_high+1);
 
   DSdbEnter ();
-  fmt = static_cast<DynamicStrings_String> (FormatStrings_HandleEscape (fmt));
+  fmt = FormatStrings_HandleEscape (fmt);
   i = static_cast<int> (0);
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high));
-  s = static_cast<DynamicStrings_String> (FormatString (fmt, &i, s, (const unsigned char *) w4, _w4_high));
-  s = static_cast<DynamicStrings_String> (HandlePercent (fmt, s, i));
+  s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high);
+  s = FormatString (fmt, &i, s, (const unsigned char *) w4, _w4_high);
+  s = HandlePercent (fmt, s, i);
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -735,57 +735,57 @@ extern "C" DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_Stri
   unsigned char b;
 
   DSdbEnter ();
-  d = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  i = static_cast<int> (DynamicStrings_Index (s, '\\', 0));
+  d = DynamicStrings_InitString ((const char *) "", 0);
+  i = DynamicStrings_Index (s, '\\', 0);
   j = static_cast<int> (0);
   while (i >= 0)
     {
       if (i > 0)
         {
           /* initially i might be zero which means the end of the string, which is not what we want.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Slice (s, j, i)));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Slice (s, j, i));
         }
-      ch = static_cast<char> (DynamicStrings_char (s, i+1));
+      ch = DynamicStrings_char (s, i+1);
       if (ch == 'a')
         {
           /* requires a bell.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_bel))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_bel)));
         }
       else if (ch == 'b')
         {
           /* avoid dangling else.  */
           /* requires a backspace.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_bs))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_bs)));
         }
       else if (ch == 'e')
         {
           /* avoid dangling else.  */
           /* requires a escape.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_esc))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_esc)));
         }
       else if (ch == 'f')
         {
           /* avoid dangling else.  */
           /* requires a formfeed.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_ff))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_ff)));
         }
       else if (ch == 'n')
         {
           /* avoid dangling else.  */
           /* requires a newline.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_nl))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_nl)));
         }
       else if (ch == 'r')
         {
           /* avoid dangling else.  */
           /* requires a carriage return.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_cr))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_cr)));
         }
       else if (ch == 't')
         {
           /* avoid dangling else.  */
           /* requires a tab.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_tab))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ASCII_tab)));
         }
       else if (ch == 'x')
         {
@@ -798,7 +798,7 @@ extern "C" DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_Stri
               if (isHex (DynamicStrings_char (s, i+1)))
                 {
                   b = (unsigned char ) ((((unsigned int ) (b))*0x010)+(toHex (DynamicStrings_char (s, i+1))));
-                  d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar ((char ) (b)))));
+                  d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar ((char ) (b))));
                 }
             }
         }
@@ -816,20 +816,20 @@ extern "C" DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_Stri
                   b = (unsigned char ) ((((unsigned int ) (b))*8)+(toOct (DynamicStrings_char (s, i+1))));
                 }
             }
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar ((char ) (b)))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar ((char ) (b))));
         }
       else
         {
           /* avoid dangling else.  */
           /* copy escaped character.  */
-          d = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ch))));
+          d = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_InitStringChar (ch)));
         }
       i += 2;
       j = i;
-      i = static_cast<int> (DynamicStrings_Index (s, '\\', (unsigned int ) (i)));
+      i = DynamicStrings_Index (s, '\\', (unsigned int ) (i));
     }
   /* s := Assign(s, Mark(ConCat(d, Mark(Slice(s, j, 0))))) ;    dont Mark(s) in the Slice as we Assign contents  */
-  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), j, 0))));
+  s = DynamicStrings_ConCat (d, DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), j, 0)));
   DSdbExit (s);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */

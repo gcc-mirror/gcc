@@ -60,7 +60,7 @@ extern "C" void Storage_REALLOCATE (void * *a, unsigned int Size)
 
 extern "C" unsigned int Storage_Available (unsigned int Size)
 {
-  return static_cast<unsigned int> (SysStorage_Available (Size));
+  return SysStorage_Available (Size);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

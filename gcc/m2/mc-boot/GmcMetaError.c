@@ -396,17 +396,17 @@ static void internalFormat (DynamicStrings_String s, int i, const char *m_, unsi
   /* make a local copy of each unbounded array.  */
   memcpy (m, m_, _m_high+1);
 
-  e = static_cast<mcError_error> (mcError_newError (mcLexBuf_getTokenNo ()));
-  s = static_cast<DynamicStrings_String> (SFIO_WriteS (FIO_StdOut, s));
+  e = mcError_newError (mcLexBuf_getTokenNo ());
+  s = SFIO_WriteS (FIO_StdOut, s);
   FIO_WriteLine (FIO_StdOut);
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_KillString (s);
   if (i > 0)
     {
       i -= 1;
     }
-  s = static_cast<DynamicStrings_String> (DynamicStrings_Mult (DynamicStrings_InitString ((const char *) " ", 1), static_cast<unsigned int> (i)));
-  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (s, '^'));
-  s = static_cast<DynamicStrings_String> (SFIO_WriteS (FIO_StdOut, s));
+  s = DynamicStrings_Mult (DynamicStrings_InitString ((const char *) " ", 1), static_cast<unsigned int> (i));
+  s = DynamicStrings_ConCatChar (s, '^');
+  s = SFIO_WriteS (FIO_StdOut, s);
   FIO_WriteLine (FIO_StdOut);
   mcError_internalError ((const char *) m, _m_high, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcMetaError.mod", 77, 97);
 }
@@ -475,7 +475,7 @@ static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, Dyn
       (*quotes) = FALSE;
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &c, (sizeof (c)-1));
-      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' ')));
+      return DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' '));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -499,30 +499,30 @@ static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, Dyna
       (*quotes) = FALSE;
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &c, (sizeof (c)-1));
-      o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' ')));
+      o = DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' '));
       if (((c % 100) >= 11) && ((c % 100) <= 13))
         {
-          o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "th", 2))));
+          o = DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "th", 2)));
         }
 
       else {
         switch (c % 10)
           {
             case 1:
-              o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "st", 2))));
+              o = DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "st", 2)));
               break;
 
             case 2:
-              o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "nd", 2))));
+              o = DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "nd", 2)));
               break;
 
             case 3:
-              o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "rd", 2))));
+              o = DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "rd", 2)));
               break;
 
 
             default:
-              o = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "th", 2))));
+              o = DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "th", 2)));
               break;
           }
       }
@@ -549,7 +549,7 @@ static DynamicStrings_String doAscii (unsigned int bol, varargs_vararg sym, Dyna
     }
   else
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)))));
+      return DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n))));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -575,18 +575,18 @@ static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, Dynam
       if (decl_isZtype (n))
         {
           (*quotes) = FALSE;
-          return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the ZType", 9))));
+          return DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the ZType", 9)));
         }
       else if (decl_isRtype (n))
         {
           /* avoid dangling else.  */
           (*quotes) = FALSE;
-          return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the RType", 9))));
+          return DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the RType", 9)));
         }
       else if ((decl_getSymName (n)) != nameKey_NulName)
         {
           /* avoid dangling else.  */
-          return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)))));
+          return DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n))));
         }
       else
         {
@@ -617,17 +617,17 @@ static DynamicStrings_String doQualified (unsigned int bol, varargs_vararg sym, 
     }
   else
     {
-      s = static_cast<decl_node> (decl_getScope (n));
-      mod = static_cast<varargs_vararg> (varargs_start1 ((const unsigned char *) &s, (sizeof (s)-1)));
+      s = decl_getScope (n);
+      mod = varargs_start1 ((const unsigned char *) &s, (sizeof (s)-1));
       if ((decl_isDef (s)) && (decl_isExported (n)))
         {
-          o = static_cast<DynamicStrings_String> (x (o, doAscii (0, mod, o)));
-          o = static_cast<DynamicStrings_String> (x (o, DynamicStrings_ConCatChar (o, '.')));
-          o = static_cast<DynamicStrings_String> (x (o, DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n))))));
+          o = x (o, doAscii (0, mod, o));
+          o = x (o, DynamicStrings_ConCatChar (o, '.'));
+          o = x (o, DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)))));
         }
       else
         {
-          o = static_cast<DynamicStrings_String> (x (o, doAscii (bol, sym, o)));
+          o = x (o, doAscii (bol, sym, o));
         }
       varargs_end (&mod);
       return o;
@@ -655,10 +655,10 @@ static DynamicStrings_String doType (unsigned int bol, varargs_vararg *sym, Dyna
     }
   else
     {
-      n = static_cast<decl_node> (decl_skipType (decl_getType (n)));
+      n = decl_skipType (decl_getType (n));
       varargs_next ((*sym), bol);
       varargs_replace ((*sym), (unsigned char *) &n, (sizeof (n)-1));
-      return static_cast<DynamicStrings_String> (x (o, doAscii (bol, (*sym), o)));
+      return x (o, doAscii (bol, (*sym), o));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -682,7 +682,7 @@ static DynamicStrings_String doSkipType (unsigned int bol, varargs_vararg *sym, 
     }
   else
     {
-      n = static_cast<decl_node> (decl_skipType (decl_getType (n)));
+      n = decl_skipType (decl_getType (n));
       varargs_next ((*sym), bol);
       varargs_replace ((*sym), (unsigned char *) &n, (sizeof (n)-1));
       if ((decl_getSymName (n)) == nameKey_NulName)
@@ -691,7 +691,7 @@ static DynamicStrings_String doSkipType (unsigned int bol, varargs_vararg *sym, 
         }
       else
         {
-          return static_cast<DynamicStrings_String> (x (o, doAscii (bol, (*sym), o)));
+          return x (o, doAscii (bol, (*sym), o));
         }
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -716,7 +716,7 @@ static DynamicStrings_String doKey (unsigned int bol, varargs_vararg sym, Dynami
     {
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &n, (sizeof (n)-1));
-      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      return DynamicStrings_ConCat (o, DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -738,21 +738,21 @@ static mcError_error doError (mcError_error e, errorType t, unsigned int tok)
           }
         else
           {
-            e = static_cast<mcError_error> (mcError_chainError (tok, e));
+            e = mcError_chainError (tok, e);
           }
         break;
 
       case newerror:
         if (e == NULL)
           {
-            e = static_cast<mcError_error> (mcError_newError (tok));
+            e = mcError_newError (tok);
           }
         break;
 
       case newwarning:
         if (e == NULL)
           {
-            e = static_cast<mcError_error> (mcError_newWarning (tok));
+            e = mcError_newWarning (tok);
           }
         break;
 
@@ -779,7 +779,7 @@ static mcError_error doDeclaredDef (mcError_error e, errorType t, unsigned int b
     {
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &n, (sizeof (n)-1));
-      e = static_cast<mcError_error> (doError (e, t, decl_getDeclaredDef (n)));
+      e = doError (e, t, decl_getDeclaredDef (n));
     }
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -799,7 +799,7 @@ static mcError_error doDeclaredMod (mcError_error e, errorType t, unsigned int b
     {
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &n, (sizeof (n)-1));
-      e = static_cast<mcError_error> (doError (e, t, decl_getDeclaredMod (n)));
+      e = doError (e, t, decl_getDeclaredMod (n));
     }
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -819,7 +819,7 @@ static mcError_error doUsed (mcError_error e, errorType t, unsigned int bol, var
     {
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &n, (sizeof (n)-1));
-      e = static_cast<mcError_error> (doError (e, t, decl_getFirstUsed (n)));
+      e = doError (e, t, decl_getFirstUsed (n));
     }
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -835,18 +835,18 @@ static DynamicStrings_String ConCatWord (DynamicStrings_String a, DynamicStrings
 {
   if (((DynamicStrings_Length (a)) == 1) && ((DynamicStrings_char (a, 0)) == 'a'))
     {
-      a = static_cast<DynamicStrings_String> (x (a, DynamicStrings_ConCatChar (a, 'n')));
+      a = x (a, DynamicStrings_ConCatChar (a, 'n'));
     }
   else if ((((DynamicStrings_Length (a)) > 1) && ((DynamicStrings_char (a, -1)) == 'a')) && (isWhite (DynamicStrings_char (a, -2))))
     {
       /* avoid dangling else.  */
-      a = static_cast<DynamicStrings_String> (x (a, DynamicStrings_ConCatChar (a, 'n')));
+      a = x (a, DynamicStrings_ConCatChar (a, 'n'));
     }
   if (((DynamicStrings_Length (a)) > 0) && (! (isWhite (DynamicStrings_char (a, -1)))))
     {
-      a = static_cast<DynamicStrings_String> (x (a, DynamicStrings_ConCatChar (a, ' ')));
+      a = x (a, DynamicStrings_ConCatChar (a, ' '));
     }
-  return static_cast<DynamicStrings_String> (x (a, DynamicStrings_ConCat (a, b)));
+  return x (a, DynamicStrings_ConCat (a, b));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -860,7 +860,7 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o)
 {
   if (decl_isLiteral (n))
     {
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "literal", 7))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "literal", 7)));
     }
   else if (decl_isConstSet (n))
     {
@@ -870,109 +870,109 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o)
    THEN
       RETURN( ConCatWord (o, Mark (InitString ('constructor'))) )
   */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "constant set", 12))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "constant set", 12)));
     }
   else if (decl_isConst (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "constant", 8))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "constant", 8)));
     }
   else if (decl_isArray (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "array", 5))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "array", 5)));
     }
   else if (decl_isVar (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "variable", 8))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "variable", 8)));
     }
   else if (decl_isEnumeration (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "enumeration type", 16))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "enumeration type", 16)));
     }
   else if (decl_isEnumerationField (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "enumeration field", 17))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "enumeration field", 17)));
     }
   else if (decl_isUnbounded (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "unbounded parameter", 19))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "unbounded parameter", 19)));
     }
   else if (decl_isProcType (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "procedure type", 14))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "procedure type", 14)));
     }
   else if (decl_isProcedure (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "procedure", 9))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "procedure", 9)));
     }
   else if (decl_isPointer (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "pointer", 7))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "pointer", 7)));
     }
   else if (decl_isParameter (n))
     {
       /* avoid dangling else.  */
       if (decl_isVarParam (n))
         {
-          return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "var parameter", 13))));
+          return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "var parameter", 13)));
         }
       else
         {
-          return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "parameter", 9))));
+          return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "parameter", 9)));
         }
     }
   else if (decl_isType (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "type", 4))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "type", 4)));
     }
   else if (decl_isRecord (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "record", 6))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "record", 6)));
     }
   else if (decl_isRecordField (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "record field", 12))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "record field", 12)));
     }
   else if (decl_isVarient (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "varient record", 14))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "varient record", 14)));
     }
   else if (decl_isModule (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "module", 6))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "module", 6)));
     }
   else if (decl_isDef (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "definition module", 17))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "definition module", 17)));
     }
   else if (decl_isImp (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "implementation module", 21))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "implementation module", 21)));
     }
   else if (decl_isSet (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "set", 3))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "set", 3)));
     }
   else if (decl_isSubrange (n))
     {
       /* avoid dangling else.  */
-      return static_cast<DynamicStrings_String> (ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "subrange", 8))));
+      return ConCatWord (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "subrange", 8)));
     }
   else
     {
@@ -996,7 +996,7 @@ static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, Dynam
     {
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &n, (sizeof (n)-1));
-      o = static_cast<DynamicStrings_String> (symDesc (n, o));
+      o = symDesc (n, o);
       if ((DynamicStrings_Length (o)) > 0)
         {
           (*quotes) = FALSE;
@@ -1018,16 +1018,16 @@ static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_
     {
       if (! (isWhite (DynamicStrings_char (r, -1))))
         {
-          r = static_cast<DynamicStrings_String> (x (r, DynamicStrings_ConCatChar (r, ' ')));
+          r = x (r, DynamicStrings_ConCatChar (r, ' '));
         }
       if (quotes)
         {
-          r = static_cast<DynamicStrings_String> (x (r, DynamicStrings_ConCatChar (r, '\'')));
+          r = x (r, DynamicStrings_ConCatChar (r, '\''));
         }
-      r = static_cast<DynamicStrings_String> (x (r, DynamicStrings_ConCat (r, o)));
+      r = x (r, DynamicStrings_ConCat (r, o));
       if (quotes)
         {
-          r = static_cast<DynamicStrings_String> (x (r, DynamicStrings_ConCatChar (r, '\'')));
+          r = x (r, DynamicStrings_ConCatChar (r, '\''));
         }
     }
   return r;
@@ -1046,55 +1046,55 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
   varargs_vararg c;
   unsigned int quotes;
 
-  c = static_cast<varargs_vararg> (varargs_copy (sym));
-  o = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  c = varargs_copy (sym);
+  o = DynamicStrings_InitString ((const char *) "", 0);
   quotes = TRUE;
   while (((*i) < l) && ((DynamicStrings_char (s, (*i))) != '}'))
     {
       switch (DynamicStrings_char (s, (*i)))
         {
           case 'a':
-            o = static_cast<DynamicStrings_String> (x (o, doName (bol, sym, o, &quotes)));
+            o = x (o, doName (bol, sym, o, &quotes));
             break;
 
           case 'q':
-            o = static_cast<DynamicStrings_String> (x (o, doQualified (bol, sym, o)));
+            o = x (o, doQualified (bol, sym, o));
             break;
 
           case 't':
-            o = static_cast<DynamicStrings_String> (x (o, doType (bol, &sym, o)));
+            o = x (o, doType (bol, &sym, o));
             break;
 
           case 'd':
-            o = static_cast<DynamicStrings_String> (x (o, doDesc (bol, sym, o, &quotes)));
+            o = x (o, doDesc (bol, sym, o, &quotes));
             break;
 
           case 'n':
-            o = static_cast<DynamicStrings_String> (x (o, doNumber (bol, sym, o, &quotes)));
+            o = x (o, doNumber (bol, sym, o, &quotes));
             break;
 
           case 'N':
-            o = static_cast<DynamicStrings_String> (x (o, doCount (bol, sym, o, &quotes)));
+            o = x (o, doCount (bol, sym, o, &quotes));
             break;
 
           case 's':
-            o = static_cast<DynamicStrings_String> (x (o, doSkipType (bol, &sym, o)));
+            o = x (o, doSkipType (bol, &sym, o));
             break;
 
           case 'k':
-            o = static_cast<DynamicStrings_String> (x (o, doKey (bol, sym, o)));
+            o = x (o, doKey (bol, sym, o));
             break;
 
           case 'D':
-            (*e) = static_cast<mcError_error> (doDeclaredDef ((*e), (*t), bol, sym));
+            (*e) = doDeclaredDef ((*e), (*t), bol, sym);
             break;
 
           case 'M':
-            (*e) = static_cast<mcError_error> (doDeclaredMod ((*e), (*t), bol, sym));
+            (*e) = doDeclaredMod ((*e), (*t), bol, sym);
             break;
 
           case 'U':
-            (*e) = static_cast<mcError_error> (doUsed ((*e), (*t), bol, sym));
+            (*e) = doUsed ((*e), (*t), bol, sym);
             break;
 
           case 'E':
@@ -1107,10 +1107,10 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
 
           case ':':
             varargs_end (&sym);
-            sym = static_cast<varargs_vararg> (varargs_copy (c));
+            sym = varargs_copy (c);
             then (e, t, r, s, sym, i, l, o, positive);
-            o = static_cast<DynamicStrings_String> (DynamicStrings_KillString (o));
-            o = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+            o = DynamicStrings_KillString (o);
+            o = DynamicStrings_InitString ((const char *) "", 0);
             if (((*i) < l) && ((DynamicStrings_char (s, (*i))) != '}'))
               {
                 internalFormat (s, (*i), (const char *) "expecting to see }", 18);
@@ -1125,8 +1125,8 @@ static void op (mcError_error *e, errorType *t, DynamicStrings_String *r, Dynami
         }
       (*i) += 1;
     }
-  (*r) = static_cast<DynamicStrings_String> (x ((*r), addQuoted ((*r), o, quotes)));
-  o = static_cast<DynamicStrings_String> (DynamicStrings_KillString (o));
+  (*r) = x ((*r), addQuoted ((*r), o, quotes));
+  o = DynamicStrings_KillString (o);
 }
 
 
@@ -1196,7 +1196,7 @@ static void percent (DynamicStrings_String *r, DynamicStrings_String s, varargs_
       (*i) += 1;
       if ((*i) < l)
         {
-          (*r) = static_cast<DynamicStrings_String> (x ((*r), DynamicStrings_ConCatChar ((*r), DynamicStrings_char (s, (*i)))));
+          (*r) = x ((*r), DynamicStrings_ConCatChar ((*r), DynamicStrings_char (s, (*i))));
           (*i) += 1;
         }
     }
@@ -1269,14 +1269,14 @@ static void ebnf (mcError_error *e, errorType *t, DynamicStrings_String *r, Dyna
             break;
 
           case '}':
-            return;
+            return ;
             break;
 
 
           default:
             if ((((isWhite (DynamicStrings_char (s, (*i)))) && ((DynamicStrings_Length ((*r))) > 0)) && (! (isWhite (DynamicStrings_char ((*r), -1))))) || (! (isWhite (DynamicStrings_char (s, (*i))))))
               {
-                (*r) = static_cast<DynamicStrings_String> (x ((*r), DynamicStrings_ConCatChar ((*r), DynamicStrings_char (s, (*i)))));
+                (*r) = x ((*r), DynamicStrings_ConCatChar ((*r), DynamicStrings_char (s, (*i))));
               }
             break;
         }
@@ -1295,11 +1295,11 @@ static DynamicStrings_String doFormat (mcError_error *e, errorType *t, DynamicSt
   int i;
   int l;
 
-  r = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  r = DynamicStrings_InitString ((const char *) "", 0);
   i = static_cast<int> (0);
   l = static_cast<int> (DynamicStrings_Length (s));
   ebnf (e, t, &r, s, sym, &i, l);
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_KillString (s);
   return r;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1325,16 +1325,16 @@ static void wrapErrors (unsigned int tok, const char *m1_, unsigned int _m1_high
 
   e = static_cast<mcError_error> (NULL);
   t = newerror;
-  str = static_cast<DynamicStrings_String> (doFormat (&e, &t, DynamicStrings_InitString ((const char *) m1, _m1_high), sym));
-  e = static_cast<mcError_error> (doError (e, t, tok));
+  str = doFormat (&e, &t, DynamicStrings_InitString ((const char *) m1, _m1_high), sym);
+  e = doError (e, t, tok);
   mcError_errorString (e, str);
   f = e;
   t = chained;
-  str = static_cast<DynamicStrings_String> (doFormat (&f, &t, DynamicStrings_InitString ((const char *) m2, _m2_high), sym));
+  str = doFormat (&f, &t, DynamicStrings_InitString ((const char *) m2, _m2_high), sym);
   if (e == f)
     {
       t = chained;
-      f = static_cast<mcError_error> (doError (e, t, tok));
+      f = doError (e, t, tok);
     }
   mcError_errorString (f, str);
 }
@@ -1604,7 +1604,7 @@ extern "C" void mcMetaError_metaErrorsT1 (unsigned int tok, const char *m1_, uns
   memcpy (m2, m2_, _m2_high+1);
   memcpy (s, s_, _s_high+1);
 
-  sym = static_cast<varargs_vararg> (varargs_start1 ((const unsigned char *) s, _s_high));
+  sym = varargs_start1 ((const unsigned char *) s, _s_high);
   wrapErrors (tok, (const char *) m1, _m1_high, (const char *) m2, _m2_high, sym);
   varargs_end (&sym);
 }
@@ -1628,7 +1628,7 @@ extern "C" void mcMetaError_metaErrorsT2 (unsigned int tok, const char *m1_, uns
   memcpy (s1, s1_, _s1_high+1);
   memcpy (s2, s2_, _s2_high+1);
 
-  sym = static_cast<varargs_vararg> (varargs_start2 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high));
+  sym = varargs_start2 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high);
   wrapErrors (tok, (const char *) m1, _m1_high, (const char *) m2, _m2_high, sym);
   varargs_end (&sym);
 }
@@ -1654,7 +1654,7 @@ extern "C" void mcMetaError_metaErrorsT3 (unsigned int tok, const char *m1_, uns
   memcpy (s2, s2_, _s2_high+1);
   memcpy (s3, s3_, _s3_high+1);
 
-  sym = static_cast<varargs_vararg> (varargs_start3 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high));
+  sym = varargs_start3 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high);
   wrapErrors (tok, (const char *) m1, _m1_high, (const char *) m2, _m2_high, sym);
   varargs_end (&sym);
 }
@@ -1682,7 +1682,7 @@ extern "C" void mcMetaError_metaErrorsT4 (unsigned int tok, const char *m1_, uns
   memcpy (s3, s3_, _s3_high+1);
   memcpy (s4, s4_, _s4_high+1);
 
-  sym = static_cast<varargs_vararg> (varargs_start4 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high, (const unsigned char *) s4, _s4_high));
+  sym = varargs_start4 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high, (const unsigned char *) s4, _s4_high);
   wrapErrors (tok, (const char *) m1, _m1_high, (const char *) m2, _m2_high, sym);
   varargs_end (&sym);
 }
@@ -1776,10 +1776,10 @@ extern "C" void mcMetaError_metaErrorStringT1 (unsigned int tok, DynamicStrings_
   memcpy (s, s_, _s_high+1);
 
   e = static_cast<mcError_error> (NULL);
-  sym = static_cast<varargs_vararg> (varargs_start1 ((const unsigned char *) s, _s_high));
+  sym = varargs_start1 ((const unsigned char *) s, _s_high);
   t = newerror;
-  str = static_cast<DynamicStrings_String> (doFormat (&e, &t, m, sym));
-  e = static_cast<mcError_error> (doError (e, t, tok));
+  str = doFormat (&e, &t, m, sym);
+  e = doError (e, t, tok);
   mcError_errorString (e, str);
   varargs_end (&sym);
 }
@@ -1803,10 +1803,10 @@ extern "C" void mcMetaError_metaErrorStringT2 (unsigned int tok, DynamicStrings_
   memcpy (s2, s2_, _s2_high+1);
 
   e = static_cast<mcError_error> (NULL);
-  sym = static_cast<varargs_vararg> (varargs_start2 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high));
+  sym = varargs_start2 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high);
   t = newerror;
-  str = static_cast<DynamicStrings_String> (doFormat (&e, &t, m, sym));
-  e = static_cast<mcError_error> (doError (e, t, tok));
+  str = doFormat (&e, &t, m, sym);
+  e = doError (e, t, tok);
   mcError_errorString (e, str);
   varargs_end (&sym);
 }
@@ -1832,10 +1832,10 @@ extern "C" void mcMetaError_metaErrorStringT3 (unsigned int tok, DynamicStrings_
   memcpy (s3, s3_, _s3_high+1);
 
   e = static_cast<mcError_error> (NULL);
-  sym = static_cast<varargs_vararg> (varargs_start3 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high));
+  sym = varargs_start3 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high);
   t = newerror;
-  str = static_cast<DynamicStrings_String> (doFormat (&e, &t, m, sym));
-  e = static_cast<mcError_error> (doError (e, t, tok));
+  str = doFormat (&e, &t, m, sym);
+  e = doError (e, t, tok);
   mcError_errorString (e, str);
   varargs_end (&sym);
 }
@@ -1863,10 +1863,10 @@ extern "C" void mcMetaError_metaErrorStringT4 (unsigned int tok, DynamicStrings_
   memcpy (s4, s4_, _s4_high+1);
 
   e = static_cast<mcError_error> (NULL);
-  sym = static_cast<varargs_vararg> (varargs_start4 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high, (const unsigned char *) s4, _s4_high));
+  sym = varargs_start4 ((const unsigned char *) s1, _s1_high, (const unsigned char *) s2, _s2_high, (const unsigned char *) s3, _s3_high, (const unsigned char *) s4, _s4_high);
   t = newerror;
-  str = static_cast<DynamicStrings_String> (doFormat (&e, &t, m, sym));
-  e = static_cast<mcError_error> (doError (e, t, tok));
+  str = doFormat (&e, &t, m, sym);
+  e = doError (e, t, tok);
   mcError_errorString (e, str);
   varargs_end (&sym);
 }

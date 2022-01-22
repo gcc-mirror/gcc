@@ -80,7 +80,7 @@ static void removeFiles (void);
 
 static DynamicStrings_String makeTempFile (DynamicStrings_String ext)
 {
-  return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "/tmp/mctemp.", 12), ext));
+  return DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "/tmp/mctemp.", 12), ext);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -140,16 +140,16 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
   DynamicStrings_String commandLine;
   unsigned int pos;
 
-  command = static_cast<DynamicStrings_String> (mcOptions_getCppCommandLine ());
+  command = mcOptions_getCppCommandLine ();
   if (DynamicStrings_EqualArray (command, (const char *) "", 0))
     {
       return filename;
     }
   else
     {
-      tempfile = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (reinterpret_cast<void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3)))));
-      commandLine = static_cast<DynamicStrings_String> (DynamicStrings_Dup (command));
-      commandLine = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (commandLine), ' '), filename), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " -o ", 4))), tempfile));
+      tempfile = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> (makeTempFile (DynamicStrings_InitString ((const char *) "cpp", 3))));
+      commandLine = DynamicStrings_Dup (command);
+      commandLine = DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (commandLine), ' '), filename), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " -o ", 4))), tempfile);
       if (mcOptions_getVerbose ())
         {
           mcPrintf_fprintf1 (FIO_StdOut, (const char *) "%s\\n", 4, (const unsigned char *) &commandLine, (sizeof (commandLine)-1));
@@ -159,8 +159,8 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
           mcPrintf_fprintf1 (FIO_StdErr, (const char *) "C preprocessor failed when preprocessing %s\\n", 45, (const unsigned char *) &filename, (sizeof (filename)-1));
           libc_exit (1);
         }
-      commandLine = static_cast<DynamicStrings_String> (DynamicStrings_KillString (commandLine));
-      return static_cast<DynamicStrings_String> (onExitDelete (tempfile));
+      commandLine = DynamicStrings_KillString (commandLine);
+      return onExitDelete (tempfile);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -168,7 +168,7 @@ extern "C" DynamicStrings_String mcPreprocess_preprocessModule (DynamicStrings_S
 
 extern "C" void _M2_mcPreprocess_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  listOfFiles = static_cast<alists_alist> (alists_initList ());
+  listOfFiles = alists_initList ();
   if (! (M2RTS_InstallTerminationProcedure ((PROC ) {(PROC_t) removeFiles})))
     {
       M2RTS_HALT (-1);

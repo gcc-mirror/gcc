@@ -176,16 +176,16 @@ static void doWrite (int fd, FIO_File f, char ch)
             r = static_cast<int> (libc_write (FIO_GetUnixFileDescriptor (f), &ch, static_cast<size_t> (1)));
             if (r == 1)
               {
-                return;
+                return ;
               }
             else if (r == -1)
               {
                 /* avoid dangling else.  */
-                r = static_cast<int> (errno_geterrno ());
+                r = errno_geterrno ();
                 if ((r != errno_EAGAIN) && (r != errno_EINTR))
                   {
                     fdState.array[fd].IsEof = TRUE;
-                    return;
+                    return ;
                   }
               }
           }
@@ -308,7 +308,7 @@ extern "C" void IO_Read (char *ch)
     {
       if (fdState.array[0].IsEof)
         {
-          (*ch) = static_cast<char> (ASCII_eof);
+          (*ch) = ASCII_eof;
         }
       else
         {
@@ -317,17 +317,17 @@ extern "C" void IO_Read (char *ch)
             r = static_cast<int> (libc_read (FIO_GetUnixFileDescriptor (FIO_StdIn), ch, static_cast<size_t> (1)));
             if (r == 1)
               {
-                return;
+                return ;
               }
             else if (r == -1)
               {
                 /* avoid dangling else.  */
-                r = static_cast<int> (errno_geterrno ());
+                r = errno_geterrno ();
                 if (r != errno_EAGAIN)
                   {
                     fdState.array[0].IsEof = TRUE;
                     (*ch) = ASCII_eof;
-                    return;
+                    return ;
                   }
               }
           }
@@ -335,7 +335,7 @@ extern "C" void IO_Read (char *ch)
     }
   else
     {
-      (*ch) = static_cast<char> (FIO_ReadChar (FIO_StdIn));
+      (*ch) = FIO_ReadChar (FIO_StdIn);
     }
 }
 
@@ -370,20 +370,20 @@ extern "C" void IO_UnBufferedMode (int fd, unsigned int input)
     {
       fdState.array[fd].IsRaw = TRUE;
     }
-  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
+  term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       doraw (term);
       if (input)
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
+          result = termios_tcsetattr (fd, termios_tcsflush (), term);
         }
       else
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
+          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
         }
     }
-  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
+  term = termios_KillTermios (term);
 }
 
 extern "C" void IO_BufferedMode (int fd, unsigned int input)
@@ -395,20 +395,20 @@ extern "C" void IO_BufferedMode (int fd, unsigned int input)
     {
       fdState.array[fd].IsRaw = FALSE;
     }
-  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
+  term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       dononraw (term);
       if (input)
         {
-          r = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
+          r = termios_tcsetattr (fd, termios_tcsflush (), term);
         }
       else
         {
-          r = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
+          r = termios_tcsetattr (fd, termios_tcsdrain (), term);
         }
     }
-  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
+  term = termios_KillTermios (term);
 }
 
 
@@ -424,20 +424,20 @@ extern "C" void IO_EchoOn (int fd, unsigned int input)
   termios_TERMIOS term;
   int result;
 
-  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
+  term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       setFlag (term, static_cast<termios_Flag> (termios_lecho), TRUE);
       if (input)
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
+          result = termios_tcsetattr (fd, termios_tcsflush (), term);
         }
       else
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
+          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
         }
     }
-  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
+  term = termios_KillTermios (term);
 }
 
 
@@ -453,20 +453,20 @@ extern "C" void IO_EchoOff (int fd, unsigned int input)
   termios_TERMIOS term;
   int result;
 
-  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
+  term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       setFlag (term, static_cast<termios_Flag> (termios_lecho), FALSE);
       if (input)
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
+          result = termios_tcsetattr (fd, termios_tcsflush (), term);
         }
       else
         {
-          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
+          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
         }
     }
-  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
+  term = termios_KillTermios (term);
 }
 
 extern "C" void _M2_IO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])

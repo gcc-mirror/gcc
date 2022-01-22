@@ -191,7 +191,7 @@ static unsigned int TranslateNameToCharStar (char *a, unsigned int _a_high, unsi
 
   argno = static_cast<unsigned int> (1);
   i = static_cast<unsigned int> (0);
-  h = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  h = StrLib_StrLen ((const char *) a, _a_high);
   while (i < h)
     {
       if ((a[i] == '%') && ((i+1) < h))
@@ -353,14 +353,14 @@ extern "C" void mcPrintf_fprintf1 (FIO_File file, const char *a_, unsigned int _
   if (TranslateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w, _w_high);
-      s = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
-      t = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
-      s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf1 (t, (const unsigned char *) &s, (sizeof (s)-1)));
+      s = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
+      t = DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high));
+      s = FormatStrings_Sprintf1 (t, (const unsigned char *) &s, (sizeof (s)-1));
     }
   else
     {
-      t = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
-      s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf1 (t, (const unsigned char *) w, _w_high));
+      t = DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high));
+      s = FormatStrings_Sprintf1 (t, (const unsigned char *) w, _w_high);
     }
   if ((DynamicStrings_KillString (SFIO_WriteS (file, s))) == NULL)
     {}  /* empty.  */
@@ -392,31 +392,31 @@ extern "C" void mcPrintf_fprintf2 (FIO_File file, const char *a_, unsigned int _
   if (TranslateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w1, _w1_high);
-      s1 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s1 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (1 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 2))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w2, _w2_high);
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s2 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (2 ));
     }
   switch (b)
     {
       case (unsigned int) 0:
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
         break;
 
       case (unsigned int) ((1 << (1))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high);
         break;
 
       case (unsigned int) ((1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1)));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1)));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1));
         break;
 
 
@@ -458,53 +458,53 @@ extern "C" void mcPrintf_fprintf3 (FIO_File file, const char *a_, unsigned int _
   if (TranslateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w1, _w1_high);
-      s1 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s1 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (1 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 2))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w2, _w2_high);
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s2 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (2 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 3))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w3, _w3_high);
-      s3 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s3 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (3 ));
     }
   switch (b)
     {
       case (unsigned int) 0:
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (1))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
 
@@ -549,91 +549,91 @@ extern "C" void mcPrintf_fprintf4 (FIO_File file, const char *a_, unsigned int _
   if (TranslateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w1, _w1_high);
-      s1 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s1 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (1 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 2))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w2, _w2_high);
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s2 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (2 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 3))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w3, _w3_high);
-      s3 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s3 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (3 ));
     }
   if (TranslateNameToCharStar ((char *) a, _a_high, 4))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w4, _w4_high);
-      s4 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s4 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (4 ));
     }
   switch (b)
     {
       case (unsigned int) 0:
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (1))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) w4, _w4_high);
         break;
 
       case (unsigned int) ((1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (2)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high, (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (3)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (3)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (2)) | (1 << (3)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2)) | (1 << (3)) | (1 << (4))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1)));
+        s = FormatStrings_Sprintf4 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1), (const unsigned char *) &s4, (sizeof (s4)-1));
         break;
 
 

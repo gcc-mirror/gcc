@@ -477,7 +477,7 @@ static void InvokeHandler (void)
 {
   Handler h;
 
-  h = static_cast<Handler> (findHandler (currentEHB, currentEHB->number));
+  h = findHandler (currentEHB, currentEHB->number);
   if (h == NULL)
     {
       throw (RTExceptions_GetNumber (RTExceptions_GetExceptionBlock ()));
@@ -872,7 +872,7 @@ static void Init (void)
   inException = FALSE;
   freeHandler = static_cast<Handler> (NULL);
   freeEHB = static_cast<RTExceptions_EHBlock> (NULL);
-  currentEHB = static_cast<RTExceptions_EHBlock> (RTExceptions_InitExceptionBlock ());
+  currentEHB = RTExceptions_InitExceptionBlock ();
   currentSource = NULL;
   RTExceptions_BaseExceptionsThrow ();
   SysExceptions_InitExceptionHandlers ((SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) indexf}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) range}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) casef}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) invalidloc}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) function}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) wholevalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) wholediv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) realvalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) realdiv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) complexvalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) complexdiv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) protection}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) systemf}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) coroutine}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) exception});
@@ -890,7 +890,7 @@ static void TidyUp (void)
 
   if (currentEHB != NULL)
     {
-      currentEHB = static_cast<RTExceptions_EHBlock> (RTExceptions_KillExceptionBlock (currentEHB));
+      currentEHB = RTExceptions_KillExceptionBlock (currentEHB);
     }
   while (freeHandler != NULL)
     {
@@ -1011,9 +1011,9 @@ extern "C" RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void)
 {
   RTExceptions_EHBlock e;
 
-  e = static_cast<RTExceptions_EHBlock> (New ());
-  e->number = static_cast<unsigned int> (UINT_MAX);
-  e->handlers = static_cast<Handler> (NewHandler ());  /* add the dummy onto the head  */
+  e = New ();
+  e->number = UINT_MAX;
+  e->handlers = NewHandler ();  /* add the dummy onto the head  */
   e->handlers->right = e->handlers;  /* add the dummy onto the head  */
   e->handlers->left = e->handlers;
   e->right = e;
@@ -1029,7 +1029,7 @@ extern "C" RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void)
 
 extern "C" RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e)
 {
-  e->handlers = static_cast<Handler> (KillHandlers (e->handlers));
+  e->handlers = KillHandlers (e->handlers);
   e->right = freeEHB;
   freeEHB = e;
   return static_cast<RTExceptions_EHBlock> (NULL);
@@ -1047,17 +1047,17 @@ extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int n
   Handler h;
   Handler i;
 
-  h = static_cast<Handler> (findHandler (e, number));
+  h = findHandler (e, number);
   if (h == NULL)
     {
-      i = static_cast<Handler> (InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), number, p));
+      i = InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), number, p);
     }
   else
     {
       /* remove, h,  */
       SubHandler (h);
       /* stack it onto a new handler  */
-      i = static_cast<Handler> (InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), h, number, p));
+      i = InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), h, number, p);
     }
   /* add new handler  */
   AddHandler (e, i);
@@ -1074,7 +1074,7 @@ extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int nu
   Handler h;
   Handler i;
 
-  h = static_cast<Handler> (findHandler (e, number));
+  h = findHandler (e, number);
   if (h != NULL)
     {
       /* remove, h,  */
@@ -1083,7 +1083,7 @@ extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int nu
         {
           AddHandler (e, h->stack);
         }
-      h = static_cast<Handler> (KillHandler (h));
+      h = KillHandler (h);
     }
 }
 
@@ -1099,7 +1099,7 @@ extern "C" void RTExceptions_DefaultErrorCatch (void)
   RTExceptions_EHBlock e;
   int n;
 
-  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
+  e = RTExceptions_GetExceptionBlock ();
   n = static_cast<int> (libc_write (2, RTExceptions_GetTextBuffer (e), libc_strlen (RTExceptions_GetTextBuffer (e))));
   M2RTS_HALT (-1);
   __builtin_unreachable ();

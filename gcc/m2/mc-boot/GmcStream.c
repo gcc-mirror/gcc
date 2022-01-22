@@ -160,10 +160,10 @@ static FIO_File createTemporaryFile (unsigned int id)
   FIO_File f;
   int p;
 
-  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "/tmp/frag-%d-%d.frag", 20));
-  p = static_cast<int> (libc_getpid ());
-  s = static_cast<DynamicStrings_String> (removeLater (FormatStrings_Sprintf2 (s, (const unsigned char *) &p, (sizeof (p)-1), (const unsigned char *) &id, (sizeof (id)-1))));
-  f = static_cast<FIO_File> (SFIO_OpenToWrite (s));
+  s = DynamicStrings_InitString ((const char *) "/tmp/frag-%d-%d.frag", 20);
+  p = libc_getpid ();
+  s = removeLater (FormatStrings_Sprintf2 (s, (const unsigned char *) &p, (sizeof (p)-1), (const unsigned char *) &id, (sizeof (id)-1)));
+  f = SFIO_OpenToWrite (s);
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -187,13 +187,13 @@ static void copy (ptrToFile p)
   if (p != NULL)
     {
       f = (*p);
-      s = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (FIO_getFileName (f)));
+      s = DynamicStrings_InitStringCharStar (FIO_getFileName (f));
       FIO_Close (f);
-      f = static_cast<FIO_File> (SFIO_OpenToRead (s));
+      f = SFIO_OpenToRead (s);
       while (! (FIO_EOF (f)))
         {
-          b = static_cast<unsigned int> (FIO_ReadNBytes (f, maxBuffer, &buffer));
-          b = static_cast<unsigned int> (FIO_WriteNBytes (destFile, b, &buffer));
+          b = FIO_ReadNBytes (f, maxBuffer, &buffer);
+          b = FIO_WriteNBytes (destFile, b, &buffer);
         }
       FIO_Close (f);
     }
@@ -210,7 +210,7 @@ extern "C" FIO_File mcStream_openFrag (unsigned int id)
   FIO_File f;
   ptrToFile p;
 
-  f = static_cast<FIO_File> (createTemporaryFile (id));
+  f = createTemporaryFile (id);
   Storage_ALLOCATE ((void **) &p, sizeof (FIO_File));
   (*p) = f;
   Indexing_PutIndice (frag, id, reinterpret_cast<void *> (p));
@@ -254,9 +254,9 @@ extern "C" FIO_File mcStream_combine (void)
 
 extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  listOfFiles = static_cast<alists_alist> (alists_initList ());
+  listOfFiles = alists_initList ();
   seenDest = FALSE;
-  frag = static_cast<Indexing_Index> (Indexing_InitIndex (1));
+  frag = Indexing_InitIndex (1);
 }
 
 extern "C" void _M2_mcStream_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])

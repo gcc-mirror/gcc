@@ -318,7 +318,7 @@ static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsi
   */
   argno = static_cast<unsigned int> (1);
   i = static_cast<unsigned int> (0);
-  h = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  h = StrLib_StrLen ((const char *) a, _a_high);
   while (i < h)
     {
       if ((a[i] == '%') && ((i+1) < h))
@@ -361,11 +361,11 @@ static void outString (DynamicStrings_String file, unsigned int line, unsigned i
   col += 1;
   if (Xcode)
     {
-      leader = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:", 6)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1)));
+      leader = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:", 6)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1));
     }
   else
     {
-      leader = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:%d:", 9)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1), (const unsigned char *) &col, (sizeof (col)-1)));
+      leader = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:%d:", 9)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1), (const unsigned char *) &col, (sizeof (col)-1));
     }
   p = static_cast<_T1> (DynamicStrings_string (s));
   newline = TRUE;
@@ -405,8 +405,8 @@ static void outString (DynamicStrings_String file, unsigned int line, unsigned i
   FIO_FlushBuffer (FIO_StdOut);
   if (! Debugging)
     {
-      s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
-      leader = static_cast<DynamicStrings_String> (DynamicStrings_KillString (leader));
+      s = DynamicStrings_KillString (s);
+      leader = DynamicStrings_KillString (leader);
     }
 }
 
@@ -427,12 +427,12 @@ static DynamicStrings_String doFormat1 (const char *a_, unsigned int _a_high, co
   if (translateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w, _w_high);
-      s = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
-      s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf1 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s, (sizeof (s)-1)));
+      s = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
+      s = FormatStrings_Sprintf1 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s, (sizeof (s)-1));
     }
   else
     {
-      s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf1 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w, _w_high));
+      s = FormatStrings_Sprintf1 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w, _w_high);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -464,31 +464,31 @@ static DynamicStrings_String doFormat2 (const char *a_, unsigned int _a_high, co
   if (translateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w1, _w1_high);
-      s1 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s1 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (1 ));
     }
   if (translateNameToCharStar ((char *) a, _a_high, 2))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w2, _w2_high);
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s2 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (2 ));
     }
   switch (b)
     {
       case (unsigned int) 0:
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
         break;
 
       case (unsigned int) ((1 << (1))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high);
         break;
 
       case (unsigned int) ((1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1)));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1)));
+        s = FormatStrings_Sprintf2 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1));
         break;
 
 
@@ -532,53 +532,53 @@ static DynamicStrings_String doFormat3 (const char *a_, unsigned int _a_high, co
   if (translateNameToCharStar ((char *) a, _a_high, 1))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w1, _w1_high);
-      s1 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s1 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (1 ));
     }
   if (translateNameToCharStar ((char *) a, _a_high, 2))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w2, _w2_high);
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s2 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (2 ));
     }
   if (translateNameToCharStar ((char *) a, _a_high, 3))
     {
       cast ((unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) w3, _w3_high);
-      s3 = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      s3 = DynamicStrings_Mark (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
       b |= (1 << (3 ));
     }
   switch (b)
     {
       case (unsigned int) 0:
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (1))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) w3, _w3_high);
         break;
 
       case (unsigned int) ((1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) w2, _w2_high, (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) w1, _w1_high, (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
       case (unsigned int) ((1 << (1)) | (1 << (2)) | (1 << (3))):
-        s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1)));
+        s = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)), (const unsigned char *) &s1, (sizeof (s1)-1), (const unsigned char *) &s2, (sizeof (s2)-1), (const unsigned char *) &s3, (sizeof (s3)-1));
         break;
 
 
@@ -626,10 +626,10 @@ static void checkIncludes (unsigned int token, unsigned int depth)
   DynamicStrings_String included;
   unsigned int lineno;
 
-  included = static_cast<DynamicStrings_String> (mcLexBuf_findFileNameFromToken (token, depth+1));
+  included = mcLexBuf_findFileNameFromToken (token, depth+1);
   if (included != NULL)
     {
-      lineno = static_cast<unsigned int> (mcLexBuf_tokenToLineNo (token, depth+1));
+      lineno = mcLexBuf_tokenToLineNo (token, depth+1);
       if (depth == 0)
         {
           mcPrintf_printf2 ((const char *) "In file included from %s:%d", 27, (const unsigned char *) &included, (sizeof (included)-1), (const unsigned char *) &lineno, (sizeof (lineno)-1));
@@ -669,11 +669,11 @@ static unsigned int flushAll (mcError_error e, unsigned int FatalStatus)
             checkIncludes (e->token, 0);
             if (e->fatal)
               {
-                e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " error: ", 8), DynamicStrings_Mark (e->s)));
+                e->s = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " error: ", 8), DynamicStrings_Mark (e->s));
               }
             else
               {
-                e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " warning: ", 10), DynamicStrings_Mark (e->s)));
+                e->s = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " warning: ", 10), DynamicStrings_Mark (e->s));
               }
             outString (mcLexBuf_findFileNameFromToken (e->token, 0), mcLexBuf_tokenToLineNo (e->token, 0), mcLexBuf_tokenToColumnNo (e->token, 0), e->s);
             if ((e->child != NULL) && (flushAll (e->child, FatalStatus)))
@@ -685,7 +685,7 @@ static unsigned int flushAll (mcError_error e, unsigned int FatalStatus)
         e = e->next;
         if (! Debugging)
           {
-            f->s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (f->s));
+            f->s = DynamicStrings_KillString (f->s);
             Storage_DEALLOCATE ((void **) &f, sizeof (_T2));
           }
       } while (! (e == NULL));
@@ -739,8 +739,8 @@ extern "C" void mcError_writeFormat0 (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  e = static_cast<mcError_error> (mcError_newError (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high))));
+  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
 }
 
 
@@ -760,8 +760,8 @@ extern "C" void mcError_writeFormat1 (const char *a_, unsigned int _a_high, cons
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  e = static_cast<mcError_error> (mcError_newError (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high));
+  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e->s = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
 }
 
 
@@ -783,8 +783,8 @@ extern "C" void mcError_writeFormat2 (const char *a_, unsigned int _a_high, cons
   memcpy (w1, w1_, _w1_high+1);
   memcpy (w2, w2_, _w2_high+1);
 
-  e = static_cast<mcError_error> (mcError_newError (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high));
+  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e->s = doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
 }
 
 
@@ -808,8 +808,8 @@ extern "C" void mcError_writeFormat3 (const char *a_, unsigned int _a_high, cons
   memcpy (w2, w2_, _w2_high+1);
   memcpy (w3, w3_, _w3_high+1);
 
-  e = static_cast<mcError_error> (mcError_newError (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+  e = mcError_newError (mcLexBuf_getTokenNo ());
+  e->s = doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
 }
 
 
@@ -859,7 +859,7 @@ extern "C" mcError_error mcError_newWarning (unsigned int atTokenNo)
 {
   mcError_error e;
 
-  e = static_cast<mcError_error> (mcError_newError (atTokenNo));
+  e = mcError_newError (atTokenNo);
   e->fatal = FALSE;
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -879,7 +879,7 @@ extern "C" mcError_error mcError_chainError (unsigned int atTokenNo, mcError_err
 
   if (e == NULL)
     {
-      return static_cast<mcError_error> (mcError_newError (atTokenNo));
+      return mcError_newError (atTokenNo);
     }
   else
     {
@@ -909,11 +909,11 @@ extern "C" void mcError_errorFormat0 (mcError_error e, const char *a_, unsigned 
   */
   if (e->s == NULL)
     {
-      e->s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high))));
+      e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
     }
   else
     {
-      e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (e->s, DynamicStrings_Mark (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high))))));
+      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)))));
     }
 }
 
@@ -927,14 +927,14 @@ extern "C" void mcError_errorFormat1 (mcError_error e, const char *a_, unsigned 
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  s1 = static_cast<DynamicStrings_String> (doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high));
+  s1 = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
   if (e->s == NULL)
     {
       e->s = s1;
     }
   else
     {
-      e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1)));
+      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
     }
 }
 
@@ -950,14 +950,14 @@ extern "C" void mcError_errorFormat2 (mcError_error e, const char *a_, unsigned 
   memcpy (w1, w1_, _w1_high+1);
   memcpy (w2, w2_, _w2_high+1);
 
-  s1 = static_cast<DynamicStrings_String> (doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high));
+  s1 = doFormat2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
   if (e->s == NULL)
     {
       e->s = s1;
     }
   else
     {
-      e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1)));
+      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
     }
 }
 
@@ -975,14 +975,14 @@ extern "C" void mcError_errorFormat3 (mcError_error e, const char *a_, unsigned 
   memcpy (w2, w2_, _w2_high+1);
   memcpy (w3, w3_, _w3_high+1);
 
-  s1 = static_cast<DynamicStrings_String> (doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high));
+  s1 = doFormat3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
   if (e->s == NULL)
     {
       e->s = s1;
     }
   else
     {
-      e->s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1)));
+      e->s = DynamicStrings_ConCat (e->s, DynamicStrings_Mark (s1));
     }
 }
 
@@ -1002,7 +1002,7 @@ extern "C" void mcError_errorStringAt (DynamicStrings_String s, unsigned int tok
 {
   mcError_error e;
 
-  e = static_cast<mcError_error> (mcError_newError (tok));
+  e = mcError_newError (tok);
   mcError_errorString (e, s);
 }
 
@@ -1031,9 +1031,9 @@ extern "C" void mcError_errorStringsAt2 (DynamicStrings_String s1, DynamicString
 
   if (s1 == s2)
     {
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s1));
+      s2 = DynamicStrings_Dup (s1);
     }
-  e = static_cast<mcError_error> (mcError_newError (tok1));
+  e = mcError_newError (tok1);
   mcError_errorString (e, s1);
   mcError_errorString (mcError_chainError (tok2, e), s2);
 }
@@ -1049,7 +1049,7 @@ extern "C" void mcError_warnStringAt (DynamicStrings_String s, unsigned int tok)
 {
   mcError_error e;
 
-  e = static_cast<mcError_error> (mcError_newWarning (tok));
+  e = mcError_newWarning (tok);
   mcError_errorString (e, s);
 }
 
@@ -1078,9 +1078,9 @@ extern "C" void mcError_warnStringsAt2 (DynamicStrings_String s1, DynamicStrings
 
   if (s1 == s2)
     {
-      s2 = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s1));
+      s2 = DynamicStrings_Dup (s1);
     }
-  e = static_cast<mcError_error> (mcError_newWarning (tok1));
+  e = mcError_newWarning (tok1);
   mcError_errorString (e, s1);
   mcError_errorString (mcError_chainError (tok2, e), s2);
 }
@@ -1098,8 +1098,8 @@ extern "C" void mcError_warnFormat0 (const char *a_, unsigned int _a_high)
                  with the encapsulated format string.
                  Used for simple warning messages tied to the current token.
   */
-  e = static_cast<mcError_error> (mcError_newWarning (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high))));
+  e = mcError_newWarning (mcLexBuf_getTokenNo ());
+  e->s = FormatStrings_Sprintf0 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) a, _a_high)));
 }
 
 
@@ -1119,8 +1119,8 @@ extern "C" void mcError_warnFormat1 (const char *a_, unsigned int _a_high, const
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  e = static_cast<mcError_error> (mcError_newWarning (mcLexBuf_getTokenNo ()));
-  e->s = static_cast<DynamicStrings_String> (doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high));
+  e = mcError_newWarning (mcLexBuf_getTokenNo ());
+  e->s = doFormat1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
 }
 
 

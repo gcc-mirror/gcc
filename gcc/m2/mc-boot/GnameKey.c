@@ -172,7 +172,7 @@ static nameKey_Name doMakeKey (ptrToChar n, unsigned int higha)
   nameNode child;
   nameKey_Name k;
 
-  result = static_cast<comparison> (findNodeAndParentInTree (n, &child, &father));
+  result = findNodeAndParentInTree (n, &child, &father);
   if (child == NULL)
     {
       if (result == less)
@@ -265,7 +265,7 @@ static comparison findNodeAndParentInTree (ptrToChar n, nameNode *child, nameNod
   else
     {
       do {
-        result = static_cast<comparison> (compare (n, (*child)->key));
+        result = compare (n, (*child)->key);
         if (result == less)
           {
             (*father) = (*child);
@@ -303,7 +303,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  higha = StrLib_StrLen ((const char *) a, _a_high);
   Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
   if (p == NULL)
     {
@@ -321,7 +321,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
           p += 1;
         }
       (*p) = ASCII_nul;
-      return static_cast<nameKey_Name> (doMakeKey (n, higha));
+      return doMakeKey (n, higha);
     }
   ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/nameKey.def", 20, 1);
   __builtin_unreachable ();
@@ -370,7 +370,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
               pa += 1;
             }
           (*p) = ASCII_nul;
-          return static_cast<nameKey_Name> (doMakeKey (n, higha));
+          return doMakeKey (n, higha);
         }
     }
   ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/nameKey.def", 20, 1);
@@ -565,7 +565,7 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
     }
   else
     {
-      return reinterpret_cast<void *> (Indexing_GetIndice (keyIndex, static_cast<unsigned int> (key)));
+      return Indexing_GetIndice (keyIndex, static_cast<unsigned int> (key));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -574,7 +574,7 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
 extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   lastIndice = static_cast<unsigned int> (0);
-  keyIndex = static_cast<Indexing_Index> (Indexing_InitIndex (1));
+  keyIndex = Indexing_InitIndex (1);
   Storage_ALLOCATE ((void **) &binaryTree, sizeof (_T1));
   binaryTree->left = static_cast<nameNode> (NULL);
 }

@@ -86,12 +86,12 @@ extern "C" void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, ch
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
   i = static_cast<unsigned int> (0);
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = static_cast<char> (StrCase_Cap (a[i]));
+      b[i] = StrCase_Cap (a[i]);
       i += 1;
     }
   if (i < highb)
@@ -116,12 +116,12 @@ extern "C" void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, ch
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
   i = static_cast<unsigned int> (0);
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = static_cast<char> (StrCase_Lower (a[i]));
+      b[i] = StrCase_Lower (a[i]);
       i += 1;
     }
   if (i < highb)

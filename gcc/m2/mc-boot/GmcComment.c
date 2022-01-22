@@ -193,11 +193,11 @@ static DynamicStrings_String RemoveNewlines (DynamicStrings_String s)
     {
       if ((DynamicStrings_char (s, 0)) == ASCII_nl)
         {
-          s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (DynamicStrings_Slice (s, 1, 0)));
+          s = DynamicStrings_RemoveWhitePrefix (DynamicStrings_Slice (s, 1, 0));
         }
       else
         {
-          return static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));
+          return DynamicStrings_RemoveWhitePrefix (s);
         }
     }
   return s;
@@ -219,11 +219,11 @@ static unsigned int seenProcedure (mcComment_commentDesc cd, nameKey_Name procNa
   unsigned int h;
   unsigned int res;
 
-  a = reinterpret_cast<void *> (nameKey_keyToCharStar (procName));
-  s = static_cast<DynamicStrings_String> (RemoveNewlines (cd->content));
-  s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (Min (DynamicStrings_Length (s), nameKey_lengthKey (procName)))));
-  res = static_cast<unsigned int> (DynamicStrings_EqualCharStar (s, a));
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  a = nameKey_keyToCharStar (procName);
+  s = RemoveNewlines (cd->content);
+  s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (Min (DynamicStrings_Length (s), nameKey_lengthKey (procName))));
+  res = DynamicStrings_EqualCharStar (s, a);
+  s = DynamicStrings_KillString (s);
   return res;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -293,7 +293,7 @@ extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces)
     {
       cd->type = afterStatement;
     }
-  cd->content = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  cd->content = DynamicStrings_InitString ((const char *) "", 0);
   cd->procName = static_cast<nameKey_Name> (nameKey_NulName);
   cd->used = FALSE;
   return cd;
@@ -311,7 +311,7 @@ extern "C" void mcComment_addText (mcComment_commentDesc cd, void * cs)
 {
   if (cd != NULL)
     {
-      cd->content = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (cd->content, DynamicStrings_InitStringCharStar (cs)));
+      cd->content = DynamicStrings_ConCat (cd->content, DynamicStrings_InitStringCharStar (cs));
     }
 }
 
@@ -340,14 +340,14 @@ extern "C" void * mcComment_getCommentCharStar (mcComment_commentDesc cd)
 {
   DynamicStrings_String s;
 
-  s = static_cast<DynamicStrings_String> (mcComment_getContent (cd));
+  s = mcComment_getContent (cd);
   if (s == NULL)
     {
       return NULL;
     }
   else
     {
-      return reinterpret_cast<void *> (DynamicStrings_string (s));
+      return DynamicStrings_string (s);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

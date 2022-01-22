@@ -119,10 +119,10 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  Highb = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
+  Highb = StrLib_StrLen ((const char *) b, _b_high);
   Highc = _c_high;
   StrLib_StrCopy ((const char *) a, _a_high, (char *) c, _c_high);
-  i = static_cast<unsigned int> (StrLib_StrLen ((const char *) c, _c_high));
+  i = StrLib_StrLen ((const char *) c, _c_high);
   j = static_cast<unsigned int> (0);
   while ((j < Highb) && (i <= Highc))
     {
@@ -132,7 +132,7 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
     }
   if (i <= Highc)
     {
-      c[i] = static_cast<char> (ASCII_nul);
+      c[i] = ASCII_nul;
     }
 }
 
@@ -154,8 +154,8 @@ extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, co
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  Higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
-  Highb = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
+  Higha = StrLib_StrLen ((const char *) a, _a_high);
+  Highb = StrLib_StrLen ((const char *) b, _b_high);
   i = static_cast<unsigned int> (0);
   while ((i < Higha) && (i < Highb))
     {
@@ -242,7 +242,7 @@ extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *
   memcpy (src, src_, _src_high+1);
 
   n = static_cast<unsigned int> (0);
-  HighSrc = static_cast<unsigned int> (StrLib_StrLen ((const char *) src, _src_high));
+  HighSrc = StrLib_StrLen ((const char *) src, _src_high);
   HighDest = _dest_high;
   while ((n < HighSrc) && (n <= HighDest))
     {
@@ -273,8 +273,8 @@ extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  LengthA = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
-  LengthB = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
+  LengthA = StrLib_StrLen ((const char *) a, _a_high);
+  LengthB = StrLib_StrLen ((const char *) b, _b_high);
   i = static_cast<unsigned int> (0);
   if (LengthA > LengthB)
     {
@@ -319,7 +319,7 @@ extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_hig
 
   i = static_cast<unsigned int> (0);
   j = static_cast<unsigned int> (0);
-  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
   while ((i < higha) && (IsWhite (a[i])))
     {

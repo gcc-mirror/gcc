@@ -89,7 +89,7 @@ extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
     {
       /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
       ppc = static_cast<PtrToPtrToChar> ((void *) (((PtrToChar) (UnixArgs_ArgV))+(i*sizeof (PtrToChar))));
-      (*s) = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc))));
+      (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
       return TRUE;
     }
   else

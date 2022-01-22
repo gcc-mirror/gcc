@@ -208,7 +208,7 @@ extern "C" varargs_vararg varargs_copy (varargs_vararg v)
   c->nArgs = v->nArgs;
   c->size = v->size;
   Storage_ALLOCATE (&c->contents, c->size);
-  c->contents = reinterpret_cast<void *> (libc_memcpy (c->contents, v->contents, static_cast<size_t> (c->size)));
+  c->contents = libc_memcpy (c->contents, v->contents, static_cast<size_t> (c->size));
   for (j=0; j<=c->nArgs; j++)
     {
       offset = (unsigned int ) (((ptrToByte) (v->contents))-((ptrToByte) (v->arg.array[j].ptr)));
@@ -290,9 +290,9 @@ extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
   v->i = static_cast<unsigned int> (0);
   v->nArgs = static_cast<unsigned int> (1);
-  v->size = static_cast<unsigned int> (_a_high+1);
+  v->size = _a_high+1;
   Storage_ALLOCATE (&v->contents, v->size);
-  v->contents = reinterpret_cast<void *> (libc_memcpy (v->contents, &a, static_cast<size_t> (v->size)));
+  v->contents = libc_memcpy (v->contents, &a, static_cast<size_t> (v->size));
   v->arg.array[0].ptr = v->contents;
   v->arg.array[0].len = v->size;
   return v;
@@ -321,15 +321,15 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
   v->i = static_cast<unsigned int> (0);
   v->nArgs = static_cast<unsigned int> (2);
-  v->size = static_cast<unsigned int> ((_a_high+_b_high)+2);
+  v->size = (_a_high+_b_high)+2;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T3> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
   v->arg.array[0].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[0].len = static_cast<unsigned int> (_a_high+1);
+  v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
   p = static_cast<_T3> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[1].len = static_cast<unsigned int> (_b_high+1);
+  v->arg.array[1].len = _b_high+1;
   return v;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -358,19 +358,19 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
   v->i = static_cast<unsigned int> (0);
   v->nArgs = static_cast<unsigned int> (3);
-  v->size = static_cast<unsigned int> (((_a_high+_b_high)+_c_high)+3);
+  v->size = ((_a_high+_b_high)+_c_high)+3;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T4> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
   v->arg.array[0].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[0].len = static_cast<unsigned int> (_a_high+1);
+  v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
   p = static_cast<_T4> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[1].len = static_cast<unsigned int> (_b_high+1);
+  v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
   p = static_cast<_T4> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[2].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[2].len = static_cast<unsigned int> (_c_high+1);
+  v->arg.array[2].len = _c_high+1;
   return v;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -401,22 +401,22 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
   v->i = static_cast<unsigned int> (0);
   v->nArgs = static_cast<unsigned int> (4);
-  v->size = static_cast<unsigned int> ((((_a_high+_b_high)+_c_high)+_d_high)+4);
+  v->size = (((_a_high+_b_high)+_c_high)+_d_high)+4;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T5> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
-  v->arg.array[0].len = static_cast<unsigned int> (_a_high+1);
+  v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
   p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
   v->arg.array[1].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[1].len = static_cast<unsigned int> (_b_high+1);
+  v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
   p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[2].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[2].len = static_cast<unsigned int> (_c_high+1);
+  v->arg.array[2].len = _c_high+1;
   p += v->arg.array[2].len;
   p = static_cast<_T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
   v->arg.array[3].ptr = reinterpret_cast<void *> (p);
-  v->arg.array[3].len = static_cast<unsigned int> (_c_high+1);
+  v->arg.array[3].len = _c_high+1;
   return v;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

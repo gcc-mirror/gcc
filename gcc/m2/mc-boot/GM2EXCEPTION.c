@@ -53,8 +53,8 @@ extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   /* If the program or coroutine is in the exception state then return the enumeration
    value representing the exception cause.  If it is not in the exception state then
    raises and exception (exException).  */
-  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
-  n = static_cast<unsigned int> (RTExceptions_GetNumber (e));
+  e = RTExceptions_GetExceptionBlock ();
+  n = RTExceptions_GetNumber (e);
   if (n == (UINT_MAX))
     {
       RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (reinterpret_cast<const void*>("M2Exception")), const_cast<void*> (reinterpret_cast<const void*>("current coroutine is not in the exceptional execution state")));
@@ -73,7 +73,7 @@ extern "C" unsigned int M2EXCEPTION_IsM2Exception (void)
 
   /* Returns TRUE if the program or coroutine is in the exception state.
    Returns FALSE if the program or coroutine is not in the exception state.  */
-  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
+  e = RTExceptions_GetExceptionBlock ();
   return (RTExceptions_GetNumber (e)) != (UINT_MAX);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

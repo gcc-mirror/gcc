@@ -110,7 +110,7 @@ static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
   HighA = _Arg_high;  /* Index into Arg  */
-  HighC = static_cast<unsigned int> (StrLib_StrLen ((const char *) CmdLine, _CmdLine_high));
+  HighC = StrLib_StrLen ((const char *) CmdLine, _CmdLine_high);
   ArgIndex = static_cast<unsigned int> (0);
   /* Skip spaces  */
   while (((*CmdIndex) < HighC) && (Space (CmdLine[(*CmdIndex)])))
@@ -148,7 +148,7 @@ static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high
     }
   if (ArgIndex < HighA)
     {
-      Arg[ArgIndex] = static_cast<char> (ASCII_nul);
+      Arg[ArgIndex] = ASCII_nul;
     }
   return (*CmdIndex) < HighC;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -271,7 +271,7 @@ extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdL
   /* Continually retrieve an argument until we get the n th argument.  */
   i = static_cast<unsigned int> (0);
   do {
-    Another = static_cast<unsigned int> (GetNextArg ((const char *) CmdLine, _CmdLine_high, &Index, (char *) Argi, _Argi_high));
+    Another = GetNextArg ((const char *) CmdLine, _CmdLine_high, &Index, (char *) Argi, _Argi_high);
     i += 1;
   } while (! ((i > n) || ! Another));
   return i > n;

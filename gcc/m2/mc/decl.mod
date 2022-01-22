@@ -5219,7 +5219,7 @@ END doGetExprType ;
 
 
 (*
-   getExprType -
+   getExprType - return the expression type.
 *)
 
 PROCEDURE getExprType (n: node) : node ;
@@ -9143,7 +9143,7 @@ END doReturnC ;
 
 PROCEDURE doExprCastC (p: pretty; e, type: node) ;
 BEGIN
-   IF skipType (type) # skipType (getType (e))
+   IF skipType (type) # skipType (getExprType (e))
    THEN
       IF lang = ansiCP
       THEN

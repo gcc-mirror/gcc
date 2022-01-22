@@ -397,7 +397,7 @@ static void comment (FIO_File f, const char *a_, unsigned int _a_high)
 
 static void commentS (FIO_File f, DynamicStrings_String s)
 {
-  s = static_cast<DynamicStrings_String> (SFIO_WriteS (f, s));
+  s = SFIO_WriteS (f, s);
   FIO_WriteLine (f);
 }
 
@@ -412,23 +412,23 @@ static void gplBody (FIO_File f)
   if (contributed)
     {
       FIO_WriteString (f, (const char *) "Contributed by ", 15);
-      contributedContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, contributedContents));
+      contributedContents = SFIO_WriteS (f, contributedContents);
       FIO_WriteString (f, (const char *) ".", 1);
       FIO_WriteLine (f);
     }
   FIO_WriteLine (f);
   FIO_WriteString (f, (const char *) "This file is part of ", 21);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   FIO_WriteString (f, (const char *) ".", 1);
   FIO_WriteLine (f);
   FIO_WriteLine (f);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) " is software; you can redistribute it and/or modify", 51);
   comment (f, (const char *) "it under the terms of the GNU General Public License as published by", 68);
   comment (f, (const char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
   comment (f, (const char *) "any later version.", 18);
   FIO_WriteLine (f);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) " is distributed in the hope that it will be useful, but", 55);
   comment (f, (const char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
   comment (f, (const char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
@@ -436,7 +436,7 @@ static void gplBody (FIO_File f)
   FIO_WriteLine (f);
   comment (f, (const char *) "You should have received a copy of the GNU General Public License", 65);
   FIO_WriteString (f, (const char *) "along with ", 11);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) "; see the file COPYING.  If not,", 32);
   FIO_WriteString (f, (const char *) "see <https://www.gnu.org/licenses/>. ", 37);
 }
@@ -452,29 +452,29 @@ static void glplBody (FIO_File f)
   if (contributed)
     {
       FIO_WriteString (f, (const char *) "Contributed by ", 15);
-      contributedContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, contributedContents));
+      contributedContents = SFIO_WriteS (f, contributedContents);
       FIO_WriteString (f, (const char *) ".", 1);
       FIO_WriteLine (f);
     }
   FIO_WriteLine (f);
   FIO_WriteString (f, (const char *) "This file is part of ", 21);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   FIO_WriteString (f, (const char *) ".", 1);
   FIO_WriteLine (f);
   FIO_WriteLine (f);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) " is free software; you can redistribute it and/or modify", 56);
   comment (f, (const char *) "it under the terms of the GNU General Public License as published by", 68);
   comment (f, (const char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
   comment (f, (const char *) "any later version.", 18);
   FIO_WriteLine (f);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) " is software; you can redistribute it and/or modify", 51);
   comment (f, (const char *) "it under the terms of the GNU Lesser General Public License", 59);
   comment (f, (const char *) "as published by the Free Software Foundation; either version 3,", 63);
   comment (f, (const char *) "or (at your option) any later version.", 38);
   FIO_WriteLine (f);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) " is distributed in the hope that it will be useful, but", 55);
   comment (f, (const char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
   comment (f, (const char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
@@ -482,13 +482,13 @@ static void glplBody (FIO_File f)
   FIO_WriteLine (f);
   comment (f, (const char *) "You should have received a copy of the GNU General Public License", 65);
   FIO_WriteString (f, (const char *) "along with ", 11);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) "; see the file COPYING3.  If not see", 36);
   comment (f, (const char *) "<http://www.gnu.org/licenses/>.", 31);
   FIO_WriteLine (f);
   comment (f, (const char *) "You should have received a copy of the GNU Lesser General Public License", 72);
   FIO_WriteString (f, (const char *) "along with ", 11);
-  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  projectContents = SFIO_WriteS (f, projectContents);
   comment (f, (const char *) "; see the file COPYING.  If not,", 32);
   FIO_WriteString (f, (const char *) "see <https://www.gnu.org/licenses/>. ", 37);
 }
@@ -617,13 +617,13 @@ static unsigned int optionIs (const char *left_, unsigned int _left_high, Dynami
 
   if ((DynamicStrings_Length (right)) == (StrLib_StrLen ((const char *) left, _left_high)))
     {
-      return static_cast<unsigned int> (DynamicStrings_EqualArray (right, (const char *) left, _left_high));
+      return DynamicStrings_EqualArray (right, (const char *) left, _left_high);
     }
   else if ((DynamicStrings_Length (right)) > (StrLib_StrLen ((const char *) left, _left_high)))
     {
       /* avoid dangling else.  */
-      s = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_Slice (right, 0, static_cast<int> (StrLib_StrLen ((const char *) left, _left_high)))));
-      return static_cast<unsigned int> (DynamicStrings_EqualArray (s, (const char *) left, _left_high));
+      s = DynamicStrings_Mark (DynamicStrings_Slice (right, 0, static_cast<int> (StrLib_StrLen ((const char *) left, _left_high))));
+      return DynamicStrings_EqualArray (s, (const char *) left, _left_high);
     }
   else
     {
@@ -705,7 +705,7 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--cpp", 5, arg))
     {
       /* avoid dangling else.  */
-      cppProgram = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "cpp", 3));
+      cppProgram = DynamicStrings_InitString ((const char *) "cpp", 3);
     }
   else if (optionIs ((const char *) "-o=", 3, arg))
     {
@@ -746,18 +746,18 @@ static void handleOption (DynamicStrings_String arg)
     {
       /* avoid dangling else.  */
       summary = TRUE;
-      summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 11, -1));
+      summaryContents = DynamicStrings_Slice (arg, 11, -1);
     }
   else if (optionIs ((const char *) "--contributed=\"", 15, arg))
     {
       /* avoid dangling else.  */
       contributed = TRUE;
-      contributedContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 13, -1));
+      contributedContents = DynamicStrings_Slice (arg, 13, -1);
     }
   else if (optionIs ((const char *) "--project=\"", 11, arg))
     {
       /* avoid dangling else.  */
-      projectContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 10, -1));
+      projectContents = DynamicStrings_Slice (arg, 10, -1);
     }
   else if (optionIs ((const char *) "--gcc-config-system", 19, arg))
     {
@@ -792,7 +792,7 @@ extern "C" DynamicStrings_String mcOptions_handleOptions (void)
             {
               if (! summary)
                 {
-                  summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "automatically created by mc from ", 33), arg), '.'));
+                  summaryContents = DynamicStrings_ConCatChar (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "automatically created by mc from ", 33), arg), '.');
                   summary = FALSE;
                 }
               return arg;
@@ -856,11 +856,11 @@ extern "C" DynamicStrings_String mcOptions_getCppCommandLine (void)
     }
   else
     {
-      s = static_cast<DynamicStrings_String> (DynamicStrings_Dup (cppProgram));
-      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), cppArgs));
+      s = DynamicStrings_Dup (cppProgram);
+      s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), cppArgs);
       if (mcOptions_getQuiet ())
         {
-          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "-quiet", 6))));
+          s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "-quiet", 6)));
         }
       return s;
     }
@@ -980,13 +980,13 @@ extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribut
   debugTopological = FALSE;
   ignoreFQ = FALSE;
   gccConfigSystem = FALSE;
-  hPrefix = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  cppArgs = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  cppProgram = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  outputFile = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "-", 1));
-  summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  contributedContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
-  projectContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "GNU Modula-2", 12));
+  hPrefix = DynamicStrings_InitString ((const char *) "", 0);
+  cppArgs = DynamicStrings_InitString ((const char *) "", 0);
+  cppProgram = DynamicStrings_InitString ((const char *) "", 0);
+  outputFile = DynamicStrings_InitString ((const char *) "-", 1);
+  summaryContents = DynamicStrings_InitString ((const char *) "", 0);
+  contributedContents = DynamicStrings_InitString ((const char *) "", 0);
+  projectContents = DynamicStrings_InitString ((const char *) "GNU Modula-2", 12);
 }
 
 extern "C" void _M2_mcOptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])

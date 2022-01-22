@@ -231,7 +231,7 @@ extern "C" void * symbolKey_getSymKey (symbolKey_symbolTree t, nameKey_Name name
 
   if (t == NULL)
     {
-      return reinterpret_cast<void *> (symbolKey_NulKey);
+      return symbolKey_NulKey;
     }
   else
     {
@@ -379,7 +379,7 @@ extern "C" unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t)
 
 extern "C" unsigned int symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
 {
-  return static_cast<unsigned int> (searchForAny (t->left, p));
+  return searchForAny (t->left, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

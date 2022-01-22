@@ -2146,7 +2146,7 @@ static decl_node replace (decl_node n)
 
 static decl_node peep (void)
 {
-  return static_cast<decl_node> (push (pop ()));
+  return push (pop ());
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2158,7 +2158,7 @@ static decl_node peep (void)
 
 static unsigned int depth (void)
 {
-  return static_cast<unsigned int> (mcStack_depth (stk));
+  return mcStack_depth (stk);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2211,12 +2211,12 @@ static void pushNunbounded (unsigned int c)
 
   while (c != 0)
     {
-      type = static_cast<decl_node> (pop ());
-      subrange = static_cast<decl_node> (decl_makeSubrange (static_cast<decl_node> (NULL), static_cast<decl_node> (NULL)));
+      type = pop ();
+      subrange = decl_makeSubrange (static_cast<decl_node> (NULL), static_cast<decl_node> (NULL));
       decl_putSubrangeType (subrange, decl_getCardinal ());
-      array = static_cast<decl_node> (decl_makeArray (subrange, type));
+      array = decl_makeArray (subrange, type);
       decl_putUnbounded (array);
-      type = static_cast<decl_node> (push (array));
+      type = push (array);
       c -= 1;
     }
 }
@@ -2232,7 +2232,7 @@ static decl_node makeIndexedArray (unsigned int c, decl_node t)
 
   while (c > 0)
     {
-      t = static_cast<decl_node> (decl_makeArray (pop (), t));
+      t = decl_makeArray (pop (), t);
       c -= 1;
     }
   return t;
@@ -2255,14 +2255,14 @@ static void importInto (decl_node m, nameKey_Name name, decl_node current)
 
   mcDebug_assert (decl_isDef (m));
   mcDebug_assert (((decl_isDef (current)) || (decl_isModule (current))) || (decl_isImp (current)));
-  s = static_cast<decl_node> (decl_lookupExported (m, name));
+  s = decl_lookupExported (m, name);
   if (s == NULL)
     {
       mcMetaError_metaError2 ((const char *) "{%1k} was not exported from definition module {%2a}", 51, (const unsigned char *) &name, (sizeof (name)-1), (const unsigned char *) &m, (sizeof (m)-1));
     }
   else
     {
-      o = static_cast<decl_node> (decl_import (current, s));
+      o = decl_import (current, s);
       if (s != o)
         {
           mcMetaError_metaError2 ((const char *) "{%1ad} cannot be imported into the current module as it causes a name clash with {%2ad}", 87, (const unsigned char *) &s, (sizeof (s)-1), (const unsigned char *) &o, (sizeof (o)-1));
@@ -2285,8 +2285,8 @@ static void checkEndName (decl_node module, nameKey_Name name, const char *desc_
 
   if ((decl_getSymName (module)) != name)
     {
-      s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "inconsistent module name found with this ", 41));
-      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) desc, _desc_high))));
+      s = DynamicStrings_InitString ((const char *) "inconsistent module name found with this ", 41);
+      s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) desc, _desc_high)));
       ErrorString (s);
     }
 }
@@ -2303,450 +2303,450 @@ static DynamicStrings_String DescribeStop (SetOfStop0 stopset0, SetOfStop1 stops
   DynamicStrings_String message;
 
   n = static_cast<unsigned int> (0);
-  message = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  message = DynamicStrings_InitString ((const char *) "", 0);
   if ((((1 << (mcReserved_stringtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "string", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "string", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_realtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "real number", 11))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "real number", 11)));
       n += 1;
     }
   if ((((1 << (mcReserved_identtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "identifier", 10))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "identifier", 10)));
       n += 1;
     }
   if ((((1 << (mcReserved_integertok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "integer number", 14))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "integer number", 14)));
       n += 1;
     }
   if ((((1 << (mcReserved_inlinetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__INLINE__", 10))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__INLINE__", 10)));
       n += 1;
     }
   if ((((1 << (mcReserved_builtintok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__BUILTIN__", 11))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__BUILTIN__", 11)));
       n += 1;
     }
   if ((((1 << (mcReserved_attributetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__ATTRIBUTE__", 13))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__ATTRIBUTE__", 13)));
       n += 1;
     }
   if ((((1 << (mcReserved_filetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__FILE__", 8))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__FILE__", 8)));
       n += 1;
     }
   if ((((1 << (mcReserved_linetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__LINE__", 8))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__LINE__", 8)));
       n += 1;
     }
   if ((((1 << (mcReserved_datetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__DATE__", 8))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "__DATE__", 8)));
       n += 1;
     }
   if ((((1 << (mcReserved_periodperiodperiodtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "...", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "...", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_volatiletok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "VOLATILE", 8))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "VOLATILE", 8)));
       n += 1;
     }
   if ((((1 << (mcReserved_asmtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ASM", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ASM", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_withtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "WITH", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "WITH", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_whiletok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "WHILE", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "WHILE", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_vartok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "VAR", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "VAR", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_untiltok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "UNTIL", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "UNTIL", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_typetok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "TYPE", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "TYPE", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_totok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "TO", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "TO", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_thentok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "THEN", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "THEN", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_settok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "SET", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "SET", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_returntok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RETURN", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RETURN", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_retrytok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RETRY", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RETRY", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_repeattok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "REPEAT", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "REPEAT", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_remtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "REM", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "REM", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_recordtok-mcReserved_recordtok)) & (stopset2)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RECORD", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "RECORD", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_unqualifiedtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "UNQUALIFIED", 11))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "UNQUALIFIED", 11)));
       n += 1;
     }
   if ((((1 << (mcReserved_qualifiedtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "QUALIFIED", 9))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "QUALIFIED", 9)));
       n += 1;
     }
   if ((((1 << (mcReserved_proceduretok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "PROCEDURE", 9))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "PROCEDURE", 9)));
       n += 1;
     }
   if ((((1 << (mcReserved_pointertok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "POINTER", 7))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "POINTER", 7)));
       n += 1;
     }
   if ((((1 << (mcReserved_packedsettok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "PACKEDSET", 9))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "PACKEDSET", 9)));
       n += 1;
     }
   if ((((1 << (mcReserved_ortok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "OR", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "OR", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_oftok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "OF", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "OF", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_nottok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "NOT", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "NOT", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_moduletok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "MODULE", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "MODULE", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_modtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "MOD", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "MOD", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_looptok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "LOOP", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "LOOP", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_intok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IN", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IN", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_importtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IMPORT", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IMPORT", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_implementationtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IMPLEMENTATION", 14))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IMPLEMENTATION", 14)));
       n += 1;
     }
   if ((((1 << (mcReserved_iftok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IF", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "IF", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_fromtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FROM", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FROM", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_fortok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FOR", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FOR", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_finallytok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FINALLY", 7))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "FINALLY", 7)));
       n += 1;
     }
   if ((((1 << (mcReserved_exporttok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXPORT", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXPORT", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_exittok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXIT", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXIT", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_excepttok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXCEPT", 6))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "EXCEPT", 6)));
       n += 1;
     }
   if ((((1 << (mcReserved_endtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "END", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "END", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_elsiftok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ELSIF", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ELSIF", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_elsetok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ELSE", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ELSE", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_dotok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DO", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DO", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_divtok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DIV", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DIV", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_definitiontok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DEFINITION", 10))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "DEFINITION", 10)));
       n += 1;
     }
   if ((((1 << (mcReserved_consttok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "CONST", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "CONST", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_casetok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "CASE", 4))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "CASE", 4)));
       n += 1;
     }
   if ((((1 << (mcReserved_bytok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "BY", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "BY", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_begintok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "BEGIN", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "BEGIN", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_arraytok-mcReserved_arraytok)) & (stopset1)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ARRAY", 5))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "ARRAY", 5)));
       n += 1;
     }
   if ((((1 << (mcReserved_andtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "AND", 3))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "AND", 3)));
       n += 1;
     }
   if ((((1 << (mcReserved_colontok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ":", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ":", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_periodperiodtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "..", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "..", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_rdirectivetok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "*>", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "*>", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_ldirectivetok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<*", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<*", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_greaterequaltok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ">=", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ">=", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_lessequaltok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<=", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<=", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_lessgreatertok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<>", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<>", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_hashtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "#", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "#", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_equaltok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "=", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "=", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_uparrowtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "^", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "^", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_semicolontok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ";", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ";", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_commatok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ",", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ",", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_periodtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ".", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ".", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_ambersandtok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "&", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "&", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_dividetok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "/", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "/", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_timestok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "*", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "*", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_minustok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "-", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "-", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_plustok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "+", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "+", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_doublequotestok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (message, ' '), '`'), '"'), '\''), ','));
+      message = DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (message, ' '), '`'), '"'), '\''), ',');
       n += 1;
     }
   if ((((1 << (mcReserved_singlequotetok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (message, ' '), '"'), '\''), '"'), ','));
+      message = DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (message, ' '), '"'), '\''), '"'), ',');
       n += 1;
     }
   if ((((1 << (mcReserved_greatertok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ">", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ">", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_lesstok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "<", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_rparatok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ")", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ")", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_lparatok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "(", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "(", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_rcbratok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "}", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "}", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_lcbratok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "{", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "{", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_rsbratok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "]", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "]", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_lsbratok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "[", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "[", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_bartok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "|", 1))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "|", 1)));
       n += 1;
     }
   if ((((1 << (mcReserved_becomestok-mcReserved_eoftok)) & (stopset0)) != 0))
     {
-      message = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ":=", 2))));
+      message = DynamicStrings_ConCat (DynamicStrings_ConCatChar (message, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ":=", 2)));
       n += 1;
     }
   if ((((1 << (mcReserved_eoftok-mcReserved_eoftok)) & (stopset0)) != 0))
@@ -2754,19 +2754,19 @@ static DynamicStrings_String DescribeStop (SetOfStop0 stopset0, SetOfStop1 stops
   /* eoftok has no token name (needed to generate error messages)  */
   if (n == 0)
     {
-      str = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) " syntax error", 13));
-      message = static_cast<DynamicStrings_String> (DynamicStrings_KillString (message));
+      str = DynamicStrings_InitString ((const char *) " syntax error", 13);
+      message = DynamicStrings_KillString (message);
     }
   else if (n == 1)
     {
       /* avoid dangling else.  */
-      str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (message, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " missing ", 9))));
+      str = DynamicStrings_ConCat (message, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) " missing ", 9)));
     }
   else
     {
       /* avoid dangling else.  */
-      str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " expecting one of", 17), message));
-      message = static_cast<DynamicStrings_String> (DynamicStrings_KillString (message));
+      str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) " expecting one of", 17), message);
+      message = DynamicStrings_KillString (message);
     }
   return str;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2782,367 +2782,367 @@ static void DescribeError (void)
 {
   DynamicStrings_String str;
 
-  str = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  str = DynamicStrings_InitString ((const char *) "", 0);
   switch (mcLexBuf_currenttoken)
     {
       case mcReserved_stringtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found string", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found string", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_realtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found real number", 31), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found real number", 31), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_identtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found identifier", 30), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found identifier", 30), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_integertok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found integer number", 34), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found integer number", 34), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_inlinetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __INLINE__", 30), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __INLINE__", 30), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_builtintok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __BUILTIN__", 31), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __BUILTIN__", 31), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_attributetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __ATTRIBUTE__", 33), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __ATTRIBUTE__", 33), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_filetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __FILE__", 28), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __FILE__", 28), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_linetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __LINE__", 28), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __LINE__", 28), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_datetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __DATE__", 28), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found __DATE__", 28), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_periodperiodperiodtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ...", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ...", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_volatiletok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found VOLATILE", 28), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found VOLATILE", 28), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_asmtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ASM", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ASM", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_withtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found WITH", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found WITH", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_whiletok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found WHILE", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found WHILE", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_vartok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found VAR", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found VAR", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_untiltok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found UNTIL", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found UNTIL", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_typetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found TYPE", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found TYPE", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_totok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found TO", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found TO", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_thentok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found THEN", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found THEN", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_settok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found SET", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found SET", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_returntok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RETURN", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RETURN", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_retrytok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RETRY", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RETRY", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_repeattok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found REPEAT", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found REPEAT", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_remtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found REM", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found REM", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_recordtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RECORD", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found RECORD", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_unqualifiedtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found UNQUALIFIED", 31), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found UNQUALIFIED", 31), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_qualifiedtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found QUALIFIED", 29), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found QUALIFIED", 29), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_proceduretok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found PROCEDURE", 29), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found PROCEDURE", 29), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_pointertok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found POINTER", 27), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found POINTER", 27), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_packedsettok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found PACKEDSET", 29), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found PACKEDSET", 29), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_ortok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found OR", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found OR", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_oftok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found OF", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found OF", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_nottok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found NOT", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found NOT", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_moduletok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found MODULE", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found MODULE", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_modtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found MOD", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found MOD", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_looptok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found LOOP", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found LOOP", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_intok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IN", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IN", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_importtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IMPORT", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IMPORT", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_implementationtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IMPLEMENTATION", 34), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IMPLEMENTATION", 34), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_iftok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IF", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found IF", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_fromtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FROM", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FROM", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_fortok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FOR", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FOR", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_finallytok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FINALLY", 27), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found FINALLY", 27), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_exporttok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXPORT", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXPORT", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_exittok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXIT", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXIT", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_excepttok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXCEPT", 26), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found EXCEPT", 26), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_endtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found END", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found END", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_elsiftok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ELSIF", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ELSIF", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_elsetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ELSE", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ELSE", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_dotok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DO", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DO", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_divtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DIV", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DIV", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_definitiontok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DEFINITION", 30), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found DEFINITION", 30), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_consttok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found CONST", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found CONST", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_casetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found CASE", 24), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found CASE", 24), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_bytok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found BY", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found BY", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_begintok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found BEGIN", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found BEGIN", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_arraytok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ARRAY", 25), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ARRAY", 25), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_andtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found AND", 23), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found AND", 23), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_colontok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found :", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found :", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_periodperiodtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ..", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ..", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_rdirectivetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found *>", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found *>", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_ldirectivetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <*", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <*", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_greaterequaltok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found >=", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found >=", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lessequaltok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <=", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <=", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lessgreatertok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <>", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <>", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_hashtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found #", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found #", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_equaltok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found =", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found =", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_uparrowtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ^", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ^", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_semicolontok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ;", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ;", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_commatok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ,", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ,", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_periodtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found .", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found .", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_ambersandtok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found &", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found &", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_dividetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found /", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found /", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_timestok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found *", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found *", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_minustok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found -", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found -", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_plustok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found +", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found +", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_doublequotestok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "syntax error, found '", 21), '"'), '\''), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "syntax error, found '", 21), '"'), '\''), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_singlequotetok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "syntax error, found \"", 21), '\''), '"'), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_ConCatChar (DynamicStrings_InitString ((const char *) "syntax error, found \"", 21), '\''), '"'), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_greatertok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found >", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found >", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lesstok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found <", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_rparatok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found )", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found )", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lparatok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found (", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found (", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_rcbratok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found }", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found }", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lcbratok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found {", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found {", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_rsbratok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ]", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ]", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_lsbratok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found [", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found [", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_bartok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found |", 21), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found |", 21), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_becomestok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found :=", 22), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found :=", 22), DynamicStrings_Mark (str));
         break;
 
       case mcReserved_eoftok:
-        str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ", 20), DynamicStrings_Mark (str)));
+        str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error, found ", 20), DynamicStrings_Mark (str));
         break;
 
 
@@ -3225,8 +3225,8 @@ static void WarnMissingToken (mcReserved_toktype t)
       /* avoid dangling else.  */
       s2 = (SetOfStop2) ((1 << (t-mcReserved_recordtok)));
     }
-  str = static_cast<DynamicStrings_String> (DescribeStop (s0, s1, s2));
-  str = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error,", 13), DynamicStrings_Mark (str)));
+  str = DescribeStop (s0, s1, s2);
+  str = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "syntax error,", 13), DynamicStrings_Mark (str));
   mcError_errorStringAt (str, mcLexBuf_getTokenNo ());
 }
 
@@ -3340,7 +3340,7 @@ static void Expect (mcReserved_toktype t, SetOfStop0 stopset0, SetOfStop1 stopse
 
 static void Ident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
-  curident = static_cast<nameKey_Name> (nameKey_makekey (mcLexBuf_currentstring));
+  curident = nameKey_makekey (mcLexBuf_currentstring);
   Expect (static_cast<mcReserved_toktype> (mcReserved_identtok), stopset0, stopset1, stopset2);
 }
 
@@ -3351,7 +3351,7 @@ static void Ident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2
 
 static void string (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
-  curstring = static_cast<nameKey_Name> (nameKey_makekey (mcLexBuf_currentstring));
+  curstring = nameKey_makekey (mcLexBuf_currentstring);
   Expect (static_cast<mcReserved_toktype> (mcReserved_stringtok), stopset0, stopset1, stopset2);
 }
 
@@ -3364,7 +3364,7 @@ static void Integer (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopse
 {
   decl_node n;
 
-  n = static_cast<decl_node> (push (decl_makeLiteralInt (nameKey_makekey (mcLexBuf_currentstring))));
+  n = push (decl_makeLiteralInt (nameKey_makekey (mcLexBuf_currentstring)));
   Expect (static_cast<mcReserved_toktype> (mcReserved_integertok), stopset0, stopset1, stopset2);
 }
 
@@ -3377,7 +3377,7 @@ static void Real (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
   decl_node n;
 
-  n = static_cast<decl_node> (push (decl_makeLiteralReal (nameKey_makekey (mcLexBuf_currentstring))));
+  n = push (decl_makeLiteralReal (nameKey_makekey (mcLexBuf_currentstring)));
   Expect (static_cast<mcReserved_toktype> (mcReserved_realtok), stopset0, stopset1, stopset2);
 }
 
@@ -3432,7 +3432,7 @@ static void ProgramModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 {
   Expect (static_cast<mcReserved_toktype> (mcReserved_moduletok), stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok)) | (1 << (mcReserved_lsbratok-mcReserved_eoftok))), stopset1, stopset2);
-  curmodule = static_cast<decl_node> (decl_lookupModule (curident));
+  curmodule = decl_lookupModule (curident);
   decl_enterScope (curmodule);
   decl_resetConstExpPos (curmodule);
   if (mcLexBuf_currenttoken == mcReserved_lsbratok)
@@ -3479,7 +3479,7 @@ static void ImplementationModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetO
   Expect (static_cast<mcReserved_toktype> (mcReserved_implementationtok), stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_moduletok-mcReserved_arraytok))), stopset2);
   Expect (static_cast<mcReserved_toktype> (mcReserved_moduletok), stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok)) | (1 << (mcReserved_lsbratok-mcReserved_eoftok))), stopset1, stopset2);
-  curmodule = static_cast<decl_node> (decl_lookupImp (curident));
+  curmodule = decl_lookupImp (curident);
   decl_enterScope (decl_lookupDef (curident));
   decl_enterScope (curmodule);
   decl_resetConstExpPos (curmodule);
@@ -3601,10 +3601,10 @@ static void ConstantDeclaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOf
   decl_node e;
 
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_equaltok-mcReserved_eoftok))), stopset1, stopset2);
-  d = static_cast<decl_node> (decl_lookupSym (curident));
+  d = decl_lookupSym (curident);
   Expect (static_cast<mcReserved_toktype> (mcReserved_equaltok), stopset0|(SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
   ConstExpression (stopset0, stopset1, stopset2);
-  e = static_cast<decl_node> (pop ());
+  e = pop ();
   mcDebug_assert (decl_isConst (d));
   decl_putConst (d, e);
 }
@@ -3644,19 +3644,19 @@ static void ConstExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
   mcReserved_toktype op;
   unsigned int d;
 
-  d = static_cast<unsigned int> (depth ());
-  c = static_cast<decl_node> (push (decl_getNextConstExp ()));
+  d = depth ();
+  c = push (decl_getNextConstExp ());
   SimpleConstExpr (stopset0|(SetOfStop0) ((1 << (mcReserved_greaterequaltok-mcReserved_eoftok)) | (1 << (mcReserved_greatertok-mcReserved_eoftok)) | (1 << (mcReserved_lessequaltok-mcReserved_eoftok)) | (1 << (mcReserved_lesstok-mcReserved_eoftok)) | (1 << (mcReserved_lessgreatertok-mcReserved_eoftok)) | (1 << (mcReserved_hashtok-mcReserved_eoftok)) | (1 << (mcReserved_equaltok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_intok-mcReserved_arraytok))), stopset2);
   op = mcLexBuf_currenttoken;
   if (((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_equaltok-mcReserved_eoftok)) | (1 << (mcReserved_hashtok-mcReserved_eoftok)) | (1 << (mcReserved_lessgreatertok-mcReserved_eoftok)) | (1 << (mcReserved_lesstok-mcReserved_eoftok)) | (1 << (mcReserved_lessequaltok-mcReserved_eoftok)) | (1 << (mcReserved_greatertok-mcReserved_eoftok)) | (1 << (mcReserved_greaterequaltok-mcReserved_eoftok))))) != 0))) || (mcLexBuf_currenttoken == mcReserved_intok))
     {
       Relation (stopset0|(SetOfStop0) ((1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       SimpleConstExpr (stopset0, stopset1, stopset2);
-      r = static_cast<decl_node> (pop ());
-      l = static_cast<decl_node> (pop ());
-      l = static_cast<decl_node> (push (decl_makeBinaryTok (op, l, r)));
+      r = pop ();
+      l = pop ();
+      l = push (decl_makeBinaryTok (op, l, r));
     }
-  c = static_cast<decl_node> (replace (decl_fixupConstExp (c, pop ())));
+  c = replace (decl_fixupConstExp (c, pop ()));
   mcDebug_assert ((d+1) == (depth ()));
 }
 
@@ -3743,16 +3743,16 @@ static void SimpleConstExpr (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
   decl_node n;
 
   UnaryOrConstTerm (stopset0|(SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_ortok-mcReserved_arraytok))), stopset2);
-  n = static_cast<decl_node> (pop ());
+  n = pop ();
   while (((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_minustok-mcReserved_eoftok))))) != 0))) || (mcLexBuf_currenttoken == mcReserved_ortok))
     {
       op = mcLexBuf_currenttoken;
       AddOperator (stopset0|(SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstTerm (stopset0|(SetOfStop0) ((1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_minustok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_ortok-mcReserved_arraytok))), stopset2);
-      n = static_cast<decl_node> (decl_makeBinaryTok (op, n, pop ()));
+      n = decl_makeBinaryTok (op, n, pop ());
     }
    /* while  */
-  n = static_cast<decl_node> (push (n));
+  n = push (n);
 }
 
 
@@ -3778,14 +3778,14 @@ static void UnaryOrConstTerm (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
     {
       Expect (static_cast<mcReserved_toktype> (mcReserved_plustok), stopset0|(SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstTerm (stopset0, stopset1, stopset2);
-      n = static_cast<decl_node> (push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_plustok), pop ())));
+      n = push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_plustok), pop ()));
     }
   else if (mcLexBuf_currenttoken == mcReserved_minustok)
     {
       /* avoid dangling else.  */
       Expect (static_cast<mcReserved_toktype> (mcReserved_minustok), stopset0|(SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstTerm (stopset0, stopset1, stopset2);
-      n = static_cast<decl_node> (push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_minustok), pop ())));
+      n = push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_minustok), pop ()));
     }
   else if ((((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))))) != 0))) || (mcLexBuf_currenttoken == mcReserved_nottok)) || ((mcLexBuf_currenttoken >= mcReserved_recordtok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_recordtok)) & ((SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))))) != 0))))
     {
@@ -3856,16 +3856,16 @@ static void ConstTerm (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
   decl_node n;
 
   ConstFactor (stopset0|(SetOfStop0) ((1 << (mcReserved_ambersandtok-mcReserved_eoftok)) | (1 << (mcReserved_andtok-mcReserved_eoftok)) | (1 << (mcReserved_dividetok-mcReserved_eoftok)) | (1 << (mcReserved_timestok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_modtok-mcReserved_arraytok)) | (1 << (mcReserved_divtok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_remtok-mcReserved_recordtok))));
-  n = static_cast<decl_node> (pop ());
+  n = pop ();
   while ((((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_timestok-mcReserved_eoftok)) | (1 << (mcReserved_dividetok-mcReserved_eoftok)) | (1 << (mcReserved_andtok-mcReserved_eoftok)) | (1 << (mcReserved_ambersandtok-mcReserved_eoftok))))) != 0))) || (((mcLexBuf_currenttoken >= mcReserved_arraytok) && (mcLexBuf_currenttoken < mcReserved_recordtok)) && ((((1 << (mcLexBuf_currenttoken-mcReserved_arraytok)) & ((SetOfStop1) ((1 << (mcReserved_divtok-mcReserved_arraytok)) | (1 << (mcReserved_modtok-mcReserved_arraytok))))) != 0)))) || (mcLexBuf_currenttoken == mcReserved_remtok))
     {
       op = mcLexBuf_currenttoken;
       MulOperator (stopset0|(SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstFactor (stopset0|(SetOfStop0) ((1 << (mcReserved_timestok-mcReserved_eoftok)) | (1 << (mcReserved_dividetok-mcReserved_eoftok)) | (1 << (mcReserved_andtok-mcReserved_eoftok)) | (1 << (mcReserved_ambersandtok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_divtok-mcReserved_arraytok)) | (1 << (mcReserved_modtok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_remtok-mcReserved_recordtok))));
-      n = static_cast<decl_node> (decl_makeBinaryTok (op, n, pop ()));
+      n = decl_makeBinaryTok (op, n, pop ());
     }
    /* while  */
-  n = static_cast<decl_node> (push (n));
+  n = push (n);
 }
 
 
@@ -3940,7 +3940,7 @@ static void NotConstFactor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 
   Expect (static_cast<mcReserved_toktype> (mcReserved_nottok), stopset0|(SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
   ConstFactor (stopset0, stopset1, stopset2);
-  n = static_cast<decl_node> (push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_nottok), pop ())));
+  n = push (decl_makeUnaryTok (static_cast<mcReserved_toktype> (mcReserved_nottok), pop ()));
 }
 
 
@@ -4012,7 +4012,7 @@ static void ConstString (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 st
   decl_node n;
 
   string (stopset0, stopset1, stopset2);
-  n = static_cast<decl_node> (push (decl_makeString (curstring)));
+  n = push (decl_makeString (curstring));
 }
 
 
@@ -4043,16 +4043,16 @@ static void ConstComponentElement (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
   decl_node n;
 
   ConstExpression (stopset0|(SetOfStop0) ((1 << (mcReserved_periodperiodtok-mcReserved_eoftok))), stopset1, stopset2);
-  l = static_cast<decl_node> (pop ());
+  l = pop ();
   h = static_cast<decl_node> (NULL);
   if (mcLexBuf_currenttoken == mcReserved_periodperiodtok)
     {
       Expect (static_cast<mcReserved_toktype> (mcReserved_periodperiodtok), stopset0|(SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstExpression (stopset0, stopset1, stopset2);
-      h = static_cast<decl_node> (pop ());
+      h = pop ();
       ErrorArray ((const char *) "implementation restriction range is not allowed", 47);
     }
-  n = static_cast<decl_node> (push (decl_includeSetValue (pop (), l, h)));
+  n = push (decl_includeSetValue (pop (), l, h));
 }
 
 
@@ -4115,7 +4115,7 @@ static void ConstConstructor (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
   decl_node n;
 
   Expect (static_cast<mcReserved_toktype> (mcReserved_lcbratok), stopset0|(SetOfStop0) ((1 << (mcReserved_rcbratok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
-  n = static_cast<decl_node> (push (decl_makeSetValue ()));
+  n = push (decl_makeSetValue ());
   if ((((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))))) != 0))) || (mcLexBuf_currenttoken == mcReserved_nottok)) || ((mcLexBuf_currenttoken >= mcReserved_recordtok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_recordtok)) & ((SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))))) != 0))))
     {
       ConstArraySetRecordValue (stopset0|(SetOfStop0) ((1 << (mcReserved_rcbratok-mcReserved_eoftok))), stopset1, stopset2);
@@ -4170,7 +4170,7 @@ static void ConstSetOrQualidentOrFunction (SetOfStop0 stopset0, SetOfStop1 stops
   if (mcLexBuf_currenttoken == mcReserved_identtok)
     {
       /* avoid dangling else.  */
-      d = static_cast<unsigned int> (depth ());
+      d = depth ();
       PushQualident (stopset0|(SetOfStop0) ((1 << (mcReserved_lcbratok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok))), stopset1, stopset2);
       mcDebug_assert ((d+1) == (depth ()));
       if ((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))))) != 0)))
@@ -4180,18 +4180,18 @@ static void ConstSetOrQualidentOrFunction (SetOfStop0 stopset0, SetOfStop1 stops
           if (mcLexBuf_currenttoken == mcReserved_lcbratok)
             {
               ConstConstructor (stopset0, stopset1, stopset2);
-              p = static_cast<decl_node> (pop ());
-              q = static_cast<decl_node> (pop ());
-              n = static_cast<decl_node> (push (decl_putSetValue (p, q)));
+              p = pop ();
+              q = pop ();
+              n = push (decl_putSetValue (p, q));
               mcDebug_assert ((d+1) == (depth ()));
             }
           else if (mcLexBuf_currenttoken == mcReserved_lparatok)
             {
               /* avoid dangling else.  */
               ConstActualParameters (stopset0, stopset1, stopset2);
-              p = static_cast<decl_node> (pop ());
-              q = static_cast<decl_node> (pop ());
-              n = static_cast<decl_node> (push (decl_makeFuncCall (q, p)));
+              p = pop ();
+              q = pop ();
+              n = push (decl_makeFuncCall (q, p));
               mcDebug_assert ((d+1) == (depth ()));
             }
           else
@@ -4204,7 +4204,7 @@ static void ConstSetOrQualidentOrFunction (SetOfStop0 stopset0, SetOfStop1 stops
     }
   else
     {
-      d = static_cast<unsigned int> (depth ());
+      d = depth ();
       ConstConstructor (stopset0, stopset1, stopset2);
       mcDebug_assert ((d+1) == (depth ()));
     }
@@ -4230,7 +4230,7 @@ static void ConstActualParameters (SetOfStop0 stopset0, SetOfStop1 stopset1, Set
   decl_node n;
 
   Expect (static_cast<mcReserved_toktype> (mcReserved_lparatok), stopset0|(SetOfStop0) ((1 << (mcReserved_rparatok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
-  n = static_cast<decl_node> (push (decl_makeExpList ()));
+  n = push (decl_makeExpList ());
   if ((((mcLexBuf_currenttoken < mcReserved_arraytok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_eoftok)) & ((SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))))) != 0))) || (mcLexBuf_currenttoken == mcReserved_nottok)) || ((mcLexBuf_currenttoken >= mcReserved_recordtok) && ((((1 << (mcLexBuf_currenttoken-mcReserved_recordtok)) & ((SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))))) != 0))))
     {
       ConstExpList (stopset0|(SetOfStop0) ((1 << (mcReserved_rparatok-mcReserved_eoftok))), stopset1, stopset2);
@@ -4269,7 +4269,7 @@ static void ConstExpList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
   decl_node p;
   decl_node n;
 
-  p = static_cast<decl_node> (peep ());
+  p = peep ();
   mcDebug_assert (decl_isExpList (p));
   ConstExpression (stopset0|(SetOfStop0) ((1 << (mcReserved_commatok-mcReserved_eoftok))), stopset1, stopset2);
   decl_putExpList (p, pop ());
@@ -4326,7 +4326,7 @@ static void ConstAttributeExpression (SetOfStop0 stopset0, SetOfStop1 stopset1, 
   if (mcLexBuf_currenttoken == mcReserved_identtok)
     {
       Ident (stopset0, stopset1, stopset2);
-      n = static_cast<decl_node> (push (decl_getBuiltinConst (curident)));
+      n = push (decl_getBuiltinConst (curident));
     }
   else if (mcLexBuf_currenttoken == mcReserved_lesstok)
     {
@@ -4453,7 +4453,7 @@ static void PushIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
 {
   decl_node n;
 
-  n = static_cast<decl_node> (decl_makeIdentList ());
+  n = decl_makeIdentList ();
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_commatok-mcReserved_eoftok))), stopset1, stopset2);
   checkDuplicate (decl_putIdent (n, curident));
   while (mcLexBuf_currenttoken == mcReserved_commatok)
@@ -4463,7 +4463,7 @@ static void PushIdentList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
       checkDuplicate (decl_putIdent (n, curident));
     }
    /* while  */
-  n = static_cast<decl_node> (push (n));
+  n = push (n);
 }
 
 
@@ -5022,7 +5022,7 @@ static void VarIdent (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stops
     {
       Expect (static_cast<mcReserved_toktype> (mcReserved_lsbratok), stopset0|(SetOfStop0) ((1 << (mcReserved_minustok-mcReserved_eoftok)) | (1 << (mcReserved_plustok-mcReserved_eoftok)) | (1 << (mcReserved_lparatok-mcReserved_eoftok)) | (1 << (mcReserved_lcbratok-mcReserved_eoftok))), stopset1|(SetOfStop1) ((1 << (mcReserved_nottok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_integertok-mcReserved_recordtok)) | (1 << (mcReserved_realtok-mcReserved_recordtok)) | (1 << (mcReserved_attributetok-mcReserved_recordtok)) | (1 << (mcReserved_stringtok-mcReserved_recordtok)) | (1 << (mcReserved_identtok-mcReserved_recordtok))));
       ConstExpression (stopset0|(SetOfStop0) ((1 << (mcReserved_rsbratok-mcReserved_eoftok))), stopset1, stopset2);
-      n = static_cast<decl_node> (pop ());
+      n = pop ();
       Expect (static_cast<mcReserved_toktype> (mcReserved_rsbratok), stopset0, stopset1, stopset2);
     }
 }
@@ -5951,7 +5951,7 @@ static void ProcedureDeclaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetO
 static void ProcedureIdent (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
   Ident (stopset0, stopset1, stopset2);
-  curproc = static_cast<decl_node> (decl_lookupSym (curident));
+  curproc = decl_lookupSym (curident);
   decl_enterScope (curproc);
 }
 
@@ -5969,7 +5969,7 @@ static void ProcedureIdent (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2
 static void DefProcedureIdent (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
   Ident (stopset0, stopset1, stopset2);
-  curproc = static_cast<decl_node> (decl_lookupSym (curident));
+  curproc = decl_lookupSym (curident);
 }
 
 
@@ -6858,7 +6858,7 @@ static void DefinitionModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
       string (stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
     }
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok))), stopset1, stopset2);
-  curmodule = static_cast<decl_node> (decl_lookupDef (curident));
+  curmodule = decl_lookupDef (curident);
   decl_addCommentBody (curmodule);
   Expect (static_cast<mcReserved_toktype> (mcReserved_semicolontok), stopset0, stopset1|(SetOfStop1) ((1 << (mcReserved_importtok-mcReserved_arraytok)) | (1 << (mcReserved_fromtok-mcReserved_arraytok)) | (1 << (mcReserved_exporttok-mcReserved_arraytok)) | (1 << (mcReserved_endtok-mcReserved_arraytok)) | (1 << (mcReserved_proceduretok-mcReserved_arraytok)) | (1 << (mcReserved_consttok-mcReserved_arraytok))), stopset2|(SetOfStop2) ((1 << (mcReserved_vartok-mcReserved_recordtok)) | (1 << (mcReserved_typetok-mcReserved_recordtok))));
   decl_enterScope (curmodule);
@@ -6914,7 +6914,7 @@ static void DefinitionModule (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfSto
 static void PushQualident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_periodtok-mcReserved_eoftok))), stopset1, stopset2);
-  typeExp = static_cast<decl_node> (push (decl_lookupSym (curident)));
+  typeExp = push (decl_lookupSym (curident));
   if (typeExp == NULL)
     {
       mcMetaError_metaError1 ((const char *) "the symbol {%1k} is not visible in this scope (or any other nested scope)", 73, (const unsigned char *) &curident, (sizeof (curident)-1));
@@ -6927,7 +6927,7 @@ static void PushQualident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 
           ErrorArray ((const char *) "the first component of this qualident must be a definition module", 65);
         }
       Ident (stopset0, stopset1, stopset2);
-      typeExp = static_cast<decl_node> (replace (decl_lookupInScope (typeExp, curident)));
+      typeExp = replace (decl_lookupInScope (typeExp, curident));
       if (typeExp == NULL)
         {
           ErrorArray ((const char *) "identifier not found in definition module", 41);
@@ -7143,7 +7143,7 @@ static void TypeDeclaration (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop
 static void DefQualident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stopset2)
 {
   Ident (stopset0|(SetOfStop0) ((1 << (mcReserved_periodtok-mcReserved_eoftok))), stopset1, stopset2);
-  typeExp = static_cast<decl_node> (decl_lookupSym (curident));
+  typeExp = decl_lookupSym (curident);
   if (mcLexBuf_currenttoken == mcReserved_periodtok)
     {
       Expect (static_cast<mcReserved_toktype> (mcReserved_periodtok), stopset0, stopset1, stopset2|(SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
@@ -7152,7 +7152,7 @@ static void DefQualident (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 s
           ErrorArray ((const char *) "the first component of this qualident must be a definition module", 65);
         }
       Ident (stopset0, stopset1, stopset2);
-      typeExp = static_cast<decl_node> (decl_lookupInScope (typeExp, curident));
+      typeExp = decl_lookupInScope (typeExp, curident);
       if (typeExp == NULL)
         {
           ErrorArray ((const char *) "identifier not found in definition module", 41);
@@ -7574,7 +7574,7 @@ static void TrashList (SetOfStop0 stopset0, SetOfStop1 stopset1, SetOfStop2 stop
 
 extern "C" unsigned int mcp4_CompilationUnit (void)
 {
-  stk = static_cast<mcStack_stack> (mcStack_init ());
+  stk = mcStack_init ();
   WasNoError = TRUE;
   FileUnit ((SetOfStop0) ((1 << (mcReserved_eoftok-mcReserved_eoftok))), (SetOfStop1) 0, (SetOfStop2) 0);
   mcStack_kill (&stk);

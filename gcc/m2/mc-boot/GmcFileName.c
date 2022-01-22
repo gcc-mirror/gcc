@@ -76,11 +76,11 @@ extern "C" DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_St
 {
   if (MaxFileName == 0)
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, MaxFileName), '.'), extension));
+      return DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, MaxFileName), '.'), extension);
     }
   else
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, (MaxFileName-(DynamicStrings_Length (extension)))-1), '.'), extension));
+      return DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, (MaxFileName-(DynamicStrings_Length (extension)))-1), '.'), extension);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -95,7 +95,7 @@ extern "C" DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_St
 
 extern "C" DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module)
 {
-  return static_cast<DynamicStrings_String> (DynamicStrings_Slice (module, 0, MaxStemName));
+  return DynamicStrings_Slice (module, 0, MaxStemName);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -110,7 +110,7 @@ extern "C" DynamicStrings_String mcFileName_extractExtension (DynamicStrings_Str
 {
   if (DynamicStrings_Equal (ext, DynamicStrings_Mark (DynamicStrings_Slice (filename, static_cast<int> (-(DynamicStrings_Length (ext))), 0))))
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (filename, 0, static_cast<int> (-(DynamicStrings_Length (ext)))));
+      return DynamicStrings_Slice (filename, 0, static_cast<int> (-(DynamicStrings_Length (ext))));
     }
   else
     {
@@ -130,14 +130,14 @@ extern "C" DynamicStrings_String mcFileName_extractModule (DynamicStrings_String
 {
   int i;
 
-  i = static_cast<int> (DynamicStrings_Index (filename, Directory, 0));
+  i = DynamicStrings_Index (filename, Directory, 0);
   if (i == -1)
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_Dup (filename));
+      return DynamicStrings_Dup (filename);
     }
   else
     {
-      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (filename, i+1, 0));
+      return DynamicStrings_Slice (filename, i+1, 0);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

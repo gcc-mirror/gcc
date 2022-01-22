@@ -203,7 +203,7 @@ extern "C" void StrIO_ReadString (char *a, unsigned int _a_high)
         /* avoid dangling else.  */
         if ((ch == ASCII_cr) || (ch == ASCII_lf))
           {
-            a[n] = static_cast<char> (ASCII_nul);
+            a[n] = ASCII_nul;
             n += 1;
           }
         else if (ch == ASCII_ff)

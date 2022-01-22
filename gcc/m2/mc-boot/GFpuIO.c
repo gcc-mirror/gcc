@@ -238,9 +238,9 @@ extern "C" void FpuIO_StrToLongReal (const char *a_, unsigned int _a_high, long 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) a, _a_high));
-  (*x) = static_cast<long double> (StringConvert_StringToLongreal (s, &found));
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_InitString ((const char *) a, _a_high);
+  (*x) = StringConvert_StringToLongreal (s, &found);
+  s = DynamicStrings_KillString (s);
 }
 
 
@@ -253,9 +253,9 @@ extern "C" void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, uns
 {
   DynamicStrings_String s;
 
-  s = static_cast<DynamicStrings_String> (StringConvert_LongrealToString (x, TotalWidth, FractionWidth));
+  s = StringConvert_LongrealToString (x, TotalWidth, FractionWidth);
   DynamicStrings_CopyOut ((char *) a, _a_high, s);
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_KillString (s);
 }
 
 
@@ -307,9 +307,9 @@ extern "C" void FpuIO_StrToLongInt (const char *a_, unsigned int _a_high, long i
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) a, _a_high));
-  (*x) = static_cast<long int> (StringConvert_StringToLongInteger (s, 10, &found));
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_InitString ((const char *) a, _a_high);
+  (*x) = StringConvert_StringToLongInteger (s, 10, &found);
+  s = DynamicStrings_KillString (s);
 }
 
 
@@ -322,9 +322,9 @@ extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigne
 {
   DynamicStrings_String s;
 
-  s = static_cast<DynamicStrings_String> (StringConvert_LongIntegerToString (x, n, ' ', FALSE, 10, TRUE));
+  s = StringConvert_LongIntegerToString (x, n, ' ', FALSE, 10, TRUE);
   DynamicStrings_CopyOut ((char *) a, _a_high, s);
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_KillString (s);
 }
 
 extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])

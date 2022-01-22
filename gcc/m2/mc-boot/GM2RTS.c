@@ -390,8 +390,8 @@ extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_
       ErrorString ((const char *) " has caused ", 12);
     }
   ErrorString ((const char *) message, _message_high);
-  LineNo.array[0] = static_cast<char> (ASCII_nl);
-  LineNo.array[1] = static_cast<char> (ASCII_nul);
+  LineNo.array[0] = ASCII_nl;
+  LineNo.array[1] = ASCII_nul;
   ErrorString ((const char *) &LineNo.array[0], 10);
   libc_exit (1);
 }

@@ -270,7 +270,7 @@ extern "C" mcPretty_pretty mcPretty_pushPretty (mcPretty_pretty p)
 {
   mcPretty_pretty q;
 
-  q = static_cast<mcPretty_pretty> (mcPretty_dupPretty (p));
+  q = mcPretty_dupPretty (p);
   q->stacked = p;
   return q;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -329,7 +329,7 @@ extern "C" unsigned int mcPretty_getcurpos (mcPretty_pretty s)
 {
   if (s->needsSpace)
     {
-      return static_cast<unsigned int> (s->curPos+1);
+      return s->curPos+1;
     }
   else
     {
@@ -394,9 +394,9 @@ extern "C" void mcPretty_print (mcPretty_pretty p, const char *a_, unsigned int 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) a, _a_high));
+  s = DynamicStrings_InitString ((const char *) a, _a_high);
   mcPretty_prints (p, s);
-  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+  s = DynamicStrings_KillString (s);
 }
 
 
@@ -409,7 +409,7 @@ extern "C" void mcPretty_prints (mcPretty_pretty p, DynamicStrings_String s)
   unsigned int l;
   unsigned int i;
 
-  l = static_cast<unsigned int> (DynamicStrings_Length (s));
+  l = DynamicStrings_Length (s);
   i = static_cast<unsigned int> (0);
   flushSpace (p);
   while (i < l)
@@ -446,7 +446,7 @@ extern "C" void mcPretty_raw (mcPretty_pretty p, DynamicStrings_String s)
   unsigned int l;
   unsigned int i;
 
-  l = static_cast<unsigned int> (DynamicStrings_Length (s));
+  l = DynamicStrings_Length (s);
   i = static_cast<unsigned int> (0);
   flushSpace (p);
   flushIndent (p);

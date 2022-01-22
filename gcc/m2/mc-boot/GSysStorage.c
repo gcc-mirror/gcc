@@ -90,7 +90,7 @@ extern "C" void SysStorage_Init (void);
 
 extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
 {
-  (*a) = reinterpret_cast<void *> (libc_malloc (static_cast<size_t> (size)));
+  (*a) = libc_malloc (static_cast<size_t> (size));
   if ((*a) == NULL)
     {
       Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
@@ -160,7 +160,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
           libc_printf ((const char *) "  realloc (0x%x, %d bytes)  ->  ", 32, (*a), size);
           libc_printf ((const char *) "<MEM-FREE> %ld %d\\n", 19, (*a), size);
         }
-      (*a) = reinterpret_cast<void *> (libc_realloc ((*a), static_cast<size_t> (size)));
+      (*a) = libc_realloc ((*a), static_cast<size_t> (size));
       if ((*a) == NULL)
         {
           Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
@@ -191,7 +191,7 @@ extern "C" unsigned int SysStorage_Available (unsigned int size)
       libc_printf ((const char *) "<DEBUG-CALL> %d SysStorage.Available (%d bytes)\\n", 49, callno, size);
       callno += 1;
     }
-  a = reinterpret_cast<void *> (libc_malloc (static_cast<size_t> (size)));
+  a = libc_malloc (static_cast<size_t> (size));
   if (a == NULL)
     {
       if (enableTrace && trace)

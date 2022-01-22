@@ -105,7 +105,7 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file);
 
 extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname)
 {
-  return static_cast<unsigned int> (FIO_exists (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
+  return FIO_exists (DynamicStrings_string (fname), DynamicStrings_Length (fname));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -120,7 +120,7 @@ extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname)
 
 extern "C" FIO_File SFIO_OpenToRead (DynamicStrings_String fname)
 {
-  return static_cast<FIO_File> (FIO_openToRead (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
+  return FIO_openToRead (DynamicStrings_string (fname), DynamicStrings_Length (fname));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -135,7 +135,7 @@ extern "C" FIO_File SFIO_OpenToRead (DynamicStrings_String fname)
 
 extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
 {
-  return static_cast<FIO_File> (FIO_openToWrite (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
+  return FIO_openToWrite (DynamicStrings_string (fname), DynamicStrings_Length (fname));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -155,7 +155,7 @@ extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
 
 extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile)
 {
-  return static_cast<FIO_File> (FIO_openForRandom (DynamicStrings_string (fname), DynamicStrings_Length (fname), towrite, newfile));
+  return FIO_openForRandom (DynamicStrings_string (fname), DynamicStrings_Length (fname), towrite, newfile);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -171,7 +171,7 @@ extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_Stri
 
   if (s != NULL)
     {
-      nBytes = static_cast<unsigned int> (FIO_WriteNBytes (file, DynamicStrings_Length (s), DynamicStrings_string (s)));
+      nBytes = FIO_WriteNBytes (file, DynamicStrings_Length (s), DynamicStrings_string (s));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -191,10 +191,10 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
   DynamicStrings_String s;
   unsigned int c;
 
-  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  s = DynamicStrings_InitString ((const char *) "", 0);
   while (((! (FIO_EOLN (file))) && (! (FIO_EOF (file)))) && (FIO_IsNoError (file)))
     {
-      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (s, FIO_ReadChar (file)));
+      s = DynamicStrings_ConCatChar (s, FIO_ReadChar (file));
     }
   if (FIO_EOLN (file))
     {

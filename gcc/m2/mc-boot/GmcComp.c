@@ -200,7 +200,7 @@ static void doCompile (DynamicStrings_String s)
 {
   decl_node n;
 
-  n = static_cast<decl_node> (initParser (s));
+  n = initParser (s);
   doPass (TRUE, TRUE, 1, (symbolKey_performOperation) {(symbolKey_performOperation_t) p1}, (const char *) "lexical analysis, modules, root decls and C preprocessor", 56);
   doPass (TRUE, TRUE, 2, (symbolKey_performOperation) {(symbolKey_performOperation_t) p2}, (const char *) "[all modules] type equivalence and enumeration types", 52);
   doPass (TRUE, TRUE, 3, (symbolKey_performOperation) {(symbolKey_performOperation_t) p3}, (const char *) "[all modules] import lists, types, variables and procedure declarations", 71);
@@ -255,7 +255,7 @@ static decl_node examineCompilationUnit (void)
                 }
               if (mcLexBuf_currenttoken == mcReserved_identtok)
                 {
-                  return static_cast<decl_node> (decl_lookupDef (nameKey_makekey (mcLexBuf_currentstring)));
+                  return decl_lookupDef (nameKey_makekey (mcLexBuf_currentstring));
                 }
             }
           else
@@ -273,7 +273,7 @@ static decl_node examineCompilationUnit (void)
               mcLexBuf_getToken ();
               if (mcLexBuf_currenttoken == mcReserved_identtok)
                 {
-                  return static_cast<decl_node> (decl_lookupImp (nameKey_makekey (mcLexBuf_currentstring)));
+                  return decl_lookupImp (nameKey_makekey (mcLexBuf_currentstring));
                 }
             }
           else
@@ -287,7 +287,7 @@ static decl_node examineCompilationUnit (void)
           mcLexBuf_getToken ();
           if (mcLexBuf_currenttoken == mcReserved_identtok)
             {
-              return static_cast<decl_node> (decl_lookupModule (nameKey_makekey (mcLexBuf_currentstring)));
+              return decl_lookupModule (nameKey_makekey (mcLexBuf_currentstring));
             }
         }
       mcLexBuf_getToken ();
@@ -309,10 +309,10 @@ static decl_node peepInto (DynamicStrings_String s)
   decl_node n;
   DynamicStrings_String fileName;
 
-  fileName = static_cast<DynamicStrings_String> (mcPreprocess_preprocessModule (s));
+  fileName = mcPreprocess_preprocessModule (s);
   if (mcLexBuf_openSource (fileName))
     {
-      n = static_cast<decl_node> (examineCompilationUnit ());
+      n = examineCompilationUnit ();
       decl_setSource (n, nameKey_makekey (DynamicStrings_string (fileName)));
       decl_setMainModule (n);
       mcLexBuf_closeSource ();
@@ -336,7 +336,7 @@ static decl_node peepInto (DynamicStrings_String s)
 static decl_node initParser (DynamicStrings_String s)
 {
   mcQuiet_qprintf1 ((const char *) "Compiling: %s\\n", 15, (const unsigned char *) &s, (sizeof (s)-1));
-  return static_cast<decl_node> (peepInto (s));
+  return peepInto (s);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -449,7 +449,7 @@ static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicS
   DynamicStrings_String postProcessed;
 
   mcQuiet_qprintf2 ((const char *) "   Module %-20s : %s\\n", 22, (const unsigned char *) &symName, (sizeof (symName)-1), (const unsigned char *) &fileName, (sizeof (fileName)-1));
-  postProcessed = static_cast<DynamicStrings_String> (mcPreprocess_preprocessModule (fileName));
+  postProcessed = mcPreprocess_preprocessModule (fileName);
   decl_setSource (n, nameKey_makekey (DynamicStrings_string (postProcessed)));
   decl_setCurrentModule (n);
   if (mcLexBuf_openSource (postProcessed))
@@ -479,8 +479,8 @@ static unsigned int openDef (decl_node n, unsigned int exitOnFailure)
   DynamicStrings_String symName;
   DynamicStrings_String fileName;
 
-  sourceName = static_cast<nameKey_Name> (decl_getSource (n));
-  symName = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n))));
+  sourceName = decl_getSource (n);
+  symName = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
   if (sourceName == nameKey_NulName)
     {
       /* avoid dangling else.  */
@@ -495,9 +495,9 @@ static unsigned int openDef (decl_node n, unsigned int exitOnFailure)
     }
   else
     {
-      fileName = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (sourceName)));
+      fileName = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (sourceName));
     }
-  return static_cast<unsigned int> (doOpen (n, symName, fileName, exitOnFailure));
+  return doOpen (n, symName, fileName, exitOnFailure);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -515,8 +515,8 @@ static unsigned int openMod (decl_node n, unsigned int exitOnFailure)
   DynamicStrings_String symName;
   DynamicStrings_String fileName;
 
-  sourceName = static_cast<nameKey_Name> (decl_getSource (n));
-  symName = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n))));
+  sourceName = decl_getSource (n);
+  symName = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (n)));
   if (sourceName == nameKey_NulName)
     {
       /* avoid dangling else.  */
@@ -538,9 +538,9 @@ static unsigned int openMod (decl_node n, unsigned int exitOnFailure)
     }
   else
     {
-      fileName = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (sourceName)));
+      fileName = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (sourceName));
     }
-  return static_cast<unsigned int> (doOpen (n, symName, fileName, exitOnFailure));
+  return doOpen (n, symName, fileName, exitOnFailure);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -561,7 +561,7 @@ static void pass (unsigned int no, decl_node n, parserFunction f, decl_isNodeF i
             {
               mcError_writeFormat0 ((const char *) "compilation failed", 18);
               mcLexBuf_closeSource ();
-              return;
+              return ;
             }
           mcLexBuf_closeSource ();
         }
@@ -582,7 +582,7 @@ static void doPass (unsigned int parseDefs, unsigned int parseMain, unsigned int
   memcpy (desc, desc_, _desc_high+1);
 
   setToPassNo (no);
-  descs = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) desc, _desc_high));
+  descs = DynamicStrings_InitString ((const char *) desc, _desc_high);
   mcQuiet_qprintf2 ((const char *) "Pass %d: %s\\n", 13, (const unsigned char *) &no, (sizeof (no)-1), (const unsigned char *) &descs, (sizeof (descs)-1));
   decl_foreachDefModuleDo ((symbolKey_performOperation) {(symbolKey_performOperation_t) decl_unsetVisited});
   decl_foreachModModuleDo ((symbolKey_performOperation) {(symbolKey_performOperation_t) decl_unsetVisited});

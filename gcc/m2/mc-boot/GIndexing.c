@@ -169,7 +169,7 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
   i->High = static_cast<unsigned int> (0);
   i->ArraySize = static_cast<unsigned int> (MinSize);
   Storage_ALLOCATE (&i->ArrayStart, MinSize);
-  i->ArrayStart = reinterpret_cast<void *> (libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize)));
+  i->ArrayStart = libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize));
   i->Debug = FALSE;
   i->Used = static_cast<unsigned int> (0);
   i->Map = (unsigned int) 0;
@@ -292,7 +292,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
           oldSize = i->ArraySize;
           while (((n-i->Low)*sizeof (void *)) >= i->ArraySize)
             {
-              i->ArraySize = static_cast<unsigned int> (i->ArraySize*2);
+              i->ArraySize = i->ArraySize*2;
             }
           if (oldSize != i->ArraySize)
             {
@@ -308,7 +308,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
               /* and initialize the remainder of the array to NIL  */
               b = i->ArrayStart;
               b = reinterpret_cast<void *> (reinterpret_cast<char *> (b)+oldSize);
-              b = reinterpret_cast<void *> (libc_memset (b, 0, static_cast<size_t> (i->ArraySize-oldSize)));
+              b = libc_memset (b, 0, static_cast<size_t> (i->ArraySize-oldSize));
             }
           i->High = n;
         }
@@ -472,7 +472,7 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
   unsigned int j;
   Indexing_IndexProcedure q;
 
-  j = static_cast<unsigned int> (Indexing_LowIndice (i));
+  j = Indexing_LowIndice (i);
   q = p;
   while (j <= (Indexing_HighIndice (i)))
     {

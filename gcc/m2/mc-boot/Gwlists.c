@@ -224,7 +224,7 @@ extern "C" void wlists_putItemIntoList (wlists_wlist l, unsigned int c)
   else
     {
       /* avoid dangling else.  */
-      l->next = static_cast<wlists_wlist> (wlists_initList ());
+      l->next = wlists_initList ();
       wlists_putItemIntoList (l->next, c);
     }
 }
@@ -282,7 +282,7 @@ extern "C" unsigned int wlists_getIndexOfList (wlists_wlist l, unsigned int c)
               i += 1;
             }
         }
-      return static_cast<unsigned int> (l->noOfElements+(wlists_getIndexOfList (l->next, c)));
+      return l->noOfElements+(wlists_getIndexOfList (l->next, c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -429,7 +429,7 @@ extern "C" void wlists_foreachItemInListDo (wlists_wlist l, wlists_performOperat
   unsigned int i;
   unsigned int n;
 
-  n = static_cast<unsigned int> (wlists_noOfItemsInList (l));
+  n = wlists_noOfItemsInList (l);
   i = static_cast<unsigned int> (1);
   while (i <= n)
     {
@@ -449,8 +449,8 @@ extern "C" wlists_wlist wlists_duplicateList (wlists_wlist l)
   unsigned int n;
   unsigned int i;
 
-  m = static_cast<wlists_wlist> (wlists_initList ());
-  n = static_cast<unsigned int> (wlists_noOfItemsInList (l));
+  m = wlists_initList ();
+  n = wlists_noOfItemsInList (l);
   i = static_cast<unsigned int> (1);
   while (i <= n)
     {

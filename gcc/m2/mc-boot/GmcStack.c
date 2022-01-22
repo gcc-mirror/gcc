@@ -103,7 +103,7 @@ extern "C" mcStack_stack mcStack_init (void)
   mcStack_stack s;
 
   Storage_ALLOCATE ((void **) &s, sizeof (_T1));
-  s->list = static_cast<Indexing_Index> (Indexing_InitIndex (1));
+  s->list = Indexing_InitIndex (1);
   s->count = static_cast<unsigned int> (0);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -117,7 +117,7 @@ extern "C" mcStack_stack mcStack_init (void)
 
 extern "C" void mcStack_kill (mcStack_stack *s)
 {
-  (*s)->list = static_cast<Indexing_Index> (Indexing_KillIndex ((*s)->list));
+  (*s)->list = Indexing_KillIndex ((*s)->list);
   Storage_DEALLOCATE ((void **) &(*s), sizeof (_T1));
   (*s) = static_cast<mcStack_stack> (NULL);
 }
@@ -161,7 +161,7 @@ extern "C" void * mcStack_pop (mcStack_stack s)
   else
     {
       s->count -= 1;
-      a = reinterpret_cast<void *> (Indexing_GetIndice (s->list, Indexing_HighIndice (s->list)));
+      a = Indexing_GetIndice (s->list, Indexing_HighIndice (s->list));
       Indexing_DeleteIndice (s->list, Indexing_HighIndice (s->list));
       return a;
     }
@@ -178,8 +178,8 @@ extern "C" void * mcStack_replace (mcStack_stack s, void * a)
 {
   void * b;
 
-  b = reinterpret_cast<void *> (mcStack_pop (s));
-  return reinterpret_cast<void *> (mcStack_push (s, a));
+  b = mcStack_pop (s);
+  return mcStack_push (s, a);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -213,7 +213,7 @@ extern "C" void * mcStack_access (mcStack_stack s, unsigned int i)
     }
   else
     {
-      return reinterpret_cast<void *> (Indexing_GetIndice (s->list, i));
+      return Indexing_GetIndice (s->list, i);
     }
   ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcStack.def", 20, 1);
   __builtin_unreachable ();

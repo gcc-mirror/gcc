@@ -866,9 +866,9 @@ static scope new_ (decl_node n)
 
 static unsigned int mangle1 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
 {
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_KillString ((*m)));
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar ((*m), '_'));
+  (*m) = DynamicStrings_KillString ((*m));
+  (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
+  (*m) = DynamicStrings_ConCatChar ((*m), '_');
   return ! (clash (nameKey_makekey (DynamicStrings_string ((*m))), scopes));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -882,9 +882,9 @@ static unsigned int mangle1 (nameKey_Name n, DynamicStrings_String *m, unsigned 
 
 static unsigned int mangle2 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
 {
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_KillString ((*m)));
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "_", 1), DynamicStrings_Mark ((*m))));
+  (*m) = DynamicStrings_KillString ((*m));
+  (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
+  (*m) = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "_", 1), DynamicStrings_Mark ((*m)));
   return ! (clash (nameKey_makekey (DynamicStrings_string ((*m))), scopes));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -898,11 +898,11 @@ static unsigned int mangle2 (nameKey_Name n, DynamicStrings_String *m, unsigned 
 
 static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
 {
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_KillString ((*m)));
-  (*m) = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n)));
+  (*m) = DynamicStrings_KillString ((*m));
+  (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
   for (;;)
   {
-    (*m) = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar ((*m), '_'));
+    (*m) = DynamicStrings_ConCatChar ((*m), '_');
     if (! (clash (nameKey_makekey (DynamicStrings_string ((*m))), scopes)))
       {
         return TRUE;
@@ -966,7 +966,7 @@ static void add (symbolKey_symbolTree s, const char *a_, unsigned int _a_high)
 
 static void initMacros (void)
 {
-  macros = static_cast<symbolKey_symbolTree> (symbolKey_initTree ());
+  macros = symbolKey_initTree ();
   add (macros, (const char *) "FILE", 4);
   add (macros, (const char *) "EOF", 3);
   add (macros, (const char *) "stdio", 5);
@@ -1001,7 +1001,7 @@ static void initMacros (void)
 
 static void initKeywords (void)
 {
-  keywords = static_cast<symbolKey_symbolTree> (symbolKey_initTree ());
+  keywords = symbolKey_initTree ();
   add (keywords, (const char *) "auto", 4);
   add (keywords, (const char *) "break", 5);
   add (keywords, (const char *) "case", 4);
@@ -1470,9 +1470,9 @@ extern "C" void keyc_enterScope (decl_node n)
 {
   scope s;
 
-  s = static_cast<scope> (new_ (n));
+  s = new_ (n);
   s->scoped = n;
-  s->symbols = static_cast<symbolKey_symbolTree> (symbolKey_initTree ());
+  s->symbols = symbolKey_initTree ();
   s->next = stack;
   stack = s;
 }
@@ -1525,7 +1525,7 @@ extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes
           if (scopes)
             {
               /* no longer a clash with, m, so add it to the current scope.  */
-              n = static_cast<nameKey_Name> (nameKey_makekey (DynamicStrings_string (m)));
+              n = nameKey_makekey (DynamicStrings_string (m));
               symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (m));
             }
         }
@@ -1568,7 +1568,7 @@ extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, unsigned int scopes)
       if (((mangle1 (n, &m, scopes)) || (mangle2 (n, &m, scopes))) || (mangleN (n, &m, scopes)))
         {
           /* avoid dangling else.  */
-          n = static_cast<nameKey_Name> (nameKey_makekey (DynamicStrings_string (m)));
+          n = nameKey_makekey (DynamicStrings_string (m));
           if (scopes)
             {
               /* no longer a clash with, m, so add it to the current scope.  */
@@ -1588,7 +1588,7 @@ extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, unsigned int scopes)
       /* no clash, add it to the current scope.  */
       symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
     }
-  m = static_cast<DynamicStrings_String> (DynamicStrings_KillString (m));
+  m = DynamicStrings_KillString (m);
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

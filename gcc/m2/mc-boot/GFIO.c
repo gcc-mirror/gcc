@@ -534,8 +534,8 @@ static FIO_File GetNextFreeDescriptor (void)
   FIO_File h;
   FileDescriptor fd;
 
-  f = static_cast<FIO_File> (Error+1);
-  h = static_cast<FIO_File> (Indexing_HighIndice (FileInfo));
+  f = Error+1;
+  h = Indexing_HighIndice (FileInfo);
   for (;;)
   {
     if (f <= h)
@@ -589,7 +589,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
   else
     {
       Indexing_PutIndice (FileInfo, static_cast<unsigned int> (f), reinterpret_cast<void *> (fd));
-      fd->name.size = static_cast<unsigned int> (flength+1);  /* need to guarantee the nul for C  */
+      fd->name.size = flength+1;  /* need to guarantee the nul for C  */
       fd->usage = use;  /* need to guarantee the nul for C  */
       fd->output = towrite;
       Storage_ALLOCATE (&fd->name.address, fd->name.size);
@@ -598,11 +598,11 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
           fd->state = outofmemory;
           return f;
         }
-      fd->name.address = reinterpret_cast<void *> (libc_strncpy (fd->name.address, fname, flength));
+      fd->name.address = libc_strncpy (fd->name.address, fname, flength);
       /* and assign nul to the last byte  */
       p = static_cast<PtrToChar> (fd->name.address);
       p += flength;
-      (*p) = static_cast<char> (ASCII_nul);
+      (*p) = ASCII_nul;
       fd->abspos = static_cast<long int> (0);
       /* now for the buffer  */
       Storage_ALLOCATE ((void **) &fd->buffer, sizeof (buf));
@@ -666,16 +666,16 @@ static void ConnectToUnix (FIO_File f, unsigned int towrite, unsigned int newfil
             {
               if (newfile)
                 {
-                  fd->unixfd = static_cast<int> (libc_creat (fd->name.address, CreatePermissions));
+                  fd->unixfd = libc_creat (fd->name.address, CreatePermissions);
                 }
               else
                 {
-                  fd->unixfd = static_cast<int> (libc_open (fd->name.address, UNIXWRITEONLY, 0));
+                  fd->unixfd = libc_open (fd->name.address, UNIXWRITEONLY, 0);
                 }
             }
           else
             {
-              fd->unixfd = static_cast<int> (libc_open (fd->name.address, UNIXREADONLY, 0));
+              fd->unixfd = libc_open (fd->name.address, UNIXREADONLY, 0);
             }
           if (fd->unixfd < 0)
             {
@@ -730,7 +730,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                 }
               else
                 {
-                  n = static_cast<unsigned int> (Min (fd->buffer->left, nBytes));
+                  n = Min (fd->buffer->left, nBytes);
                   t = fd->buffer->address;
                   t = reinterpret_cast<void *> (reinterpret_cast<char *> (t)+fd->buffer->position);
                   p = static_cast<_T1> (libc_memcpy (a, t, static_cast<size_t> (n)));
@@ -922,7 +922,7 @@ static void HandleEscape (char *dest, unsigned int _dest_high, const char *src_,
       if (src[(*i)+1] == 'n')
         {
           /* requires a newline  */
-          dest[(*j)] = static_cast<char> (ASCII_nl);
+          dest[(*j)] = ASCII_nl;
           (*j) += 1;
           (*i) += 2;
         }
@@ -930,7 +930,7 @@ static void HandleEscape (char *dest, unsigned int _dest_high, const char *src_,
         {
           /* avoid dangling else.  */
           /* requires a tab (yuck) tempted to fake this but I better not..  */
-          dest[(*j)] = static_cast<char> (ASCII_tab);
+          dest[(*j)] = ASCII_tab;
           (*j) += 1;
           (*i) += 2;
         }
@@ -999,7 +999,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
   memcpy (src, src_, _src_high+1);
   memcpy (w, w_, _w_high+1);
 
-  HighSrc = static_cast<unsigned int> (StrLib_StrLen ((const char *) src, _src_high));
+  HighSrc = StrLib_StrLen ((const char *) src, _src_high);
   HighDest = _dest_high;
   i = static_cast<unsigned int> (0);
   j = static_cast<unsigned int> (0);
@@ -1032,7 +1032,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
             {
               dest[j] = ASCII_nul;
             }
-          j = static_cast<unsigned int> (StrLib_StrLen ((const char *) dest, _dest_high));
+          j = StrLib_StrLen ((const char *) dest, _dest_high);
           i += 2;
         }
       else if (src[i+1] == 'd')
@@ -1042,7 +1042,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
           Cast ((unsigned char *) &c, (sizeof (c)-1), (const unsigned char *) w, _w_high);
           NumberIO_CardToStr (c, 0, (char *) &str.array[0], MaxErrorString);
           StrLib_StrConCat ((const char *) dest, _dest_high, (const char *) &str.array[0], MaxErrorString, (char *) dest, _dest_high);
-          j = static_cast<unsigned int> (StrLib_StrLen ((const char *) dest, _dest_high));
+          j = StrLib_StrLen ((const char *) dest, _dest_high);
           i += 2;
         }
       else
@@ -1353,7 +1353,7 @@ static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_h
 
 static void Init (void)
 {
-  FileInfo = static_cast<Indexing_Index> (Indexing_InitIndex (0));
+  FileInfo = Indexing_InitIndex (0);
   Error = static_cast<FIO_File> (0);
   PreInitialize (Error, (const char *) "error", 5, static_cast<FileStatus> (toomanyfilesopen), static_cast<FileUsage> (unused), FALSE, -1, 0);
   FIO_StdIn = static_cast<FIO_File> (1);
@@ -1420,7 +1420,7 @@ extern "C" unsigned int FIO_Exists (const char *fname_, unsigned int _fname_high
   /* 
    The following functions are wrappers for the above.
   */
-  return static_cast<unsigned int> (FIO_exists (&fname, StrLib_StrLen ((const char *) fname, _fname_high)));
+  return FIO_exists (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1432,7 +1432,7 @@ extern "C" FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return static_cast<FIO_File> (FIO_openToRead (&fname, StrLib_StrLen ((const char *) fname, _fname_high)));
+  return FIO_openToRead (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1444,7 +1444,7 @@ extern "C" FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_hig
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return static_cast<FIO_File> (FIO_openToWrite (&fname, StrLib_StrLen ((const char *) fname, _fname_high)));
+  return FIO_openToWrite (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1456,7 +1456,7 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return static_cast<FIO_File> (FIO_openForRandom (&fname, StrLib_StrLen ((const char *) fname, _fname_high), towrite, newfile));
+  return FIO_openForRandom (&fname, StrLib_StrLen ((const char *) fname, _fname_high), towrite, newfile);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1517,7 +1517,7 @@ extern "C" unsigned int FIO_exists (void * fname, unsigned int flength)
 {
   FIO_File f;
 
-  f = static_cast<FIO_File> (FIO_openToRead (fname, flength));
+  f = FIO_openToRead (fname, flength);
   if (FIO_IsNoError (f))
     {
       FIO_Close (f);
@@ -1544,14 +1544,14 @@ extern "C" FIO_File FIO_openToRead (void * fname, unsigned int flength)
 {
   FIO_File f;
 
-  f = static_cast<FIO_File> (GetNextFreeDescriptor ());
+  f = GetNextFreeDescriptor ();
   if (f == Error)
     {
       SetState (f, static_cast<FileStatus> (toomanyfilesopen));
     }
   else
     {
-      f = static_cast<FIO_File> (InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforread), FALSE, MaxBufferLength));
+      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforread), FALSE, MaxBufferLength);
       ConnectToUnix (f, FALSE, FALSE);
     }
   return f;
@@ -1571,14 +1571,14 @@ extern "C" FIO_File FIO_openToWrite (void * fname, unsigned int flength)
 {
   FIO_File f;
 
-  f = static_cast<FIO_File> (GetNextFreeDescriptor ());
+  f = GetNextFreeDescriptor ();
   if (f == Error)
     {
       SetState (f, static_cast<FileStatus> (toomanyfilesopen));
     }
   else
     {
-      f = static_cast<FIO_File> (InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforwrite), TRUE, MaxBufferLength));
+      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforwrite), TRUE, MaxBufferLength);
       ConnectToUnix (f, TRUE, TRUE);
     }
   return f;
@@ -1600,14 +1600,14 @@ extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsig
 {
   FIO_File f;
 
-  f = static_cast<FIO_File> (GetNextFreeDescriptor ());
+  f = GetNextFreeDescriptor ();
   if (f == Error)
     {
       SetState (f, static_cast<FileStatus> (toomanyfilesopen));
     }
   else
     {
-      f = static_cast<FIO_File> (InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforrandom), towrite, MaxBufferLength));
+      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforrandom), towrite, MaxBufferLength);
       ConnectToUnix (f, towrite, newfile);
     }
   return f;
@@ -1666,7 +1666,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
   if (f != Error)
     {
       CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
-      n = static_cast<int> (ReadFromBuffer (f, a, nBytes));
+      n = ReadFromBuffer (f, a, nBytes);
       if (n <= 0)
         {
           return static_cast<unsigned int> (0);
@@ -1818,7 +1818,7 @@ extern "C" unsigned int FIO_EOLN (FIO_File f)
         {
           if ((fd->state == successful) || (fd->state == endofline))
             {
-              ch = static_cast<char> (FIO_ReadChar (f));
+              ch = FIO_ReadChar (f);
               if ((fd->state == successful) || (fd->state == endofline))
                 {
                   FIO_UnReadChar (f, ch);
@@ -1931,10 +1931,10 @@ extern "C" void FIO_UnReadChar (FIO_File f, char ch)
                     }
                   else
                     {
-                      n = static_cast<unsigned int> (fd->buffer->filled-fd->buffer->position);
+                      n = fd->buffer->filled-fd->buffer->position;
                       b = &(*fd->buffer->contents).array[fd->buffer->position];
                       a = &(*fd->buffer->contents).array[fd->buffer->position+1];
-                      a = reinterpret_cast<void *> (libc_memcpy (a, b, static_cast<size_t> (n)));
+                      a = libc_memcpy (a, b, static_cast<size_t> (n));
                       fd->buffer->filled += 1;
                       (*fd->buffer->contents).array[fd->buffer->position] = ch;
                     }
@@ -1971,7 +1971,7 @@ extern "C" void FIO_WriteString (FIO_File f, const char *a_, unsigned int _a_hig
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  l = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  l = StrLib_StrLen ((const char *) a, _a_high);
   if ((FIO_WriteNBytes (f, l, &a)) != l)
     {}  /* empty.  */
 }
@@ -1993,7 +1993,7 @@ extern "C" void FIO_ReadString (FIO_File f, char *a, unsigned int _a_high)
   high = _a_high;
   i = static_cast<unsigned int> (0);
   do {
-    ch = static_cast<char> (FIO_ReadChar (f));
+    ch = FIO_ReadChar (f);
     if (i <= high)
       {
         /* avoid gcc warning by using compound statement even if not strictly necessary.  */
@@ -2096,7 +2096,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
                   fd->buffer->position = static_cast<unsigned int> (0);
                   fd->buffer->filled = static_cast<unsigned int> (0);
                 }
-              offset = static_cast<long int> (libc_lseek (fd->unixfd, pos, SEEK_SET));
+              offset = libc_lseek (fd->unixfd, pos, SEEK_SET);
               if ((offset >= 0) && (pos == offset))
                 {
                   fd->abspos = pos;
@@ -2145,7 +2145,7 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
               fd->buffer->position = static_cast<unsigned int> (0);
               fd->buffer->filled = static_cast<unsigned int> (0);
             }
-          offset = static_cast<long int> (libc_lseek (fd->unixfd, pos, SEEK_END));
+          offset = libc_lseek (fd->unixfd, pos, SEEK_END);
           if (offset >= 0)
             {
               fd->abspos = offset;
@@ -2185,7 +2185,7 @@ extern "C" long int FIO_FindPosition (FIO_File f)
             }
           else
             {
-              return static_cast<long int> (fd->buffer->bufstart+((long int ) (fd->buffer->position)));
+              return fd->buffer->bufstart+((long int ) (fd->buffer->position));
             }
         }
     }
