@@ -1,3 +1,90 @@
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104148
+	* c-c++-common/Wformat-pr104148.c: New test.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/explicit-args6.C: Add expected message.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104084
+	PR c++/20040
+	* g++.dg/init/new50.C: New test.
+
+2022-01-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-4.c: Add two test variants.  Adjust
+	assembler counts.
+
+2022-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/104140
+	* gcc.target/riscv/pr104140.c: New test case.
+
+2022-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103676
+	* g++.target/arm/pr103676.C: New.
+
+2022-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101715
+	* g++.dg/cpp0x/noexcept72.C: New test.
+	* g++.dg/cpp0x/noexcept73.C: New test.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104139
+	PR c++/103681
+	* g++.dg/abi/no_unique_address2.C: Adjust to detect this on x86-64.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/99673
+	* gcc.dg/asan/pr99673.c: New testcase.
+
+2022-01-21  Ard Biesheuvel  <ardb@kernel.org>
+
+	* gcc.target/arm/stack-protector-7.c: New test.
+	* gcc.target/arm/stack-protector-8.c: New test.
+
+2022-01-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/spellcheck_1.c: Adjust tests for new output.
+	* gcc.target/aarch64/spellcheck_2.c: Likewise.
+	* gcc.target/aarch64/spellcheck_3.c: Likewise.
+	* gcc.target/aarch64/spellcheck_7.c: Likewise.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104156
+	* gcc.dg/loop-unswitch-6.c: New testcase.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104152
+	* gcc.dg/vect/pr104152.c: New testcase.
+
+2022-01-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103721-2.c: New test.
+	* gcc.dg/pr103721.c: New test.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* gcc.dg/pr102478.c: New test.
+
+2022-01-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/fix-r4000-2.c: Update expected output.
+	* gcc.target/mips/fix-r4000-3.c: Update expected output.  Add
+	-fexpensive-optimizations for consistency in output.
+	* gcc.target/mips/fix-r4000-7.c: Update expected output.
+	* gcc.target/mips/fix-r4000-8.c: Update expected output.
+
 2022-01-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94362

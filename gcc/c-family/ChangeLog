@@ -1,3 +1,15 @@
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104148
+	* c-common.h (check_function_arguments_recurse): Add for_format
+	arg.
+	* c-common.cc (check_function_nonnull): Pass false to
+	check_function_arguments_recurse's last argument.
+	(check_function_arguments_recurse): Add for_format argument,
+	if true, don't stop on warning_suppressed_p.
+	* c-format.cc (check_format_info): Pass true to
+	check_function_arguments_recurse's last argument.
+
 2022-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.cc (c_common_c_tests): Rename to...

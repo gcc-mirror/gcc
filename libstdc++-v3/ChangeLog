@@ -1,3 +1,78 @@
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/array.cc: Fix comment.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87193
+	PR libstdc++/104019
+	* include/bits/alloc_traits.h (__cpp_lib_allocator_traits_is_always_equal):
+	Define as type long.
+	* include/bits/allocator.h (__cpp_lib_incomplete_container_elements):
+	Likewise.
+	* include/bits/basic_string.h (__cpp_lib_string_udls): Likewise.
+	* include/bits/chrono.h (__cpp_lib_chrono): Likewise.
+	(__cpp_lib_chrono_udls): Likewise.
+	* include/bits/move.h (__cpp_lib_addressof_constexpr): Likewise.
+	* include/bits/node_handle.h (__cpp_lib_node_extract): Likewise.
+	* include/bits/range_access.h (__cpp_lib_nonmember_container_access):
+	Likewise.
+	* include/bits/shared_ptr.h (__cpp_lib_enable_shared_from_this):
+	Likewise.
+	* include/bits/stl_algo.h (__cpp_lib_clamp): Likewise.
+	(__cpp_lib_sample): Likewise.
+	* include/bits/stl_algobase.h (__cpp_lib_robust_nonmodifying_seq_ops):
+	Likewise.
+	* include/bits/stl_function.h (__cpp_lib_transparent_operators):
+	Likewise.
+	* include/bits/stl_iterator.h (__cpp_lib_make_reverse_iterator):
+	Likewise.
+	* include/bits/stl_map.h (__cpp_lib_map_try_emplace):
+	Likewise.
+	* include/bits/stl_tree.h (__cpp_lib_generic_associative_lookup):
+	Likewise.
+	* include/bits/unique_ptr.h (__cpp_lib_make_unique):
+	Likewise.
+	* include/bits/unordered_map.h (__cpp_lib_unordered_map_try_emplace):
+	Likewise.
+	* include/c_global/cmath (__cpp_lib_hypot): Likewise.
+	* include/c_global/cstddef (__cpp_lib_byte): Likewise.
+	* include/std/atomic (__cpp_lib_atomic_is_always_lock_free):
+	Likewise.
+	* include/std/complex (__cpp_lib_complex_udls): Likewise.
+	* include/std/filesystem (__cpp_lib_filesystem): Likewise.
+	* include/std/functional (__cpp_lib_not_fn): Likewise.
+	(__cpp_lib_boyer_moore_searcher): Likewise.
+	* include/std/iomanip (__cpp_lib_quoted_string_io): Likewise.
+	* include/std/mutex (__cpp_lib_scoped_lock): Likewise.
+	* include/std/numeric (__cpp_lib_gcd_lcm): Likewise.
+	(__cpp_lib_gcd, __cpp_lib_lcm): Likewise.
+	* include/std/tuple (__cpp_lib_apply): Likewise.
+	(__cpp_lib_make_from_tuple): Likewise.
+	* include/std/type_traits (__cpp_lib_integral_constant_callable)
+	(__cpp_lib_bool_constant, __cpp_lib_logical_traits)
+	(__cpp_lib_is_null_pointer, __cpp_lib_transformation_trait_aliases)
+	(__cpp_lib_result_of_sfinae, __cpp_lib_void_t)
+	(__cpp_lib_is_swappable, __cpp_lib_is_invocable)
+	(__cpp_lib_has_unique_object_representations)
+	(__cpp_lib_is_aggregate): Likewise.
+	* include/std/version: Likewise.
+	* libsupc++/new (__cpp_lib_launder): Likewise.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_shared_ptr_arrays): Fix
+	condition for C++17 definition.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count):
+	Add constexpr.
+	(_Sp_atomic::_M_ptr): Add default member-initializer.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check constant initialization.
+	* testsuite/20_util/weak_ptr/atomic_weak_ptr.cc: Likewise.
+
 2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/cxx11-ios_failure.cc (__constinit): Define as
