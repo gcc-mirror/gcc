@@ -49,7 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-unsigned int SFIO_Exists (DynamicStrings_String fname);
+extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname);
 
 /*
    OpenToRead - attempts to open a file, fname, for reading and
@@ -58,7 +58,7 @@ unsigned int SFIO_Exists (DynamicStrings_String fname);
                 calling IsNoError.
 */
 
-FIO_File SFIO_OpenToRead (DynamicStrings_String fname);
+extern "C" FIO_File SFIO_OpenToRead (DynamicStrings_String fname);
 
 /*
    OpenToWrite - attempts to open a file, fname, for write and
@@ -67,7 +67,7 @@ FIO_File SFIO_OpenToRead (DynamicStrings_String fname);
                  calling IsNoError.
 */
 
-FIO_File SFIO_OpenToWrite (DynamicStrings_String fname);
+extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname);
 
 /*
    OpenForRandom - attempts to open a file, fname, for random access
@@ -81,13 +81,13 @@ FIO_File SFIO_OpenToWrite (DynamicStrings_String fname);
                    and modify an existing file.
 */
 
-FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile);
+extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile);
 
 /*
    WriteS - writes a string, s, to, file. It returns the String, s.
 */
 
-DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s);
+extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s);
 
 /*
    ReadS - reads and returns a string from, file.
@@ -96,16 +96,16 @@ DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s);
            this into the returned string.
 */
 
-DynamicStrings_String SFIO_ReadS (FIO_File file);
+extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file);
 
 
 /*
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-unsigned int SFIO_Exists (DynamicStrings_String fname)
+extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname)
 {
-  return FIO_exists (DynamicStrings_string (fname), DynamicStrings_Length (fname));
+  return static_cast<unsigned int> (FIO_exists (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -118,9 +118,9 @@ unsigned int SFIO_Exists (DynamicStrings_String fname)
                 calling IsNoError.
 */
 
-FIO_File SFIO_OpenToRead (DynamicStrings_String fname)
+extern "C" FIO_File SFIO_OpenToRead (DynamicStrings_String fname)
 {
-  return FIO_openToRead (DynamicStrings_string (fname), DynamicStrings_Length (fname));
+  return static_cast<FIO_File> (FIO_openToRead (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -133,9 +133,9 @@ FIO_File SFIO_OpenToRead (DynamicStrings_String fname)
                  calling IsNoError.
 */
 
-FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
+extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
 {
-  return FIO_openToWrite (DynamicStrings_string (fname), DynamicStrings_Length (fname));
+  return static_cast<FIO_File> (FIO_openToWrite (DynamicStrings_string (fname), DynamicStrings_Length (fname)));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -153,9 +153,9 @@ FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
                    and modify an existing file.
 */
 
-FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile)
+extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile)
 {
-  return FIO_openForRandom (DynamicStrings_string (fname), DynamicStrings_Length (fname), towrite, newfile);
+  return static_cast<FIO_File> (FIO_openForRandom (DynamicStrings_string (fname), DynamicStrings_Length (fname), towrite, newfile));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -165,13 +165,13 @@ FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, 
    WriteS - writes a string, s, to, file. It returns the String, s.
 */
 
-DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s)
+extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s)
 {
   unsigned int nBytes;
 
   if (s != NULL)
     {
-      nBytes = FIO_WriteNBytes (file, DynamicStrings_Length (s), DynamicStrings_string (s));
+      nBytes = static_cast<unsigned int> (FIO_WriteNBytes (file, DynamicStrings_Length (s), DynamicStrings_string (s)));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -186,15 +186,15 @@ DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_String s)
            this into the returned string.
 */
 
-DynamicStrings_String SFIO_ReadS (FIO_File file)
+extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
 {
   DynamicStrings_String s;
   unsigned int c;
 
-  s = DynamicStrings_InitString ((char *) "", 0);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
   while (((! (FIO_EOLN (file))) && (! (FIO_EOF (file)))) && (FIO_IsNoError (file)))
     {
-      s = DynamicStrings_ConCatChar (s, FIO_ReadChar (file));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (s, FIO_ReadChar (file)));
     }
   if (FIO_EOLN (file))
     {
@@ -207,10 +207,10 @@ DynamicStrings_String SFIO_ReadS (FIO_File file)
   __builtin_unreachable ();
 }
 
-void _M2_SFIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SFIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_SFIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SFIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

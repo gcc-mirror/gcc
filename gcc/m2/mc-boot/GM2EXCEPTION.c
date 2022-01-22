@@ -42,10 +42,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef enum {M2EXCEPTION_indexException, M2EXCEPTION_rangeException, M2EXCEPTION_caseSelectException, M2EXCEPTION_invalidLocation, M2EXCEPTION_functionException, M2EXCEPTION_wholeValueException, M2EXCEPTION_wholeDivException, M2EXCEPTION_realValueException, M2EXCEPTION_realDivException, M2EXCEPTION_complexValueException, M2EXCEPTION_complexDivException, M2EXCEPTION_protException, M2EXCEPTION_sysException, M2EXCEPTION_coException, M2EXCEPTION_exException} M2EXCEPTION_M2Exceptions;
 
-M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void);
-unsigned int M2EXCEPTION_IsM2Exception (void);
+extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void);
+extern "C" unsigned int M2EXCEPTION_IsM2Exception (void);
 
-M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
+extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
 {
   RTExceptions_EHBlock e;
   unsigned int n;
@@ -53,11 +53,11 @@ M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   /* If the program or coroutine is in the exception state then return the enumeration
    value representing the exception cause.  If it is not in the exception state then
    raises and exception (exException).  */
-  e = RTExceptions_GetExceptionBlock ();
-  n = RTExceptions_GetNumber (e);
+  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
+  n = static_cast<unsigned int> (RTExceptions_GetNumber (e));
   if (n == (UINT_MAX))
     {
-      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/M2EXCEPTION.mod", 47, 6, "M2Exception", "current coroutine is not in the exceptional execution state");
+      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (reinterpret_cast<const void*>("M2Exception")), const_cast<void*> (reinterpret_cast<const void*>("current coroutine is not in the exceptional execution state")));
     }
   else
     {
@@ -67,23 +67,23 @@ M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   __builtin_unreachable ();
 }
 
-unsigned int M2EXCEPTION_IsM2Exception (void)
+extern "C" unsigned int M2EXCEPTION_IsM2Exception (void)
 {
   RTExceptions_EHBlock e;
 
   /* Returns TRUE if the program or coroutine is in the exception state.
    Returns FALSE if the program or coroutine is not in the exception state.  */
-  e = RTExceptions_GetExceptionBlock ();
+  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
   return (RTExceptions_GetNumber (e)) != (UINT_MAX);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   RTExceptions_SetExceptionBlock (RTExceptions_InitExceptionBlock ());
 }
 
-void _M2_M2EXCEPTION_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_M2EXCEPTION_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -67,7 +67,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
                      are used.
 */
 
-DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
 
 /*
    CardinalToString - converts CARDINAL, c, into a String. The field with can be specified
@@ -78,7 +78,7 @@ DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, 
                       are used.
 */
 
-DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
 
 /*
    StringToInteger - converts a string, s, of, base, into an INTEGER.
@@ -88,7 +88,7 @@ DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned i
                      The parameter found is set TRUE if a number was found.
 */
 
-int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
 
 /*
    StringToCardinal - converts a string, s, of, base, into a CARDINAL.
@@ -98,7 +98,7 @@ int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, u
                       The parameter found is set TRUE if a number was found.
 */
 
-unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
 
 /*
    LongIntegerToString - converts LONGINT, i, into a String. The field with
@@ -112,7 +112,7 @@ unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned i
                          abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
 
 /*
    StringToLongInteger - converts a string, s, of, base, into an LONGINT.
@@ -122,7 +122,7 @@ DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned in
                          The parameter found is set TRUE if a number was found.
 */
 
-long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
 
 /*
    LongCardinalToString - converts LONGCARD, c, into a String. The field
@@ -135,7 +135,7 @@ long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned in
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
 
 /*
    StringToLongCardinal - converts a string, s, of, base, into a LONGCARD.
@@ -145,7 +145,7 @@ DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, u
                           The parameter found is set TRUE if a number was found.
 */
 
-long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
 
 /*
    ShortCardinalToString - converts SHORTCARD, c, into a String. The field
@@ -158,7 +158,7 @@ long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, u
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
 
 /*
    StringToShortCardinal - converts a string, s, of, base, into a SHORTCARD.
@@ -168,73 +168,73 @@ DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c,
                            The parameter found is set TRUE if a number was found.
 */
 
-short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
 
 /*
    stoi - decimal string to INTEGER
 */
 
-int StringConvert_stoi (DynamicStrings_String s);
+extern "C" int StringConvert_stoi (DynamicStrings_String s);
 
 /*
    itos - integer to decimal string.
 */
 
-DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign);
+extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign);
 
 /*
    ctos - cardinal to decimal string.
 */
 
-DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, char padding);
+extern "C" DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, char padding);
 
 /*
    stoc - decimal string to CARDINAL
 */
 
-unsigned int StringConvert_stoc (DynamicStrings_String s);
+extern "C" unsigned int StringConvert_stoc (DynamicStrings_String s);
 
 /*
    hstoi - hexidecimal string to INTEGER
 */
 
-int StringConvert_hstoi (DynamicStrings_String s);
+extern "C" int StringConvert_hstoi (DynamicStrings_String s);
 
 /*
    ostoi - octal string to INTEGER
 */
 
-int StringConvert_ostoi (DynamicStrings_String s);
+extern "C" int StringConvert_ostoi (DynamicStrings_String s);
 
 /*
    bstoi - binary string to INTEGER
 */
 
-int StringConvert_bstoi (DynamicStrings_String s);
+extern "C" int StringConvert_bstoi (DynamicStrings_String s);
 
 /*
    hstoc - hexidecimal string to CARDINAL
 */
 
-unsigned int StringConvert_hstoc (DynamicStrings_String s);
+extern "C" unsigned int StringConvert_hstoc (DynamicStrings_String s);
 
 /*
    ostoc - octal string to CARDINAL
 */
 
-unsigned int StringConvert_ostoc (DynamicStrings_String s);
+extern "C" unsigned int StringConvert_ostoc (DynamicStrings_String s);
 
 /*
    bstoc - binary string to CARDINAL
 */
 
-unsigned int StringConvert_bstoc (DynamicStrings_String s);
+extern "C" unsigned int StringConvert_bstoc (DynamicStrings_String s);
 
 /*
    StringToLongreal - returns a LONGREAL and sets found to TRUE if a legal number is seen.
 */
 
-long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found);
+extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found);
 
 /*
    LongrealToString - converts a LONGREAL number, Real, which has,
@@ -260,19 +260,19 @@ long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned in
                       fractional components.
 */
 
-DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned int TotalWidth, unsigned int FractionWidth);
+extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned int TotalWidth, unsigned int FractionWidth);
 
 /*
    stor - returns a REAL given a string.
 */
 
-double StringConvert_stor (DynamicStrings_String s);
+extern "C" double StringConvert_stor (DynamicStrings_String s);
 
 /*
    stolr - returns a LONGREAL given a string.
 */
 
-long double StringConvert_stolr (DynamicStrings_String s);
+extern "C" long double StringConvert_stolr (DynamicStrings_String s);
 
 /*
    ToSigFig - returns a floating point or base 10 integer
@@ -292,7 +292,7 @@ long double StringConvert_stolr (DynamicStrings_String s);
               1      10
 */
 
-DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned int n);
+extern "C" DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned int n);
 
 /*
    ToDecimalPlaces - returns a floating point or base 10 integer
@@ -313,13 +313,13 @@ DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned 
                      1      12.3
 */
 
-DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_String s, unsigned int n);
+extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_String s, unsigned int n);
 
 /*
    Assert - implement a simple assert.
 */
 
-static void Assert (unsigned int b, char *file_, unsigned int _file_high, unsigned int line, char *func_, unsigned int _func_high);
+static void Assert (unsigned int b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high);
 
 /*
    Max -
@@ -441,7 +441,7 @@ static DynamicStrings_String carryOne (DynamicStrings_String s, unsigned int i);
    Assert - implement a simple assert.
 */
 
-static void Assert (unsigned int b, char *file_, unsigned int _file_high, unsigned int line, char *func_, unsigned int _func_high)
+static void Assert (unsigned int b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high)
 {
   char file[_file_high+1];
   char func[_func_high+1];
@@ -452,7 +452,7 @@ static void Assert (unsigned int b, char *file_, unsigned int _file_high, unsign
 
   if (! b)
     {
-      M2RTS_ErrorMessage ((char *) "assert failed", 13, (char *) file, _file_high, line, (char *) func, _func_high);
+      M2RTS_ErrorMessage ((const char *) "assert failed", 13, (const char *) file, _file_high, line, (const char *) func, _func_high);
     }
 }
 
@@ -535,7 +535,7 @@ static unsigned int IsDecimalDigitValid (char ch, unsigned int base, unsigned in
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
-      (*c) = ((*c)*base)+( ((unsigned int) (ch))- ((unsigned int) ('0')));
+      (*c) = static_cast<unsigned int> (((*c)*base)+( ((unsigned int) (ch))- ((unsigned int) ('0'))));
       return TRUE;
     }
   else
@@ -556,13 +556,13 @@ static unsigned int IsHexidecimalDigitValid (char ch, unsigned int base, unsigne
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
-      (*c) = ((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10);
+      (*c) = static_cast<unsigned int> (((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10));
       return TRUE;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
-      (*c) = ((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10);
+      (*c) = static_cast<unsigned int> (((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10));
       return TRUE;
     }
   else
@@ -584,7 +584,7 @@ static unsigned int IsDecimalDigitValidLong (char ch, unsigned int base, long un
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
-      (*c) = (*c)*((long unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0')))));
+      (*c) = static_cast<long unsigned int> ((*c)*((long unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0'))))));
       return TRUE;
     }
   else
@@ -605,13 +605,13 @@ static unsigned int IsHexidecimalDigitValidLong (char ch, unsigned int base, lon
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
-      (*c) = (*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10)));
+      (*c) = static_cast<long unsigned int> ((*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10))));
       return TRUE;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
-      (*c) = (*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10)));
+      (*c) = static_cast<long unsigned int> ((*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10))));
       return TRUE;
     }
   else
@@ -633,7 +633,7 @@ static unsigned int IsDecimalDigitValidShort (char ch, unsigned int base, short 
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
-      (*c) = (*c)*((short unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0')))));
+      (*c) = static_cast<short unsigned int> ((*c)*((short unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0'))))));
       return TRUE;
     }
   else
@@ -654,13 +654,13 @@ static unsigned int IsHexidecimalDigitValidShort (char ch, unsigned int base, sh
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
-      (*c) = (*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10)));
+      (*c) = static_cast<short unsigned int> ((*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10))));
       return TRUE;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
-      (*c) = (*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10)));
+      (*c) = static_cast<short unsigned int> ((*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10))));
       return TRUE;
     }
   else
@@ -681,12 +681,12 @@ static long double ToThePower10 (long double v, int power)
 {
   int i;
 
-  i = 0;
+  i = static_cast<int> (0);
   if (power > 0)
     {
       while (i < power)
         {
-          v = v*10.0;
+          v = static_cast<long double> (v*10.0);
           i += 1;
         }
     }
@@ -694,7 +694,7 @@ static long double ToThePower10 (long double v, int power)
     {
       while (i > power)
         {
-          v = v/10.0;
+          v = static_cast<long double> (v/10.0);
           i -= 1;
         }
     }
@@ -716,11 +716,11 @@ static unsigned int DetermineSafeTruncation (void)
   double MaxPowerOfTen;
   unsigned int LogPower;
 
-  MaxPowerOfTen = 1.0;
-  LogPower = 0;
+  MaxPowerOfTen = static_cast<double> (1.0);
+  LogPower = static_cast<unsigned int> (0);
   while ((MaxPowerOfTen*10.0) < ((double) ((INT_MAX) / 10)))
     {
-      MaxPowerOfTen = MaxPowerOfTen*10.0;
+      MaxPowerOfTen = static_cast<double> (MaxPowerOfTen*10.0);
       LogPower += 1;
     }
   return LogPower;
@@ -737,7 +737,7 @@ static DynamicStrings_String rtos (double r, unsigned int TotalWidth, unsigned i
 {
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  return NULL;
+  return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -751,7 +751,7 @@ static DynamicStrings_String lrtos (long double r, unsigned int TotalWidth, unsi
 {
   M2RTS_HALT (-1);
   __builtin_unreachable ();
-  return NULL;
+  return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -774,26 +774,26 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
   DynamicStrings_String tenths;
   DynamicStrings_String hundreths;
 
-  l = DynamicStrings_Length (s);
-  i = 0;
+  l = static_cast<int> (DynamicStrings_Length (s));
+  i = static_cast<int> (0);
   /* remove '.'  */
-  point = DynamicStrings_Index (s, '.', 0);
+  point = static_cast<int> (DynamicStrings_Index (s, '.', 0));
   if (point == 0)
     {
-      s = DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0));
     }
   else if (point < l)
     {
       /* avoid dangling else.  */
-      s = DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point+1, 0)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point+1, 0))));
     }
   else
     {
       /* avoid dangling else.  */
-      s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point));
     }
-  l = DynamicStrings_Length (s);
-  i = 0;
+  l = static_cast<int> (DynamicStrings_Length (s));
+  i = static_cast<int> (0);
   if (l > 0)
     {
       /* skip over leading zeros  */
@@ -804,15 +804,15 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
       /* was the string full of zeros?  */
       if ((i == l) && ((DynamicStrings_char (s, i-1)) == '0'))
         {
-          s = DynamicStrings_KillString (s);
-          s = DynamicStrings_ConCat (DynamicStrings_InitString ((char *) "0.", 2), DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), n)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "0.", 2), DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), n))));
           return s;
         }
     }
   /* insert leading zero  */
-  s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('0'), DynamicStrings_Mark (s));
+  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('0'), DynamicStrings_Mark (s)));
   point += 1;  /* and move point position to correct place  */
-  l = DynamicStrings_Length (s);  /* update new length  */
+  l = static_cast<int> (DynamicStrings_Length (s));  /* update new length  */
   i = point;  /* update new length  */
   while ((n > 1) && (i < l))
     {
@@ -821,41 +821,41 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
     }
   if ((i+3) <= l)
     {
-      t = DynamicStrings_Dup (s);
-      hundreths = DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+3);
+      t = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s));
+      hundreths = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+3));
       s = t;
       if ((StringConvert_stoc (hundreths)) >= 50)
         {
-          s = carryOne (DynamicStrings_Mark (s), (unsigned int) i);
+          s = static_cast<DynamicStrings_String> (carryOne (DynamicStrings_Mark (s), static_cast<unsigned int> (i)));
         }
-      hundreths = DynamicStrings_KillString (hundreths);
+      hundreths = static_cast<DynamicStrings_String> (DynamicStrings_KillString (hundreths));
     }
   else if ((i+2) <= l)
     {
       /* avoid dangling else.  */
-      t = DynamicStrings_Dup (s);
-      tenths = DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+2);
+      t = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s));
+      tenths = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+2));
       s = t;
       if ((StringConvert_stoc (tenths)) >= 5)
         {
-          s = carryOne (DynamicStrings_Mark (s), (unsigned int) i);
+          s = static_cast<DynamicStrings_String> (carryOne (DynamicStrings_Mark (s), static_cast<unsigned int> (i)));
         }
-      tenths = DynamicStrings_KillString (tenths);
+      tenths = static_cast<DynamicStrings_String> (DynamicStrings_KillString (tenths));
     }
   /* check whether we need to remove the leading zero  */
   if ((DynamicStrings_char (s, 0)) == '0')
     {
-      s = DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0));
       l -= 1;
       point -= 1;
     }
   if (i < l)
     {
-      s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i);
-      l = DynamicStrings_Length (s);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i));
+      l = static_cast<int> (DynamicStrings_Length (s));
       if (l < point)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), (unsigned int) point-l));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (point-l))));
         }
     }
   /* re-insert the point  */
@@ -864,11 +864,11 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (point == 0)
         {
-          s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('.'), DynamicStrings_Mark (s));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('.'), DynamicStrings_Mark (s)));
         }
       else
         {
-          s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0))));
         }
     }
   return s;
@@ -893,33 +893,33 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
   DynamicStrings_String tenths;
   DynamicStrings_String hundreths;
 
-  l = DynamicStrings_Length (s);
-  i = 0;
+  l = static_cast<int> (DynamicStrings_Length (s));
+  i = static_cast<int> (0);
   /* remove '.'  */
-  point = DynamicStrings_Index (s, '.', 0);
+  point = static_cast<int> (DynamicStrings_Index (s, '.', 0));
   if (point >= 0)
     {
       if (point == 0)
         {
-          s = DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 1, 0));
         }
       else if (point < l)
         {
           /* avoid dangling else.  */
-          s = DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point+1, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point+1, 0))));
         }
       else
         {
           /* avoid dangling else.  */
-          s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point));
         }
     }
   else
     {
-      s = DynamicStrings_Dup (DynamicStrings_Mark (s));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Dup (DynamicStrings_Mark (s)));
     }
-  l = DynamicStrings_Length (s);
-  i = 0;
+  l = static_cast<int> (DynamicStrings_Length (s));
+  i = static_cast<int> (0);
   if (l > 0)
     {
       /* skip over leading zeros  */
@@ -931,22 +931,22 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
       if ((i == l) && ((DynamicStrings_char (s, i-1)) == '0'))
         {
           /* truncate string  */
-          s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, (int) n);
-          i = n;
+          s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (n)));
+          i = static_cast<int> (n);
         }
     }
   /* add a leading zero in case we need to overflow the carry  */
   z = i;  /* remember where we inserted zero  */
   if (z == 0)  /* remember where we inserted zero  */
     {
-      s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('0'), DynamicStrings_Mark (s));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('0'), DynamicStrings_Mark (s)));
     }
   else
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i), '0'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), i, 0)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i), '0'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), i, 0))));
     }
   n += 1;  /* and increase the number of sig figs needed  */
-  l = DynamicStrings_Length (s);  /* and increase the number of sig figs needed  */
+  l = static_cast<int> (DynamicStrings_Length (s));  /* and increase the number of sig figs needed  */
   while ((n > 1) && (i < l))
     {
       n -= 1;
@@ -954,39 +954,39 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
     }
   if ((i+3) <= l)
     {
-      t = DynamicStrings_Dup (s);
-      hundreths = DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+3);
+      t = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s));
+      hundreths = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+3));
       s = t;
       if ((StringConvert_stoc (hundreths)) >= 50)
         {
-          s = carryOne (DynamicStrings_Mark (s), (unsigned int) i);
+          s = static_cast<DynamicStrings_String> (carryOne (DynamicStrings_Mark (s), static_cast<unsigned int> (i)));
         }
-      hundreths = DynamicStrings_KillString (hundreths);
+      hundreths = static_cast<DynamicStrings_String> (DynamicStrings_KillString (hundreths));
     }
   else if ((i+2) <= l)
     {
       /* avoid dangling else.  */
-      t = DynamicStrings_Dup (s);
-      tenths = DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+2);
+      t = static_cast<DynamicStrings_String> (DynamicStrings_Dup (s));
+      tenths = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), i+1, i+2));
       s = t;
       if ((StringConvert_stoc (tenths)) >= 5)
         {
-          s = carryOne (DynamicStrings_Mark (s), (unsigned int) i);
+          s = static_cast<DynamicStrings_String> (carryOne (DynamicStrings_Mark (s), static_cast<unsigned int> (i)));
         }
-      tenths = DynamicStrings_KillString (tenths);
+      tenths = static_cast<DynamicStrings_String> (DynamicStrings_KillString (tenths));
     }
   /* check whether we need to remove the leading zero  */
   if ((DynamicStrings_char (s, z)) == '0')
     {
       if (z == 0)
         {
-          s = DynamicStrings_Slice (DynamicStrings_Mark (s), z+1, 0);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), z+1, 0));
         }
       else
         {
-          s = DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, z), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), z+1, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, z), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), z+1, 0))));
         }
-      l = DynamicStrings_Length (s);
+      l = static_cast<int> (DynamicStrings_Length (s));
     }
   else
     {
@@ -994,11 +994,11 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
     }
   if (i < l)
     {
-      s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i);
-      l = DynamicStrings_Length (s);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i));
+      l = static_cast<int> (DynamicStrings_Length (s));
       if (l < point)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), (unsigned int) point-l));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (point-l))));
         }
     }
   /* re-insert the point  */
@@ -1007,11 +1007,11 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (point == 0)
         {
-          s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('.'), DynamicStrings_Mark (s));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('.'), DynamicStrings_Mark (s)));
         }
       else
         {
-          s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0))));
         }
     }
   return s;
@@ -1028,31 +1028,31 @@ static DynamicStrings_String carryOne (DynamicStrings_String s, unsigned int i)
 {
   if (i >= 0)
     {
-      if (IsDigit (DynamicStrings_char (s, (int) i)))
+      if (IsDigit (DynamicStrings_char (s, static_cast<int> (i))))
         {
           /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-          if ((DynamicStrings_char (s, (int) i)) == '9')
+          if ((DynamicStrings_char (s, static_cast<int> (i))) == '9')
             {
               if (i == 0)
                 {
-                  s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('1'), DynamicStrings_Mark (s));
+                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('1'), DynamicStrings_Mark (s)));
                   return s;
                 }
               else
                 {
-                  s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, (int) i), '0'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), (int) i+1, 0)));
-                  return carryOne (s, i-1);
+                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (i)), '0'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), static_cast<int> (i+1), 0))));
+                  return static_cast<DynamicStrings_String> (carryOne (s, i-1));
                 }
             }
           else
             {
               if (i == 0)
                 {
-                  s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ( ((char) ( ((unsigned int) (DynamicStrings_char (s, (int) i)))+1))), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), (int) i+1, 0)));
+                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ( ((char) ( ((unsigned int) (DynamicStrings_char (s, static_cast<int> (i))))+1))), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), static_cast<int> (i+1), 0))));
                 }
               else
                 {
-                  s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, (int) i), ((char) ( ((unsigned int) (DynamicStrings_char (s, (int) i)))+1))), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), (int) i+1, 0)));
+                  s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (i)), ((char) ( ((unsigned int) (DynamicStrings_char (s, static_cast<int> (i))))+1))), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), static_cast<int> (i+1), 0))));
                 }
             }
         }
@@ -1073,7 +1073,7 @@ static DynamicStrings_String carryOne (DynamicStrings_String s, unsigned int i)
                      are used.
 */
 
-DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
 {
   DynamicStrings_String s;
   unsigned int c;
@@ -1083,58 +1083,58 @@ DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, 
       if (i == (INT_MIN))
         {
           /* remember that -15 MOD 4 = 1 in Modula-2  */
-          c = ((unsigned int ) (abs (i+1)))+1;
+          c = static_cast<unsigned int> (((unsigned int ) (abs (i+1)))+1);
           if (width > 0)
             {
-              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString ((int) c % base, 0, ' ', FALSE, base, lower)));
+              return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', FALSE, base, lower))));
             }
           else
             {
-              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString ((int) c % base, 0, ' ', FALSE, base, lower)));
+              return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', FALSE, base, lower))));
             }
         }
       else
         {
-          s = DynamicStrings_InitString ((char *) "-", 1);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "-", 1));
         }
-      i = -i;
+      i = static_cast<int> (-i);
     }
   else
     {
       if (sign)
         {
-          s = DynamicStrings_InitString ((char *) "+", 1);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "+", 1));
         }
       else
         {
-          s = DynamicStrings_InitString ((char *) "", 0);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
         }
     }
   if (i > (((int ) (base))-1))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_IntegerToString ((int) ((unsigned int ) (i)) / base, 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_IntegerToString ((int) ((unsigned int ) (i)) % base, 0, ' ', FALSE, base, lower)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) / base), 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) % base), 0, ' ', FALSE, base, lower))));
     }
   else
     {
       if (i <= 9)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (i))+ ((unsigned int) ('0')))))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (i))+ ((unsigned int) ('0'))))))));
         }
       else
         {
           if (lower)
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('a')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('a')))-10))))));
             }
           else
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('A')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('A')))-10))))));
             }
         }
     }
   if (width > (DynamicStrings_Length (s)))
     {
-      return DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), DynamicStrings_Mark (s));
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), DynamicStrings_Mark (s)));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1151,36 +1151,36 @@ DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, 
                       are used.
 */
 
-DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
 {
   DynamicStrings_String s;
 
-  s = DynamicStrings_InitString ((char *) "", 0);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
   if (c > (base-1))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_CardinalToString (c / base, 0, ' ', base, lower))), DynamicStrings_Mark (StringConvert_CardinalToString (c % base, 0, ' ', base, lower)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_CardinalToString (c / base, 0, ' ', base, lower))), DynamicStrings_Mark (StringConvert_CardinalToString (c % base, 0, ' ', base, lower))));
     }
   else
     {
       if (c <= 9)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (c+ ((unsigned int) ('0')))))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (c+ ((unsigned int) ('0'))))))));
         }
       else
         {
           if (lower)
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((c+ ((unsigned int) ('a')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((c+ ((unsigned int) ('a')))-10))))));
             }
           else
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((c+ ((unsigned int) ('A')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((c+ ((unsigned int) ('A')))-10))))));
             }
         }
     }
   if (width > (DynamicStrings_Length (s)))
     {
-      return DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1196,43 +1196,43 @@ DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned i
                      The parameter found is set TRUE if a number was found.
 */
 
-int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
 {
   unsigned int n;
   unsigned int l;
   unsigned int c;
   unsigned int negative;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
-  l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = 0;
-  n = 0;
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* returns a new string, s  */
+  l = static_cast<unsigned int> (DynamicStrings_Length (s));  /* returns a new string, s  */
+  c = static_cast<unsigned int> (0);
+  n = static_cast<unsigned int> (0);
   negative = FALSE;
   if (n < l)
     {
       /* parse leading + and -  */
-      while (((DynamicStrings_char (s, (int) n)) == '-') || ((DynamicStrings_char (s, (int) n)) == '+'))
+      while (((DynamicStrings_char (s, static_cast<int> (n))) == '-') || ((DynamicStrings_char (s, static_cast<int> (n))) == '+'))
         {
-          if ((DynamicStrings_char (s, (int) n)) == '-')
+          if ((DynamicStrings_char (s, static_cast<int> (n))) == '-')
             {
               negative = ! negative;
             }
           n += 1;
         }
-      while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, (int) n), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, (int) n), base, &c))))
+      while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
           (*found) = TRUE;
           n += 1;
         }
     }
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   if (negative)
     {
-      return -((int ) (Min (((unsigned int ) (INT_MAX))+1, c)));
+      return static_cast<int> (-((int ) (Min (((unsigned int ) (INT_MAX))+1, c))));
     }
   else
     {
-      return (int ) (Min ((unsigned int) INT_MAX, c));
+      return (int ) (Min (static_cast<unsigned int> (INT_MAX), c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1247,30 +1247,30 @@ int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, u
                       The parameter found is set TRUE if a number was found.
 */
 
-unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
 {
   unsigned int n;
   unsigned int l;
   unsigned int c;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
-  l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = 0;
-  n = 0;
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* returns a new string, s  */
+  l = static_cast<unsigned int> (DynamicStrings_Length (s));  /* returns a new string, s  */
+  c = static_cast<unsigned int> (0);
+  n = static_cast<unsigned int> (0);
   if (n < l)
     {
       /* parse leading +  */
-      while ((DynamicStrings_char (s, (int) n)) == '+')
+      while ((DynamicStrings_char (s, static_cast<int> (n))) == '+')
         {
           n += 1;
         }
-      while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, (int) n), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, (int) n), base, &c))))
+      while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
           (*found) = TRUE;
           n += 1;
         }
     }
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   return c;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1289,7 +1289,7 @@ unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned i
                          abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
 {
   DynamicStrings_String s;
   long unsigned int c;
@@ -1300,58 +1300,58 @@ DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned in
         {
           /* remember that -15 MOD 4 is 1 in Modula-2, and although ABS(MIN(LONGINT)+1)
             is very likely MAX(LONGINT), it is safer not to assume this is the case  */
-          c = ((long unsigned int ) (labs (i+1)))+1;
+          c = static_cast<long unsigned int> (((long unsigned int ) (labs (i+1)))+1);
           if (width > 0)
             {
-              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString ((long int) c % ((long unsigned int ) (base)), 0, ' ', FALSE, base, lower)));
+              return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', FALSE, base, lower))));
             }
           else
             {
-              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString ((long int) c % ((long unsigned int ) (base)), 0, ' ', FALSE, base, lower)));
+              return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', FALSE, base, lower))));
             }
         }
       else
         {
-          s = DynamicStrings_InitString ((char *) "-", 1);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "-", 1));
         }
-      i = -i;
+      i = static_cast<long int> (-i);
     }
   else
     {
       if (sign)
         {
-          s = DynamicStrings_InitString ((char *) "+", 1);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "+", 1));
         }
       else
         {
-          s = DynamicStrings_InitString ((char *) "", 0);
+          s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
         }
     }
   if (i > ((long int ) (base-1)))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_LongIntegerToString (i / ((long int ) (base)), 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_LongIntegerToString (i % ((long int ) (base)), 0, ' ', FALSE, base, lower)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_LongIntegerToString (i / ((long int ) (base)), 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_LongIntegerToString (i % ((long int ) (base)), 0, ' ', FALSE, base, lower))));
     }
   else
     {
       if (i <= 9)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (i))+ ((unsigned int) ('0')))))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (i))+ ((unsigned int) ('0'))))))));
         }
       else
         {
           if (lower)
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('a')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('a')))-10))))));
             }
           else
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('A')))-10)))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (i))+ ((unsigned int) ('A')))-10))))));
             }
         }
     }
   if (width > (DynamicStrings_Length (s)))
     {
-      return DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1367,43 +1367,43 @@ DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned in
                          The parameter found is set TRUE if a number was found.
 */
 
-long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
 {
   unsigned int n;
   unsigned int l;
   long unsigned int c;
   unsigned int negative;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
-  l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = 0;
-  n = 0;
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* returns a new string, s  */
+  l = static_cast<unsigned int> (DynamicStrings_Length (s));  /* returns a new string, s  */
+  c = static_cast<long unsigned int> (0);
+  n = static_cast<unsigned int> (0);
   negative = FALSE;
   if (n < l)
     {
       /* parse leading + and -  */
-      while (((DynamicStrings_char (s, (int) n)) == '-') || ((DynamicStrings_char (s, (int) n)) == '+'))
+      while (((DynamicStrings_char (s, static_cast<int> (n))) == '-') || ((DynamicStrings_char (s, static_cast<int> (n))) == '+'))
         {
-          if ((DynamicStrings_char (s, (int) n)) == '-')
+          if ((DynamicStrings_char (s, static_cast<int> (n))) == '-')
             {
               negative = ! negative;
             }
           n += 1;
         }
-      while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, (int) n), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, (int) n), base, &c))))
+      while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
           (*found) = TRUE;
           n += 1;
         }
     }
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   if (negative)
     {
-      return -((long int ) (LongMin (((long unsigned int ) (LONG_MAX))+1, c)));
+      return static_cast<long int> (-((long int ) (LongMin (((long unsigned int ) (LONG_MAX))+1, c))));
     }
   else
     {
-      return (long int ) (LongMin ((long unsigned int) LONG_MAX, c));
+      return (long int ) (LongMin (static_cast<long unsigned int> (LONG_MAX), c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1421,36 +1421,36 @@ long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned in
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
 {
   DynamicStrings_String s;
 
-  s = DynamicStrings_InitString ((char *) "", 0);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
   if (c > ((long unsigned int ) (base-1)))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, StringConvert_LongCardinalToString (c / ((long unsigned int ) (base)), 0, ' ', base, lower)), StringConvert_LongCardinalToString (c % ((long unsigned int ) (base)), 0, ' ', base, lower));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, StringConvert_LongCardinalToString (c / ((long unsigned int ) (base)), 0, ' ', base, lower)), StringConvert_LongCardinalToString (c % ((long unsigned int ) (base)), 0, ' ', base, lower)));
     }
   else
     {
       if (c <= 9)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (c))+ ((unsigned int) ('0'))))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (c))+ ((unsigned int) ('0')))))));
         }
       else
         {
           if (lower)
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('a')))-10))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('a')))-10)))));
             }
           else
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('A')))-10))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('A')))-10)))));
             }
         }
     }
   if (width > (DynamicStrings_Length (s)))
     {
-      return DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1466,30 +1466,30 @@ DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, u
                           The parameter found is set TRUE if a number was found.
 */
 
-long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
 {
   unsigned int n;
   unsigned int l;
   long unsigned int c;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
-  l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = 0;
-  n = 0;
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* returns a new string, s  */
+  l = static_cast<unsigned int> (DynamicStrings_Length (s));  /* returns a new string, s  */
+  c = static_cast<long unsigned int> (0);
+  n = static_cast<unsigned int> (0);
   if (n < l)
     {
       /* parse leading +  */
-      while ((DynamicStrings_char (s, (int) n)) == '+')
+      while ((DynamicStrings_char (s, static_cast<int> (n))) == '+')
         {
           n += 1;
         }
-      while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, (int) n), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, (int) n), base, &c))))
+      while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
           (*found) = TRUE;
           n += 1;
         }
     }
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   return c;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1507,36 +1507,36 @@ long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, u
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
 {
   DynamicStrings_String s;
 
-  s = DynamicStrings_InitString ((char *) "", 0);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
   if (((unsigned int ) (c)) > (base-1))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, StringConvert_ShortCardinalToString (c / ((short unsigned int ) (base)), 0, ' ', base, lower)), StringConvert_ShortCardinalToString (c % ((short unsigned int ) (base)), 0, ' ', base, lower));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, StringConvert_ShortCardinalToString (c / ((short unsigned int ) (base)), 0, ' ', base, lower)), StringConvert_ShortCardinalToString (c % ((short unsigned int ) (base)), 0, ' ', base, lower)));
     }
   else
     {
       if (c <= 9)
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (c))+ ((unsigned int) ('0'))))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) (((unsigned int ) (c))+ ((unsigned int) ('0')))))));
         }
       else
         {
           if (lower)
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('a')))-10))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('a')))-10)))));
             }
           else
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('A')))-10))));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_InitStringChar ( ((char) ((((unsigned int ) (c))+ ((unsigned int) ('A')))-10)))));
             }
         }
     }
   if (width > (DynamicStrings_Length (s)))
     {
-      return DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (padding)), width-(DynamicStrings_Length (s))), s));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1552,30 +1552,30 @@ DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c,
                            The parameter found is set TRUE if a number was found.
 */
 
-short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
 {
   unsigned int n;
   unsigned int l;
   short unsigned int c;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
-  l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = 0;
-  n = 0;
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* returns a new string, s  */
+  l = static_cast<unsigned int> (DynamicStrings_Length (s));  /* returns a new string, s  */
+  c = static_cast<short unsigned int> (0);
+  n = static_cast<unsigned int> (0);
   if (n < l)
     {
       /* parse leading +  */
-      while ((DynamicStrings_char (s, (int) n)) == '+')
+      while ((DynamicStrings_char (s, static_cast<int> (n))) == '+')
         {
           n += 1;
         }
-      while ((n < l) && ((IsDecimalDigitValidShort (DynamicStrings_char (s, (int) n), base, &c)) || (IsHexidecimalDigitValidShort (DynamicStrings_char (s, (int) n), base, &c))))
+      while ((n < l) && ((IsDecimalDigitValidShort (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidShort (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
           (*found) = TRUE;
           n += 1;
         }
     }
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   return c;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1586,11 +1586,11 @@ short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s,
    stoi - decimal string to INTEGER
 */
 
-int StringConvert_stoi (DynamicStrings_String s)
+extern "C" int StringConvert_stoi (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToInteger (s, 10, &found);
+  return static_cast<int> (StringConvert_StringToInteger (s, 10, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1600,9 +1600,9 @@ int StringConvert_stoi (DynamicStrings_String s)
    itos - integer to decimal string.
 */
 
-DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign)
+extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign)
 {
-  return StringConvert_IntegerToString (i, width, padding, sign, 10, FALSE);
+  return static_cast<DynamicStrings_String> (StringConvert_IntegerToString (i, width, padding, sign, 10, FALSE));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1612,9 +1612,9 @@ DynamicStrings_String StringConvert_itos (int i, unsigned int width, char paddin
    ctos - cardinal to decimal string.
 */
 
-DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, char padding)
+extern "C" DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, char padding)
 {
-  return StringConvert_CardinalToString (c, width, padding, 10, FALSE);
+  return static_cast<DynamicStrings_String> (StringConvert_CardinalToString (c, width, padding, 10, FALSE));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1624,11 +1624,11 @@ DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, ch
    stoc - decimal string to CARDINAL
 */
 
-unsigned int StringConvert_stoc (DynamicStrings_String s)
+extern "C" unsigned int StringConvert_stoc (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToCardinal (s, 10, &found);
+  return static_cast<unsigned int> (StringConvert_StringToCardinal (s, 10, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1638,11 +1638,11 @@ unsigned int StringConvert_stoc (DynamicStrings_String s)
    hstoi - hexidecimal string to INTEGER
 */
 
-int StringConvert_hstoi (DynamicStrings_String s)
+extern "C" int StringConvert_hstoi (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToInteger (s, 16, &found);
+  return static_cast<int> (StringConvert_StringToInteger (s, 16, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1652,11 +1652,11 @@ int StringConvert_hstoi (DynamicStrings_String s)
    ostoi - octal string to INTEGER
 */
 
-int StringConvert_ostoi (DynamicStrings_String s)
+extern "C" int StringConvert_ostoi (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToInteger (s, 8, &found);
+  return static_cast<int> (StringConvert_StringToInteger (s, 8, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1666,11 +1666,11 @@ int StringConvert_ostoi (DynamicStrings_String s)
    bstoi - binary string to INTEGER
 */
 
-int StringConvert_bstoi (DynamicStrings_String s)
+extern "C" int StringConvert_bstoi (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToInteger (s, 2, &found);
+  return static_cast<int> (StringConvert_StringToInteger (s, 2, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1680,11 +1680,11 @@ int StringConvert_bstoi (DynamicStrings_String s)
    hstoc - hexidecimal string to CARDINAL
 */
 
-unsigned int StringConvert_hstoc (DynamicStrings_String s)
+extern "C" unsigned int StringConvert_hstoc (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToCardinal (s, 16, &found);
+  return static_cast<unsigned int> (StringConvert_StringToCardinal (s, 16, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1694,11 +1694,11 @@ unsigned int StringConvert_hstoc (DynamicStrings_String s)
    ostoc - octal string to CARDINAL
 */
 
-unsigned int StringConvert_ostoc (DynamicStrings_String s)
+extern "C" unsigned int StringConvert_ostoc (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToCardinal (s, 8, &found);
+  return static_cast<unsigned int> (StringConvert_StringToCardinal (s, 8, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1708,11 +1708,11 @@ unsigned int StringConvert_ostoc (DynamicStrings_String s)
    bstoc - binary string to CARDINAL
 */
 
-unsigned int StringConvert_bstoc (DynamicStrings_String s)
+extern "C" unsigned int StringConvert_bstoc (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToCardinal (s, 2, &found);
+  return static_cast<unsigned int> (StringConvert_StringToCardinal (s, 2, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1722,14 +1722,14 @@ unsigned int StringConvert_bstoc (DynamicStrings_String s)
    StringToLongreal - returns a LONGREAL and sets found to TRUE if a legal number is seen.
 */
 
-long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found)
+extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found)
 {
   unsigned int error;
   long double value;
 
-  s = DynamicStrings_RemoveWhitePrefix (s);  /* new string is created  */
-  value = ldtoa_strtold (DynamicStrings_string (s), &error);  /* new string is created  */
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_RemoveWhitePrefix (s));  /* new string is created  */
+  value = static_cast<long double> (ldtoa_strtold (DynamicStrings_string (s), &error));  /* new string is created  */
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
   (*found) = ! error;
   return value;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1761,7 +1761,7 @@ long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned in
                       fractional components.
 */
 
-DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
+extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
   unsigned int maxprecision;
   DynamicStrings_String s;
@@ -1773,38 +1773,38 @@ DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned in
   if (TotalWidth == 0)
     {
       maxprecision = TRUE;
-      r = ldtoa_ldtoa (x, (ldtoa_Mode) ldtoa_decimaldigits, 100, &point, &sign);
+      r = reinterpret_cast<void *> (ldtoa_ldtoa (x, static_cast<ldtoa_Mode> (ldtoa_decimaldigits), 100, &point, &sign));
     }
   else
     {
-      r = ldtoa_ldtoa (x, (ldtoa_Mode) ldtoa_decimaldigits, 100, &point, &sign);
+      r = reinterpret_cast<void *> (ldtoa_ldtoa (x, static_cast<ldtoa_Mode> (ldtoa_decimaldigits), 100, &point, &sign));
     }
-  s = DynamicStrings_InitStringCharStar (r);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (r));
   libc_free (r);
-  l = DynamicStrings_Length (s);
+  l = static_cast<int> (DynamicStrings_Length (s));
   if (point > l)
     {
       /* avoid dangling else.  */
-      s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), (unsigned int) point-l)));
-      s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitString ((char *) ".0", 2)));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (point-l)))));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) ".0", 2))));
       if (! maxprecision && (FractionWidth > 0))
         {
           FractionWidth -= 1;
           if (((int ) (FractionWidth)) > (point-l))
             {
-              s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((char *) "0", 1)), FractionWidth)));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "0", 1)), FractionWidth))));
             }
         }
     }
   else if (point < 0)
     {
       /* avoid dangling else.  */
-      s = DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), (unsigned int) -point), DynamicStrings_Mark (s));
-      l = DynamicStrings_Length (s);
-      s = DynamicStrings_ConCat (DynamicStrings_InitString ((char *) "0.", 2), DynamicStrings_Mark (s));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (-point)), DynamicStrings_Mark (s)));
+      l = static_cast<int> (DynamicStrings_Length (s));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "0.", 2), DynamicStrings_Mark (s)));
       if (! maxprecision && (l < ((int ) (FractionWidth))))
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((char *) "0", 1)), (unsigned int) ((int ) (FractionWidth))-l)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "0", 1)), static_cast<unsigned int> (((int ) (FractionWidth))-l)))));
         }
     }
   else
@@ -1812,15 +1812,15 @@ DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned in
       /* avoid dangling else.  */
       if (point == 0)
         {
-          s = DynamicStrings_ConCat (DynamicStrings_InitString ((char *) "0.", 2), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "0.", 2), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0))));
         }
       else
         {
-          s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point), '.'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), point, 0))));
         }
       if (! maxprecision && ((l-point) < ((int ) (FractionWidth))))
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((char *) "0", 1)), (unsigned int) ((int ) (FractionWidth))-(l-point))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "0", 1)), static_cast<unsigned int> (((int ) (FractionWidth))-(l-point))))));
         }
     }
   if ((DynamicStrings_Length (s)) > TotalWidth)
@@ -1830,34 +1830,34 @@ DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned in
         {
           if (sign)
             {
-              s = DynamicStrings_Slice (DynamicStrings_Mark (StringConvert_ToDecimalPlaces (s, FractionWidth)), 0, (int) TotalWidth-1);
-              s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (StringConvert_ToDecimalPlaces (s, FractionWidth)), 0, static_cast<int> (TotalWidth-1)));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s)));
               sign = FALSE;
             }
           else
             {
               /* minus 1 because all results will include a '.'  */
-              s = DynamicStrings_Slice (DynamicStrings_Mark (StringConvert_ToDecimalPlaces (s, FractionWidth)), 0, (int) TotalWidth);
+              s = static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (StringConvert_ToDecimalPlaces (s, FractionWidth)), 0, static_cast<int> (TotalWidth)));
             }
         }
       else
         {
           if (sign)
             {
-              s = StringConvert_ToDecimalPlaces (s, FractionWidth);
-              s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s));
+              s = static_cast<DynamicStrings_String> (StringConvert_ToDecimalPlaces (s, FractionWidth));
+              s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s)));
               sign = FALSE;
             }
           else
             {
               /* minus 1 because all results will include a '.'  */
-              s = StringConvert_ToDecimalPlaces (s, FractionWidth);
+              s = static_cast<DynamicStrings_String> (StringConvert_ToDecimalPlaces (s, FractionWidth));
             }
         }
     }
   if ((DynamicStrings_Length (s)) < TotalWidth)
     {
-      s = DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (' ')), TotalWidth-(DynamicStrings_Length (s))), DynamicStrings_Mark (s));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar (' ')), TotalWidth-(DynamicStrings_Length (s))), DynamicStrings_Mark (s)));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1869,7 +1869,7 @@ DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned in
    stor - returns a REAL given a string.
 */
 
-double StringConvert_stor (DynamicStrings_String s)
+extern "C" double StringConvert_stor (DynamicStrings_String s)
 {
   unsigned int found;
 
@@ -1883,11 +1883,11 @@ double StringConvert_stor (DynamicStrings_String s)
    stolr - returns a LONGREAL given a string.
 */
 
-long double StringConvert_stolr (DynamicStrings_String s)
+extern "C" long double StringConvert_stolr (DynamicStrings_String s)
 {
   unsigned int found;
 
-  return StringConvert_StringToLongreal (s, &found);
+  return static_cast<long double> (StringConvert_StringToLongreal (s, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1911,32 +1911,32 @@ long double StringConvert_stolr (DynamicStrings_String s)
               1      10
 */
 
-DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned int n)
+extern "C" DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned int n)
 {
   int point;
   unsigned int poTen;
 
-  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1222, (char *) "ToSigFig", 8);
-  point = DynamicStrings_Index (s, '.', 0);
+  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1222, (const char *) "ToSigFig", 8);
+  point = static_cast<int> (DynamicStrings_Index (s, '.', 0));
   if (point < 0)
     {
-      poTen = DynamicStrings_Length (s);
+      poTen = static_cast<unsigned int> (DynamicStrings_Length (s));
     }
   else
     {
-      poTen = point;
+      poTen = static_cast<unsigned int> (point);
     }
-  s = doSigFig (s, n);
+  s = static_cast<DynamicStrings_String> (doSigFig (s, n));
   /* if the last character is '.' remove it  */
   if (((DynamicStrings_Length (s)) > 0) && ((DynamicStrings_char (s, -1)) == '.'))
     {
-      return DynamicStrings_Slice (DynamicStrings_Mark (s), 0, -1);
+      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, -1));
     }
   else
     {
       if (poTen > (DynamicStrings_Length (s)))
         {
-          s = DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), poTen-(DynamicStrings_Length (s)))));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), poTen-(DynamicStrings_Length (s))))));
         }
       return s;
     }
@@ -1964,29 +1964,29 @@ DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s, unsigned 
                      1      12.3
 */
 
-DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_String s, unsigned int n)
+extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_String s, unsigned int n)
 {
   int point;
 
-  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1069, (char *) "ToDecimalPlaces", 15);
-  point = DynamicStrings_Index (s, '.', 0);
+  Assert ((IsDigit (DynamicStrings_char (s, 0))) || ((DynamicStrings_char (s, 0)) == '.'), (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/StringConvert.mod", 85, 1069, (const char *) "ToDecimalPlaces", 15);
+  point = static_cast<int> (DynamicStrings_Index (s, '.', 0));
   if (point < 0)
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (n > 0)
         {
-          return DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ('.'))), DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), n));
+          return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (DynamicStrings_InitStringChar ('.'))), DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), n)));
         }
       else
         {
           return s;
         }
     }
-  s = doDecimalPlaces (s, n);
+  s = static_cast<DynamicStrings_String> (doDecimalPlaces (s, n));
   /* if the last character is '.' remove it  */
   if (((DynamicStrings_Length (s)) > 0) && ((DynamicStrings_char (s, -1)) == '.'))
     {
-      return DynamicStrings_Slice (DynamicStrings_Mark (s), 0, -1);
+      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, -1));
     }
   else
     {
@@ -1996,10 +1996,10 @@ DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_String s, un
   __builtin_unreachable ();
 }
 
-void _M2_StringConvert_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_StringConvert_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StringConvert_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

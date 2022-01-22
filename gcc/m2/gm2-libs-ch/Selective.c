@@ -30,6 +30,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gm2-libs-host.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(HAVE_SELECT)
 # define FDSET_T fd_set
 #else
@@ -227,5 +231,16 @@ char Selective_ReadCharRaw (int fd)
 }
 
 
-void _M2_Selective_init () {}
-void _M2_Selective_finish () {}
+void
+_M2_Selective_init ()
+{
+}
+
+void
+_M2_Selective_finish ()
+{
+}
+
+#ifdef __cplusplus
+}
+#endif

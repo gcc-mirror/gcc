@@ -60,13 +60,13 @@ static DynamicStrings_String InitialPath;
                     Number         ::= 0..9
 */
 
-void mcSearch_initSearchPath (DynamicStrings_String path);
+extern "C" void mcSearch_initSearchPath (DynamicStrings_String path);
 
 /*
    prependSearchPath - prepends a new path to the initial search path.
 */
 
-void mcSearch_prependSearchPath (DynamicStrings_String path);
+extern "C" void mcSearch_prependSearchPath (DynamicStrings_String path);
 
 /*
    findSourceFile - attempts to locate the source file FileName.
@@ -82,7 +82,7 @@ void mcSearch_prependSearchPath (DynamicStrings_String path);
                     The string, FileName, is not altered.
 */
 
-unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
+extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
 
 /*
    findSourceDefFile - attempts to find the definition module for
@@ -91,7 +91,7 @@ unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStr
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    findSourceModFile - attempts to find the implementation module for
@@ -100,7 +100,7 @@ unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStri
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+extern "C" unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    setDefExtension - sets the default extension for definition modules to, ext.
@@ -108,7 +108,7 @@ unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStri
                      an appropriate time.
 */
 
-void mcSearch_setDefExtension (DynamicStrings_String ext);
+extern "C" void mcSearch_setDefExtension (DynamicStrings_String ext);
 
 /*
    setModExtension - sets the default extension for implementation and program
@@ -116,7 +116,7 @@ void mcSearch_setDefExtension (DynamicStrings_String ext);
                      by the caller at an appropriate time.
 */
 
-void mcSearch_setModExtension (DynamicStrings_String ext);
+extern "C" void mcSearch_setModExtension (DynamicStrings_String ext);
 
 /*
    doDSdbEnter -
@@ -165,7 +165,7 @@ static void doDSdbEnter (void)
 
 static void doDSdbExit (DynamicStrings_String s)
 {
-  s = DynamicStrings_PopAllocationExemption (TRUE, s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_PopAllocationExemption (TRUE, s));
 }
 
 
@@ -193,10 +193,10 @@ static void DSdbExit (DynamicStrings_String s)
 
 static void Init (void)
 {
-  UserPath = DynamicStrings_InitString ((char *) "", 0);
-  InitialPath = DynamicStrings_InitStringChar ('.');
-  Def = NULL;
-  Mod = NULL;
+  UserPath = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  InitialPath = static_cast<DynamicStrings_String> (DynamicStrings_InitStringChar ('.'));
+  Def = static_cast<DynamicStrings_String> (NULL);
+  Mod = static_cast<DynamicStrings_String> (NULL);
 }
 
 
@@ -212,11 +212,11 @@ static void Init (void)
                     Number         ::= 0..9
 */
 
-void mcSearch_initSearchPath (DynamicStrings_String path)
+extern "C" void mcSearch_initSearchPath (DynamicStrings_String path)
 {
   if (InitialPath != NULL)
     {
-      InitialPath = DynamicStrings_KillString (InitialPath);
+      InitialPath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (InitialPath));
     }
   InitialPath = path;
 }
@@ -226,17 +226,17 @@ void mcSearch_initSearchPath (DynamicStrings_String path)
    prependSearchPath - prepends a new path to the initial search path.
 */
 
-void mcSearch_prependSearchPath (DynamicStrings_String path)
+extern "C" void mcSearch_prependSearchPath (DynamicStrings_String path)
 {
   DSdbEnter ();
-  if (DynamicStrings_EqualArray (UserPath, (char *) "", 0))
+  if (DynamicStrings_EqualArray (UserPath, (const char *) "", 0))
     {
-      UserPath = DynamicStrings_KillString (UserPath);
-      UserPath = DynamicStrings_Dup (path);
+      UserPath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (UserPath));
+      UserPath = static_cast<DynamicStrings_String> (DynamicStrings_Dup (path));
     }
   else
     {
-      UserPath = DynamicStrings_ConCat (DynamicStrings_ConCatChar (UserPath, ':'), path);
+      UserPath = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (UserPath, ':'), path));
     }
   DSdbExit (UserPath);
 }
@@ -256,61 +256,61 @@ void mcSearch_prependSearchPath (DynamicStrings_String path)
                     The string, FileName, is not altered.
 */
 
-unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath)
+extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String completeSearchPath;
   int start;
   int end;
   DynamicStrings_String newpath;
 
-  if (DynamicStrings_EqualArray (UserPath, (char *) "", 0))
+  if (DynamicStrings_EqualArray (UserPath, (const char *) "", 0))
     {
-      if (DynamicStrings_EqualArray (InitialPath, (char *) "", 0))
+      if (DynamicStrings_EqualArray (InitialPath, (const char *) "", 0))
         {
-          completeSearchPath = DynamicStrings_InitString ((char *) ".", 1);
+          completeSearchPath = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) ".", 1));
         }
       else
         {
-          completeSearchPath = DynamicStrings_Dup (InitialPath);
+          completeSearchPath = static_cast<DynamicStrings_String> (DynamicStrings_Dup (InitialPath));
         }
     }
   else
     {
-      completeSearchPath = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (UserPath), ':'), InitialPath);
+      completeSearchPath = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (UserPath), ':'), InitialPath));
     }
-  start = 0;
-  end = DynamicStrings_Index (completeSearchPath, ':', (unsigned int ) (start));
+  start = static_cast<int> (0);
+  end = static_cast<int> (DynamicStrings_Index (completeSearchPath, ':', (unsigned int ) (start)));
   do {
     if (end == -1)
       {
-        end = 0;
+        end = static_cast<int> (0);
       }
-    newpath = DynamicStrings_Slice (completeSearchPath, start, end);
-    if (DynamicStrings_EqualArray (newpath, (char *) ".", 1))
+    newpath = static_cast<DynamicStrings_String> (DynamicStrings_Slice (completeSearchPath, start, end));
+    if (DynamicStrings_EqualArray (newpath, (const char *) ".", 1))
       {
-        newpath = DynamicStrings_KillString (newpath);
-        newpath = DynamicStrings_Dup (FileName);
+        newpath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (newpath));
+        newpath = static_cast<DynamicStrings_String> (DynamicStrings_Dup (FileName));
       }
     else
       {
-        newpath = DynamicStrings_ConCat (DynamicStrings_ConCatChar (newpath, Directory), FileName);
+        newpath = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (newpath, Directory), FileName));
       }
     if (SFIO_Exists (newpath))
       {
         (*fullPath) = newpath;
-        completeSearchPath = DynamicStrings_KillString (completeSearchPath);
+        completeSearchPath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (completeSearchPath));
         return TRUE;
       }
-    newpath = DynamicStrings_KillString (newpath);
+    newpath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (newpath));
     if (end != 0)
       {
-        start = end+1;
-        end = DynamicStrings_Index (completeSearchPath, ':', (unsigned int ) (start));
+        start = static_cast<int> (end+1);
+        end = static_cast<int> (DynamicStrings_Index (completeSearchPath, ':', (unsigned int ) (start)));
       }
   } while (! (end == 0));
-  (*fullPath) = NULL;
-  newpath = DynamicStrings_KillString (newpath);
-  completeSearchPath = DynamicStrings_KillString (completeSearchPath);
+  (*fullPath) = static_cast<DynamicStrings_String> (NULL);
+  newpath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (newpath));
+  completeSearchPath = static_cast<DynamicStrings_String> (DynamicStrings_KillString (completeSearchPath));
   return FALSE;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -324,22 +324,22 @@ unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStr
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
+extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String f;
 
   if (Def != NULL)
     {
-      f = mcFileName_calculateFileName (stem, Def);
+      f = static_cast<DynamicStrings_String> (mcFileName_calculateFileName (stem, Def));
       if (mcSearch_findSourceFile (f, fullPath))
         {
           return TRUE;
         }
-      f = DynamicStrings_KillString (f);
+      f = static_cast<DynamicStrings_String> (DynamicStrings_KillString (f));
     }
   /* and try the GNU Modula-2 default extension  */
-  f = mcFileName_calculateFileName (stem, DynamicStrings_Mark (DynamicStrings_InitString ((char *) "def", 3)));
-  return mcSearch_findSourceFile (f, fullPath);
+  f = static_cast<DynamicStrings_String> (mcFileName_calculateFileName (stem, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "def", 3))));
+  return static_cast<unsigned int> (mcSearch_findSourceFile (f, fullPath));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -352,22 +352,22 @@ unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStri
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
+extern "C" unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String f;
 
   if (Mod != NULL)
     {
-      f = mcFileName_calculateFileName (stem, Mod);
+      f = static_cast<DynamicStrings_String> (mcFileName_calculateFileName (stem, Mod));
       if (mcSearch_findSourceFile (f, fullPath))
         {
           return TRUE;
         }
-      f = DynamicStrings_KillString (f);
+      f = static_cast<DynamicStrings_String> (DynamicStrings_KillString (f));
     }
   /* and try the GNU Modula-2 default extension  */
-  f = mcFileName_calculateFileName (stem, DynamicStrings_Mark (DynamicStrings_InitString ((char *) "mod", 3)));
-  return mcSearch_findSourceFile (f, fullPath);
+  f = static_cast<DynamicStrings_String> (mcFileName_calculateFileName (stem, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "mod", 3))));
+  return static_cast<unsigned int> (mcSearch_findSourceFile (f, fullPath));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -379,10 +379,10 @@ unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStri
                      an appropriate time.
 */
 
-void mcSearch_setDefExtension (DynamicStrings_String ext)
+extern "C" void mcSearch_setDefExtension (DynamicStrings_String ext)
 {
-  Def = DynamicStrings_KillString (Def);
-  Def = DynamicStrings_Dup (ext);
+  Def = static_cast<DynamicStrings_String> (DynamicStrings_KillString (Def));
+  Def = static_cast<DynamicStrings_String> (DynamicStrings_Dup (ext));
 }
 
 
@@ -392,17 +392,17 @@ void mcSearch_setDefExtension (DynamicStrings_String ext)
                      by the caller at an appropriate time.
 */
 
-void mcSearch_setModExtension (DynamicStrings_String ext)
+extern "C" void mcSearch_setModExtension (DynamicStrings_String ext)
 {
-  Mod = DynamicStrings_KillString (Mod);
-  Mod = DynamicStrings_Dup (ext);
+  Mod = static_cast<DynamicStrings_String> (DynamicStrings_KillString (Mod));
+  Mod = static_cast<DynamicStrings_String> (DynamicStrings_Dup (ext));
 }
 
-void _M2_mcSearch_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcSearch_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   Init ();
 }
 
-void _M2_mcSearch_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcSearch_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

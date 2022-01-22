@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_FIO_H)
 #   define _FIO_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -70,7 +70,7 @@ EXTERN unsigned int FIO_IsActive (FIO_File f);
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-EXTERN unsigned int FIO_Exists (char *fname_, unsigned int _fname_high);
+EXTERN unsigned int FIO_Exists (const char *fname_, unsigned int _fname_high);
 
 /*
    OpenToRead - attempts to open a file, fname, for reading and
@@ -79,7 +79,7 @@ EXTERN unsigned int FIO_Exists (char *fname_, unsigned int _fname_high);
                 calling IsNoError.
 */
 
-EXTERN FIO_File FIO_OpenToRead (char *fname_, unsigned int _fname_high);
+EXTERN FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high);
 
 /*
    OpenToWrite - attempts to open a file, fname, for write and
@@ -88,7 +88,7 @@ EXTERN FIO_File FIO_OpenToRead (char *fname_, unsigned int _fname_high);
                  calling IsNoError.
 */
 
-EXTERN FIO_File FIO_OpenToWrite (char *fname_, unsigned int _fname_high);
+EXTERN FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_high);
 
 /*
    OpenForRandom - attempts to open a file, fname, for random access
@@ -103,7 +103,7 @@ EXTERN FIO_File FIO_OpenToWrite (char *fname_, unsigned int _fname_high);
                    and modify an existing file.
 */
 
-EXTERN FIO_File FIO_OpenForRandom (char *fname_, unsigned int _fname_high, unsigned int towrite, unsigned int newfile);
+EXTERN FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, unsigned int towrite, unsigned int newfile);
 
 /*
    Close - close a file which has been previously opened using:
@@ -213,7 +213,7 @@ EXTERN void FIO_WriteLine (FIO_File f);
    WriteString - writes a string to file, f.
 */
 
-EXTERN void FIO_WriteString (FIO_File f, char *a_, unsigned int _a_high);
+EXTERN void FIO_WriteString (FIO_File f, const char *a_, unsigned int _a_high);
 
 /*
    ReadString - reads a string from file, f, into string, a.

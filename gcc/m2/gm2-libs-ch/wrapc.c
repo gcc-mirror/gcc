@@ -31,6 +31,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gm2-libs-host.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* strtime - returns the address of a string which describes the
 local time.  */
@@ -39,7 +42,7 @@ char *
 wrapc_strtime (void)
 {
 #if defined(HAVE_CTIME)
-  time_t clock = time ((void *)0);
+  time_t clock = time ((time_t *)0);
   char *string = ctime (&clock);
 
   string[24] = (char)0;
@@ -228,7 +231,12 @@ void
 _M2_wrapc_init ()
 {
 }
+
 void
 _M2_wrapc_finish ()
 {
 }
+
+#ifdef __cplusplus
+}
+#endif

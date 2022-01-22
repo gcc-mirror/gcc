@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_NumberIO_H)
 #   define _NumberIO_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,22 +54,22 @@ EXTERN void NumberIO_WriteHex (unsigned int x, unsigned int n);
 EXTERN void NumberIO_ReadInt (int *x);
 EXTERN void NumberIO_WriteInt (int x, unsigned int n);
 EXTERN void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-EXTERN void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x);
+EXTERN void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsigned int *x);
 EXTERN void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-EXTERN void NumberIO_StrToHex (char *a_, unsigned int _a_high, unsigned int *x);
+EXTERN void NumberIO_StrToHex (const char *a_, unsigned int _a_high, unsigned int *x);
 EXTERN void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high);
-EXTERN void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x);
+EXTERN void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x);
 EXTERN void NumberIO_ReadOct (unsigned int *x);
 EXTERN void NumberIO_WriteOct (unsigned int x, unsigned int n);
 EXTERN void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-EXTERN void NumberIO_StrToOct (char *a_, unsigned int _a_high, unsigned int *x);
+EXTERN void NumberIO_StrToOct (const char *a_, unsigned int _a_high, unsigned int *x);
 EXTERN void NumberIO_ReadBin (unsigned int *x);
 EXTERN void NumberIO_WriteBin (unsigned int x, unsigned int n);
 EXTERN void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-EXTERN void NumberIO_StrToBin (char *a_, unsigned int _a_high, unsigned int *x);
-EXTERN void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x);
-EXTERN void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x);
-EXTERN void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x);
+EXTERN void NumberIO_StrToBin (const char *a_, unsigned int _a_high, unsigned int *x);
+EXTERN void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int *x);
+EXTERN void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int *x);
+EXTERN void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int *x);
 #   ifdef __cplusplus
 }
 #   endif

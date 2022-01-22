@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_StrLib_H)
 #   define _StrLib_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -52,26 +52,26 @@ extern "C" {
    StrConCat - combines a and b into c.
 */
 
-EXTERN void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high, char *c, unsigned int _c_high);
+EXTERN void StrLib_StrConCat (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high, char *c, unsigned int _c_high);
 
 /*
    StrLess - returns TRUE if string, a, alphabetically occurs before
              string, b.
 */
 
-EXTERN unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
+EXTERN unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrEqual - performs a = b on two strings.
 */
 
-EXTERN unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
+EXTERN unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrLen - returns the length of string, a.
 */
 
-EXTERN unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
+EXTERN unsigned int StrLib_StrLen (const char *a_, unsigned int _a_high);
 
 /*
    StrCopy - copy string src into string dest providing dest is large enough.
@@ -79,20 +79,20 @@ EXTERN unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
              dest is full.  Add a nul character if there is room in dest.
 */
 
-EXTERN void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
+EXTERN void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
 
 /*
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-EXTERN unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
+EXTERN unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrRemoveWhitePrefix - copies string, into string, b, excluding any white
                           space infront of a.
 */
 
-EXTERN void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+EXTERN void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 #   ifdef __cplusplus
 }
 #   endif

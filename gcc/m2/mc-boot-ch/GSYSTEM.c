@@ -19,11 +19,19 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+
+EXTERN
 void
 _M2_SYSTEM_init (int argc, char *p)
 {
 }
 
+EXTERN
 void
 _M2_SYSTEM_finish (int argc, char *p)
 {

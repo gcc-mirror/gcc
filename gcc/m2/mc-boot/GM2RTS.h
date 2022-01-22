@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_M2RTS_H)
 #   define _M2RTS_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -107,7 +107,7 @@ EXTERN void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
           four parameters to aid debugging.
 */
 
-EXTERN void M2RTS_Halt (char *file_, unsigned int _file_high, unsigned int line, char *function_, unsigned int _function_high, char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_Halt (const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -119,7 +119,7 @@ EXTERN void M2RTS_ExitOnHalt (int e);
    ErrorMessage - emits an error message to stderr and then calls exit (1).
 */
 
-EXTERN void M2RTS_ErrorMessage (char *message_, unsigned int _message_high, char *file_, unsigned int _file_high, unsigned int line, char *function_, unsigned int _function_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *file_, unsigned int _file_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 
 /*
    Length - returns the length of a string, a. This is called whenever
@@ -127,7 +127,7 @@ EXTERN void M2RTS_ErrorMessage (char *message_, unsigned int _message_high, char
             at compile time.
 */
 
-EXTERN unsigned int M2RTS_Length (char *a_, unsigned int _a_high);
+EXTERN unsigned int M2RTS_Length (const char *a_, unsigned int _a_high);
 EXTERN void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 EXTERN void M2RTS_ReturnException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 EXTERN void M2RTS_IncException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);

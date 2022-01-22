@@ -1,6 +1,6 @@
-/* GUnixArgs.c handwritten module for mc.
+/* Gabort.c a GCC style abort function.
 
-Copyright (C) 2016-2022 Free Software Foundation, Inc.
+Copyright (C) 2022 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -19,26 +19,12 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-int UnixArgs_ArgC;
-
-char **UnixArgs_ArgV;
+#include "config.h"
+#include "system.h"
 
 void
-_M2_UnixArgs_init (int argc, char *argv[])
+fancy_abort (const char *filename, int line, const char *func)
 {
-  UnixArgs_ArgC = argc;
-  UnixArgs_ArgV = argv;
+  fprintf (stderr, "%s:%d%s: aborting\n", filename, line, func);
+  exit (1);
 }
-
-void
-_M2_UnixArgs_finish (int argc, char *argv[])
-{
-}
-
-#if defined(__cplusplus)
-}
-#endif

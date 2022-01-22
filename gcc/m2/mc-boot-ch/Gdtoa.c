@@ -24,6 +24,11 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_FP_DIGITS 500
 
 typedef enum Mode { maxsignicant, decimaldigits } Mode;
@@ -117,6 +122,7 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
   return x;
 }
 
+
 int
 dtoa_calcsign (char *p, int str_size)
 {
@@ -129,6 +135,7 @@ dtoa_calcsign (char *p, int str_size)
     return FALSE;
 }
 
+
 char *
 dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 {
@@ -140,14 +147,14 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 
     case maxsignicant:
       ndigits += 20; /* enough for exponent.  */
-      p = malloc (ndigits);
+      p = (char *) malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "E");
       snprintf (p, ndigits, format, d);
       *sign = dtoa_calcsign (p, ndigits);
       *decpt = dtoa_calcmaxsig (p, ndigits);
       return p;
     case decimaldigits:
-      p = malloc (MAX_FP_DIGITS + 20);
+      p = (char *) malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "E");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
       *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
@@ -165,8 +172,13 @@ void
 _M2_dtoa_init (void)
 {
 }
+
 void
 _M2_dtoa_finish (void)
 {
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

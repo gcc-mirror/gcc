@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_CmdArgs_H)
 #   define _CmdArgs_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,14 +53,14 @@ extern "C" {
             the success of the operation is returned.
 */
 
-EXTERN unsigned int CmdArgs_GetArg (char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
+EXTERN unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
 
 /*
    Narg - returns the number of arguments available from
           command line, CmdLine.
 */
 
-EXTERN unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high);
+EXTERN unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLine_high);
 #   ifdef __cplusplus
 }
 #   endif

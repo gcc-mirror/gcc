@@ -24,6 +24,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gm2-libs-host.h"
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+
 #if 0
 /* Signals.  */
 #define SIGHUP 1       /* Hangup (POSIX).  */
@@ -151,6 +157,7 @@ sigfpeDespatcher (int signum, siginfo_t *info, void *ucontext)
     }
 }
 
+EXTERN
 void
 SysExceptions_InitExceptionHandlers (
     void (*indexf) (void *), void (*range) (void *), void (*casef) (void *),
@@ -202,6 +209,7 @@ SysExceptions_InitExceptionHandlers (
 }
 
 #else
+EXTERN
 void
 SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
                                      void *invalidloc, void *function,
@@ -216,11 +224,13 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 
 /* GNU Modula-2 linking fodder.  */
 
+EXTERN
 void
 _M2_SysExceptions_init (void)
 {
 }
 
+EXTERN
 void
 _M2_SysExceptions_finish (void)
 {

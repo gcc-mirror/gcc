@@ -28,6 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "system.h"
 #include "ansidecl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *
 xstrdup (char *src)
 {
@@ -38,3 +42,7 @@ xstrdup (char *src)
   strcpy (dst, src);
   return dst;
 }
+
+#ifdef __cplusplus
+}
+#endif

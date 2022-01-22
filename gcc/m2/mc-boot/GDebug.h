@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_Debug_H)
 #   define _Debug_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,7 +55,7 @@ extern "C" {
           It then terminates by calling HALT.
 */
 
-EXTERN void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo, char *Module_, unsigned int _Module_high);
+EXTERN void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high);
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
@@ -63,7 +63,7 @@ EXTERN void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int
  as carriage return, linefeed.
 */
 
-EXTERN void Debug_DebugString (char *a_, unsigned int _a_high);
+EXTERN void Debug_DebugString (const char *a_, unsigned int _a_high);
 #   ifdef __cplusplus
 }
 #   endif

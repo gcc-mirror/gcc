@@ -41,27 +41,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   define MaxArgs 255
 #   define MaxString 4096
-typedef struct _T1_a _T1;
-
 typedef struct _T2_a _T2;
 
-struct _T1_a { _T2 * array[MaxArgs+1]; };
-struct _T2_a { char array[MaxString+1]; };
-static _T1 * Source;
+typedef _T2 *_T1;
+
+typedef struct _T3_a _T3;
+
+struct _T2_a { _T3 * array[MaxArgs+1]; };
+struct _T3_a { char array[MaxString+1]; };
+static _T1 Source;
 
 /*
    GetArg - returns the nth argument from the command line.
             The success of the operation is returned.
 */
 
-unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i);
+extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i);
 
 /*
    Narg - returns the number of arguments available from
           command line.
 */
 
-unsigned int Args_Narg (void);
+extern "C" unsigned int Args_Narg (void);
 
 
 /*
@@ -69,16 +71,16 @@ unsigned int Args_Narg (void);
             The success of the operation is returned.
 */
 
-unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i)
+extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i)
 {
   unsigned int High;
   unsigned int j;
 
-  j = 0;
+  j = static_cast<unsigned int> (0);
   High = _a_high;
   if (i < UnixArgs_ArgC)
     {
-      Source = UnixArgs_ArgV;
+      Source = static_cast<_T1> (UnixArgs_ArgV);
       while (((*(*Source).array[i]).array[j] != ASCII_nul) && (j < High))
         {
           a[j] = (*(*Source).array[i]).array[j];
@@ -100,17 +102,17 @@ unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int i)
           command line.
 */
 
-unsigned int Args_Narg (void)
+extern "C" unsigned int Args_Narg (void)
 {
   return UnixArgs_ArgC;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_Args_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Args_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_Args_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Args_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

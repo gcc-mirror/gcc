@@ -29,6 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libiberty.h"
 #include "Gchoosetemp.h"
 
+#   ifdef __cplusplus
+extern "C" {
+#   endif
+
 /* Return a temporary file name (as a string) or NIL if unable to
 create one.  */
 
@@ -49,3 +53,6 @@ void
 _M2_choosetemp_finish (void)
 {
 }
+#   ifdef __cplusplus
+}
+#   endif

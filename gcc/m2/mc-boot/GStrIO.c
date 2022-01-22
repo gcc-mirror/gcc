@@ -51,7 +51,7 @@ static unsigned int IsATTY;
              character.
 */
 
-void StrIO_WriteLn (void);
+extern "C" void StrIO_WriteLn (void);
 
 /*
    ReadString - reads a sequence of characters into a string.
@@ -59,13 +59,13 @@ void StrIO_WriteLn (void);
                 Ctrl U.
 */
 
-void StrIO_ReadString (char *a, unsigned int _a_high);
+extern "C" void StrIO_ReadString (char *a, unsigned int _a_high);
 
 /*
    WriteString - writes a string to the default output.
 */
 
-void StrIO_WriteString (char *a_, unsigned int _a_high);
+extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high);
 
 /*
    Erase - writes a backspace, space and backspace to remove the
@@ -132,7 +132,7 @@ static unsigned int AlphaNum (char ch)
              character.
 */
 
-void StrIO_WriteLn (void)
+extern "C" void StrIO_WriteLn (void)
 {
   Echo (ASCII_cr);
   StdIO_Write (ASCII_lf);
@@ -145,14 +145,14 @@ void StrIO_WriteLn (void)
                 Ctrl U.
 */
 
-void StrIO_ReadString (char *a, unsigned int _a_high)
+extern "C" void StrIO_ReadString (char *a, unsigned int _a_high)
 {
   unsigned int n;
   unsigned int high;
   char ch;
 
   high = _a_high;
-  n = 0;
+  n = static_cast<unsigned int> (0);
   do {
     StdIO_Read (&ch);
     if ((ch == ASCII_del) || (ch == ASCII_bs))
@@ -203,7 +203,7 @@ void StrIO_ReadString (char *a, unsigned int _a_high)
         /* avoid dangling else.  */
         if ((ch == ASCII_cr) || (ch == ASCII_lf))
           {
-            a[n] = ASCII_nul;
+            a[n] = static_cast<char> (ASCII_nul);
             n += 1;
           }
         else if (ch == ASCII_ff)
@@ -248,7 +248,7 @@ void StrIO_ReadString (char *a, unsigned int _a_high)
    WriteString - writes a string to the default output.
 */
 
-void StrIO_WriteString (char *a_, unsigned int _a_high)
+extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high)
 {
   unsigned int n;
   unsigned int high;
@@ -258,7 +258,7 @@ void StrIO_WriteString (char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   high = _a_high;
-  n = 0;
+  n = static_cast<unsigned int> (0);
   while ((n <= high) && (a[n] != ASCII_nul))
     {
       StdIO_Write (a[n]);
@@ -266,12 +266,12 @@ void StrIO_WriteString (char *a_, unsigned int _a_high)
     }
 }
 
-void _M2_StrIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   /* IsATTY := isatty()  */
   IsATTY = FALSE;
 }
 
-void _M2_StrIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -96,7 +96,7 @@ static char *libraries = NULL;
 static char *args = NULL;
 static functList *head = NULL;
 static functList *tail = NULL;
-static int GCCCommand = FALSE; /* FALSE = g++, TRUE = gcc.  */
+static int langC = FALSE; /* FALSE = C++, TRUE = C.  */
 
 /* addLibrary - adds libname to the list of libraries to be linked.  */
 
@@ -150,7 +150,7 @@ main (int argc, char *argv[])
 	LinkCommandLine = FALSE;
       else
         {
-          fprintf (stderr, "Usage: mklink (-l|-s) [--gcc|--g++] [--pg|-p] "
+          fprintf (stderr, "Usage: mklink (-l|-s) [--langc|--langc++] [--pg|-p] "
                            "[--lib library] [--main name] [--exit] --name "
                            "filename <modulelistfile>\n");
           fprintf (stderr, "       must supply -l or -s option\n");
@@ -161,10 +161,10 @@ main (int argc, char *argv[])
       i = 2;
       while (i < argc - 1)
         {
-          if (strcmp (argv[i], "--g++") == 0)
-	    GCCCommand = FALSE;
-          else if (strcmp (argv[i], "--gcc") == 0)
-	    GCCCommand = TRUE;
+          if (strcmp (argv[i], "--langc++") == 0)
+	    langC = FALSE;
+          else if (strcmp (argv[i], "--langc") == 0)
+	    langC = TRUE;
           else if (strncmp (argv[i], "-f", 2) == 0)
 	    addGccArg (argv[i]);
           else if (strcmp (argv[i], "--pg") == 0)
@@ -237,7 +237,7 @@ ParseFileLinkCommand (void)
   s = getenv ("CC");
   if (s == NULL)
     {
-      if (GCCCommand)
+      if (langC)
         printf ("gcc -g ");
       else
         printf ("g++ -g ");
@@ -372,7 +372,7 @@ GeneratePrototypes (functList *p)
 {
   while (p != NULL)
     {
-      if (GCCCommand)
+      if (langC)
         {
           printf ("extern void _M2_%s_init(int argc, char *argv[]);\n",
                   p->functname);
@@ -407,7 +407,7 @@ ParseFileStartup (void)
     }
   GeneratePrototypes (head);
   printf ("extern");
-  if (!GCCCommand)
+  if (!langC)
     printf (" \"C\"");
   printf (" void _exit(int);\n");
 

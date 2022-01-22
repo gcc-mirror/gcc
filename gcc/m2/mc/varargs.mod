@@ -23,7 +23,7 @@ IMPLEMENTATION MODULE varargs ;
 
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM libc IMPORT memcpy ;
-FROM SYSTEM IMPORT ADDRESS, TSIZE, ADR ;
+FROM SYSTEM IMPORT ADDRESS, TSIZE, ADR, BYTE ;
 
 
 CONST
@@ -42,6 +42,8 @@ TYPE
                 ptr: ADDRESS ;
                 len: CARDINAL ;
              END ;
+
+   ptrToByte = POINTER TO BYTE ;
 
 
 (*
@@ -105,8 +107,8 @@ BEGIN
       ALLOCATE (contents, size) ;
       contents := memcpy (contents, v^.contents, size) ;
       FOR j := 0 TO nArgs DO
-         offset := VAL (CARDINAL, v^.contents - v^.arg[j].ptr) ;
-         arg[j].ptr := contents + offset ;
+         offset := VAL (CARDINAL, VAL (ptrToByte, v^.contents) - VAL (ptrToByte, v^.arg[j].ptr)) ;
+         arg[j].ptr := VAL (ptrToByte, VAL (ptrToByte, contents) + offset) ;
          arg[j].len := v^.arg[j].len ;
       END
    END ;

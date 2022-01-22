@@ -64,14 +64,14 @@ typedef PtrToChar *PtrToPtrToChar;
             new string, otherwise s is set to NIL.
 */
 
-unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i);
+extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i);
 
 /*
    Narg - returns the number of arguments available from
           command line.
 */
 
-unsigned int SArgs_Narg (void);
+extern "C" unsigned int SArgs_Narg (void);
 
 
 /*
@@ -81,20 +81,20 @@ unsigned int SArgs_Narg (void);
             new string, otherwise s is set to NIL.
 */
 
-unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
+extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
 {
   PtrToPtrToChar ppc;
 
   if (i < UnixArgs_ArgC)
     {
       /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
-      ppc = (void *) (((PtrToChar) (UnixArgs_ArgV))+(i*sizeof (PtrToChar)));
-      (*s) = DynamicStrings_InitStringCharStar ((void *) (*ppc));
+      ppc = static_cast<PtrToPtrToChar> ((void *) (((PtrToChar) (UnixArgs_ArgV))+(i*sizeof (PtrToChar))));
+      (*s) = static_cast<DynamicStrings_String> (DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc))));
       return TRUE;
     }
   else
     {
-      (*s) = NULL;
+      (*s) = static_cast<DynamicStrings_String> (NULL);
       return FALSE;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -107,17 +107,17 @@ unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int i)
           command line.
 */
 
-unsigned int SArgs_Narg (void)
+extern "C" unsigned int SArgs_Narg (void)
 {
   return UnixArgs_ArgC;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_SArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_SArgs_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SArgs_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

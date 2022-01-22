@@ -24,6 +24,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gm2-libs-host.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAX_FP_DIGITS 500
 
 typedef enum Mode { maxsignicant, decimaldigits } Mode;
@@ -69,14 +73,14 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 
     case maxsignicant:
       ndigits += 20; /* enough for exponent.  */
-      p = malloc (ndigits);
+      p = (char *)malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "LE");
       snprintf (p, ndigits, format, d);
       *sign = dtoa_calcsign (p, ndigits);
       *decpt = dtoa_calcmaxsig (p, ndigits);
       return p;
     case decimaldigits:
-      p = malloc (MAX_FP_DIGITS + 20);
+      p = (char *)malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "LE");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
       *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
@@ -93,7 +97,11 @@ void
 _M2_ldtoa_init (void)
 {
 }
+
 void
 _M2_ldtoa_finish (void)
 {
 }
+#   ifdef __cplusplus
+}
+#   endif

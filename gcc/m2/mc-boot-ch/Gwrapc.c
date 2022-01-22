@@ -25,7 +25,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gm2-libs-host.h"
 
-#ifdef cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -36,7 +36,7 @@ char *
 wrapc_strtime (void)
 {
 #if defined(HAVE_CTIME)
-  time_t clock = time ((void *)0);
+  time_t clock = time ((time_t *)0);
   char *string = ctime (&clock);
 
   string[24] = (char)0;
@@ -178,6 +178,6 @@ _M2_wrapc_finish ()
 {
 }
 
-#ifdef cplusplus
+#ifdef __cplusplus
 }
 #endif

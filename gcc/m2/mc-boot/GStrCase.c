@@ -45,14 +45,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
                     result in, b.
 */
 
-void StrCase_StrToUpperCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+extern "C" void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
 /*
    StrToLowerCase - converts string, a, to lowercase returning the
                     result in, b.
 */
 
-void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+extern "C" void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
 /*
    Cap - converts a lower case character into a capital character.
@@ -60,7 +60,7 @@ void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned i
          then the character is simply returned unaltered.
 */
 
-char StrCase_Cap (char ch);
+extern "C" char StrCase_Cap (char ch);
 
 /*
    Lower - converts an upper case character into a lower case character.
@@ -68,7 +68,7 @@ char StrCase_Cap (char ch);
            then the character is simply returned unaltered.
 */
 
-char StrCase_Lower (char ch);
+extern "C" char StrCase_Lower (char ch);
 
 
 /*
@@ -76,7 +76,7 @@ char StrCase_Lower (char ch);
                     result in, b.
 */
 
-void StrCase_StrToUpperCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
+extern "C" void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
 {
   unsigned int higha;
   unsigned int highb;
@@ -86,12 +86,12 @@ void StrCase_StrToUpperCase (char *a_, unsigned int _a_high, char *b, unsigned i
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  higha = StrLib_StrLen ((char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
   highb = _b_high;
-  i = 0;
+  i = static_cast<unsigned int> (0);
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = StrCase_Cap (a[i]);
+      b[i] = static_cast<char> (StrCase_Cap (a[i]));
       i += 1;
     }
   if (i < highb)
@@ -106,7 +106,7 @@ void StrCase_StrToUpperCase (char *a_, unsigned int _a_high, char *b, unsigned i
                     result in, b.
 */
 
-void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
+extern "C" void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
 {
   unsigned int higha;
   unsigned int highb;
@@ -116,12 +116,12 @@ void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned i
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  higha = StrLib_StrLen ((char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
   highb = _b_high;
-  i = 0;
+  i = static_cast<unsigned int> (0);
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = StrCase_Lower (a[i]);
+      b[i] = static_cast<char> (StrCase_Lower (a[i]));
       i += 1;
     }
   if (i < highb)
@@ -137,7 +137,7 @@ void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned i
          then the character is simply returned unaltered.
 */
 
-char StrCase_Cap (char ch)
+extern "C" char StrCase_Cap (char ch)
 {
   if ((ch >= 'a') && (ch <= 'z'))
     {
@@ -155,7 +155,7 @@ char StrCase_Cap (char ch)
            then the character is simply returned unaltered.
 */
 
-char StrCase_Lower (char ch)
+extern "C" char StrCase_Lower (char ch)
 {
   if ((ch >= 'A') && (ch <= 'Z'))
     {
@@ -166,10 +166,10 @@ char StrCase_Lower (char ch)
   __builtin_unreachable ();
 }
 
-void _M2_StrCase_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrCase_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_StrCase_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrCase_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

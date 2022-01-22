@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_Environment_H)
 #   define _Environment_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,7 +53,7 @@ extern "C" {
       	       	    a copy of its value into string, a.
 */
 
-EXTERN unsigned int Environment_GetEnvironment (char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
+EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
 #   ifdef __cplusplus
 }
 #   endif

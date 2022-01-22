@@ -22,12 +22,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 
-void
-fancy_abort (const char *filename, int line, const char *func)
-{
-  fprintf (stderr, "%s:%d%s: aborting\n", filename, line, func);
-  exit (1);
-}
+#   ifdef __cplusplus
+extern "C" {
+#   endif
 
 void
 CaseException (const char *s, unsigned int high, unsigned int lineno)
@@ -46,8 +43,12 @@ ReturnException (const char *s, unsigned int high, unsigned int lineno)
   _exit (1);
 }
 
-void throw (int n)
+void _throw (int n)
 {
   fprintf (stderr, "throw called (%d)\n", n);
   _exit (1);
 }
+
+#   ifdef __cplusplus
+}
+#   endif

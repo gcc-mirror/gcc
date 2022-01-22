@@ -44,28 +44,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Assert - tests the boolean Condition, if it fails then HALT is called.
 */
 
-void Assertion_Assert (unsigned int Condition);
+extern "C" void Assertion_Assert (unsigned int Condition);
 
 
 /*
    Assert - tests the boolean Condition, if it fails then HALT is called.
 */
 
-void Assertion_Assert (unsigned int Condition)
+extern "C" void Assertion_Assert (unsigned int Condition)
 {
   if (! Condition)
     {
-      StrIO_WriteString ((char *) "assert failed - halting system", 30);
+      StrIO_WriteString ((const char *) "assert failed - halting system", 30);
       StrIO_WriteLn ();
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
 }
 
-void _M2_Assertion_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Assertion_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_Assertion_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Assertion_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

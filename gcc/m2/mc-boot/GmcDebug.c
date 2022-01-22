@@ -36,13 +36,13 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
             and the execution is terminated.
 */
 
-void mcDebug_assert (unsigned int q);
+extern "C" void mcDebug_assert (unsigned int q);
 
 /*
    writeDebug - only writes a string if internal debugging is on.
 */
 
-void mcDebug_writeDebug (char *a_, unsigned int _a_high);
+extern "C" void mcDebug_writeDebug (const char *a_, unsigned int _a_high);
 
 
 /*
@@ -50,11 +50,11 @@ void mcDebug_writeDebug (char *a_, unsigned int _a_high);
             and the execution is terminated.
 */
 
-void mcDebug_assert (unsigned int q)
+extern "C" void mcDebug_assert (unsigned int q)
 {
   if (! q)
     {
-      mcError_internalError ((char *) "assert failed", 13, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcDebug.mod", 73, 36);
+      mcError_internalError ((const char *) "assert failed", 13, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcDebug.mod", 73, 35);
     }
 }
 
@@ -63,7 +63,7 @@ void mcDebug_assert (unsigned int q)
    writeDebug - only writes a string if internal debugging is on.
 */
 
-void mcDebug_writeDebug (char *a_, unsigned int _a_high)
+extern "C" void mcDebug_writeDebug (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -72,15 +72,15 @@ void mcDebug_writeDebug (char *a_, unsigned int _a_high)
 
   if (mcOptions_getInternalDebugging ())
     {
-      StrIO_WriteString ((char *) a, _a_high);
+      StrIO_WriteString ((const char *) a, _a_high);
       StrIO_WriteLn ();
     }
 }
 
-void _M2_mcDebug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcDebug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_mcDebug_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcDebug_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

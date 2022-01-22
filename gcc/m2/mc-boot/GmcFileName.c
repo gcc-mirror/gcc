@@ -40,7 +40,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
                        collection.
 */
 
-DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module, DynamicStrings_String extension);
+extern "C" DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module, DynamicStrings_String extension);
 
 /*
    calculateStemName - calculates the stem name for given a module.
@@ -48,21 +48,21 @@ DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module
       	       	       compiler specific.
 */
 
-DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module);
+extern "C" DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module);
 
 /*
    extractExtension - given a, filename, return the filename without
                       the extension, Ext.
 */
 
-DynamicStrings_String mcFileName_extractExtension (DynamicStrings_String filename, DynamicStrings_String ext);
+extern "C" DynamicStrings_String mcFileName_extractExtension (DynamicStrings_String filename, DynamicStrings_String ext);
 
 /*
    extractModule - given a, filename, return the module name including any
                    extension. A new string is returned.
 */
 
-DynamicStrings_String mcFileName_extractModule (DynamicStrings_String filename);
+extern "C" DynamicStrings_String mcFileName_extractModule (DynamicStrings_String filename);
 
 
 /*
@@ -72,15 +72,15 @@ DynamicStrings_String mcFileName_extractModule (DynamicStrings_String filename);
                        collection.
 */
 
-DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module, DynamicStrings_String extension)
+extern "C" DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module, DynamicStrings_String extension)
 {
   if (MaxFileName == 0)
     {
-      return DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, MaxFileName), '.'), extension);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, MaxFileName), '.'), extension));
     }
   else
     {
-      return DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, (MaxFileName-(DynamicStrings_Length (extension)))-1), '.'), extension);
+      return static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (module, 0, (MaxFileName-(DynamicStrings_Length (extension)))-1), '.'), extension));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -93,9 +93,9 @@ DynamicStrings_String mcFileName_calculateFileName (DynamicStrings_String module
       	       	       compiler specific.
 */
 
-DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module)
+extern "C" DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module)
 {
-  return DynamicStrings_Slice (module, 0, MaxStemName);
+  return static_cast<DynamicStrings_String> (DynamicStrings_Slice (module, 0, MaxStemName));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -106,11 +106,11 @@ DynamicStrings_String mcFileName_calculateStemName (DynamicStrings_String module
                       the extension, Ext.
 */
 
-DynamicStrings_String mcFileName_extractExtension (DynamicStrings_String filename, DynamicStrings_String ext)
+extern "C" DynamicStrings_String mcFileName_extractExtension (DynamicStrings_String filename, DynamicStrings_String ext)
 {
-  if (DynamicStrings_Equal (ext, DynamicStrings_Mark (DynamicStrings_Slice (filename, (int) -(DynamicStrings_Length (ext)), 0))))
+  if (DynamicStrings_Equal (ext, DynamicStrings_Mark (DynamicStrings_Slice (filename, static_cast<int> (-(DynamicStrings_Length (ext))), 0))))
     {
-      return DynamicStrings_Slice (filename, 0, (int) -(DynamicStrings_Length (ext)));
+      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (filename, 0, static_cast<int> (-(DynamicStrings_Length (ext)))));
     }
   else
     {
@@ -126,27 +126,27 @@ DynamicStrings_String mcFileName_extractExtension (DynamicStrings_String filenam
                    extension. A new string is returned.
 */
 
-DynamicStrings_String mcFileName_extractModule (DynamicStrings_String filename)
+extern "C" DynamicStrings_String mcFileName_extractModule (DynamicStrings_String filename)
 {
   int i;
 
-  i = DynamicStrings_Index (filename, Directory, 0);
+  i = static_cast<int> (DynamicStrings_Index (filename, Directory, 0));
   if (i == -1)
     {
-      return DynamicStrings_Dup (filename);
+      return static_cast<DynamicStrings_String> (DynamicStrings_Dup (filename));
     }
   else
     {
-      return DynamicStrings_Slice (filename, i+1, 0);
+      return static_cast<DynamicStrings_String> (DynamicStrings_Slice (filename, i+1, 0));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_mcFileName_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcFileName_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_mcFileName_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcFileName_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

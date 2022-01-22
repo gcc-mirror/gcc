@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_StrIO_H)
 #   define _StrIO_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -67,7 +67,7 @@ EXTERN void StrIO_ReadString (char *a, unsigned int _a_high);
    WriteString - writes a string to the default output.
 */
 
-EXTERN void StrIO_WriteString (char *a_, unsigned int _a_high);
+EXTERN void StrIO_WriteString (const char *a_, unsigned int _a_high);
 #   ifdef __cplusplus
 }
 #   endif

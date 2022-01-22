@@ -31,6 +31,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gm2-libs-host.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if !defined(HAVE_EXP10)
 double
 exp10 (double x)
@@ -54,3 +58,7 @@ exp10l (long double x)
   return expl (x * M_LN10);
 }
 #endif
+
+#   ifdef __cplusplus
+}
+#   endif

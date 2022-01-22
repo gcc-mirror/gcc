@@ -267,6 +267,14 @@ PROCEDURE genDefs (p: pretty) ;
 
 
 (*
+   genConfigSystem - generate include files for config.h and system.h
+                     within the GCC framework.
+*)
+
+PROCEDURE genConfigSystem (p: pretty) ;
+
+
+(*
    enterScope - enter a scope defined by, n.
 *)
 

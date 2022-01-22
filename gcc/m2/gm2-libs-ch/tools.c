@@ -28,7 +28,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "system.h"
 #include "ansidecl.h"
 
-void fancy_abort(char const*, int, char const*)
+void
+fancy_abort (char const*, int, char const*)
 {
   fprintf (stderr, "fancy_abort called\n");
   exit (1);

@@ -104,63 +104,63 @@ static void * currentSource;
            and message in the EHBlock for later use.
 */
 
-void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message);
+extern "C" void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message);
 
 /*
    SetExceptionBlock - sets, source, as the active EHB.
 */
 
-void RTExceptions_SetExceptionBlock (RTExceptions_EHBlock source);
+extern "C" void RTExceptions_SetExceptionBlock (RTExceptions_EHBlock source);
 
 /*
    GetExceptionBlock - returns the active EHB.
 */
 
-RTExceptions_EHBlock RTExceptions_GetExceptionBlock (void);
+extern "C" RTExceptions_EHBlock RTExceptions_GetExceptionBlock (void);
 
 /*
    GetTextBuffer - returns the address of the EHB buffer.
 */
 
-void * RTExceptions_GetTextBuffer (RTExceptions_EHBlock e);
+extern "C" void * RTExceptions_GetTextBuffer (RTExceptions_EHBlock e);
 
 /*
    GetTextBufferSize - return the size of the EHB text buffer.
 */
 
-unsigned int RTExceptions_GetTextBufferSize (RTExceptions_EHBlock e);
+extern "C" unsigned int RTExceptions_GetTextBufferSize (RTExceptions_EHBlock e);
 
 /*
    GetNumber - return the exception number associated with,
                source.
 */
 
-unsigned int RTExceptions_GetNumber (RTExceptions_EHBlock source);
+extern "C" unsigned int RTExceptions_GetNumber (RTExceptions_EHBlock source);
 
 /*
    InitExceptionBlock - creates and returns a new exception block.
 */
 
-RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void);
+extern "C" RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void);
 
 /*
    KillExceptionBlock - destroys the EHB, e, and all its handlers.
 */
 
-RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e);
+extern "C" RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e);
 
 /*
    PushHandler - install a handler in EHB, e.
 */
 
-void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int number, RTExceptions_ProcedureHandler p);
+extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int number, RTExceptions_ProcedureHandler p);
 
 /*
    PopHandler - removes the handler associated with, number, from
                 EHB, e.
 */
 
-void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number);
+extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number);
 
 /*
    DefaultErrorCatch - displays the current error message in
@@ -168,7 +168,7 @@ void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number);
                        calls HALT.
 */
 
-void RTExceptions_DefaultErrorCatch (void);
+extern "C" void RTExceptions_DefaultErrorCatch (void);
 
 /*
    BaseExceptionsThrow - configures the Modula-2 exceptions to call
@@ -178,14 +178,14 @@ void RTExceptions_DefaultErrorCatch (void);
                          error message routine and then HALT.
 */
 
-void RTExceptions_BaseExceptionsThrow (void);
+extern "C" void RTExceptions_BaseExceptionsThrow (void);
 
 /*
    IsInExceptionState - returns TRUE if the program is currently
                         in the exception state.
 */
 
-unsigned int RTExceptions_IsInExceptionState (void);
+extern "C" unsigned int RTExceptions_IsInExceptionState (void);
 
 /*
    SetExceptionState - returns the current exception state and
@@ -193,7 +193,7 @@ unsigned int RTExceptions_IsInExceptionState (void);
                        to.
 */
 
-unsigned int RTExceptions_SetExceptionState (unsigned int to);
+extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to);
 
 /*
    SwitchExceptionState - assigns, from, with the current exception
@@ -201,32 +201,32 @@ unsigned int RTExceptions_SetExceptionState (unsigned int to);
                           to, to.
 */
 
-void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to);
+extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to);
 
 /*
    GetBaseExceptionBlock - returns the initial language exception block
                            created.
 */
 
-RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void);
+extern "C" RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void);
 
 /*
    SetExceptionSource - sets the current exception source to, source.
 */
 
-void RTExceptions_SetExceptionSource (void * source);
+extern "C" void RTExceptions_SetExceptionSource (void * source);
 
 /*
    GetExceptionSource - returns the current exception source.
 */
 
-void * RTExceptions_GetExceptionSource (void);
+extern "C" void * RTExceptions_GetExceptionSource (void);
 
 /*
    ErrorString - writes a string to stderr.
 */
 
-static void ErrorString (char *a_, unsigned int _a_high);
+static void ErrorString (const char *a_, unsigned int _a_high);
 
 /*
    findHandler -
@@ -430,7 +430,7 @@ static void TidyUp (void);
    ErrorString - writes a string to stderr.
 */
 
-static void ErrorString (char *a_, unsigned int _a_high)
+static void ErrorString (const char *a_, unsigned int _a_high)
 {
   int n;
   char a[_a_high+1];
@@ -438,7 +438,7 @@ static void ErrorString (char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  n = libc_write (2, &a, (size_t) StrLib_StrLen ((char *) a, _a_high));
+  n = static_cast<int> (libc_write (2, &a, static_cast<size_t> (StrLib_StrLen ((const char *) a, _a_high))));
 }
 
 
@@ -457,7 +457,7 @@ static Handler findHandler (RTExceptions_EHBlock e, unsigned int number)
     }
   if (h == e->handlers)
     {
-      return NULL;
+      return static_cast<Handler> (NULL);
     }
   else
     {
@@ -477,7 +477,7 @@ static void InvokeHandler (void)
 {
   Handler h;
 
-  h = findHandler (currentEHB, currentEHB->number);
+  h = static_cast<Handler> (findHandler (currentEHB, currentEHB->number));
   if (h == NULL)
     {
       throw (RTExceptions_GetNumber (RTExceptions_GetExceptionBlock ()));
@@ -523,8 +523,8 @@ static void * stripPath (void * s)
   PtrToChar f;
   PtrToChar p;
 
-  p = s;
-  f = s;
+  p = static_cast<PtrToChar> (s);
+  f = static_cast<PtrToChar> (s);
   while ((*p) != ASCII_nul)
     {
       if ((*p) == '/')
@@ -537,7 +537,7 @@ static void * stripPath (void * s)
           p += 1;
         }
     }
-  return f;
+  return reinterpret_cast<void *> (f);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -552,7 +552,7 @@ static void addFile (void * s, unsigned int *i)
 {
   PtrToChar p;
 
-  p = stripPath (s);
+  p = static_cast<PtrToChar> (stripPath (s));
   while ((p != NULL) && ((*p) != ASCII_nul))
     {
       addChar ((*p), i);
@@ -570,7 +570,7 @@ static void addStr (void * s, unsigned int *i)
 {
   PtrToChar p;
 
-  p = s;
+  p = static_cast<PtrToChar> (s);
   while ((p != NULL) && ((*p) != ASCII_nul))
     {
       addChar ((*p), i);
@@ -652,7 +652,7 @@ static Handler KillHandler (Handler h)
 {
   h->right = freeHandler;
   freeHandler = h;
-  return NULL;
+  return static_cast<Handler> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -666,7 +666,7 @@ static Handler KillHandlers (Handler h)
 {
   h->left->right = freeHandler;
   freeHandler = h;
-  return NULL;
+  return static_cast<Handler> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -719,7 +719,7 @@ static void AddHandler (RTExceptions_EHBlock e, Handler h)
 
 static void indexf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 612, 9, "indexf", "array index out of bounds");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_indexException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 612, 9, const_cast<void*> (reinterpret_cast<const void*>("indexf")), const_cast<void*> (reinterpret_cast<const void*>("array index out of bounds")));
 }
 
 
@@ -729,7 +729,7 @@ static void indexf (void * a)
 
 static void range (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 624, 9, "range", "assignment out of range");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 624, 9, const_cast<void*> (reinterpret_cast<const void*>("range")), const_cast<void*> (reinterpret_cast<const void*>("assignment out of range")));
 }
 
 
@@ -739,7 +739,7 @@ static void range (void * a)
 
 static void casef (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 636, 9, "casef", "case selector out of range");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_caseSelectException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 636, 9, const_cast<void*> (reinterpret_cast<const void*>("casef")), const_cast<void*> (reinterpret_cast<const void*>("case selector out of range")));
 }
 
 
@@ -749,7 +749,7 @@ static void casef (void * a)
 
 static void invalidloc (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 648, 9, "invalidloc", "invalid address referenced");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_invalidLocation)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 648, 9, const_cast<void*> (reinterpret_cast<const void*>("invalidloc")), const_cast<void*> (reinterpret_cast<const void*>("invalid address referenced")));
 }
 
 
@@ -759,7 +759,7 @@ static void invalidloc (void * a)
 
 static void function (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 660, 9, "function", "... function ... ");  /* --fixme-- what has happened ?  */
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_functionException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 660, 9, const_cast<void*> (reinterpret_cast<const void*>("function")), const_cast<void*> (reinterpret_cast<const void*>("... function ... ")));  /* --fixme-- what has happened ?  */
 }
 
 
@@ -769,7 +769,7 @@ static void function (void * a)
 
 static void wholevalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 672, 9, "wholevalue", "illegal whole value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 672, 9, const_cast<void*> (reinterpret_cast<const void*>("wholevalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -779,7 +779,7 @@ static void wholevalue (void * a)
 
 static void wholediv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 684, 9, "wholediv", "illegal whole value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_wholeDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 684, 9, const_cast<void*> (reinterpret_cast<const void*>("wholediv")), const_cast<void*> (reinterpret_cast<const void*>("illegal whole value exception")));
 }
 
 
@@ -789,7 +789,7 @@ static void wholediv (void * a)
 
 static void realvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 696, 9, "realvalue", "illegal real value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 696, 9, const_cast<void*> (reinterpret_cast<const void*>("realvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal real value exception")));
 }
 
 
@@ -799,7 +799,7 @@ static void realvalue (void * a)
 
 static void realdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 708, 9, "realdiv", "real number division by zero exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_realDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 708, 9, const_cast<void*> (reinterpret_cast<const void*>("realdiv")), const_cast<void*> (reinterpret_cast<const void*>("real number division by zero exception")));
 }
 
 
@@ -809,7 +809,7 @@ static void realdiv (void * a)
 
 static void complexvalue (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 720, 9, "complexvalue", "illegal complex value exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexValueException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 720, 9, const_cast<void*> (reinterpret_cast<const void*>("complexvalue")), const_cast<void*> (reinterpret_cast<const void*>("illegal complex value exception")));
 }
 
 
@@ -819,7 +819,7 @@ static void complexvalue (void * a)
 
 static void complexdiv (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 732, 9, "complexdiv", "complex number division by zero exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_complexDivException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 732, 9, const_cast<void*> (reinterpret_cast<const void*>("complexdiv")), const_cast<void*> (reinterpret_cast<const void*>("complex number division by zero exception")));
 }
 
 
@@ -829,7 +829,7 @@ static void complexdiv (void * a)
 
 static void protection (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 744, 9, "protection", "protection exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_protException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 744, 9, const_cast<void*> (reinterpret_cast<const void*>("protection")), const_cast<void*> (reinterpret_cast<const void*>("protection exception")));
 }
 
 
@@ -839,7 +839,7 @@ static void protection (void * a)
 
 static void systemf (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 756, 9, "systemf", "system exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_sysException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 756, 9, const_cast<void*> (reinterpret_cast<const void*>("systemf")), const_cast<void*> (reinterpret_cast<const void*>("system exception")));
 }
 
 
@@ -849,7 +849,7 @@ static void systemf (void * a)
 
 static void coroutine (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 768, 9, "coroutine", "coroutine exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_coException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 768, 9, const_cast<void*> (reinterpret_cast<const void*>("coroutine")), const_cast<void*> (reinterpret_cast<const void*>("coroutine exception")));
 }
 
 
@@ -859,7 +859,7 @@ static void coroutine (void * a)
 
 static void exception (void * a)
 {
-  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 780, 9, "exception", "exception exception");
+  RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod")), 780, 9, const_cast<void*> (reinterpret_cast<const void*>("exception")), const_cast<void*> (reinterpret_cast<const void*>("exception exception")));
 }
 
 
@@ -870,9 +870,9 @@ static void exception (void * a)
 static void Init (void)
 {
   inException = FALSE;
-  freeHandler = NULL;
-  freeEHB = NULL;
-  currentEHB = RTExceptions_InitExceptionBlock ();
+  freeHandler = static_cast<Handler> (NULL);
+  freeEHB = static_cast<RTExceptions_EHBlock> (NULL);
+  currentEHB = static_cast<RTExceptions_EHBlock> (RTExceptions_InitExceptionBlock ());
   currentSource = NULL;
   RTExceptions_BaseExceptionsThrow ();
   SysExceptions_InitExceptionHandlers ((SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) indexf}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) range}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) casef}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) invalidloc}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) function}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) wholevalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) wholediv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) realvalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) realdiv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) complexvalue}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) complexdiv}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) protection}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) systemf}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) coroutine}, (SysExceptions_PROCEXCEPTION) {(SysExceptions_PROCEXCEPTION_t) exception});
@@ -890,7 +890,7 @@ static void TidyUp (void)
 
   if (currentEHB != NULL)
     {
-      currentEHB = RTExceptions_KillExceptionBlock (currentEHB);
+      currentEHB = static_cast<RTExceptions_EHBlock> (RTExceptions_KillExceptionBlock (currentEHB));
     }
   while (freeHandler != NULL)
     {
@@ -913,12 +913,12 @@ static void TidyUp (void)
            and message in the EHBlock for later use.
 */
 
-void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message)
+extern "C" void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, unsigned int column, void * function, void * message)
 {
   unsigned int i;
 
   currentEHB->number = number;
-  i = 0;
+  i = static_cast<unsigned int> (0);
   addFile (file, &i);
   addChar (':', &i);
   addNum (line, &i);
@@ -948,7 +948,7 @@ void RTExceptions_Raise (unsigned int number, void * file, unsigned int line, un
    SetExceptionBlock - sets, source, as the active EHB.
 */
 
-void RTExceptions_SetExceptionBlock (RTExceptions_EHBlock source)
+extern "C" void RTExceptions_SetExceptionBlock (RTExceptions_EHBlock source)
 {
   currentEHB = source;
 }
@@ -958,7 +958,7 @@ void RTExceptions_SetExceptionBlock (RTExceptions_EHBlock source)
    GetExceptionBlock - returns the active EHB.
 */
 
-RTExceptions_EHBlock RTExceptions_GetExceptionBlock (void)
+extern "C" RTExceptions_EHBlock RTExceptions_GetExceptionBlock (void)
 {
   return currentEHB;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -970,7 +970,7 @@ RTExceptions_EHBlock RTExceptions_GetExceptionBlock (void)
    GetTextBuffer - returns the address of the EHB buffer.
 */
 
-void * RTExceptions_GetTextBuffer (RTExceptions_EHBlock e)
+extern "C" void * RTExceptions_GetTextBuffer (RTExceptions_EHBlock e)
 {
   return &e->buffer;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -982,7 +982,7 @@ void * RTExceptions_GetTextBuffer (RTExceptions_EHBlock e)
    GetTextBufferSize - return the size of the EHB text buffer.
 */
 
-unsigned int RTExceptions_GetTextBufferSize (RTExceptions_EHBlock e)
+extern "C" unsigned int RTExceptions_GetTextBufferSize (RTExceptions_EHBlock e)
 {
   return sizeof (e->buffer);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -995,7 +995,7 @@ unsigned int RTExceptions_GetTextBufferSize (RTExceptions_EHBlock e)
                source.
 */
 
-unsigned int RTExceptions_GetNumber (RTExceptions_EHBlock source)
+extern "C" unsigned int RTExceptions_GetNumber (RTExceptions_EHBlock source)
 {
   return source->number;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1007,13 +1007,13 @@ unsigned int RTExceptions_GetNumber (RTExceptions_EHBlock source)
    InitExceptionBlock - creates and returns a new exception block.
 */
 
-RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void)
+extern "C" RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void)
 {
   RTExceptions_EHBlock e;
 
-  e = New ();
-  e->number = UINT_MAX;
-  e->handlers = NewHandler ();  /* add the dummy onto the head  */
+  e = static_cast<RTExceptions_EHBlock> (New ());
+  e->number = static_cast<unsigned int> (UINT_MAX);
+  e->handlers = static_cast<Handler> (NewHandler ());  /* add the dummy onto the head  */
   e->handlers->right = e->handlers;  /* add the dummy onto the head  */
   e->handlers->left = e->handlers;
   e->right = e;
@@ -1027,12 +1027,12 @@ RTExceptions_EHBlock RTExceptions_InitExceptionBlock (void)
    KillExceptionBlock - destroys the EHB, e, and all its handlers.
 */
 
-RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e)
+extern "C" RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e)
 {
-  e->handlers = KillHandlers (e->handlers);
+  e->handlers = static_cast<Handler> (KillHandlers (e->handlers));
   e->right = freeEHB;
   freeEHB = e;
-  return NULL;
+  return static_cast<RTExceptions_EHBlock> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1042,22 +1042,22 @@ RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EHBlock e)
    PushHandler - install a handler in EHB, e.
 */
 
-void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int number, RTExceptions_ProcedureHandler p)
+extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int number, RTExceptions_ProcedureHandler p)
 {
   Handler h;
   Handler i;
 
-  h = findHandler (e, number);
+  h = static_cast<Handler> (findHandler (e, number));
   if (h == NULL)
     {
-      i = InitHandler (NewHandler (), (Handler) NULL, (Handler) NULL, (Handler) NULL, number, p);
+      i = static_cast<Handler> (InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), number, p));
     }
   else
     {
       /* remove, h,  */
       SubHandler (h);
       /* stack it onto a new handler  */
-      i = InitHandler (NewHandler (), (Handler) NULL, (Handler) NULL, h, number, p);
+      i = static_cast<Handler> (InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), h, number, p));
     }
   /* add new handler  */
   AddHandler (e, i);
@@ -1069,12 +1069,12 @@ void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int number, RTEx
                 EHB, e.
 */
 
-void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
+extern "C" void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
 {
   Handler h;
   Handler i;
 
-  h = findHandler (e, number);
+  h = static_cast<Handler> (findHandler (e, number));
   if (h != NULL)
     {
       /* remove, h,  */
@@ -1083,7 +1083,7 @@ void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
         {
           AddHandler (e, h->stack);
         }
-      h = KillHandler (h);
+      h = static_cast<Handler> (KillHandler (h));
     }
 }
 
@@ -1094,13 +1094,13 @@ void RTExceptions_PopHandler (RTExceptions_EHBlock e, unsigned int number)
                        calls HALT.
 */
 
-void RTExceptions_DefaultErrorCatch (void)
+extern "C" void RTExceptions_DefaultErrorCatch (void)
 {
   RTExceptions_EHBlock e;
   int n;
 
-  e = RTExceptions_GetExceptionBlock ();
-  n = libc_write (2, RTExceptions_GetTextBuffer (e), libc_strlen (RTExceptions_GetTextBuffer (e)));
+  e = static_cast<RTExceptions_EHBlock> (RTExceptions_GetExceptionBlock ());
+  n = static_cast<int> (libc_write (2, RTExceptions_GetTextBuffer (e), libc_strlen (RTExceptions_GetTextBuffer (e))));
   M2RTS_HALT (-1);
   __builtin_unreachable ();
 }
@@ -1114,11 +1114,11 @@ void RTExceptions_DefaultErrorCatch (void)
                          error message routine and then HALT.
 */
 
-void RTExceptions_BaseExceptionsThrow (void)
+extern "C" void RTExceptions_BaseExceptionsThrow (void)
 {
   M2EXCEPTION_M2Exceptions i;
 
-  for (i=M2EXCEPTION_indexException; i<=M2EXCEPTION_exException; i++)
+  for (i=M2EXCEPTION_indexException; i<=M2EXCEPTION_exException; i= static_cast<M2EXCEPTION_M2Exceptions>(static_cast<int>(i+1)))
     {
       RTExceptions_PushHandler (RTExceptions_GetExceptionBlock (), (unsigned int ) (i), (RTExceptions_ProcedureHandler) {(RTExceptions_ProcedureHandler_t) DoThrow});
     }
@@ -1130,7 +1130,7 @@ void RTExceptions_BaseExceptionsThrow (void)
                         in the exception state.
 */
 
-unsigned int RTExceptions_IsInExceptionState (void)
+extern "C" unsigned int RTExceptions_IsInExceptionState (void)
 {
   return inException;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1144,7 +1144,7 @@ unsigned int RTExceptions_IsInExceptionState (void)
                        to.
 */
 
-unsigned int RTExceptions_SetExceptionState (unsigned int to)
+extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to)
 {
   unsigned int old;
 
@@ -1162,7 +1162,7 @@ unsigned int RTExceptions_SetExceptionState (unsigned int to)
                           to, to.
 */
 
-void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to)
+extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to)
 {
   (*from) = inException;
   inException = to;
@@ -1174,11 +1174,11 @@ void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to)
                            created.
 */
 
-RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
+extern "C" RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
 {
   if (currentEHB == NULL)
     {
-      M2RTS_Halt ((char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 84, 598, (char *) "GetBaseExceptionBlock", 21, (char *) "currentEHB has not been initialized yet", 39);
+      M2RTS_Halt ((const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/RTExceptions.mod", 84, 598, (const char *) "GetBaseExceptionBlock", 21, (const char *) "currentEHB has not been initialized yet", 39);
     }
   else
     {
@@ -1193,7 +1193,7 @@ RTExceptions_EHBlock RTExceptions_GetBaseExceptionBlock (void)
    SetExceptionSource - sets the current exception source to, source.
 */
 
-void RTExceptions_SetExceptionSource (void * source)
+extern "C" void RTExceptions_SetExceptionSource (void * source)
 {
   currentSource = source;
 }
@@ -1203,19 +1203,19 @@ void RTExceptions_SetExceptionSource (void * source)
    GetExceptionSource - returns the current exception source.
 */
 
-void * RTExceptions_GetExceptionSource (void)
+extern "C" void * RTExceptions_GetExceptionSource (void)
 {
   return currentSource;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_RTExceptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_RTExceptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   Init ();
 }
 
-void _M2_RTExceptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_RTExceptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   TidyUp ();
 }

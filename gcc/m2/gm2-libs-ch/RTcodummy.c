@@ -24,6 +24,10 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 void
 RTco_wait (__attribute__ ((unused)) int sid)
@@ -96,6 +100,7 @@ RTco_select (__attribute__ ((unused)) int p1,
 	     __attribute__ ((unused)) void *p4,
 	     __attribute__ ((unused)) void *p5)
 {
+  return 0;
 }
 
 
@@ -124,5 +129,10 @@ _M2_RTco_init (void)
 void
 _M2_RTco_finish (void)
 {
+}
+#endif
+
+
+#ifdef __cplusplus
 }
 #endif

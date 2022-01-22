@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_FormatStrings_H)
 #   define _FormatStrings_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -62,25 +62,25 @@ EXTERN DynamicStrings_String FormatStrings_Sprintf0 (DynamicStrings_String fmt);
               entity, w. It only formats the first %s or %d with n.
 */
 
-EXTERN DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String fmt, unsigned char *w_, unsigned int _w_high);
+EXTERN DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String fmt, const unsigned char *w_, unsigned int _w_high);
 
 /*
    Sprintf2 - returns a string, fmt, which has been formatted.
 */
 
-EXTERN DynamicStrings_String FormatStrings_Sprintf2 (DynamicStrings_String fmt, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high);
+EXTERN DynamicStrings_String FormatStrings_Sprintf2 (DynamicStrings_String fmt, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high);
 
 /*
    Sprintf3 - returns a string, fmt, which has been formatted.
 */
 
-EXTERN DynamicStrings_String FormatStrings_Sprintf3 (DynamicStrings_String fmt, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high);
+EXTERN DynamicStrings_String FormatStrings_Sprintf3 (DynamicStrings_String fmt, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high);
 
 /*
    Sprintf4 - returns a string, fmt, which has been formatted.
 */
 
-EXTERN DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String fmt, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high, unsigned char *w4_, unsigned int _w4_high);
+EXTERN DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String fmt, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high, const unsigned char *w4_, unsigned int _w4_high);
 
 /*
    HandleEscape - translates \a, \b, \e, \f, 

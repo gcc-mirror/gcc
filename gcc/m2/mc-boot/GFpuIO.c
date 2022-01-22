@@ -51,80 +51,80 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GStringConvert.h"
 
 #   define MaxLineLength 100
-void FpuIO_ReadReal (double *x);
+extern "C" void FpuIO_ReadReal (double *x);
 
 /*
    WriteReal - converts a REAL number, x, which has a, TotalWidth, and
                FractionWidth into, string, a.
 */
 
-void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWidth);
+extern "C" void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWidth);
 
 /*
    WriteReal - converts a REAL number, x, which has a, TotalWidth, and
                FractionWidth into, string, a.
 */
 
-void FpuIO_StrToReal (char *a_, unsigned int _a_high, double *x);
+extern "C" void FpuIO_StrToReal (const char *a_, unsigned int _a_high, double *x);
 
 /*
    RealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                FractionWidth into a string.
 */
 
-void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high);
-void FpuIO_ReadLongReal (long double *x);
+extern "C" void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high);
+extern "C" void FpuIO_ReadLongReal (long double *x);
 
 /*
    WriteLongReal - converts a LONGREAL number, x, which has a, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int FractionWidth);
+extern "C" void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int FractionWidth);
 
 /*
    WriteLongReal - converts a LONGREAL number, x, which has a, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_StrToLongReal (char *a_, unsigned int _a_high, long double *x);
+extern "C" void FpuIO_StrToLongReal (const char *a_, unsigned int _a_high, long double *x);
 
 /*
    LongRealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high);
+extern "C" void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high);
 
 /*
    LongRealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_ReadLongInt (long int *x);
+extern "C" void FpuIO_ReadLongInt (long int *x);
 
 /*
    LongRealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_WriteLongInt (long int x, unsigned int n);
+extern "C" void FpuIO_WriteLongInt (long int x, unsigned int n);
 
 /*
    LongRealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_StrToLongInt (char *a_, unsigned int _a_high, long int *x);
+extern "C" void FpuIO_StrToLongInt (const char *a_, unsigned int _a_high, long int *x);
 
 /*
    LongRealToStr - converts a LONGREAL number, Real, which has, TotalWidth, and
                    FractionWidth into a string.
 */
 
-void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigned int _a_high);
 
-void FpuIO_ReadReal (double *x)
+extern "C" void FpuIO_ReadReal (double *x)
 {
   typedef struct _T1_a _T1;
 
@@ -143,7 +143,7 @@ if defined(GM2_DEBUG_FPUIO)
 #endif
   */
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  FpuIO_StrToReal ((char *) &a.array[0], MaxLineLength, x);
+  FpuIO_StrToReal ((const char *) &a.array[0], MaxLineLength, x);
 }
 
 
@@ -152,7 +152,7 @@ if defined(GM2_DEBUG_FPUIO)
                FractionWidth into, string, a.
 */
 
-void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWidth)
+extern "C" void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
   typedef struct _T2_a _T2;
 
@@ -160,7 +160,7 @@ void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWi
   _T2 a;
 
   FpuIO_RealToStr (x, TotalWidth, FractionWidth, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
 
@@ -169,7 +169,7 @@ void FpuIO_WriteReal (double x, unsigned int TotalWidth, unsigned int FractionWi
                FractionWidth into, string, a.
 */
 
-void FpuIO_StrToReal (char *a_, unsigned int _a_high, double *x)
+extern "C" void FpuIO_StrToReal (const char *a_, unsigned int _a_high, double *x)
 {
   long double lr;
   char a[_a_high+1];
@@ -177,7 +177,7 @@ void FpuIO_StrToReal (char *a_, unsigned int _a_high, double *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  FpuIO_StrToLongReal ((char *) a, _a_high, &lr);  /* let StrToLongReal do the work and we convert the result back to REAL  */
+  FpuIO_StrToLongReal ((const char *) a, _a_high, &lr);  /* let StrToLongReal do the work and we convert the result back to REAL  */
   (*x) = (double ) (lr);  /* let StrToLongReal do the work and we convert the result back to REAL  */
 }
 
@@ -187,7 +187,7 @@ void FpuIO_StrToReal (char *a_, unsigned int _a_high, double *x)
                FractionWidth into a string.
 */
 
-void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high)
+extern "C" void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high)
 {
   long double lr;
 
@@ -195,7 +195,7 @@ void FpuIO_RealToStr (double x, unsigned int TotalWidth, unsigned int FractionWi
   FpuIO_LongRealToStr (lr, TotalWidth, FractionWidth, (char *) a, _a_high);
 }
 
-void FpuIO_ReadLongReal (long double *x)
+extern "C" void FpuIO_ReadLongReal (long double *x)
 {
   typedef struct _T3_a _T3;
 
@@ -203,7 +203,7 @@ void FpuIO_ReadLongReal (long double *x)
   _T3 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  FpuIO_StrToLongReal ((char *) &a.array[0], MaxLineLength, x);
+  FpuIO_StrToLongReal ((const char *) &a.array[0], MaxLineLength, x);
 }
 
 
@@ -212,7 +212,7 @@ void FpuIO_ReadLongReal (long double *x)
                    FractionWidth into a string.
 */
 
-void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
+extern "C" void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
   typedef struct _T4_a _T4;
 
@@ -220,7 +220,7 @@ void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int F
   _T4 a;
 
   FpuIO_LongRealToStr (x, TotalWidth, FractionWidth, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
 
@@ -229,7 +229,7 @@ void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, unsigned int F
                    FractionWidth into a string.
 */
 
-void FpuIO_StrToLongReal (char *a_, unsigned int _a_high, long double *x)
+extern "C" void FpuIO_StrToLongReal (const char *a_, unsigned int _a_high, long double *x)
 {
   unsigned int found;
   DynamicStrings_String s;
@@ -238,9 +238,9 @@ void FpuIO_StrToLongReal (char *a_, unsigned int _a_high, long double *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  s = DynamicStrings_InitString ((char *) a, _a_high);
-  (*x) = StringConvert_StringToLongreal (s, &found);
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) a, _a_high));
+  (*x) = static_cast<long double> (StringConvert_StringToLongreal (s, &found));
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
 }
 
 
@@ -249,13 +249,13 @@ void FpuIO_StrToLongReal (char *a_, unsigned int _a_high, long double *x)
                    FractionWidth into a string.
 */
 
-void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high)
+extern "C" void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, unsigned int FractionWidth, char *a, unsigned int _a_high)
 {
   DynamicStrings_String s;
 
-  s = StringConvert_LongrealToString (x, TotalWidth, FractionWidth);
+  s = static_cast<DynamicStrings_String> (StringConvert_LongrealToString (x, TotalWidth, FractionWidth));
   DynamicStrings_CopyOut ((char *) a, _a_high, s);
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
 }
 
 
@@ -264,7 +264,7 @@ void FpuIO_LongRealToStr (long double x, unsigned int TotalWidth, unsigned int F
                    FractionWidth into a string.
 */
 
-void FpuIO_ReadLongInt (long int *x)
+extern "C" void FpuIO_ReadLongInt (long int *x)
 {
   typedef struct _T5_a _T5;
 
@@ -272,7 +272,7 @@ void FpuIO_ReadLongInt (long int *x)
   _T5 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  FpuIO_StrToLongInt ((char *) &a.array[0], MaxLineLength, x);
+  FpuIO_StrToLongInt ((const char *) &a.array[0], MaxLineLength, x);
 }
 
 
@@ -281,7 +281,7 @@ void FpuIO_ReadLongInt (long int *x)
                    FractionWidth into a string.
 */
 
-void FpuIO_WriteLongInt (long int x, unsigned int n)
+extern "C" void FpuIO_WriteLongInt (long int x, unsigned int n)
 {
   typedef struct _T6_a _T6;
 
@@ -289,7 +289,7 @@ void FpuIO_WriteLongInt (long int x, unsigned int n)
   _T6 a;
 
   FpuIO_LongIntToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
 
@@ -298,7 +298,7 @@ void FpuIO_WriteLongInt (long int x, unsigned int n)
                    FractionWidth into a string.
 */
 
-void FpuIO_StrToLongInt (char *a_, unsigned int _a_high, long int *x)
+extern "C" void FpuIO_StrToLongInt (const char *a_, unsigned int _a_high, long int *x)
 {
   DynamicStrings_String s;
   unsigned int found;
@@ -307,9 +307,9 @@ void FpuIO_StrToLongInt (char *a_, unsigned int _a_high, long int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  s = DynamicStrings_InitString ((char *) a, _a_high);
-  (*x) = StringConvert_StringToLongInteger (s, 10, &found);
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) a, _a_high));
+  (*x) = static_cast<long int> (StringConvert_StringToLongInteger (s, 10, &found));
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
 }
 
 
@@ -318,19 +318,19 @@ void FpuIO_StrToLongInt (char *a_, unsigned int _a_high, long int *x)
                    FractionWidth into a string.
 */
 
-void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigned int _a_high)
 {
   DynamicStrings_String s;
 
-  s = StringConvert_LongIntegerToString (x, n, ' ', FALSE, 10, TRUE);
+  s = static_cast<DynamicStrings_String> (StringConvert_LongIntegerToString (x, n, ' ', FALSE, 10, TRUE));
   DynamicStrings_CopyOut ((char *) a, _a_high, s);
-  s = DynamicStrings_KillString (s);
+  s = static_cast<DynamicStrings_String> (DynamicStrings_KillString (s));
 }
 
-void _M2_FpuIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_FpuIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_FpuIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

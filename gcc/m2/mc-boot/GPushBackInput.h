@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_PushBackInput_H)
 #   define _PushBackInput_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,7 +54,7 @@ extern "C" {
    Open - opens a file for reading.
 */
 
-EXTERN FIO_File PushBackInput_Open (char *a_, unsigned int _a_high);
+EXTERN FIO_File PushBackInput_Open (const char *a_, unsigned int _a_high);
 
 /*
    GetCh - gets a character from either the push back stack or
@@ -74,7 +74,7 @@ EXTERN char PushBackInput_PutCh (char ch);
    PutString - pushes a string onto the push back stack.
 */
 
-EXTERN void PushBackInput_PutString (char *a_, unsigned int _a_high);
+EXTERN void PushBackInput_PutString (const char *a_, unsigned int _a_high);
 
 /*
    PutStr - pushes a dynamic string onto the push back stack.
@@ -87,7 +87,7 @@ EXTERN void PushBackInput_PutStr (DynamicStrings_String s);
    Error - emits an error message with the appropriate file, line combination.
 */
 
-EXTERN void PushBackInput_Error (char *a_, unsigned int _a_high);
+EXTERN void PushBackInput_Error (const char *a_, unsigned int _a_high);
 
 /*
    WarnError - emits an error message with the appropriate file, line combination.
@@ -95,7 +95,7 @@ EXTERN void PushBackInput_Error (char *a_, unsigned int _a_high);
                1 will be issued.
 */
 
-EXTERN void PushBackInput_WarnError (char *a_, unsigned int _a_high);
+EXTERN void PushBackInput_WarnError (const char *a_, unsigned int _a_high);
 
 /*
    WarnString - emits an error message with the appropriate file, line combination.

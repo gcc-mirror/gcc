@@ -29,13 +29,13 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   include "GmcOptions.h"
 #   include "GmcPrintf.h"
 
-void mcQuiet_qprintf0 (char *a_, unsigned int _a_high);
-void mcQuiet_qprintf1 (char *a_, unsigned int _a_high, unsigned char *w_, unsigned int _w_high);
-void mcQuiet_qprintf2 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high);
-void mcQuiet_qprintf3 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high);
-void mcQuiet_qprintf4 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high, unsigned char *w4_, unsigned int _w4_high);
+extern "C" void mcQuiet_qprintf0 (const char *a_, unsigned int _a_high);
+extern "C" void mcQuiet_qprintf1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high);
+extern "C" void mcQuiet_qprintf2 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high);
+extern "C" void mcQuiet_qprintf3 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high);
+extern "C" void mcQuiet_qprintf4 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high, const unsigned char *w4_, unsigned int _w4_high);
 
-void mcQuiet_qprintf0 (char *a_, unsigned int _a_high)
+extern "C" void mcQuiet_qprintf0 (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -44,11 +44,11 @@ void mcQuiet_qprintf0 (char *a_, unsigned int _a_high)
 
   if (! (mcOptions_getQuiet ()))
     {
-      mcPrintf_printf0 ((char *) a, _a_high);
+      mcPrintf_printf0 ((const char *) a, _a_high);
     }
 }
 
-void mcQuiet_qprintf1 (char *a_, unsigned int _a_high, unsigned char *w_, unsigned int _w_high)
+extern "C" void mcQuiet_qprintf1 (const char *a_, unsigned int _a_high, const unsigned char *w_, unsigned int _w_high)
 {
   char a[_a_high+1];
   unsigned char w[_w_high+1];
@@ -59,11 +59,11 @@ void mcQuiet_qprintf1 (char *a_, unsigned int _a_high, unsigned char *w_, unsign
 
   if (! (mcOptions_getQuiet ()))
     {
-      mcPrintf_printf1 ((char *) a, _a_high, (unsigned char *) w, _w_high);
+      mcPrintf_printf1 ((const char *) a, _a_high, (const unsigned char *) w, _w_high);
     }
 }
 
-void mcQuiet_qprintf2 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high)
+extern "C" void mcQuiet_qprintf2 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high)
 {
   char a[_a_high+1];
   unsigned char w1[_w1_high+1];
@@ -76,11 +76,11 @@ void mcQuiet_qprintf2 (char *a_, unsigned int _a_high, unsigned char *w1_, unsig
 
   if (! (mcOptions_getQuiet ()))
     {
-      mcPrintf_printf2 ((char *) a, _a_high, (unsigned char *) w1, _w1_high, (unsigned char *) w2, _w2_high);
+      mcPrintf_printf2 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high);
     }
 }
 
-void mcQuiet_qprintf3 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high)
+extern "C" void mcQuiet_qprintf3 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high)
 {
   char a[_a_high+1];
   unsigned char w1[_w1_high+1];
@@ -95,11 +95,11 @@ void mcQuiet_qprintf3 (char *a_, unsigned int _a_high, unsigned char *w1_, unsig
 
   if (! (mcOptions_getQuiet ()))
     {
-      mcPrintf_printf3 ((char *) a, _a_high, (unsigned char *) w1, _w1_high, (unsigned char *) w2, _w2_high, (unsigned char *) w3, _w3_high);
+      mcPrintf_printf3 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high);
     }
 }
 
-void mcQuiet_qprintf4 (char *a_, unsigned int _a_high, unsigned char *w1_, unsigned int _w1_high, unsigned char *w2_, unsigned int _w2_high, unsigned char *w3_, unsigned int _w3_high, unsigned char *w4_, unsigned int _w4_high)
+extern "C" void mcQuiet_qprintf4 (const char *a_, unsigned int _a_high, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high, const unsigned char *w4_, unsigned int _w4_high)
 {
   char a[_a_high+1];
   unsigned char w1[_w1_high+1];
@@ -116,14 +116,14 @@ void mcQuiet_qprintf4 (char *a_, unsigned int _a_high, unsigned char *w1_, unsig
 
   if (! (mcOptions_getQuiet ()))
     {
-      mcPrintf_printf4 ((char *) a, _a_high, (unsigned char *) w1, _w1_high, (unsigned char *) w2, _w2_high, (unsigned char *) w3, _w3_high, (unsigned char *) w4, _w4_high);
+      mcPrintf_printf4 ((const char *) a, _a_high, (const unsigned char *) w1, _w1_high, (const unsigned char *) w2, _w2_high, (const unsigned char *) w3, _w3_high, (const unsigned char *) w4, _w4_high);
     }
 }
 
-void _M2_mcQuiet_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcQuiet_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_mcQuiet_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcQuiet_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

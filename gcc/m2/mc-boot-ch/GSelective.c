@@ -27,10 +27,17 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "gm2-libs-host.h"
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+
 /* PROCEDURE Select (nooffds: CARDINAL; readfds, writefds, exceptfds:
 SetOfFd; timeout: Timeval) : INTEGER ; */
 
 #if defined(HAVE_SELECT)
+EXTERN
 int
 Selective_Select (int nooffds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout)
@@ -38,6 +45,7 @@ Selective_Select (int nooffds, fd_set *readfds, fd_set *writefds,
   return select (nooffds, readfds, writefds, exceptfds, timeout);
 }
 #else
+EXTERN
 int
 Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
                   void *timeout)
@@ -49,6 +57,7 @@ Selective_Select (int nooffds, void *readfds, void *writefds, void *exceptfds,
 /* PROCEDURE InitTime (sec, usec) : Timeval ; */
 
 #if defined(HAVE_SELECT)
+EXTERN
 struct timeval *
 Selective_InitTime (unsigned int sec, unsigned int usec)
 {
@@ -59,6 +68,7 @@ Selective_InitTime (unsigned int sec, unsigned int usec)
   return t;
 }
 
+EXTERN
 void
 Selective_GetTime (struct timeval *t, unsigned int *sec, unsigned int *usec)
 {
@@ -66,6 +76,7 @@ Selective_GetTime (struct timeval *t, unsigned int *sec, unsigned int *usec)
   *usec = (unsigned int)t->tv_usec;
 }
 
+EXTERN
 void
 Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 {
@@ -75,6 +86,7 @@ Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 
 /* PROCEDURE KillTime (t: Timeval) : Timeval ; */
 
+EXTERN
 struct timeval *
 Selective_KillTime (struct timeval *t)
 {
@@ -84,6 +96,7 @@ Selective_KillTime (struct timeval *t)
 
 /* PROCEDURE InitSet () : SetOfFd ; */
 
+EXTERN
 fd_set *
 Selective_InitSet (void)
 {
@@ -94,6 +107,7 @@ Selective_InitSet (void)
 
 /* PROCEDURE KillSet (s: SetOfFd) : SetOfFd ; */
 
+EXTERN
 fd_set *
 Selective_KillSet (fd_set *s)
 {
@@ -103,6 +117,7 @@ Selective_KillSet (fd_set *s)
 
 /* PROCEDURE FdZero (s: SetOfFd) ; */
 
+EXTERN
 void
 Selective_FdZero (fd_set *s)
 {
@@ -111,6 +126,7 @@ Selective_FdZero (fd_set *s)
 
 /* PROCEDURE Fd_Set (fd: INTEGER; SetOfFd) ; */
 
+EXTERN
 void
 Selective_FdSet (int fd, fd_set *s)
 {
@@ -119,6 +135,7 @@ Selective_FdSet (int fd, fd_set *s)
 
 /* PROCEDURE FdClr (fd: INTEGER; SetOfFd) ; */
 
+EXTERN
 void
 Selective_FdClr (int fd, fd_set *s)
 {
@@ -127,6 +144,7 @@ Selective_FdClr (int fd, fd_set *s)
 
 /* PROCEDURE FdIsSet (fd: INTEGER; SetOfFd) : BOOLEAN ; */
 
+EXTERN
 int
 Selective_FdIsSet (int fd, fd_set *s)
 {
@@ -137,6 +155,7 @@ Selective_FdIsSet (int fd, fd_set *s)
 current system time in seconds and microseconds.  It returns zero
 (see man 3p gettimeofday) */
 
+EXTERN
 int
 Selective_GetTimeOfDay (struct timeval *t)
 {
@@ -144,55 +163,65 @@ Selective_GetTimeOfDay (struct timeval *t)
 }
 #else
 
+EXTERN
 void *
 Selective_InitTime (unsigned int sec, unsigned int usec)
 {
   return NULL;
 }
 
+EXTERN
 void *
 Selective_KillTime (void *t)
 {
   return NULL;
 }
 
+EXTERN
 void
 Selective_GetTime (struct timeval *t, unsigned int *sec, unsigned int *usec)
 {
 }
 
+EXTERN
 void
 Selective_SetTime (struct timeval *t, unsigned int sec, unsigned int usec)
 {
 }
 
+EXTERN
 fd_set *
 Selective_InitSet (void)
 {
   return NULL;
 }
 
+EXTERN
 void
 Selective_FdZero (void *s)
 {
 }
 
+EXTERN
 void
 Selective_FdSet (int fd, void *s)
 {
 }
 
+EXTERN
 void
 Selective_FdClr (int fd, void *s)
 {
 }
 
+EXTERN
 int
 Selective_FdIsSet (int fd, void *s)
 {
   return 0;
 }
 
+EXTERN
 int
 Selective_GetTimeOfDay (struct timeval *t)
 {
@@ -202,6 +231,7 @@ Selective_GetTimeOfDay (struct timeval *t)
 
 /* PROCEDURE MaxFdsPlusOne (a, b: File) : File ; */
 
+EXTERN
 int
 Selective_MaxFdsPlusOne (int a, int b)
 {
@@ -213,6 +243,7 @@ Selective_MaxFdsPlusOne (int a, int b)
 
 /* PROCEDURE WriteCharRaw (fd: INTEGER; ch: CHAR) ; */
 
+EXTERN
 void
 Selective_WriteCharRaw (int fd, char ch)
 {
@@ -221,6 +252,7 @@ Selective_WriteCharRaw (int fd, char ch)
 
 /* PROCEDURE ReadCharRaw (fd: INTEGER) : CHAR ; */
 
+EXTERN
 char
 Selective_ReadCharRaw (int fd)
 {
@@ -230,11 +262,13 @@ Selective_ReadCharRaw (int fd)
   return ch;
 }
 
+EXTERN
 void
 _M2_Selective_init ()
 {
 }
 
+EXTERN
 void
 _M2_Selective_finish ()
 {

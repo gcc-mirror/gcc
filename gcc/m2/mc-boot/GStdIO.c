@@ -67,14 +67,14 @@ static unsigned int StackRPtr;
           should use to receive a character.
 */
 
-void StdIO_Read (char *ch);
+extern "C" void StdIO_Read (char *ch);
 
 /*
    Write - is the generic procedure that all higher application layers
            should use to emit a character.
 */
 
-void StdIO_Write (char ch);
+extern "C" void StdIO_Write (char ch);
 
 /*
    PushOutput - pushes the current Write procedure onto a stack,
@@ -82,19 +82,19 @@ void StdIO_Write (char ch);
                 procedure, p.
 */
 
-void StdIO_PushOutput (StdIO_ProcWrite p);
+extern "C" void StdIO_PushOutput (StdIO_ProcWrite p);
 
 /*
    PopOutput - restores Write to use the previous output procedure.
 */
 
-void StdIO_PopOutput (void);
+extern "C" void StdIO_PopOutput (void);
 
 /*
    GetCurrentOutput - returns the current output procedure.
 */
 
-StdIO_ProcWrite StdIO_GetCurrentOutput (void);
+extern "C" StdIO_ProcWrite StdIO_GetCurrentOutput (void);
 
 /*
    PushInput - pushes the current Read procedure onto a stack,
@@ -102,19 +102,19 @@ StdIO_ProcWrite StdIO_GetCurrentOutput (void);
                procedure, p.
 */
 
-void StdIO_PushInput (StdIO_ProcRead p);
+extern "C" void StdIO_PushInput (StdIO_ProcRead p);
 
 /*
    PopInput - restores Write to use the previous output procedure.
 */
 
-void StdIO_PopInput (void);
+extern "C" void StdIO_PopInput (void);
 
 /*
    GetCurrentInput - returns the current input procedure.
 */
 
-StdIO_ProcRead StdIO_GetCurrentInput (void);
+extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void);
 
 
 /*
@@ -122,7 +122,7 @@ StdIO_ProcRead StdIO_GetCurrentInput (void);
           should use to receive a character.
 */
 
-void StdIO_Read (char *ch)
+extern "C" void StdIO_Read (char *ch)
 {
   (*StackR.array[StackRPtr].proc) (ch);
 }
@@ -133,7 +133,7 @@ void StdIO_Read (char *ch)
            should use to emit a character.
 */
 
-void StdIO_Write (char ch)
+extern "C" void StdIO_Write (char ch)
 {
   (*StackW.array[StackWPtr].proc) (ch);
 }
@@ -145,7 +145,7 @@ void StdIO_Write (char ch)
                 procedure, p.
 */
 
-void StdIO_PushOutput (StdIO_ProcWrite p)
+extern "C" void StdIO_PushOutput (StdIO_ProcWrite p)
 {
   if (StackWPtr == MaxStack)
     {
@@ -164,7 +164,7 @@ void StdIO_PushOutput (StdIO_ProcWrite p)
    PopOutput - restores Write to use the previous output procedure.
 */
 
-void StdIO_PopOutput (void)
+extern "C" void StdIO_PopOutput (void)
 {
   if (StackWPtr == 1)
     {
@@ -182,7 +182,7 @@ void StdIO_PopOutput (void)
    GetCurrentOutput - returns the current output procedure.
 */
 
-StdIO_ProcWrite StdIO_GetCurrentOutput (void)
+extern "C" StdIO_ProcWrite StdIO_GetCurrentOutput (void)
 {
   if (StackWPtr > 0)
     {
@@ -204,7 +204,7 @@ StdIO_ProcWrite StdIO_GetCurrentOutput (void)
                procedure, p.
 */
 
-void StdIO_PushInput (StdIO_ProcRead p)
+extern "C" void StdIO_PushInput (StdIO_ProcRead p)
 {
   if (StackRPtr == MaxStack)
     {
@@ -223,7 +223,7 @@ void StdIO_PushInput (StdIO_ProcRead p)
    PopInput - restores Write to use the previous output procedure.
 */
 
-void StdIO_PopInput (void)
+extern "C" void StdIO_PopInput (void)
 {
   if (StackRPtr == 1)
     {
@@ -241,7 +241,7 @@ void StdIO_PopInput (void)
    GetCurrentInput - returns the current input procedure.
 */
 
-StdIO_ProcRead StdIO_GetCurrentInput (void)
+extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void)
 {
   if (StackRPtr > 0)
     {
@@ -256,14 +256,14 @@ StdIO_ProcRead StdIO_GetCurrentInput (void)
   __builtin_unreachable ();
 }
 
-void _M2_StdIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  StackWPtr = 0;
-  StackRPtr = 0;
+  StackWPtr = static_cast<unsigned int> (0);
+  StackRPtr = static_cast<unsigned int> (0);
   StdIO_PushOutput ((StdIO_ProcWrite) {(StdIO_ProcWrite_t) IO_Write});
   StdIO_PushInput ((StdIO_ProcRead) {(StdIO_ProcRead_t) IO_Read});
 }
 
-void _M2_StdIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StdIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

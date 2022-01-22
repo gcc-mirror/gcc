@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_DynamicStrings_H)
 #   define _DynamicStrings_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -59,7 +59,7 @@ extern "C" {
                 Initial contents are, a.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_InitString (char *a_, unsigned int _a_high);
+EXTERN DynamicStrings_String DynamicStrings_InitString (const char *a_, unsigned int _a_high);
 
 /*
    KillString - frees String, s, and its contents.
@@ -149,7 +149,7 @@ EXTERN unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, void 
                 string, a.
 */
 
-EXTERN unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, char *a_, unsigned int _a_high);
+EXTERN unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
 
 /*
    Mult - returns a new string which is n concatenations of String, s.
@@ -258,37 +258,37 @@ EXTERN void * DynamicStrings_string (DynamicStrings_String s);
    InitStringDB - the debug version of InitString.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_InitStringDB (char *a_, unsigned int _a_high, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_InitStringDB (const char *a_, unsigned int _a_high, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    InitStringCharStarDB - the debug version of InitStringCharStar.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_InitStringCharStarDB (void * a, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_InitStringCharStarDB (void * a, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    InitStringCharDB - the debug version of InitStringChar.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_InitStringCharDB (char ch, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_InitStringCharDB (char ch, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    MultDB - the debug version of MultDB.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_MultDB (DynamicStrings_String s, unsigned int n, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_MultDB (DynamicStrings_String s, unsigned int n, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    DupDB - the debug version of Dup.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_DupDB (DynamicStrings_String s, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_DupDB (DynamicStrings_String s, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    SliceDB - debug version of Slice.
 */
 
-EXTERN DynamicStrings_String DynamicStrings_SliceDB (DynamicStrings_String s, int low, int high, char *file_, unsigned int _file_high, unsigned int line);
+EXTERN DynamicStrings_String DynamicStrings_SliceDB (DynamicStrings_String s, int low, int high, const char *file_, unsigned int _file_high, unsigned int line);
 
 /*
    PushAllocation - pushes the current allocation/deallocation lists.

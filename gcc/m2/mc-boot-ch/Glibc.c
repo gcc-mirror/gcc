@@ -22,48 +22,62 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+
+EXTERN
 int
 libc_read (int fd, void *a, int nbytes)
 {
   return read (fd, a, nbytes);
 }
 
+EXTERN
 int
 libc_write (int fd, void *a, int nbytes)
 {
   return write (fd, a, nbytes);
 }
 
+EXTERN
 int
 libc_close (int fd)
 {
   return close (fd);
 }
 
+EXTERN
 int
 libc_exit (int code)
 {
   exit (code);
 }
 
-int
+EXTERN
+void
 libc_perror (char *s)
 {
   perror (s);
 }
 
+EXTERN
 int
 libc_abort ()
 {
   abort ();
 }
 
+EXTERN
 int
 libc_strlen (char *s)
 {
   return strlen (s);
 }
 
+EXTERN
 int
 libc_printf (char *_format, unsigned int _format_high, ...)
 {
@@ -101,102 +115,119 @@ libc_printf (char *_format, unsigned int _format_high, ...)
   return done;
 }
 
+EXTERN
 void *
 libc_malloc (unsigned int size)
 {
   return malloc (size);
 }
 
+EXTERN
 void
 libc_free (void *p)
 {
   free (p);
 }
 
+EXTERN
 char *
 libc_strcpy (char *dest, char *src)
 {
   return strcpy (dest, src);
 }
 
+EXTERN
 char *
 libc_strncpy (char *dest, char *src, int n)
 {
   return strncpy (dest, src, n);
 }
 
+EXTERN
 int
 libc_unlink (char *p)
 {
   return unlink (p);
 }
 
+EXTERN
 int
 libc_system (char *command)
 {
   return system (command);
 }
 
+EXTERN
 void *
 libc_memcpy (void *dest, void *src, int n)
 {
   return memcpy (dest, src, n);
 }
 
+EXTERN
 char *
 libc_getenv (char *name)
 {
   return getenv (name);
 }
 
+EXTERN
 int
 libc_creat (char *p, mode_t mode)
 {
   return creat (p, mode);
 }
 
+EXTERN
 int
 libc_open (char *p, int flags, mode_t mode)
 {
   return open (p, flags, mode);
 }
 
+EXTERN
 off_t
 libc_lseek (int fd, off_t offset, int whence)
 {
   return lseek (fd, offset, whence);
 }
 
+EXTERN
 void *
 libc_realloc (void *ptr, size_t size)
 {
   return realloc (ptr, size);
 }
 
+EXTERN
 void *
 libc_memset (void *s, int c, size_t n)
 {
   return memset (s, c, n);
 }
 
+EXTERN
 void *
 libc_memmove (void *dest, void *src, size_t n)
 {
   return memmove (dest, src, n);
 }
 
+EXTERN
 int
 libc_getpid (void)
 {
   return getpid ();
 }
 
+EXTERN
 unsigned int
 libc_sleep (unsigned int s)
 {
   return sleep (s);
 }
 
+EXTERN
 int
 libc_atexit (void (*function) (void))
 {

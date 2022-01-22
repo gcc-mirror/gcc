@@ -54,31 +54,31 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   define MaxHexDigits 20
 #   define MaxOctDigits 40
 #   define MaxBits 64
-void NumberIO_ReadCard (unsigned int *x);
-void NumberIO_WriteCard (unsigned int x, unsigned int n);
-void NumberIO_ReadHex (unsigned int *x);
-void NumberIO_WriteHex (unsigned int x, unsigned int n);
-void NumberIO_ReadInt (int *x);
-void NumberIO_WriteInt (int x, unsigned int n);
-void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x);
-void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-void NumberIO_StrToHex (char *a_, unsigned int _a_high, unsigned int *x);
-void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high);
-void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x);
-void NumberIO_ReadOct (unsigned int *x);
-void NumberIO_WriteOct (unsigned int x, unsigned int n);
-void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-void NumberIO_StrToOct (char *a_, unsigned int _a_high, unsigned int *x);
-void NumberIO_ReadBin (unsigned int *x);
-void NumberIO_WriteBin (unsigned int x, unsigned int n);
-void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
-void NumberIO_StrToBin (char *a_, unsigned int _a_high, unsigned int *x);
-void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x);
-void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x);
-void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x);
+extern "C" void NumberIO_ReadCard (unsigned int *x);
+extern "C" void NumberIO_WriteCard (unsigned int x, unsigned int n);
+extern "C" void NumberIO_ReadHex (unsigned int *x);
+extern "C" void NumberIO_WriteHex (unsigned int x, unsigned int n);
+extern "C" void NumberIO_ReadInt (int *x);
+extern "C" void NumberIO_WriteInt (int x, unsigned int n);
+extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsigned int *x);
+extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void NumberIO_StrToHex (const char *a_, unsigned int _a_high, unsigned int *x);
+extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x);
+extern "C" void NumberIO_ReadOct (unsigned int *x);
+extern "C" void NumberIO_WriteOct (unsigned int x, unsigned int n);
+extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void NumberIO_StrToOct (const char *a_, unsigned int _a_high, unsigned int *x);
+extern "C" void NumberIO_ReadBin (unsigned int *x);
+extern "C" void NumberIO_WriteBin (unsigned int x, unsigned int n);
+extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high);
+extern "C" void NumberIO_StrToBin (const char *a_, unsigned int _a_high, unsigned int *x);
+extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int *x);
+extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int *x);
+extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int *x);
 
-void NumberIO_ReadCard (unsigned int *x)
+extern "C" void NumberIO_ReadCard (unsigned int *x)
 {
   typedef struct _T1_a _T1;
 
@@ -86,10 +86,10 @@ void NumberIO_ReadCard (unsigned int *x)
   _T1 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  NumberIO_StrToCard ((char *) &a.array[0], MaxLineLength, x);
+  NumberIO_StrToCard ((const char *) &a.array[0], MaxLineLength, x);
 }
 
-void NumberIO_WriteCard (unsigned int x, unsigned int n)
+extern "C" void NumberIO_WriteCard (unsigned int x, unsigned int n)
 {
   typedef struct _T2_a _T2;
 
@@ -97,10 +97,10 @@ void NumberIO_WriteCard (unsigned int x, unsigned int n)
   _T2 a;
 
   NumberIO_CardToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
-void NumberIO_ReadHex (unsigned int *x)
+extern "C" void NumberIO_ReadHex (unsigned int *x)
 {
   typedef struct _T3_a _T3;
 
@@ -108,10 +108,10 @@ void NumberIO_ReadHex (unsigned int *x)
   _T3 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  NumberIO_StrToHex ((char *) &a.array[0], MaxLineLength, x);
+  NumberIO_StrToHex ((const char *) &a.array[0], MaxLineLength, x);
 }
 
-void NumberIO_WriteHex (unsigned int x, unsigned int n)
+extern "C" void NumberIO_WriteHex (unsigned int x, unsigned int n)
 {
   typedef struct _T4_a _T4;
 
@@ -119,10 +119,10 @@ void NumberIO_WriteHex (unsigned int x, unsigned int n)
   _T4 a;
 
   NumberIO_HexToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
-void NumberIO_ReadInt (int *x)
+extern "C" void NumberIO_ReadInt (int *x)
 {
   typedef struct _T5_a _T5;
 
@@ -130,10 +130,10 @@ void NumberIO_ReadInt (int *x)
   _T5 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  NumberIO_StrToInt ((char *) &a.array[0], MaxLineLength, x);
+  NumberIO_StrToInt ((const char *) &a.array[0], MaxLineLength, x);
 }
 
-void NumberIO_WriteInt (int x, unsigned int n)
+extern "C" void NumberIO_WriteInt (int x, unsigned int n)
 {
   typedef struct _T6_a _T6;
 
@@ -141,10 +141,10 @@ void NumberIO_WriteInt (int x, unsigned int n)
   _T6 a;
 
   NumberIO_IntToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
-void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
   typedef struct _T7_a _T7;
 
@@ -154,20 +154,20 @@ void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _
   unsigned int Higha;
   _T7 buf;
 
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
     i += 1;
     if (i > MaxDigits)
       {
-        StrIO_WriteString ((char *) "NumberIO - increase MaxDigits", 29);
+        StrIO_WriteString ((const char *) "NumberIO - increase MaxDigits", 29);
         StrIO_WriteLn ();
         M2RTS_HALT (-1);
         __builtin_unreachable ();
       }
-    buf.array[i-1] = x % 10;
-    x = x / 10;
+    buf.array[i-1] = static_cast<unsigned int> (x % 10);
+    x = static_cast<unsigned int> (x / 10);
   } while (! (x == 0));
-  j = 0;
+  j = static_cast<unsigned int> (0);
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -183,11 +183,11 @@ void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, unsigned int _
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      a[j] = static_cast<char> (ASCII_nul);
     }
 }
 
-void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x)
+extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsigned int *x)
 {
   unsigned int i;
   unsigned int ok;
@@ -197,9 +197,9 @@ void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  StrLib_StrRemoveWhitePrefix ((char *) a, _a_high, (char *) a, _a_high);
-  higha = StrLib_StrLen ((char *) a, _a_high);
-  i = 0;
+  StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  i = static_cast<unsigned int> (0);
   ok = TRUE;
   while (ok)
     {
@@ -219,12 +219,12 @@ void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x)
           ok = FALSE;
         }
     }
-  (*x) = 0;
+  (*x) = static_cast<unsigned int> (0);
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = (10*(*x))+( ((unsigned int) (a[i]))- ((unsigned int) ('0')));
+        (*x) = static_cast<unsigned int> ((10*(*x))+( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
         if (i < higha)
           {
             /* avoid dangling else.  */
@@ -242,7 +242,7 @@ void NumberIO_StrToCard (char *a_, unsigned int _a_high, unsigned int *x)
     }
 }
 
-void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
   typedef struct _T8_a _T8;
 
@@ -252,20 +252,20 @@ void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
   unsigned int Higha;
   _T8 buf;
 
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
     i += 1;
     if (i > MaxHexDigits)
       {
-        StrIO_WriteString ((char *) "NumberIO - increase MaxDigits", 29);
+        StrIO_WriteString ((const char *) "NumberIO - increase MaxDigits", 29);
         StrIO_WriteLn ();
         M2RTS_HALT (-1);
         __builtin_unreachable ();
       }
-    buf.array[i-1] = x % 0x010;
-    x = x / 0x010;
+    buf.array[i-1] = static_cast<unsigned int> (x % 0x010);
+    x = static_cast<unsigned int> (x / 0x010);
   } while (! (x == 0));
-  j = 0;
+  j = static_cast<unsigned int> (0);
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -292,7 +292,7 @@ void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
     }
 }
 
-void NumberIO_StrToHex (char *a_, unsigned int _a_high, unsigned int *x)
+extern "C" void NumberIO_StrToHex (const char *a_, unsigned int _a_high, unsigned int *x)
 {
   int i;
   char a[_a_high+1];
@@ -300,11 +300,11 @@ void NumberIO_StrToHex (char *a_, unsigned int _a_high, unsigned int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  NumberIO_StrToHexInt ((char *) a, _a_high, &i);
+  NumberIO_StrToHexInt ((const char *) a, _a_high, &i);
   (*x) = (unsigned int ) (i);
 }
 
-void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
 {
   typedef struct _T9_a _T9;
 
@@ -320,7 +320,7 @@ void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
     {
       /* avoid dangling else.  */
       Negative = TRUE;
-      c = ((unsigned int ) (abs (x+1)))+1;
+      c = static_cast<unsigned int> (((unsigned int ) (abs (x+1)))+1);
       if (n > 0)
         {
           n -= 1;
@@ -328,23 +328,23 @@ void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
     }
   else
     {
-      c = x;
+      c = static_cast<unsigned int> (x);
       Negative = FALSE;
     }
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
     i += 1;
     if (i > MaxDigits)
       {
-        StrIO_WriteString ((char *) "NumberIO - increase MaxDigits", 29);
+        StrIO_WriteString ((const char *) "NumberIO - increase MaxDigits", 29);
         StrIO_WriteLn ();
         M2RTS_HALT (-1);
         __builtin_unreachable ();
       }
-    buf.array[i-1] = c % 10;
-    c = c / 10;
+    buf.array[i-1] = static_cast<unsigned int> (c % 10);
+    c = static_cast<unsigned int> (c / 10);
   } while (! (c == 0));
-  j = 0;
+  j = static_cast<unsigned int> (0);
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -369,7 +369,7 @@ void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int _a_high)
     }
 }
 
-void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x)
+extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
   unsigned int ok;
@@ -380,9 +380,9 @@ void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  StrLib_StrRemoveWhitePrefix ((char *) a, _a_high, (char *) a, _a_high);
-  higha = StrLib_StrLen ((char *) a, _a_high);
-  i = 0;
+  StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  i = static_cast<unsigned int> (0);
   Negative = FALSE;
   ok = TRUE;
   while (ok)
@@ -410,18 +410,18 @@ void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x)
           ok = FALSE;
         }
     }
-  (*x) = 0;
+  (*x) = static_cast<int> (0);
   if (i < higha)
     {
       ok = TRUE;
       do {
         if (Negative)
           {
-            (*x) = (10*(*x))-((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+            (*x) = static_cast<int> ((10*(*x))-((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
           }
         else
           {
-            (*x) = (10*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+            (*x) = static_cast<int> ((10*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
           }
         if (i < higha)
           {
@@ -440,7 +440,7 @@ void NumberIO_StrToInt (char *a_, unsigned int _a_high, int *x)
     }
 }
 
-void NumberIO_ReadOct (unsigned int *x)
+extern "C" void NumberIO_ReadOct (unsigned int *x)
 {
   typedef struct _T10_a _T10;
 
@@ -448,10 +448,10 @@ void NumberIO_ReadOct (unsigned int *x)
   _T10 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  NumberIO_StrToOct ((char *) &a.array[0], MaxLineLength, x);
+  NumberIO_StrToOct ((const char *) &a.array[0], MaxLineLength, x);
 }
 
-void NumberIO_WriteOct (unsigned int x, unsigned int n)
+extern "C" void NumberIO_WriteOct (unsigned int x, unsigned int n)
 {
   typedef struct _T11_a _T11;
 
@@ -459,10 +459,10 @@ void NumberIO_WriteOct (unsigned int x, unsigned int n)
   _T11 a;
 
   NumberIO_OctToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
-void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
   typedef struct _T12_a _T12;
 
@@ -472,20 +472,20 @@ void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
   unsigned int Higha;
   _T12 buf;
 
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
     i += 1;
     if (i > MaxOctDigits)
       {
-        StrIO_WriteString ((char *) "NumberIO - increase MaxDigits", 29);
+        StrIO_WriteString ((const char *) "NumberIO - increase MaxDigits", 29);
         StrIO_WriteLn ();
         M2RTS_HALT (-1);
         __builtin_unreachable ();
       }
-    buf.array[i-1] = x % 8;
-    x = x / 8;
+    buf.array[i-1] = static_cast<unsigned int> (x % 8);
+    x = static_cast<unsigned int> (x / 8);
   } while (! (x == 0));
-  j = 0;
+  j = static_cast<unsigned int> (0);
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -505,7 +505,7 @@ void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
     }
 }
 
-void NumberIO_StrToOct (char *a_, unsigned int _a_high, unsigned int *x)
+extern "C" void NumberIO_StrToOct (const char *a_, unsigned int _a_high, unsigned int *x)
 {
   int i;
   char a[_a_high+1];
@@ -513,11 +513,11 @@ void NumberIO_StrToOct (char *a_, unsigned int _a_high, unsigned int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  NumberIO_StrToOctInt ((char *) a, _a_high, &i);
+  NumberIO_StrToOctInt ((const char *) a, _a_high, &i);
   (*x) = (unsigned int ) (i);
 }
 
-void NumberIO_ReadBin (unsigned int *x)
+extern "C" void NumberIO_ReadBin (unsigned int *x)
 {
   typedef struct _T13_a _T13;
 
@@ -525,10 +525,10 @@ void NumberIO_ReadBin (unsigned int *x)
   _T13 a;
 
   StrIO_ReadString ((char *) &a.array[0], MaxLineLength);
-  NumberIO_StrToBin ((char *) &a.array[0], MaxLineLength, x);
+  NumberIO_StrToBin ((const char *) &a.array[0], MaxLineLength, x);
 }
 
-void NumberIO_WriteBin (unsigned int x, unsigned int n)
+extern "C" void NumberIO_WriteBin (unsigned int x, unsigned int n)
 {
   typedef struct _T14_a _T14;
 
@@ -536,10 +536,10 @@ void NumberIO_WriteBin (unsigned int x, unsigned int n)
   _T14 a;
 
   NumberIO_BinToStr (x, n, (char *) &a.array[0], MaxLineLength);
-  StrIO_WriteString ((char *) &a.array[0], MaxLineLength);
+  StrIO_WriteString ((const char *) &a.array[0], MaxLineLength);
 }
 
-void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
+extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a_high)
 {
   typedef struct _T15_a _T15;
 
@@ -549,20 +549,20 @@ void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
   unsigned int Higha;
   _T15 buf;
 
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
     i += 1;
     if (i > MaxBits)
       {
-        StrIO_WriteString ((char *) "NumberIO - increase MaxBits", 27);
+        StrIO_WriteString ((const char *) "NumberIO - increase MaxBits", 27);
         StrIO_WriteLn ();
         M2RTS_HALT (-1);
         __builtin_unreachable ();
       }
-    buf.array[i-1] = x % 2;
-    x = x / 2;
+    buf.array[i-1] = static_cast<unsigned int> (x % 2);
+    x = static_cast<unsigned int> (x / 2);
   } while (! (x == 0));
-  j = 0;
+  j = static_cast<unsigned int> (0);
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -582,7 +582,7 @@ void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsigned int _a
     }
 }
 
-void NumberIO_StrToBin (char *a_, unsigned int _a_high, unsigned int *x)
+extern "C" void NumberIO_StrToBin (const char *a_, unsigned int _a_high, unsigned int *x)
 {
   int i;
   char a[_a_high+1];
@@ -590,11 +590,11 @@ void NumberIO_StrToBin (char *a_, unsigned int _a_high, unsigned int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  NumberIO_StrToBinInt ((char *) a, _a_high, &i);
+  NumberIO_StrToBinInt ((const char *) a, _a_high, &i);
   (*x) = (unsigned int ) (i);
 }
 
-void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x)
+extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
   unsigned int ok;
@@ -604,9 +604,9 @@ void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  StrLib_StrRemoveWhitePrefix ((char *) a, _a_high, (char *) a, _a_high);
-  higha = StrLib_StrLen ((char *) a, _a_high);
-  i = 0;
+  StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  i = static_cast<unsigned int> (0);
   ok = TRUE;
   while (ok)
     {
@@ -626,12 +626,12 @@ void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x)
           ok = FALSE;
         }
     }
-  (*x) = 0;
+  (*x) = static_cast<int> (0);
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = (2*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+        (*x) = static_cast<int> ((2*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
         if (i < higha)
           {
             /* avoid dangling else.  */
@@ -649,7 +649,7 @@ void NumberIO_StrToBinInt (char *a_, unsigned int _a_high, int *x)
     }
 }
 
-void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x)
+extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
   unsigned int ok;
@@ -659,9 +659,9 @@ void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  StrLib_StrRemoveWhitePrefix ((char *) a, _a_high, (char *) a, _a_high);
-  higha = StrLib_StrLen ((char *) a, _a_high);
-  i = 0;
+  StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  i = static_cast<unsigned int> (0);
   ok = TRUE;
   while (ok)
     {
@@ -681,19 +681,19 @@ void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x)
           ok = FALSE;
         }
     }
-  (*x) = 0;
+  (*x) = static_cast<int> (0);
   if (i < higha)
     {
       ok = TRUE;
       do {
         if ((a[i] >= '0') && (a[i] <= '9'))
           {
-            (*x) = (0x010*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+            (*x) = static_cast<int> ((0x010*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
           }
         else if ((a[i] >= 'A') && (a[i] <= 'F'))
           {
             /* avoid dangling else.  */
-            (*x) = (0x010*(*x))+((int ) (( ((unsigned int) (a[i]))- ((unsigned int) ('A')))+10));
+            (*x) = static_cast<int> ((0x010*(*x))+((int ) (( ((unsigned int) (a[i]))- ((unsigned int) ('A')))+10)));
           }
         if (i < higha)
           {
@@ -712,7 +712,7 @@ void NumberIO_StrToHexInt (char *a_, unsigned int _a_high, int *x)
     }
 }
 
-void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x)
+extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int *x)
 {
   unsigned int i;
   unsigned int ok;
@@ -722,9 +722,9 @@ void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  StrLib_StrRemoveWhitePrefix ((char *) a, _a_high, (char *) a, _a_high);
-  higha = StrLib_StrLen ((char *) a, _a_high);
-  i = 0;
+  StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  i = static_cast<unsigned int> (0);
   ok = TRUE;
   while (ok)
     {
@@ -744,12 +744,12 @@ void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x)
           ok = FALSE;
         }
     }
-  (*x) = 0;
+  (*x) = static_cast<int> (0);
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = (8*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+        (*x) = static_cast<int> ((8*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
         if (i < higha)
           {
             /* avoid dangling else.  */
@@ -767,10 +767,10 @@ void NumberIO_StrToOctInt (char *a_, unsigned int _a_high, int *x)
     }
 }
 
-void _M2_NumberIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_NumberIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_NumberIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_NumberIO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -30,6 +30,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gm2-libs-host.h"
 
+#   ifdef __cplusplus
+extern "C" {
+#   endif
+
 int
 errno_geterrno (void)
 {
@@ -49,3 +53,7 @@ void
 _M2_errno_finish (void)
 {
 }
+
+#   ifdef __cplusplus
+}
+#   endif

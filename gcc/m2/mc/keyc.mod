@@ -741,7 +741,6 @@ END fixNullPointerConst ;
 
 PROCEDURE genDefs (p: pretty) ;
 BEGIN
-   checkGccConfigSystem (p) ;
    checkFreeMalloc (p) ;
    checkProc (p) ;
    checkTrue (p) ;
@@ -760,6 +759,17 @@ BEGIN
    checkThrow (p) ;
    fixNullPointerConst (p)
 END genDefs ;
+
+
+(*
+   genConfigSystem - generate include files for config.h and system.h
+                     within the GCC framework.
+*)
+
+PROCEDURE genConfigSystem (p: pretty) ;
+BEGIN
+   checkGccConfigSystem (p)
+END genConfigSystem ;
 
 
 (*
@@ -986,7 +996,8 @@ BEGIN
    add (keywords, 'try') ;
    add (keywords, 'catch') ;
    add (keywords, 'operator') ;
-   add (keywords, 'complex')
+   add (keywords, 'complex') ;
+   add (keywords, 'export')
 END initCP ;
 
 

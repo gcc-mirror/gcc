@@ -69,23 +69,23 @@ static _T1 fdState;
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.
 */
 
-void IO_Read (char *ch);
+extern "C" void IO_Read (char *ch);
 
 /*
    doWrite - performs the write of a single character, ch,
              onto fd or f.
 */
 
-void IO_Write (char ch);
+extern "C" void IO_Write (char ch);
 
 /*
    doWrite - performs the write of a single character, ch,
              onto fd or f.
 */
 
-void IO_Error (char ch);
-void IO_UnBufferedMode (int fd, unsigned int input);
-void IO_BufferedMode (int fd, unsigned int input);
+extern "C" void IO_Error (char ch);
+extern "C" void IO_UnBufferedMode (int fd, unsigned int input);
+extern "C" void IO_BufferedMode (int fd, unsigned int input);
 
 /*
    EchoOn - turns on echoing for file descriptor, fd.  This
@@ -94,7 +94,7 @@ void IO_BufferedMode (int fd, unsigned int input);
             which is attached to a particular piece of hardware.
 */
 
-void IO_EchoOn (int fd, unsigned int input);
+extern "C" void IO_EchoOn (int fd, unsigned int input);
 
 /*
    EchoOff - turns off echoing for file descriptor, fd.  This
@@ -103,7 +103,7 @@ void IO_EchoOn (int fd, unsigned int input);
              which is attached to a particular piece of hardware.
 */
 
-void IO_EchoOff (int fd, unsigned int input);
+extern "C" void IO_EchoOff (int fd, unsigned int input);
 
 /*
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.
@@ -173,7 +173,7 @@ static void doWrite (int fd, FIO_File f, char ch)
         {
           for (;;)
           {
-            r = libc_write (FIO_GetUnixFileDescriptor (f), &ch, (size_t) 1);
+            r = static_cast<int> (libc_write (FIO_GetUnixFileDescriptor (f), &ch, static_cast<size_t> (1)));
             if (r == 1)
               {
                 return;
@@ -181,7 +181,7 @@ static void doWrite (int fd, FIO_File f, char ch)
             else if (r == -1)
               {
                 /* avoid dangling else.  */
-                r = errno_geterrno ();
+                r = static_cast<int> (errno_geterrno ());
                 if ((r != errno_EAGAIN) && (r != errno_EINTR))
                   {
                     fdState.array[fd].IsEof = TRUE;
@@ -225,22 +225,22 @@ static void doraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, (termios_Flag) termios_ignbrk, FALSE);
-  setFlag (term, (termios_Flag) termios_ibrkint, FALSE);
-  setFlag (term, (termios_Flag) termios_iparmrk, FALSE);
-  setFlag (term, (termios_Flag) termios_istrip, FALSE);
-  setFlag (term, (termios_Flag) termios_inlcr, FALSE);
-  setFlag (term, (termios_Flag) termios_igncr, FALSE);
-  setFlag (term, (termios_Flag) termios_icrnl, FALSE);
-  setFlag (term, (termios_Flag) termios_ixon, FALSE);
-  setFlag (term, (termios_Flag) termios_opost, FALSE);
-  setFlag (term, (termios_Flag) termios_lecho, FALSE);
-  setFlag (term, (termios_Flag) termios_lechonl, FALSE);
-  setFlag (term, (termios_Flag) termios_licanon, FALSE);
-  setFlag (term, (termios_Flag) termios_lisig, FALSE);
-  setFlag (term, (termios_Flag) termios_liexten, FALSE);
-  setFlag (term, (termios_Flag) termios_parenb, FALSE);
-  setFlag (term, (termios_Flag) termios_cs8, TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_ignbrk), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_ibrkint), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_iparmrk), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_istrip), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_inlcr), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_igncr), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_icrnl), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_ixon), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_opost), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_lecho), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_lechonl), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_licanon), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_lisig), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_liexten), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_parenb), FALSE);
+  setFlag (term, static_cast<termios_Flag> (termios_cs8), TRUE);
 }
 
 
@@ -262,20 +262,20 @@ static void dononraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, (termios_Flag) termios_ignbrk, TRUE);
-  setFlag (term, (termios_Flag) termios_ibrkint, TRUE);
-  setFlag (term, (termios_Flag) termios_iparmrk, TRUE);
-  setFlag (term, (termios_Flag) termios_istrip, TRUE);
-  setFlag (term, (termios_Flag) termios_inlcr, TRUE);
-  setFlag (term, (termios_Flag) termios_igncr, TRUE);
-  setFlag (term, (termios_Flag) termios_icrnl, TRUE);
-  setFlag (term, (termios_Flag) termios_ixon, TRUE);
-  setFlag (term, (termios_Flag) termios_opost, TRUE);
-  setFlag (term, (termios_Flag) termios_lecho, TRUE);
-  setFlag (term, (termios_Flag) termios_lechonl, TRUE);
-  setFlag (term, (termios_Flag) termios_licanon, TRUE);
-  setFlag (term, (termios_Flag) termios_lisig, TRUE);
-  setFlag (term, (termios_Flag) termios_liexten, TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_ignbrk), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_ibrkint), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_iparmrk), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_istrip), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_inlcr), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_igncr), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_icrnl), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_ixon), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_opost), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_lecho), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_lechonl), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_licanon), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_lisig), TRUE);
+  setFlag (term, static_cast<termios_Flag> (termios_liexten), TRUE);
 }
 
 
@@ -298,7 +298,7 @@ static void Init (void)
    IsDefaultFd - returns TRUE if, fd, is 0, 1 or 2.
 */
 
-void IO_Read (char *ch)
+extern "C" void IO_Read (char *ch)
 {
   int r;
 
@@ -308,13 +308,13 @@ void IO_Read (char *ch)
     {
       if (fdState.array[0].IsEof)
         {
-          (*ch) = ASCII_eof;
+          (*ch) = static_cast<char> (ASCII_eof);
         }
       else
         {
           for (;;)
           {
-            r = libc_read (FIO_GetUnixFileDescriptor (FIO_StdIn), ch, (size_t) 1);
+            r = static_cast<int> (libc_read (FIO_GetUnixFileDescriptor (FIO_StdIn), ch, static_cast<size_t> (1)));
             if (r == 1)
               {
                 return;
@@ -322,7 +322,7 @@ void IO_Read (char *ch)
             else if (r == -1)
               {
                 /* avoid dangling else.  */
-                r = errno_geterrno ();
+                r = static_cast<int> (errno_geterrno ());
                 if (r != errno_EAGAIN)
                   {
                     fdState.array[0].IsEof = TRUE;
@@ -335,7 +335,7 @@ void IO_Read (char *ch)
     }
   else
     {
-      (*ch) = FIO_ReadChar (FIO_StdIn);
+      (*ch) = static_cast<char> (FIO_ReadChar (FIO_StdIn));
     }
 }
 
@@ -345,7 +345,7 @@ void IO_Read (char *ch)
              onto fd or f.
 */
 
-void IO_Write (char ch)
+extern "C" void IO_Write (char ch)
 {
   doWrite (1, FIO_StdOut, ch);
 }
@@ -356,12 +356,12 @@ void IO_Write (char ch)
              onto fd or f.
 */
 
-void IO_Error (char ch)
+extern "C" void IO_Error (char ch)
 {
   doWrite (2, FIO_StdErr, ch);
 }
 
-void IO_UnBufferedMode (int fd, unsigned int input)
+extern "C" void IO_UnBufferedMode (int fd, unsigned int input)
 {
   termios_TERMIOS term;
   int result;
@@ -370,23 +370,23 @@ void IO_UnBufferedMode (int fd, unsigned int input)
     {
       fdState.array[fd].IsRaw = TRUE;
     }
-  term = termios_InitTermios ();
+  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       doraw (term);
       if (input)
         {
-          result = termios_tcsetattr (fd, termios_tcsflush (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
         }
       else
         {
-          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
         }
     }
-  term = termios_KillTermios (term);
+  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
 }
 
-void IO_BufferedMode (int fd, unsigned int input)
+extern "C" void IO_BufferedMode (int fd, unsigned int input)
 {
   termios_TERMIOS term;
   int r;
@@ -395,20 +395,20 @@ void IO_BufferedMode (int fd, unsigned int input)
     {
       fdState.array[fd].IsRaw = FALSE;
     }
-  term = termios_InitTermios ();
+  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
   if ((termios_tcgetattr (fd, term)) == 0)
     {
       dononraw (term);
       if (input)
         {
-          r = termios_tcsetattr (fd, termios_tcsflush (), term);
+          r = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
         }
       else
         {
-          r = termios_tcsetattr (fd, termios_tcsdrain (), term);
+          r = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
         }
     }
-  term = termios_KillTermios (term);
+  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
 }
 
 
@@ -419,25 +419,25 @@ void IO_BufferedMode (int fd, unsigned int input)
             which is attached to a particular piece of hardware.
 */
 
-void IO_EchoOn (int fd, unsigned int input)
+extern "C" void IO_EchoOn (int fd, unsigned int input)
 {
   termios_TERMIOS term;
   int result;
 
-  term = termios_InitTermios ();
+  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, (termios_Flag) termios_lecho, TRUE);
+      setFlag (term, static_cast<termios_Flag> (termios_lecho), TRUE);
       if (input)
         {
-          result = termios_tcsetattr (fd, termios_tcsflush (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
         }
       else
         {
-          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
         }
     }
-  term = termios_KillTermios (term);
+  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
 }
 
 
@@ -448,32 +448,32 @@ void IO_EchoOn (int fd, unsigned int input)
              which is attached to a particular piece of hardware.
 */
 
-void IO_EchoOff (int fd, unsigned int input)
+extern "C" void IO_EchoOff (int fd, unsigned int input)
 {
   termios_TERMIOS term;
   int result;
 
-  term = termios_InitTermios ();
+  term = static_cast<termios_TERMIOS> (termios_InitTermios ());
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, (termios_Flag) termios_lecho, FALSE);
+      setFlag (term, static_cast<termios_Flag> (termios_lecho), FALSE);
       if (input)
         {
-          result = termios_tcsetattr (fd, termios_tcsflush (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsflush (), term));
         }
       else
         {
-          result = termios_tcsetattr (fd, termios_tcsdrain (), term);
+          result = static_cast<int> (termios_tcsetattr (fd, termios_tcsdrain (), term));
         }
     }
-  term = termios_KillTermios (term);
+  term = static_cast<termios_TERMIOS> (termios_KillTermios (term));
 }
 
-void _M2_IO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_IO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   Init ();
 }
 
-void _M2_IO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_IO_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

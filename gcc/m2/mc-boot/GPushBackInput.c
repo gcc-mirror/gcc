@@ -56,14 +56,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #   define MaxPushBackStack 8192
 #   define MaxFileName 4096
-typedef struct _T1_a _T1;
-
 typedef struct _T2_a _T2;
 
-struct _T1_a { char array[MaxFileName+1]; };
-struct _T2_a { char array[MaxPushBackStack+1]; };
-static _T1 FileName;
-static _T2 CharStack;
+typedef struct _T3_a _T3;
+
+struct _T2_a { char array[MaxFileName+1]; };
+struct _T3_a { char array[MaxPushBackStack+1]; };
+static _T2 FileName;
+static _T3 CharStack;
 static unsigned int ExitStatus;
 static unsigned int Column;
 static unsigned int StackPtr;
@@ -74,40 +74,40 @@ static unsigned int Debugging;
    Open - opens a file for reading.
 */
 
-FIO_File PushBackInput_Open (char *a_, unsigned int _a_high);
+extern "C" FIO_File PushBackInput_Open (const char *a_, unsigned int _a_high);
 
 /*
    GetCh - gets a character from either the push back stack or
            from file, f.
 */
 
-char PushBackInput_GetCh (FIO_File f);
+extern "C" char PushBackInput_GetCh (FIO_File f);
 
 /*
    PutCh - pushes a character onto the push back stack, it also
            returns the character which has been pushed.
 */
 
-char PushBackInput_PutCh (char ch);
+extern "C" char PushBackInput_PutCh (char ch);
 
 /*
    PutString - pushes a string onto the push back stack.
 */
 
-void PushBackInput_PutString (char *a_, unsigned int _a_high);
+extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high);
 
 /*
    PutStr - pushes a dynamic string onto the push back stack.
             The string, s, is not deallocated.
 */
 
-void PushBackInput_PutStr (DynamicStrings_String s);
+extern "C" void PushBackInput_PutStr (DynamicStrings_String s);
 
 /*
    Error - emits an error message with the appropriate file, line combination.
 */
 
-void PushBackInput_Error (char *a_, unsigned int _a_high);
+extern "C" void PushBackInput_Error (const char *a_, unsigned int _a_high);
 
 /*
    WarnError - emits an error message with the appropriate file, line combination.
@@ -115,7 +115,7 @@ void PushBackInput_Error (char *a_, unsigned int _a_high);
                1 will be issued.
 */
 
-void PushBackInput_WarnError (char *a_, unsigned int _a_high);
+extern "C" void PushBackInput_WarnError (const char *a_, unsigned int _a_high);
 
 /*
    WarnString - emits an error message with the appropriate file, line combination.
@@ -123,37 +123,37 @@ void PushBackInput_WarnError (char *a_, unsigned int _a_high);
                 1 will be issued.
 */
 
-void PushBackInput_WarnString (DynamicStrings_String s);
+extern "C" void PushBackInput_WarnString (DynamicStrings_String s);
 
 /*
    Close - closes the opened file.
 */
 
-void PushBackInput_Close (FIO_File f);
+extern "C" void PushBackInput_Close (FIO_File f);
 
 /*
    GetExitStatus - returns the exit status which will be 1 if any warnings were issued.
 */
 
-unsigned int PushBackInput_GetExitStatus (void);
+extern "C" unsigned int PushBackInput_GetExitStatus (void);
 
 /*
    SetDebug - sets the debug flag on or off.
 */
 
-void PushBackInput_SetDebug (unsigned int d);
+extern "C" void PushBackInput_SetDebug (unsigned int d);
 
 /*
    GetColumnPosition - returns the column position of the current character.
 */
 
-unsigned int PushBackInput_GetColumnPosition (void);
+extern "C" unsigned int PushBackInput_GetColumnPosition (void);
 
 /*
    GetCurrentLine - returns the current line number.
 */
 
-unsigned int PushBackInput_GetCurrentLine (void);
+extern "C" unsigned int PushBackInput_GetCurrentLine (void);
 
 /*
    ErrChar - writes a char, ch, to stderr.
@@ -184,10 +184,10 @@ static void ErrChar (char ch)
 
 static void Init (void)
 {
-  ExitStatus = 0;
-  StackPtr = 0;
-  LineNo = 1;
-  Column = 0;
+  ExitStatus = static_cast<unsigned int> (0);
+  StackPtr = static_cast<unsigned int> (0);
+  LineNo = static_cast<unsigned int> (1);
+  Column = static_cast<unsigned int> (0);
 }
 
 
@@ -195,7 +195,7 @@ static void Init (void)
    Open - opens a file for reading.
 */
 
-FIO_File PushBackInput_Open (char *a_, unsigned int _a_high)
+extern "C" FIO_File PushBackInput_Open (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -203,8 +203,8 @@ FIO_File PushBackInput_Open (char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   Init ();
-  StrLib_StrCopy ((char *) a, _a_high, (char *) &FileName.array[0], MaxFileName);
-  return FIO_OpenToRead ((char *) a, _a_high);
+  StrLib_StrCopy ((const char *) a, _a_high, (char *) &FileName.array[0], MaxFileName);
+  return static_cast<FIO_File> (FIO_OpenToRead ((const char *) a, _a_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -215,7 +215,7 @@ FIO_File PushBackInput_Open (char *a_, unsigned int _a_high)
            from file, f.
 */
 
-char PushBackInput_GetCh (FIO_File f)
+extern "C" char PushBackInput_GetCh (FIO_File f)
 {
   char ch;
 
@@ -232,16 +232,16 @@ char PushBackInput_GetCh (FIO_File f)
     {
       if ((FIO_EOF (f)) || (! (FIO_IsNoError (f))))
         {
-          ch = ASCII_nul;
+          ch = static_cast<char> (ASCII_nul);
         }
       else
         {
           do {
-            ch = FIO_ReadChar (f);
+            ch = static_cast<char> (FIO_ReadChar (f));
           } while (! (((ch != ASCII_cr) || (FIO_EOF (f))) || (! (FIO_IsNoError (f)))));
           if (ch == ASCII_lf)
             {
-              Column = 0;
+              Column = static_cast<unsigned int> (0);
               LineNo += 1;
             }
           else
@@ -265,7 +265,7 @@ char PushBackInput_GetCh (FIO_File f)
            returns the character which has been pushed.
 */
 
-char PushBackInput_PutCh (char ch)
+extern "C" char PushBackInput_PutCh (char ch)
 {
   if (StackPtr < MaxPushBackStack)
     {
@@ -274,7 +274,7 @@ char PushBackInput_PutCh (char ch)
     }
   else
     {
-      Debug_Halt ((char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+      Debug_Halt ((const char *) "max push back stack exceeded, increase MaxPushBackStack", 55, 150, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
     }
   return ch;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -286,7 +286,7 @@ char PushBackInput_PutCh (char ch)
    PutString - pushes a string onto the push back stack.
 */
 
-void PushBackInput_PutString (char *a_, unsigned int _a_high)
+extern "C" void PushBackInput_PutString (const char *a_, unsigned int _a_high)
 {
   unsigned int l;
   char a[_a_high+1];
@@ -294,13 +294,13 @@ void PushBackInput_PutString (char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  l = StrLib_StrLen ((char *) a, _a_high);
+  l = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
   while (l > 0)
     {
       l -= 1;
       if ((PushBackInput_PutCh (a[l])) != a[l])
         {
-          Debug_Halt ((char *) "assert failed", 13, 132, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+          Debug_Halt ((const char *) "assert failed", 13, 132, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
         }
     }
 }
@@ -311,17 +311,17 @@ void PushBackInput_PutString (char *a_, unsigned int _a_high)
             The string, s, is not deallocated.
 */
 
-void PushBackInput_PutStr (DynamicStrings_String s)
+extern "C" void PushBackInput_PutStr (DynamicStrings_String s)
 {
   unsigned int i;
 
-  i = DynamicStrings_Length (s);
+  i = static_cast<unsigned int> (DynamicStrings_Length (s));
   while (i > 0)
     {
       i -= 1;
-      if ((PushBackInput_PutCh (DynamicStrings_char (s, (int) i))) != (DynamicStrings_char (s, (int) i)))
+      if ((PushBackInput_PutCh (DynamicStrings_char (s, static_cast<int> (i)))) != (DynamicStrings_char (s, static_cast<int> (i))))
         {
-          Debug_Halt ((char *) "assert failed", 13, 113, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
+          Debug_Halt ((const char *) "assert failed", 13, 113, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/PushBackInput.mod", 85);
         }
     }
 }
@@ -331,7 +331,7 @@ void PushBackInput_PutStr (DynamicStrings_String s)
    Error - emits an error message with the appropriate file, line combination.
 */
 
-void PushBackInput_Error (char *a_, unsigned int _a_high)
+extern "C" void PushBackInput_Error (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -339,11 +339,11 @@ void PushBackInput_Error (char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   StdIO_PushOutput ((StdIO_ProcWrite) {(StdIO_ProcWrite_t) ErrChar});
-  StrIO_WriteString ((char *) &FileName.array[0], MaxFileName);
+  StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
   StdIO_Write (':');
   NumberIO_WriteCard (LineNo, 0);
   StdIO_Write (':');
-  StrIO_WriteString ((char *) a, _a_high);
+  StrIO_WriteString ((const char *) a, _a_high);
   StrIO_WriteLn ();
   StdIO_PopOutput ();
   FIO_Close (FIO_StdErr);
@@ -357,7 +357,7 @@ void PushBackInput_Error (char *a_, unsigned int _a_high)
                1 will be issued.
 */
 
-void PushBackInput_WarnError (char *a_, unsigned int _a_high)
+extern "C" void PushBackInput_WarnError (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -365,14 +365,14 @@ void PushBackInput_WarnError (char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   StdIO_PushOutput ((StdIO_ProcWrite) {(StdIO_ProcWrite_t) ErrChar});
-  StrIO_WriteString ((char *) &FileName.array[0], MaxFileName);
+  StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
   StdIO_Write (':');
   NumberIO_WriteCard (LineNo, 0);
   StdIO_Write (':');
-  StrIO_WriteString ((char *) a, _a_high);
+  StrIO_WriteString ((const char *) a, _a_high);
   StrIO_WriteLn ();
   StdIO_PopOutput ();
-  ExitStatus = 1;
+  ExitStatus = static_cast<unsigned int> (1);
 }
 
 
@@ -382,12 +382,14 @@ void PushBackInput_WarnError (char *a_, unsigned int _a_high)
                 1 will be issued.
 */
 
-void PushBackInput_WarnString (DynamicStrings_String s)
+extern "C" void PushBackInput_WarnString (DynamicStrings_String s)
 {
-  char * p;
+  typedef char *_T1;
 
-  p = DynamicStrings_string (s);
-  StrIO_WriteString ((char *) &FileName.array[0], MaxFileName);
+  _T1 p;
+
+  p = static_cast<_T1> (DynamicStrings_string (s));
+  StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
   StdIO_Write (':');
   NumberIO_WriteCard (LineNo, 0);
   StdIO_Write (':');
@@ -397,7 +399,7 @@ void PushBackInput_WarnString (DynamicStrings_String s)
         if ((*p) == ASCII_lf)
           {
             StrIO_WriteLn ();
-            StrIO_WriteString ((char *) &FileName.array[0], MaxFileName);
+            StrIO_WriteString ((const char *) &FileName.array[0], MaxFileName);
             StdIO_Write (':');
             NumberIO_WriteCard (LineNo, 0);
             StdIO_Write (':');
@@ -409,7 +411,7 @@ void PushBackInput_WarnString (DynamicStrings_String s)
         p += 1;
       }
   } while (! ((p == NULL) || ((*p) == ASCII_nul)));
-  ExitStatus = 1;
+  ExitStatus = static_cast<unsigned int> (1);
 }
 
 
@@ -417,7 +419,7 @@ void PushBackInput_WarnString (DynamicStrings_String s)
    Close - closes the opened file.
 */
 
-void PushBackInput_Close (FIO_File f)
+extern "C" void PushBackInput_Close (FIO_File f)
 {
   FIO_Close (f);
 }
@@ -427,7 +429,7 @@ void PushBackInput_Close (FIO_File f)
    GetExitStatus - returns the exit status which will be 1 if any warnings were issued.
 */
 
-unsigned int PushBackInput_GetExitStatus (void)
+extern "C" unsigned int PushBackInput_GetExitStatus (void)
 {
   return ExitStatus;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -439,7 +441,7 @@ unsigned int PushBackInput_GetExitStatus (void)
    SetDebug - sets the debug flag on or off.
 */
 
-void PushBackInput_SetDebug (unsigned int d)
+extern "C" void PushBackInput_SetDebug (unsigned int d)
 {
   Debugging = d;
 }
@@ -449,15 +451,15 @@ void PushBackInput_SetDebug (unsigned int d)
    GetColumnPosition - returns the column position of the current character.
 */
 
-unsigned int PushBackInput_GetColumnPosition (void)
+extern "C" unsigned int PushBackInput_GetColumnPosition (void)
 {
   if (StackPtr > Column)
     {
-      return 0;
+      return static_cast<unsigned int> (0);
     }
   else
     {
-      return Column-StackPtr;
+      return static_cast<unsigned int> (Column-StackPtr);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -468,19 +470,19 @@ unsigned int PushBackInput_GetColumnPosition (void)
    GetCurrentLine - returns the current line number.
 */
 
-unsigned int PushBackInput_GetCurrentLine (void)
+extern "C" unsigned int PushBackInput_GetCurrentLine (void)
 {
   return LineNo;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-void _M2_PushBackInput_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   PushBackInput_SetDebug (FALSE);
   Init ();
 }
 
-void _M2_PushBackInput_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_PushBackInput_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

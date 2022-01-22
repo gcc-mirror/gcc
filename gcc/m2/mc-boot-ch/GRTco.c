@@ -24,19 +24,27 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
 
+EXTERN
 void
 RTco_wait (__attribute__ ((unused)) int sid)
 {
 }
 
 
+EXTERN
 void
 RTco_signal (__attribute__ ((unused)) int sid)
 {
 }
 
 
+EXTERN
 int
 RTco_init (void)
 {
@@ -44,6 +52,7 @@ RTco_init (void)
 }
 
 
+EXTERN
 int
 RTco_initSemaphore (__attribute__ ((unused)) int value)
 {
@@ -53,6 +62,7 @@ RTco_initSemaphore (__attribute__ ((unused)) int value)
 
 /* signalThread signal the semaphore associated with thread tid.  */
 
+EXTERN
 void
 RTco_signalThread (__attribute__ ((unused)) int tid)
 {
@@ -61,12 +71,14 @@ RTco_signalThread (__attribute__ ((unused)) int tid)
 
 /* waitThread wait on the semaphore associated with thread tid.  */
 
+EXTERN
 void
 RTco_waitThread (__attribute__ ((unused)) int tid)
 {
 }
 
 
+EXTERN
 int
 RTco_currentThread (void)
 {
@@ -74,6 +86,7 @@ RTco_currentThread (void)
 }
 
 
+EXTERN
 int
 RTco_initThread (__attribute__ ((unused)) void (*proc)(void),
 		 __attribute__ ((unused)) unsigned int stackSize)
@@ -82,12 +95,14 @@ RTco_initThread (__attribute__ ((unused)) void (*proc)(void),
 }
 
 
+EXTERN
 void
 RTco_transfer (__attribute__ ((unused)) int *p1, __attribute__ ((unused)) int p2)
 {
 }
 
 
+EXTERN
 int
 RTco_select (__attribute__ ((unused)) int p1,
 	     __attribute__ ((unused)) void *p2,
@@ -98,11 +113,13 @@ RTco_select (__attribute__ ((unused)) int p1,
 }
 
 
+EXTERN
 void
 _M2_RTco_init (void)
 {
 }
 
+EXTERN
 void
 _M2_RTco_finish (void)
 {

@@ -51,7 +51,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       	       	    a copy of its value into string, a.
 */
 
-unsigned int Environment_GetEnvironment (char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
+extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high);
 
 
 /*
@@ -59,19 +59,21 @@ unsigned int Environment_GetEnvironment (char *Env_, unsigned int _Env_high, cha
       	       	    a copy of its value into string, a.
 */
 
-unsigned int Environment_GetEnvironment (char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high)
+extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *a, unsigned int _a_high)
 {
+  typedef char *_T1;
+
   unsigned int High;
   unsigned int i;
-  char * Addr;
+  _T1 Addr;
   char Env[_Env_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (Env, Env_, _Env_high+1);
 
-  i = 0;
+  i = static_cast<unsigned int> (0);
   High = _a_high;
-  Addr = libc_getenv (&Env);
+  Addr = static_cast<_T1> (libc_getenv (&Env));
   while (((i < High) && (Addr != NULL)) && ((*Addr) != ASCII_nul))
     {
       a[i] = (*Addr);
@@ -87,10 +89,10 @@ unsigned int Environment_GetEnvironment (char *Env_, unsigned int _Env_high, cha
   __builtin_unreachable ();
 }
 
-void _M2_Environment_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Environment_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_Environment_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Environment_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -33,6 +33,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <signal.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if 0
 /* Signals.  */
 #define SIGHUP 1       /* Hangup (POSIX).  */
@@ -225,18 +229,15 @@ SysExceptions_InitExceptionHandlers (void *indexf, void *range, void *casef,
 
 /* GNU Modula-2 linking fodder.  */
 
-#ifdef __cplusplus
-extern "C"
-#endif
-    void
-    _M2_SysExceptions_init (void)
+void
+_M2_SysExceptions_init (void)
 {
 }
 
-#ifdef __cplusplus
-extern "C"
-#endif
-    void
-    _M2_SysExceptions_finish (void)
+void
+_M2_SysExceptions_finish (void)
 {
 }
+#ifdef __cplusplus
+}
+#endif

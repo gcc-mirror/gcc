@@ -28,6 +28,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "system.h"
 #include "ansi-decl.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 char *cgetopt_optarg;
 int cgetopt_optind;
 int cgetopt_opterr;
@@ -151,3 +157,7 @@ void
 _M2_cgetopt_finish (void)
 {
 }
+
+#   ifdef __cplusplus
+}
+#   endif

@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 */
 
-void TimeString_GetTimeString (char *a, unsigned int _a_high);
+extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high);
 
 
 /*
@@ -58,13 +58,15 @@ void TimeString_GetTimeString (char *a, unsigned int _a_high);
 
 */
 
-void TimeString_GetTimeString (char *a, unsigned int _a_high)
+extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high)
 {
-  unsigned int i;
-  char * Addr;
+  typedef char *_T1;
 
-  Addr = wrapc_strtime ();
-  i = 0;
+  _T1 Addr;
+  unsigned int i;
+
+  Addr = static_cast<_T1> (wrapc_strtime ());
+  i = static_cast<unsigned int> (0);
   if (Addr != NULL)
     {
       while ((i < _a_high) && ((*Addr) != ASCII_nul))
@@ -80,10 +82,10 @@ void TimeString_GetTimeString (char *a, unsigned int _a_high)
     }
 }
 
-void _M2_TimeString_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_TimeString_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_TimeString_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_TimeString_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

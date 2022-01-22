@@ -51,7 +51,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
           It then terminates by calling HALT.
 */
 
-void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo, char *Module_, unsigned int _Module_high);
+extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high);
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
@@ -59,7 +59,7 @@ void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo
  as carriage return, linefeed.
 */
 
-void Debug_DebugString (char *a_, unsigned int _a_high);
+extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high);
 
 /*
    WriteLn - writes a carriage return and a newline
@@ -88,7 +88,7 @@ static void WriteLn (void)
           It then terminates by calling HALT.
 */
 
-void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo, char *Module_, unsigned int _Module_high)
+extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high)
 {
   typedef struct _T1_a _T1;
 
@@ -101,13 +101,13 @@ void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo
   memcpy (Message, Message_, _Message_high+1);
   memcpy (Module, Module_, _Module_high+1);
 
-  Debug_DebugString ((char *) Module, _Module_high);  /* should be large enough for most source files..  */
+  Debug_DebugString ((const char *) Module, _Module_high);  /* should be large enough for most source files..  */
   NumberIO_CardToStr (LineNo, 0, (char *) &No.array[0], MaxNoOfDigits);
-  Debug_DebugString ((char *) ":", 1);
-  Debug_DebugString ((char *) &No.array[0], MaxNoOfDigits);
-  Debug_DebugString ((char *) ":", 1);
-  Debug_DebugString ((char *) Message, _Message_high);
-  Debug_DebugString ((char *) "\\n", 2);
+  Debug_DebugString ((const char *) ":", 1);
+  Debug_DebugString ((const char *) &No.array[0], MaxNoOfDigits);
+  Debug_DebugString ((const char *) ":", 1);
+  Debug_DebugString ((const char *) Message, _Message_high);
+  Debug_DebugString ((const char *) "\\n", 2);
   M2RTS_HALT (-1);
   __builtin_unreachable ();
 }
@@ -119,7 +119,7 @@ void Debug_Halt (char *Message_, unsigned int _Message_high, unsigned int LineNo
  as carriage return, linefeed.
 */
 
-void Debug_DebugString (char *a_, unsigned int _a_high)
+extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high)
 {
   unsigned int n;
   unsigned int high;
@@ -129,7 +129,7 @@ void Debug_DebugString (char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   high = _a_high;
-  n = 0;
+  n = static_cast<unsigned int> (0);
   while ((n <= high) && (a[n] != ASCII_nul))
     {
       if (a[n] == '\\')
@@ -159,10 +159,10 @@ void Debug_DebugString (char *a_, unsigned int _a_high)
     }
 }
 
-void _M2_Debug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Debug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_Debug_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_Debug_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

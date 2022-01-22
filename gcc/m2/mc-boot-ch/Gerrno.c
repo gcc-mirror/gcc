@@ -23,6 +23,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "system.h"
 #include "ansidecl.h"
 
+#   ifdef __cplusplus
+extern "C" {
+#   endif
+
 /* geterrno returns errno.  */
 
 int
@@ -44,3 +48,7 @@ void
 _M2_errno_finish (int argc, char *p)
 {
 }
+
+#   ifdef __cplusplus
+}
+#   endif

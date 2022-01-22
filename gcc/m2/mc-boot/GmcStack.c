@@ -51,38 +51,38 @@ struct _T1_r {
    init - create and return a stack.
 */
 
-mcStack_stack mcStack_init (void);
+extern "C" mcStack_stack mcStack_init (void);
 
 /*
    kill - deletes stack, s.
 */
 
-void mcStack_kill (mcStack_stack *s);
+extern "C" void mcStack_kill (mcStack_stack *s);
 
 /*
    push - an address, a, onto the stack, s.
           It returns, a.
 */
 
-void * mcStack_push (mcStack_stack s, void * a);
+extern "C" void * mcStack_push (mcStack_stack s, void * a);
 
 /*
    pop - and return the top element from stack, s.
 */
 
-void * mcStack_pop (mcStack_stack s);
+extern "C" void * mcStack_pop (mcStack_stack s);
 
 /*
    replace - performs a pop; push (a); return a.
 */
 
-void * mcStack_replace (mcStack_stack s, void * a);
+extern "C" void * mcStack_replace (mcStack_stack s, void * a);
 
 /*
    depth - returns the depth of the stack.
 */
 
-unsigned int mcStack_depth (mcStack_stack s);
+extern "C" unsigned int mcStack_depth (mcStack_stack s);
 
 /*
    access - returns the, i, th stack element.
@@ -91,20 +91,20 @@ unsigned int mcStack_depth (mcStack_stack s);
             access (s, depth (s)).
 */
 
-void * mcStack_access (mcStack_stack s, unsigned int i);
+extern "C" void * mcStack_access (mcStack_stack s, unsigned int i);
 
 
 /*
    init - create and return a stack.
 */
 
-mcStack_stack mcStack_init (void)
+extern "C" mcStack_stack mcStack_init (void)
 {
   mcStack_stack s;
 
   Storage_ALLOCATE ((void **) &s, sizeof (_T1));
-  s->list = Indexing_InitIndex (1);
-  s->count = 0;
+  s->list = static_cast<Indexing_Index> (Indexing_InitIndex (1));
+  s->count = static_cast<unsigned int> (0);
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -115,11 +115,11 @@ mcStack_stack mcStack_init (void)
    kill - deletes stack, s.
 */
 
-void mcStack_kill (mcStack_stack *s)
+extern "C" void mcStack_kill (mcStack_stack *s)
 {
-  (*s)->list = Indexing_KillIndex ((*s)->list);
+  (*s)->list = static_cast<Indexing_Index> (Indexing_KillIndex ((*s)->list));
   Storage_DEALLOCATE ((void **) &(*s), sizeof (_T1));
-  (*s) = NULL;
+  (*s) = static_cast<mcStack_stack> (NULL);
 }
 
 
@@ -128,7 +128,7 @@ void mcStack_kill (mcStack_stack *s)
           It returns, a.
 */
 
-void * mcStack_push (mcStack_stack s, void * a)
+extern "C" void * mcStack_push (mcStack_stack s, void * a)
 {
   if (s->count == 0)
     {
@@ -149,7 +149,7 @@ void * mcStack_push (mcStack_stack s, void * a)
    pop - and return the top element from stack, s.
 */
 
-void * mcStack_pop (mcStack_stack s)
+extern "C" void * mcStack_pop (mcStack_stack s)
 {
   void * a;
 
@@ -161,7 +161,7 @@ void * mcStack_pop (mcStack_stack s)
   else
     {
       s->count -= 1;
-      a = Indexing_GetIndice (s->list, Indexing_HighIndice (s->list));
+      a = reinterpret_cast<void *> (Indexing_GetIndice (s->list, Indexing_HighIndice (s->list)));
       Indexing_DeleteIndice (s->list, Indexing_HighIndice (s->list));
       return a;
     }
@@ -174,12 +174,12 @@ void * mcStack_pop (mcStack_stack s)
    replace - performs a pop; push (a); return a.
 */
 
-void * mcStack_replace (mcStack_stack s, void * a)
+extern "C" void * mcStack_replace (mcStack_stack s, void * a)
 {
   void * b;
 
-  b = mcStack_pop (s);
-  return mcStack_push (s, a);
+  b = reinterpret_cast<void *> (mcStack_pop (s));
+  return reinterpret_cast<void *> (mcStack_push (s, a));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -189,7 +189,7 @@ void * mcStack_replace (mcStack_stack s, void * a)
    depth - returns the depth of the stack.
 */
 
-unsigned int mcStack_depth (mcStack_stack s)
+extern "C" unsigned int mcStack_depth (mcStack_stack s)
 {
   return s->count;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -204,7 +204,7 @@ unsigned int mcStack_depth (mcStack_stack s)
             access (s, depth (s)).
 */
 
-void * mcStack_access (mcStack_stack s, unsigned int i)
+extern "C" void * mcStack_access (mcStack_stack s, unsigned int i)
 {
   if ((i > s->count) || (i == 0))
     {
@@ -213,16 +213,16 @@ void * mcStack_access (mcStack_stack s, unsigned int i)
     }
   else
     {
-      return Indexing_GetIndice (s->list, i);
+      return reinterpret_cast<void *> (Indexing_GetIndice (s->list, i));
     }
   ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/mcStack.def", 20, 1);
   __builtin_unreachable ();
 }
 
-void _M2_mcStack_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcStack_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_mcStack_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcStack_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

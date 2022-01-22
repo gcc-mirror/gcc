@@ -51,16 +51,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    StrConCat - combines a and b into c.
 */
 
-void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high, char *c, unsigned int _c_high);
+extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high, char *c, unsigned int _c_high);
 
 /*
    StrLess - returns TRUE if string, a, alphabetically occurs before
              string, b.
 */
 
-unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
-unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
-unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
+extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+extern "C" unsigned int StrLib_StrLen (const char *a_, unsigned int _a_high);
 
 /*
    StrCopy - copy string src into string dest providing dest is large enough.
@@ -68,20 +68,20 @@ unsigned int StrLib_StrLen (char *a_, unsigned int _a_high);
              dest is full.  Add a nul character if there is room in dest.
 */
 
-void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
+extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high);
 
 /*
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high);
+extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrRemoveWhitePrefix - copies string, into string, b, excluding any white
                           space infront of a.
 */
 
-void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
 /*
    IsWhite - returns TRUE if, ch, is a space or a tab.
@@ -106,7 +106,7 @@ static unsigned int IsWhite (char ch)
    StrConCat - combines a and b into c.
 */
 
-void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high, char *c, unsigned int _c_high)
+extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high, char *c, unsigned int _c_high)
 {
   unsigned int Highb;
   unsigned int Highc;
@@ -119,11 +119,11 @@ void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  Highb = StrLib_StrLen ((char *) b, _b_high);
+  Highb = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
   Highc = _c_high;
-  StrLib_StrCopy ((char *) a, _a_high, (char *) c, _c_high);
-  i = StrLib_StrLen ((char *) c, _c_high);
-  j = 0;
+  StrLib_StrCopy ((const char *) a, _a_high, (char *) c, _c_high);
+  i = static_cast<unsigned int> (StrLib_StrLen ((const char *) c, _c_high));
+  j = static_cast<unsigned int> (0);
   while ((j < Highb) && (i <= Highc))
     {
       c[i] = b[j];
@@ -132,7 +132,7 @@ void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b
     }
   if (i <= Highc)
     {
-      c[i] = ASCII_nul;
+      c[i] = static_cast<char> (ASCII_nul);
     }
 }
 
@@ -142,7 +142,7 @@ void StrLib_StrConCat (char *a_, unsigned int _a_high, char *b_, unsigned int _b
              string, b.
 */
 
-unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high)
+extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int Higha;
   unsigned int Highb;
@@ -154,9 +154,9 @@ unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned 
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  Higha = StrLib_StrLen ((char *) a, _a_high);
-  Highb = StrLib_StrLen ((char *) b, _b_high);
-  i = 0;
+  Higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  Highb = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
+  i = static_cast<unsigned int> (0);
   while ((i < Higha) && (i < Highb))
     {
       if (a[i] < b[i])
@@ -176,7 +176,7 @@ unsigned int StrLib_StrLess (char *a_, unsigned int _a_high, char *b_, unsigned 
   __builtin_unreachable ();
 }
 
-unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high)
+extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int i;
   unsigned int higha;
@@ -190,7 +190,7 @@ unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned
 
   higha = _a_high;
   highb = _b_high;
-  i = 0;
+  i = static_cast<unsigned int> (0);
   while ((((i <= higha) && (i <= highb)) && (a[i] != ASCII_nul)) && (b[i] != ASCII_nul))
     {
       if (a[i] != b[i])
@@ -204,7 +204,7 @@ unsigned int StrLib_StrEqual (char *a_, unsigned int _a_high, char *b_, unsigned
   __builtin_unreachable ();
 }
 
-unsigned int StrLib_StrLen (char *a_, unsigned int _a_high)
+extern "C" unsigned int StrLib_StrLen (const char *a_, unsigned int _a_high)
 {
   unsigned int High;
   unsigned int Len;
@@ -213,7 +213,7 @@ unsigned int StrLib_StrLen (char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  Len = 0;
+  Len = static_cast<unsigned int> (0);
   High = _a_high;
   while ((Len <= High) && (a[Len] != ASCII_nul))
     {
@@ -231,7 +231,7 @@ unsigned int StrLib_StrLen (char *a_, unsigned int _a_high)
              dest is full.  Add a nul character if there is room in dest.
 */
 
-void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high)
+extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *dest, unsigned int _dest_high)
 {
   unsigned int HighSrc;
   unsigned int HighDest;
@@ -241,8 +241,8 @@ void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned in
   /* make a local copy of each unbounded array.  */
   memcpy (src, src_, _src_high+1);
 
-  n = 0;
-  HighSrc = StrLib_StrLen ((char *) src, _src_high);
+  n = static_cast<unsigned int> (0);
+  HighSrc = static_cast<unsigned int> (StrLib_StrLen ((const char *) src, _src_high));
   HighDest = _dest_high;
   while ((n < HighSrc) && (n <= HighDest))
     {
@@ -260,7 +260,7 @@ void StrLib_StrCopy (char *src_, unsigned int _src_high, char *dest, unsigned in
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsigned int _b_high)
+extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high)
 {
   unsigned int i;
   unsigned int j;
@@ -273,14 +273,14 @@ unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsig
   memcpy (a, a_, _a_high+1);
   memcpy (b, b_, _b_high+1);
 
-  LengthA = StrLib_StrLen ((char *) a, _a_high);
-  LengthB = StrLib_StrLen ((char *) b, _b_high);
-  i = 0;
+  LengthA = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
+  LengthB = static_cast<unsigned int> (StrLib_StrLen ((const char *) b, _b_high));
+  i = static_cast<unsigned int> (0);
   if (LengthA > LengthB)
     {
       while (i <= (LengthA-LengthB))
         {
-          j = 0;
+          j = static_cast<unsigned int> (0);
           while ((j < LengthB) && (a[i+j] == b[j]))
             {
               j += 1;
@@ -306,7 +306,7 @@ unsigned int StrLib_IsSubString (char *a_, unsigned int _a_high, char *b_, unsig
                           space infront of a.
 */
 
-void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
+extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high)
 {
   unsigned int i;
   unsigned int j;
@@ -317,9 +317,9 @@ void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsig
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  i = 0;
-  j = 0;
-  higha = StrLib_StrLen ((char *) a, _a_high);
+  i = static_cast<unsigned int> (0);
+  j = static_cast<unsigned int> (0);
+  higha = static_cast<unsigned int> (StrLib_StrLen ((const char *) a, _a_high));
   highb = _b_high;
   while ((i < higha) && (IsWhite (a[i])))
     {
@@ -337,10 +337,10 @@ void StrLib_StrRemoveWhitePrefix (char *a_, unsigned int _a_high, char *b, unsig
     }
 }
 
-void _M2_StrLib_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrLib_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_StrLib_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_StrLib_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -82,80 +82,80 @@ static DynamicStrings_String cppProgram;
                    if found at the end of the arguments.
 */
 
-DynamicStrings_String mcOptions_handleOptions (void);
+extern "C" DynamicStrings_String mcOptions_handleOptions (void);
 
 /*
    getQuiet - return the value of quiet.
 */
 
-unsigned int mcOptions_getQuiet (void);
+extern "C" unsigned int mcOptions_getQuiet (void);
 
 /*
    getVerbose - return the value of verbose.
 */
 
-unsigned int mcOptions_getVerbose (void);
+extern "C" unsigned int mcOptions_getVerbose (void);
 
 /*
    getInternalDebugging - return the value of internalDebugging.
 */
 
-unsigned int mcOptions_getInternalDebugging (void);
+extern "C" unsigned int mcOptions_getInternalDebugging (void);
 
 /*
    getCppCommandLine - returns the Cpp command line and all arguments.
 */
 
-DynamicStrings_String mcOptions_getCppCommandLine (void);
+extern "C" DynamicStrings_String mcOptions_getCppCommandLine (void);
 
 /*
    getOutputFile - sets the output filename to output.
 */
 
-DynamicStrings_String mcOptions_getOutputFile (void);
+extern "C" DynamicStrings_String mcOptions_getOutputFile (void);
 
 /*
    getExtendedOpaque - return the extendedOpaque value.
 */
 
-unsigned int mcOptions_getExtendedOpaque (void);
+extern "C" unsigned int mcOptions_getExtendedOpaque (void);
 
 /*
    setDebugTopological - sets the flag debugTopological to value.
 */
 
-void mcOptions_setDebugTopological (unsigned int value);
+extern "C" void mcOptions_setDebugTopological (unsigned int value);
 
 /*
    getDebugTopological - returns the flag value of the command
                          line option --debug-top.
 */
 
-unsigned int mcOptions_getDebugTopological (void);
+extern "C" unsigned int mcOptions_getDebugTopological (void);
 
 /*
    getHPrefix - saves the H file prefix.
 */
 
-DynamicStrings_String mcOptions_getHPrefix (void);
+extern "C" DynamicStrings_String mcOptions_getHPrefix (void);
 
 /*
    getIgnoreFQ - returns the ignorefq flag.
 */
 
-unsigned int mcOptions_getIgnoreFQ (void);
+extern "C" unsigned int mcOptions_getIgnoreFQ (void);
 
 /*
    getGccConfigSystem - return the value of the gccConfigSystem flag.
 */
 
-unsigned int mcOptions_getGccConfigSystem (void);
+extern "C" unsigned int mcOptions_getGccConfigSystem (void);
 
 /*
    writeGPLheader - writes out the GPL or the LGPL as a comment.
 */
 
-void mcOptions_writeGPLheader (FIO_File f);
+extern "C" void mcOptions_writeGPLheader (FIO_File f);
 
 /*
    displayVersion - displays the version of the compiler.
@@ -185,7 +185,7 @@ static void commentEnd (FIO_File f);
    comment - write a comment to file, f, and also a newline.
 */
 
-static void comment (FIO_File f, char *a_, unsigned int _a_high);
+static void comment (FIO_File f, const char *a_, unsigned int _a_high);
 
 /*
    commentS - write a comment to file, f, and also a newline.
@@ -264,7 +264,7 @@ static void setIgnoreFQ (unsigned int value);
               match left.
 */
 
-static unsigned int optionIs (char *left_, unsigned int _left_high, DynamicStrings_String right);
+static unsigned int optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right);
 
 /*
    setLang - set the appropriate output language.
@@ -285,10 +285,10 @@ static void handleOption (DynamicStrings_String arg);
 
 static void displayVersion (unsigned int mustExit)
 {
-  mcPrintf_printf0 ((char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.\\n", 55);
-  mcPrintf_printf0 ((char *) "License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\\n", 78);
-  mcPrintf_printf0 ((char *) "This is free software: you are free to change and redistribute it.\\n", 68);
-  mcPrintf_printf0 ((char *) "There is NO WARRANTY, to the extent permitted by law.\\n", 55);
+  mcPrintf_printf0 ((const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.\\n", 55);
+  mcPrintf_printf0 ((const char *) "License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>\\n", 78);
+  mcPrintf_printf0 ((const char *) "This is free software: you are free to change and redistribute it.\\n", 68);
+  mcPrintf_printf0 ((const char *) "There is NO WARRANTY, to the extent permitted by law.\\n", 55);
   if (mustExit)
     {
       libc_exit (0);
@@ -302,37 +302,37 @@ static void displayVersion (unsigned int mustExit)
 
 static void displayHelp (void)
 {
-  mcPrintf_printf0 ((char *) "usage: mc [--cpp] [-g] [--quiet] [--extended-opaque] [-q] [-v]", 62);
-  mcPrintf_printf0 ((char *) " [--verbose] [--version] [--help] [-h] [-Ipath] [--olang=c]", 59);
-  mcPrintf_printf0 ((char *) " [--olang=c++] [--olang=m2] [--debug-top]", 41);
-  mcPrintf_printf0 ((char *) " [--gpl-header] [--glpl-header] [--summary=\"foo\"]", 49);
-  mcPrintf_printf0 ((char *) " [--contributed=\"foo\"] [--project=\"foo\"]", 40);
-  mcPrintf_printf0 ((char *) " [--h-file-prefix=foo] [--automatic] [-o=foo] filename\\n", 56);
-  mcPrintf_printf0 ((char *) "  --cpp               preprocess through the C preprocessor\\n", 61);
-  mcPrintf_printf0 ((char *) "  -g                  emit debugging directives in the output language", 70);
-  mcPrintf_printf0 ((char *) "                      so that the debugger will refer to the source\\n", 69);
-  mcPrintf_printf0 ((char *) "  -q --quiet          no output unless an error occurs\\n", 56);
-  mcPrintf_printf0 ((char *) "  -v --verbose        display preprocessor if invoked\\n", 55);
-  mcPrintf_printf0 ((char *) "  --version           display version and exit\\n", 48);
-  mcPrintf_printf0 ((char *) "  -h --help           display this help message\\n", 49);
-  mcPrintf_printf0 ((char *) "  -Ipath              set the module search path\\n", 50);
-  mcPrintf_printf0 ((char *) "  --olang=c           generate ansi C output\\n", 46);
-  mcPrintf_printf0 ((char *) "  --olang=c++         generate ansi C++ output\\n", 48);
-  mcPrintf_printf0 ((char *) "  --olang=m2          generate PIM4 output\\n", 44);
-  mcPrintf_printf0 ((char *) "  --extended-opaque   parse definition and implementation modules to\\n", 70);
-  mcPrintf_printf0 ((char *) "                      generate full type debugging of opaque types\\n", 68);
-  mcPrintf_printf0 ((char *) "  --debug-top         debug topological data structure resolving (internal)\\n", 77);
-  mcPrintf_printf0 ((char *) "  --h-file-prefix=foo set the h file prefix to foo\\n", 52);
-  mcPrintf_printf0 ((char *) "  -o=foo              set the output file to foo\\n", 50);
-  mcPrintf_printf0 ((char *) "  --ignore-fq         do not generate fully qualified idents\\n", 62);
-  mcPrintf_printf0 ((char *) "  --gcc-config-system do not use standard host include files, use gcc config and system instead\\n", 97);
-  mcPrintf_printf0 ((char *) "  --gpl-header        generate a GPL3 header comment at the top of the file\\n", 77);
-  mcPrintf_printf0 ((char *) "  --glpl-header       generate a GLPL3 header comment at the top of the file\\n", 78);
-  mcPrintf_printf0 ((char *) "  --summary=\"foo\"     generate a one line summary comment at the top of the file\\n", 82);
-  mcPrintf_printf0 ((char *) "  --contributed=\"foo\" generate a one line contribution comment near the top of the file\\n", 89);
-  mcPrintf_printf0 ((char *) "  --project=\"foo\"     include the project name within the GPL3 or GLPL3 header\\n", 80);
-  mcPrintf_printf0 ((char *) "  --automatic         generate a comment at the start of the file warning not to edit as it was automatically generated\\n", 121);
-  mcPrintf_printf0 ((char *) "  filename            the source file must be the last option\\n", 63);
+  mcPrintf_printf0 ((const char *) "usage: mc [--cpp] [-g] [--quiet] [--extended-opaque] [-q] [-v]", 62);
+  mcPrintf_printf0 ((const char *) " [--verbose] [--version] [--help] [-h] [-Ipath] [--olang=c]", 59);
+  mcPrintf_printf0 ((const char *) " [--olang=c++] [--olang=m2] [--debug-top]", 41);
+  mcPrintf_printf0 ((const char *) " [--gpl-header] [--glpl-header] [--summary=\"foo\"]", 49);
+  mcPrintf_printf0 ((const char *) " [--contributed=\"foo\"] [--project=\"foo\"]", 40);
+  mcPrintf_printf0 ((const char *) " [--h-file-prefix=foo] [--automatic] [-o=foo] filename\\n", 56);
+  mcPrintf_printf0 ((const char *) "  --cpp               preprocess through the C preprocessor\\n", 61);
+  mcPrintf_printf0 ((const char *) "  -g                  emit debugging directives in the output language", 70);
+  mcPrintf_printf0 ((const char *) "                      so that the debugger will refer to the source\\n", 69);
+  mcPrintf_printf0 ((const char *) "  -q --quiet          no output unless an error occurs\\n", 56);
+  mcPrintf_printf0 ((const char *) "  -v --verbose        display preprocessor if invoked\\n", 55);
+  mcPrintf_printf0 ((const char *) "  --version           display version and exit\\n", 48);
+  mcPrintf_printf0 ((const char *) "  -h --help           display this help message\\n", 49);
+  mcPrintf_printf0 ((const char *) "  -Ipath              set the module search path\\n", 50);
+  mcPrintf_printf0 ((const char *) "  --olang=c           generate ansi C output\\n", 46);
+  mcPrintf_printf0 ((const char *) "  --olang=c++         generate ansi C++ output\\n", 48);
+  mcPrintf_printf0 ((const char *) "  --olang=m2          generate PIM4 output\\n", 44);
+  mcPrintf_printf0 ((const char *) "  --extended-opaque   parse definition and implementation modules to\\n", 70);
+  mcPrintf_printf0 ((const char *) "                      generate full type debugging of opaque types\\n", 68);
+  mcPrintf_printf0 ((const char *) "  --debug-top         debug topological data structure resolving (internal)\\n", 77);
+  mcPrintf_printf0 ((const char *) "  --h-file-prefix=foo set the h file prefix to foo\\n", 52);
+  mcPrintf_printf0 ((const char *) "  -o=foo              set the output file to foo\\n", 50);
+  mcPrintf_printf0 ((const char *) "  --ignore-fq         do not generate fully qualified idents\\n", 62);
+  mcPrintf_printf0 ((const char *) "  --gcc-config-system do not use standard host include files, use gcc config and system instead\\n", 97);
+  mcPrintf_printf0 ((const char *) "  --gpl-header        generate a GPL3 header comment at the top of the file\\n", 77);
+  mcPrintf_printf0 ((const char *) "  --glpl-header       generate a GLPL3 header comment at the top of the file\\n", 78);
+  mcPrintf_printf0 ((const char *) "  --summary=\"foo\"     generate a one line summary comment at the top of the file\\n", 82);
+  mcPrintf_printf0 ((const char *) "  --contributed=\"foo\" generate a one line contribution comment near the top of the file\\n", 89);
+  mcPrintf_printf0 ((const char *) "  --project=\"foo\"     include the project name within the GPL3 or GLPL3 header\\n", 80);
+  mcPrintf_printf0 ((const char *) "  --automatic         generate a comment at the start of the file warning not to edit as it was automatically generated\\n", 121);
+  mcPrintf_printf0 ((const char *) "  filename            the source file must be the last option\\n", 63);
   libc_exit (0);
 }
 
@@ -345,12 +345,12 @@ static void commentBegin (FIO_File f)
 {
   if (langC || langCPP)
     {
-      FIO_WriteString (f, (char *) "/* ", 3);
+      FIO_WriteString (f, (const char *) "/* ", 3);
     }
   else if (langM2)
     {
       /* avoid dangling else.  */
-      FIO_WriteString (f, (char *) "(* ", 3);
+      FIO_WriteString (f, (const char *) "(* ", 3);
     }
 }
 
@@ -363,13 +363,13 @@ static void commentEnd (FIO_File f)
 {
   if (langC || langCPP)
     {
-      FIO_WriteString (f, (char *) " */", 3);
+      FIO_WriteString (f, (const char *) " */", 3);
       FIO_WriteLine (f);
     }
   else if (langM2)
     {
       /* avoid dangling else.  */
-      FIO_WriteString (f, (char *) " *)", 3);
+      FIO_WriteString (f, (const char *) " *)", 3);
       FIO_WriteLine (f);
     }
 }
@@ -379,14 +379,14 @@ static void commentEnd (FIO_File f)
    comment - write a comment to file, f, and also a newline.
 */
 
-static void comment (FIO_File f, char *a_, unsigned int _a_high)
+static void comment (FIO_File f, const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  FIO_WriteString (f, (char *) a, _a_high);
+  FIO_WriteString (f, (const char *) a, _a_high);
   FIO_WriteLine (f);
 }
 
@@ -397,7 +397,7 @@ static void comment (FIO_File f, char *a_, unsigned int _a_high)
 
 static void commentS (FIO_File f, DynamicStrings_String s)
 {
-  s = SFIO_WriteS (f, s);
+  s = static_cast<DynamicStrings_String> (SFIO_WriteS (f, s));
   FIO_WriteLine (f);
 }
 
@@ -408,37 +408,37 @@ static void commentS (FIO_File f, DynamicStrings_String s)
 
 static void gplBody (FIO_File f)
 {
-  comment (f, (char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
+  comment (f, (const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
   if (contributed)
     {
-      FIO_WriteString (f, (char *) "Contributed by ", 15);
-      contributedContents = SFIO_WriteS (f, contributedContents);
-      FIO_WriteString (f, (char *) ".", 1);
+      FIO_WriteString (f, (const char *) "Contributed by ", 15);
+      contributedContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, contributedContents));
+      FIO_WriteString (f, (const char *) ".", 1);
       FIO_WriteLine (f);
     }
   FIO_WriteLine (f);
-  FIO_WriteString (f, (char *) "This file is part of ", 21);
-  projectContents = SFIO_WriteS (f, projectContents);
-  FIO_WriteString (f, (char *) ".", 1);
+  FIO_WriteString (f, (const char *) "This file is part of ", 21);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  FIO_WriteString (f, (const char *) ".", 1);
   FIO_WriteLine (f);
   FIO_WriteLine (f);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) " is software; you can redistribute it and/or modify", 51);
-  comment (f, (char *) "it under the terms of the GNU General Public License as published by", 68);
-  comment (f, (char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
-  comment (f, (char *) "any later version.", 18);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) " is software; you can redistribute it and/or modify", 51);
+  comment (f, (const char *) "it under the terms of the GNU General Public License as published by", 68);
+  comment (f, (const char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
+  comment (f, (const char *) "any later version.", 18);
   FIO_WriteLine (f);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) " is distributed in the hope that it will be useful, but", 55);
-  comment (f, (char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
-  comment (f, (char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
-  comment (f, (char *) "General Public License for more details.", 40);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) " is distributed in the hope that it will be useful, but", 55);
+  comment (f, (const char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
+  comment (f, (const char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
+  comment (f, (const char *) "General Public License for more details.", 40);
   FIO_WriteLine (f);
-  comment (f, (char *) "You should have received a copy of the GNU General Public License", 65);
-  FIO_WriteString (f, (char *) "along with ", 11);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) "; see the file COPYING.  If not,", 32);
-  FIO_WriteString (f, (char *) "see <https://www.gnu.org/licenses/>. ", 37);
+  comment (f, (const char *) "You should have received a copy of the GNU General Public License", 65);
+  FIO_WriteString (f, (const char *) "along with ", 11);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) "; see the file COPYING.  If not,", 32);
+  FIO_WriteString (f, (const char *) "see <https://www.gnu.org/licenses/>. ", 37);
 }
 
 
@@ -448,49 +448,49 @@ static void gplBody (FIO_File f)
 
 static void glplBody (FIO_File f)
 {
-  comment (f, (char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
+  comment (f, (const char *) "Copyright (C) ''2021'' Free Software Foundation, Inc.", 53);
   if (contributed)
     {
-      FIO_WriteString (f, (char *) "Contributed by ", 15);
-      contributedContents = SFIO_WriteS (f, contributedContents);
-      FIO_WriteString (f, (char *) ".", 1);
+      FIO_WriteString (f, (const char *) "Contributed by ", 15);
+      contributedContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, contributedContents));
+      FIO_WriteString (f, (const char *) ".", 1);
       FIO_WriteLine (f);
     }
   FIO_WriteLine (f);
-  FIO_WriteString (f, (char *) "This file is part of ", 21);
-  projectContents = SFIO_WriteS (f, projectContents);
-  FIO_WriteString (f, (char *) ".", 1);
+  FIO_WriteString (f, (const char *) "This file is part of ", 21);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  FIO_WriteString (f, (const char *) ".", 1);
   FIO_WriteLine (f);
   FIO_WriteLine (f);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) " is free software; you can redistribute it and/or modify", 56);
-  comment (f, (char *) "it under the terms of the GNU General Public License as published by", 68);
-  comment (f, (char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
-  comment (f, (char *) "any later version.", 18);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) " is free software; you can redistribute it and/or modify", 56);
+  comment (f, (const char *) "it under the terms of the GNU General Public License as published by", 68);
+  comment (f, (const char *) "the Free Software Foundation; either version 3, or (at your option)", 67);
+  comment (f, (const char *) "any later version.", 18);
   FIO_WriteLine (f);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) " is software; you can redistribute it and/or modify", 51);
-  comment (f, (char *) "it under the terms of the GNU Lesser General Public License", 59);
-  comment (f, (char *) "as published by the Free Software Foundation; either version 3,", 63);
-  comment (f, (char *) "or (at your option) any later version.", 38);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) " is software; you can redistribute it and/or modify", 51);
+  comment (f, (const char *) "it under the terms of the GNU Lesser General Public License", 59);
+  comment (f, (const char *) "as published by the Free Software Foundation; either version 3,", 63);
+  comment (f, (const char *) "or (at your option) any later version.", 38);
   FIO_WriteLine (f);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) " is distributed in the hope that it will be useful, but", 55);
-  comment (f, (char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
-  comment (f, (char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
-  comment (f, (char *) "General Public License for more details.", 40);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) " is distributed in the hope that it will be useful, but", 55);
+  comment (f, (const char *) "WITHOUT ANY WARRANTY; without even the implied warranty of", 58);
+  comment (f, (const char *) "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU", 65);
+  comment (f, (const char *) "General Public License for more details.", 40);
   FIO_WriteLine (f);
-  comment (f, (char *) "You should have received a copy of the GNU General Public License", 65);
-  FIO_WriteString (f, (char *) "along with ", 11);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) "; see the file COPYING3.  If not see", 36);
-  comment (f, (char *) "<http://www.gnu.org/licenses/>.", 31);
+  comment (f, (const char *) "You should have received a copy of the GNU General Public License", 65);
+  FIO_WriteString (f, (const char *) "along with ", 11);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) "; see the file COPYING3.  If not see", 36);
+  comment (f, (const char *) "<http://www.gnu.org/licenses/>.", 31);
   FIO_WriteLine (f);
-  comment (f, (char *) "You should have received a copy of the GNU Lesser General Public License", 72);
-  FIO_WriteString (f, (char *) "along with ", 11);
-  projectContents = SFIO_WriteS (f, projectContents);
-  comment (f, (char *) "; see the file COPYING.  If not,", 32);
-  FIO_WriteString (f, (char *) "see <https://www.gnu.org/licenses/>. ", 37);
+  comment (f, (const char *) "You should have received a copy of the GNU Lesser General Public License", 72);
+  FIO_WriteString (f, (const char *) "along with ", 11);
+  projectContents = static_cast<DynamicStrings_String> (SFIO_WriteS (f, projectContents));
+  comment (f, (const char *) "; see the file COPYING.  If not,", 32);
+  FIO_WriteString (f, (const char *) "see <https://www.gnu.org/licenses/>. ", 37);
 }
 
 
@@ -607,7 +607,7 @@ static void setIgnoreFQ (unsigned int value)
               match left.
 */
 
-static unsigned int optionIs (char *left_, unsigned int _left_high, DynamicStrings_String right)
+static unsigned int optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right)
 {
   DynamicStrings_String s;
   char left[_left_high+1];
@@ -615,15 +615,15 @@ static unsigned int optionIs (char *left_, unsigned int _left_high, DynamicStrin
   /* make a local copy of each unbounded array.  */
   memcpy (left, left_, _left_high+1);
 
-  if ((DynamicStrings_Length (right)) == (StrLib_StrLen ((char *) left, _left_high)))
+  if ((DynamicStrings_Length (right)) == (StrLib_StrLen ((const char *) left, _left_high)))
     {
-      return DynamicStrings_EqualArray (right, (char *) left, _left_high);
+      return static_cast<unsigned int> (DynamicStrings_EqualArray (right, (const char *) left, _left_high));
     }
-  else if ((DynamicStrings_Length (right)) > (StrLib_StrLen ((char *) left, _left_high)))
+  else if ((DynamicStrings_Length (right)) > (StrLib_StrLen ((const char *) left, _left_high)))
     {
       /* avoid dangling else.  */
-      s = DynamicStrings_Mark (DynamicStrings_Slice (right, 0, (int) StrLib_StrLen ((char *) left, _left_high)));
-      return DynamicStrings_EqualArray (s, (char *) left, _left_high);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Mark (DynamicStrings_Slice (right, 0, static_cast<int> (StrLib_StrLen ((const char *) left, _left_high)))));
+      return static_cast<unsigned int> (DynamicStrings_EqualArray (s, (const char *) left, _left_high));
     }
   else
     {
@@ -642,18 +642,18 @@ static unsigned int optionIs (char *left_, unsigned int _left_high, DynamicStrin
 static void setLang (DynamicStrings_String arg)
 {
   /* must check the longest distinctive string first.  */
-  if (optionIs ((char *) "c++", 3, arg))
+  if (optionIs ((const char *) "c++", 3, arg))
     {
       decl_setLangCP ();
       langCPP = TRUE;
     }
-  else if (optionIs ((char *) "c", 1, arg))
+  else if (optionIs ((const char *) "c", 1, arg))
     {
       /* avoid dangling else.  */
       decl_setLangC ();
       langC = TRUE;
     }
-  else if (optionIs ((char *) "m2", 2, arg))
+  else if (optionIs ((const char *) "m2", 2, arg))
     {
       /* avoid dangling else.  */
       decl_setLangM2 ();
@@ -673,93 +673,93 @@ static void setLang (DynamicStrings_String arg)
 
 static void handleOption (DynamicStrings_String arg)
 {
-  if ((optionIs ((char *) "--quiet", 7, arg)) || (optionIs ((char *) "-q", 2, arg)))
+  if ((optionIs ((const char *) "--quiet", 7, arg)) || (optionIs ((const char *) "-q", 2, arg)))
     {
       setQuiet (TRUE);
     }
-  else if ((optionIs ((char *) "--verbose", 9, arg)) || (optionIs ((char *) "-v", 2, arg)))
+  else if ((optionIs ((const char *) "--verbose", 9, arg)) || (optionIs ((const char *) "-v", 2, arg)))
     {
       /* avoid dangling else.  */
       setVerbose (TRUE);
     }
-  else if (optionIs ((char *) "--version", 9, arg))
+  else if (optionIs ((const char *) "--version", 9, arg))
     {
       /* avoid dangling else.  */
       displayVersion (TRUE);
     }
-  else if (optionIs ((char *) "--olang=", 8, arg))
+  else if (optionIs ((const char *) "--olang=", 8, arg))
     {
       /* avoid dangling else.  */
       setLang (DynamicStrings_Slice (arg, 8, 0));
     }
-  else if (optionIs ((char *) "-I", 2, arg))
+  else if (optionIs ((const char *) "-I", 2, arg))
     {
       /* avoid dangling else.  */
       setSearchPath (DynamicStrings_Slice (arg, 2, 0));
     }
-  else if ((optionIs ((char *) "--help", 6, arg)) || (optionIs ((char *) "-h", 2, arg)))
+  else if ((optionIs ((const char *) "--help", 6, arg)) || (optionIs ((const char *) "-h", 2, arg)))
     {
       /* avoid dangling else.  */
       displayHelp ();
     }
-  else if (optionIs ((char *) "--cpp", 5, arg))
+  else if (optionIs ((const char *) "--cpp", 5, arg))
     {
       /* avoid dangling else.  */
-      cppProgram = DynamicStrings_InitString ((char *) "cpp", 3);
+      cppProgram = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "cpp", 3));
     }
-  else if (optionIs ((char *) "-o=", 3, arg))
+  else if (optionIs ((const char *) "-o=", 3, arg))
     {
       /* avoid dangling else.  */
       setOutputFile (DynamicStrings_Slice (arg, 3, 0));
     }
-  else if (optionIs ((char *) "--extended-opaque", 17, arg))
+  else if (optionIs ((const char *) "--extended-opaque", 17, arg))
     {
       /* avoid dangling else.  */
       setExtendedOpaque (TRUE);
     }
-  else if (optionIs ((char *) "--debug-top", 11, arg))
+  else if (optionIs ((const char *) "--debug-top", 11, arg))
     {
       /* avoid dangling else.  */
       mcOptions_setDebugTopological (TRUE);
     }
-  else if (optionIs ((char *) "--h-file-prefix=", 16, arg))
+  else if (optionIs ((const char *) "--h-file-prefix=", 16, arg))
     {
       /* avoid dangling else.  */
       setHPrefix (DynamicStrings_Slice (arg, 16, 0));
     }
-  else if (optionIs ((char *) "--ignore-fq", 11, arg))
+  else if (optionIs ((const char *) "--ignore-fq", 11, arg))
     {
       /* avoid dangling else.  */
       setIgnoreFQ (TRUE);
     }
-  else if (optionIs ((char *) "--gpl-header", 12, arg))
+  else if (optionIs ((const char *) "--gpl-header", 12, arg))
     {
       /* avoid dangling else.  */
       gplHeader = TRUE;
     }
-  else if (optionIs ((char *) "--glpl-header", 13, arg))
+  else if (optionIs ((const char *) "--glpl-header", 13, arg))
     {
       /* avoid dangling else.  */
       glplHeader = TRUE;
     }
-  else if (optionIs ((char *) "--summary=\"", 11, arg))
+  else if (optionIs ((const char *) "--summary=\"", 11, arg))
     {
       /* avoid dangling else.  */
       summary = TRUE;
-      summaryContents = DynamicStrings_Slice (arg, 11, -1);
+      summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 11, -1));
     }
-  else if (optionIs ((char *) "--contributed=\"", 15, arg))
+  else if (optionIs ((const char *) "--contributed=\"", 15, arg))
     {
       /* avoid dangling else.  */
       contributed = TRUE;
-      contributedContents = DynamicStrings_Slice (arg, 13, -1);
+      contributedContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 13, -1));
     }
-  else if (optionIs ((char *) "--project=\"", 11, arg))
+  else if (optionIs ((const char *) "--project=\"", 11, arg))
     {
       /* avoid dangling else.  */
-      projectContents = DynamicStrings_Slice (arg, 10, -1);
+      projectContents = static_cast<DynamicStrings_String> (DynamicStrings_Slice (arg, 10, -1));
     }
-  else if (optionIs ((char *) "--gcc-config-system", 19, arg))
+  else if (optionIs ((const char *) "--gcc-config-system", 19, arg))
     {
       /* avoid dangling else.  */
       gccConfigSystem = TRUE;
@@ -773,12 +773,12 @@ static void handleOption (DynamicStrings_String arg)
                    if found at the end of the arguments.
 */
 
-DynamicStrings_String mcOptions_handleOptions (void)
+extern "C" DynamicStrings_String mcOptions_handleOptions (void)
 {
   unsigned int i;
   DynamicStrings_String arg;
 
-  i = 1;
+  i = static_cast<unsigned int> (1);
   while (SArgs_GetArg (&arg, i))
     {
       if ((DynamicStrings_Length (arg)) > 0)
@@ -792,7 +792,7 @@ DynamicStrings_String mcOptions_handleOptions (void)
             {
               if (! summary)
                 {
-                  summaryContents = DynamicStrings_ConCatChar (DynamicStrings_ConCat (DynamicStrings_InitString ((char *) "automatically created by mc from ", 33), arg), '.');
+                  summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_ConCatChar (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "automatically created by mc from ", 33), arg), '.'));
                   summary = FALSE;
                 }
               return arg;
@@ -800,7 +800,7 @@ DynamicStrings_String mcOptions_handleOptions (void)
         }
       i += 1;
     }
-  return NULL;
+  return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -810,7 +810,7 @@ DynamicStrings_String mcOptions_handleOptions (void)
    getQuiet - return the value of quiet.
 */
 
-unsigned int mcOptions_getQuiet (void)
+extern "C" unsigned int mcOptions_getQuiet (void)
 {
   return quiet;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -822,7 +822,7 @@ unsigned int mcOptions_getQuiet (void)
    getVerbose - return the value of verbose.
 */
 
-unsigned int mcOptions_getVerbose (void)
+extern "C" unsigned int mcOptions_getVerbose (void)
 {
   return verbose;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -834,7 +834,7 @@ unsigned int mcOptions_getVerbose (void)
    getInternalDebugging - return the value of internalDebugging.
 */
 
-unsigned int mcOptions_getInternalDebugging (void)
+extern "C" unsigned int mcOptions_getInternalDebugging (void)
 {
   return internalDebugging;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -846,21 +846,21 @@ unsigned int mcOptions_getInternalDebugging (void)
    getCppCommandLine - returns the Cpp command line and all arguments.
 */
 
-DynamicStrings_String mcOptions_getCppCommandLine (void)
+extern "C" DynamicStrings_String mcOptions_getCppCommandLine (void)
 {
   DynamicStrings_String s;
 
-  if (DynamicStrings_EqualArray (cppProgram, (char *) "", 0))
+  if (DynamicStrings_EqualArray (cppProgram, (const char *) "", 0))
     {
-      return NULL;
+      return static_cast<DynamicStrings_String> (NULL);
     }
   else
     {
-      s = DynamicStrings_Dup (cppProgram);
-      s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), cppArgs);
+      s = static_cast<DynamicStrings_String> (DynamicStrings_Dup (cppProgram));
+      s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), cppArgs));
       if (mcOptions_getQuiet ())
         {
-          s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((char *) "-quiet", 6)));
+          s = static_cast<DynamicStrings_String> (DynamicStrings_ConCat (DynamicStrings_ConCatChar (s, ' '), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "-quiet", 6))));
         }
       return s;
     }
@@ -873,7 +873,7 @@ DynamicStrings_String mcOptions_getCppCommandLine (void)
    getOutputFile - sets the output filename to output.
 */
 
-DynamicStrings_String mcOptions_getOutputFile (void)
+extern "C" DynamicStrings_String mcOptions_getOutputFile (void)
 {
   return outputFile;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -885,7 +885,7 @@ DynamicStrings_String mcOptions_getOutputFile (void)
    getExtendedOpaque - return the extendedOpaque value.
 */
 
-unsigned int mcOptions_getExtendedOpaque (void)
+extern "C" unsigned int mcOptions_getExtendedOpaque (void)
 {
   return extendedOpaque;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -897,7 +897,7 @@ unsigned int mcOptions_getExtendedOpaque (void)
    setDebugTopological - sets the flag debugTopological to value.
 */
 
-void mcOptions_setDebugTopological (unsigned int value)
+extern "C" void mcOptions_setDebugTopological (unsigned int value)
 {
   debugTopological = value;
 }
@@ -908,7 +908,7 @@ void mcOptions_setDebugTopological (unsigned int value)
                          line option --debug-top.
 */
 
-unsigned int mcOptions_getDebugTopological (void)
+extern "C" unsigned int mcOptions_getDebugTopological (void)
 {
   return debugTopological;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -920,7 +920,7 @@ unsigned int mcOptions_getDebugTopological (void)
    getHPrefix - saves the H file prefix.
 */
 
-DynamicStrings_String mcOptions_getHPrefix (void)
+extern "C" DynamicStrings_String mcOptions_getHPrefix (void)
 {
   return hPrefix;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -932,7 +932,7 @@ DynamicStrings_String mcOptions_getHPrefix (void)
    getIgnoreFQ - returns the ignorefq flag.
 */
 
-unsigned int mcOptions_getIgnoreFQ (void)
+extern "C" unsigned int mcOptions_getIgnoreFQ (void)
 {
   return ignoreFQ;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -944,7 +944,7 @@ unsigned int mcOptions_getIgnoreFQ (void)
    getGccConfigSystem - return the value of the gccConfigSystem flag.
 */
 
-unsigned int mcOptions_getGccConfigSystem (void)
+extern "C" unsigned int mcOptions_getGccConfigSystem (void)
 {
   return gccConfigSystem;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -956,12 +956,12 @@ unsigned int mcOptions_getGccConfigSystem (void)
    writeGPLheader - writes out the GPL or the LGPL as a comment.
 */
 
-void mcOptions_writeGPLheader (FIO_File f)
+extern "C" void mcOptions_writeGPLheader (FIO_File f)
 {
   issueGPL (f);
 }
 
-void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
   langC = TRUE;
   langCPP = FALSE;
@@ -980,15 +980,15 @@ void _M2_mcOptions_init (__attribute__((unused)) int argc, __attribute__((unused
   debugTopological = FALSE;
   ignoreFQ = FALSE;
   gccConfigSystem = FALSE;
-  hPrefix = DynamicStrings_InitString ((char *) "", 0);
-  cppArgs = DynamicStrings_InitString ((char *) "", 0);
-  cppProgram = DynamicStrings_InitString ((char *) "", 0);
-  outputFile = DynamicStrings_InitString ((char *) "-", 1);
-  summaryContents = DynamicStrings_InitString ((char *) "", 0);
-  contributedContents = DynamicStrings_InitString ((char *) "", 0);
-  projectContents = DynamicStrings_InitString ((char *) "GNU Modula-2", 12);
+  hPrefix = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  cppArgs = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  cppProgram = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  outputFile = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "-", 1));
+  summaryContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  contributedContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "", 0));
+  projectContents = static_cast<DynamicStrings_String> (DynamicStrings_InitString ((const char *) "GNU Modula-2", 12));
 }
 
-void _M2_mcOptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_mcOptions_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

@@ -24,6 +24,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void
 RTint_Init (void)
@@ -39,5 +42,9 @@ _M2_RTint_init (void)
 void
 _M2_RTint_finish (void)
 {
+}
+#endif
+
+#ifdef __cplusplus
 }
 #endif

@@ -58,8 +58,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 static unsigned int callno;
 static unsigned int zero;
 static unsigned int trace;
-void SysStorage_ALLOCATE (void * *a, unsigned int size);
-void SysStorage_DEALLOCATE (void * *a, unsigned int size);
+extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size);
+extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size);
 
 /*
    REALLOCATE - attempts to reallocate storage. The address,
@@ -69,7 +69,7 @@ void SysStorage_DEALLOCATE (void * *a, unsigned int size);
                 is resized accordingly.
 */
 
-void SysStorage_REALLOCATE (void * *a, unsigned int size);
+extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size);
 
 /*
    REALLOCATE - attempts to reallocate storage. The address,
@@ -79,54 +79,54 @@ void SysStorage_REALLOCATE (void * *a, unsigned int size);
                 is resized accordingly.
 */
 
-unsigned int SysStorage_Available (unsigned int size);
+extern "C" unsigned int SysStorage_Available (unsigned int size);
 
 /*
    Init - initializes the heap.  This does nothing on a GNU/Linux system.
           But it remains here since it might be used in an embedded system.
 */
 
-void SysStorage_Init (void);
+extern "C" void SysStorage_Init (void);
 
-void SysStorage_ALLOCATE (void * *a, unsigned int size)
+extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
 {
-  (*a) = libc_malloc ((size_t) size);
+  (*a) = reinterpret_cast<void *> (libc_malloc (static_cast<size_t> (size)));
   if ((*a) == NULL)
     {
-      Debug_Halt ((char *) "out of memory error", 19, 50, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+      Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
     }
   if (enableTrace && trace)
     {
-      libc_printf ((char *) "<DEBUG-CALL> %d SysStorage.ALLOCATE (0x%x, %d bytes)\\n", 54, callno, (*a), size);
-      libc_printf ((char *) "<MEM-ALLOC> %ld %d\\n", 20, (*a), size);
+      libc_printf ((const char *) "<DEBUG-CALL> %d SysStorage.ALLOCATE (0x%x, %d bytes)\\n", 54, callno, (*a), size);
+      libc_printf ((const char *) "<MEM-ALLOC> %ld %d\\n", 20, (*a), size);
       callno += 1;
     }
 }
 
-void SysStorage_DEALLOCATE (void * *a, unsigned int size)
+extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
 {
   if (enableTrace && trace)
     {
-      libc_printf ((char *) "<DEBUG-CALL> %d SysStorage.DEALLOCATE (0x%x, %d bytes)\\n", 56, callno, (*a), size);
+      libc_printf ((const char *) "<DEBUG-CALL> %d SysStorage.DEALLOCATE (0x%x, %d bytes)\\n", 56, callno, (*a), size);
       callno += 1;
     }
   if (enableZero && zero)
     {
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "  memset (0x%x, 0, %d bytes)\\n", 30, (*a), size);
+          libc_printf ((const char *) "  memset (0x%x, 0, %d bytes)\\n", 30, (*a), size);
         }
-      if ((libc_memset ((*a), 0, (size_t) size)) != (*a))
+      if ((libc_memset ((*a), 0, static_cast<size_t> (size))) != (*a))
         {
-          Debug_Halt ((char *) "memset should have returned the first parameter", 47, 76, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, 76, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
         }
     }
   if (enableDeallocation)
     {
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "  free (0x%x)   %d bytes\\n", 26, (*a), size);
-          libc_printf ((char *) "<MEM-FREE> %ld %d\\n", 19, (*a), size);
+          libc_printf ((const char *) "  free (0x%x)   %d bytes\\n", 26, (*a), size);
+          libc_printf ((const char *) "<MEM-FREE> %ld %d\\n", 19, (*a), size);
         }
       libc_free ((*a));
     }
@@ -142,7 +142,7 @@ void SysStorage_DEALLOCATE (void * *a, unsigned int size)
                 is resized accordingly.
 */
 
-void SysStorage_REALLOCATE (void * *a, unsigned int size)
+extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
 {
   if ((*a) == NULL)
     {
@@ -152,23 +152,23 @@ void SysStorage_REALLOCATE (void * *a, unsigned int size)
     {
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "<DEBUG-CALL> %d SysStorage.REALLOCATE (0x%x, %d bytes)\\n", 56, callno, (*a), size);
+          libc_printf ((const char *) "<DEBUG-CALL> %d SysStorage.REALLOCATE (0x%x, %d bytes)\\n", 56, callno, (*a), size);
           callno += 1;
         }
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "  realloc (0x%x, %d bytes)  ->  ", 32, (*a), size);
-          libc_printf ((char *) "<MEM-FREE> %ld %d\\n", 19, (*a), size);
+          libc_printf ((const char *) "  realloc (0x%x, %d bytes)  ->  ", 32, (*a), size);
+          libc_printf ((const char *) "<MEM-FREE> %ld %d\\n", 19, (*a), size);
         }
-      (*a) = libc_realloc ((*a), (size_t) size);
+      (*a) = reinterpret_cast<void *> (libc_realloc ((*a), static_cast<size_t> (size)));
       if ((*a) == NULL)
         {
-          Debug_Halt ((char *) "out of memory error", 19, 119, (char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
+          Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/SysStorage.mod", 82);
         }
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "<MEM-ALLOC> %ld %d\\n", 20, (*a), size);
-          libc_printf ((char *) "  0x%x  %d bytes\\n", 18, (*a), size);
+          libc_printf ((const char *) "<MEM-ALLOC> %ld %d\\n", 20, (*a), size);
+          libc_printf ((const char *) "  0x%x  %d bytes\\n", 18, (*a), size);
         }
     }
 }
@@ -182,21 +182,21 @@ void SysStorage_REALLOCATE (void * *a, unsigned int size)
                 is resized accordingly.
 */
 
-unsigned int SysStorage_Available (unsigned int size)
+extern "C" unsigned int SysStorage_Available (unsigned int size)
 {
   void * a;
 
   if (enableTrace && trace)
     {
-      libc_printf ((char *) "<DEBUG-CALL> %d SysStorage.Available (%d bytes)\\n", 49, callno, size);
+      libc_printf ((const char *) "<DEBUG-CALL> %d SysStorage.Available (%d bytes)\\n", 49, callno, size);
       callno += 1;
     }
-  a = libc_malloc ((size_t) size);
+  a = reinterpret_cast<void *> (libc_malloc (static_cast<size_t> (size)));
   if (a == NULL)
     {
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "   no\\n", 7, size);
+          libc_printf ((const char *) "   no\\n", 7, size);
         }
       return FALSE;
     }
@@ -204,7 +204,7 @@ unsigned int SysStorage_Available (unsigned int size)
     {
       if (enableTrace && trace)
         {
-          libc_printf ((char *) "   yes\\n", 8, size);
+          libc_printf ((const char *) "   yes\\n", 8, size);
         }
       libc_free (a);
       return TRUE;
@@ -219,16 +219,16 @@ unsigned int SysStorage_Available (unsigned int size)
           But it remains here since it might be used in an embedded system.
 */
 
-void SysStorage_Init (void)
+extern "C" void SysStorage_Init (void)
 {
 }
 
-void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  callno = 0;
+  callno = static_cast<unsigned int> (0);
   if (enableTrace)
     {
-      trace = (libc_getenv ("M2DEBUG_SYSSTORAGE_trace")) != NULL;
+      trace = (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("M2DEBUG_SYSSTORAGE_trace")))) != NULL;
     }
   else
     {
@@ -236,7 +236,7 @@ void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unuse
     }
   if (enableZero)
     {
-      zero = (libc_getenv ("M2DEBUG_SYSSTORAGE_zero")) != NULL;
+      zero = (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("M2DEBUG_SYSSTORAGE_zero")))) != NULL;
     }
   else
     {
@@ -244,6 +244,6 @@ void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unuse
     }
 }
 
-void _M2_SysStorage_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_SysStorage_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

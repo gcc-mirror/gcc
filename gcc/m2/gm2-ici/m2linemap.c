@@ -22,9 +22,17 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void
 m2linemap_GetLocationBinary (void)
 {
   fprintf (stderr, "GetLocationBinary should not be called\n");
   exit (1);
 }
+
+#ifdef __cplusplus
+}
+#endif

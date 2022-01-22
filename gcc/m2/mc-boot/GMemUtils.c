@@ -43,42 +43,46 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    MemCopy - copys a region of memory to the required destination.
 */
 
-void MemUtils_MemCopy (void * from, unsigned int length, void * to);
+extern "C" void MemUtils_MemCopy (void * from, unsigned int length, void * to);
 
 /*
    MemZero - sets a region of memory: a..a+length to zero.
 */
 
-void MemUtils_MemZero (void * a, unsigned int length);
+extern "C" void MemUtils_MemZero (void * a, unsigned int length);
 
 
 /*
    MemCopy - copys a region of memory to the required destination.
 */
 
-void MemUtils_MemCopy (void * from, unsigned int length, void * to)
+extern "C" void MemUtils_MemCopy (void * from, unsigned int length, void * to)
 {
-  unsigned int * pwb;
-  unsigned int * pwa;
-  unsigned char * pbb;
-  unsigned char * pba;
+  typedef unsigned int *_T1;
+
+  typedef unsigned char *_T2;
+
+  _T1 pwb;
+  _T1 pwa;
+  _T2 pbb;
+  _T2 pba;
 
   while (length >= sizeof (unsigned int ))
     {
-      pwa = from;
-      pwb = to;
+      pwa = static_cast<_T1> (from);
+      pwb = static_cast<_T1> (to);
       (*pwb) = (*pwa);
-      from += sizeof (unsigned int );
-      to += sizeof (unsigned int );
+      from = reinterpret_cast<void *> (reinterpret_cast<char *> (from)+sizeof (unsigned int ));
+      to = reinterpret_cast<void *> (reinterpret_cast<char *> (to)+sizeof (unsigned int ));
       length -= sizeof (unsigned int );
     }
   while (length > 0)
     {
-      pba = from;
-      pbb = to;
+      pba = static_cast<_T2> (from);
+      pbb = static_cast<_T2> (to);
       (*pbb) = (*pba);
-      from += sizeof (unsigned char );
-      to += sizeof (unsigned char );
+      from = reinterpret_cast<void *> (reinterpret_cast<char *> (from)+sizeof (unsigned char ));
+      to = reinterpret_cast<void *> (reinterpret_cast<char *> (to)+sizeof (unsigned char ));
       length -= sizeof (unsigned char );
     }
 }
@@ -88,19 +92,23 @@ void MemUtils_MemCopy (void * from, unsigned int length, void * to)
    MemZero - sets a region of memory: a..a+length to zero.
 */
 
-void MemUtils_MemZero (void * a, unsigned int length)
+extern "C" void MemUtils_MemZero (void * a, unsigned int length)
 {
-  unsigned int * pwa;
-  unsigned char * pba;
+  typedef unsigned int *_T3;
 
-  pwa = a;
+  typedef unsigned char *_T4;
+
+  _T3 pwa;
+  _T4 pba;
+
+  pwa = static_cast<_T3> (a);
   while (length >= sizeof (unsigned int ))
     {
       (*pwa) = (unsigned int ) (0);
       pwa += sizeof (unsigned int );
       length -= sizeof (unsigned int );
     }
-  pba = (void *) (pwa);
+  pba = static_cast<_T4> ((void *) (pwa));
   while (length >= sizeof (unsigned char ))
     {
       (*pba) = (unsigned char ) (0);
@@ -109,10 +117,10 @@ void MemUtils_MemZero (void * a, unsigned int length)
     }
 }
 
-void _M2_MemUtils_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_MemUtils_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_MemUtils_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_MemUtils_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

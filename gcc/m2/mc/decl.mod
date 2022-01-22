@@ -301,6 +301,7 @@ TYPE
 
        returnT = RECORD
                     exp          : node ;
+                    scope        : node ;
 		    returnComment: commentPair ;
                  END ;
 
@@ -9121,10 +9122,15 @@ BEGIN
    assert (isReturn (s)) ;
    doCommentC (p, s^.returnF.returnComment.body) ;
    outText (p, "return") ;
-   IF s^.returnF.exp#NIL
+   IF s^.returnF.scope#NIL
    THEN
       setNeedSpace (p) ;
-      doExprC (p, s^.returnF.exp)
+      IF (NOT isProcedure (s^.returnF.scope)) OR (getType (s^.returnF.scope)=NIL)
+      THEN
+         metaError1 ('{%1DMad} has no return type', s^.returnF.scope) ;
+      ELSE
+         doExprCastC (p, s^.returnF.exp, getType (s^.returnF.scope))
+      END
    END ;
    outText (p, ";") ;
    doAfterCommentC (p, s^.returnF.returnComment.after)
@@ -14030,6 +14036,8 @@ BEGIN
    print (p, "\n\n#if !defined (_") ; prints (p, s) ; print (p, "_H)\n") ;
    print (p, "#   define _") ; prints (p, s) ; print (p, "_H\n\n") ;
 
+   keyc.genConfigSystem (p) ;
+
    print (p, "#   ifdef __cplusplus\n") ;
    print (p, 'extern "C" {\n') ;
    print (p, "#   endif\n") ;
@@ -14150,6 +14158,7 @@ BEGIN
    outImpInitC (p, n) ;
 
    outputFile := mcStream.openFrag (2) ;  (* second fragment.  *)
+   keyc.genConfigSystem (p) ;
    keyc.genDefs (p)
 END outImpC ;
 
@@ -14252,6 +14261,7 @@ BEGIN
    outModuleInitC (p, n) ;
 
    outputFile := mcStream.openFrag (2) ;  (* second fragment.  *)
+   keyc.genConfigSystem (p) ;
    keyc.genDefs (p)
 END outModuleC ;
 
@@ -15496,10 +15506,17 @@ END addIfEndComments ;
 
 PROCEDURE makeReturn () : node ;
 VAR
-   n: node ;
+   type,
+   n   : node ;
 BEGIN
    n := newNode (return) ;
    n^.returnF.exp := NIL ;
+   IF isProcedure (getDeclScope ())
+   THEN
+      n^.returnF.scope := getDeclScope ()
+   ELSE
+      n^.returnF.scope := NIL
+   END ;
    initPair (n^.returnF.returnComment) ;
    RETURN n
 END makeReturn ;

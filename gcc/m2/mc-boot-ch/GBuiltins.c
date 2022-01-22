@@ -19,8 +19,16 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
+
+
 /* init module constructor.  */
 
+EXTERN
 void
 _M2_Builtins_init (void)
 {
@@ -28,6 +36,7 @@ _M2_Builtins_init (void)
 
 /* finish module deconstructor.  */
 
+EXTERN
 void
 _M2_Builtins_finish (void)
 {

@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_StrCase_H)
 #   define _StrCase_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,14 +53,14 @@ extern "C" {
                     result in, b.
 */
 
-EXTERN void StrCase_StrToUpperCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+EXTERN void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
 /*
    StrToLowerCase - converts string, a, to lowercase returning the
                     result in, b.
 */
 
-EXTERN void StrCase_StrToLowerCase (char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
+EXTERN void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, char *b, unsigned int _b_high);
 
 /*
    Cap - converts a lower case character into a capital character.

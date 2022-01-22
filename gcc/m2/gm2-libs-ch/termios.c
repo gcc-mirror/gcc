@@ -40,6 +40,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define EXPORT(X) termios##_##X
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
   vintr,
   vquit,
@@ -1926,3 +1930,7 @@ void
 _M2_termios_finish (void)
 {
 }
+
+#ifdef __cplusplus
+}
+#endif

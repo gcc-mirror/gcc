@@ -51,14 +51,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
             The result of the operation is returned.
 */
 
-unsigned int CmdArgs_GetArg (char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
+extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
 
 /*
    Narg - returns the number of arguments available from
           command line, CmdLine.
 */
 
-unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high);
+extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLine_high);
 
 /*
    GetNextArg - Returns true if another argument may be found.
@@ -66,19 +66,19 @@ unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high);
                 Arg is filled with the found argument.
 */
 
-static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high);
+static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high);
 
 /*
    CopyUntilSpace - copies characters until a Space character is found.
 */
 
-static void CopyUntilSpace (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh);
+static void CopyUntilSpace (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh);
 
 /*
    CopyUntil - copies characters until the UntilChar is found.
 */
 
-static void CopyUntil (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh, char UntilChar);
+static void CopyUntil (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh, char UntilChar);
 
 /*
    CopyChar - copies a character from string From to string To and
@@ -86,7 +86,7 @@ static void CopyUntil (char *From_, unsigned int _From_high, unsigned int *FromI
               Where x is any character.
 */
 
-static void CopyChar (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh);
+static void CopyChar (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh);
 static unsigned int Escape (char ch);
 static unsigned int Space (char ch);
 static unsigned int DoubleQuote (char ch);
@@ -99,7 +99,7 @@ static unsigned int SingleQuote (char ch);
                 Arg is filled with the found argument.
 */
 
-static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high)
+static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high)
 {
   unsigned int ArgIndex;
   unsigned int HighA;
@@ -110,8 +110,8 @@ static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsi
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
   HighA = _Arg_high;  /* Index into Arg  */
-  HighC = StrLib_StrLen ((char *) CmdLine, _CmdLine_high);
-  ArgIndex = 0;
+  HighC = static_cast<unsigned int> (StrLib_StrLen ((const char *) CmdLine, _CmdLine_high));
+  ArgIndex = static_cast<unsigned int> (0);
   /* Skip spaces  */
   while (((*CmdIndex) < HighC) && (Space (CmdLine[(*CmdIndex)])))
     {
@@ -124,7 +124,7 @@ static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsi
         {
           /* Skip over the single quote  */
           (*CmdIndex) += 1;
-          CopyUntil ((char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA, squote);
+          CopyUntil ((const char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA, squote);
           (*CmdIndex) += 1;
         }
       else if (DoubleQuote (CmdLine[(*CmdIndex)]))
@@ -132,13 +132,13 @@ static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsi
           /* avoid dangling else.  */
           /* Skip over the double quote  */
           (*CmdIndex) += 1;
-          CopyUntil ((char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA, dquote);
+          CopyUntil ((const char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA, dquote);
           (*CmdIndex) += 1;
         }
       else
         {
           /* avoid dangling else.  */
-          CopyUntilSpace ((char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA);
+          CopyUntilSpace ((const char *) CmdLine, _CmdLine_high, CmdIndex, HighC, (char *) Arg, _Arg_high, &ArgIndex, HighA);
         }
     }
   /* Skip spaces  */
@@ -148,7 +148,7 @@ static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsi
     }
   if (ArgIndex < HighA)
     {
-      Arg[ArgIndex] = ASCII_nul;
+      Arg[ArgIndex] = static_cast<char> (ASCII_nul);
     }
   return (*CmdIndex) < HighC;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -160,7 +160,7 @@ static unsigned int GetNextArg (char *CmdLine_, unsigned int _CmdLine_high, unsi
    CopyUntilSpace - copies characters until a Space character is found.
 */
 
-static void CopyUntilSpace (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh)
+static void CopyUntilSpace (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh)
 {
   char From[_From_high+1];
 
@@ -169,7 +169,7 @@ static void CopyUntilSpace (char *From_, unsigned int _From_high, unsigned int *
 
   while ((((*FromIndex) < FromHigh) && ((*ToIndex) < ToHigh)) && (! (Space (From[(*FromIndex)]))))
     {
-      CopyChar ((char *) From, _From_high, FromIndex, FromHigh, (char *) To, _To_high, ToIndex, ToHigh);
+      CopyChar ((const char *) From, _From_high, FromIndex, FromHigh, (char *) To, _To_high, ToIndex, ToHigh);
     }
 }
 
@@ -178,7 +178,7 @@ static void CopyUntilSpace (char *From_, unsigned int _From_high, unsigned int *
    CopyUntil - copies characters until the UntilChar is found.
 */
 
-static void CopyUntil (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh, char UntilChar)
+static void CopyUntil (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh, char UntilChar)
 {
   char From[_From_high+1];
 
@@ -187,7 +187,7 @@ static void CopyUntil (char *From_, unsigned int _From_high, unsigned int *FromI
 
   while ((((*FromIndex) < FromHigh) && ((*ToIndex) < ToHigh)) && (From[(*FromIndex)] != UntilChar))
     {
-      CopyChar ((char *) From, _From_high, FromIndex, FromHigh, (char *) To, _To_high, ToIndex, ToHigh);
+      CopyChar ((const char *) From, _From_high, FromIndex, FromHigh, (char *) To, _To_high, ToIndex, ToHigh);
     }
 }
 
@@ -198,7 +198,7 @@ static void CopyUntil (char *From_, unsigned int _From_high, unsigned int *FromI
               Where x is any character.
 */
 
-static void CopyChar (char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh)
+static void CopyChar (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh)
 {
   char From[_From_high+1];
 
@@ -257,7 +257,7 @@ static unsigned int SingleQuote (char ch)
             The result of the operation is returned.
 */
 
-unsigned int CmdArgs_GetArg (char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high)
+extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high)
 {
   unsigned int Index;
   unsigned int i;
@@ -267,11 +267,11 @@ unsigned int CmdArgs_GetArg (char *CmdLine_, unsigned int _CmdLine_high, unsigne
   /* make a local copy of each unbounded array.  */
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
-  Index = 0;
+  Index = static_cast<unsigned int> (0);
   /* Continually retrieve an argument until we get the n th argument.  */
-  i = 0;
+  i = static_cast<unsigned int> (0);
   do {
-    Another = GetNextArg ((char *) CmdLine, _CmdLine_high, &Index, (char *) Argi, _Argi_high);
+    Another = static_cast<unsigned int> (GetNextArg ((const char *) CmdLine, _CmdLine_high, &Index, (char *) Argi, _Argi_high));
     i += 1;
   } while (! ((i > n) || ! Another));
   return i > n;
@@ -285,7 +285,7 @@ unsigned int CmdArgs_GetArg (char *CmdLine_, unsigned int _CmdLine_high, unsigne
           command line, CmdLine.
 */
 
-unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high)
+extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLine_high)
 {
   typedef struct _T1_a _T1;
 
@@ -297,8 +297,8 @@ unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high)
   /* make a local copy of each unbounded array.  */
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
-  ArgNo = 0;
-  while (CmdArgs_GetArg ((char *) CmdLine, _CmdLine_high, ArgNo, (char *) &a.array[0], 1000))
+  ArgNo = static_cast<unsigned int> (0);
+  while (CmdArgs_GetArg ((const char *) CmdLine, _CmdLine_high, ArgNo, (char *) &a.array[0], 1000))
     {
       ArgNo += 1;
     }
@@ -313,10 +313,10 @@ unsigned int CmdArgs_Narg (char *CmdLine_, unsigned int _CmdLine_high)
   __builtin_unreachable ();
 }
 
-void _M2_CmdArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_CmdArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }
 
-void _M2_CmdArgs_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
+extern "C" void _M2_CmdArgs_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
 }

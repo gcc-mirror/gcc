@@ -29,11 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_libc_H)
 #   define _libc_H
 
+#include "config.h"
+#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
-#include "config.h"
-#include "system.h"
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -191,7 +191,7 @@ EXTERN long int libc_lseek (int fd, long int offset, int whence);
    perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).
 */
 
-EXTERN void libc_perror (char *string_, unsigned int _string_high);
+EXTERN void libc_perror (const char *string_, unsigned int _string_high);
 
 /*
    readv - reads an io vector of bytes.
@@ -298,7 +298,7 @@ EXTERN void * libc_memset (void * s, int c, size_t size);
 */
 
 EXTERN void * libc_memmove (void * dest, void * src, size_t size);
-EXTERN int libc_printf (char *format_, unsigned int _format_high, ...);
+EXTERN int libc_printf (const char *format_, unsigned int _format_high, ...);
 
 /*
    setenv - sets environment variable, name, to value.
