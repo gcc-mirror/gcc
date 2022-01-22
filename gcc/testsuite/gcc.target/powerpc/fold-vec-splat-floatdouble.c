@@ -21,12 +21,11 @@ vector double test_dc ()
 { const vector double y = { 3.0, 5.0 }; return vec_splat (y, 0b00001); }
 
 /* If the source vector is a known constant, we will generate a load or possibly
-   XXSPLTIW.  */
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxv\M|\mplxv\M|\mxxspltiw\M} 2 } } */
+   XXSPLTIW/XXSPLTIDP.  */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvd2x\M|\mlxv\M|\mplxv\M|\mxxspltiw\M|\mxxspltidp\M} 2 } } */
 
 /* For float types, we generate a splat.  */
 /* { dg-final { scan-assembler-times {\mvspltw\M|\mxxspltw\M} 3 } } */
 
 /* For double types, we will generate xxpermdi instructions.  */
 /* { dg-final { scan-assembler-times "xxpermdi" 2 } } */
-
