@@ -36,6 +36,10 @@
 # endif
 # include <dirent.h>
 #endif
+#ifdef _GLIBCXX_HAVE_FCNTL_H
+# include <fcntl.h> // O_NOFOLLOW, O_DIRECTORY
+# include <unistd.h> // close
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -76,21 +80,40 @@ struct _Dir_base
   _Dir_base(posix::DIR* dirp = nullptr) : dirp(dirp) { }
 
   // If no error occurs then dirp is non-null,
-  // otherwise null (whether error ignored or not).
+  // otherwise null (even if an EACCES error is ignored).
   _Dir_base(const posix::char_type* pathname, bool skip_permission_denied,
-	    error_code& ec) noexcept
-  : dirp(posix::opendir(pathname))
+	    [[maybe_unused]] bool nofollow, error_code& ec) noexcept
+  : dirp(nullptr)
   {
-    if (dirp)
+#if defined O_RDONLY && O_NOFOLLOW && defined O_DIRECTORY && defined O_CLOEXEC \
+    && defined _GLIBCXX_HAVE_FDOPENDIR && !_GLIBCXX_FILESYSTEM_IS_WINDOWS
+    if (nofollow)
+      {
+	// Do not allow opening a symlink (used by filesystem::remove_all)
+	const int flags = O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC;
+	int fd = ::open(pathname, flags);
+	if (fd != -1)
+	  {
+	    if ((dirp = ::fdopendir(fd)))
+	      {
+		ec.clear();
+		return;
+	      }
+	  }
+	if (errno == EACCES && skip_permission_denied)
+	  ec.clear();
+	else
+	  ec.assign(errno, std::generic_category());
+	return;
+      }
+#endif
+
+    if ((dirp = posix::opendir(pathname)))
+      ec.clear();
+    else if (errno == EACCES && skip_permission_denied)
       ec.clear();
     else
-    {
-      const int err = errno;
-      if (err == EACCES && skip_permission_denied)
-	ec.clear();
-      else
-	ec.assign(err, std::generic_category());
-    }
+      ec.assign(errno, std::generic_category());
   }
 
   _Dir_base(_Dir_base&& d) : dirp(std::exchange(d.dirp, nullptr)) { }
@@ -187,6 +210,9 @@ get_file_type(const std::filesystem::__gnu_posix::dirent& d [[gnu::unused]])
   return file_type::none;
 #endif
 }
+
+constexpr directory_options __directory_iterator_nofollow{99};
+
 _GLIBCXX_END_NAMESPACE_FILESYSTEM
 
 _GLIBCXX_END_NAMESPACE_VERSION
