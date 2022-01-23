@@ -1571,21 +1571,15 @@ recording::context::add_error_va (location *loc, const char *fmt, va_list ap)
   if (!ctxt_progname)
     ctxt_progname = "libgccjit.so";
 
-  bool hide_log_stderr =
-    get_bool_option (GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR);
-
-  if (!hide_log_stderr)
-  {
-    if (loc)
-      fprintf (stderr, "%s: %s: error: %s\n",
-	       ctxt_progname,
-	       loc->get_debug_string (),
-	       errmsg);
-    else
-      fprintf (stderr, "%s: error: %s\n",
-	       ctxt_progname,
-	       errmsg);
-  }
+  if (loc)
+    fprintf (stderr, "%s: %s: error: %s\n",
+	     ctxt_progname,
+	     loc->get_debug_string (),
+	     errmsg);
+  else
+    fprintf (stderr, "%s: error: %s\n",
+	     ctxt_progname,
+	     errmsg);
 
   if (!m_error_count)
     {
@@ -1708,7 +1702,6 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING",
   "GCC_JIT_BOOL_OPTION_SELFCHECK_GC",
   "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES",
-  "GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR",
 };
 
 static const char * const

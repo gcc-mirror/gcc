@@ -241,9 +241,6 @@ enum gcc_jit_bool_option
      their location on stderr.  */
   GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES,
 
-  /* If true, gcc_jit_context_release will not print the errors to stderr.  */
-  GCC_JIT_BOOL_OPTION_HIDE_LOG_STDERR,
-
   GCC_JIT_NUM_BOOL_OPTIONS
 };
 
