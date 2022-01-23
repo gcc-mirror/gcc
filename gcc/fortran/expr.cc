@@ -312,7 +312,8 @@ gfc_copy_expr (gfc_expr *p)
 	  break;
 
 	case BT_CHARACTER:
-	  if (p->representation.string)
+	  if (p->representation.string
+	      && p->ts.kind == gfc_default_character_kind)
 	    q->value.character.string
 	      = gfc_char_to_widechar (q->representation.string);
 	  else
