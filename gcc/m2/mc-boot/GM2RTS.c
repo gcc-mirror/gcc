@@ -412,7 +412,7 @@ extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  l = static_cast<unsigned int> (0);
+  l = 0;
   h = _a_high;
   while ((l <= h) && (a[l] != ASCII_nul))
     {
@@ -548,9 +548,9 @@ extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned 
 
 extern "C" void _M2_M2RTS_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  iPtr = static_cast<unsigned int> (0);
-  tPtr = static_cast<unsigned int> (0);
-  ExitValue = static_cast<int> (0);
+  iPtr = 0;
+  tPtr = 0;
+  ExitValue = 0;
   isHalting = FALSE;
   CallExit = FALSE;  /* default by calling abort  */
 }

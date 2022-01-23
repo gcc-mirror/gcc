@@ -540,7 +540,7 @@ static FIO_File GetNextFreeDescriptor (void)
   {
     if (f <= h)
       {
-        fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+        fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
         if (fd == NULL)
           {
             return f;
@@ -549,7 +549,7 @@ static FIO_File GetNextFreeDescriptor (void)
     f += 1;
     if (f > h)
       {
-        Indexing_PutIndice (FileInfo, static_cast<unsigned int> (f), NULL);  /* create new slot  */
+        Indexing_PutIndice (FileInfo, f, NULL);  /* create new slot  */
         return f;  /* create new slot  */
       }
   }
@@ -566,7 +566,7 @@ static void SetState (FIO_File f, FileStatus s)
 {
   FileDescriptor fd;
 
-  fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+  fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
   fd->state = s;
 }
 
@@ -583,12 +583,12 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
   Storage_ALLOCATE ((void **) &fd, sizeof (fds));
   if (fd == NULL)
     {
-      SetState (Error, static_cast<FileStatus> (outofmemory));
+      SetState (Error, outofmemory);
       return Error;
     }
   else
     {
-      Indexing_PutIndice (FileInfo, static_cast<unsigned int> (f), reinterpret_cast<void *> (fd));
+      Indexing_PutIndice (FileInfo, f, reinterpret_cast<void *> (fd));
       fd->name.size = flength+1;  /* need to guarantee the nul for C  */
       fd->usage = use;  /* need to guarantee the nul for C  */
       fd->output = towrite;
@@ -603,21 +603,21 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
       p = static_cast<PtrToChar> (fd->name.address);
       p += flength;
       (*p) = ASCII_nul;
-      fd->abspos = static_cast<long int> (0);
+      fd->abspos = 0;
       /* now for the buffer  */
       Storage_ALLOCATE ((void **) &fd->buffer, sizeof (buf));
       if (fd->buffer == NULL)
         {
-          SetState (Error, static_cast<FileStatus> (outofmemory));
+          SetState (Error, outofmemory);
           return Error;
         }
       else
         {
           fd->buffer->valid = FALSE;
-          fd->buffer->bufstart = static_cast<long int> (0);
+          fd->buffer->bufstart = 0;
           fd->buffer->size = buflength;
-          fd->buffer->position = static_cast<unsigned int> (0);
-          fd->buffer->filled = static_cast<unsigned int> (0);
+          fd->buffer->position = 0;
+          fd->buffer->filled = 0;
           if (fd->buffer->size == 0)
             {
               fd->buffer->address = NULL;
@@ -637,7 +637,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
             }
           else
             {
-              fd->buffer->left = static_cast<unsigned int> (0);
+              fd->buffer->left = 0;
             }
           fd->buffer->contents = reinterpret_cast<_T7 *> (fd->buffer->address);  /* provides easy access for reading characters  */
           fd->state = fstate;  /* provides easy access for reading characters  */
@@ -659,7 +659,7 @@ static void ConnectToUnix (FIO_File f, unsigned int towrite, unsigned int newfil
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           if (towrite)
@@ -709,8 +709,8 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
 
   if (f != Error)
     {
-      total = static_cast<unsigned int> (0);  /* how many bytes have we read  */
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));  /* how many bytes have we read  */
+      total = 0;  /* how many bytes have we read  */
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));  /* how many bytes have we read  */
       /* extract from the buffer first  */
       if ((fd->buffer != NULL) && fd->buffer->valid)
         {
@@ -724,9 +724,9 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   (*p) = static_cast<unsigned char> ((*fd->buffer->contents).array[fd->buffer->position]);
                   fd->buffer->left -= 1;  /* remove consumed bytes  */
                   fd->buffer->position += 1;  /* move onwards n bytes  */
-                  nBytes = static_cast<unsigned int> (0);  /* reduce the amount for future direct  */
+                  nBytes = 0;  /* reduce the amount for future direct  */
                   /* read  */
-                  return static_cast<int> (1);
+                  return 1;
                 }
               else
                 {
@@ -741,7 +741,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   nBytes -= n;  /* reduce the amount for future direct  */
                   /* read  */
                   total += n;
-                  return static_cast<int> (total);  /* much cleaner to return now,  */
+                  return total;  /* much cleaner to return now,  */
                 }
                /* difficult to record an error if  */
             }
@@ -777,21 +777,21 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
               if (fd->buffer != NULL)
                 {
                   fd->buffer->valid = FALSE;
-                  fd->buffer->left = static_cast<unsigned int> (0);
-                  fd->buffer->position = static_cast<unsigned int> (0);
+                  fd->buffer->left = 0;
+                  fd->buffer->position = 0;
                   if (fd->buffer->address != NULL)
                     {
                       (*fd->buffer->contents).array[fd->buffer->position] = ASCII_nul;
                     }
                 }
-              return static_cast<int> (-1);
+              return -1;
             }
         }
-      return static_cast<int> (total);
+      return total;
     }
   else
     {
-      return static_cast<int> (-1);
+      return -1;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -820,8 +820,8 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
   if (f != Error)
     {
       /* avoid dangling else.  */
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
-      total = static_cast<int> (0);  /* how many bytes have we read  */
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
+      total = 0;  /* how many bytes have we read  */
       if (fd != NULL)  /* how many bytes have we read  */
         {
           /* extract from the buffer first  */
@@ -843,7 +843,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                         }
                       else
                         {
-                          n = static_cast<int> (Min (fd->buffer->left, nBytes));
+                          n = Min (fd->buffer->left, nBytes);
                           t = fd->buffer->address;
                           t = reinterpret_cast<void *> (reinterpret_cast<char *> (t)+fd->buffer->position);
                           p = static_cast<_T3> (libc_memcpy (a, t, static_cast<size_t> (n)));
@@ -864,24 +864,24 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                         {
                           /* avoid dangling else.  */
                           fd->buffer->valid = TRUE;
-                          fd->buffer->position = static_cast<unsigned int> (0);
-                          fd->buffer->left = static_cast<unsigned int> (n);
-                          fd->buffer->filled = static_cast<unsigned int> (n);
+                          fd->buffer->position = 0;
+                          fd->buffer->left = n;
+                          fd->buffer->filled = n;
                           fd->buffer->bufstart = fd->abspos;
                           fd->abspos += n;
                           if (n == 0)
                             {
                               /* eof reached  */
                               fd->state = endoffile;
-                              return static_cast<int> (-1);
+                              return -1;
                             }
                         }
                       else
                         {
                           fd->buffer->valid = FALSE;
-                          fd->buffer->position = static_cast<unsigned int> (0);
-                          fd->buffer->left = static_cast<unsigned int> (0);
-                          fd->buffer->filled = static_cast<unsigned int> (0);
+                          fd->buffer->position = 0;
+                          fd->buffer->left = 0;
+                          fd->buffer->filled = 0;
                           fd->state = failed;
                           return total;
                         }
@@ -891,13 +891,13 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
             }
           else
             {
-              return static_cast<int> (-1);
+              return -1;
             }
         }
     }
   else
     {
-      return static_cast<int> (-1);
+      return -1;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1001,8 +1001,8 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
 
   HighSrc = StrLib_StrLen ((const char *) src, _src_high);
   HighDest = _dest_high;
-  i = static_cast<unsigned int> (0);
-  j = static_cast<unsigned int> (0);
+  i = 0;
+  j = 0;
   while ((((i < HighSrc) && (src[i] != ASCII_nul)) && (j < HighDest)) && (src[i] != '%'))
     {
       if (src[i] == '\\')
@@ -1147,7 +1147,7 @@ static void CheckAccess (FIO_File f, FileUsage use, unsigned int towrite)
   if (f != Error)
     {
       /* avoid dangling else.  */
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd == NULL)
         {
           if (f != FIO_StdErr)
@@ -1214,10 +1214,10 @@ static void SetEndOfLine (FIO_File f, char ch)
 {
   FileDescriptor fd;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (ch == ASCII_nl)
         {
           fd->state = endofline;
@@ -1251,10 +1251,10 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
-          total = static_cast<int> (0);  /* how many bytes have we read  */
+          total = 0;  /* how many bytes have we read  */
           if (fd->buffer != NULL)  /* how many bytes have we read  */
             {
               /* place into the buffer first  */
@@ -1274,7 +1274,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
                         }
                       else
                         {
-                          n = static_cast<int> (Min (fd->buffer->left, nBytes));
+                          n = Min (fd->buffer->left, nBytes);
                           t = fd->buffer->address;
                           t = reinterpret_cast<void *> (reinterpret_cast<char *> (t)+fd->buffer->position);
                           p = static_cast<_T5> (libc_memcpy (a, t, static_cast<size_t> ((unsigned int ) (n))));
@@ -1291,7 +1291,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
                       FIO_FlushBuffer (f);
                       if ((fd->state != successful) && (fd->state != endofline))
                         {
-                          nBytes = static_cast<unsigned int> (0);
+                          nBytes = 0;
                         }
                     }
                 }
@@ -1299,7 +1299,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
             }
         }
     }
-  return static_cast<int> (-1);
+  return -1;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1320,10 +1320,10 @@ static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_h
 
   if ((InitializeFile (f, &fname, StrLib_StrLen ((const char *) fname, _fname_high), state, use, towrite, bufsize)) == f)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (f == Error)
         {
-          fe = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (FIO_StdErr)));
+          fe = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, FIO_StdErr));
           if (fe == NULL)
             {
               M2RTS_HALT (-1);
@@ -1354,14 +1354,14 @@ static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_h
 static void Init (void)
 {
   FileInfo = Indexing_InitIndex (0);
-  Error = static_cast<FIO_File> (0);
-  PreInitialize (Error, (const char *) "error", 5, static_cast<FileStatus> (toomanyfilesopen), static_cast<FileUsage> (unused), FALSE, -1, 0);
-  FIO_StdIn = static_cast<FIO_File> (1);
-  PreInitialize (FIO_StdIn, (const char *) "<stdin>", 7, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforread), FALSE, 0, MaxBufferLength);
-  FIO_StdOut = static_cast<FIO_File> (2);
-  PreInitialize (FIO_StdOut, (const char *) "<stdout>", 8, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforwrite), TRUE, 1, MaxBufferLength);
-  FIO_StdErr = static_cast<FIO_File> (3);
-  PreInitialize (FIO_StdErr, (const char *) "<stderr>", 8, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforwrite), TRUE, 2, MaxBufferLength);
+  Error = 0;
+  PreInitialize (Error, (const char *) "error", 5, toomanyfilesopen, unused, FALSE, -1, 0);
+  FIO_StdIn = 1;
+  PreInitialize (FIO_StdIn, (const char *) "<stdin>", 7, successful, openedforread, FALSE, 0, MaxBufferLength);
+  FIO_StdOut = 2;
+  PreInitialize (FIO_StdOut, (const char *) "<stdout>", 8, successful, openedforwrite, TRUE, 1, MaxBufferLength);
+  FIO_StdErr = 3;
+  PreInitialize (FIO_StdErr, (const char *) "<stderr>", 8, successful, openedforwrite, TRUE, 2, MaxBufferLength);
   if (! (M2RTS_InstallTerminationProcedure ((PROC ) {(PROC_t) FIO_FlushOutErr})))
     {
       M2RTS_HALT (-1);
@@ -1384,7 +1384,7 @@ extern "C" unsigned int FIO_IsNoError (FIO_File f)
     }
   else
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       return (fd != NULL) && (((fd->state == successful) || (fd->state == endoffile)) || (fd->state == endofline));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1404,7 +1404,7 @@ extern "C" unsigned int FIO_IsActive (FIO_File f)
     }
   else
     {
-      return (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f))) != NULL;
+      return (Indexing_GetIndice (FileInfo, f)) != NULL;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1474,7 +1474,7 @@ extern "C" void FIO_Close (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       /* 
          we allow users to close files which have an error status
   */
@@ -1500,10 +1500,10 @@ extern "C" void FIO_Close (FIO_File f)
                   Storage_DEALLOCATE (&fd->buffer->address, fd->buffer->size);
                 }
               Storage_DEALLOCATE ((void **) &fd->buffer, sizeof (buf));
-              fd->buffer = static_cast<Buffer> (NULL);
+              fd->buffer = NULL;
             }
           Storage_DEALLOCATE ((void **) &fd, sizeof (fds));
-          Indexing_PutIndice (FileInfo, static_cast<unsigned int> (f), NULL);
+          Indexing_PutIndice (FileInfo, f, NULL);
         }
     }
 }
@@ -1547,11 +1547,11 @@ extern "C" FIO_File FIO_openToRead (void * fname, unsigned int flength)
   f = GetNextFreeDescriptor ();
   if (f == Error)
     {
-      SetState (f, static_cast<FileStatus> (toomanyfilesopen));
+      SetState (f, toomanyfilesopen);
     }
   else
     {
-      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforread), FALSE, MaxBufferLength);
+      f = InitializeFile (f, fname, flength, successful, openedforread, FALSE, MaxBufferLength);
       ConnectToUnix (f, FALSE, FALSE);
     }
   return f;
@@ -1574,11 +1574,11 @@ extern "C" FIO_File FIO_openToWrite (void * fname, unsigned int flength)
   f = GetNextFreeDescriptor ();
   if (f == Error)
     {
-      SetState (f, static_cast<FileStatus> (toomanyfilesopen));
+      SetState (f, toomanyfilesopen);
     }
   else
     {
-      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforwrite), TRUE, MaxBufferLength);
+      f = InitializeFile (f, fname, flength, successful, openedforwrite, TRUE, MaxBufferLength);
       ConnectToUnix (f, TRUE, TRUE);
     }
   return f;
@@ -1603,11 +1603,11 @@ extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsig
   f = GetNextFreeDescriptor ();
   if (f == Error)
     {
-      SetState (f, static_cast<FileStatus> (toomanyfilesopen));
+      SetState (f, toomanyfilesopen);
     }
   else
     {
-      f = InitializeFile (f, fname, flength, static_cast<FileStatus> (successful), static_cast<FileUsage> (openedforrandom), towrite, MaxBufferLength);
+      f = InitializeFile (f, fname, flength, successful, openedforrandom, towrite, MaxBufferLength);
       ConnectToUnix (f, towrite, newfile);
     }
   return f;
@@ -1626,7 +1626,7 @@ extern "C" void FIO_FlushBuffer (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           if (fd->output && (fd->buffer != NULL))
@@ -1635,8 +1635,8 @@ extern "C" void FIO_FlushBuffer (FIO_File f)
                 {
                   fd->abspos += fd->buffer->position;
                   fd->buffer->bufstart = fd->abspos;
-                  fd->buffer->position = static_cast<unsigned int> (0);
-                  fd->buffer->filled = static_cast<unsigned int> (0);
+                  fd->buffer->position = 0;
+                  fd->buffer->filled = 0;
                   fd->buffer->left = fd->buffer->size;
                 }
               else
@@ -1665,23 +1665,23 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 
   if (f != Error)
     {
-      CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+      CheckAccess (f, openedforread, FALSE);
       n = ReadFromBuffer (f, a, nBytes);
       if (n <= 0)
         {
-          return static_cast<unsigned int> (0);
+          return 0;
         }
       else
         {
           p = static_cast<_T2> (a);
           p += n-1;
           SetEndOfLine (f, (*p));
-          return static_cast<unsigned int> (n);
+          return n;
         }
     }
   else
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1696,7 +1696,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 
 extern "C" void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if ((BufferedRead (f, _a_high, a)) == _a_high)
     {
       SetEndOfLine (f, static_cast<char> (a[_a_high]));
@@ -1717,18 +1717,18 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
   int total;
   FileDescriptor fd;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforwrite), TRUE);
+  CheckAccess (f, openedforwrite, TRUE);
   FIO_FlushBuffer (f);
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           total = static_cast<int> (libc_write (fd->unixfd, a, static_cast<size_t> ((int ) (nBytes))));
           if (total < 0)
             {
               fd->state = failed;
-              return static_cast<unsigned int> (0);
+              return 0;
             }
           else
             {
@@ -1741,7 +1741,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
             }
         }
     }
-  return static_cast<unsigned int> (0);
+  return 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1755,7 +1755,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
 
 extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
-  CheckAccess (f, static_cast<FileUsage> (openedforwrite), TRUE);
+  CheckAccess (f, openedforwrite, TRUE);
   if ((BufferedWrite (f, _a_high, a)) == _a_high)
     {}  /* empty.  */
 }
@@ -1767,7 +1767,7 @@ extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high
 
 extern "C" void FIO_WriteChar (FIO_File f, char ch)
 {
-  CheckAccess (f, static_cast<FileUsage> (openedforwrite), TRUE);
+  CheckAccess (f, openedforwrite, TRUE);
   if ((BufferedWrite (f, sizeof (ch), &ch)) == sizeof (ch))
     {}  /* empty.  */
 }
@@ -1781,10 +1781,10 @@ extern "C" unsigned int FIO_EOF (FIO_File f)
 {
   FileDescriptor fd;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           return fd->state == endoffile;
@@ -1806,14 +1806,14 @@ extern "C" unsigned int FIO_EOLN (FIO_File f)
   char ch;
   FileDescriptor fd;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   /* 
       we will read a character and then push it back onto the input stream,
       having noted the file status, we also reset the status.
   */
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           if ((fd->state == successful) || (fd->state == endofline))
@@ -1841,14 +1841,14 @@ extern "C" unsigned int FIO_WasEOLN (FIO_File f)
 {
   FileDescriptor fd;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if (f == Error)
     {
       return FALSE;
     }
   else
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       return (fd != NULL) && (fd->state == endofline);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1866,7 +1866,7 @@ extern "C" char FIO_ReadChar (FIO_File f)
 {
   char ch;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if ((BufferedRead (f, sizeof (ch), &ch)) == sizeof (ch))
     {
       SetEndOfLine (f, ch);
@@ -1899,10 +1899,10 @@ extern "C" void FIO_UnReadChar (FIO_File f, char ch)
   void * a;
   void * b;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (((fd->state == successful) || (fd->state == endoffile)) || (fd->state == endofline))
         {
           /* avoid dangling else.  */
@@ -1911,9 +1911,9 @@ extern "C" void FIO_UnReadChar (FIO_File f, char ch)
               /* we assume that a ReadChar has occurred, we will check just in case.  */
               if (fd->state == endoffile)
                 {
-                  fd->buffer->position = static_cast<unsigned int> (MaxBufferLength);
-                  fd->buffer->left = static_cast<unsigned int> (0);
-                  fd->buffer->filled = static_cast<unsigned int> (0);
+                  fd->buffer->position = MaxBufferLength;
+                  fd->buffer->left = 0;
+                  fd->buffer->filled = 0;
                   fd->state = successful;
                 }
               if (fd->buffer->position > 0)
@@ -1989,9 +1989,9 @@ extern "C" void FIO_ReadString (FIO_File f, char *a, unsigned int _a_high)
   unsigned int i;
   char ch;
 
-  CheckAccess (f, static_cast<FileUsage> (openedforread), FALSE);
+  CheckAccess (f, openedforread, FALSE);
   high = _a_high;
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     ch = FIO_ReadChar (f);
     if (i <= high)
@@ -2051,14 +2051,14 @@ extern "C" int FIO_GetUnixFileDescriptor (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           return fd->unixfd;
         }
     }
   FormatError1 ((const char *) "file %d has not been opened or is out of range\\n", 48, (const unsigned char *) &f, (sizeof (f)-1));
-  return static_cast<int> (-1);
+  return -1;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2075,7 +2075,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           /* always force the lseek, until we are confident that abspos is always correct,
@@ -2091,10 +2091,10 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
                     }
                   else
                     {
-                      fd->buffer->left = static_cast<unsigned int> (0);
+                      fd->buffer->left = 0;
                     }
-                  fd->buffer->position = static_cast<unsigned int> (0);
-                  fd->buffer->filled = static_cast<unsigned int> (0);
+                  fd->buffer->position = 0;
+                  fd->buffer->filled = 0;
                 }
               offset = libc_lseek (fd->unixfd, pos, SEEK_SET);
               if ((offset >= 0) && (pos == offset))
@@ -2104,7 +2104,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
               else
                 {
                   fd->state = failed;
-                  fd->abspos = static_cast<long int> (0);
+                  fd->abspos = 0;
                 }
               if (fd->buffer != NULL)
                 {
@@ -2128,7 +2128,7 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           FIO_FlushBuffer (f);
@@ -2140,10 +2140,10 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
                 }
               else
                 {
-                  fd->buffer->left = static_cast<unsigned int> (0);
+                  fd->buffer->left = 0;
                 }
-              fd->buffer->position = static_cast<unsigned int> (0);
-              fd->buffer->filled = static_cast<unsigned int> (0);
+              fd->buffer->position = 0;
+              fd->buffer->filled = 0;
             }
           offset = libc_lseek (fd->unixfd, pos, SEEK_END);
           if (offset >= 0)
@@ -2153,8 +2153,8 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
           else
             {
               fd->state = failed;
-              fd->abspos = static_cast<long int> (0);
-              offset = static_cast<long int> (0);
+              fd->abspos = 0;
+              offset = 0;
             }
           if (fd->buffer != NULL)
             {
@@ -2176,7 +2176,7 @@ extern "C" long int FIO_FindPosition (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd != NULL)
         {
           if ((fd->buffer == NULL) || ! fd->buffer->valid)
@@ -2189,7 +2189,7 @@ extern "C" long int FIO_FindPosition (FIO_File f)
             }
         }
     }
-  return static_cast<long int> (0);
+  return 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2209,7 +2209,7 @@ extern "C" void FIO_GetFileName (FIO_File f, char *a, unsigned int _a_high)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd == NULL)
         {
           FormatError ((const char *) "this file has probably been closed and not reopened successfully or alternatively never opened\\n", 96);
@@ -2225,7 +2225,7 @@ extern "C" void FIO_GetFileName (FIO_File f, char *a, unsigned int _a_high)
           else
             {
               p = static_cast<_T6> (fd->name.address);
-              i = static_cast<unsigned int> (0);
+              i = 0;
               while (((*p) != ASCII_nul) && (i <= _a_high))
                 {
                   a[i] = (*p);
@@ -2248,7 +2248,7 @@ extern "C" void * FIO_getFileName (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd == NULL)
         {
           FormatError ((const char *) "this file has probably been closed and not reopened successfully or alternatively never opened\\n", 96);
@@ -2275,7 +2275,7 @@ extern "C" unsigned int FIO_getFileNameLength (FIO_File f)
 
   if (f != Error)
     {
-      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, static_cast<unsigned int> (f)));
+      fd = static_cast<FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (fd == NULL)
         {
           FormatError ((const char *) "this file has probably been closed and not reopened successfully or alternatively never opened\\n", 96);

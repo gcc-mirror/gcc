@@ -184,10 +184,10 @@ static void ErrChar (char ch)
 
 static void Init (void)
 {
-  ExitStatus = static_cast<unsigned int> (0);
-  StackPtr = static_cast<unsigned int> (0);
-  LineNo = static_cast<unsigned int> (1);
-  Column = static_cast<unsigned int> (0);
+  ExitStatus = 0;
+  StackPtr = 0;
+  LineNo = 1;
+  Column = 0;
 }
 
 
@@ -241,7 +241,7 @@ extern "C" char PushBackInput_GetCh (FIO_File f)
           } while (! (((ch != ASCII_cr) || (FIO_EOF (f))) || (! (FIO_IsNoError (f)))));
           if (ch == ASCII_lf)
             {
-              Column = static_cast<unsigned int> (0);
+              Column = 0;
               LineNo += 1;
             }
           else
@@ -372,7 +372,7 @@ extern "C" void PushBackInput_WarnError (const char *a_, unsigned int _a_high)
   StrIO_WriteString ((const char *) a, _a_high);
   StrIO_WriteLn ();
   StdIO_PopOutput ();
-  ExitStatus = static_cast<unsigned int> (1);
+  ExitStatus = 1;
 }
 
 
@@ -411,7 +411,7 @@ extern "C" void PushBackInput_WarnString (DynamicStrings_String s)
         p += 1;
       }
   } while (! ((p == NULL) || ((*p) == ASCII_nul)));
-  ExitStatus = static_cast<unsigned int> (1);
+  ExitStatus = 1;
 }
 
 
@@ -455,7 +455,7 @@ extern "C" unsigned int PushBackInput_GetColumnPosition (void)
 {
   if (StackPtr > Column)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {

@@ -316,8 +316,8 @@ static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsi
                            if they consist of of %a then this is translated
                            into a String and %a is replaced by %s.
   */
-  argno = static_cast<unsigned int> (1);
-  i = static_cast<unsigned int> (0);
+  argno = 1;
+  i = 0;
   h = StrLib_StrLen ((const char *) a, _a_high);
   while (i < h)
     {
@@ -599,7 +599,7 @@ static DynamicStrings_String doFormat3 (const char *a_, unsigned int _a_high, co
 
 static void init (void)
 {
-  head = static_cast<mcError_error> (NULL);
+  head = NULL;
   inInternal = FALSE;
 }
 
@@ -825,9 +825,9 @@ extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
   Storage_ALLOCATE ((void **) &e, sizeof (_T2));
   e->s = static_cast<DynamicStrings_String> (NULL);
   e->token = atTokenNo;
-  e->next = static_cast<mcError_error> (NULL);
-  e->parent = static_cast<mcError_error> (NULL);
-  e->child = static_cast<mcError_error> (NULL);
+  e->next = NULL;
+  e->parent = NULL;
+  e->child = NULL;
   e->fatal = TRUE;
   if ((head == NULL) || (head->token > atTokenNo))
     {
@@ -888,7 +888,7 @@ extern "C" mcError_error mcError_chainError (unsigned int atTokenNo, mcError_err
       f->token = atTokenNo;
       f->next = e->child;
       f->parent = e;
-      f->child = static_cast<mcError_error> (NULL);
+      f->child = NULL;
       f->fatal = e->fatal;
       e->child = f;
     }

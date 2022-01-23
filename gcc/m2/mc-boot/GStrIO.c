@@ -152,7 +152,7 @@ extern "C" void StrIO_ReadString (char *a, unsigned int _a_high)
   char ch;
 
   high = _a_high;
-  n = static_cast<unsigned int> (0);
+  n = 0;
   do {
     StdIO_Read (&ch);
     if ((ch == ASCII_del) || (ch == ASCII_bs))
@@ -258,7 +258,7 @@ extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   high = _a_high;
-  n = static_cast<unsigned int> (0);
+  n = 0;
   while ((n <= high) && (a[n] != ASCII_nul))
     {
       StdIO_Write (a[n]);

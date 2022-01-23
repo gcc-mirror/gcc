@@ -165,7 +165,7 @@ extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a
       if ((_a_high+1) == v->arg.array[v->i].len)
         {
           p = static_cast<_T1> (v->arg.array[v->i].ptr);
-          j = static_cast<unsigned int> (0);
+          j = 0;
           while (j <= _a_high)
             {
               a[j] = (*p);
@@ -244,7 +244,7 @@ extern "C" void varargs_replace (varargs_vararg v, unsigned char *a, unsigned in
       if ((_a_high+1) == v->arg.array[v->i].len)
         {
           p = static_cast<_T2> (v->arg.array[v->i].ptr);
-          j = static_cast<unsigned int> (0);
+          j = 0;
           while (j <= _a_high)
             {
               (*p) = a[j];
@@ -288,8 +288,8 @@ extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int 
   memcpy (a, a_, _a_high+1);
 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
-  v->i = static_cast<unsigned int> (0);
-  v->nArgs = static_cast<unsigned int> (1);
+  v->i = 0;
+  v->nArgs = 1;
   v->size = _a_high+1;
   Storage_ALLOCATE (&v->contents, v->size);
   v->contents = libc_memcpy (v->contents, &a, static_cast<size_t> (v->size));
@@ -319,8 +319,8 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
   memcpy (b, b_, _b_high+1);
 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
-  v->i = static_cast<unsigned int> (0);
-  v->nArgs = static_cast<unsigned int> (2);
+  v->i = 0;
+  v->nArgs = 2;
   v->size = (_a_high+_b_high)+2;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T3> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
@@ -356,8 +356,8 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
   memcpy (c, c_, _c_high+1);
 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
-  v->i = static_cast<unsigned int> (0);
-  v->nArgs = static_cast<unsigned int> (3);
+  v->i = 0;
+  v->nArgs = 3;
   v->size = ((_a_high+_b_high)+_c_high)+3;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T4> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
@@ -399,8 +399,8 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
   memcpy (d, d_, _d_high+1);
 
   Storage_ALLOCATE ((void **) &v, sizeof (_T6));
-  v->i = static_cast<unsigned int> (0);
-  v->nArgs = static_cast<unsigned int> (4);
+  v->i = 0;
+  v->nArgs = 4;
   v->size = (((_a_high+_b_high)+_c_high)+_d_high)+4;
   Storage_ALLOCATE (&v->contents, v->size);
   p = static_cast<_T5> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));

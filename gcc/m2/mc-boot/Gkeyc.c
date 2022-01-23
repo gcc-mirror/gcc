@@ -1086,8 +1086,8 @@ static void init (void)
   seenSysTypes = FALSE;
   initializedCP = FALSE;
   initializedGCC = FALSE;
-  stack = static_cast<scope> (NULL);
-  freeList = static_cast<scope> (NULL);
+  stack = NULL;
+  freeList = NULL;
   initKeywords ();
   initMacros ();
 }
@@ -1492,7 +1492,7 @@ extern "C" void keyc_leaveScope (decl_node n)
       stack = stack->next;
       s->scoped = static_cast<decl_node> (NULL);
       symbolKey_killTree (&s->symbols);
-      s->next = static_cast<scope> (NULL);
+      s->next = NULL;
     }
   else
     {

@@ -432,9 +432,9 @@ static void debugLex (unsigned int n)
     }
   else
     {
-      o = static_cast<unsigned int> (0);
+      o = 0;
     }
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     t = o+i;
     if (nextTokNo == t)
@@ -512,7 +512,7 @@ static tokenBucket peeptokenBucket (unsigned int *t)
             nextTokNo = old+1;
             b = findtokenBucket (&old);
             updateFromBucket (b, old);
-            return static_cast<tokenBucket> (NULL);
+            return NULL;
           }
       }
   } while (! ((b != NULL) || (mcLexBuf_currenttoken == mcReserved_eoftok)));
@@ -562,7 +562,7 @@ static void peepAfterComment (void)
   cno = mcLexBuf_getTokenNo ();
   curline = mcLexBuf_tokenToLineNo (cno, 0);
   nextline = curline;
-  peep = static_cast<unsigned int> (0);
+  peep = 0;
   finished = FALSE;
   do {
     t = cno+peep;
@@ -613,10 +613,10 @@ static void peepAfterComment (void)
 static void init (void)
 {
   mcLexBuf_currenttoken = mcReserved_eoftok;
-  nextTokNo = static_cast<unsigned int> (0);
-  currentSource = static_cast<sourceList> (NULL);
-  listOfTokens.head = static_cast<tokenBucket> (NULL);
-  listOfTokens.tail = static_cast<tokenBucket> (NULL);
+  nextTokNo = 0;
+  currentSource = NULL;
+  listOfTokens.head = NULL;
+  listOfTokens.tail = NULL;
   useBufferedTokens = FALSE;
   procedureComment = static_cast<mcComment_commentDesc> (NULL);
   bodyComment = static_cast<mcComment_commentDesc> (NULL);
@@ -668,8 +668,8 @@ static sourceList newElement (void * s)
   else
     {
       l->name = DynamicStrings_InitStringCharStar (s);
-      l->left = static_cast<sourceList> (NULL);
-      l->right = static_cast<sourceList> (NULL);
+      l->left = NULL;
+      l->right = NULL;
     }
   return l;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1208,7 +1208,7 @@ static tokenBucket findtokenBucket (unsigned int *tokenNo)
         }
       b = b->next;
     }
-  return static_cast<tokenBucket> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1238,7 +1238,7 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
         {}  /* empty.  */
       /* list error  */
       listOfTokens.tail = listOfTokens.head;
-      listOfTokens.tail->len = static_cast<unsigned int> (0);
+      listOfTokens.tail->len = 0;
     }
   else if (listOfTokens.tail->len == MaxBucketSize)
     {
@@ -1251,11 +1251,11 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
         {
           /* list error  */
           listOfTokens.tail = listOfTokens.tail->next;
-          listOfTokens.tail->len = static_cast<unsigned int> (0);
+          listOfTokens.tail->len = 0;
         }
       listOfTokens.lastBucketOffset += MaxBucketSize;
     }
-  listOfTokens.tail->next = static_cast<tokenBucket> (NULL);
+  listOfTokens.tail->next = NULL;
   mcDebug_assert (listOfTokens.tail->len != MaxBucketSize);
   listOfTokens.tail->buf.array[listOfTokens.tail->len].token = t;
   listOfTokens.tail->buf.array[listOfTokens.tail->len].str = n;
@@ -1433,7 +1433,7 @@ extern "C" void mcLexBuf_reInitialize (void)
 
 extern "C" void mcLexBuf_resetForNewPass (void)
 {
-  nextTokNo = static_cast<unsigned int> (0);
+  nextTokNo = 0;
   useBufferedTokens = TRUE;
 }
 
@@ -1486,7 +1486,7 @@ extern "C" void mcLexBuf_insertToken (mcReserved_toktype token)
         {
           listOfTokens.tail->buf.array[listOfTokens.tail->len-1].token = token;
         }
-      addTokToList (mcLexBuf_currenttoken, static_cast<nameKey_Name> (nameKey_NulName), 0, static_cast<mcComment_commentDesc> (NULL), mcLexBuf_getLineNo (), mcLexBuf_getColumnNo (), currentSource);
+      addTokToList (mcLexBuf_currenttoken, nameKey_NulName, 0, static_cast<mcComment_commentDesc> (NULL), mcLexBuf_getLineNo (), mcLexBuf_getColumnNo (), currentSource);
       mcLexBuf_getToken ();
     }
 }
@@ -1505,7 +1505,7 @@ extern "C" void mcLexBuf_insertTokenAndRewind (mcReserved_toktype token)
         {
           listOfTokens.tail->buf.array[listOfTokens.tail->len-1].token = token;
         }
-      addTokToList (mcLexBuf_currenttoken, static_cast<nameKey_Name> (nameKey_NulName), 0, static_cast<mcComment_commentDesc> (NULL), mcLexBuf_getLineNo (), mcLexBuf_getColumnNo (), currentSource);
+      addTokToList (mcLexBuf_currenttoken, nameKey_NulName, 0, static_cast<mcComment_commentDesc> (NULL), mcLexBuf_getLineNo (), mcLexBuf_getColumnNo (), currentSource);
       mcLexBuf_currenttoken = token;
     }
 }
@@ -1532,7 +1532,7 @@ extern "C" unsigned int mcLexBuf_getLineNo (void)
 {
   if (nextTokNo == 0)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1551,7 +1551,7 @@ extern "C" unsigned int mcLexBuf_getTokenNo (void)
 {
   if (nextTokNo == 0)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1578,7 +1578,7 @@ extern "C" unsigned int mcLexBuf_tokenToLineNo (unsigned int tokenNo, unsigned i
   b = findtokenBucket (&tokenNo);
   if (b == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1594,7 +1594,7 @@ extern "C" unsigned int mcLexBuf_tokenToLineNo (unsigned int tokenNo, unsigned i
               l = l->left;
               if (l == b->buf.array[tokenNo].file->left)
                 {
-                  return static_cast<unsigned int> (0);
+                  return 0;
                 }
               depth -= 1;
             }
@@ -1615,7 +1615,7 @@ extern "C" unsigned int mcLexBuf_getColumnNo (void)
 {
   if (nextTokNo == 0)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1642,7 +1642,7 @@ extern "C" unsigned int mcLexBuf_tokenToColumnNo (unsigned int tokenNo, unsigned
   b = findtokenBucket (&tokenNo);
   if (b == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1658,7 +1658,7 @@ extern "C" unsigned int mcLexBuf_tokenToColumnNo (unsigned int tokenNo, unsigned
               l = l->left;
               if (l == b->buf.array[tokenNo].file->left)
                 {
-                  return static_cast<unsigned int> (0);
+                  return 0;
                 }
               depth -= 1;
             }
@@ -1727,7 +1727,7 @@ extern "C" void mcLexBuf_addTok (mcReserved_toktype t)
 {
   if (! ((t == mcReserved_eoftok) && (isLastTokenEof ())))
     {
-      addTokToList (t, static_cast<nameKey_Name> (nameKey_NulName), 0, static_cast<mcComment_commentDesc> (NULL), mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
+      addTokToList (t, nameKey_NulName, 0, static_cast<mcComment_commentDesc> (NULL), mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
       currentUsed = TRUE;
     }
 }
@@ -1774,7 +1774,7 @@ extern "C" void mcLexBuf_addTokInteger (mcReserved_toktype t, int i)
 
 extern "C" void mcLexBuf_addTokComment (mcReserved_toktype t, mcComment_commentDesc com)
 {
-  addTokToList (t, static_cast<nameKey_Name> (nameKey_NulName), 0, com, mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
+  addTokToList (t, nameKey_NulName, 0, com, mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
   currentUsed = TRUE;
 }
 

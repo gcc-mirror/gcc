@@ -104,7 +104,7 @@ extern "C" mcStack_stack mcStack_init (void)
 
   Storage_ALLOCATE ((void **) &s, sizeof (_T1));
   s->list = Indexing_InitIndex (1);
-  s->count = static_cast<unsigned int> (0);
+  s->count = 0;
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -119,7 +119,7 @@ extern "C" void mcStack_kill (mcStack_stack *s)
 {
   (*s)->list = Indexing_KillIndex ((*s)->list);
   Storage_DEALLOCATE ((void **) &(*s), sizeof (_T1));
-  (*s) = static_cast<mcStack_stack> (NULL);
+  (*s) = NULL;
 }
 
 

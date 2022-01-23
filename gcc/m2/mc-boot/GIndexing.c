@@ -166,12 +166,12 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
 
   Storage_ALLOCATE ((void **) &i, sizeof (_T2));
   i->Low = low;
-  i->High = static_cast<unsigned int> (0);
-  i->ArraySize = static_cast<unsigned int> (MinSize);
+  i->High = 0;
+  i->ArraySize = MinSize;
   Storage_ALLOCATE (&i->ArrayStart, MinSize);
   i->ArrayStart = libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize));
   i->Debug = FALSE;
-  i->Used = static_cast<unsigned int> (0);
+  i->Used = 0;
   i->Map = (unsigned int) 0;
   return i;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -187,7 +187,7 @@ extern "C" Indexing_Index Indexing_KillIndex (Indexing_Index i)
 {
   Storage_DEALLOCATE (&i->ArrayStart, i->ArraySize);
   Storage_DEALLOCATE ((void **) &i, sizeof (_T2));
-  return static_cast<Indexing_Index> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

@@ -66,7 +66,7 @@ extern "C" void TimeString_GetTimeString (char *a, unsigned int _a_high)
   unsigned int i;
 
   Addr = static_cast<_T1> (wrapc_strtime ());
-  i = static_cast<unsigned int> (0);
+  i = 0;
   if (Addr != NULL)
     {
       while ((i < _a_high) && ((*Addr) != ASCII_nul))

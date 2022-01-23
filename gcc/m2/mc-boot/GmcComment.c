@@ -294,7 +294,7 @@ extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces)
       cd->type = afterStatement;
     }
   cd->content = DynamicStrings_InitString ((const char *) "", 0);
-  cd->procName = static_cast<nameKey_Name> (nameKey_NulName);
+  cd->procName = nameKey_NulName;
   cd->used = FALSE;
   return cd;
   /* static analysis guarentees a RETURN statement will be used before here.  */

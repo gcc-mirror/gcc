@@ -171,8 +171,8 @@ extern "C" lists_list lists_initList (void)
   lists_list l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (_T1));
-  l->noOfelements = static_cast<unsigned int> (0);
-  l->next = static_cast<lists_list> (NULL);
+  l->noOfelements = 0;
+  l->next = NULL;
   return l;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -257,11 +257,11 @@ extern "C" unsigned int lists_getIndexOfList (lists_list l, void * c)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      i = static_cast<unsigned int> (1);
+      i = 1;
       while (i <= l->noOfelements)
         {
           if (l->elements.array[i-1] == c)
@@ -290,11 +290,11 @@ extern "C" unsigned int lists_noOfItemsInList (lists_list l)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      t = static_cast<unsigned int> (0);
+      t = 0;
       do {
         t += l->noOfelements;
         l = l->next;
@@ -334,9 +334,9 @@ extern "C" void lists_removeItemFromList (lists_list l, void * c)
   if (l != NULL)
     {
       found = FALSE;
-      p = static_cast<lists_list> (NULL);
+      p = NULL;
       do {
-        i = static_cast<unsigned int> (1);
+        i = 1;
         while ((i <= l->noOfelements) && (l->elements.array[i-1] != c))
           {
             i += 1;
@@ -368,7 +368,7 @@ extern "C" unsigned int lists_isItemInList (lists_list l, void * c)
   unsigned int i;
 
   do {
-    i = static_cast<unsigned int> (1);
+    i = 1;
     while (i <= l->noOfelements)
       {
         if (l->elements.array[i-1] == c)
@@ -398,7 +398,7 @@ extern "C" void lists_foreachItemInListDo (lists_list l, symbolKey_performOperat
   unsigned int n;
 
   n = lists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       (*p.proc) (lists_getItemFromList (l, i));
@@ -419,7 +419,7 @@ extern "C" lists_list lists_duplicateList (lists_list l)
 
   m = lists_initList ();
   n = lists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       lists_putItemIntoList (m, lists_getItemFromList (l, i));

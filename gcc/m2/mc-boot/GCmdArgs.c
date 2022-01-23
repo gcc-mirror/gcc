@@ -111,7 +111,7 @@ static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high
 
   HighA = _Arg_high;  /* Index into Arg  */
   HighC = StrLib_StrLen ((const char *) CmdLine, _CmdLine_high);
-  ArgIndex = static_cast<unsigned int> (0);
+  ArgIndex = 0;
   /* Skip spaces  */
   while (((*CmdIndex) < HighC) && (Space (CmdLine[(*CmdIndex)])))
     {
@@ -267,9 +267,9 @@ extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdL
   /* make a local copy of each unbounded array.  */
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
-  Index = static_cast<unsigned int> (0);
+  Index = 0;
   /* Continually retrieve an argument until we get the n th argument.  */
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     Another = GetNextArg ((const char *) CmdLine, _CmdLine_high, &Index, (char *) Argi, _Argi_high);
     i += 1;
@@ -297,7 +297,7 @@ extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLin
   /* make a local copy of each unbounded array.  */
   memcpy (CmdLine, CmdLine_, _CmdLine_high+1);
 
-  ArgNo = static_cast<unsigned int> (0);
+  ArgNo = 0;
   while (CmdArgs_GetArg ((const char *) CmdLine, _CmdLine_high, ArgNo, (char *) &a.array[0], 1000))
     {
       ArgNo += 1;

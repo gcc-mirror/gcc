@@ -186,12 +186,12 @@ static nameKey_Name doMakeKey (ptrToChar n, unsigned int higha)
           Storage_ALLOCATE ((void **) &child, sizeof (_T1));
           father->right = child;
         }
-      child->right = static_cast<nameNode> (NULL);
-      child->left = static_cast<nameNode> (NULL);
+      child->right = NULL;
+      child->left = NULL;
       lastIndice += 1;
       child->key = lastIndice;
       child->data = n;
-      Indexing_PutIndice (keyIndex, static_cast<unsigned int> (child->key), reinterpret_cast<void *> (n));
+      Indexing_PutIndice (keyIndex, child->key, reinterpret_cast<void *> (n));
       k = lastIndice;
     }
   else
@@ -313,7 +313,7 @@ extern "C" nameKey_Name nameKey_makeKey (const char *a_, unsigned int _a_high)
   else
     {
       n = p;
-      i = static_cast<unsigned int> (0);
+      i = 0;
       while (i < higha)
         {
           (*p) = a[i];
@@ -346,7 +346,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
 
   if (a == NULL)
     {
-      return static_cast<nameKey_Name> (nameKey_NulName);
+      return nameKey_NulName;
     }
   else
     {
@@ -361,7 +361,7 @@ extern "C" nameKey_Name nameKey_makekey (void * a)
         {
           n = p;
           pa = static_cast<ptrToChar> (a);
-          i = static_cast<unsigned int> (0);
+          i = 0;
           while (i < higha)
             {
               (*p) = (*pa);
@@ -389,7 +389,7 @@ extern "C" void nameKey_getKey (nameKey_Name key, char *a, unsigned int _a_high)
   unsigned int higha;
 
   p = static_cast<ptrToChar> (nameKey_keyToCharStar (key));
-  i = static_cast<unsigned int> (0);
+  i = 0;
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
     {
@@ -414,7 +414,7 @@ extern "C" unsigned int nameKey_lengthKey (nameKey_Name key)
   ptrToChar p;
 
   p = static_cast<ptrToChar> (nameKey_keyToCharStar (key));
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while ((*p) != ASCII_nul)
     {
       i += 1;
@@ -448,7 +448,7 @@ extern "C" unsigned int nameKey_isKey (const char *a_, unsigned int _a_high)
   if (child != NULL)
     {
       do {
-        i = static_cast<unsigned int> (0);
+        i = 0;
         higha = _a_high;
         p = static_cast<ptrToChar> (nameKey_keyToCharStar (child->key));
         while ((i <= higha) && (a[i] != ASCII_nul))
@@ -559,13 +559,13 @@ extern "C" unsigned int nameKey_isSameExcludingCase (nameKey_Name key1, nameKey_
 
 extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
 {
-  if ((key == nameKey_NulName) || (! (Indexing_InBounds (keyIndex, static_cast<unsigned int> (key)))))
+  if ((key == nameKey_NulName) || (! (Indexing_InBounds (keyIndex, key))))
     {
       return NULL;
     }
   else
     {
-      return Indexing_GetIndice (keyIndex, static_cast<unsigned int> (key));
+      return Indexing_GetIndice (keyIndex, key);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -573,10 +573,10 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
 
 extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  lastIndice = static_cast<unsigned int> (0);
+  lastIndice = 0;
   keyIndex = Indexing_InitIndex (1);
   Storage_ALLOCATE ((void **) &binaryTree, sizeof (_T1));
-  binaryTree->left = static_cast<nameNode> (NULL);
+  binaryTree->left = NULL;
 }
 
 extern "C" void _M2_nameKey_finish (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])

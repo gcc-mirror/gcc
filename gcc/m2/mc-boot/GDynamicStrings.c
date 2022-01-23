@@ -769,7 +769,7 @@ static unsigned int Capture (DynamicStrings_String s)
  *   #endif
   */
   captured = s;
-  return static_cast<unsigned int> (1);
+  return 1;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -978,7 +978,7 @@ static void AddTo (DynamicStrings_String *list, DynamicStrings_String s)
   if ((*list) == NULL)
     {
       (*list) = s;
-      s->debug.next = static_cast<DynamicStrings_String> (NULL);
+      s->debug.next = NULL;
     }
   else
     {
@@ -1017,7 +1017,7 @@ static void SubFrom (DynamicStrings_String *list, DynamicStrings_String s)
           return ;
         }
     }
-  s->debug.next = static_cast<DynamicStrings_String> (NULL);
+  s->debug.next = NULL;
 }
 
 
@@ -1174,9 +1174,9 @@ static void SubDebugInfo (DynamicStrings_String s)
 
 static void AddDebugInfo (DynamicStrings_String s)
 {
-  s->debug.next = static_cast<DynamicStrings_String> (NULL);
+  s->debug.next = NULL;
   s->debug.file = NULL;
-  s->debug.line = static_cast<unsigned int> (0);
+  s->debug.line = 0;
   s->debug.proc = NULL;
   if (CheckOn)
     {
@@ -1207,11 +1207,11 @@ static void ConcatContents (Contents *c, const char *a_, unsigned int _a_high, u
     }
   if (o < h)
     {
-      (*c).len = static_cast<unsigned int> (MaxBuf);
+      (*c).len = MaxBuf;
       Storage_ALLOCATE ((void **) &(*c).next, sizeof (stringRecord));
-      (*c).next->head = static_cast<Descriptor> (NULL);
-      (*c).next->contents.len = static_cast<unsigned int> (0);
-      (*c).next->contents.next = static_cast<DynamicStrings_String> (NULL);
+      (*c).next->head = NULL;
+      (*c).next->contents.len = 0;
+      (*c).next->contents.next = NULL;
       ConcatContents (&(*c).next->contents, (const char *) a, _a_high, h, o);
       AddDebugInfo ((*c).next);
       (*c).next = AssignDebug ((*c).next, (const char *) "/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs/DynamicStrings.mod", 86, 722, (const char *) "ConcatContents", 14);
@@ -1237,7 +1237,7 @@ static void DeallocateCharStar (DynamicStrings_String s)
         }
       s->head->charStarUsed = FALSE;
       s->head->charStar = NULL;
-      s->head->charStarSize = static_cast<unsigned int> (0);
+      s->head->charStarSize = 0;
       s->head->charStarValid = FALSE;
     }
 }
@@ -1290,7 +1290,7 @@ static void ConcatContentsAddress (Contents *c, void * a, unsigned int h)
   unsigned int i;
   unsigned int j;
 
-  j = static_cast<unsigned int> (0);
+  j = 0;
   i = (*c).len;
   p = static_cast<_T1> (a);
   while ((j < h) && (i < MaxBuf))
@@ -1303,11 +1303,11 @@ static void ConcatContentsAddress (Contents *c, void * a, unsigned int h)
   if (j < h)
     {
       /* avoid dangling else.  */
-      (*c).len = static_cast<unsigned int> (MaxBuf);
+      (*c).len = MaxBuf;
       Storage_ALLOCATE ((void **) &(*c).next, sizeof (stringRecord));
-      (*c).next->head = static_cast<Descriptor> (NULL);
-      (*c).next->contents.len = static_cast<unsigned int> (0);
-      (*c).next->contents.next = static_cast<DynamicStrings_String> (NULL);
+      (*c).next->head = NULL;
+      (*c).next->contents.len = 0;
+      (*c).next->contents.next = NULL;
       ConcatContentsAddress (&(*c).next->contents, reinterpret_cast<void *> (p), h-j);
       AddDebugInfo ((*c).next);
       if (TraceOn)
@@ -1318,7 +1318,7 @@ static void ConcatContentsAddress (Contents *c, void * a, unsigned int h)
   else
     {
       (*c).len = i;
-      (*c).next = static_cast<DynamicStrings_String> (NULL);
+      (*c).next = NULL;
     }
 }
 
@@ -1504,7 +1504,7 @@ static void Init (void)
   if (! Initialized)
     {
       Initialized = TRUE;
-      frameHead = static_cast<frame> (NULL);
+      frameHead = NULL;
       DynamicStrings_PushAllocation ();
     }
 }
@@ -1524,15 +1524,15 @@ extern "C" DynamicStrings_String DynamicStrings_InitString (const char *a_, unsi
   memcpy (a, a_, _a_high+1);
 
   Storage_ALLOCATE ((void **) &s, sizeof (stringRecord));
-  s->contents.len = static_cast<unsigned int> (0);
-  s->contents.next = static_cast<DynamicStrings_String> (NULL);
+  s->contents.len = 0;
+  s->contents.next = NULL;
   ConcatContents (&s->contents, (const char *) a, _a_high, StrLib_StrLen ((const char *) a, _a_high), 0);
   Storage_ALLOCATE ((void **) &s->head, sizeof (descriptor));
   s->head->charStarUsed = FALSE;
   s->head->charStar = NULL;
-  s->head->charStarSize = static_cast<unsigned int> (0);
+  s->head->charStarSize = 0;
   s->head->charStarValid = FALSE;
-  s->head->garbage = static_cast<DynamicStrings_String> (NULL);
+  s->head->garbage = NULL;
   s->head->state = inuse;
   AddDebugInfo (s);
   if (TraceOn)
@@ -1584,7 +1584,7 @@ extern "C" DynamicStrings_String DynamicStrings_KillString (DynamicStrings_Strin
           if (! PoisonOn)
             {
               Storage_DEALLOCATE ((void **) &s->head, sizeof (descriptor));
-              s->head = static_cast<Descriptor> (NULL);
+              s->head = NULL;
             }
         }
       t = DynamicStrings_KillString (s->contents.next);
@@ -1593,7 +1593,7 @@ extern "C" DynamicStrings_String DynamicStrings_KillString (DynamicStrings_Strin
           Storage_DEALLOCATE ((void **) &s, sizeof (stringRecord));
         }
     }
-  return static_cast<DynamicStrings_String> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1624,8 +1624,8 @@ extern "C" DynamicStrings_String DynamicStrings_InitStringCharStar (void * a)
   DynamicStrings_String s;
 
   Storage_ALLOCATE ((void **) &s, sizeof (stringRecord));
-  s->contents.len = static_cast<unsigned int> (0);
-  s->contents.next = static_cast<DynamicStrings_String> (NULL);
+  s->contents.len = 0;
+  s->contents.next = NULL;
   if (a != NULL)
     {
       ConcatContentsAddress (&s->contents, a, static_cast<unsigned int> (libc_strlen (a)));
@@ -1633,9 +1633,9 @@ extern "C" DynamicStrings_String DynamicStrings_InitStringCharStar (void * a)
   Storage_ALLOCATE ((void **) &s->head, sizeof (descriptor));
   s->head->charStarUsed = FALSE;
   s->head->charStar = NULL;
-  s->head->charStarSize = static_cast<unsigned int> (0);
+  s->head->charStarSize = 0;
   s->head->charStarValid = FALSE;
-  s->head->garbage = static_cast<DynamicStrings_String> (NULL);
+  s->head->garbage = NULL;
   s->head->state = inuse;
   AddDebugInfo (s);
   if (TraceOn)
@@ -1701,7 +1701,7 @@ extern "C" unsigned int DynamicStrings_Length (DynamicStrings_String s)
 {
   if (s == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -1802,7 +1802,7 @@ extern "C" DynamicStrings_String DynamicStrings_Assign (DynamicStrings_String a,
   if ((a != NULL) && (b != NULL))
     {
       a->contents.next = DynamicStrings_KillString (a->contents.next);
-      a->contents.len = static_cast<unsigned int> (0);
+      a->contents.len = 0;
     }
   return DynamicStrings_ConCat (a, b);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1870,7 +1870,7 @@ extern "C" unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicSt
     {
       while ((a != NULL) && (b != NULL))
         {
-          i = static_cast<unsigned int> (0);
+          i = 0;
           Assertion_Assert (a->contents.len == b->contents.len);
           while (i < a->contents.len)
             {
@@ -2039,11 +2039,11 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
   else
     {
       /* make sure high is <= Length (s)  */
-      high = static_cast<int> (Min (DynamicStrings_Length (s), static_cast<unsigned int> (high)));
+      high = Min (DynamicStrings_Length (s), static_cast<unsigned int> (high));
     }
   d = DynamicStrings_InitString ((const char *) "", 0);
   d = AddToGarbage (d, s);
-  o = static_cast<int> (0);
+  o = 0;
   t = d;
   while (s != NULL)
     {
@@ -2051,27 +2051,27 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
         {
           if (o > high)
             {
-              s = static_cast<DynamicStrings_String> (NULL);
+              s = NULL;
             }
           else
             {
               /* found sliceable unit  */
               if (low < o)
                 {
-                  start = static_cast<int> (0);
+                  start = 0;
                 }
               else
                 {
                   start = low-o;
                 }
-              end = static_cast<int> (Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0));
+              end = Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0);
               while (t->contents.len == MaxBuf)
                 {
                   if (t->contents.next == NULL)
                     {
                       Storage_ALLOCATE ((void **) &t->contents.next, sizeof (stringRecord));
-                      t->contents.next->head = static_cast<Descriptor> (NULL);
-                      t->contents.next->contents.len = static_cast<unsigned int> (0);
+                      t->contents.next->head = NULL;
+                      t->contents.next->contents.len = 0;
                       AddDebugInfo (t->contents.next);
                       if (TraceOn)
                         {
@@ -2116,7 +2116,7 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
     {
       s = CheckPoisoned (s);
     }
-  k = static_cast<unsigned int> (0);
+  k = 0;
   while (s != NULL)
     {
       if ((k+s->contents.len) < o)
@@ -2130,7 +2130,7 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
             {
               if (s->contents.buf.array[i] == ch)
                 {
-                  return static_cast<int> (k+i);
+                  return k+i;
                 }
               i += 1;
             }
@@ -2139,7 +2139,7 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
         }
       s = s->contents.next;
     }
-  return static_cast<int> (-1);
+  return -1;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2161,8 +2161,8 @@ extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned
     {
       s = CheckPoisoned (s);
     }
-  j = static_cast<int> (-1);
-  k = static_cast<unsigned int> (0);
+  j = -1;
+  k = 0;
   while (s != NULL)
     {
       if ((k+s->contents.len) < o)
@@ -2173,7 +2173,7 @@ extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned
         {
           if (o < k)
             {
-              i = static_cast<unsigned int> (0);
+              i = 0;
             }
           else
             {
@@ -2183,7 +2183,7 @@ extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned
             {
               if (s->contents.buf.array[i] == ch)
                 {
-                  j = static_cast<int> (k);
+                  j = k;
                 }
               k += 1;
               i += 1;
@@ -2238,7 +2238,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicString
 {
   unsigned int i;
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while (IsWhite (DynamicStrings_char (s, static_cast<int> (i))))
     {
       i += 1;
@@ -2297,7 +2297,7 @@ extern "C" DynamicStrings_String DynamicStrings_ToUpper (DynamicStrings_String s
       t = s;
       while (t != NULL)
         {
-          i = static_cast<unsigned int> (0);
+          i = 0;
           while (i < t->contents.len)
             {
               ch = t->contents.buf.array[i];
@@ -2334,7 +2334,7 @@ extern "C" DynamicStrings_String DynamicStrings_ToLower (DynamicStrings_String s
       t = s;
       while (t != NULL)
         {
-          i = static_cast<unsigned int> (0);
+          i = 0;
           while (i < t->contents.len)
             {
               ch = t->contents.buf.array[i];
@@ -2363,7 +2363,7 @@ extern "C" void DynamicStrings_CopyOut (char *a, unsigned int _a_high, DynamicSt
   unsigned int l;
 
   l = Min (_a_high+1, DynamicStrings_Length (s));
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while (i < l)
     {
       a[i] = DynamicStrings_char (s, static_cast<int> (i));
@@ -2394,7 +2394,7 @@ extern "C" char DynamicStrings_char (DynamicStrings_String s, int i)
     }
   else
     {
-      c = static_cast<unsigned int> (i);
+      c = i;
     }
   while ((s != NULL) && (c >= s->contents.len))
     {
@@ -2451,7 +2451,7 @@ extern "C" void * DynamicStrings_string (DynamicStrings_String s)
           a = s;
           while (a != NULL)
             {
-              i = static_cast<unsigned int> (0);
+              i = 0;
               while (i < a->contents.len)
                 {
                   (*p) = a->contents.buf.array[i];
@@ -2590,8 +2590,8 @@ extern "C" void DynamicStrings_PushAllocation (void)
       Init ();
       Storage_ALLOCATE ((void **) &f, sizeof (frameRec));
       f->next = frameHead;
-      f->alloc = static_cast<DynamicStrings_String> (NULL);
-      f->dealloc = static_cast<DynamicStrings_String> (NULL);
+      f->alloc = NULL;
+      f->dealloc = NULL;
       frameHead = f;
     }
 }
@@ -2610,7 +2610,7 @@ extern "C" void DynamicStrings_PopAllocation (unsigned int halt)
 {
   if (CheckOn)
     {
-      if ((DynamicStrings_PopAllocationExemption (halt, reinterpret_cast<DynamicStrings_String> (NULL))) == NULL)
+      if ((DynamicStrings_PopAllocationExemption (halt, NULL)) == NULL)
         {}  /* empty.  */
     }
 }

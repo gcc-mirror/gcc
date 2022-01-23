@@ -404,7 +404,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
             {
               leader = ' ';
             }
-          width = static_cast<int> (0);
+          width = 0;
           while (IsDigit (ch))
             {
               width = (width*10)+((int ) ( ((unsigned int) (ch))- ((unsigned int) ('0'))));
@@ -616,7 +616,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf1 (DynamicStrings_String f
 
   DSdbEnter ();
   fmt = FormatStrings_HandleEscape (fmt);
-  i = static_cast<int> (0);
+  i = 0;
   s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w, _w_high);
   s = HandlePercent (fmt, s, i);
   DSdbExit (s);
@@ -643,7 +643,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf2 (DynamicStrings_String f
 
   DSdbEnter ();
   fmt = FormatStrings_HandleEscape (fmt);
-  i = static_cast<int> (0);
+  i = 0;
   s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
   s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
   s = HandlePercent (fmt, s, i);
@@ -673,7 +673,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf3 (DynamicStrings_String f
 
   DSdbEnter ();
   fmt = FormatStrings_HandleEscape (fmt);
-  i = static_cast<int> (0);
+  i = 0;
   s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
   s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
   s = FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high);
@@ -706,7 +706,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String f
 
   DSdbEnter ();
   fmt = FormatStrings_HandleEscape (fmt);
-  i = static_cast<int> (0);
+  i = 0;
   s = FormatString (fmt, &i, DynamicStrings_InitString ((const char *) "", 0), (const unsigned char *) w1, _w1_high);
   s = FormatString (fmt, &i, s, (const unsigned char *) w2, _w2_high);
   s = FormatString (fmt, &i, s, (const unsigned char *) w3, _w3_high);
@@ -737,7 +737,7 @@ extern "C" DynamicStrings_String FormatStrings_HandleEscape (DynamicStrings_Stri
   DSdbEnter ();
   d = DynamicStrings_InitString ((const char *) "", 0);
   i = DynamicStrings_Index (s, '\\', 0);
-  j = static_cast<int> (0);
+  j = 0;
   while (i >= 0)
     {
       if (i > 0)

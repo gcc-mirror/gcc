@@ -681,7 +681,7 @@ static long double ToThePower10 (long double v, int power)
 {
   int i;
 
-  i = static_cast<int> (0);
+  i = 0;
   if (power > 0)
     {
       while (i < power)
@@ -717,7 +717,7 @@ static unsigned int DetermineSafeTruncation (void)
   unsigned int LogPower;
 
   MaxPowerOfTen = static_cast<double> (1.0);
-  LogPower = static_cast<unsigned int> (0);
+  LogPower = 0;
   while ((MaxPowerOfTen*10.0) < ((double) ((INT_MAX) / 10)))
     {
       MaxPowerOfTen = MaxPowerOfTen*10.0;
@@ -774,8 +774,8 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
   DynamicStrings_String tenths;
   DynamicStrings_String hundreths;
 
-  l = static_cast<int> (DynamicStrings_Length (s));
-  i = static_cast<int> (0);
+  l = DynamicStrings_Length (s);
+  i = 0;
   /* remove '.'  */
   point = DynamicStrings_Index (s, '.', 0);
   if (point == 0)
@@ -792,8 +792,8 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
       /* avoid dangling else.  */
       s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, point);
     }
-  l = static_cast<int> (DynamicStrings_Length (s));
-  i = static_cast<int> (0);
+  l = DynamicStrings_Length (s);
+  i = 0;
   if (l > 0)
     {
       /* skip over leading zeros  */
@@ -812,7 +812,7 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
   /* insert leading zero  */
   s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('0'), DynamicStrings_Mark (s));
   point += 1;  /* and move point position to correct place  */
-  l = static_cast<int> (DynamicStrings_Length (s));  /* update new length  */
+  l = DynamicStrings_Length (s);  /* update new length  */
   i = point;  /* update new length  */
   while ((n > 1) && (i < l))
     {
@@ -852,7 +852,7 @@ static DynamicStrings_String doDecimalPlaces (DynamicStrings_String s, unsigned 
   if (i < l)
     {
       s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i);
-      l = static_cast<int> (DynamicStrings_Length (s));
+      l = DynamicStrings_Length (s);
       if (l < point)
         {
           s = DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (point-l)));
@@ -893,8 +893,8 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
   DynamicStrings_String tenths;
   DynamicStrings_String hundreths;
 
-  l = static_cast<int> (DynamicStrings_Length (s));
-  i = static_cast<int> (0);
+  l = DynamicStrings_Length (s);
+  i = 0;
   /* remove '.'  */
   point = DynamicStrings_Index (s, '.', 0);
   if (point >= 0)
@@ -918,8 +918,8 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
     {
       s = DynamicStrings_Dup (DynamicStrings_Mark (s));
     }
-  l = static_cast<int> (DynamicStrings_Length (s));
-  i = static_cast<int> (0);
+  l = DynamicStrings_Length (s);
+  i = 0;
   if (l > 0)
     {
       /* skip over leading zeros  */
@@ -932,7 +932,7 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
         {
           /* truncate string  */
           s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, static_cast<int> (n));
-          i = static_cast<int> (n);
+          i = n;
         }
     }
   /* add a leading zero in case we need to overflow the carry  */
@@ -946,7 +946,7 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
       s = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i), '0'), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), i, 0)));
     }
   n += 1;  /* and increase the number of sig figs needed  */
-  l = static_cast<int> (DynamicStrings_Length (s));  /* and increase the number of sig figs needed  */
+  l = DynamicStrings_Length (s);  /* and increase the number of sig figs needed  */
   while ((n > 1) && (i < l))
     {
       n -= 1;
@@ -986,7 +986,7 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
         {
           s = DynamicStrings_ConCat (DynamicStrings_Slice (DynamicStrings_Mark (s), 0, z), DynamicStrings_Mark (DynamicStrings_Slice (DynamicStrings_Mark (s), z+1, 0)));
         }
-      l = static_cast<int> (DynamicStrings_Length (s));
+      l = DynamicStrings_Length (s);
     }
   else
     {
@@ -995,7 +995,7 @@ static DynamicStrings_String doSigFig (DynamicStrings_String s, unsigned int n)
   if (i < l)
     {
       s = DynamicStrings_Slice (DynamicStrings_Mark (s), 0, i);
-      l = static_cast<int> (DynamicStrings_Length (s));
+      l = DynamicStrings_Length (s);
       if (l < point)
         {
           s = DynamicStrings_ConCat (s, DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (point-l)));
@@ -1205,8 +1205,8 @@ extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned 
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = static_cast<unsigned int> (0);
-  n = static_cast<unsigned int> (0);
+  c = 0;
+  n = 0;
   negative = FALSE;
   if (n < l)
     {
@@ -1255,8 +1255,8 @@ extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s,
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = static_cast<unsigned int> (0);
-  n = static_cast<unsigned int> (0);
+  c = 0;
+  n = 0;
   if (n < l)
     {
       /* parse leading +  */
@@ -1376,8 +1376,8 @@ extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, 
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = static_cast<long unsigned int> (0);
-  n = static_cast<unsigned int> (0);
+  c = 0;
+  n = 0;
   negative = FALSE;
   if (n < l)
     {
@@ -1474,8 +1474,8 @@ extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = static_cast<long unsigned int> (0);
-  n = static_cast<unsigned int> (0);
+  c = 0;
+  n = 0;
   if (n < l)
     {
       /* parse leading +  */
@@ -1560,8 +1560,8 @@ extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicString
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
-  c = static_cast<short unsigned int> (0);
-  n = static_cast<unsigned int> (0);
+  c = 0;
+  n = 0;
   if (n < l)
     {
       /* parse leading +  */
@@ -1773,15 +1773,15 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
   if (TotalWidth == 0)
     {
       maxprecision = TRUE;
-      r = ldtoa_ldtoa (x, static_cast<ldtoa_Mode> (ldtoa_decimaldigits), 100, &point, &sign);
+      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
     }
   else
     {
-      r = ldtoa_ldtoa (x, static_cast<ldtoa_Mode> (ldtoa_decimaldigits), 100, &point, &sign);
+      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
     }
   s = DynamicStrings_InitStringCharStar (r);
   libc_free (r);
-  l = static_cast<int> (DynamicStrings_Length (s));
+  l = DynamicStrings_Length (s);
   if (point > l)
     {
       /* avoid dangling else.  */
@@ -1800,7 +1800,7 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
     {
       /* avoid dangling else.  */
       s = DynamicStrings_ConCat (DynamicStrings_Mult (DynamicStrings_Mark (DynamicStrings_InitStringChar ('0')), static_cast<unsigned int> (-point)), DynamicStrings_Mark (s));
-      l = static_cast<int> (DynamicStrings_Length (s));
+      l = DynamicStrings_Length (s);
       s = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "0.", 2), DynamicStrings_Mark (s));
       if (! maxprecision && (l < ((int ) (FractionWidth))))
         {
@@ -1924,7 +1924,7 @@ extern "C" DynamicStrings_String StringConvert_ToSigFig (DynamicStrings_String s
     }
   else
     {
-      poTen = static_cast<unsigned int> (point);
+      poTen = point;
     }
   s = doSigFig (s, n);
   /* if the last character is '.' remove it  */

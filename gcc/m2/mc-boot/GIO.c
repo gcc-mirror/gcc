@@ -225,22 +225,22 @@ static void doraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, static_cast<termios_Flag> (termios_ignbrk), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_ibrkint), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_iparmrk), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_istrip), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_inlcr), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_igncr), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_icrnl), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_ixon), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_opost), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_lecho), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_lechonl), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_licanon), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_lisig), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_liexten), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_parenb), FALSE);
-  setFlag (term, static_cast<termios_Flag> (termios_cs8), TRUE);
+  setFlag (term, termios_ignbrk, FALSE);
+  setFlag (term, termios_ibrkint, FALSE);
+  setFlag (term, termios_iparmrk, FALSE);
+  setFlag (term, termios_istrip, FALSE);
+  setFlag (term, termios_inlcr, FALSE);
+  setFlag (term, termios_igncr, FALSE);
+  setFlag (term, termios_icrnl, FALSE);
+  setFlag (term, termios_ixon, FALSE);
+  setFlag (term, termios_opost, FALSE);
+  setFlag (term, termios_lecho, FALSE);
+  setFlag (term, termios_lechonl, FALSE);
+  setFlag (term, termios_licanon, FALSE);
+  setFlag (term, termios_lisig, FALSE);
+  setFlag (term, termios_liexten, FALSE);
+  setFlag (term, termios_parenb, FALSE);
+  setFlag (term, termios_cs8, TRUE);
 }
 
 
@@ -262,20 +262,20 @@ static void dononraw (termios_TERMIOS term)
     *           termios_p->c_cflag &= ~(CSIZE | PARENB);
     *           termios_p->c_cflag |= CS8;
   */
-  setFlag (term, static_cast<termios_Flag> (termios_ignbrk), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_ibrkint), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_iparmrk), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_istrip), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_inlcr), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_igncr), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_icrnl), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_ixon), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_opost), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_lecho), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_lechonl), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_licanon), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_lisig), TRUE);
-  setFlag (term, static_cast<termios_Flag> (termios_liexten), TRUE);
+  setFlag (term, termios_ignbrk, TRUE);
+  setFlag (term, termios_ibrkint, TRUE);
+  setFlag (term, termios_iparmrk, TRUE);
+  setFlag (term, termios_istrip, TRUE);
+  setFlag (term, termios_inlcr, TRUE);
+  setFlag (term, termios_igncr, TRUE);
+  setFlag (term, termios_icrnl, TRUE);
+  setFlag (term, termios_ixon, TRUE);
+  setFlag (term, termios_opost, TRUE);
+  setFlag (term, termios_lecho, TRUE);
+  setFlag (term, termios_lechonl, TRUE);
+  setFlag (term, termios_licanon, TRUE);
+  setFlag (term, termios_lisig, TRUE);
+  setFlag (term, termios_liexten, TRUE);
 }
 
 
@@ -427,7 +427,7 @@ extern "C" void IO_EchoOn (int fd, unsigned int input)
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, static_cast<termios_Flag> (termios_lecho), TRUE);
+      setFlag (term, termios_lecho, TRUE);
       if (input)
         {
           result = termios_tcsetattr (fd, termios_tcsflush (), term);
@@ -456,7 +456,7 @@ extern "C" void IO_EchoOff (int fd, unsigned int input)
   term = termios_InitTermios ();
   if ((termios_tcgetattr (fd, term)) == 0)
     {
-      setFlag (term, static_cast<termios_Flag> (termios_lecho), FALSE);
+      setFlag (term, termios_lecho, FALSE);
       if (input)
         {
           result = termios_tcsetattr (fd, termios_tcsflush (), term);

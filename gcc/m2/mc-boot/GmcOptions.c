@@ -778,7 +778,7 @@ extern "C" DynamicStrings_String mcOptions_handleOptions (void)
   unsigned int i;
   DynamicStrings_String arg;
 
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (SArgs_GetArg (&arg, i))
     {
       if ((DynamicStrings_Length (arg)) > 0)

@@ -299,7 +299,7 @@ static Vector FindVector (int fd, VectorType t)
         }
       v = v->exists;
     }
-  return static_cast<Vector> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -345,7 +345,7 @@ static Vector FindPendingVector (unsigned int vec)
           return v;
         }
     }
-  return static_cast<Vector> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -487,14 +487,14 @@ static void SubTime (unsigned int *s, unsigned int *m, Selective_Timeval a, Sele
         {
           Assertion_Assert ((*s) > 0);
           (*s) -= 1;
-          (*m) = static_cast<unsigned int> ((Microseconds+am)-bm);
+          (*m) = (Microseconds+am)-bm;
           Assertion_Assert ((*m) < Microseconds);
         }
     }
   else
     {
-      (*s) = static_cast<unsigned int> (0);
-      (*m) = static_cast<unsigned int> (0);
+      (*s) = 0;
+      (*m) = 0;
     }
 }
 
@@ -619,10 +619,10 @@ static void init (void)
 
   lock = RTco_initSemaphore (1);
   RTco_wait (lock);
-  Exists = static_cast<Vector> (NULL);
+  Exists = NULL;
   for (p=COROUTINES_UnassignedPriority; p<=7; p++)
     {
-      Pending.array[p-(COROUTINES_UnassignedPriority)] = reinterpret_cast<_T1 *> (NULL);
+      Pending.array[p-(COROUTINES_UnassignedPriority)] = NULL;
     }
   initialized = TRUE;
   RTco_signal (lock);
@@ -643,7 +643,7 @@ extern "C" unsigned int RTint_InitInputVector (int fd, unsigned int pri)
       libc_printf ((const char *) "InitInputVector fd = %d priority = %d\\n", 39, fd, pri);
     }
   RTco_wait (lock);
-  v = FindVector (fd, static_cast<VectorType> (input));
+  v = FindVector (fd, input);
   if (v == NULL)
     {
       Storage_ALLOCATE ((void **) &v, sizeof (_T1));
@@ -651,7 +651,7 @@ extern "C" unsigned int RTint_InitInputVector (int fd, unsigned int pri)
       v->type = input;
       v->priority = pri;
       v->arg = NULL;
-      v->pending = static_cast<Vector> (NULL);
+      v->pending = NULL;
       v->exists = Exists;
       v->no = VecNo;
       v->File = fd;
@@ -679,7 +679,7 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
   Vector v;
 
   RTco_wait (lock);
-  v = FindVector (fd, static_cast<VectorType> (output));
+  v = FindVector (fd, output);
   if (v == NULL)
     {
       Storage_ALLOCATE ((void **) &v, sizeof (_T1));
@@ -694,7 +694,7 @@ extern "C" unsigned int RTint_InitOutputVector (int fd, unsigned int pri)
           v->type = output;
           v->priority = pri;
           v->arg = NULL;
-          v->pending = static_cast<Vector> (NULL);
+          v->pending = NULL;
           v->exists = Exists;
           v->no = VecNo;
           v->File = fd;
@@ -736,7 +736,7 @@ extern "C" unsigned int RTint_InitTimeVector (unsigned int micro, unsigned int s
       v->type = time_;
       v->priority = pri;
       v->arg = NULL;
-      v->pending = static_cast<Vector> (NULL);
+      v->pending = NULL;
       v->exists = Exists;
       v->no = VecNo;
       v->rel = Selective_InitTime (secs+DebugTime, micro);
@@ -965,7 +965,7 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
         {
           DumpPendingQueue ();
         }
-      maxFd = static_cast<int> (-1);
+      maxFd = -1;
       t = NULL;
       i = NULL;
       o = NULL;
@@ -1047,21 +1047,21 @@ extern "C" void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector 
               {
                 libc_printf ((const char *) "select (.., .., .., %u.%06u)\\n", 30, s, m);
               }
-            r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t));
+            r = RTco_select (maxFd+1, i, o, NULL, t);
             if (r == -1)
               {
                 libc_perror ((const char *) "select", 6);
-                r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), reinterpret_cast<void *> (o), NULL, NULL);
+                r = RTco_select (maxFd+1, i, o, NULL, NULL);
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select timeout argument is faulty", 33);
                   }
-                r = RTco_select (maxFd+1, reinterpret_cast<void *> (i), NULL, NULL, reinterpret_cast<void *> (t));
+                r = RTco_select (maxFd+1, i, NULL, NULL, t);
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select output fd argument is faulty", 35);
                   }
-                r = RTco_select (maxFd+1, NULL, reinterpret_cast<void *> (o), NULL, reinterpret_cast<void *> (t));
+                r = RTco_select (maxFd+1, NULL, o, NULL, t);
                 if (r == -1)
                   {
                     libc_perror ((const char *) "select input fd argument is faulty", 34);

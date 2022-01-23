@@ -1296,8 +1296,8 @@ static DynamicStrings_String doFormat (mcError_error *e, errorType *t, DynamicSt
   int l;
 
   r = DynamicStrings_InitString ((const char *) "", 0);
-  i = static_cast<int> (0);
-  l = static_cast<int> (DynamicStrings_Length (s));
+  i = 0;
+  l = DynamicStrings_Length (s);
   ebnf (e, t, &r, s, sym, &i, l);
   s = DynamicStrings_KillString (s);
   return r;

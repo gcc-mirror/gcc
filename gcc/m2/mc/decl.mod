@@ -9138,12 +9138,51 @@ END doReturnC ;
 
 
 (*
-   doExprCastC -
+   isZtypeEquivalent -
+*)
+
+PROCEDURE isZtypeEquivalent (type: node) : BOOLEAN ;
+BEGIN
+   CASE type^.kind OF
+
+   cardinal,
+   longcard,
+   shortcard,
+   integer,
+   longint,
+   shortint,
+   ztype    :  RETURN TRUE
+
+   ELSE
+      RETURN FALSE
+   END
+END isZtypeEquivalent ;
+
+
+(*
+   isEquivalentType - returns TRUE if type1 and type2 are equivalent.
+*)
+
+PROCEDURE isEquivalentType (type1, type2: node) : BOOLEAN ;
+BEGIN
+   type1 := skipType (type1) ;
+   type2 := skipType (type2) ;
+   RETURN ((type1 = type2) OR
+           (isZtypeEquivalent (type1) AND isZtypeEquivalent (type2)))
+END isEquivalentType ;
+
+
+(*
+   doExprCastC - build a cast if necessary.
 *)
 
 PROCEDURE doExprCastC (p: pretty; e, type: node) ;
+VAR
+   stype: node ;
 BEGIN
-   IF skipType (type) # skipType (getExprType (e))
+   stype := skipType (type) ;
+   IF (NOT isEquivalentType (type, getExprType (e))) AND
+      (NOT ((e^.kind = nil) AND (isPointer (stype) OR (stype^.kind = address))))
    THEN
       IF lang = ansiCP
       THEN
@@ -9860,12 +9899,15 @@ END typePair ;
 
 
 (*
-   needsCast -
+   needsCast - return TRUE if the actual type parameter needs to be cast to
+               the formal type.
 *)
 
 PROCEDURE needsCast (at, ft: node) : BOOLEAN ;
 BEGIN
-   IF (at = nilN) OR
+   at := skipType (at) ;
+   ft := skipType (ft) ;
+   IF (at = nilN) OR (at^.kind = nil) OR
       (at = ft) OR
       typePair (at, ft, cardinalN, wordN) OR
       typePair (at, ft, cardinalN, ztypeN) OR
@@ -9888,7 +9930,8 @@ END needsCast ;
 (*
    checkSystemCast - checks to see if we are passing to/from
                      a system generic type (WORD, BYTE, ADDRESS)
-                     and if so emit a cast.
+                     and if so emit a cast.  It returns the number of
+                     open parenthesis.
 *)
 
 PROCEDURE checkSystemCast (p: pretty; actual, formal: node) : CARDINAL ;
@@ -9907,14 +9950,24 @@ BEGIN
 	    RETURN 2
          ELSIF isPointer (skipType (ft)) OR (skipType (ft) = addressN)
          THEN
-            outText (p, 'reinterpret_cast<') ;
-            doTypeNameC (p, ft) ;
-	    IF isVarParam (formal)
+            IF actual = nilN
             THEN
-               outText (p, '*')
-            END ;
-            noSpace (p) ;
-            outText (p, '> (')
+               IF isVarParam (formal)
+               THEN
+                  metaError1 ('NIL is being passed to a VAR parameter {%1DMad}', formal)
+               END ;
+               (* NULL is compatible with pointers/address.  *)
+               RETURN 0
+            ELSE
+               outText (p, 'reinterpret_cast<') ;
+               doTypeNameC (p, ft) ;
+               IF isVarParam (formal)
+               THEN
+                  outText (p, '*')
+               END ;
+               noSpace (p) ;
+               outText (p, '> (')
+            END
          ELSE
             outText (p, 'static_cast<') ;
             doTypeNameC (p, ft) ;

@@ -88,7 +88,7 @@ extern "C" void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, ch
 
   higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
       b[i] = StrCase_Cap (a[i]);
@@ -118,7 +118,7 @@ extern "C" void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, ch
 
   higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
       b[i] = StrCase_Lower (a[i]);

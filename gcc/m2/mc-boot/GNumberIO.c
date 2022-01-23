@@ -154,7 +154,7 @@ extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, uns
   unsigned int Higha;
   _T7 buf;
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     i += 1;
     if (i > MaxDigits)
@@ -167,7 +167,7 @@ extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, uns
     buf.array[i-1] = x % 10;
     x = x / 10;
   } while (! (x == 0));
-  j = static_cast<unsigned int> (0);
+  j = 0;
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -199,7 +199,7 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   ok = TRUE;
   while (ok)
     {
@@ -219,12 +219,12 @@ extern "C" void NumberIO_StrToCard (const char *a_, unsigned int _a_high, unsign
           ok = FALSE;
         }
     }
-  (*x) = static_cast<unsigned int> (0);
+  (*x) = 0;
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = static_cast<unsigned int> ((10*(*x))+( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
+        (*x) = (10*(*x))+( ((unsigned int) (a[i]))- ((unsigned int) ('0')));
         if (i < higha)
           {
             /* avoid dangling else.  */
@@ -252,7 +252,7 @@ extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsi
   unsigned int Higha;
   _T8 buf;
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     i += 1;
     if (i > MaxHexDigits)
@@ -265,7 +265,7 @@ extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsi
     buf.array[i-1] = x % 0x010;
     x = x / 0x010;
   } while (! (x == 0));
-  j = static_cast<unsigned int> (0);
+  j = 0;
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -328,10 +328,10 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
     }
   else
     {
-      c = static_cast<unsigned int> (x);
+      c = x;
       Negative = FALSE;
     }
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     i += 1;
     if (i > MaxDigits)
@@ -344,7 +344,7 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
     buf.array[i-1] = c % 10;
     c = c / 10;
   } while (! (c == 0));
-  j = static_cast<unsigned int> (0);
+  j = 0;
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -382,7 +382,7 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   Negative = FALSE;
   ok = TRUE;
   while (ok)
@@ -410,18 +410,18 @@ extern "C" void NumberIO_StrToInt (const char *a_, unsigned int _a_high, int *x)
           ok = FALSE;
         }
     }
-  (*x) = static_cast<int> (0);
+  (*x) = 0;
   if (i < higha)
     {
       ok = TRUE;
       do {
         if (Negative)
           {
-            (*x) = static_cast<int> ((10*(*x))-((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
+            (*x) = (10*(*x))-((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
           }
         else
           {
-            (*x) = static_cast<int> ((10*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
+            (*x) = (10*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
           }
         if (i < higha)
           {
@@ -472,7 +472,7 @@ extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsi
   unsigned int Higha;
   _T12 buf;
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     i += 1;
     if (i > MaxOctDigits)
@@ -485,7 +485,7 @@ extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsi
     buf.array[i-1] = x % 8;
     x = x / 8;
   } while (! (x == 0));
-  j = static_cast<unsigned int> (0);
+  j = 0;
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -549,7 +549,7 @@ extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsi
   unsigned int Higha;
   _T15 buf;
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   do {
     i += 1;
     if (i > MaxBits)
@@ -562,7 +562,7 @@ extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsi
     buf.array[i-1] = x % 2;
     x = x / 2;
   } while (! (x == 0));
-  j = static_cast<unsigned int> (0);
+  j = 0;
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
@@ -606,7 +606,7 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   ok = TRUE;
   while (ok)
     {
@@ -626,12 +626,12 @@ extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int 
           ok = FALSE;
         }
     }
-  (*x) = static_cast<int> (0);
+  (*x) = 0;
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = static_cast<int> ((2*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
+        (*x) = (2*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
         if (i < higha)
           {
             /* avoid dangling else.  */
@@ -661,7 +661,7 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   ok = TRUE;
   while (ok)
     {
@@ -681,19 +681,19 @@ extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int 
           ok = FALSE;
         }
     }
-  (*x) = static_cast<int> (0);
+  (*x) = 0;
   if (i < higha)
     {
       ok = TRUE;
       do {
         if ((a[i] >= '0') && (a[i] <= '9'))
           {
-            (*x) = static_cast<int> ((0x010*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
+            (*x) = (0x010*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
           }
         else if ((a[i] >= 'A') && (a[i] <= 'F'))
           {
             /* avoid dangling else.  */
-            (*x) = static_cast<int> ((0x010*(*x))+((int ) (( ((unsigned int) (a[i]))- ((unsigned int) ('A')))+10)));
+            (*x) = (0x010*(*x))+((int ) (( ((unsigned int) (a[i]))- ((unsigned int) ('A')))+10));
           }
         if (i < higha)
           {
@@ -724,7 +724,7 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
 
   StrLib_StrRemoveWhitePrefix ((const char *) a, _a_high, (char *) a, _a_high);
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   ok = TRUE;
   while (ok)
     {
@@ -744,12 +744,12 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
           ok = FALSE;
         }
     }
-  (*x) = static_cast<int> (0);
+  (*x) = 0;
   if (i < higha)
     {
       ok = TRUE;
       do {
-        (*x) = static_cast<int> ((8*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0')))));
+        (*x) = (8*(*x))+((int ) ( ((unsigned int) (a[i]))- ((unsigned int) ('0'))));
         if (i < higha)
           {
             /* avoid dangling else.  */

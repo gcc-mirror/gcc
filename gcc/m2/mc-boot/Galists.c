@@ -172,8 +172,8 @@ extern "C" alists_alist alists_initList (void)
   alists_alist l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (_T1));
-  l->noOfelements = static_cast<unsigned int> (0);
-  l->next = static_cast<alists_alist> (NULL);
+  l->noOfelements = 0;
+  l->next = NULL;
   return l;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -258,11 +258,11 @@ extern "C" unsigned int alists_getIndexOfList (alists_alist l, void * c)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      i = static_cast<unsigned int> (1);
+      i = 1;
       while (i <= l->noOfelements)
         {
           if (l->elements.array[i-1] == c)
@@ -291,11 +291,11 @@ extern "C" unsigned int alists_noOfItemsInList (alists_alist l)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      t = static_cast<unsigned int> (0);
+      t = 0;
       do {
         t += l->noOfelements;
         l = l->next;
@@ -335,9 +335,9 @@ extern "C" void alists_removeItemFromList (alists_alist l, void * c)
   if (l != NULL)
     {
       found = FALSE;
-      p = static_cast<alists_alist> (NULL);
+      p = NULL;
       do {
-        i = static_cast<unsigned int> (1);
+        i = 1;
         while ((i <= l->noOfelements) && (l->elements.array[i-1] != c))
           {
             i += 1;
@@ -369,7 +369,7 @@ extern "C" unsigned int alists_isItemInList (alists_alist l, void * c)
   unsigned int i;
 
   do {
-    i = static_cast<unsigned int> (1);
+    i = 1;
     while (i <= l->noOfelements)
       {
         if (l->elements.array[i-1] == c)
@@ -399,7 +399,7 @@ extern "C" void alists_foreachItemInListDo (alists_alist l, alists_performOperat
   unsigned int n;
 
   n = alists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       (*p.proc) (alists_getItemFromList (l, i));
@@ -420,7 +420,7 @@ extern "C" alists_alist alists_duplicateList (alists_alist l)
 
   m = alists_initList ();
   n = alists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       alists_putItemIntoList (m, alists_getItemFromList (l, i));

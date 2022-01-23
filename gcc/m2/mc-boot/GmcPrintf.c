@@ -189,8 +189,8 @@ static unsigned int TranslateNameToCharStar (char *a, unsigned int _a_high, unsi
   unsigned int i;
   unsigned int h;
 
-  argno = static_cast<unsigned int> (1);
-  i = static_cast<unsigned int> (0);
+  argno = 1;
+  i = 0;
   h = StrLib_StrLen ((const char *) a, _a_high);
   while (i < h)
     {

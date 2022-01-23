@@ -3947,7 +3947,7 @@ static decl_node doGetFuncType (decl_node n);
 static decl_node doGetExprType (decl_node n);
 
 /*
-   getExprType -
+   getExprType - return the expression type.
 */
 
 static decl_node getExprType (decl_node n);
@@ -4906,7 +4906,19 @@ static void doAfterCommentC (mcPretty_pretty p, decl_node c);
 static void doReturnC (mcPretty_pretty p, decl_node s);
 
 /*
-   doExprCastC -
+   isZtypeEquivalent -
+*/
+
+static unsigned int isZtypeEquivalent (decl_node type);
+
+/*
+   isEquivalentType - returns TRUE if type1 and type2 are equivalent.
+*/
+
+static unsigned int isEquivalentType (decl_node type1, decl_node type2);
+
+/*
+   doExprCastC - build a cast if necessary.
 */
 
 static void doExprCastC (mcPretty_pretty p, decl_node e, decl_node type);
@@ -5061,7 +5073,8 @@ static void doAdrExprC (mcPretty_pretty p, decl_node n);
 static unsigned int typePair (decl_node a, decl_node b, decl_node x, decl_node y);
 
 /*
-   needsCast -
+   needsCast - return TRUE if the actual type parameter needs to be cast to
+               the formal type.
 */
 
 static unsigned int needsCast (decl_node at, decl_node ft);
@@ -5069,7 +5082,8 @@ static unsigned int needsCast (decl_node at, decl_node ft);
 /*
    checkSystemCast - checks to see if we are passing to/from
                      a system generic type (WORD, BYTE, ADDRESS)
-                     and if so emit a cast.
+                     and if so emit a cast.  It returns the number of
+                     open parenthesis.
 */
 
 static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_node formal);
@@ -6600,9 +6614,9 @@ static decl_node newNode (nodeT k)
   else
     {
       d->kind = k;
-      d->at.defDeclared = static_cast<unsigned int> (0);
-      d->at.modDeclared = static_cast<unsigned int> (0);
-      d->at.firstUsed = static_cast<unsigned int> (0);
+      d->at.defDeclared = 0;
+      d->at.modDeclared = 0;
+      d->at.firstUsed = 0;
       return d;
     }
   ReturnException ("/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/mc/decl.def", 20, 1);
@@ -6617,7 +6631,7 @@ static decl_node newNode (nodeT k)
 static void disposeNode (decl_node *n)
 {
   Storage_DEALLOCATE ((void **) &(*n), sizeof (_T5));
-  (*n) = static_cast<decl_node> (NULL);
+  (*n) = NULL;
 }
 
 
@@ -6728,7 +6742,7 @@ static fixupInfo initFixupInfo (void)
 {
   fixupInfo f;
 
-  f.count = static_cast<unsigned int> (0);
+  f.count = 0;
   f.info = Indexing_InitIndex (1);
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -6744,9 +6758,9 @@ static decl_node makeDef (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (def));
+  d = newNode (def);
   d->defF.name = n;
-  d->defF.source = static_cast<nameKey_Name> (nameKey_NulName);
+  d->defF.source = nameKey_NulName;
   d->defF.hasHidden = FALSE;
   d->defF.forC = FALSE;
   d->defF.exported = Indexing_InitIndex (1);
@@ -6772,16 +6786,16 @@ static decl_node makeImp (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (imp));
+  d = newNode (imp);
   d->impF.name = n;
-  d->impF.source = static_cast<nameKey_Name> (nameKey_NulName);
+  d->impF.source = nameKey_NulName;
   d->impF.importedModules = Indexing_InitIndex (1);
   d->impF.constFixup = initFixupInfo ();
   d->impF.enumFixup = initFixupInfo ();
   initDecls (&d->impF.decls);
-  d->impF.beginStatements = static_cast<decl_node> (NULL);
-  d->impF.finallyStatements = static_cast<decl_node> (NULL);
-  d->impF.definitionModule = static_cast<decl_node> (NULL);
+  d->impF.beginStatements = NULL;
+  d->impF.finallyStatements = NULL;
+  d->impF.definitionModule = NULL;
   d->impF.enumsComplete = FALSE;
   d->impF.constsComplete = FALSE;
   d->impF.visited = FALSE;
@@ -6800,15 +6814,15 @@ static decl_node makeModule (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (module));
+  d = newNode (module);
   d->moduleF.name = n;
-  d->moduleF.source = static_cast<nameKey_Name> (nameKey_NulName);
+  d->moduleF.source = nameKey_NulName;
   d->moduleF.importedModules = Indexing_InitIndex (1);
   d->moduleF.constFixup = initFixupInfo ();
   d->moduleF.enumFixup = initFixupInfo ();
   initDecls (&d->moduleF.decls);
-  d->moduleF.beginStatements = static_cast<decl_node> (NULL);
-  d->moduleF.finallyStatements = static_cast<decl_node> (NULL);
+  d->moduleF.beginStatements = NULL;
+  d->moduleF.finallyStatements = NULL;
   d->moduleF.enumsComplete = FALSE;
   d->moduleF.constsComplete = FALSE;
   d->moduleF.visited = FALSE;
@@ -7115,13 +7129,13 @@ static void makeVariablesFromParameters (decl_node proc, decl_node id, decl_node
 
   mcDebug_assert (decl_isProcedure (proc));
   mcDebug_assert (isIdentList (id));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   n = wlists_noOfItemsInList (id->identlistF.names);
   while (i <= n)
     {
       m = static_cast<nameKey_Name> (wlists_getItemFromList (id->identlistF.names, i));
       v = decl_makeVar (m);
-      decl_putVar (v, type, reinterpret_cast<decl_node> (NULL));
+      decl_putVar (v, type, NULL);
       putVarBool (v, TRUE, TRUE, isvar);
       if (debugScopes)
         {
@@ -7191,11 +7205,11 @@ static decl_node makeOptParameter (decl_node l, decl_node type, decl_node init)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (optarg_));
+  n = newNode (optarg_);
   n->optargF.namelist = l;
   n->optargF.type = type;
   n->optargF.init = init;
-  n->optargF.scope = static_cast<decl_node> (NULL);
+  n->optargF.scope = NULL;
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -7247,7 +7261,7 @@ static unsigned int identListLen (decl_node n)
 {
   if (n == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -7294,8 +7308,8 @@ static decl_node makeVarientField (decl_node v, decl_node p)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (varientfield));
-  n->varientfieldF.name = static_cast<nameKey_Name> (nameKey_NulName);
+  n = newNode (varientfield);
+  n->varientfieldF.name = nameKey_NulName;
   n->varientfieldF.parent = p;
   n->varientfieldF.varient = v;
   n->varientfieldF.simple = FALSE;
@@ -7354,7 +7368,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
   decl_node n;
   decl_node p;
 
-  n = newNode (static_cast<nodeT> (recordfield));
+  n = newNode (recordfield);
   switch (r->kind)
     {
       case record:
@@ -7396,7 +7410,7 @@ static decl_node putFieldRecord (decl_node r, nameKey_Name tag, decl_node type, 
   n->recordfieldF.parent = r;
   n->recordfieldF.varient = v;
   n->recordfieldF.tag = FALSE;
-  n->recordfieldF.scope = static_cast<decl_node> (NULL);
+  n->recordfieldF.scope = NULL;
   initCname (&n->recordfieldF.cname);
   /* 
    IF r^.kind=record
@@ -7565,13 +7579,13 @@ static decl_node doMakeEnum (void)
 {
   decl_node e;
 
-  e = newNode (static_cast<nodeT> (enumeration));
-  e->enumerationF.noOfElements = static_cast<unsigned int> (0);
+  e = newNode (enumeration);
+  e->enumerationF.noOfElements = 0;
   e->enumerationF.localSymbols = symbolKey_initTree ();
   e->enumerationF.scope = decl_getDeclScope ();
   e->enumerationF.listOfSons = Indexing_InitIndex (1);
-  e->enumerationF.low = static_cast<decl_node> (NULL);
-  e->enumerationF.high = static_cast<decl_node> (NULL);
+  e->enumerationF.low = NULL;
+  e->enumerationF.high = NULL;
   addEnumToModule (currentModule, e);
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7592,7 +7606,7 @@ static decl_node doMakeEnumField (decl_node e, nameKey_Name n)
   f = decl_lookupSym (n);
   if (f == NULL)
     {
-      f = newNode (static_cast<nodeT> (enumerationfield));
+      f = newNode (enumerationfield);
       symbolKey_putSymKey (e->enumerationF.localSymbols, n, reinterpret_cast<void *> (f));
       Indexing_IncludeIndiceIntoIndex (e->enumerationF.listOfSons, reinterpret_cast<void *> (f));
       f->enumerationfieldF.name = n;
@@ -7643,7 +7657,7 @@ static unsigned int expListLen (decl_node p)
 {
   if (p == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
@@ -7718,7 +7732,7 @@ static decl_node doMakeConstExp (void)
 {
   decl_node c;
 
-  c = makeUnary (static_cast<nodeT> (constexp), reinterpret_cast<decl_node> (NULL), reinterpret_cast<decl_node> (NULL));
+  c = makeUnary (constexp, NULL, NULL);
   addConstToModule (currentModule, c);
   return c;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -7775,7 +7789,7 @@ static decl_node makeVal (decl_node params)
   mcDebug_assert (decl_isExpList (params));
   if ((expListLen (params)) == 2)
     {
-      return makeBinary (static_cast<nodeT> (val), getExpList (params, 1), getExpList (params, 2), getExpList (params, 1));
+      return makeBinary (val, getExpList (params, 1), getExpList (params, 2), getExpList (params, 1));
     }
   else
     {
@@ -7796,7 +7810,7 @@ static decl_node makeCast (decl_node c, decl_node p)
   mcDebug_assert (decl_isExpList (p));
   if ((expListLen (p)) == 1)
     {
-      return makeBinary (static_cast<nodeT> (cast), c, getExpList (p, 1), c);
+      return makeBinary (cast, c, getExpList (p, 1), c);
     }
   else
     {
@@ -7817,7 +7831,7 @@ static decl_node makeIntrinsicProc (nodeT k, unsigned int noArgs, decl_node p)
   f = newNode (k);
   f->intrinsicF.args = p;
   f->intrinsicF.noArgs = noArgs;
-  f->intrinsicF.type = static_cast<decl_node> (NULL);
+  f->intrinsicF.type = NULL;
   f->intrinsicF.postUnreachable = k == halt;
   initPair (&f->intrinsicF.intrinsicComment);
   return f;
@@ -7866,17 +7880,17 @@ static decl_node checkIntrinsic (decl_node c, decl_node n)
   else if (c == maxN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (max), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicUnaryType (max, n, NULL);
     }
   else if (c == minN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (min), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicUnaryType (min, n, NULL);
     }
   else if (c == haltN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (halt), expListLen (n), n);
+      return makeIntrinsicProc (halt, expListLen (n), n);
     }
   else if (c == valN)
     {
@@ -7886,110 +7900,110 @@ static decl_node checkIntrinsic (decl_node c, decl_node n)
   else if (c == adrN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (adr), n, addressN);
+      return makeIntrinsicUnaryType (adr, n, addressN);
     }
   else if (c == sizeN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (size), n, cardinalN);
+      return makeIntrinsicUnaryType (size, n, cardinalN);
     }
   else if (c == tsizeN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (tsize), n, cardinalN);
+      return makeIntrinsicUnaryType (tsize, n, cardinalN);
     }
   else if (c == floatN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (float_), n, realN);
+      return makeIntrinsicUnaryType (float_, n, realN);
     }
   else if (c == truncN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (trunc), n, integerN);
+      return makeIntrinsicUnaryType (trunc, n, integerN);
     }
   else if (c == ordN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (ord), n, cardinalN);
+      return makeIntrinsicUnaryType (ord, n, cardinalN);
     }
   else if (c == chrN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (chr), n, charN);
+      return makeIntrinsicUnaryType (chr, n, charN);
     }
   else if (c == capN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (cap), n, charN);
+      return makeIntrinsicUnaryType (cap, n, charN);
     }
   else if (c == absN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (abs_), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicUnaryType (abs_, n, NULL);
     }
   else if (c == imN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (im), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicUnaryType (im, n, NULL);
     }
   else if (c == reN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (re), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicUnaryType (re, n, NULL);
     }
   else if (c == cmplxN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicBinaryType (static_cast<nodeT> (cmplx), n, reinterpret_cast<decl_node> (NULL));
+      return makeIntrinsicBinaryType (cmplx, n, NULL);
     }
   else if (c == highN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (high), n, cardinalN);
+      return makeIntrinsicUnaryType (high, n, cardinalN);
     }
   else if (c == incN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (inc), expListLen (n), n);
+      return makeIntrinsicProc (inc, expListLen (n), n);
     }
   else if (c == decN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (dec), expListLen (n), n);
+      return makeIntrinsicProc (dec, expListLen (n), n);
     }
   else if (c == inclN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (incl), expListLen (n), n);
+      return makeIntrinsicProc (incl, expListLen (n), n);
     }
   else if (c == exclN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (excl), expListLen (n), n);
+      return makeIntrinsicProc (excl, expListLen (n), n);
     }
   else if (c == newN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (new_), 1, n);
+      return makeIntrinsicProc (new_, 1, n);
     }
   else if (c == disposeN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicProc (static_cast<nodeT> (dispose), 1, n);
+      return makeIntrinsicProc (dispose, 1, n);
     }
   else if (c == lengthN)
     {
       /* avoid dangling else.  */
-      return makeIntrinsicUnaryType (static_cast<nodeT> (length), n, cardinalN);
+      return makeIntrinsicUnaryType (length, n, cardinalN);
     }
   else if (c == throwN)
     {
       /* avoid dangling else.  */
       keyc_useThrow ();
-      return makeIntrinsicProc (static_cast<nodeT> (throw_), 1, n);
+      return makeIntrinsicProc (throw_, 1, n);
     }
-  return static_cast<decl_node> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -8348,7 +8362,7 @@ static DynamicStrings_String getLiteralStringContents (decl_node n)
 
   mcDebug_assert (n->kind == literal);
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n->literalF.name));
-  content = static_cast<DynamicStrings_String> (NULL);
+  content = NULL;
   if (n->literalF.type == charN)
     {
       if ((DynamicStrings_char (s, -1)) == 'C')
@@ -8472,7 +8486,7 @@ static decl_node foldBinary (nodeT k, decl_node l, decl_node r, decl_node res)
   DynamicStrings_String ls;
   DynamicStrings_String rs;
 
-  n = static_cast<decl_node> (NULL);
+  n = NULL;
   if (((k == plus) && (isLeafString (l))) && (isLeafString (r)))
     {
       ls = getStringContents (l);
@@ -8562,7 +8576,7 @@ static decl_node doMakeComponentRef (decl_node rec, decl_node field)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (componentref));
+  n = newNode (componentref);
   n->componentrefF.rec = rec;
   n->componentrefF.field = field;
   n->componentrefF.resultType = decl_getType (field);
@@ -8824,14 +8838,14 @@ static decl_node doGetExprType (decl_node n)
       case halt:
       case new_:
       case dispose:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case inc:
       case dec:
       case incl:
       case excl:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case nil:
@@ -9027,11 +9041,11 @@ static decl_node doGetExprType (decl_node n)
         break;
 
       case throw_:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case unreachable:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case def:
@@ -9157,7 +9171,7 @@ static decl_node doGetExprType (decl_node n)
 
 
 /*
-   getExprType -
+   getExprType - return the expression type.
 */
 
 static decl_node getExprType (decl_node n)
@@ -10102,7 +10116,7 @@ static void doArrayRef (mcPretty_pretty p, decl_node n)
       outText (p, (const char *) ".array", 6);
     }
   outText (p, (const char *) "[", 1);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   c = expListLen (n->arrayrefF.index);
   while (i <= c)
     {
@@ -10508,11 +10522,11 @@ static void doExprC (mcPretty_pretty p, decl_node n)
         break;
 
       case plus:
-        doPolyBinary (p, static_cast<nodeT> (plus), n->binaryF.left, n->binaryF.right, FALSE, FALSE);
+        doPolyBinary (p, plus, n->binaryF.left, n->binaryF.right, FALSE, FALSE);
         break;
 
       case sub:
-        doPolyBinary (p, static_cast<nodeT> (sub), n->binaryF.left, n->binaryF.right, FALSE, FALSE);
+        doPolyBinary (p, sub, n->binaryF.left, n->binaryF.right, FALSE, FALSE);
         break;
 
       case div_:
@@ -10524,11 +10538,11 @@ static void doExprC (mcPretty_pretty p, decl_node n)
         break;
 
       case mult:
-        doPolyBinary (p, static_cast<nodeT> (mult), n->binaryF.left, n->binaryF.right, FALSE, FALSE);
+        doPolyBinary (p, mult, n->binaryF.left, n->binaryF.right, FALSE, FALSE);
         break;
 
       case divide:
-        doPolyBinary (p, static_cast<nodeT> (divide), n->binaryF.left, n->binaryF.right, FALSE, FALSE);
+        doPolyBinary (p, divide, n->binaryF.left, n->binaryF.right, FALSE, FALSE);
         break;
 
       case in:
@@ -10977,14 +10991,14 @@ static DynamicStrings_String replaceChar (DynamicStrings_String s, char ch, cons
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  i = static_cast<int> (0);
+  i = 0;
   for (;;)
   {
     i = DynamicStrings_Index (s, ch, static_cast<unsigned int> (i));
     if (i == 0)
       {
         s = DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) a, _a_high), DynamicStrings_Slice (s, 1, 0));
-        i = static_cast<int> (StrLib_StrLen ((const char *) a, _a_high));
+        i = StrLib_StrLen ((const char *) a, _a_high);
       }
     else if (i > 0)
       {
@@ -11043,8 +11057,8 @@ static unsigned int countChar (DynamicStrings_String s, char ch)
   int i;
   unsigned int c;
 
-  c = static_cast<unsigned int> (0);
-  i = static_cast<int> (0);
+  c = 0;
+  i = 0;
   for (;;)
   {
     i = DynamicStrings_Index (s, ch, static_cast<unsigned int> (i));
@@ -11253,7 +11267,7 @@ static mcPretty_pretty outKc (mcPretty_pretty p, const char *a_, unsigned int _a
   i = DynamicStrings_Index (s, '\\', 0);
   if (i == -1)
     {
-      t = static_cast<DynamicStrings_String> (NULL);
+      t = NULL;
     }
   else
     {
@@ -11667,7 +11681,7 @@ static void doParamC (mcPretty_pretty p, decl_node n)
       else
         {
           t = wlists_noOfItemsInList (l);
-          c = static_cast<unsigned int> (1);
+          c = 1;
           while (c <= t)
             {
               doParamConstCast (p, n);
@@ -11750,7 +11764,7 @@ static void doVarParamC (mcPretty_pretty p, decl_node n)
       else
         {
           t = wlists_noOfItemsInList (l);
-          c = static_cast<unsigned int> (1);
+          c = 1;
           while (c <= t)
             {
               doParamTypeEmit (p, n, ptype);
@@ -11993,7 +12007,7 @@ static void doCompletePartialArray (mcPretty_pretty p, decl_node t, decl_node r)
 
   mcDebug_assert (decl_isArray (r));
   type = r->arrayF.type;
-  s = static_cast<decl_node> (NULL);
+  s = NULL;
   outText (p, (const char *) "struct", 6);
   mcPretty_setNeedSpace (p);
   doFQNameC (p, t);
@@ -12169,7 +12183,7 @@ static decl_node doMax (decl_node n)
     {
       /* avoid dangling else.  */
       mcMetaError_metaError1 ((const char *) "trying to obtain MAX ({%1ad}) is illegal", 40, (const unsigned char *) &n, (sizeof (n)-1));
-      return static_cast<decl_node> (NULL);
+      return NULL;
     }
   else
     {
@@ -12307,7 +12321,7 @@ static void doCompletePartialProcType (mcPretty_pretty p, decl_node t, decl_node
   decl_node u;
 
   mcDebug_assert (decl_isProcType (n));
-  u = static_cast<decl_node> (NULL);
+  u = NULL;
   outText (p, (const char *) "typedef", 7);
   mcPretty_setNeedSpace (p);
   doTypeC (p, n->proctypeF.returnType, &u);
@@ -12575,7 +12589,7 @@ static void doArrayC (mcPretty_pretty p, decl_node n)
   mcDebug_assert (decl_isArray (n));
   t = n->arrayF.type;
   s = n->arrayF.subr;
-  u = static_cast<decl_node> (NULL);
+  u = NULL;
   if (s == NULL)
     {
       doTypeC (p, t, &u);
@@ -12618,7 +12632,7 @@ static void doPointerC (mcPretty_pretty p, decl_node n, decl_node *m)
   decl_node s;
 
   t = n->pointerF.type;
-  s = static_cast<decl_node> (NULL);
+  s = NULL;
   doTypeC (p, t, &s);
   mcPretty_setNeedSpace (p);
   outText (p, (const char *) "*", 1);
@@ -12633,7 +12647,7 @@ static void doRecordFieldC (mcPretty_pretty p, decl_node f)
 {
   decl_node m;
 
-  m = static_cast<decl_node> (NULL);
+  m = NULL;
   mcPretty_setNeedSpace (p);
   doTypeC (p, f->recordfieldF.type, &m);
   doDNameC (p, f, FALSE);
@@ -13095,7 +13109,7 @@ static void doVarC (decl_node n)
           mcPretty_setNeedSpace (doP);
         }
     }
-  s = static_cast<decl_node> (NULL);
+  s = NULL;
   doTypeC (doP, decl_getType (n), &s);
   mcPretty_setNeedSpace (doP);
   doFQDNameC (doP, n, FALSE);
@@ -13180,7 +13194,7 @@ static void doProcedureHeadingC (decl_node n, unsigned int prototype)
       outText (doP, (const char *) "static", 6);
       mcPretty_setNeedSpace (doP);
     }
-  q = static_cast<decl_node> (NULL);
+  q = NULL;
   doTypeC (doP, n->procedureF.returnType, &q);
   mcPretty_setNeedSpace (doP);
   doFQDNameC (doP, n, FALSE);
@@ -13232,14 +13246,14 @@ static unsigned int checkDeclareUnboundedParamCopyC (mcPretty_pretty p, decl_nod
     {
       t = decl_getType (t);
       c = wlists_noOfItemsInList (l);
-      i = static_cast<unsigned int> (1);
+      i = 1;
       while (i <= c)
         {
           doTypeNameC (p, t);
           mcPretty_setNeedSpace (p);
-          doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+          doNamesC (p, wlists_getItemFromList (l, i));
           outText (p, (const char *) "[_", 2);
-          doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+          doNamesC (p, wlists_getItemFromList (l, i));
           outText (p, (const char *) "_high+1];\\n", 11);
           seen = TRUE;
           i += 1;
@@ -13268,28 +13282,28 @@ static void checkUnboundedParamCopyC (mcPretty_pretty p, decl_node n)
   if (((decl_isArray (t)) && (decl_isUnbounded (t))) && (l != NULL))
     {
       c = wlists_noOfItemsInList (l);
-      i = static_cast<unsigned int> (1);
+      i = 1;
       t = decl_getType (t);
       s = decl_skipType (t);
       while (i <= c)
         {
           keyc_useMemcpy ();
           outText (p, (const char *) "memcpy (", 8);
-          doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+          doNamesC (p, wlists_getItemFromList (l, i));
           outText (p, (const char *) ",", 1);
           mcPretty_setNeedSpace (p);
-          doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+          doNamesC (p, wlists_getItemFromList (l, i));
           outText (p, (const char *) "_, ", 3);
           if (((s == charN) || (s == byteN)) || (s == locN))
             {
               outText (p, (const char *) "_", 1);
-              doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+              doNamesC (p, wlists_getItemFromList (l, i));
               outText (p, (const char *) "_high+1);\\n", 11);
             }
           else
             {
               outText (p, (const char *) "(_", 2);
-              doNamesC (p, static_cast<nameKey_Name> (wlists_getItemFromList (l, i)));
+              doNamesC (p, wlists_getItemFromList (l, i));
               outText (p, (const char *) "_high+1)", 8);
               mcPretty_setNeedSpace (p);
               doMultiplyBySize (p, t);
@@ -13490,10 +13504,10 @@ static void simplifyVar (alists_alist l, decl_node n)
       d = n->varF.decl;
       mcDebug_assert (isVarDecl (d));
       t = wlists_noOfItemsInList (d->vardeclF.names);
-      i = static_cast<unsigned int> (1);
+      i = 1;
       while (i <= t)
         {
-          v = decl_lookupInScope (n->varF.scope, static_cast<nameKey_Name> (wlists_getItemFromList (d->vardeclF.names, i)));
+          v = decl_lookupInScope (n->varF.scope, wlists_getItemFromList (d->vardeclF.names, i));
           mcDebug_assert (decl_isVar (v));
           v->varF.type = n->varF.type;
           i += 1;
@@ -13822,7 +13836,7 @@ static void joinProcedures (decl_node i, decl_node d)
 
   mcDebug_assert (decl_isDef (d));
   mcDebug_assert (decl_isImp (i));
-  j = static_cast<unsigned int> (1);
+  j = 1;
   h = Indexing_HighIndice (d->defF.decls.procedures);
   while (j <= h)
     {
@@ -13900,7 +13914,7 @@ static void doStatementSequenceC (mcPretty_pretty p, decl_node s)
 
   mcDebug_assert (decl_isStatementSequence (s));
   h = Indexing_HighIndice (s->stmtF.statements);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= h)
     {
       doStatementsC (p, reinterpret_cast<decl_node> (Indexing_GetIndice (s->stmtF.statements, i)));
@@ -14019,13 +14033,57 @@ static void doReturnC (mcPretty_pretty p, decl_node s)
 
 
 /*
-   doExprCastC -
+   isZtypeEquivalent -
+*/
+
+static unsigned int isZtypeEquivalent (decl_node type)
+{
+  switch (type->kind)
+    {
+      case cardinal:
+      case longcard:
+      case shortcard:
+      case integer:
+      case longint:
+      case shortint:
+      case ztype:
+        return TRUE;
+        break;
+
+
+      default:
+        return FALSE;
+        break;
+    }
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   isEquivalentType - returns TRUE if type1 and type2 are equivalent.
+*/
+
+static unsigned int isEquivalentType (decl_node type1, decl_node type2)
+{
+  type1 = decl_skipType (type1);
+  type2 = decl_skipType (type2);
+  return (type1 == type2) || ((isZtypeEquivalent (type1)) && (isZtypeEquivalent (type2)));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   doExprCastC - build a cast if necessary.
 */
 
 static void doExprCastC (mcPretty_pretty p, decl_node e, decl_node type)
 {
-  /* IF skipType (type) # skipType (getType (e))  */
-  if ((decl_skipType (type)) != (decl_skipType (getExprType (e))))
+  decl_node stype;
+
+  stype = decl_skipType (type);
+  if ((! (isEquivalentType (type, getExprType (e)))) && (! ((e->kind == nil) && ((decl_isPointer (stype)) || (stype->kind == address)))))
     {
       if (lang == ansiCP)
         {
@@ -14842,12 +14900,15 @@ static unsigned int typePair (decl_node a, decl_node b, decl_node x, decl_node y
 
 
 /*
-   needsCast -
+   needsCast - return TRUE if the actual type parameter needs to be cast to
+               the formal type.
 */
 
 static unsigned int needsCast (decl_node at, decl_node ft)
 {
-  if ((((((((((((at == nilN) || (at == ft)) || (typePair (at, ft, cardinalN, wordN))) || (typePair (at, ft, cardinalN, ztypeN))) || (typePair (at, ft, integerN, ztypeN))) || (typePair (at, ft, longcardN, ztypeN))) || (typePair (at, ft, shortcardN, ztypeN))) || (typePair (at, ft, longintN, ztypeN))) || (typePair (at, ft, shortintN, ztypeN))) || (typePair (at, ft, realN, rtypeN))) || (typePair (at, ft, longrealN, rtypeN))) || (typePair (at, ft, shortrealN, rtypeN)))
+  at = decl_skipType (at);
+  ft = decl_skipType (ft);
+  if (((((((((((((at == nilN) || (at->kind == nil)) || (at == ft)) || (typePair (at, ft, cardinalN, wordN))) || (typePair (at, ft, cardinalN, ztypeN))) || (typePair (at, ft, integerN, ztypeN))) || (typePair (at, ft, longcardN, ztypeN))) || (typePair (at, ft, shortcardN, ztypeN))) || (typePair (at, ft, longintN, ztypeN))) || (typePair (at, ft, shortintN, ztypeN))) || (typePair (at, ft, realN, rtypeN))) || (typePair (at, ft, longrealN, rtypeN))) || (typePair (at, ft, shortrealN, rtypeN)))
     {
       return FALSE;
     }
@@ -14863,7 +14924,8 @@ static unsigned int needsCast (decl_node at, decl_node ft)
 /*
    checkSystemCast - checks to see if we are passing to/from
                      a system generic type (WORD, BYTE, ADDRESS)
-                     and if so emit a cast.
+                     and if so emit a cast.  It returns the number of
+                     open parenthesis.
 */
 
 static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_node formal)
@@ -14881,19 +14943,31 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_n
           if ((isString (actual)) && ((decl_skipType (ft)) == addressN))
             {
               outText (p, (const char *) "const_cast<void*> (reinterpret_cast<const void*> (", 50);
-              return static_cast<unsigned int> (2);
+              return 2;
             }
           else if ((decl_isPointer (decl_skipType (ft))) || ((decl_skipType (ft)) == addressN))
             {
               /* avoid dangling else.  */
-              outText (p, (const char *) "reinterpret_cast<", 17);
-              doTypeNameC (p, ft);
-              if (decl_isVarParam (formal))
+              if (actual == nilN)
                 {
-                  outText (p, (const char *) "*", 1);
+                  if (decl_isVarParam (formal))
+                    {
+                      mcMetaError_metaError1 ((const char *) "NIL is being passed to a VAR parameter {%1DMad}", 47, (const unsigned char *) &formal, (sizeof (formal)-1));
+                    }
+                  /* NULL is compatible with pointers/address.  */
+                  return 0;
                 }
-              mcPretty_noSpace (p);
-              outText (p, (const char *) "> (", 3);
+              else
+                {
+                  outText (p, (const char *) "reinterpret_cast<", 17);
+                  doTypeNameC (p, ft);
+                  if (decl_isVarParam (formal))
+                    {
+                      outText (p, (const char *) "*", 1);
+                    }
+                  mcPretty_noSpace (p);
+                  outText (p, (const char *) "> (", 3);
+                }
             }
           else
             {
@@ -14907,7 +14981,7 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_n
               mcPretty_noSpace (p);
               outText (p, (const char *) "> (", 3);
             }
-          return static_cast<unsigned int> (1);
+          return 1;
         }
       else
         {
@@ -14922,7 +14996,7 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node actual, decl_n
           mcPretty_setNeedSpace (p);
         }
     }
-  return static_cast<unsigned int> (0);
+  return 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -15094,7 +15168,7 @@ static decl_node getNthParamType (Indexing_Index l, unsigned int i)
     {
       return decl_getType (p);
     }
-  return static_cast<decl_node> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -15132,7 +15206,7 @@ static decl_node getNthParam (Indexing_Index l, unsigned int i)
             {
               /* avoid dangling else.  */
               mcDebug_assert (decl_isVarargs (p));
-              return static_cast<decl_node> (NULL);
+              return NULL;
             }
           if (i <= k)
             {
@@ -15145,7 +15219,7 @@ static decl_node getNthParam (Indexing_Index l, unsigned int i)
             }
         }
     }
-  return static_cast<decl_node> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -15168,7 +15242,7 @@ static void doFuncArgsC (mcPretty_pretty p, decl_node s, Indexing_Index l, unsig
     }
   if (s->funccallF.args != NULL)
     {
-      i = static_cast<unsigned int> (1);
+      i = 1;
       n = expListLen (s->funccallF.args);
       while (i <= n)
         {
@@ -15208,7 +15282,7 @@ static void doProcTypeArgsC (mcPretty_pretty p, decl_node s, Indexing_Index args
     }
   if (s->funccallF.args != NULL)
     {
-      i = static_cast<unsigned int> (1);
+      i = 1;
       n = expListLen (s->funccallF.args);
       while (i <= n)
         {
@@ -16136,7 +16210,7 @@ static void doFuncExprC (mcPretty_pretty p, decl_node n)
       mcPretty_setNeedSpace (p);
       if (t == procN)
         {
-          doProcTypeArgsC (p, n, reinterpret_cast<Indexing_Index> (NULL), TRUE);
+          doProcTypeArgsC (p, n, NULL, TRUE);
         }
       else
         {
@@ -16267,7 +16341,7 @@ static void doRangeListC (mcPretty_pretty p, decl_node c)
   unsigned int h;
 
   mcDebug_assert (decl_isCaseList (c));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (c->caselistF.rangePairs);
   while (i <= h)
     {
@@ -16293,7 +16367,7 @@ static void doRangeIfListC (mcPretty_pretty p, decl_node e, decl_node c)
   unsigned int h;
 
   mcDebug_assert (decl_isCaseList (c));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (c->caselistF.rangePairs);
   while (i <= h)
     {
@@ -16372,7 +16446,7 @@ static void doCaseLabelListC (mcPretty_pretty p, decl_node n, unsigned int haveE
   decl_node c;
 
   mcDebug_assert (decl_isCase (n));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (n->caseF.caseLabelList);
   while (i <= h)
     {
@@ -16424,7 +16498,7 @@ static void doCaseIfLabelListC (mcPretty_pretty p, decl_node n)
   decl_node c;
 
   mcDebug_assert (decl_isCase (n));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (n->caseF.caseLabelList);
   while (i <= h)
     {
@@ -16507,7 +16581,7 @@ static unsigned int canUseSwitchCaseLabels (decl_node n)
 
   mcDebug_assert (decl_isCaseLabelList (n));
   l = n->caselabellistF.caseList;
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (l->caselistF.rangePairs);
   while (i <= h)
     {
@@ -16537,7 +16611,7 @@ static unsigned int canUseSwitch (decl_node n)
   decl_node c;
 
   mcDebug_assert (decl_isCase (n));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (n->caseF.caseLabelList);
   while (i <= h)
     {
@@ -16884,7 +16958,7 @@ static unsigned int isLastStatementCase (decl_node n, decl_isNodeF q)
 
   ret = TRUE;
   mcDebug_assert (decl_isCase (n));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = Indexing_HighIndice (n->caseF.caseLabelList);
   while (i <= h)
     {
@@ -17245,7 +17319,7 @@ static dependentState walkRecord (alists_alist l, decl_node n)
               dbs (s, q);
               addTodo (n);
               dbq (n);
-              db ((const char *) "\\n", 2, reinterpret_cast<decl_node> (NULL));
+              db ((const char *) "\\n", 2, NULL);
               mcPretty_setindent (doP, o);
               return s;
             }
@@ -17278,7 +17352,7 @@ static dependentState walkVarient (alists_alist l, decl_node n)
     {
       dbs (s, n->varientF.tag);
       dbq (n->varientF.tag);
-      db ((const char *) "\\n", 2, reinterpret_cast<decl_node> (NULL));
+      db ((const char *) "\\n", 2, NULL);
       return s;
     }
   i = Indexing_LowIndice (n->varientF.listOfSons);
@@ -17291,7 +17365,7 @@ static dependentState walkVarient (alists_alist l, decl_node n)
       if (s != completed)
         {
           dbs (s, q);
-          db ((const char *) "\\n", 2, reinterpret_cast<decl_node> (NULL));
+          db ((const char *) "\\n", 2, NULL);
           return s;
         }
       i += 1;
@@ -17570,20 +17644,20 @@ static dependentState walkRecordField (alists_alist l, decl_node n)
   t = decl_getType (n);
   if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
     {
-      dbs (static_cast<dependentState> (partial), n);
+      dbs (partial, n);
       return partial;
     }
   else if (alists_isItemInList (doneQ, reinterpret_cast<void *> (t)))
     {
       /* avoid dangling else.  */
-      dbs (static_cast<dependentState> (completed), n);
+      dbs (completed, n);
       return completed;
     }
   else
     {
       /* avoid dangling else.  */
       addTodo (t);
-      dbs (static_cast<dependentState> (blocked), n);
+      dbs (blocked, n);
       dbq (n);
       dbq (t);
       /* s := walkDependants (l, t)  */
@@ -18207,7 +18281,7 @@ static void visitIndex (alists_alist v, Indexing_Index i, nodeProcedure p)
   unsigned int j;
   unsigned int h;
 
-  j = static_cast<unsigned int> (1);
+  j = 1;
   h = Indexing_HighIndice (i);
   while (j <= h)
     {
@@ -19189,7 +19263,7 @@ static DynamicStrings_String genKind (decl_node n)
       case longcomplex:
       case shortcomplex:
         /* types, no need to generate a kind string as it it contained in the name.  */
-        return static_cast<DynamicStrings_String> (NULL);
+        return NULL;
         break;
 
       case type:
@@ -19531,7 +19605,7 @@ static void dumpQ (const char *q_, unsigned int _q_high, alists_alist l)
   m = DynamicStrings_KillString (SFIO_WriteS (FIO_StdOut, m));
   m = FormatStrings_Sprintf0 (DynamicStrings_InitString ((const char *) "\\n", 2));
   m = DynamicStrings_KillString (SFIO_WriteS (FIO_StdOut, m));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   h = alists_noOfItemsInList (l);
   while (i <= h)
     {
@@ -19692,7 +19766,7 @@ static void outputPartial (decl_node n)
   unsigned int indirection;
 
   q = decl_getType (n);
-  indirection = static_cast<unsigned int> (0);
+  indirection = 0;
   while (decl_isPointer (q))
     {
       q = decl_getType (q);
@@ -19712,7 +19786,7 @@ static void tryOutputTodo (nodeProcedure c, nodeProcedure t, nodeProcedure v, no
   unsigned int n;
   decl_node d;
 
-  i = static_cast<unsigned int> (1);
+  i = 1;
   n = alists_noOfItemsInList (todoQ);
   while (i <= n)
     {
@@ -19721,14 +19795,14 @@ static void tryOutputTodo (nodeProcedure c, nodeProcedure t, nodeProcedure v, no
         {
           alists_removeItemFromList (todoQ, reinterpret_cast<void *> (d));
           alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (d));
-          i = static_cast<unsigned int> (1);
+          i = 1;
         }
       else if (tryPartial (d, pt))
         {
           /* avoid dangling else.  */
           alists_removeItemFromList (todoQ, reinterpret_cast<void *> (d));
           alists_includeItemIntoList (partialQ, reinterpret_cast<void *> (d));
-          i = static_cast<unsigned int> (1);
+          i = 1;
         }
       else
         {
@@ -19750,7 +19824,7 @@ static void tryOutputPartial (nodeProcedure t)
   unsigned int n;
   decl_node d;
 
-  i = static_cast<unsigned int> (1);
+  i = 1;
   n = alists_noOfItemsInList (partialQ);
   while (i <= n)
     {
@@ -19759,7 +19833,7 @@ static void tryOutputPartial (nodeProcedure t)
         {
           alists_removeItemFromList (partialQ, reinterpret_cast<void *> (d));
           alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (d));
-          i = static_cast<unsigned int> (1);
+          i = 1;
           n -= 1;
         }
       else
@@ -19789,7 +19863,7 @@ static void debugList (const char *a_, unsigned int _a_high, alists_alist l)
     {
       outText (doP, (const char *) a, _a_high);
       outText (doP, (const char *) " still contains node(s)\\n", 25);
-      i = static_cast<unsigned int> (1);
+      i = 1;
       do {
         n = static_cast<decl_node> (alists_getItemFromList (l, i));
         dbg (n);
@@ -19840,7 +19914,7 @@ static void populateTodo (nodeProcedure p)
   alists_alist l;
 
   h = alists_noOfItemsInList (todoQ);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= h)
     {
       n = static_cast<decl_node> (alists_getItemFromList (todoQ, i));
@@ -19865,8 +19939,8 @@ static void topologicallyOut (nodeProcedure c, nodeProcedure t, nodeProcedure v,
   unsigned int pa;
 
   populateTodo ((nodeProcedure) {(nodeProcedure_t) addEnumConst});
-  tol = static_cast<unsigned int> (0);
-  pal = static_cast<unsigned int> (0);
+  tol = 0;
+  pal = 0;
   to = alists_noOfItemsInList (todoQ);
   pa = alists_noOfItemsInList (partialQ);
   while ((tol != to) || (pal != pa))
@@ -20673,7 +20747,7 @@ static void doParamM2 (mcPretty_pretty p, decl_node n)
       else
         {
           t = wlists_noOfItemsInList (l);
-          c = static_cast<unsigned int> (1);
+          c = 1;
           while (c <= t)
             {
               i = static_cast<nameKey_Name> (wlists_getItemFromList (l, c));
@@ -20725,7 +20799,7 @@ static void doVarParamM2 (mcPretty_pretty p, decl_node n)
       else
         {
           t = wlists_noOfItemsInList (l);
-          c = static_cast<unsigned int> (1);
+          c = 1;
           while (c <= t)
             {
               i = static_cast<nameKey_Name> (wlists_getItemFromList (l, c));
@@ -21296,7 +21370,7 @@ static void dbg (decl_node n)
   doP = mcPretty_initPretty ((mcPretty_writeProc) {(mcPretty_writeProc_t) write_}, (mcPretty_writeLnProc) {(mcPretty_writeLnProc_t) writeln});
   l = alists_initList ();
   alists_includeItemIntoList (l, reinterpret_cast<void *> (n));
-  i = static_cast<unsigned int> (1);
+  i = 1;
   out1 ((const char *) "dbg (%s)\\n", 10, n);
   do {
     n = static_cast<decl_node> (alists_getItemFromList (l, i));
@@ -21443,8 +21517,8 @@ static unsigned int isComment (decl_node n)
 
 static void initPair (commentPair *c)
 {
-  (*c).after = static_cast<decl_node> (NULL);
-  (*c).body = static_cast<decl_node> (NULL);
+  (*c).after = NULL;
+  (*c).body = NULL;
 }
 
 
@@ -21562,7 +21636,7 @@ static decl_node dupSetValue (decl_node n)
   decl_node m;
   unsigned int i;
 
-  m = newNode (static_cast<nodeT> (setvalue));
+  m = newNode (setvalue);
   m->setvalueF.type = n->setvalueF.type;
   i = Indexing_LowIndice (n->setvalueF.values);
   while (i <= (Indexing_HighIndice (n->setvalueF.values)))
@@ -21769,15 +21843,15 @@ static decl_node doDupExpr (decl_node n)
 static void makeSystem (void)
 {
   systemN = decl_lookupDef (nameKey_makeKey ((const char *) "SYSTEM", 6));
-  addressN = makeBase (static_cast<nodeT> (address));
-  locN = makeBase (static_cast<nodeT> (loc));
-  byteN = makeBase (static_cast<nodeT> (byte));
-  wordN = makeBase (static_cast<nodeT> (word));
-  csizetN = makeBase (static_cast<nodeT> (csizet));
-  cssizetN = makeBase (static_cast<nodeT> (cssizet));
-  adrN = makeBase (static_cast<nodeT> (adr));
-  tsizeN = makeBase (static_cast<nodeT> (tsize));
-  throwN = makeBase (static_cast<nodeT> (throw_));
+  addressN = makeBase (address);
+  locN = makeBase (loc);
+  byteN = makeBase (byte);
+  wordN = makeBase (word);
+  csizetN = makeBase (csizet);
+  cssizetN = makeBase (cssizet);
+  adrN = makeBase (adr);
+  tsizeN = makeBase (tsize);
+  throwN = makeBase (throw_);
   decl_enterScope (systemN);
   addressN = addToScope (addressN);
   locN = addToScope (locN);
@@ -21818,9 +21892,9 @@ static decl_node makeBitnum (void)
 {
   decl_node b;
 
-  b = newNode (static_cast<nodeT> (subrange));
-  b->subrangeF.type = static_cast<decl_node> (NULL);
-  b->subrangeF.scope = static_cast<decl_node> (NULL);
+  b = newNode (subrange);
+  b->subrangeF.type = NULL;
+  b->subrangeF.scope = NULL;
   b->subrangeF.low = lookupConst (b, nameKey_makeKey ((const char *) "0", 1));
   b->subrangeF.high = lookupConst (b, nameKey_makeKey ((const char *) "31", 2));
   return b;
@@ -21836,49 +21910,49 @@ static decl_node makeBitnum (void)
 static void makeBaseSymbols (void)
 {
   baseSymbols = symbolKey_initTree ();
-  booleanN = makeBase (static_cast<nodeT> (boolean));
-  charN = makeBase (static_cast<nodeT> (char_));
-  procN = makeBase (static_cast<nodeT> (proc));
-  cardinalN = makeBase (static_cast<nodeT> (cardinal));
-  longcardN = makeBase (static_cast<nodeT> (longcard));
-  shortcardN = makeBase (static_cast<nodeT> (shortcard));
-  integerN = makeBase (static_cast<nodeT> (integer));
-  longintN = makeBase (static_cast<nodeT> (longint));
-  shortintN = makeBase (static_cast<nodeT> (shortint));
-  bitsetN = makeBase (static_cast<nodeT> (bitset));
+  booleanN = makeBase (boolean);
+  charN = makeBase (char_);
+  procN = makeBase (proc);
+  cardinalN = makeBase (cardinal);
+  longcardN = makeBase (longcard);
+  shortcardN = makeBase (shortcard);
+  integerN = makeBase (integer);
+  longintN = makeBase (longint);
+  shortintN = makeBase (shortint);
+  bitsetN = makeBase (bitset);
   bitnumN = makeBitnum ();
-  ztypeN = makeBase (static_cast<nodeT> (ztype));
-  rtypeN = makeBase (static_cast<nodeT> (rtype));
-  complexN = makeBase (static_cast<nodeT> (complex_));
-  longcomplexN = makeBase (static_cast<nodeT> (longcomplex));
-  shortcomplexN = makeBase (static_cast<nodeT> (shortcomplex));
-  realN = makeBase (static_cast<nodeT> (real));
-  longrealN = makeBase (static_cast<nodeT> (longreal));
-  shortrealN = makeBase (static_cast<nodeT> (shortreal));
-  nilN = makeBase (static_cast<nodeT> (nil));
-  trueN = makeBase (static_cast<nodeT> (true_));
-  falseN = makeBase (static_cast<nodeT> (false_));
-  sizeN = makeBase (static_cast<nodeT> (size));
-  minN = makeBase (static_cast<nodeT> (min));
-  maxN = makeBase (static_cast<nodeT> (max));
-  floatN = makeBase (static_cast<nodeT> (float_));
-  truncN = makeBase (static_cast<nodeT> (trunc));
-  ordN = makeBase (static_cast<nodeT> (ord));
-  valN = makeBase (static_cast<nodeT> (val));
-  chrN = makeBase (static_cast<nodeT> (chr));
-  capN = makeBase (static_cast<nodeT> (cap));
-  absN = makeBase (static_cast<nodeT> (abs_));
-  newN = makeBase (static_cast<nodeT> (new_));
-  disposeN = makeBase (static_cast<nodeT> (dispose));
-  lengthN = makeBase (static_cast<nodeT> (length));
-  incN = makeBase (static_cast<nodeT> (inc));
-  decN = makeBase (static_cast<nodeT> (dec));
-  inclN = makeBase (static_cast<nodeT> (incl));
-  exclN = makeBase (static_cast<nodeT> (excl));
-  highN = makeBase (static_cast<nodeT> (high));
-  imN = makeBase (static_cast<nodeT> (im));
-  reN = makeBase (static_cast<nodeT> (re));
-  cmplxN = makeBase (static_cast<nodeT> (cmplx));
+  ztypeN = makeBase (ztype);
+  rtypeN = makeBase (rtype);
+  complexN = makeBase (complex_);
+  longcomplexN = makeBase (longcomplex);
+  shortcomplexN = makeBase (shortcomplex);
+  realN = makeBase (real);
+  longrealN = makeBase (longreal);
+  shortrealN = makeBase (shortreal);
+  nilN = makeBase (nil);
+  trueN = makeBase (true_);
+  falseN = makeBase (false_);
+  sizeN = makeBase (size);
+  minN = makeBase (min);
+  maxN = makeBase (max);
+  floatN = makeBase (float_);
+  truncN = makeBase (trunc);
+  ordN = makeBase (ord);
+  valN = makeBase (val);
+  chrN = makeBase (chr);
+  capN = makeBase (cap);
+  absN = makeBase (abs_);
+  newN = makeBase (new_);
+  disposeN = makeBase (dispose);
+  lengthN = makeBase (length);
+  incN = makeBase (inc);
+  decN = makeBase (dec);
+  inclN = makeBase (incl);
+  exclN = makeBase (excl);
+  highN = makeBase (high);
+  imN = makeBase (im);
+  reN = makeBase (re);
+  cmplxN = makeBase (cmplx);
   symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "BOOLEAN", 7), reinterpret_cast<void *> (booleanN));
   symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "PROC", 4), reinterpret_cast<void *> (procN));
   symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CHAR", 4), reinterpret_cast<void *> (charN));
@@ -21983,7 +22057,7 @@ static void init (void)
   makeBuiltins ();
   makeM2rts ();
   outputState = punct;
-  tempCount = static_cast<unsigned int> (0);
+  tempCount = 0;
   mustVisitScope = FALSE;
 }
 
@@ -22219,17 +22293,17 @@ extern "C" void decl_resetEnumPos (decl_node n)
   mcDebug_assert (((decl_isDef (n)) || (decl_isImp (n))) || (decl_isModule (n)));
   if (decl_isDef (n))
     {
-      n->defF.enumFixup.count = static_cast<unsigned int> (0);
+      n->defF.enumFixup.count = 0;
     }
   else if (decl_isImp (n))
     {
       /* avoid dangling else.  */
-      n->impF.enumFixup.count = static_cast<unsigned int> (0);
+      n->impF.enumFixup.count = 0;
     }
   else if (decl_isModule (n))
     {
       /* avoid dangling else.  */
-      n->moduleF.enumFixup.count = static_cast<unsigned int> (0);
+      n->moduleF.enumFixup.count = 0;
     }
 }
 
@@ -22242,7 +22316,7 @@ extern "C" decl_node decl_getNextEnum (void)
 {
   decl_node n;
 
-  n = static_cast<decl_node> (NULL);
+  n = NULL;
   mcDebug_assert (((decl_isDef (currentModule)) || (decl_isImp (currentModule))) || (decl_isModule (currentModule)));
   if (decl_isDef (currentModule))
     {
@@ -22479,7 +22553,7 @@ extern "C" decl_node decl_getType (decl_node n)
     {
       case new_:
       case dispose:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case length:
@@ -22490,7 +22564,7 @@ extern "C" decl_node decl_getType (decl_node n)
       case dec:
       case incl:
       case excl:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case nil:
@@ -22686,11 +22760,11 @@ extern "C" decl_node decl_getType (decl_node n)
         break;
 
       case throw_:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case unreachable:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case def:
@@ -22969,7 +23043,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case nil:
       case true_:
       case false_:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case address:
@@ -23000,7 +23074,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case longcomplex:
       case shortcomplex:
         /* base types.  */
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case type:
@@ -23033,7 +23107,7 @@ extern "C" decl_node decl_getScope (decl_node n)
         break;
 
       case string:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case const_:
@@ -23041,7 +23115,7 @@ extern "C" decl_node decl_getScope (decl_node n)
         break;
 
       case literal:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case varparam:
@@ -23081,7 +23155,7 @@ extern "C" decl_node decl_getScope (decl_node n)
         break;
 
       case subscript:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case procedure:
@@ -23101,7 +23175,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case elsif:
       case assignment:
         /* statements.  */
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case componentref:
@@ -23123,11 +23197,11 @@ extern "C" decl_node decl_getScope (decl_node n)
       case divide:
       case in:
         /* expressions.  */
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case neg:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case lsl:
@@ -23147,7 +23221,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case greater:
       case greequal:
       case lessequal:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case adr:
@@ -23163,7 +23237,7 @@ extern "C" decl_node decl_getScope (decl_node n)
       case im:
       case min:
       case max:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case vardecl:
@@ -23171,23 +23245,23 @@ extern "C" decl_node decl_getScope (decl_node n)
         break;
 
       case funccall:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case explist:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case caselabellist:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case caselist:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case range:
-        return static_cast<decl_node> (NULL);
+        return NULL;
         break;
 
       case varargs:
@@ -23524,11 +23598,11 @@ extern "C" decl_node decl_makeConst (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (const_));
+  d = newNode (const_);
   d->constF.name = n;
-  d->constF.type = static_cast<decl_node> (NULL);
+  d->constF.type = NULL;
   d->constF.scope = decl_getDeclScope ();
-  d->constF.value = static_cast<decl_node> (NULL);
+  d->constF.value = NULL;
   return addToScope (d);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -23554,9 +23628,9 @@ extern "C" decl_node decl_makeType (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (type));
+  d = newNode (type);
   d->typeF.name = n;
-  d->typeF.type = static_cast<decl_node> (NULL);
+  d->typeF.type = NULL;
   d->typeF.scope = decl_getDeclScope ();
   d->typeF.isHidden = FALSE;
   d->typeF.isInternal = FALSE;
@@ -23583,9 +23657,9 @@ extern "C" decl_node decl_makeTypeImp (nameKey_Name n)
     }
   else
     {
-      d = newNode (static_cast<nodeT> (type));
+      d = newNode (type);
       d->typeF.name = n;
-      d->typeF.type = static_cast<decl_node> (NULL);
+      d->typeF.type = NULL;
       d->typeF.scope = decl_getDeclScope ();
       d->typeF.isHidden = FALSE;
       return addToScope (d);
@@ -23603,10 +23677,10 @@ extern "C" decl_node decl_makeVar (nameKey_Name n)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (var));
+  d = newNode (var);
   d->varF.name = n;
-  d->varF.type = static_cast<decl_node> (NULL);
-  d->varF.decl = static_cast<decl_node> (NULL);
+  d->varF.type = NULL;
+  d->varF.decl = NULL;
   d->varF.scope = decl_getDeclScope ();
   d->varF.isInitialised = FALSE;
   d->varF.isParameter = FALSE;
@@ -23644,15 +23718,15 @@ extern "C" decl_node decl_makeVarDecl (decl_node i, decl_node type)
   unsigned int n;
 
   type = checkPtr (type);
-  d = newNode (static_cast<nodeT> (vardecl));
+  d = newNode (vardecl);
   d->vardeclF.names = i->identlistF.names;
   d->vardeclF.type = type;
   d->vardeclF.scope = decl_getDeclScope ();
   n = wlists_noOfItemsInList (d->vardeclF.names);
-  j = static_cast<unsigned int> (1);
+  j = 1;
   while (j <= n)
     {
-      v = decl_lookupSym (static_cast<nameKey_Name> (wlists_getItemFromList (d->vardeclF.names, j)));
+      v = decl_lookupSym (wlists_getItemFromList (d->vardeclF.names, j));
       mcDebug_assert (decl_isVar (v));
       decl_putVar (v, type, d);
       j += 1;
@@ -23709,10 +23783,10 @@ extern "C" decl_node decl_makeSubrange (decl_node low, decl_node high)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (subrange));
+  n = newNode (subrange);
   n->subrangeF.low = low;
   n->subrangeF.high = high;
-  n->subrangeF.type = static_cast<decl_node> (NULL);
+  n->subrangeF.type = NULL;
   n->subrangeF.scope = decl_getDeclScope ();
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -23739,7 +23813,7 @@ extern "C" decl_node decl_makePointer (decl_node type)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (pointer));
+  n = newNode (pointer);
   n->pointerF.type = type;
   n->pointerF.scope = decl_getDeclScope ();
   return n;
@@ -23756,7 +23830,7 @@ extern "C" decl_node decl_makeSet (decl_node type)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (set));
+  n = newNode (set);
   n->setF.type = type;
   n->setF.scope = decl_getDeclScope ();
   return n;
@@ -23776,7 +23850,7 @@ extern "C" decl_node decl_makeArray (decl_node subr, decl_node type)
 
   s = decl_skipType (subr);
   mcDebug_assert (((decl_isSubrange (s)) || (isOrdinal (s))) || (decl_isEnumeration (s)));
-  n = newNode (static_cast<nodeT> (array));
+  n = newNode (array);
   n->arrayF.subr = subr;
   n->arrayF.type = type;
   n->arrayF.scope = decl_getDeclScope ();
@@ -23806,7 +23880,7 @@ extern "C" decl_node decl_makeRecord (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (record));
+  n = newNode (record);
   n->recordF.localSymbols = symbolKey_initTree ();
   n->recordF.listOfSons = Indexing_InitIndex (1);
   n->recordF.scope = decl_getDeclScope ();
@@ -23825,18 +23899,18 @@ extern "C" decl_node decl_makeVarient (decl_node r)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (varient));
+  n = newNode (varient);
   n->varientF.listOfSons = Indexing_InitIndex (1);
   /* if so use this   n^.varientF.parent := r  */
   if (decl_isRecord (r))
     {
-      n->varientF.varient = static_cast<decl_node> (NULL);
+      n->varientF.varient = NULL;
     }
   else
     {
       n->varientF.varient = r;
     }
-  n->varientF.tag = static_cast<decl_node> (NULL);
+  n->varientF.tag = NULL;
   n->varientF.scope = decl_getDeclScope ();
   switch (r->kind)
     {
@@ -23876,7 +23950,7 @@ extern "C" decl_node decl_addFieldsToRecord (decl_node r, decl_node v, decl_node
   if (decl_isRecord (r))
     {
       p = r;
-      v = static_cast<decl_node> (NULL);
+      v = NULL;
     }
   else
     {
@@ -23886,11 +23960,11 @@ extern "C" decl_node decl_addFieldsToRecord (decl_node r, decl_node v, decl_node
       putFieldVarient (r, v);
     }
   n = wlists_noOfItemsInList (i->identlistF.names);
-  j = static_cast<unsigned int> (1);
+  j = 1;
   while (j <= n)
     {
       fn = static_cast<nameKey_Name> (wlists_getItemFromList (i->identlistF.names, j));
-      fj = static_cast<decl_node> (symbolKey_getSymKey (p->recordF.localSymbols, static_cast<nameKey_Name> (n)));
+      fj = static_cast<decl_node> (symbolKey_getSymKey (p->recordF.localSymbols, n));
       if (fj == NULL)
         {
           fj = putFieldRecord (r, fn, t, v);
@@ -24113,11 +24187,11 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         break;
 
       case record:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case varient:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case var:
@@ -24125,19 +24199,19 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         break;
 
       case enumeration:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case subrange:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case pointer:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case array:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case string:
@@ -24153,15 +24227,15 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         break;
 
       case varparam:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case param:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case optarg_:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case recordfield:
@@ -24177,15 +24251,15 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         break;
 
       case set:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case proctype:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case subscript:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case procedure:
@@ -24213,7 +24287,7 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
       case elsif:
       case assignment:
         /* statements.  */
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case constexp:
@@ -24237,7 +24311,7 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
       case greequal:
       case lessequal:
         /* expressions.  */
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case adr:
@@ -24305,11 +24379,11 @@ extern "C" nameKey_Name decl_getSymName (decl_node n)
         break;
 
       case funccall:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
       case identlist:
-        return static_cast<nameKey_Name> (nameKey_NulName);
+        return nameKey_NulName;
         break;
 
 
@@ -24384,7 +24458,7 @@ extern "C" decl_node decl_lookupExported (decl_node n, nameKey_Name i)
     {
       return r;
     }
-  return static_cast<decl_node> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -24621,7 +24695,7 @@ extern "C" decl_node decl_makeProcedure (nameKey_Name n)
   d = decl_lookupSym (n);
   if (d == NULL)
     {
-      d = newNode (static_cast<nodeT> (procedure));
+      d = newNode (procedure);
       d->procedureF.name = n;
       initDecls (&d->procedureF.decls);
       d->procedureF.scope = decl_getDeclScope ();
@@ -24629,17 +24703,17 @@ extern "C" decl_node decl_makeProcedure (nameKey_Name n)
       d->procedureF.isForC = isDefForCNode (decl_getDeclScope ());
       d->procedureF.built = FALSE;
       d->procedureF.returnopt = FALSE;
-      d->procedureF.optarg_ = static_cast<decl_node> (NULL);
+      d->procedureF.optarg_ = NULL;
       d->procedureF.noreturnused = FALSE;
       d->procedureF.noreturn = FALSE;
       d->procedureF.vararg = FALSE;
       d->procedureF.checking = FALSE;
-      d->procedureF.paramcount = static_cast<unsigned int> (0);
-      d->procedureF.returnType = static_cast<decl_node> (NULL);
-      d->procedureF.beginStatements = static_cast<decl_node> (NULL);
+      d->procedureF.paramcount = 0;
+      d->procedureF.returnType = NULL;
+      d->procedureF.beginStatements = NULL;
       initCname (&d->procedureF.cname);
-      d->procedureF.defComment = static_cast<mcComment_commentDesc> (NULL);
-      d->procedureF.modComment = static_cast<mcComment_commentDesc> (NULL);
+      d->procedureF.defComment = NULL;
+      d->procedureF.modComment = NULL;
     }
   return addProcedureToScope (d, n);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -24687,13 +24761,13 @@ extern "C" decl_node decl_makeProcType (void)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (proctype));
+  d = newNode (proctype);
   d->proctypeF.scope = decl_getDeclScope ();
   d->proctypeF.parameters = Indexing_InitIndex (1);
   d->proctypeF.returnopt = FALSE;
-  d->proctypeF.optarg_ = static_cast<decl_node> (NULL);
+  d->proctypeF.optarg_ = NULL;
   d->proctypeF.vararg = FALSE;
-  d->proctypeF.returnType = static_cast<decl_node> (NULL);
+  d->proctypeF.returnType = NULL;
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -24745,7 +24819,7 @@ extern "C" decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_no
   decl_node d;
 
   mcDebug_assert ((l == NULL) || (isIdentList (l)));
-  d = newNode (static_cast<nodeT> (varparam));
+  d = newNode (varparam);
   d->varparamF.namelist = l;
   d->varparamF.type = type;
   d->varparamF.scope = proc;
@@ -24766,7 +24840,7 @@ extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl
   decl_node d;
 
   mcDebug_assert ((l == NULL) || (isIdentList (l)));
-  d = newNode (static_cast<nodeT> (param));
+  d = newNode (param);
   d->paramF.namelist = l;
   d->paramF.type = type;
   d->paramF.scope = proc;
@@ -24785,7 +24859,7 @@ extern "C" decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl
 extern "C" void decl_paramEnter (decl_node n)
 {
   mcDebug_assert (decl_isProcedure (n));
-  n->procedureF.paramcount = static_cast<unsigned int> (0);
+  n->procedureF.paramcount = 0;
 }
 
 
@@ -24812,7 +24886,7 @@ extern "C" decl_node decl_makeIdentList (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (identlist));
+  n = newNode (identlist);
   n->identlistF.names = wlists_initList ();
   n->identlistF.cnamed = FALSE;
   return n;
@@ -24829,13 +24903,13 @@ extern "C" decl_node decl_makeIdentList (void)
 extern "C" unsigned int decl_putIdent (decl_node n, nameKey_Name i)
 {
   mcDebug_assert (isIdentList (n));
-  if (wlists_isItemInList (n->identlistF.names, static_cast<unsigned int> (i)))
+  if (wlists_isItemInList (n->identlistF.names, i))
     {
       return FALSE;
     }
   else
     {
-      wlists_putItemIntoList (n->identlistF.names, static_cast<unsigned int> (i));
+      wlists_putItemIntoList (n->identlistF.names, i);
       return TRUE;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -24899,8 +24973,8 @@ extern "C" decl_node decl_makeVarargs (void)
 {
   decl_node d;
 
-  d = newNode (static_cast<nodeT> (varargs));
-  d->varargsF.scope = static_cast<decl_node> (NULL);
+  d = newNode (varargs);
+  d->varargsF.scope = NULL;
   return d;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -24969,77 +25043,77 @@ extern "C" decl_node decl_makeBinaryTok (mcReserved_toktype op, decl_node l, dec
 {
   if (op == mcReserved_equaltok)
     {
-      return makeBinary (static_cast<nodeT> (equal), l, r, booleanN);
+      return makeBinary (equal, l, r, booleanN);
     }
   else if ((op == mcReserved_hashtok) || (op == mcReserved_lessgreatertok))
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (notequal), l, r, booleanN);
+      return makeBinary (notequal, l, r, booleanN);
     }
   else if (op == mcReserved_lesstok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (less), l, r, booleanN);
+      return makeBinary (less, l, r, booleanN);
     }
   else if (op == mcReserved_greatertok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (greater), l, r, booleanN);
+      return makeBinary (greater, l, r, booleanN);
     }
   else if (op == mcReserved_greaterequaltok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (greequal), l, r, booleanN);
+      return makeBinary (greequal, l, r, booleanN);
     }
   else if (op == mcReserved_lessequaltok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (lessequal), l, r, booleanN);
+      return makeBinary (lessequal, l, r, booleanN);
     }
   else if (op == mcReserved_andtok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (and_), l, r, booleanN);
+      return makeBinary (and_, l, r, booleanN);
     }
   else if (op == mcReserved_ortok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (or_), l, r, booleanN);
+      return makeBinary (or_, l, r, booleanN);
     }
   else if (op == mcReserved_plustok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (plus), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (plus, l, r, NULL);
     }
   else if (op == mcReserved_minustok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (sub), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (sub, l, r, NULL);
     }
   else if (op == mcReserved_divtok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (div_), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (div_, l, r, NULL);
     }
   else if (op == mcReserved_timestok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (mult), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (mult, l, r, NULL);
     }
   else if (op == mcReserved_modtok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (mod), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (mod, l, r, NULL);
     }
   else if (op == mcReserved_intok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (in), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (in, l, r, NULL);
     }
   else if (op == mcReserved_dividetok)
     {
       /* avoid dangling else.  */
-      return makeBinary (static_cast<nodeT> (divide), l, r, reinterpret_cast<decl_node> (NULL));
+      return makeBinary (divide, l, r, NULL);
     }
   else
     {
@@ -25061,17 +25135,17 @@ extern "C" decl_node decl_makeUnaryTok (mcReserved_toktype op, decl_node e)
 {
   if (op == mcReserved_nottok)
     {
-      return makeUnary (static_cast<nodeT> (not_), e, booleanN);
+      return makeUnary (not_, e, booleanN);
     }
   else if (op == mcReserved_plustok)
     {
       /* avoid dangling else.  */
-      return makeUnary (static_cast<nodeT> (plus), e, reinterpret_cast<decl_node> (NULL));
+      return makeUnary (plus, e, NULL);
     }
   else if (op == mcReserved_minustok)
     {
       /* avoid dangling else.  */
-      return makeUnary (static_cast<nodeT> (neg), e, reinterpret_cast<decl_node> (NULL));
+      return makeUnary (neg, e, NULL);
     }
   else
     {
@@ -25136,7 +25210,7 @@ extern "C" decl_node decl_makePointerRef (decl_node ptr, decl_node field)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (pointerref));
+  n = newNode (pointerref);
   n->pointerrefF.ptr = ptr;
   n->pointerrefF.field = field;
   n->pointerrefF.resultType = decl_getType (field);
@@ -25169,7 +25243,7 @@ extern "C" decl_node decl_makeDeRef (decl_node n)
 
   t = decl_skipType (decl_getType (n));
   mcDebug_assert (decl_isPointer (t));
-  return makeUnary (static_cast<nodeT> (deref), n, decl_getType (t));
+  return makeUnary (deref, n, decl_getType (t));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -25188,12 +25262,12 @@ extern "C" decl_node decl_makeArrayRef (decl_node array, decl_node index)
   unsigned int i;
   unsigned int j;
 
-  n = newNode (static_cast<nodeT> (arrayref));
+  n = newNode (arrayref);
   n->arrayrefF.array = array;
   n->arrayrefF.index = index;
   t = array;
   j = expListLen (index);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   t = decl_skipType (decl_getType (t));
   do {
     if (decl_isArray (t))
@@ -25246,7 +25320,7 @@ extern "C" decl_node decl_makeLiteralInt (nameKey_Name n)
   decl_node m;
   DynamicStrings_String s;
 
-  m = newNode (static_cast<nodeT> (literal));
+  m = newNode (literal);
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
   m->literalF.name = n;
   if ((DynamicStrings_char (s, -1)) == 'C')
@@ -25272,7 +25346,7 @@ extern "C" decl_node decl_makeLiteralReal (nameKey_Name n)
 {
   decl_node m;
 
-  m = newNode (static_cast<nodeT> (literal));
+  m = newNode (literal);
   m->literalF.name = n;
   m->literalF.type = rtypeN;
   return m;
@@ -25289,7 +25363,7 @@ extern "C" decl_node decl_makeString (nameKey_Name n)
 {
   decl_node m;
 
-  m = newNode (static_cast<nodeT> (string));
+  m = newNode (string);
   m->stringF.name = n;
   m->stringF.length = nameKey_lengthKey (n);
   m->stringF.isCharCompatible = m->stringF.length <= 3;
@@ -25301,7 +25375,7 @@ extern "C" decl_node decl_makeString (nameKey_Name n)
     }
   else
     {
-      m->stringF.cchar = static_cast<DynamicStrings_String> (NULL);
+      m->stringF.cchar = NULL;
     }
   return m;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -25317,7 +25391,7 @@ extern "C" decl_node decl_makeSetValue (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (setvalue));
+  n = newNode (setvalue);
   n->setvalueF.type = bitsetN;
   n->setvalueF.values = Indexing_InitIndex (1);
   return n;
@@ -25399,7 +25473,7 @@ extern "C" decl_node decl_getBuiltinConst (nameKey_Name n)
   else
     {
       /* avoid dangling else.  */
-      return static_cast<decl_node> (NULL);
+      return NULL;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -25414,7 +25488,7 @@ extern "C" decl_node decl_makeExpList (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (explist));
+  n = newNode (explist);
   n->explistF.exp = Indexing_InitIndex (1);
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -25547,17 +25621,17 @@ extern "C" void decl_resetConstExpPos (decl_node n)
   mcDebug_assert (((decl_isDef (n)) || (decl_isImp (n))) || (decl_isModule (n)));
   if (decl_isDef (n))
     {
-      n->defF.constFixup.count = static_cast<unsigned int> (0);
+      n->defF.constFixup.count = 0;
     }
   else if (decl_isImp (n))
     {
       /* avoid dangling else.  */
-      n->impF.constFixup.count = static_cast<unsigned int> (0);
+      n->impF.constFixup.count = 0;
     }
   else if (decl_isModule (n))
     {
       /* avoid dangling else.  */
-      n->moduleF.constFixup.count = static_cast<unsigned int> (0);
+      n->moduleF.constFixup.count = 0;
     }
 }
 
@@ -25579,10 +25653,10 @@ extern "C" decl_node decl_makeFuncCall (decl_node c, decl_node n)
   checkCHeaders (c);
   if (f == NULL)
     {
-      f = newNode (static_cast<nodeT> (funccall));
+      f = newNode (funccall);
       f->funccallF.function = c;
       f->funccallF.args = n;
-      f->funccallF.type = static_cast<decl_node> (NULL);
+      f->funccallF.type = NULL;
       initPair (&f->funccallF.funccallComment);
     }
   return f;
@@ -25599,7 +25673,7 @@ extern "C" decl_node decl_makeStatementSequence (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (stmtseq));
+  n = newNode (stmtseq);
   n->stmtF.statements = Indexing_InitIndex (1);
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -25632,7 +25706,7 @@ extern "C" void decl_addStatement (decl_node s, decl_node n)
       if ((isIntrinsic (n)) && n->intrinsicF.postUnreachable)
         {
           n->intrinsicF.postUnreachable = FALSE;
-          decl_addStatement (s, makeIntrinsicProc (static_cast<nodeT> (unreachable), 0, reinterpret_cast<decl_node> (NULL)));
+          decl_addStatement (s, makeIntrinsicProc (unreachable, 0, NULL));
         }
     }
 }
@@ -25729,15 +25803,15 @@ extern "C" decl_node decl_makeReturn (void)
   decl_node type;
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (return_));
-  n->returnF.exp = static_cast<decl_node> (NULL);
+  n = newNode (return_);
+  n->returnF.exp = NULL;
   if (decl_isProcedure (decl_getDeclScope ()))
     {
       n->returnF.scope = decl_getDeclScope ();
     }
   else
     {
-      n->returnF.scope = static_cast<decl_node> (NULL);
+      n->returnF.scope = NULL;
     }
   initPair (&n->returnF.returnComment);
   return n;
@@ -25778,9 +25852,9 @@ extern "C" decl_node decl_makeWhile (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (while_));
-  n->whileF.expr = static_cast<decl_node> (NULL);
-  n->whileF.statements = static_cast<decl_node> (NULL);
+  n = newNode (while_);
+  n->whileF.expr = NULL;
+  n->whileF.statements = NULL;
   initPair (&n->whileF.doComment);
   initPair (&n->whileF.endComment);
   return n;
@@ -25847,7 +25921,7 @@ extern "C" decl_node decl_makeAssignment (decl_node d, decl_node e)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (assignment));
+  n = newNode (assignment);
   n->assignmentF.des = d;
   n->assignmentF.expr = e;
   initPair (&n->assignmentF.assignComment);
@@ -25924,7 +25998,7 @@ extern "C" decl_node decl_makeExit (decl_node l, unsigned int n)
   decl_node e;
 
   mcDebug_assert (decl_isLoop (l));
-  e = newNode (static_cast<nodeT> (exit_));
+  e = newNode (exit_);
   e->exitF.loop = l;
   l->loopF.labelno = n;
   return e;
@@ -25954,9 +26028,9 @@ extern "C" decl_node decl_makeLoop (void)
 {
   decl_node l;
 
-  l = newNode (static_cast<nodeT> (loop));
-  l->loopF.statements = static_cast<decl_node> (NULL);
-  l->loopF.labelno = static_cast<unsigned int> (0);
+  l = newNode (loop);
+  l->loopF.statements = NULL;
+  l->loopF.labelno = 0;
   return l;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -26020,11 +26094,11 @@ extern "C" decl_node decl_makeCommentS (mcComment_commentDesc c)
 
   if (c == NULL)
     {
-      return static_cast<decl_node> (NULL);
+      return NULL;
     }
   else
     {
-      n = newNode (static_cast<nodeT> (comment));
+      n = newNode (comment);
       n->commentF.content = c;
       return n;
     }
@@ -26043,11 +26117,11 @@ extern "C" decl_node decl_makeIf (decl_node e, decl_node s)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (if_));
+  n = newNode (if_);
   n->ifF.expr = e;
   n->ifF.then = s;
-  n->ifF.else_ = static_cast<decl_node> (NULL);
-  n->ifF.elsif = static_cast<decl_node> (NULL);
+  n->ifF.else_ = NULL;
+  n->ifF.elsif = NULL;
   initPair (&n->ifF.ifComment);
   initPair (&n->ifF.elseComment);
   initPair (&n->ifF.endComment);
@@ -26079,11 +26153,11 @@ extern "C" decl_node decl_makeElsif (decl_node i, decl_node e, decl_node s)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (elsif));
+  n = newNode (elsif);
   n->elsifF.expr = e;
   n->elsifF.then = s;
-  n->elsifF.elsif = static_cast<decl_node> (NULL);
-  n->elsifF.else_ = static_cast<decl_node> (NULL);
+  n->elsifF.elsif = NULL;
+  n->elsifF.else_ = NULL;
   initPair (&n->elsifF.elseComment);
   mcDebug_assert ((decl_isIf (i)) || (decl_isElsif (i)));
   if (decl_isIf (i))
@@ -26145,12 +26219,12 @@ extern "C" decl_node decl_makeFor (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (for_));
-  n->forF.des = static_cast<decl_node> (NULL);
-  n->forF.start = static_cast<decl_node> (NULL);
-  n->forF.end = static_cast<decl_node> (NULL);
-  n->forF.increment = static_cast<decl_node> (NULL);
-  n->forF.statements = static_cast<decl_node> (NULL);
+  n = newNode (for_);
+  n->forF.des = NULL;
+  n->forF.start = NULL;
+  n->forF.end = NULL;
+  n->forF.increment = NULL;
+  n->forF.statements = NULL;
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -26198,9 +26272,9 @@ extern "C" decl_node decl_makeRepeat (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (repeat));
-  n->repeatF.expr = static_cast<decl_node> (NULL);
-  n->repeatF.statements = static_cast<decl_node> (NULL);
+  n = newNode (repeat);
+  n->repeatF.expr = NULL;
+  n->repeatF.statements = NULL;
   initPair (&n->repeatF.repeatComment);
   initPair (&n->repeatF.untilComment);
   return n;
@@ -26266,10 +26340,10 @@ extern "C" decl_node decl_makeCase (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (case_));
-  n->caseF.expression = static_cast<decl_node> (NULL);
+  n = newNode (case_);
+  n->caseF.expression = NULL;
   n->caseF.caseLabelList = Indexing_InitIndex (1);
-  n->caseF.else_ = static_cast<decl_node> (NULL);
+  n->caseF.else_ = NULL;
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -26344,7 +26418,7 @@ extern "C" decl_node decl_makeCaseLabelList (decl_node l, decl_node s)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (caselabellist));
+  n = newNode (caselabellist);
   n->caselabellistF.caseList = l;
   n->caselabellistF.statements = s;
   return n;
@@ -26374,7 +26448,7 @@ extern "C" decl_node decl_makeCaseList (void)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (caselist));
+  n = newNode (caselist);
   n->caselistF.rangePairs = Indexing_InitIndex (1);
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -26417,7 +26491,7 @@ extern "C" decl_node decl_makeRange (decl_node lo, decl_node hi)
 {
   decl_node n;
 
-  n = newNode (static_cast<nodeT> (range));
+  n = newNode (range);
   n->rangeF.lo = lo;
   n->rangeF.hi = hi;
   return n;
@@ -26466,7 +26540,7 @@ extern "C" decl_node decl_dupExpr (decl_node n)
 {
   if (n == NULL)
     {
-      return static_cast<decl_node> (NULL);
+      return NULL;
     }
   else
     {

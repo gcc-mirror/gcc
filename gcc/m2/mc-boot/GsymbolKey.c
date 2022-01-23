@@ -206,8 +206,8 @@ extern "C" symbolKey_symbolTree symbolKey_initTree (void)
   symbolKey_symbolTree t;
 
   Storage_ALLOCATE ((void **) &t, sizeof (_T1));  /* The value entity  */
-  t->left = static_cast<symbolKey_symbolTree> (NULL);
-  t->right = static_cast<symbolKey_symbolTree> (NULL);
+  t->left = NULL;
+  t->right = NULL;
   return t;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -220,7 +220,7 @@ extern "C" void symbolKey_killTree (symbolKey_symbolTree *t)
       symbolKey_killTree (&(*t)->left);
       symbolKey_killTree (&(*t)->right);
       Storage_DEALLOCATE ((void **) &(*t), sizeof (_T1));
-      (*t) = static_cast<symbolKey_symbolTree> (NULL);
+      (*t) = NULL;
     }
 }
 
@@ -278,8 +278,8 @@ extern "C" void symbolKey_putSymKey (symbolKey_symbolTree t, nameKey_Name name, 
               father->right = child;
             }
         }
-      child->right = static_cast<symbolKey_symbolTree> (NULL);
-      child->left = static_cast<symbolKey_symbolTree> (NULL);
+      child->right = NULL;
+      child->left = NULL;
       child->key = key;
       child->name = name;
     }

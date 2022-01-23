@@ -76,7 +76,7 @@ extern "C" unsigned int Args_GetArg (char *a, unsigned int _a_high, unsigned int
   unsigned int High;
   unsigned int j;
 
-  j = static_cast<unsigned int> (0);
+  j = 0;
   High = _a_high;
   if (i < UnixArgs_ArgC)
     {

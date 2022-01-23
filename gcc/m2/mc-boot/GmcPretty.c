@@ -221,11 +221,11 @@ extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_w
   p->writeln = l;
   p->needsSpace = FALSE;
   p->needsIndent = FALSE;
-  p->curPos = static_cast<unsigned int> (0);
-  p->curLine = static_cast<unsigned int> (0);
-  p->seekPos = static_cast<unsigned int> (0);
-  p->indent = static_cast<unsigned int> (0);
-  p->stacked = static_cast<mcPretty_pretty> (NULL);
+  p->curPos = 0;
+  p->curLine = 0;
+  p->seekPos = 0;
+  p->indent = 0;
+  p->stacked = NULL;
   return p;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -255,10 +255,10 @@ extern "C" mcPretty_pretty mcPretty_dupPretty (mcPretty_pretty p)
 
 extern "C" void mcPretty_killPretty (mcPretty_pretty *p)
 {
-  (*p) = static_cast<mcPretty_pretty> (NULL);
+  (*p) = NULL;
   return ;
   Storage_DEALLOCATE ((void **) &(*p), sizeof (_T1));
-  (*p) = static_cast<mcPretty_pretty> (NULL);
+  (*p) = NULL;
 }
 
 
@@ -410,7 +410,7 @@ extern "C" void mcPretty_prints (mcPretty_pretty p, DynamicStrings_String s)
   unsigned int i;
 
   l = DynamicStrings_Length (s);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   flushSpace (p);
   while (i < l)
     {
@@ -418,7 +418,7 @@ extern "C" void mcPretty_prints (mcPretty_pretty p, DynamicStrings_String s)
         {
           p->needsIndent = TRUE;
           p->needsSpace = FALSE;
-          p->curPos = static_cast<unsigned int> (0);
+          p->curPos = 0;
           (*p->writeln.proc) ();
           p->seekPos += 1;
           p->curLine += 1;
@@ -447,7 +447,7 @@ extern "C" void mcPretty_raw (mcPretty_pretty p, DynamicStrings_String s)
   unsigned int i;
 
   l = DynamicStrings_Length (s);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   flushSpace (p);
   flushIndent (p);
   while (i < l)

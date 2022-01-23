@@ -129,7 +129,7 @@ extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   high = _a_high;
-  n = static_cast<unsigned int> (0);
+  n = 0;
   while ((n <= high) && (a[n] != ASCII_nul))
     {
       if (a[n] == '\\')

@@ -123,7 +123,7 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
   Highc = _c_high;
   StrLib_StrCopy ((const char *) a, _a_high, (char *) c, _c_high);
   i = StrLib_StrLen ((const char *) c, _c_high);
-  j = static_cast<unsigned int> (0);
+  j = 0;
   while ((j < Highb) && (i <= Highc))
     {
       c[i] = b[j];
@@ -156,7 +156,7 @@ extern "C" unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, co
 
   Higha = StrLib_StrLen ((const char *) a, _a_high);
   Highb = StrLib_StrLen ((const char *) b, _b_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while ((i < Higha) && (i < Highb))
     {
       if (a[i] < b[i])
@@ -190,7 +190,7 @@ extern "C" unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, c
 
   higha = _a_high;
   highb = _b_high;
-  i = static_cast<unsigned int> (0);
+  i = 0;
   while ((((i <= higha) && (i <= highb)) && (a[i] != ASCII_nul)) && (b[i] != ASCII_nul))
     {
       if (a[i] != b[i])
@@ -213,7 +213,7 @@ extern "C" unsigned int StrLib_StrLen (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  Len = static_cast<unsigned int> (0);
+  Len = 0;
   High = _a_high;
   while ((Len <= High) && (a[Len] != ASCII_nul))
     {
@@ -241,7 +241,7 @@ extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *
   /* make a local copy of each unbounded array.  */
   memcpy (src, src_, _src_high+1);
 
-  n = static_cast<unsigned int> (0);
+  n = 0;
   HighSrc = StrLib_StrLen ((const char *) src, _src_high);
   HighDest = _dest_high;
   while ((n < HighSrc) && (n <= HighDest))
@@ -275,12 +275,12 @@ extern "C" unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high
 
   LengthA = StrLib_StrLen ((const char *) a, _a_high);
   LengthB = StrLib_StrLen ((const char *) b, _b_high);
-  i = static_cast<unsigned int> (0);
+  i = 0;
   if (LengthA > LengthB)
     {
       while (i <= (LengthA-LengthB))
         {
-          j = static_cast<unsigned int> (0);
+          j = 0;
           while ((j < LengthB) && (a[i+j] == b[j]))
             {
               j += 1;
@@ -317,8 +317,8 @@ extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_hig
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  i = static_cast<unsigned int> (0);
-  j = static_cast<unsigned int> (0);
+  i = 0;
+  j = 0;
   higha = StrLib_StrLen ((const char *) a, _a_high);
   highb = _b_high;
   while ((i < higha) && (IsWhite (a[i])))

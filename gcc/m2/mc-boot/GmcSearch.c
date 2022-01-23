@@ -278,12 +278,12 @@ extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName,
     {
       completeSearchPath = DynamicStrings_ConCat (DynamicStrings_ConCatChar (DynamicStrings_Dup (UserPath), ':'), InitialPath);
     }
-  start = static_cast<int> (0);
+  start = 0;
   end = DynamicStrings_Index (completeSearchPath, ':', (unsigned int ) (start));
   do {
     if (end == -1)
       {
-        end = static_cast<int> (0);
+        end = 0;
       }
     newpath = DynamicStrings_Slice (completeSearchPath, start, end);
     if (DynamicStrings_EqualArray (newpath, (const char *) ".", 1))

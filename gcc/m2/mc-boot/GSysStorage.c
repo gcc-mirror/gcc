@@ -225,7 +225,7 @@ extern "C" void SysStorage_Init (void)
 
 extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[])
 {
-  callno = static_cast<unsigned int> (0);
+  callno = 0;
   if (enableTrace)
     {
       trace = (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("M2DEBUG_SYSSTORAGE_trace")))) != NULL;

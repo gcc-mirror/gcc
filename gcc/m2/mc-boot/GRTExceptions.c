@@ -457,7 +457,7 @@ static Handler findHandler (RTExceptions_EHBlock e, unsigned int number)
     }
   if (h == e->handlers)
     {
-      return static_cast<Handler> (NULL);
+      return NULL;
     }
   else
     {
@@ -652,7 +652,7 @@ static Handler KillHandler (Handler h)
 {
   h->right = freeHandler;
   freeHandler = h;
-  return static_cast<Handler> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -666,7 +666,7 @@ static Handler KillHandlers (Handler h)
 {
   h->left->right = freeHandler;
   freeHandler = h;
-  return static_cast<Handler> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -870,8 +870,8 @@ static void exception (void * a)
 static void Init (void)
 {
   inException = FALSE;
-  freeHandler = static_cast<Handler> (NULL);
-  freeEHB = static_cast<RTExceptions_EHBlock> (NULL);
+  freeHandler = NULL;
+  freeEHB = NULL;
   currentEHB = RTExceptions_InitExceptionBlock ();
   currentSource = NULL;
   RTExceptions_BaseExceptionsThrow ();
@@ -918,7 +918,7 @@ extern "C" void RTExceptions_Raise (unsigned int number, void * file, unsigned i
   unsigned int i;
 
   currentEHB->number = number;
-  i = static_cast<unsigned int> (0);
+  i = 0;
   addFile (file, &i);
   addChar (':', &i);
   addNum (line, &i);
@@ -1032,7 +1032,7 @@ extern "C" RTExceptions_EHBlock RTExceptions_KillExceptionBlock (RTExceptions_EH
   e->handlers = KillHandlers (e->handlers);
   e->right = freeEHB;
   freeEHB = e;
-  return static_cast<RTExceptions_EHBlock> (NULL);
+  return NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1050,14 +1050,14 @@ extern "C" void RTExceptions_PushHandler (RTExceptions_EHBlock e, unsigned int n
   h = findHandler (e, number);
   if (h == NULL)
     {
-      i = InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), number, p);
+      i = InitHandler (NewHandler (), NULL, NULL, NULL, number, p);
     }
   else
     {
       /* remove, h,  */
       SubHandler (h);
       /* stack it onto a new handler  */
-      i = InitHandler (NewHandler (), reinterpret_cast<Handler> (NULL), reinterpret_cast<Handler> (NULL), h, number, p);
+      i = InitHandler (NewHandler (), NULL, NULL, h, number, p);
     }
   /* add new handler  */
   AddHandler (e, i);

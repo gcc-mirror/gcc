@@ -180,8 +180,8 @@ extern "C" wlists_wlist wlists_initList (void)
   wlists_wlist l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (_T1));
-  l->noOfElements = static_cast<unsigned int> (0);
-  l->next = static_cast<wlists_wlist> (NULL);
+  l->noOfElements = 0;
+  l->next = NULL;
   return l;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -266,11 +266,11 @@ extern "C" unsigned int wlists_getIndexOfList (wlists_wlist l, unsigned int c)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      i = static_cast<unsigned int> (1);
+      i = 1;
       while (i <= l->noOfElements)
         {
           if (l->elements.array[i-1] == c)
@@ -299,11 +299,11 @@ extern "C" unsigned int wlists_noOfItemsInList (wlists_wlist l)
 
   if (l == NULL)
     {
-      return static_cast<unsigned int> (0);
+      return 0;
     }
   else
     {
-      t = static_cast<unsigned int> (0);
+      t = 0;
       do {
         t += l->noOfElements;
         l = l->next;
@@ -343,9 +343,9 @@ extern "C" void wlists_removeItemFromList (wlists_wlist l, unsigned int c)
   if (l != NULL)
     {
       found = FALSE;
-      p = static_cast<wlists_wlist> (NULL);
+      p = NULL;
       do {
-        i = static_cast<unsigned int> (1);
+        i = 1;
         while ((i <= l->noOfElements) && (l->elements.array[i-1] != c))
           {
             i += 1;
@@ -400,7 +400,7 @@ extern "C" unsigned int wlists_isItemInList (wlists_wlist l, unsigned int c)
   unsigned int i;
 
   do {
-    i = static_cast<unsigned int> (1);
+    i = 1;
     while (i <= l->noOfElements)
       {
         if (l->elements.array[i-1] == c)
@@ -430,7 +430,7 @@ extern "C" void wlists_foreachItemInListDo (wlists_wlist l, wlists_performOperat
   unsigned int n;
 
   n = wlists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       (*p.proc) (wlists_getItemFromList (l, i));
@@ -451,7 +451,7 @@ extern "C" wlists_wlist wlists_duplicateList (wlists_wlist l)
 
   m = wlists_initList ();
   n = wlists_noOfItemsInList (l);
-  i = static_cast<unsigned int> (1);
+  i = 1;
   while (i <= n)
     {
       wlists_putItemIntoList (m, wlists_getItemFromList (l, i));

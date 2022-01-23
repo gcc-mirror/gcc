@@ -71,7 +71,7 @@ extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned i
   /* make a local copy of each unbounded array.  */
   memcpy (Env, Env_, _Env_high+1);
 
-  i = static_cast<unsigned int> (0);
+  i = 0;
   High = _a_high;
   Addr = static_cast<_T1> (libc_getenv (&Env));
   while (((i < High) && (Addr != NULL)) && ((*Addr) != ASCII_nul))
