@@ -5103,6 +5103,7 @@ prevent_branch_around_nothing (void)
 	    case CODE_FOR_nvptx_forked:
 	    case CODE_FOR_nvptx_joining:
 	    case CODE_FOR_nvptx_join:
+	    case CODE_FOR_nop:
 	      continue;
 	    default:
 	      seen_label = NULL;
