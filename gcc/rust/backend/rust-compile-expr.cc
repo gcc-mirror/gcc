@@ -274,7 +274,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       rust_assert (kase_arm.get_patterns ().size () > 0);
 
       // generate implicit label
-      Location arm_locus = kase_arm.get_patterns ().at (0)->get_locus ();
+      Location arm_locus = kase_arm.get_locus ();
       tree case_label = ctx->get_backend ()->label (
 	fndecl, "" /* empty creates an artificial label */, arm_locus);
 

@@ -3713,6 +3713,7 @@ private:
   AST::AttrVec outer_attrs;
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns;
   std::unique_ptr<Expr> guard_expr;
+  Location locus;
 
 public:
   // Returns whether the MatchArm has a match arm guard expression
@@ -3721,10 +3722,11 @@ public:
   // Constructor for match arm with a guard expression
   MatchArm (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	    std::unique_ptr<Expr> guard_expr = nullptr,
-	    AST::AttrVec outer_attrs = AST::AttrVec ())
+	    AST::AttrVec outer_attrs = AST::AttrVec (),
+	    Location locus = Location ())
     : outer_attrs (std::move (outer_attrs)),
       match_arm_patterns (std::move (match_arm_patterns)),
-      guard_expr (std::move (guard_expr))
+      guard_expr (std::move (guard_expr)), locus (locus)
   {}
 
   // Copy constructor with clone
@@ -3737,6 +3739,8 @@ public:
     match_arm_patterns.reserve (other.match_arm_patterns.size ());
     for (const auto &e : other.match_arm_patterns)
       match_arm_patterns.push_back (e->clone_pattern ());
+
+    locus = other.locus;
   }
 
   ~MatchArm () = default;
@@ -3775,6 +3779,8 @@ public:
   {
     return match_arm_patterns;
   }
+
+  Location get_locus () const { return locus; }
 };
 
 /* A "match case" - a correlated match arm and resulting expression. Not
@@ -3818,96 +3824,6 @@ public:
   MatchArm &get_arm () { return arm; }
   std::unique_ptr<Expr> &get_expr () { return expr; }
 };
-
-#if 0
-// Block expression match case
-class MatchCaseBlockExpr : public MatchCase
-{
-  std::unique_ptr<BlockExpr> block_expr;
-
-  // TODO: should this store location data?
-
-public:
-  MatchCaseBlockExpr (MatchArm arm, std::unique_ptr<BlockExpr> block_expr)
-    : MatchCase (std::move (arm)), block_expr (std::move (block_expr))
-  {}
-
-  // Copy constructor requires clone
-  MatchCaseBlockExpr (MatchCaseBlockExpr const &other)
-    : MatchCase (other), block_expr (other.block_expr->clone_block_expr ())
-  {}
-
-  // Overload assignment operator to have clone
-  MatchCaseBlockExpr &operator= (MatchCaseBlockExpr const &other)
-  {
-    MatchCase::operator= (other);
-    block_expr = other.block_expr->clone_block_expr ();
-    // arm = other.arm;
-
-    return *this;
-  }
-
-  // move constructors
-  MatchCaseBlockExpr (MatchCaseBlockExpr &&other) = default;
-  MatchCaseBlockExpr &operator= (MatchCaseBlockExpr &&other) = default;
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MatchCaseBlockExpr *clone_match_case_impl () const override
-  {
-    return new MatchCaseBlockExpr (*this);
-  }
-};
-
-// Expression (except block expression) match case
-class MatchCaseExpr : public MatchCase
-{
-  std::unique_ptr<Expr> expr;
-
-  // TODO: should this store location data?
-
-public:
-  MatchCaseExpr (MatchArm arm, std::unique_ptr<Expr> expr)
-    : MatchCase (std::move (arm)), expr (std::move (expr))
-  {}
-
-  // Copy constructor requires clone
-  MatchCaseExpr (MatchCaseExpr const &other)
-    : MatchCase (other), expr (other.expr->clone_expr ())
-  {}
-
-  // Overload assignment operator to have clone
-  MatchCaseExpr &operator= (MatchCaseExpr const &other)
-  {
-    MatchCase::operator= (other);
-    expr = other.expr->clone_expr ();
-    // arm = other.arm;
-
-    return *this;
-  }
-
-  // move constructors
-  MatchCaseExpr (MatchCaseExpr &&other) = default;
-  MatchCaseExpr &operator= (MatchCaseExpr &&other) = default;
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  MatchCaseExpr *clone_match_case_impl () const override
-  {
-    return new MatchCaseExpr (*this);
-  }
-};
-#endif
 
 // Match expression HIR node
 class MatchExpr : public ExprWithBlock
