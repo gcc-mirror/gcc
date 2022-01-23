@@ -44,8 +44,9 @@ template class std::__shared_ptr<fs::recursive_directory_iterator::_Dir_stack>;
 
 struct fs::_Dir : _Dir_base
 {
-  _Dir(const fs::path& p, bool skip_permission_denied, error_code& ec)
-  : _Dir_base(p.c_str(), skip_permission_denied, ec)
+  _Dir(const fs::path& p, bool skip_permission_denied, bool nofollow,
+       error_code& ec)
+  : _Dir_base(p.c_str(), skip_permission_denied, nofollow, ec)
   {
     if (!ec)
       path = p;
@@ -128,11 +129,15 @@ namespace
 fs::directory_iterator::
 directory_iterator(const path& p, directory_options options, error_code* ecptr)
 {
+  // Do not report an error for permission denied errors.
   const bool skip_permission_denied
     = is_set(options, directory_options::skip_permission_denied);
+  // Do not allow opening a symlink (used by filesystem::remove_all)
+  const bool nofollow
+     = is_set(options, __directory_iterator_nofollow);
 
   error_code ec;
-  _Dir dir(p, skip_permission_denied, ec);
+  _Dir dir(p, skip_permission_denied, nofollow, ec);
 
   if (dir.dirp)
     {
@@ -287,7 +292,7 @@ fs::recursive_directory_iterator::increment(error_code& ec)
 
   if (std::exchange(_M_dirs->pending, true) && top.should_recurse(follow, ec))
     {
-      _Dir dir(top.entry.path(), skip_permission_denied, ec);
+      _Dir dir(top.entry.path(), skip_permission_denied, !follow, ec);
       if (ec)
 	{
 	  _M_dirs.reset();

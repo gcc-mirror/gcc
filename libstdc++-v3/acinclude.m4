@@ -4736,6 +4736,18 @@ dnl
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
   fi
 dnl
+  AC_CACHE_CHECK([for fdopendir],
+    glibcxx_cv_fdopendir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [::fdopendir(1);],
+      [glibcxx_cv_fdopendir=yes],
+      [glibcxx_cv_fdopendir=no])
+  ])
+  if test $glibcxx_cv_truncate = yes; then
+    AC_DEFINE(HAVE_FDOPENDIR, 1, [Define if fdopendir is available in <dirent.h>.])
+  fi
+dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])

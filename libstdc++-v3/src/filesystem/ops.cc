@@ -1105,7 +1105,7 @@ fs::remove_all(const path& p, error_code& ec) noexcept
   uintmax_t count = 0;
   if (s.type() == file_type::directory)
     {
-      directory_iterator d(p, ec), end;
+      directory_iterator d(p, directory_options{99}, ec), end;
       while (!ec && d != end)
 	{
 	  const auto removed = fs::remove_all(d->path(), ec);
@@ -1113,9 +1113,9 @@ fs::remove_all(const path& p, error_code& ec) noexcept
 	    return -1;
 	  count += removed;
 	  d.increment(ec);
-	  if (ec)
-	    return -1;
 	}
+      if (ec)
+	return -1;
     }
 
   if (fs::remove(p, ec))
