@@ -1,3 +1,11 @@
+2022-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104127
+	* simplify.cc (gfc_simplify_transfer): Ensure that the result
+	typespec is set up for TRANSFER with MOLD of type CHARACTER
+	including character length even if the result is a zero-sized
+	array.
+
 2022-01-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR fortran/103695

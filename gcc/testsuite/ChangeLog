@@ -1,3 +1,26 @@
+2022-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104150
+	* gcc.dg/analyzer/pr104089.c: Add "dg-add-options float16"
+	and "dg-require-effective-target float16" directives.
+
+2022-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104159
+	* gcc.dg/analyzer/torture/pr104159.c: New test.
+
+2022-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104127
+	* gfortran.dg/transfer_simplify_11.f90: Fix logic.
+	* gfortran.dg/transfer_simplify_13.f90: New test.
+
+2022-01-22  Michael Meissner  <meissner@the-meissners.org>
+
+	PR testsuite/103763
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: Fix insn regex
+	on power10.
+
 2022-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104148

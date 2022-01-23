@@ -1,3 +1,11 @@
+2022-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104159
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_cast): Bail out if the types
+	are the same.  Don't attempt to handle casts involving vector
+	types.
+
 2022-01-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/94362

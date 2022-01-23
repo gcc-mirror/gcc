@@ -1,3 +1,9 @@
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104176
+	* opts-global.cc (handle_common_deferred_options): Quote
+	--enable-plugin in diagnostics to avoid -Werror=format-diag.
+
 2022-01-21  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/104136
