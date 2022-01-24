@@ -1915,7 +1915,7 @@ package body Sem_Warn is
                  and then (No (Unset_Reference (E))
                             or else
                               Earlier_In_Extended_Unit
-                                (Sloc (N), Sloc (Unset_Reference (E))))
+                                (N, Unset_Reference (E)))
                  and then not Has_Pragma_Unmodified_Check_Spec (E)
                  and then not Warnings_Off_Check_Spec (E)
                  and then not Has_Junk_Name (E)
