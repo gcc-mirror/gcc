@@ -4410,7 +4410,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 					TREE_TYPE (rhs2_type))
 		 && multiple_p (TYPE_VECTOR_SUBPARTS (rhs1_type),
 				TYPE_VECTOR_SUBPARTS (rhs2_type))
-		 && multiple_of_p (bitsizetype, rhs3, TYPE_SIZE (rhs2_type)))))
+		 && multiple_p (wi::to_poly_offset (rhs3),
+				wi::to_poly_offset (TYPE_SIZE (rhs2_type))))))
 	{
 	  error ("not allowed type combination in %qs", code_name);
 	  debug_generic_expr (rhs1_type);
