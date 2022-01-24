@@ -132,6 +132,21 @@ be accepted by the driver.  This is used for cases such as
 @option{-march=native} that are processed by the driver so that
 @samp{gcc -v} shows how the options chosen depended on the system on
 which the compiler was run.
+
+@item Set(@var{number})
+This property is optional, required for enumerations used in
+@code{EnumSet} options.  @var{number} should be decimal number between
+1 and 64 inclusive and divides the enumeration into a set of
+sets of mutually exclusive arguments.  Arguments with the same
+@var{number} can't be specified together in the same option, but
+arguments with different @var{number} can.  @var{value} needs to be
+chosen such that a mask of all @var{value} values from the same set
+@var{number} bitwise ored doesn't overlap with masks for other sets.
+When @code{-foption=arg_from_set1,arg_from_set4} and
+@code{-fno-option=arg_from_set3} are used, the effect is that previous
+value of the @code{Var} will get bits from set 1 and 4 masks cleared,
+ored @code{Value} of @code{arg_from_set1} and @code{arg_from_set4}
+and then will get bits from set 3 mask cleared.
 @end table
 
 @item
@@ -395,6 +410,16 @@ The option's argument is a string from the set of strings associated
 with the corresponding @samp{Enum} record.  The string is checked and
 converted to the integer specified in the corresponding
 @samp{EnumValue} record before being passed to option handlers.
+
+@item EnumSet
+Must be used together with the @code{Enum(@var{name})} property.
+Corresponding @samp{Enum} record must use @code{Set} properties.
+The option's argument is either a string from the set like for
+@code{Enum(@var{name})}, but with a slightly different behavior that
+the whole @code{Var} isn't overwritten, but only the bits in all the
+enumeration values with the same set bitwise ored together.
+Or option's argument can be a comma separated list of strings where
+each string is from a different @code{Set(@var{number})}.
 
 @item Defer
 The option should be stored in a vector, specified with @code{Var},

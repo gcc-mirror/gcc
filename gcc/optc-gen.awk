@@ -348,6 +348,7 @@ for (i = 0; i < n_opts; i++) {
 			alias_data = "NULL, NULL, N_OPTS"
 		if (flag_set_p("Enum.*", flags[i])) {
 			if (!flag_set_p("RejectNegative", flags[i]) \
+			    && !flag_set_p("EnumSet", flags[i]) \
 			    && opts[i] ~ "^[Wfgm]")
 				print "#error Enum allowing negative form"
 		}
