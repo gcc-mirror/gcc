@@ -1,3 +1,12 @@
+2022-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103782
+	* expr.c (gfc_simplify_expr): Adjust logic for when to scalarize a
+	call of an intrinsic which may have been overloaded.
+
 2021-12-19  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
