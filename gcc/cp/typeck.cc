@@ -2726,17 +2726,14 @@ build_class_member_access_expr (cp_expr object, tree member,
   /* Transform `(a, b).x' into `(*(a, &b)).x', `(a ? b : c).x' into
      `(*(a ?  &b : &c)).x', and so on.  A COND_EXPR is only an lvalue
      in the front end; only _DECLs and _REFs are lvalues in the back end.  */
-  {
-    tree temp = unary_complex_lvalue (ADDR_EXPR, object);
-    if (temp)
-      {
-	temp = cp_build_fold_indirect_ref (temp);
-	if (xvalue_p (object) && !xvalue_p (temp))
-	  /* Preserve xvalue kind.  */
-	  temp = move (temp);
-	object = temp;
-      }
-  }
+  if (tree temp = unary_complex_lvalue (ADDR_EXPR, object))
+    {
+      temp = cp_build_fold_indirect_ref (temp);
+      if (!lvalue_p (object) && lvalue_p (temp))
+	/* Preserve rvalueness.  */
+	temp = move (temp);
+      object = temp;
+    }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
      MEMBER.  We check for each of those cases here.  */
