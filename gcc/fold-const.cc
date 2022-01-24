@@ -14149,14 +14149,14 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	}
       return 0;
 
-    case NOP_EXPR:
+    CASE_CONVERT:
       /* Can't handle conversions from non-integral or wider integral type.  */
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
 	return 0;
-
-      /* fall through */
+      return multiple_of_p (TREE_TYPE (TREE_OPERAND (top, 0)),
+			    TREE_OPERAND (top, 0), bottom);
 
     case SAVE_EXPR:
       return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
