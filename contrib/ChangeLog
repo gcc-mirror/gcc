@@ -1,3 +1,8 @@
+2022-01-23  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out one another warning
+	for sse.md.
+
 2022-01-19  Martin Liska  <mliska@suse.cz>
 
 	* check_GNU_style_lib.py: Skip Python files.

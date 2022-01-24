@@ -1,3 +1,28 @@
+2022-01-23  Will Wray  <wjwray@gmail.com>
+
+	PR c++/55227
+	* decl.cc (reshape_init_r): Only call has_designator_check when
+	first_initializer_p or for the inner constructor element.
+	(cp_complete_array_type): Call reshape_init on braced-init-list.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104182
+	* cp-gimplify.cc (cp_genericize_target_expr): Make sure nothing
+	has set DECL_INITIAL on a TARGET_EXPR slot.
+	* tree.cc (is_local_temp): Don't check DECL_CONTEXT.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101072
+	* cp-tree.h (build_implicit_conv_flags): Declare.
+	* call.cc (build_implicit_conv_flags): Split out from...
+	(perform_implicit_conversion_flags): ...here.
+	* decl.cc (check_initializer): Use it.
+	* pt.cc (tsubst_copy_and_build): Remove TARGET_EXPR handling.
+	* semantics.cc (finish_compound_literal): Don't treat
+	scalar values like CONSTRUCTORs.
+
 2022-01-21  Jason Merrill  <jason@redhat.com>
 
 	* semantics.cc (find_failing_clause): Return expr if not

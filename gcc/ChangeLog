@@ -1,3 +1,11 @@
+2022-01-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/64821
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Handle
+	__builtin_aarch64_sqrt* and simplify into SQRT internal
+	function.
+
 2022-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/104176

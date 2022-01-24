@@ -1,3 +1,38 @@
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104032
+	* include/std/spanstream (basic_spanbuf(basic_spanbuf&&)): Use
+	mem-initializer for _M_buf.
+	(basic_spanbuf::Operator=(basic_spanbuf&&)): Fix ill-formed
+	member access.
+	* testsuite/27_io/spanstream/2.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (USE_STRTOD_FOR_FROM_CHARS):
+	Define macro for case where std::from_chars is implemented in
+	terms of strtod, strtof or strtold.
+	(buffer_resource, valid_fmt, find_end_of_float, pattern)
+	(from_chars_impl, make_result, reserve_string): Do not define
+	unless USE_STRTOD_FOR_FROM_CHARS is defined.
+	(from_chars): Define when at least one of USE_LIB_FAST_FLOAT and
+	USE_STRTOD_FOR_FROM_CHARS is defined, instead of
+	_GLIBCXX_HAVE_USELOCALE. Use fast_float for long double when it
+	is binary64.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104174
+	* include/bits/hashtable_policy.h (_Map_base): Add partial
+	specialization for maps with const key types.
+	* testsuite/23_containers/unordered_map/104174.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104019
+	* include/bits/shared_ptr_base.h (_Sp_counted_base<>::_M_release):
+	Set members to zero without type punning.
+
 2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/shared_ptr/cons/array.cc: Fix comment.

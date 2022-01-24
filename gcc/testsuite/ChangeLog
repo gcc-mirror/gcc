@@ -1,3 +1,24 @@
+2022-01-23  Will Wray  <wjwray@gmail.com>
+
+	PR c++/55227
+	* g++.dg/cpp2a/desig21.C: New test.
+
+2022-01-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/64821
+	* gcc.target/aarch64/vsqrt-1.c: New test.
+	* gcc.target/aarch64/vsqrt-2.c: New test.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104182
+	* g++.dg/cpp0x/initlist127.C: New test.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101072
+	* g++.dg/cpp0x/constexpr-empty14a.C: New test.
+
 2022-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104150
