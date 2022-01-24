@@ -2621,10 +2621,6 @@ common_handle_option (struct gcc_options *opts,
 	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
       break;
 
-    case OPT_fsanitize_coverage_:
-      opts->x_flag_sanitize_coverage = value;
-      break;
-
     case OPT_O:
     case OPT_Os:
     case OPT_Ofast:

@@ -223,10 +223,6 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
-; What the coverage sanitizers should instrument
-Variable
-unsigned int flag_sanitize_coverage
-
 ; Flag whether a prefix has been added to dump_base_name
 Variable
 bool dump_base_name_prefixed = false
@@ -1076,17 +1072,17 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined RejectNegative Enum(sanitize_coverage)
+Common Joined Enum(sanitize_coverage) Var(flag_sanitize_coverage) EnumSet
 Select type of coverage sanitization.
 
 Enum
 Name(sanitize_coverage) Type(int)
 
 EnumValue
-Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC)
+Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC) Set(1)
 
 EnumValue
-Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP)
+Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP) Set(2)
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
