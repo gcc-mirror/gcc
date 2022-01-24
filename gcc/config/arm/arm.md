@@ -9183,7 +9183,7 @@
 		      UNSPEC_SP_SET))
       (clobber (match_scratch:SI 2 ""))
       (clobber (match_scratch:SI 3 ""))])]
-  ""
+  "arm_stack_protector_guard == SSP_GLOBAL"
   ""
 )
 
@@ -9267,7 +9267,7 @@
       (clobber (match_scratch:SI 3 ""))
       (clobber (match_scratch:SI 4 ""))
       (clobber (reg:CC CC_REGNUM))])]
-  ""
+  "arm_stack_protector_guard == SSP_GLOBAL"
   ""
 )
 
@@ -9359,6 +9359,64 @@
    (set_attr "conds" "set")
    (set_attr "type" "multiple")
    (set_attr "arch" "t,32")]
+)
+
+(define_expand "stack_protect_set"
+  [(match_operand:SI 0 "memory_operand")
+   (match_operand:SI 1 "memory_operand")]
+  "arm_stack_protector_guard == SSP_TLSREG"
+  "
+{
+  operands[1] = arm_stack_protect_tls_canary_mem (false /* reload */);
+  emit_insn (gen_stack_protect_set_tls (operands[0], operands[1]));
+  DONE;
+}"
+)
+
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that the
+;; canary value does not live beyond the life of this sequence.
+(define_insn "stack_protect_set_tls"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+       (unspec:SI [(match_operand:SI 1 "memory_operand" "m")]
+        UNSPEC_SP_SET))
+   (set (match_scratch:SI 2 "=&r") (const_int 0))]
+  ""
+  "ldr\\t%2, %1\;str\\t%2, %0\;mov\t%2, #0"
+  [(set_attr "length" "12")
+   (set_attr "conds" "unconditional")
+   (set_attr "type" "multiple")]
+)
+
+(define_expand "stack_protect_test"
+  [(match_operand:SI 0 "memory_operand")
+   (match_operand:SI 1 "memory_operand")
+   (match_operand:SI 2)]
+  "arm_stack_protector_guard == SSP_TLSREG"
+  "
+{
+  operands[1] = arm_stack_protect_tls_canary_mem (true /* reload */);
+  emit_insn (gen_stack_protect_test_tls (operands[0], operands[1]));
+
+  rtx cc_reg = gen_rtx_REG (CC_Zmode, CC_REGNUM);
+  rtx eq = gen_rtx_EQ (CC_Zmode, cc_reg, const0_rtx);
+  emit_jump_insn (gen_arm_cond_branch (operands[2], eq, cc_reg));
+  DONE;
+}"
+)
+
+(define_insn "stack_protect_test_tls"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z (unspec:SI [(match_operand:SI 0 "memory_operand" "m")
+				  (match_operand:SI 1 "memory_operand" "m")]
+				 UNSPEC_SP_TEST)
+		      (const_int 0)))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  ""
+  "ldr\t%2, %0\;ldr\t%3, %1\;eors\t%2, %3, %2\;mov\t%3, #0"
+  [(set_attr "length" "16")
+   (set_attr "conds" "set")
+   (set_attr "type" "multiple")]
 )
 
 (define_expand "casesi"
@@ -12131,6 +12189,15 @@
   "mrc%?\\tp15, 0, %0, c13, c0, 3\\t@ load_tp_hard"
   [(set_attr "predicable" "yes")
    (set_attr "type" "mrs")]
+)
+
+;; Used by the TLS register based stack protector
+(define_insn "reload_tp_hard"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(const_int 0)] VUNSPEC_MRC))]
+  "TARGET_HARD_TP"
+  "mrc\\tp15, 0, %0, c13, c0, 3\\t@ reload_tp_hard"
+  [(set_attr "type" "mrs")]
 )
 
 ;; Doesn't clobber R1-R3.  Must use r0 for the first operand.

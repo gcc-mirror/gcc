@@ -1,3 +1,5 @@
+/* { dg-add-options float16 } */
+/* { dg-require-effective-target float16 } */
 /* { dg-additional-options "-frounding-math" } */
 
 volatile _Float16 true_min = 5.96046447753906250000000000000000000e-8F16;

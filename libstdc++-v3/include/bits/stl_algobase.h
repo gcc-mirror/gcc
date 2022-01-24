@@ -1645,7 +1645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
 #if __cplusplus > 201103L
 
-#define __cpp_lib_robust_nonmodifying_seq_ops 201304
+#define __cpp_lib_robust_nonmodifying_seq_ops 201304L
 
   /**
    *  @brief Tests a range for element-wise equality.

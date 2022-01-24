@@ -79,9 +79,10 @@ static class loop *tree_unswitch_loop (class loop *, basic_block, tree);
 static bool tree_unswitch_single_loop (class loop *, int);
 static tree tree_may_unswitch_on (basic_block, class loop *);
 static bool tree_unswitch_outer_loop (class loop *);
-static edge find_loop_guard (class loop *);
-static bool empty_bb_without_guard_p (class loop *, basic_block);
-static bool used_outside_loop_p (class loop *, tree);
+static edge find_loop_guard (class loop *, vec<gimple *>&);
+static bool empty_bb_without_guard_p (class loop *, basic_block,
+				      vec<gimple *>&);
+static bool used_outside_loop_p (class loop *, tree, vec<gimple *>&);
 static void hoist_guard (class loop *, edge);
 static bool check_exit_phi (class loop *);
 static tree get_vop_from_header (class loop *);
@@ -536,11 +537,18 @@ tree_unswitch_outer_loop (class loop *loop)
     }
 
   bool changed = false;
-  while ((guard = find_loop_guard (loop)))
+  auto_vec<gimple *> dbg_to_reset;
+  while ((guard = find_loop_guard (loop, dbg_to_reset)))
     {
       if (! changed)
 	rewrite_virtuals_into_loop_closed_ssa (loop);
       hoist_guard (loop, guard);
+      for (gimple *debug_stmt : dbg_to_reset)
+	{
+	  gimple_debug_bind_reset_value (debug_stmt);
+	  update_stmt (debug_stmt);
+	}
+      dbg_to_reset.truncate (0);
       changed = true;
     }
   return changed;
@@ -551,7 +559,7 @@ tree_unswitch_outer_loop (class loop *loop)
    otherwise returns NULL.  */
 
 static edge
-find_loop_guard (class loop *loop)
+find_loop_guard (class loop *loop, vec<gimple *> &dbg_to_reset)
 {
   basic_block header = loop->header;
   edge guard_edge, te, fe;
@@ -688,7 +696,7 @@ find_loop_guard (class loop *loop)
 	  guard_edge = NULL;
 	  goto end;
 	}
-      if (!empty_bb_without_guard_p (loop, bb))
+      if (!empty_bb_without_guard_p (loop, bb, dbg_to_reset))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
@@ -699,7 +707,7 @@ find_loop_guard (class loop *loop)
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+    dump_printf_loc (MSG_NOTE, loc,
 		     "suitable to hoist\n");
 end:
   if (body)
@@ -713,10 +721,12 @@ end:
       are noy used outside of the loop.
    KNOWN_INVARIANTS is a set of ssa names we know to be invariant, and
    PROCESSED is a set of ssa names for that we already tested whether they
-   are invariant or not.  */
+   are invariant or not.  Uses in debug stmts outside of the loop are
+   pushed to DBG_TO_RESET.  */
 
 static bool
-empty_bb_without_guard_p (class loop *loop, basic_block bb)
+empty_bb_without_guard_p (class loop *loop, basic_block bb,
+			  vec<gimple *> &dbg_to_reset)
 {
   basic_block exit_bb = single_exit (loop)->src;
   bool may_be_used_outside = (bb == exit_bb
@@ -736,7 +746,7 @@ empty_bb_without_guard_p (class loop *loop, basic_block bb)
 	  if (virtual_operand_p (name))
 	    continue;
 
-	  if (used_outside_loop_p (loop, name))
+	  if (used_outside_loop_p (loop, name, dbg_to_reset))
 	    return false;
 	}
     }
@@ -745,6 +755,9 @@ empty_bb_without_guard_p (class loop *loop, basic_block bb)
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+
       if (gimple_has_side_effects (stmt))
 	return false;
 
@@ -754,17 +767,18 @@ empty_bb_without_guard_p (class loop *loop, basic_block bb)
       FOR_EACH_SSA_TREE_OPERAND (name, stmt, op_iter, SSA_OP_DEF)
 	{
 	  if (may_be_used_outside
-	      && used_outside_loop_p (loop, name))
+	      && used_outside_loop_p (loop, name, dbg_to_reset))
 	    return false;
 	}
     }
   return true;
 }
 
-/* Return true if NAME is used outside of LOOP.  */
+/* Return true if NAME is used outside of LOOP.  Pushes debug stmts that
+   have such uses to DBG_TO_RESET but do not consider such uses.  */
 
 static bool
-used_outside_loop_p (class loop *loop, tree name)
+used_outside_loop_p (class loop *loop, tree name, vec<gimple *> &dbg_to_reset)
 {
   imm_use_iterator it;
   use_operand_p use;
@@ -773,7 +787,11 @@ used_outside_loop_p (class loop *loop, tree name)
     {
       gimple *stmt = USE_STMT (use);
       if (!flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
-	return true;
+	{
+	  if (!is_gimple_debug (stmt))
+	    return true;
+	  dbg_to_reset.safe_push (stmt);
+	}
     }
 
   return false;
@@ -847,7 +865,7 @@ hoist_guard (class loop *loop, edge guard)
       char buffer[64];
       guard->probability.dump (buffer);
 
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+      dump_printf_loc (MSG_NOTE, loc,
 		       "Moving guard %i->%i (prob %s) to bb %i, "
 		       "new preheader is %i\n",
 		       guard->src->index, guard->dest->index,
@@ -949,7 +967,7 @@ hoist_guard (class loop *loop, edge guard)
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 		     "Guard hoisted\n");
 
   free (body);

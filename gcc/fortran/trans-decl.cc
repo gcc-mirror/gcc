@@ -647,6 +647,9 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	       && sym->ns->proc_name->attr.flavor == FL_LABEL)
 	/* This is a BLOCK construct.  */
 	add_decl_as_local (decl);
+      else if (sym->ns->omp_affinity_iterators)
+	/* This is a block-local iterator.  */
+	add_decl_as_local (decl);
       else
 	gfc_add_decl_to_parent_function (decl);
     }

@@ -18710,7 +18710,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 				    gimple_call_arg (stmt, n_args - 1)))
 	break;
       arg2 = gimple_call_arg (stmt, 2);
-      if (TREE_CODE (arg2) == INTEGER_CST)
+      if (TREE_CODE (arg2) == INTEGER_CST && gimple_call_lhs (stmt))
 	{
 	  unsigned HOST_WIDE_INT shuffle_mask = TREE_INT_CST_LOW (arg2);
 	  /* Check valid imm, refer to gcc.target/i386/testimm-10.c.  */

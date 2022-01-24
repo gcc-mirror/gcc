@@ -4641,11 +4641,11 @@ case "${target}" in
 		esac
 
 		case "${with_isa_spec}" in
-		""|default|2.2)
-			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
-			;;
-		20191213 | 201912)
+		""|default|20191213|201912)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			;;
+		2.2)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
 			;;
 		20190608 | 201906)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"

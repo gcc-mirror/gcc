@@ -1,3 +1,86 @@
+2022-01-23  Will Wray  <wjwray@gmail.com>
+
+	PR c++/55227
+	* decl.cc (reshape_init_r): Only call has_designator_check when
+	first_initializer_p or for the inner constructor element.
+	(cp_complete_array_type): Call reshape_init on braced-init-list.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104182
+	* cp-gimplify.cc (cp_genericize_target_expr): Make sure nothing
+	has set DECL_INITIAL on a TARGET_EXPR slot.
+	* tree.cc (is_local_temp): Don't check DECL_CONTEXT.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101072
+	* cp-tree.h (build_implicit_conv_flags): Declare.
+	* call.cc (build_implicit_conv_flags): Split out from...
+	(perform_implicit_conversion_flags): ...here.
+	* decl.cc (check_initializer): Use it.
+	* pt.cc (tsubst_copy_and_build): Remove TARGET_EXPR handling.
+	* semantics.cc (finish_compound_literal): Don't treat
+	scalar values like CONSTRUCTORs.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	* semantics.cc (find_failing_clause): Return expr if not
+	decomposable.
+	(finish_static_assert): Show constant values in failing
+	comparison.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104084
+	PR c++/20040
+	* init.cc (build_new_1): Only pull out TARGET_EXPR_INITIAL if
+	alloc_expr is a TARGET_EXPR.
+
+2022-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101715
+	* tree.cc (fixup_deferred_exception_variants): Remove duplicate
+	variants after parsing the exception specifications.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104139
+	PR c++/103681
+	* class.cc (end_of_class): Use base_binfo.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101405
+	* decl.cc (reshape_init_class): Reject designator for a member of
+	another class.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/91911
+	PR c++/103672
+	* pt.cc (keep_template_parm): Punt on a level 0 template parm.
+	(tsubst_decl) <case VAR_DECL>: Remove !CHECKING_P safeguard.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Handle CTAD placeholders
+	specially.
+	(make_auto_1): Add defaulted 'level' parameter.
+	(make_template_placeholder): Pass 0 as 'level' to make_auto_1.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (grokdeclarator): Diagnose a CTAD placeholder as
+	function return type even when !funcdecl_p.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	PR c++/104134
+	* error.cc (dump_aggr_type): Partially disable the warning.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* parser.cc (cp_parser_template_name): Use dependent_scope_p.
+
 2022-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* cp-lang.cc (selftest::run_cp_tests): Update calls for .c to .cc

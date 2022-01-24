@@ -1237,7 +1237,12 @@
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
                 p10,       p10,
-                <VSisa>,   *,         *,         *,         *")])
+                <VSisa>,   *,         *,         *,         *")
+   (set_attr "prefixed"
+               "*,         *,         *,         *,         *,         *,
+                *,         *,         *,         *,         *,         *,
+                *,         yes,
+                *,         *,         *,         *,         *")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
 ;;              LXVKQ      XXSPLTI*
@@ -1276,6 +1281,11 @@
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 p10,       p10,
                 p9v,       *,         <VSisa>,   *,         *,
+                *,         *")
+   (set_attr "prefixed"
+               "*,         *,         *,         *,         *,         *,
+                *,         yes,
+                *,         *,         *,         *,         *,
                 *,         *")])
 
 ;; Explicit  load/store expanders for the builtin functions

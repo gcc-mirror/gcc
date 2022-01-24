@@ -2671,6 +2671,18 @@ if test x$gcc_cv_ld != x; then
 fi
 AC_MSG_RESULT($ld_is_gold)
 
+# Check to see if we are using mold instead of ld
+AC_MSG_CHECKING(whether we are using mold)
+ld_is_mold=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "mold" > /dev/null; then
+    ld_is_mold=yes
+  fi
+fi
+AC_MSG_RESULT($ld_is_mold)
+
+
 AC_MSG_CHECKING(gold linker with split stack support as non default)
 # Check to see if default ld is not gold, but gold is
 # available and has support for split stack.  If gcc was configured
@@ -3068,6 +3080,8 @@ AC_CACHE_CHECK(linker for .hidden support, gcc_cv_ld_hidden,
 else
   gcc_cv_ld_hidden=yes
   if test x"$ld_is_gold" = xyes; then
+    :
+  elif test x"$ld_is_mold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
@@ -3537,6 +3551,8 @@ else
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
+  comdat_group=yes
+elif test x"$ld_is_mold" = xyes; then
   comdat_group=yes
 elif test $in_tree_ld = yes ; then
   comdat_group=no

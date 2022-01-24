@@ -1,3 +1,224 @@
+2022-01-23  Will Wray  <wjwray@gmail.com>
+
+	PR c++/55227
+	* g++.dg/cpp2a/desig21.C: New test.
+
+2022-01-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/64821
+	* gcc.target/aarch64/vsqrt-1.c: New test.
+	* gcc.target/aarch64/vsqrt-2.c: New test.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104182
+	* g++.dg/cpp0x/initlist127.C: New test.
+
+2022-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101072
+	* g++.dg/cpp0x/constexpr-empty14a.C: New test.
+
+2022-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104150
+	* gcc.dg/analyzer/pr104089.c: Add "dg-add-options float16"
+	and "dg-require-effective-target float16" directives.
+
+2022-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104159
+	* gcc.dg/analyzer/torture/pr104159.c: New test.
+
+2022-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104127
+	* gfortran.dg/transfer_simplify_11.f90: Fix logic.
+	* gfortran.dg/transfer_simplify_13.f90: New test.
+
+2022-01-22  Michael Meissner  <meissner@the-meissners.org>
+
+	PR testsuite/103763
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: Fix insn regex
+	on power10.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104148
+	* c-c++-common/Wformat-pr104148.c: New test.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/explicit-args6.C: Add expected message.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104084
+	PR c++/20040
+	* g++.dg/init/new50.C: New test.
+
+2022-01-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-4.c: Add two test variants.  Adjust
+	assembler counts.
+
+2022-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/104140
+	* gcc.target/riscv/pr104140.c: New test case.
+
+2022-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103676
+	* g++.target/arm/pr103676.C: New.
+
+2022-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101715
+	* g++.dg/cpp0x/noexcept72.C: New test.
+	* g++.dg/cpp0x/noexcept73.C: New test.
+
+2022-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104139
+	PR c++/103681
+	* g++.dg/abi/no_unique_address2.C: Adjust to detect this on x86-64.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/99673
+	* gcc.dg/asan/pr99673.c: New testcase.
+
+2022-01-21  Ard Biesheuvel  <ardb@kernel.org>
+
+	* gcc.target/arm/stack-protector-7.c: New test.
+	* gcc.target/arm/stack-protector-8.c: New test.
+
+2022-01-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/spellcheck_1.c: Adjust tests for new output.
+	* gcc.target/aarch64/spellcheck_2.c: Likewise.
+	* gcc.target/aarch64/spellcheck_3.c: Likewise.
+	* gcc.target/aarch64/spellcheck_7.c: Likewise.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104156
+	* gcc.dg/loop-unswitch-6.c: New testcase.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104152
+	* gcc.dg/vect/pr104152.c: New testcase.
+
+2022-01-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103721-2.c: New test.
+	* gcc.dg/pr103721.c: New test.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* gcc.dg/pr102478.c: New test.
+
+2022-01-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/fix-r4000-2.c: Update expected output.
+	* gcc.target/mips/fix-r4000-3.c: Update expected output.  Add
+	-fexpensive-optimizations for consistency in output.
+	* gcc.target/mips/fix-r4000-7.c: Update expected output.
+	* gcc.target/mips/fix-r4000-8.c: Update expected output.
+
+2022-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94362
+	* gcc.dg/analyzer/pr94362-1.c: New test.
+	* gcc.dg/analyzer/pr94362-2.c: New test.
+
+2022-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103685
+	* gcc.dg/analyzer/torture/pr103685.c: New test.
+
+2022-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103695
+	PR fortran/102621
+	* gfortran.dg/gomp/affinity-clause-3.f90: Adjust pattern.
+	* gfortran.dg/gomp/pr102621.f90: New.
+	* gfortran.dg/gomp/pr103695.f90: New.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101405
+	* g++.dg/cpp2a/desig20.C: New test.
+
+2022-01-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102338
+	* g++.dg/cpp1y/noexcept2.C: New test.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103631
+	* g++.dg/cpp2a/nontype-class51.C: New test.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gcc.dg/torture/pr100786.c: New testcase.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/102517
+	* gcc.target/aarch64/cpymem-q-reg_1.c: Allow ld1 and st1 for the
+	memcpy expansion.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/91911
+	PR c++/103672
+	* g++.dg/cpp1z/class-deduction101.C: New test.
+	* g++.dg/cpp1z/class-deduction101a.C: New test.
+	* g++.dg/cpp1z/class-deduction101b.C: New test.
+	* g++.dg/cpp1z/class-deduction102.C: New test.
+	* g++.dg/cpp1z/class-deduction102a.C: New test.
+	* g++.dg/cpp1z/class-deduction102b.C: New test.
+	* g++.dg/cpp1z/class-deduction103.C: New test.
+
+2022-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/other/pr88187.C: Adjust expected C++17 diagnostic.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/crypto-vaese-erratum1.c: New test.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103874
+	* gcc.dg/debug/dwarf2/pr103874.c: New test.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/pr47639.C: Add -Wno-psabi to dg-options.
+
+2022-01-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/mask-pack-prefer128.c: New test.
+	* gcc.target/i386/mask-pack-prefer256.c: New test.
+	* gcc.target/i386/pr103771.c: New test.
+
+2022-01-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/102300
+	* g++.dg/parse/no-typename1.C: Remove expected error.
+	* g++.dg/template/nested7.C: New test.
+
+2022-01-20  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/sldoi_to_mov.c: Require VSX.
+
 2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.dg/ifcvt-4.c: Remove s390-specific check.

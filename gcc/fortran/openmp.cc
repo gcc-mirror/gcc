@@ -1123,7 +1123,7 @@ gfc_match_iterator (gfc_namespace **ns, bool permit_var)
       if (last)
 	last->tlink = sym;
       else
-	(*ns)->proc_name = sym;
+	(*ns)->omp_affinity_iterators = sym;
       last = sym;
       sym->declared_at = prev_loc;
       sym->ts = ts;
@@ -6832,8 +6832,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    && n->u2.ns && !n->u2.ns->resolved)
 		  {
 		    n->u2.ns->resolved = 1;
-		    for (gfc_symbol *sym = n->u2.ns->proc_name; sym;
-			 sym = sym->tlink)
+		    for (gfc_symbol *sym = n->u2.ns->omp_affinity_iterators;
+			 sym; sym = sym->tlink)
 		      {
 			gfc_constructor *c;
 			c = gfc_constructor_first (sym->value->value.constructor);

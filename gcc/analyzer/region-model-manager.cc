@@ -497,6 +497,17 @@ const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
   gcc_assert (type);
+
+  /* No-op if the types are the same.  */
+  if (type == arg->get_type ())
+    return arg;
+
+  /* Don't attempt to handle casts involving vector types for now.  */
+  if (TREE_CODE (type) == VECTOR_TYPE
+      || (arg->get_type ()
+	  && TREE_CODE (arg->get_type ()) == VECTOR_TYPE))
+    return get_or_create_unknown_svalue (type);
+
   enum tree_code op = get_code_for_cast (type, arg->get_type ());
   return get_or_create_unaryop (type, op, arg);
 }

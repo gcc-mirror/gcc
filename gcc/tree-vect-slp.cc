@@ -1926,8 +1926,17 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      if (dt == vect_constant_def
 		  || dt == vect_external_def)
 		{
-		  /* We can always build those.  Might want to sort last
-		     or defer building.  */
+		  /* Check whether we can build the invariant.  If we can't
+		     we never will be able to.  */
+		  tree type = TREE_TYPE (chains[0][n].op);
+		  if (!GET_MODE_SIZE (vinfo->vector_mode).is_constant ()
+		      && (TREE_CODE (type) == BOOLEAN_TYPE
+			  || !can_duplicate_and_interleave_p (vinfo, group_size,
+							      type)))
+		    {
+		      matches[0] = false;
+		      goto out;
+		    }
 		  vec<tree> ops;
 		  ops.create (group_size);
 		  for (lane = 0; lane < group_size; ++lane)
@@ -5897,9 +5906,8 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      profitable_subgraphs.safe_push (instance);
 	    }
 
-	  /* When we're vectorizing an if-converted loop body with the
-	     very-cheap cost model make sure we vectorized all if-converted
-	     code.  */
+	  /* When we're vectorizing an if-converted loop body make sure
+	     we vectorized all if-converted code.  */
 	  if (!profitable_subgraphs.is_empty ()
 	      && orig_loop)
 	    {
@@ -5915,7 +5923,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 		      gimple_set_visited (gsi_stmt (gsi), false);
 		      continue;
 		    }
-		  if (flag_vect_cost_model != VECT_COST_MODEL_VERY_CHEAP)
+		  if (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED)
 		    continue;
 
 		  if (gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi)))

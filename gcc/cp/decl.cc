@@ -6569,16 +6569,22 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  tree ictx = DECL_CONTEXT (field);
 	  if (!same_type_ignoring_top_level_qualifiers_p (ictx, type))
 	    {
-	      gcc_assert (ANON_AGGR_TYPE_P (ictx));
 	      /* Find the anon aggr that is a direct member of TYPE.  */
-	      while (true)
+	      while (ANON_AGGR_TYPE_P (ictx))
 		{
 		  tree cctx = TYPE_CONTEXT (ictx);
 		  if (same_type_ignoring_top_level_qualifiers_p (cctx, type))
-		    break;
+		    goto found;
 		  ictx = cctx;
 		}
-	      /* And then the TYPE member with that anon aggr type.  */
+
+	      /* Not found, e.g. FIELD is a member of a base class.  */
+	      if (complain & tf_error)
+		error ("%qD is not a direct member of %qT", field, type);
+	      return error_mark_node;
+
+	    found:
+	      /* Now find the TYPE member with that anon aggr type.  */
 	      tree aafield = TYPE_FIELDS (type);
 	      for (; aafield; aafield = TREE_CHAIN (aafield))
 		if (TREE_TYPE (aafield) == ictx)
@@ -6811,6 +6817,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
     {
       tree str_init = init;
       tree stripped_str_init = stripped_init;
+      reshape_iter stripd = {};
 
       /* Strip one level of braces if and only if they enclose a single
 	 element (as allowed by [dcl.init.string]).  */
@@ -6818,7 +6825,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	  && TREE_CODE (stripped_str_init) == CONSTRUCTOR
 	  && CONSTRUCTOR_NELTS (stripped_str_init) == 1)
 	{
-	  str_init = (*CONSTRUCTOR_ELTS (stripped_str_init))[0].value;
+	  stripd.cur = CONSTRUCTOR_ELT (stripped_str_init, 0);
+	  str_init = stripd.cur->value;
 	  stripped_str_init = tree_strip_any_location_wrapper (str_init);
 	}
 
@@ -6827,7 +6835,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	 array types (one value per array element).  */
       if (TREE_CODE (stripped_str_init) == STRING_CST)
 	{
-	  if (has_designator_problem (d, complain))
+	  if ((first_initializer_p && has_designator_problem (d, complain))
+	      || (stripd.cur && has_designator_problem (&stripd, complain)))
 	    return error_mark_node;
 	  d->cur++;
 	  return str_init;
@@ -7229,7 +7238,12 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	      /* In C++20, the call to build_aggr_init could have created
 		 an INIT_EXPR with a CONSTRUCTOR as the RHS to handle
 		 A(1, 2).  */
-	      init = TREE_OPERAND (init_code, 1);
+	      tree rhs = TREE_OPERAND (init_code, 1);
+	      if (processing_template_decl && TREE_CODE (rhs) == TARGET_EXPR)
+		/* Avoid leaking TARGET_EXPR into template trees.  */
+		rhs = build_implicit_conv_flags (type, init, flags);
+	      init = rhs;
+
 	      init_code = NULL_TREE;
 	      /* Don't call digest_init; it's unnecessary and will complain
 		 about aggregate initialization of non-aggregate classes.  */
@@ -9544,22 +9558,11 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
   if (initial_value)
     {
       /* An array of character type can be initialized from a
-	 brace-enclosed string constant.
-
-	 FIXME: this code is duplicated from reshape_init. Probably
-	 we should just call reshape_init here?  */
-      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
-	  && TREE_CODE (initial_value) == CONSTRUCTOR
-	  && !vec_safe_is_empty (CONSTRUCTOR_ELTS (initial_value)))
-	{
-	  vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (initial_value);
-	  tree value = (*v)[0].value;
-	  STRIP_ANY_LOCATION_WRAPPER (value);
-
-	  if (TREE_CODE (value) == STRING_CST
-	      && v->length () == 1)
-	    initial_value = value;
-	}
+	 brace-enclosed string constant so call reshape_init to
+	 remove the optional braces from a braced string literal.  */
+      if (BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+	initial_value = reshape_init (*ptype, initial_value,
+				      tf_warning_or_error);
 
       /* If any of the elements are parameter packs, we can't actually
 	 complete this type now because the array size is dependent.  */
@@ -12647,11 +12650,11 @@ grokdeclarator (const cp_declarator *declarator,
 		if (!tmpl)
 		  if (tree late_auto = type_uses_auto (late_return_type))
 		    tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
-		if (tmpl && funcdecl_p)
+		if (tmpl)
 		  {
-		    if (!dguide_name_p (unqualified_id))
+		    if (!funcdecl_p || !dguide_name_p (unqualified_id))
 		      {
-			error_at (declarator->id_loc, "deduced class "
+			error_at (typespec_loc, "deduced class "
 				  "type %qD in function return type",
 				  DECL_NAME (tmpl));
 			inform (DECL_SOURCE_LOCATION (tmpl),

@@ -63,10 +63,11 @@ private:
   void ssa_range_in_phi (irange &r, gphi *phi);
   void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
-  void maybe_register_phi_relation (gphi *, tree arg);
+  void maybe_register_phi_relation (gphi *, edge e);
   bool add_to_imports (tree name, bitmap imports);
   bool import_p (tree name);
   bool ssa_defined_in_bb (tree name, basic_block bb);
+  bool relations_may_be_invalidated (edge);
 
   // Path navigation.
   void set_path (const vec<basic_block> &);

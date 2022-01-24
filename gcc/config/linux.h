@@ -29,18 +29,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* C libraries supported on Linux.  */
 #ifdef SINGLE_LIBC
-#define OPTION_GLIBC  (DEFAULT_LIBC == LIBC_GLIBC)
-#define OPTION_UCLIBC (DEFAULT_LIBC == LIBC_UCLIBC)
-#define OPTION_BIONIC (DEFAULT_LIBC == LIBC_BIONIC)
-#undef OPTION_MUSL
-#define OPTION_MUSL   (DEFAULT_LIBC == LIBC_MUSL)
+#define OPTION_GLIBC_P(opts)	(DEFAULT_LIBC == LIBC_GLIBC)
+#define OPTION_UCLIBC_P(opts)	(DEFAULT_LIBC == LIBC_UCLIBC)
+#define OPTION_BIONIC_P(opts)	(DEFAULT_LIBC == LIBC_BIONIC)
+#undef OPTION_MUSL_P
+#define OPTION_MUSL_P(opts)	(DEFAULT_LIBC == LIBC_MUSL)
 #else
-#define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
-#define OPTION_UCLIBC (linux_libc == LIBC_UCLIBC)
-#define OPTION_BIONIC (linux_libc == LIBC_BIONIC)
-#undef OPTION_MUSL
-#define OPTION_MUSL   (linux_libc == LIBC_MUSL)
+#define OPTION_GLIBC_P(opts)	((opts)->x_linux_libc == LIBC_GLIBC)
+#define OPTION_UCLIBC_P(opts)	((opts)->x_linux_libc == LIBC_UCLIBC)
+#define OPTION_BIONIC_P(opts)	((opts)->x_linux_libc == LIBC_BIONIC)
+#undef OPTION_MUSL_P
+#define OPTION_MUSL_P(opts)	((opts)->x_linux_libc == LIBC_MUSL)
 #endif
+#define OPTION_GLIBC		OPTION_GLIBC_P (&global_options)
+#define OPTION_UCLIBC		OPTION_UCLIBC_P (&global_options)
+#define OPTION_BIONIC		OPTION_BIONIC_P (&global_options)
+#undef OPTION_MUSL
+#define OPTION_MUSL		OPTION_MUSL_P (&global_options)
 
 #define GNU_USER_TARGET_OS_CPP_BUILTINS()			\
     do {							\

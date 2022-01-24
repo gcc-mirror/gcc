@@ -3401,6 +3401,10 @@
     XXSLDWI_2DI  XXSLDWI_VSLL
   vull __builtin_vec_sldw (vull, vull, const int);
     XXSLDWI_2DI  XXSLDWI_VULL
+  vf __builtin_vec_sldw (vf, vf, const int);
+    XXSLDWI_4SF  XXSLDWI_VF
+  vd __builtin_vec_sldw (vd, vd, const int);
+    XXSLDWI_2DF  XXSLDWI_VD
 
 [VEC_SLL, vec_sll, __builtin_vec_sll]
   vsc __builtin_vec_sll (vsc, vuc);

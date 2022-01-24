@@ -1,3 +1,126 @@
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104032
+	* include/std/spanstream (basic_spanbuf(basic_spanbuf&&)): Use
+	mem-initializer for _M_buf.
+	(basic_spanbuf::Operator=(basic_spanbuf&&)): Fix ill-formed
+	member access.
+	* testsuite/27_io/spanstream/2.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (USE_STRTOD_FOR_FROM_CHARS):
+	Define macro for case where std::from_chars is implemented in
+	terms of strtod, strtof or strtold.
+	(buffer_resource, valid_fmt, find_end_of_float, pattern)
+	(from_chars_impl, make_result, reserve_string): Do not define
+	unless USE_STRTOD_FOR_FROM_CHARS is defined.
+	(from_chars): Define when at least one of USE_LIB_FAST_FLOAT and
+	USE_STRTOD_FOR_FROM_CHARS is defined, instead of
+	_GLIBCXX_HAVE_USELOCALE. Use fast_float for long double when it
+	is binary64.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104174
+	* include/bits/hashtable_policy.h (_Map_base): Add partial
+	specialization for maps with const key types.
+	* testsuite/23_containers/unordered_map/104174.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104019
+	* include/bits/shared_ptr_base.h (_Sp_counted_base<>::_M_release):
+	Set members to zero without type punning.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/array.cc: Fix comment.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87193
+	PR libstdc++/104019
+	* include/bits/alloc_traits.h (__cpp_lib_allocator_traits_is_always_equal):
+	Define as type long.
+	* include/bits/allocator.h (__cpp_lib_incomplete_container_elements):
+	Likewise.
+	* include/bits/basic_string.h (__cpp_lib_string_udls): Likewise.
+	* include/bits/chrono.h (__cpp_lib_chrono): Likewise.
+	(__cpp_lib_chrono_udls): Likewise.
+	* include/bits/move.h (__cpp_lib_addressof_constexpr): Likewise.
+	* include/bits/node_handle.h (__cpp_lib_node_extract): Likewise.
+	* include/bits/range_access.h (__cpp_lib_nonmember_container_access):
+	Likewise.
+	* include/bits/shared_ptr.h (__cpp_lib_enable_shared_from_this):
+	Likewise.
+	* include/bits/stl_algo.h (__cpp_lib_clamp): Likewise.
+	(__cpp_lib_sample): Likewise.
+	* include/bits/stl_algobase.h (__cpp_lib_robust_nonmodifying_seq_ops):
+	Likewise.
+	* include/bits/stl_function.h (__cpp_lib_transparent_operators):
+	Likewise.
+	* include/bits/stl_iterator.h (__cpp_lib_make_reverse_iterator):
+	Likewise.
+	* include/bits/stl_map.h (__cpp_lib_map_try_emplace):
+	Likewise.
+	* include/bits/stl_tree.h (__cpp_lib_generic_associative_lookup):
+	Likewise.
+	* include/bits/unique_ptr.h (__cpp_lib_make_unique):
+	Likewise.
+	* include/bits/unordered_map.h (__cpp_lib_unordered_map_try_emplace):
+	Likewise.
+	* include/c_global/cmath (__cpp_lib_hypot): Likewise.
+	* include/c_global/cstddef (__cpp_lib_byte): Likewise.
+	* include/std/atomic (__cpp_lib_atomic_is_always_lock_free):
+	Likewise.
+	* include/std/complex (__cpp_lib_complex_udls): Likewise.
+	* include/std/filesystem (__cpp_lib_filesystem): Likewise.
+	* include/std/functional (__cpp_lib_not_fn): Likewise.
+	(__cpp_lib_boyer_moore_searcher): Likewise.
+	* include/std/iomanip (__cpp_lib_quoted_string_io): Likewise.
+	* include/std/mutex (__cpp_lib_scoped_lock): Likewise.
+	* include/std/numeric (__cpp_lib_gcd_lcm): Likewise.
+	(__cpp_lib_gcd, __cpp_lib_lcm): Likewise.
+	* include/std/tuple (__cpp_lib_apply): Likewise.
+	(__cpp_lib_make_from_tuple): Likewise.
+	* include/std/type_traits (__cpp_lib_integral_constant_callable)
+	(__cpp_lib_bool_constant, __cpp_lib_logical_traits)
+	(__cpp_lib_is_null_pointer, __cpp_lib_transformation_trait_aliases)
+	(__cpp_lib_result_of_sfinae, __cpp_lib_void_t)
+	(__cpp_lib_is_swappable, __cpp_lib_is_invocable)
+	(__cpp_lib_has_unique_object_representations)
+	(__cpp_lib_is_aggregate): Likewise.
+	* include/std/version: Likewise.
+	* libsupc++/new (__cpp_lib_launder): Likewise.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_shared_ptr_arrays): Fix
+	condition for C++17 definition.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count):
+	Add constexpr.
+	(_Sp_atomic::_M_ptr): Add default member-initializer.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check constant initialization.
+	* testsuite/20_util/weak_ptr/atomic_weak_ptr.cc: Likewise.
+
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (__constinit): Define as
+	equivalent attribute for Clang.
+	* src/c++11/future.cc (__constinit): Likewise.
+	* src/c++11/system_error.cc (__constinit): Likewise.
+	* src/c++17/memory_resource.cc (__constinit): Likewise.
+
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/testsuite_flags.in: Only add src/filesystem/.libs and
+	src/libbacktrace/.libs to LDFLAGS if those directories exist.
+
 2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Remove -gdwarf-4

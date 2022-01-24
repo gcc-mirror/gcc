@@ -108,6 +108,9 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
   const riscv_subset_list *subset_list = riscv_current_subset_list ();
+  if (!subset_list)
+    return;
+
   size_t max_ext_len = 0;
 
   /* Figure out the max length of extension name for reserving buffer.   */

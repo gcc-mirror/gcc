@@ -1,3 +1,318 @@
+2022-01-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/64821
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Handle
+	__builtin_aarch64_sqrt* and simplify into SQRT internal
+	function.
+
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104176
+	* opts-global.cc (handle_common_deferred_options): Quote
+	--enable-plugin in diagnostics to avoid -Werror=format-diag.
+
+2022-01-21  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104136
+	* config/rs6000/rs6000-protos.h (prefixed_xxsplti_p): Delete.
+	* config/rs6000/rs6000.cc (prefixed_xxsplti_p): Delete.
+	* config/rs6000/rs6000.md (prefixed attribute): Delete section
+	that sets the prefixed attribute for xxspltiw, xxspltidp, and
+	xxsplti32dx instructions.
+	(movsf_hardfloat): Explicitly set the prefixed attribute
+	when xxspltiw and xxspltidp instructions are generated.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Explicitly set the
+	prefixed attribute for xxspltiw and xxspltidp instructions.
+	(vsx_mov<mode>_32bit): Likewise.
+
+2022-01-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/104170
+	* common/config/i386/i386-common.cc (ix86_supports_split_stack):
+	Return true only on glibc.
+	* config/i386/gnu-user-common.h (STACK_CHECK_STATIC_BUILTIN):
+	Revert commit c163647ffbc.
+	* config/i386/gnu.h (TARGET_LIBC_PROVIDES_SSP): Likewise.
+
+2022-01-21  Sören Tempel  <soeren@soeren-tempel.net>
+
+	* common/config/s390/s390-common.cc (s390_supports_split_stack):
+	Only support split-stack on glibc targets.
+	* config/i386/gnu-user-common.h (STACK_CHECK_STATIC_BUILTIN): Ditto.
+	* config/i386/gnu.h (defined): Ditto.
+
+2022-01-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (VEC_SLDW): Add instances for
+	vector float and vector double.
+
+2022-01-21  Bill Seurer  <seurer@gcc.gnu.org>
+
+	* config/rs6000/rs6000.cc (rs6000_get_function_versions_dispatcher):
+	Fix mention of ifunc in string.
+
+2022-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/104140
+	* tree-ssa-math-opts.cc (convert_mult_to_highpart): Check that the
+	operands of the widening multiplication are either both signed or
+	both unsigned, and abort the conversion if mismatched.
+	* doc/generic.texi (WIDEN_MULT_EXPR): Describe expression node.
+	(MULT_HIGHPART_EXPR): Clarify that operands must have the same
+	signedness.
+	* tree.def (MULT_HIGHPART_EXPR): Document both operands must have
+	integer types with the same precision and signedness.
+	(WIDEN_MULT_EXPR): Document that operands must have integer types
+	with the same precision, but possibly differing signedness.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Defend against
+	riscv_current_subset_list returning a NULL pointer (empty list).
+
+2022-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103676
+	* ira.h (struct target_ira): Add member
+	x_ira_exclude_class_mode_regs.
+	(ira_exclude_class_mode_regs): New macro.
+	* lra.h (lra_create_new_reg): Add arg exclude_start_hard_regs and
+	move from here ...
+	* lra-int.h: ... to here.
+	(lra_create_new_reg_with_unique_value): Add arg
+	exclude_start_hard_regs.
+	(class lra_reg): Add member exclude_start_hard_regs.
+	* lra-assigns.cc (find_hard_regno_for_1): Setup
+	impossible_start_hard_regs from exclude_start_hard_regs.
+	* lra-constraints.cc (get_reload_reg): Add arg exclude_start_hard_regs and pass
+	it lra_create_new_reg[_with_unique_value].
+	(match_reload): Ditto.
+	(check_and_process_move): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg_with_unique_value.
+	(goal_alt_exclude_start_hard_regs): New static variable.
+	(process_addr_reg, simplify_operand_subreg): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg_with_unique_value
+	and get_reload_reg.
+	(process_alt_operands): Setup goal_alt_exclude_start_hard_regs.
+	Use this_alternative_exclude_start_hard_regs additionally to find
+	winning operand alternative.
+	(base_to_reg, base_plus_disp_to_reg, index_part_to_reg): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg.
+	(process_address_1, emit_inc): Ditto.
+	(curr_insn_transform): Pass exclude_start_hard_regs value to
+	lra_create_new_reg, get_reload_reg, match_reload.
+	(inherit_reload_reg, split_reg): Pass NULL exclude_start_hard_regs
+	to lra_create_new_reg.
+	(process_invariant_for_inheritance): Ditto.
+	* lra-remat.cc (update_scratch_ops): Ditto.
+	* lra.cc (lra_create_new_reg_with_unique_value): Add arg
+	exclude_start_hard_regs.  Setup the corresponding member of
+	lra reg info.
+	(lra_create_new_reg): Add arg exclude_start_hard_regs and pass it
+	to lra_create_new_reg_with_unique_value.
+	(initialize_lra_reg_info_element): Initialize member
+	exclude_start_hard_regs.
+	(get_scratch_reg): Pass NULL to lra_create_new_reg.
+	* ira.cc (setup_prohibited_class_mode_regs): Rename to
+	setup_prohibited_and_exclude_class_mode_regs and calculate
+	ira_exclude_class_mode_regs.
+
+2022-01-21  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Detect ld_is_mold and use it for
+	comdat_group=yes and gcc_cv_ld_hidden=yes.
+	* configure: Regenerate.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100089
+	* tree-vect-slp.cc (vect_slp_region): Reject BB vectorization
+	of if-converted loops with unvectorized COND_EXPRs for
+	all but the unlimited cost models.
+
+2022-01-21  Ard Biesheuvel  <ardb@kernel.org>
+
+	* config/arm/arm-opts.h (enum stack_protector_guard): New.
+	* config/arm/arm-protos.h (arm_stack_protect_tls_canary_mem):
+	New.
+	* config/arm/arm.cc (TARGET_STACK_PROTECT_GUARD): Define.
+	(arm_option_override_internal): Handle and put in error checks.
+	for stack protector guard options.
+	(arm_option_reconfigure_globals): Likewise.
+	(arm_stack_protect_tls_canary_mem): New.
+	(arm_stack_protect_guard): New.
+	* config/arm/arm.md (stack_protect_set): New.
+	(stack_protect_set_tls): Likewise.
+	(stack_protect_test): Likewise.
+	(stack_protect_test_tls): Likewise.
+	(reload_tp_hard): Likewise.
+	* config/arm/arm.opt (-mstack-protector-guard): New
+	(-mstack-protector-guard-offset): New.
+	* doc/invoke.texi: Document new options.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104156
+	* tree-ssa-loop-unswitch.cc (tree_unswitch_outer_loop):
+	Collect and reset debug stmts with out-of-loop uses when
+	hoisting guards.
+	(find_loop_guard): Adjust.
+	(empty_bb_without_guard_p): Likewise.  Ignore debug stmts.
+	(used_outside_loop_p): Push debug uses to a vector of
+	debug stmts to reset.
+	(hoist_guard): Adjust -fopt-info category.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104152
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Add missing
+	can_duplicate_and_interleave_p check.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer):
+	Avoid passing var to warning_at when the format string doesn't
+	refer to it.
+
+2022-01-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103721
+	* gimple-range-path.cc
+	(path_range_query::relations_may_be_invalidated): New.
+	(path_range_query::compute_ranges_in_block): Reset relations if
+	they may be invalidated.
+	(path_range_query::maybe_register_phi_relation): Exit if relations
+	may be invalidated on incoming edge.
+	(path_range_query::compute_phi_relations): Pass incoming PHI edge
+	to maybe_register_phi_relation.
+	* gimple-range-path.h (relations_may_be_invalidated): New.
+	(maybe_register_phi_relation): Pass edge instead of tree.
+	* tree-ssa-threadbackward.cc (back_threader::back_threader):
+	Mark DFS edges.
+	* value-relation.cc (path_oracle::path_oracle): Call
+	mark_dfs_back_edges.
+	(path_oracle::register_relation): Add SSA names to m_registered
+	bitmap.
+	(path_oracle::reset_path): Clear m_registered bitmap.
+	* value-relation.h (path_oracle::set_root_oracle): New.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* optabs.cc (prepare_cmp_insn): If !can_create_pseudo_p (), don't
+	force_reg constants and for -fnon-call-exceptions fail if copy_to_reg
+	would be needed.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gimple-fold.cc (get_symbol_constant_value): Only return
+	values of compatible type to the symbol.
+
+2022-01-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (relation_oracle::valid_equivs): Query and add
+	if valid members of a set.
+	(equiv_oracle::register_equiv): Call valid_equivs rather than
+	bitmap direct operations.
+	(path_oracle::register_equiv): Ditto.
+	* value-relation.h (relation_oracle::valid_equivs): New prototype.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/100784
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Check for
+	LHS before folding __builtin_ia32_shufpd and friends.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (aes_op_protect): Allow moves from core
+	registers and from memory.
+	(aes_op_protect_misalign_load): New pattern.
+	(aes_op_protect_neon_vld1v16qi): New pattern.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AESMC:crypto_pattern>_protected):
+	New pattern.
+	(aarch32_crypto_aese_fused_protected): Likewise.
+	(aarch32_crypto_aesd_fused_protected): Likewise.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AES:crypto_pattern>): Convert
+	to define_expand.  Add mitigation for the Cortex-A AES erratum
+	when enabled.
+	(*crypto_<CRYPTO_AES:crypto_pattern>_insn): New pattern, based
+	on original crypto_<CRYPTO_AES:crypto_pattern> insn.
+	(aes_op_protect): New pattern.
+	* config/arm/unspecs.md (unspec): Add UNSPEC_AES_PROTECT.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (quirk_aes_1742098): New quirk feature
+	(ALL_QUIRKS): Add it.
+	(cortex-a57, cortex-a72): Enable it.
+	(cortex-a57.cortex-a53, cortex-a72.cortex-a53): Likewise.
+	* config/arm/arm.opt (mfix-cortex-a57-aes-1742098): New command-line
+	option.
+	(mfix-cortex-a72-aes-1655431): New option alias.
+	* config/arm/arm.cc (arm_option_override): Handle default settings
+	for AES erratum switch.
+	* doc/invoke.texi (Arm Options): Document new options.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CYRPTO_AES:crypto_pattern>): Use
+	<crypto_mode> rather than hard-coding the mode.
+	(crypto_<CRYPTO_AESMC:crypto_pattern>): Fix white space.
+	(crypto_<CRYPTO_AES:crypto_pattern>): Likewise.
+	(*aarch32_crypto_aese_fused): Likewise.
+	(*aarch32_crypto_aesd_fused): Likewise.
+	(crypto_<CRYPTO_BINARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_TERNARY:crypto_pattern>): Likewise.
+	(crypto_sha1h_lb): Likewise.
+	(crypto_vmullp64): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>_lb): Likewise.
+
+2022-01-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/crypto.md (crypto_<CRYPTO_AESMC:crypto_pattern>): Add
+	iterator to pattern name to disambiguate.
+	(crypto_<CRYPTO_AES:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_BINARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_TERNARY:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>): Likewise.
+	(crypto_<CRYPTO_SELECTING:crypto_pattern>_lb): Likewise.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/104135
+	* emit-rtl.cc (make_insn_raw): Fix -Wformat-diag warnings.
+	* rtl.cc: Partially disable -Wformat-diag for RTL checking
+	error messages.
+
+2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103874
+	* dwarf2out.cc (index_rnglists): For !HAVE_AS_LEB128 and
+	block_num > 0, index entry even if !have_multiple_function_sections.
+
+2022-01-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103771
+	* tree-vect-stmts.cc (supportable_narrowing_operation): Enhance
+	integral mode mask pack by multi steps which takes
+	vec_pack_sbool_trunc_optab as start when elements number is
+	less than BITS_PER_UNITS.
+
+2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104114
+	* tree-vect-generic.cc (expand_vector_piecewise): Do not diagnose
+	single element vector decomposition.
+
 2022-01-19  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* ifcvt.cc (noce_convert_multiple_sets_1): New function.

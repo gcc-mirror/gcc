@@ -357,7 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Ensure we can use the LSB as the lock bit.
 	static_assert(alignof(remove_pointer_t<pointer>) > 1);
 
-	_Atomic_count() : _M_val(0) { }
+	constexpr _Atomic_count() noexcept = default;
 
 	explicit
 	_Atomic_count(__count_type&& __c) noexcept
@@ -457,7 +457,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr uintptr_t _S_lock_bit{1};
       };
 
-      typename _Tp::element_type* _M_ptr;
+      typename _Tp::element_type* _M_ptr = nullptr;
       _Atomic_count _M_refcount;
 
       static typename _Atomic_count::pointer

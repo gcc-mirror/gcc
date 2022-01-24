@@ -1,3 +1,21 @@
+2022-01-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Strengthen.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+
 2022-01-19  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* config/gcn/icv-device.c: Make GOMP_DEVICE_NUM_VAR public (remove

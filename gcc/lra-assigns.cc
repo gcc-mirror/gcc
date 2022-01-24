@@ -550,7 +550,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   sparseset_clear_bit (conflict_reload_and_inheritance_pseudos, regno);
   val = lra_reg_info[regno].val;
   offset = lra_reg_info[regno].offset;
-  CLEAR_HARD_REG_SET (impossible_start_hard_regs);
+  impossible_start_hard_regs = lra_reg_info[regno].exclude_start_hard_regs;
   EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
     {
       conflict_hr = live_pseudos_reg_renumber[conflict_regno];

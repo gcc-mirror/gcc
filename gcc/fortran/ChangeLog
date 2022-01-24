@@ -1,3 +1,23 @@
+2022-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104127
+	* simplify.cc (gfc_simplify_transfer): Ensure that the result
+	typespec is set up for TRANSFER with MOLD of type CHARACTER
+	including character length even if the result is a zero-sized
+	array.
+
+2022-01-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/103695
+	PR fortran/102621
+	* gfortran.h (struct gfc_namespace) Add omp_affinity_iterator
+	field.
+	* dump-parse-tree.cc (show_iterator): Use it.
+	* openmp.cc (gfc_match_iterator): Likewise.
+	(resolve_omp_clauses): Likewise.
+	* trans-decl.cc (gfc_finish_var_decl): Likewise.
+	* trans-openmp.cc (handle_iterator): Likewise.
+
 2022-01-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103692
