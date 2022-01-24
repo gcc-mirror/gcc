@@ -14079,7 +14079,7 @@ int
 multiple_of_p (tree type, const_tree top, const_tree bottom)
 {
   gimple *stmt;
-  tree t1, op1, op2;
+  tree op1, op2;
 
   if (operand_equal_p (top, bottom, 0))
     return 1;
@@ -14125,6 +14125,21 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
       return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
 	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
 
+    case LSHIFT_EXPR:
+      /* Handle X << CST as X * (1 << CST) and only process the constant.  */
+      if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
+	{
+	  op1 = TREE_OPERAND (top, 1);
+	  if (wi::to_widest (op1) < TYPE_PRECISION (type))
+	    {
+	      wide_int mul_op
+		= wi::one (TYPE_PRECISION (type)) << wi::to_wide (op1);
+	      return multiple_of_p (type,
+				    wide_int_to_tree (type, mul_op), bottom);
+	    }
+	}
+      return 0;
+
     case MINUS_EXPR:
       /* It is impossible to prove if op0 - op1 is multiple of bottom
 	 precisely, so be conservative here checking if both op0 and op1
@@ -14143,22 +14158,6 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	op1 = fold_build1 (NEGATE_EXPR, type, op1);
       return (multiple_of_p (type, op1, bottom)
 	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
-
-    case LSHIFT_EXPR:
-      if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
-	{
-	  op1 = TREE_OPERAND (top, 1);
-	  /* const_binop may not detect overflow correctly,
-	     so check for it explicitly here.  */
-	  if (wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
-			 wi::to_wide (op1))
-	      && (t1 = fold_convert (type,
-				     const_binop (LSHIFT_EXPR, size_one_node,
-						  op1))) != 0
-	      && !TREE_OVERFLOW (t1))
-	    return multiple_of_p (type, t1, bottom);
-	}
-      return 0;
 
     CASE_CONVERT:
       /* Can't handle conversions from non-integral or wider integral type.  */
