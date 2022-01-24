@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "diagnostic-core.h"
 #include "stor-layout.h"
+#include "langhooks.h"
 #include "except.h"
 #include "dojump.h"
 #include "explow.h"
@@ -1641,8 +1642,14 @@ set_stack_check_libfunc (const char *libfunc_name)
 {
   gcc_assert (stack_check_libfunc == NULL_RTX);
   stack_check_libfunc = gen_rtx_SYMBOL_REF (Pmode, libfunc_name);
+  tree ptype
+    = Pmode == ptr_mode
+      ? ptr_type_node
+      : lang_hooks.types.type_for_mode (Pmode, 1);
+  tree ftype
+    = build_function_type_list (void_type_node, ptype, NULL_TREE);
   tree decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
-			  get_identifier (libfunc_name), void_type_node);
+			  get_identifier (libfunc_name), ftype);
   DECL_EXTERNAL (decl) = 1;
   SET_SYMBOL_REF_DECL (stack_check_libfunc, decl);
 }

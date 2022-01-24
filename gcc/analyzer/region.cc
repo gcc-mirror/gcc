@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -634,6 +634,20 @@ region::symbolic_for_unknown_ptr_p () const
 {
   if (const symbolic_region *sym_reg = dyn_cast_symbolic_region ())
     if (sym_reg->get_pointer ()->get_kind () == SK_UNKNOWN)
+      return true;
+  return false;
+}
+
+/* Return true if this is a region for a decl with name DECL_NAME.
+   Intended for use when debugging (for assertions and conditional
+   breakpoints).  */
+
+DEBUG_FUNCTION bool
+region::is_named_decl_p (const char *decl_name) const
+{
+  if (tree decl = maybe_get_decl ())
+    if (DECL_NAME (decl)
+	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), decl_name))
       return true;
   return false;
 }

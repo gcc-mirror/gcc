@@ -217,7 +217,7 @@ version (CRuntime_Glibc)
     }
     else
     {
-        extern (D) inout(ubyte)*   CMSG_DATA( return inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
+        extern (D) inout(ubyte)*   CMSG_DATA( return scope inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
     }
 
     private inout(cmsghdr)* __cmsg_nxthdr(inout(msghdr)*, inout(cmsghdr)*) pure nothrow @nogc;
@@ -536,7 +536,8 @@ version (CRuntime_Glibc)
 
     enum
     {
-        SOMAXCONN       = 128
+        // https://sourceware.org/git/?p=glibc.git;a=commit;f=sysdeps/unix/sysv/linux/bits/socket.h;h=96958e2700f5b4f4d1183a0606b2b9848a53ea44
+        SOMAXCONN       = 4096
     }
 
     enum : uint

@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,7 +41,7 @@ void gfc_cpp_init_options (unsigned int decoded_options_count,
 
 int gfc_cpp_handle_option(size_t scode, const char *arg, int value);
 
-void gfc_cpp_post_options (void);
+void gfc_cpp_post_options (bool);
 
 bool gfc_cpp_preprocess (const char *source_file);
 
@@ -49,7 +49,5 @@ void gfc_cpp_done (void);
 
 void gfc_cpp_add_include_path (char *path, bool user_supplied);
 void gfc_cpp_add_include_path_after (char *path, bool user_supplied);
-
-void gfc_cpp_register_include_paths (void);
 
 #endif /* GFC_CPP_H */

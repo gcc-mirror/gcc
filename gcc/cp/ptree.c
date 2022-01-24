@@ -1,5 +1,5 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -51,6 +51,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
     }
   else if (TREE_CODE (node) == TEMPLATE_DECL)
     {
+      print_node (file, "result", DECL_TEMPLATE_RESULT (node), indent + 4);
       print_node (file, "parms", DECL_TEMPLATE_PARMS (node), indent + 4);
       indent_to (file, indent + 3);
       fprintf (file, " full-name \"%s\"",
@@ -115,13 +116,8 @@ cxx_print_decl (FILE *file, tree node, int indent)
   
   if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
-    {
-      if (need_indent)
-	indent_to (file, indent + 3);
-      fprintf (file, " template-info %p",
-	       (void *) DECL_TEMPLATE_INFO (node));
-      need_indent = false;
-    }
+    print_node (file, "template-info", DECL_TEMPLATE_INFO (node),
+		indent + 4);
 }
 
 void
@@ -153,6 +149,12 @@ cxx_print_type (FILE *file, tree node, int indent)
 
     case DECLTYPE_TYPE:
       print_node (file, "expr", DECLTYPE_TYPE_EXPR (node), indent + 4);
+      return;
+
+    case DEPENDENT_OPERATOR_TYPE:
+      print_node (file, "saved_lookups",
+		  DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS (node),
+		  indent + 4);
       return;
 
     case TYPENAME_TYPE:
@@ -296,7 +298,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
-	    char pfx[24];
+	    char pfx[32];
 	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
@@ -382,6 +384,9 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "condition", STATIC_ASSERT_CONDITION (node), indent+4);
       if (tree message = STATIC_ASSERT_MESSAGE (node))
 	print_node (file, "message", message, indent+4);
+      break;
+    case PTRMEM_CST:
+      print_node (file, "member", PTRMEM_CST_MEMBER (node), indent+4);
       break;
     default:
       break;

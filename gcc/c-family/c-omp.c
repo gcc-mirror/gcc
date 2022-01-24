@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -379,7 +379,11 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       if (SCALAR_FLOAT_TYPE_P (cmptype) && !test)
 	{
 	  bool clear_padding = false;
-	  if (BITS_PER_UNIT == 8 && CHAR_BIT == 8)
+	  HOST_WIDE_INT non_padding_start = 0;
+	  HOST_WIDE_INT non_padding_end = 0;
+	  if (BITS_PER_UNIT == 8
+	      && CHAR_BIT == 8
+	      && clear_padding_type_may_have_padding_p (cmptype))
 	    {
 	      HOST_WIDE_INT sz = int_size_in_bytes (cmptype), i;
 	      gcc_assert (sz > 0);
@@ -392,6 +396,40 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 		    clear_padding = true;
 		    break;
 		  }
+	      if (clear_padding && buf[i] == 0)
+		{
+		  /* Try to optimize.  In the common case where
+		     non-padding bits are all continuous and start
+		     and end at a byte boundary, we can just adjust
+		     the memcmp call arguments and don't need to
+		     emit __builtin_clear_padding calls.  */
+		  if (i == 0)
+		    {
+		      for (i = 0; i < sz; i++)
+			if (buf[i] != 0)
+			  break;
+		      if (i < sz && buf[i] == (unsigned char) ~0)
+			{
+			  non_padding_start = i;
+			  for (; i < sz; i++)
+			    if (buf[i] != (unsigned char) ~0)
+			      break;
+			}
+		      else
+			i = 0;
+		    }
+		  if (i != 0)
+		    {
+		      non_padding_end = i;
+		      for (; i < sz; i++)
+			if (buf[i] != 0)
+			  {
+			    non_padding_start = 0;
+			    non_padding_end = 0;
+			    break;
+			  }
+		    }
+		}
 	    }
 	  tree inttype = NULL_TREE;
 	  if (!clear_padding && tree_fits_uhwi_p (TYPE_SIZE (cmptype)))
@@ -428,12 +466,22 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
 	      tmp2 = build4 (TARGET_EXPR, cmptype, tmp2,
 			     TREE_OPERAND (rhs1, 1), NULL, NULL);
 	      tmp2 = build1 (ADDR_EXPR, pcmptype, tmp2);
+	      if (non_padding_start)
+		{
+		  tmp1 = build2 (POINTER_PLUS_EXPR, pcmptype, tmp1,
+				 size_int (non_padding_start));
+		  tmp2 = build2 (POINTER_PLUS_EXPR, pcmptype, tmp2,
+				 size_int (non_padding_start));
+		}
 	      tree fndecl = builtin_decl_explicit (BUILT_IN_MEMCMP);
 	      rhs1 = build_call_expr_loc (loc, fndecl, 3, tmp1, tmp2,
-					  TYPE_SIZE_UNIT (cmptype));
+					  non_padding_end
+					  ? size_int (non_padding_end
+						      - non_padding_start)
+					  : TYPE_SIZE_UNIT (cmptype));
 	      rhs1 = build2 (EQ_EXPR, boolean_type_node, rhs1,
 			     integer_zero_node);
-	      if (clear_padding)
+	      if (clear_padding && non_padding_end == 0)
 		{
 		  fndecl = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
 		  tree cp1 = build_call_expr_loc (loc, fndecl, 1, tmp1);
@@ -1305,6 +1353,20 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
 	}
       d->fail = true;
     }
+  else if ((d->kind & 4)
+	   && TREE_CODE (*tp) != TREE_VEC
+	   && TREE_CODE (*tp) != PLUS_EXPR
+	   && TREE_CODE (*tp) != MINUS_EXPR
+	   && TREE_CODE (*tp) != MULT_EXPR
+	   && TREE_CODE (*tp) != POINTER_PLUS_EXPR
+	   && !CONVERT_EXPR_P (*tp))
+    {
+      *walk_subtrees = 0;
+      d->kind &= 3;
+      walk_tree_1 (tp, c_omp_check_loop_iv_r, data, NULL, d->lh);
+      d->kind |= 4;
+      return NULL_TREE;
+    }
   else if (d->ppset->add (*tp))
     *walk_subtrees = 0;
   /* Don't walk dtors added by C++ wrap_cleanups_r.  */
@@ -1415,6 +1477,18 @@ c_omp_check_nonrect_loop_iv (tree *tp, struct c_omp_check_loop_iv_data *d,
 	  break;
 	}
       a2 = integer_zero_node;
+      break;
+    case POINTER_PLUS_EXPR:
+      a1 = TREE_OPERAND (t, 0);
+      a2 = TREE_OPERAND (t, 1);
+      while (CONVERT_EXPR_P (a1))
+	a1 = TREE_OPERAND (a1, 0);
+      if (DECL_P (a1) && c_omp_is_loop_iterator (a1, d) >= 0)
+	{
+	  a2 = TREE_OPERAND (t, 1);
+	  t = a1;
+	  break;
+	}
       break;
     default:
       break;
@@ -1538,10 +1612,7 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	  data.fail = true;
 	}
       /* Handle non-rectangular loop nests.  */
-      if (TREE_CODE (stmt) != OACC_LOOP
-	  && (TREE_CODE (TREE_OPERAND (init, 1)) == TREE_VEC
-	      || INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 1))))
-	  && i > 0)
+      if (TREE_CODE (stmt) != OACC_LOOP && i > 0)
 	kind = 4;
       data.kind = kind;
       data.idx = i;
@@ -1603,11 +1674,13 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 /* Similar, but allows to check the init or cond expressions individually.  */
 
 bool
-c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
-			   tree init, tree cond, walk_tree_lh lh)
+c_omp_check_loop_iv_exprs (location_t stmt_loc, enum tree_code code,
+			   tree declv, int i, tree decl, tree init, tree cond,
+			   walk_tree_lh lh)
 {
   hash_set<tree> pset;
   struct c_omp_check_loop_iv_data data;
+  int kind = (code != OACC_LOOP && i > 0) ? 4 : 0;
 
   data.declv = declv;
   data.fail = false;
@@ -1626,7 +1699,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
   if (init)
     {
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 0;
+      data.kind = kind;
       walk_tree_1 (&init,
 		   c_omp_check_loop_iv_r, &data, NULL, lh);
     }
@@ -1634,7 +1707,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
     {
       gcc_assert (COMPARISON_CLASS_P (cond));
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 1;
+      data.kind = kind | 1;
       if (TREE_OPERAND (cond, 0) == decl)
 	walk_tree_1 (&TREE_OPERAND (cond, 1),
 		     c_omp_check_loop_iv_r, &data, NULL, lh);
@@ -1794,7 +1867,6 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  break;
 	case OMP_CLAUSE_NUM_TEAMS:
-	case OMP_CLAUSE_THREAD_LIMIT:
 	  s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
 	case OMP_CLAUSE_DIST_SCHEDULE:
@@ -2114,14 +2186,35 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
-	/* order clauses are allowed on for, simd and loop.  */
+	/* order clauses are allowed on distribute, for, simd and loop.  */
 	case OMP_CLAUSE_ORDER:
+	  if ((mask & (OMP_CLAUSE_MASK_1
+		       << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)) != 0)
+	    {
+	      if (code == OMP_DISTRIBUTE)
+		{
+		  s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
+		  break;
+		}
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_ORDER);
+	      OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
+		= OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
+	      OMP_CLAUSE_ORDER_REPRODUCIBLE (c)
+		= OMP_CLAUSE_ORDER_REPRODUCIBLE (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	      cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE] = c;
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      if (code == OMP_SIMD)
 		{
 		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
 					OMP_CLAUSE_ORDER);
+		  OMP_CLAUSE_ORDER_UNCONSTRAINED (c)
+		    = OMP_CLAUSE_ORDER_UNCONSTRAINED (clauses);
+		  OMP_CLAUSE_ORDER_REPRODUCIBLE (c)
+		    = OMP_CLAUSE_ORDER_REPRODUCIBLE (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
 		  cclauses[C_OMP_CLAUSE_SPLIT_FOR] = c;
 		  s = C_OMP_CLAUSE_SPLIT_SIMD;
@@ -2437,6 +2530,30 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_FOR;
 	  break;
+	  /* thread_limit is allowed on target and teams.  Distribute it
+	     to all.  */
+	case OMP_CLAUSE_THREAD_LIMIT:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
+	      != 0)
+	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_THREAD_LIMIT);
+		  OMP_CLAUSE_THREAD_LIMIT_EXPR (c)
+		    = OMP_CLAUSE_THREAD_LIMIT_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
+		}
+	      else
+		{
+		  s = C_OMP_CLAUSE_SPLIT_TARGET;
+		  break;
+		}
+	    }
+	  s = C_OMP_CLAUSE_SPLIT_TEAMS;
+	  break;
 	/* Allocate clause is allowed on target, teams, distribute, parallel,
 	   for, sections and taskloop.  Distribute it to all.  */
 	case OMP_CLAUSE_ALLOCATE:
@@ -2494,6 +2611,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_DECL (clauses);
 		  OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
 		    = OMP_CLAUSE_ALLOCATE_ALLOCATOR (clauses);
+		  OMP_CLAUSE_ALLOCATE_ALIGN (c)
+		    = OMP_CLAUSE_ALLOCATE_ALIGN (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[s];
 		  cclauses[s] = c;
 		  has_dup_allocate = true;
@@ -2789,13 +2908,44 @@ c_omp_predefined_variable (tree decl)
 {
   if (VAR_P (decl)
       && DECL_ARTIFICIAL (decl)
-      && TREE_READONLY (decl)
       && TREE_STATIC (decl)
-      && DECL_NAME (decl)
-      && (DECL_NAME (decl) == ridpointers[RID_C99_FUNCTION_NAME]
-	  || DECL_NAME (decl) == ridpointers[RID_FUNCTION_NAME]
-	  || DECL_NAME (decl) == ridpointers[RID_PRETTY_FUNCTION_NAME]))
-    return true;
+      && DECL_NAME (decl))
+    {
+      if (TREE_READONLY (decl)
+	  && (DECL_NAME (decl) == ridpointers[RID_C99_FUNCTION_NAME]
+	      || DECL_NAME (decl) == ridpointers[RID_FUNCTION_NAME]
+	      || DECL_NAME (decl) == ridpointers[RID_PRETTY_FUNCTION_NAME]))
+	return true;
+      /* For UBSan handle the same also ubsan_create_data created
+	 variables.  There is no magic flag for those, but user variables
+	 shouldn't be DECL_ARTIFICIAL or have TYPE_ARTIFICIAL type with
+	 such names.  */
+      if ((flag_sanitize & (SANITIZE_UNDEFINED
+			    | SANITIZE_UNDEFINED_NONDEFAULT)) != 0
+	  && DECL_IGNORED_P (decl)
+	  && !TREE_READONLY (decl)
+	  && TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE
+	  && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	  && TYPE_ARTIFICIAL (TREE_TYPE (decl))
+	  && TYPE_NAME (TREE_TYPE (decl))
+	  && TREE_CODE (TYPE_NAME (TREE_TYPE (decl))) == TYPE_DECL
+	  && DECL_NAME (TYPE_NAME (TREE_TYPE (decl)))
+	  && (TREE_CODE (DECL_NAME (TYPE_NAME (TREE_TYPE (decl))))
+	      == IDENTIFIER_NODE))
+	{
+	  tree id1 = DECL_NAME (decl);
+	  tree id2 = DECL_NAME (TYPE_NAME (TREE_TYPE (decl)));
+	  if (IDENTIFIER_LENGTH (id1) >= sizeof ("ubsan_data") - 1
+	      && IDENTIFIER_LENGTH (id2) >= sizeof ("__ubsan__data")
+	      && !memcmp (IDENTIFIER_POINTER (id2), "__ubsan_",
+			  sizeof ("__ubsan_") - 1)
+	      && !memcmp (IDENTIFIER_POINTER (id2) + IDENTIFIER_LENGTH (id2)
+			  - sizeof ("_data") + 1, "_data",
+			  sizeof ("_data") - 1)
+	      && strstr (IDENTIFIER_POINTER (id1), "ubsan_data"))
+	    return true;
+	}
+    }
   return false;
 }
 
@@ -2839,143 +2989,6 @@ c_omp_predetermined_mapping (tree decl)
   return OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 }
 
-
-/* Diagnose errors in an OpenMP context selector, return CTX if
-   it is correct or error_mark_node otherwise.  */
-
-tree
-c_omp_check_context_selector (location_t loc, tree ctx)
-{
-  /* Each trait-set-selector-name can only be specified once.
-     There are just 4 set names.  */
-  for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
-    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
-      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
-	{
-	  error_at (loc, "selector set %qs specified more than once",
-	  	    IDENTIFIER_POINTER (TREE_PURPOSE (t1)));
-	  return error_mark_node;
-	}
-  for (tree t = ctx; t; t = TREE_CHAIN (t))
-    {
-      /* Each trait-selector-name can only be specified once.  */
-      if (list_length (TREE_VALUE (t)) < 5)
-	{
-	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
-	    for (tree t2 = TREE_CHAIN (t1); t2; t2 = TREE_CHAIN (t2))
-	      if (TREE_PURPOSE (t1) == TREE_PURPOSE (t2))
-		{
-		  error_at (loc,
-			    "selector %qs specified more than once in set %qs",
-			    IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-			    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
-		  return error_mark_node;
-		}
-	}
-      else
-	{
-	  hash_set<tree> pset;
-	  for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
-	    if (pset.add (TREE_PURPOSE (t1)))
-	      {
-		error_at (loc,
-			  "selector %qs specified more than once in set %qs",
-			  IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-			  IDENTIFIER_POINTER (TREE_PURPOSE (t)));
-		return error_mark_node;
-	      }
-	}
-
-      static const char *const kind[] = {
-	"host", "nohost", "cpu", "gpu", "fpga", "any", NULL };
-      static const char *const vendor[] = {
-	"amd", "arm", "bsc", "cray", "fujitsu", "gnu", "ibm", "intel",
-	"llvm", "nvidia", "pgi", "ti", "unknown", NULL };
-      static const char *const extension[] = { NULL };
-      static const char *const atomic_default_mem_order[] = {
-	"seq_cst", "relaxed", "acq_rel", NULL };
-      struct known_properties { const char *set; const char *selector;
-				const char *const *props; };
-      known_properties props[] = {
-	{ "device", "kind", kind },
-	{ "implementation", "vendor", vendor },
-	{ "implementation", "extension", extension },
-	{ "implementation", "atomic_default_mem_order",
-	  atomic_default_mem_order } };
-      for (tree t1 = TREE_VALUE (t); t1; t1 = TREE_CHAIN (t1))
-	for (unsigned i = 0; i < ARRAY_SIZE (props); i++)
-	  if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t1)),
-					   props[i].selector)
-	      && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t)),
-					      props[i].set))
-	    for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
-	      for (unsigned j = 0; ; j++)
-		{
-		  if (props[i].props[j] == NULL)
-		    {
-		      if (TREE_PURPOSE (t2)
-			  && !strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				      " score"))
-			break;
-		      if (props[i].props == atomic_default_mem_order)
-			{
-			  error_at (loc,
-				    "incorrect property %qs of %qs selector",
-				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    "atomic_default_mem_order");
-			  return error_mark_node;
-			}
-		      else if (TREE_PURPOSE (t2))
-			warning_at (loc, 0,
-				    "unknown property %qs of %qs selector",
-				    IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    props[i].selector);
-		      else
-			warning_at (loc, 0,
-				    "unknown property %qE of %qs selector",
-				    TREE_VALUE (t2), props[i].selector);
-		      break;
-		    }
-		  else if (TREE_PURPOSE (t2) == NULL_TREE)
-		    {
-		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
-		      if (!strcmp (str, props[i].props[j])
-			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
-			      == strlen (str) + 1))
-			break;
-		    }
-		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    props[i].props[j]))
-		    break;
-		}
-    }
-  return ctx;
-}
-
-/* Register VARIANT as variant of some base function marked with
-   #pragma omp declare variant.  CONSTRUCT is corresponding construct
-   selector set.  */
-
-void
-c_omp_mark_declare_variant (location_t loc, tree variant, tree construct)
-{
-  tree attr = lookup_attribute ("omp declare variant variant",
-				DECL_ATTRIBUTES (variant));
-  if (attr == NULL_TREE)
-    {
-      attr = tree_cons (get_identifier ("omp declare variant variant"),
-			unshare_expr (construct),
-			DECL_ATTRIBUTES (variant));
-      DECL_ATTRIBUTES (variant) = attr;
-      return;
-    }
-  if ((TREE_VALUE (attr) != NULL_TREE) != (construct != NULL_TREE)
-      || (construct != NULL_TREE
-	  && omp_context_selector_set_compare ("construct", TREE_VALUE (attr),
-					       construct)))
-    error_at (loc, "%qD used as a variant with incompatible %<construct%> "
-		   "selector sets", variant);
-}
 
 /* For OpenACC, the OMP_CLAUSE_MAP_KIND of an OMP_CLAUSE_MAP is used internally
    to distinguish clauses as seen by the user.  Return the "friendly" clause

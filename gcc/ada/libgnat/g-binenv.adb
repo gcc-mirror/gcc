@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2015-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2015-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package body GNAT.Bind_Environment is
    function Get (Key : String) return String is
       use type System.Address;
 
-      Bind_Env_Addr : System.Address;
+      Bind_Env_Addr : constant System.Address;
       pragma Import (C, Bind_Env_Addr, "__gl_bind_env_addr");
       --  Variable provided by init.c/s-init.ads, and initialized by
       --  the binder generated file.

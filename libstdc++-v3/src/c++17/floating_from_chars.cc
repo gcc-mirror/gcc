@@ -1,6 +1,6 @@
 // std::from_chars implementation for floating-point types -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +31,11 @@
 #define _GLIBCXX_USE_CXX11_ABI 1
 
 #include <charconv>
+#include <bit>
 #include <string>
 #include <memory_resource>
 #include <cfenv>
+#include <cfloat>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -50,6 +52,18 @@
 #endif
 // strtold for __ieee128
 extern "C" __ieee128 __strtoieee128(const char*, char**);
+#endif
+
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+# define USE_LIB_FAST_FLOAT 1
+#endif
+
+#if USE_LIB_FAST_FLOAT
+# define FASTFLOAT_DEBUG_ASSERT __glibcxx_assert
+namespace
+{
+# include "fast_float/fast_float.h"
+} // anon namespace
 #endif
 
 #if _GLIBCXX_HAVE_USELOCALE
@@ -396,6 +410,369 @@ namespace
   }
 #endif
 
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+  // If the given ASCII character represents a hexit, return that hexit.
+  // Otherwise return -1.
+  int
+  ascii_to_hexit(char ch)
+  {
+    if (ch >= '0' && ch <= '9')
+      return ch - '0';
+    if (ch >= 'a' && ch <= 'f')
+      return ch - 'a' + 10;
+    if (ch >= 'A' && ch <= 'F')
+      return ch - 'A' + 10;
+    return -1;
+  }
+
+  // Return true iff [FIRST,LAST) begins with PREFIX, ignoring case.
+  bool
+  starts_with_ci(const char* first, const char* last, string_view prefix)
+  {
+    __glibcxx_requires_valid_range(first, last);
+
+    for (char ch : prefix)
+      {
+	__glibcxx_assert(ch >= 'a' && ch <= 'z');
+	if (first == last || (*first != ch && *first != ch - 32))
+	  return false;
+	++first;
+      }
+
+    return true;
+  }
+
+  // An implementation of hexadecimal float parsing for binary32/64.
+  template<typename T>
+  from_chars_result
+  __floating_from_chars_hex(const char* first, const char* last, T& value)
+  {
+    static_assert(is_same_v<T, float> || is_same_v<T, double>);
+
+    using uint_t = conditional_t<is_same_v<T, float>, uint32_t, uint64_t>;
+    constexpr int mantissa_bits = is_same_v<T, float> ? 23 : 52;
+    constexpr int exponent_bits = is_same_v<T, float> ? 8 : 11;
+    constexpr int exponent_bias = (1 << (exponent_bits - 1)) - 1;
+
+    __glibcxx_requires_valid_range(first, last);
+    if (first == last)
+      return {first, errc::invalid_argument};
+
+    // Consume the sign bit.
+    const char* const orig_first = first;
+    bool sign_bit = false;
+    if (*first == '-')
+      {
+	sign_bit = true;
+	++first;
+      }
+
+    // Handle "inf", "infinity", "NaN" and variants thereof.
+    if (first != last)
+      if (*first == 'i' || *first == 'I' || *first == 'n' || *first == 'N') [[unlikely]]
+	{
+	  if (starts_with_ci(first, last, "inf"sv))
+	    {
+	      first += strlen("inf");
+	      if (starts_with_ci(first, last, "inity"sv))
+		first += strlen("inity");
+
+	      uint_t result = 0;
+	      result |= sign_bit;
+	      result <<= exponent_bits;
+	      result |= (1ull << exponent_bits) - 1;
+	      result <<= mantissa_bits;
+	      memcpy(&value, &result, sizeof(result));
+
+	      return {first, errc{}};
+	    }
+	  else if (starts_with_ci(first, last, "nan"))
+	    {
+	      first += strlen("nan");
+
+	      if (first != last && *first == '(')
+		{
+		  // Tentatively consume the '(' as we look for an optional
+		  // n-char-sequence followed by a ')'.
+		  const char* const fallback_first = first;
+		  for (;;)
+		    {
+		      ++first;
+		      if (first == last)
+			{
+			  first = fallback_first;
+			  break;
+			}
+
+		      char ch = *first;
+		      if (ch == ')')
+			{
+			  ++first;
+			  break;
+			}
+		      else if ((ch >= '0' && ch <= '9')
+			       || (ch >= 'a' && ch <= 'z')
+			       || (ch >= 'A' && ch <= 'Z')
+			       || ch == '_')
+			continue;
+		      else
+			{
+			  first = fallback_first;
+			  break;
+			}
+		    }
+		}
+
+	      // We make the implementation-defined decision of ignoring the
+	      // sign bit and the n-char-sequence when assembling the NaN.
+	      uint_t result = 0;
+	      result <<= exponent_bits;
+	      result |= (1ull << exponent_bits) - 1;
+	      result <<= mantissa_bits;
+	      result |= (1ull << (mantissa_bits - 1)) | 1;
+	      memcpy(&value, &result, sizeof(result));
+
+	      return {first, errc{}};
+	    }
+	}
+
+    // Consume all insignificant leading zeros in the whole part of the
+    // mantissa.
+    bool seen_hexit = false;
+    while (first != last && *first == '0')
+      {
+	seen_hexit = true;
+	++first;
+      }
+
+    // Now consume the rest of the written mantissa, populating MANTISSA with
+    // the first MANTISSA_BITS+k significant bits of the written mantissa, where
+    // 1 <= k <= 4 is the bit width of the leading significant written hexit.
+    //
+    // Examples:
+    //  After parsing "1.2f3", MANTISSA is 0x12f30000000000 (bit_width=52+1).
+    //  After parsing ".0000f0e", MANTISSA is 0xf0e00000000000 (bit_width=52+4).
+    //  After parsing ".1234567890abcd8", MANTISSA is 0x1234567890abcd (bit_width=52+1)
+    //   and MIDPOINT_BIT is true (and NONZERO_TAIL is false).
+    uint_t mantissa = 0;
+    int mantissa_idx = mantissa_bits; // The current bit index into MANTISSA
+				       // into which we'll write the next hexit.
+    int exponent_adjustment = 0; // How much we'd have to adjust the written
+				 // exponent in order to represent the mantissa
+				 // in scientific form h.hhhhhhhhhhhhh.
+    bool midpoint_bit = false; // Whether the MANTISSA_BITS+k+1 significant
+			       // bit is set in the written mantissa.
+    bool nonzero_tail = false; // Whether some bit thereafter is set in the
+			       // written mantissa.
+    bool seen_decimal_point = false;
+    for (; first != last; ++first)
+      {
+	char ch = *first;
+	if (ch == '.' && !seen_decimal_point)
+	  {
+	    seen_decimal_point = true;
+	    continue;
+	  }
+
+	int hexit = ascii_to_hexit(ch);
+	if (hexit == -1)
+	  break;
+	seen_hexit = true;
+
+	if (!seen_decimal_point && mantissa != 0)
+	  exponent_adjustment += 4;
+	else if (seen_decimal_point && mantissa == 0)
+	  {
+	    exponent_adjustment -= 4;
+	    if (hexit == 0x0)
+	      continue;
+	  }
+
+	if (mantissa_idx >= 0)
+	  mantissa |= uint_t(hexit) << mantissa_idx;
+	else if (mantissa_idx >= -4)
+	  {
+	    if constexpr (is_same_v<T, float>)
+	      {
+		__glibcxx_assert(mantissa_idx == -1);
+		mantissa |= hexit >> 1;
+		midpoint_bit = (hexit & 0b0001) != 0;
+	      }
+	    else
+	      {
+		__glibcxx_assert(mantissa_idx == -4);
+		midpoint_bit = (hexit & 0b1000) != 0;
+		nonzero_tail = (hexit & 0b0111) != 0;
+	      }
+	  }
+	else
+	  nonzero_tail |= (hexit != 0x0);
+
+	mantissa_idx -= 4;
+      }
+    if (mantissa != 0)
+      __glibcxx_assert(__bit_width(mantissa) >= mantissa_bits + 1
+		       && __bit_width(mantissa) <= mantissa_bits + 4);
+    else
+      __glibcxx_assert(!midpoint_bit && !nonzero_tail);
+
+    if (!seen_hexit)
+      // If we haven't seen any hexit at this point, the parse failed.
+      return {orig_first, errc::invalid_argument};
+
+    // Parse the written exponent.
+    int written_exponent = 0;
+    if (first != last && *first == 'p')
+      {
+	// Tentatively consume the 'p' and try to parse a decimal number.
+	const char* const fallback_first = first;
+	++first;
+	if (first != last && *first == '+')
+	  ++first;
+	from_chars_result fcr = from_chars(first, last, written_exponent, 10);
+	if (fcr.ptr == first)
+	  // The parse failed, so undo consuming the 'p' and carry on as if the
+	  // exponent was omitted (i.e. is 0).
+	  first = fallback_first;
+	else
+	  {
+	    first = fcr.ptr;
+	    if (mantissa != 0 && fcr.ec == errc::result_out_of_range)
+	      // Punt on very large exponents for now. FIXME
+	      return {first, errc::result_out_of_range};
+	  }
+      }
+    int biased_exponent = written_exponent + exponent_bias;
+    if (exponent_adjustment != 0)
+      // The mantissa wasn't written in scientific form.  Adjust the exponent
+      // so that we may assume scientific form.
+      //
+      // Examples;
+      //  For input "a.bcp5", EXPONENT_ADJUSTMENT would be 0 since this
+      //   written mantissa is already in scientific form.
+      //  For input "ab.cp5", EXPONENT_ADJUSTMENT would be 4 since the
+      //   scientific form is "a.bcp9".
+      //  For input 0.0abcp5", EXPONENT_ADJUSTMENT would be -8 since the
+      //   scientific form is "a.bcp-3".
+      biased_exponent += exponent_adjustment;
+
+    // Shifts the mantissa to the right by AMOUNT while updating
+    // BIASED_EXPONENT, MIDPOINT_BIT and NONZERO_TAIL accordingly.
+    auto shift_mantissa = [&] (int amount) {
+      __glibcxx_assert(amount >= 0);
+      if (amount > mantissa_bits + 1)
+	{
+	  // Shifting the mantissa by an amount greater than its precision.
+	  nonzero_tail |= midpoint_bit;
+	  nonzero_tail |= mantissa != 0;
+	  midpoint_bit = false;
+	  mantissa = 0;
+	  biased_exponent += amount;
+	}
+      else if (amount != 0)
+	{
+	  nonzero_tail |= midpoint_bit;
+	  nonzero_tail |= (mantissa & ((1ull << (amount - 1)) - 1)) != 0;
+	  midpoint_bit = (mantissa & (1ull << (amount - 1))) != 0;
+	  mantissa >>= amount;
+	  biased_exponent += amount;
+	}
+    };
+
+    if (mantissa != 0)
+      {
+	// If the leading hexit is not '1', shift MANTISSA to make it so.
+	// This normalizes input like "4.08p0" into "1.02p2".
+	const int leading_hexit = mantissa >> mantissa_bits;
+	const int leading_hexit_width = __bit_width(leading_hexit); // FIXME: optimize?
+	__glibcxx_assert(leading_hexit_width >= 1 && leading_hexit_width <= 4);
+	shift_mantissa(leading_hexit_width - 1);
+	// After this adjustment, we can assume the leading hexit is '1'.
+	__glibcxx_assert((mantissa >> mantissa_bits) == 0x1);
+      }
+
+    if (biased_exponent <= 0)
+      {
+	// This number is too small to be represented as a normal number, so
+	// try for a subnormal number by shifting the mantissa sufficiently.
+	// We need to shift by 1 more than -BIASED_EXPONENT because the leading
+	// mantissa bit is omitted in the representation of a normal number but
+	// not in a subnormal number.
+	shift_mantissa(-biased_exponent + 1);
+	__glibcxx_assert(!(mantissa & (1ull << mantissa_bits)));
+	__glibcxx_assert(biased_exponent == 1);
+	biased_exponent = 0;
+      }
+
+    // Perform round-to-nearest, tie-to-even rounding according to
+    // MIDPOINT_BIT and NONZERO_TAIL.
+    if (midpoint_bit && (nonzero_tail || (mantissa % 2) != 0))
+      {
+	// Rounding away from zero.
+	++mantissa;
+	midpoint_bit = false;
+	nonzero_tail = false;
+
+	// Deal with a couple of corner cases after rounding.
+	if (mantissa == (1ull << mantissa_bits))
+	  {
+	    // We rounded the subnormal number 1.fffffffffffff...p-1023
+	    // up to the normal number 1p-1022.
+	    __glibcxx_assert(biased_exponent == 0);
+	    ++biased_exponent;
+	  }
+	else if (mantissa & (1ull << (mantissa_bits + 1)))
+	  {
+	    // We rounded the normal number 1.fffffffffffff8pN (with maximal
+	    // mantissa) up to to 1p(N+1).
+	    mantissa >>= 1;
+	    ++biased_exponent;
+	  }
+      }
+    else
+      {
+	// Rounding toward zero.
+
+	if (mantissa == 0 && (midpoint_bit || nonzero_tail))
+	  {
+	    // A nonzero number that rounds to zero is unrepresentable.
+	    __glibcxx_assert(biased_exponent == 0);
+	    return {first, errc::result_out_of_range};
+	  }
+
+	midpoint_bit = false;
+	nonzero_tail = false;
+      }
+
+    if (mantissa != 0 && biased_exponent >= (1 << exponent_bits) - 1)
+      // The exponent of this number is too large to be representable.
+      return {first, errc::result_out_of_range};
+
+    uint_t result = 0;
+    if (mantissa == 0)
+      {
+	// Assemble a (possibly signed) zero.
+	if (sign_bit)
+	  result |= 1ull << (exponent_bits + mantissa_bits);
+      }
+    else
+      {
+	// Assemble a nonzero normal or subnormal value.
+	result |= sign_bit;
+	result <<= exponent_bits;
+	result |= biased_exponent;
+	result <<= mantissa_bits;
+	result |= mantissa & ((1ull << mantissa_bits) - 1);
+	// The implicit leading mantissa bit is set iff the number is normal.
+	__glibcxx_assert(((mantissa & (1ull << mantissa_bits)) != 0)
+			 == (biased_exponent != 0));
+      }
+    memcpy(&value, &result, sizeof(result));
+
+    return {first, errc{}};
+  }
+#endif
+
 } // namespace
 
 // FIXME: This should be reimplemented so it doesn't use strtod and newlocale.
@@ -406,6 +783,15 @@ from_chars_result
 from_chars(const char* first, const char* last, float& value,
 	   chars_format fmt) noexcept
 {
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+  if (fmt == chars_format::hex)
+    return __floating_from_chars_hex(first, last, value);
+  else
+    {
+      static_assert(USE_LIB_FAST_FLOAT);
+      return fast_float::from_chars(first, last, value, fmt);
+    }
+#else
   errc ec = errc::invalid_argument;
 #if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
@@ -426,12 +812,22 @@ from_chars(const char* first, const char* last, float& value,
       fmt = chars_format{};
     }
   return make_result(first, len, fmt, ec);
+#endif
 }
 
 from_chars_result
 from_chars(const char* first, const char* last, double& value,
 	   chars_format fmt) noexcept
 {
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+  if (fmt == chars_format::hex)
+    return __floating_from_chars_hex(first, last, value);
+  else
+    {
+      static_assert(USE_LIB_FAST_FLOAT);
+      return fast_float::from_chars(first, last, value, fmt);
+    }
+#else
   errc ec = errc::invalid_argument;
 #if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
@@ -452,6 +848,7 @@ from_chars(const char* first, const char* last, double& value,
       fmt = chars_format{};
     }
   return make_result(first, len, fmt, ec);
+#endif
 }
 
 from_chars_result

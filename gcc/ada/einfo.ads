@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -610,12 +610,23 @@ package Einfo is
 --       tables must be consulted to determine if there actually is an active
 --       Suppress or Unsuppress pragma that applies to the entity.
 
---    Class_Wide_Clone
---       Defined on subprogram entities. Set if the subprogram has a class-wide
---       pre- or postcondition, and the expression contains calls to other
---       primitive funtions of the type. Used to implement properly the
---       semantics of inherited operations whose class-wide condition may
---       be different from that of the ancestor (See AI012-0195).
+--    Class_Postconditions
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       postconditions. Denotes the (and-then) expression built by merging
+--       inherited class-wide postconditions with its own class-wide
+--       postconditions.
+
+--    Class_Preconditions
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       preconditions. Denotes the (or-else) expression built by merging
+--       inherited class-wide preconditions with its own class-wide
+--       preconditions.
+
+--    Class_Preconditions_Subprogram
+--       Defined on subprogram entities. Set on subprogram helpers and also on
+--       the indirect-call wrapper internally built for subprograms that have
+--       class-wide preconditions. References the subprogram that has the
+--       class-wide preconditions.
 
 --    Class_Wide_Type
 --       Defined in all type entities. For a tagged type or subtype, returns
@@ -746,9 +757,9 @@ package Einfo is
 
 --    Corresponding_Record_Component
 --       Defined in components of a derived untagged record type, including
---       discriminants. For a regular component or a girder discriminant,
+--       discriminants. For a regular component or a stored discriminant,
 --       points to the corresponding component in the parent type. Set to
---       Empty for a non-girder discriminant. It is used by the back end to
+--       Empty for a non-stored discriminant. It is used by the back end to
 --       ensure the layout of the derived type matches that of the parent
 --       type when there is no representation clause on the derived type.
 
@@ -818,7 +829,9 @@ package Einfo is
 --       a private type, then we obtain the declaration node denoted by the
 --       full type, i.e. the full type declaration node. Also note that for
 --       subprograms, this returns the {function,procedure}_specification, not
---       the subprogram_declaration.
+--       the subprogram_declaration. If the parent of an Itype is a type or
+--       subtype declaration, we return the declaration node as for any other
+--       type. For other Itypes, we return Empty.
 
 --    Default_Aspect_Component_Value [base type only]
 --       Defined in array types. Holds the static value specified in a
@@ -933,16 +946,17 @@ package Einfo is
 
 --    Direct_Primitive_Operations
 --       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types, and in tagged incomplete types. However, when
---       Extensions_Allowed is True (-gnatX), also defined for untagged types
---       (for support of the extension feature of prefixed calls for untagged
---       types). This field is an element list of entities for primitive
---       operations of the type. For incomplete types the list is always empty.
---       In order to follow the C++ ABI, entities of primitives that come from
---       source must be stored in this list in the order of their occurrence in
---       the sources. When expansion is disabled, the corresponding record type
---       of a synchronized type is not constructed. In that case, such types
---       carry this attribute directly.
+--       in tagged private types, and in tagged incomplete types. Moreover, it
+--       is also defined for untagged types, both when Extensions_Allowed is
+--       True (-gnatX) to support the extension feature of prefixed calls for
+--       untagged types, and when Extensions_Allowed is False to get better
+--       error messages. This field is an element list of entities for
+--       primitive operations of the type. For incomplete types the list is
+--       always empty. In order to follow the C++ ABI, entities of primitives
+--       that come from source must be stored in this list in the order of
+--       their occurrence in the sources. When expansion is disabled, the
+--       corresponding record type of a synchronized type is not constructed.
+--       In that case, such types carry this attribute directly.
 
 --    Directly_Designated_Type
 --       Defined in access types. This field points to the type that is
@@ -1028,6 +1042,11 @@ package Einfo is
 --       dispatch tables. Points to the list of dispatch table wrappers
 --       associated with the tagged type. For an untagged record, contains
 --       No_Elist.
+
+--    Dynamic_Call_Helper
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       preconditions. Denotes the helper that evaluates at run time the
+--       class-wide preconditions performing dispatching calls.
 
 --    DTC_Entity
 --       Defined in function and procedure entities. Set to Empty unless
@@ -2182,6 +2201,18 @@ package Einfo is
 --       "off" and indicates that all SPARK_Mode pragmas found within must
 --       be ignored.
 
+--    Ignored_Class_Postconditions
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       postconditions. Denotes the (and-then) expression built by merging
+--       inherited ignored class-wide postconditions with its own ignored
+--       class-wide postconditions.
+
+--    Ignored_Class_Preconditions
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       preconditions. Denotes the (or-else) expression built by merging
+--       inherited ignored class-wide preconditions with its own ignored
+--       class-wide preconditions.
+
 --    Implementation_Base_Type (synthesized)
 --       Applies to all entities. For types, similar to Base_Type, but never
 --       returns a private type when applied to a non-private type. Instead in
@@ -2215,6 +2246,12 @@ package Einfo is
 --       not empty, the instantiation, which appears in a package declaration,
 --       is relocated to the corresponding package body, which must have a
 --       corresponding nonlimited with_clause.
+
+--    Indirect_Call_Wrapper
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       preconditions. Denotes the internal wrapper that checks preconditions
+--       and invokes the subprogram body. Subp'Access points to the indirect
+--       call wrapper if available.
 
 --    Initialization_Statements
 --       Defined in constants and variables. For a composite object initialized
@@ -2393,6 +2430,11 @@ package Einfo is
 --    Is_Class_Wide_Type (synthesized)
 --       Applies to all entities, true for class wide types and subtypes
 
+--    Is_Class_Wide_Wrapper
+--       Defined in subprogram entities. Indicates that it has been created as
+--       a wrapper in a generic/instance scenario involving a formal type and
+--       a generic primitive operation when the actual is a class-wide type.
+
 --    Is_Compilation_Unit
 --       Defined in all entities. Set if the entity is a package or subprogram
 --       entity for a compilation unit other than a subunit (since we treat
@@ -2400,11 +2442,11 @@ package Einfo is
 --       parent, we do not consider them to be separate units for this flag).
 
 --    Is_Completely_Hidden
---       Defined on discriminants. Only set on girder discriminants of
---       untagged types. When set, the entity is a girder discriminant of a
+--       Defined on discriminants. Only set on stored discriminants of
+--       untagged types. When set, the entity is a stored discriminant of a
 --       derived untagged type which is not directly visible in the derived
 --       type because the derived type or one of its ancestors have renamed the
---       discriminants in the root type. Note: there are girder discriminants
+--       discriminants in the root type. Note: there are stored discriminants
 --       which are not Completely_Hidden (e.g. discriminants of a root type).
 
 --    Is_Composite_Type (synthesized)
@@ -2506,6 +2548,11 @@ package Einfo is
 --    Is_Dispatch_Table_Entity
 --       Applies to all entities. Set to indicate to the backend that this
 --       entity is associated with a dispatch table.
+
+--    Is_Dispatch_Table_Wrapper
+--       Applies to all entities. Set on wrappers built when the subprogram has
+--       class-wide preconditions or class-wide postconditions affected by
+--       overriding (AI12-0195).
 
 --    Is_Dispatching_Operation
 --       Defined in all entities. Set for procedures, functions, generic
@@ -3652,7 +3699,7 @@ package Einfo is
 
 --    Next_Discriminant (synthesized)
 --       Applies to discriminants returned by First/Next_Discriminant. Returns
---       the next language-defined (i.e. perhaps non-girder) discriminant by
+--       the next language-defined (i.e. perhaps non-stored) discriminant by
 --       following the chain of declared entities as long as the kind of the
 --       entity corresponds to a discriminant. Note that the discriminants
 --       might be the only components of the record. Returns Empty if there
@@ -3698,7 +3745,7 @@ package Einfo is
 
 --    No_Dynamic_Predicate_On_Actual
 --       Defined in discrete types. Set for generic formal types that are used
---       in loops and quantified expressions. The corresponing actual cannot
+--       in loops and quantified expressions. The corresponding actual cannot
 --       have dynamic predicates.
 
 --    No_Pool_Assigned [root type only]
@@ -3761,17 +3808,6 @@ package Einfo is
 --       value of Position for the component, i.e. the offset in storage
 --       units from the start of the record to the lowest addressed storage
 --       unit containing part or all of the field.
-
---    Normalized_Position_Max
---       Defined in components and discriminants. For almost all cases, this
---       is the same as Normalized_Position. The one exception is for the case
---       of a discriminated record containing one or more arrays whose length
---       depends on discriminants. In this case, the Normalized_Position_Max
---       field represents the maximum possible value of Normalized_Position
---       assuming min/max values for discriminant subscripts in all fields.
---       This is used by Layout in front end layout mode to properly compute
---       the maximum size of such records (needed for allocation purposes when
---       there are default discriminants, and also for the 'Size value).
 
 --    Number_Dimensions (synthesized)
 --       Applies to array types and subtypes. Returns the number of dimensions
@@ -3853,8 +3889,8 @@ package Einfo is
 --            Rec_Ext.Comp -> Rec_Ext.Parent. ... .Parent.Comp
 --
 --       In base untagged types:
---         Always points to itself except for non-girder discriminants, where
---         it points to the girder discriminant it renames.
+--         Always points to itself except for non-stored discriminants, where
+--         it points to the stored discriminant it renames.
 --
 --       In subtypes (tagged and untagged):
 --         Points to the component in the base type.
@@ -4288,7 +4324,8 @@ package Einfo is
 --       Indicates the number of scopes that statically enclose the declaration
 --       of the unit or type. Library units have a depth of zero. Note that
 --       record types can act as scopes but do NOT have this field set (see
---       Scope_Depth above).
+--       Scope_Depth above). Queries should normally be via Scope_Depth,
+--       and not call Scope_Depth_Value directly.
 
 --    Scope_Depth_Set (synthesized)
 --       Applies to a special predicate function that returns a Boolean value
@@ -4412,6 +4449,11 @@ package Einfo is
 --       Default_Scalar_Storage_Order (High_Order_First) was active at the time
 --       the record or array was declared and therefore applies to it.
 
+--    Static_Call_Helper
+--       Defined on subprogram entities. Set if the subprogram has class-wide
+--       preconditions. Denotes the helper that evaluates at runtime the
+--       class-wide preconditions performing static calls.
+
 --    Static_Discrete_Predicate
 --       Defined in discrete types/subtypes with static predicates (with the
 --       two flags Has_Predicates and Has_Static_Predicate set). Set if the
@@ -4515,7 +4557,7 @@ package Einfo is
 --       in inheritance of subprograms between views of the same type.
 
 --    Subps_Index
---       Present in subprogram entries. Set if the subprogram contains nested
+--       Present in subprogram entities. Set if the subprogram contains nested
 --       subprograms, or is a subprogram nested within such a subprogram. Holds
 --       the index in the Exp_Unst.Subps table for the subprogram. Note that
 --       for the outer level subprogram, this is the starting index in the Subp
@@ -4721,7 +4763,7 @@ package Einfo is
 
 --  Several entity attributes relate to renaming constructs, and to the use of
 --  different names to refer to the same entity. The following is a summary of
---  these constructs and their prefered uses.
+--  these constructs and their preferred uses.
 
 --  There are three related attributes:
 
@@ -4734,7 +4776,7 @@ package Einfo is
 
 --  a) Renamed_Entity applies to entities in renaming declarations that rename
 --  an entity, so the value of the attribute IS an entity. This applies to
---  generic renamings, package renamings, exception renamings, and subprograms
+--  generic renamings, package renamings, exception renamings, and subprogram
 --  renamings that rename a subprogram (rather than an attribute, an entry, a
 --  protected operation, etc).
 
@@ -4756,9 +4798,9 @@ package Einfo is
 --  in a few cases we need to use a loop to trace a chain of object renamings
 --  where all of them happen to be entities. So:
 
---    X : integer;
---    Y : integer renames X;   -- renamed object is the identifier X
---    Z : integer renames Y;   -- renamed object is the identifier Y
+--    X : Integer;
+--    Y : Integer renames X;   -- renamed object is the identifier X
+--    Z : Integer renames Y;   -- renamed object is the identifier Y
 
 --  The front-end does not store explicitly the fact that Z renames X.
 
@@ -4821,10 +4863,6 @@ package Einfo is
 --  Similarly, the type E_Access_Attribute_Type is used as the initial kind
 --  associated with an access attribute. After resolution a specific access
 --  type will be established as determined by the context.
-
---  Finally, the type Any_Access is used to label -null- during type
---  resolution. Any_Access is also replaced by the context type after
---  resolution.
 
    --------------------------------------------------------
    -- Description of Defined Attributes for Entity_Kinds --
@@ -4889,6 +4927,7 @@ package Einfo is
    --    Is_Discrim_SO_Function
    --    Is_Discriminant_Check_Function
    --    Is_Dispatch_Table_Entity
+   --    Is_Dispatch_Table_Wrapper
    --    Is_Dispatching_Operation
    --    Is_Entry_Formal
    --    Is_Exported
@@ -5228,7 +5267,6 @@ package Einfo is
    --    Linker_Section_Pragma $$$
    --    Normalized_First_Bit
    --    Current_Value                         (always Empty)
-   --    Normalized_Position_Max
    --    Component_Bit_Offset
    --    Esize
    --    Component_Clause
@@ -5311,7 +5349,7 @@ package Einfo is
    --    Size_Clause                           (synth)
 
    --  E_Decimal_Fixed_Point_Type
-   --  E_Decimal_Fixed_Subtype$$$no such thing
+   --  E_Decimal_Fixed_Point_Subtype
    --    Scale_Value
    --    Digits_Value
    --    Scalar_Range
@@ -5328,7 +5366,6 @@ package Einfo is
    --  E_Discriminant
    --    Normalized_First_Bit
    --    Current_Value                         (always Empty)
-   --    Normalized_Position_Max
    --    Component_Bit_Offset
    --    Esize
    --    Component_Clause
@@ -5497,7 +5534,14 @@ package Einfo is
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)
-   --    Class_Wide_Clone
+   --    Class_Postconditions
+   --    Class_Preconditions
+   --    Class_Preconditions_Subprogram
+   --    Dynamic_Call_Helper
+   --    Ignored_Class_Preconditions
+   --    Ignored_Class_Postconditions
+   --    Indirect_Call_Wrapper
+   --    Static_Call_Helper
    --    Protected_Subprogram                 (non-generic case only)
    --    SPARK_Pragma
    --    Original_Protected_Subprogram
@@ -5521,6 +5565,7 @@ package Einfo is
    --    Ignore_SPARK_Mode_Pragmas
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel                       (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
@@ -5693,6 +5738,7 @@ package Einfo is
    --    Default_Expressions_Processed
    --    Has_Nested_Subprogram
    --    Ignore_SPARK_Mode_Pragmas
+   --    Is_Class_Wide_Wrapper
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id
    --    Is_Intrinsic_Subprogram
@@ -5853,7 +5899,14 @@ package Einfo is
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)
-   --    Class_Wide_Clone
+   --    Class_Postconditions
+   --    Class_Preconditions
+   --    Class_Preconditions_Subprogram
+   --    Dynamic_Call_Helper
+   --    Ignored_Class_Preconditions
+   --    Ignored_Class_Postconditions
+   --    Indirect_Call_Wrapper
+   --    Static_Call_Helper
    --    Protected_Subprogram                 (non-generic case only)
    --    SPARK_Pragma
    --    Original_Protected_Subprogram
@@ -5876,6 +5929,7 @@ package Einfo is
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Asynchronous
    --    Is_Called                            (non-generic case only)
+   --    Is_Class_Wide_Wrapper
    --    Is_Constructor
    --    Is_CUDA_Kernel
    --    Is_DIC_Procedure                     (non-generic case only)

@@ -1,6 +1,6 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__location->~_Tp();
     }
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
   template<typename _Tp, typename... _Args>
     constexpr auto
     construct_at(_Tp* __location, _Args&&... __args)
@@ -104,9 +104,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 #if __cplusplus >= 201103L
   template<typename _Tp, typename... _Args>
+    _GLIBCXX20_CONSTEXPR
     inline void
     _Construct(_Tp* __p, _Args&&... __args)
-    { ::new(static_cast<void*>(__p)) _Tp(std::forward<_Args>(__args)...); }
+    {
+#if __cplusplus >= 202002L
+      if (std::__is_constant_evaluated())
+	{
+	  // Allow std::_Construct to be used in constant expressions.
+	  std::construct_at(__p, std::forward<_Args>(__args)...);
+	  return;
+	}
+#endif
+      ::new((void*)__p) _Tp(std::forward<_Args>(__args)...);
+    }
 #else
   template<typename _T1, typename _T2>
     inline void
@@ -121,7 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _T1>
     inline void
     _Construct_novalue(_T1* __p)
-    { ::new(static_cast<void*>(__p)) _T1; }
+    { ::new((void*)__p) _T1; }
 
   template<typename _ForwardIterator>
     _GLIBCXX20_CONSTEXPR void
@@ -177,8 +188,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_destructible<_Value_type>::value,
 		    "value type is destructible");
 #endif
-#if __cplusplus > 201703L && defined __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
+#if __cplusplus >= 202002L
+      if (std::__is_constant_evaluated())
 	return _Destroy_aux<false>::__destroy(__first, __last);
 #endif
       std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
@@ -226,8 +237,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_destructible<_Value_type>::value,
 		    "value type is destructible");
 #endif
-#if __cplusplus > 201703L && defined __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
+#if __cplusplus >= 202002L
+      if (std::__is_constant_evaluated())
 	return _Destroy_n_aux<false>::__destroy_n(__first, __count);
 #endif
       return std::_Destroy_n_aux<__has_trivial_destructor(_Value_type)>::

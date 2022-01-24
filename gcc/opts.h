@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
 enum cl_var_type {
-  /* The switch is enabled when FLAG_VAR is nonzero.  */
-  CLVC_BOOLEAN,
+  /* The switch is an integer value.  */
+  CLVC_INTEGER,
 
   /* The switch is enabled when FLAG_VAR == VAR_VALUE.  */
   CLVC_EQUAL,
@@ -428,6 +428,8 @@ extern bool target_handle_option (struct gcc_options *opts,
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    location_t loc);
+extern void diagnose_options (gcc_options *opts, gcc_options *opts_set,
+			      location_t loc);
 extern void print_help (struct gcc_options *opts, unsigned int lang_mask, const
 			char *help_option_argument);
 extern void default_options_optimization (struct gcc_options *opts,
@@ -499,5 +501,9 @@ extern char *gen_producer_string (const char *language_string,
       (OPTS)->x_ ## OPTION = VALUE; \
   } \
   while (false)
+
+/* Return true if OPTION is set by user in global options.  */
+
+#define OPTION_SET_P(OPTION) global_options_set.x_ ## OPTION
 
 #endif

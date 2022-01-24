@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fdisable-tree-thread1" } */
+/* { dg-additional-options "-fno-thread-jumps --param max-stores-to-sink=0" } */
 
 #define N 1500
 

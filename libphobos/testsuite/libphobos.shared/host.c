@@ -10,6 +10,11 @@ int main(int argc, char* argv[])
     void *druntime = dlopen(argv[1], RTLD_LAZY); // load druntime
     assert(druntime);
 #endif
+#if defined(__DragonFly__)
+    // workaround for Bugzilla 14824
+    void *druntime = dlopen(argv[1], RTLD_LAZY); // load druntime
+    assert(druntime);
+#endif
 
     const size_t pathlen = strrchr(argv[0], '/') - argv[0] + 1;
     char *name = malloc(pathlen + sizeof("plugin1.so"));
@@ -54,6 +59,9 @@ int main(int argc, char* argv[])
     free(name);
 
 #if defined(__FreeBSD__)
+    dlclose(druntime);
+#endif
+#if defined(__DragonFly__)
     dlclose(druntime);
 #endif
     return EXIT_SUCCESS;

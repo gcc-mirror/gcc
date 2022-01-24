@@ -13,7 +13,10 @@ LIB2FUNCS_EXCLUDE += _clear_cache
 LIBGCC2_INCLUDES = -nostdinc -I. \
   -I$(MULTIBUILDTOP)../../gcc/include-fixed$(MULTISUBDIR) \
   -I$(MULTIBUILDTOP)../../gcc/include \
-  `case "/$(MULTIDIR)" in \
-     */mrtp*) echo -I$(WIND_USR)/h -I$(WIND_USR)/h/wrn/coreip ;; \
-     *) echo -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip ;; \
-   esac`
+  $(if $(findstring vxworks7, $(target_noncanonical)), \
+    -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h -I=/system -I=/public, \
+    -I=/ -I=/wrn/coreip)
+
+# Use these also for the vxcrstuff objects (.e.g for version.h), on top of
+# the options possibly already set specifically for the target:
+CRTSTUFF_T_CFLAGS += $(LIBGCC2_INCLUDES)

@@ -1,5 +1,5 @@
 /* ctfc.h - Declarations and definitions related to the CTF container.
-   Copyright (C) 2019,2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -212,7 +212,7 @@ enum ctf_dtu_d_union_enum {
   CTF_DTU_D_ARRAY,
   CTF_DTU_D_ENCODING,
   CTF_DTU_D_ARGUMENTS,
-  CTF_DTU_D_SLICE,
+  CTF_DTU_D_SLICE
 };
 
 enum ctf_dtu_d_union_enum

@@ -1,6 +1,6 @@
 // wstring_convert implementation -*- C++ -*-
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -252,8 +252,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Tp* _M_ptr;
       };
   }
-
-#ifdef _GLIBCXX_USE_WCHAR_T
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
@@ -625,8 +623,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
       char			_M_get_buf[_S_buffer_length-_S_putback_length];
       bool			_M_always_noconv;
     };
-
-#endif  // _GLIBCXX_USE_WCHAR_T
 
   /// @} group locales
 

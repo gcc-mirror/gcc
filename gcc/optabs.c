@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1135,6 +1135,10 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 
       remainder = convert_modes (mode, word_mode, remainder, unsignedp);
       /* Punt if we need any library calls.  */
+      if (last)
+	last = NEXT_INSN (last);
+      else
+	last = get_insns ();
       for (; last; last = NEXT_INSN (last))
 	if (CALL_P (last))
 	  return NULL_RTX;
@@ -1228,6 +1232,10 @@ expand_doubleword_divmod (machine_mode mode, rtx op0, rtx op1, rtx *rem,
     }
 
   /* Punt if we need any library calls.  */
+  if (last)
+    last = NEXT_INSN (last);
+  else
+    last = get_insns ();
   for (; last; last = NEXT_INSN (last))
     if (CALL_P (last))
       return NULL_RTX;

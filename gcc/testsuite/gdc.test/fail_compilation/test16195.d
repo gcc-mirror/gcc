@@ -1,7 +1,8 @@
 /*
  * TEST_OUTPUT:
 ---
-fail_compilation/test16195.d(13): Error: delete p is not @safe but is used in @safe function test
+fail_compilation/test16195.d(14): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+fail_compilation/test16195.d(14): Error: `delete p` is not `@safe` but is used in `@safe` function `test`
 ---
  */
 

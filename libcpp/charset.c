@@ -1,5 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
 
@@ -955,14 +955,12 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   valid_flags = C99 | CXX | C11 | CXX23;
   if (CPP_PEDANTIC (pfile))
     {
-      if (CPP_OPTION (pfile, cxx23_identifiers))
+      if (CPP_OPTION (pfile, cplusplus))
 	valid_flags = CXX23;
       else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
       else if (CPP_OPTION (pfile, c99))
 	valid_flags = C99;
-      else if (CPP_OPTION (pfile, cplusplus))
-	valid_flags = CXX;
     }
   if (! (ucnranges[mn].flags & valid_flags))
       return 0;
@@ -1021,7 +1019,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
       return 2;
     }
 
-  if (CPP_OPTION (pfile, cxx23_identifiers))
+  if (CPP_OPTION (pfile, cplusplus))
     invalid_start_flags = NXX23;
   else if (CPP_OPTION (pfile, c11_identifiers))
     invalid_start_flags = N11;
@@ -1464,7 +1462,6 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
   cppchar_t c, n = 0;
   size_t width = cvt.width;
   size_t mask = width_to_mask (width);
-  bool overflow = false;
 
   /* loc_reader and ranges must either be both NULL, or both be non-NULL.  */
   gcc_assert ((loc_reader != NULL) == (ranges != NULL));
@@ -1477,7 +1474,6 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       from++;
       if (loc_reader)
 	char_range.m_finish = loc_reader->get_next ().m_finish;
-      overflow |= n ^ (n << 3 >> 3);
       n = (n << 3) + c - '0';
     }
 
@@ -1536,7 +1532,6 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     case 'x':
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
-      break;
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':
@@ -1584,12 +1579,14 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 		   "unknown escape sequence: '\\%c'", (int) c);
       else
 	{
+	  encoding_rich_location rich_loc (pfile);
+
 	  /* diagnostic.c does not support "%03o".  When it does, this
 	     code can use %03o directly in the diagnostic again.  */
 	  char buf[32];
 	  sprintf(buf, "%03o", (int) c);
-	  cpp_error (pfile, CPP_DL_PEDWARN,
-		     "unknown escape sequence: '\\%s'", buf);
+	  cpp_error_at (pfile, CPP_DL_PEDWARN, &rich_loc,
+			"unknown escape sequence: '\\%s'", buf);
 	}
     }
 
@@ -2347,14 +2344,16 @@ cpp_string_location_reader::get_next ()
 }
 
 cpp_display_width_computation::
-cpp_display_width_computation (const char *data, int data_length, int tabstop) :
+cpp_display_width_computation (const char *data, int data_length,
+			       const cpp_char_column_policy &policy) :
   m_begin (data),
   m_next (m_begin),
   m_bytes_left (data_length),
-  m_tabstop (tabstop),
+  m_policy (policy),
   m_display_cols (0)
 {
-  gcc_assert (m_tabstop > 0);
+  gcc_assert (policy.m_tabstop > 0);
+  gcc_assert (policy.m_width_cb);
 }
 
 
@@ -2366,19 +2365,28 @@ cpp_display_width_computation (const char *data, int data_length, int tabstop) :
    point to a valid UTF-8-encoded sequence, then it will be treated as a single
    byte with display width 1.  m_cur_display_col is the current display column,
    relative to which tab stops should be expanded.  Returns the display width of
-   the codepoint just processed.  */
+   the codepoint just processed.
+   If OUT is non-NULL, it is populated.  */
 
 int
-cpp_display_width_computation::process_next_codepoint ()
+cpp_display_width_computation::process_next_codepoint (cpp_decoded_char *out)
 {
   cppchar_t c;
   int next_width;
+
+  if (out)
+    out->m_start_byte = m_next;
 
   if (*m_next == '\t')
     {
       ++m_next;
       --m_bytes_left;
-      next_width = m_tabstop - (m_display_cols % m_tabstop);
+      next_width = m_policy.m_tabstop - (m_display_cols % m_policy.m_tabstop);
+      if (out)
+	{
+	  out->m_ch = '\t';
+	  out->m_valid_ch = true;
+	}
     }
   else if (one_utf8_to_cppchar ((const uchar **) &m_next, &m_bytes_left, &c)
 	   != 0)
@@ -2388,13 +2396,23 @@ cpp_display_width_computation::process_next_codepoint ()
 	 of one.  */
       ++m_next;
       --m_bytes_left;
-      next_width = 1;
+      next_width = m_policy.m_undecoded_byte_width;
+      if (out)
+	out->m_valid_ch = false;
     }
   else
     {
       /*  one_utf8_to_cppchar() has updated m_next and m_bytes_left for us.  */
-      next_width = cpp_wcwidth (c);
+      next_width = m_policy.m_width_cb (c);
+      if (out)
+	{
+	  out->m_ch = c;
+	  out->m_valid_ch = true;
+	}
     }
+
+  if (out)
+    out->m_next_byte = m_next;
 
   m_display_cols += next_width;
   return next_width;
@@ -2411,7 +2429,7 @@ cpp_display_width_computation::advance_display_cols (int n)
   const int start = m_display_cols;
   const int target = start + n;
   while (m_display_cols < target && !done ())
-    process_next_codepoint ();
+    process_next_codepoint (NULL);
   return m_display_cols - start;
 }
 
@@ -2419,29 +2437,33 @@ cpp_display_width_computation::advance_display_cols (int n)
     how many display columns are occupied by the first COLUMN bytes.  COLUMN
     may exceed DATA_LENGTH, in which case the phantom bytes at the end are
     treated as if they have display width 1.  Tabs are expanded to the next tab
-    stop, relative to the start of DATA.  */
+    stop, relative to the start of DATA, and non-printable-ASCII characters
+    will be escaped as per POLICY.  */
 
 int
 cpp_byte_column_to_display_column (const char *data, int data_length,
-				   int column, int tabstop)
+				   int column,
+				   const cpp_char_column_policy &policy)
 {
   const int offset = MAX (0, column - data_length);
-  cpp_display_width_computation dw (data, column - offset, tabstop);
+  cpp_display_width_computation dw (data, column - offset, policy);
   while (!dw.done ())
-    dw.process_next_codepoint ();
+    dw.process_next_codepoint (NULL);
   return dw.display_cols_processed () + offset;
 }
 
 /*  For the string of length DATA_LENGTH bytes that begins at DATA, compute
     the least number of bytes that will result in at least DISPLAY_COL display
     columns.  The return value may exceed DATA_LENGTH if the entire string does
-    not occupy enough display columns.  */
+    not occupy enough display columns.  Non-printable-ASCII characters
+    will be escaped as per POLICY.  */
 
 int
 cpp_display_column_to_byte_column (const char *data, int data_length,
-				   int display_col, int tabstop)
+				   int display_col,
+				   const cpp_char_column_policy &policy)
 {
-  cpp_display_width_computation dw (data, data_length, tabstop);
+  cpp_display_width_computation dw (data, data_length, policy);
   const int avail_display = dw.advance_display_cols (display_col);
   return dw.bytes_processed () + MAX (0, display_col - avail_display);
 }

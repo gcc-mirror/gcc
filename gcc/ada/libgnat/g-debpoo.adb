@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -777,7 +777,7 @@ package body GNAT.Debug_Pools is
       function Is_Valid_Or_Handled
         (Storage : System.Address;
          Valid   : Boolean) return Boolean is
-         Int_Storage  : constant Integer_Address := To_Integer (Storage);
+         Int_Storage : constant Integer_Address := To_Integer (Storage);
 
       begin
          --  The pool only returns addresses aligned on Storage_Alignment so
@@ -1148,7 +1148,7 @@ package body GNAT.Debug_Pools is
       Modulo : constant Storage_Count :=
                  Size_In_Storage_Elements mod Dead_Bytes;
    begin
-      M.all := (others => Dead);
+      M.all := [others => Dead];
 
       --  Any bytes left (up to three of them)
 
@@ -1942,7 +1942,7 @@ package body GNAT.Debug_Pools is
          Grand_Total : Float;
 
          Max  : array (1 .. Size) of Traceback_Htable_Elem_Ptr :=
-           (others => null);
+           [others => null];
          --  Sorted array for the biggest memory users
 
          Allocated_In_Pool : Byte_Count;

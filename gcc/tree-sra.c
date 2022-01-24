@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "builtins.h"
 #include "tree-sra.h"
-
+#include "opts.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -3288,6 +3288,8 @@ totally_scalarize_subtree (struct access *root)
 	      continue;
 
 	    HOST_WIDE_INT pos = root->offset + int_bit_position (fld);
+	    if (pos + fsize > root->offset + root->size)
+	      return false;
 	    enum total_sra_field_state
 	      state = total_should_skip_creating_access (root,
 							 &last_seen_sibling,
@@ -3427,12 +3429,12 @@ analyze_all_variable_accesses (void)
 
   if (optimize_speed_p)
     {
-      if (global_options_set.x_param_sra_max_scalarization_size_speed)
+      if (OPTION_SET_P (param_sra_max_scalarization_size_speed))
 	max_scalarization_size = param_sra_max_scalarization_size_speed;
     }
   else
     {
-      if (global_options_set.x_param_sra_max_scalarization_size_size)
+      if (OPTION_SET_P (param_sra_max_scalarization_size_size))
 	max_scalarization_size = param_sra_max_scalarization_size_size;
     }
   max_scalarization_size *= BITS_PER_UNIT;
@@ -4121,7 +4123,7 @@ get_repl_default_def_ssa_name (struct access *racc, tree reg_type)
 static void
 generate_subtree_deferred_init (struct access *access,
 				tree init_type,
-				tree is_vla,
+				tree decl_name,
 				gimple_stmt_iterator *gsi,
 				location_t loc)
 {
@@ -4133,7 +4135,7 @@ generate_subtree_deferred_init (struct access *access,
 	  gimple *call
 	    = gimple_build_call_internal (IFN_DEFERRED_INIT, 3,
 					  TYPE_SIZE_UNIT (TREE_TYPE (repl)),
-					  init_type, is_vla);
+					  init_type, decl_name);
 	  gimple_call_set_lhs (call, repl);
 	  gsi_insert_before (gsi, call, GSI_SAME_STMT);
 	  update_stmt (call);
@@ -4142,7 +4144,7 @@ generate_subtree_deferred_init (struct access *access,
 	}
       if (access->first_child)
 	generate_subtree_deferred_init (access->first_child, init_type,
-					is_vla, gsi, loc);
+					decl_name, gsi, loc);
 
       access = access ->next_sibling;
     }
@@ -4150,7 +4152,7 @@ generate_subtree_deferred_init (struct access *access,
 }
 
 /* For a call to .DEFERRED_INIT:
-   var = .DEFERRED_INIT (size_of_var, init_type, is_vla);
+   var = .DEFERRED_INIT (size_of_var, init_type, name_of_var);
    examine the LHS variable VAR and replace it with a scalar replacement if
    there is one, also replace the RHS call to a call to .DEFERRED_INIT of
    the corresponding scalar relacement variable.  Examine the subtree and
@@ -4162,7 +4164,7 @@ sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs = gimple_call_lhs (stmt);
   tree init_type = gimple_call_arg (stmt, 1);
-  tree is_vla = gimple_call_arg (stmt, 2);
+  tree decl_name = gimple_call_arg (stmt, 2);
 
   struct access *lhs_access = get_access_for_expr (lhs);
   if (!lhs_access)
@@ -4183,7 +4185,7 @@ sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)
 
   if (lhs_access->first_child)
     generate_subtree_deferred_init (lhs_access->first_child,
-				    init_type, is_vla, gsi, loc);
+				    init_type, decl_name, gsi, loc);
   if (lhs_access->grp_covered)
     {
       unlink_stmt_vdef (stmt);

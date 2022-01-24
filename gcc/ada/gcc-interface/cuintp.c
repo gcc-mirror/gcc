@@ -39,6 +39,7 @@
 #include "ada.h"
 #include "types.h"
 #include "uintp.h"
+#include "sinfo.h"
 #include "ada-tree.h"
 #include "gigi.h"
 

@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -188,6 +188,8 @@ public:
   bool symbolic_for_unknown_ptr_p () const;
 
   const complexity &get_complexity () const { return m_complexity; }
+
+  bool is_named_decl_p (const char *decl_name) const;
 
  protected:
   region (complexity c, unsigned id, const region *parent, tree type);

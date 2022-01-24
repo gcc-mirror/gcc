@@ -6,7 +6,7 @@
    be adjusted.  Ditto if -Wuninitialized output changes for some
    other reason.
    { dg-do compile { target { { lp64 || ilp32 } || llp64 } } }
-   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
+   { dg-options "-O2 -Wall -ftrack-macro-expansion=0 -fno-ipa-modref" } */
 
 #define CONCAT(x, y)   x ## y
 #define CAT(x, y)      CONCAT(x, y)

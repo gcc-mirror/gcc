@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2461,9 +2461,6 @@ static hash_map<basic_block, rtx_code_label *> *lab_rtx_for_bb;
 static rtx_code_label *
 label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 {
-  gimple_stmt_iterator gsi;
-  tree lab;
-
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
@@ -2472,21 +2469,12 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
     return *elt;
 
   /* Find the tree label if it is present.  */
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      glabel *lab_stmt;
-
-      lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
-      if (!lab_stmt)
-	break;
-
-      lab = gimple_label_label (lab_stmt);
-      if (DECL_NONLOCAL (lab))
-	break;
-
-      return jump_target_rtx (lab);
-    }
+  gimple_stmt_iterator gsi = gsi_start_bb (bb);
+  glabel *lab_stmt;
+  if (!gsi_end_p (gsi)
+      && (lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi)))
+      && !DECL_NONLOCAL (gimple_label_label (lab_stmt)))
+    return jump_target_rtx (gimple_label_label (lab_stmt));
 
   rtx_code_label *l = gen_label_rtx ();
   lab_rtx_for_bb->put (bb, l);
@@ -4341,11 +4329,8 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
 	  tree &vexpr = deep_ter_debug_map->get_or_insert (use);
 	  if (vexpr != NULL)
 	    continue;
-	  vexpr = make_node (DEBUG_EXPR_DECL);
+	  vexpr = build_debug_expr_decl (TREE_TYPE (use));
 	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (use);
-	  SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (use)));
 	  gimple_stmt_iterator gsi = gsi_for_stmt (g);
 	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
 	  avoid_deep_ter_for_debug (def_temp, 0);
@@ -5756,6 +5741,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   rtx_insn *last;
   edge e;
   edge_iterator ei;
+  bool nondebug_stmt_seen = false;
 
   if (dump_file)
     fprintf (dump_file, "\n;; Generating RTL for gimple basic block %d\n",
@@ -5836,6 +5822,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt))
+	nondebug_stmt_seen = true;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed
@@ -5898,18 +5886,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		       temporary.  */
 		    gimple *debugstmt;
 		    tree value = gimple_assign_rhs_to_tree (def);
-		    tree vexpr = make_node (DEBUG_EXPR_DECL);
+		    tree vexpr = build_debug_expr_decl (TREE_TYPE (value));
 		    rtx val;
 		    machine_mode mode;
 
 		    set_curr_insn_location (gimple_location (def));
 
-		    DECL_ARTIFICIAL (vexpr) = 1;
-		    TREE_TYPE (vexpr) = TREE_TYPE (value);
 		    if (DECL_P (value))
 		      mode = DECL_MODE (value);
 		    else
 		      mode = TYPE_MODE (TREE_TYPE (value));
+		    /* FIXME: Is setting the mode really necessary? */
 		    SET_DECL_MODE (vexpr, mode);
 
 		    val = gen_rtx_VAR_LOCATION
@@ -6090,7 +6077,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (e->goto_locus != UNKNOWN_LOCATION || !stmt)
+      if (e->goto_locus != UNKNOWN_LOCATION || !nondebug_stmt_seen)
 	set_curr_insn_location (e->goto_locus);
       if ((e->flags & EDGE_FALLTHRU) && e->dest != bb->next_bb)
 	{

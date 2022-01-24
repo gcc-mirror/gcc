@@ -1,5 +1,5 @@
 /* Code sinking for trees
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
 This file is part of GCC.
@@ -696,7 +696,9 @@ sink_code_in_bb (basic_block bb)
 	  /* If we face a dead stmt remove it as it possibly blocks
 	     sinking of uses.  */
 	  if (zero_uses_p
-	      && ! gimple_vdef (stmt))
+	      && !gimple_vdef (stmt)
+	      && (cfun->can_delete_dead_exceptions
+		  || !stmt_could_throw_p (cfun, stmt)))
 	    {
 	      gsi_remove (&saved, true);
 	      release_defs (stmt);

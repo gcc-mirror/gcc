@@ -94,6 +94,7 @@ static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_stack_protector_attribute (tree *, tree, tree, int, bool *);
+static tree handle_strub_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
@@ -157,6 +158,8 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "no_stack_protector",0, 0, true,  false, false, false,
     handle_no_stack_protector_attribute,
     attr_stack_protect_exclusions },
+  { "strub",	    0, 1, false, true, false, true,
+    handle_strub_attribute, NULL },
   { "noinline",     0, 0,  true,  false, false, false,
     handle_noinline_attribute, NULL },
   { "noclone",      0, 0,  true,  false, false, false,
@@ -2899,12 +2902,10 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
   return var_decl;
 }
 
-/* Return true if TYPE, an aggregate type, contains (or is) an array.
-   If SELF_REFERENTIAL is true, then an additional requirement on the
-   array is that it be self-referential.  */
+/* Return true if TYPE, an aggregate type, contains (or is) an array.  */
 
-bool
-aggregate_type_contains_array_p (tree type, bool self_referential)
+static bool
+aggregate_type_contains_array_p (tree type)
 {
   switch (TREE_CODE (type))
     {
@@ -2915,14 +2916,13 @@ aggregate_type_contains_array_p (tree type, bool self_referential)
 	tree field;
 	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	  if (AGGREGATE_TYPE_P (TREE_TYPE (field))
-	      && aggregate_type_contains_array_p (TREE_TYPE (field),
-						  self_referential))
+	      && aggregate_type_contains_array_p (TREE_TYPE (field)))
 	    return true;
 	return false;
       }
 
     case ARRAY_TYPE:
-      return self_referential ? type_contains_placeholder_p (type) : true;
+      return true;
 
     default:
       gcc_unreachable ();
@@ -2932,7 +2932,7 @@ aggregate_type_contains_array_p (tree type, bool self_referential)
 /* Return true if TYPE is a type with variable size or a padding type with a
    field of variable size or a record that has a field with such a type.  */
 
-static bool
+bool
 type_has_variable_size (tree type)
 {
   tree field;
@@ -3034,7 +3034,7 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 		 || (!pos && type_has_variable_size (type))
 		 || (!pos
 		     && AGGREGATE_TYPE_P (type)
-		     && aggregate_type_contains_array_p (type, false))))
+		     && aggregate_type_contains_array_p (type))))
     SET_DECL_ALIGN (field_decl, BITS_PER_UNIT);
 
   /* Bump the alignment if need be, either for bitfield/packing purposes or
@@ -6602,6 +6602,15 @@ handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
   return NULL_TREE;
 }
 
+/* Handle a "strub" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_strub_attribute (tree *, tree, tree, int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  return NULL_TREE;
+}
 
 /* Handle a "noinline" attribute; arguments as in
    struct attribute_spec.handler.  */

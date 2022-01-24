@@ -1,5 +1,5 @@
 /* Define builtin-in macros for all front ends that perform preprocessing
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -110,6 +110,16 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
     cpp_define (pfile, "__SUPPORT_SNAN__");
   if (!flag_errno_math)
     cpp_define (pfile, "__NO_MATH_ERRNO__");
+  if (flag_reciprocal_math)
+    cpp_define (pfile, "__RECIPROCAL_MATH__");
+  if (!flag_signed_zeros)
+    cpp_define (pfile, "__NO_SIGNED_ZEROS__");
+  if (!flag_trapping_math)
+    cpp_define (pfile, "__NO_TRAPPING_MATH__");
+  if (flag_associative_math)
+    cpp_define (pfile, "__ASSOCIATIVE_MATH__");
+  if (flag_rounding_math)
+    cpp_define (pfile, "__ROUNDING_MATH__");
 
   cpp_define_formatted (pfile, "__FINITE_MATH_ONLY__=%d",
 			flag_finite_math_only);

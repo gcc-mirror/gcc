@@ -1,6 +1,6 @@
 // future -*- C++ -*-
 
-// Copyright (C) 2009-2021 Free Software Foundation, Inc.
+// Copyright (C) 2009-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,14 +27,15 @@
 
 namespace
 {
-  struct future_error_category : public std::error_category
+  struct future_error_category final : public std::error_category
   {
-    virtual const char*
-    name() const noexcept
+    const char*
+    name() const noexcept final
     { return "future"; }
 
     _GLIBCXX_DEFAULT_ABI_TAG
-    virtual std::string message(int __ec) const
+    std::string
+    message(int __ec) const final
     {
       std::string __msg;
       switch (std::future_errc(__ec))
@@ -59,12 +60,17 @@ namespace
     }
   };
 
-  const future_error_category&
-  __future_category_instance() noexcept
+  struct constant_init
   {
-    static const future_error_category __fec{};
-    return __fec;
-  }
+    union {
+      unsigned char unused;
+      future_error_category cat;
+    };
+    constexpr constant_init() : cat() { }
+    ~constant_init() { /* do nothing, union member is not destroyed */ }
+  };
+
+  __constinit constant_init future_category_instance{};
 }
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -76,7 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { _GLIBCXX_THROW_OR_ABORT(future_error(make_error_code(future_errc(__i)))); }
 
   const error_category& future_category() noexcept
-  { return __future_category_instance(); }
+  { return future_category_instance.cat; }
 
   future_error::~future_error() noexcept { }
 

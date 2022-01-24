@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -624,7 +624,7 @@ package body Exp_Strm is
          end if;
 
       else pragma Assert (Is_Access_Type (U_Type));
-         if P_Size > System_Address_Size then
+         if Present (P_Size) and then P_Size > System_Address_Size then
             Lib_RE := RE_I_AD;
          else
             Lib_RE := RE_I_AS;
@@ -868,7 +868,7 @@ package body Exp_Strm is
 
       else pragma Assert (Is_Access_Type (U_Type));
 
-         if P_Size > System_Address_Size then
+         if Present (P_Size) and then P_Size > System_Address_Size then
             Lib_RE := RE_W_AD;
          else
             Lib_RE := RE_W_AS;

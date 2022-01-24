@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2021, AdaCore                     --
+--                     Copyright (C) 1999-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -691,7 +691,7 @@ package body System.Traceback.Symbolic is
       return Symbolic_Traceback (E, Suppress_Hex => True);
    end Symbolic_Traceback_No_Hex;
 
-   Exception_Tracebacks_Symbolic : Integer;
+   Exception_Tracebacks_Symbolic : constant Integer;
    pragma Import
      (C,
       Exception_Tracebacks_Symbolic,

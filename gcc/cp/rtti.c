@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -475,6 +475,15 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
       DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
+      /* Tell equal_address_to that different tinfo decls never
+	 overlap.  */
+      if (vec_safe_is_empty (unemitted_tinfo_decls))
+	DECL_ATTRIBUTES (d)
+	  = build_tree_list (get_identifier ("non overlapping"),
+			     NULL_TREE);
+      else
+	DECL_ATTRIBUTES (d)
+	  = DECL_ATTRIBUTES ((*unemitted_tinfo_decls)[0]);
 
       /* Mark the variable as undefined -- but remember that we can
 	 define it later if we need to do so.  */

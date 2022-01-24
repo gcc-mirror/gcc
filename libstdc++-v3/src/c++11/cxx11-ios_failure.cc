@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,14 +44,15 @@
 
 namespace
 {
-  struct io_error_category : std::error_category
+  struct io_error_category final : std::error_category
   {
-    virtual const char*
-    name() const noexcept
+    const char*
+    name() const noexcept final
     { return "iostream"; }
 
     _GLIBCXX_DEFAULT_ABI_TAG
-    virtual std::string message(int __ec) const
+    std::string
+    message(int __ec) const final
     {
       std::string __msg;
       switch (std::io_errc(__ec))
@@ -67,13 +68,17 @@ namespace
     }
   };
 
-  const io_error_category&
-  __io_category_instance() noexcept
+  struct constant_init
   {
-    static const io_error_category __ec{};
-    return __ec;
-  }
+    union {
+      unsigned char unused;
+      io_error_category cat;
+    };
+    constexpr constant_init() : cat() { }
+    ~constant_init() { /* do nothing, union member is not destroyed */ }
+  };
 
+  __constinit constant_init io_category_instance{};
 } // namespace
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -82,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const error_category&
   iostream_category() noexcept
-  { return __io_category_instance(); }
+  { return io_category_instance.cat; }
 
   ios_base::failure::failure(const string& __str)
   : system_error(io_errc::stream, __str) { }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,9 +66,9 @@ package body System.Interrupt_Management is
 
    type Interrupt_List is array (Interrupt_ID range <>) of Interrupt_ID;
    Exception_Interrupts : constant Interrupt_List :=
-     (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
+     [SIGFPE, SIGILL, SIGSEGV, SIGBUS];
 
-   Unreserve_All_Interrupts : Interfaces.C.int;
+   Unreserve_All_Interrupts : constant Interfaces.C.int;
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
 
@@ -206,8 +206,8 @@ package body System.Interrupt_Management is
 
       act.sa_mask := Signal_Mask;
 
-      pragma Assert (Keep_Unmasked = (Interrupt_ID'Range => False));
-      pragma Assert (Reserve = (Interrupt_ID'Range => False));
+      pragma Assert (Keep_Unmasked = [Interrupt_ID'Range => False]);
+      pragma Assert (Reserve = [Interrupt_ID'Range => False]);
 
       --  Process state of exception signals
 

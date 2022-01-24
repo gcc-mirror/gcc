@@ -1,6 +1,6 @@
 ; Options for the HP PA-RISC port of the compiler.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -50,8 +50,8 @@ Target Var(TARGET_COHERENT_LDCW) Init(1)
 Use ldcw/ldcd coherent cache-control hint.
 
 mdisable-fpregs
-Target Mask(DISABLE_FPREGS)
-Disable FP regs.
+Target Mask(SOFT_FLOAT)
+Disable FP regs.  Equivalent to -msoft-float.
 
 mdisable-indexing
 Target Mask(DISABLE_INDEXING)
@@ -142,6 +142,10 @@ Enum(pa_schedule) String(7300) Value(PROCESSOR_7300)
 msoft-float
 Target Mask(SOFT_FLOAT)
 Use software floating point.
+
+msoft-mult
+Target Mask(SOFT_MULT)
+Use software integer multiplication.
 
 msnake
 Target RejectNegative

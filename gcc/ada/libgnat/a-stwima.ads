@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -181,8 +181,7 @@ private
    overriding procedure Adjust     (Object : in out Wide_Character_Set);
    overriding procedure Finalize   (Object : in out Wide_Character_Set);
 
-   Null_Range : aliased constant Wide_Character_Ranges :=
-                  (1 .. 0 => (Low => ' ', High => ' '));
+   Null_Range : aliased constant Wide_Character_Ranges := [];
 
    Null_Set : constant Wide_Character_Set :=
                 (AF.Controlled with

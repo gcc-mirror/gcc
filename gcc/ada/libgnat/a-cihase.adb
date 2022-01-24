@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -854,8 +854,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1728,7 +1726,6 @@ is
       HT       : Hash_Table_Type;
       Node     : Node_Access;
       Inserted : Boolean;
-      pragma Unreferenced (Node, Inserted);
    begin
       Insert (HT, New_Item, Node, Inserted);
       return Set'(Controlled with HT);
@@ -1776,7 +1773,6 @@ is
 
          Tgt_Node : Node_Access;
          Success  : Boolean;
-         pragma Unreferenced (Tgt_Node, Success);
 
       --  Start of processing for Process
 
@@ -2063,29 +2059,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
-         Node : constant Node_Access := Key_Keys.Find (HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            TC : constant Tamper_Counts_Access :=
-              HT.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Node.Element.all'Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -2280,34 +2261,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            HT : Hash_Table_Type renames Container.HT;
-            P  : constant Cursor := Find (Container, Key);
-         begin
-            return R : constant Reference_Type :=
-                         (Element => Node.Element.all'Access,
-                          Control =>
-                            (Controlled with
-                              HT.TC'Unrestricted_Access,
-                              Container => Container'Unchecked_Access,
-                              Index     => HT_Ops.Index (HT, P.Node),
-                              Old_Pos   => P,
-                              Old_Hash  => Hash (Key)))
-            do
-               Busy (HT.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------

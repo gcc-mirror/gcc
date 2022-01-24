@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -575,7 +575,7 @@ alpha_option_override (void)
   }
 
   /* Default the definition of "small data" to 8 bytes.  */
-  if (!global_options_set.x_g_switch_value)
+  if (!OPTION_SET_P (g_switch_value))
     g_switch_value = 8;
 
   /* Infer TARGET_SMALL_DATA from -fpic/-fPIC.  */

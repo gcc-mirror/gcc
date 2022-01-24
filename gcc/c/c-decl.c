@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_STRING
-#define INCLUDE_UNIQUE_PTR
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -4643,7 +4643,7 @@ c_warn_unused_attributes (tree attrs)
 	 constraint violation.  */
       pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
-    else
+    else if (!attribute_ignored_p (t))
       warning (OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
 }
@@ -5866,6 +5866,12 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
       if (pd->u.array.static_p)
 	spec += 's';
 
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
+	/* Avoid invalid NELTS.  */
+	return attrs;
+
+      STRIP_NOPS (nelts);
+      nelts = c_fully_fold (nelts, false, nullptr);
       if (TREE_CODE (nelts) == INTEGER_CST)
 	{
 	  /* Skip all constant bounds except the most significant one.
@@ -5883,13 +5889,9 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  spec += buf;
 	  break;
 	}
-      else if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
-	/* Avoid invalid NELTS.  */
-	return attrs;
 
       /* Each variable VLA bound is represented by a dollar sign.  */
       spec += "$";
-      STRIP_NOPS (nelts);
       vbchain = tree_cons (NULL_TREE, nelts, vbchain);
     }
 
@@ -9038,8 +9040,8 @@ resort_field_decl_cmp (const void *x_p, const void *y_p)
   {
     tree d1 = DECL_NAME (*x);
     tree d2 = DECL_NAME (*y);
-    resort_data.new_value (&d1, resort_data.cookie);
-    resort_data.new_value (&d2, resort_data.cookie);
+    resort_data.new_value (&d1, &d1, resort_data.cookie);
+    resort_data.new_value (&d2, &d2, resort_data.cookie);
     if (d1 < d2)
       return -1;
   }
@@ -9435,6 +9437,36 @@ c_simulate_enum_decl (location_t loc, const char *name,
 
   input_location = saved_loc;
   return enumtype;
+}
+
+/* Implement LANG_HOOKS_SIMULATE_RECORD_DECL.  */
+
+tree
+c_simulate_record_decl (location_t loc, const char *name,
+			array_slice<const tree> fields)
+{
+  location_t saved_loc = input_location;
+  input_location = loc;
+
+  class c_struct_parse_info *struct_info;
+  tree ident = get_identifier (name);
+  tree type = start_struct (loc, RECORD_TYPE, ident, &struct_info);
+
+  for (unsigned int i = 0; i < fields.size (); ++i)
+    {
+      DECL_FIELD_CONTEXT (fields[i]) = type;
+      if (i > 0)
+	DECL_CHAIN (fields[i - 1]) = fields[i];
+    }
+
+  finish_struct (loc, type, fields[0], NULL_TREE, struct_info);
+
+  tree decl = build_decl (loc, TYPE_DECL, ident, type);
+  set_underlying_type (decl);
+  lang_hooks.decls.pushdecl (decl);
+
+  input_location = saved_loc;
+  return type;
 }
 
 /* Create the FUNCTION_DECL for a function definition.
@@ -10589,6 +10621,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_HAS_ATTRIBUTE:
     case RID_BUILTIN_SHUFFLE:
     case RID_BUILTIN_SHUFFLEVECTOR:
+    case RID_BUILTIN_ASSOC_BARRIER:
     case RID_CHOOSE_EXPR:
     case RID_OFFSETOF:
     case RID_TYPES_COMPATIBLE_P:

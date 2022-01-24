@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,8 @@
 #include <debug/vector>
 
 #include <cassert>
-#include <cstdio>
+#include <cstdio>	// for std::fprintf, stderr
+#include <cstdlib>	// for std::abort
 #include <cctype>	// for std::isspace.
 #include <cstring>	// for std::strstr.
 
@@ -42,6 +43,21 @@
 #include <cxxabi.h>	// for __cxa_demangle.
 
 #include "mutex_pool.h"
+
+#ifdef _GLIBCXX_VERBOSE_ASSERT
+namespace std
+{
+  [[__noreturn__]]
+  void
+  __glibcxx_assert_fail(const char* file, int line,
+			const char* function, const char* condition) noexcept
+  {
+    fprintf(stderr, "%s:%d: %s: Assertion '%s' failed.\n",
+		      file, line, function, condition);
+    abort();
+  }
+}
+#endif
 
 using namespace std;
 

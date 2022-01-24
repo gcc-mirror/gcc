@@ -1,6 +1,6 @@
 /* AArch64 Non-NEON ACLE intrinsics include file.
 
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -209,6 +209,43 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __ttest (void)
 {
   return __builtin_aarch64_ttest ();
+}
+
+#pragma GCC pop_options
+#endif
+
+#ifdef __ARM_FEATURE_LS64
+#pragma GCC push_options
+#pragma GCC target ("+nothing+ls64")
+
+typedef __arm_data512_t data512_t;
+
+__extension__ extern __inline data512_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_ld64b (const void *__addr)
+{
+  return __builtin_aarch64_ld64b (__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_st64b (void *__addr, data512_t __value)
+{
+  __builtin_aarch64_st64b (__addr, __value);
+}
+
+__extension__ extern __inline uint64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_st64bv (void *__addr, data512_t __value)
+{
+  return __builtin_aarch64_st64bv (__addr, __value);
+}
+
+__extension__ extern __inline uint64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__arm_st64bv0 (void *__addr, data512_t __value)
+{
+  return __builtin_aarch64_st64bv0 (__addr, __value);
 }
 
 #pragma GCC pop_options

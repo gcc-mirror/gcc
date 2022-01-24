@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -893,7 +893,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_atomic_wait
       _GLIBCXX_ALWAYS_INLINE void
       wait(__pointer_type __old,
-	   memory_order __m = memory_order_seq_cst) noexcept
+	   memory_order __m = memory_order_seq_cst) const noexcept
       {
 	std::__atomic_wait_address_v(&_M_p, __old,
 				     [__m, this]
@@ -946,7 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // As above, but for difference_type arguments.
     template<typename _Tp>
-      using _Diff = conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
+      using _Diff = __conditional_t<is_pointer_v<_Tp>, ptrdiff_t, _Val<_Tp>>;
 
     template<size_t _Size, size_t _Align>
       _GLIBCXX_ALWAYS_INLINE bool

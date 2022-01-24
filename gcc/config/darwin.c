@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "optabs.h"
 #include "flags.h"
+#include "opts.h"
 
 /* Fix and Continue.
 
@@ -133,7 +134,7 @@ int emit_aligned_common = false;
    DIRECTIVE is as for output_section_asm_op.  */
 
 static void
-output_objc_section_asm_op (const void *directive)
+output_objc_section_asm_op (const char *directive)
 {
   static bool been_here = false;
 
@@ -1058,7 +1059,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
 int
 machopic_output_data_section_indirection (machopic_indirection **slot,
-					  FILE *asm_out_file)
+					  FILE *out_file)
 {
   machopic_indirection *p = *slot;
 
@@ -1073,7 +1074,7 @@ machopic_output_data_section_indirection (machopic_indirection **slot,
 
   switch_to_section (data_section);
   assemble_align (GET_MODE_ALIGNMENT (Pmode));
-  assemble_label (asm_out_file, ptr_name);
+  assemble_label (out_file, ptr_name);
   assemble_integer (gen_rtx_SYMBOL_REF (Pmode, sym_name),
 		    GET_MODE_SIZE (Pmode),
 		    GET_MODE_ALIGNMENT (Pmode), 1);
@@ -1083,7 +1084,7 @@ machopic_output_data_section_indirection (machopic_indirection **slot,
 
 int
 machopic_output_stub_indirection (machopic_indirection **slot,
-				  FILE *asm_out_file)
+				  FILE *out_file)
 {
   machopic_indirection *p = *slot;
 
@@ -1121,13 +1122,13 @@ machopic_output_stub_indirection (machopic_indirection **slot,
   else
     sprintf (stub, "%s%s", user_label_prefix, ptr_name);
 
-  machopic_output_stub (asm_out_file, sym, stub);
+  machopic_output_stub (out_file, sym, stub);
 
   return 1;
 }
 
 int
-machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
+machopic_output_indirection (machopic_indirection **slot, FILE *out_file)
 {
   machopic_indirection *p = *slot;
 
@@ -1159,18 +1160,18 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
 	     storage has been allocated.  */
 	  && !TREE_STATIC (decl))
 	{
-	  fputs ("\t.weak_reference ", asm_out_file);
-	  assemble_name (asm_out_file, sym_name);
-	  fputc ('\n', asm_out_file);
+	  fputs ("\t.weak_reference ", out_file);
+	  assemble_name (out_file, sym_name);
+	  fputc ('\n', out_file);
 	}
     }
 
-  assemble_name (asm_out_file, ptr_name);
-  fprintf (asm_out_file, ":\n");
+  assemble_name (out_file, ptr_name);
+  fprintf (out_file, ":\n");
 
-  fprintf (asm_out_file, "\t.indirect_symbol ");
-  assemble_name (asm_out_file, sym_name);
-  fprintf (asm_out_file, "\n");
+  fprintf (out_file, "\t.indirect_symbol ");
+  assemble_name (out_file, sym_name);
+  fprintf (out_file, "\n");
 
   /* Variables that are marked with MACHO_SYMBOL_FLAG_STATIC need to
      have their symbol name instead of 0 in the second entry of
@@ -1190,7 +1191,7 @@ machopic_output_indirection (machopic_indirection **slot, FILE *asm_out_file)
 }
 
 static void
-machopic_finish (FILE *asm_out_file)
+machopic_finish (FILE *out_file)
 {
   if (!machopic_indirections)
     return;
@@ -1198,13 +1199,13 @@ machopic_finish (FILE *asm_out_file)
   /* First output an symbol indirections that have been placed into .data
      (we don't expect these now).  */
   machopic_indirections->traverse_noresize
-    <FILE *, machopic_output_data_section_indirection> (asm_out_file);
+    <FILE *, machopic_output_data_section_indirection> (out_file);
 
   machopic_indirections->traverse_noresize
-    <FILE *, machopic_output_stub_indirection> (asm_out_file);
+    <FILE *, machopic_output_stub_indirection> (out_file);
 
   machopic_indirections->traverse_noresize
-    <FILE *, machopic_output_indirection> (asm_out_file);
+    <FILE *, machopic_output_indirection> (out_file);
 }
 
 int
@@ -2557,7 +2558,6 @@ darwin_emit_common (FILE *fp, const char *name,
     rounded = (size + (align-1)) & ~(align-1);
 
   l2align = floor_log2 (align);
-  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
 
   in_section = comm_section;
   /* We mustn't allow multiple public symbols to share an address when using
@@ -2708,6 +2708,10 @@ darwin_asm_output_aligned_decl_common (FILE *fp, tree decl, const char *name,
 #ifdef DEBUG_DARWIN_MEM_ALLOCATORS
 fprintf (fp, "# adcom: %s (%d,%d) decl=0x0\n", name, (int)size, (int)align);
 #endif
+     /* Common variables are limited to a maximum alignment of 2^15.  */
+      if (align > 32768)
+	error_at (UNKNOWN_LOCATION, "common variables must have an alignment"
+		  " of 32678 or less");
       darwin_emit_common (fp, name, size, align);
       return;
     }
@@ -2735,7 +2739,7 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
     }
 
   /* We shouldn't be messing with this if the decl has a section name.  */
-  gcc_assert (DECL_SECTION_NAME (decl) == NULL);
+  gcc_checking_assert (DECL_SECTION_NAME (decl) == NULL);
 
   /* We would rather not have to check this here - but it seems that we might
      be passed a decl that should be in coalesced space.  */
@@ -2764,10 +2768,16 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
 
   l2align = floor_log2 (align / BITS_PER_UNIT);
   /* Check we aren't asking for more aligment than the platform allows.  */
-  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+  gcc_checking_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
 
   if (TREE_PUBLIC (decl) != 0)
-    darwin_emit_common (fp, name, size, align);
+    {
+      /* Common variables are limited to a maximum alignment of 2^15.  */
+      if (l2align > 15)
+	error_at (DECL_SOURCE_LOCATION (decl), "common variables must have"
+		  " an alignment of 32678 or less");
+      darwin_emit_common (fp, name, size, align);
+    }
   else
     darwin_emit_local_bss (fp, decl, name, size, l2align);
 }
@@ -3282,7 +3292,7 @@ darwin_override_options (void)
     }
 
   /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */
-  if (!global_options_set.x_flag_objc_abi)
+  if (!OPTION_SET_P (flag_objc_abi))
     global_options.x_flag_objc_abi
 	= (!flag_next_runtime)
 		? 0
@@ -3290,7 +3300,7 @@ darwin_override_options (void)
 				: (generating_for_darwin_version >= 9) ? 1
 								       : 0);
 
-  if (global_options_set.x_flag_objc_abi && flag_next_runtime)
+  if (OPTION_SET_P (flag_objc_abi) && flag_next_runtime)
     {
       if (TARGET_64BIT && global_options.x_flag_objc_abi != 2)
 	/* The Objective-C family ABI 2 is the only valid version NeXT/m64.  */
@@ -3307,42 +3317,43 @@ darwin_override_options (void)
 
   /* Don't emit DWARF3/4 unless specifically selected.  This is a
      workaround for tool bugs.  */
-  if (!global_options_set.x_dwarf_strict)
+  if (!OPTION_SET_P (dwarf_strict))
     dwarf_strict = 1;
-  if (!global_options_set.x_dwarf_version)
+  if (!OPTION_SET_P (dwarf_version))
     dwarf_version = 2;
 
-  if (global_options_set.x_dwarf_split_debug_info)
+  if (OPTION_SET_P (dwarf_split_debug_info))
     {
       inform (input_location,
 	      "%<-gsplit-dwarf%> is not supported on this platform, ignored");
       dwarf_split_debug_info = 0;
-      global_options_set.x_dwarf_split_debug_info = 0;
+      OPTION_SET_P (dwarf_split_debug_info) = 0;
     }
 
   /* Do not allow unwind tables to be generated by default for m32.
      fnon-call-exceptions will override this, regardless of what we do.  */
   if (generating_for_darwin_version < 10
-      && !global_options_set.x_flag_asynchronous_unwind_tables
+      && !OPTION_SET_P (flag_asynchronous_unwind_tables)
       && !TARGET_64BIT)
     global_options.x_flag_asynchronous_unwind_tables = 0;
 
    /* Disable -freorder-blocks-and-partition when unwind tables are being
       emitted for Darwin < 9 (OSX 10.5).
-      The strategy is, "Unless the User has specifically set/unset an unwind
+      The strategy is, "Unless the user has specifically set/unset an unwind
       flag we will switch off -freorder-blocks-and-partition when unwind tables
-      will be generated".  If the User specifically sets flags... we assume
-      (s)he knows why...  */
+      will be generated".  If the user specifically sets flags, we have to
+      assume they know why.  */
    if (generating_for_darwin_version < 9
-       && global_options_set.x_flag_reorder_blocks_and_partition
+       && OPTION_SET_P (flag_reorder_blocks_and_partition)
+       && flag_reorder_blocks_and_partition
        && ((global_options.x_flag_exceptions 		/* User, c++, java */
-	    && !global_options_set.x_flag_exceptions) 	/* User specified... */
+	    && !OPTION_SET_P (flag_exceptions)) 	/* User specified... */
 	   || (global_options.x_flag_unwind_tables
-	       && !global_options_set.x_flag_unwind_tables)
+	       && !OPTION_SET_P (flag_unwind_tables))
 	   || (global_options.x_flag_non_call_exceptions
-	       && !global_options_set.x_flag_non_call_exceptions)
+	       && !OPTION_SET_P (flag_non_call_exceptions))
 	   || (global_options.x_flag_asynchronous_unwind_tables
-	       && !global_options_set.x_flag_asynchronous_unwind_tables)))
+	       && !OPTION_SET_P (flag_asynchronous_unwind_tables))))
     {
       inform (input_location,
 	      "%<-freorder-blocks-and-partition%> does not work with "
@@ -3353,12 +3364,12 @@ darwin_override_options (void)
 
     /* FIXME: flag_objc_sjlj_exceptions is no longer needed since there is only
        one valid choice of exception scheme for each runtime.  */
-    if (!global_options_set.x_flag_objc_sjlj_exceptions)
+    if (!OPTION_SET_P (flag_objc_sjlj_exceptions))
       global_options.x_flag_objc_sjlj_exceptions =
 				flag_next_runtime && !TARGET_64BIT;
 
     /* FIXME: and this could be eliminated then too.  */
-    if (!global_options_set.x_flag_exceptions
+    if (!OPTION_SET_P (flag_exceptions)
 	&& flag_objc_exceptions
 	&& TARGET_64BIT)
       flag_exceptions = 1;
@@ -3414,7 +3425,7 @@ darwin_override_options (void)
      Linkers that don't need stubs, don't need the EH symbol markers either.
   */
 
-  if (!global_options_set.x_darwin_symbol_stubs)
+  if (!OPTION_SET_P (darwin_symbol_stubs))
     {
       if (darwin_target_linker)
 	{
@@ -3636,30 +3647,6 @@ darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 void
 darwin_rename_builtins (void)
 {
-  /* The system ___divdc3 routine in libSystem on darwin10 is not
-     accurate to 1ulp, ours is, so we avoid ever using the system name
-     for this routine and instead install a non-conflicting name that
-     is accurate.
-
-     When -ffast-math or -funsafe-math-optimizations is given, we can
-     use the faster version.  */
-  if (!flag_unsafe_math_optimizations)
-    {
-      enum built_in_function dcode
-	= (enum built_in_function)(BUILT_IN_COMPLEX_DIV_MIN
-				   + DCmode - MIN_MODE_COMPLEX_FLOAT);
-      tree fn = builtin_decl_explicit (dcode);
-      /* Fortran and c call TARGET_INIT_BUILTINS and
-	 TARGET_INIT_LIBFUNCS at different times, so we have to put a
-	 call into each to ensure that at least one of them is called
-	 after build_common_builtin_nodes.  A better fix is to add a
-	 new hook to run after build_common_builtin_nodes runs.  */
-      if (fn)
-	set_user_assembler_name (fn, "___ieee_divdc3");
-      fn = builtin_decl_implicit (dcode);
-      if (fn)
-	set_user_assembler_name (fn, "___ieee_divdc3");
-    }
 }
 
 /* Implementation for the TARGET_LIBC_HAS_FUNCTION hook.  */

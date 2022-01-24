@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
 This file is part of GCC.
@@ -120,6 +120,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-dse.h"
+#include "tree-vectorizer.h"
+#include "tree-eh.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -131,6 +133,11 @@ along with GCC; see the file COPYING3.  If not see
    statement to ensure that it is a no-op when C is false.  See
    predicate_statements for the kinds of predication we support.  */
 static bool need_to_predicate;
+
+/* True if we have to rewrite stmts that may invoke undefined behavior
+   when a condition C was false so it doesn't if it is always executed.
+   See predicate_statements for the kinds of predication we support.  */
+static bool need_to_rewrite_undefined;
 
 /* Indicate if there are any complicated PHIs that need to be handled in
    if-conversion.  Complicated PHI has more than two arguments and can't
@@ -1042,6 +1049,13 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
+  else if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	    || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
+	   && arith_code_with_undefined_signed_overflow
+				(gimple_assign_rhs_code (stmt)))
+    /* We have to rewrite stmts with undefined overflow.  */
+    need_to_rewrite_undefined = true;
 
   /* When if-converting stores force versioning, likewise if we
      ended up generating store data races.  */
@@ -1096,8 +1110,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	}
       return false;
     }
-
-  return true;
 }
 
 /* Assumes that BB has more than 1 predecessors.
@@ -1720,7 +1732,11 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
       reduction_op = gimple_assign_rhs_code (stmt);
     }
 
-  if (reduction_op != PLUS_EXPR && reduction_op != MINUS_EXPR)
+  if (reduction_op != PLUS_EXPR
+      && reduction_op != MINUS_EXPR
+      && reduction_op != BIT_IOR_EXPR
+      && reduction_op != BIT_XOR_EXPR
+      && reduction_op != BIT_AND_EXPR)
     return false;
   r_op1 = gimple_assign_rhs1 (stmt);
   r_op2 = gimple_assign_rhs2 (stmt);
@@ -1730,7 +1746,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 
   /* Make R_OP1 to hold reduction variable.  */
   if (r_nop2 == PHI_RESULT (header_phi)
-      && reduction_op == PLUS_EXPR)
+      && commutative_tree_code (reduction_op))
     {
       std::swap (r_op1, r_op2);
       std::swap (r_nop1, r_nop2);
@@ -1799,7 +1815,8 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
   tree rhs1 = gimple_assign_rhs1 (reduc);
   tree tmp = make_temp_ssa_name (TREE_TYPE (rhs1), NULL, "_ifc_");
   tree c;
-  tree zero = build_zero_cst (TREE_TYPE (rhs1));
+  enum tree_code reduction_op  = gimple_assign_rhs_code (reduc);
+  tree op_nochange = neutral_op_for_reduction (TREE_TYPE (rhs1), reduction_op, NULL);
   gimple_seq stmts = NULL;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1812,14 +1829,14 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
      of reduction rhs.  */
   c = fold_build_cond_expr (TREE_TYPE (rhs1),
 			    unshare_expr (cond),
-			    swap ? zero : op1,
-			    swap ? op1 : zero);
+			    swap ? op_nochange : op1,
+			    swap ? op1 : op_nochange);
 
   /* Create assignment stmt and insert it at GSI.  */
   new_assign = gimple_build_assign (tmp, c);
   gsi_insert_before (gsi, new_assign, GSI_SAME_STMT);
-  /* Build rhs for unconditional increment/decrement.  */
-  rhs = gimple_build (&stmts, gimple_assign_rhs_code (reduc),
+  /* Build rhs for unconditional increment/decrement/logic_operation.  */
+  rhs = gimple_build (&stmts, reduction_op,
 		      TREE_TYPE (rhs1), op0, tmp);
 
   if (has_nop)
@@ -2509,6 +2526,7 @@ predicate_statements (loop_p loop)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
 	  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
+	  tree lhs;
 	  if (!stmt)
 	    ;
 	  else if (is_false_predicate (cond)
@@ -2563,6 +2581,30 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
+	  else if (((lhs = gimple_assign_lhs (stmt)), true)
+		   && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		       || POINTER_TYPE_P (TREE_TYPE (lhs)))
+		   && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs))
+		   && arith_code_with_undefined_signed_overflow
+						(gimple_assign_rhs_code (stmt)))
+	    {
+	      gsi_remove (&gsi, true);
+	      gimple_seq stmts = rewrite_to_defined_overflow (stmt);
+	      bool first = true;
+	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
+		   !gsi_end_p (gsi2);)
+		{
+		  gassign *stmt2 = as_a <gassign *> (gsi_stmt (gsi2));
+		  gsi_remove (&gsi2, false);
+		  if (first)
+		    {
+		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
+		      first = false;
+		    }
+		  else
+		    gsi_insert_after (&gsi, stmt2, GSI_NEW_STMT);
+		}
+	    }
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
@@ -2580,7 +2622,7 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-	  tree lhs = gimple_get_lhs (gsi_stmt (gsi));
+	  lhs = gimple_get_lhs (gsi_stmt (gsi));
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	    ssa_names.add (lhs);
 	  gsi_next (&gsi);
@@ -2647,7 +2689,7 @@ combine_blocks (class loop *loop)
   insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
 
-  if (need_to_predicate)
+  if (need_to_predicate || need_to_rewrite_undefined)
     predicate_statements (loop);
 
   /* Merge basic blocks.  */
@@ -3132,6 +3174,99 @@ ifcvt_local_dce (class loop *loop)
     }
 }
 
+/* Return true if VALUE is already available on edge PE.  */
+
+static bool
+ifcvt_available_on_edge_p (edge pe, tree value)
+{
+  if (is_gimple_min_invariant (value))
+    return true;
+
+  if (TREE_CODE (value) == SSA_NAME)
+    {
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (value));
+      if (!def_bb || dominated_by_p (CDI_DOMINATORS, pe->dest, def_bb))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if STMT can be hoisted from if-converted loop LOOP to
+   edge PE.  */
+
+static bool
+ifcvt_can_hoist (class loop *loop, edge pe, gimple *stmt)
+{
+  if (auto *call = dyn_cast<gcall *> (stmt))
+    {
+      if (gimple_call_internal_p (call)
+	  && internal_fn_mask_index (gimple_call_internal_fn (call)) >= 0)
+	return false;
+    }
+  else if (auto *assign = dyn_cast<gassign *> (stmt))
+    {
+      if (gimple_assign_rhs_code (assign) == COND_EXPR)
+	return false;
+    }
+  else
+    return false;
+
+  if (gimple_has_side_effects (stmt)
+      || gimple_could_trap_p (stmt)
+      || stmt_could_throw_p (cfun, stmt)
+      || gimple_vdef (stmt)
+      || gimple_vuse (stmt))
+    return false;
+
+  int num_args = gimple_num_args (stmt);
+  if (pe != loop_preheader_edge (loop))
+    {
+      for (int i = 0; i < num_args; ++i)
+	if (!ifcvt_available_on_edge_p (pe, gimple_arg (stmt, i)))
+	  return false;
+    }
+  else
+    {
+      for (int i = 0; i < num_args; ++i)
+	if (!expr_invariant_in_loop_p (loop, gimple_arg (stmt, i)))
+	  return false;
+    }
+
+  return true;
+}
+
+/* Hoist invariant statements from LOOP to edge PE.  */
+
+static void
+ifcvt_hoist_invariants (class loop *loop, edge pe)
+{
+  gimple_stmt_iterator hoist_gsi = {};
+  unsigned int num_blocks = loop->num_nodes;
+  basic_block *body = get_loop_body (loop);
+  for (unsigned int i = 0; i < num_blocks; ++i)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (ifcvt_can_hoist (loop, pe, stmt))
+	  {
+	    /* Once we've hoisted one statement, insert other statements
+	       after it.  */
+	    gsi_remove (&gsi, false);
+	    if (hoist_gsi.ptr)
+	      gsi_insert_after (&hoist_gsi, stmt, GSI_NEW_STMT);
+	    else
+	      {
+		gsi_insert_on_edge_immediate (pe, stmt);
+		hoist_gsi = gsi_for_stmt (stmt);
+	      }
+	    continue;
+	  }
+	gsi_next (&gsi);
+      }
+  free (body);
+}
+
 /* If-convert LOOP when it is legal.  For the moment this pass has no
    profitability analysis.  Returns non-zero todo flags when something
    changed.  */
@@ -3143,11 +3278,13 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   bool aggressive_if_conv;
   class loop *rloop;
   bitmap exit_bbs;
+  edge pe;
 
  again:
   rloop = NULL;
   ifc_bbs = NULL;
   need_to_predicate = false;
+  need_to_rewrite_undefined = false;
   any_complicated_phi = false;
 
   /* Apply more aggressive if-conversion when loop or its outer loop were
@@ -3172,6 +3309,9 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
       && ((!flag_tree_loop_vectorize && !loop->force_vectorize)
 	  || loop->dont_vectorize))
     goto cleanup;
+
+  /* The edge to insert invariant stmts on.  */
+  pe = loop_preheader_edge (loop);
 
   /* Since we have no cost model, always version loops unless the user
      specified -ftree-loop-if-convert or unless versioning is required.
@@ -3210,6 +3350,12 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 	  gcc_assert (nloop->inner && nloop->inner->next == NULL);
 	  rloop = nloop->inner;
 	}
+      else
+	/* If we versioned loop then make sure to insert invariant
+	   stmts before the .LOOP_VECTORIZED check since the vectorizer
+	   will re-use that for things like runtime alias versioning
+	   whose condition can end up using those invariants.  */
+	pe = single_pred_edge (gimple_bb (preds->last ()));
     }
 
   /* Now all statements are if-convertible.  Combine all the basic
@@ -3236,6 +3382,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop);
   BITMAP_FREE (exit_bbs);
+
+  ifcvt_hoist_invariants (loop, pe);
 
   todo |= TODO_cleanup_cfg;
 

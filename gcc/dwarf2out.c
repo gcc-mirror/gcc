@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -2780,6 +2780,43 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
     }
 }
 
+static void
+build_breg_loc (struct dw_loc_descr_node **head, unsigned int regno)
+{
+  if (regno <= 31)
+    add_loc_descr (head, new_loc_descr ((enum dwarf_location_atom)
+					(DW_OP_breg0 + regno),  0, 0));
+  else
+    add_loc_descr (head, new_loc_descr (DW_OP_bregx, regno, 0));
+}
+
+/* Build a dwarf location for a cfa_reg spanning multiple
+   consecutive registers.  */
+
+struct dw_loc_descr_node *
+build_span_loc (struct cfa_reg reg)
+{
+  struct dw_loc_descr_node *head = NULL;
+
+  gcc_assert (reg.span_width > 0);
+  gcc_assert (reg.span > 1);
+
+  /* Start from the highest number register as it goes in the upper bits.  */
+  unsigned int regno = reg.reg + reg.span - 1;
+  build_breg_loc (&head, regno);
+
+  /* Deal with the remaining registers in the span.  */
+  for (int i = reg.span - 2; i >= 0; i--)
+    {
+      add_loc_descr (&head, int_loc_descriptor (reg.span_width * 8));
+      add_loc_descr (&head, new_loc_descr (DW_OP_shl, 0, 0));
+      regno--;
+      build_breg_loc (&head, regno);
+      add_loc_descr (&head, new_loc_descr (DW_OP_plus, 0, 0));
+    }
+  return head;
+}
+
 /* This function builds a dwarf location descriptor sequence from a
    dw_cfa_location, adding the given OFFSET to the result of the
    expression.  */
@@ -2791,9 +2828,16 @@ build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
 
   offset += cfa->offset;
 
-  if (cfa->indirect)
+  if (cfa->reg.span > 1)
     {
-      head = new_reg_loc_descr (cfa->reg, cfa->base_offset);
+      head = build_span_loc (cfa->reg);
+
+      if (maybe_ne (offset, 0))
+	  loc_descr_plus_const (&head, offset);
+    }
+  else if (cfa->indirect)
+    {
+      head = new_reg_loc_descr (cfa->reg.reg, cfa->base_offset);
       head->dw_loc_oprnd1.val_class = dw_val_class_const;
       head->dw_loc_oprnd1.val_entry = NULL;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
@@ -2801,7 +2845,7 @@ build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
       loc_descr_plus_const (&head, offset);
     }
   else
-    head = new_reg_loc_descr (cfa->reg, offset);
+    head = new_reg_loc_descr (cfa->reg.reg, offset);
 
   return head;
 }
@@ -2819,7 +2863,7 @@ build_cfa_aligned_loc (dw_cfa_location *cfa,
     = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 
   /* When CFA is defined as FP+OFFSET, emulate stack alignment.  */
-  if (cfa->reg == HARD_FRAME_POINTER_REGNUM && cfa->indirect == 0)
+  if (cfa->reg.reg == HARD_FRAME_POINTER_REGNUM && cfa->indirect == 0)
     {
       head = new_reg_loc_descr (dwarf_fp, 0);
       add_loc_descr (&head, int_loc_descriptor (alignment));
@@ -3854,7 +3898,7 @@ static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 					 dw_loc_list_ref);
 static void add_data_member_location_attribute (dw_die_ref, tree,
 						struct vlr_context *);
-static bool add_const_value_attribute (dw_die_ref, rtx);
+static bool add_const_value_attribute (dw_die_ref, machine_mode, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_wide_int (const wide_int &, unsigned char *, int);
 static unsigned insert_float (const_rtx, unsigned char *);
@@ -13373,8 +13417,6 @@ is_base_type (tree type)
 	return 0;
       gcc_unreachable ();
     }
-
-  return 0;
 }
 
 /* Given a pointer to a tree node, assumed to be some kind of a ..._TYPE
@@ -16379,6 +16421,15 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     do_binop:
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
+      if (XEXP (rtl, 0) == XEXP (rtl, 1))
+	{
+	  if (op0 == 0)
+	    break;
+	  mem_loc_result = op0;
+	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_dup, 0, 0));
+	  add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+	  break;
+	}
       op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
 
@@ -16823,6 +16874,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CONST_FIXED:
     case CLRSB:
     case CLOBBER:
+    case SMUL_HIGHPART:
+    case UMUL_HIGHPART:
       break;
 
     case CONST_STRING:
@@ -19658,6 +19711,7 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
   if (PCC_BITFIELD_TYPE_MATTERS
+      && DECL_BIT_FIELD_TYPE (decl)
       && TREE_CODE (DECL_FIELD_OFFSET (decl)) == INTEGER_CST)
     {
       offset_int object_offset_in_bits;
@@ -20093,8 +20147,10 @@ insert_float (const_rtx rtl, unsigned char *array)
    constants do not necessarily get memory "homes".  */
 
 static bool
-add_const_value_attribute (dw_die_ref die, rtx rtl)
+add_const_value_attribute (dw_die_ref die, machine_mode mode, rtx rtl)
 {
+  scalar_mode int_mode;
+
   switch (GET_CODE (rtl))
     {
     case CONST_INT:
@@ -20109,15 +20165,15 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_WIDE_INT:
-      {
-	wide_int w1 = rtx_mode_t (rtl, MAX_MODE_INT);
-	unsigned int prec = MIN (wi::min_precision (w1, UNSIGNED),
-				 (unsigned int) CONST_WIDE_INT_NUNITS (rtl)
-				 * HOST_BITS_PER_WIDE_INT);
-	wide_int w = wide_int::from (w1, prec, UNSIGNED);
-	add_AT_wide (die, DW_AT_const_value, w);
-      }
-      return true;
+      if (is_int_mode (mode, &int_mode)
+	  && (GET_MODE_PRECISION (int_mode)
+	      & (HOST_BITS_PER_WIDE_INT - 1)) == 0)
+	{
+	  wide_int w = rtx_mode_t (rtl, int_mode);
+	  add_AT_wide (die, DW_AT_const_value, w);
+	  return true;
+	}
+      return false;
 
     case CONST_DOUBLE:
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
@@ -20202,7 +20258,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST:
       if (CONSTANT_P (XEXP (rtl, 0)))
-	return add_const_value_attribute (die, XEXP (rtl, 0));
+	return add_const_value_attribute (die, mode, XEXP (rtl, 0));
       /* FALLTHROUGH */
     case SYMBOL_REF:
       if (!const_ok_for_output (rtl))
@@ -20249,7 +20305,6 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       /* No other kinds of rtx should be possible here.  */
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Determine whether the evaluation of EXPR references any variables
@@ -20715,7 +20770,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
 
   rtl = rtl_for_decl_location (decl);
   if (rtl && (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
-      && add_const_value_attribute (die, rtl))
+      && add_const_value_attribute (die, DECL_MODE (decl), rtl))
     return true;
 
   /* See if we have single element location list that is equivalent to
@@ -20736,7 +20791,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
       if (GET_CODE (rtl) == EXPR_LIST)
 	rtl = XEXP (rtl, 0);
       if ((CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
-	  && add_const_value_attribute (die, rtl))
+	  && add_const_value_attribute (die, DECL_MODE (decl), rtl))
 	 return true;
     }
   /* If this decl is from BLOCK_NONLOCALIZED_VARS, we might need its
@@ -20811,7 +20866,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
      symbols.  */
   rtl = rtl_for_decl_init (init, type);
   if (rtl && !early_dwarf)
-    return add_const_value_attribute (die, rtl);
+    return add_const_value_attribute (die, TYPE_MODE (type), rtl);
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))
@@ -20885,7 +20940,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   list = NULL;
 
   memset (&next_cfa, 0, sizeof (next_cfa));
-  next_cfa.reg = INVALID_REGNUM;
+  next_cfa.reg.set_by_dwreg (INVALID_REGNUM);
   remember = next_cfa;
 
   start_label = fde->dw_fde_begin;

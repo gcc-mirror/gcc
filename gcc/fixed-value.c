@@ -1,5 +1,5 @@
 /* Fixed-point arithmetic support.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -756,7 +756,6 @@ fixed_arithmetic (FIXED_VALUE_TYPE *f, int icode, const FIXED_VALUE_TYPE *op0,
     default:
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Compare fixed-point values by tree_code.

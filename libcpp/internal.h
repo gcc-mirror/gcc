@@ -1,5 +1,5 @@
 /* Part of CPP library.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -287,6 +287,9 @@ struct lexer_state
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
   unsigned char pragma_allow_expansion;
+
+  /* Nonzero if _Pragma should not be interpreted.  */
+  unsigned char ignore__Pragma;
 };
 
 /* Special nodes - identifiers with predefined significance.  */
@@ -597,6 +600,13 @@ struct cpp_reader
   /* Location identifying the main source file -- intended to be line
      zero of said file.  */
   location_t main_loc;
+
+  /* Returns true iff we should warn about UTF-8 bidirectional control
+     characters.  */
+  bool warn_bidi_p () const
+  {
+    return CPP_OPTION (this, cpp_warn_bidirectional) != bidirectional_none;
+  }
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -769,6 +779,9 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
 
+/* In errors.c  */
+extern location_t cpp_diagnostic_get_current_location (cpp_reader *);
+
 /* In traditional.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
@@ -934,6 +947,26 @@ int linemap_get_expansion_line (class line_maps *,
    SET is the line map set LOCATION comes from.  */
 const char* linemap_get_expansion_filename (class line_maps *,
 					    location_t);
+
+/* A subclass of rich_location for emitting a diagnostic
+   at the current location of the reader, but flagging
+   it with set_escape_on_output (true).  */
+class encoding_rich_location : public rich_location
+{
+ public:
+  encoding_rich_location (cpp_reader *pfile)
+  : rich_location (pfile->line_table,
+		   cpp_diagnostic_get_current_location (pfile))
+  {
+    set_escape_on_output (true);
+  }
+
+  encoding_rich_location (cpp_reader *pfile, location_t loc)
+  : rich_location (pfile->line_table, loc)
+  {
+    set_escape_on_output (true);
+  }
+};
 
 #ifdef __cplusplus
 }

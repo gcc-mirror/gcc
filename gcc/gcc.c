@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -367,6 +367,7 @@ static void putenv_from_prefixes (const struct path_prefix *, const char *,
 				  bool);
 static int access_check (const char *, int);
 static char *find_a_file (const struct path_prefix *, const char *, int, bool);
+static char *find_a_program (const char *);
 static void add_prefix (struct path_prefix *, const char *, const char *,
 			int, int, int);
 static void add_sysrooted_prefix (struct path_prefix *, const char *,
@@ -3052,22 +3053,7 @@ find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
 {
   struct file_at_path_info info;
 
-#ifdef DEFAULT_ASSEMBLER
-  if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
-    return xstrdup (DEFAULT_ASSEMBLER);
-#endif
-
-#ifdef DEFAULT_LINKER
-  if (! strcmp (name, "ld") && access (DEFAULT_LINKER, mode) == 0)
-    return xstrdup (DEFAULT_LINKER);
-#endif
-
-#ifdef DEFAULT_DSYMUTIL
-  if (! strcmp (name, "dsymutil") && access (DEFAULT_DSYMUTIL, mode) == 0)
-    return xstrdup (DEFAULT_DSYMUTIL);
-#endif
-
-  /* Determine the filename to execute (special case for absolute paths).  */
+  /* Find the filename in question (special case for absolute paths).  */
 
   if (IS_ABSOLUTE_PATH (name))
     {
@@ -3086,6 +3072,32 @@ find_a_file (const struct path_prefix *pprefix, const char *name, int mode,
   return (char*) for_each_path (pprefix, do_multi,
 				info.name_len + info.suffix_len,
 				file_at_path, &info);
+}
+
+/* Specialization of find_a_file for programs that also takes into account
+   configure-specified default programs. */
+
+static char*
+find_a_program (const char *name)
+{
+  /* Do not search if default matches query. */
+
+#ifdef DEFAULT_ASSEMBLER
+  if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, X_OK) == 0)
+    return xstrdup (DEFAULT_ASSEMBLER);
+#endif
+
+#ifdef DEFAULT_LINKER
+  if (! strcmp (name, "ld") && access (DEFAULT_LINKER, X_OK) == 0)
+    return xstrdup (DEFAULT_LINKER);
+#endif
+
+#ifdef DEFAULT_DSYMUTIL
+  if (! strcmp (name, "dsymutil") && access (DEFAULT_DSYMUTIL, X_OK) == 0)
+    return xstrdup (DEFAULT_DSYMUTIL);
+#endif
+
+  return find_a_file (&exec_prefixes, name, X_OK, false);
 }
 
 /* Ranking of prefixes in the sort list. -B prefixes are put before
@@ -3243,8 +3255,7 @@ execute (void)
 
   if (wrapper_string)
     {
-      string = find_a_file (&exec_prefixes,
-			    argbuf[0], X_OK, false);
+      string = find_a_program (argbuf[0]);
       if (string)
 	argbuf[0] = string;
       insert_wrapper (wrapper_string);
@@ -3269,7 +3280,7 @@ execute (void)
 
   if (!wrapper_string)
     {
-      string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
+      string = find_a_program(commands[0].prog);
       if (string)
 	commands[0].argv[0] = string;
     }
@@ -3284,8 +3295,7 @@ execute (void)
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv
 	  = &(argbuf.address ())[i + 1];
-	string = find_a_file (&exec_prefixes, commands[n_commands].prog,
-			      X_OK, false);
+	string = find_a_program(commands[n_commands].prog);
 	if (string)
 	  commands[n_commands].argv[0] = string;
 	n_commands++;
@@ -4007,26 +4017,25 @@ check_offload_target_name (const char *target, ptrdiff_t len)
       memcpy (cand, OFFLOAD_TARGETS, olen);
       for (c = strtok (cand, ","); c; c = strtok (NULL, ","))
 	candidates.safe_push (c);
+      candidates.safe_push ("default");
+      candidates.safe_push ("disable");
 
       char *target2 = XALLOCAVEC (char, len + 1);
       memcpy (target2, target, len);
       target2[len] = '\0';
 
-      error ("GCC is not configured to support %qs as offload target", target2);
+      error ("GCC is not configured to support %qs as %<-foffload=%> argument",
+	     target2);
 
-      if (candidates.is_empty ())
-	inform (UNKNOWN_LOCATION, "no offloading targets configured");
+      char *s;
+      const char *hint = candidates_list_and_hint (target2, s, candidates);
+      if (hint)
+	inform (UNKNOWN_LOCATION,
+		"valid %<-foffload=%> arguments are: %s; "
+		"did you mean %qs?", s, hint);
       else
-	{
-	  char *s;
-	  const char *hint = candidates_list_and_hint (target2, s, candidates);
-	  if (hint)
-	    inform (UNKNOWN_LOCATION,
-		    "valid offload targets are: %s; did you mean %qs?", s, hint);
-	  else
-	    inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
-	  XDELETEVEC (s);
-	}
+	inform (UNKNOWN_LOCATION, "valid %<-foffload=%> arguments are: %s", s);
+      XDELETEVEC (s);
       return false;
     }
   return true;
@@ -4273,6 +4282,10 @@ driver_handle_option (struct gcc_options *opts,
        use_ld = ".gold";
        break;
 
+    case OPT_fuse_ld_mold:
+       use_ld = ".mold";
+       break;
+
     case OPT_fcompare_debug_second:
       compare_debug_second = 1;
       break;
@@ -4479,7 +4492,10 @@ driver_handle_option (struct gcc_options *opts,
     case OPT__sysroot_:
       target_system_root = arg;
       target_system_root_changed = 1;
-      do_save = false;
+      /* Saving this option is useful to let self-specs decide to
+	 provide a default one.  */
+      do_save = true;
+      validated = true;
       break;
 
     case OPT_time_:
@@ -4566,10 +4582,12 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
     case OPT_static_libgfortran:
+    case OPT_static_libphobos:
     case OPT_static_libstdc__:
       /* These are always valid, since gcc.c itself understands the
-	 first two, gfortranspec.c understands -static-libgfortran and
-	 g++spec.c understands -static-libstdc++ */
+	 first two, gfortranspec.c understands -static-libgfortran,
+	 d-spec.cc understands -static-libphobos, and g++spec.c
+	 understands -static-libstdc++ */
       validated = true;
       break;
 
@@ -5088,7 +5106,8 @@ process_command (unsigned int decoded_options_count,
 
   bool explicit_dumpdir = dumpdir;
 
-  if (!save_temps_overrides_dumpdir && explicit_dumpdir)
+  if ((!save_temps_overrides_dumpdir && explicit_dumpdir)
+      || (output_file && not_actual_file_p (output_file)))
     {
       /* Do nothing.  */
     }
@@ -8556,8 +8575,7 @@ driver::maybe_putenv_COLLECT_LTO_WRAPPER () const
   if (have_c)
     lto_wrapper_file = NULL;
   else
-    lto_wrapper_file = find_a_file (&exec_prefixes, "lto-wrapper",
-				    X_OK, false);
+    lto_wrapper_file = find_a_program ("lto-wrapper");
   if (lto_wrapper_file)
     {
       lto_wrapper_file = convert_white_space (lto_wrapper_file);
@@ -8671,7 +8689,7 @@ driver::maybe_print_and_exit () const
 #endif
 	  print_prog_name = concat (print_prog_name, use_ld, NULL);
 	}
-      char *newname = find_a_file (&exec_prefixes, print_prog_name, X_OK, 0);
+      char *newname = find_a_program (print_prog_name);
       printf ("%s\n", (newname ? newname : print_prog_name));
       return (0);
     }
@@ -8761,7 +8779,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2021 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2022 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
@@ -9070,7 +9088,7 @@ driver::maybe_run_linker (const char *argv0) const
 	  /* We'll use ld if we can't find collect2.  */
 	  if (! strcmp (linker_name_spec, "collect2"))
 	    {
-	      char *s = find_a_file (&exec_prefixes, "collect2", X_OK, false);
+	      char *s = find_a_program ("collect2");
 	      if (s == NULL)
 		set_static_spec_shared (&linker_name_spec, "ld");
 	    }

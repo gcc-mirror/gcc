@@ -1,13 +1,16 @@
-/* REQUIRED_ARGS: -o- -de
+/* REQUIRED_ARGS: -o-
 TEST_OUTPUT:
 ---
-fail_compilation/commaexp.d(24): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(36): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(37): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(38): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(39): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(41): Deprecation: Using the result of a comma expression is deprecated
-fail_compilation/commaexp.d(42): Deprecation: Using the result of a comma expression is deprecated
+fail_compilation/commaexp.d(27): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(39): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(40): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(41): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(42): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(44): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(45): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(56): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(69): Error: Using the result of a comma expression is not allowed
+fail_compilation/commaexp.d(81): Error: Using the result of a comma expression is not allowed
 ---
 */
 
@@ -19,7 +22,7 @@ int main () {
     size_t aggr;
     MyContainerClass mc;
 
-    // Bug 15997
+    // https://issues.dlang.org/show_bug.cgi?id=15997
     enum WINHTTP_ERROR_BASE = 4200;
     enum ERROR_WINHTTP_CLIENT_AUTH_CERT_NEEDED = (WINHTTP_ERROR_BASE, + 44);
 
@@ -40,4 +43,40 @@ int main () {
     assert(!ok);
     ok = true, (ok = (true, false));
     return 42, 0;
+}
+
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=16022
+
+bool test16022()
+{
+    enum Type { Colon, Comma }
+    Type type;
+    return type == Type.Colon, type == Type.Comma;
+}
+
+bool test16022_structs()
+{
+    struct A
+    {
+        int i;
+        string s;
+    }
+
+    enum Type { Colon = A(0, "zero"), Comma = A(1, "one") }
+    Type type;
+    return type == Type.Colon, type == Type.Comma;
+}
+
+/********************************************/
+
+
+void bar11(int*, int*) { }
+
+void test11()
+{
+    static int* p;
+    static int i;
+    bar11((i,p), &i);
 }

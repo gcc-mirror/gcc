@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2021 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2022 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -564,6 +564,36 @@
           end function omp_get_max_task_priority
         end interface
 
+        interface omp_set_num_teams
+          subroutine omp_set_num_teams (num_teams)
+            integer (4), intent (in) :: num_teams
+          end subroutine omp_set_num_teams
+          subroutine omp_set_num_teams_8 (num_teams)
+            integer (8), intent (in) :: num_teams
+          end subroutine omp_set_num_teams_8
+        end interface
+
+        interface
+          function omp_get_max_teams ()
+            integer (4) :: omp_get_max_teams
+          end function omp_get_max_teams
+        end interface
+
+        interface omp_set_teams_thread_limit
+          subroutine omp_set_teams_thread_limit (thread_limit)
+            integer (4), intent (in) :: thread_limit
+          end subroutine omp_set_teams_thread_limit
+          subroutine omp_set_teams_thread_limit_8 (thread_limit)
+            integer (8), intent (in) :: thread_limit
+          end subroutine omp_set_teams_thread_limit_8
+        end interface
+
+        interface
+          function omp_get_teams_thread_limit ()
+            integer (4) :: omp_get_teams_thread_limit
+          end function omp_get_teams_thread_limit
+        end interface
+
         interface
           subroutine omp_fulfill_event (event)
             use omp_lib_kinds
@@ -681,12 +711,53 @@
         end interface
 
         interface
+          function omp_aligned_alloc (alignment, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_aligned_alloc
+            integer(c_size_t), value :: alignment, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_aligned_alloc
+        end interface
+
+        interface
           subroutine omp_free(ptr, allocator) bind(c)
             use, intrinsic :: iso_c_binding, only : c_ptr
             import :: omp_allocator_handle_kind
             type(c_ptr), value :: ptr
             integer(omp_allocator_handle_kind), value :: allocator
-          end subroutine
+          end subroutine omp_free
+        end interface
+
+        interface
+          function omp_calloc (nmemb, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_calloc
+            integer(c_size_t), value :: nmemb, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_calloc
+        end interface
+
+        interface
+          function omp_aligned_calloc (alignment, nmemb, size, allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_aligned_calloc
+            integer(c_size_t), value :: alignment, nmemb, size
+            integer(omp_allocator_handle_kind), value :: allocator
+          end function omp_aligned_calloc
+        end interface
+
+        interface
+          function omp_realloc (ptr, size, allocator, free_allocator) bind(c)
+            use, intrinsic :: iso_c_binding, only : c_ptr, c_size_t
+            import :: omp_allocator_handle_kind
+            type(c_ptr) :: omp_realloc
+            type(c_ptr), value :: ptr
+            integer(c_size_t), value :: size
+            integer(omp_allocator_handle_kind), value :: allocator, free_allocator
+          end function omp_realloc
         end interface
 
         interface
@@ -769,7 +840,7 @@
 #endif
 
 #if _OPENMP >= 202011
-!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master
+!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master, omp_atv_sequential
 #endif
 
       end module omp_lib

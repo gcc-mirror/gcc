@@ -1,5 +1,5 @@
 /* Darwin host-specific hook definitions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -20,62 +20,164 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "options.h"
 #include "diagnostic-core.h"
 #include "config/host-darwin.h"
+#include <errno.h>
 
-/* Yes, this is really supposed to work.  */
-/* This allows for a pagesize of 16384, which we have on Darwin20, but should
-   continue to work OK for pagesize 4096 which we have on earlier versions.
-   The size is 1 (binary) Gb.  */
-static char pch_address_space[65536*16384] __attribute__((aligned (16384)));
+/* For Darwin (macOS only) platforms, without ASLR (PIE) enabled on the
+   binaries, the following VM addresses are expected to be available.
+   NOTE, that for aarch64, ASLR is always enabled - but the VM address
+   mentioned below is available (at least on Darwin20).
 
-/* Return the address of the PCH address space, if the PCH will fit in it.  */
+   The spaces should all have 512Mb available c.f. PCH files for large
+   C++ or Objective-C in the range of 150Mb for 64b hosts.
+
+   We also try to steer clear of places already used for sanitizers.
+
+   If the allocation fails at the 'ideal' address, we go with what the
+   kernel provides (there is more likelihood that we will need to relocate
+   on read in).  */
+
+#define PAGE_SZ 4096
+#if defined(__x86_64) && defined(__LP64__)
+# define TRY_EMPTY_VM_SPACE	0x180000000000ULL
+#elif defined(__x86_64)
+# define TRY_EMPTY_VM_SPACE	0x00006fe00000ULL
+#elif defined(__i386)
+# define TRY_EMPTY_VM_SPACE	0x00006fe00000ULL
+#elif defined(__POWERPC__) && defined(__LP64__)
+# define TRY_EMPTY_VM_SPACE	0x180000000000ULL
+#elif defined(__POWERPC__)
+# define TRY_EMPTY_VM_SPACE	0x00006fe00000ULL
+#elif defined(__aarch64__)
+# undef PAGE_SZ
+# define PAGE_SZ 16384
+# define TRY_EMPTY_VM_SPACE	0x180000000000ULL
+#else
+# error "unknown Darwin target"
+#endif
+
+/* Try to map a known position in the VM.  The current PCH implementation
+   can adjust values at write-time, but not at read-time thus we need to
+   pick up the same position when reading as we got at write-time.  */
 
 void *
-darwin_gt_pch_get_address (size_t sz, int fd ATTRIBUTE_UNUSED)
+darwin_gt_pch_get_address (size_t sz, int fd)
 {
-  if (sz <= sizeof (pch_address_space))
-    return pch_address_space;
-  else
-    return NULL;
-}
+  /* First try with the constraint that we really want this address...  */
+  void *addr = mmap ((void *)TRY_EMPTY_VM_SPACE, sz, PROT_READ | PROT_WRITE,
+		     MAP_PRIVATE | MAP_FIXED, fd, 0);
 
-/* Check ADDR and SZ for validity, and deallocate (using munmap) that part of
-   pch_address_space beyond SZ.  */
+  if (addr != (void *) MAP_FAILED)
+    munmap (addr, sz);
 
-int
-darwin_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
-{
-  const size_t pagesize = getpagesize();
-  void *mmap_result;
-  int ret;
+  /* This ought to be the only alternative to failure, but there are comments
+     that suggest some versions of mmap can be buggy and return a different
+     value.  */
+  if (addr == (void *) TRY_EMPTY_VM_SPACE)
+    return addr;
 
-  gcc_assert ((size_t)pch_address_space % pagesize == 0
-	      && sizeof (pch_address_space) % pagesize == 0);
-  
-  ret = (addr == pch_address_space && sz <= sizeof (pch_address_space));
-  if (! ret)
-    sz = 0;
+  /* OK try to find a space without the constraint.  */
+  addr = mmap ((void *) TRY_EMPTY_VM_SPACE, sz, PROT_READ | PROT_WRITE,
+	       MAP_PRIVATE, fd, 0);
 
-  /* Round the size to a whole page size.  Normally this is a no-op.  */
-  sz = (sz + pagesize - 1) / pagesize * pagesize;
-
-  if (munmap (pch_address_space + sz, sizeof (pch_address_space) - sz) != 0)
-    fatal_error (input_location,
-		 "could not unmap %<pch_address_space%>: %m");
-
-  if (ret)
+  /* We return whatever the kernel gave us.  */
+  if (addr != (void *) MAP_FAILED)
     {
-      mmap_result = mmap (addr, sz,
-			  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-			  fd, off);
-
-      /* The file might not be mmap-able.  */
-      ret = mmap_result != (void *) MAP_FAILED;
-
-      /* Sanity check for broken MAP_FIXED.  */
-      gcc_assert (!ret || mmap_result == addr);
+      /* Unmap the area before returning.  */
+      munmap (addr, sz);
+      return addr;
     }
 
-  return ret;
+  /* Otherwise, try again but put some arbitrary buffer space first.  */
+  size_t buffer_size = 64 * 1024 * 1024;
+  void *buffer = mmap (0, buffer_size, PROT_NONE,
+		       MAP_PRIVATE | MAP_ANON, -1, 0);
+  addr = mmap ((void *)TRY_EMPTY_VM_SPACE, sz, PROT_READ | PROT_WRITE,
+		MAP_PRIVATE, fd, 0);
+
+  if (buffer != (void *) MAP_FAILED)
+    munmap (buffer, buffer_size);
+
+  /* If we failed this time, that means there is *no* large enough free
+     space.  */
+  if (addr == (void *) MAP_FAILED)
+    {
+      error ("PCH memory not available %m");
+      return NULL;
+    }
+
+  munmap (addr, sz);
+  return addr;
+}
+
+/* Try to mmap the PCH file at ADDR for SZ bytes at OFF offset in the file.
+   If we succeed return 1, if we cannot mmap the desired address, then we
+   fail with -1.  */
+
+int
+darwin_gt_pch_use_address (void *&addr, size_t sz, int fd, size_t off)
+{
+  void *mapped_addr;
+
+  /* We're called with size == 0 if we're not planning to load a PCH
+     file at all.  This allows the hook to free any static space that
+     we might have allocated at link time.  */
+  if (sz == 0)
+    return -1;
+
+  gcc_checking_assert (!(off % PAGE_SZ));
+
+  /* Try to map the file with MAP_PRIVATE and FIXED.  */
+  mapped_addr = mmap (addr, sz, PROT_READ | PROT_WRITE,
+		      MAP_PRIVATE | MAP_FIXED, fd, (off_t) off);
+
+  /* Hopefully, we succeed.  */
+  if (mapped_addr == addr)
+    return 1;
+
+  /* In theory, the only alternative to success for MAP_FIXED should be FAILED
+     however, there are some buggy earlier implementations that could return
+     an address.  */
+  if (mapped_addr != (void *) MAP_FAILED)
+    munmap (mapped_addr, sz);
+
+  /* Try to map the file with MAP_PRIVATE but let the kernel move it.  */
+  mapped_addr = mmap (addr, sz, PROT_READ | PROT_WRITE,
+		      MAP_PRIVATE, fd, (off_t) off);
+
+  /* Hopefully, we succeed.  */
+  if (mapped_addr != (void *) MAP_FAILED)
+    {
+      addr = mapped_addr;
+      return 1;
+    }
+
+  /* Try to make an anonymous private mmap at the desired location in case
+     the problem is in mapping the file.  */
+  mapped_addr = mmap (addr, sz, PROT_READ | PROT_WRITE,
+		      MAP_PRIVATE | MAP_ANON, -1, (off_t)0);
+
+  /* If this fails, we are out of ideas (and maybe memory).  */
+  if (mapped_addr == (void *) MAP_FAILED)
+    return -1;
+
+  addr = mapped_addr;
+
+  if (lseek (fd, off, SEEK_SET) == (off_t) -1)
+    return -1;
+
+  while (sz)
+    {
+      ssize_t nbytes;
+
+      nbytes = read (fd, mapped_addr, MIN (sz, (size_t) -1 >> 1));
+      if (nbytes <= 0)
+	return -1;
+      mapped_addr = (char *) mapped_addr + nbytes;
+      sz -= nbytes;
+    }
+
+  return 1;
 }

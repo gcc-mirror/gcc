@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,10 +46,11 @@ package System.Val_LLI is
               Long_Long_Unsigned,
               Val_LLU.Scan_Raw_Long_Long_Unsigned);
 
-   function Scan_Long_Long_Integer
+   procedure Scan_Long_Long_Integer
      (Str  : String;
       Ptr  : not null access Integer;
-      Max  : Integer) return Long_Long_Integer
+      Max  : Integer;
+      Res  : out Long_Long_Integer)
      renames Impl.Scan_Integer;
 
    function Value_Long_Long_Integer (Str : String) return Long_Long_Integer

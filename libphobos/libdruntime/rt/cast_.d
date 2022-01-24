@@ -2,8 +2,9 @@
  * Implementation of array assignment support routines.
  *
  * Copyright: Copyright Digital Mars 2004 - 2010.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright, Sean Kelly
+ * Source: $(DRUNTIMESRC rt/_cast_.d)
  */
 
 /*          Copyright Digital Mars 2004 - 2010.
@@ -14,6 +15,19 @@
 module rt.cast_;
 
 extern (C):
+@nogc:
+nothrow:
+pure:
+
+// Needed because ClassInfo.opEquals(Object) does a dynamic cast,
+// but we are trying to implement dynamic cast.
+extern (D) private bool areClassInfosEqual(scope const ClassInfo a, scope const ClassInfo b) @safe
+{
+    if (a is b)
+        return true;
+    // take care of potential duplicates across binaries
+    return a.name == b.name;
+}
 
 /******************************************
  * Given a pointer:
@@ -22,7 +36,7 @@ extern (C):
  *      If it is null, return null.
  *      Else, undefined crash
  */
-Object _d_toObject(void* p)
+Object _d_toObject(return scope void* p)
 {
     if (!p)
         return null;
@@ -74,21 +88,21 @@ void* _d_dynamic_cast(Object o, ClassInfo c)
     return res;
 }
 
-int _d_isbaseof2(ClassInfo oc, ClassInfo c, ref size_t offset)
+int _d_isbaseof2(scope ClassInfo oc, scope const ClassInfo c, scope ref size_t offset) @safe
 {
-    if (oc is c)
+    if (areClassInfosEqual(oc, c))
         return true;
 
     do
     {
-        if (oc.base is c)
+        if (oc.base && areClassInfosEqual(oc.base, c))
             return true;
 
         // Bugzilla 2013: Use depth-first search to calculate offset
         // from the derived (oc) to the base (c).
         foreach (iface; oc.interfaces)
         {
-            if (iface.classinfo is c || _d_isbaseof2(iface.classinfo, c, offset))
+            if (areClassInfosEqual(iface.classinfo, c) || _d_isbaseof2(iface.classinfo, c, offset))
             {
                 offset += iface.offset;
                 return true;
@@ -101,19 +115,19 @@ int _d_isbaseof2(ClassInfo oc, ClassInfo c, ref size_t offset)
     return false;
 }
 
-int _d_isbaseof(ClassInfo oc, ClassInfo c)
+int _d_isbaseof(scope ClassInfo oc, scope const ClassInfo c) @safe
 {
-    if (oc is c)
+    if (areClassInfosEqual(oc, c))
         return true;
 
     do
     {
-        if (oc.base is c)
+        if (oc.base && areClassInfosEqual(oc.base, c))
             return true;
 
         foreach (iface; oc.interfaces)
         {
-            if (iface.classinfo is c || _d_isbaseof(iface.classinfo, c))
+            if (areClassInfosEqual(iface.classinfo, c) || _d_isbaseof(iface.classinfo, c))
                 return true;
         }
 
@@ -121,21 +135,4 @@ int _d_isbaseof(ClassInfo oc, ClassInfo c)
     } while (oc);
 
     return false;
-}
-
-/*********************************
- * Find the vtbl[] associated with Interface ic.
- */
-void* _d_interface_vtbl(ClassInfo ic, Object o)
-{
-    debug(cast_) printf("__d_interface_vtbl(o = %p, ic = %p)\n", o, ic);
-
-    assert(o);
-
-    foreach (iface; typeid(o).interfaces)
-    {
-        if (iface.classinfo is ic)
-            return cast(void*) iface.vtbl;
-    }
-    assert(0);
 }

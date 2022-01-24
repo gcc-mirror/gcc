@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-iftoswitch-optimized" } */
+/* Supplying case-values-threshold makes the testcase less target dependent.  */
+/* { dg-options "-O2 -fdump-tree-iftoswitch-optimized --param case-values-threshold=4" } */
 
 int IsMySuperRandomChar(int aChar)
 {

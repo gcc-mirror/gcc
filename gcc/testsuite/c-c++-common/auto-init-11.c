@@ -11,4 +11,4 @@ void foo(int n)
   return;
 }
 
-/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(D.\\d*, 2, 1\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(D.\\d*, 2, \&\"arr\"" "gimple" } } */

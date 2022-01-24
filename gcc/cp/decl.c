@@ -1,5 +1,5 @@
 /* Process declarations and variables for -*- C++ -*- compiler.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
+#include "opts.h"
+#include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -596,7 +598,7 @@ poplevel (int keep, int reverse, int functionbody)
   tree decl;
   scope_kind kind;
 
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
  restart:
 
   block = NULL_TREE;
@@ -828,7 +830,6 @@ poplevel (int keep, int reverse, int functionbody)
   if (kind == sk_cleanup)
     goto restart;
 
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return block;
 }
 
@@ -907,7 +908,7 @@ static GTY((deletable)) vec<tree, va_gc> *local_entities;
 void
 determine_local_discriminator (tree decl)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
   retrofit_lang_decl (decl);
   tree ctx = DECL_CONTEXT (decl);
   tree name = (TREE_CODE (decl) == TYPE_DECL
@@ -942,8 +943,6 @@ determine_local_discriminator (tree decl)
       local_entities->quick_push (decl);
       local_entities->quick_push (name);
     }
-
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
 
@@ -1288,6 +1287,12 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     }
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
+      /* With -fimplicit-constexpr, ignore changes in the constexpr
+	 keyword.  */
+      if (flag_implicit_constexpr
+	  && (DECL_IMMEDIATE_FUNCTION_P (new_decl)
+	      == DECL_IMMEDIATE_FUNCTION_P (old_decl)))
+	return true;
       if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
@@ -3228,7 +3233,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	{
 	  DECL_EXTERNAL (newdecl) = 1;
 	  /* For now, only warn with explicit -Wdeprecated.  */
-	  if (global_options_set.x_warn_deprecated)
+	  if (OPTION_SET_P (warn_deprecated))
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (DECL_SOURCE_LOCATION (newdecl), OPT_Wdeprecated,
@@ -3276,6 +3281,8 @@ named_label_hash::equal (const value_type entry, compare_type name)
 static named_label_entry *
 lookup_label_1 (tree id, bool making_local_p)
 {
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
+
   /* You can't use labels at global scope.  */
   if (current_function_decl == NULL_TREE)
     {
@@ -3338,18 +3345,14 @@ lookup_label_1 (tree id, bool making_local_p)
 tree
 lookup_label (tree id)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   named_label_entry *ent = lookup_label_1 (id, false);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ent ? ent->label_decl : NULL_TREE;
 }
 
 tree
 declare_local_label (tree id)
 {
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   named_label_entry *ent = lookup_label_1 (id, true);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
   return ent ? ent->label_decl : NULL_TREE;
 }
 
@@ -3680,9 +3683,11 @@ check_omp_return (void)
 /* Define a label, specifying the location in the source file.
    Return the LABEL_DECL node for the label.  */
 
-static tree
-define_label_1 (location_t location, tree name)
+tree
+define_label (location_t location, tree name)
 {
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
+
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
   for (cp_binding_level *p = current_binding_level;
@@ -3715,18 +3720,6 @@ define_label_1 (location_t location, tree name)
 
   return decl;
 }
-
-/* Wrapper for define_label_1.  */
-
-tree
-define_label (location_t location, tree name)
-{
-  bool running = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = define_label_1 (location, name);
-  timevar_cond_stop (TV_NAME_LOOKUP, running);
-  return ret;
-}
-
 
 struct cp_switch
 {
@@ -4725,6 +4718,9 @@ cxx_init_decl_processing (void)
     nullptr_node = build_int_cst (nullptr_type_node, 0);
   }
 
+  if (! supports_one_only ())
+    flag_weak = 0;
+
   abort_fndecl
     = build_library_fn_ptr ("__cxa_pure_virtual", void_ftype,
 			    ECF_NORETURN | ECF_NOTHROW | ECF_COLD);
@@ -4740,9 +4736,6 @@ cxx_init_decl_processing (void)
   if (flag_exceptions)
     init_exception_processing ();
 
-  if (! supports_one_only ())
-    flag_weak = 0;
-
   if (modules_p ())
     init_modules (parse_in);
 
@@ -4756,7 +4749,7 @@ cxx_init_decl_processing (void)
   /* Check that the hardware interference sizes are at least
      alignof(max_align_t), as required by the standard.  */
   const int max_align = max_align_t_align () / BITS_PER_UNIT;
-  if (global_options_set.x_param_destruct_interfere_size)
+  if (OPTION_SET_P (param_destruct_interfere_size))
     {
       if (param_destruct_interfere_size < max_align)
 	error ("%<--param destructive-interference-size=%d%> is less than "
@@ -4773,7 +4766,7 @@ cxx_init_decl_processing (void)
     param_destruct_interfere_size = param_l1_cache_line_size;
   /* else leave it unset.  */
 
-  if (global_options_set.x_param_construct_interfere_size)
+  if (OPTION_SET_P (param_construct_interfere_size))
     {
       if (param_construct_interfere_size < max_align)
 	error ("%<--param constructive-interference-size=%d%> is less than "
@@ -5574,7 +5567,7 @@ start_decl (const cp_declarator *declarator,
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
-      bool this_tmpl = (processing_template_decl
+      bool this_tmpl = (current_template_depth
 			> template_class_depth (context));
       if (VAR_P (decl))
 	{
@@ -5709,17 +5702,20 @@ start_decl (const cp_declarator *declarator,
     }
 
   if (current_function_decl && VAR_P (decl)
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && cxx_dialect < cxx23)
     {
       bool ok = false;
       if (CP_DECL_THREAD_LOCAL_P (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<thread_local%> in %qs function", decl,
+		  "%qD declared %<thread_local%> in %qs function only "
+		  "available with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else if (TREE_STATIC (decl))
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "%qD declared %<static%> in %qs function", decl,
+		  "%qD declared %<static%> in %qs function only available "
+		  "with %<-std=c++2b%> or %<-std=gnu++2b%>", decl,
 		  DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
 		  ? "consteval" : "constexpr");
       else
@@ -5770,14 +5766,6 @@ start_decl_1 (tree decl, bool initialized)
 	 was "const", but incomplete, before this point.  But, now, we
 	 have a complete type, so we can try again.  */
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
-    }
-
-  if (is_global_var (decl))
-    {
-      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
-				   ? TCTX_THREAD_STORAGE
-				   : TCTX_STATIC_STORAGE);
-      verify_type_context (input_location, context, TREE_TYPE (decl));
     }
 
   if (initialized)
@@ -7269,11 +7257,6 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
       if (init && TREE_CODE (init) != TREE_VEC)
 	{
-	  /* In aggregate initialization of a variable, each element
-	     initialization is a full-expression because there is no
-	     enclosing expression.  */
-	  gcc_assert (stmts_are_full_exprs_p ());
-
 	  init_code = store_init_value (decl, init, cleanups, flags);
 
 	  if (DECL_INITIAL (decl)
@@ -7377,7 +7360,8 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 		 This is horrible, as we're affecting a
 		 possibly-shared decl.  Again, a one-true-decl
 		 model breaks down.  */
-	      set_user_assembler_name (ns_decl, asmspec);
+	      if (ns_decl != error_mark_node)
+		set_user_assembler_name (ns_decl, asmspec);
 	}
     }
 
@@ -7439,12 +7423,15 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
       tree guard = (tree)data;
       tree tcleanup = TARGET_EXPR_CLEANUP (*stmt_p);
 
-      tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
-      /* Tell honor_protect_cleanup_actions to handle this as a separate
-	 cleanup.  */
-      TRY_CATCH_IS_CLEANUP (tcleanup) = 1;
- 
-      TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
+      if (tcleanup && !CLEANUP_EH_ONLY (*stmt_p)
+	  && !expr_noexcept_p (tcleanup, tf_none))
+	{
+	  tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
+	  /* Tell honor_protect_cleanup_actions to handle this as a separate
+	     cleanup.  */
+	  TRY_CATCH_IS_CLEANUP (tcleanup) = 1;
+	  TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
+	}
     }
 
   return NULL_TREE;
@@ -7464,11 +7451,24 @@ wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
    they are run on the normal path, but not if they are run on the
    exceptional path.  We implement this by telling
    honor_protect_cleanup_actions to strip the variable cleanup from the
-   exceptional path.  */
+   exceptional path.
+
+   Another approach could be to make the variable cleanup region enclose
+   initialization, but depend on a flag to indicate that the variable is
+   initialized; that's effectively what we do for arrays.  But the current
+   approach works fine for non-arrays, and has no code overhead in the usual
+   case where the temporary destructors are noexcept.  */
 
 static void
 wrap_temporary_cleanups (tree init, tree guard)
 {
+  if (TREE_CODE (guard) == BIND_EXPR)
+    {
+      /* An array cleanup region already encloses any temporary cleanups,
+	 don't wrap it around them again.  */
+      gcc_checking_assert (BIND_EXPR_VEC_DTOR (guard));
+      return;
+    }
   cp_walk_tree_without_duplicates (&init, wrap_cleanups_r, (void *)guard);
 }
 
@@ -7509,11 +7509,11 @@ initialize_local_var (tree decl, tree init)
     {
       tree rinit = (TREE_CODE (init) == INIT_EXPR
 		    ? TREE_OPERAND (init, 1) : NULL_TREE);
-      if (rinit && !TREE_SIDE_EFFECTS (rinit))
+      if (rinit && !TREE_SIDE_EFFECTS (rinit)
+	  && TREE_OPERAND (init, 0) == decl)
 	{
 	  /* Stick simple initializers in DECL_INITIAL so that
 	     -Wno-init-self works (c++/34772).  */
-	  gcc_assert (TREE_OPERAND (init, 0) == decl);
 	  DECL_INITIAL (decl) = rinit;
 
 	  if (warn_init_self && TYPE_REF_P (type))
@@ -7531,9 +7531,8 @@ initialize_local_var (tree decl, tree init)
 
 	  /* If we're only initializing a single object, guard the
 	     destructors of any temporaries used in its initializer with
-	     its destructor.  This isn't right for arrays because each
-	     element initialization is a full-expression.  */
-	  if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
+	     its destructor.  */
+	  if (cleanup)
 	    wrap_temporary_cleanups (init, cleanup);
 
 	  gcc_assert (building_stmt_list_p ());
@@ -7772,7 +7771,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
       else
 	{
 	  tree construct = omp_get_context_selector (ctx, "construct", NULL);
-	  c_omp_mark_declare_variant (match_loc, variant, construct);
+	  omp_mark_declare_variant (match_loc, variant, construct);
 	  if (!omp_context_selector_matches (ctx))
 	    return true;
 	  TREE_PURPOSE (TREE_VALUE (attr)) = variant;
@@ -7976,6 +7975,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 			      TCTX_STATIC_STORAGE, type)
       && DECL_INITIALIZED_IN_CLASS_P (decl))
     check_static_variable_definition (decl, type);
+
+  if (!processing_template_decl && VAR_P (decl) && is_global_var (decl))
+    {
+      type_context_kind context = (DECL_THREAD_LOCAL_P (decl)
+				   ? TCTX_THREAD_STORAGE
+				   : TCTX_STATIC_STORAGE);
+      verify_type_context (input_location, context, TREE_TYPE (decl));
+    }
 
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -8373,7 +8380,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (cleanups)
     {
       for (tree t : *cleanups)
-	push_cleanup (decl, t, false);
+	{
+	  push_cleanup (decl, t, false);
+	  /* As in initialize_local_var.  */
+	  wrap_temporary_cleanups (init, t);
+	}
       release_tree_vector (cleanups);
     }
 
@@ -9532,9 +9543,6 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   if (initial_value)
     {
-      unsigned HOST_WIDE_INT i;
-      tree value;
-
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant.
 
@@ -9556,14 +9564,9 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
       /* If any of the elements are parameter packs, we can't actually
 	 complete this type now because the array size is dependent.  */
       if (TREE_CODE (initial_value) == CONSTRUCTOR)
-	{
-	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (initial_value), 
-				      i, value)
-	    {
-	      if (PACK_EXPANSION_P (value))
-		return 0;
-	    }
-	}
+	for (auto &e: CONSTRUCTOR_ELTS (initial_value))
+	  if (PACK_EXPANSION_P (e.value))
+	    return 0;
     }
 
   failure = complete_array_type (ptype, initial_value, do_default);
@@ -9889,7 +9892,7 @@ grokfndecl (tree ctype,
       tree ctx = friendp ? current_class_type : ctype;
       bool block_local = TREE_CODE (current_scope ()) == FUNCTION_DECL;
       bool memtmpl = (!block_local
-		      && (processing_template_decl
+		      && (current_template_depth
 			  > template_class_depth (ctx)));
       if (memtmpl)
 	{
@@ -10311,7 +10314,7 @@ grokfndecl (tree ctype,
   if (ctype != NULL_TREE && check)
     {
       tree old_decl = check_classfn (ctype, decl,
-				     (processing_template_decl
+				     (current_template_depth
 				      > template_class_depth (ctype))
 				     ? current_template_parms
 				     : NULL_TREE);
@@ -10587,7 +10590,7 @@ grokvardecl (tree type,
         }
     }
   else if (flag_concepts
-	   && processing_template_decl > template_class_depth (scope))
+	   && current_template_depth > template_class_depth (scope))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       tree ci = build_constraints (reqs, NULL_TREE);
@@ -11002,7 +11005,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 				    cp_convert (ssizetype, integer_one_node,
 						complain),
 				    complain);
-	itype = maybe_constant_value (itype);
+	itype = maybe_constant_value (itype, NULL_TREE, true);
       }
 
       if (!TREE_CONSTANT (itype))
@@ -11365,6 +11368,33 @@ name_unnamed_type (tree type, tree decl)
   gcc_assert (!TYPE_UNNAMED_P (type));
 }
 
+/* Check that decltype(auto) was well-formed: only plain decltype(auto)
+   is allowed.  TYPE might contain a decltype(auto).  Returns true if
+   there was a problem, false otherwise.  */
+
+static bool
+check_decltype_auto (location_t loc, tree type)
+{
+  if (tree a = type_uses_auto (type))
+    {
+      if (AUTO_IS_DECLTYPE (a))
+	{
+	  if (a != type)
+	    {
+	      error_at (loc, "%qT as type rather than plain "
+			"%<decltype(auto)%>", type);
+	      return true;
+	    }
+	  else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+	    {
+	      error_at (loc, "%<decltype(auto)%> cannot be cv-qualified");
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -11518,14 +11548,18 @@ grokdeclarator (const cp_declarator *declarator,
   if (initialized == SD_DEFAULTED || initialized == SD_DELETED)
     funcdef_flag = true;
 
-  location_t typespec_loc = smallest_type_location (type_quals,
-						    declspecs->locations);
-  if (typespec_loc == UNKNOWN_LOCATION)
-    typespec_loc = input_location;
-
-  location_t id_loc = declarator ? declarator->id_loc : input_location;
-  if (id_loc == UNKNOWN_LOCATION)
-    id_loc = input_location;
+  location_t typespec_loc = loc_or_input_loc (smallest_type_location
+					      (type_quals,
+					       declspecs->locations));
+  location_t id_loc;
+  location_t init_loc;
+  if (declarator)
+    {
+      id_loc = loc_or_input_loc (declarator->id_loc);
+      init_loc = loc_or_input_loc (declarator->init_loc);
+    }
+  else
+    init_loc = id_loc = input_location;
 
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
@@ -12709,25 +12743,9 @@ grokdeclarator (const cp_declarator *declarator,
 			  "allowed");
 		return error_mark_node;
 	      }
-	    /* Only plain decltype(auto) is allowed.  */
-	    if (tree a = type_uses_auto (type))
-	      {
-		if (AUTO_IS_DECLTYPE (a))
-		  {
-		    if (a != type)
-		      {
-			error_at (typespec_loc, "%qT as type rather than "
-				  "plain %<decltype(auto)%>", type);
-			return error_mark_node;
-		      }
-		    else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
-		      {
-			error_at (typespec_loc, "%<decltype(auto)%> cannot be "
-				  "cv-qualified");
-			return error_mark_node;
-		      }
-		  }
-	      }
+
+	    if (check_decltype_auto (typespec_loc, type))
+	      return error_mark_node;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -13086,6 +13104,15 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   id_loc = declarator ? declarator->id_loc : input_location;
+
+  if (innermost_code != cdk_function
+    /* Don't check this if it can be the artifical decltype(auto)
+       we created when building a constraint in a compound-requirement:
+       that the type-constraint is plain is going to be checked in
+       cp_parser_compound_requirement.  */
+      && decl_context != TYPENAME
+      && check_decltype_auto (id_loc, type))
+    return error_mark_node;
 
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */
@@ -13982,7 +14009,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		/* Set the constraints on the declaration.  */
-		bool memtmpl = (processing_template_decl
+		bool memtmpl = (current_template_depth
 				> template_class_depth (current_class_type));
 		if (memtmpl)
 		  {
@@ -14038,7 +14065,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    /* An attempt is being made to initialize a non-static
 		       member.  This is new in C++11.  */
-		    maybe_warn_cpp0x (CPP0X_NSDMI);
+		    maybe_warn_cpp0x (CPP0X_NSDMI, init_loc);
 
 		    /* If this has been parsed with static storage class, but
 		       errors forced staticp to be cleared, ensure NSDMI is
@@ -14865,7 +14892,7 @@ grok_special_member_properties (tree decl)
       if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
-      if (DECL_DECLARED_CONSTEXPR_P (decl)
+      if (maybe_constexpr_fn (decl)
 	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
@@ -15147,6 +15174,8 @@ grok_op_properties (tree decl, bool complain)
     case OVL_OP_FLAG_BINARY:
       if (arity != 2)
 	{
+	  if (operator_code == ARRAY_REF && cxx_dialect >= cxx23)
+	    break;
 	  error_at (loc,
 		    methodp
 		    ? G_("%qD must have exactly one argument")
@@ -15424,6 +15453,16 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     }
 
   if (DECL_CLASS_TEMPLATE_P (decl)
+      && !template_header_p
+      && how == TAG_how::CURRENT_ONLY)
+    {
+      error ("class template %qD redeclared as non-template", name);
+      inform (location_of (decl), "previous declaration here");
+      CLASSTYPE_ERRONEOUS (TREE_TYPE (decl)) = true;
+      return error_mark_node;
+    }
+
+  if (DECL_CLASS_TEMPLATE_P (decl)
       /* If scope is TAG_how::CURRENT_ONLY we're defining a class,
 	 so ignore a template template parameter.  */
       || (how != TAG_how::CURRENT_ONLY && DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))
@@ -15495,12 +15534,14 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
    TEMPLATE_HEADER_P is true when this declaration is preceded by
    a set of template parameters.  */
 
-static tree
-xref_tag_1 (enum tag_types tag_code, tree name,
-            TAG_how how, bool template_header_p)
+tree
+xref_tag (enum tag_types tag_code, tree name,
+	  TAG_how how, bool template_header_p)
 {
   enum tree_code code;
   tree context = NULL_TREE;
+
+  auto_cond_timevar tv (TV_NAME_LOOKUP);
 
   gcc_assert (identifier_p (name));
 
@@ -15648,18 +15689,6 @@ xref_tag_1 (enum tag_types tag_code, tree name,
     }
 
   return t;
-}
-
-/* Wrapper for xref_tag_1.  */
-
-tree
-xref_tag (enum tag_types tag_code, tree name,
-	  TAG_how how, bool template_header_p)
-{
-  bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
-  tree ret = xref_tag_1 (tag_code, name, how, template_header_p);
-  timevar_cond_stop (TV_NAME_LOOKUP, subtime);
-  return ret;
 }
 
 /* Create the binfo hierarchy for REF with (possibly NULL) base list
@@ -16597,6 +16626,42 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
   input_location = saved_loc;
   return enumtype;
 }
+
+/* Implement LANG_HOOKS_SIMULATE_RECORD_DECL.  */
+
+tree
+cxx_simulate_record_decl (location_t loc, const char *name,
+			  array_slice<const tree> fields)
+{
+  iloc_sentinel ils (loc);
+
+  tree ident = get_identifier (name);
+  tree type = xref_tag (/*tag_code=*/record_type, ident);
+  if (type != error_mark_node
+      && (TREE_CODE (type) != RECORD_TYPE || COMPLETE_TYPE_P (type)))
+    {
+      error ("redefinition of %q#T", type);
+      type = error_mark_node;
+    }
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  xref_basetypes (type, NULL_TREE);
+  type = begin_class_definition (type);
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  for (tree field : fields)
+    finish_member_declaration (field);
+
+  type = finish_struct (type, NULL_TREE);
+
+  tree decl = build_decl (loc, TYPE_DECL, ident, type);
+  set_underlying_type (decl);
+  lang_hooks.decls.pushdecl (decl);
+
+  return type;
+}
 
 /* We're defining DECL.  Make sure that its type is OK.  */
 
@@ -17076,8 +17141,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   start_fname_decls ();
 
   store_parm_decls (current_function_parms);
-
-  push_operator_bindings ();
 
   if (!processing_template_decl
       && (flag_lifetime_dse > 1)
@@ -17569,7 +17632,8 @@ finish_function (bool inline_p)
   if (!processing_template_decl
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl))
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
     TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might

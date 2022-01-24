@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -732,7 +732,7 @@ package body Endh is
       --       ...
       --    end My_Label;
 
-      --  This is the case where we want to use the entry in the suspicous
+      --  This is the case where we want to use the entry in the suspicious
       --  label table to flag the semicolon saying it should be a colon.
 
       --  Label_OK will be false because the label does not match (we have

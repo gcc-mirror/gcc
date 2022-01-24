@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -2648,6 +2648,8 @@ check_allocation (void)
 	      ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
 	      int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
 	      if (conflict_hard_regno < 0)
+		continue;
+	      if (ira_soft_conflict (a, conflict_a))
 		continue;
 
 	      conflict_nregs = hard_regno_nregs (conflict_hard_regno,

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4080,12 +4080,6 @@ The return value is usually either a @code{reg} RTX for the hard
 register in which to pass the argument, or zero to pass the argument
 on the stack.
 
-The return value can be a @code{const_int} which means argument is
-passed in a target specific slot with specified number.  Target hooks
-should be used to store or load argument in such case.  See
-@code{TARGET_STORE_BOUNDS_FOR_ARG} and @code{TARGET_LOAD_BOUNDS_FOR_ARG}
-for more information.
-
 The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
 @code{parallel} should be the mode of the entire argument.  The
@@ -5431,37 +5425,6 @@ defined, then define this hook to return @code{true} if
 Otherwise, you should not define this hook.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_LOAD_BOUNDS_FOR_ARG (rtx @var{slot}, rtx @var{arg}, rtx @var{slot_no})
-This hook is used by expand pass to emit insn to load bounds of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-bounds of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then bounds are loaded as for regular pointer loaded from
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to obtain bounds.  Hook returns RTX holding loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_BOUNDS_FOR_ARG (rtx @var{arg}, rtx @var{slot}, rtx @var{bounds}, rtx @var{slot_no})
-This hook is used by expand pass to emit insns to store @var{bounds} of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-@var{bounds} of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then @var{bounds} are stored as for regular pointer stored in
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to store @var{bounds}.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_LOAD_RETURNED_BOUNDS (rtx @var{slot})
-This hook is used by expand pass to emit insn to load bounds
-returned by function call in @var{slot}.  Hook returns RTX holding
-loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_RETURNED_BOUNDS (rtx @var{slot}, rtx @var{bounds})
-This hook is used by expand pass to emit insn to store @var{bounds}
-returned by function call into @var{slot}.
-@end deftypefn
-
 @node Trampolines
 @section Support for Nested Functions
 @cindex support for nested functions
@@ -6256,7 +6219,7 @@ type @code{internal_fn}) should be considered expensive when the mask is
 all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
-@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (class loop *@var{loop_info}, bool @var{costing_for_scalar})
+@deftypefn {Target Hook} {class vector_costs *} TARGET_VECTORIZE_CREATE_COSTS (vec_info *@var{vinfo}, bool @var{costing_for_scalar})
 This hook should initialize target-specific data structures in preparation
 for modeling the costs of vectorizing a loop or basic block.  The default
 allocates three unsigned integers for accumulating costs for the prologue,
@@ -6265,29 +6228,6 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the
 current cost model is for the scalar version of a loop or block; otherwise
 it is for the vector version.
-@end deftypefn
-
-@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, tree @var{vectype}, int @var{misalign}, enum vect_cost_model_location @var{where})
-This hook should update the target-specific @var{data} in response to
-adding @var{count} copies of the given @var{kind} of statement to a
-loop or basic block.  The default adds the builtin vectorizer cost for
-the copies of the statement to the accumulator specified by @var{where},
-(the prologue, body, or epilogue) and returns the amount added.  The
-return value should be viewed as a tentative cost that may later be
-revised.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_FINISH_COST (void *@var{data}, unsigned *@var{prologue_cost}, unsigned *@var{body_cost}, unsigned *@var{epilogue_cost})
-This hook should complete calculations of the cost of vectorizing a loop
-or basic block based on @var{data}, and return the prologue, body, and
-epilogue costs as unsigned integers.  The default returns the value of
-the three accumulators.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_DESTROY_COST_DATA (void *@var{data})
-This hook should release @var{data} and any related data structures
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the
-accumulator.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
@@ -9271,6 +9211,14 @@ collecting constructors and destructors to be run at startup and exit.
 It is false if we must use @command{collect2}.
 @end deftypevr
 
+@deftypevr {Target Hook} bool TARGET_DTORS_FROM_CXA_ATEXIT
+This value is true if the target wants destructors to be queued to be
+run from __cxa_atexit.  If this is the case then, for each priority level,
+a new constructor will be entered that registers the destructors for that
+level with __cxa_atexit (and there will be no destructors emitted).
+It is false the method implied by @code{have_ctors_dtors} is used.
+@end deftypevr
+
 @deftypefn {Target Hook} void TARGET_ASM_CONSTRUCTOR (rtx @var{symbol}, int @var{priority})
 If defined, a function that outputs assembler code to arrange to call
 the function referenced by @var{symbol} at initialization time.
@@ -10764,6 +10712,37 @@ This target hook returns @code{false} if the @var{caller} function
 cannot inline @var{callee}, based on target specific information.  By
 default, inlining is not allowed if the callee function has function
 specific target options and the caller does not use the same options.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_UPDATE_IPA_FN_TARGET_INFO (unsigned int& @var{info}, const gimple* @var{stmt})
+Allow target to analyze all gimple statements for the given function to
+record and update some target specific information for inlining.  A typical
+example is that a caller with one isa feature disabled is normally not
+allowed to inline a callee with that same isa feature enabled even which is
+attributed by always_inline, but with the conservative analysis on all
+statements of the callee if we are able to guarantee the callee does not
+exploit any instructions from the mismatch isa feature, it would be safe to
+allow the caller to inline the callee.
+@var{info} is one @code{unsigned int} value to record information in which
+one set bit indicates one corresponding feature is detected in the analysis,
+@var{stmt} is the statement being analyzed.  Return true if target still
+need to analyze the subsequent statements, otherwise return false to stop
+subsequent analysis.
+The default version of this hook returns false.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_NEED_IPA_FN_TARGET_INFO (const_tree @var{decl}, unsigned int& @var{info})
+Allow target to check early whether it is necessary to analyze all gimple
+statements in the given function to update target specific information for
+inlining.  See hook @code{update_ipa_fn_target_info} for usage example of
+target specific information.  This hook is expected to be invoked ahead of
+the iterating with hook @code{update_ipa_fn_target_info}.
+@var{decl} is the function being analyzed, @var{info} is the same as what
+in hook @code{update_ipa_fn_target_info}, target can do one time update
+into @var{info} without iterating for some case.  Return true if target
+decides to analyze all gimple statements to collect information, otherwise
+return false.
+The default version of this hook returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_RELAYOUT_FUNCTION (tree @var{fndecl})
@@ -12426,6 +12405,11 @@ This value should be set if the result written by
 It returns true if the target supports GNU indirect functions.
 The support includes the assembler, linker and dynamic linker.
 The default value of this hook is based on target's libc.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_IFUNC_REF_LOCAL_OK (void)
+Return true if it is OK to reference indirect function resolvers
+locally.  The default is to return false.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned int} TARGET_ATOMIC_ALIGN_FOR_MODE (machine_mode @var{mode})

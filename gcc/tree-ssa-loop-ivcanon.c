@@ -1,5 +1,5 @@
 /* Induction variable canonicalization and loop peeling.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -720,7 +720,7 @@ try_unroll_loop_completely (class loop *loop,
     exit = NULL;
 
   /* See if we can improve our estimate by using recorded loop bounds.  */
-  if ((allow_peel || maxiter == 0 || ul == UL_NO_GROWTH)
+  if ((maxiter == 0 || ul != UL_SINGLE_ITER)
       && maxiter >= 0
       && (!n_unroll_found || (unsigned HOST_WIDE_INT)maxiter < n_unroll))
     {
@@ -729,6 +729,10 @@ try_unroll_loop_completely (class loop *loop,
       /* Loop terminates before the IV variable test, so we cannot
 	 remove it in the last iteration.  */
       edge_to_cancel = NULL;
+      /* If we do not allow peeling and we iterate just allow cases
+	 that do not grow code.  */
+      if (!allow_peel && maxiter != 0)
+	ul = UL_NO_GROWTH;
     }
 
   if (!n_unroll_found)
@@ -903,11 +907,10 @@ try_unroll_loop_completely (class loop *loop,
       if (may_be_zero)
 	bitmap_clear_bit (wont_exit, 1);
 
-      if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-						 n_unroll, wont_exit,
-						 exit, &edges_to_remove,
-						 DLTHE_FLAG_UPDATE_FREQ
-						 | DLTHE_FLAG_COMPLETTE_PEEL))
+      if (!gimple_duplicate_loop_body_to_header_edge (
+	    loop, loop_preheader_edge (loop), n_unroll, wont_exit, exit,
+	    &edges_to_remove,
+	    DLTHE_FLAG_UPDATE_FREQ | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
           free_original_copy_tables ();
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1094,10 +1097,9 @@ try_peel_loop (class loop *loop,
     }
   if (may_be_zero)
     bitmap_clear_bit (wont_exit, 1);
-  if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					     npeel, wont_exit,
-					     exit, &edges_to_remove,
-					     DLTHE_FLAG_UPDATE_FREQ))
+  if (!gimple_duplicate_loop_body_to_header_edge (
+	loop, loop_preheader_edge (loop), npeel, wont_exit, exit,
+	&edges_to_remove, DLTHE_FLAG_UPDATE_FREQ))
     {
       free_original_copy_tables ();
       return false;

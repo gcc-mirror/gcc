@@ -1,5 +1,5 @@
 // GNU D Compiler routines for stack backtrace support.
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -23,24 +23,6 @@
 module gcc.backtrace;
 
 import gcc.libbacktrace;
-
-version (Posix)
-{
-    // NOTE: The first 5 frames with the current implementation are
-    //       inside core.runtime and the object code, so eliminate
-    //       these for readability.  The alternative would be to
-    //       exclude the first N frames that are in a list of
-    //       mangled function names.
-    private enum FIRSTFRAME = 5;
-}
-else
-{
-    // NOTE: On Windows, the number of frames to exclude is based on
-    //       whether the exception is user or system-generated, so
-    //       it may be necessary to exclude a list of function names
-    //       instead.
-    private enum FIRSTFRAME = 0;
-}
 
 // Max size per line of the traceback.
 private enum MAX_BUFSIZE = 1536;
@@ -205,8 +187,6 @@ static if (BACKTRACE_SUPPORTED && !BACKTRACE_USES_MALLOC)
     // FIXME: state is never freed as libbacktrace doesn't provide a free function...
     public class LibBacktrace : Throwable.TraceInfo
     {
-        enum MaxAlignment = (void*).alignof;
-
         static void initLibBacktrace()
         {
             if (!initialized)
@@ -216,7 +196,7 @@ static if (BACKTRACE_SUPPORTED && !BACKTRACE_USES_MALLOC)
             }
         }
 
-        this(int firstFrame = FIRSTFRAME)
+        this(int firstFrame)
         {
             _firstFrame = firstFrame;
 
@@ -365,7 +345,7 @@ else
      */
     public class UnwindBacktrace : Throwable.TraceInfo
     {
-        this(int firstFrame = FIRSTFRAME)
+        this(int firstFrame)
         {
             _firstFrame = firstFrame;
             _callstack = getBacktrace();

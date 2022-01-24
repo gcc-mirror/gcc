@@ -2,7 +2,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-add-options tls }
 // { dg-require-effective-target tls_runtime }
-// { dg-additional-options "-fdump-tree-gimple" }
+// { dg-additional-options "-fdump-tree-gimple -fno-implicit-constexpr" }
 // { dg-final { scan-tree-dump-times "_ZTW2s1" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "_ZTW2s2" 2 "gimple" } }
 // { dg-final { scan-tree-dump-times "_ZTW2s3" 2 "gimple" } }

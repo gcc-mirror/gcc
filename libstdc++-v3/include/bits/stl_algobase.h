@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -420,11 +420,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
 #if __cplusplus >= 201103L
-	  using __assignable = conditional<_IsMove,
-					   is_move_assignable<_Tp>,
-					   is_copy_assignable<_Tp>>;
+	  using __assignable = __conditional_t<_IsMove,
+					       is_move_assignable<_Tp>,
+					       is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type must be assignable" );
+	  static_assert( __assignable::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -613,7 +613,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
-	    typename iterator_traits<_II>::value_type>)
+	    typename iterator_traits<_II>::reference>)
       __glibcxx_requires_can_increment_range(__first, __last, __result);
 
       return std::__copy_move_a<__is_move_iterator<_II>::__value>
@@ -646,7 +646,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II>)
       __glibcxx_function_requires(_OutputIteratorConcept<_OI,
-	    typename iterator_traits<_II>::value_type>)
+	    typename iterator_traits<_II>::value_type&&>)
       __glibcxx_requires_can_increment_range(__first, __last, __result);
 
       return std::__copy_move_a<true>(std::__miter_base(__first),
@@ -731,11 +731,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
 #if __cplusplus >= 201103L
-	  using __assignable = conditional<_IsMove,
-					   is_move_assignable<_Tp>,
-					   is_copy_assignable<_Tp>>;
+	  using __assignable = __conditional_t<_IsMove,
+					       is_move_assignable<_Tp>,
+					       is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type must be assignable" );
+	  static_assert( __assignable::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -850,9 +850,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_BI1>::value_type,
-	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_BI2,
+	    typename iterator_traits<_BI1>::reference>)
       __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
       return std::__copy_move_backward_a<__is_move_iterator<_BI1>::__value>
@@ -886,9 +885,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
-      __glibcxx_function_requires(_ConvertibleConcept<
-	    typename iterator_traits<_BI1>::value_type,
-	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_BI2,
+	    typename iterator_traits<_BI1>::value_type&&>)
       __glibcxx_requires_can_decrement_range(__first, __last, __result);
 
       return std::__copy_move_backward_a<true>(std::__miter_base(__first),
@@ -958,6 +956,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	      const _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>&,
 	      const _VTp&);
 
+  _GLIBCXX20_CONSTEXPR
   void
   __fill_a1(_GLIBCXX_STD_C::_Bit_iterator, _GLIBCXX_STD_C::_Bit_iterator,
 	    const bool&);
@@ -1144,7 +1143,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
-      __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OI, const _Tp&>)
 
       return std::__fill_n_a(__first, std::__size_to_integer(__n), __value,
 			       std::__iterator_category(__first));
@@ -1827,11 +1826,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-#if __cpp_lib_is_constant_evaluated
       using _Cat = decltype(__comp(*__first1, *__first2));
       static_assert(same_as<common_comparison_category_t<_Cat>, _Cat>);
 
-      if (!std::is_constant_evaluated())
+      if (!std::__is_constant_evaluated())
 	if constexpr (same_as<_Comp, __detail::_Synth3way>
 		      || same_as<_Comp, compare_three_way>)
 	  if constexpr (__is_byte_iter<_InputIter1>)
@@ -1848,7 +1846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		  }
 		return __lencmp;
 	      }
-#endif // is_constant_evaluated
+
       while (__first1 != __last1)
 	{
 	  if (__first2 == __last2)
@@ -2125,6 +2123,26 @@ _GLIBCXX_END_NAMESPACE_ALGO
 	if (__pred(__first))
 	  ++__n;
       return __n;
+    }
+
+  template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
+    _ForwardIterator
+    __remove_if(_ForwardIterator __first, _ForwardIterator __last,
+		_Predicate __pred)
+    {
+      __first = std::__find_if(__first, __last, __pred);
+      if (__first == __last)
+	return __first;
+      _ForwardIterator __result = __first;
+      ++__first;
+      for (; __first != __last; ++__first)
+	if (!__pred(__first))
+	  {
+	    *__result = _GLIBCXX_MOVE(*__first);
+	    ++__result;
+	  }
+      return __result;
     }
 
 #if __cplusplus >= 201103L

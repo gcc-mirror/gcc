@@ -1,5 +1,5 @@
 /* Definitions for the NVPTX port needed for option handling.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -23,13 +23,17 @@
 enum ptx_isa
 {
   PTX_ISA_SM30,
-  PTX_ISA_SM35
+  PTX_ISA_SM35,
+  PTX_ISA_SM53,
+  PTX_ISA_SM75,
+  PTX_ISA_SM80
 };
 
 enum ptx_version
 {
   PTX_VERSION_3_1,
-  PTX_VERSION_6_3
+  PTX_VERSION_6_3,
+  PTX_VERSION_7_0
 };
 
 #endif

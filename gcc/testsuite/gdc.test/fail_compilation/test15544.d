@@ -1,10 +1,9 @@
 /*
-REQUIRED_ARGS: -dip1000
-PERMUTE_ARGS:
+REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test15544.d(21): Error: reference to local `this` assigned to non-scope `_del` in @safe code
-fail_compilation/test15544.d(23): Error: reference to local `this` assigned to non-scope `_del` in @safe code
+fail_compilation/test15544.d(20): Error: reference to local `this` assigned to non-scope `_del` in @safe code
+fail_compilation/test15544.d(22): Error: reference to local `this` assigned to non-scope `_del` in @safe code
 ---
 */
 
@@ -27,7 +26,7 @@ struct S {
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15544.d(47): Error: reference to local `y` assigned to non-scope `dg` in @safe code
+fail_compilation/test15544.d(46): Error: reference to local `y` assigned to non-scope `dg` in @safe code
 ---
 */
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                     Copyright (C) 1999-2021, AdaCore                     --
+--                     Copyright (C) 1999-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,6 +128,9 @@ package Interfaces.VxWorks is
    OK    : constant STATUS := 0;
    ERROR : constant STATUS := -1;
 
+   type BOOL is new int;
+   --  Equivalent of the C type BOOL
+
    type VOIDFUNCPTR is access procedure (parameter : System.Address);
    type Interrupt_Vector is new System.Address;
    type Exception_Vector is new System.Address;
@@ -140,9 +143,9 @@ package Interfaces.VxWorks is
    --  The routine generates a wrapper around the user handler to save and
    --  restore context
 
-   function intContext return int;
-   --  Binding to the C routine intContext. This function returns 1 only if the
-   --  current execution state is in interrupt context.
+   function intContext return BOOL;
+   --  Binding to the C routine intContext. This function returns 1 (TRUE)
+   --  only if the current execution state is in interrupt context.
 
    function intVecGet
      (Vector : Interrupt_Vector) return VOIDFUNCPTR;

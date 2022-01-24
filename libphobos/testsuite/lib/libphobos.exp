@@ -1,4 +1,4 @@
-# Copyright (C) 2017-2021 Free Software Foundation, Inc.
+# Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,6 +54,10 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
 
     # Set up the compiler flags, based on what we're going to do.
     switch $do_what {
+	"compile" {
+	    set compile_type "assembly"
+	    set output_file "[file rootname [file tail $prog]].s"
+	}
 	"run" {
 	    set compile_type "executable"
 	    # FIXME: "./" is to cope with "." not being in $PATH.
@@ -89,7 +93,58 @@ proc libphobos-dg-test { prog do_what extra_tool_flags } {
     return [list $comp_output $output_file]
 }
 
+# Override the DejaGnu dg-test in order to clear flags after a test, as
+# is done for compiler tests in gcc-dg.exp.
+
+if { [info procs saved-dg-test] == [list] } {
+    rename dg-test saved-dg-test
+
+    proc dg-test { args } {
+	global additional_prunes
+	global errorInfo
+	global testname_with_flags
+	global shouldfail
+
+	if { [ catch { eval saved-dg-test $args } errmsg ] } {
+	    set saved_info $errorInfo
+	    set additional_prunes ""
+	    set shouldfail 0
+	    if [info exists testname_with_flags] {
+		unset testname_with_flags
+	    }
+	    unset_timeout_vars
+	    error $errmsg $saved_info
+	}
+	set additional_prunes ""
+	set shouldfail 0
+	unset_timeout_vars
+	if [info exists testname_with_flags] {
+	    unset testname_with_flags
+	}
+    }
+}
+
+# Prune messages from gdc that aren't useful.
+
+set additional_prunes ""
+
 proc libphobos-dg-prune { system text } {
+
+    global additional_prunes
+
+    foreach p $additional_prunes {
+	if { [string length $p] > 0 } {
+	    # Following regexp matches a complete line containing $p.
+	    regsub -all "(^|\n)\[^\n\]*$p\[^\n\]*" $text "" text
+	}
+    }
+
+    # Ignore harmless warnings from Xcode.
+    regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
+
+    # Ignore dsymutil warning (tool bug is actually linker)
+    regsub -all "(^|\n)\[^\n\]*could not find object file symbol for symbol\[^\n\]*" $text "" text
+
     return $text
 }
 
@@ -272,6 +327,18 @@ proc libphobos_skipped_test_p { test } {
     }
 
     return "skipped test"
+}
+
+# Prune any messages matching ARGS[1] (a regexp) from test output.
+proc dg-prune-output { args } {
+    global additional_prunes
+
+    if { [llength $args] != 2 } {
+	error "[lindex $args 1]: need one argument"
+	return
+    }
+
+    lappend additional_prunes [lindex $args 1]
 }
 
 # Return true if the curl library is supported on the target.

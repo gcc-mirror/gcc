@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -452,6 +452,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
   node->definition = true;
   notice_global_symbol (decl);
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
+  node->semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
   if (!flag_toplevel_reorder)
     node->no_reorder = true;
 
@@ -554,6 +555,8 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	node = cgraph_node::get_create (fndecl);
 	node->local = false;
 	node->definition = true;
+	node->semantic_interposition = opt_for_fn (fndecl,
+						   flag_semantic_interposition);
 	node->force_output = true;
 	if (TREE_PUBLIC (fndecl))
 	  node->externally_visible = true;
@@ -581,6 +584,8 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
 	if (lowered)
 	  node->lowered = true;
 	node->definition = true;
+	node->semantic_interposition = opt_for_fn (fndecl,
+						   flag_semantic_interposition);
 	node->analyze ();
 	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	gimple_register_cfg_hooks ();
@@ -954,6 +959,7 @@ varpool_node::finalize_decl (tree decl)
   /* Set definition first before calling notice_global_symbol so that
      it is available to notice_global_symbol.  */
   node->definition = true;
+  node->semantic_interposition = flag_semantic_interposition;
   notice_global_symbol (decl);
   if (!flag_toplevel_reorder)
     node->no_reorder = true;
@@ -2216,17 +2222,6 @@ ipa_passes (void)
 }
 
 
-/* Return string alias is alias of.  */
-
-static tree
-get_alias_symbol (tree decl)
-{
-  tree alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
-  return get_identifier (TREE_STRING_POINTER
-			  (TREE_VALUE (TREE_VALUE (alias))));
-}
-
-
 /* Weakrefs may be associated to external decls and thus not output
    at expansion time.  Emit all necessary aliases.  */
 
@@ -2253,10 +2248,7 @@ symbol_table::output_weakrefs (void)
 	else if (node->analyzed)
 	  target = DECL_ASSEMBLER_NAME (node->get_alias_target ()->decl);
 	else
-	  {
-	    gcc_unreachable ();
-	    target = get_alias_symbol (node->decl);
-	  }
+	  gcc_unreachable ();
         do_assemble_alias (node->decl, target);
       }
 }
@@ -2576,6 +2568,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
   /* Turn alias into thunk and expand it into GIMPLE representation.  */
   definition = true;
+  semantic_interposition = opt_for_fn (decl, flag_semantic_interposition);
 
   /* Create empty thunk, but be sure we did not keep former thunk around.
      In that case we would need to preserve the info.  */

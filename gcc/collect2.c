@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -776,6 +776,7 @@ main (int argc, char **argv)
       USE_GOLD_LD,
       USE_BFD_LD,
       USE_LLD_LD,
+      USE_MOLD_LD,
       USE_LD_MAX
     } selected_linker = USE_DEFAULT_LD;
   static const char *const ld_suffixes[USE_LD_MAX] =
@@ -784,7 +785,8 @@ main (int argc, char **argv)
       PLUGIN_LD_SUFFIX,
       "ld.gold",
       "ld.bfd",
-      "ld.lld"
+      "ld.lld",
+      "ld.mold"
     };
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
@@ -957,6 +959,8 @@ main (int argc, char **argv)
 	  selected_linker = USE_GOLD_LD;
 	else if (strcmp (argv[i], "-fuse-ld=lld") == 0)
 	  selected_linker = USE_LLD_LD;
+	else if (strcmp (argv[i], "-fuse-ld=mold") == 0)
+	  selected_linker = USE_MOLD_LD;
 	else if (startswith (argv[i], "-o"))
 	  {
 	    /* Parse the output filename if it's given so that we can make
@@ -1048,7 +1052,7 @@ main (int argc, char **argv)
   ld_file_name = 0;
 #ifdef DEFAULT_LINKER
   if (selected_linker == USE_BFD_LD || selected_linker == USE_GOLD_LD ||
-      selected_linker == USE_LLD_LD)
+      selected_linker == USE_LLD_LD || selected_linker == USE_MOLD_LD)
     {
       char *linker_name;
 # ifdef HOST_EXECUTABLE_SUFFIX
@@ -1283,7 +1287,7 @@ main (int argc, char **argv)
 	      else if (!use_collect_ld
 		       && startswith (arg, "-fuse-ld="))
 		{
-		  /* Do not pass -fuse-ld={bfd|gold|lld} to the linker. */
+		  /* Do not pass -fuse-ld={bfd|gold|lld|mold} to the linker. */
 		  ld1--;
 		  ld2--;
 		}
@@ -2299,10 +2303,15 @@ is_lto_object_file (const char *prog_name)
 							LTO_SEGMENT_NAME,
 							&errmsg, &err);
   if (!inobj)
-    return false;
+    {
+      close (infd);
+      return false;
+    }
 
   errmsg = simple_object_find_sections (inobj, has_lto_section,
 					(void *) &found, &err);
+  simple_object_release_read (inobj);
+  close (infd);
   if (! errmsg && found)
     return true;
 

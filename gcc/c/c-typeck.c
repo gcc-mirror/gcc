@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,12 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 
-/* Possible cases of implicit bad conversions.  Used to select
-   diagnostic messages in convert_for_assignment.  */
+/* Possible cases of implicit conversions.  Used to select diagnostic messages
+   and control folding initializers in convert_for_assignment.  */
 enum impl_conv {
   ic_argpass,
   ic_assign,
   ic_init,
+  ic_init_const,
   ic_return
 };
 
@@ -3940,7 +3941,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
     warning_at (location, OPT_Waddress,
-		"comparison with string literal results in unspecified behavior");
+		"comparison with string literal results in unspecified "
+		"behavior");
+
+  if (warn_array_compare
+      && TREE_CODE_CLASS (code) == tcc_comparison
+      && TREE_CODE (type1) == ARRAY_TYPE
+      && TREE_CODE (type2) == ARRAY_TYPE)
+    do_warn_array_compare (location, code, arg1.value, arg2.value);
 
   if (TREE_OVERFLOW_P (result.value)
       && !TREE_OVERFLOW_P (arg1.value)
@@ -4961,6 +4969,10 @@ lvalue_p (const_tree ref)
     case STRING_CST:
       return true;
 
+    case MEM_REF:
+    case TARGET_MEM_REF:
+      /* MEM_REFs can appear from -fgimple parsing or folding, so allow them
+	 here as well.  */
     case INDIRECT_REF:
     case ARRAY_REF:
     case VAR_DECL:
@@ -6791,6 +6803,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
         pedwarn (LOCATION, OPT, AS);                                     \
         break;                                                           \
       case ic_init:                                                      \
+      case ic_init_const:                                                \
         pedwarn_init (LOCATION, OPT, IN);                                \
         break;                                                           \
       case ic_return:                                                    \
@@ -6827,6 +6840,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  warning_at (LOCATION, OPT, AS, QUALS);                         \
         break;                                                           \
       case ic_init:                                                      \
+      case ic_init_const:                                                \
 	if (PEDWARN)							 \
 	  pedwarn (LOCATION, OPT, IN, QUALS);                            \
 	else								 \
@@ -6875,6 +6889,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  break;
 
 	case ic_init:
+	case ic_init_const:
 	  parmno = -2;
 	  break;
 
@@ -6908,6 +6923,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     "%qT in assignment is invalid in C++", rhstype, type);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    pedwarn_init (location, OPT_Wc___compat, "enum conversion from "
 			  "%qT to %qT in initialization is invalid in C++",
 			  rhstype, type);
@@ -7018,7 +7034,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       tree ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
-				    ? expr_loc : location, type, orig_rhs);
+				    ? expr_loc : location, type, orig_rhs,
+				    errtype == ic_init_const);
       in_late_binary_op = save;
       return ret;
     }
@@ -7241,6 +7258,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		break;
 	      }
 	    case ic_init:
+	    case ic_init_const:
 	      {
 		const char msg[] = G_("initialization from pointer to "
 				      "non-enclosed address space");
@@ -7285,6 +7303,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			"a candidate for a format attribute");
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"initialization left-hand side might be "
 			"a candidate for a format attribute");
@@ -7328,6 +7347,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			  "incompatible scalar storage order", type, rhstype);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    /* Likewise.  */
 	    if (TREE_CODE (rhs) != CALL_EXPR
 		|| (t = get_callee_fndecl (rhs)) == NULL_TREE
@@ -7454,6 +7474,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			     "differ in signedness", rhstype, type);
 		    break;
 		  case ic_init:
+		  case ic_init_const:
 		    pedwarn_init (location, OPT_Wpointer_sign,
 				  "pointer targets in initialization of %qT "
 				  "from %qT differ in signedness", type,
@@ -7519,6 +7540,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			 type, rhstype);
 	      break;
 	    case ic_init:
+	    case ic_init_const:
 	      if (bltin)
 		pedwarn_init (location, OPT_Wincompatible_pointer_types,
 			      "initialization of %qT from pointer to "
@@ -7588,6 +7610,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     "without a cast", type, rhstype);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    pedwarn_init (location, OPT_Wint_conversion,
 			  "initialization of %qT from %qT makes pointer from "
 			  "integer without a cast", type, rhstype);
@@ -7624,6 +7647,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		   "without a cast", type, rhstype);
 	  break;
 	case ic_init:
+	case ic_init_const:
 	  pedwarn_init (location, OPT_Wint_conversion,
 			"initialization of %qT from %qT makes integer from "
 			"pointer without a cast", type, rhstype);
@@ -7675,6 +7699,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	break;
       }
     case ic_init:
+    case ic_init_const:
       {
 	const char msg[]
 	  = G_("incompatible types when initializing type %qT using type %qT");
@@ -8184,7 +8209,9 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
 	inside_init = convert_for_assignment (init_loc, UNKNOWN_LOCATION,
 					      type, inside_init, origtype,
-					      ic_init, null_pointer_constant,
+					      (require_constant
+					       ? ic_init_const
+					       : ic_init), null_pointer_constant,
 					      NULL_TREE, NULL_TREE, 0);
       return inside_init;
     }
@@ -8204,7 +8231,8 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 			      inside_init);
       inside_init
 	= convert_for_assignment (init_loc, UNKNOWN_LOCATION, type,
-				  inside_init, origtype, ic_init,
+				  inside_init, origtype,
+				  require_constant ? ic_init_const : ic_init,
 				  null_pointer_constant, NULL_TREE, NULL_TREE,
 				  0);
 
@@ -10783,10 +10811,19 @@ c_finish_goto_label (location_t loc, tree label)
    the GOTO.  */
 
 tree
-c_finish_goto_ptr (location_t loc, tree expr)
+c_finish_goto_ptr (location_t loc, c_expr val)
 {
+  tree expr = val.value;
   tree t;
   pedwarn (loc, OPT_Wpedantic, "ISO C forbids %<goto *expr;%>");
+  if (expr != error_mark_node
+      && !POINTER_TYPE_P (TREE_TYPE (expr))
+      && !null_pointer_constant_p (expr))
+    {
+      error_at (val.get_location (),
+		"computed goto must be pointer type");
+      expr = build_zero_cst (ptr_type_node);
+    }
   expr = c_fully_fold (expr, false, NULL);
   expr = convert (ptr_type_node, expr);
   t = build1 (GOTO_EXPR, void_type_node, expr);
@@ -11220,7 +11257,8 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
 
   if (skip)
     return NULL_TREE;
-  else if (in_statement & IN_OBJC_FOREACH)
+  else if ((in_statement & IN_OBJC_FOREACH)
+	   && !(is_break && (in_statement & IN_SWITCH_STMT)))
     {
       /* The foreach expander produces low-level code using gotos instead
 	 of a structured loop construct.  */
@@ -11543,6 +11581,113 @@ build_vec_cmp (tree_code code, tree type,
   tree cmp_type = truth_type_for (type);
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
+/* Possibly warn about an address of OP never being NULL in a comparison
+   operation CODE involving null.  */
+
+static void
+maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
+{
+  /* Prevent warnings issued for macro expansion.  */
+  if (!warn_address
+      || warning_suppressed_p (op, OPT_Waddress)
+      || from_macro_expansion_at (loc))
+    return;
+
+  if (TREE_CODE (op) == NOP_EXPR)
+    {
+      /* Allow casts to intptr_t to suppress the warning.  */
+      tree type = TREE_TYPE (op);
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	return;
+      op = TREE_OPERAND (op, 0);
+    }
+
+  if (TREE_CODE (op) == POINTER_PLUS_EXPR)
+    {
+      /* Allow a cast to void* to suppress the warning.  */
+      tree type = TREE_TYPE (TREE_TYPE (op));
+      if (VOID_TYPE_P (type))
+	return;
+
+      /* Adding any value to a null pointer, including zero, is undefined
+	 in C.  This includes the expression &p[0] where p is the null
+	 pointer, although &p[0] will have been folded to p by this point
+	 and so not diagnosed.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the pointer operand in %qE must not be NULL",
+		    op);
+
+      return;
+    }
+
+  if (TREE_CODE (op) != ADDR_EXPR)
+    return;
+
+  op = TREE_OPERAND (op, 0);
+
+  if (TREE_CODE (op) == IMAGPART_EXPR
+      || TREE_CODE (op) == REALPART_EXPR)
+    {
+      /* The address of either complex part may not be null.  */
+      if (code == EQ_EXPR)
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<false%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      else
+	warning_at (loc, OPT_Waddress,
+		    "the comparison will always evaluate as %<true%> "
+		    "for the address of %qE will never be NULL",
+		    op);
+      return;
+    }
+
+  /* Set to true in the loop below if OP dereferences is operand.
+     In such a case the ultimate target need not be a decl for
+     the null [in]equality test to be constant.  */
+  bool deref = false;
+
+  /* Get the outermost array or object, or member.  */
+  while (handled_component_p (op))
+    {
+      if (TREE_CODE (op) == COMPONENT_REF)
+	{
+	  /* Get the member (its address is never null).  */
+	  op = TREE_OPERAND (op, 1);
+	  break;
+	}
+
+      /* Get the outer array/object to refer to in the warning.  */
+      op = TREE_OPERAND (op, 0);
+      deref = true;
+    }
+
+  if ((!deref && !decl_with_nonnull_addr_p (op))
+      || from_macro_expansion_at (loc))
+    return;
+
+  if (code == EQ_EXPR)
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<false%> "
+		"for the address of %qE will never be NULL",
+		op);
+  else
+    warning_at (loc, OPT_Waddress,
+		"the comparison will always evaluate as %<true%> "
+		"for the address of %qE will never be NULL",
+		op);
+
+  if (DECL_P (op))
+    inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
 }
 
 /* Build a binary-operation expression without default conversions.
@@ -12180,44 +12325,12 @@ build_binary_op (location_t location, enum tree_code code,
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && null_pointer_constant_p (orig_op1))
 	{
-	  if (TREE_CODE (op0) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op0, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op0, 0));
-	    }
+	  maybe_warn_for_null_address (location, op0, code);
 	  result_type = type0;
 	}
       else if (code1 == POINTER_TYPE && null_pointer_constant_p (orig_op0))
 	{
-	  if (TREE_CODE (op1) == ADDR_EXPR
-	      && decl_with_nonnull_addr_p (TREE_OPERAND (op1, 0))
-	      && !from_macro_expansion_at (location))
-	    {
-	      if (code == EQ_EXPR)
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<false%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	      else
-		warning_at (location,
-			    OPT_Waddress,
-			    "the comparison will always evaluate as %<true%> "
-			    "for the address of %qD will never be NULL",
-			    TREE_OPERAND (op1, 0));
-	    }
+	  maybe_warn_for_null_address (location, op1, code);
 	  result_type = type1;
 	}
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
@@ -12724,7 +12837,9 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && (doing_div_or_mod || doing_shift)
       && !require_constant_value)
@@ -12735,7 +12850,8 @@ build_binary_op (location_t location, enum tree_code code,
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
       if (doing_div_or_mod && (sanitize_flags_p ((SANITIZE_DIVIDE
-						  | SANITIZE_FLOAT_DIVIDE))))
+						  | SANITIZE_FLOAT_DIVIDE
+						  | SANITIZE_SI_OVERFLOW))))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
       else if (doing_shift && sanitize_flags_p (SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
@@ -13105,6 +13221,18 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		    t, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
+      while (TREE_CODE (t) == INDIRECT_REF)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  STRIP_NOPS (t);
+	  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	}
+      while (TREE_CODE (t) == COMPOUND_EXPR)
+	{
+	  t = TREE_OPERAND (t, 1);
+	  STRIP_NOPS (t);
+	}
       if (TREE_CODE (t) == COMPONENT_REF
 	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
@@ -13126,6 +13254,15 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      t = TREE_OPERAND (t, 0);
+	      while (TREE_CODE (t) == MEM_REF
+		     || TREE_CODE (t) == INDIRECT_REF
+		     || TREE_CODE (t) == ARRAY_REF)
+		{
+		  t = TREE_OPERAND (t, 0);
+		  STRIP_NOPS (t);
+		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		    t = TREE_OPERAND (t, 0);
+		}
 	      if (ort == C_ORT_ACC && TREE_CODE (t) == MEM_REF)
 		{
 		  if (maybe_ne (mem_ref_offset (t), 0))
@@ -13413,15 +13550,25 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       /* If there is a pointer type anywhere but in the very first
-	 array-section-subscript, the array section can't be contiguous.  */
+	 array-section-subscript, the array section could be non-contiguous.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "array section is not contiguous in %qs clause",
-		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	  return error_mark_node;
+	  /* If any prior dimension has a non-one length, then deem this
+	     array section as non-contiguous.  */
+	  for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
+	       d = TREE_CHAIN (d))
+	    {
+	      tree d_length = TREE_VALUE (d);
+	      if (d_length == NULL_TREE || !integer_onep (d_length))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "array section is not contiguous in %qs clause",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  return error_mark_node;
+		}
+	    }
 	}
     }
   else
@@ -13733,7 +13880,6 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = NULL;
   id.eh_lp_nr = 0;
   walk_tree (&stmt, copy_tree_body_r, &id, NULL);
   return stmt;
@@ -13971,6 +14117,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree ordered_clause = NULL_TREE;
   tree schedule_clause = NULL_TREE;
   bool oacc_async = false;
+  bool indir_component_ref_p = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
   tree *nogroup_seen = NULL;
@@ -14770,8 +14917,21 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == COMPONENT_REF
 		      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		    {
-		      while (TREE_CODE (t) == COMPONENT_REF)
-			t = TREE_OPERAND (t, 0);
+		      do
+			{
+			  t = TREE_OPERAND (t, 0);
+			  if (TREE_CODE (t) == MEM_REF
+			      || TREE_CODE (t) == INDIRECT_REF)
+			    {
+			      t = TREE_OPERAND (t, 0);
+			      STRIP_NOPS (t);
+			      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+				t = TREE_OPERAND (t, 0);
+			    }
+			}
+		      while (TREE_CODE (t) == COMPONENT_REF
+			     || TREE_CODE (t) == ARRAY_REF);
+
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			  && OMP_CLAUSE_MAP_IMPLICIT (c)
 			  && (bitmap_bit_p (&map_head, DECL_UID (t))
@@ -14838,6 +14998,32 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	       bias) to zero here, so it is not set erroneously to the pointer
 	       size later on in gimplify.c.  */
 	    OMP_CLAUSE_SIZE (c) = size_zero_node;
+	  while (TREE_CODE (t) == INDIRECT_REF
+		 || TREE_CODE (t) == ARRAY_REF)
+	    {
+	      t = TREE_OPERAND (t, 0);
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
+	  while (TREE_CODE (t) == COMPOUND_EXPR)
+	    {
+	      t = TREE_OPERAND (t, 1);
+	      STRIP_NOPS (t);
+	    }
+	  indir_component_ref_p = false;
+	  if (TREE_CODE (t) == COMPONENT_REF
+	      && (TREE_CODE (TREE_OPERAND (t, 0)) == MEM_REF
+		  || TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
+		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
+	    {
+	      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+	      indir_component_ref_p = true;
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
+
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
 	    {
@@ -14873,13 +15059,22 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      break;
 		    }
 		  t = TREE_OPERAND (t, 0);
-		  if (ort == C_ORT_ACC && TREE_CODE (t) == MEM_REF)
+		  if (TREE_CODE (t) == MEM_REF)
 		    {
 		      if (maybe_ne (mem_ref_offset (t), 0))
 			error_at (OMP_CLAUSE_LOCATION (c),
 				  "cannot dereference %qE in %qs clause", t,
 				  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 		      else
+			t = TREE_OPERAND (t, 0);
+		    }
+		  while (TREE_CODE (t) == MEM_REF
+			 || TREE_CODE (t) == INDIRECT_REF
+			 || TREE_CODE (t) == ARRAY_REF)
+		    {
+		      t = TREE_OPERAND (t, 0);
+		      STRIP_NOPS (t);
+		      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
 			t = TREE_OPERAND (t, 0);
 		    }
 		}
@@ -14910,6 +15105,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
 		    || (OMP_CLAUSE_MAP_KIND (c)
 			!= GOMP_MAP_FIRSTPRIVATE_POINTER))
+		   && !indir_component_ref_p
 		   && !c_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -14952,7 +15148,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qD appears more than once in data clauses", t);
 		  remove = true;
 		}
-	      else if (bitmap_bit_p (&map_head, DECL_UID (t)))
+	      else if (bitmap_bit_p (&map_head, DECL_UID (t))
+		       && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
 		{
 		  if (ort == C_ORT_ACC)
 		    error_at (OMP_CLAUSE_LOCATION (c),
@@ -14966,8 +15163,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
 	    }
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t))
-		   && (ort == C_ORT_ACC
-		       || !bitmap_bit_p (&map_field_head, DECL_UID (t))))
+		   && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
 	    {
 	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP)
 		error_at (OMP_CLAUSE_LOCATION (c),
@@ -15870,8 +16066,6 @@ c_tree_equal (tree t1, tree t2)
     default:
       gcc_unreachable ();
     }
-  /* We can get here with --disable-checking.  */
-  return false;
 }
 
 /* Returns true when the function declaration FNDECL is implicit,

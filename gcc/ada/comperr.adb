@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -424,7 +424,7 @@ package body Comperr is
       Unit_Name : Node_Id;
 
       Success : Boolean;
-      pragma Unreferenced (Success);
+      pragma Warnings (Off, "modified by call");
 
       procedure Decode_Name_Buffer;
       --  Replace "__" by "." in Name_Buffer, and adjust Name_Len accordingly
@@ -478,6 +478,7 @@ package body Comperr is
          when N_Package_Declaration
             | N_Subprogram_Body
             | N_Subprogram_Declaration
+            | N_Subprogram_Renaming_Declaration
          =>
             Unit_Name := Defining_Unit_Name (Specification (Main));
 
@@ -489,10 +490,10 @@ package body Comperr is
          =>
             Unit_Name := Defining_Unit_Name (Main);
 
-         --  No SCIL file generated for generic package declarations
+         --  No SCIL file generated for generic unit declarations
 
-         when N_Generic_Package_Declaration
-            | N_Generic_Package_Renaming_Declaration
+         when N_Generic_Declaration
+            | N_Generic_Renaming_Declaration
          =>
             return;
 

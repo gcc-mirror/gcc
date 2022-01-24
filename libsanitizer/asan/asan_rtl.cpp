@@ -82,6 +82,17 @@ void ShowStatsAndAbort() {
   Die();
 }
 
+NOINLINE
+static void ReportGenericErrorWrapper(uptr addr, bool is_write, int size,
+                                      int exp_arg, bool fatal) {
+  if (__asan_test_only_reported_buggy_pointer) {
+    *__asan_test_only_reported_buggy_pointer = addr;
+  } else {
+    GET_CALLER_PC_BP_SP;
+    ReportGenericError(pc, bp, sp, addr, is_write, size, exp_arg, fatal);
+  }
+}
+
 // --------------- LowLevelAllocateCallbac ---------- {{{1
 static void OnLowLevelAllocate(uptr ptr, uptr size) {
   PoisonShadow(ptr, size, kAsanInternalHeapMagic);
@@ -145,12 +156,7 @@ ASAN_REPORT_ERROR_N(store, true)
     if (UNLIKELY(size >= SHADOW_GRANULARITY ||                                 \
                  ((s8)((addr & (SHADOW_GRANULARITY - 1)) + size - 1)) >=       \
                      (s8)s)) {                                                 \
-      if (__asan_test_only_reported_buggy_pointer) {                           \
-        *__asan_test_only_reported_buggy_pointer = addr;                       \
-      } else {                                                                 \
-        GET_CALLER_PC_BP_SP;                                                   \
-        ReportGenericError(pc, bp, sp, addr, is_write, size, exp_arg, fatal);  \
-      }                                                                        \
+      ReportGenericErrorWrapper(addr, is_write, size, exp_arg, fatal);         \
     }                                                                          \
   }
 
@@ -551,7 +557,8 @@ void UnpoisonStack(uptr bottom, uptr top, const char *type) {
         "False positive error reports may follow\n"
         "For details see "
         "https://github.com/google/sanitizers/issues/189\n",
-        type, top, bottom, top - bottom, top - bottom);
+        type, (void *)top, (void *)bottom, (void *)(top - bottom),
+        top - bottom);
     return;
   }
   PoisonShadow(bottom, RoundUpTo(top - bottom, SHADOW_GRANULARITY), 0);

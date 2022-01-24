@@ -1,5 +1,5 @@
 /* Analysis Utilities for Loop Vectorization.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Dorit Nuzman <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -119,8 +119,9 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (vectype)
-		  == vect_use_mask_type_p (orig_stmt_info));
+      gcc_assert (!vectype
+		  || (VECTOR_BOOLEAN_TYPE_P (vectype)
+		      == vect_use_mask_type_p (orig_stmt_info)));
       STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
       pattern_stmt_info->mask_precision = orig_stmt_info->mask_precision;
     }
@@ -4283,8 +4284,6 @@ vect_recog_bool_pattern (vec_info *vinfo,
 	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
-      if (vectype == NULL_TREE)
-	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
 	{
@@ -5595,8 +5594,10 @@ vect_mark_pattern_stmts (vec_info *vinfo,
   /* Transfer reduction path info to the pattern.  */
   if (STMT_VINFO_REDUC_IDX (orig_stmt_info_saved) != -1)
     {
-      tree lookfor = gimple_op (orig_stmt_info_saved->stmt,
-				1 + STMT_VINFO_REDUC_IDX (orig_stmt_info));
+      gimple_match_op op;
+      if (!gimple_extract_op (orig_stmt_info_saved->stmt, &op))
+	gcc_unreachable ();
+      tree lookfor = op.ops[STMT_VINFO_REDUC_IDX (orig_stmt_info)];
       /* Search the pattern def sequence and the main pattern stmt.  Note
          we may have inserted all into a containing pattern def sequence
 	 so the following is a bit awkward.  */
@@ -5616,14 +5617,15 @@ vect_mark_pattern_stmts (vec_info *vinfo,
       do
 	{
 	  bool found = false;
-	  for (unsigned i = 1; i < gimple_num_ops (s); ++i)
-	    if (gimple_op (s, i) == lookfor)
-	      {
-		STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i - 1;
-		lookfor = gimple_get_lhs (s);
-		found = true;
-		break;
-	      }
+	  if (gimple_extract_op (s, &op))
+	    for (unsigned i = 0; i < op.num_ops; ++i)
+	      if (op.ops[i] == lookfor)
+		{
+		  STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+		  lookfor = gimple_get_lhs (s);
+		  found = true;
+		  break;
+		}
 	  if (s == pattern_stmt)
 	    {
 	      if (!found && dump_enabled_p ())
@@ -5696,7 +5698,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
     }
 
   loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  gcc_assert (pattern_vectype);
  
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())

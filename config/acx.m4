@@ -420,6 +420,31 @@ else
 fi
 ])
 
+# Test for D.
+AC_DEFUN([ACX_PROG_GDC],
+[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
+AC_REQUIRE([AC_PROG_CC])
+AC_CHECK_TOOL(GDC, gdc, no)
+AC_CACHE_CHECK([whether the D compiler works],
+		 acx_cv_d_compiler_works,
+[cat >conftest.d <<EOF
+module conftest; int main() { return 0; }
+EOF
+acx_cv_d_compiler_works=no
+if test "x$GDC" != xno; then
+  errors=`(${GDC} $1[]m4_ifval([$1], [ ])-c conftest.d) 2>&1 || echo failure`
+  if test x"$errors" = x && test -f conftest.$ac_objext; then
+    acx_cv_d_compiler_works=yes
+  fi
+  rm -f conftest.*
+fi])
+if test "x$GDC" != xno && test x$acx_cv_d_compiler_works != xno; then
+  have_gdc=yes
+else
+  have_gdc=no
+fi
+])
+
 dnl 'make compare' can be significantly faster, if cmp itself can
 dnl skip bytes instead of using tail.  The test being performed is
 dnl "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"

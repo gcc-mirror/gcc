@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,6 +124,7 @@ package Output is
    --  Similar as Write_Eol, except that trailing spaces are not removed
 
    procedure Write_Int (Val : Int);
+   procedure Write_Int_64 (Val : Int_64);
    --  Write an integer value with no leading blanks or zeroes. Negative values
    --  are preceded by a minus sign).
 

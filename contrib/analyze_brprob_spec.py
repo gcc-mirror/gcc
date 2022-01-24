@@ -31,6 +31,7 @@ parser.add_argument('-s', '--sorting', dest = 'sorting',
     choices = ['branches', 'branch-hitrate', 'hitrate', 'coverage', 'name'],
     default = 'branches')
 parser.add_argument('-d', '--def-file', help = 'path to predict.def')
+parser.add_argument('-v', '--verbose', action = 'store_true', help = 'Print verbose informations')
 
 args = parser.parse_args()
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -127,8 +127,7 @@ private
    overriding procedure Adjust (Container : in out Holder);
    overriding procedure Finalize (Container : in out Holder);
 
-   type Reference_Control_Type is new Controlled with
-   record
+   type Reference_Control_Type is new Controlled with record
       Container : Holder_Access;
    end record;
 

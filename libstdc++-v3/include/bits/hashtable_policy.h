@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -59,19 +60,19 @@ namespace __detail
 
   // Helper function: return distance(first, last) for forward
   // iterators, or 0/1 for input iterators.
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::input_iterator_tag)
     { return __first != __last ? 1 : 0; }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::forward_iterator_tag)
     { return std::distance(__first, __last); }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last)
     { return __distance_fw(__first, __last,
@@ -87,20 +88,25 @@ namespace __detail
 
   struct _Select1st
   {
-    template<typename _Tp>
-      auto
-      operator()(_Tp&& __x) const noexcept
-      -> decltype(std::get<0>(std::forward<_Tp>(__x)))
-      { return std::get<0>(std::forward<_Tp>(__x)); }
-  };
+    template<typename _Pair>
+      struct __1st_type;
 
-  struct _Select2nd
-  {
+    template<typename _Tp, typename _Up>
+      struct __1st_type<pair<_Tp, _Up>>
+      { using type = _Tp; };
+
+    template<typename _Tp, typename _Up>
+      struct __1st_type<const pair<_Tp, _Up>>
+      { using type = const _Tp; };
+
+    template<typename _Pair>
+      struct __1st_type<_Pair&>
+      { using type = typename __1st_type<_Pair>::type&; };
+
     template<typename _Tp>
-      auto
+      typename __1st_type<_Tp>::type&&
       operator()(_Tp&& __x) const noexcept
-      -> decltype(std::get<1>(std::forward<_Tp>(__x)))
-      { return std::get<1>(std::forward<_Tp>(__x)); }
+      { return std::forward<_Tp>(__x).first; }
   };
 
   template<typename _ExKey>
@@ -112,14 +118,10 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&& __arg, const _NodeGenerator& __node_gen)
-	-> decltype(__node_gen(std::piecewise_construct,
-			       std::forward_as_tuple(std::forward<_Kt>(__k)),
-			       std::forward_as_tuple(_Select2nd{}(
-						std::forward<_Arg>(__arg)))))
+	-> typename _NodeGenerator::__node_type*
 	{
-	  return __node_gen(std::piecewise_construct,
-	    std::forward_as_tuple(std::forward<_Kt>(__k)),
-	    std::forward_as_tuple(_Select2nd{}(std::forward<_Arg>(__arg))));
+	  return __node_gen(std::forward<_Kt>(__k),
+			    std::forward<_Arg>(__arg).second);
 	}
     };
 
@@ -129,7 +131,7 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&&, const _NodeGenerator& __node_gen)
-	-> decltype(__node_gen(std::forward<_Kt>(__k)))
+	-> typename _NodeGenerator::__node_type*
 	{ return __node_gen(std::forward<_Kt>(__k)); }
     };
 
@@ -146,9 +148,10 @@ namespace __detail
       using __hashtable_alloc = _Hashtable_alloc<__node_alloc_type>;
       using __node_alloc_traits =
 	typename __hashtable_alloc::__node_alloc_traits;
-      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
+      using __node_type = typename __hashtable_alloc::__node_type;
+
       _ReuseOrAllocNode(__node_type* __nodes, __hashtable_alloc& __h)
       : _M_nodes(__nodes), _M_h(__h) { }
       _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
@@ -194,9 +197,10 @@ namespace __detail
     {
     private:
       using __hashtable_alloc = _Hashtable_alloc<_NodeAlloc>;
-      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
+      using __node_type = typename __hashtable_alloc::__node_type;
+
       _AllocNode(__hashtable_alloc& __h)
       : _M_h(__h) { }
 
@@ -240,6 +244,20 @@ namespace __detail
       using __hash_cached = __bool_constant<_Cache_hash_code>;
       using __constant_iterators = __bool_constant<_Constant_iterators>;
       using __unique_keys = __bool_constant<_Unique_keys>;
+    };
+
+  /**
+   *  struct _Hashtable_hash_traits
+   *
+   *  Important traits for hash tables depending on associated hasher.
+   *
+   */
+  template<typename _Hash>
+    struct _Hashtable_hash_traits
+    {
+      static constexpr std::size_t
+      __small_size_threshold() noexcept
+      { return std::__is_fast_hash<_Hash>::value ? 0 : 20; }
     };
 
   /**
@@ -360,15 +378,15 @@ namespace __detail
       using __node_type = typename __base_type::__node_type;
 
     public:
-      typedef _Value					value_type;
-      typedef std::ptrdiff_t				difference_type;
-      typedef std::forward_iterator_tag			iterator_category;
+      using value_type = _Value;
+      using difference_type = std::ptrdiff_t;
+      using iterator_category = std::forward_iterator_tag;
 
-      using pointer = typename std::conditional<__constant_iterators,
-				  const value_type*, value_type*>::type;
+      using pointer = __conditional_t<__constant_iterators,
+				      const value_type*, value_type*>;
 
-      using reference = typename std::conditional<__constant_iterators,
-				  const value_type&, value_type&>::type;
+      using reference = __conditional_t<__constant_iterators,
+					const value_type&, value_type&>;
 
       _Node_iterator() = default;
 
@@ -667,8 +685,8 @@ namespace __detail
   /**
    *  Primary class template _Map_base.
    *
-   *  If the hashtable has a value type of the form pair<T1, T2> and a
-   *  key extraction policy (_ExtractKey) that returns the first part
+   *  If the hashtable has a value type of the form pair<const T1, T2> and
+   *  a key extraction policy (_ExtractKey) that returns the first part
    *  of the pair, the hashtable gets a mapped_type typedef.  If it
    *  satisfies those criteria and also has unique keys, then it also
    *  gets an operator[].
@@ -680,37 +698,38 @@ namespace __detail
 	   bool _Unique_keys = _Traits::__unique_keys::value>
     struct _Map_base { };
 
-  /// Partial specialization, __unique_keys set to false.
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  /// Partial specialization, __unique_keys set to false, std::pair value type.
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    struct _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    struct _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 		     _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, false>
     {
-      using mapped_type = typename std::tuple_element<1, _Pair>::type;
+      using mapped_type = _Val;
     };
 
   /// Partial specialization, __unique_keys set to true.
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    struct _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    struct _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 		     _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>
     {
     private:
-      using __hashtable_base = _Hashtable_base<_Key, _Pair, _Select1st, _Equal,
-					       _Hash, _RangeHash, _Unused,
+      using __hashtable_base = _Hashtable_base<_Key, pair<const _Key, _Val>,
+					       _Select1st, _Equal, _Hash,
+					       _RangeHash, _Unused,
 					       _Traits>;
 
-      using __hashtable = _Hashtable<_Key, _Pair, _Alloc, _Select1st, _Equal,
-				     _Hash, _RangeHash,
+      using __hashtable = _Hashtable<_Key, pair<const _Key, _Val>, _Alloc,
+				     _Select1st, _Equal, _Hash, _RangeHash,
 				     _Unused, _RehashPolicy, _Traits>;
 
       using __hash_code = typename __hashtable_base::__hash_code;
 
     public:
       using key_type = typename __hashtable_base::key_type;
-      using mapped_type = typename std::tuple_element<1, _Pair>::type;
+      using mapped_type = _Val;
 
       mapped_type&
       operator[](const key_type& __k);
@@ -721,17 +740,29 @@ namespace __detail
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 761. unordered_map needs an at() member function.
       mapped_type&
-      at(const key_type& __k);
+      at(const key_type& __k)
+      {
+	auto __ite = static_cast<__hashtable*>(this)->find(__k);
+	if (!__ite._M_cur)
+	  __throw_out_of_range(__N("unordered_map::at"));
+	return __ite->second;
+      }
 
       const mapped_type&
-      at(const key_type& __k) const;
+      at(const key_type& __k) const
+      {
+	auto __ite = static_cast<const __hashtable*>(this)->find(__k);
+	if (!__ite._M_cur)
+	  __throw_out_of_range(__N("unordered_map::at"));
+	return __ite->second;
+      }
     };
 
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
     auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
     operator[](const key_type& __k)
     -> mapped_type&
@@ -754,11 +785,11 @@ namespace __detail
       return __pos->second;
     }
 
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
     auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
+    _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal,
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
     operator[](key_type&& __k)
     -> mapped_type&
@@ -779,40 +810,6 @@ namespace __detail
 	= __h->_M_insert_unique_node(__bkt, __code, __node._M_node);
       __node._M_node = nullptr;
       return __pos->second;
-    }
-
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
-    at(const key_type& __k)
-    -> mapped_type&
-    {
-      __hashtable* __h = static_cast<__hashtable*>(this);
-      auto __ite = __h->find(__k);
-
-      if (!__ite._M_cur)
-	__throw_out_of_range(__N("_Map_base::at"));
-      return __ite->second;
-    }
-
-  template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Map_base<_Key, _Pair, _Alloc, _Select1st, _Equal,
-	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
-    at(const key_type& __k) const
-    -> const mapped_type&
-    {
-      const __hashtable* __h = static_cast<const __hashtable*>(this);
-      auto __ite = __h->find(__k);
-
-      if (!__ite._M_cur)
-	__throw_out_of_range(__N("_Map_base::at"));
-      return __ite->second;
     }
 
   /**
@@ -867,12 +864,13 @@ namespace __detail
       using iterator = _Node_iterator<_Value, __constant_iterators::value,
 				      __hash_cached::value>;
 
-      using const_iterator = _Node_const_iterator<_Value, __constant_iterators::value,
+      using const_iterator = _Node_const_iterator<_Value,
+						  __constant_iterators::value,
 						  __hash_cached::value>;
 
-      using __ireturn_type = typename std::conditional<__unique_keys::value,
-						     std::pair<iterator, bool>,
-						     iterator>::type;
+      using __ireturn_type = __conditional_t<__unique_keys::value,
+					     std::pair<iterator, bool>,
+					     iterator>;
 
       __ireturn_type
       insert(const value_type& __v)
@@ -1121,10 +1119,12 @@ namespace __detail
 			_Hash, _RangeHash, _Unused, _RehashPolicy, _Traits,
 			true_type /* Has load factor */>
     {
+    private:
       using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
 				     _Equal, _Hash, _RangeHash, _Unused,
 				     _RehashPolicy, _Traits>;
 
+    public:
       float
       max_load_factor() const noexcept
       {
@@ -1265,6 +1265,27 @@ namespace __detail
 	    "hash function must be invocable with an argument of key type");
 	  return _M_hash()(__k);
 	}
+
+      __hash_code
+      _M_hash_code(const _Hash&,
+		   const _Hash_node_value<_Value, true>& __n) const
+      { return __n._M_hash_code; }
+
+      // Compute hash code using _Hash as __n _M_hash_code, if present, was
+      // computed using _H2.
+      template<typename _H2>
+	__hash_code
+	_M_hash_code(const _H2&,
+		const _Hash_node_value<_Value, __cache_hash_code>& __n) const
+	{ return _M_hash_code(_ExtractKey{}(__n._M_v())); }
+
+      __hash_code
+      _M_hash_code(const _Hash_node_value<_Value, false>& __n) const
+      { return _M_hash_code(_ExtractKey{}(__n._M_v())); }
+
+      __hash_code
+      _M_hash_code(const _Hash_node_value<_Value, true>& __n) const
+      { return __n._M_hash_code; }
 
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
@@ -1482,15 +1503,13 @@ namespace __detail
       using __hash_code_base = typename __base_type::__hash_code_base;
 
     public:
-      typedef _Value					value_type;
-      typedef typename std::conditional<__constant_iterators,
-					const value_type*, value_type*>::type
-							pointer;
-      typedef typename std::conditional<__constant_iterators,
-					const value_type&, value_type&>::type
-							reference;
-      typedef std::ptrdiff_t				difference_type;
-      typedef std::forward_iterator_tag			iterator_category;
+      using value_type = _Value;
+      using pointer = __conditional_t<__constant_iterators,
+				      const value_type*, value_type*>;
+      using reference = __conditional_t<__constant_iterators,
+					const value_type&, value_type&>;
+      using difference_type = ptrdiff_t;
+      using iterator_category = forward_iterator_tag;
 
       _Local_iterator() = default;
 
@@ -1646,27 +1665,40 @@ namespace __detail
       { }
 
       bool
-      _M_equals(const _Key& __k, __hash_code __c,
-		const _Hash_node_value<_Value, __hash_cached::value>& __n) const
+      _M_key_equals(const _Key& __k,
+		    const _Hash_node_value<_Value,
+					   __hash_cached::value>& __n) const
       {
 	static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
 	  "key equality predicate must be invocable with two arguments of "
 	  "key type");
-	return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	return _M_eq()(__k, _ExtractKey{}(__n._M_v()));
       }
+
+      template<typename _Kt>
+	bool
+	_M_key_equals_tr(const _Kt& __k,
+			 const _Hash_node_value<_Value,
+					     __hash_cached::value>& __n) const
+	{
+	  static_assert(
+	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
+	    "key equality predicate must be invocable with two arguments of "
+	    "key type");
+	  return _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	}
+
+      bool
+      _M_equals(const _Key& __k, __hash_code __c,
+		const _Hash_node_value<_Value, __hash_cached::value>& __n) const
+      { return _S_equals(__c, __n) && _M_key_equals(__k, __n); }
 
       template<typename _Kt>
 	bool
 	_M_equals_tr(const _Kt& __k, __hash_code __c,
 		     const _Hash_node_value<_Value,
 					    __hash_cached::value>& __n) const
-	{
-	  static_assert(
-	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
-	    "key equality predicate must be invocable with two arguments of "
-	    "key type");
-	  return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
-	}
+	{ return _S_equals(__c, __n) && _M_key_equals_tr(__k, __n); }
 
       bool
       _M_node_equals(
@@ -1674,7 +1706,7 @@ namespace __detail
 	const _Hash_node_value<_Value, __hash_cached::value>& __rhn) const
       {
 	return _S_node_equals(__lhn, __rhn)
-	  && _M_eq()(_ExtractKey{}(__lhn._M_v()), _ExtractKey{}(__rhn._M_v()));
+	  && _M_key_equals(_ExtractKey{}(__lhn._M_v()), __rhn);
       }
 
       void
@@ -1841,6 +1873,13 @@ namespace __detail
     {
     private:
       using __ebo_node_alloc = _Hashtable_ebo_helper<0, _NodeAlloc>;
+
+      template<typename>
+	struct __get_value_type;
+      template<typename _Val, bool _Cache_hash_code>
+	struct __get_value_type<_Hash_node<_Val, _Cache_hash_code>>
+	{ using type = _Val; };
+
     public:
       using __node_type = typename _NodeAlloc::value_type;
       using __node_alloc_type = _NodeAlloc;
@@ -1848,7 +1887,7 @@ namespace __detail
       using __node_alloc_traits = __gnu_cxx::__alloc_traits<__node_alloc_type>;
 
       using __value_alloc_traits = typename __node_alloc_traits::template
-	rebind_traits<typename __node_type::value_type>;
+	rebind_traits<typename __get_value_type<__node_type>::type>;
 
       using __node_ptr = __node_type*;
       using __node_base = _Hash_node_base;
@@ -1982,6 +2021,7 @@ namespace __detail
 
  ///@} hashtable-detail
 } // namespace __detail
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

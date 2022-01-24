@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -466,6 +466,11 @@ DEF_RTL_EXPR(MULT, "mult", "ee", RTX_COMM_ARITH)
 DEF_RTL_EXPR(SS_MULT, "ss_mult", "ee", RTX_COMM_ARITH)
 /* Multiplication with unsigned saturation */
 DEF_RTL_EXPR(US_MULT, "us_mult", "ee", RTX_COMM_ARITH)
+
+/* Signed high-part multiplication.  */
+DEF_RTL_EXPR(SMUL_HIGHPART, "smul_highpart", "ee", RTX_COMM_ARITH)
+/* Unsigned high-part multiplication.  */
+DEF_RTL_EXPR(UMUL_HIGHPART, "umul_highpart", "ee", RTX_COMM_ARITH)
 
 /* Operand 0 divided by operand 1.  */
 DEF_RTL_EXPR(DIV, "div", "ee", RTX_BIN_ARITH)

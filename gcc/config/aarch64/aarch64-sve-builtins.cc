@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -3913,7 +3913,7 @@ gt_pch_nx (function_instance *)
 }
 
 inline void
-gt_pch_nx (function_instance *, void (*) (void *, void *), void *)
+gt_pch_nx (function_instance *, gt_pointer_operator, void *)
 {
 }
 

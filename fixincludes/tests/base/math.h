@@ -30,6 +30,11 @@
 #endif  /* DARWIN_9_LONG_DOUBLE_FUNCS_2_CHECK */
 
 
+#if defined( DARWIN_FLT_EVAL_METHOD_CHECK )
+#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16
+#endif  /* DARWIN_FLT_EVAL_METHOD_CHECK */
+
+
 #if defined( HPPA_HPUX_FP_MACROS_CHECK )
 #endif /* _INCLUDE_HPUX_SOURCE */
 
@@ -99,6 +104,40 @@ extern int class();
 int foo;
 #endif
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */
+
+
+#if defined( VXWORKS_MATH_H_FP_C99_CHECK )
+
+#define HUGE_VAL _ARCH_HUGH_VAL
+
+#if _C99
+
+#define FP_INFINITE  1
+#define FP_NAN       2
+#define FP_NORMAL    (-1)
+#define FP_SUBNORMAL (-2)
+#define FP_ZERO      0
+
+#define fpclassify(x) \
+  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, \
+		       FP_SUBNORMAL, FP_ZERO, (x))
+
+#define signbit(x) __builtin_signbit(x)
+#define isfinite(x) __builtin_isfinite(x)
+#define isnormal(x) __builtin_isnormal(x)
+#define isnan(x) __builtin_isnan(x)
+#define isinf(x) __builtin_isinf(x)
+
+#define isgreater(x, y) __builtin_isgreater((x),(y))
+#define isgreaterequal(x, y) __builtin_isgreaterequal((x),(y))
+#define isless(x, y) __builtin_isless((x),(y))
+#define islessequal(x, y) __builtin_islessequal((x),(y))
+#define islessgreater(x, y) __builtin_islessgreater((x),(y))
+#define isunordered(x, y) __builtin_isunordered((x),(y))
+
+#endif /* _C99 */
+
+#endif  /* VXWORKS_MATH_H_FP_C99_CHECK */
 #ifdef __cplusplus
 #undef exception
 #endif

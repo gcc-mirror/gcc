@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1493,8 +1493,6 @@ bb_next_bb (basic_block bb)
     default:
       return bb->next_bb;
     }
-
-  gcc_unreachable ();
 }
 
 

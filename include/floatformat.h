@@ -1,5 +1,5 @@
 /* IEEE floating point support declarations, for GDB, the GNU Debugger.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of GDB.
 
@@ -91,7 +91,7 @@ struct floatformat
 
   /* Is the format actually the sum of two smaller floating point
      formats (IBM long double, as described in
-     gcc/config/rs6000/darwin-ldouble-format)?  If so, this is the
+     libgcc/config/rs6000/ibm-ldouble-format)?  If so, this is the
      smaller format in question, and the fields sign_start through
      intbit describe the first half.  If not, this is NULL.  */
   const struct floatformat *split_half;

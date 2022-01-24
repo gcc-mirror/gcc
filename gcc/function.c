@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4873,8 +4873,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
      binding annotations among them.  */
   cfun->debug_nonbind_markers = lang_hooks.emits_begin_stmt
     && MAY_HAVE_DEBUG_MARKER_STMTS;
-
-  cfun->x_range_query = &global_ranges;
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL

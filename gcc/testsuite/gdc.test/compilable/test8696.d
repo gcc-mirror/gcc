@@ -1,6 +1,7 @@
 // REQUIRED_ARGS: -w
 
-// 8696: incorrect dangling else with version():
+// https://issues.dlang.org/show_bug.cgi?id=8696
+// incorrect dangling else with version():
 version (all):
 
 version (linux)

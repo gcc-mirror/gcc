@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -589,6 +589,10 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   if (flag_undef)
     return;
 
+  /* Make sure all of the builtins about to be declared have
+     BUILTINS_LOCATION has their location_t.  */
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
+
   /* Other target-independent built-ins determined by command-line
      options.  */
   if (!prev->x_optimize_size && cur->x_optimize_size)
@@ -628,6 +632,33 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
       cpp_undef (pfile, "__FINITE_MATH_ONLY__");
       cpp_define_unused (pfile, "__FINITE_MATH_ONLY__=0");
     }
+
+  if (!prev->x_flag_reciprocal_math && cur->x_flag_reciprocal_math)
+    cpp_define_unused (pfile, "__RECIPROCAL_MATH__");
+  else if (prev->x_flag_reciprocal_math && !cur->x_flag_reciprocal_math)
+    cpp_undef (pfile, "__RECIPROCAL_MATH__");
+
+  if (!prev->x_flag_signed_zeros && cur->x_flag_signed_zeros)
+    cpp_undef (pfile, "__NO_SIGNED_ZEROS__");
+  else if (prev->x_flag_signed_zeros && !cur->x_flag_signed_zeros)
+    cpp_define_unused (pfile, "__NO_SIGNED_ZEROS__");
+
+  if (!prev->x_flag_trapping_math && cur->x_flag_trapping_math)
+    cpp_undef (pfile, "__NO_TRAPPING_MATH__");
+  else if (prev->x_flag_trapping_math && !cur->x_flag_trapping_math)
+    cpp_define_unused (pfile, "__NO_TRAPPING_MATH__");
+
+  if (!prev->x_flag_associative_math && cur->x_flag_associative_math)
+    cpp_define_unused (pfile, "__ASSOCIATIVE_MATH__");
+  else if (prev->x_flag_associative_math && !cur->x_flag_associative_math)
+    cpp_undef (pfile, "__ASSOCIATIVE_MATH__");
+
+  if (!prev->x_flag_rounding_math && cur->x_flag_rounding_math)
+    cpp_define_unused (pfile, "__ROUNDING_MATH__");
+  else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
+    cpp_undef (pfile, "__ROUNDING_MATH__");
+
+  cpp_stop_forcing_token_locations (parse_in);
 }
 
 
@@ -1027,7 +1058,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
 	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
-	  cpp_define (pfile, "__cpp_constexpr=201907L");
+	  if (cxx_dialect <= cxx20)
+	    cpp_define (pfile, "__cpp_constexpr=201907L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
 	  cpp_define (pfile, "__cpp_consteval=201811L");
@@ -1046,6 +1078,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Set feature test macros for C++23.  */
 	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
 	  cpp_define (pfile, "__cpp_if_consteval=202106L");
+	  cpp_define (pfile, "__cpp_constexpr=202110L");
+	  cpp_define (pfile, "__cpp_multidimensional_subscript=202110L");
 	}
       if (flag_concepts)
         {
@@ -1084,6 +1118,8 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect >= cxx11 && strcmp (thread_model, "single") != 0)
 	cpp_define (pfile, "__STDCPP_THREADS__=1");
 #endif
+      if (flag_implicit_constexpr)
+	cpp_define (pfile, "__cpp_implicit_constexpr=20211111L");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */

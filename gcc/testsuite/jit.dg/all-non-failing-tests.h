@@ -181,10 +181,31 @@
 #undef create_code
 #undef verify_code
 
+/* test-global-init-rvalue.c */
+#define create_code create_code_global_init_rvalue
+#define verify_code verify_code_global_init_rvalue
+#include "test-global-init-rvalue.c"
+#undef create_code
+#undef verify_code
+
 /* test-global-set-initializer.c */
 #define create_code create_code_global_set_initializer
 #define verify_code verify_code_global_set_initializer
 #include "test-global-set-initializer.c"
+#undef create_code
+#undef verify_code
+
+/* test-builtin-types.c */
+#define create_code create_code_builtin_types
+#define verify_code verify_code_builtin_types
+#include "test-builtin-types.c"
+#undef create_code
+#undef verify_code
+
+/* test-tls.c */
+#define create_code create_code_tls
+#define verify_code verify_code_tls
+#include "test-tls.c"
 #undef create_code
 #undef verify_code
 
@@ -195,10 +216,20 @@
 #undef create_code
 #undef verify_code
 
+/* test-link-section-assembler.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
+
 /* test-linked-list.c */
 #define create_code create_code_linked_list
 #define verify_code verify_code_linked_list
 #include "test-linked-list.c"
+#undef create_code
+#undef verify_code
+
+/* test-local-init-rvalue.c */
+#define create_code create_code_local_init_rvalue
+#define verify_code verify_code_local_init_rvalue
+#include "test-local-init-rvalue.c"
 #undef create_code
 #undef verify_code
 
@@ -229,6 +260,9 @@
 #include "test-nested-loops.c"
 #undef create_code
 #undef verify_code
+
+/* test-pr103562.c: We don't add this one, since it touches
+   the optimization level of the context as a whole.  */
 
 /* test-pr66700-observing-write-through-ptr.c */
 #define create_code create_code_pr66700_observing_write_through_ptr
@@ -262,6 +296,13 @@
 #define create_code create_code_reading_struct
 #define verify_code verify_code_reading_struct
 #include "test-reading-struct.c"
+#undef create_code
+#undef verify_code
+
+/* test-reflection.c */
+#define create_code create_code_reflection
+#define verify_code verify_code_reflection
+#include "test-reflection.c"
 #undef create_code
 #undef verify_code
 
@@ -401,12 +442,21 @@ const struct testcase testcases[] = {
   {"functions",
    create_code_functions,
    verify_code_functions},
+  {"builtin-types",
+   create_code_builtin_types,
+   verify_code_builtin_types},
+  {"global_rvalue_init",
+   create_code_global_init_rvalue,
+   verify_code_global_init_rvalue},
   {"hello_world",
    create_code_hello_world,
    verify_code_hello_world},
   {"linked_list",
    create_code_linked_list,
    verify_code_linked_list},
+  {"local_rvalue_init",
+   create_code_local_init_rvalue,
+   verify_code_local_init_rvalue},
   {"long_names",
    create_code_long_names,
    verify_code_long_names},
@@ -434,6 +484,9 @@ const struct testcase testcases[] = {
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },
+  {"reflection",
+   create_code_reflection ,
+   verify_code_reflection },
   {"string_literal",
    create_code_string_literal,
    verify_code_string_literal},
@@ -443,6 +496,9 @@ const struct testcase testcases[] = {
   {"switch",
    create_code_switch,
    verify_code_switch},
+  {"tls",
+   create_code_tls,
+   verify_code_tls},
   {"types",
    create_code_types,
    verify_code_types},

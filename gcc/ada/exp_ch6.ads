@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,9 @@ package Exp_Ch6 is
    --  Func_Body is the root of the body of the function before its analysis.
    --  The returned node is the root of the procedure body which will replace
    --  the original function body, which is not needed for the C program.
+
+   procedure Install_Class_Preconditions_Check (Call_Node : Node_Id);
+   --  Install check of class-wide preconditions on the caller.
 
    function Is_Build_In_Place_Entity (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E is a BIP entity.

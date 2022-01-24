@@ -4,7 +4,7 @@
  *
  * This module is a submodule of $(MREF std, container).
  *
- * Source: $(PHOBOSSRC std/container/_array.d)
+ * Source: $(PHOBOSSRC std/container/array.d)
  *
  * Copyright: 2010- Andrei Alexandrescu. All rights reserved by the respective holders.
  *
@@ -24,8 +24,63 @@ import std.traits;
 
 public import std.container.util;
 
+pure @system unittest
+{
+    // We test multiple array lengths in order to ensure that the "a1.capacity == a0.length" test is meaningful
+    // for the version in which the constructor uses insertBack
+    // (because for some lengths, the test passes even without reserve).
+    for (size_t n = 0; n < 100; ++n)
+    {
+        float[] a0;
+        {
+            import std.range : iota;
+            import std.array;
+            import std.algorithm.iteration : map;
+            a0 = iota (0, n).map!(i => i * 1.1f).array;
+        }
+
+        auto a1 = Array!float(a0);
+
+        // We check that a1 has the same length and contents as a0:
+        {
+            assert(a1.length == a0.length);
+
+            // I wish that I could write "assert(a1[] == a0[]);",
+            // but the compiler complains: "Error: incompatible types for `(a1.opSlice()) == (a0[])`: `RangeT!(Array!float)` and `float[]`".
+            import std.algorithm.comparison : equal;
+            assert(equal(a1[], a0[]));
+        }
+
+        // We check that a1's constructor has called reserve (to maintain good performance):
+        assert(a1.capacity == a0.length);
+    }
+}
+
+pure @system unittest
+{
+    // To avoid bad performance, we check that an Array constructed from an empty range
+    // does not initialize its RefCountedStore object, even after a call to "reserve(0)".
+
+    {
+        Array!float a1;
+        assert(! a1._data.refCountedStore.isInitialized);
+        a1.reserve(0);
+        assert(! a1._data.refCountedStore.isInitialized);
+    }
+
+    {
+        float[] a0 = [];
+        Array!float a1 = a0;
+        // [2021-09-26] TODO: Investigate RefCounted.
+        //assert(! a1._data.refCountedStore.isInitialized);
+        a1.reserve(0);
+        // [2021-09-26] TODO: Investigate RefCounted.
+        //assert(! a1._data.refCountedStore.isInitialized);
+    }
+}
+
 ///
-@system unittest
+pure @system unittest
 {
     auto arr = Array!int(0, 2, 3);
     assert(arr[0] == 0);
@@ -52,7 +107,7 @@ public import std.container.util;
 }
 
 ///
-@system unittest
+pure @system unittest
 {
     import std.algorithm.comparison : equal;
     auto arr = Array!int(1, 2, 3);
@@ -71,16 +126,15 @@ public import std.container.util;
 }
 
 /// `Array!bool` packs together values efficiently by allocating one bit per element
-@system unittest
+pure @system unittest
 {
-    Array!bool arr;
-    arr.insert([true, true, false, true, false]);
+    auto arr = Array!bool([true, true, false, true, false]);
     assert(arr.length == 5);
 }
 
 private struct RangeT(A)
 {
-    /* Workaround for Issue 13629 at https://issues.dlang.org/show_bug.cgi?id=13629
+    /* Workaround for https://issues.dlang.org/show_bug.cgi?id=13629
        See also: http://forum.dlang.org/post/vbmwhzvawhnkoxrhbnyb@forum.dlang.org
     */
     private A[1] _outer_;
@@ -144,26 +198,34 @@ private struct RangeT(A)
 
         E moveFront()
         {
-            assert(!empty && _a < _outer.length);
+            assert(!empty, "Attempting to moveFront an empty Array");
+            assert(_a < _outer.length,
+                "Attempting to moveFront using an out of bounds low index on an Array");
             return move(_outer._data._payload[_a]);
         }
 
         E moveBack()
         {
-            assert(!empty && _b  <= _outer.length);
+            assert(!empty, "Attempting to moveBack an empty Array");
+            assert(_b - 1 < _outer.length,
+                "Attempting to moveBack using an out of bounds high index on an Array");
             return move(_outer._data._payload[_b - 1]);
         }
 
         E moveAt(size_t i)
         {
-            assert(_a + i < _b && _a + i < _outer.length);
+            assert(_a + i < _b,
+                "Attempting to moveAt using an out of bounds index on an Array");
+            assert(_a + i < _outer.length,
+                "Cannot move past the end of the array");
             return move(_outer._data._payload[_a + i]);
         }
     }
 
     ref inout(E) opIndex(size_t i) inout
     {
-        assert(_a + i < _b);
+        assert(_a + i < _b,
+            "Attempting to fetch using an out of bounds index on an Array");
         return _outer[_a + i];
     }
 
@@ -174,7 +236,8 @@ private struct RangeT(A)
 
     RangeT opSlice(size_t i, size_t j)
     {
-        assert(i <= j && _a + j <= _b);
+        assert(i <= j && _a + j <= _b,
+            "Attempting to slice using an out of bounds indices on an Array");
         return typeof(return)(_outer, _a + i, _a + j);
     }
 
@@ -185,7 +248,8 @@ private struct RangeT(A)
 
     RangeT!(const(A)) opSlice(size_t i, size_t j) const
     {
-        assert(i <= j && _a + j <= _b);
+        assert(i <= j && _a + j <= _b,
+            "Attempting to slice using an out of bounds indices on an Array");
         return typeof(return)(_outer, _a + i, _a + j);
     }
 
@@ -193,43 +257,113 @@ private struct RangeT(A)
     {
         void opSliceAssign(E value)
         {
-            assert(_b <= _outer.length);
+            assert(_b <= _outer.length,
+                "Attempting to assign using an out of bounds indices on an Array");
             _outer[_a .. _b] = value;
         }
 
         void opSliceAssign(E value, size_t i, size_t j)
         {
-            assert(_a + j <= _b);
+            assert(_a + j <= _b,
+                "Attempting to slice assign using an out of bounds indices on an Array");
             _outer[_a + i .. _a + j] = value;
         }
 
         void opSliceUnary(string op)()
         if (op == "++" || op == "--")
         {
-            assert(_b <= _outer.length);
+            assert(_b <= _outer.length,
+                "Attempting to slice using an out of bounds indices on an Array");
             mixin(op~"_outer[_a .. _b];");
         }
 
         void opSliceUnary(string op)(size_t i, size_t j)
         if (op == "++" || op == "--")
         {
-            assert(_a + j <= _b);
+            assert(_a + j <= _b,
+                "Attempting to slice using an out of bounds indices on an Array");
             mixin(op~"_outer[_a + i .. _a + j];");
         }
 
         void opSliceOpAssign(string op)(E value)
         {
-            assert(_b <= _outer.length);
+            assert(_b <= _outer.length,
+                "Attempting to slice using an out of bounds indices on an Array");
             mixin("_outer[_a .. _b] "~op~"= value;");
         }
 
         void opSliceOpAssign(string op)(E value, size_t i, size_t j)
         {
-            assert(_a + j <= _b);
+            assert(_a + j <= _b,
+                "Attempting to slice using an out of bounds indices on an Array");
             mixin("_outer[_a + i .. _a + j] "~op~"= value;");
         }
     }
 }
+
+@system unittest
+{
+    enum : bool { display = false }
+    static if (display)
+    {
+        import std.stdio;
+        enum { nDigitsForPointer = 2 * size_t.sizeof, nDigitsForNObjects = 4 }
+    }
+
+    static struct S
+    {
+        static size_t s_nConstructed;
+        static size_t s_nDestroyed;
+        static void throwIfTooMany()
+        {
+            if (s_nConstructed >= 7) throw new Exception ("Ka-boom !");
+        }
+
+        uint _i;
+
+        ~this()
+        {
+            static if (display) writefln("@%*Xh: Destroying.", nDigitsForPointer, &this);
+            ++s_nDestroyed;
+        }
+
+        this(uint i)
+        {
+            static if (display) writefln("@%*Xh: Constructing.", nDigitsForPointer, &this);
+            _i = i;
+            ++s_nConstructed;
+            throwIfTooMany();
+        }
+
+        this(this)
+        {
+            static if (display) writefln("@%*Xh: Copying.", nDigitsForPointer, &this);
+            ++s_nConstructed;
+            throwIfTooMany();
+        }
+    }
+
+    try
+    {
+        auto a = Array!S (S(0), S(1), S(2), S(3));
+        static if (display) writefln("@%*Xh: This is where the array elements are.", nDigitsForPointer, &a [0]);
+    }
+    catch (Exception e)
+    {
+        static if (display) writefln("Exception caught !");
+    }
+
+    static if (display)
+    {
+        writefln("s_nConstructed %*Xh.", nDigitsForNObjects, S.s_nConstructed);
+        writefln("s_nDestroyed   %*Xh.", nDigitsForNObjects, S.s_nDestroyed);
+        writefln("s_nConstructed should be equal to s_nDestroyed.");
+        writefln("");
+    }
+
+    assert(S.s_nDestroyed == S.s_nConstructed);
+}
+
 
 /**
  * _Array type with deterministic control of memory. The memory allocated
@@ -249,9 +383,10 @@ private struct RangeT(A)
  * instead of `array.map!`). The container itself is not a range.
  */
 struct Array(T)
-if (!is(Unqual!T == bool))
+if (!is(immutable T == immutable bool))
 {
-    import core.stdc.stdlib : malloc, realloc, free;
+    import core.memory : free = pureFree;
+    import std.internal.memory : enforceMalloc, enforceRealloc;
     import core.stdc.string : memcpy, memmove, memset;
 
     import core.memory : GC;
@@ -293,8 +428,6 @@ if (!is(Unqual!T == bool))
 
         @property void length(size_t newLength)
         {
-            import std.algorithm.mutation : initializeAll;
-
             if (length >= newLength)
             {
                 // shorten
@@ -305,24 +438,22 @@ if (!is(Unqual!T == bool))
                 _payload = _payload.ptr[0 .. newLength];
                 return;
             }
-            immutable startEmplace = length;
-            if (_capacity < newLength)
-            {
-                // enlarge
-                import core.checkedint : mulu;
 
-                bool overflow;
-                const nbytes = mulu(newLength, T.sizeof, overflow);
-                if (overflow)
-                    assert(0);
-                _payload = (cast(T*) realloc(_payload.ptr, nbytes))[0 .. newLength];
-                _capacity = newLength;
+            static if (__traits(compiles, { static T _; }))
+            {
+                import std.algorithm.mutation : initializeAll;
+
+                immutable startEmplace = length;
+                reserve(newLength);
+                initializeAll(_payload.ptr[startEmplace .. newLength]);
+                _payload = _payload.ptr[0 .. newLength];
             }
             else
             {
-                _payload = _payload.ptr[0 .. newLength];
+                assert(0, "Cannot add elements to array because `" ~
+                    fullyQualifiedName!T ~ ".this()` is annotated with " ~
+                    "`@disable`.");
             }
-            initializeAll(_payload.ptr[startEmplace .. newLength]);
         }
 
         @property size_t capacity() const
@@ -333,11 +464,18 @@ if (!is(Unqual!T == bool))
         void reserve(size_t elements)
         {
             if (elements <= capacity) return;
-            import core.checkedint : mulu;
-            bool overflow;
-            const sz = mulu(elements, T.sizeof, overflow);
-            if (overflow)
-                assert(0);
+            static if (T.sizeof == 1)
+            {
+                const sz = elements;
+            }
+            else
+            {
+                import core.checkedint : mulu;
+                bool overflow;
+                const sz = mulu(elements, T.sizeof, overflow);
+                if (overflow)
+                    assert(false, "Overflow");
+            }
             static if (hasIndirections!T)
             {
                 /* Because of the transactional nature of this
@@ -347,8 +485,7 @@ if (!is(Unqual!T == bool))
                  */
                 immutable oldLength = length;
 
-                auto newPayloadPtr = cast(T*) malloc(sz);
-                newPayloadPtr || assert(false, "std.container.Array.reserve failed to allocate memory");
+                auto newPayloadPtr = cast(T*) enforceMalloc(sz);
                 auto newPayload = newPayloadPtr[0 .. oldLength];
 
                 // copy old data over to new array
@@ -365,8 +502,7 @@ if (!is(Unqual!T == bool))
             else
             {
                 // These can't have pointers, so no need to zero unused region
-                auto newPayloadPtr = cast(T*) realloc(_payload.ptr, sz);
-                newPayloadPtr || assert(false, "std.container.Array.reserve failed to allocate memory");
+                auto newPayloadPtr = cast(T*) enforceRealloc(_payload.ptr, sz);
                 auto newPayload = newPayloadPtr[0 .. length];
                 _payload = newPayload;
             }
@@ -377,12 +513,21 @@ if (!is(Unqual!T == bool))
         size_t insertBack(Elem)(Elem elem)
         if (isImplicitlyConvertible!(Elem, T))
         {
-            import std.conv : emplace;
+            import core.lifetime : emplace;
+            assert(_capacity >= length);
             if (_capacity == length)
             {
-                reserve(1 + capacity * 3 / 2);
+                import core.checkedint : addu;
+
+                bool overflow;
+                immutable size_t newCapacity = addu(capacity, capacity / 2 + 1, overflow);
+                if (overflow)
+                    assert(false, "Overflow");
+
+                reserve(newCapacity);
             }
-            assert(capacity > length && _payload.ptr);
+            assert(capacity > length && _payload.ptr,
+                "Failed to reserve memory");
             emplace(_payload.ptr + _payload.length, elem);
             _payload = _payload.ptr[0 .. _payload.length + 1];
             return 1;
@@ -392,21 +537,27 @@ if (!is(Unqual!T == bool))
         size_t insertBack(Range)(Range r)
         if (isInputRange!Range && isImplicitlyConvertible!(ElementType!Range, T))
         {
+            immutable size_t oldLength = length;
+
             static if (hasLength!Range)
             {
-                immutable oldLength = length;
-                reserve(oldLength + r.length);
+                immutable size_t rLength = r.length;
+                reserve(oldLength + rLength);
             }
+
             size_t result;
             foreach (item; r)
             {
                 insertBack(item);
                 ++result;
             }
+
             static if (hasLength!Range)
-            {
-                assert(length == oldLength + r.length);
-            }
+                assert(result == rLength, "insertBack: range might have changed length");
+
+            assert(length == oldLength + result,
+                "Failed to insertBack range");
+
             return result;
         }
     }
@@ -419,27 +570,32 @@ if (!is(Unqual!T == bool))
     this(U)(U[] values...)
     if (isImplicitlyConvertible!(U, T))
     {
-        import core.checkedint : mulu;
-        import std.conv : emplace;
-        bool overflow;
-        const nbytes = mulu(values.length, T.sizeof, overflow);
-        if (overflow) assert(0);
-        auto p = cast(T*) malloc(nbytes);
-        static if (hasIndirections!T)
+        // [2021-07-17] Checking to see whether *always* calling ensureInitialized works-around-and/or-is-related-to https://issues.dlang.org/show_bug.cgihttps://issues.dlang.org/show_bug.cgi...
+        //if (values.length)
         {
-            if (p)
-                GC.addRange(p, T.sizeof * values.length);
+            _data.refCountedStore.ensureInitialized();
+            _data.reserve(values.length);
+            foreach (ref value; values)
+            {
+                // We do not simply write "_data.insertBack(value);"
+                // because that might perform, on each iteration, a now-redundant check of length vs capacity.
+                // Thanks to @dkorpel (https://github.com/dlang/phobos/pull/8162#discussion_r667479090).
+
+                import core.lifetime : emplace;
+                emplace(_data._payload.ptr + _data._payload.length, value);
+
+                // We increment the length after each iteration (as opposed to adjusting it just once, after the loop)
+                // in order to improve error-safety (in case one of the calls to emplace throws).
+                _data._payload = _data._payload.ptr[0 .. _data._payload.length + 1];
+            }
         }
 
-        foreach (i, e; values)
-        {
-            emplace(p + i, e);
-        }
-        _data = Data(p[0 .. values.length]);
+        assert(length == values.length);   // We check that all values have been inserted.
+        assert(capacity == values.length); // We check that reserve has been called before the loop.
     }
 
     /**
-     * Constructor taking an input range
+     * Constructor taking an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
      */
     this(Range)(Range r)
     if (isInputRange!Range && isImplicitlyConvertible!(ElementType!Range, T) && !is(Range == T[]))
@@ -527,6 +683,17 @@ if (!is(Unqual!T == bool))
     }
 
     /**
+     * Returns: the internal representation of the array.
+     *
+     * Complexity: $(BIGOH 1).
+     */
+
+    inout(T)[] data() inout @system
+    {
+        return _data.refCountedStore.isInitialized ? _data._payload : [];
+    }
+
+    /**
      * Ensures sufficient capacity to accommodate `e` _elements.
      * If `e < capacity`, this method does nothing.
      *
@@ -539,25 +706,11 @@ if (!is(Unqual!T == bool))
      */
     void reserve(size_t elements)
     {
-        if (!_data.refCountedStore.isInitialized)
+        if (elements > capacity)
         {
-            if (!elements) return;
-            import core.checkedint : mulu;
-            bool overflow;
-            const sz = mulu(elements, T.sizeof, overflow);
-            if (overflow) assert(0);
-            auto p = malloc(sz);
-            p || assert(false, "std.container.Array.reserve failed to allocate memory");
-            static if (hasIndirections!T)
-            {
-                GC.addRange(p, sz);
-            }
-            _data = Data(cast(T[]) p[0 .. 0]);
-            _data._capacity = elements;
-        }
-        else
-        {
+            _data.refCountedStore.ensureInitialized();
             _data.reserve(elements);
+            assert(capacity == elements); // Might need changing to ">=" if implementation of Payload.reserve is changed.
         }
     }
 
@@ -592,19 +745,19 @@ if (!is(Unqual!T == bool))
      */
     Range opSlice(size_t i, size_t j)
     {
-        assert(i <= j && j <= length);
+        assert(i <= j && j <= length, "Invalid slice bounds");
         return typeof(return)(this, i, j);
     }
 
     ConstRange opSlice(size_t i, size_t j) const
     {
-        assert(i <= j && j <= length);
+        assert(i <= j && j <= length, "Invalid slice bounds");
         return typeof(return)(this, i, j);
     }
 
     ImmutableRange opSlice(size_t i, size_t j) immutable
     {
-        assert(i <= j && j <= length);
+        assert(i <= j && j <= length, "Invalid slice bounds");
         return typeof(return)(this, i, j);
     }
 
@@ -617,7 +770,8 @@ if (!is(Unqual!T == bool))
      */
     @property ref inout(T) front() inout
     {
-        assert(_data.refCountedStore.isInitialized);
+        assert(_data.refCountedStore.isInitialized,
+            "Cannot get front of empty range");
         return _data._payload[0];
     }
 
@@ -630,7 +784,8 @@ if (!is(Unqual!T == bool))
      */
     @property ref inout(T) back() inout
     {
-        assert(_data.refCountedStore.isInitialized);
+        assert(_data.refCountedStore.isInitialized,
+            "Cannot get back of empty range");
         return _data._payload[$ - 1];
     }
 
@@ -643,7 +798,8 @@ if (!is(Unqual!T == bool))
      */
     ref inout(T) opIndex(size_t i) inout
     {
-        assert(_data.refCountedStore.isInitialized);
+        assert(_data.refCountedStore.isInitialized,
+            "Cannot index empty range");
         return _data._payload[i];
     }
 
@@ -755,11 +911,15 @@ if (!is(Unqual!T == bool))
     /**
      * Sets the number of elements in the array to `newLength`. If `newLength`
      * is greater than `length`, the new elements are added to the end of the
-     * array and initialized with `T.init`.
+     * array and initialized with `T.init`. If `T` is a `struct` whose default
+     * constructor is annotated with `@disable`, `newLength` must be lower than
+     * or equal to `length`.
      *
      * Complexity:
      * Guaranteed $(BIGOH abs(length - newLength)) if `capacity >= newLength`.
      * If `capacity < newLength` the worst case is $(BIGOH newLength).
+     *
+     * Precondition: `__traits(compiles, { static T _; }) || newLength <= length`
      *
      * Postcondition: `length == newLength`
      */
@@ -879,10 +1039,11 @@ if (!is(Unqual!T == bool))
     size_t insertBefore(Stuff)(Range r, Stuff stuff)
     if (isImplicitlyConvertible!(Stuff, T))
     {
-        import std.conv : emplace;
+        import core.lifetime : emplace;
         enforce(r._outer._data is _data && r._a <= length);
         reserve(length + 1);
-        assert(_data.refCountedStore.isInitialized);
+        assert(_data.refCountedStore.isInitialized,
+            "Failed to allocate capacity to insertBefore");
         // Move elements over by one slot
         memmove(_data._payload.ptr + r._a + 1,
                 _data._payload.ptr + r._a,
@@ -896,7 +1057,7 @@ if (!is(Unqual!T == bool))
     size_t insertBefore(Stuff)(Range r, Stuff stuff)
     if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
     {
-        import std.conv : emplace;
+        import core.lifetime : emplace;
         enforce(r._outer._data is _data && r._a <= length);
         static if (isForwardRange!Stuff)
         {
@@ -904,7 +1065,8 @@ if (!is(Unqual!T == bool))
             auto extra = walkLength(stuff);
             if (!extra) return 0;
             reserve(length + extra);
-            assert(_data.refCountedStore.isInitialized);
+            assert(_data.refCountedStore.isInitialized,
+                "Failed to allocate capacity to insertBefore");
             // Move elements over by extra slots
             memmove(_data._payload.ptr + r._a + extra,
                     _data._payload.ptr + r._a,
@@ -937,6 +1099,8 @@ if (!is(Unqual!T == bool))
 
     /// ditto
     size_t insertAfter(Stuff)(Range r, Stuff stuff)
+    if (isImplicitlyConvertible!(Stuff, T) ||
+            isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
     {
         import std.algorithm.mutation : bringToFront;
         enforce(r._outer._data is _data);
@@ -1115,9 +1279,17 @@ if (!is(Unqual!T == bool))
 
 @safe unittest
 {
-    // REG https://issues.dlang.org/show_bug.cgi?id=13621
+    // https://issues.dlang.org/show_bug.cgi?id=13621
     import std.container : Array, BinaryHeap;
     alias Heap = BinaryHeap!(Array!int);
+}
+
+@system unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=18800
+    static struct S { void* p; }
+    Array!S a;
+    a.length = 10;
 }
 
 @system unittest
@@ -1203,7 +1375,8 @@ if (!is(Unqual!T == bool))
     assert(a.length == 7);
     assert(equal(a[1 .. 4], [1, 2, 3]));
 }
-// Test issue 5920
+
+// https://issues.dlang.org/show_bug.cgi?id=5920
 @system unittest
 {
     struct structBug5920
@@ -1242,7 +1415,9 @@ if (!is(Unqual!T == bool))
     }
     assert(dMask == 0b1111_1111);   // make sure the d'tor is called once only.
 }
-// Test issue 5792 (mainly just to check if this piece of code is compilable)
+
+// Test for https://issues.dlang.org/show_bug.cgi?id=5792
+// (mainly just to check if this piece of code is compilable)
 @system unittest
 {
     auto a = Array!(int[])([[1,2],[3,4]]);
@@ -1401,7 +1576,8 @@ if (!is(Unqual!T == bool))
     arr ~= s;
 }
 
-@safe unittest //11459
+// https://issues.dlang.org/show_bug.cgi?id=11459
+@safe unittest
 {
     static struct S
     {
@@ -1412,18 +1588,21 @@ if (!is(Unqual!T == bool))
     alias B = Array!(shared bool);
 }
 
-@system unittest //11884
+// https://issues.dlang.org/show_bug.cgi?id=11884
+@system unittest
 {
     import std.algorithm.iteration : filter;
     auto a = Array!int([1, 2, 2].filter!"true"());
 }
 
-@safe unittest //8282
+// https://issues.dlang.org/show_bug.cgi?id=8282
+@safe unittest
 {
     auto arr = new Array!int;
 }
 
-@system unittest //6998
+// https://issues.dlang.org/show_bug.cgi?id=6998
+@system unittest
 {
     static int i = 0;
     class C
@@ -1448,7 +1627,9 @@ if (!is(Unqual!T == bool))
     //Just to make sure the GC doesn't collect before the above test.
     assert(c.dummy == 1);
 }
-@system unittest //6998-2
+
+//https://issues.dlang.org/show_bug.cgi?id=6998 (2)
+@system unittest
 {
     static class C {int i;}
     auto c = new C;
@@ -1508,6 +1689,56 @@ if (!is(Unqual!T == bool))
     ai.insertBack(arr);
 }
 
+/*
+ * typeof may give wrong result in case of classes defining `opCall` operator
+ * https://issues.dlang.org/show_bug.cgi?id=20589
+ *
+ * destructor std.container.array.Array!(MyClass).Array.~this is @system
+ * so the unittest is @system too
+ */
+@system unittest
+{
+    class MyClass
+    {
+        T opCall(T)(T p)
+        {
+            return p;
+        }
+    }
+
+    Array!MyClass arr;
+}
+
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    auto a = Array!int([1,2,3,4,5]);
+    assert(a.length == 5);
+
+    assert(a.insertAfter(a[0 .. 5], [7, 8]) == 2);
+    assert(equal(a[], [1,2,3,4,5,7,8]));
+
+    assert(a.insertAfter(a[0 .. 5], 6) == 1);
+    assert(equal(a[], [1,2,3,4,5,6,7,8]));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22105
+@system unittest
+{
+    import core.exception : AssertError;
+    import std.exception : assertThrown, assertNotThrown;
+
+    struct NoDefaultCtor
+    {
+        int i;
+        @disable this();
+        this(int j) { i = j; }
+    }
+
+    auto array = Array!NoDefaultCtor([NoDefaultCtor(1), NoDefaultCtor(2)]);
+    assertNotThrown!AssertError(array.length = 1);
+    assertThrown!AssertError(array.length = 5);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Array!bool
@@ -1518,7 +1749,7 @@ if (!is(Unqual!T == bool))
  * allocating one bit per element.
  */
 struct Array(T)
-if (is(Unqual!T == bool))
+if (is(immutable T == immutable bool))
 {
     import std.exception : enforce;
     import std.typecons : RefCounted, RefCountedAutoInitialize;
@@ -1533,7 +1764,8 @@ if (is(Unqual!T == bool))
 
     private @property ref size_t[] data()
     {
-        assert(_store.refCountedStore.isInitialized);
+        assert(_store.refCountedStore.isInitialized,
+            "Cannot get data of uninitialized Array");
         return _store._backend._payload;
     }
 
@@ -1628,19 +1860,60 @@ if (is(Unqual!T == bool))
         /// Ditto
         @property size_t length() const
         {
-            assert(_a <= _b);
+            assert(_a <= _b, "Invalid bounds");
             return _b - _a;
         }
         alias opDollar = length;
         /// ditto
         Range opSlice(size_t low, size_t high)
         {
+            // Note: indexes start at 0, which is equivalent to _a
             assert(
-                _a <= low && low <= high && high <= _b,
+                low <= high && high <= (_b - _a),
                 "Using out of bounds indexes on an Array"
             );
             return Range(_outer, _a + low, _a + high);
         }
+    }
+
+    /**
+     * Constructor taking a number of items.
+     */
+    this(U)(U[] values...)
+    if (isImplicitlyConvertible!(U, T))
+    {
+        reserve(values.length);
+        foreach (i, v; values)
+        {
+            auto rem = i % bitsPerWord;
+            if (rem)
+            {
+                // Fits within the current array
+                if (v)
+                {
+                    data[$ - 1] |= (cast(size_t) 1 << rem);
+                }
+                else
+                {
+                    data[$ - 1] &= ~(cast(size_t) 1 << rem);
+                }
+            }
+            else
+            {
+                // Need to add more data
+                _store._backend.insertBack(v);
+            }
+        }
+        _store._length = values.length;
+    }
+
+    /**
+     * Constructor taking an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+     */
+    this(Range)(Range r)
+    if (isInputRange!Range && isImplicitlyConvertible!(ElementType!Range, T) && !is(Range == T[]))
+    {
+        insertBack(r);
     }
 
     /**
@@ -1675,10 +1948,7 @@ if (is(Unqual!T == bool))
     {
         return _store.refCountedStore.isInitialized ? _store._length : 0;
     }
-    size_t opDollar() const
-    {
-        return length;
-    }
+    alias opDollar = length;
 
     /**
      * Returns: The maximum number of elements the array can store without
@@ -1964,14 +2234,17 @@ if (is(Unqual!T == bool))
     size_t insertBack(Stuff)(Stuff stuff)
     if (isInputRange!Stuff && is(ElementType!Stuff : bool))
     {
-        static if (!hasLength!Stuff) size_t result;
+        size_t result;
+        static if (hasLength!Stuff)
+            result = stuff.length;
+
         for (; !stuff.empty; stuff.popFront())
         {
             insertBack(stuff.front);
             static if (!hasLength!Stuff) ++result;
         }
-        static if (!hasLength!Stuff) return result;
-        else return stuff.length;
+
+        return result;
     }
 
     /// ditto
@@ -2076,6 +2349,8 @@ if (is(Unqual!T == bool))
 
     /// ditto
     size_t insertAfter(Stuff)(Range r, Stuff stuff)
+    if (isImplicitlyConvertible!(Stuff, T) ||
+            isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
     {
         import std.algorithm.mutation : bringToFront;
         // TODO: make this faster, it moves one bit at a time
@@ -2132,14 +2407,32 @@ if (is(Unqual!T == bool))
 
 @system unittest
 {
+    import std.algorithm.comparison : equal;
+
+    auto a = Array!bool([true, true, false, false, true, false]);
+    assert(equal(a[], [true, true, false, false, true, false]));
+}
+
+// using Ranges
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : retro;
+    bool[] arr = [true, true, false, false, true, false];
+
+    auto a = Array!bool(retro(arr));
+    assert(equal(a[], retro(arr)));
+}
+
+@system unittest
+{
     Array!bool a;
     assert(a.empty);
 }
 
 @system unittest
 {
-    Array!bool arr;
-    arr.insert([false, false, false, false]);
+    auto arr = Array!bool([false, false, false, false]);
     assert(arr.front == false);
     assert(arr.back == false);
     assert(arr[1] == false);
@@ -2149,6 +2442,7 @@ if (is(Unqual!T == bool))
     slice.front = true;
     slice.back = true;
     slice[1] = true;
+    slice = slice[0 .. $]; // https://issues.dlang.org/show_bug.cgi?id=19171
     assert(slice.front == true);
     assert(slice.back == true);
     assert(slice[1] == true);
@@ -2157,7 +2451,8 @@ if (is(Unqual!T == bool))
     assert(slice.moveAt(1) == true);
 }
 
-// issue 16331 - uncomparable values are valid values for an array
+// uncomparable values are valid values for an array
+// https://issues.dlang.org/show_bug.cgi?id=16331
 @system unittest
 {
     double[] values = [double.nan, double.nan];
@@ -2243,22 +2538,19 @@ if (is(Unqual!T == bool))
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a[0 .. 2].length == 2);
 }
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a[].length == 4);
 }
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a.front);
     a.front = false;
     assert(!a.front);
@@ -2266,15 +2558,13 @@ if (is(Unqual!T == bool))
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a[].length == 4);
 }
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a.back);
     a.back = false;
     assert(!a.back);
@@ -2282,8 +2572,7 @@ if (is(Unqual!T == bool))
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     assert(a[0] && !a[1]);
     a[0] &= a[1];
     assert(!a[0]);
@@ -2292,10 +2581,8 @@ if (is(Unqual!T == bool))
 @system unittest
 {
     import std.algorithm.comparison : equal;
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
-    Array!bool b;
-    b.insertBack([true, true, false, true]);
+    auto a = Array!bool([true, false, true, true]);
+    auto b = Array!bool([true, true, false, true]);
     assert(equal((a ~ b)[],
                     [true, false, true, true, true, true, false, true]));
     assert((a ~ [true, false])[].equal([true, false, true, true, true, false]));
@@ -2306,10 +2593,8 @@ if (is(Unqual!T == bool))
 @system unittest
 {
     import std.algorithm.comparison : equal;
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
-    Array!bool b;
-    a.insertBack([false, true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
+    auto b = Array!bool([false, true, false, true, true]);
     a ~= b;
     assert(equal(
                 a[],
@@ -2318,8 +2603,7 @@ if (is(Unqual!T == bool))
 
 @system unittest
 {
-    Array!bool a;
-    a.insertBack([true, false, true, true]);
+    auto a = Array!bool([true, false, true, true]);
     a.clear();
     assert(a.capacity == 0);
 }
@@ -2391,6 +2675,30 @@ if (is(Unqual!T == bool))
     assert(a[].equal([false, true, true]));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=21555
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    Array!bool arr;
+    size_t len = arr.insertBack([false, true]);
+    assert(len == 2);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21556
+@system unittest
+{
+    import std.algorithm.comparison : equal;
+    Array!bool a;
+    a.insertBack([true, true, false, false, true]);
+    assert(a.length == 5);
+
+    assert(a.insertAfter(a[0 .. 5], [false, false]) == 2);
+    assert(equal(a[], [true, true, false, false, true, false, false]));
+
+    assert(a.insertAfter(a[0 .. 5], true) == 1);
+    assert(equal(a[], [true, true, false, false, true, true, false, false]));
+}
+
 @system unittest
 {
     import std.conv : to;
@@ -2416,4 +2724,46 @@ if (is(Unqual!T == bool))
     arr ~= v;
     assert(arr[0] == [1, 2, 3]);
     assert(arr[1] == [4, 5, 6]);
+}
+
+// Change of length reallocates without calling GC.
+// https://issues.dlang.org/show_bug.cgi?id=13642
+@system unittest
+{
+    import core.memory;
+    class ABC { void func() { int x = 5; } }
+
+    Array!ABC arr;
+    // Length only allocates if capacity is too low.
+    arr.reserve(4);
+    assert(arr.capacity == 4);
+
+    void func() @nogc
+    {
+        arr.length = 5;
+    }
+    func();
+
+    foreach (ref b; arr) b = new ABC;
+    GC.collect();
+    arr[1].func();
+}
+
+@system unittest
+{
+
+    Array!int arr = [1, 2, 4, 5];
+    int[] data = arr.data();
+
+    const Array!int arr2 = [8, 9];
+    assert(arr2.data() == [8, 9]);
+
+    data[0] = 0;
+    assert(arr[0] == 0);
+
+    arr.length = 0;
+    assert(arr.data == []);
+
+    Array!int empty;
+    assert(empty.data == []);
 }

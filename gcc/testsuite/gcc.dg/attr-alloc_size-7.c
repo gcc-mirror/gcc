@@ -4,7 +4,7 @@
    of the maximum specified by -Walloc-size-larger-than=maximum.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target alloca } */
-/* { dg-options "-O1 -Wall -Walloc-size-larger-than=12345" } */
+/* { dg-options "-O1 -Wall -Walloc-size-larger-than=12345 -Wno-use-after-free" } */
 
 #define SIZE_MAX   __SIZE_MAX__
 #define MAXOBJSZ   12345

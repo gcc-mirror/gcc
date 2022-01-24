@@ -1,5 +1,11 @@
 // COMPILE_SEPARATELY: -g
 // EXTRA_SOURCES: imports/link12144a.d
+/*
+TEST_OUTPUT:
+---
+runnable/imports/link12144a.d(31): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+---
+*/
 
 import imports.link12144a;
 

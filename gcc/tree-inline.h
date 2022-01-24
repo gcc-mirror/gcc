@@ -1,5 +1,5 @@
 /* Tree inlining hooks and declarations.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -132,9 +132,6 @@ struct copy_body_data
      of any decls mentioned in the type will remap to anything but itself
      and only in that case will actually remap the type.  */
   bool dont_remap_vla_if_no_change;
-
-  /* A function to be called when duplicating BLOCK nodes.  */
-  void (*transform_lang_insert_block) (tree);
 
   /* Statements that might be possibly folded.  */
   hash_set<gimple *> *statements_to_fold;

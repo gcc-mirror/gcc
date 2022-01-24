@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,6 @@
 
 --  This unit may be used directly from an application program by providing
 --  an appropriate WITH, and the interface can be expected to remain stable.
-
-pragma Compiler_Unit_Warning;
 
 package System.WCh_Con is
    pragma Pure;
@@ -167,12 +165,12 @@ package System.WCh_Con is
    --  no ambiguity in Ada sources, since the above sequences are illegal Ada).
 
    WC_Encoding_Letters : constant array (WC_Encoding_Method) of Character :=
-     (WCEM_Hex       => 'h',
+     [WCEM_Hex       => 'h',
       WCEM_Upper     => 'u',
       WCEM_Shift_JIS => 's',
       WCEM_EUC       => 'e',
       WCEM_UTF8      => '8',
-      WCEM_Brackets  => 'b');
+      WCEM_Brackets  => 'b'];
    --  Letters used for selection of wide character encoding method in the
    --  compiler options (-gnatW? switch) and for Wide_Text_IO (WCEM parameter
    --  in the form string).
@@ -191,12 +189,12 @@ package System.WCh_Con is
    --  or wide wide character sequence for any of the active encoding methods.
 
    WC_Longest_Sequences : constant array (WC_Encoding_Method) of Natural :=
-     (WCEM_Hex       => 5,
+     [WCEM_Hex       => 5,
       WCEM_Upper     => 2,
       WCEM_Shift_JIS => 2,
       WCEM_EUC       => 2,
       WCEM_UTF8      => 6,
-      WCEM_Brackets  => 12);
+      WCEM_Brackets  => 12];
    --  The longest number of characters that can be used for a wide character
    --  or wide wide character sequence using the given encoding method.
 

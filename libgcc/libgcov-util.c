@@ -1,6 +1,6 @@
 /* Utility functions for reading gcda files into in-memory
    gcov_info structures and offline profile processing. */
-/* Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -309,6 +309,9 @@ read_gcda_file (const char *filename)
 
   /* Read stamp.  */
   obj_info->stamp = gcov_read_unsigned ();
+
+  /* Read checksum.  */
+  obj_info->checksum = gcov_read_unsigned ();
 
   while (1)
     {

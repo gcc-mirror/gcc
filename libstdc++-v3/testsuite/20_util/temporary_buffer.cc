@@ -1,6 +1,6 @@
 // 2002-01-24  Phil Edwards  <pme@gcc.gnu.org>
 
-// Copyright (C) 2002-2021 Free Software Foundation, Inc.
+// Copyright (C) 2002-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ struct junk { char j[12]; };
 int main(void)
 {
   typedef std::pair<junk*, std::ptrdiff_t> pair_type;
-  pair_type results = std::get_temporary_buffer<junk>(5);
+  pair_type results = std::get_temporary_buffer<junk>(5); // { dg-warning "deprecated" "" { target c++14 } }
 
   if (results.second != 0)
   {

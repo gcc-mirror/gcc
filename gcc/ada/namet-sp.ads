@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,20 @@
 --  and this separation helps in dealing with older versions of GNAT.
 
 package Namet.Sp is
+
+   function Aspect_Spell_Check (Name : Name_Id) return Boolean;
+   --  Returns True, if Name is a misspelling of some aspect name
+
+   function Aspect_Spell_Check (Name : Name_Id) return Name_Id;
+   --  Returns a possible correction, if Name is a misspelling of some aspect
+   --  name. If not, return No_Name.
+
+   function Attribute_Spell_Check (N : Name_Id) return Boolean;
+   --  Returns True, if Name is a misspelling of some attribute name
+
+   function Attribute_Spell_Check (N : Name_Id) return Name_Id;
+   --  Returns a possible correction, if Name is a misspelling of some
+   --  attribute name. If not, return No_Name.
 
    function Is_Bad_Spelling_Of (Found, Expect : Name_Id) return Boolean;
    --  Compares two identifier names from the names table, and returns True if

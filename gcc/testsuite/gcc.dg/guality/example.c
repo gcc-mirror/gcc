@@ -1,5 +1,6 @@
-/* { dg-do run { xfail { ! aarch64*-*-* } } } */
+/* { dg-skip-if "gdb hang" { hppa*-*-linux* } } */
 /* { dg-options "-g" } */
+/* { dg-do run { xfail { ! aarch64*-*-* } } } */
 /* { dg-xfail-run-if "" aarch64*-*-* "*" { "-O[01g]" } } */
 
 #define GUALITY_DONT_FORCE_LIVE_AFTER -1

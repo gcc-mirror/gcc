@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -315,10 +315,10 @@ package body Exp_Util is
 
          if Present (Msg_Node) then
             Error_Msg_N
-              ("info: atomic synchronization set for &?N?", Msg_Node);
+              ("info: atomic synchronization set for &?.n?", Msg_Node);
          else
             Error_Msg_N
-              ("info: atomic synchronization set?N?", N);
+              ("info: atomic synchronization set?.n?", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;
@@ -458,7 +458,6 @@ package body Exp_Util is
       else
          Append (N, Actions (Fnode));
       end if;
-
    end Append_Freeze_Action;
 
    ---------------------------
@@ -1270,11 +1269,10 @@ package body Exp_Util is
    ---------------------------------
 
    procedure Build_Class_Wide_Expression
-     (Prag          : Node_Id;
-      Subp          : Entity_Id;
-      Par_Subp      : Entity_Id;
-      Adjust_Sloc   : Boolean;
-      Needs_Wrapper : out Boolean)
+     (Pragma_Or_Expr : Node_Id;
+      Subp           : Entity_Id;
+      Par_Subp       : Entity_Id;
+      Adjust_Sloc    : Boolean)
    is
       function Replace_Entity (N : Node_Id) return Traverse_Result;
       --  Replace reference to formal of inherited operation or to primitive
@@ -1294,7 +1292,7 @@ package body Exp_Util is
             Adjust_Inherited_Pragma_Sloc (N);
          end if;
 
-         if Nkind (N) = N_Identifier
+         if Nkind (N) in N_Identifier | N_Expanded_Name | N_Operator_Symbol
            and then Present (Entity (N))
            and then
              (Is_Formal (Entity (N)) or else Is_Subprogram (Entity (N)))
@@ -1319,84 +1317,6 @@ package body Exp_Util is
 
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
-
-               --  AI12-0166: a precondition for a protected operation
-               --  cannot include an internal call to a protected function
-               --  of the type. In the case of an inherited condition for an
-               --  overriding operation, both the operation and the function
-               --  are given by primitive wrappers.
-               --  Move this check to sem???
-
-               if Ekind (New_E) = E_Function
-                 and then Is_Primitive_Wrapper (New_E)
-                 and then Is_Primitive_Wrapper (Subp)
-                 and then Scope (Subp) = Scope (New_E)
-                 and then Chars (Pragma_Identifier (Prag)) = Name_Precondition
-               then
-                  Error_Msg_Node_2 := Wrapped_Entity (Subp);
-                  Error_Msg_NE
-                    ("internal call to& cannot appear in inherited "
-                     & "precondition of protected operation&",
-                     N, Wrapped_Entity (New_E));
-               end if;
-
-               --  If the entity is an overridden primitive and we are not
-               --  in GNATprove mode, we must build a wrapper for the current
-               --  inherited operation. If the reference is the prefix of an
-               --  attribute such as 'Result (or others ???) there is no need
-               --  for a wrapper: the condition is just rewritten in terms of
-               --  the inherited subprogram.
-
-               if Is_Subprogram (New_E)
-                  and then Nkind (Parent (N)) /= N_Attribute_Reference
-                  and then not GNATprove_Mode
-               then
-                  Needs_Wrapper := True;
-               end if;
-            end if;
-
-            --  Check that there are no calls left to abstract operations if
-            --  the current subprogram is not abstract.
-            --  Move this check to sem???
-
-            if Nkind (Parent (N)) = N_Function_Call
-              and then N = Name (Parent (N))
-            then
-               if not Is_Abstract_Subprogram (Subp)
-                 and then Is_Abstract_Subprogram (Entity (N))
-               then
-                  Error_Msg_Sloc   := Sloc (Current_Scope);
-                  Error_Msg_Node_2 := Subp;
-                  if Comes_From_Source (Subp) then
-                     Error_Msg_NE
-                       ("cannot call abstract subprogram & in inherited "
-                        & "condition for&#", Subp, Entity (N));
-                  else
-                     Error_Msg_NE
-                       ("cannot call abstract subprogram & in inherited "
-                        & "condition for inherited&#", Subp, Entity (N));
-                  end if;
-
-               --  In SPARK mode, reject an inherited condition for an
-               --  inherited operation if it contains a call to an overriding
-               --  operation, because this implies that the pre/postconditions
-               --  of the inherited operation have changed silently.
-
-               elsif SPARK_Mode = On
-                 and then Warn_On_Suspicious_Contract
-                 and then Present (Alias (Subp))
-                 and then Present (New_E)
-                 and then Comes_From_Source (New_E)
-               then
-                  Error_Msg_N
-                    ("cannot modify inherited condition (SPARK RM 6.1.1(1))",
-                     Parent (Subp));
-                  Error_Msg_Sloc   := Sloc (New_E);
-                  Error_Msg_Node_2 := Subp;
-                  Error_Msg_NE
-                    ("\overriding of&# forces overriding of&",
-                     Parent (Subp), New_E);
-               end if;
             end if;
 
             --  Update type of function call node, which should be the same as
@@ -1422,26 +1342,17 @@ package body Exp_Util is
 
       --  Local variables
 
-      Par_Formal  : Entity_Id;
-      Subp_Formal : Entity_Id;
+      Par_Typ  : constant Entity_Id := Find_Dispatching_Type (Par_Subp);
+      Subp_Typ : constant Entity_Id := Find_Dispatching_Type (Subp);
 
    --  Start of processing for Build_Class_Wide_Expression
 
    begin
-      Needs_Wrapper := False;
+      pragma Assert (Par_Typ /= Subp_Typ);
 
-      --  Add mapping from old formals to new formals
-
-      Par_Formal  := First_Formal (Par_Subp);
-      Subp_Formal := First_Formal (Subp);
-
-      while Present (Par_Formal) and then Present (Subp_Formal) loop
-         Type_Map.Set (Par_Formal, Subp_Formal);
-         Next_Formal (Par_Formal);
-         Next_Formal (Subp_Formal);
-      end loop;
-
-      Replace_Condition_Entities (Prag);
+      Update_Primitives_Mapping (Par_Subp, Subp);
+      Map_Formals (Par_Subp, Subp);
+      Replace_Condition_Entities (Pragma_Or_Expr);
    end Build_Class_Wide_Expression;
 
    --------------------
@@ -1511,7 +1422,7 @@ package body Exp_Util is
       --  Add a runtime check to verify assertion expression DIC_Expr of
       --  inherited pragma DIC_Prag. This routine applies class-wide pre-
       --  and postcondition-like runtime semantics to the check. Expr is
-      --  the assertion expression after substitition has been performed
+      --  the assertion expression after substitution has been performed
       --  (via Replace_References). All generated code is added to list Stmts.
 
       procedure Add_Inherited_DICs
@@ -1895,7 +1806,33 @@ package body Exp_Util is
          Priv_Typ : Entity_Id;
          --  The partial view of Par_Typ
 
+         Op_Node  : Elmt_Id;
+         Par_Prim : Entity_Id;
+         Prim     : Entity_Id;
+
       begin
+         --  Map the overridden primitive to the overriding one; required by
+         --  Replace_References (called by Add_Inherited_DICs) to handle calls
+         --  to parent primitives.
+
+         Op_Node := First_Elmt (Primitive_Operations (T));
+         while Present (Op_Node) loop
+            Prim := Node (Op_Node);
+
+            if Present (Overridden_Operation (Prim))
+              and then Comes_From_Source (Prim)
+            then
+               Par_Prim := Overridden_Operation (Prim);
+
+               --  Create a mapping of the form:
+               --    parent type primitive -> derived type primitive
+
+               Type_Map.Set (Par_Prim, Prim);
+            end if;
+
+            Next_Elmt (Op_Node);
+         end loop;
+
          --  Climb the parent type chain
 
          Curr_Typ := T;
@@ -2097,14 +2034,11 @@ package body Exp_Util is
                Stmts    => Stmts);
          end if;
 
-      --  Otherwise the "full" DIC procedure verifies the DICs of the full
-      --  view, well as DICs inherited from parent types. In addition, it
-      --  indirectly verifies the DICs of the partial view by calling the
-      --  "partial" DIC procedure.
+      --  Otherwise, the "full" DIC procedure verifies the DICs inherited from
+      --  parent types, as well as indirectly verifying the DICs of the partial
+      --  view by calling the "partial" DIC procedure.
 
       else
-         pragma Assert (Present (Full_Typ));
-
          --  Check the DIC of the partial view by calling the "partial" DIC
          --  procedure, unless the partial DIC body is empty. Generate:
 
@@ -2116,44 +2050,6 @@ package body Exp_Util is
                 Name                   => New_Occurrence_Of (Part_Proc, Loc),
                 Parameter_Associations => New_List (
                   New_Occurrence_Of (Obj_Id, Loc))));
-         end if;
-
-         --  Derived subtypes do not have a partial view
-
-         if Present (Priv_Typ) then
-
-            --  The processing of the "full" DIC procedure intentionally
-            --  skips the partial view because a) this may result in changes of
-            --  visibility and b) lead to duplicate checks. However, when the
-            --  full view is the underlying full view of an untagged derived
-            --  type whose parent type is private, partial DICs appear on
-            --  the rep item chain of the partial view only.
-
-            --    package Pack_1 is
-            --       type Root ... is private;
-            --    private
-            --       <full view of Root>
-            --    end Pack_1;
-
-            --    with Pack_1;
-            --    package Pack_2 is
-            --       type Child is new Pack_1.Root with Type_DIC => ...;
-            --       <underlying full view of Child>
-            --    end Pack_2;
-
-            --  As a result, the processing of the full view must also consider
-            --  all DICs of the partial view.
-
-            if Is_Untagged_Private_Derivation (Priv_Typ, Full_Typ) then
-               null;
-
-            --  Otherwise the DICs of the partial view are ignored
-
-            else
-               --  Ignore the DICs of the partial view by eliminating the view
-
-               Priv_Typ := Empty;
-            end if;
          end if;
 
          --  Process inherited Default_Initial_Conditions for all parent types
@@ -2952,7 +2848,7 @@ package body Exp_Util is
          if Inherited and Opt.List_Inherited_Aspects then
             Error_Msg_Sloc := Sloc (Prag);
             Error_Msg_N
-              ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
+              ("info: & inherits `Invariant''Class` aspect from #?.l?", Typ);
          end if;
 
          --  Add the pragma to the list of processed pragmas
@@ -3856,7 +3752,7 @@ package body Exp_Util is
       --  Anonymous arrays in object declarations have no explicit declaration
       --  so use the related object declaration as the insertion point.
 
-      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ)  then
+      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ) then
          Typ_Decl := Associated_Node_For_Itype (Work_Typ);
 
       --  Derived types with the full view as parent do not have a partial
@@ -4887,10 +4783,14 @@ package body Exp_Util is
       --  record or bit-packed array, then everything is fine, since the back
       --  end can handle these cases correctly.
 
-      elsif Esize (Comp) <= System_Max_Integer_Size
+      elsif Known_Esize (Comp)
+        and then Esize (Comp) <= System_Max_Integer_Size
         and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
       then
          return False;
+
+      elsif not Known_Normalized_First_Bit (Comp) then
+         return True;
 
       --  Otherwise if the component is not byte aligned, we know we have the
       --  nasty unaligned case.
@@ -4911,7 +4811,7 @@ package body Exp_Util is
    -- Convert_To_Actual_Subtype --
    -------------------------------
 
-   procedure Convert_To_Actual_Subtype (Exp : Entity_Id) is
+   procedure Convert_To_Actual_Subtype (Exp : Node_Id) is
       Act_ST : Entity_Id;
 
    begin
@@ -6356,6 +6256,32 @@ package body Exp_Util is
       raise Program_Error;
    end Find_Protection_Type;
 
+   function Find_Storage_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id
+   is
+      use Sem_Util.Storage_Model_Support;
+
+   begin
+      if Has_Storage_Model_Type_Aspect (Typ) then
+         declare
+            SMT_Op : constant Entity_Id :=
+                       Get_Storage_Model_Type_Entity (Typ, Nam);
+         begin
+            if not Present (SMT_Op) then
+               raise Program_Error;
+            else
+               return SMT_Op;
+            end if;
+         end;
+
+      --  Otherwise we assume that Typ is a descendant of Root_Storage_Pool
+
+      else
+         return Find_Prim_Op (Typ, Nam);
+      end if;
+   end Find_Storage_Op;
+
    -----------------------
    -- Find_Hook_Context --
    -----------------------
@@ -6589,6 +6515,7 @@ package body Exp_Util is
       Related_Id    : Entity_Id := Empty;
       Is_Low_Bound  : Boolean   := False;
       Is_High_Bound : Boolean   := False;
+      Discr_Number  : Int       := 0;
       Mode          : Force_Evaluation_Mode := Relaxed)
    is
    begin
@@ -6600,6 +6527,7 @@ package body Exp_Util is
          Related_Id         => Related_Id,
          Is_Low_Bound       => Is_Low_Bound,
          Is_High_Bound      => Is_High_Bound,
+         Discr_Number       => Discr_Number,
          Check_Side_Effects =>
            Is_Static_Expression (Exp)
              or else Mode = Relaxed);
@@ -7043,7 +6971,7 @@ package body Exp_Util is
    -- Get_Index_Subtype --
    -----------------------
 
-   function Get_Index_Subtype (N : Node_Id) return Node_Id is
+   function Get_Index_Subtype (N : Node_Id) return Entity_Id is
       P_Type : Entity_Id := Etype (Prefix (N));
       Indx   : Node_Id;
       J      : Int;
@@ -7067,6 +6995,15 @@ package body Exp_Util is
 
       return Etype (Indx);
    end Get_Index_Subtype;
+
+   -----------------------
+   -- Get_Mapped_Entity --
+   -----------------------
+
+   function Get_Mapped_Entity (E : Entity_Id) return Entity_Id is
+   begin
+      return Type_Map.Get (E);
+   end Get_Mapped_Entity;
 
    ---------------------
    -- Get_Stream_Size --
@@ -7235,7 +7172,7 @@ package body Exp_Util is
       Wrapped_Node : Node_Id := Empty;
 
    begin
-      if No (Ins_Actions) or else Is_Empty_List (Ins_Actions) then
+      if Is_Empty_List (Ins_Actions) then
          return;
       end if;
 
@@ -7682,8 +7619,18 @@ package body Exp_Util is
                | N_Iterated_Component_Association
                | N_Iterated_Element_Association
             =>
-               if Nkind (Parent (P)) = N_Aggregate
-                 and then Present (Loop_Actions (P))
+               if Nkind (Parent (P)) in N_Aggregate | N_Delta_Aggregate
+
+                 --  We must not climb up out of an N_Iterated_xxx_Association
+                 --  because the actions might contain references to the loop
+                 --  parameter. But it turns out that setting the Loop_Actions
+                 --  attribute in the case of an N_Component_Association
+                 --  when the attribute was not already set can lead to
+                 --  (as yet not understood) bugboxes (gcc failures that are
+                 --  presumably due to malformed trees). So we don't do that.
+
+                 and then (Nkind (P) /= N_Component_Association
+                            or else Present (Loop_Actions (P)))
                then
                   if Is_Empty_List (Loop_Actions (P)) then
                      Set_Loop_Actions (P, Ins_Actions);
@@ -7969,43 +7916,6 @@ package body Exp_Util is
       end if;
    end Insert_Actions_After;
 
-   ------------------------
-   -- Insert_Declaration --
-   ------------------------
-
-   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id) is
-      P : Node_Id;
-
-   begin
-      pragma Assert (Nkind (N) in N_Subexpr);
-
-      --  Climb until we find a procedure or a package
-
-      P := N;
-      loop
-         pragma Assert (Present (Parent (P)));
-         P := Parent (P);
-
-         if Is_List_Member (P) then
-            exit when Nkind (Parent (P)) in
-                        N_Package_Specification | N_Subprogram_Body;
-
-            --  Special handling for handled sequence of statements, we must
-            --  insert in the statements not the exception handlers!
-
-            if Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements then
-               P := First (Statements (Parent (P)));
-               exit;
-            end if;
-         end if;
-      end loop;
-
-      --  Now do the insertion
-
-      Insert_Before (P, Decl);
-      Analyze (Decl);
-   end Insert_Declaration;
-
    ---------------------------------
    -- Insert_Library_Level_Action --
    ---------------------------------
@@ -8057,10 +7967,8 @@ package body Exp_Util is
    ----------------------
 
    function Inside_Init_Proc return Boolean is
-      Proc : constant Entity_Id := Enclosing_Init_Proc;
-
    begin
-      return Proc /= Empty;
+      return Present (Enclosing_Init_Proc);
    end Inside_Init_Proc;
 
    ----------------------
@@ -8835,7 +8743,7 @@ package body Exp_Util is
    ----------------------------------
 
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean is
-      T  : constant Entity_Id := Etype (N);
+      T : constant Entity_Id := Etype (N);
 
    begin
       --  If renamed object, apply test to underlying object
@@ -9550,14 +9458,12 @@ package body Exp_Util is
    begin
       W := Warn;
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
-            Kill_Dead_Code (N, W);
-            W := False;
-            Next (N);
-         end loop;
-      end if;
+      N := First (L);
+      while Present (N) loop
+         Kill_Dead_Code (N, W);
+         W := False;
+         Next (N);
+      end loop;
    end Kill_Dead_Code;
 
    -----------------------------
@@ -10020,7 +9926,7 @@ package body Exp_Util is
             --  Nothing to do when the pragma lacks arguments, in which case it
             --  is illegal.
 
-            elsif No (Args) or else Is_Empty_List (Args) then
+            elsif Is_Empty_List (Args) then
                return False;
             end if;
 
@@ -10345,6 +10251,36 @@ package body Exp_Util is
       end if;
    end Make_Variant_Comparison;
 
+   -----------------
+   -- Map_Formals --
+   -----------------
+
+   procedure Map_Formals
+     (Parent_Subp  : Entity_Id;
+      Derived_Subp : Entity_Id;
+      Force_Update : Boolean := False)
+   is
+      Par_Formal  : Entity_Id := First_Formal (Parent_Subp);
+      Subp_Formal : Entity_Id := First_Formal (Derived_Subp);
+
+   begin
+      if Force_Update then
+         Type_Map.Set (Parent_Subp, Derived_Subp);
+      end if;
+
+      --  At this stage either we are under regular processing and the caller
+      --  has previously ensured that these primitives are already mapped (by
+      --  means of calling previously to Update_Primitives_Mapping), or we are
+      --  processing a late-overriding primitive and Force_Update updated above
+      --  the mapping of these primitives.
+
+      while Present (Par_Formal) and then Present (Subp_Formal) loop
+         Type_Map.Set (Par_Formal, Subp_Formal);
+         Next_Formal (Par_Formal);
+         Next_Formal (Subp_Formal);
+      end loop;
+   end Map_Formals;
+
    ---------------
    -- Map_Types --
    ---------------
@@ -10457,6 +10393,14 @@ package body Exp_Util is
          --  inherited ancestor primitive.
 
          elsif Present (Inher_Prim) then
+            --  It is possible that an internally generated alias could be
+            --  set to a subprogram which overrides the same aliased primitive,
+            --  so return Empty in this case.
+
+            if Ancestor_Primitive (Inher_Prim) = Subp then
+               return Empty;
+            end if;
+
             return Inher_Prim;
 
          --  Otherwise the current subprogram is the root of the inheritance or
@@ -10640,7 +10584,7 @@ package body Exp_Util is
                   end if;
 
                --  Otherwise the constraint denotes a reference to some name
-               --  which results in a Girder discriminant:
+               --  which results in a Stored discriminant:
 
                --    vvvv
                --    Name : ...;
@@ -10661,7 +10605,7 @@ package body Exp_Util is
                return Find_Constraint_Value (Entity (Constr));
 
             --  Otherwise the current constraint is an expression which yields
-            --  a Girder discriminant:
+            --  a Stored discriminant:
 
             --    type Typ (D1 : ...; DN : ...) is
             --      new Anc (Discr => <expression>) with ...
@@ -10736,7 +10680,7 @@ package body Exp_Util is
          --    that D_2 constrains D_1, therefore if the algorithm finds the
          --    value of D_2, then this would also be the value for D_1.
 
-         --    2.2) The constraint is a name (aka Girder):
+         --    2.2) The constraint is a name (aka Stored):
 
          --      Name : ...
          --      type Ancestor_1 (D_1 : ...) is tagged ...
@@ -10745,7 +10689,7 @@ package body Exp_Util is
          --    In this case the name is the final value of D_1 because the
          --    discriminant cannot be further constrained.
 
-         --    2.3) The constraint is an expression (aka Girder):
+         --    2.3) The constraint is an expression (aka Stored):
 
          --      type Ancestor_1 (D_1 : ...) is tagged ...
          --      type Ancestor_2 is new Ancestor_1 (D_1 => 1 + 2) ...
@@ -10856,7 +10800,7 @@ package body Exp_Util is
          --  they relate to the primitives of the parent type. If there is a
          --  meaningful relation, create a mapping of the form:
 
-         --    parent type primitive -> perived type primitive
+         --    parent type primitive -> derived type primitive
 
          if Present (Direct_Primitive_Operations (Deriv_Typ)) then
             Prim_Elmt := First_Elmt (Direct_Primitive_Operations (Deriv_Typ));
@@ -10992,26 +10936,25 @@ package body Exp_Util is
    --  At the current time, the only types that we return False for (i.e. where
    --  we decide we know they cannot generate large temps) are ones where we
    --  know the size is 256 bits or less at compile time, and we are still not
-   --  doing a thorough job on arrays and records ???
+   --  doing a thorough job on arrays and records.
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
    begin
       if not Size_Known_At_Compile_Time (Typ) then
          return False;
+      end if;
 
-      elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
+      if Known_Esize (Typ) and then Esize (Typ) <= 256 then
          return False;
+      end if;
 
-      elsif Is_Array_Type (Typ)
+      if Is_Array_Type (Typ)
         and then Present (Packed_Array_Impl_Type (Typ))
       then
          return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
-
-      --  We could do more here to find other small types ???
-
-      else
-         return True;
       end if;
+
+      return True;
    end May_Generate_Large_Temp;
 
    --------------------------------------------
@@ -11282,6 +11225,7 @@ package body Exp_Util is
 
          when others =>
             if Is_Entity_Name (N)
+              and then Is_Object (Entity (N))
               and then Present (Renamed_Object (Entity (N)))
             then
                return
@@ -11623,6 +11567,7 @@ package body Exp_Util is
       Related_Id         : Entity_Id := Empty;
       Is_Low_Bound       : Boolean   := False;
       Is_High_Bound      : Boolean   := False;
+      Discr_Number       : Int       := 0;
       Check_Side_Effects : Boolean   := True)
    is
       function Build_Temporary
@@ -11651,18 +11596,44 @@ package body Exp_Util is
       is
          Temp_Id  : Entity_Id;
          Temp_Nam : Name_Id;
+         Should_Set_Related_Expression : Boolean := False;
 
       begin
-         --  The context requires an external symbol
+         --  The context requires an external symbol : expression is
+         --  the bound of an array, or a discriminant value. We create
+         --  a unique string using the related entity and an appropriate
+         --  suffix, rather than a numeric serial number (used for internal
+         --  entities) that may vary depending on compilation options, in
+         --  particular on the Assertions_Enabled mode. This avoids spurious
+         --  link errors.
 
          if Present (Related_Id) then
             if Is_Low_Bound then
                Temp_Nam := New_External_Name (Chars (Related_Id), "_FIRST");
-            else pragma Assert (Is_High_Bound);
+
+            elsif Is_High_Bound then
                Temp_Nam := New_External_Name (Chars (Related_Id), "_LAST");
+
+            else
+               pragma Assert (Discr_Number > 0);
+
+               --  We don't have any intelligible way of printing T_DISCR in
+               --  CodePeer. Thus, set a related expression in this case.
+
+               Should_Set_Related_Expression := True;
+
+               --  Use fully qualified name to avoid ambiguities.
+
+               Temp_Nam :=
+                  New_External_Name
+                   (Get_Qualified_Name (Related_Id), "_DISCR", Discr_Number);
             end if;
 
             Temp_Id := Make_Defining_Identifier (Loc, Temp_Nam);
+
+            if Should_Set_Related_Expression then
+               Set_Related_Expression (Temp_Id, Related_Nod);
+            end if;
 
          --  Otherwise generate an internal temporary
 
@@ -11770,10 +11741,15 @@ package body Exp_Util is
       --  case and it is better not to make an additional one for the attribute
       --  itself, because the return type of many of them is universal integer,
       --  which is a very large type for a temporary.
+      --  The prefix of an attribute reference Reduce may be syntactically an
+      --  aggregate, but will be expanded into a loop, so no need to remove
+      --  side-effects.
 
       if Nkind (Exp) = N_Attribute_Reference
         and then Side_Effect_Free_Attribute (Attribute_Name (Exp))
         and then Side_Effect_Free (Expressions (Exp), Name_Req, Variable_Ref)
+        and then (Attribute_Name (Exp) /= Name_Reduce
+                   or else Nkind (Prefix (Exp)) /= N_Aggregate)
         and then not Is_Name_Reference (Prefix (Exp))
       then
          Remove_Side_Effects (Prefix (Exp), Name_Req, Variable_Ref);
@@ -12661,10 +12637,6 @@ package body Exp_Util is
       Typ     : Entity_Id;
 
    begin
-      if No (L) or else Is_Empty_List (L) then
-         return False;
-      end if;
-
       Decl := First (L);
       while Present (Decl) loop
 
@@ -12683,9 +12655,10 @@ package body Exp_Util is
               and then Is_Library_Level_Entity (Typ)
               and then Convention (Typ) = Convention_Ada
               and then Present (Access_Disp_Table (Typ))
-              and then RTE_Available (RE_Unregister_Tag)
               and then not Is_Abstract_Type (Typ)
               and then not No_Run_Time_Mode
+              and then not Restriction_Active (No_Tagged_Type_Registration)
+              and then RTE_Available (RE_Unregister_Tag)
             then
                return True;
             end if;
@@ -13111,11 +13084,11 @@ package body Exp_Util is
                                            (Component_Type (Ityp))));
       end if;
 
-      if Ialign /= No_Uint and then Ialign > Maximum_Alignment then
+      if Present (Ialign) and then Ialign > Maximum_Alignment then
          return True;
 
-      elsif Ialign /= No_Uint
-        and then Oalign /= No_Uint
+      elsif Present (Ialign)
+        and then Present (Oalign)
         and then Ialign <= Oalign
       then
          return True;
@@ -14092,10 +14065,12 @@ package body Exp_Util is
      (Inher_Id : Entity_Id;
       Subp_Id  : Entity_Id)
    is
+      Parent_Type  : constant Entity_Id := Find_Dispatching_Type (Inher_Id);
+      Derived_Type : constant Entity_Id := Find_Dispatching_Type (Subp_Id);
+
    begin
-      Map_Types
-        (Parent_Type  => Find_Dispatching_Type (Inher_Id),
-         Derived_Type => Find_Dispatching_Type (Subp_Id));
+      pragma Assert (Parent_Type /= Derived_Type);
+      Map_Types (Parent_Type, Derived_Type);
    end Update_Primitives_Mapping;
 
    ----------------------------------

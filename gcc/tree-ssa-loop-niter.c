@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1478,11 +1478,11 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
    The number of iterations is stored to NITER.  */
 
 static bool
-number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
+number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
 				 affine_iv *iv1, class tree_niter_desc *niter)
 {
   tree niter_type = unsigned_type_for (type);
-  tree step, num, assumptions, may_be_zero;
+  tree step, num, assumptions, may_be_zero, span;
   wide_int high, low, max, min;
 
   may_be_zero = fold_build2 (LE_EXPR, boolean_type_node, iv1->base, iv0->base);
@@ -1506,6 +1506,23 @@ number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
 
       num = fold_build2 (MINUS_EXPR, niter_type, wide_int_to_tree (type, max),
 			 iv1->base);
+
+      /* When base has the form iv + 1, if we know iv >= n, then iv + 1 < n
+	 only when iv + 1 overflows, i.e. when iv == TYPE_VALUE_MAX.  */
+      if (sgn == UNSIGNED
+	  && integer_onep (step)
+	  && TREE_CODE (iv1->base) == PLUS_EXPR
+	  && integer_onep (TREE_OPERAND (iv1->base, 1)))
+	{
+	  tree cond = fold_build2 (GE_EXPR, boolean_type_node,
+				   TREE_OPERAND (iv1->base, 0), iv0->base);
+	  cond = simplify_using_initial_conditions (loop, cond);
+	  if (integer_onep (cond))
+	    may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node,
+				       TREE_OPERAND (iv1->base, 0),
+				       TYPE_MAX_VALUE (type));
+	}
+
       high = max;
       if (TREE_CODE (iv1->base) == INTEGER_CST)
 	low = wi::to_wide (iv1->base) - 1;
@@ -1556,6 +1573,20 @@ number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
 				      niter->assumptions, assumptions);
 
   niter->control.no_overflow = false;
+
+  /* Update bound and exit condition as:
+     bound = niter * STEP + (IVbase - STEP).
+     { IVbase - STEP, +, STEP } != bound
+     Here, biasing IVbase by 1 step makes 'bound' be the value before wrap.
+     */
+  niter->control.base = fold_build2 (MINUS_EXPR, niter_type,
+				     niter->control.base, niter->control.step);
+  span = fold_build2 (MULT_EXPR, niter_type, niter->niter,
+		      fold_convert (niter_type, niter->control.step));
+  niter->bound = fold_build2 (PLUS_EXPR, niter_type, span,
+			      fold_convert (niter_type, niter->control.base));
+  niter->bound = fold_convert (type, niter->bound);
+  niter->cmp = NE_EXPR;
 
   return true;
 }

@@ -1,5 +1,5 @@
 /* Constant folding for calls to built-in and internal functions.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -429,7 +429,6 @@ fold_const_logb (real_value *result, const real_value *arg,
 	}
       return false;
     }
-  gcc_unreachable ();
 }
 
 /* Try to evaluate:
@@ -463,7 +462,6 @@ fold_const_significand (real_value *result, const real_value *arg,
 	}
       return false;
     }
-  gcc_unreachable ();
 }
 
 /* Try to evaluate:

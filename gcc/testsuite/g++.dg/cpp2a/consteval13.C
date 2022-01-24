@@ -10,8 +10,8 @@ void
 foo ()
 {
    auto qux = [] (fnptr a = quux ()) consteval { return a (); };
-   constexpr auto c = qux (baz);	// { dg-error "28:taking address of an immediate function" }
-   constexpr auto d = qux (bar);	// { dg-error "28:taking address of an immediate function" }
+   constexpr auto c = qux (baz);
+   constexpr auto d = qux (bar);
    static_assert (c == 1);
    static_assert (d == 42);
 }

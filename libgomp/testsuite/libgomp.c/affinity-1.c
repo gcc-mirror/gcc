@@ -1,5 +1,5 @@
 /* Affinity tests.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -48,7 +48,7 @@ struct place
 };
 struct places
 {
-  char name[40];
+  const char *name;
   int count;
   struct place places[8];
 } places_array[] = {
@@ -62,7 +62,10 @@ struct places
     { { 1, 1 }, { 2, 1 }, { 3, 1 },
       { 4, 1 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } },
   { "{0,1},{3,2,4},{6,5,!6},{6},{7:2:-1,!6}", 5,
-    { { 0, 2 }, { 2, 3 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } }
+    { { 0, 2 }, { 2, 3 }, { 5, 1 }, { 6, 1 }, { 7, 1 } } },
+  { "1,2,{2,3,!2},3,3,!3,!{5:3:-1,!4,!5},{4},5,!4,!5,"
+    "1:2,!{1},!2,7:3:-2,!{5},!7,!3", 3,
+    { { 1, 1 }, { 2, 1 }, { 3, 1 } } }
 };
 
 unsigned long contig_cpucount;

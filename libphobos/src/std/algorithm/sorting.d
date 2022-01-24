@@ -1,29 +1,28 @@
 // Written in the D programming language.
 /**
 This is a submodule of $(MREF std, algorithm).
-It contains generic _sorting algorithms.
+It contains generic sorting algorithms.
 
 $(SCRIPT inhibitQuickIndex = 1;)
 $(BOOKTABLE Cheat Sheet,
 $(TR $(TH Function Name) $(TH Description))
 $(T2 completeSort,
-        If $(D a = [10, 20, 30]) and $(D b = [40, 6, 15]), then
-        $(D completeSort(a, b)) leaves $(D a = [6, 10, 15]) and $(D b = [20,
-        30, 40]).
-        The range $(D a) must be sorted prior to the call, and as a result the
-        combination $(D $(REF chain, std,range)(a, b)) is sorted.)
+        If `a = [10, 20, 30]` and `b = [40, 6, 15]`, then
+        `completeSort(a, b)` leaves `a = [6, 10, 15]` and `b = [20, 30, 40]`.
+        The range `a` must be sorted prior to the call, and as a result the
+        combination `$(REF chain, std,range)(a, b)` is sorted.)
 $(T2 isPartitioned,
-        $(D isPartitioned!"a < 0"([-1, -2, 1, 0, 2])) returns $(D true) because
-        the predicate is $(D true) for a portion of the range and $(D false)
+        `isPartitioned!"a < 0"([-1, -2, 1, 0, 2])` returns `true` because
+        the predicate is `true` for a portion of the range and `false`
         afterwards.)
 $(T2 isSorted,
-        $(D isSorted([1, 1, 2, 3])) returns $(D true).)
+        `isSorted([1, 1, 2, 3])` returns `true`.)
 $(T2 isStrictlyMonotonic,
-        $(D isStrictlyMonotonic([1, 1, 2, 3])) returns $(D false).)
+        `isStrictlyMonotonic([1, 1, 2, 3])` returns `false`.)
 $(T2 ordered,
-        $(D ordered(1, 1, 2, 3)) returns $(D true).)
+        `ordered(1, 1, 2, 3)` returns `true`.)
 $(T2 strictlyOrdered,
-        $(D strictlyOrdered(1, 1, 2, 3)) returns $(D false).)
+        `strictlyOrdered(1, 1, 2, 3)` returns `false`.)
 $(T2 makeIndex,
         Creates a separate index for a range.)
 $(T2 merge,
@@ -36,10 +35,13 @@ $(T2 nextEvenPermutation,
 $(T2 nextPermutation,
         Computes the next lexicographically greater permutation of a range
         in-place.)
+$(T2 nthPermutation,
+        Computes the nth permutation of a range
+        in-place.)
 $(T2 partialSort,
-        If $(D a = [5, 4, 3, 2, 1]), then $(D partialSort(a, 3)) leaves
-        $(D a[0 .. 3] = [1, 2, 3]).
-        The other elements of $(D a) are left in an unspecified order.)
+        If `a = [5, 4, 3, 2, 1]`, then `partialSort(a, 3)` leaves
+        `a[0 .. 3] = [1, 2, 3]`.
+        The other elements of `a` are left in an unspecified order.)
 $(T2 partition,
         Partitions a range according to a unary predicate.)
 $(T2 partition3,
@@ -55,7 +57,7 @@ $(T2 schwartzSort,
 $(T2 sort,
         Sorts.)
 $(T2 topN,
-        Separates the top elements in a range.)
+        Separates the top elements in a range, akin to $(LINK2 https://en.wikipedia.org/wiki/Quickselect, Quickselect).)
 $(T2 topNCopy,
         Copies out the top elements of a range.)
 $(T2 topNIndex,
@@ -68,7 +70,7 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 
 Authors: $(HTTP erdani.com, Andrei Alexandrescu)
 
-Source: $(PHOBOSSRC std/algorithm/_sorting.d)
+Source: $(PHOBOSSRC std/algorithm/sorting.d)
 
 Macros:
 T2=$(TR $(TDNW $(LREF $1)) $(TD $+))
@@ -76,33 +78,34 @@ T2=$(TR $(TDNW $(LREF $1)) $(TD $+))
 module std.algorithm.sorting;
 
 import std.algorithm.mutation : SwapStrategy;
-import std.functional; // : unaryFun, binaryFun;
+import std.functional : unaryFun, binaryFun;
 import std.range.primitives;
-import std.typecons : Flag;
-// FIXME
-import std.meta; // : allSatisfy;
-import std.range; // : SortedRange;
+import std.typecons : Flag, No, Yes;
+import std.meta : allSatisfy;
+import std.range : SortedRange;
 import std.traits;
 
 /**
 Specifies whether the output of certain algorithm is desired in sorted
 format.
 
-If set to $(D SortOutput.no), the output should not be sorted.
+If set to `SortOutput.no`, the output should not be sorted.
 
-Otherwise if set to $(D SortOutput.yes), the output should be sorted.
+Otherwise if set to `SortOutput.yes`, the output should be sorted.
  */
 alias SortOutput = Flag!"sortOutput";
 
 // completeSort
 /**
-Sorts the random-access range $(D chain(lhs, rhs)) according to
-predicate $(D less). The left-hand side of the range $(D lhs) is
-assumed to be already sorted; $(D rhs) is assumed to be unsorted. The
-exact strategy chosen depends on the relative sizes of $(D lhs) and
-$(D rhs).  Performs $(BIGOH lhs.length + rhs.length * log(rhs.length))
+Sorts the random-access range `chain(lhs, rhs)` according to
+predicate `less`.
+
+The left-hand side of the range `lhs` is assumed to be already sorted;
+`rhs` is assumed to be unsorted.
+The exact strategy chosen depends on the relative sizes of `lhs` and
+`rhs`.  Performs $(BIGOH lhs.length + rhs.length * log(rhs.length))
 (best case) to $(BIGOH (lhs.length + rhs.length) * log(lhs.length +
-rhs.length)) (worst-case) evaluations of $(D swap).
+rhs.length)) (worst-case) evaluations of $(REF_ALTTEXT swap, swap, std,algorithm,mutation).
 
 Params:
     less = The predicate to sort by.
@@ -112,8 +115,9 @@ Params:
         sorted.
 */
 void completeSort(alias less = "a < b", SwapStrategy ss = SwapStrategy.unstable,
-        RandomAccessRange1, RandomAccessRange2)(SortedRange!(RandomAccessRange1, less) lhs, RandomAccessRange2 rhs)
-if (hasLength!(RandomAccessRange2) && hasSlicing!(RandomAccessRange2))
+        Lhs , Rhs)(SortedRange!(Lhs, less) lhs, Rhs rhs)
+if (hasLength!(Rhs) && hasSlicing!(Rhs)
+        && hasSwappableElements!Lhs && hasSwappableElements!Rhs)
 {
     import std.algorithm.mutation : bringToFront;
     import std.range : chain, assumeSorted;
@@ -143,8 +147,8 @@ if (hasLength!(RandomAccessRange2) && hasSlicing!(RandomAccessRange2))
 // isSorted
 /**
 Checks whether a $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
-is sorted according to the comparison operation $(D less). Performs $(BIGOH r.length)
-evaluations of $(D less).
+is sorted according to the comparison operation `less`. Performs $(BIGOH r.length)
+evaluations of `less`.
 
 Unlike `isSorted`, `isStrictlyMonotonic` does not allow for equal values,
 i.e. values for which both `less(a, b)` and `less(b, a)` are false.
@@ -222,7 +226,7 @@ if (isForwardRange!(Range))
 {
     import std.conv : to;
 
-    // Issue 9457
+    // https://issues.dlang.org/show_bug.cgi?id=9457
     auto x = "abcd";
     assert(isSorted(x));
     auto y = "acbd";
@@ -291,16 +295,16 @@ if (isForwardRange!Range)
 }
 
 /**
-Like $(D isSorted), returns $(D true) if the given $(D values) are ordered
-according to the comparison operation $(D less). Unlike $(D isSorted), takes values
+Like `isSorted`, returns `true` if the given `values` are ordered
+according to the comparison operation `less`. Unlike `isSorted`, takes values
 directly instead of structured in a range.
 
-$(D ordered) allows repeated values, e.g. $(D ordered(1, 1, 2)) is $(D true). To verify
-that the values are ordered strictly monotonically, use $(D strictlyOrdered);
-$(D strictlyOrdered(1, 1, 2)) is $(D false).
+`ordered` allows repeated values, e.g. `ordered(1, 1, 2)` is `true`. To verify
+that the values are ordered strictly monotonically, use `strictlyOrdered`;
+`strictlyOrdered(1, 1, 2)` is `false`.
 
 With either function, the predicate must be a strict ordering. For example,
-using $(D "a <= b") instead of $(D "a < b") is incorrect and will cause failed
+using `"a <= b"` instead of `"a < b"` is incorrect and will cause failed
 assertions.
 
 Params:
@@ -308,8 +312,8 @@ Params:
     less = The comparison predicate
 
 Returns:
-    $(D true) if the values are ordered; $(D ordered) allows for duplicates,
-    $(D strictlyOrdered) does not.
+    `true` if the values are ordered; `ordered` allows for duplicates,
+    `strictlyOrdered` does not.
 */
 
 bool ordered(alias less = "a < b", T...)(T values)
@@ -366,16 +370,16 @@ if (is(typeof(ordered!less(values))))
 
 // partition
 /**
-Partitions a range in two using the given $(D predicate).
-Specifically, reorders the range $(D r = [left, right$(RPAREN)) using $(D swap)
-such that all elements $(D i) for which $(D predicate(i)) is $(D true) come
-before all elements $(D j) for which $(D predicate(j)) returns $(D false).
+Partitions a range in two using the given `predicate`.
+
+Specifically, reorders the range `r = [left, right$(RPAREN)` using $(REF_ALTTEXT swap, swap, std,algorithm,mutation)
+such that all elements `i` for which `predicate(i)` is `true` come
+before all elements `j` for which `predicate(j)` returns `false`.
 
 Performs $(BIGOH r.length) (if unstable or semistable) or $(BIGOH
-r.length * log(r.length)) (if stable) evaluations of $(D less) and $(D
-swap). The unstable version computes the minimum possible evaluations
-of $(D swap) (roughly half of those performed by the semistable
-version).
+r.length * log(r.length)) (if stable) evaluations of `less` and $(REF_ALTTEXT swap, swap, std,algorithm,mutation).
+The unstable version computes the minimum possible evaluations of `swap`
+(roughly half of those performed by the semistable version).
 
 Params:
     predicate = The predicate to partition by.
@@ -384,20 +388,18 @@ Params:
 
 Returns:
 
-The right part of $(D r) after partitioning.
+The right part of `r` after partitioning.
 
-If $(D ss == SwapStrategy.stable), $(D partition) preserves the relative
-ordering of all elements $(D a), $(D b) in $(D r) for which $(D predicate(a) ==
-predicate(b)). If $(D ss == SwapStrategy.semistable), $(D partition) preserves
-the relative ordering of all elements $(D a), $(D b) in the left part of $(D r)
-for which $(D predicate(a) == predicate(b)).
-
-See_Also:
-    STL's $(HTTP sgi.com/tech/stl/_partition.html, _partition)$(BR)
-    STL's $(HTTP sgi.com/tech/stl/stable_partition.html, stable_partition)
+If `ss == SwapStrategy.stable`, `partition` preserves the relative
+ordering of all elements `a`, `b` in `r` for which
+`predicate(a) == predicate(b)`.
+If `ss == SwapStrategy.semistable`, `partition` preserves
+the relative ordering of all elements `a`, `b` in the left part of `r`
+for which `predicate(a) == predicate(b)`.
 */
 Range partition(alias predicate, SwapStrategy ss, Range)(Range r)
-if (ss == SwapStrategy.stable && isRandomAccessRange!(Range) && hasLength!Range && hasSlicing!Range)
+if (ss == SwapStrategy.stable && isRandomAccessRange!(Range) && hasLength!Range &&
+        hasSlicing!Range && hasSwappableElements!Range)
 {
     import std.algorithm.mutation : bringToFront;
 
@@ -464,7 +466,7 @@ if (ss != SwapStrategy.stable && isInputRange!Range && hasSwappableElements!Rang
                     ++lo;
                 }
                 // found the left bound
-                assert(lo <= hi);
+                assert(lo <= hi, "lo must be <= hi");
                 for (;;)
                 {
                     if (lo == hi) return r[lo .. r.length];
@@ -489,7 +491,7 @@ if (ss != SwapStrategy.stable && isInputRange!Range && hasSwappableElements!Rang
                     result.popFront();
                 }
                 // found the left bound
-                assert(!r.empty);
+                assert(!r.empty, "r must not be empty");
                 for (;;)
                 {
                     if (pred(r.back)) break;
@@ -572,22 +574,23 @@ if (ss != SwapStrategy.stable && isInputRange!Range && hasSwappableElements!Rang
 
 // pivotPartition
 /**
-
 Partitions `r` around `pivot` using comparison function `less`, algorithm akin
 to $(LINK2 https://en.wikipedia.org/wiki/Quicksort#Hoare_partition_scheme,
-Hoare partition). Specifically, permutes elements of `r` and returns
-an index $(D k < r.length) such that:
+Hoare partition).
+
+Specifically, permutes elements of `r` and returns
+an index `k < r.length` such that:
 
 $(UL
 
 $(LI `r[pivot]` is swapped to `r[k]`)
 
-$(LI All elements `e` in subrange $(D r[0 .. k]) satisfy $(D !less(r[k], e))
+$(LI All elements `e` in subrange `r[0 .. k]` satisfy `!less(r[k], e)`
 (i.e. `r[k]` is greater than or equal to each element to its left according to
 predicate `less`))
 
-$(LI All elements `e` in subrange $(D r[0 .. k]) satisfy $(D !less(e,
-r[k])) (i.e. `r[k]` is less than or equal to each element to its right
+$(LI All elements `e` in subrange `r[k .. $]` satisfy `!less(e, r[k])`
+(i.e. `r[k]` is less than or equal to each element to its right
 according to predicate `less`)))
 
 If `r` contains equivalent elements, multiple permutations of `r` satisfy these
@@ -602,7 +605,7 @@ less = The predicate used for comparison, modeled as a
         equivalence)
 r = The range being partitioned
 pivot = The index of the pivot for partitioning, must be less than `r.length` or
-`0` is `r.length` is `0`
+`0` if `r.length` is `0`
 
 Returns:
 The new position of the pivot
@@ -615,9 +618,10 @@ Keynote), Andrei Alexandrescu.
 */
 size_t pivotPartition(alias less = "a < b", Range)
 (Range r, size_t pivot)
-if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
+if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range && hasAssignableElements!Range)
 {
-    assert(pivot < r.length || r.length == 0 && pivot == 0);
+    assert(pivot < r.length || r.length == 0 && pivot == 0, "pivot must be"
+        ~ " less than the length of r or r must be empty and pivot zero");
     if (r.length <= 1) return 0;
     import std.algorithm.mutation : swapAt, move;
     alias lt = binaryFun!less;
@@ -635,17 +639,20 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
         auto p = r[0];
         // Plant the pivot in the end as well as a sentinel
         size_t lo = 0, hi = r.length - 1;
-        auto save = move(r[hi]);
+        auto save = r.moveAt(hi);
         r[hi] = p; // Vacancy is in r[$ - 1] now
         // Start process
         for (;;)
         {
             // Loop invariant
-            version (unittest)
+            version (StdUnittest)
             {
-                import std.algorithm.searching : all;
-                assert(r[0 .. lo].all!(x => !lt(p, x)));
-                assert(r[hi + 1 .. r.length].all!(x => !lt(x, p)));
+                // this used to import std.algorithm.all, but we want to save
+                // imports when unittests are enabled if possible.
+                foreach (x; r[0 .. lo])
+                    assert(!lt(p, x), "p must not be less than x");
+                foreach (x; r[hi+1 .. r.length])
+                    assert(!lt(x, p), "x must not be less than p");
             }
             do ++lo; while (lt(r[lo], p));
             r[hi] = r[lo];
@@ -656,17 +663,17 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
             // Vacancy is not in r[hi]
         }
         // Fixup
-        assert(lo - hi <= 2);
-        assert(!lt(p, r[hi]));
+        assert(lo - hi <= 2, "Following compare not possible");
+        assert(!lt(p, r[hi]), "r[hi] must not be less than p");
         if (lo == hi + 2)
         {
-            assert(!lt(r[hi + 1], p));
+            assert(!lt(r[hi + 1], p), "r[hi + 1] must not be less than p");
             r[lo] = r[hi + 1];
             --lo;
         }
         r[lo] = save;
         if (lt(p, save)) --lo;
-        assert(!lt(p, r[lo]));
+        assert(!lt(p, r[lo]), "r[lo] must not be less than p");
     }
     else
     {
@@ -679,14 +686,14 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
                 if (!lt(r[lo], r[0])) break;
             }
             // found the left bound:  r[lo] >= r[0]
-            assert(lo <= hi);
+            assert(lo <= hi, "lo must be less or equal than hi");
             for (;; --hi)
             {
                 if (lo >= hi) break loop;
                 if (!lt(r[0], r[hi])) break;
             }
             // found the right bound: r[hi] <= r[0], swap & make progress
-            assert(!lt(r[lo], r[hi]));
+            assert(!lt(r[lo], r[hi]), "r[lo] must not be less than r[hi]");
             r.swapAt(lo, hi);
         }
         --lo;
@@ -747,17 +754,18 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
         assert(a == [ 42, 42 ]);
 
         import std.algorithm.iteration : map;
-        import std.random;
-        import std.stdio;
-        auto s = unpredictableSeed;
-        auto g = Random(s);
+        import std.array : array;
+        import std.format : format;
+        import std.random : Random, uniform, Xorshift;
+        import std.range : iota;
+        auto s = 123_456_789;
+        auto g = Xorshift(s);
         a = iota(0, uniform(1, 1000, g))
             .map!(_ => uniform(-1000, 1000, g))
             .array;
-        scope(failure) writeln("RNG seed was ", s);
         pivot = pivotPartition!less(a, a.length / 2);
-        assert(a[0 .. pivot].all!(x => x <= a[pivot]));
-        assert(a[pivot .. $].all!(x => x >= a[pivot]));
+        assert(a[0 .. pivot].all!(x => x <= a[pivot]), "RNG seed: %d".format(s));
+        assert(a[pivot .. $].all!(x => x >= a[pivot]), "RNG seed: %d".format(s));
     }
     test!"a < b";
     static bool myLess(int a, int b)
@@ -773,7 +781,7 @@ if (isRandomAccessRange!Range && hasLength!Range && hasSlicing!Range)
 Params:
     pred = The predicate that the range should be partitioned by.
     r = The range to check.
-Returns: $(D true) if $(D r) is partitioned according to predicate $(D pred).
+Returns: `true` if `r` is partitioned according to predicate `pred`.
  */
 bool isPartitioned(alias pred, Range)(Range r)
 if (isForwardRange!(Range))
@@ -799,13 +807,15 @@ if (isForwardRange!(Range))
 
 // partition3
 /**
-Rearranges elements in $(D r) in three adjacent ranges and returns
-them. The first and leftmost range only contains elements in $(D r)
-less than $(D pivot). The second and middle range only contains
-elements in $(D r) that are equal to $(D pivot). Finally, the third
-and rightmost range only contains elements in $(D r) that are greater
-than $(D pivot). The less-than test is defined by the binary function
-$(D less).
+Rearranges elements in `r` in three adjacent ranges and returns
+them.
+
+The first and leftmost range only contains elements in `r`
+less than `pivot`. The second and middle range only contains
+elements in `r` that are equal to `pivot`. Finally, the third
+and rightmost range only contains elements in `r` that are greater
+than `pivot`. The less-than test is defined by the binary function
+`less`.
 
 Params:
     less = The predicate to use for the rearrangement.
@@ -817,7 +827,7 @@ Returns:
     A $(REF Tuple, std,typecons) of the three resulting ranges. These ranges are
     slices of the original range.
 
-BUGS: stable $(D partition3) has not been implemented yet.
+BUGS: stable `partition3` has not been implemented yet.
  */
 auto partition3(alias less = "a < b", SwapStrategy ss = SwapStrategy.unstable, Range, E)
 (Range r, E pivot)
@@ -843,15 +853,15 @@ if (ss == SwapStrategy.unstable && isRandomAccessRange!Range
         for (;; ++j)
         {
             if (j == k) break bigloop;
-            assert(j < r.length);
+            assert(j < r.length, "j must be less than r.length");
             if (lessFun(r[j], pivot)) continue;
             if (lessFun(pivot, r[j])) break;
             r.swapAt(i++, j);
         }
-        assert(j < k);
+        assert(j < k, "j must be less than k");
         for (;;)
         {
-            assert(k > 0);
+            assert(k > 0, "k must be positive");
             if (!lessFun(pivot, r[--k]))
             {
                 if (lessFun(r[k], pivot)) break;
@@ -886,9 +896,9 @@ if (ss == SwapStrategy.unstable && isRandomAccessRange!Range
 
 @safe unittest
 {
-    import std.random : Random, uniform, unpredictableSeed;
+    import std.random : Random = Xorshift, uniform;
 
-    immutable uint[] seeds = [3923355730, 1927035882, unpredictableSeed];
+    immutable uint[] seeds = [3923355730, 1927035882];
     foreach (s; seeds)
     {
         auto r = Random(s);
@@ -916,8 +926,9 @@ if (ss == SwapStrategy.unstable && isRandomAccessRange!Range
 
 // makeIndex
 /**
-Computes an index for $(D r) based on the comparison $(D less). The
-index is a sorted array of pointers or indices into the original
+Computes an index for `r` based on the comparison `less`.
+
+The index is a sorted array of pointers or indices into the original
 range. This technique is similar to sorting, but it is more flexible
 because (1) it allows "sorting" of immutable collections, (2) allows
 binary search even if the original collection does not offer random
@@ -926,15 +937,15 @@ and (4) may be faster when dealing with large objects. However, using
 an index may also be slower under certain circumstances due to the
 extra indirection, and is always larger than a sorting-based solution
 because it needs space for the index in addition to the original
-collection. The complexity is the same as $(D sort)'s.
+collection. The complexity is the same as `sort`'s.
 
-The first overload of $(D makeIndex) writes to a range containing
+The first overload of `makeIndex` writes to a range containing
 pointers, and the second writes to a range containing offsets. The
-first overload requires $(D Range) to be a
+first overload requires `Range` to be a
 $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives), and the
 latter requires it to be a random-access range.
 
-$(D makeIndex) overwrites its second argument with the result, but
+`makeIndex` overwrites its second argument with the result, but
 never reallocates it.
 
 Params:
@@ -943,11 +954,12 @@ Params:
     r = The range to index.
     index = The resulting index.
 
-Returns: The pointer-based version returns a $(D SortedRange) wrapper
-over index, of type $(D SortedRange!(RangeIndex, (a, b) =>
-binaryFun!less(*a, *b))) thus reflecting the ordering of the
-index. The index-based version returns $(D void) because the ordering
-relation involves not only $(D index) but also $(D r).
+Returns: The pointer-based version returns a `SortedRange` wrapper
+over index, of type
+`SortedRange!(RangeIndex, (a, b) => binaryFun!less(*a, *b))`
+thus reflecting the ordering of the
+index. The index-based version returns `void` because the ordering
+relation involves not only `index` but also `r`.
 
 Throws: If the second argument's length is less than that of the range
 indexed, an exception is thrown.
@@ -960,7 +972,7 @@ makeIndex(
     RangeIndex)
 (Range r, RangeIndex index)
 if (isForwardRange!(Range) && isRandomAccessRange!(RangeIndex)
-    && is(ElementType!(RangeIndex) : ElementType!(Range)*))
+    && is(ElementType!(RangeIndex) : ElementType!(Range)*) && hasAssignableElements!RangeIndex)
 {
     import std.algorithm.internal : addressOf;
     import std.exception : enforce;
@@ -984,7 +996,7 @@ void makeIndex(
 (Range r, RangeIndex index)
 if (isRandomAccessRange!Range && !isInfinite!Range &&
     isRandomAccessRange!RangeIndex && !isInfinite!RangeIndex &&
-    isIntegral!(ElementType!RangeIndex))
+    isIntegral!(ElementType!RangeIndex) && hasAssignableElements!RangeIndex)
 {
     import std.conv : to;
     import std.exception : enforce;
@@ -1059,6 +1071,7 @@ if (isRandomAccessRange!Range && !isInfinite!Range &&
 @safe unittest
 {
     import std.algorithm.comparison : equal;
+    import std.range : iota;
 
     ubyte[256] index = void;
     iota(256).makeIndex(index[]);
@@ -1085,8 +1098,8 @@ if (Rs.length >= 2 &&
     }
 
     import std.functional : binaryFun;
+    import std.meta : anySatisfy;
     import std.traits : isCopyable;
-    import std.typetuple : anySatisfy;
 
     private alias comp = binaryFun!less;
     private alias ElementType = CommonType!(staticMap!(.ElementType, Rs));
@@ -1119,7 +1132,7 @@ if (Rs.length >= 2 &&
             foreach (i, _; Rs)
             {
             case i:
-                assert(!source[i].empty);
+                assert(!source[i].empty, "Can not get front of empty Merge");
                 return source[i].front;
             }
         }
@@ -1158,8 +1171,7 @@ if (Rs.length >= 2 &&
                 {
                     if (!source[i].empty)
                     {
-                        assert(previousFront == source[i].front ||
-                               comp(previousFront, source[i].front),
+                        assert(!comp(source[i].front, previousFront),
                                "Input " ~ i.stringof ~ " is unsorted"); // @nogc
                     }
                 }
@@ -1182,7 +1194,7 @@ if (Rs.length >= 2 &&
                 foreach (i, _; Rs)
                 {
                 case i:
-                    assert(!source[i].empty);
+                    assert(!source[i].empty, "Can not get back of empty Merge");
                     return source[i].back;
                 }
             }
@@ -1225,8 +1237,7 @@ if (Rs.length >= 2 &&
                     {
                         if (!source[i].empty)
                         {
-                            assert(previousBack == source[i].back ||
-                                   comp(source[i].back, previousBack),
+                            assert(!comp(previousBack, source[i].back),
                                    "Input " ~ i.stringof ~ " is unsorted"); // @nogc
                         }
                     }
@@ -1273,7 +1284,9 @@ if (Rs.length >= 2 &&
 /**
    Merge multiple sorted ranges `rs` with less-than predicate function `pred`
    into one single sorted output range containing the sorted union of the
-   elements of inputs. Duplicates are not eliminated, meaning that the total
+   elements of inputs.
+
+   Duplicates are not eliminated, meaning that the total
    number of elements in the output is the sum of all elements in the ranges
    passed to it; the `length` member is offered if all inputs also have
    `length`. The element types of all the inputs must have a common type
@@ -1308,6 +1321,9 @@ All of its inputs are assumed to be sorted. This can mean that inputs are
 
    If any of the inputs `rs` is infinite so is the result (`empty` being always
    `false`).
+
+See_Also: $(REF multiwayMerge, std,algorithm,setops) for an analogous function
+   that merges a dynamic number of ranges.
 */
 Merge!(less, Rs) merge(alias less = "a < b", Rs...)(Rs rs)
 if (Rs.length >= 2 &&
@@ -1427,6 +1443,37 @@ if (Rs.length >= 2 &&
     assert(m.empty);
 }
 
+// Issue 21810: Check for sortedness must not use `==`
+@nogc @safe pure nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.typecons : tuple;
+
+    static immutable a = [
+        tuple(1, 1),
+        tuple(3, 1),
+        tuple(3, 2),
+        tuple(5, 1),
+    ];
+    static immutable b = [
+        tuple(2, 1),
+        tuple(3, 1),
+        tuple(4, 1),
+        tuple(4, 2),
+    ];
+    static immutable r = [
+        tuple(1, 1),
+        tuple(2, 1),
+        tuple(3, 1),
+        tuple(3, 2),
+        tuple(3, 1),
+        tuple(4, 1),
+        tuple(4, 2),
+        tuple(5, 1),
+    ];
+    assert(merge!"a[0] < b[0]"(a, b).equal(r));
+}
+
 private template validPredicates(E, less...)
 {
     static if (less.length == 0)
@@ -1440,24 +1487,23 @@ private template validPredicates(E, less...)
 }
 
 /**
-$(D auto multiSort(Range)(Range r)
-    if (validPredicates!(ElementType!Range, less));)
+Sorts a range by multiple keys.
 
-Sorts a range by multiple keys. The call $(D multiSort!("a.id < b.id",
-"a.date > b.date")(r)) sorts the range $(D r) by $(D id) ascending,
-and sorts elements that have the same $(D id) by $(D date)
+The call $(D multiSort!("a.id < b.id",
+"a.date > b.date")(r)) sorts the range `r` by `id` ascending,
+and sorts elements that have the same `id` by `date`
 descending. Such a call is equivalent to $(D sort!"a.id != b.id ? a.id
-< b.id : a.date > b.date"(r)), but $(D multiSort) is faster because it
+< b.id : a.date > b.date"(r)), but `multiSort` is faster because it
 does fewer comparisons (in addition to being more convenient).
 
 Returns:
-    The initial range wrapped as a $(D SortedRange) with its predicates
+    The initial range wrapped as a `SortedRange` with its predicates
     converted to an equivalent single predicate.
  */
 template multiSort(less...) //if (less.length > 1)
 {
     auto multiSort(Range)(Range r)
-    if (validPredicates!(ElementType!Range, less))
+    if (validPredicates!(ElementType!Range, less) && hasSwappableElements!Range)
     {
         import std.meta : AliasSeq;
         import std.range : assumeSorted;
@@ -1483,6 +1529,17 @@ template multiSort(less...) //if (less.length > 1)
             return assumeSorted!(multiSortPredFun!(Range, funs))(r);
         }
     }
+}
+
+///
+@safe unittest
+{
+    import std.algorithm.mutation : SwapStrategy;
+    static struct Point { int x, y; }
+    auto pts1 = [ Point(0, 0), Point(5, 5), Point(0, 1), Point(0, 2) ];
+    auto pts2 = [ Point(0, 0), Point(0, 1), Point(0, 2), Point(5, 5) ];
+    multiSort!("a.x < b.x", "a.y < b.y", SwapStrategy.unstable)(pts1);
+    assert(pts1 == pts2);
 }
 
 private bool multiSortPredFun(Range, funs...)(ElementType!Range a, ElementType!Range b)
@@ -1526,17 +1583,6 @@ private void multiSortImpl(Range, SwapStrategy ss, funs...)(Range r)
     }
 }
 
-///
-@safe unittest
-{
-    import std.algorithm.mutation : SwapStrategy;
-    static struct Point { int x, y; }
-    auto pts1 = [ Point(0, 0), Point(5, 5), Point(0, 1), Point(0, 2) ];
-    auto pts2 = [ Point(0, 0), Point(0, 1), Point(0, 2), Point(5, 5) ];
-    multiSort!("a.x < b.x", "a.y < b.y", SwapStrategy.unstable)(pts1);
-    assert(pts1 == pts2);
-}
-
 @safe unittest
 {
     import std.algorithm.comparison : equal;
@@ -1556,7 +1602,8 @@ private void multiSortImpl(Range, SwapStrategy ss, funs...)(Range r)
     assert(pts4.multiSort!("a > b").release.equal(iota(10).retro));
 }
 
-@safe unittest //issue 9160 (L-value only comparators)
+//https://issues.dlang.org/show_bug.cgi?id=9160 (L-value only comparators)
+@safe unittest
 {
     static struct A
     {
@@ -1580,7 +1627,9 @@ private void multiSortImpl(Range, SwapStrategy ss, funs...)(Range r)
     assert(points[1] == A(4, 1));
 }
 
-@safe unittest // issue 16179 (cannot access frame of function)
+// cannot access frame of function
+// https://issues.dlang.org/show_bug.cgi?id=16179
+@safe unittest
 {
     auto arr = [[1, 2], [2, 0], [1, 0], [1, 1]];
     int c = 3;
@@ -1592,7 +1641,8 @@ private void multiSortImpl(Range, SwapStrategy ss, funs...)(Range r)
     assert(arr == [[1, 0], [1, 1], [1, 2], [2, 0]]);
 }
 
-@safe unittest //Issue 16413 - @system comparison function
+// https://issues.dlang.org/show_bug.cgi?id=16413 - @system comparison function
+@safe unittest
 {
     bool lt(int a, int b) { return a < b; } static @system
     auto a = [2, 1];
@@ -1676,7 +1726,7 @@ private void shortSort(alias less, Range)(Range r)
             break;
     }
 
-    assert(r.length >= 6);
+    assert(r.length >= 6, "r must have more than 5 elements");
     /* The last 5 elements of the range are sorted. Proceed with expanding the
     sorted portion downward. */
     immutable maxJ = r.length - 2;
@@ -1687,17 +1737,30 @@ private void shortSort(alias less, Range)(Range r)
                 auto t = r[0]; if (pred(t, r[0])) r[0] = r[0];
             }))) // Can we afford to temporarily invalidate the array?
         {
+            import core.lifetime : move;
+
             size_t j = i + 1;
-            auto temp = r[i];
+            static if (hasLvalueElements!Range)
+                auto temp = move(r[i]);
+            else
+                auto temp = r[i];
+
             if (pred(r[j], temp))
             {
                 do
                 {
-                    r[j - 1] = r[j];
+                    static if (hasLvalueElements!Range)
+                        trustedMoveEmplace(r[j], r[j - 1]);
+                    else
+                        r[j - 1] = r[j];
                     ++j;
                 }
                 while (j < r.length && pred(r[j], temp));
-                r[j - 1] = temp;
+
+                static if (hasLvalueElements!Range)
+                    trustedMoveEmplace(temp, r[j - 1]);
+                else
+                    r[j - 1] = move(temp);
             }
         }
         else
@@ -1714,9 +1777,16 @@ private void shortSort(alias less, Range)(Range r)
     }
 }
 
+/// @trusted wrapper for moveEmplace
+private void trustedMoveEmplace(T)(ref T source, ref T target) @trusted
+{
+    import core.lifetime : moveEmplace;
+    moveEmplace(source, target);
+}
+
 @safe unittest
 {
-    import std.random : Random, uniform;
+    import std.random : Random = Xorshift, uniform;
 
     auto rnd = Random(1);
     auto a = new int[uniform(100, 200, rnd)];
@@ -1734,7 +1804,7 @@ Sorts the first 5 elements exactly of range r.
 */
 private void sort5(alias lt, Range)(Range r)
 {
-    assert(r.length >= 5);
+    assert(r.length >= 5, "r must have more than 4 elements");
 
     import std.algorithm.mutation : swapAt;
 
@@ -1748,7 +1818,8 @@ private void sort5(alias lt, Range)(Range r)
         r.swapAt(0, 2);
         r.swapAt(1, 3);
     }
-    assert(!lt(r[1], r[0]) && !lt(r[3], r[1]) && !lt(r[3], r[2]));
+    assert(!lt(r[1], r[0]) && !lt(r[3], r[1]) && !lt(r[3], r[2]), "unexpected"
+        ~ " order");
 
     // 3. Insert 4 into [0, 1, 3]
     if (lt(r[4], r[1]))
@@ -1764,10 +1835,11 @@ private void sort5(alias lt, Range)(Range r)
     {
         r.swapAt(3, 4);
     }
-    assert(!lt(r[1], r[0]) && !lt(r[3], r[1]) && !lt(r[4], r[3]));
+    assert(!lt(r[1], r[0]) && !lt(r[3], r[1]) && !lt(r[4], r[3]), "unexpected"
+        ~ " order");
 
     // 4. Insert 2 into [0, 1, 3, 4] (note: we already know the last is greater)
-    assert(!lt(r[4], r[2]));
+    assert(!lt(r[4], r[2]), "unexpected order");
     if (lt(r[2], r[1]))
     {
         r.swapAt(1, 2);
@@ -1787,6 +1859,7 @@ private void sort5(alias lt, Range)(Range r)
 {
     import std.algorithm.iteration : permutations;
     import std.algorithm.mutation : copy;
+    import std.range : iota;
 
     int[5] buf;
     foreach (per; iota(5).permutations)
@@ -1799,14 +1872,15 @@ private void sort5(alias lt, Range)(Range r)
 
 // sort
 /**
-Sorts a random-access range according to the predicate $(D less). Performs
-$(BIGOH r.length * log(r.length)) evaluations of $(D less). If `less` involves
+Sorts a random-access range according to the predicate `less`.
+
+Performs $(BIGOH r.length * log(r.length)) evaluations of `less`. If `less` involves
 expensive computations on the _sort key, it may be worthwhile to use
 $(LREF schwartzSort) instead.
 
-Stable sorting requires $(D hasAssignableElements!Range) to be true.
+Stable sorting requires `hasAssignableElements!Range` to be true.
 
-$(D sort) returns a $(REF SortedRange, std,range) over the original range,
+`sort` returns a $(REF SortedRange, std,range) over the original range,
 allowing functions that can take advantage of sorted data to know that the
 range is sorted and adjust accordingly. The $(REF SortedRange, std,range) is a
 wrapper around the original range, so both it and the original range are sorted.
@@ -1815,14 +1889,14 @@ they $(I can) know that $(REF SortedRange, std,range) has been sorted.
 
 Preconditions:
 
-The predicate is expected to satisfy certain rules in order for $(D sort) to
+The predicate is expected to satisfy certain rules in order for `sort` to
 behave as expected - otherwise, the program may fail on certain inputs (but not
-others) when not compiled in release mode, due to the cursory $(D assumeSorted)
-check. Specifically, $(D sort) expects $(D less(a,b) && less(b,c)) to imply
-$(D less(a,c)) (transitivity), and, conversely, $(D !less(a,b) && !less(b,c)) to
-imply $(D !less(a,c)). Note that the default predicate ($(D "a < b")) does not
+others) when not compiled in release mode, due to the cursory `assumeSorted`
+check. Specifically, `sort` expects `less(a,b) && less(b,c)` to imply
+`less(a,c)` (transitivity), and, conversely, `!less(a,b) && !less(b,c)` to
+imply `!less(a,c)`. Note that the default predicate (`"a < b"`) does not
 always satisfy these conditions for floating point types, because the expression
-will always be $(D false) when either $(D a) or $(D b) is NaN.
+will always be `false` when either `a` or `b` is NaN.
 Use $(REF cmp, std,math) instead.
 
 Params:
@@ -1830,8 +1904,8 @@ Params:
     ss = The swapping strategy to use.
     r = The range to sort.
 
-Returns: The initial range wrapped as a $(D SortedRange) with the predicate
-$(D binaryFun!less).
+Returns: The initial range wrapped as a `SortedRange` with the predicate
+`binaryFun!less`.
 
 Algorithms: $(HTTP en.wikipedia.org/wiki/Introsort, Introsort) is used for unstable sorting and
 $(HTTP en.wikipedia.org/wiki/Timsort, Timsort) is used for stable sorting.
@@ -1916,7 +1990,8 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
     double[] numbers = [-0.0, 3.0, -2.0, double.nan, 0.0, -double.nan];
 
     import std.algorithm.comparison : equal;
-    import std.math : cmp, isIdentical;
+    import std.math.operations : cmp;
+    import std.math.traits : isIdentical;
 
     sort!((a, b) => cmp(a, b) < 0)(numbers);
 
@@ -1927,7 +2002,10 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
 @safe unittest
 {
     // Simple regression benchmark
-    import std.algorithm.iteration, std.algorithm.mutation, std.random;
+    import std.algorithm.iteration, std.algorithm.mutation;
+    import std.array : array;
+    import std.random : Random, uniform;
+    import std.range : iota;
     Random rng;
     int[] a = iota(20148).map!(_ => uniform(-1000, 1000, rng)).array;
     static uint comps;
@@ -1941,7 +2019,7 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
 
     // This should get smaller with time. On occasion it may go larger, but only
     // if there's thorough justification.
-    debug enum uint watermark = 1676280;
+    debug enum uint watermark = 1676220;
     else enum uint watermark = 1676220;
 
     import std.conv;
@@ -1955,12 +2033,12 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
 {
     import std.algorithm.internal : rndstuff;
     import std.algorithm.mutation : swapRanges;
-    import std.random : Random, unpredictableSeed, uniform;
+    import std.random : Random = Xorshift, uniform;
     import std.uni : toUpper;
 
     // sort using delegate
     auto a = new int[100];
-    auto rnd = Random(unpredictableSeed);
+    auto rnd = Random(123_456_789);
     foreach (ref e; a)
     {
         e = uniform(-100, 100, rnd);
@@ -2002,14 +2080,14 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
     assert(isSorted!("toUpper(a) < toUpper(b)")(b));
 
     {
-        // Issue 10317
+        // https://issues.dlang.org/show_bug.cgi?id=10317
         enum E_10317 { a, b }
         auto a_10317 = new E_10317[10];
         sort(a_10317);
     }
 
     {
-        // Issue 7767
+        // https://issues.dlang.org/show_bug.cgi?id=7767
         // Unstable sort should complete without an excessive number of predicate calls
         // This would suggest it's running in quadratic time
 
@@ -2050,16 +2128,29 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
         r.sort();
         assert(proxySwapCalled);
     }
+
+    // https://issues.dlang.org/show_bug.cgi?id=20751
+    {
+        static bool refPred(ref int a, ref int b)
+        {
+            return a < b;
+        }
+
+        auto sortedArr = [5,4,3,2,1].sort!refPred;
+        sortedArr.equalRange(3);
+    }
 }
 
 private void quickSortImpl(alias less, Range)(Range r, size_t depth)
 {
     import std.algorithm.comparison : min, max;
     import std.algorithm.mutation : swap, swapAt;
+    import std.conv : to;
 
     alias Elem = ElementType!(Range);
     enum size_t shortSortGetsBetter = max(32, 1024 / Elem.sizeof);
-    static assert(shortSortGetsBetter >= 1);
+    static assert(shortSortGetsBetter >= 1, Elem.stringof ~ " "
+        ~ to!string(Elem.sizeof));
 
     // partition
     while (r.length > shortSortGetsBetter)
@@ -2114,13 +2205,15 @@ package(std) template HeapOps(alias less, Range)
 {
     import std.algorithm.mutation : swapAt;
 
-    static assert(isRandomAccessRange!Range);
-    static assert(hasLength!Range);
-    static assert(hasSwappableElements!Range || hasAssignableElements!Range);
+    static assert(isRandomAccessRange!Range, Range.stringof ~ " must be a"
+        ~ " RandomAccessRange");
+    static assert(hasLength!Range, Range.stringof ~ " must have length");
+    static assert(hasSwappableElements!Range || hasAssignableElements!Range,
+        Range.stringof ~ " must have swappable or assignable Elements");
 
     alias lessFun = binaryFun!less;
 
-    //template because of @@@12410@@@
+    //template because of https://issues.dlang.org/show_bug.cgi?id=12410
     void heapSort()(Range r)
     {
         // If true, there is nothing to do
@@ -2135,7 +2228,7 @@ package(std) template HeapOps(alias less, Range)
         }
     }
 
-    //template because of @@@12410@@@
+    //template because of https://issues.dlang.org/show_bug.cgi?id=12410
     void buildHeap()(Range r)
     {
         immutable n = r.length;
@@ -2143,7 +2236,7 @@ package(std) template HeapOps(alias less, Range)
         {
             siftDown(r, i, n);
         }
-        assert(isHeap(r));
+        assert(isHeap(r), "r is not a heap");
     }
 
     bool isHeap()(Range r)
@@ -2160,7 +2253,7 @@ package(std) template HeapOps(alias less, Range)
 
     // Sifts down r[parent] (which is initially assumed to be messed up) so the
     // heap property is restored for r[parent .. end].
-    // template because of @@@12410@@@
+    // template because of https://issues.dlang.org/show_bug.cgi?id=12410
     void siftDown()(Range r, size_t parent, immutable size_t end)
     {
         for (;;)
@@ -2188,7 +2281,7 @@ package(std) template HeapOps(alias less, Range)
     // restored. So there are more swaps but fewer comparisons. Gains are made
     // when the final position is likely to end toward the bottom of the heap,
     // so not a lot of sifts back are performed.
-    //template because of @@@12410@@@
+    //template because of https://issues.dlang.org/show_bug.cgi?id=12410
     void percolate()(Range r, size_t parent, immutable size_t end)
     {
         immutable root = parent;
@@ -2232,17 +2325,19 @@ private template TimSortImpl(alias pred, R)
     import core.bitop : bsr;
     import std.array : uninitializedArray;
 
-    static assert(isRandomAccessRange!R);
-    static assert(hasLength!R);
-    static assert(hasSlicing!R);
-    static assert(hasAssignableElements!R);
+    static assert(isRandomAccessRange!R, R.stringof ~ " must be a"
+        ~ " RandomAccessRange");
+    static assert(hasLength!R, R.stringof ~ " must have a length");
+    static assert(hasSlicing!R, R.stringof ~ " must support slicing");
+    static assert(hasAssignableElements!R, R.stringof ~ " must have"
+        ~ " assignable elements");
 
     alias T = ElementType!R;
 
     alias less = binaryFun!pred;
-    alias greater = (a, b) => less(b, a);
-    alias greaterEqual = (a, b) => !less(a, b);
-    alias lessEqual = (a, b) => !less(b, a);
+    bool greater()(auto ref T a, auto ref T b) { return less(b, a); }
+    bool greaterEqual()(auto ref T a, auto ref T b) { return !less(a, b); }
+    bool lessEqual()(auto ref T a, auto ref T b) { return !less(b, a); }
 
     enum minimalMerge = 128;
     enum minimalGallop = 7;
@@ -2255,6 +2350,7 @@ private template TimSortImpl(alias pred, R)
     void sort()(R range, T[] temp)
     {
         import std.algorithm.comparison : min;
+        import std.format : format;
 
         // Do insertion sort on small range
         if (range.length <= minimalMerge)
@@ -2312,15 +2408,27 @@ private template TimSortImpl(alias pred, R)
             }
 
             // Assert that the code above established the invariant correctly
-            version (assert)
+            version (StdUnittest)
             {
-                if (stackLen == 2) assert(stack[0].length > stack[1].length);
+                if (stackLen == 2)
+                {
+                    assert(stack[0].length > stack[1].length, format!
+                        "stack[0].length %s > stack[1].length %s"(
+                            stack[0].length, stack[1].length
+                        ));
+                }
                 else if (stackLen > 2)
                 {
                     foreach (k; 2 .. stackLen)
                     {
-                        assert(stack[k - 2].length > stack[k - 1].length + stack[k].length);
-                        assert(stack[k - 1].length > stack[k].length);
+                        assert(stack[k - 2].length > stack[k - 1].length + stack[k].length,
+                            format!"stack[k - 2].length %s > stack[k - 1].length %s + stack[k].length %s"(
+                                stack[k - 2].length, stack[k - 1].length, stack[k].length
+                            ));
+                        assert(stack[k - 1].length > stack[k].length,
+                            format!"stack[k - 1].length %s > stack[k].length %s"(
+                                stack[k - 1].length, stack[k].length
+                            ));
                     }
                 }
             }
@@ -2352,9 +2460,10 @@ private template TimSortImpl(alias pred, R)
     size_t firstRun()(R range)
     out(ret)
     {
-        assert(ret <= range.length);
+        assert(ret <= range.length, "ret must be less or equal than"
+            ~ " range.length");
     }
-    body
+    do
     {
         import std.algorithm.mutation : reverse;
 
@@ -2377,9 +2486,9 @@ private template TimSortImpl(alias pred, R)
     void binaryInsertionSort()(R range, size_t sortedLen = 1)
     out
     {
-        if (!__ctfe) assert(isSorted!pred(range));
+        if (!__ctfe) assert(isSorted!pred(range), "range must be sorted");
     }
-    body
+    do
     {
         import std.algorithm.mutation : move;
 
@@ -2400,8 +2509,17 @@ private template TimSortImpl(alias pred, R)
             //moveAll(retro(range[lower .. sortedLen]),
             //            retro(range[lower+1 .. sortedLen+1]));
             for (upper=sortedLen; upper > lower; upper--)
-                range[upper] = range.moveAt(upper - 1);
-            range[lower] = move(item);
+            {
+                static if (hasLvalueElements!R)
+                    move(range[upper -1], range[upper]);
+                else
+                    range[upper] = range.moveAt(upper - 1);
+            }
+
+            static if (hasLvalueElements!R)
+                move(item, range[lower]);
+            else
+                range[lower] = move(item);
         }
     }
 
@@ -2409,10 +2527,12 @@ private template TimSortImpl(alias pred, R)
     void mergeAt()(R range, Slice[] stack, immutable size_t at, ref size_t minGallop, ref T[] temp)
     in
     {
-        assert(stack.length >= 2);
-        assert(stack.length - at == 2 || stack.length - at == 3);
+        import std.format : format;
+        assert(stack.length >= 2, "stack be be greater than 1");
+        assert(stack.length - at == 2 || stack.length - at == 3,
+            format!"stack.length - at %s must be 2 or 3"(stack.length - at));
     }
-    body
+    do
     {
         immutable base = stack[at].base;
         immutable mid  = stack[at].length;
@@ -2433,13 +2553,16 @@ private template TimSortImpl(alias pred, R)
     {
         if (!__ctfe)
         {
-            assert(isSorted!pred(range[0 .. mid]));
-            assert(isSorted!pred(range[mid .. range.length]));
+            assert(isSorted!pred(range[0 .. mid]), "range[0 .. mid] must be"
+                ~ " sorted");
+            assert(isSorted!pred(range[mid .. range.length]), "range[mid .."
+                ~ " range.length] must be sorted");
         }
     }
-    body
+    do
     {
-        assert(mid < range.length);
+        assert(mid < range.length, "mid must be less than the length of the"
+            ~ " range");
 
         // Reduce range of elements
         immutable firstElement = gallopForwardUpper(range[0 .. mid], range[mid]);
@@ -2466,9 +2589,9 @@ private template TimSortImpl(alias pred, R)
     T[] ensureCapacity()(size_t minCapacity, T[] temp)
     out(ret)
     {
-        assert(ret.length >= minCapacity);
+        assert(ret.length >= minCapacity, "ensuring the capacity failed");
     }
-    body
+    do
     {
         if (temp.length < minCapacity)
         {
@@ -2487,21 +2610,22 @@ private template TimSortImpl(alias pred, R)
     size_t mergeLo()(R range, immutable size_t mid, size_t minGallop, T[] temp)
     out
     {
-        if (!__ctfe) assert(isSorted!pred(range));
+        if (!__ctfe) assert(isSorted!pred(range), "the range must be sorted");
     }
-    body
+    do
     {
         import std.algorithm.mutation : copy;
 
-        assert(mid <= range.length);
-        assert(temp.length >= mid);
+        assert(mid <= range.length, "mid must be less than the length of the"
+            ~ " range");
+        assert(temp.length >= mid, "temp.length must be greater or equal to mid");
 
         // Copy run into temporary memory
         temp = temp[0 .. mid];
         copy(range[0 .. mid], temp);
 
         // Move first element into place
-        range[0] = range[mid];
+        moveEntry(range, mid, range, 0);
 
         size_t i = 1, lef = 0, rig = mid + 1;
         size_t count_lef, count_rig;
@@ -2518,14 +2642,14 @@ private template TimSortImpl(alias pred, R)
             {
                 if (lessEqual(temp[lef], range[rig]))
                 {
-                    range[i++] = temp[lef++];
+                    moveEntry(temp, lef++, range, i++);
                     if (lef >= lef_end) break outer;
                     ++count_lef;
                     count_rig = 0;
                 }
                 else
                 {
-                    range[i++] = range[rig++];
+                    moveEntry(range, rig++, range, i++);
                     if (rig >= range.length) break outer;
                     count_lef = 0;
                     ++count_rig;
@@ -2536,14 +2660,14 @@ private template TimSortImpl(alias pred, R)
             do
             {
                 count_lef = gallopForwardUpper(temp[lef .. $], range[rig]);
-                foreach (j; 0 .. count_lef) range[i++] = temp[lef++];
+                foreach (j; 0 .. count_lef) moveEntry(temp, lef++, range, i++);
                 if (lef >= temp.length) break outer;
 
                 count_rig = gallopForwardLower(range[rig .. range.length], temp[lef]);
-                foreach (j; 0 .. count_rig) range[i++] = range[rig++];
+                foreach (j; 0 .. count_rig) moveEntry(range, rig++, range, i++);
                 if (rig >= range.length) while (true)
                 {
-                    range[i++] = temp[lef++];
+                    moveEntry(temp, lef++, range, i++);
                     if (lef >= temp.length) break outer;
                 }
 
@@ -2556,11 +2680,11 @@ private template TimSortImpl(alias pred, R)
 
         // Move remaining elements from right
         while (rig < range.length)
-            range[i++] = range[rig++];
+            moveEntry(range, rig++, range, i++);
 
         // Move remaining elements from left
         while (lef < temp.length)
-            range[i++] = temp[lef++];
+            moveEntry(temp, lef++, range, i++);
 
         return minGallop > 0 ? minGallop : 1;
     }
@@ -2570,21 +2694,24 @@ private template TimSortImpl(alias pred, R)
     size_t mergeHi()(R range, immutable size_t mid, size_t minGallop, T[] temp)
     out
     {
-        if (!__ctfe) assert(isSorted!pred(range));
+        if (!__ctfe) assert(isSorted!pred(range), "the range must be sorted");
     }
-    body
+    do
     {
         import std.algorithm.mutation : copy;
+        import std.format : format;
 
-        assert(mid <= range.length);
-        assert(temp.length >= range.length - mid);
+        assert(mid <= range.length, "mid must be less or equal to range.length");
+        assert(temp.length >= range.length - mid, format!
+            "temp.length %s >= range.length %s - mid %s"(temp.length,
+            range.length, mid));
 
         // Copy run into temporary memory
         temp = temp[0 .. range.length - mid];
         copy(range[mid .. range.length], temp);
 
         // Move first element into place
-        range[range.length - 1] = range[mid - 1];
+        moveEntry(range, mid - 1, range, range.length - 1);
 
         size_t i = range.length - 2, lef = mid - 2, rig = temp.length - 1;
         size_t count_lef, count_rig;
@@ -2600,19 +2727,19 @@ private template TimSortImpl(alias pred, R)
             {
                 if (greaterEqual(temp[rig], range[lef]))
                 {
-                    range[i--] = temp[rig];
+                    moveEntry(temp, rig, range, i--);
                     if (rig == 1)
                     {
                         // Move remaining elements from left
                         while (true)
                         {
-                            range[i--] = range[lef];
+                            moveEntry(range, lef, range, i--);
                             if (lef == 0) break;
                             --lef;
                         }
 
                         // Move last element into place
-                        range[i] = temp[0];
+                        moveEntry(temp, 0, range, i);
 
                         break outer;
                     }
@@ -2622,10 +2749,10 @@ private template TimSortImpl(alias pred, R)
                 }
                 else
                 {
-                    range[i--] = range[lef];
+                    moveEntry(range, lef, range, i--);
                     if (lef == 0) while (true)
                     {
-                        range[i--] = temp[rig];
+                        moveEntry(temp, rig, range, i--);
                         if (rig == 0) break outer;
                         --rig;
                     }
@@ -2641,7 +2768,7 @@ private template TimSortImpl(alias pred, R)
                 count_rig = rig - gallopReverseLower(temp[0 .. rig], range[lef]);
                 foreach (j; 0 .. count_rig)
                 {
-                    range[i--] = temp[rig];
+                    moveEntry(temp, rig, range, i--);
                     if (rig == 0) break outer;
                     --rig;
                 }
@@ -2649,10 +2776,10 @@ private template TimSortImpl(alias pred, R)
                 count_lef = lef - gallopReverseUpper(range[0 .. lef], temp[rig]);
                 foreach (j; 0 .. count_lef)
                 {
-                    range[i--] = range[lef];
+                    moveEntry(range, lef, range, i--);
                     if (lef == 0) while (true)
                     {
-                        range[i--] = temp[rig];
+                        moveEntry(temp, rig, range, i--);
                         if (rig == 0) break outer;
                         --rig;
                     }
@@ -2676,9 +2803,10 @@ private template TimSortImpl(alias pred, R)
         size_t gallopSearch(R)(R range, T value)
         out(ret)
         {
-            assert(ret <= range.length);
+            assert(ret <= range.length, "ret must be less or equal to"
+                ~ " range.length");
         }
-        body
+        do
         {
             size_t lower = 0, center = 1, upper = range.length;
             alias gap = center;
@@ -2748,6 +2876,21 @@ private template TimSortImpl(alias pred, R)
     alias gallopForwardUpper = gallopSearch!(false,  true);
     alias gallopReverseLower = gallopSearch!( true, false);
     alias gallopReverseUpper = gallopSearch!( true,  true);
+
+    /// Helper method that moves from[fIdx] into to[tIdx] if both are lvalues and
+    /// uses a plain assignment if not (necessary for backwards compatibility)
+    void moveEntry(X, Y)(ref X from, const size_t fIdx, ref Y to, const size_t tIdx)
+    {
+        // This template is instantiated with different combinations of range (R) and temp (T[]).
+        // T[] obviously has lvalue-elements, so checking R should be enough here
+        static if (hasLvalueElements!R)
+        {
+            import core.lifetime : move;
+            move(from[fIdx], to[tIdx]);
+        }
+        else
+            to[tIdx] = from[fIdx];
+    }
 }
 
 @safe unittest
@@ -2797,6 +2940,7 @@ private template TimSortImpl(alias pred, R)
     // Tests the Timsort function for correctness and stability
     static bool testSort(uint seed)
     {
+        import std.format : format;
         auto arr = genSampleData(seed);
 
         // Now sort the array!
@@ -2808,12 +2952,15 @@ private template TimSortImpl(alias pred, R)
         sort!(comp, SwapStrategy.stable)(arr);
 
         // Test that the array was sorted correctly
-        assert(isSorted!comp(arr));
+        assert(isSorted!comp(arr), "arr must be sorted");
 
         // Test that the array was sorted stably
         foreach (i; 0 .. arr.length - 1)
         {
-            if (arr[i].value == arr[i + 1].value) assert(arr[i].index < arr[i + 1].index);
+            if (arr[i].value == arr[i + 1].value)
+                assert(arr[i].index < arr[i + 1].index, format!
+                    "arr[i %s].index %s < arr[i + 1].index %s"(
+                    i, arr[i].index, arr[i + 1].index));
         }
 
         return true;
@@ -2823,11 +2970,12 @@ private template TimSortImpl(alias pred, R)
     testSort(seed);
 
     enum result = testSort(seed);
-    assert(result == true);
+    assert(result == true, "invalid result");
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=4584
 @safe unittest
-{//bugzilla 4584
+{
     assert(isSorted!"a < b"(sort!("a < b", SwapStrategy.stable)(
        [83, 42, 85, 86, 87, 22, 89, 30, 91, 46, 93, 94, 95, 6,
          97, 14, 33, 10, 101, 102, 103, 26, 105, 106, 107, 6]
@@ -2847,18 +2995,54 @@ private template TimSortImpl(alias pred, R)
     assert(y == "aebcd"d);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=14223
 @safe unittest
 {
-    // Issue 14223
     import std.array, std.range;
     auto arr = chain(iota(0, 384), iota(0, 256), iota(0, 80), iota(0, 64), iota(0, 96)).array;
     sort!("a < b", SwapStrategy.stable)(arr);
 }
 
+@safe unittest
+{
+    static struct NoCopy
+    {
+        pure nothrow @nogc @safe:
+
+        int key;
+        this(scope const ref NoCopy)
+        {
+            assert(false, "Tried to copy struct!");
+        }
+        ref opAssign()(scope const auto ref NoCopy other)
+        {
+            assert(false, "Tried to copy struct!");
+        }
+        this(this) {}
+    }
+
+    static NoCopy[] makeArray(const size_t size)
+    {
+        NoCopy[] array = new NoCopy[](size);
+        foreach (const i, ref t; array[0..$/2]) t.key = cast(int) (size - i);
+        foreach (const i, ref t; array[$/2..$]) t.key = cast(int) i;
+        return array;
+    }
+
+    alias cmp = (ref NoCopy a, ref NoCopy b) => a.key < b.key;
+    enum minMerge = TimSortImpl!(cmp, NoCopy[]).minimalMerge;
+
+    sort!(cmp, SwapStrategy.unstable)(makeArray(20));
+    sort!(cmp, SwapStrategy.stable)(makeArray(minMerge - 5));
+    sort!(cmp, SwapStrategy.stable)(makeArray(minMerge + 5));
+}
+
 // schwartzSort
 /**
 Alternative sorting method that should be used when comparing keys involves an
-expensive computation. Instead of using `less(a, b)` for comparing elements,
+expensive computation.
+
+Instead of using `less(a, b)` for comparing elements,
 `schwartzSort` uses `less(transform(a), transform(b))`. The values of the
 `transform` function are precomputed in a temporary array, thus saving on
 repeatedly computing it. Conversely, if the cost of `transform` is small
@@ -2882,46 +3066,75 @@ sort!((a, b) => hashFun(a) < hashFun(b))(array);
 schwartzSort!(hashFun, "a < b")(array);
 ----
 
-The $(D schwartzSort) function might require less temporary data and
+The `schwartzSort` function might require less temporary data and
 be faster than the Perl idiom or the decorate-sort-undecorate idiom
 present in Python and Lisp. This is because sorting is done in-place
 and only minimal extra data (one array of transformed elements) is
 created.
 
 To check whether an array was sorted and benefit of the speedup of
-Schwartz sorting, a function $(D schwartzIsSorted) is not provided
+Schwartz sorting, a function `schwartzIsSorted` is not provided
 because the effect can be achieved by calling $(D
 isSorted!less(map!transform(r))).
 
 Params:
-    transform = The transformation to apply.
-    less = The predicate to sort by.
+    transform = The transformation to apply. Either a unary function
+                (`unaryFun!transform(element)`), or a binary function
+                (`binaryFun!transform(element, index)`).
+    less = The predicate to sort the transformed elements by.
     ss = The swapping strategy to use.
     r = The range to sort.
 
-Returns: The initial range wrapped as a $(D SortedRange) with the
-predicate $(D (a, b) => binaryFun!less(transform(a),
-transform(b))).
+Returns: The initial range wrapped as a `SortedRange` with the
+predicate `(a, b) => binaryFun!less(transform(a), transform(b))`.
  */
 SortedRange!(R, ((a, b) => binaryFun!less(unaryFun!transform(a),
                                           unaryFun!transform(b))))
 schwartzSort(alias transform, alias less = "a < b",
         SwapStrategy ss = SwapStrategy.unstable, R)(R r)
-if (isRandomAccessRange!R && hasLength!R)
+if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R &&
+    !is(typeof(binaryFun!less) == SwapStrategy))
 {
-    import std.conv : emplace;
+    import core.lifetime : emplace;
     import std.range : zip, SortedRange;
     import std.string : representation;
 
-    alias T = typeof(unaryFun!transform(r.front));
-    static trustedMalloc(size_t len) @trusted
+    static if (is(typeof(unaryFun!transform(r.front))))
+    {
+        alias transformFun = unaryFun!transform;
+        alias TB = typeof(transformFun(r.front));
+        enum isBinary = false;
+    }
+    else static if (is(typeof(binaryFun!transform(r.front, 0))))
+    {
+        alias transformFun = binaryFun!transform;
+        alias TB = typeof(transformFun(r.front, 0));
+        enum isBinary = true;
+    }
+    else
+        static assert(false, "unsupported `transform` alias");
+
+    // The `transform` function might return a qualified type, e.g. const(int).
+    // Strip qualifiers if possible s.t. the temporary array is sortable.
+    static if (is(TB : Unqual!TB))
+        alias T = Unqual!TB;
+    else
+        static assert(false, "`transform` returns an unsortable qualified type: " ~ TB.stringof);
+
+    static trustedMalloc()(size_t len) @trusted
     {
         import core.checkedint : mulu;
-        import core.stdc.stdlib : malloc;
+        import core.memory : pureMalloc;
         bool overflow;
         const nbytes = mulu(len, T.sizeof, overflow);
-        if (overflow) assert(0);
-        return (cast(T*) malloc(nbytes))[0 .. len];
+        if (overflow) assert(false, "multiplication overflowed");
+        T[] result = (cast(T*) pureMalloc(nbytes))[0 .. len];
+        static if (hasIndirections!T)
+        {
+            import core.memory : GC;
+            GC.addRange(result.ptr, nbytes);
+        }
+        return result;
     }
     auto xform1 = trustedMalloc(r.length);
 
@@ -2932,16 +3145,24 @@ if (isRandomAccessRange!R && hasLength!R)
         {
             foreach (i; 0 .. length) collectException(destroy(xform1[i]));
         }
-        static void trustedFree(T[] p) @trusted
+        static void trustedFree()(T[] p) @trusted
         {
-            import core.stdc.stdlib : free;
-            free(p.ptr);
+            import core.memory : pureFree;
+            static if (hasIndirections!T)
+            {
+                import core.memory : GC;
+                GC.removeRange(p.ptr);
+            }
+            pureFree(p.ptr);
         }
         trustedFree(xform1);
     }
     for (; length != r.length; ++length)
     {
-        emplace(&xform1[length], unaryFun!transform(r[length]));
+        static if (isBinary)
+            emplace(&xform1[length], transformFun(r[length], length));
+        else
+            emplace(&xform1[length], transformFun(r[length]));
     }
     // Make sure we use ubyte[] and ushort[], not char[] and wchar[]
     // for the intermediate array, lest zip gets confused.
@@ -2957,8 +3178,15 @@ if (isRandomAccessRange!R && hasLength!R)
     return typeof(return)(r);
 }
 
+/// ditto
+auto schwartzSort(alias transform, SwapStrategy ss, R)(R r)
+if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
+{
+    return schwartzSort!(transform, "a < b", ss, R)(r);
+}
+
 ///
-@safe unittest
+@safe pure unittest
 {
     import std.algorithm.iteration : map;
     import std.numeric : entropy;
@@ -2979,7 +3207,7 @@ if (isRandomAccessRange!R && hasLength!R)
     assert(isSorted!("a > b")(map!(entropy)(arr)));
 }
 
-@safe unittest
+@safe pure unittest
 {
     import std.algorithm.iteration : map;
     import std.numeric : entropy;
@@ -3000,29 +3228,111 @@ if (isRandomAccessRange!R && hasLength!R)
     assert(isSorted!("a < b")(map!(entropy)(arr)));
 }
 
-@safe unittest
+@safe pure unittest
 {
-    // issue 4909
+    // binary transform function
+    string[] strings = [ "one", "two", "three" ];
+    schwartzSort!((element, index) => size_t.max - index)(strings);
+    assert(strings == [ "three", "two", "one" ]);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=4909
+@safe pure unittest
+{
     import std.typecons : Tuple;
     Tuple!(char)[] chars;
     schwartzSort!"a[0]"(chars);
 }
 
-@safe unittest
+// https://issues.dlang.org/show_bug.cgi?id=5924
+@safe pure unittest
 {
-    // issue 5924
     import std.typecons : Tuple;
     Tuple!(char)[] chars;
     schwartzSort!((Tuple!(char) c){ return c[0]; })(chars);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=13965
+@safe pure unittest
+{
+    import std.typecons : Tuple;
+    Tuple!(char)[] chars;
+    schwartzSort!("a[0]", SwapStrategy.stable)(chars);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=13965
+@safe pure unittest
+{
+    import std.algorithm.iteration : map;
+    import std.numeric : entropy;
+
+    auto lowEnt = [ 1.0, 0, 0 ],
+        midEnt = [ 0.1, 0.1, 0.8 ],
+        highEnt = [ 0.31, 0.29, 0.4 ];
+    auto arr = new double[][3];
+    arr[0] = midEnt;
+    arr[1] = lowEnt;
+    arr[2] = highEnt;
+
+    schwartzSort!(entropy, SwapStrategy.stable)(arr);
+
+    assert(arr[0] == lowEnt);
+    assert(arr[1] == midEnt);
+    assert(arr[2] == highEnt);
+    assert(isSorted!("a < b")(map!(entropy)(arr)));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=20799
+@safe unittest
+{
+    import std.range : iota, retro;
+    import std.array : array;
+
+    auto arr = 1_000_000.iota.retro.array;
+    arr.schwartzSort!(
+        n => new int(n),
+        (a, b) => *a < *b
+    );
+    assert(arr.isSorted());
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21183
+@safe unittest
+{
+    static T get(T)(int) { return T.init; }
+
+    // There's no need to actually sort, just checking type interference
+    if (false)
+    {
+        int[] arr;
+
+        // Fine because there are no indirections
+        arr.schwartzSort!(get!(const int));
+
+        // Fine because it decays to immutable(int)*
+        arr.schwartzSort!(get!(immutable int*));
+
+        // Disallowed because it would require a non-const reference
+        static assert(!__traits(compiles, arr.schwartzSort!(get!(const Object))));
+
+        static struct Wrapper
+        {
+            int* ptr;
+        }
+
+        // Disallowed because Wrapper.ptr would become mutable
+        static assert(!__traits(compiles, arr.schwartzSort!(get!(const Wrapper))));
+    }
+}
+
 // partialSort
 /**
-Reorders the random-access range $(D r) such that the range $(D r[0
-.. mid]) is the same as if the entire $(D r) were sorted, and leaves
-the range $(D r[mid .. r.length]) in no particular order. Performs
-$(BIGOH r.length * log(mid)) evaluations of $(D pred). The
-implementation simply calls $(D topN!(less, ss)(r, n)) and then $(D
+Reorders the random-access range `r` such that the range `r[0 .. mid]`
+is the same as if the entire `r` were sorted, and leaves
+the range `r[mid .. r.length]` in no particular order.
+
+Performs $(BIGOH r.length * log(mid)) evaluations of `pred`. The
+implementation simply calls `topN!(less, ss)(r, n)` and then $(D
 sort!(less, ss)(r[0 .. n])).
 
 Params:
@@ -3077,17 +3387,20 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
 
 // topN
 /**
-Reorders the range $(D r) using $(D swap) such that $(D r[nth]) refers
-to the element that would fall there if the range were fully
-sorted. In addition, it also partitions $(D r) such that all elements
-$(D e1) from $(D r[0]) to $(D r[nth]) satisfy $(D !less(r[nth], e1)),
-and all elements $(D e2) from $(D r[nth]) to $(D r[r.length]) satisfy
-$(D !less(e2, r[nth])). Effectively, it finds the nth smallest
-(according to $(D less)) elements in $(D r). Performs an expected
-$(BIGOH r.length) (if unstable) or $(BIGOH r.length * log(r.length))
-(if stable) evaluations of $(D less) and $(D swap).
+Reorders the range `r` using $(REF_ALTTEXT swap, swap, std,algorithm,mutation)
+such that `r[nth]` refers to the element that would fall there if the range
+were fully sorted.
 
-If $(D n >= r.length), the algorithm has no effect and returns
+It is akin to $(LINK2 https://en.wikipedia.org/wiki/Quickselect, Quickselect),
+and partitions `r` such that all elements
+`e1` from `r[0]` to `r[nth]` satisfy `!less(r[nth], e1)`,
+and all elements `e2` from `r[nth]` to `r[r.length]` satisfy
+`!less(e2, r[nth])`. Effectively, it finds the `nth + 1` smallest
+(according to `less`) elements in `r`. Performs an expected
+$(BIGOH r.length) (if unstable) or $(BIGOH r.length * log(r.length))
+(if stable) evaluations of `less` and $(REF_ALTTEXT swap, swap, std,algorithm,mutation).
+
+If `n >= r.length`, the algorithm has no effect and returns
 `r[0 .. r.length]`.
 
 Params:
@@ -3097,9 +3410,10 @@ Params:
     nth = The index of the element that should be in sorted position after the
         function is done.
 
+Returns: a slice from `r[0]` to `r[nth]`, excluding `r[nth]` itself.
+
 See_Also:
     $(LREF topNIndex),
-    $(HTTP sgi.com/tech/stl/nth_element.html, STL's nth_element)
 
 BUGS:
 
@@ -3108,7 +3422,8 @@ Stable topN has not been implemented yet.
 auto topN(alias less = "a < b",
         SwapStrategy ss = SwapStrategy.unstable,
         Range)(Range r, size_t nth)
-if (isRandomAccessRange!(Range) && hasLength!Range && hasSlicing!Range)
+if (isRandomAccessRange!(Range) && hasLength!Range &&
+    hasSlicing!Range && hasAssignableElements!Range)
 {
     static assert(ss == SwapStrategy.unstable,
             "Stable topN not yet implemented");
@@ -3119,15 +3434,38 @@ if (isRandomAccessRange!(Range) && hasLength!Range && hasSlicing!Range)
         // Workaround for https://issues.dlang.org/show_bug.cgi?id=16528
         // Safety checks: enumerate all potentially unsafe generic primitives
         // then use a @trusted implementation.
-        binaryFun!less(r[0], r[r.length - 1]);
+        cast(void) binaryFun!less(r[0], r[r.length - 1]);
         import std.algorithm.mutation : swapAt;
         r.swapAt(size_t(0), size_t(0));
-        static assert(is(typeof(r.length) == size_t));
+        static assert(is(typeof(r.length) == size_t),
+            typeof(r.length).stringof ~ " must be of type size_t");
         pivotPartition!less(r, 0);
     }
     bool useSampling = true;
     topNImpl!(binaryFun!less)(r, nth, useSampling);
     return ret;
+}
+
+///
+@safe unittest
+{
+    int[] v = [ 25, 7, 9, 2, 0, 5, 21 ];
+    topN!"a < b"(v, 100);
+    assert(v == [ 25, 7, 9, 2, 0, 5, 21 ]);
+    auto n = 4;
+    topN!((a, b) => a < b)(v, n);
+    assert(v[n] == 9);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=8341
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : zip;
+    import std.typecons : tuple;
+    auto a = [10, 30, 20];
+    auto b = ["c", "b", "a"];
+    assert(topN!"a[0] > b[0]"(zip(a, b), 2).equal([tuple(20, "a"), tuple(30, "b")]));
 }
 
 private @trusted
@@ -3212,7 +3550,7 @@ void topNImpl(alias less, R)(R r, size_t n, ref bool useSampling)
             }
         }
 
-        assert(pivot != size_t.max);
+        assert(pivot != size_t.max, "pivot must be not equal to size_t.max");
         // See how the pivot fares
         if (pivot == n)
         {
@@ -3230,20 +3568,11 @@ void topNImpl(alias less, R)(R r, size_t n, ref bool useSampling)
     }
 }
 
-///
-@safe unittest
-{
-    int[] v = [ 25, 7, 9, 2, 0, 5, 21 ];
-    topN!"a < b"(v, 100);
-    assert(v == [ 25, 7, 9, 2, 0, 5, 21 ]);
-    auto n = 4;
-    topN!"a < b"(v, n);
-    assert(v[n] == 9);
-}
-
 private size_t topNPartition(alias lp, R)(R r, size_t n, bool useSampling)
 {
-    assert(r.length >= 9 && n < r.length);
+    import std.format : format;
+    assert(r.length >= 9 && n < r.length, "length must be longer than 8"
+        ~ " and n must be less than r.length");
     immutable ninth = r.length / 9;
     auto pivot = ninth / 2;
     // Position subrange r[lo .. hi] to have length equal to ninth and its upper
@@ -3252,9 +3581,11 @@ private size_t topNPartition(alias lp, R)(R r, size_t n, bool useSampling)
     // the median in already sorted ranges.
     immutable lo = r.length / 2 - pivot, hi = lo + ninth;
     // We have either one straggler on the left, one on the right, or none.
-    assert(lo - (r.length - hi) <= 1 || (r.length - hi) - lo <= 1);
-    assert(lo >= ninth * 4);
-    assert(r.length - hi >= ninth * 4);
+    assert(lo - (r.length - hi) <= 1 || (r.length - hi) - lo <= 1,
+        format!"straggler check failed lo %s, r.length %s, hi %s"(lo, r.length, hi));
+    assert(lo >= ninth * 4, format!"lo %s >= ninth * 4 %s"(lo, ninth * 4));
+    assert(r.length - hi >= ninth * 4,
+        format!"r.length %s - hi %s >= ninth * 4 %s"(r.length, hi, ninth * 4));
 
     // Partition in groups of 3, and the mid tertile again in groups of 3
     if (!useSampling)
@@ -3270,12 +3601,15 @@ private size_t topNPartition(alias lp, R)(R r, size_t n, bool useSampling)
 
 private void p3(alias less, Range)(Range r, size_t lo, immutable size_t hi)
 {
-    assert(lo <= hi && hi < r.length);
+    import std.format : format;
+    assert(lo <= hi && hi < r.length,
+        format!"lo %s <= hi %s && hi < r.length %s"(lo, hi, r.length));
     immutable ln = hi - lo;
     for (; lo < hi; ++lo)
     {
-        assert(lo >= ln);
-        assert(lo + ln < r.length);
+        assert(lo >= ln, format!"lo %s >= ln %s"(lo, ln));
+        assert(lo + ln < r.length, format!"lo %s + ln %s < r.length %s"(
+            lo, ln, r.length));
         medianOf!less(r, lo - ln, lo, lo + ln);
     }
 }
@@ -3283,12 +3617,15 @@ private void p3(alias less, Range)(Range r, size_t lo, immutable size_t hi)
 private void p4(alias less, Flag!"leanRight" f, Range)
     (Range r, size_t lo, immutable size_t hi)
 {
-    assert(lo <= hi && hi < r.length);
+    import std.format : format;
+    assert(lo <= hi && hi < r.length, format!"lo %s <= hi %s && hi < r.length %s"(
+        lo, hi, r.length));
     immutable ln = hi - lo, _2ln = ln * 2;
     for (; lo < hi; ++lo)
     {
-        assert(lo >= ln);
-        assert(lo + ln < r.length);
+        assert(lo >= ln, format!"lo %s >= ln %s"(lo, ln));
+        assert(lo + ln < r.length, format!"lo %s + ln %s < r.length %s"(
+            lo, ln, r.length));
         static if (f == Yes.leanRight)
             medianOf!(less, f)(r, lo - _2ln, lo - ln, lo, lo + ln);
         else
@@ -3299,8 +3636,8 @@ private void p4(alias less, Flag!"leanRight" f, Range)
 private size_t topNPartitionOffMedian(alias lp, Flag!"leanRight" f, R)
     (R r, size_t n, bool useSampling)
 {
-    assert(r.length >= 12);
-    assert(n < r.length);
+    assert(r.length >= 12, "The length of r must be greater than 11");
+    assert(n < r.length, "n must be less than the length of r");
     immutable _4 = r.length / 4;
     static if (f == Yes.leanRight)
         immutable leftLimit = 2 * _4;
@@ -3337,19 +3674,23 @@ size_t expandPartition(alias lp, R)(R r, size_t lo, size_t pivot, size_t hi)
 in
 {
     import std.algorithm.searching : all;
-    assert(lo <= pivot);
-    assert(pivot < hi);
-    assert(hi <= r.length);
-    assert(r[lo .. pivot + 1].all!(x => !lp(r[pivot], x)));
-    assert(r[pivot + 1 .. hi].all!(x => !lp(x, r[pivot])));
+    assert(lo <= pivot, "lo must be less than or equal pivot");
+    assert(pivot < hi, "pivot must be less than hi");
+    assert(hi <= r.length, "hi must be less than or equal to the length of r");
+    assert(r[lo .. pivot + 1].all!(x => !lp(r[pivot], x)),
+        "r[lo .. pivot + 1] failed less than test");
+    assert(r[pivot + 1 .. hi].all!(x => !lp(x, r[pivot])),
+        "r[pivot + 1 .. hi] failed less than test");
     }
 out
 {
     import std.algorithm.searching : all;
-    assert(r[0 .. pivot + 1].all!(x => !lp(r[pivot], x)));
-    assert(r[pivot + 1 .. r.length].all!(x => !lp(x, r[pivot])));
+    assert(r[0 .. pivot + 1].all!(x => !lp(r[pivot], x)),
+        "r[0 .. pivot + 1] failed less than test");
+    assert(r[pivot + 1 .. r.length].all!(x => !lp(x, r[pivot])),
+        "r[pivot + 1 .. r.length] failed less than test");
 }
-body
+do
 {
     import std.algorithm.mutation : swapAt;
     import std.algorithm.searching : all;
@@ -3372,10 +3713,14 @@ body
         r.swapAt(left, rite);
     }
 
-    assert(r[lo .. pivot + 1].all!(x => !lp(r[pivot], x)));
-    assert(r[pivot + 1 .. hi + 1].all!(x => !lp(x, r[pivot])));
-    assert(r[0 .. left].all!(x => !lp(r[pivot], x)));
-    assert(r[rite + 1 .. r.length].all!(x => !lp(x, r[pivot])));
+    assert(r[lo .. pivot + 1].all!(x => !lp(r[pivot], x)),
+        "r[lo .. pivot + 1] failed less than test");
+    assert(r[pivot + 1 .. hi + 1].all!(x => !lp(x, r[pivot])),
+        "r[pivot + 1 .. hi + 1] failed less than test");
+    assert(r[0 .. left].all!(x => !lp(r[pivot], x)),
+        "r[0 .. left] failed less than test");
+    assert(r[rite + 1 .. r.length].all!(x => !lp(x, r[pivot])),
+        "r[rite + 1 .. r.length] failed less than test");
 
     immutable oldPivot = pivot;
 
@@ -3387,7 +3732,7 @@ body
             if (left == lo) goto done;
             if (!lp(r[oldPivot], r[left])) continue;
             --pivot;
-            assert(!lp(r[oldPivot], r[pivot]));
+            assert(!lp(r[oldPivot], r[pivot]), "less check failed");
             r.swapAt(left, pivot);
         }
         // Second loop: make left and pivot meet
@@ -3414,7 +3759,7 @@ body
         if (rite == hi) goto done;
         if (!lp(r[rite], r[oldPivot])) continue;
         ++pivot;
-        assert(!lp(r[pivot], r[oldPivot]));
+        assert(!lp(r[pivot], r[oldPivot]), "less check failed");
         r.swapAt(rite, pivot);
     }
     // Second loop: make left and pivot meet
@@ -3441,21 +3786,16 @@ done:
 {
     auto a = [ 10, 5, 3, 4, 8,  11,  13, 3, 9, 4, 10 ];
     assert(expandPartition!((a, b) => a < b)(a, 4, 5, 6) == 9);
-    a = randomArray;
+
+    import std.algorithm.iteration : map;
+    import std.array : array;
+    import std.random : uniform;
+    import std.range : iota;
+    auto size = uniform(1, 1000);
+    a = iota(0, size).map!(_ => uniform(0, 1000)).array;
     if (a.length == 0) return;
     expandPartition!((a, b) => a < b)(a, a.length / 2, a.length / 2,
         a.length / 2 + 1);
-}
-
-version (unittest)
-private T[] randomArray(Flag!"exactSize" flag = No.exactSize, T = int)(
-    size_t maxSize = 1000,
-    T minValue = 0, T maxValue = 255)
-{
-    import std.algorithm.iteration : map;
-    import std.random : unpredictableSeed, Random, uniform;
-    auto size = flag == Yes.exactSize ? maxSize : uniform(1, maxSize);
-    return iota(0, size).map!(_ => uniform(minValue, maxValue)).array;
 }
 
 @safe unittest
@@ -3509,9 +3849,9 @@ private T[] randomArray(Flag!"exactSize" flag = No.exactSize, T = int)(
 {
     import std.algorithm.comparison : max, min;
     import std.algorithm.iteration : reduce;
-    import std.random : Random, uniform, unpredictableSeed;
+    import std.random : Random = Xorshift, uniform;
 
-    immutable uint[] seeds = [90027751, 2709791795, 1374631933, 995751648, 3541495258, 984840953, unpredictableSeed];
+    immutable uint[] seeds = [90027751, 2709791795, 1374631933, 995751648, 3541495258, 984840953];
     foreach (s; seeds)
     {
         auto r = Random(s);
@@ -3534,7 +3874,7 @@ private T[] randomArray(Flag!"exactSize" flag = No.exactSize, T = int)(
     }
 }
 
-// bug 12987
+// https://issues.dlang.org/show_bug.cgi?id=12987
 @safe unittest
 {
     int[] a = [ 25, 7, 9, 2, 0, 5, 21 ];
@@ -3584,7 +3924,7 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
     assert(a == [0, 1, 2, 2, 3]);
 }
 
-// bug 15421
+// https://issues.dlang.org/show_bug.cgi?id=15421
 @system unittest
 {
     import std.algorithm.comparison : equal;
@@ -3628,7 +3968,7 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
     }
 }
 
-// bug 15421
+// https://issues.dlang.org/show_bug.cgi?id=15421
 @system unittest
 {
     auto a = [ 9, 8, 0, 3, 5, 25, 43, 4, 2, 0, 7 ];
@@ -3647,7 +3987,7 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
     assert(a == b);
 }
 
-// bug 12987
+// https://issues.dlang.org/show_bug.cgi?id=12987
 @system unittest
 {
     int[] a = [ 5, 7, 2, 6, 7 ];
@@ -3657,7 +3997,7 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
     assert(t == [ 0, 1, 2, 2, 3 ]);
 }
 
-// bug 15420
+// https://issues.dlang.org/show_bug.cgi?id=15420
 @system unittest
 {
     int[] a = [ 5, 7, 2, 6, 7 ];
@@ -3668,11 +4008,12 @@ if (isRandomAccessRange!(Range1) && hasLength!Range1 &&
 }
 
 /**
-Copies the top $(D n) elements of the
-$(REF_ALTTEXT input range, isInputRange, std,range,primitives) $(D source) into the
-random-access range $(D target), where $(D n =
-target.length). Elements of $(D source) are not touched. If $(D
-sorted) is $(D true), the target is sorted. Otherwise, the target
+Copies the top `n` elements of the
+$(REF_ALTTEXT input range, isInputRange, std,range,primitives) `source` into the
+random-access range `target`, where `n = target.length`.
+
+Elements of `source` are not touched. If $(D
+sorted) is `true`, the target is sorted. Otherwise, the target
 respects the $(HTTP en.wikipedia.org/wiki/Binary_heap, heap property).
 
 Params:
@@ -3714,10 +4055,10 @@ if (isInputRange!(SRange) && isRandomAccessRange!(TRange)
 
 @system unittest
 {
-    import std.random : Random, unpredictableSeed, uniform, randomShuffle;
+    import std.random : Random = Xorshift, uniform, randomShuffle;
     import std.typecons : Yes;
 
-    auto r = Random(unpredictableSeed);
+    auto r = Random(123_456_789);
     ptrdiff_t[] a = new ptrdiff_t[uniform(1, 1000, r)];
     foreach (i, ref e; a) e = i;
     randomShuffle(a, r);
@@ -3735,7 +4076,7 @@ Similar to $(LREF topN), except that the range is not modified.
 
 Params:
     less = A binary predicate that defines the ordering of range elements.
-        Defaults to $(D a < b).
+        Defaults to `a < b`.
     ss = $(RED (Not implemented yet.)) Specify the swapping strategy.
     r = A
         $(REF_ALTTEXT random-access range, isRandomAccessRange, std,range,primitives)
@@ -3743,13 +4084,13 @@ Params:
     index = A
         $(REF_ALTTEXT random-access range, isRandomAccessRange, std,range,primitives)
         with assignable elements to build the index in. The length of this range
-        determines how many top elements to index in $(D r).
+        determines how many top elements to index in `r`.
 
         This index range can either have integral elements, in which case the
         constructed index will consist of zero-based numerical indices into
-        $(D r); or it can have pointers to the element type of $(D r), in which
+        `r`; or it can have pointers to the element type of `r`, in which
         case the constructed index will be pointers to the top elements in
-        $(D r).
+        `r`.
     sorted = Determines whether to sort the index by the elements they refer
         to.
 
@@ -3852,7 +4193,7 @@ Private for the time being.
 Computes the median of 2 to 5 arbitrary indexes in random-access range `r`
 using hand-written specialized algorithms. The indexes must be distinct (if not,
 behavior is implementation-defined). The function also partitions the elements
-involved around the median, e.g. $(D medianOf(r, a, b, c)) not only fills `r[b]`
+involved around the median, e.g. `medianOf(r, a, b, c)` not only fills `r[b]`
 with the median of `r[a]`, `r[b]`, and `r[c]`, but also puts the minimum in
 `r[a]` and the maximum in `r[c]`.
 
@@ -3861,9 +4202,9 @@ less = The comparison predicate used, modeled as a
     $(LINK2 https://en.wikipedia.org/wiki/Weak_ordering#Strict_weak_orderings, strict weak ordering)
     (irreflexive, antisymmetric, transitive, and implying a transitive equivalence).
 flag = Used only for even values of `T.length`. If `No.leanRight`, the median
-"leans left", meaning $(D medianOf(r, a, b, c, d)) puts the lower median of the
+"leans left", meaning `medianOf(r, a, b, c, d)` puts the lower median of the
 four in `r[b]`, the minimum in `r[a]`, and the two others in `r[c]` and `r[d]`.
-Conversely, $(D median!("a < b", Yes.leanRight)(r, a, b, c, d)) puts the upper
+Conversely, `median!("a < b", Yes.leanRight)(r, a, b, c, d)` puts the upper
 median of the four in `r[c]`, the maximum in `r[d]`, and the two others in
 `r[a]` and `r[b]`.
 r = The range containing the indexes.
@@ -3879,37 +4220,45 @@ if (isRandomAccessRange!Range && hasLength!Range &&
     Indexes.length >= 2 && Indexes.length <= 5 &&
     allSatisfy!(isUnsigned, Indexes))
 {
-    assert(r.length >= Indexes.length);
+    assert(r.length >= Indexes.length, "r.length must be greater than or"
+        ~ " equal to Indexes.length");
     import std.functional : binaryFun;
     alias lt = binaryFun!less;
     enum k = Indexes.length;
     import std.algorithm.mutation : swapAt;
+    import std.format : format;
 
     alias a = i[0];
-    static assert(is(typeof(a) == size_t));
+    static assert(is(typeof(a) == size_t), typeof(a).stringof ~ " must be"
+        ~ " of type size_t");
     static if (k >= 2)
     {
         alias b = i[1];
-        static assert(is(typeof(b) == size_t));
-        assert(a != b);
+        static assert(is(typeof(b) == size_t), typeof(b).stringof ~ " must be"
+        ~ " of type size_t");
+        assert(a != b, "a != b ");
     }
     static if (k >= 3)
     {
         alias c = i[2];
-        static assert(is(typeof(c) == size_t));
-        assert(a != c && b != c);
+        static assert(is(typeof(c) == size_t), typeof(c).stringof ~ " must be"
+        ~ " of type size_t");
+        assert(a != c && b != c, "a != c && b != c");
     }
     static if (k >= 4)
     {
         alias d = i[3];
-        static assert(is(typeof(d) == size_t));
-        assert(a != d && b != d && c != d);
+        static assert(is(typeof(d) == size_t), typeof(d).stringof ~ " must be"
+        ~ " of type size_t");
+        assert(a != d && b != d && c != d, "a != d && b != d && c != d failed");
     }
     static if (k >= 5)
     {
         alias e = i[4];
-        static assert(is(typeof(e) == size_t));
-        assert(a != e && b != e && c != e && d != e);
+        static assert(is(typeof(e) == size_t), typeof(e).stringof ~ " must be"
+        ~ " of type size_t");
+        assert(a != e && b != e && c != e && d != e,
+            "a != e && b != e && c != e && d != e failed");
     }
 
     static if (k == 2)
@@ -3942,8 +4291,8 @@ if (isRandomAccessRange!Range && hasLength!Range &&
                 if (lt(r[c], r[b])) r.swapAt(b, c);
             }
         }
-        assert(!lt(r[b], r[a]));
-        assert(!lt(r[c], r[b]));
+        assert(!lt(r[b], r[a]), "less than check failed");
+        assert(!lt(r[c], r[b]), "less than check failed");
     }
     else static if (k == 4)
     {
@@ -3965,12 +4314,12 @@ if (isRandomAccessRange!Range && hasLength!Range &&
     else static if (k == 5)
     {
         // Credit: Teppo Niinimäki
-        version (unittest) scope(success)
+        version (StdUnittest) scope(success)
         {
-            assert(!lt(r[c], r[a]));
-            assert(!lt(r[c], r[b]));
-            assert(!lt(r[d], r[c]));
-            assert(!lt(r[e], r[c]));
+            assert(!lt(r[c], r[a]), "less than check failed");
+            assert(!lt(r[c], r[b]), "less than check failed");
+            assert(!lt(r[d], r[c]), "less than check failed");
+            assert(!lt(r[e], r[c]), "less than check failed");
         }
 
         if (lt(r[c], r[a])) r.swapAt(a, c);
@@ -4025,16 +4374,16 @@ if (isRandomAccessRange!Range && hasLength!Range &&
 
 // nextPermutation
 /**
- * Permutes $(D range) in-place to the next lexicographically greater
+ * Permutes `range` in-place to the next lexicographically greater
  * permutation.
  *
- * The predicate $(D less) defines the lexicographical ordering to be used on
+ * The predicate `less` defines the lexicographical ordering to be used on
  * the range.
  *
  * If the range is currently the lexicographically greatest permutation, it is
  * permuted back to the least permutation and false is returned.  Otherwise,
  * true is returned. One can thus generate all permutations of a range by
- * sorting it according to $(D less), which produces the lexicographically
+ * sorting it according to `less`, which produces the lexicographically
  * least permutation, and then calling nextPermutation until it returns false.
  * This is guaranteed to generate all distinct permutations of the range
  * exactly once.  If there are $(I N) elements in the range and all of them are
@@ -4094,7 +4443,7 @@ if (isBidirectionalRange!BidirectionalRange &&
     auto j = find!((a) => binaryFun!less(i.front, a))(
                    takeExactly(retro(range), n));
 
-    assert(!j.empty);   // shouldn't happen since i.front < last.front
+    assert(!j.empty, "j must not be empty");   // shouldn't happen since i.front < last.front
     swap(i.front, j.front);
     reverse(takeExactly(retro(range), n));
 
@@ -4242,7 +4591,7 @@ if (isBidirectionalRange!BidirectionalRange &&
     assert(a == [3,2,1]);
 }
 
-// Issue 13594
+// https://issues.dlang.org/show_bug.cgi?id=13594
 @safe unittest
 {
     int[3] a = [1,2,3];
@@ -4252,10 +4601,10 @@ if (isBidirectionalRange!BidirectionalRange &&
 
 // nextEvenPermutation
 /**
- * Permutes $(D range) in-place to the next lexicographically greater $(I even)
+ * Permutes `range` in-place to the next lexicographically greater $(I even)
  * permutation.
  *
- * The predicate $(D less) defines the lexicographical ordering to be used on
+ * The predicate `less` defines the lexicographical ordering to be used on
  * the range.
  *
  * An even permutation is one which is produced by swapping an even number of
@@ -4351,7 +4700,7 @@ if (isBidirectionalRange!BidirectionalRange &&
                            takeExactly(retro(range), n));
 
             // shouldn't happen since i.front < last.front
-            assert(!j.empty);
+            assert(!j.empty, "j must not be empty");
 
             swap(i.front, j.front);
             oddParity = !oddParity;
@@ -4417,9 +4766,9 @@ if (isBidirectionalRange!BidirectionalRange &&
     assert(b == [ 1, 3, 2 ]);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=13594
 @safe unittest
 {
-    // Issue 13594
     int[3] a = [1,2,3];
     assert(nextEvenPermutation(a[]));
     assert(a == [2,3,1]);
@@ -4431,7 +4780,7 @@ shapes. Here's a non-trivial example:
 */
 @safe unittest
 {
-    import std.math : sqrt;
+    import std.math.algebraic : sqrt;
 
     // Print the 60 vertices of a uniform truncated icosahedron (soccer ball)
     enum real Phi = (1.0 + sqrt(5.0)) / 2.0;    // Golden ratio
@@ -4465,4 +4814,178 @@ shapes. Here's a non-trivial example:
         } while (nextEvenPermutation(seed));
     }
     assert(n == 60);
+}
+
+/**
+Permutes `range` into the `perm` permutation.
+
+The algorithm has a constant runtime complexity with respect to the number of
+permutations created.
+Due to the number of unique values of `ulong` only the first 21 elements of
+`range` can be permuted. The rest of the range will therefore not be
+permuted.
+This algorithm uses the $(HTTP en.wikipedia.org/wiki/Lehmer_code, Lehmer
+Code).
+
+The algorithm works as follows:
+$(D_CODE
+    auto pem = [4,0,4,1,0,0,0]; // permutation 2982 in factorial
+    auto src = [0,1,2,3,4,5,6]; // the range to permutate
+
+    auto i = 0;                    // range index
+    // range index iterates pem and src in sync
+    // pem[i] + i is used as index into src
+    // first src[pem[i] + i] is stored in t
+    auto t = 4;                    // tmp value
+    src = [0,1,2,3,n,5,6];
+
+    // then the values between i and pem[i] + i are moved one
+    // to the right
+    src = [n,0,1,2,3,5,6];
+    // at last t is inserted into position i
+    src = [4,0,1,2,3,5,6];
+    // finally i is incremented
+    ++i;
+
+    // this process is repeated while i < pem.length
+
+    t = 0;
+    src = [4,n,1,2,3,5,6];
+    src = [4,0,1,2,3,5,6];
+    ++i;
+    t = 6;
+    src = [4,0,1,2,3,5,n];
+    src = [4,0,n,1,2,3,5];
+    src = [4,0,6,1,2,3,5];
+)
+
+Returns:
+    The permuted range.
+
+Params:
+    range = The Range to permute. The original ordering will be lost.
+    perm = The permutation to permutate `range` to.
+*/
+auto ref Range nthPermutation(Range)
+                             (auto ref Range range, const ulong perm)
+if (isRandomAccessRange!Range && hasLength!Range)
+{
+    if (!nthPermutationImpl(range, perm))
+    {
+        throw new Exception(
+            "The range to permutate must not have less"
+            ~ " elements than the factorial number has digits");
+    }
+
+    return range;
+}
+
+///
+pure @safe unittest
+{
+    auto src = [0, 1, 2, 3, 4, 5, 6];
+    auto rslt = [4, 0, 6, 2, 1, 3, 5];
+
+    src = nthPermutation(src, 2982);
+    assert(src == rslt);
+}
+
+/**
+Returns: `true` in case the permutation worked, `false` in case `perm` had
+    more digits in the factorial number system than range had elements.
+    This case must not occur as this would lead to out of range accesses.
+*/
+bool nthPermutationImpl(Range)
+                       (auto ref Range range, ulong perm)
+if (isRandomAccessRange!Range && hasLength!Range)
+{
+    import std.range.primitives : ElementType;
+    import std.numeric : decimalToFactorial;
+
+    // ulong.max has 21 digits in the factorial number system
+    ubyte[21] fac;
+    size_t idx = decimalToFactorial(perm, fac);
+
+    if (idx > range.length)
+    {
+        return false;
+    }
+
+    ElementType!Range tmp;
+    size_t i = 0;
+
+    for (; i < idx; ++i)
+    {
+        size_t re = fac[i];
+        tmp = range[re + i];
+        for (size_t j = re + i; j > i; --j)
+        {
+            range[j] = range[j - 1];
+        }
+        range[i] = tmp;
+    }
+
+    return true;
+}
+
+///
+pure @safe unittest
+{
+    auto src = [0, 1, 2, 3, 4, 5, 6];
+    auto rslt = [4, 0, 6, 2, 1, 3, 5];
+
+    bool worked = nthPermutationImpl(src, 2982);
+    assert(worked);
+    assert(src == rslt);
+}
+
+pure @safe unittest
+{
+    auto rslt = [4, 0, 6, 2, 1, 3, 5];
+
+    auto src = nthPermutation([0, 1, 2, 3, 4, 5, 6], 2982);
+    assert(src == rslt);
+}
+
+pure @safe unittest
+{
+    auto src = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    auto rslt = [4, 0, 6, 2, 1, 3, 5, 7, 8, 9, 10];
+
+    src = nthPermutation(src, 2982);
+    assert(src == rslt);
+}
+
+pure @safe unittest
+{
+    import std.exception : assertThrown;
+
+    auto src = [0, 1, 2, 3];
+
+    assertThrown(nthPermutation(src, 2982));
+}
+
+pure @safe unittest
+{
+    import std.internal.test.dummyrange;
+    import std.meta : AliasSeq;
+
+    auto src = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    auto rsl = [4, 0, 6, 2, 1, 3, 5, 7, 8, 9, 10];
+
+    foreach (T; AliasSeq!(
+            DummyRange!(ReturnBy.Reference, Length.Yes, RangeType.Random, int[]),
+            DummyRange!(ReturnBy.Value, Length.Yes, RangeType.Random, int[])))
+    {
+        static assert(isRandomAccessRange!(T));
+        static assert(hasLength!(T));
+        auto dr = T(src.dup);
+        dr = nthPermutation(dr, 2982);
+
+        int idx;
+        foreach (it; dr)
+        {
+            assert(it == rsl[idx++]);
+        }
+    }
 }

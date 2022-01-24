@@ -4,7 +4,7 @@
  * Translated from MinGW Windows headers
  *
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_sqlext.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_sqlext.d)
  */
 module core.sys.windows.sqlext;
 version (Windows):
@@ -535,7 +535,7 @@ enum SQL_U_UNION_ALL = 2;
 
 enum SQL_UB_OFF = 0UL;
 enum SQL_UB_DEFAULT = SQL_UB_OFF;
-enum SQL_UB_ON = 01UL;
+enum SQL_UB_ON = 1UL;
 
 enum SQL_UNION = 96;
 enum SQL_UNSEARCHABLE = 0;

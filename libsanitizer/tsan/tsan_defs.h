@@ -15,7 +15,26 @@
 
 #include "sanitizer_common/sanitizer_internal_defs.h"
 #include "sanitizer_common/sanitizer_libc.h"
+#include "sanitizer_common/sanitizer_mutex.h"
 #include "ubsan/ubsan_platform.h"
+
+#ifndef TSAN_VECTORIZE
+#  define TSAN_VECTORIZE __SSE4_2__
+#endif
+
+#if TSAN_VECTORIZE
+// <emmintrin.h> transitively includes <stdlib.h>,
+// and it's prohibited to include std headers into tsan runtime.
+// So we do this dirty trick.
+#  define _MM_MALLOC_H_INCLUDED
+#  define __MM_MALLOC_H
+#  include <emmintrin.h>
+#  include <smmintrin.h>
+#  define VECTOR_ALIGNED ALIGNED(16)
+typedef __m128i m128;
+#else
+#  define VECTOR_ALIGNED
+#endif
 
 // Setup defaults for compile definitions.
 #ifndef TSAN_NO_HISTORY
@@ -31,6 +50,19 @@
 #endif
 
 namespace __tsan {
+
+constexpr uptr kByteBits = 8;
+
+// Thread slot ID.
+enum class Sid : u8 {};
+constexpr uptr kThreadSlotCount = 256;
+constexpr Sid kFreeSid = static_cast<Sid>(255);
+
+// Abstract time unit, vector clock element.
+enum class Epoch : u16 {};
+constexpr uptr kEpochBits = 14;
+constexpr Epoch kEpochZero = static_cast<Epoch>(0);
+constexpr Epoch kEpochOver = static_cast<Epoch>(1 << kEpochBits);
 
 const int kClkBits = 42;
 const unsigned kMaxTidReuse = (1 << (64 - kClkBits)) - 1;
@@ -74,8 +106,9 @@ const uptr kShadowCnt = 4;
 // That many user bytes are mapped onto a single shadow cell.
 const uptr kShadowCell = 8;
 
-// Size of a single shadow value (u64).
-const uptr kShadowSize = 8;
+// Single shadow value.
+typedef u64 RawShadow;
+const uptr kShadowSize = sizeof(RawShadow);
 
 // Shadow memory is kShadowMultiplier times larger than user memory.
 const uptr kShadowMultiplier = kShadowSize * kShadowCnt / kShadowCell;
@@ -86,6 +119,9 @@ const uptr kMetaShadowCell = 8;
 
 // Size of a single meta shadow value (u32).
 const uptr kMetaShadowSize = 4;
+
+// All addresses and PCs are assumed to be compressable to that many bits.
+const uptr kCompressedAddrBits = 44;
 
 #if TSAN_NO_HISTORY
 const bool kCollectHistory = false;
@@ -153,12 +189,23 @@ struct ReportStack;
 class ReportDesc;
 class RegionAlloc;
 
+typedef uptr AccessType;
+
+enum : AccessType {
+  kAccessWrite = 0,
+  kAccessRead = 1 << 0,
+  kAccessAtomic = 1 << 1,
+  kAccessVptr = 1 << 2,  // read or write of an object virtual table pointer
+  kAccessFree = 1 << 3,  // synthetic memory access during memory freeing
+  kAccessExternalPC = 1 << 4,  // access PC can have kExternalPCBit set
+};
+
 // Descriptor of user's memory block.
 struct MBlock {
   u64  siz : 48;
   u64  tag : 16;
-  u32  stk;
-  u16  tid;
+  StackID stk;
+  Tid tid;
 };
 
 COMPILER_CHECK(sizeof(MBlock) == 16);
@@ -170,6 +217,17 @@ enum ExternalTag : uptr {
   kExternalTagMax = 1024,
   // Don't set kExternalTagMax over 65,536, since MBlock only stores tags
   // as 16-bit values, see tsan_defs.h.
+};
+
+enum MutexType {
+  MutexTypeTrace = MutexLastCommon,
+  MutexTypeReport,
+  MutexTypeSyncVar,
+  MutexTypeAnnotations,
+  MutexTypeAtExit,
+  MutexTypeFired,
+  MutexTypeRacy,
+  MutexTypeGlobalProc,
 };
 
 }  // namespace __tsan

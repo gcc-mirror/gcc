@@ -1,5 +1,5 @@
 /* Polynomial integer classes.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -324,10 +324,10 @@ struct poly_result<T1, T2, 2>
    routine can take the address of RES rather than the address of
    a temporary.
 
-   The dummy comparison against a null C * is just a way of checking
+   The dummy self-comparison against C * is just a way of checking
    that C gives the right type.  */
 #define POLY_SET_COEFF(C, RES, I, VALUE) \
-  ((void) (&(RES).coeffs[0] == (C *) 0), \
+  ((void) (&(RES).coeffs[0] == (C *) (void *) &(RES).coeffs[0]), \
    wi::int_traits<C>::precision_type == wi::FLEXIBLE_PRECISION \
    ? (void) ((RES).coeffs[I] = VALUE) \
    : (void) ((RES).coeffs[I].~C (), new (&(RES).coeffs[I]) C (VALUE)))
@@ -2717,7 +2717,7 @@ gt_pch_nx (poly_int_pod<N, C> *)
 
 template<unsigned int N, typename C>
 void
-gt_pch_nx (poly_int_pod<N, C> *, void (*) (void *, void *), void *)
+gt_pch_nx (poly_int_pod<N, C> *, gt_pointer_operator, void *)
 {
 }
 

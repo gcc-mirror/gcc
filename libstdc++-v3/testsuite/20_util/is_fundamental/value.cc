@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 //
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,14 +24,12 @@ void test01()
 {
   using std::is_fundamental;
   using namespace __gnu_test;
-  
+
   static_assert(test_category<is_fundamental, void>(true), "");
   static_assert(test_category<is_fundamental, char>(true), "");
   static_assert(test_category<is_fundamental, signed char>(true), "");
   static_assert(test_category<is_fundamental, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_fundamental, wchar_t>(true), "");
-#endif
   static_assert(test_category<is_fundamental, short>(true), "");
   static_assert(test_category<is_fundamental, unsigned short>(true), "");
   static_assert(test_category<is_fundamental, int>(true), "");

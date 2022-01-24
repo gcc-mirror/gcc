@@ -1,6 +1,6 @@
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -76,8 +76,8 @@ void test01()
   errorstate = good;
   iterator_type ret03 = tim_get.get_year(is_it03, end, iss, errorstate,
 					 &time03);
-  VERIFY( time03.tm_year == 3 );
-  VERIFY( errorstate == ios_base::failbit );
+  VERIFY( time03.tm_year == 197 - 1900 );
+  VERIFY( errorstate == good );
   VERIFY( *ret03 == 'd' );
 
   iss.str("71d71");

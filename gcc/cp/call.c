@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -1070,8 +1070,6 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1089,10 +1087,10 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -1124,8 +1122,6 @@ build_complex_conv (tree type, tree ctor, int flags,
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1135,10 +1131,10 @@ build_complex_conv (tree type, tree ctor, int flags,
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -4436,7 +4432,7 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   struct z_candidate *cand;
   tree ret;
 
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
+  auto_cond_timevar tv (TV_OVERLOAD);
   cand = build_user_type_conversion_1 (totype, expr, flags, complain);
 
   if (cand)
@@ -4452,7 +4448,6 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   else
     ret = NULL_TREE;
 
-  timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }
 
@@ -4692,7 +4687,7 @@ perform_overload_resolution (tree fn,
   tree explicit_targs;
   int template_only;
 
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   explicit_targs = NULL_TREE;
   template_only = 0;
@@ -4724,7 +4719,6 @@ perform_overload_resolution (tree fn,
   else
     cand = NULL;
 
-  timevar_cond_stop (TV_OVERLOAD, subtime);
   return cand;
 }
 
@@ -4989,14 +4983,16 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 
 /* Build a new call to operator().  This may change ARGS.  */
 
-static tree
-build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
+tree
+build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, first_mem_arg = NULL_TREE;
   bool any_viable_p;
   tree result = NULL_TREE;
   void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   obj = mark_lvalue_use (obj);
 
@@ -5125,18 +5121,6 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
   obstack_free (&conversion_obstack, p);
 
   return result;
-}
-
-/* Wrapper for above.  */
-
-tree
-build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_op_call_1 (obj, args, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
 }
 
 /* Called by op_error to prepare format strings suitable for the error
@@ -5330,10 +5314,10 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
 /* Implement [expr.cond].  ARG1, ARG2, and ARG3 are the three
    arguments to the conditional expression.  */
 
-static tree
-build_conditional_expr_1 (const op_location_t &loc,
-			  tree arg1, tree arg2, tree arg3,
-                          tsubst_flags_t complain)
+tree
+build_conditional_expr (const op_location_t &loc,
+			tree arg1, tree arg2, tree arg3,
+			tsubst_flags_t complain)
 {
   tree arg2_type;
   tree arg3_type;
@@ -5344,6 +5328,8 @@ build_conditional_expr_1 (const op_location_t &loc,
   struct z_candidate *cand;
   void *p;
   tree orig_arg2, orig_arg3;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   /* As a G++ extension, the second argument to the conditional can be
      omitted.  (So that `a ? : c' is roughly equivalent to `a ? a :
@@ -5410,8 +5396,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	  && !VECTOR_TYPE_P (arg3_type))
 	{
 	  /* Rely on the error messages of the scalar version.  */
-	  tree scal = build_conditional_expr_1 (loc, integer_one_node,
-						orig_arg2, orig_arg3, complain);
+	  tree scal = build_conditional_expr (loc, integer_one_node,
+					      orig_arg2, orig_arg3, complain);
 	  if (scal == error_mark_node)
 	    return error_mark_node;
 	  tree stype = TREE_TYPE (scal);
@@ -5968,20 +5954,6 @@ build_conditional_expr_1 (const op_location_t &loc,
   return result;
 }
 
-/* Wrapper for above.  */
-
-tree
-build_conditional_expr (const op_location_t &loc,
-			tree arg1, tree arg2, tree arg3,
-                        tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_conditional_expr_1 (loc, arg1, arg2, arg3, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
-}
-
 /* OPERAND is an operand to an expression.  Perform necessary steps
    required before using it.  If OPERAND is NULL_TREE, NULL_TREE is
    returned.  */
@@ -6311,14 +6283,19 @@ op_is_ordered (tree_code code)
     }
 }
 
-/* Subroutine of build_new_op_1: Add to CANDIDATES all candidates for the
+/* Subroutine of build_new_op: Add to CANDIDATES all candidates for the
    operator indicated by CODE/CODE2.  This function calls itself recursively to
-   handle C++20 rewritten comparison operator candidates.  */
+   handle C++20 rewritten comparison operator candidates.
+
+   LOOKUPS, if non-NULL, is the set of pertinent namespace-scope operator
+   overloads to consider.  This parameter is used when instantiating a
+   dependent operator expression and has the same structure as
+   DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS.  */
 
 static tree
 add_operator_candidates (z_candidate **candidates,
 			 tree_code code, tree_code code2,
-			 vec<tree, va_gc> *arglist,
+			 vec<tree, va_gc> *arglist, tree lookups,
 			 int flags, tsubst_flags_t complain)
 {
   z_candidate *start_candidates = *candidates;
@@ -6354,7 +6331,15 @@ add_operator_candidates (z_candidate **candidates,
      consider.  */
   if (!memonly)
     {
-      tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
+      tree fns;
+      if (!lookups)
+	fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
+      /* If LOOKUPS is non-NULL, then we're instantiating a dependent operator
+	 expression, and LOOKUPS is the result of stage 1 name lookup.  */
+      else if (tree found = purpose_member (fnname, lookups))
+	fns = TREE_VALUE (found);
+      else
+	fns = NULL_TREE;
       fns = lookup_arg_dependent (fnname, fns, arglist);
       add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
 		      NULL_TREE, false, NULL_TREE, NULL_TREE,
@@ -6457,7 +6442,7 @@ add_operator_candidates (z_candidate **candidates,
 	  if (rewrite_code != code)
 	    /* Add rewritten candidates in same order.  */
 	    add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
-				     arglist, flags, complain);
+				     arglist, lookups, flags, complain);
 
 	  z_candidate *save_cand = *candidates;
 
@@ -6467,7 +6452,7 @@ add_operator_candidates (z_candidate **candidates,
 	  revlist->quick_push ((*arglist)[1]);
 	  revlist->quick_push ((*arglist)[0]);
 	  add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
-				   revlist, flags, complain);
+				   revlist, lookups, flags, complain);
 
 	  /* Release the vec if we didn't add a candidate that uses it.  */
 	  for (z_candidate *c = *candidates; c != save_cand; c = c->next)
@@ -6483,22 +6468,23 @@ add_operator_candidates (z_candidate **candidates,
   return NULL_TREE;
 }
 
-static tree
-build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
-		tree arg1, tree arg2, tree arg3, tree *overload,
-		tsubst_flags_t complain)
+tree
+build_new_op (const op_location_t &loc, enum tree_code code, int flags,
+	      tree arg1, tree arg2, tree arg3, tree lookups,
+	      tree *overload, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
-  vec<tree, va_gc> *arglist;
+  releasing_vec arglist;
   tree result = NULL_TREE;
   bool result_valid_p = false;
   enum tree_code code2 = ERROR_MARK;
   enum tree_code code_orig_arg1 = ERROR_MARK;
   enum tree_code code_orig_arg2 = ERROR_MARK;
-  conversion *conv;
   void *p;
   bool strict_p;
   bool any_viable_p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   if (error_operand_p (arg1)
       || error_operand_p (arg2)
@@ -6569,7 +6555,6 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
       arg2_type = integer_type_node;
     }
 
-  vec_alloc (arglist, 3);
   arglist->quick_push (arg1);
   if (arg2 != NULL_TREE)
     arglist->quick_push (arg2);
@@ -6580,7 +6565,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   p = conversion_obstack_alloc (0);
 
   result = add_operator_candidates (&candidates, code, code2, arglist,
-				    flags, complain);
+				    lookups, flags, complain);
   if (result == error_mark_node)
     goto user_defined_result_ready;
 
@@ -6635,8 +6620,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    code = PREINCREMENT_EXPR;
 	  else
 	    code = PREDECREMENT_EXPR;
-	  result = build_new_op_1 (loc, code, flags, arg1, NULL_TREE,
-				   NULL_TREE, overload, complain);
+	  result = build_new_op (loc, code, flags, arg1, NULL_TREE,
+				 NULL_TREE, lookups, overload, complain);
 	  break;
 
 	  /* The caller will deal with these.  */
@@ -6793,7 +6778,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 		    warning_sentinel ws (warn_zero_as_null_pointer_constant);
 		    result = build_new_op (loc, code,
 					   LOOKUP_NORMAL|LOOKUP_REWRITTEN,
-					   lhs, rhs, NULL_TREE,
+					   lhs, rhs, NULL_TREE, lookups,
 					   NULL, complain);
 		  }
 		  break;
@@ -6840,7 +6825,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	     corresponding parameters of the selected operation function,
 	     except that the second standard conversion sequence of a
 	     user-defined conversion sequence (12.3.3.1.2) is not applied."  */
-	  conv = cand->convs[0];
+	  conversion *conv = cand->convs[0];
 	  if (conv->user_conv_p)
 	    {
 	      conv = strip_standard_conversion (conv);
@@ -6958,19 +6943,115 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   return NULL_TREE;
 }
 
-/* Wrapper for above.  */
+/* Build a new call to operator[].  This may change ARGS.  */
 
 tree
-build_new_op (const op_location_t &loc, enum tree_code code, int flags,
-	      tree arg1, tree arg2, tree arg3,
-	      tree *overload, tsubst_flags_t complain)
+build_op_subscript (const op_location_t &loc, tree obj,
+		    vec<tree, va_gc> **args, tree *overload,
+		    tsubst_flags_t complain)
 {
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_op_1 (loc, code, flags, arg1, arg2, arg3,
-			overload, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
+  struct z_candidate *candidates = 0, *cand;
+  tree fns, first_mem_arg = NULL_TREE;
+  bool any_viable_p;
+  tree result = NULL_TREE;
+  void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
+
+  obj = mark_lvalue_use (obj);
+
+  if (error_operand_p (obj))
+    return error_mark_node;
+
+  tree type = TREE_TYPE (obj);
+
+  obj = prep_operand (obj);
+
+  if (TYPE_BINFO (type))
+    {
+      fns = lookup_fnfields (TYPE_BINFO (type), ovl_op_identifier (ARRAY_REF),
+			     1, complain);
+      if (fns == error_mark_node)
+	return error_mark_node;
+    }
+  else
+    fns = NULL_TREE;
+
+  if (args != NULL && *args != NULL)
+    {
+      *args = resolve_args (*args, complain);
+      if (*args == NULL)
+	return error_mark_node;
+    }
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  p = conversion_obstack_alloc (0);
+
+  if (fns)
+    {
+      first_mem_arg = obj;
+
+      add_candidates (BASELINK_FUNCTIONS (fns),
+		      first_mem_arg, *args, NULL_TREE,
+		      NULL_TREE, false,
+		      BASELINK_BINFO (fns), BASELINK_ACCESS_BINFO (fns),
+		      LOOKUP_NORMAL, &candidates, complain);
+    }
+
+  /* Be strict here because if we choose a bad conversion candidate, the
+     errors we get won't mention the call context.  */
+  candidates = splice_viable (candidates, true, &any_viable_p);
+  if (!any_viable_p)
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("no match for call to %<%T::operator[] (%A)%>",
+		 TREE_TYPE (obj), build_tree_list_vec (*args));
+	  print_z_candidates (loc, candidates);
+	}
+      result = error_mark_node;
+    }
+  else
+    {
+      cand = tourney (candidates, complain);
+      if (cand == 0)
+	{
+	  if (complain & tf_error)
+	    {
+	      auto_diagnostic_group d;
+	      error ("call of %<%T::operator[] (%A)%> is ambiguous",
+		     TREE_TYPE (obj), build_tree_list_vec (*args));
+	      print_z_candidates (loc, candidates);
+	    }
+	  result = error_mark_node;
+	}
+      else if (TREE_CODE (cand->fn) == FUNCTION_DECL
+	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
+	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, ARRAY_REF))
+	{
+	  if (overload)
+	    *overload = cand->fn;
+	  result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
+	    /* There won't be a CALL_EXPR.  */;
+	  else if (result && result != error_mark_node)
+	    {
+	      tree call = extract_call_expr (result);
+	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
+
+	      /* Specify evaluation order as per P0145R2.  */
+	      CALL_EXPR_ORDERED_ARGS (call) = op_is_ordered (ARRAY_REF) == 1;
+	    }
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return result;
 }
 
 /* CALL was returned by some call-building function; extract the actual
@@ -7186,6 +7267,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   tree oaddr = addr;
   addr = cp_convert (ptr_type_node, addr, complain);
 
+  tree excluded_destroying = NULL_TREE;
+
   if (placement)
     {
       /* "A declaration of a placement deallocation function matches the
@@ -7271,6 +7354,15 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	dealloc_info di_elt;
 	if (usual_deallocation_fn_p (elt, &di_elt))
 	  {
+	    /* If we're called for an EH cleanup in a new-expression, we can't
+	       use a destroying delete; the exception was thrown before the
+	       object was constructed.  */
+	    if (alloc_fn && di_elt.destroying)
+	      {
+		excluded_destroying = elt;
+		continue;
+	      }
+
 	    if (!fn)
 	      {
 		fn = elt;
@@ -7418,6 +7510,14 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       return ret;
     }
 
+  /* If there's only a destroying delete that we can't use because the
+     object isn't constructed yet, and we used global new, use global
+     delete as well.  */
+  if (excluded_destroying
+      && DECL_NAMESPACE_SCOPE_P (alloc_fn))
+    return build_op_delete_call (code, addr, size, true, placement,
+				 alloc_fn, complain);
+
   /* [expr.new]
 
      If no unambiguous matching deallocation function can be found,
@@ -7427,8 +7527,16 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     {
       if ((complain & tf_warning)
 	  && !placement)
-	warning (0, "no corresponding deallocation function for %qD",
-		 alloc_fn);
+	{
+	  bool w = warning (0,
+			    "no corresponding deallocation function for %qD",
+			    alloc_fn);
+	  if (w && excluded_destroying)
+	    inform (DECL_SOURCE_LOCATION (excluded_destroying), "destroying "
+		    "delete %qD cannot be used to release the allocated memory"
+		    " if the initialization throws because the object is not "
+		    "constructed yet", excluded_destroying);
+	}
       return NULL_TREE;
     }
 
@@ -9025,6 +9133,20 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 		 instance, clobber);
 }
 
+/* Return true if in an immediate function context, or an unevaluated operand,
+   or a subexpression of an immediate invocation.  */
+
+bool
+in_immediate_context ()
+{
+  return (cp_unevaluated_operand != 0
+	  || (current_function_decl != NULL_TREE
+	      && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	  || (current_binding_level->kind == sk_function_parms
+	      && current_binding_level->immediate_fn_ctx_p)
+	  || in_consteval_if_p);
+}
+
 /* Return true if a call to FN with number of arguments NARGS
    is an immediate invocation.  */
 
@@ -9033,17 +9155,24 @@ immediate_invocation_p (tree fn, int nargs)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  && (current_binding_level->kind != sk_function_parms
-	      || !current_binding_level->immediate_fn_ctx_p)
-	  && !in_consteval_if_p
+	  && !in_immediate_context ()
 	  /* As an exception, we defer std::source_location::current ()
 	     invocations until genericization because LWG3396 mandates
 	     special behavior for it.  */
 	  && (nargs > 1 || !source_location_current_p (fn)));
 }
+
+/* temp_override for in_consteval_if_p, which can't use make_temp_override
+   because it is a bitfield.  */
+
+struct in_consteval_if_p_temp_override {
+  bool save_in_consteval_if_p;
+  in_consteval_if_p_temp_override ()
+    : save_in_consteval_if_p (in_consteval_if_p) {}
+  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
+  ~in_consteval_if_p_temp_override ()
+  { reset (); }
+};
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
@@ -9253,6 +9382,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (parmlen > nargs)
     nargs = parmlen;
   argarray = XALLOCAVEC (tree, nargs);
+
+  in_consteval_if_p_temp_override icip;
+  /* If the call is immediate function invocation, make sure
+     taking address of immediate functions is allowed in its arguments.  */
+  if (immediate_invocation_p (STRIP_TEMPLATE (fn), nargs))
+    in_consteval_if_p = true;
 
   /* The implicit parameters to a constructor are not considered by overload
      resolution, and must be of the proper type.  */
@@ -9498,6 +9633,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
   gcc_assert (j <= nargs);
   nargs = j;
+  icip.reset ();
 
   /* Avoid performing argument transformation if warnings are disabled.
      When tf_warning is set and at least one of the warnings is active
@@ -9761,7 +9897,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (cand->flags & LOOKUP_LIST_INIT_CTOR)
     {
       tree c = extract_call_expr (call);
-      /* build_new_op_1 will clear this when appropriate.  */
+      /* build_new_op will clear this when appropriate.  */
       CALL_EXPR_ORDERED_ARGS (c) = true;
     }
   if (warned_p)
@@ -10670,10 +10806,10 @@ complain_about_no_candidates_for_method_call (tree instance,
    be set, upon return, to the function called.  ARGS may be NULL.
    This may change ARGS.  */
 
-static tree
-build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
-		         tree conversion_path, int flags,
-		         tree *fn_p, tsubst_flags_t complain)
+tree
+build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
+		       tree conversion_path, int flags,
+		       tree *fn_p, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
@@ -10692,6 +10828,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   tree orig_fns;
   vec<tree, va_gc> *orig_args = NULL;
   void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   gcc_assert (instance != NULL_TREE);
 
@@ -10987,7 +11125,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		     we know we really need it.  */
 		  cand->first_arg = instance;
 		}
-	      else if (any_dependent_bases_p ())
+	      else if (current_class_ptr && any_dependent_bases_p ())
 		/* We can't tell until instantiation time whether we can use
 		   *this as the implicit object argument.  */;
 	      else
@@ -11052,6 +11190,34 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	}
       if (INDIRECT_REF_P (call))
 	call = TREE_OPERAND (call, 0);
+
+      /* Prune all but the selected function from the original overload
+	 set so that we can avoid some duplicate work at instantiation time.  */
+      if (really_overloaded_fn (fns))
+	{
+	  if (DECL_TEMPLATE_INFO (fn)
+	      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn))
+	      && dependent_type_p (DECL_CONTEXT (fn)))
+	    {
+	      /* FIXME: We're not prepared to fully instantiate "inside-out"
+		 partial instantiations such as A<T>::f<int>().  So instead
+		 use the selected template, not the specialization.  */
+
+	      if (OVL_SINGLE_P (fns))
+		/* If the original overload set consists of a single function
+		   template, this isn't beneficial.  */
+		goto skip_prune;
+
+	      fn = ovl_make (DECL_TI_TEMPLATE (fn));
+	      if (template_only)
+		fn = lookup_template_function (fn, explicit_targs);
+	    }
+	  orig_fns = copy_node (orig_fns);
+	  BASELINK_FUNCTIONS (orig_fns) = fn;
+	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (orig_fns) = true;
+	}
+
+skip_prune:
       call = (build_min_non_dep_call_vec
 	      (call,
 	       build_min (COMPONENT_REF, TREE_TYPE (CALL_EXPR_FN (call)),
@@ -11070,21 +11236,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
     release_tree_vector (orig_args);
 
   return call;
-}
-
-/* Wrapper for above.  */
-
-tree
-build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
-		       tree conversion_path, int flags,
-		       tree *fn_p, tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_method_call_1 (instance, fns, args, conversion_path, flags,
-                                 fn_p, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
 }
 
 /* Returns true iff standard conversion sequence ICS1 is a proper
@@ -11794,7 +11945,7 @@ joust_maybe_elide_copy (z_candidate *&cand)
 /* True if the defining declarations of the two candidates have equivalent
    parameters.  */
 
-bool
+static bool
 cand_parms_match (z_candidate *c1, z_candidate *c2)
 {
   tree fn1 = c1->fn;
@@ -11816,8 +11967,19 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
       fn1 = DECL_TEMPLATE_RESULT (t1);
       fn2 = DECL_TEMPLATE_RESULT (t2);
     }
-  return compparms (TYPE_ARG_TYPES (TREE_TYPE (fn1)),
-		    TYPE_ARG_TYPES (TREE_TYPE (fn2)));
+  tree parms1 = TYPE_ARG_TYPES (TREE_TYPE (fn1));
+  tree parms2 = TYPE_ARG_TYPES (TREE_TYPE (fn2));
+  if (DECL_FUNCTION_MEMBER_P (fn1)
+      && DECL_FUNCTION_MEMBER_P (fn2)
+      && (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn1)
+	  != DECL_NONSTATIC_MEMBER_FUNCTION_P (fn2)))
+    {
+      /* Ignore 'this' when comparing the parameters of a static member
+	 function with those of a non-static one.  */
+      parms1 = skip_artificial_parms_for (fn1, parms1);
+      parms2 = skip_artificial_parms_for (fn2, parms2);
+    }
+  return compparms (parms1, parms2);
 }
 
 /* Compare two candidates for overloading as described in
@@ -12525,7 +12687,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
-    expr = convert_like (conv, expr, complain);
+    {
+      /* Give a conversion call the same location as expr.  */
+      iloc_sentinel il (loc);
+      expr = convert_like (conv, expr, complain);
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

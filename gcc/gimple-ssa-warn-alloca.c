@@ -1,5 +1,5 @@
 /* Warn on problematic uses of alloca and variable length arrays.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -221,10 +221,9 @@ alloca_call_type (gimple *stmt, bool is_vla)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
-      static int_range<2> invalid_range (build_int_cst (size_type_node, 0),
-					 build_int_cst (size_type_node,
-							max_size),
-					 VR_ANTI_RANGE);
+      int_range<2> invalid_range (build_int_cst (size_type_node, 0),
+				  build_int_cst (size_type_node, max_size),
+				  VR_ANTI_RANGE);
 
       r.intersect (invalid_range);
       if (r.undefined_p ())

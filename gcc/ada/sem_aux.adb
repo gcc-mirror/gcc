@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -336,10 +336,18 @@ package body Sem_Aux is
 
    function First_Subtype (Typ : Entity_Id) return Entity_Id is
       B   : constant Entity_Id := Base_Type (Typ);
-      F   : constant Node_Id   := Freeze_Node (B);
+      F   : Node_Id := Freeze_Node (B);
       Ent : Entity_Id;
 
    begin
+      --  The freeze node of a ghost type might have been rewritten in a null
+      --  statement by the time gigi calls First_Subtype on the corresponding
+      --  type.
+
+      if Nkind (F) = N_Null_Statement then
+         F := Original_Node (F);
+      end if;
+
       --  If the base type has no freeze node, it is a type in Standard, and
       --  always acts as its own first subtype, except where it is one of the
       --  predefined integer types. If the type is formal, it is also a first
@@ -846,10 +854,7 @@ package body Sem_Aux is
       Btype : constant Entity_Id := Base_Type (Ent);
 
    begin
-      if Error_Posted (Ent) or else Error_Posted (Btype) then
-         return False;
-
-      elsif Is_Private_Type (Btype) then
+      if Is_Private_Type (Btype) then
          declare
             Utyp : constant Entity_Id := Underlying_Type (Btype);
          begin
@@ -1403,6 +1408,31 @@ package body Sem_Aux is
                                  and then not Is_Constrained (Typ))
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
+
+   ------------------
+   -- Package_Body --
+   ------------------
+
+   function Package_Body (E : Entity_Id) return Node_Id is
+      Body_Decl : Node_Id;
+      Body_Id   : constant Opt_E_Package_Body_Id :=
+        Corresponding_Body (Package_Spec (E));
+
+   begin
+      if Present (Body_Id) then
+         Body_Decl := Parent (Body_Id);
+
+         if Nkind (Body_Decl) = N_Defining_Program_Unit_Name then
+            Body_Decl := Parent (Body_Decl);
+         end if;
+
+         pragma Assert (Nkind (Body_Decl) = N_Package_Body);
+
+         return Body_Decl;
+      else
+         return Empty;
+      end if;
+   end Package_Body;
 
    ------------------
    -- Package_Spec --

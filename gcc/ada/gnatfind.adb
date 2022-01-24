@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -347,6 +347,11 @@ procedure Gnatfind is
 --  Start of processing for Gnatfind
 
 begin
+   Put_Line
+     ("WARNING: gnatfind is obsolete and will be removed in the next release");
+   Put_Line
+     ("Consider using Libadalang or GNAT Studio python scripting instead");
+
    Parse_Cmd_Line;
 
    if not Have_Entity then

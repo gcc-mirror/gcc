@@ -40,7 +40,7 @@ class bar : foo
 
 int def(foo f)
 {
-    printf("def(%p), %p\n", f, (cast(int*)f)[0]);
+    printf("def(%p), %d\n", f, (cast(int*)f)[0]);
     assert(f.testc(3) == 50);
     assert(f.testd(7) == 54);
     assert(f.testd(10) == 57);
@@ -49,7 +49,7 @@ int def(foo f)
 
 void abc(bar b)
 {
-    printf("abc(%p), %p\n", b, (cast(int*)b)[3]);
+    printf("abc(%p), %d\n", b, (cast(int*)b)[3]);
     def(b);
 }
 
@@ -57,8 +57,8 @@ int main()
 {
     bar b = new bar();
 
-    printf("b.size = x%x\n", b.classinfo.initializer.length);
-    printf("bar.size = x%x\n", bar.classinfo.initializer.length);
+    printf("b.size = x%zx\n", b.classinfo.initializer.length);
+    printf("bar.size = x%zx\n", bar.classinfo.initializer.length);
     assert(b.classinfo.initializer.length == bar.classinfo.initializer.length);
     abc(b);
     return 0;

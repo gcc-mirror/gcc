@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -222,6 +222,7 @@ c_common_init_options_struct (struct gcc_options *opts)
 
   /* By default, C99-like requirements for complex multiply and divide.  */
   opts->x_flag_complex_method = 2;
+  opts->x_flag_default_complex_method = opts->x_flag_complex_method;
 }
 
 /* Common initialization before calling option handlers.  */
@@ -830,7 +831,7 @@ c_common_post_options (const char **pfilename)
      for -ffp-contract=off).  */
   if (flag_iso
       && !c_dialect_cxx ()
-      && (global_options_set.x_flag_fp_contract_mode
+      && (OPTION_SET_P (flag_fp_contract_mode)
 	  == (enum fp_contract_mode) 0)
       && flag_unsafe_math_optimizations == 0)
     flag_fp_contract_mode = FP_CONTRACT_OFF;
@@ -841,7 +842,7 @@ c_common_post_options (const char **pfilename)
      the set specified in ISO C99/C11.  */
   if (!flag_iso
       && !c_dialect_cxx ()
-      && (global_options_set.x_flag_permitted_flt_eval_methods
+      && (OPTION_SET_P (flag_permitted_flt_eval_methods)
 	  == PERMITTED_FLT_EVAL_METHODS_DEFAULT))
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_TS_18661;
   else
@@ -945,7 +946,8 @@ c_common_post_options (const char **pfilename)
   /* -Wcomma-subscript is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_comma_subscript,
-		       cxx_dialect >= cxx20 && warn_deprecated);
+		       cxx_dialect >= cxx23
+		       || (cxx_dialect == cxx20 && warn_deprecated));
 
   /* -Wvolatile is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
@@ -973,9 +975,9 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 16;
-  /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
-  const int abi_compat_default = 11;
+  const int latest_abi_version = 17;
+  /* Generate compatibility aliases for ABI v13 (8.2) by default.  */
+  const int abi_compat_default = 13;
 
 #define clamp(X) if (X == 0 || X > latest_abi_version) X = latest_abi_version
   clamp (flag_abi_version);
@@ -1039,7 +1041,7 @@ c_common_post_options (const char **pfilename)
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
 	 for -std=c++{11,14,17,20,23} default to -fno-ext-numeric-literals.  */
-      if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
+      if (flag_iso && !OPTION_SET_P (flag_ext_numeric_literals))
 	cpp_opts->ext_numeric_literals = 0;
     }
   else if (warn_narrowing == -1)
@@ -1050,6 +1052,9 @@ c_common_post_options (const char **pfilename)
   if (c_dialect_cxx ()
       && flag_strong_eval_order == -1)
     flag_strong_eval_order = (cxx_dialect >= cxx17 ? 2 : 1);
+
+  if (flag_implicit_constexpr && cxx_dialect < cxx14)
+    flag_implicit_constexpr = false;
 
   /* Global sized deallocation is new in C++14.  */
   if (flag_sized_deallocation == -1)
@@ -1104,10 +1109,7 @@ c_common_post_options (const char **pfilename)
 	out_stream = fopen (out_fname, "w");
 
       if (out_stream == NULL)
-	{
-	  fatal_error (input_location, "opening output file %s: %m", out_fname);
-	  return false;
-	}
+	fatal_error (input_location, "opening output file %s: %m", out_fname);
 
       init_pp_output (out_stream);
     }

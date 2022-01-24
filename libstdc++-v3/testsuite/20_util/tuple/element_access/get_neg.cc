@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,3 +60,4 @@ test03()
 }
 
 // { dg-error "tuple index must be in range" "" { target *-*-* } 0 }
+// { dg-prune-output "no type named 'type' in .*_Nth_type" }

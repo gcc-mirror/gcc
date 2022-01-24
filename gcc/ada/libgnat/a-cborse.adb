@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -739,25 +739,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = 0 then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            N : Node_Type renames Container.Nodes (Node);
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => N.Element'Unchecked_Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -960,28 +949,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = 0 then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            N : Node_Type renames Container.Nodes (Node);
-         begin
-            return R : constant Reference_Type :=
-                         (Element => N.Element'Unchecked_Access,
-                          Control =>
-                            (Controlled with
-                              Container.TC'Unrestricted_Access,
-                              Container => Container'Unchecked_Access,
-                               Pos      => Find (Container, Key),
-                               Old_Key  => new Key_Type'(Key)))
-            do
-               Busy (Container.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------
@@ -1124,8 +1099,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1205,7 +1178,6 @@ is
       Dst_Node : out Count_Type)
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
 
       procedure Set_Element (Node : in out Node_Type);
       pragma Inline (Set_Element);
@@ -2012,6 +1984,7 @@ is
    function To_Set (New_Item : Element_Type) return Set is
       Node     : Count_Type;
       Inserted : Boolean;
+
    begin
       return S : Set (1) do
          Insert_Sans_Hint (S, New_Item, Node, Inserted);

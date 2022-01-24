@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2165,7 +2165,7 @@ make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
 }
 
 /* At entry of the nearest common dominator for basic blocks with
-   conversions, generate a single
+   conversions/rcp/sqrt/rsqrt/round, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
    for all
 	vcvtss2sd  op, %xmmN, %xmmX
@@ -2211,13 +2211,27 @@ remove_partial_avx_dependency (void)
 	    continue;
 
 	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
-	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
-	     vec_merge with subreg.  */
+	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, sqrt, rsqrt, rcp,
+	     round, to vec_dup and vec_merge with subreg.  */
 	  rtx src = SET_SRC (set);
 	  rtx dest = SET_DEST (set);
 	  machine_mode dest_mode = GET_MODE (dest);
-	  machine_mode src_mode = GET_MODE (XEXP (src, 0));
+	  bool convert_p = false;
+	  switch (GET_CODE (src))
+	    {
+	    case FLOAT:
+	    case FLOAT_EXTEND:
+	    case FLOAT_TRUNCATE:
+	    case UNSIGNED_FLOAT:
+	      convert_p = true;
+	      break;
+	    default:
+	      break;
+	    }
 
+	  /* Only hanlde conversion here.  */
+	  machine_mode src_mode
+	    = convert_p ? GET_MODE (XEXP (src, 0)) : VOIDmode;
 	  switch (src_mode)
 	    {
 	    case E_SFmode:
@@ -2232,8 +2246,11 @@ remove_partial_avx_dependency (void)
 		  || !TARGET_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY)
 		continue;
 	      break;
-	    default:
+	    case E_VOIDmode:
+	      gcc_assert (!convert_p);
 	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 
 	  if (!v4sf_const0)
@@ -2241,15 +2258,22 @@ remove_partial_avx_dependency (void)
 
 	  rtx zero;
 	  machine_mode dest_vecmode;
-	  if (dest_mode == E_SFmode)
+	  switch (dest_mode)
 	    {
+	    case E_HFmode:
+	      dest_vecmode = V8HFmode;
+	      zero = gen_rtx_SUBREG (V8HFmode, v4sf_const0, 0);
+	      break;
+	    case E_SFmode:
 	      dest_vecmode = V4SFmode;
 	      zero = v4sf_const0;
-	    }
-	  else
-	    {
+	      break;
+	    case E_DFmode:
 	      dest_vecmode = V2DFmode;
 	      zero = gen_rtx_SUBREG (V2DFmode, v4sf_const0, 0);
+	      break;
+	    default:
+	      gcc_unreachable ();
 	    }
 
 	  /* Change source to vector mode.  */

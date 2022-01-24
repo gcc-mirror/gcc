@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -309,7 +309,7 @@ package body Sprint is
    procedure Write_Param_Specs (N : Node_Id);
    --  Output parameter specifications for node N (which is a subprogram, or
    --  entry or entry family or access-subprogram-definition, all of which
-   --  have a Parameter_Specificatioons field).
+   --  have a Parameter_Specifications field).
 
    procedure Write_Rewrite_Str (S : String);
    --  Writes out a string (typically containing <<< or >>>}) for a node
@@ -588,7 +588,7 @@ package body Sprint is
                              Print_Generated_Code or
                              Debug_Generated_Code;
       Dump_Original_Only  := Debug_Flag_O;
-      Dump_Freeze_Null    := Debug_Flag_S or Debug_Flag_G;
+      Dump_Freeze_Null    := Debug_Flag_S or Dump_Generated_Only;
 
       --  Note that we turn off the tree dump flags immediately, before
       --  starting the dump. This avoids generating two copies of the dump
@@ -673,6 +673,11 @@ package body Sprint is
             end if;
          end loop;
       end if;
+
+      --  See above for the rationale, but we cannot do it earlier for them
+
+      Print_Generated_Code := False;
+      Debug_Generated_Code := False;
    end Source_Dump;
 
    ---------------------
@@ -1116,6 +1121,12 @@ package body Sprint is
                Write_Char (']');
             end if;
 
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
          when N_And_Then =>
             Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" and then ");
@@ -1124,7 +1135,7 @@ package body Sprint is
          --  Note: the following code for N_Aspect_Specification is not
          --  normally used, since we deal with aspects as part of a
          --  declaration, but it is here in case we deliberately try
-         --  to print an N_Aspect_Speficiation node (e.g. from GDB).
+         --  to print an N_Aspect_Specification node (e.g. from GDB).
 
          when N_Aspect_Specification =>
             Sprint_Node (Identifier (Node));
@@ -1785,10 +1796,22 @@ package body Sprint is
             if Present (Handled_Statement_Sequence (Node)) then
                Write_Str_With_Col_Check (" do");
                Sprint_Node (Handled_Statement_Sequence (Node));
-               Write_Indent_Str ("end return;");
-            else
-               Write_Indent_Str (";");
+               Write_Indent_Str ("end return");
             end if;
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
+            Write_Char (';');
 
          when N_Delta_Aggregate =>
             Write_Str_With_Col_Check_Sloc ("(");
@@ -1973,6 +1996,19 @@ package body Sprint is
          when N_Free_Statement =>
             Write_Indent_Str_Sloc ("free ");
             Sprint_Node (Expression (Node));
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
             Write_Char (';');
 
          when N_Freeze_Entity =>
@@ -2075,7 +2111,7 @@ package body Sprint is
             Sprint_Node (Name (Node));
             Write_Char (';');
 
-         when N_Generic_Package_Declaration =>
+         when N_Generic_Declaration =>
             Extra_Blank_Line;
             Write_Indent_Str_Sloc ("generic ");
             Sprint_Indented_List (Generic_Formal_Declarations (Node));
@@ -2095,14 +2131,6 @@ package body Sprint is
             Sprint_Node (Defining_Unit_Name (Node));
             Write_Str_With_Col_Check (" renames ");
             Sprint_Node (Name (Node));
-            Write_Char (';');
-
-         when N_Generic_Subprogram_Declaration =>
-            Extra_Blank_Line;
-            Write_Indent_Str_Sloc ("generic ");
-            Sprint_Indented_List (Generic_Formal_Declarations (Node));
-            Write_Indent;
-            Sprint_Node (Specification (Node));
             Write_Char (';');
 
          when N_Goto_Statement =>
@@ -3178,10 +3206,23 @@ package body Sprint is
             if Present (Expression (Node)) then
                Write_Indent_Str_Sloc ("return ");
                Sprint_Node (Expression (Node));
-               Write_Char (';');
             else
-               Write_Indent_Str_Sloc ("return;");
+               Write_Indent_Str_Sloc ("return");
             end if;
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
+            Write_Char (';');
 
          when N_Selective_Accept =>
             Write_Indent_Str_Sloc ("select");
@@ -4222,7 +4263,7 @@ package body Sprint is
          --  Itype to be printed
 
          declare
-            B : constant Node_Id := Etype (Typ);
+            B : constant Entity_Id := Etype (Typ);
             P : constant Node_Id := Parent (Typ);
             S : constant Saved_Output_Buffer := Save_Output_Buffer;
             --  Save current output buffer
@@ -4402,7 +4443,12 @@ package body Sprint is
                   when E_Modular_Integer_Type =>
                      Write_Header;
                      Write_Str ("mod ");
-                     Write_Uint_With_Col_Check (Modulus (Typ), Auto);
+
+                     if No (Modulus (Typ)) then
+                        Write_Uint_With_Col_Check (Uint_0, Auto);
+                     else
+                        Write_Uint_With_Col_Check (Modulus (Typ), Auto);
+                     end if;
 
                   --  Floating-point types and subtypes
 
@@ -4760,7 +4806,7 @@ package body Sprint is
       --  Set true if we output at least one parameter
 
    begin
-      --  Write out explicit specs from Parameter_Speficiations list
+      --  Write out explicit specs from Parameter_Specifications list
 
       if Specs_Present then
          Write_Str_With_Col_Check (" (");

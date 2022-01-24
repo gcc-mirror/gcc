@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -88,7 +88,7 @@ test02()
     VERIFY( i == (&i - out) );
 }
 
-void
+constexpr bool
 test03()
 {
   int arr[2] = { 1, 2 };
@@ -117,6 +117,9 @@ test03()
   VERIFY( (j - end) == -2 );
   VERIFY( (j - i) == 0 );
 
+  if (std::is_constant_evaluated())
+    return true;
+
   try
   {
     struct S { operator const int*() const { throw 1; } };
@@ -126,7 +129,11 @@ test03()
   catch (int)
   {
   }
+
+  return true;
 }
+
+static_assert( test03() );
 
 void
 test04()
@@ -149,6 +156,22 @@ test04()
   VERIFY( arr[0].i == -1 );
   VERIFY( x.i == 2 );
 }
+
+constexpr bool
+test_pr103992()
+{
+  using C1 = std::common_iterator<std::reverse_iterator<int*>,
+				  std::unreachable_sentinel_t>;
+  using C2 = std::common_iterator<std::reverse_iterator<const int*>,
+				  std::unreachable_sentinel_t>;
+  C1 c1;
+  C2 c2 = c1;
+  C1 c3 = c1;
+
+  return true;
+}
+
+static_assert( test_pr103992() );
 
 int
 main()

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -422,7 +422,7 @@ for (i = 0; i < n_opts; i++) {
 		       cl_flags, cl_bit_fields)
 	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
 	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i]),
-		    opt_args("Init", flags[i]), opts[i]), comma)
+		    opt_args("Init", flags[i]), opts[i], flag_set_p("UInteger", flags[i])), comma)
 
 	# Bump up the informational option index.
 	++optindex

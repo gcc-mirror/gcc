@@ -11,6 +11,7 @@ extern void abort (void);
 
 #define TEST_VMLS(q1, q2, size, in1_lanes, in2_lanes)			\
 static void								\
+__attribute__((noipa,noinline))						\
 test_vfms##q1##_lane##q2##_f##size (float##size##_t * res,		\
 				   const float##size##_t *in1,		\
 				   const float##size##_t *in2)		\
@@ -105,12 +106,14 @@ main (int argc, char **argv)
    vfmsq_laneq_f32.  */
 /* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
 
-/* vfms_lane_f64.  */
-/* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 } } */
+/* vfms_lane_f64.
+   vfms_laneq_f64.  */
+/* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 2 { target aarch64_little_endian } } } */
 
 /* vfmsq_lane_f64.
-   vfms_laneq_f64.
    vfmsq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 } } */
+/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 { target aarch64_little_endian } } } */
 
 

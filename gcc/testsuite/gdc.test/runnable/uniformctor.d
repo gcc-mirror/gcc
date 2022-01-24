@@ -1,10 +1,16 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern(C) int printf(const char*, ...);
 template TypeTuple(TL...) { alias TypeTuple = TL; }
 
 import core.stdc.math : isnan;
 
 /********************************************/
-// 9112
+// https://issues.dlang.org/show_bug.cgi?id=9112
 
 void test9112a()    //  T() and T(v)
 {
@@ -40,19 +46,12 @@ void test9112a()    //  T() and T(v)
     test!( float )(3.14);
     test!( double)(3.14);
     test!( real  )(3.14);
-    test!(ifloat )(1.4142i);
-    test!(idouble)(1.4142i);
-    test!(ireal  )(1.4142i);
-    test!(cfloat )(1.2+3.4i);
-    test!(cdouble)(1.2+3.4i);
-    test!(creal  )(1.2+3.4i);
     test!( char  )('A');
     test!(wchar  )('A');
     test!(dchar  )('A');
     test!(bool   )(true);
 
     static assert(!__traits(compiles, int(1.42)));  // in curre,t this is disallowed
-    static assert(!__traits(compiles, double(3.14i)));
 
     {
         int x;
@@ -107,12 +106,6 @@ void test9112b()    // new T(v)
     test!( float )(3.14);
     test!( double)(3.14);
     test!( real  )(3.14);
-    test!(ifloat )(1.4142i);
-    test!(idouble)(1.4142i);
-    test!(ireal  )(1.4142i);
-    test!(cfloat )(1.2+3.4i);
-    test!(cdouble)(1.2+3.4i);
-    test!(creal  )(1.2+3.4i);
     test!( char  )('A');
     test!(wchar  )('A');
     test!(dchar  )('A');
@@ -138,7 +131,6 @@ void test9112b()    // new T(v)
     static assert(!__traits(compiles, new const int(1, 2)));
 
     static assert(!__traits(compiles, new int(1.42)));  // in curre,t this is disallowed
-    static assert(!__traits(compiles, new double(3.14i)));
 
     // int(1) in directly on statement scope should be parsed as an expression, but
     // would fail to compile because of "has no effect" error.

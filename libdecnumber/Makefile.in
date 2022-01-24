@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libdecnumber.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -178,13 +178,14 @@ html:
 info:
 install-info:
 install-pdf:
+install-dvi:
 install-man:
 install-html:
 install:
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
   maintainer-clean check installcheck dvi pdf html info install-info \
-  install-pdf install-man update-po install-html
+  install-pdf install-dvi install-man update-po install-html
 
 COMPILE = source='$<' object='$@' libtool=no $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
 

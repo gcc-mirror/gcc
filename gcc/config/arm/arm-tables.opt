@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -250,6 +250,9 @@ EnumValue
 Enum(processor_type) String(cortex-a78c) Value( TARGET_CPU_cortexa78c)
 
 EnumValue
+Enum(processor_type) String(cortex-a710) Value( TARGET_CPU_cortexa710)
+
+EnumValue
 Enum(processor_type) String(cortex-x1) Value( TARGET_CPU_cortexx1)
 
 EnumValue
@@ -281,6 +284,9 @@ Enum(processor_type) String(cortex-m55) Value( TARGET_CPU_cortexm55)
 
 EnumValue
 Enum(processor_type) String(cortex-r52) Value( TARGET_CPU_cortexr52)
+
+EnumValue
+Enum(processor_type) String(cortex-r52plus) Value( TARGET_CPU_cortexr52plus)
 
 Enum
 Name(arm_arch) Type(int)
@@ -380,10 +386,13 @@ EnumValue
 Enum(arm_arch) String(armv8.1-m.main) Value(30)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt) Value(31)
+Enum(arm_arch) String(armv9-a) Value(31)
 
 EnumValue
-Enum(arm_arch) String(iwmmxt2) Value(32)
+Enum(arm_arch) String(iwmmxt) Value(32)
+
+EnumValue
+Enum(arm_arch) String(iwmmxt2) Value(33)
 
 Enum
 Name(arm_fpu) Type(enum fpu_type)

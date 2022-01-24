@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512vpopcntdq -mavx512bw -mavx512vl" } */
+/* { dg-options "-O2 -fno-tree-vectorize -mavx512vpopcntdq -mavx512bw -mavx512vl" } */
 /* { dg-require-effective-target avx512vl } */
 /* { dg-require-effective-target avx512vpopcntdqvl } */
 /* { dg-require-effective-target avx512bw } */

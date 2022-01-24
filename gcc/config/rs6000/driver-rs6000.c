@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -417,6 +417,9 @@ detect_processor_aix (void)
 
     case 0x20000:
       return "power9";
+
+    case 0x40000:
+      return "power10";
 
     default:
       return "powerpc";

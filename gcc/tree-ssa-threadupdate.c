@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -196,10 +196,12 @@ back_jt_path_registry::back_jt_path_registry ()
 {
 }
 
-jump_thread_edge *
-jt_path_registry::allocate_thread_edge (edge e, jump_thread_edge_type t)
+void
+jt_path_registry::push_edge (vec<jump_thread_edge *> *path,
+			     edge e, jump_thread_edge_type type)
 {
-  return m_allocator.allocate_thread_edge (e, t);
+  jump_thread_edge *x =  m_allocator.allocate_thread_edge (e, type);
+  path->safe_push (x);
 }
 
 vec<jump_thread_edge *> *
@@ -211,15 +213,20 @@ jt_path_registry::allocate_thread_path ()
 /* Dump a jump threading path, including annotations about each
    edge in the path.  */
 
-void
+static void
 dump_jump_thread_path (FILE *dump_file,
-		       const vec<jump_thread_edge *> path,
+		       const vec<jump_thread_edge *> &path,
 		       bool registering)
 {
-  fprintf (dump_file,
-	   "  %s jump thread: (%d, %d) incoming edge; ",
-	   (registering ? "Registering" : "Cancelling"),
-	   path[0]->e->src->index, path[0]->e->dest->index);
+  if (registering)
+    fprintf (dump_file,
+	     "  [%u] Registering jump thread: (%d, %d) incoming edge; ",
+	     dbg_cnt_counter (registered_jump_thread),
+	     path[0]->e->src->index, path[0]->e->dest->index);
+  else
+    fprintf (dump_file,
+	     "  Cancelling jump thread: (%d, %d) incoming edge; ",
+	     path[0]->e->src->index, path[0]->e->dest->index);
 
   for (unsigned int i = 1; i < path.length (); i++)
     {
@@ -246,6 +253,9 @@ dump_jump_thread_path (FILE *dump_file,
 	default:
 	  gcc_unreachable ();
 	}
+
+      if ((path[i]->e->flags & EDGE_DFS_BACK) != 0)
+	fprintf (dump_file, " (back)");
     }
   fprintf (dump_file, "; \n");
 }
@@ -271,7 +281,7 @@ cancel_thread (vec<jump_thread_edge *> *path, const char *reason = NULL)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       if (reason)
-	fprintf (dump_file, "%s:\n", reason);
+	fprintf (dump_file, "%s: ", reason);
 
       dump_jump_thread_path (dump_file, *path, false);
       fprintf (dump_file, "\n");
@@ -2288,12 +2298,6 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 {
   vec<jump_thread_edge *> *curr_path = m_paths[curr_path_num];
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "just threaded: ");
-      debug_path (dump_file, curr_path_num);
-    }
-
   /* Iterate through all the other paths and adjust them.  */
   for (unsigned cand_path_num = 0; cand_path_num < m_paths.length (); )
     {
@@ -2401,12 +2405,6 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "\nabout to thread: ");
-      debug_path (dump_file, current_path_no);
-    }
 
   /* Some sanity checking.  Note that we do not check for all possible
      missuses of the functions.  I.e. if you ask to copy something weird,
@@ -2568,7 +2566,7 @@ valid_jump_thread_path (vec<jump_thread_edge *> *path)
 void
 fwd_jt_path_registry::remove_jump_threads_including (edge_def *e)
 {
-  if (!m_paths.exists ())
+  if (!m_paths.exists () || !flag_thread_jumps)
     return;
 
   edge *slot = m_removed_edges->find_slot (e, INSERT);
@@ -2755,6 +2753,100 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
   return retval;
 }
 
+bool
+jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
+{
+  gcc_checking_assert (!path.is_empty ());
+  edge entry = path[0]->e;
+  edge exit = path[path.length () - 1]->e;
+  bool seen_latch = false;
+  int loops_crossed = 0;
+  bool crossed_latch = false;
+  bool crossed_loop_header = false;
+  // Use ->dest here instead of ->src to ignore the first block.  The
+  // first block is allowed to be in a different loop, since it'll be
+  // redirected.  See similar comment in profitable_path_p: "we don't
+  // care about that block...".
+  loop_p loop = entry->dest->loop_father;
+  loop_p curr_loop = loop;
+
+  for (unsigned int i = 0; i < path.length (); i++)
+    {
+      edge e = path[i]->e;
+
+      if (e == NULL)
+	{
+	  // NULL outgoing edges on a path can happen for jumping to a
+	  // constant address.
+	  cancel_thread (&path, "Found NULL edge in jump threading path");
+	  return true;
+	}
+
+      if (loop->latch == e->src || loop->latch == e->dest)
+	{
+	  seen_latch = true;
+	  // Like seen_latch, but excludes the first block.
+	  if (e->src != entry->src)
+	    crossed_latch = true;
+	}
+
+      if (e->dest->loop_father != curr_loop)
+	{
+	  curr_loop = e->dest->loop_father;
+	  ++loops_crossed;
+	}
+
+      // ?? Avoid threading through loop headers that remain in the
+      // loop, as such threadings tend to create sub-loops which
+      // _might_ be OK ??.
+      if (e->dest->loop_father->header == e->dest
+	  && !flow_loop_nested_p (exit->dest->loop_father,
+				  e->dest->loop_father))
+	crossed_loop_header = true;
+
+      if (flag_checking && !m_backedge_threads)
+	gcc_assert ((path[i]->e->flags & EDGE_DFS_BACK) == 0);
+    }
+
+  // If we crossed a loop into an outer loop without crossing the
+  // latch, this is just an early exit from the loop.
+  if (loops_crossed == 1
+      && !crossed_latch
+      && flow_loop_nested_p (exit->dest->loop_father, exit->src->loop_father))
+    return false;
+
+  if (cfun->curr_properties & PROP_loop_opts_done)
+    return false;
+
+  if (seen_latch && empty_block_p (loop->latch))
+    {
+      cancel_thread (&path, "Threading through latch before loop opts "
+		     "would create non-empty latch");
+      return true;
+    }
+  if (loops_crossed)
+    {
+      cancel_thread (&path, "Path crosses loops");
+      return true;
+    }
+  // The path should either start and end in the same loop or exit the
+  // loop it starts in but never enter a loop.  This also catches
+  // creating irreducible loops, not only rotation.
+  if (entry->src->loop_father != exit->dest->loop_father
+      && !flow_loop_nested_p (exit->src->loop_father,
+			      entry->dest->loop_father))
+    {
+      cancel_thread (&path, "Path rotates loop");
+      return true;
+    }
+  if (crossed_loop_header)
+    {
+      cancel_thread (&path, "Path crosses loop header but does not exit it");
+      return true;
+    }
+  return false;
+}
+
 /* Register a jump threading opportunity.  We queue up all the jump
    threading opportunities discovered by a pass and update the CFG
    and SSA form all at once.
@@ -2768,25 +2860,16 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
 bool
 jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
 {
+  gcc_checking_assert (flag_thread_jumps);
+
   if (!dbg_cnt (registered_jump_thread))
     {
       path->release ();
       return false;
     }
 
-  /* First make sure there are no NULL outgoing edges on the jump threading
-     path.  That can happen for jumping to a constant address.  */
-  for (unsigned int i = 0; i < path->length (); i++)
-    {
-      if ((*path)[i]->e == NULL)
-	{
-	  cancel_thread (path, "Found NULL edge in jump threading path");
-	  return false;
-	}
-
-      if (flag_checking && !m_backedge_threads)
-	gcc_assert (((*path)[i]->e->flags & EDGE_DFS_BACK) == 0);
-    }
+  if (cancel_invalid_paths (*path))
+    return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_jump_thread_path (dump_file, *path, true);

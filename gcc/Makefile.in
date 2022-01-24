@@ -1,7 +1,7 @@
 # Makefile for GNU Compiler Collection
 # Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 1987-2021 Free Software Foundation, Inc.
+# Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -452,6 +452,7 @@ USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 
 # Enable target overriding of this fragment, as in config/t-vxworks.
 T_GLIMITS_H = $(srcdir)/glimits.h
+T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
@@ -715,6 +716,8 @@ tmpdir = /tmp
 
 datarootdir = @datarootdir@
 docdir = @docdir@
+# Directory in which to put DVIs
+dvidir = @dvidir@
 # Directory in which to build HTML
 build_htmldir = $(objdir)/HTML/gcc-$(version)
 # Directory in which to put HTML
@@ -1094,6 +1097,10 @@ SYSLIBS = @GNAT_LIBEXC@
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
 
+# Used from d/Make-lang.in
+GDC = @GDC@
+GDCFLAGS = @GDCFLAGS@
+
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
 
@@ -1396,11 +1403,13 @@ OBJS = \
 	gimple-if-to-switch.o \
 	gimple-iterator.o \
 	gimple-fold.o \
+	gimple-harden-conditionals.o \
 	gimple-laddress.o \
 	gimple-loop-interchange.o \
 	gimple-loop-jam.o \
 	gimple-loop-versioning.o \
 	gimple-low.o \
+	gimple-predicate-analysis.o \
 	gimple-pretty-print.o \
 	gimple-range.o \
 	gimple-range-cache.o \
@@ -1423,6 +1432,7 @@ OBJS = \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \
+	gimple-warn-recursion.o \
 	gimplify.o \
 	gimplify-me.o \
 	godump.o \
@@ -1696,7 +1706,6 @@ OBJS = \
 	tree.o \
 	tristate.o \
 	typed-splay-tree.o \
-	unique-ptr-tests.o \
 	valtrack.o \
 	value-pointer-equiv.o \
 	value-query.o \
@@ -2990,7 +2999,7 @@ build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
 gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
               gengtype-state.o errors.o $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	    $(filter-out ($LIBDEPS), $^) $(LIBS)
+	    $(filter-out $(LIBDEPS), $^) $(LIBS)
 
 # Rule for the generator programs:
 $(genprog:%=build/gen%$(build_exeext)): build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
@@ -3119,7 +3128,7 @@ gcov-tool$(exeext): $(GCOV_TOOL_OBJS) $(LIBDEPS)
 # be rebuilt.
 
 # Build the include directories.
-stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(USER_H) fixinc_list
+stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(T_STDINT_GCC_H) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
 #
 # The sed command gets just the last file name component;
@@ -3165,7 +3174,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(USER_H) fixinc_list
 	  cp $(srcdir)/ginclude/stdint-wrap.h include/stdint.h; \
 	  chmod a+r include/stdint.h; \
 	elif [ $(USE_GCC_STDINT) = provide ]; then \
-	  cp $(srcdir)/ginclude/stdint-gcc.h include/stdint.h; \
+	  cp $(T_STDINT_GCC_H) include/stdint.h; \
 	  chmod a+r include/stdint.h; \
 	fi
 	set -e; for ml in `cat fixinc_list`; do \
@@ -3414,8 +3423,10 @@ $(build_htmldir)/gcc/index.html: $(TEXI_GCC_FILES)
 $(build_htmldir)/gccint/index.html: $(TEXI_GCCINT_FILES)
 $(build_htmldir)/cppinternals/index.html: $(TEXI_CPPINT_FILES)
 
-dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
-      doc/cppinternals.dvi lang.dvi
+DVIFILES = doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
+           doc/cppinternals.dvi
+
+dvi:: $(DVIFILES) lang.dvi
 
 doc/%.dvi: %.texi
 	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
@@ -3709,7 +3720,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 # We keep the directory structure for files in config, common/config or
 # c-family and .def files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
-	headers=`echo $(PLUGIN_HEADERS) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
+	headers=`echo $(sort $(PLUGIN_HEADERS)) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
 	for file in $$headers; do \
 	  if [ -f $$file ] ; then \
@@ -3824,6 +3835,18 @@ $(DESTDIR)$(infodir)/%.info: doc/%.info installdirs
 	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $@; \
 	  else true; fi; \
 	else true; fi;
+
+dvi__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+
+install-dvi: $(DVIFILES) lang.install-dvi
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
 
 pdf__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 
@@ -4329,6 +4352,10 @@ paranoia: paranoia.o real.o $(LIBIBERTY)
 
 # These exist for maintenance purposes.
 
+CTAGS=@CTAGS@
+ETAGS=@ETAGS@
+CSCOPE=@CSCOPE@
+
 # Update the tags table.
 TAGS: lang.tags
 	(cd $(srcdir);					\
@@ -4338,14 +4365,14 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	etags -o TAGS.sub c-family/*.h c-family/*.c c-family/*.cc \
+	$(ETAGS) -o TAGS.sub c-family/*.h c-family/*.c c-family/*.cc \
 	      *.h *.c *.cc \
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\
 	      --language=none --regex="/\(DEF_RTL_EXPR\|DEFTREECODE\|DEFGSCODE\|DEFTIMEVAR\|DEFPARAM\|DEFPARAMENUM5\)[ ]?(\([A-Za-z_0-9]+\)/\2/" rtl.def tree.def gimple.def timevar.def \
 		; \
-	etags --include TAGS.sub $$incs)
+	$(ETAGS) --include TAGS.sub $$incs)
 
 # -----------------------------------------------------
 # Rules for generating translated message descriptions.

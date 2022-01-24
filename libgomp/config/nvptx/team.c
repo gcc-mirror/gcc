@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -32,6 +32,7 @@
 #include <string.h>
 
 struct gomp_thread *nvptx_thrs __attribute__((shared,nocommon));
+int __gomp_team_num __attribute__((shared,nocommon));
 
 static void gomp_thread_start (struct gomp_thread_pool *);
 
@@ -54,9 +55,11 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
   if (tid == 0)
     {
       gomp_global_icv.nthreads_var = ntids;
+      gomp_global_icv.thread_limit_var = ntids;
       /* Starting additional threads is not supported.  */
       gomp_global_icv.dyn_var = true;
 
+      __gomp_team_num = 0;
       nvptx_thrs = alloca (ntids * sizeof (*nvptx_thrs));
       memset (nvptx_thrs, 0, ntids * sizeof (*nvptx_thrs));
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,8 @@ with Ada.Unchecked_Conversion;
 with Interfaces.C;
 
 with System.OS_Primitives;
+
+with System.OS_Lib;
 
 package body Ada.Calendar with
   SPARK_Mode => Off
@@ -147,7 +149,7 @@ is
    -- Leap seconds control --
    --------------------------
 
-   Flag : Integer;
+   Flag : constant Integer;
    pragma Import (C, Flag, "__gl_leap_seconds_support");
    --  This imported value is used to determine whether the compilation had
    --  binder flag "-y" present which enables leap seconds. A value of zero
@@ -204,14 +206,14 @@ is
 
    Cumulative_Days_Before_Month :
      constant array (Month_Number) of Natural :=
-       (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+       [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
 
    --  The following table contains the hard time values of all existing leap
    --  seconds. The values are produced by the utility program xleaps.adb. This
    --  must be updated when additional leap second times are defined.
 
    Leap_Second_Times : constant array (1 .. Leap_Seconds_Count) of Time_Rep :=
-     (-5601484800000000000,
+     [-5601484800000000000,
       -5585587199000000000,
       -5554051198000000000,
       -5522515197000000000,
@@ -237,7 +239,7 @@ is
       -4449513577000000000,
       -4339180776000000000,
       -4244572775000000000,
-      -4197052774000000000);
+      -4197052774000000000];
 
    ---------
    -- "+" --
@@ -488,7 +490,6 @@ is
       Y : Year_Number;
       M : Month_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, M, S);
    begin
       Split (Date, Y, M, D, S);
       return D;
@@ -535,7 +536,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, D, S);
    begin
       Split (Date, Y, M, D, S);
       return M;
@@ -550,7 +550,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (Y, M, D);
    begin
       Split (Date, Y, M, D, S);
       return S;
@@ -572,8 +571,6 @@ is
       Se : Integer;
       Ss : Duration;
       Le : Boolean;
-
-      pragma Unreferenced (H, M, Se, Ss, Le);
 
    begin
       --  Even though the input time zone is UTC (0), the flag Use_TZ will
@@ -685,13 +682,10 @@ is
       type int_Pointer  is access all Interfaces.C.int;
       type long_Pointer is access all Interfaces.C.long;
 
-      type time_t is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
-      type time_t_Pointer is access all time_t;
+      type OS_Time_Pointer is access all System.OS_Lib.OS_Time;
 
       procedure localtime_tzoff
-        (timer       : time_t_Pointer;
+        (timer       : OS_Time_Pointer;
          is_historic : int_Pointer;
          off         : long_Pointer);
       pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
@@ -708,7 +702,7 @@ is
       Date_N   : Time_Rep;
       Flag     : aliased Interfaces.C.int;
       Offset   : aliased Interfaces.C.long;
-      Secs_T   : aliased time_t;
+      Secs_T   : aliased System.OS_Lib.OS_Time;
 
    --  Start of processing for UTC_Time_Offset
 
@@ -745,7 +739,7 @@ is
 
       --  Convert the date into seconds
 
-      Secs_T := time_t (Date_N / Nano);
+      Secs_T := System.OS_Lib.To_Ada (Long_Long_Integer (Date_N / Nano));
 
       --  Determine whether to treat the input date as historical or not. A
       --  value of "0" signifies that the date is NOT historic.
@@ -770,7 +764,6 @@ is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
-      pragma Unreferenced (M, D, S);
    begin
       Split (Date, Y, M, D, S);
       return Y;

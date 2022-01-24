@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++20" }
-// { dg-do compile { xfail c++20 } }
+// { dg-do compile { target c++20 } }
 #include <span>
 
 // PR libstdc++/101411

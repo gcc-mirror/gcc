@@ -1,5 +1,29 @@
+/*
+RUN_OUTPUT:
+---
+i = 1
+Writer.opShl(char[])
+BinaryWriter.opShl(int)
+a + 1 = 2
+1 + a = 2
+a + b = 3
+b + a = 3
+i = 64
+12
+534
+A::opShl(int 4)
+4A::opShl(char[])
+ A::opShl(int 12)
+12A::opShl(char[])
+
+B::opShl_r(A)
+Success
+---
+*/
 
 // Test operator overloading
+// Ignore deprecation warnings for D1 style operator overloading
+// TRANSFORM_OUTPUT: remove_lines("Deprecation: `op")
 
 import core.stdc.stdio;
 
@@ -776,7 +800,7 @@ class A13
  A13 opShl(string x)
  {
     printf("A::opShl(char[])\n");
-    printf("%.*s", x.length, x.ptr);
+    printf("%.*s", cast(int)x.length, x.ptr);
     return this;
  }
 }
@@ -821,7 +845,7 @@ void test14()
 
 /**************************************/
 
-// 3983
+// https://issues.dlang.org/show_bug.cgi?id=3983
 
 struct Fug
 {
@@ -849,7 +873,7 @@ void test15()
 }
 
 /**************************************/
-// 4953
+// https://issues.dlang.org/show_bug.cgi?id=4953
 
 struct S4953a
 {
@@ -907,7 +931,7 @@ void test4953d()
 }
 
 /**************************************/
-// 4993
+// https://issues.dlang.org/show_bug.cgi?id=4993
 
 // reduced from the bug report
 struct Bar4993
@@ -924,7 +948,7 @@ void test4993()
 }
 
 /**************************************/
-// 8133
+// https://issues.dlang.org/show_bug.cgi?id=8133
 
 void test8133()
 {
@@ -942,7 +966,7 @@ void test8133()
 }
 
 /**************************************/
-// 8522
+// https://issues.dlang.org/show_bug.cgi?id=8522
 
 struct Point8522
 {
@@ -961,7 +985,7 @@ void test8522()
 }
 
 /**************************************/
-// 12778
+// https://issues.dlang.org/show_bug.cgi?id=12778
 
 struct Vec12778X
 {
@@ -1009,7 +1033,7 @@ void test12778()
 }
 
 /**************************************/
-// 14343
+// https://issues.dlang.org/show_bug.cgi?id=14343
 
 struct S14343a
 {
@@ -1049,7 +1073,7 @@ void test14343()
 }
 
 /**************************************/
-// 14344
+// https://issues.dlang.org/show_bug.cgi?id=14344
 
 struct S14344
 {
@@ -1080,7 +1104,41 @@ class C14344
 }
 
 /**************************************/
+// https://issues.dlang.org/show_bug.cgi?id=1547
+struct A
+{
+    int b;
+    static A opCall(int k)
+    {
+        assert(0);
+    }
+    this(int) {}
+}
 
+void fun(A k = 2) {}
+
+void test1547()
+{
+    fun();
+}
+
+/**************************************/
+// https://issues.dlang.org/show_bug.cgi?id=20475
+struct S20475
+{
+    string[2] x;
+}
+
+void test20475()
+{
+    auto s = S20475(["abc", "bcd"]);
+    auto t = S20475(["abc", ""]);
+    string u = "abcd";
+    t.x[1] = u[1..$];
+    assert(s == t);
+}
+
+/**************************************/
 int main()
 {
     test1();
@@ -1098,6 +1156,7 @@ int main()
     test13();
     test14();
     test15();
+    test1547();
     test4953a();
     test4953b();
     test4953c();
@@ -1105,6 +1164,7 @@ int main()
     test4993();
     test8133();
     test8522();
+    test20475();
 
     printf("Success\n");
     return 0;

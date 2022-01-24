@@ -95,14 +95,14 @@ dnl ----------------------------------------------------------------------
 dnl This whole bit snagged from libstdc++-v3, via libatomic.
 
 dnl
-dnl LIBAT_ENABLE
+dnl LIBFFI_ENABLE
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, permit a|b|c)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, SHELL-CODE-HANDLER)
 dnl
 dnl See docs/html/17_intro/configury.html#enable for documentation.
 dnl
-m4_define([LIBAT_ENABLE],[dnl
+m4_define([LIBFFI_ENABLE],[dnl
 m4_define([_g_switch],[--enable-$1])dnl
 m4_define([_g_help],[AC_HELP_STRING(_g_switch$3,[$4 @<:@default=$2@:>@])])dnl
  AC_ARG_ENABLE($1,_g_help,
@@ -146,7 +146,7 @@ dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
 dnl set libat_gnu_ld_version to 12345.  Zeros cause problems.
 dnl
-AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
+AC_DEFUN([LIBFFI_CHECK_LINKER_FEATURES], [
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
   # by now (in libtool), but require it now just to be safe...
@@ -178,7 +178,7 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
-         sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
   changequote([,])
   libat_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
@@ -248,7 +248,7 @@ dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
 dnl set libat_gnu_ld_version to 12345.  Zeros cause problems.
 dnl
-AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
+AC_DEFUN([LIBFFI_CHECK_LINKER_FEATURES], [
   # If we're not using GNU ld, then there's no point in even trying these
   # tests.  Check for that first.  We should have already tested for gld
   # by now (in libtool), but require it now just to be safe...
@@ -278,9 +278,13 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libat_ld_is_gold=yes
   fi
+  libat_ld_is_lld=no
+  if $LD --version 2>/dev/null | grep 'LLD '> /dev/null 2>&1; then
+    libat_ld_is_lld=yes
+  fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
-         sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
+         sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
   changequote([,])
   libat_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
@@ -341,20 +345,20 @@ dnl --enable-symvers=style adds a version script to the linker call when
 dnl       creating the shared library.  The choice of version script is
 dnl       controlled by 'style'.
 dnl --disable-symvers does not.
-dnl  +  Usage:  LIBAT_ENABLE_SYMVERS[(DEFAULT)]
+dnl  +  Usage:  LIBFFI_ENABLE_SYMVERS[(DEFAULT)]
 dnl       Where DEFAULT is either 'yes' or 'no'.  Passing `yes' tries to
 dnl       choose a default style based on linker characteristics.  Passing
 dnl       'no' disables versioning.
 dnl
-AC_DEFUN([LIBAT_ENABLE_SYMVERS], [
+AC_DEFUN([LIBFFI_ENABLE_SYMVERS], [
 
-LIBAT_ENABLE(symvers,yes,[=STYLE],
+LIBFFI_ENABLE(symvers,yes,[=STYLE],
   [enables symbol versioning of the shared library],
   [permit yes|no|gnu*|sun])
 
-# If we never went through the LIBAT_CHECK_LINKER_FEATURES macro, then we
+# If we never went through the LIBFFI_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
-AC_REQUIRE([LIBAT_CHECK_LINKER_FEATURES])
+AC_REQUIRE([LIBFFI_CHECK_LINKER_FEATURES])
 
 # Turn a 'yes' into a suitable default.
 if test x$enable_symvers = xyes ; then
@@ -420,7 +424,7 @@ changequote([,])dnl
 fi
 
 # For GNU ld, we need at least this version.  The format is described in
-# LIBAT_CHECK_LINKER_FEATURES above.
+# LIBFFI_CHECK_LINKER_FEATURES above.
 libat_min_gnu_ld_version=21400
 # XXXXXXXXXXX libat_gnu_ld_version=21390
 
@@ -431,6 +435,8 @@ if test $enable_symvers != no && test $libat_shared_libgcc = yes; then
     if test $libat_gnu_ld_version -ge $libat_min_gnu_ld_version ; then
       enable_symvers=gnu
     elif test $libat_ld_is_gold = yes ; then
+      enable_symvers=gnu
+    elif test $libat_ld_is_lld = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
@@ -462,12 +468,12 @@ if test $enable_symvers != no && test $libat_shared_libgcc = yes; then
   fi
 fi
 if test $enable_symvers = gnu; then
-  AC_DEFINE(LIBAT_GNU_SYMBOL_VERSIONING, 1,
+  AC_DEFINE(LIBFFI_GNU_SYMBOL_VERSIONING, 1,
 	    [Define to 1 if GNU symbol versioning is used for libatomic.])
 fi
 
-AM_CONDITIONAL(LIBAT_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
-AM_CONDITIONAL(LIBAT_BUILD_VERSIONED_SHLIB_GNU, test $enable_symvers = gnu)
-AM_CONDITIONAL(LIBAT_BUILD_VERSIONED_SHLIB_SUN, test $enable_symvers = sun)
+AM_CONDITIONAL(LIBFFI_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+AM_CONDITIONAL(LIBFFI_BUILD_VERSIONED_SHLIB_GNU, test $enable_symvers = gnu)
+AM_CONDITIONAL(LIBFFI_BUILD_VERSIONED_SHLIB_SUN, test $enable_symvers = sun)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
 ])

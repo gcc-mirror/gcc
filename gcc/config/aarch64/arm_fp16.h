@@ -1,6 +1,6 @@
 /* ARM FP16 scalar intrinsics include file.
 
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -383,7 +383,7 @@ __extension__ extern __inline float16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnh_f16 (float16_t __a)
 {
-  return __builtin_aarch64_frintnhf (__a);
+  return __builtin_aarch64_roundevenhf (__a);
 }
 
 __extension__ extern __inline float16_t

@@ -15,7 +15,7 @@
 ! subroutine with an assumed-rank dummy.
 
 program test 
-
+  implicit none
   ! Define some arrays for testing.
   integer, target :: x1(5)
   integer :: y1(0:9)
@@ -51,7 +51,7 @@ contains
     r = rank(a)
 
     block
-      integer :: s(r)
+      integer :: s(r), i
       s = shape(a)
       do i = 1, r
         if (s(i) .ne. size(a,i)) stop 101

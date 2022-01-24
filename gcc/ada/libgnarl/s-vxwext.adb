@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---           Copyright (C) 2009-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2009-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 
 package body System.VxWorks.Ext is
 
-   ERROR : constant := -1;
+   IERR : constant := -1;
 
    ------------------------
    -- taskCpuAffinitySet --
@@ -39,7 +39,7 @@ package body System.VxWorks.Ext is
    function taskCpuAffinitySet (tid : t_id; CPU : int) return int is
       pragma Unreferenced (tid, CPU);
    begin
-      return ERROR;
+      return IERR;
    end taskCpuAffinitySet;
 
    -------------------------
@@ -49,7 +49,7 @@ package body System.VxWorks.Ext is
    function taskMaskAffinitySet (tid : t_id; CPU_Set : unsigned) return int is
       pragma Unreferenced (tid, CPU_Set);
    begin
-      return ERROR;
+      return IERR;
    end taskMaskAffinitySet;
 
 end System.VxWorks.Ext;

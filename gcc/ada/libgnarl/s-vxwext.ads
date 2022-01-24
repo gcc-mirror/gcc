@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,18 @@ package System.VxWorks.Ext is
    subtype int is Interfaces.C.int;
    subtype unsigned is Interfaces.C.unsigned;
 
+   type STATUS is new int;
+   --  Equivalent of the C type STATUS
+
+   OK    : constant STATUS := 0;
+   ERROR : constant STATUS := -1;
+
+   type BOOL is new int;
+   --  Equivalent of the C type BOOL
+
+   type vx_freq_t is new unsigned;
+   --  Equivalent of the C type _Vx_freq_t
+
    type Interrupt_Handler is access procedure (parameter : System.Address);
    pragma Convention (C, Interrupt_Handler);
 
@@ -54,7 +66,7 @@ package System.VxWorks.Ext is
    function Int_Lock return int;
    pragma Import (C, Int_Lock, "intLock");
 
-   function Int_Unlock (Old : int) return int;
+   procedure Int_Unlock (Old : int);
    pragma Import (C, Int_Unlock, "intUnlock");
 
    function Interrupt_Connect
@@ -63,7 +75,7 @@ package System.VxWorks.Ext is
       Parameter : System.Address := System.Null_Address) return int;
    pragma Import (C, Interrupt_Connect, "intConnect");
 
-   function Interrupt_Context return int;
+   function Interrupt_Context return BOOL;
    pragma Import (C, Interrupt_Context, "intContext");
 
    function Interrupt_Number_To_Vector

@@ -1,5 +1,5 @@
 ;; Predicate definitions for TI PRU.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;;
 ;; This file is part of GCC.
@@ -117,6 +117,25 @@
 
       return REGNO_REG_CLASS (regno) == MULSRC1_REGNUM
 	     || regno >= FIRST_PSEUDO_REGISTER;
+    }
+  return 0;
+})
+
+(define_predicate "regio_operand"
+  (match_code "subreg,reg")
+{
+  if (register_operand (op, mode))
+    {
+      int regno;
+
+      if (REG_P (op))
+	regno = REGNO (op);
+      else if (GET_CODE (op) == SUBREG && REG_P (SUBREG_REG (op)))
+	regno = REGNO (SUBREG_REG (op));
+      else
+	return 0;
+
+      return REGNO_REG_CLASS (regno) == REGIO_REGS;
     }
   return 0;
 })

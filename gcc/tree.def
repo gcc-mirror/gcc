@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -470,7 +470,11 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
    OBJ_TYPE_REF_OBJECT: Is the object on whose behalf the lookup is
    being performed.  Through this the optimizers may be able to statically
    determine the dynamic type of the object.
-   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.  */
+   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.
+   The integer index should have as type the original type of
+   OBJ_TYPE_REF_OBJECT; as pointer type conversions are useless in GIMPLE,
+   the type of OBJ_TYPE_REF_OBJECT can change to an unrelated pointer
+   type during optimizations.  */
 DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
 
 /* Used to represent the brace-enclosed initializers for a structure or an

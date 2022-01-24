@@ -999,7 +999,9 @@ class Expression
   determine_type_no_context();
 
   // Return the current type of the expression.  This may be changed
-  // by determine_type.
+  // by determine_type.  This should not be called before the lowering
+  // pass, unless the is_type_expression method returns true (i.e.,
+  // this is an EXPRESSION_TYPE).
   Type*
   type()
   { return this->do_type(); }
@@ -3403,6 +3405,10 @@ class Bound_method_expression : public Expression
   static Named_object*
   create_thunk(Gogo*, const Method* method, Named_object* function);
 
+  // Look up a thunk.
+  static Named_object*
+  lookup_thunk(Named_object* function);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -3575,6 +3581,10 @@ class Interface_field_reference_expression : public Expression
   // part of a method value.
   static Named_object*
   create_thunk(Gogo*, Interface_type* type, const std::string& name);
+
+  // Look up a thunk.
+  static Named_object*
+  lookup_thunk(Interface_type* type, const std::string& name);
 
   // Return an expression for the pointer to the function to call.
   Expression*

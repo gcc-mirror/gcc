@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -87,6 +87,8 @@ struct scoped_attributes
   const char *ns;
   vec<attribute_spec> attributes;
   hash_table<attribute_hasher> *attribute_hash;
+  /* True if we should not warn about unknown attributes in this NS.  */
+  bool ignored_p;
 };
 
 /* The table of scope attributes.  */
@@ -95,6 +97,8 @@ static vec<scoped_attributes> attributes_table;
 static scoped_attributes* find_attribute_namespace (const char*);
 static void register_scoped_attribute (const struct attribute_spec *,
 				       scoped_attributes *);
+static const struct attribute_spec *lookup_scoped_attribute_spec (const_tree,
+								  const_tree);
 
 static bool attributes_initialized = false;
 
@@ -111,22 +115,19 @@ static const struct attribute_spec empty_attribute_table[] =
 static void
 extract_attribute_substring (struct substring *str)
 {
-  if (str->length > 4 && str->str[0] == '_' && str->str[1] == '_'
-      && str->str[str->length - 1] == '_' && str->str[str->length - 2] == '_')
-    {
-      str->length -= 4;
-      str->str += 2;
-    }
+  canonicalize_attr_name (str->str, str->length);
 }
 
 /* Insert an array of attributes ATTRIBUTES into a namespace.  This
    array must be NULL terminated.  NS is the name of attribute
-   namespace.  The function returns the namespace into which the
-   attributes have been registered.  */
+   namespace.  IGNORED_P is true iff all unknown attributes in this
+   namespace should be ignored for the purposes of -Wattributes.  The
+   function returns the namespace into which the attributes have been
+   registered.  */
 
 scoped_attributes *
 register_scoped_attributes (const struct attribute_spec *attributes,
-			    const char *ns)
+			    const char *ns, bool ignored_p /*=false*/)
 {
   scoped_attributes *result = NULL;
 
@@ -144,9 +145,12 @@ register_scoped_attributes (const struct attribute_spec *attributes,
       memset (&sa, 0, sizeof (sa));
       sa.ns = ns;
       sa.attributes.create (64);
+      sa.ignored_p = ignored_p;
       result = attributes_table.safe_push (sa);
       result->attribute_hash = new hash_table<attribute_hasher> (200);
     }
+  else
+    result->ignored_p |= ignored_p;
 
   /* Really add the attributes to their namespace now.  */
   for (unsigned i = 0; attributes[i].name != NULL; ++i)
@@ -224,6 +228,99 @@ check_attribute_tables (void)
 				 attribute_tables[j][l].name));
 }
 
+/* Used to stash pointers to allocated memory so that we can free them at
+   the end of parsing of all TUs. */
+static vec<attribute_spec *> ignored_attributes_table;
+
+/* Parse arguments V of -Wno-attributes=.
+   Currently we accept:
+     vendor::attr
+     vendor::
+   This functions also registers the parsed attributes so that we don't
+   warn that we don't recognize them.  */
+
+void
+handle_ignored_attributes_option (vec<char *> *v)
+{
+  if (v == nullptr)
+    return;
+
+  for (auto opt : v)
+    {
+      char *cln = strstr (opt, "::");
+      /* We don't accept '::attr'.  */
+      if (cln == nullptr || cln == opt)
+	{
+	  error ("wrong argument to ignored attributes");
+	  inform (input_location, "valid format is %<ns::attr%> or %<ns::%>");
+	  continue;
+	}
+      const char *vendor_start = opt;
+      ptrdiff_t vendor_len = cln - opt;
+      const char *attr_start = cln + 2;
+      /* This could really use rawmemchr :(.  */
+      ptrdiff_t attr_len = strchr (attr_start, '\0') - attr_start;
+      /* Verify that they look valid.  */
+      auto valid_p = [](const char *const s, ptrdiff_t len) {
+	bool ok = false;
+
+	for (int i = 0; i < len; ++i)
+	  if (ISALNUM (s[i]))
+	    ok = true;
+	  else if (s[i] != '_')
+	    return false;
+
+	return ok;
+      };
+      if (!valid_p (vendor_start, vendor_len))
+	{
+	  error ("wrong argument to ignored attributes");
+	  continue;
+	}
+      canonicalize_attr_name (vendor_start, vendor_len);
+      /* We perform all this hijinks so that we don't have to copy OPT.  */
+      tree vendor_id = get_identifier_with_length (vendor_start, vendor_len);
+      const char *attr;
+      /* In the "vendor::" case, we should ignore *any* attribute coming
+	 from this attribute namespace.  */
+      if (attr_len > 0)
+	{
+	  if (!valid_p (attr_start, attr_len))
+	    {
+	      error ("wrong argument to ignored attributes");
+	      continue;
+	    }
+	  canonicalize_attr_name (attr_start, attr_len);
+	  tree attr_id = get_identifier_with_length (attr_start, attr_len);
+	  attr = IDENTIFIER_POINTER (attr_id);
+	  /* If we've already seen this vendor::attr, ignore it.  Attempting to
+	     register it twice would lead to a crash.  */
+	  if (lookup_scoped_attribute_spec (vendor_id, attr_id))
+	    continue;
+	}
+      else
+	attr = nullptr;
+      /* Create a table with extra attributes which we will register.
+	 We can't free it here, so squirrel away the pointers.  */
+      attribute_spec *table = new attribute_spec[2];
+      ignored_attributes_table.safe_push (table);
+      table[0] = { attr, 0, -2, false, false, false, false, nullptr, nullptr };
+      table[1] = { nullptr, 0, 0, false, false, false, false, nullptr,
+		   nullptr };
+      register_scoped_attributes (table, IDENTIFIER_POINTER (vendor_id), !attr);
+    }
+}
+
+/* Free data we might have allocated when adding extra attributes.  */
+
+void
+free_attr_data ()
+{
+  for (auto x : ignored_attributes_table)
+    delete[] x;
+  ignored_attributes_table.release ();
+}
+
 /* Initialize attribute tables, and make some sanity checks if checking is
    enabled.  */
 
@@ -251,6 +348,9 @@ init_attributes (void)
   for (i = 0; i < ARRAY_SIZE (attribute_tables); ++i)
     /* Put all the GNU attributes into the "gnu" namespace.  */
     register_scoped_attributes (attribute_tables[i], "gnu");
+
+  vec<char *> *ignored = (vec<char *> *) flag_ignored_attributes;
+  handle_ignored_attributes_option (ignored);
 
   invoke_plugin_callbacks (PLUGIN_ATTRIBUTES, NULL);
   attributes_initialized = true;
@@ -282,7 +382,7 @@ register_scoped_attribute (const struct attribute_spec *attr,
 
   /* Attribute names in the table must be in the form 'text' and not
      in the form '__text__'.  */
-  gcc_assert (str.length > 0 && str.str[0] != '_');
+  gcc_checking_assert (!canonicalize_attr_name (str.str, str.length));
 
   slot = name_space->attribute_hash
 	 ->find_slot_with_hash (&str, substring_hash (str.str, str.length),
@@ -456,6 +556,45 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
   return found;
 }
 
+/* Return true iff we should not complain about unknown attributes
+   coming from the attribute namespace NS.  This is the case for
+   the -Wno-attributes=ns:: command-line option.  */
+
+static bool
+attr_namespace_ignored_p (tree ns)
+{
+  if (ns == NULL_TREE)
+    return false;
+  scoped_attributes *r = find_attribute_namespace (IDENTIFIER_POINTER (ns));
+  return r && r->ignored_p;
+}
+
+/* Return true if the attribute ATTR should not be warned about.  */
+
+bool
+attribute_ignored_p (tree attr)
+{
+  if (!cxx11_attribute_p (attr))
+    return false;
+  if (tree ns = get_attribute_namespace (attr))
+    {
+      if (attr_namespace_ignored_p (ns))
+	return true;
+      const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attr));
+      if (as && as->max_length == -2)
+	return true;
+    }
+  return false;
+}
+
+/* Like above, but takes an attribute_spec AS, which must be nonnull.  */
+
+bool
+attribute_ignored_p (const attribute_spec *const as)
+{
+  return as->max_length == -2;
+}
+
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
    it should be modified in place; if a TYPE, a copy should be created
@@ -492,9 +631,21 @@ decl_attributes (tree *node, tree attributes, int flags,
     }
 
   if (TREE_CODE (*node) == FUNCTION_DECL
-      && optimization_current_node != optimization_default_node
+      && (optimization_current_node != optimization_default_node
+	  || target_option_current_node != target_option_default_node)
       && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node))
-    DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
+    {
+      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
+      tree cur_tree
+	= build_target_option_node (&global_options, &global_options_set);
+      tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
+      if (!old_tree)
+	old_tree = target_option_default_node;
+      /* The changes on optimization options can cause the changes in
+	 target options, update it accordingly if it's changed.  */
+      if (old_tree != cur_tree)
+	DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+    }
 
   /* If this is a function and the user used #pragma GCC target, add the
      options to the attribute((target(...))) list.  */
@@ -556,7 +707,8 @@ decl_attributes (tree *node, tree attributes, int flags,
 
       if (spec == NULL)
 	{
-	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	  if (!(flags & (int) ATTR_FLAG_BUILT_IN)
+	      && !attr_namespace_ignored_p (ns))
 	    {
 	      if (ns == NULL_TREE || !cxx11_attr_p)
 		warning (OPT_Wattributes, "%qE attribute directive ignored",
@@ -1022,40 +1174,6 @@ common_function_versions (tree fn1, tree fn2)
   return result;
 }
 
-/* Return a new name by appending SUFFIX to the DECL name.  If make_unique
-   is true, append the full path name of the source file.  */
-
-char *
-make_unique_name (tree decl, const char *suffix, bool make_unique)
-{
-  char *global_var_name;
-  int name_len;
-  const char *name;
-  const char *unique_name = NULL;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  /* Get a unique name that can be used globally without any chances
-     of collision at link time.  */
-  if (make_unique)
-    unique_name = IDENTIFIER_POINTER (get_file_function_name ("\0"));
-
-  name_len = strlen (name) + strlen (suffix) + 2;
-
-  if (make_unique)
-    name_len += strlen (unique_name) + 1;
-  global_var_name = XNEWVEC (char, name_len);
-
-  /* Use '.' to concatenate names as it is demangler friendly.  */
-  if (make_unique)
-    snprintf (global_var_name, name_len, "%s.%s.%s", name, unique_name,
-	      suffix);
-  else
-    snprintf (global_var_name, name_len, "%s.%s", name, suffix);
-
-  return global_var_name;
-}
-
 /* Make a dispatcher declaration for the multi-versioned function DECL.
    Calls to DECL function will be replaced with calls to the dispatcher
    by the front-end.  Return the decl created.  */
@@ -1205,7 +1323,7 @@ cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
 /* Compare two constructor-element-type constants.  Return 1 if the lists
    are known to be equal; otherwise return 0.  */
 
-static bool
+bool
 simple_cst_list_equal (const_tree l1, const_tree l2)
 {
   while (l1 != NULL_TREE && l2 != NULL_TREE)

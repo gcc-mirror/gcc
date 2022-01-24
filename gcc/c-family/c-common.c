@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -384,6 +384,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
+  { "__builtin_assoc_barrier", RID_BUILTIN_ASSOC_BARRIER, 0 },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
@@ -1242,6 +1243,13 @@ c_build_shufflevector (location_t loc, tree v0, tree v1,
       tree lpartt = build_vector_type (TREE_TYPE (ret_type), mask.length ());
       ret = build3_loc (loc, BIT_FIELD_REF,
 			lpartt, ret, TYPE_SIZE (lpartt), bitsize_zero_node);
+      /* Wrap the lowpart operation in a TARGET_EXPR so it gets a separate
+	 temporary during gimplification.  See PR101530 for cases where
+	 we'd otherwise end up with non-toplevel BIT_FIELD_REFs.  */
+      tree tem = create_tmp_var_raw (lpartt);
+      DECL_CONTEXT (tem) = current_function_decl;
+      ret = build4 (TARGET_EXPR, lpartt, tem, ret, NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (ret) = 1;
     }
 
   if (!c_dialect_cxx () && !wrap)
@@ -1739,10 +1747,13 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 
 /* Convert EXPR to TYPE, warning about conversion problems with constants.
    Invoke this function on every expression that is converted implicitly,
-   i.e. because of language rules and not because of an explicit cast.  */
+   i.e. because of language rules and not because of an explicit cast.
+   INIT_CONST is true if the conversion is for arithmetic types for a static
+   initializer and folding must apply accordingly (discarding floating-point
+   exceptions and assuming the default rounding mode is in effect).  */
 
 tree
-convert_and_check (location_t loc, tree type, tree expr)
+convert_and_check (location_t loc, tree type, tree expr, bool init_const)
 {
   tree result;
   tree expr_for_warning;
@@ -1754,7 +1765,9 @@ convert_and_check (location_t loc, tree type, tree expr)
     {
       tree orig_type = TREE_TYPE (expr);
       expr = TREE_OPERAND (expr, 0);
-      expr_for_warning = convert (orig_type, expr);
+      expr_for_warning = (init_const
+			  ? convert_init (orig_type, expr)
+			  : convert (orig_type, expr));
       if (orig_type == type)
 	return expr_for_warning;
     }
@@ -1764,7 +1777,7 @@ convert_and_check (location_t loc, tree type, tree expr)
   if (TREE_TYPE (expr) == type)
     return expr;
 
-  result = convert (type, expr);
+  result = init_const ? convert_init (type, expr) : convert (type, expr);
 
   if (c_inhibit_evaluation_warnings == 0
       && !TREE_OVERFLOW_P (expr)
@@ -3301,7 +3314,21 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 				 TREE_TYPE (result_type)))
     size_exp = integer_one_node;
   else
-    size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+    {
+      if (!complain && !COMPLETE_TYPE_P (TREE_TYPE (result_type)))
+	return error_mark_node;
+      size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+      /* Wrap the pointer expression in a SAVE_EXPR to make sure it
+	 is evaluated first when the size expression may depend
+	 on it for VM types.  */
+      if (TREE_SIDE_EFFECTS (size_exp)
+	  && TREE_SIDE_EFFECTS (ptrop)
+	  && variably_modified_type_p (TREE_TYPE (ptrop), NULL))
+	{
+	  ptrop = save_expr (ptrop);
+	  size_exp = build2 (COMPOUND_EXPR, TREE_TYPE (intop), ptrop, size_exp);
+	}
+    }
 
   /* We are manipulating pointer values, so we don't need to warn
      about relying on undefined signed overflow.  We disable the
@@ -3393,16 +3420,45 @@ c_wrap_maybe_const (tree expr, bool non_const)
   return expr;
 }
 
-/* Return whether EXPR is a declaration whose address can never be
-   NULL.  */
+/* Return whether EXPR is a declaration whose address can never be NULL.
+   The address of the first struct member could be NULL only if it were
+   accessed through a NULL pointer, and such an access would be invalid.
+   The address of a weak symbol may be null unless it has a definition.  */
 
 bool
 decl_with_nonnull_addr_p (const_tree expr)
 {
-  return (DECL_P (expr)
-	  && (TREE_CODE (expr) == PARM_DECL
-	      || TREE_CODE (expr) == LABEL_DECL
-	      || !DECL_WEAK (expr)));
+  if (!DECL_P (expr))
+    return false;
+
+  if (TREE_CODE (expr) == FIELD_DECL
+      || TREE_CODE (expr) == PARM_DECL
+      || TREE_CODE (expr) == LABEL_DECL)
+    return true;
+
+  if (!VAR_OR_FUNCTION_DECL_P (expr))
+    return false;
+
+  if (!DECL_WEAK (expr))
+    /* Ordinary (non-weak) symbols have nonnull addresses.  */
+    return true;
+
+  if (DECL_INITIAL (expr) && DECL_INITIAL (expr) != error_mark_node)
+    /* Initialized weak symbols have nonnull addresses.  */
+    return true;
+
+  if (DECL_EXTERNAL (expr) || !TREE_STATIC (expr))
+    /* Uninitialized extern weak symbols and weak symbols with no
+       allocated storage might have a null address.  */
+    return false;
+
+  tree attribs = DECL_ATTRIBUTES (expr);
+  if (lookup_attribute ("weakref", attribs))
+    /* Weakref symbols might have a null address unless their referent
+       is known not to.  Don't bother following weakref targets here.  */
+    return false;
+
+  return true;
 }
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
@@ -3488,13 +3544,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
     case ADDR_EXPR:
       {
  	tree inner = TREE_OPERAND (expr, 0);
-	if (decl_with_nonnull_addr_p (inner))
+	if (decl_with_nonnull_addr_p (inner)
+	    /* Check both EXPR and INNER for suppression.  */
+	    && !warning_suppressed_p (expr, OPT_Waddress)
+	    && !warning_suppressed_p (inner, OPT_Waddress))
 	  {
-	    /* Common Ada programmer's mistake.  */
+	    /* Common Ada programmer's mistake.	 */
 	    warning_at (location,
 			OPT_Waddress,
 			"the address of %qD will always evaluate as %<true%>",
 			inner);
+	    suppress_warning (inner, OPT_Waddress);
 	    return truthvalue_true_node;
 	  }
 	break;
@@ -3627,8 +3687,17 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	  break;
 	/* If this isn't narrowing the argument, we can ignore it.  */
 	if (TYPE_PRECISION (totype) >= TYPE_PRECISION (fromtype))
-	  return c_common_truthvalue_conversion (location,
-						 TREE_OPERAND (expr, 0));
+	  {
+	    tree op0 = TREE_OPERAND (expr, 0);
+	    if ((TREE_CODE (fromtype) == POINTER_TYPE
+		 && TREE_CODE (totype) == INTEGER_TYPE)
+		|| warning_suppressed_p (expr, OPT_Waddress))
+	      /* Suppress -Waddress for casts to intptr_t, propagating
+		 any suppression from the enclosing expression to its
+		 operand.  */
+	      suppress_warning (op0, OPT_Waddress);
+	    return c_common_truthvalue_conversion (location, op0);
+	  }
       }
       break;
 
@@ -5904,9 +5973,23 @@ parse_optimize_options (tree args, bool attr_p)
       j++;
     }
   decoded_options_count = j;
-  /* And apply them.  */
+
+  /* Merge the decoded options with save_decoded_options.  */
+  unsigned save_opt_count = save_opt_decoded_options->length ();
+  unsigned merged_decoded_options_count
+    = save_opt_count + decoded_options_count;
+  cl_decoded_option *merged_decoded_options
+    = XNEWVEC (cl_decoded_option, merged_decoded_options_count);
+
+  /* Note the first decoded_options is used for the program name.  */
+  for (unsigned i = 0; i < save_opt_count; ++i)
+    merged_decoded_options[i + 1] = (*save_opt_decoded_options)[i];
+  for (unsigned i = 1; i < decoded_options_count; ++i)
+    merged_decoded_options[save_opt_count + i] = decoded_options[i];
+
+   /* And apply them.  */
   decode_options (&global_options, &global_options_set,
-		  decoded_options, decoded_options_count,
+		  merged_decoded_options, merged_decoded_options_count,
 		  input_location, global_dc, NULL);
   free (decoded_options);
 
@@ -6906,12 +6989,15 @@ c_common_mark_addressable_vec (tree t)
     }
   if (!VAR_P (t)
       && TREE_CODE (t) != PARM_DECL
-      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR)
+      && TREE_CODE (t) != COMPOUND_LITERAL_EXPR
+      && TREE_CODE (t) != TARGET_EXPR)
     return;
   if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
     TREE_ADDRESSABLE (t) = 1;
   if (TREE_CODE (t) == COMPOUND_LITERAL_EXPR)
     TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (t)) = 1;
+  else if (TREE_CODE (t) == TARGET_EXPR)
+    TREE_ADDRESSABLE (TARGET_EXPR_SLOT (t)) = 1;
 }
 
 
@@ -8179,8 +8265,16 @@ release_tree_vector (vec<tree, va_gc> *vec)
 {
   if (vec != NULL)
     {
-      vec->truncate (0);
-      vec_safe_push (tree_vector_cache, vec);
+      if (vec->allocated () >= 16)
+	/* Don't cache vecs that have expanded more than once.  On a p64
+	   target, vecs double in alloc size with each power of 2 elements, e.g
+	   at 16 elements the alloc increases from 128 to 256 bytes.  */
+	vec_free (vec);
+      else
+	{
+	  vec->truncate (0);
+	  vec_safe_push (tree_vector_cache, vec);
+	}
     }
 }
 

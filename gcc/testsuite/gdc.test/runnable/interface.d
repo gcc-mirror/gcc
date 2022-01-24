@@ -1,3 +1,10 @@
+/*
+TEST_OUTPUT:
+---
+runnable/interface.d(41): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/interface.d(55): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+---
+*/
 
 import core.stdc.stdio;
 
@@ -79,7 +86,7 @@ void test3()
     j.f();
     K3 k = a;
     k.f();
-    assert(&j.f == &k.f); // Bugzilla 3706
+    assert(&j.f == &k.f); // https://issues.dlang.org/show_bug.cgi?id=3706
 }
 
 /*******************************************/

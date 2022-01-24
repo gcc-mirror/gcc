@@ -1,5 +1,5 @@
 /* Internals of libgccjit: classes for recording calls made to the JIT API.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -1062,6 +1062,18 @@ recording::context::new_global (recording::location *loc,
   return result;
 }
 
+void
+recording::context::new_global_init_rvalue (lvalue *variable,
+					    rvalue *init)
+{
+  recording::global_init_rvalue *obj =
+    new recording::global_init_rvalue (this, variable, init);
+  record (obj);
+
+  global *gbl = (global *) variable;
+  gbl->set_rvalue_init (init); /* Needed by the global for write dump.  */
+}
+
 /* Create a recording::memento_of_new_string_literal instance and add it
    to this context's list of mementos.
 
@@ -1090,6 +1102,72 @@ recording::context::new_rvalue_from_vector (location *loc,
 {
   recording::rvalue *result
     = new memento_of_new_rvalue_from_vector (this, loc, type, elements);
+  record (result);
+  return result;
+}
+
+recording::rvalue *
+recording::context::new_ctor (recording::location *loc,
+			      recording::type *type,
+			      size_t num_values,
+			      field **fields,
+			      rvalue **values)
+{
+  recording::ctor *result = new ctor (this, loc, type);
+
+  /* Short cut for zero init.  */
+  if (!num_values)
+    {
+      record (result);
+      return result;
+    }
+
+  bool is_struct_or_union = type->is_struct () || type->is_union ();
+
+  /* We need to copy fields and values into result's auto_vec:s.
+     Both for structs and unions and only values for arrays.  */
+  if (type->is_array () != NULL)
+    {
+      result->m_values.reserve (num_values, false);
+
+      for (size_t i = 0; i < num_values; i++)
+	result->m_values.quick_push (values[i]);
+    }
+  else if (is_struct_or_union && fields)
+    {
+      /* ctor values are paired with user specified fields.  */
+
+      result->m_values.reserve (num_values, false);
+      result->m_fields.reserve (num_values, false);
+
+      for (size_t i = 0; i < num_values; i++)
+	{
+	  result->m_values.quick_push (values[i]);
+	  result->m_fields.quick_push (fields[i]);
+	}
+    }
+  else if (is_struct_or_union && !fields)
+    {
+      /* ctor values are in definition order one by one,
+	 so take the fields from the type object.  */
+
+      result->m_values.reserve (num_values, false);
+      result->m_fields.reserve (num_values, false);
+
+      compound_type *ct = reinterpret_cast<compound_type *>(type);
+      recording::fields *fields = ct->get_fields ();
+
+      /* The entry point checks that num_values is not greater than
+	 the amount of fields in 'fields'.  */
+      for (size_t i = 0; i < num_values; i++)
+	{
+	  result->m_values.quick_push (values[i]);
+	  result->m_fields.quick_push (fields->get_field (i));
+	}
+    }
+  else
+    gcc_unreachable ();
+
   record (result);
   return result;
 }
@@ -2598,8 +2676,13 @@ recording::memento_of_get_pointer::accepts_writes_from (type *rtype)
     return false;
 
   /* It's OK to assign to a (const T *) from a (T *).  */
-  return m_other_type->unqualified ()
-    ->accepts_writes_from (rtype_points_to);
+  if (m_other_type->unqualified ()->accepts_writes_from (rtype_points_to))
+  {
+    return true;
+  }
+
+  /* It's OK to assign to a (volatile const T *) from a (volatile const T *). */
+  return m_other_type->is_same_type_as (rtype_points_to);
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3713,6 +3796,17 @@ recording::lvalue::get_address (recording::location *loc)
   return result;
 }
 
+void
+recording::lvalue::set_tls_model (enum gcc_jit_tls_model model)
+{
+    m_tls_model = model;
+}
+
+void recording::lvalue::set_link_section (const char *name)
+{
+  m_link_section = new_string (name);
+}
+
 /* The implementation of class gcc::jit::recording::param.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4539,6 +4633,16 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 #  pragma GCC diagnostic pop
 #endif
 
+namespace recording {
+static const enum tls_model tls_models[] = {
+  TLS_MODEL_NONE, /* GCC_JIT_TLS_MODEL_NONE */
+  TLS_MODEL_GLOBAL_DYNAMIC, /* GCC_JIT_TLS_MODEL_GLOBAL_DYNAMIC */
+  TLS_MODEL_LOCAL_DYNAMIC, /* GCC_JIT_TLS_MODEL_LOCAL_DYNAMIC */
+  TLS_MODEL_INITIAL_EXEC, /* GCC_JIT_TLS_MODEL_INITIAL_EXEC */
+  TLS_MODEL_LOCAL_EXEC, /* GCC_JIT_TLS_MODEL_LOCAL_EXEC */
+};
+} /* namespace recording */
+
 /* The implementation of class gcc::jit::recording::global.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4547,20 +4651,29 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 void
 recording::global::replay_into (replayer *r)
 {
-  set_playback_obj (
-    m_initializer
-    ? r->new_global_initialized (playback_location (r, m_loc),
+  playback::lvalue *global = m_initializer
+  ? r->new_global_initialized (playback_location (r, m_loc),
 				 m_kind,
 				 m_type->playback_type (),
 				 m_type->dereference ()->get_size (),
 				 m_initializer_num_bytes
 				 / m_type->dereference ()->get_size (),
 				 m_initializer,
-				 playback_string (m_name))
+				 playback_string (m_name),
+				 m_flags)
     : r->new_global (playback_location (r, m_loc),
 		     m_kind,
 		     m_type->playback_type (),
-		     playback_string (m_name)));
+		     playback_string (m_name),
+		     m_flags);
+
+  if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
+    global->set_tls_model (recording::tls_models[m_tls_model]);
+
+  if (m_link_section != NULL)
+    global->set_link_section (m_link_section->c_str ());
+
+  set_playback_obj (global);
 }
 
 /* Override the default implementation of
@@ -4609,21 +4722,30 @@ recording::global::write_to_dump (dump &d)
 	   m_type->get_debug_string (),
 	   get_debug_string ());
 
-  if (!m_initializer)
+  if (!m_initializer && !m_rvalue_init)
     {
       d.write (";\n");
-      return;
+    }
+  else if (m_initializer)
+    {
+      d.write ("=\n  { ");
+      const unsigned char *p = (const unsigned char *)m_initializer;
+      for (size_t i = 0; i < m_initializer_num_bytes; i++)
+	{
+	  d.write ("0x%x, ", p[i]);
+	  if (i && !(i % 64))
+	    d.write ("\n    ");
+	}
+      d.write ("};\n");
+    }
+  else if (m_rvalue_init)
+    {
+      d.write (" = ");
+      d.write (m_rvalue_init->get_debug_string ());
+      d.write (";\n");
     }
 
-  d.write ("=\n  { ");
-  const unsigned char *p = (const unsigned char *)m_initializer;
-  for (size_t i = 0; i < m_initializer_num_bytes; i++)
-    {
-      d.write ("0x%x, ", p[i]);
-      if (i && !(i % 64))
-	d.write ("\n    ");
-    }
-  d.write ("};\n");
+  return;
 }
 
 /* A table of enum gcc_jit_global_kind values expressed in string
@@ -4658,6 +4780,14 @@ recording::global::write_initializer_reproducer (const char *id, reproducer &r)
 
 /* Implementation of recording::memento::write_reproducer for globals. */
 
+static const char * const tls_model_enum_strings[] = {
+  "GCC_JIT_TLS_MODEL_NONE",
+  "GCC_JIT_TLS_MODEL_GLOBAL_DYNAMIC",
+  "GCC_JIT_TLS_MODEL_LOCAL_DYNAMIC",
+  "GCC_JIT_TLS_MODEL_INITIAL_EXEC",
+  "GCC_JIT_TLS_MODEL_LOCAL_EXEC",
+};
+
 void
 recording::global::write_reproducer (reproducer &r)
 {
@@ -4674,6 +4804,18 @@ recording::global::write_reproducer (reproducer &r)
     global_kind_reproducer_strings[m_kind],
     r.get_identifier_as_type (get_type ()),
     m_name->get_debug_string ());
+
+  if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
+    r.write ("  gcc_jit_lvalue_set_tls_model (%s, /* gcc_jit_lvalue *lvalue */\n"
+	     "                                %s); /* enum gcc_jit_tls_model model */\n",
+	     id,
+	     tls_model_enum_strings[m_tls_model]);
+
+  if (m_link_section != NULL)
+    r.write ("  gcc_jit_lvalue_set_link_section (%s, /* gcc_jit_lvalue *lvalue */\n"
+	"                                  \"%s\"); /* */\n",
+     id,
+     m_link_section->c_str ());
 
   if (m_initializer)
     switch (m_type->dereference ()->get_size ())
@@ -5068,6 +5210,201 @@ recording::memento_of_new_rvalue_from_vector::write_reproducer (reproducer &r)
 	   r.get_identifier (m_vector_type),
 	   m_elements.length (),
 	   elements_id);
+}
+
+void
+recording::ctor::visit_children (rvalue_visitor *v)
+{
+  for (unsigned int i = 0; i < m_values.length (); i++)
+    v->visit (m_values[i]);
+}
+
+recording::string *
+recording::ctor::make_debug_string ()
+{
+  //Make a compound literal-ish
+  pretty_printer pp;
+
+  pp_string (&pp, "(");
+  pp_string (&pp, m_type->get_debug_string ());
+  pp_string (&pp, ") {");
+
+  size_t field_n = m_fields.length ();
+  size_t values_n = m_values.length ();
+
+  if (!field_n && !values_n)
+    ;
+  else if (!field_n && values_n)
+    {
+      for (size_t i = 0; i < values_n; i++)
+	{
+	  if (m_values[i])
+	    pp_string (&pp, m_values[i]->get_debug_string ());
+	  else
+	    pp_string (&pp, "0");
+	  if (i + 1 != values_n)
+	    pp_string (&pp, ", ");
+	}
+    }
+  else if (field_n && values_n)
+    {
+      for (size_t i = 0; i < values_n; i++)
+	{
+	  pp_string (&pp, ".");
+	  pp_string (&pp, m_fields[i]->get_debug_string ());
+	  pp_string (&pp, "=");
+	  if (m_values[i])
+	    pp_string (&pp, m_values[i]->get_debug_string ());
+	  else
+	    pp_string (&pp, "0");
+	  if (i + 1 != values_n)
+	    pp_string (&pp, ", ");
+	}
+    }
+  /* m_fields are never populated with m_values empty.  */
+
+  pp_string (&pp, "}");
+
+  return new_string (pp_formatted_text (&pp));
+}
+
+void
+recording::ctor::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "rvalue");
+  type *type = get_type ();
+
+  r.write ("  gcc_jit_rvalue *%s;\n", id);
+  r.write ("  {\n"); /* Open scope for locals.  */
+
+  if (type->is_union ())
+    {
+      if (m_values.length () == 0)
+	r.write ("    gcc_jit_rvalue *value = NULL;\n");
+      else
+	r.write ("    gcc_jit_rvalue *value = %s;\n",
+		 r.get_identifier (m_values[0]));
+
+      if (m_fields.length () == 0)
+	r.write ("    gcc_jit_field *field = NULL;\n");
+      else
+	r.write ("    gcc_jit_field *field = %s;\n",
+		 r.get_identifier (m_fields[0]));
+    }
+  else
+    {
+      /* Write the array of values.  */
+      if (m_values.length () == 0)
+	r.write ("    gcc_jit_rvalue **values = NULL;\n");
+      else
+	{
+	  r.write ("    gcc_jit_rvalue *values[] = {\n");
+	  for (size_t i = 0; i < m_values.length (); i++)
+	    r.write ("        %s,\n", r.get_identifier (m_values[i]));
+	  r.write ("      };\n");
+	}
+      /* Write the array of fields.  */
+      if (m_fields.length () == 0)
+	r.write ("    gcc_jit_field **fields = NULL;\n");
+      else
+	{
+	  r.write ("    gcc_jit_field *fields[] = {\n");
+	  for (size_t i = 0; i < m_fields.length (); i++)
+	    r.write ("        %s,\n", r.get_identifier (m_fields[i]));
+	  r.write ("      };\n");
+	}
+    }
+  if (type->is_array ())
+    r.write (
+"    %s =\n"
+"      gcc_jit_context_new_array_constructor (%s,\n"
+"                                             %s, /* gcc_jit_location *loc */\n"
+"                                             %s, /* gcc_jit_type *type */\n"
+"                                             %i, /* int num_values */\n"
+"                                             values);\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (get_type ()),
+	   m_values.length ());
+  else if (type->is_struct ())
+    r.write (
+"    %s =\n"
+"      gcc_jit_context_new_struct_constructor (%s,\n"
+"                                              %s, /* loc */\n"
+"                                              %s, /* gcc_jit_type *type */\n"
+"                                              %i, /* int num_values */\n"
+"                                              fields,\n"
+"                                              values);\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (get_type ()),
+	   m_values.length ());
+  else if (type->is_union ())
+    r.write (
+"    %s =\n"
+"      gcc_jit_context_new_union_constructor (%s,\n"
+"                                             %s, /* loc */\n"
+"                                             %s, /* gcc_jit_type *type */\n"
+"                                             field,\n"
+"                                             value);\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (get_type ()));
+  else
+    gcc_unreachable ();
+
+  r.write ("  }\n"); /* Close scope for locals.  */
+}
+
+void
+recording::ctor::replay_into (replayer *r)
+{
+  auto_vec<playback::rvalue *> playback_values;
+  auto_vec<playback::field *> playback_fields;
+
+  int n = m_values.length ();
+
+  type *type = get_type ();
+
+  /* Handle arrays, and return.  */
+  if (type->is_array ())
+    {
+      playback_values.reserve (n, false);
+
+      for (int i = 0; i < n; i++)
+	{
+	  /* null m_values element indicates zero ctor.  */
+	  playback_values.quick_push (m_values[i] ?
+				      m_values[i]->playback_rvalue () :
+				      NULL);
+	}
+      set_playback_obj (r->new_ctor (playback_location (r, m_loc),
+				     get_type ()->playback_type (),
+				     NULL,
+				     &playback_values));
+      return;
+    }
+  /* ... else handle unions and structs.  */
+
+  playback_values.reserve (n, false);
+  playback_fields.reserve (n, false);
+
+  for (int i = 0; i < n; i++)
+    {
+      /* null m_values element indicates zero ctor.  */
+      playback_values.quick_push (m_values[i] ?
+				    m_values[i]->playback_rvalue () :
+				    NULL);
+      playback_fields.quick_push (m_fields[i]->playback_field ());
+    }
+
+  set_playback_obj (r->new_ctor (playback_location (r, m_loc),
+				 get_type ()->playback_type (),
+				 &playback_fields,
+				 &playback_values));
 }
 
 /* The implementation of class gcc::jit::recording::unary_op.  */
@@ -7032,6 +7369,167 @@ recording::top_level_asm::write_reproducer (reproducer &r)
 	   r.get_identifier (get_context ()),
 	   r.get_identifier (m_loc),
 	   m_asm_stmts->get_debug_string ());
+}
+
+void
+recording::global_init_rvalue::replay_into (replayer *r)
+{
+  r->global_set_init_rvalue (m_variable->playback_lvalue (),
+			     m_init->playback_rvalue ());
+}
+
+void
+recording::global_init_rvalue::write_reproducer (reproducer &r)
+{
+  r.write (
+    "  gcc_jit_global_set_initializer_rvalue (%s, /* lvalue *global */\n"
+    "                                         %s);/* rvalue *init */\n",
+    r.get_identifier (m_variable),
+    r.get_identifier_as_rvalue (m_init));
+}
+
+void
+recording::global_init_rvalue::write_to_dump (dump &d)
+{
+  d.write ("%s;\n", get_debug_string ());
+}
+
+recording::string *
+recording::global_init_rvalue::make_debug_string ()
+{
+    return string::from_printf (m_ctxt, "%s = %s",
+      m_variable->get_debug_string (),
+      m_init->get_debug_string ());
+}
+
+enum strip_flags {
+  STRIP_FLAG_NONE,
+  STRIP_FLAG_ARR,
+  STRIP_FLAG_VEC
+};
+
+/* Strips type down to array, vector or base type (whichever comes first)
+
+   Also saves 'ptr_depth' and sets 'flags' for array or vector types.  */
+static
+recording::type *
+strip_and_count (recording::type *type_to_strip,
+		 int &ptr_depth,
+		 strip_flags &flags)
+{
+  recording::type *t = type_to_strip;
+
+  while (true)
+    {
+      if (!t)
+	gcc_unreachable (); /* Should only happen on corrupt input.  */
+
+      recording::type *pointed_to_type = t->is_pointer ();
+      if (pointed_to_type != NULL)
+	{
+	  ptr_depth++;
+	  t = pointed_to_type;
+	  continue;
+	}
+
+      recording::type *array_el = t->is_array ();
+      if (array_el != NULL)
+	{
+	  flags = STRIP_FLAG_ARR;
+	  break;
+	}
+
+      recording::type *vec = t->dyn_cast_vector_type ();
+      if (vec != NULL)
+	{
+	  flags = STRIP_FLAG_VEC;
+	  break;
+	}
+
+      /* unqualified () returns 'this' on base types.  */
+      recording::type *next = t->unqualified ();
+      if (next == t)
+	{
+	  break;
+	}
+      t = next;
+    }
+
+  return t;
+}
+
+/* Strip qualifiers and count pointer depth, returning true
+   if the types' base type and pointer depth are
+   the same, otherwise false.
+
+   For array and vector types the number of element also
+   has to match.
+
+   Do not call this directly.  Call 'types_kinda_same'.  */
+bool
+types_kinda_same_internal (recording::type *a, recording::type *b)
+{
+  int ptr_depth_a = 0;
+  int ptr_depth_b = 0;
+  recording::type *base_a;
+  recording::type *base_b;
+
+  strip_flags flags_a = STRIP_FLAG_NONE;
+  strip_flags flags_b = STRIP_FLAG_NONE;
+
+  base_a = strip_and_count (a, ptr_depth_a, flags_a);
+  base_b = strip_and_count (b, ptr_depth_b, flags_b);
+
+  if (ptr_depth_a != ptr_depth_b)
+    return false;
+
+  if (base_a == base_b)
+    return true;
+
+  if (flags_a != flags_b)
+    return false;
+
+  /* If the "base type" is an array or vector we might need to
+     check deeper.  */
+  if (flags_a == STRIP_FLAG_ARR)
+    {
+      recording::array_type *arr_a =
+	static_cast<recording::array_type*> (base_a);
+      recording::array_type *arr_b =
+	static_cast<recording::array_type*> (base_b);
+
+      if (arr_a->num_elements () != arr_b->num_elements ())
+	return false;
+
+      /* is_array returns element type.  */
+      recording::type *el_a = arr_a->is_array ();
+      recording::type *el_b = arr_b->is_array ();
+
+      if (el_a == el_b)
+	return true;
+
+      return types_kinda_same_internal (el_a, el_b);
+    }
+  if (flags_a == STRIP_FLAG_VEC)
+    {
+      recording::vector_type *arr_a =
+	static_cast<recording::vector_type*> (base_a);
+      recording::vector_type *arr_b =
+	static_cast<recording::vector_type*> (base_b);
+
+      if (arr_a->get_num_units () != arr_b->get_num_units ())
+	return false;
+
+      recording::type *el_a = arr_a->get_element_type ();
+      recording::type *el_b = arr_b->get_element_type ();
+
+      if (el_a == el_b)
+	return true;
+
+      return types_kinda_same_internal (el_a, el_b);
+    }
+
+  return false;
 }
 
 } // namespace gcc::jit

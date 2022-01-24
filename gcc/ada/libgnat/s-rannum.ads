@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,7 +157,7 @@ private
       Writable  : Writable_Access (Generator'Access);
       --  This self reference allows functions to modify Generator arguments
 
-      S : State := (others => 0);
+      S : State := [others => 0];
       --  The shift register, a circular buffer
 
       I : Integer := N;

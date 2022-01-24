@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -1192,16 +1192,19 @@
 
 ;;              VSX store  VSX load   VSX move  VSX->GPR   GPR->VSX    LQ (GPR)
 ;;              STQ (GPR)  GPR load   GPR store GPR move   XXSPLTIB    VSPLTISW
+;;              LXVKQ      XXSPLTI*
 ;;              VSX 0/-1   VMX const  GPR const LVX (VMX)  STVX (VMX)
 (define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      wa,        wa,        r,         we,        ?wQ,
                 ?&r,       ??r,       ??Y,       <??r>,     wa,        v,
+                wa,        wa,
                 ?wa,       v,         <??r>,     wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "wa,        ZwO,       wa,        we,        r,         r,
                 wQ,        Y,         r,         r,         wE,        jwM,
+                eQ,        eP,
                 ?jwM,      W,         <nW>,      v,         wZ"))]
 
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
@@ -1213,35 +1216,43 @@
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, mtvsr,     mfvsr,     load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
+                vecperm,   vecperm,
                 vecsimple, *,         *,         vecstore,  vecload")
    (set_attr "num_insns"
                "*,         *,         *,         2,         *,         2,
                 2,         2,         2,         2,         *,         *,
+                *,         *,
                 *,         5,         2,         *,         *")
    (set_attr "max_prefixed_insns"
                "*,         *,         *,         *,         *,         2,
                 2,         2,         2,         2,         *,         *,
+                *,         *,
                 *,         *,         *,         *,         *")
    (set_attr "length"
                "*,         *,         *,         8,         *,         8,
                 8,         8,         8,         8,         *,         *,
+                *,         *,
                 *,         20,        8,         *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
+                p10,       p10,
                 <VSisa>,   *,         *,         *,         *")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
+;;              LXVKQ      XXSPLTI*
 ;;              XXSPLTIB   VSPLTISW   VSX 0/-1   VMX const  GPR const
 ;;              LVX (VMX)  STVX (VMX)
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      wa,        wa,        ??r,       ??Y,       <??r>,
+                wa,        wa,
                 wa,        v,         ?wa,       v,         <??r>,
                 wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "wa,        ZwO,       wa,        Y,         r,         r,
+                eQ,        eP,
                 wE,        jwM,       ?jwM,      W,         <nW>,
                 v,         wZ"))]
 
@@ -1253,14 +1264,17 @@
 }
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, load,      store,    *,
+                vecperm,   vecperm,
                 vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
    (set_attr "length"
                "*,         *,         *,         16,        16,        16,
+                *,         *,
                 *,         *,         *,         20,        16,
                 *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
+                p10,       p10,
                 p9v,       *,         <VSisa>,   *,         *,
                 *,         *")])
 
@@ -2183,31 +2197,6 @@
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
   "xvcmpge<sd>p. %x0,%x1,%x2"
   [(set_attr "type" "<VStype_simple>")])
-
-;; Vector select
-(define_insn "*vsx_xxsel<mode>"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(if_then_else:VSX_L
-	 (ne:CC (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa")
-		(match_operand:VSX_L 4 "zero_constant" ""))
-	 (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa")
-	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa")))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxsel %x0,%x3,%x2,%x1"
-  [(set_attr "type" "vecmove")
-   (set_attr "isa" "<VSisa>")])
-
-(define_insn "*vsx_xxsel<mode>_uns"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(if_then_else:VSX_L
-	 (ne:CCUNS (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa")
-		   (match_operand:VSX_L 4 "zero_constant" ""))
-	 (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa")
-	 (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa")))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxsel %x0,%x3,%x2,%x1"
-  [(set_attr "type" "vecmove")
-   (set_attr "isa" "<VSisa>")])
 
 ;; Copy sign
 (define_insn "vsx_copysign<mode>3"
@@ -3865,8 +3854,10 @@
   rtx vec_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4241,8 +4232,10 @@
   rtx v4si_tmp = operands[3];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4284,8 +4277,10 @@
   rtx df_tmp = operands[4];
   int value;
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SImode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    element = GEN_INT (GET_MODE_NUNITS (V4SImode) - 1 - INTVAL (element));
+    element = GEN_INT (3 - INTVAL (element));
 
   /* If the value is in the correct position, we can avoid doing the VSPLT<x>
      instruction.  */
@@ -4477,8 +4472,10 @@
 {
   int ele = INTVAL (operands[4]);
 
+  /* Adjust index for LE element ordering, the below minuend 3 is computed by
+     GET_MODE_NUNITS (V4SFmode) - 1.  */
   if (!BYTES_BIG_ENDIAN)
-    ele = GET_MODE_NUNITS (V4SFmode) - 1 - ele;
+    ele = 3 - ele;
 
   operands[4] = GEN_INT (GET_MODE_SIZE (SFmode) * ele);
   return "xxinsertw %x0,%x2,%4";
@@ -4590,7 +4587,7 @@
 
 ;; V4SI splat support
 (define_insn "vsx_splat_v4si"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=we,we")
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,wa")
 	(vec_duplicate:V4SI
 	 (match_operand:SI 1 "splat_input_operand" "r,Z")))]
   "TARGET_P9_VECTOR"
@@ -4688,7 +4685,7 @@
   [(set_attr "type" "vecperm")])
 
 ;; V4SF/V4SI interleave
-(define_insn "vsx_xxmrghw_<mode>"
+(define_expand "vsx_xxmrghw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
         (vec_select:VSX_W
 	  (vec_concat:<VS_double>
@@ -4698,14 +4695,17 @@
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if (BYTES_BIG_ENDIAN)
-    return "xxmrghw %x0,%x1,%x2";
-  else
-    return "xxmrglw %x0,%x2,%x1";
+  rtx (*fun) (rtx, rtx, rtx);
+  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrghw_direct_<mode>
+			 : gen_altivec_vmrglw_direct_<mode>;
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (fun (operands[0], operands[1], operands[2]));
+  DONE;
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "vsx_xxmrglw_<mode>"
+(define_expand "vsx_xxmrglw_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
 	(vec_select:VSX_W
 	  (vec_concat:<VS_double>
@@ -4715,10 +4715,13 @@
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  if (BYTES_BIG_ENDIAN)
-    return "xxmrglw %x0,%x1,%x2";
-  else
-    return "xxmrghw %x0,%x2,%x1";
+  rtx (*fun) (rtx, rtx, rtx);
+  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrglw_direct_<mode>
+			 : gen_altivec_vmrghw_direct_<mode>;
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (fun (operands[0], operands[1], operands[2]));
+  DONE;
 }
   [(set_attr "type" "vecperm")])
 
@@ -5637,7 +5640,8 @@
 (define_expand "len_load_v16qi"
   [(match_operand:V16QI 0 "vlogical_operand")
    (match_operand:V16QI 1 "memory_operand")
-   (match_operand:QI 2 "gpc_reg_operand")]
+   (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
   rtx mem = XEXP (operands[1], 0);
@@ -5651,6 +5655,7 @@
   [(match_operand:V16QI 0 "memory_operand")
    (match_operand:V16QI 1 "vlogical_operand")
    (match_operand:QI 2 "gpc_reg_operand")
+   (match_operand:QI 3 "zero_constant")
   ]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
@@ -6589,3 +6594,19 @@
    [(set_attr "type" "vecperm")
     (set_attr "prefixed" "yes")])
 
+;; Construct V1TI by vsx_concat_v2di
+(define_split
+  [(set (match_operand:V1TI 0 "vsx_register_operand")
+	(subreg:V1TI
+	  (match_operand:TI 1 "int_reg_operand") 0 ))]
+  "TARGET_P9_VECTOR && !reload_completed"
+  [(const_int 0)]
+{
+  rtx tmp1 = simplify_gen_subreg (DImode, operands[1], TImode, 0);
+  rtx tmp2 = simplify_gen_subreg (DImode, operands[1], TImode, 8);
+  rtx tmp3 = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (tmp3, tmp1, tmp2));
+  rtx tmp4 = simplify_gen_subreg (V1TImode, tmp3, V2DImode, 0);
+  emit_move_insn (operands[0], tmp4);
+  DONE;
+})

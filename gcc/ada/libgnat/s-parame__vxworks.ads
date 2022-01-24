@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,11 +108,11 @@ package System.Parameters is
    --  Select the appropriate time_t_bits for the VSB in use, then rebuild
    --  the runtime using instructions in adainclude/libada.gpr.
 
-   time_t_bits : constant := Long_Integer'Size;
+   --  time_t_bits : constant := Long_Integer'Size;
    --  Number of bits in type time_t for SR0650 and before and SR0660 with
    --  non-default configuration.
 
-   --  time_t_bits : constant := Long_Long_Integer'Size;
+   time_t_bits : constant := Long_Long_Integer'Size;
    --  Number of bits in type time_t for SR0660 with default configuration.
 
    ----------------------------------------------

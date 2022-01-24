@@ -1307,46 +1307,14 @@ void
 Parse::declaration()
 {
   const Token* token = this->peek_token();
-
-  unsigned int pragmas = this->lex_->get_and_clear_pragmas();
-  if (pragmas != 0
-      && !token->is_keyword(KEYWORD_FUNC)
-      && !token->is_keyword(KEYWORD_TYPE))
-    go_warning_at(token->location(), 0,
-		  "ignoring magic comment before non-function");
-
-  std::vector<std::string>* embeds = NULL;
-  if (this->lex_->has_embeds())
-    {
-      embeds = new(std::vector<std::string>);
-      this->lex_->get_and_clear_embeds(embeds);
-
-      if (!this->gogo_->current_file_imported_embed())
-	{
-	  go_error_at(token->location(),
-		      "invalid go:embed: missing import %<embed%>");
-	  delete embeds;
-	  embeds = NULL;
-	}
-      if (!token->is_keyword(KEYWORD_VAR))
-	{
-	  go_error_at(token->location(), "misplaced go:embed directive");
-	  if (embeds != NULL)
-	    {
-	      delete embeds;
-	      embeds = NULL;
-	    }
-	}
-    }
-
   if (token->is_keyword(KEYWORD_CONST))
     this->const_decl();
   else if (token->is_keyword(KEYWORD_TYPE))
-    this->type_decl(pragmas);
+    this->type_decl();
   else if (token->is_keyword(KEYWORD_VAR))
-    this->var_decl(embeds);
+    this->var_decl();
   else if (token->is_keyword(KEYWORD_FUNC))
-    this->function_decl(pragmas);
+    this->function_decl();
   else
     {
       go_error_at(this->location(), "expected declaration");
@@ -1367,8 +1335,7 @@ Parse::declaration_may_start_here()
 // Decl<P> = P | "(" [ List<P> ] ")" .
 
 void
-Parse::decl(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
-	    unsigned int pragmas, std::vector<std::string>* embeds)
+Parse::decl(void (Parse::*pfn)())
 {
   if (this->peek_token()->is_eof())
     {
@@ -1378,15 +1345,18 @@ Parse::decl(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
     }
 
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
-    (this->*pfn)(pragmas, embeds);
+    (this->*pfn)();
   else
     {
-      if (pragmas != 0)
-	go_warning_at(this->location(), 0,
-		      "ignoring magic %<//go:...%> comment before group");
-      if (embeds != NULL)
+      if (this->lex_->get_and_clear_pragmas() != 0)
 	go_error_at(this->location(),
-		    "ignoring %<//go:embed%> comment before group");
+		    "ignoring compiler directive before group");
+      if (this->lex_->has_embeds())
+	{
+	  this->lex_->clear_embeds();
+	  go_error_at(this->location(),
+		      "ignoring %<//go:embed%> comment before group");
+	}
       if (!this->advance_token()->is_op(OPERATOR_RPAREN))
 	{
 	  this->list(pfn, true);
@@ -1410,10 +1380,9 @@ Parse::decl(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
 // might follow.  This is either a '}' or a ')'.
 
 void
-Parse::list(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
-	    bool follow_is_paren)
+Parse::list(void (Parse::*pfn)(), bool follow_is_paren)
 {
-  (this->*pfn)(0, NULL);
+  (this->*pfn)();
   Operator follow = follow_is_paren ? OPERATOR_RPAREN : OPERATOR_RCURLY;
   while (this->peek_token()->is_op(OPERATOR_SEMICOLON)
 	 || this->peek_token()->is_op(OPERATOR_COMMA))
@@ -1422,7 +1391,7 @@ Parse::list(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
 	go_error_at(this->location(), "unexpected comma");
       if (this->advance_token()->is_op(follow))
 	break;
-      (this->*pfn)(0, NULL);
+      (this->*pfn)();
     }
 }
 
@@ -1469,6 +1438,8 @@ Parse::const_decl()
 void
 Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 {
+  this->check_directives();
+
   Location loc = this->location();
   Typed_identifier_list til;
   this->identifier_list(&til);
@@ -1545,18 +1516,21 @@ Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 // TypeDecl = "type" Decl<TypeSpec> .
 
 void
-Parse::type_decl(unsigned int pragmas)
+Parse::type_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_TYPE));
   this->advance_token();
-  this->decl(&Parse::type_spec, pragmas, NULL);
+  this->decl(&Parse::type_spec);
 }
 
 // TypeSpec = identifier ["="] Type .
 
 void
-Parse::type_spec(unsigned int pragmas, std::vector<std::string>*)
+Parse::type_spec()
 {
+  unsigned int pragmas = this->lex_->get_and_clear_pragmas();
+  this->check_directives();
+
   const Token* token = this->peek_token();
   if (!token->is_identifier())
     {
@@ -1649,23 +1623,34 @@ Parse::type_spec(unsigned int pragmas, std::vector<std::string>*)
 // VarDecl = "var" Decl<VarSpec> .
 
 void
-Parse::var_decl(std::vector<std::string>* embeds)
+Parse::var_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_VAR));
   this->advance_token();
-  this->decl(&Parse::var_spec, 0, embeds);
+  this->decl(&Parse::var_spec);
 }
 
 // VarSpec = IdentifierList
 //             ( CompleteType [ "=" ExpressionList ] | "=" ExpressionList ) .
 
 void
-Parse::var_spec(unsigned int pragmas, std::vector<std::string>* embeds)
+Parse::var_spec()
 {
   Location loc = this->location();
 
-  if (pragmas != 0)
-    go_warning_at(loc, 0, "ignoring magic %<//go:...%> comment before var");
+  std::vector<std::string>* embeds = NULL;
+  if (this->lex_->has_embeds())
+    {
+      if (!this->gogo_->current_file_imported_embed())
+	go_error_at(loc, "invalid go:embed: missing import %<embed%>");
+      else
+	{
+	  embeds = new(std::vector<std::string>);
+	  this->lex_->get_and_clear_embeds(embeds);
+	}
+    }
+
+  this->check_directives();
 
   // Get the variable names.
   Typed_identifier_list til;
@@ -2339,9 +2324,13 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 // PRAGMAS is a bitset of magic comments.
 
 void
-Parse::function_decl(unsigned int pragmas)
+Parse::function_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_FUNC));
+
+  unsigned int pragmas = this->lex_->get_and_clear_pragmas();
+  this->check_directives();
+
   Location location = this->location();
   std::string extern_name = this->lex_->extern_name();
   const Token* token = this->advance_token();
@@ -5370,7 +5359,7 @@ Parse::for_stat(Label* label)
 	{
 	  go_error_at(this->location(),
                       "var declaration not allowed in for initializer");
-	  this->var_decl(NULL);
+	  this->var_decl();
 	}
 
       if (token->is_op(OPERATOR_SEMICOLON))
@@ -5815,17 +5804,15 @@ Parse::import_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_IMPORT));
   this->advance_token();
-  this->decl(&Parse::import_spec, 0, NULL);
+  this->decl(&Parse::import_spec);
 }
 
 // ImportSpec = [ "." | PackageName ] PackageFileName .
 
 void
-Parse::import_spec(unsigned int pragmas, std::vector<std::string>*)
+Parse::import_spec()
 {
-  if (pragmas != 0)
-    go_warning_at(this->location(), 0,
-		  "ignoring magic %<//go:...%> comment before import");
+  this->check_directives();
 
   const Token* token = this->peek_token();
   Location location = token->location();
@@ -5915,6 +5902,23 @@ Parse::program()
                          "level declaration"));
 	  this->skip_past_error(OPERATOR_INVALID);
 	}
+    }
+
+  this->check_directives();
+}
+
+// If there are any pending compiler directives, clear them and give
+// an error.  This is called when directives are not permitted.
+
+void
+Parse::check_directives()
+{
+  if (this->lex_->get_and_clear_pragmas() != 0)
+    go_error_at(this->location(), "misplaced compiler directive");
+  if (this->lex_->has_embeds())
+    {
+      this->lex_->clear_embeds();
+      go_error_at(this->location(), "misplaced go:embed directive");
     }
 }
 

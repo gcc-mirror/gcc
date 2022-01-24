@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -44,6 +44,7 @@ is
 
    pragma Assertion_Policy (Pre => Ignore);
    pragma Assertion_Policy (Post => Ignore);
+   pragma Assertion_Policy (Contract_Cases => Ignore);
    pragma Annotate (CodePeer, Skip_Analysis);
 
    type List (Capacity : Count_Type) is private with
@@ -1596,8 +1597,7 @@ is
              M_Elements_Sorted'Result =
                (for all I in 1 .. M.Length (Container) =>
                  (for all J in I .. M.Length (Container) =>
-                   Element (Container, I) = Element (Container, J)
-                     or Element (Container, I) < Element (Container, J)));
+                   not (Element (Container, J) < Element (Container, I))));
          pragma Annotate (GNATprove, Inline_For_Proof, M_Elements_Sorted);
 
       end Formal_Model;

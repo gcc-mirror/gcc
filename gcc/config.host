@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -99,7 +99,8 @@ case ${host} in
 esac
 
 case ${host} in
-  aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia*)
+  aarch64*-*-freebsd* | aarch64*-*-linux* | aarch64*-*-fuchsia* |\
+  aarch64*-*-darwin*)
     case ${target} in
       aarch64*-*-*)
 	host_extra_gcc_objs="driver-aarch64.o"
@@ -250,6 +251,10 @@ case ${host} in
     out_host_hook_obj=host-mingw32.o
     host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o"
     host_lto_plugin_soname=liblto_plugin.dll
+    ;;
+  aarch64*-*-darwin*)
+    out_host_hook_obj="${out_host_hook_obj} host-aarch64-darwin.o"
+    host_xmake_file="${host_xmake_file} aarch64/x-darwin"
     ;;
   i[34567]86-*-darwin* | x86_64-*-darwin*)
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"

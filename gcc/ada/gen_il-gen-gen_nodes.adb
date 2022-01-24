@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2021, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2022, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -481,7 +481,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expressions, List_Id, Default_No_List),
         Sy (Component_Associations, List_Id, Default_No_List),
         Sy (Null_Record_Present, Flag),
+        Sy (Is_Parenthesis_Aggregate, Flag),
         Sy (Is_Homogeneous_Aggregate, Flag),
+        Sy (Is_Enum_Array_Aggregate, Flag),
         Sm (Aggregate_Bounds, Node_Id),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Associated_Node
         Sm (Compile_Time_Known_Aggregate, Flag),
@@ -577,7 +579,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Declaration, Node_Kind);
    --  Note: this includes all constructs normally thought of as declarations
-   --  except those that are separately grouped in N_Later_Decl_Item.
+   --  except those that are separately grouped in N_Later_Decl_Item. But
+   --  Declaration_Node may return yet more node types; see N_Is_Decl below.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -983,7 +986,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Case_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Alternatives, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Code_Statement, N_Statement_Other_Than_Procedure_Call,
@@ -1093,7 +1096,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Then_Statements, List_Id),
         Sy (Elsif_Parts, List_Id, Default_No_List),
         Sy (Else_Statements, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Accept_Alternative, Node_Kind,
@@ -1135,11 +1138,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Formal_Abstract_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Cc (N_Formal_Concrete_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Ab (N_Push_Pop_xxx_Label, Node_Kind);
@@ -1593,7 +1598,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Dcheck_Function, Node_Id),
         Sm (Enclosing_Variant, Node_Id),
         Sm (Has_SP_Choice, Flag),
-        Sm (Present_Expr, Uint)));
+        Sm (Present_Expr, Valid_Uint)));
 
    Cc (N_Variant_Part, Node_Kind,
        (Sy (Name, Node_Id, Default_Empty),
@@ -1648,5 +1653,81 @@ begin -- Gen_IL.Gen.Gen_Nodes
              N_Iteration_Scheme,
              N_Terminate_Alternative));
    --  Nodes with condition fields (does not include N_Raise_xxx_Error)
+
+   Union (N_Has_Bounds,
+          Children =>
+            (N_Range,
+             N_Real_Range_Specification,
+             N_Signed_Integer_Type_Definition));
+   --  Nodes that have Low_Bound and High_Bound defined
+
+   Union (N_Is_Index,
+          Children =>
+            (N_Has_Bounds,
+             N_Has_Entity,
+             N_Subtype_Indication));
+   --  Nodes that can be an index of an array
+
+   Union (N_Entity_Name,
+          Children =>
+            (N_Expanded_Name,
+             N_Identifier,
+             N_Operator_Symbol));
+   --  Nodes that are definitely representing an entity.
+   --  Some N_Attribute_Reference nodes may also represent an entity. See
+   --  Is_Entity_Name.
+
+   Union (N_Is_Decl,
+          Children =>
+            (N_Aggregate,
+             N_Block_Statement,
+             N_Declaration,
+             N_Discriminant_Specification,
+             N_Entry_Index_Specification,
+             N_Enumeration_Type_Definition,
+             N_Exception_Handler,
+             N_Explicit_Dereference,
+             N_Expression_With_Actions,
+             N_Extension_Aggregate,
+             N_Identifier,
+             N_Iterated_Component_Association,
+             N_Later_Decl_Item,
+             N_Loop_Statement,
+             N_Null_Statement,
+             N_Number_Declaration,
+             N_Package_Specification,
+             N_Parameter_Specification,
+             N_Renaming_Declaration,
+             N_Quantified_Expression));
+   --  Nodes that can be returned by Declaration_Node; it can also return
+   --  Empty. Not all of these are true "declarations", but Declaration_Node
+   --  can return them in some cases.
+
+   Union (N_Is_Range,
+          Children =>
+            (N_Character_Literal,
+             N_Entity_Name,
+             N_Has_Bounds,
+             N_Integer_Literal,
+             N_Subtype_Indication));
+   --  Nodes that can be used to specify a range
+
+   Union (N_Is_Case_Choice,
+          Children =>
+            (N_Is_Range,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of a case statement
+
+   Union (N_Is_Exception_Choice,
+          Children =>
+            (N_Entity_Name,
+             N_Others_Choice));
+   --  Nodes that can be in the choices of an exception handler
+
+   Union (N_Alternative,
+          Children =>
+            (N_Case_Statement_Alternative,
+             N_Variant));
+   --  Nodes that can be alternatives in case contructs
 
 end Gen_IL.Gen.Gen_Nodes;

@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -616,7 +616,11 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	else if (ISGRAPH (c))
 	  error_at (*loc, "stray %qc in program", (int) c);
 	else
-	  error_at (*loc, "stray %<\\%o%> in program", (int) c);
+	  {
+	    rich_location rich_loc (line_table, *loc);
+	    rich_loc.set_escape_on_output (true);
+	    error_at (&rich_loc, "stray %<\\%o%> in program", (int) c);
+	  }
       }
       goto retry;
 

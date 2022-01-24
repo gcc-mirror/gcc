@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/imp16460.d
 module imports.test16460;
 
 void bug()

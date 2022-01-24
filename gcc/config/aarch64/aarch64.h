@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -234,6 +234,21 @@ extern unsigned aarch64_architecture_version;
 /* Pointer Authentication (PAUTH) extension.  */
 #define AARCH64_FL_PAUTH      (1ULL << 40)
 
+/* Armv9.0-A.  */
+#define AARCH64_FL_V9         (1ULL << 41)  /* Armv9.0-A Architecture.  */
+
+/* 64-byte atomic load/store extensions.  */
+#define AARCH64_FL_LS64      (1ULL << 42)
+
+/* Armv8.7-a architecture extensions.  */
+#define AARCH64_FL_V8_7       (1ULL << 43)
+
+/* Hardware memory operation instructions.  */
+#define AARCH64_FL_MOPS       (1ULL << 44)
+
+/* Armv8.8-a architecture extensions.  */
+#define AARCH64_FL_V8_8       (1ULL << 45)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -258,8 +273,15 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_FOR_ARCH8_6			\
   (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_V8_6 | AARCH64_FL_FPSIMD \
    | AARCH64_FL_I8MM | AARCH64_FL_BF16)
+#define AARCH64_FL_FOR_ARCH8_7			\
+  (AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V8_7 | AARCH64_FL_LS64)
+#define AARCH64_FL_FOR_ARCH8_8			\
+  (AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V8_8 | AARCH64_FL_MOPS)
+
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
+#define AARCH64_FL_FOR_ARCH9       \
+  (AARCH64_FL_FOR_ARCH8_5 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_V9)
 
 /* Macros to test ISA flags.  */
 
@@ -298,6 +320,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SB		   (aarch64_isa_flags & AARCH64_FL_SB)
 #define AARCH64_ISA_V8_R	   (aarch64_isa_flags & AARCH64_FL_V8_R)
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
+#define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
+#define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
+#define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -388,6 +413,12 @@ extern unsigned aarch64_architecture_version;
 
 /* PAUTH instructions are enabled through +pauth.  */
 #define TARGET_PAUTH (AARCH64_ISA_PAUTH)
+
+/* MOPS instructions are enabled through +mops.  */
+#define TARGET_MOPS (AARCH64_ISA_MOPS)
+
+/* LS64 instructions are enabled through +ls64.  */
+#define TARGET_LS64 (AARCH64_ISA_LS64)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
@@ -1034,23 +1065,24 @@ typedef struct
    7-byte copy is a 4-byte + 2-byte + byte copy.  This proves inefficient
    for both size and speed of copy, so we will instead use the "cpymem"
    standard name to implement the copy.  This logic does not apply when
-   targeting -mstrict-align, so keep a sensible default in that case.  */
+   targeting -mstrict-align or TARGET_MOPS, so keep a sensible default in
+   that case.  */
 #define MOVE_RATIO(speed) \
-  (!STRICT_ALIGNMENT ? 2 : (((speed) ? 15 : AARCH64_CALL_RATIO) / 2))
+  ((!STRICT_ALIGNMENT || TARGET_MOPS) ? 2 : (((speed) ? 15 : AARCH64_CALL_RATIO) / 2))
 
 /* Like MOVE_RATIO, without -mstrict-align, make decisions in "setmem" when
    we would use more than 3 scalar instructions.
    Otherwise follow a sensible default: when optimizing for size, give a better
    estimate of the length of a memset call, but use the default otherwise.  */
 #define CLEAR_RATIO(speed) \
-  (!STRICT_ALIGNMENT ? 4 : (speed) ? 15 : AARCH64_CALL_RATIO)
+  (!STRICT_ALIGNMENT ? (TARGET_MOPS ? 0 : 4) : (speed) ? 15 : AARCH64_CALL_RATIO)
 
 /* SET_RATIO is similar to CLEAR_RATIO, but for a non-zero constant.  Without
    -mstrict-align, make decisions in "setmem".  Otherwise follow a sensible
    default: when optimizing for size adjust the ratio to account for the
    overhead of loading the constant.  */
 #define SET_RATIO(speed) \
-  (!STRICT_ALIGNMENT ? 0 : (speed) ? 15 : AARCH64_CALL_RATIO - 2)
+  ((!STRICT_ALIGNMENT || TARGET_MOPS) ? 0 : (speed) ? 15 : AARCH64_CALL_RATIO - 2)
 
 /* Disable auto-increment in move_by_pieces et al.  Use of auto-increment is
    rarely a good idea in straight-line code since it adds an extra address

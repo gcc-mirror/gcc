@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -28,7 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 
 
-#if defined(GFC_REAL_16_IS_FLOAT128)
+#if defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_GFC_REAL_17)
 
 /* The prototypes for the called procedures in transfer.c.  */
 
@@ -65,8 +65,10 @@ export_proto(transfer_complex128_write);
    write_float; the pointer assignment with USED attribute make sure
    that there is a non-weakref dependence if the quadmath functions
    are used. That avoids segfault when libquadmath is statically linked.  */
+# if !defined(HAVE_GFC_REAL_17) || !defined(POWER_IEEE128)
 static void __attribute__((used)) *tmp1 = strtoflt128;
 static void __attribute__((used)) *tmp2 = quadmath_snprintf;
+# endif
 
 void
 transfer_real128 (st_parameter_dt *dtp, void *p, int kind)

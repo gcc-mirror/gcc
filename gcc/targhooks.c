@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1474,65 +1474,10 @@ default_empty_mask_is_expensive (unsigned ifn)
    loop body, and epilogue) for a vectorized loop or block.  So allocate an
    array of three unsigned ints, set it to zero, and return its address.  */
 
-void *
-default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED,
-		   bool costing_for_scalar ATTRIBUTE_UNUSED)
+vector_costs *
+default_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 {
-  unsigned *cost = XNEWVEC (unsigned, 3);
-  cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
-  return cost;
-}
-
-/* By default, the cost model looks up the cost of the given statement
-   kind and mode, multiplies it by the occurrence count, accumulates
-   it into the cost specified by WHERE, and returns the cost added.  */
-
-unsigned
-default_add_stmt_cost (class vec_info *vinfo, void *data, int count,
-		       enum vect_cost_for_stmt kind,
-		       class _stmt_vec_info *stmt_info, tree vectype,
-		       int misalign,
-		       enum vect_cost_model_location where)
-{
-  unsigned *cost = (unsigned *) data;
-  unsigned retval = 0;
-  int stmt_cost = targetm.vectorize.builtin_vectorization_cost (kind, vectype,
-								misalign);
-   /* Statements in an inner loop relative to the loop being
-      vectorized are weighted more heavily.  The value here is
-      arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info
-      && stmt_in_inner_loop_p (vinfo, stmt_info))
-    {
-      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-      gcc_assert (loop_vinfo);
-      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
-    }
-
-  retval = (unsigned) (count * stmt_cost);
-  cost[where] += retval;
-
-  return retval;
-}
-
-/* By default, the cost model just returns the accumulated costs.  */
-
-void
-default_finish_cost (void *data, unsigned *prologue_cost,
-		     unsigned *body_cost, unsigned *epilogue_cost)
-{
-  unsigned *cost = (unsigned *) data;
-  *prologue_cost = cost[vect_prologue];
-  *body_cost     = cost[vect_body];
-  *epilogue_cost = cost[vect_epilogue];
-}
-
-/* Free the cost data.  */
-
-void
-default_destroy_cost_data (void *data)
-{
-  free (data);
+  return new vector_costs (vinfo, costing_for_scalar);
 }
 
 /* Determine whether or not a pointer mode is valid. Assume defaults
@@ -1763,6 +1708,22 @@ default_target_can_inline_p (tree caller, tree callee)
      options since build_target_option_node uses a hash table for the
      options.  */
   return callee_opts == caller_opts;
+}
+
+/* By default, return false to not need to collect any target information
+   for inlining.  Target maintainer should re-define the hook if the
+   target want to take advantage of it.  */
+
+bool
+default_need_ipa_fn_target_info (const_tree, unsigned int &)
+{
+  return false;
+}
+
+bool
+default_update_ipa_fn_target_info (unsigned int &, const gimple *)
+{
+  return false;
 }
 
 /* If the machine does not have a case insn that compares the bounds,
@@ -2200,7 +2161,7 @@ pch_option_mismatch (const char *option)
 /* Default version of pch_valid_p.  */
 
 const char *
-default_pch_valid_p (const void *data_p, size_t len)
+default_pch_valid_p (const void *data_p, size_t len ATTRIBUTE_UNUSED)
 {
   struct cl_option_state state;
   const char *data = (const char *)data_p;
@@ -2221,7 +2182,6 @@ default_pch_valid_p (const void *data_p, size_t len)
 
       memcpy (&tf, data, sizeof (target_flags));
       data += sizeof (target_flags);
-      len -= sizeof (target_flags);
       r = targetm.check_pch_target_flags (tf);
       if (r != NULL)
 	return r;
@@ -2233,7 +2193,6 @@ default_pch_valid_p (const void *data_p, size_t len)
 	if (memcmp (data, state.data, state.size) != 0)
 	  return pch_option_mismatch (cl_options[i].opt_text);
 	data += state.size;
-	len -= state.size;
       }
 
   return NULL;
@@ -2253,36 +2212,6 @@ bool
 default_member_type_forces_blk (const_tree, machine_mode)
 {
   return false;
-}
-
-rtx
-default_load_bounds_for_arg (rtx addr ATTRIBUTE_UNUSED,
-			     rtx ptr ATTRIBUTE_UNUSED,
-			     rtx bnd ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-void
-default_store_bounds_for_arg (rtx val ATTRIBUTE_UNUSED,
-			      rtx addr ATTRIBUTE_UNUSED,
-			      rtx bounds ATTRIBUTE_UNUSED,
-			      rtx to ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-rtx
-default_load_returned_bounds (rtx slot ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-void
-default_store_returned_bounds (rtx slot ATTRIBUTE_UNUSED,
-			       rtx bounds ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
 }
 
 /* Default version of canonicalize_comparison.  */
@@ -2453,12 +2382,12 @@ default_max_noce_ifcvt_seq_cost (edge e)
 
   if (predictable_p)
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_predictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_predictable_cost))
 	return param_max_rtl_if_conversion_predictable_cost;
     }
   else
     {
-      if (global_options_set.x_param_max_rtl_if_conversion_unpredictable_cost)
+      if (OPTION_SET_P (param_max_rtl_if_conversion_unpredictable_cost))
 	return param_max_rtl_if_conversion_unpredictable_cost;
     }
 

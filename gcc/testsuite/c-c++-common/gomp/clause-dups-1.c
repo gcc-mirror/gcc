@@ -29,6 +29,12 @@ f1 (int *p)
   #pragma omp for nowait nowait					/* { dg-error "too many 'nowait' clauses" } */
   for (i = 0; i < 8; ++i)
     f0 ();
+  #pragma omp for schedule(static) order(concurrent) order(concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+  #pragma omp for schedule(static) order(reproducible:concurrent) order(unconstrained:concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
   #pragma omp simd collapse(1) collapse(1)			/* { dg-error "too many 'collapse' clauses" } */
   for (i = 0; i < 8; ++i)
     f0 ();
@@ -207,6 +213,18 @@ f1 (int *p)
   f0 ();
   #pragma omp scope nowait nowait				/* { dg-error "too many 'nowait' clauses" } */
   ;
+  #pragma omp loop bind(thread) order(concurrent) order(concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+  #pragma omp loop bind(thread) order(reproducible:concurrent) order(unconstrained:concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+  #pragma omp simd order(concurrent) order(concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+  #pragma omp simd order(reproducible:concurrent) order(unconstrained:concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
 }
 
 #pragma omp declare simd simdlen (4) simdlen (4)		/* { dg-error "too many 'simdlen' clauses" } */
@@ -223,3 +241,17 @@ void f6 (int a, int b);
 void f7 (int a, int b);
 #pragma omp declare simd linear (a) uniform (a)			/* { dg-error "'a' appears more than once in data clauses" } */
 void f8 (int a, int b);
+
+#pragma omp declare target
+void
+f9 (void)
+{
+  int i;
+  #pragma omp distribute dist_schedule(static) order(concurrent) order(concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+  #pragma omp loop bind(thread) order(reproducible:concurrent) order(unconstrained:concurrent)	/* { dg-error "too many 'order' clauses" } */
+  for (i = 0; i < 8; ++i)
+    f0 ();
+}
+#pragma omp end declare target

@@ -1,7 +1,7 @@
 // { dg-options "-fchar8_t" }
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,9 +27,7 @@ test01()
   using namespace std::literals::string_view_literals;
 
   std::string_view planet = "Mercury"sv;
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring_view wplanet = L"Venus"sv;
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   std::u8string_view u8planet = u8"Mars"sv;
 #else
@@ -39,9 +37,7 @@ test01()
   std::u32string_view u32planet = U"Saturn"sv;
 
   VERIFY( planet == std::string_view("Mercury") );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet == std::wstring_view(L"Venus") );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   VERIFY( u8planet == std::u8string_view(u8"Mars") );
 #else
@@ -57,9 +53,7 @@ test02()
   using namespace std::literals::string_view_literals;
 
   std::string_view planet_cratered = "Mercury\0cratered"sv;
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring_view wplanet_cratered = L"Venus\0cratered"sv;
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   std::u8string_view u8planet_cratered = u8"Mars\0cratered"sv;
 #else
@@ -69,9 +63,7 @@ test02()
   std::u32string_view u32planet_cratered = U"Saturn\0cratered"sv;
 
   VERIFY( planet_cratered == std::string_view("Mercury\0cratered", 16) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet_cratered == std::wstring_view(L"Venus\0cratered", 14) );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   VERIFY( u8planet_cratered == std::u8string_view(u8"Mars\0cratered", 13) );
 #else

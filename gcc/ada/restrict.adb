@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,12 +71,12 @@ package body Restrict is
 
    No_Specification_Of_Aspect_Warning : array (Aspect_Id) of Boolean :=
                                           (others => True);
-   --  An entry in this array is set False in reponse to a previous call to
-   --  Set_No_Speficiation_Of_Aspect for pragmas in the main unit that
+   --  An entry in this array is set False in response to a previous call to
+   --  Set_No_Specification_Of_Aspect for pragmas in the main unit that
    --  specify Warning as False. Once set False, an entry is never reset.
 
    No_Specification_Of_Aspect_Set : Boolean := False;
-   --  Set True if any entry of No_Specifcation_Of_Aspects has been set True.
+   --  Set True if any entry of No_Specification_Of_Aspects has been set True.
    --  Once set True, this is never turned off again.
 
    No_Use_Of_Attribute : array (Attribute_Id) of Source_Ptr :=
@@ -148,24 +148,6 @@ package body Restrict is
    end Add_To_Config_Boolean_Restrictions;
    --  Add specified restriction to stored configuration boolean restrictions.
    --  This is used for handling the special case of No_Elaboration_Code.
-
-   -------------------------
-   -- Check_Compiler_Unit --
-   -------------------------
-
-   procedure Check_Compiler_Unit (Feature : String; N : Node_Id) is
-   begin
-      if Compiler_Unit then
-         Error_Msg_N (Feature & " not allowed in compiler unit!!??", N);
-      end if;
-   end Check_Compiler_Unit;
-
-   procedure Check_Compiler_Unit (Feature : String; Loc : Source_Ptr) is
-   begin
-      if Compiler_Unit then
-         Error_Msg (Feature & " not allowed in compiler unit!!??", Loc);
-      end if;
-   end Check_Compiler_Unit;
 
    ------------------------------------
    -- Check_Elaboration_Code_Allowed --

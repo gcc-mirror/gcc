@@ -29,7 +29,7 @@ function test_associated3 (a, b)
   integer, target :: b
   logical :: test_associated3
 
-  test_associated3 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" { xfail *-*-* } }
+  test_associated3 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" }
 end function
 
 function test_associated4 (a, b)
@@ -38,7 +38,7 @@ function test_associated4 (a, b)
   integer, target :: b(:)
   logical :: test_associated4
 
-  test_associated4 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" { xfail *-*-* } }
+  test_associated4 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" }
 end function
 
 function test_associated5 (a, b)
@@ -47,7 +47,7 @@ function test_associated5 (a, b)
   integer, target :: b(20)
   logical :: test_associated5
 
-  test_associated5 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" { xfail *-*-* } }
+  test_associated5 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" }
 end function
 
 function test_associated6 (a, b)
@@ -65,7 +65,7 @@ function test_associated7 (a, b)
   integer, pointer :: b
   logical :: test_associated7
 
-  test_associated7 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" { xfail *-*-* } }
+  test_associated7 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" }
 end function
 
 function test_associated8 (a, b)
@@ -74,6 +74,6 @@ function test_associated8 (a, b)
   integer, pointer :: b(:)
   logical :: test_associated8
 
-  test_associated8 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" { xfail *-*-* } }
+  test_associated8 = associated (a, b) ! { dg-bogus "must be of rank -1" "pr101334" }
 end function
 

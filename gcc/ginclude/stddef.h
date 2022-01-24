@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -128,6 +128,7 @@ _TYPE_wchar_t;
 #ifndef ___int_ptrdiff_t_h
 #ifndef _GCC_PTRDIFF_T
 #ifndef _PTRDIFF_T_DECLARED /* DragonFly */
+#ifndef __DEFINED_ptrdiff_t /* musl libc */
 #define _PTRDIFF_T
 #define _T_PTRDIFF_
 #define _T_PTRDIFF
@@ -137,10 +138,12 @@ _TYPE_wchar_t;
 #define ___int_ptrdiff_t_h
 #define _GCC_PTRDIFF_T
 #define _PTRDIFF_T_DECLARED
+#define __DEFINED_ptrdiff_t
 #ifndef __PTRDIFF_TYPE__
 #define __PTRDIFF_TYPE__ long int
 #endif
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
+#endif /* __DEFINED_ptrdiff_t */
 #endif /* _PTRDIFF_T_DECLARED */
 #endif /* _GCC_PTRDIFF_T */
 #endif /* ___int_ptrdiff_t_h */
@@ -174,6 +177,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _SIZE_T_DEFINED
 #ifndef _BSD_SIZE_T_DEFINED_	/* Darwin */
 #ifndef _SIZE_T_DECLARED	/* FreeBSD 5 */
+#ifndef __DEFINED_size_t	/* musl libc */
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
@@ -191,6 +195,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _SIZE_T_DEFINED
 #define _BSD_SIZE_T_DEFINED_	/* Darwin */
 #define _SIZE_T_DECLARED	/* FreeBSD 5 */
+#define __DEFINED_size_t	/* musl libc */
 #define ___int_size_t_h
 #define _GCC_SIZE_T
 #define _SIZET_
@@ -215,6 +220,7 @@ typedef long ssize_t;
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
+#endif /* __DEFINED_size_t */
 #endif /* _SIZE_T_DECLARED */
 #endif /* _BSD_SIZE_T_DEFINED_ */
 #endif /* _SIZE_T_DEFINED */
@@ -251,6 +257,7 @@ typedef long ssize_t;
 #ifndef _BSD_WCHAR_T_DEFINED_    /* Darwin */
 #ifndef _BSD_RUNE_T_DEFINED_	/* Darwin */
 #ifndef _WCHAR_T_DECLARED /* FreeBSD 5 */
+#ifndef __DEFINED_wchar_t /* musl libc */
 #ifndef _WCHAR_T_DEFINED_
 #ifndef _WCHAR_T_DEFINED
 #ifndef _WCHAR_T_H
@@ -272,6 +279,7 @@ typedef long ssize_t;
 #define __INT_WCHAR_T_H
 #define _GCC_WCHAR_T
 #define _WCHAR_T_DECLARED
+#define __DEFINED_wchar_t
 
 /* On BSD/386 1.1, at least, machine/ansi.h defines _BSD_WCHAR_T_
    instead of _WCHAR_T_, and _BSD_RUNE_T_ (which, unlike the other
@@ -326,6 +334,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#endif /* __DEFINED_wchar_t */
 #endif /* _WCHAR_T_DECLARED */
 #endif /* _BSD_RUNE_T_DEFINED_ */
 #endif

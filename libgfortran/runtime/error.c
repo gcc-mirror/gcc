@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -216,37 +216,6 @@ exit_error (int status)
       show_backtrace (false);
     }
   exit (status);
-}
-
-
-
-/* gfc_xtoa()-- Integer to hexadecimal conversion.  */
-
-const char *
-gfc_xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
-{
-  int digit;
-  char *p;
-
-  assert (len >= GFC_XTOA_BUF_SIZE);
-
-  if (n == 0)
-    return "0";
-
-  p = buffer + GFC_XTOA_BUF_SIZE - 1;
-  *p = '\0';
-
-  while (n != 0)
-    {
-      digit = n & 0xF;
-      if (digit > 9)
-	digit += 'A' - '0' - 10;
-
-      *--p = '0' + digit;
-      n >>= 4;
-    }
-
-  return p;
 }
 
 

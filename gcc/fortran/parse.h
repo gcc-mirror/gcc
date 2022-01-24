@@ -1,5 +1,5 @@
 /* Parser header
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -31,7 +31,7 @@ enum gfc_compile_state
   COMP_STRUCTURE, COMP_UNION, COMP_MAP,
   COMP_DO, COMP_SELECT, COMP_FORALL, COMP_WHERE, COMP_CONTAINS, COMP_ENUM,
   COMP_SELECT_TYPE, COMP_SELECT_RANK, COMP_OMP_STRUCTURED_BLOCK, COMP_CRITICAL,
-  COMP_DO_CONCURRENT
+  COMP_DO_CONCURRENT, COMP_OMP_STRICTLY_STRUCTURED_BLOCK
 };
 
 /* Stack element for the current compilation state.  These structures

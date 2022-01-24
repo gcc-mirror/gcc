@@ -1,6 +1,6 @@
 /* Breadth-first and depth-first routines for
    searching multiple-inheritance lattice for GNU C++.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1090,6 +1090,10 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
   BASELINK_ACCESS_BINFO (baselink) = access_binfo;
   BASELINK_FUNCTIONS (baselink) = functions;
   BASELINK_OPTYPE (baselink) = optype;
+
+  if (binfo == access_binfo
+      && TYPE_BEING_DEFINED (BINFO_TYPE (access_binfo)))
+    BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
 
   return baselink;
 }

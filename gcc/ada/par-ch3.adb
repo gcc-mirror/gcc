@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,39 +209,9 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    function P_Defining_Identifier (C : Id_Check := None) return Node_Id is
-      Ident_Node : Node_Id;
+      Ident_Node : Node_Id := P_Identifier (C, True);
 
    begin
-      --  Scan out the identifier. Note that this code is essentially identical
-      --  to P_Identifier, except that in the call to Scan_Reserved_Identifier
-      --  we set Force_Msg to True, since we want at least one message for each
-      --  separate declaration (but not use) of a reserved identifier.
-
-      --  Duplication should be removed, common code should be factored???
-
-      if Token = Tok_Identifier then
-         Check_Future_Keyword;
-
-      --  If we have a reserved identifier, manufacture an identifier with
-      --  a corresponding name after posting an appropriate error message
-
-      elsif Is_Reserved_Identifier (C) then
-         Scan_Reserved_Identifier (Force_Msg => True);
-
-      --  Otherwise we have junk that cannot be interpreted as an identifier
-
-      else
-         T_Identifier; -- to give message
-         raise Error_Resync;
-      end if;
-
-      if Style_Check then
-         Style.Check_Defining_Identifier_Casing;
-      end if;
-
-      Ident_Node := Token_Node;
-      Scan; -- past the identifier
-
       --  If we already have a defining identifier, clean it out and make
       --  a new clean identifier. This situation arises in some error cases
       --  and we need to fix it.
@@ -2818,12 +2788,7 @@ package body Ch3 is
             else
                P_Index_Subtype_Def_With_Fixed_Lower_Bound (Subtype_Mark_Node);
 
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Token_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
             end if;
 
             exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -2892,12 +2857,7 @@ package body Ch3 is
                      P_Index_Subtype_Def_With_Fixed_Lower_Bound
                        (Subtype_Mark_Node);
 
-                     if not Extensions_Allowed then
-                        Error_Msg_N
-                          ("fixed-lower-bound array is an extension feature; "
-                             & "use -gnatX",
-                           Token_Node);
-                     end if;
+                     Error_Msg_GNAT_Extension ("fixed-lower-bound array");
                   end if;
 
                   exit when Token = Tok_Right_Paren or else Token = Tok_Of;
@@ -3399,12 +3359,7 @@ package body Ch3 is
             --  later during analysis), and scan to the next token.
 
             if Token = Tok_Box then
-               if not Extensions_Allowed then
-                  Error_Msg_N
-                    ("fixed-lower-bound array is an extension feature; "
-                       & "use -gnatX",
-                     Expr_Node);
-               end if;
+               Error_Msg_GNAT_Extension ("fixed-lower-bound array");
 
                Expr_Node := Empty;
                Scan;
@@ -4201,14 +4156,6 @@ package body Ch3 is
    function P_Access_Type_Definition
      (Header_Already_Parsed : Boolean := False) return Node_Id
    is
-      Access_Loc       : constant Source_Ptr := Token_Ptr;
-      Prot_Flag        : Boolean;
-      Not_Null_Present : Boolean := False;
-      Not_Null_Subtype : Boolean := False;
-      Type_Def_Node    : Node_Id;
-      Result_Not_Null  : Boolean;
-      Result_Node      : Node_Id;
-
       procedure Check_Junk_Subprogram_Name;
       --  Used in access to subprogram definition cases to check for an
       --  identifier or operator symbol that does not belong.
@@ -4235,22 +4182,32 @@ package body Ch3 is
          end if;
       end Check_Junk_Subprogram_Name;
 
+      Access_Loc           : constant Source_Ptr := Token_Ptr;
+      Prot_Flag            : Boolean;
+      Not_Null_Present     : Boolean := False;
+      Not_Null_Subtype     : Boolean := False;
+      Not_Null_Subtype_Loc : Source_Ptr; -- loc of second "not null"
+      Type_Def_Node        : Node_Id;
+      Result_Not_Null      : Boolean;
+      Result_Node          : Node_Id;
+
    --  Start of processing for P_Access_Type_Definition
 
    begin
       if not Header_Already_Parsed then
+         --  NOT NULL ACCESS... is a common form of access definition. ACCESS
+         --  NOT NULL... is certainly rare, but syntactically legal. NOT NULL
+         --  ACCESS NOT NULL... is rarer yet, and also legal. The last two
+         --  cases are only meaningful if the following subtype indication
+         --  denotes an access type. We check below for "not null procedure"
+         --  and "not null function"; in the access-to-object case it is a
+         --  semantic check. The flag Not_Null_Subtype indicates that this
+         --  second null exclusion is present in the access type definition.
 
-         --  NOT NULL ACCESS .. is a common form of access definition.
-         --  ACCESS NOT NULL ..  is certainly rare, but syntactically legal.
-         --  NOT NULL ACCESS NOT NULL .. is rarer yet, and also legal.
-         --  The last two cases are only meaningful if the following subtype
-         --  indication denotes an access type (semantic check). The flag
-         --  Not_Null_Subtype indicates that this second null exclusion is
-         --  present in the access type definition.
-
-         Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+         Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
-         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear
+         Not_Null_Subtype_Loc := Token_Ptr;
+         Not_Null_Subtype := P_Null_Exclusion; --  Might also appear
       end if;
 
       if Token_Name = Name_Protected then
@@ -4266,6 +4223,20 @@ package body Ch3 is
          if Token /= Tok_Procedure and then Token /= Tok_Function then
             Error_Msg_SC -- CODEFIX
               ("FUNCTION or PROCEDURE expected");
+         end if;
+      end if;
+
+      --  Access-to-subprogram case
+
+      if Token in Tok_Procedure | Tok_Function then
+
+         --  Check for "not null [protected] procedure" and "not null
+         --  [protected] function".
+
+         if Not_Null_Subtype then
+            Error_Msg
+              ("null exclusion must apply to access type",
+               Not_Null_Subtype_Loc);
          end if;
       end if;
 
@@ -4317,9 +4288,10 @@ package body Ch3 is
 
          Set_Result_Definition (Type_Def_Node, Result_Node);
 
+      --  Access-to-object case
+
       else
-         Type_Def_Node :=
-           New_Node (N_Access_To_Object_Definition, Access_Loc);
+         Type_Def_Node := New_Node (N_Access_To_Object_Definition, Access_Loc);
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
          Set_Null_Excluding_Subtype (Type_Def_Node, Not_Null_Subtype);
 

@@ -1,5 +1,5 @@
 /* Consolidation of svalues and regions.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -66,13 +66,14 @@ namespace ana {
 
 /* region_model_manager's ctor.  */
 
-region_model_manager::region_model_manager ()
-: m_next_region_id (0),
+region_model_manager::region_model_manager (logger *logger)
+: m_logger (logger),
+  m_next_region_id (0),
   m_root_region (alloc_region_id ()),
   m_stack_region (alloc_region_id (), &m_root_region),
   m_heap_region (alloc_region_id (), &m_root_region),
   m_unknown_NULL (NULL),
-  m_check_complexity (true),
+  m_checking_feasibility (false),
   m_max_complexity (0, 0),
   m_code_region (alloc_region_id (), &m_root_region),
   m_fndecls_map (), m_labels_map (),
@@ -165,7 +166,7 @@ region_model_manager::too_complex_p (const complexity &c) const
 bool
 region_model_manager::reject_if_too_complex (svalue *sval)
 {
-  if (!m_check_complexity)
+  if (m_checking_feasibility)
     return false;
 
   const complexity &c = sval->get_complexity ();
@@ -237,6 +238,11 @@ region_model_manager::get_or_create_int_cst (tree type, poly_int64 val)
 const svalue *
 region_model_manager::get_or_create_unknown_svalue (tree type)
 {
+  /* Don't create unknown values when doing feasibility testing;
+     instead, create a unique svalue.  */
+  if (m_checking_feasibility)
+    return create_unique_svalue (type);
+
   /* Special-case NULL, so that the hash_map can use NULL as the
      "empty" value.  */
   if (type == NULL_TREE)
@@ -251,6 +257,16 @@ region_model_manager::get_or_create_unknown_svalue (tree type)
     return *slot;
   unknown_svalue *sval = new unknown_svalue (type);
   m_unknowns_map.put (type, sval);
+  return sval;
+}
+
+/* Return a freshly-allocated svalue of TYPE, owned by this manager.  */
+
+const svalue *
+region_model_manager::create_unique_svalue (tree type)
+{
+  svalue *sval = new placeholder_svalue (type, "unique");
+  m_managed_dynamic_svalues.safe_push (sval);
   return sval;
 }
 
@@ -380,6 +396,13 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 		    == boolean_true_node))
 	      return maybe_fold_unaryop (type, op, innermost_arg);
 	  }
+	/* Avoid creating symbolic regions for pointer casts by
+	   simplifying (T*)(&REGION) to ((T*)&REGION).  */
+	if (const region_svalue *region_sval = arg->dyn_cast_region_svalue ())
+	  if (POINTER_TYPE_P (type)
+	      && region_sval->get_type ()
+	      && POINTER_TYPE_P (region_sval->get_type ()))
+	    return get_ptr_svalue (type, region_sval->get_pointee ());
       }
       break;
     case TRUTH_NOT_EXPR:
@@ -575,6 +598,42 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 							 compound_sval,
 							 cst1, arg1))
 	      return sval;
+	}
+      if (arg0->get_type () == boolean_type_node
+	  && arg1->get_type () == boolean_type_node)
+	{
+	  /* If the LHS are both _Bool, then... */
+	  /* ..."(1 & x) -> x".  */
+	  if (cst0 && !zerop (cst0))
+	    return get_or_create_cast (type, arg1);
+	  /* ..."(x & 1) -> x".  */
+	  if (cst1 && !zerop (cst1))
+	    return get_or_create_cast (type, arg0);
+	  /* ..."(0 & x) -> 0".  */
+	  if (cst0 && zerop (cst0))
+	    return get_or_create_int_cst (type, 0);
+	  /* ..."(x & 0) -> 0".  */
+	  if (cst1 && zerop (cst1))
+	    return get_or_create_int_cst (type, 0);
+	}
+      break;
+    case BIT_IOR_EXPR:
+      if (arg0->get_type () == boolean_type_node
+	  && arg1->get_type () == boolean_type_node)
+	{
+	  /* If the LHS are both _Bool, then... */
+	  /* ..."(1 | x) -> 1".  */
+	  if (cst0 && !zerop (cst0))
+	    return get_or_create_int_cst (type, 1);
+	  /* ..."(x | 1) -> 1".  */
+	  if (cst1 && !zerop (cst1))
+	    return get_or_create_int_cst (type, 1);
+	  /* ..."(0 | x) -> x".  */
+	  if (cst0 && zerop (cst0))
+	    return get_or_create_cast (type, arg1);
+	  /* ..."(x | 0) -> x".  */
+	  if (cst1 && zerop (cst1))
+	    return get_or_create_cast (type, arg0);
 	}
       break;
     case TRUTH_ANDIF_EXPR:

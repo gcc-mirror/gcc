@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,8 +72,6 @@ static_assert(is_same<make_unsigned<char16_t const>::type, I6 const>::value, "")
 using I7 = smallest_rank_t<char32_t>;
 static_assert(is_same<make_unsigned<char32_t>::type, I7>::value, "");
 static_assert(is_same<make_unsigned<char32_t const>::type, I7 const>::value, "");
-#ifdef _GLIBCXX_USE_WCHAR_T
 using I8 = smallest_rank_t<wchar_t>;
 static_assert(is_same<make_unsigned<wchar_t>::type, I8>::value, "");
 static_assert(is_same<make_unsigned<wchar_t const>::type, I8 const>::value, "");
-#endif

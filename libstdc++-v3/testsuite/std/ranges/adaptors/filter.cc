@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,6 +140,33 @@ test06()
   static_assert(!requires { views::all | filter; });
 }
 
+constexpr bool
+test07()
+{
+  struct Pred
+  {
+    constexpr Pred() { }
+    constexpr Pred(const Pred&) { }
+    constexpr Pred(Pred&&) { }
+    // These make it non-copyable, so non-copyable-box<Pred> will provide
+    // assignment.
+    Pred& operator=(const Pred&) = delete;
+    Pred& operator=(Pred&&) = delete;
+
+    bool operator()(int i) const { return i < 10; }
+  };
+
+  int i = 0;
+  ranges::filter_view v(views::single(i), Pred{});
+  // LWG 3572. copyable-box should be fully constexpr
+  v = v;
+  v = std::move(v);
+
+  return true;
+}
+
+static_assert( test07() );
+
 int
 main()
 {
@@ -150,4 +177,5 @@ main()
   test05<forward_iterator_wrapper>();
   test05<random_access_iterator_wrapper>();
   test06();
+  test07();
 }

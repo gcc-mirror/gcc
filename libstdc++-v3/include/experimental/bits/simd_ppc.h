@@ -1,6 +1,6 @@
 // Simd PowerPC specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@
 _GLIBCXX_SIMD_BEGIN_NAMESPACE
 
 // _SimdImplPpc {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _SimdImplPpc : _SimdImplBuiltin<_Abi>
   {
     using _Base = _SimdImplBuiltin<_Abi>;
@@ -117,7 +117,7 @@ template <typename _Abi>
 
 // }}}
 // _MaskImplPpc {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _MaskImplPpc : _MaskImplBuiltin<_Abi>
   {
     using _Base = _MaskImplBuiltin<_Abi>;

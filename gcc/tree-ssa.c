@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -434,14 +434,13 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       else
 	{
 	  gdebug *def_temp;
-	  tree vexpr = make_node (DEBUG_EXPR_DECL);
+	  tree vexpr = build_debug_expr_decl (TREE_TYPE (value));
 
 	  def_temp = gimple_build_debug_bind (vexpr,
 					      unshare_expr (value),
 					      def_stmt);
 
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (value);
+	  /* FIXME: Is setting the mode really necessary? */
 	  if (DECL_P (value))
 	    SET_DECL_MODE (vexpr, DECL_MODE (value));
 	  else
@@ -649,10 +648,8 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 {
   bool err = false;
 
-  if (bitmap_bit_p (visited, bb->index))
+  if (!bitmap_set_bit (visited, bb->index))
     return false;
-
-  bitmap_set_bit (visited, bb->index);
 
   /* Pick up the single virtual PHI def.  */
   gphi *phi = NULL;
@@ -2079,7 +2076,7 @@ execute_update_addresses_taken (void)
 			    gcall *call
 			      = gimple_build_call_internal (IFN_ASAN_POISON, 0);
 			    gimple_call_set_lhs (call, var);
-			    gsi_replace (&gsi, call, GSI_SAME_STMT);
+			    gsi_replace (&gsi, call, true);
 			  }
 			else
 			  {
@@ -2088,7 +2085,7 @@ execute_update_addresses_taken (void)
 			       previous out of scope value.  */
 			    tree clobber = build_clobber (TREE_TYPE (var));
 			    gimple *g = gimple_build_assign (var, clobber);
-			    gsi_replace (&gsi, g, GSI_SAME_STMT);
+			    gsi_replace (&gsi, g, true);
 			  }
 			continue;
 		      }

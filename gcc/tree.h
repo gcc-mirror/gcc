@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1689,6 +1689,11 @@ class auto_suppress_location_wrappers
    map clause.  */
 #define OMP_CLAUSE_MAP_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.default_def_flag)
+/* Nonzero if this map clause is to be indicated to the runtime as 'implicit',
+   due to being created through implicit data-mapping rules in the middle-end.
+   NOTE: this is different than OMP_CLAUSE_MAP_IMPLICIT.  */
+#define OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.deprecated_flag)
 
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */
@@ -1714,6 +1719,13 @@ class auto_suppress_location_wrappers
 
 #define OMP_CLAUSE_ORDERED_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDERED), 0)
+
+/* True for unconstrained modifier on order(concurrent) clause.  */
+#define OMP_CLAUSE_ORDER_UNCONSTRAINED(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER)->base.public_flag)
+/* True for reproducible modifier on order(concurrent) clause.  */
+#define OMP_CLAUSE_ORDER_REPRODUCIBLE(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDER))
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
   (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
@@ -1786,6 +1798,9 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_ALLOCATE_ALLOCATOR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 1)
 
+#define OMP_CLAUSE_ALLOCATE_ALIGN(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE), 2)
+
 /* True if an ALLOCATE clause was present on a combined or composite
    construct and the code for splitting the clauses has already performed
    checking if the listed variable has explicit privatization on the
@@ -1793,8 +1808,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_ALLOCATE_COMBINED(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE)->base.public_flag)
 
-#define OMP_CLAUSE_NUM_TEAMS_EXPR(NODE) \
+#define OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 0)
+
+#define OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 1)
 
 #define OMP_CLAUSE_THREAD_LIMIT_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, \
@@ -4557,6 +4575,7 @@ extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
 extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_decl (location_t, enum tree_code,
 			tree, tree CXX_MEM_STAT_INFO);
+extern tree build_debug_expr_decl (tree type);
 extern tree build_fn_decl (const char *, tree);
 extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);
@@ -4903,6 +4922,11 @@ extern bool integer_minus_onep (const_tree);
 
 extern bool integer_pow2p (const_tree);
 
+/* Checks to see if T is a constant or a constant vector and if each element E
+   adheres to ~E + 1 == pow2 then return ~E otherwise NULL_TREE.  */
+
+extern tree bitmask_inv_cst_vector_p (tree);
+
 /* integer_nonzerop (tree x) is nonzero if X is an integer constant
    with a nonzero value.  */
 
@@ -5086,8 +5110,6 @@ reverse_storage_order_for_component_p (tree t)
     default:
       return false;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return true if T is a storage order barrier, i.e. a VIEW_CONVERT_EXPR

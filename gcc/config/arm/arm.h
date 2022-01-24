@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -455,7 +455,8 @@ enum base_architecture
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
   BASE_ARCH_8M_MAIN = 8,
-  BASE_ARCH_8R = 8
+  BASE_ARCH_8R = 8,
+  BASE_ARCH_9A = 9
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */

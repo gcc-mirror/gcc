@@ -1,6 +1,6 @@
 /* Subroutines used to remove unnecessary doubleword swaps
    for p8 little-endian VSX code.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -766,8 +766,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  default:
 	    break;
 	  case UNSPEC_VBPERMQ:
-	  case UNSPEC_VMRGH_DIRECT:
-	  case UNSPEC_VMRGL_DIRECT:
 	  case UNSPEC_VPACK_SIGN_SIGN_SAT:
 	  case UNSPEC_VPACK_SIGN_UNS_SAT:
 	  case UNSPEC_VPACK_UNS_UNS_MOD:

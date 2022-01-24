@@ -1,5 +1,5 @@
 /* Definitions of target machine for TI PRU.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -230,6 +230,7 @@ enum reg_class
   MULDST_REGS,
   MULSRC0_REGS,
   MULSRC1_REGS,
+  REGIO_REGS,
   GP_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -244,6 +245,7 @@ enum reg_class
      "MULDST_REGS",	  \
      "MULSRC0_REGS",	  \
      "MULSRC1_REGS",	  \
+     "REGIO_REGS",	  \
      "GP_REGS",		  \
      "ALL_REGS" }
 
@@ -257,6 +259,7 @@ enum reg_class
     /* MULDST_REGS    */ { 0, 0, 0, 0x00000f00, 0},		\
     /* MULSRC0_REGS   */ { 0, 0, 0, 0x000f0000, 0},		\
     /* MULSRC1_REGS   */ { 0, 0, 0, 0x00f00000, 0},		\
+    /* REGIO_REGS     */ { 0, 0, 0, 0xff000000, 0},		\
     /* GP_REGS	      */ { ~0, ~0, ~0, ~0, 0},			\
     /* ALL_REGS	      */ { ~0,~0, ~0, ~0, ~0}			\
   }
@@ -267,6 +270,8 @@ enum reg_class
 	((REGNO) == MULDST_REGNUM ? MULDST_REGS				    \
 	 : (REGNO) == MULSRC0_REGNUM ? MULSRC0_REGS			    \
 	 : (REGNO) == MULSRC1_REGNUM ? MULSRC1_REGS			    \
+	 : (REGNO) == R30_REGNUM ? REGIO_REGS				    \
+	 : (REGNO) == R31_REGNUM ? REGIO_REGS				    \
 	 : (REGNO) >= FIRST_ARG_REGNUM					    \
 	    && (REGNO) <= LAST_ARG_REGNUM ? SIB_REGS			    \
 	 : (REGNO) == STATIC_CHAIN_REGNUM ? SIB_REGS			    \

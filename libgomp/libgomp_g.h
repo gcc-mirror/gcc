@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -355,6 +355,7 @@ extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 unsigned short *, unsigned int,
 					 void **);
 extern void GOMP_teams (unsigned int, unsigned int);
+extern bool GOMP_teams4 (unsigned int, unsigned int, unsigned int, bool);
 
 /* teams.c */
 

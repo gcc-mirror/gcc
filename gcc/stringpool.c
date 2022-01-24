@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -225,7 +225,7 @@ gt_pch_nx (unsigned char& x ATTRIBUTE_UNUSED)
 void
 gt_pch_nx (unsigned char *x, gt_pointer_operator op, void *cookie)
 {
-  op (x, cookie);
+  op (x, NULL, cookie);
 }
 
 /* Handle saving and restoring the string pool for PCH.  */

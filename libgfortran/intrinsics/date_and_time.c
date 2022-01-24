@@ -1,5 +1,5 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -113,9 +113,6 @@ gmtime_r (const time_t * timep, struct tm * result)
    VALUES for INTEGER(kind=4) and INTEGER(kind=8).
 
    Based on libU77's date_time_.c.
-
-   TODO :
-   - Check year boundaries.
 */
 #define DATE_LEN 8
 #define TIME_LEN 10   
@@ -131,7 +128,7 @@ date_and_time (char *__date, char *__time, char *__zone,
 	       gfc_array_i4 *__values, GFC_INTEGER_4 __date_len,
 	       GFC_INTEGER_4 __time_len, GFC_INTEGER_4 __zone_len)
 {
-  int i;
+  int i, delta_day;
   char date[DATE_LEN + 1];
   char timec[TIME_LEN + 1];
   char zone[ZONE_LEN + 1];
@@ -154,9 +151,22 @@ date_and_time (char *__date, char *__time, char *__zone,
       values[0] = 1900 + local_time.tm_year;
       values[1] = 1 + local_time.tm_mon;
       values[2] = local_time.tm_mday;
-      values[3] = (local_time.tm_min - UTC_time.tm_min +
-	           60 * (local_time.tm_hour - UTC_time.tm_hour +
-		     24 * (local_time.tm_yday - UTC_time.tm_yday)));
+
+      /* Day difference with UTC should always be -1, 0 or +1.
+	 Near year boundaries, we may obtain a large positive (+364,
+	 or +365 on leap years) or negative (-364, or -365 on leap years)
+	 number, which we have to handle.
+	 https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98507
+       */
+      delta_day = local_time.tm_yday - UTC_time.tm_yday;
+      if (delta_day < -1)
+	delta_day = 1;
+      else if (delta_day > 1)
+	delta_day = -1;
+
+      values[3] = local_time.tm_min - UTC_time.tm_min
+		  + 60 * (local_time.tm_hour - UTC_time.tm_hour + 24 * delta_day);
+
       values[4] = local_time.tm_hour;
       values[5] = local_time.tm_min;
       values[6] = local_time.tm_sec;

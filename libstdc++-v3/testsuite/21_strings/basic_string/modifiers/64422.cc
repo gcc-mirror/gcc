@@ -1,6 +1,6 @@
 // 2015-01-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,6 @@ main ()
   x.replace (x.begin (), x.end (), best, best + 4);
   x.replace (x.begin (), x.end (), x);
   x.erase (x.begin (), x.end ());
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring w;
   w.insert (w.begin (), 10, L'x');
   const wchar_t west[] = L"west";
@@ -44,6 +43,5 @@ main ()
   w.replace (w.begin (), w.end (), rest, rest + 4);
   w.replace (w.begin (), w.end (), w);
   w.erase (w.begin (), w.end ());
-#endif
   return 0;
 }

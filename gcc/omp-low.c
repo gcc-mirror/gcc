@@ -4,7 +4,7 @@
 
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -591,7 +591,15 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
   tree copy = copy_var_decl (var, name, type);
 
   DECL_CONTEXT (copy) = current_function_decl;
-  DECL_CHAIN (copy) = ctx->block_vars;
+
+  if (ctx)
+    {
+      DECL_CHAIN (copy) = ctx->block_vars;
+      ctx->block_vars = copy;
+    }
+  else
+    record_vars (copy);
+
   /* If VAR is listed in task_shared_vars, it means it wasn't
      originally addressable and is just because task needs to take
      it's address.  But we don't need to take address of privatizations
@@ -602,7 +610,6 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
 	  || (global_nonaddressable_vars
 	      && bitmap_bit_p (global_nonaddressable_vars, DECL_UID (var)))))
     TREE_ADDRESSABLE (copy) = 0;
-  ctx->block_vars = copy;
 
   return copy;
 }
@@ -1161,14 +1168,17 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ALLOCATE
 	&& (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
 	    /* omp_default_mem_alloc is 1 */
-	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))))
+	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
+	    || OMP_CLAUSE_ALLOCATE_ALIGN (c) != NULL_TREE))
       {
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
-	ctx->allocate_map->put (OMP_CLAUSE_DECL (c),
-				OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-				? OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
-				: integer_zero_node);
+	tree val = integer_zero_node;
+	if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
+	  val = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	if (OMP_CLAUSE_ALLOCATE_ALIGN (c))
+	  val = build_tree_list (val, OMP_CLAUSE_ALLOCATE_ALIGN (c));
+	ctx->allocate_map->put (OMP_CLAUSE_DECL (c), val);
       }
 
   for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
@@ -1278,7 +1288,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  tree at = t;
 		  if (ctx->outer)
 		    scan_omp_op (&at, ctx->outer);
-		  tree nt = omp_copy_decl_1 (at, ctx);
+		  tree nt = omp_copy_decl_1 (at, ctx->outer);
 		  splay_tree_insert (ctx->field_map,
 				     (splay_tree_key) &DECL_CONTEXT (t),
 				     (splay_tree_value) nt);
@@ -1319,7 +1329,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      tree at = decl;
 	      if (ctx->outer)
 		scan_omp_op (&at, ctx->outer);
-	      tree nt = omp_copy_decl_1 (at, ctx);
+	      tree nt = omp_copy_decl_1 (at, ctx->outer);
 	      splay_tree_insert (ctx->field_map,
 				 (splay_tree_key) &DECL_CONTEXT (decl),
 				 (splay_tree_value) nt);
@@ -3918,8 +3928,12 @@ omp_runtime_api_call (const_tree fndecl)
     {
       /* This array has 3 sections.  First omp_* calls that don't
 	 have any suffixes.  */
-      "omp_alloc",
-      "omp_free",
+      "aligned_alloc",
+      "aligned_calloc",
+      "alloc",
+      "calloc",
+      "free",
+      "realloc",
       "target_alloc",
       "target_associate_ptr",
       "target_disassociate_ptr",
@@ -3928,7 +3942,8 @@ omp_runtime_api_call (const_tree fndecl)
       "target_memcpy",
       "target_memcpy_rect",
       NULL,
-      /* Now omp_* calls that are available as omp_* and omp_*_.  */
+      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
+	 DECL_NAME is always omp_* without tailing underscore.  */
       "capture_affinity",
       "destroy_allocator",
       "destroy_lock",
@@ -3946,6 +3961,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_level",
       "get_max_active_levels",
       "get_max_task_priority",
+      "get_max_teams",
       "get_max_threads",
       "get_nested",
       "get_num_devices",
@@ -3958,6 +3974,7 @@ omp_runtime_api_call (const_tree fndecl)
       "get_proc_bind",
       "get_supported_active_levels",
       "get_team_num",
+      "get_teams_thread_limit",
       "get_thread_limit",
       "get_thread_num",
       "get_wtick",
@@ -3978,7 +3995,8 @@ omp_runtime_api_call (const_tree fndecl)
       "unset_lock",
       "unset_nest_lock",
       NULL,
-      /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
+	 as DECL_NAME only omp_* and omp_*_8 appear.  */
       "display_env",
       "get_ancestor_thread_num",
       "init_allocator",
@@ -3991,8 +4009,10 @@ omp_runtime_api_call (const_tree fndecl)
       "set_dynamic",
       "set_max_active_levels",
       "set_nested",
+      "set_num_teams",
       "set_num_threads",
-      "set_schedule"
+      "set_schedule",
+      "set_teams_thread_limit"
     };
 
   int mode = 0;
@@ -4006,11 +4026,7 @@ omp_runtime_api_call (const_tree fndecl)
       size_t len = strlen (omp_runtime_apis[i]);
       if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
 	  && (name[4 + len] == '\0'
-	      || (mode > 0
-		  && name[4 + len] == '_'
-		  && (name[4 + len + 1] == '\0'
-		      || (mode > 1
-			  && strcmp (name + 4 + len + 1, "8_") == 0)))))
+	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
 	return true;
     }
   return false;
@@ -4077,9 +4093,26 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 			    "OpenMP runtime API call %qD in a region with "
 			    "%<order(concurrent)%> clause", fndecl);
 		}
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+		  && omp_runtime_api_call (fndecl)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_num_teams"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_num_teams") != 0)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_team_num"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_team_num") != 0))
+		{
+		  remove = true;
+		  error_at (gimple_location (stmt),
+			    "OpenMP runtime API call %qD strictly nested in a "
+			    "%<teams%> region", fndecl);
+		}
 	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
 		  && (gimple_omp_target_kind (ctx->stmt)
-		      == GF_OMP_TARGET_KIND_REGION))
+		      == GF_OMP_TARGET_KIND_REGION)
+		  && omp_runtime_api_call (fndecl))
 		{
 		  tree tgt_clauses = gimple_omp_target_clauses (ctx->stmt);
 		  tree c = omp_find_clause (tgt_clauses, OMP_CLAUSE_DEVICE);
@@ -4725,6 +4758,12 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
       return false;
     }
 
+  unsigned HOST_WIDE_INT ialign = 0;
+  if (TREE_CODE (allocator) == TREE_LIST)
+    {
+      ialign = tree_to_uhwi (TREE_VALUE (allocator));
+      allocator = TREE_PURPOSE (allocator);
+    }
   if (TREE_CODE (allocator) != INTEGER_CST)
     allocator = build_outer_var_ref (allocator, ctx);
   allocator = fold_convert (pointer_sized_int_node, allocator);
@@ -4739,21 +4778,21 @@ lower_private_allocate (tree var, tree new_var, tree &allocator,
   if (TYPE_P (new_var))
     {
       ptr_type = build_pointer_type (new_var);
-      align = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (new_var));
+      ialign = MAX (ialign, TYPE_ALIGN_UNIT (new_var));
     }
   else if (is_ref)
     {
       ptr_type = build_pointer_type (TREE_TYPE (TREE_TYPE (new_var)));
-      align = build_int_cst (size_type_node,
-			     TYPE_ALIGN_UNIT (TREE_TYPE (ptr_type)));
+      ialign = MAX (ialign, TYPE_ALIGN_UNIT (TREE_TYPE (ptr_type)));
     }
   else
     {
       ptr_type = build_pointer_type (TREE_TYPE (new_var));
-      align = build_int_cst (size_type_node, DECL_ALIGN_UNIT (new_var));
+      ialign = MAX (ialign, DECL_ALIGN_UNIT (new_var));
       if (sz == NULL_TREE)
 	sz = fold_convert (size_type_node, DECL_SIZE_UNIT (new_var));
     }
+  align = build_int_cst (size_type_node, ialign);
   if (TREE_CODE (sz) != INTEGER_CST)
     {
       tree szvar = create_tmp_var (size_type_node);
@@ -5707,6 +5746,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    if (tree *allocatep = ctx->allocate_map->get (var))
 		      {
 			allocator = *allocatep;
+			if (TREE_CODE (allocator) == TREE_LIST)
+			  allocator = TREE_PURPOSE (allocator);
 			if (TREE_CODE (allocator) != INTEGER_CST)
 			  allocator = build_outer_var_ref (allocator, ctx);
 			allocator = fold_convert (pointer_sized_int_node,
@@ -6025,6 +6066,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			if (tree *allocatep = ctx->allocate_map->get (var))
 			  {
 			    allocator = *allocatep;
+			    if (TREE_CODE (allocator) == TREE_LIST)
+			      allocator = TREE_PURPOSE (allocator);
 			    if (TREE_CODE (allocator) != INTEGER_CST)
 			      allocator = build_outer_var_ref (allocator, ctx);
 			    allocator = fold_convert (pointer_sized_int_node,
@@ -8226,6 +8269,10 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
 
 	case OMP_CLAUSE_TILE:
 	  tag |= OLF_TILE;
+	  break;
+
+	case OMP_CLAUSE_REDUCTION:
+	  tag |= OLF_REDUCTION;
 	  break;
 
 	default:
@@ -12070,6 +12117,12 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 	      if (tree *allocatorp = ctx->allocate_map->get (decl))
 		{
 		  tree allocator = *allocatorp;
+		  HOST_WIDE_INT ialign = 0;
+		  if (TREE_CODE (allocator) == TREE_LIST)
+		    {
+		      ialign = tree_to_uhwi (TREE_VALUE (allocator));
+		      allocator = TREE_PURPOSE (allocator);
+		    }
 		  if (TREE_CODE (allocator) != INTEGER_CST)
 		    {
 		      n = splay_tree_lookup (ctx->sfield_map,
@@ -12083,7 +12136,8 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
 		  allocator = fold_convert (pointer_sized_int_node, allocator);
 		  tree a = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
 		  tree align = build_int_cst (size_type_node,
-					      DECL_ALIGN_UNIT (decl));
+					      MAX (ialign,
+						   DECL_ALIGN_UNIT (decl)));
 		  tree sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (dst)));
 		  tree ptr = build_call_expr_loc (loc, a, 3, align, sz,
 						  allocator);
@@ -12581,6 +12635,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH:
 	  case GOMP_MAP_DETACH:
+	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
 	    break;
 	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:
@@ -13117,6 +13173,19 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		      tkind = tkind_zero;
 		    else if (integer_nonzerop (s))
 		      tkind_zero = tkind;
+		  }
+		if (tkind_zero == tkind
+		    && OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (c)
+		    && (((tkind & GOMP_MAP_FLAG_SPECIAL_BITS)
+			 & ~GOMP_MAP_IMPLICIT)
+			== 0))
+		  {
+		    /* If this is an implicit map, and the GOMP_MAP_IMPLICIT
+		       bits are not interfered by other special bit encodings,
+		       then turn the GOMP_IMPLICIT_BIT flag on for the runtime
+		       to see.  */
+		    tkind |= GOMP_MAP_IMPLICIT;
+		    tkind_zero = tkind;
 		  }
 		break;
 	      case OMP_CLAUSE_FIRSTPRIVATE:
@@ -13852,14 +13921,24 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   tree num_teams = omp_find_clause (gimple_omp_teams_clauses (teams_stmt),
 				    OMP_CLAUSE_NUM_TEAMS);
+  tree num_teams_lower = NULL_TREE;
   if (num_teams == NULL_TREE)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams_lower = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (num_teams);
+      if (num_teams_lower)
+	{
+	  num_teams_lower = fold_convert (unsigned_type_node, num_teams_lower);
+	  gimplify_expr (&num_teams_lower, &bind_body, NULL, is_gimple_val,
+			 fb_rvalue);
+	}
+      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
       gimplify_expr (&num_teams, &bind_body, NULL, is_gimple_val, fb_rvalue);
     }
+  if (num_teams_lower == NULL_TREE)
+    num_teams_lower = num_teams;
   tree thread_limit = omp_find_clause (gimple_omp_teams_clauses (teams_stmt),
 				       OMP_CLAUSE_THREAD_LIMIT);
   if (thread_limit == NULL_TREE)
@@ -13871,6 +13950,30 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimplify_expr (&thread_limit, &bind_body, NULL, is_gimple_val,
 		     fb_rvalue);
     }
+  location_t loc = gimple_location (teams_stmt);
+  tree decl = builtin_decl_explicit (BUILT_IN_GOMP_TEAMS4);
+  tree rettype = TREE_TYPE (TREE_TYPE (decl));
+  tree first = create_tmp_var (rettype);
+  gimple_seq_add_stmt (&bind_body,
+		       gimple_build_assign (first, build_one_cst (rettype)));
+  tree llabel = create_artificial_label (loc);
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (llabel));
+  gimple *call
+    = gimple_build_call (decl, 4, num_teams_lower, num_teams, thread_limit,
+			 first);
+  gimple_set_location (call, loc);
+  tree temp = create_tmp_var (rettype);
+  gimple_call_set_lhs (call, temp);
+  gimple_seq_add_stmt (&bind_body, call);
+
+  tree tlabel = create_artificial_label (loc);
+  tree flabel = create_artificial_label (loc);
+  gimple *cond = gimple_build_cond (NE_EXPR, temp, build_zero_cst (rettype),
+				    tlabel, flabel);
+  gimple_seq_add_stmt (&bind_body, cond);
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (tlabel));
+  gimple_seq_add_stmt (&bind_body,
+		       gimple_build_assign (first, build_zero_cst (rettype)));
 
   lower_rec_input_clauses (gimple_omp_teams_clauses (teams_stmt),
 			   &bind_body, &dlist, ctx, NULL);
@@ -13879,17 +13982,13 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			   NULL, ctx);
   gimple_seq_add_stmt (&bind_body, teams_stmt);
 
-  location_t loc = gimple_location (teams_stmt);
-  tree decl = builtin_decl_explicit (BUILT_IN_GOMP_TEAMS);
-  gimple *call = gimple_build_call (decl, 2, num_teams, thread_limit);
-  gimple_set_location (call, loc);
-  gimple_seq_add_stmt (&bind_body, call);
-
   gimple_seq_add_seq (&bind_body, gimple_omp_body (teams_stmt));
   gimple_omp_set_body (teams_stmt, NULL);
   gimple_seq_add_seq (&bind_body, olist);
   gimple_seq_add_seq (&bind_body, dlist);
   gimple_seq_add_stmt (&bind_body, gimple_build_omp_return (true));
+  gimple_seq_add_stmt (&bind_body, gimple_build_goto (llabel));
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (flabel));
   gimple_bind_set_body (bind, bind_body);
 
   pop_gimplify_context (bind);

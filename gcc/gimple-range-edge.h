@@ -1,5 +1,5 @@
 /* Gimple range edge header file.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -38,13 +38,14 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_outgoing_range
 {
 public:
-  gimple_outgoing_range ();
+  gimple_outgoing_range (int max_sw_edges = INT_MAX);
   ~gimple_outgoing_range ();
   gimple *edge_range_p (irange &r, edge e);
 private:
   void calc_switch_ranges (gswitch *sw);
   bool get_edge_range (irange &r, gimple *s, edge e);
 
+  int m_max_edges;
   hash_map<edge, irange *> *m_edge_table;
   irange_allocator m_range_allocator;
 };

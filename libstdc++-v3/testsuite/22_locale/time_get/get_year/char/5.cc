@@ -1,6 +1,6 @@
 // 2006-06-16  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006-2021 Free Software Foundation, Inc.
+// Copyright (C) 2006-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,12 +49,13 @@ void test01()
 
   const string str0 = "1";
   tg.get_year(str0.begin(), str0.end(), iss, err, &tm0);
-  VERIFY( err == (failbit | eofbit) );
-  VERIFY( tm0.tm_year == 0 );
+  VERIFY( err == eofbit );
+  VERIFY( tm0.tm_year == 2001 - 1900 );
 
   const string str1 = "1997 ";
+  err = goodbit;
   iter_type end1 = tg.get_year(str1.begin(), str1.end(), iss, err, &tm1);
-  VERIFY( err == (failbit | eofbit) );
+  VERIFY( err == goodbit );
   VERIFY( tm1.tm_year == time_sanity.tm_year );
   VERIFY( *end1 ==  ' ' );
 }

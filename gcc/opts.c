@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -569,6 +569,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_freorder_blocks, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fshrink_wrap, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fthread_jumps, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ccp, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ch, NULL, 1 },
@@ -580,6 +581,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_slsr, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fvar_tracking, NULL, 1 },
 
     /* -O1 (and not -Og) optimizations.  */
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
@@ -629,12 +631,12 @@ static const struct default_options default_options_table[] =
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fstore_merging, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fthread_jumps, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
+    { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL,
+      VECT_COST_MODEL_VERY_CHEAP },
     { OPT_LEVELS_2_PLUS, OPT_finline_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
 
@@ -646,6 +648,8 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
       REORDER_BLOCKS_ALGORITHM_STC },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_loop_vectorize, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_slp_vectorize, NULL, 1 },
 #ifdef INSN_SCHEDULING
   /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },
@@ -663,9 +667,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_DYNAMIC },
     { OPT_LEVELS_3_PLUS, OPT_fversion_loops_for_strides, NULL, 1 },
@@ -680,6 +682,7 @@ static const struct default_options default_options_table[] =
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
     { OPT_LEVELS_FAST, OPT_fallow_store_data_races, NULL, 1 },
+    { OPT_LEVELS_FAST, OPT_fsemantic_interposition, NULL, 0 },
 
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
@@ -720,7 +723,7 @@ default_options_optimization (struct gcc_options *opts,
 	      const int optimize_val = integral_argument (opt->arg);
 	      if (optimize_val == -1)
 		error_at (loc, "argument to %<-O%> should be a non-negative "
-			       "integer, %<g%>, %<s%> or %<fast%>");
+			       "integer, %<g%>, %<s%>, %<z%> or %<fast%>");
 	      else
 		{
 		  opts->x_optimize = optimize_val;
@@ -735,6 +738,15 @@ default_options_optimization (struct gcc_options *opts,
 
 	case OPT_Os:
 	  opts->x_optimize_size = 1;
+
+	  /* Optimizing for size forces optimize to be 2.  */
+	  opts->x_optimize = 2;
+	  opts->x_optimize_fast = 0;
+	  opts->x_optimize_debug = 0;
+	  break;
+
+	case OPT_Oz:
+	  opts->x_optimize_size = 2;
 
 	  /* Optimizing for size forces optimize to be 2.  */
 	  opts->x_optimize = 2;
@@ -1002,8 +1014,6 @@ void
 finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		location_t loc)
 {
-  enum unwind_info_type ui_except;
-
   if (opts->x_dump_base_name
       && ! opts->x_dump_base_name_prefixed)
     {
@@ -1103,61 +1113,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_warn_inline = 0;
       opts->x_flag_no_inline = 1;
     }
-
-  /* The optimization to partition hot and cold basic blocks into separate
-     sections of the .o and executable files does not work (currently)
-     with exception handling.  This is because there is no support for
-     generating unwind info.  If opts->x_flag_exceptions is turned on
-     we need to turn off the partitioning optimization.  */
-
-  ui_except = targetm_common.except_unwind_info (opts);
-
-  if (opts->x_flag_exceptions
-      && opts->x_flag_reorder_blocks_and_partition
-      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not work "
-		"with exceptions on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
-  /* If user requested unwind info, then turn off the partitioning
-     optimization.  */
-
-  if (opts->x_flag_unwind_tables
-      && !targetm_common.unwind_tables_default
-      && opts->x_flag_reorder_blocks_and_partition
-      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not support "
-		"unwind info on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
-  /* If the target requested unwind info, then turn off the partitioning
-     optimization with a different message.  Likewise, if the target does not
-     support named sections.  */
-
-  if (opts->x_flag_reorder_blocks_and_partition
-      && (!targetm_common.have_named_sections
-	  || (opts->x_flag_unwind_tables
-	      && targetm_common.unwind_tables_default
-	      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not work "
-		"on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
 
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
@@ -1320,17 +1275,148 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 				       opts->x_flag_live_patching,
 				       loc);
 
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (opts->x_flag_unroll_all_loops)
-    opts->x_flag_unroll_loops = 1;
-
   /* Allow cunroll to grow size accordingly.  */
   if (!opts_set->x_flag_cunroll_grow_size)
     opts->x_flag_cunroll_grow_size
       = (opts->x_flag_unroll_loops
          || opts->x_flag_peel_loops
          || opts->x_optimize >= 3);
+
+  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
+  if (opts->x_flag_cx_limited_range)
+    opts->x_flag_complex_method = 0;
+  else if (opts_set->x_flag_cx_limited_range)
+    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
+
+  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
+  if (opts->x_flag_cx_fortran_rules)
+    opts->x_flag_complex_method = 1;
+  else if (opts_set->x_flag_cx_fortran_rules)
+    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
+
+  /* Use -fvect-cost-model=cheap instead of -fvect-cost-mode=very-cheap
+     by default with explicit -ftree-{loop,slp}-vectorize.  */
+  if (opts->x_optimize == 2
+      && (opts_set->x_flag_tree_loop_vectorize
+	  || opts_set->x_flag_tree_vectorize))
+    SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
+			 VECT_COST_MODEL_CHEAP);
+
+  /* One could use EnabledBy, but it would lead to a circular dependency.  */
+  if (!OPTION_SET_P (flag_var_tracking_uninit))
+     flag_var_tracking_uninit = flag_var_tracking;
+
+  if (!OPTION_SET_P (flag_var_tracking_assignments))
+    flag_var_tracking_assignments
+      = (flag_var_tracking
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  if (flag_var_tracking_assignments_toggle)
+    flag_var_tracking_assignments = !flag_var_tracking_assignments;
+
+  if (flag_var_tracking_assignments && !flag_var_tracking)
+    flag_var_tracking = flag_var_tracking_assignments = -1;
+
+  if (flag_var_tracking_assignments
+      && (flag_selective_scheduling || flag_selective_scheduling2))
+    warning_at (loc, 0,
+		"var-tracking-assignments changes selective scheduling");
+
+  if (flag_syntax_only)
+    {
+      write_symbols = NO_DEBUG;
+      profile_flag = 0;
+    }
+
+  if (flag_gtoggle)
+    {
+      /* Make sure to process -gtoggle only once.  */
+      flag_gtoggle = false;
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	{
+	  debug_info_level = DINFO_LEVEL_NORMAL;
+
+	  if (write_symbols == NO_DEBUG)
+	    write_symbols = PREFERRED_DEBUGGING_TYPE;
+	}
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
+    }
+
+  if (!OPTION_SET_P (debug_nonbind_markers_p))
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && dwarf_debuginfo_p ()
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  diagnose_options (opts, opts_set, loc);
+}
+
+/* The function diagnoses incompatible combinations for provided options
+   (OPTS and OPTS_SET) at a given LOCation.  The function is called both
+   when command line is parsed (after the target optimization hook) and
+   when an optimize/target attribute (or pragma) is used.  */
+
+void diagnose_options (gcc_options *opts, gcc_options *opts_set,
+		       location_t loc)
+{
+  /* The optimization to partition hot and cold basic blocks into separate
+     sections of the .o and executable files does not work (currently)
+     with exception handling.  This is because there is no support for
+     generating unwind info.  If opts->x_flag_exceptions is turned on
+     we need to turn off the partitioning optimization.  */
+
+  enum unwind_info_type ui_except
+    = targetm_common.except_unwind_info (opts);
+
+  if (opts->x_flag_exceptions
+      && opts->x_flag_reorder_blocks_and_partition
+      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not work "
+		"with exceptions on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+  /* If user requested unwind info, then turn off the partitioning
+     optimization.  */
+
+  if (opts->x_flag_unwind_tables
+      && !targetm_common.unwind_tables_default
+      && opts->x_flag_reorder_blocks_and_partition
+      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not support "
+		"unwind info on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+  /* If the target requested unwind info, then turn off the partitioning
+     optimization with a different message.  Likewise, if the target does not
+     support named sections.  */
+
+  if (opts->x_flag_reorder_blocks_and_partition
+      && (!targetm_common.have_named_sections
+	  || (opts->x_flag_unwind_tables
+	      && targetm_common.unwind_tables_default
+	      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not work "
+		"on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+
 }
 
 #define LEFT_COLUMN	27
@@ -2543,7 +2629,28 @@ common_handle_option (struct gcc_options *opts,
     case OPT_Os:
     case OPT_Ofast:
     case OPT_Og:
+    case OPT_Oz:
       /* Currently handled in a prescan.  */
+      break;
+
+    case OPT_Wattributes_:
+      if (lang_mask == CL_DRIVER)
+	break;
+
+      if (value)
+	{
+	  error_at (loc, "arguments ignored for %<-Wattributes=%>; use "
+		    "%<-Wno-attributes=%> instead");
+	  break;
+	}
+      else if (arg[strlen (arg) - 1] == ',')
+	{
+	  error_at (loc, "trailing %<,%> in arguments for "
+		    "%<-Wno-attributes=%>");
+	  break;
+	}
+
+      add_comma_separated_to_vector (&opts->x_flag_ignored_attributes, arg);
       break;
 
     case OPT_Werror:
@@ -2599,6 +2706,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdebug_prefix_map_:
     case OPT_ffile_prefix_map_:
+    case OPT_fprofile_prefix_map_:
       /* Deferred.  */
       break;
 
@@ -2669,6 +2777,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_column_origin_:
       dc->column_origin = value;
+      break;
+
+    case OPT_fdiagnostics_escape_format_:
+      dc->escape_format = (enum diagnostics_escape_format)value;
       break;
 
     case OPT_fdiagnostics_show_cwe:
@@ -2993,6 +3105,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fuse_ld_bfd:
     case OPT_fuse_ld_gold:
     case OPT_fuse_ld_lld:
+    case OPT_fuse_ld_mold:
     case OPT_fuse_linker_plugin:
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;
@@ -3508,6 +3621,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fdebug_prefix_map_:
       case OPT_fmacro_prefix_map_:
       case OPT_ffile_prefix_map_:
+      case OPT_fprofile_prefix_map_:
       case OPT_fcompare_debug:
       case OPT_fchecking:
       case OPT_fchecking_:

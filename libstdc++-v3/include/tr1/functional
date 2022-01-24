@@ -1,6 +1,6 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -263,6 +263,10 @@ namespace tr1
     {
       typedef void type;
     };
+
+// Ignore warnings about std::unary_function and std::binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
@@ -2089,6 +2093,7 @@ namespace tr1
       typedef _Res (*_Invoker_type)(const _Any_data&, _ArgTypes...);
       _Invoker_type _M_invoker;
   };
+#pragma GCC diagnostic pop
 
   template<typename _Res, typename... _ArgTypes>
     function<_Res(_ArgTypes...)>::

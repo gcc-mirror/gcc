@@ -1,6 +1,6 @@
 // <experimental/io_service> -*- C++ -*-
 
-// Copyright (C) 2015-2021 Free Software Foundation, Inc.
+// Copyright (C) 2015-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,6 @@
 #if __cplusplus >= 201402L
 
 #include <atomic>
-#include <chrono>
 #include <forward_list>
 #include <functional>
 #include <system_error>
@@ -43,6 +42,7 @@
 #include <vector>
 #include <experimental/netfwd>
 #include <experimental/executor>
+#include <bits/chrono.h>
 #if _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif

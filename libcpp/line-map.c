@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -2086,7 +2086,8 @@ rich_location::rich_location (line_maps *set, location_t loc,
   m_fixit_hints (),
   m_seen_impossible_fixit (false),
   m_fixits_cannot_be_auto_applied (false),
-  m_path (NULL)
+  m_path (NULL),
+  m_escape_on_output (false)
 {
   add_range (loc, SHOW_RANGE_WITH_CARET, label);
 }

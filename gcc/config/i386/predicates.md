@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -617,9 +617,11 @@
 ;; use @GOTOFF unless we are absolutely sure that the symbol is in the
 ;; same segment as the GOT.  Unfortunately, the flexibility of linker
 ;; scripts means that we can't be sure of that in general, so assume
-;; that @GOTOFF is never valid on VxWorks.
+;; @GOTOFF is not valid on VxWorks, except with the large code model.
 (define_predicate "gotoff_operand"
-  (and (not (match_test "TARGET_VXWORKS_RTP"))
+  (and (ior (not (match_test "TARGET_VXWORKS_RTP"))
+            (match_test "ix86_cmodel == CM_LARGE")
+            (match_test "ix86_cmodel == CM_LARGE_PIC"))
        (match_operand 0 "local_symbolic_operand")))
 
 ;; Test for various thread-local symbols.
@@ -1046,10 +1048,10 @@
 
 ;; True for registers, or (not: registers).  Used to optimize 3-operand
 ;; bitwise operation.
-(define_predicate "reg_or_notreg_operand"
-  (ior (match_operand 0 "register_operand")
+(define_predicate "regmem_or_bitnot_regmem_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
        (and (match_code "not")
-	    (match_test "register_operand (XEXP (op, 0), mode)"))))
+	    (match_test "nonimmediate_operand (XEXP (op, 0), mode)"))))
 
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
@@ -1839,6 +1841,19 @@
   else
     return false;
 
+  return true;
+})
+
+;; Return true if OP is a const vector with duplicate value.
+(define_predicate "const_vector_duplicate_operand"
+  (match_code "const_vector")
+{
+  rtx elt = XVECEXP (op, 0, 0);
+  int i, nelt = XVECLEN (op, 0);
+
+  for (i = 1; i < nelt; ++i)
+    if (!rtx_equal_p (elt, XVECEXP (op, 0, i)))
+      return false;
   return true;
 })
 

@@ -22,8 +22,8 @@
 ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
          do j = 1, n
             call workerr (a, n) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
-! { dg-bogus "note: routine 'workerr' declared here" "TODO" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'workerr_' declared here" "TODO" { xfail offloading_enabled } .-2 }
+! { dg-bogus "note: routine 'workerr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
+! { dg-bogus "note: routine 'workerr_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
          end do
       end do
 !$acc end parallel loop
@@ -36,8 +36,8 @@
          do j = 1, n
             call gangr (a, n) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" "" { target *-*-* } .-1 }
-! { dg-bogus "note: routine 'gangr' declared here" "TODO" { xfail { ! offloading_enabled } } .-2 }
-! { dg-bogus "note: routine 'gangr_' declared here" "TODO" { xfail offloading_enabled } .-3 }
+! { dg-bogus "note: routine 'gangr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-2 }
+! { dg-bogus "note: routine 'gangr_' declared here" "TODO2" { xfail offloading_enabled } .-3 }
          end do
       end do
 !$acc end parallel loop
@@ -162,8 +162,8 @@
 !$acc parallel loop ! { dg-message "optimized: assigned OpenACC gang worker loop parallelism" }
       do i = 1, n
          call vectorr (a, n) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
-! { dg-bogus "note: routine 'vectorr' declared here" "TODO" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'vectorr_' declared here" "TODO" { xfail offloading_enabled } .-2 }
+! { dg-bogus "note: routine 'vectorr' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
+! { dg-bogus "note: routine 'vectorr_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
       end do
 !$acc end parallel loop
 
@@ -214,8 +214,8 @@
 ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
          do j = 1, n
             a(i) = workerf (a, n) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
-! { dg-bogus "note: routine 'workerf' declared here" "TODO" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'workerf_' declared here" "TODO" { xfail offloading_enabled } .-2 }
+! { dg-bogus "note: routine 'workerf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
+! { dg-bogus "note: routine 'workerf_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
          end do
       end do
 !$acc end parallel loop
@@ -228,8 +228,8 @@
          do j = 1, n
             a(i) = gangf (a, n) ! { dg-message "optimized: assigned OpenACC worker vector loop parallelism" }
 ! { dg-error "routine call uses same OpenACC parallelism as containing loop" "" { target *-*-* } .-1 }
-! { dg-bogus "note: routine 'gangf' declared here" "TODO" { xfail { ! offloading_enabled } } .-2 }
-! { dg-bogus "note: routine 'gangf_' declared here" "TODO" { xfail offloading_enabled } .-3 }
+! { dg-bogus "note: routine 'gangf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-2 }
+! { dg-bogus "note: routine 'gangf_' declared here" "TODO2" { xfail offloading_enabled } .-3 }
          end do
       end do
 !$acc end parallel loop
@@ -354,8 +354,8 @@
 !$acc parallel loop ! { dg-message "optimized: assigned OpenACC gang worker loop parallelism" }
       do i = 1, n
          a(i) = vectorf (a, n) ! { dg-message "optimized: assigned OpenACC vector loop parallelism" }
-! { dg-bogus "note: routine 'vectorf' declared here" "TODO" { xfail { ! offloading_enabled } } .-1 }
-! { dg-bogus "note: routine 'vectorf_' declared here" "TODO" { xfail offloading_enabled } .-2 }
+! { dg-bogus "note: routine 'vectorf' declared here" "TODO1" { xfail { ! offloading_enabled } } .-1 }
+! { dg-bogus "note: routine 'vectorf_' declared here" "TODO2" { xfail offloading_enabled } .-2 }
       end do
 !$acc end parallel loop
 

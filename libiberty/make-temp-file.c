@@ -1,5 +1,5 @@
 /* Utility to pick a temporary filename prefix.
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -39,6 +39,10 @@ Boston, MA 02110-1301, USA.  */
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
 #endif
+#if HAVE_SYS_STAT_H
+#include <sys/stat.h>
+#endif
+
 
 #ifndef R_OK
 #define R_OK 4
@@ -76,7 +80,17 @@ try_dir (const char *dir, const char *base)
     return base;
   if (dir != 0
       && access (dir, R_OK | W_OK | X_OK) == 0)
-    return dir;
+    {
+      /* Check to make sure dir is actually a directory. */
+#ifdef S_ISDIR
+      struct stat s;
+      if (stat (dir, &s))
+	return NULL;
+      if (!S_ISDIR (s.st_mode))
+	return NULL;
+#endif
+      return dir;
+    }
   return 0;
 }
 

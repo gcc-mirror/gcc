@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -641,6 +641,24 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
 	  case GFC_CONVERT_SWAP:
 	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
 	    break;
+
+#ifdef HAVE_GFC_REAL_17
+	  case GFC_CONVERT_NATIVE | GFC_CONVERT_R16_IEEE:
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "BIG_ENDIAN,R16_IEEE" : "LITTLE_ENDIAN,R16_IEEE";
+	    break;
+
+	  case GFC_CONVERT_SWAP | GFC_CONVERT_R16_IEEE:
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "LITTLE_ENDIAN,R16_IEEE" : "BIG_ENDIAN,R16_IEEE";
+	    break;
+
+	  case GFC_CONVERT_NATIVE | GFC_CONVERT_R16_IBM:
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "BIG_ENDIAN,R16_IBM" : "LITTLE_ENDIAN,R16_IBM";
+	    break;
+
+	  case GFC_CONVERT_SWAP | GFC_CONVERT_R16_IBM:
+	    p = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ ? "LITTLE_ENDIAN,R16_IBM" : "BIG_ENDIAN,R16_IBM";
+	    break;
+#endif
 
 	  default:
 	    internal_error (&iqp->common, "inquire_via_unit(): Bad convert");

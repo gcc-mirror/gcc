@@ -1,5 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -100,6 +100,7 @@ extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
 extern void force_edge_cold (edge, bool);
 extern void propagate_unlikely_bbs_forward (void);
+extern void change_edge_frequency (edge, profile_probability);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 

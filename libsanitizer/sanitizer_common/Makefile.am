@@ -17,6 +17,7 @@ AM_CXXFLAGS += -DSANITIZER_LIBBACKTRACE -DSANITIZER_CP_DEMANGLE \
 endif
 AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I m4
+sanitizer_platform_limits_freebsd.lo: AM_CXXFLAGS += -DUSE_SYSTEM_MD5
 
 noinst_LTLIBRARIES = libsanitizer_common.la
 
@@ -44,7 +45,6 @@ sanitizer_common_files = \
 	sanitizer_mutex.cpp \
 	sanitizer_netbsd.cpp \
 	sanitizer_openbsd.cpp \
-	sanitizer_persistent_allocator.cpp \
 	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
 	sanitizer_platform_limits_openbsd.cpp \

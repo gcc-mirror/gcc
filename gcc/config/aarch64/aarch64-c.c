@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -200,6 +200,8 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_BF16_FP,
 			"__ARM_FEATURE_BF16_SCALAR_ARITHMETIC", pfile);
+  aarch64_def_or_undef (TARGET_LS64,
+			"__ARM_FEATURE_LS64", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
@@ -257,7 +259,9 @@ aarch64_pragma_target_parse (tree args, tree pop_target)
   unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
   cpp_opts->warn_unused_macros = 0;
 
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
   aarch64_update_cpp_builtins (parse_in);
+  cpp_stop_forcing_token_locations (parse_in);
 
   cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 
@@ -296,6 +300,8 @@ aarch64_pragma_aarch64 (cpp_reader *)
   const char *name = TREE_STRING_POINTER (x);
   if (strcmp (name, "arm_sve.h") == 0)
     aarch64_sve::handle_arm_sve_h ();
+  else if (strcmp (name, "arm_neon.h") == 0)
+    handle_arm_neon_h ();
   else
     error ("unknown %<#pragma GCC aarch64%> option %qs", name);
 }

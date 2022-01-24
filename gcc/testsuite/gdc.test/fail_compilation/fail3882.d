@@ -2,13 +2,13 @@
 // PERMUTE_ARGS: -debug
 
 /******************************************/
-// 3882
+// https://issues.dlang.org/show_bug.cgi?id=3882
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3882.d(23): Warning: calling fail3882.strictlyPure!int.strictlyPure without side effects discards return value of type int, prepend a cast(void) if intentional
-fail_compilation/fail3882.d(27): Warning: calling fp without side effects discards return value of type int, prepend a cast(void) if intentional
+fail_compilation/fail3882.d(23): Warning: calling `fail3882.strictlyPure!int.strictlyPure` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
+fail_compilation/fail3882.d(27): Warning: calling `fp` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
 ---
 */
 
@@ -22,7 +22,7 @@ void main()
     int x = 3;
     strictlyPure(x);
 
-    // 12649
+    // https://issues.dlang.org/show_bug.cgi?id=12649
     auto fp = &strictlyPure!int;
     fp(x);
 }
@@ -33,8 +33,10 @@ void main()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3882.d(46): Warning: calling fail3882.f1 without side effects discards return value of type int, prepend a cast(void) if intentional
-fail_compilation/fail3882.d(47): Warning: calling fail3882.f2 without side effects discards return value of type int, prepend a cast(void) if intentional
+fail_compilation/fail3882.d(48): Warning: calling `fail3882.f1` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
+fail_compilation/fail3882.d(49): Warning: calling `fail3882.f2` without side effects discards return value of type `int`; prepend a `cast(void)` if intentional
+Error: warnings are treated as errors
+       Use -wi if you wish to treat warnings only as informational.
 ---
 */
 

@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include <openacc.h>
-#include <alloca.h>
 #include <string.h>
 #include <gomp-constants.h>
 #include <stdlib.h>
@@ -78,9 +77,9 @@ int main ()
     vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
 
-  gangdist = (int *) alloca (gangsize * sizeof (int));
-  workerdist = (int *) alloca (workersize * sizeof (int));
-  vectordist = (int *) alloca (vectorsize * sizeof (int));
+  gangdist = (int *) __builtin_alloca (gangsize * sizeof (int));
+  workerdist = (int *) __builtin_alloca (workersize * sizeof (int));
+  vectordist = (int *) __builtin_alloca (vectorsize * sizeof (int));
   memset (gangdist, 0, gangsize * sizeof (int));
   memset (workerdist, 0, workersize * sizeof (int));
   memset (vectordist, 0, vectorsize * sizeof (int));

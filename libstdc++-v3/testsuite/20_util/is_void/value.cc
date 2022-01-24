@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,13 +26,11 @@ void test01()
   using namespace __gnu_test;
 
   static_assert(test_category<is_void, void>(true), "");
-  
+
   static_assert(test_category<is_void, char>(false), "");
   static_assert(test_category<is_void, signed char>(false), "");
   static_assert(test_category<is_void, unsigned char>(false), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_void, wchar_t>(false), "");
-#endif
   static_assert(test_category<is_void, short>(false), "");
   static_assert(test_category<is_void, unsigned short>(false), "");
   static_assert(test_category<is_void, int>(false), "");

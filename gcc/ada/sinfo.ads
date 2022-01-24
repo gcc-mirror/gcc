@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,7 +200,7 @@ package Sinfo is
 
    --  The exceptions to this rule occur with {DEFINING_IDENTIFIERS} in all
    --  contexts, which is handled as described in the previous section, and
-   --  with {,library_unit_NAME} in the N_With_Clause mode, which is handled
+   --  with {,library_unit_NAME} in the N_With_Clause node, which is handled
    --  using the First_Name and Last_Name flags, as further detailed in the
    --  description of the N_With_Clause node.
 
@@ -410,10 +410,6 @@ package Sinfo is
    --       Has_Dynamic_Length_Check  set if length check inserted
    --       Assignment_OK             set if modification is OK
    --       Is_Controlling_Actual     set for controlling argument
-
-   --  Note: the utility program that creates the Treeprs spec (in the file
-   --  xtreeprs.adb) knows about the special fields here, so it must be
-   --  modified if any change is made to these fields.
 
    --  Note: see under (EXPRESSION) for further details on the use of
    --  the Paren_Count field to record the number of parentheses levels.
@@ -1846,7 +1842,7 @@ package Sinfo is
 
    --  Is_Read
    --    Present in variable reference markers. Set when the original variable
-   --    reference constitues a read of the variable.
+   --    reference constitutes a read of the variable.
 
    --  Is_Source_Call
    --    Present in call marker nodes. Set when the related call came from
@@ -1906,7 +1902,7 @@ package Sinfo is
 
    --  Is_Write
    --    Present in variable reference markers. Set when the original variable
-   --    reference constitues a write of the variable.
+   --    reference constitutes a write of the variable.
 
    --  Itype
    --    Used in N_Itype_Reference node to reference an itype for which it is

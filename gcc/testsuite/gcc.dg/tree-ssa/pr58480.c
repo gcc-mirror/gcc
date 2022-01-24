@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! keeps_null_pointer_checks } } } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fdump-tree-vrp1 -fdelete-null-pointer-checks" } */
+/* { dg-options "-O2 -fno-thread-jumps -fdisable-tree-evrp -fdump-tree-vrp1 -fdelete-null-pointer-checks" } */
 
 extern void eliminate (void);
 extern void* f1 (void *a, void *b) __attribute__((nonnull));

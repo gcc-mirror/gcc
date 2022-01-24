@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -250,8 +250,8 @@ object_block_hasher::hash (object_block *old)
 /* Return a new unnamed section with the given fields.  */
 
 section *
-get_unnamed_section (unsigned int flags, void (*callback) (const void *),
-		     const void *data)
+get_unnamed_section (unsigned int flags, void (*callback) (const char *),
+		     const char *data)
 {
   section *sect;
 
@@ -3415,8 +3415,6 @@ compare_constant (const tree t1, const tree t2)
     default:
       return 0;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return the section into which constant EXP should be placed.  */
@@ -5871,7 +5869,7 @@ mark_weak (tree decl)
 
   struct symtab_node *n = symtab_node::get (decl);
   if (n && n->refuse_visibility_changes)
-    error ("%+qD declared weak after being used", decl);
+    error ("%qD declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)
@@ -7476,7 +7474,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      FIXME: We can resolve the weakref case more curefuly by looking at the
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
-      || (TREE_CODE (exp) == FUNCTION_DECL
+      || (!targetm.ifunc_ref_local_ok ()
+	  && TREE_CODE (exp) == FUNCTION_DECL
 	  && cgraph_node::get (exp)
 	  && cgraph_node::get (exp)->ifunc_resolver))
     return false;
@@ -7625,6 +7624,8 @@ decl_binds_to_current_def_p (const_tree decl)
    at link-time with an entirely different definition, provided that the
    replacement has the same type.  For example, functions declared
    with __attribute__((weak)) on most systems are replaceable.
+   If SEMANTIC_INTERPOSITION_P is false allow interposition only on
+   symbols explicitly declared weak.
 
    COMDAT functions are not replaceable, since all definitions of the
    function must be equivalent.  It is important that COMDAT functions
@@ -7632,12 +7633,12 @@ decl_binds_to_current_def_p (const_tree decl)
    instantiations is not penalized.  */
 
 bool
-decl_replaceable_p (tree decl)
+decl_replaceable_p (tree decl, bool semantic_interposition_p)
 {
   gcc_assert (DECL_P (decl));
   if (!TREE_PUBLIC (decl) || DECL_COMDAT (decl))
     return false;
-  if (!flag_semantic_interposition
+  if (!semantic_interposition_p
       && !DECL_WEAK (decl))
     return false;
   return !decl_binds_to_current_def_p (decl);
@@ -7778,9 +7779,9 @@ file_end_indicate_split_stack (void)
    a get_unnamed_section callback.  */
 
 void
-output_section_asm_op (const void *directive)
+output_section_asm_op (const char *directive)
 {
-  fprintf (asm_out_file, "%s\n", (const char *) directive);
+  fprintf (asm_out_file, "%s\n", directive);
 }
 
 /* Emit assembly code to switch to section NEW_SECTION.  Do nothing if
@@ -7827,10 +7828,7 @@ switch_to_section (section *new_section, tree decl)
   else if (in_section == new_section)
     return;
 
-  if (new_section->common.flags & SECTION_FORGET)
-    in_section = NULL;
-  else
-    in_section = new_section;
+  in_section = new_section;
 
   switch (SECTION_STYLE (new_section))
     {

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,15 @@ package body Ada.Wide_Wide_Characters.Unicode is
    begin
       return Category (G.Get_Category (Wide_Wide_Character'Pos (U)));
    end Get_Category;
+
+   --------------
+   -- Is_Basic --
+   --------------
+
+   function Is_Basic (U : Wide_Wide_Character) return Boolean is
+   begin
+      return G.Is_UTF_32_Basic (Wide_Wide_Character'Pos (U));
+   end Is_Basic;
 
    --------------
    -- Is_Digit --
@@ -157,6 +166,16 @@ package body Ada.Wide_Wide_Characters.Unicode is
    begin
       return G.Is_UTF_32_Space (G.Category (C));
    end Is_Space;
+
+   --------------
+   -- To_Basic --
+   --------------
+
+   function To_Basic (U : Wide_Wide_Character) return Wide_Wide_Character is
+   begin
+      return Wide_Wide_Character'Val
+        (G.UTF_32_To_Basic (Wide_Wide_Character'Pos (U)));
+   end To_Basic;
 
    -------------------
    -- To_Lower_Case --

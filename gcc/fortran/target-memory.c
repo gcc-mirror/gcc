@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory.
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.
@@ -138,7 +138,6 @@ gfc_element_size (gfc_expr *e, size_t *siz)
       *siz = 0;
       return false;
     }
-  return true;
 }
 
 
@@ -486,7 +485,7 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 
   result->value.character.string[result->value.character.length] = '\0';
 
-  return result->value.character.length;
+  return size_character (result->value.character.length, result->ts.kind);
 }
 
 

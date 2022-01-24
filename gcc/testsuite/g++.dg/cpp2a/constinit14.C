@@ -2,7 +2,7 @@
 // { dg-do compile { target c++20 } }
 
 struct Value {
-  Value() : v{new int{42}} {}
+  Value() : v{new int{42}} {}	// { dg-error "result of 'operator new'" "" { target implicit_constexpr } }
   int* v;
 };
 

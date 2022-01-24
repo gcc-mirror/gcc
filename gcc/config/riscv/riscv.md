@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -170,7 +170,7 @@
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost"
+   fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -802,7 +802,7 @@
       rtx hp = gen_reg_rtx (<MODE>mode);
       rtx lp = gen_reg_rtx (<MODE>mode);
 
-      emit_insn (gen_mul<mode>3_highpart (hp, operands[1], operands[2]));
+      emit_insn (gen_smul<mode>3_highpart (hp, operands[1], operands[2]));
       emit_insn (gen_mul<mode>3 (operands[0], operands[1], operands[2]));
       emit_insn (gen_ashr<mode>3 (lp, operands[0],
 				  GEN_INT (BITS_PER_WORD - 1)));
@@ -899,14 +899,14 @@
   emit_insn (gen_muldi3 (low, operands[1], operands[2]));
 
   rtx high = gen_reg_rtx (DImode);
-  emit_insn (gen_<u>muldi3_highpart (high, operands[1], operands[2]));
+  emit_insn (gen_<su>muldi3_highpart (high, operands[1], operands[2]));
 
   emit_move_insn (gen_lowpart (DImode, operands[0]), low);
   emit_move_insn (gen_highpart (DImode, operands[0]), high);
   DONE;
 })
 
-(define_insn "<u>muldi3_highpart"
+(define_insn "<su>muldi3_highpart"
   [(set (match_operand:DI                0 "register_operand" "=r")
 	(truncate:DI
 	  (lshiftrt:TI
@@ -961,13 +961,13 @@
 {
   rtx temp = gen_reg_rtx (SImode);
   emit_insn (gen_mulsi3 (temp, operands[1], operands[2]));
-  emit_insn (gen_<u>mulsi3_highpart (riscv_subword (operands[0], true),
+  emit_insn (gen_<su>mulsi3_highpart (riscv_subword (operands[0], true),
 				     operands[1], operands[2]));
   emit_insn (gen_movsi (riscv_subword (operands[0], false), temp));
   DONE;
 })
 
-(define_insn "<u>mulsi3_highpart"
+(define_insn "<su>mulsi3_highpart"
   [(set (match_operand:SI                0 "register_operand" "=r")
 	(truncate:SI
 	  (lshiftrt:DI
@@ -1302,11 +1302,16 @@
 
 ;; Extension insns.
 
-(define_insn_and_split "zero_extendsidi2"
+(define_expand "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
+  "TARGET_64BIT")
+
+(define_insn_and_split "*zero_extendsidi2_internal"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT"
+  "TARGET_64BIT && !TARGET_ZBA"
   "@
    #
    lwu\t%0,%1"
@@ -1321,11 +1326,17 @@
   [(set_attr "move_type" "shift_shift,load")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "zero_extendhi<GPR:mode>2"
+(define_expand "zero_extendhi<GPR:mode>2"
+  [(set (match_operand:GPR    0 "register_operand")
+	(zero_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn_and_split "*zero_extendhi<GPR:mode>2"
   [(set (match_operand:GPR    0 "register_operand"     "=r,r")
 	(zero_extend:GPR
 	    (match_operand:HI 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_ZBB"
   "@
    #
    lhu\t%0,%1"
@@ -1372,11 +1383,16 @@
   [(set_attr "move_type" "move,load")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "extend<SHORT:mode><SUPERQI:mode>2"
+(define_expand "extend<SHORT:mode><SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI 0 "register_operand")
+	(sign_extend:SUPERQI (match_operand:SHORT 1 "nonimmediate_operand")))]
+  "")
+
+(define_insn_and_split "*extend<SHORT:mode><SUPERQI:mode>2"
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:SHORT 1 "nonimmediate_operand" " r,m")))]
-  ""
+  "!TARGET_ZBB"
   "@
    #
    l<SHORT:size>\t%0,%1"
@@ -2078,7 +2094,7 @@
 			   (match_operand:QI 2 "immediate_operand" "I"))
 		(match_operand 3 "immediate_operand" "")))
    (clobber (match_scratch:DI 4 "=&r"))]
-  "TARGET_64BIT
+  "TARGET_64BIT && !TARGET_ZBA
    && ((INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff)"
   "#"
   "&& reload_completed"
@@ -2845,6 +2861,7 @@
   "<load>\t%3, %1\;<load>\t%0, %2\;xor\t%0, %3, %0\;li\t%3, 0"
   [(set_attr "length" "12")])
 
+(include "bitmanip.md")
 (include "sync.md")
 (include "peephole.md")
 (include "pic.md")

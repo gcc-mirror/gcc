@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -491,7 +491,7 @@ package body Exp_Ch13 is
       --  a constrained type extension with inherited discriminants.
 
       if Is_Type (E_Scope)
-        and then Ekind (E_Scope) not in Concurrent_Kind
+        and then not Is_Concurrent_Type (E_Scope)
       then
          E_Scope := Scope (E_Scope);
 

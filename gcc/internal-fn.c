@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2696,9 +2696,9 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
 static void
 expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
-  rtx mem, target, mask;
+  class expand_operand ops[4];
+  tree type, lhs, rhs, maskt, biast;
+  rtx mem, target, mask, bias;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
@@ -2723,11 +2723,20 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_output_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   if (optab == len_load_optab)
-    create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
-				 TYPE_UNSIGNED (TREE_TYPE (maskt)));
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 3);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[3], bias, QImode);
+      expand_insn (icode, 4, ops);
+    }
   else
-    create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (icode, 3, ops);
+    {
+      create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      expand_insn (icode, 3, ops);
+    }
+
   if (!rtx_equal_p (target, ops[0].value))
     emit_move_insn (target, ops[0].value);
 }
@@ -2741,9 +2750,9 @@ expand_partial_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  class expand_operand ops[3];
-  tree type, lhs, rhs, maskt;
-  rtx mem, reg, mask;
+  class expand_operand ops[4];
+  tree type, lhs, rhs, maskt, biast;
+  rtx mem, reg, mask, bias;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
@@ -2766,11 +2775,19 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   create_fixed_operand (&ops[0], mem);
   create_input_operand (&ops[1], reg, TYPE_MODE (type));
   if (optab == len_store_optab)
-    create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
-				 TYPE_UNSIGNED (TREE_TYPE (maskt)));
+    {
+      create_convert_operand_from (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)),
+				   TYPE_UNSIGNED (TREE_TYPE (maskt)));
+      biast = gimple_call_arg (stmt, 4);
+      bias = expand_normal (biast);
+      create_input_operand (&ops[3], bias, QImode);
+      expand_insn (icode, 4, ops);
+    }
   else
-    create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
-  expand_insn (icode, 3, ops);
+    {
+      create_input_operand (&ops[2], mask, TYPE_MODE (TREE_TYPE (maskt)));
+      expand_insn (icode, 3, ops);
+    }
 }
 
 #define expand_mask_store_optab_fn expand_partial_store_optab_fn
@@ -2934,6 +2951,36 @@ expand_VEC_CONVERT (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* Expand IFN_RAWMEMCHAR internal function.  */
+
+void
+expand_RAWMEMCHR (internal_fn, gcall *stmt)
+{
+  expand_operand ops[3];
+
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+  machine_mode lhs_mode = TYPE_MODE (TREE_TYPE (lhs));
+  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  create_output_operand (&ops[0], lhs_rtx, lhs_mode);
+
+  tree mem = gimple_call_arg (stmt, 0);
+  rtx mem_rtx = get_memory_rtx (mem, NULL);
+  create_fixed_operand (&ops[1], mem_rtx);
+
+  tree pattern = gimple_call_arg (stmt, 1);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (pattern));
+  rtx pattern_rtx = expand_normal (pattern);
+  create_input_operand (&ops[2], pattern_rtx, mode);
+
+  insn_code icode = direct_optab_handler (rawmemchr_optab, mode);
+
+  expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+    emit_move_insn (lhs_rtx, ops[0].value);
+}
+
 /* Expand the IFN_UNIQUE function according to its first argument.  */
 
 static void
@@ -2981,11 +3028,7 @@ expand_UNIQUE (internal_fn, gcall *stmt)
 }
 
 /* Expand the IFN_DEFERRED_INIT function:
-   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA);
-
-   if IS_VLA is false, the LHS is the DECL itself,
-   if IS_VLA is true, the LHS is a MEM_REF whose address is the pointer
-   to this DECL.
+   LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, NAME of the DECL);
 
    Initialize the LHS with zero/pattern according to its second argument
    INIT_TYPE:
@@ -3015,21 +3058,41 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     reg_lhs = true;
   else
     {
-      rtx tem = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-      reg_lhs = !MEM_P (tem);
+      tree lhs_base = lhs;
+      while (handled_component_p (lhs_base))
+	lhs_base = TREE_OPERAND (lhs_base, 0);
+      reg_lhs = (mem_ref_refers_to_non_mem_p (lhs_base)
+		 || non_mem_decl_p (lhs_base));
+      /* If this expands to a register and the underlying decl is wrapped in
+	 a MEM_REF that just serves as an access type change expose the decl
+	 if it is of correct size.  This avoids a situation as in PR103271
+	 if the target does not support a direct move to the registers mode.  */
+      if (reg_lhs
+	  && TREE_CODE (lhs_base) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (lhs_base, 0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))
+	  && integer_zerop (TREE_OPERAND (lhs_base, 1))
+	  && tree_fits_uhwi_p (var_size)
+	  && tree_int_cst_equal
+	       (var_size,
+		DECL_SIZE_UNIT (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))))
+	{
+	  lhs = TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0);
+	  var_type = TREE_TYPE (lhs);
+	}
     }
 
   if (!reg_lhs)
     {
-      /* If this is a VLA or the variable is not in register,
-	 expand to a memset to initialize it.  */
+      /* If the variable is not in register, expand to a memset
+	 to initialize it.  */
       mark_addressable (lhs);
       tree var_addr = build_fold_addr_expr (lhs);
 
-      tree value = (init_type == AUTO_INIT_PATTERN) ?
-		    build_int_cst (integer_type_node,
-				   INIT_PATTERN_VALUE) :
-		    integer_zero_node;
+      tree value = (init_type == AUTO_INIT_PATTERN)
+		    ? build_int_cst (integer_type_node,
+				     INIT_PATTERN_VALUE)
+		    : integer_zero_node;
       tree m_call = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMSET),
 				     3, var_addr, value, var_size);
       /* Expand this memset call.  */
@@ -3037,27 +3100,36 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     }
   else
     {
-      /* If this variable is in a register, use expand_assignment might
-	 generate better code.  */
-      tree init = build_zero_cst (var_type);
-      unsigned HOST_WIDE_INT total_bytes
-	= tree_to_uhwi (TYPE_SIZE_UNIT (var_type));
-
-      if (init_type == AUTO_INIT_PATTERN)
+      /* If this variable is in a register use expand_assignment.
+	 For boolean scalars force zero-init.  */
+      tree init;
+      scalar_int_mode var_mode;
+      if (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE
+	  && tree_fits_uhwi_p (var_size)
+	  && (init_type == AUTO_INIT_PATTERN
+	      || !is_gimple_reg_type (var_type))
+	  && int_mode_for_size (tree_to_uhwi (var_size) * BITS_PER_UNIT,
+				0).exists (&var_mode)
+	  && have_insn_for (SET, var_mode))
 	{
-	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
-	  memset (buf, INIT_PATTERN_VALUE, total_bytes);
-	  if (can_native_interpret_type_p (var_type))
-	    init = native_interpret_expr (var_type, buf, total_bytes);
+	  unsigned HOST_WIDE_INT total_bytes = tree_to_uhwi (var_size);
+	  unsigned char *buf = XALLOCAVEC (unsigned char, total_bytes);
+	  memset (buf, (init_type == AUTO_INIT_PATTERN
+			? INIT_PATTERN_VALUE : 0), total_bytes);
+	  tree itype = build_nonstandard_integer_type
+			 (total_bytes * BITS_PER_UNIT, 1);
+	  wide_int w = wi::from_buffer (buf, total_bytes);
+	  init = wide_int_to_tree (itype, w);
+	  /* Pun the LHS to make sure its type has constant size
+	     unless it is an SSA name where that's already known.  */
+	  if (TREE_CODE (lhs) != SSA_NAME)
+	    lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
 	  else
-	    {
-	      tree itype = build_nonstandard_integer_type
-			     (total_bytes * BITS_PER_UNIT, 1);
-	      wide_int w = wi::from_buffer (buf, total_bytes);
-	      init = build1 (VIEW_CONVERT_EXPR, var_type,
-			     wide_int_to_tree (itype, w));
-	    }
+	    init = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), init);
 	}
+      else
+	/* Use zero-init also for variable-length sizes.  */
+	init = build_zero_cst (var_type);
 
       expand_assignment (lhs, init, false);
     }
@@ -3177,6 +3249,46 @@ static void
 expand_ATOMIC_COMPARE_EXCHANGE (internal_fn, gcall *call)
 {
   expand_ifn_atomic_compare_exchange (call);
+}
+
+/* Expand atomic add fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_ADD_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic sub fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_SUB_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic and fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_AND_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic or fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_OR_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
+}
+
+/* Expand atomic xor fetch and cmp with 0.  */
+
+static void
+expand_ATOMIC_XOR_FETCH_CMP_0 (internal_fn, gcall *call)
+{
+  expand_ifn_atomic_op_fetch_cmp_0 (call);
 }
 
 /* Expand LAUNDER to assignment, lhs = arg0.  */
@@ -3775,6 +3887,67 @@ direct_internal_fn_supported_p (gcall *stmt, optimization_type opt_type)
   return direct_internal_fn_supported_p (fn, types, opt_type);
 }
 
+/* Return true if FN is a binary operation and if FN is commutative.  */
+
+bool
+commutative_binary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_AVG_FLOOR:
+    case IFN_AVG_CEIL:
+    case IFN_MULH:
+    case IFN_MULHS:
+    case IFN_MULHRS:
+    case IFN_FMIN:
+    case IFN_FMAX:
+    case IFN_COMPLEX_MUL:
+    case IFN_UBSAN_CHECK_ADD:
+    case IFN_UBSAN_CHECK_MUL:
+    case IFN_ADD_OVERFLOW:
+    case IFN_MUL_OVERFLOW:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if FN is a ternary operation and if its first two arguments
+   are commutative.  */
+
+bool
+commutative_ternary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMA:
+    case IFN_FMS:
+    case IFN_FNMA:
+    case IFN_FNMS:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if FN is an associative binary operation.  */
+
+bool
+associative_binary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMIN:
+    case IFN_FMAX:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* If FN is commutative in two consecutive arguments, return the
    index of the first, otherwise return -1.  */
 
@@ -3783,23 +3956,12 @@ first_commutative_argument (internal_fn fn)
 {
   switch (fn)
     {
-    case IFN_FMA:
-    case IFN_FMS:
-    case IFN_FNMA:
-    case IFN_FNMS:
-    case IFN_AVG_FLOOR:
-    case IFN_AVG_CEIL:
-    case IFN_MULH:
-    case IFN_MULHS:
-    case IFN_MULHRS:
-    case IFN_FMIN:
-    case IFN_FMAX:
-      return 0;
-
     case IFN_COND_ADD:
     case IFN_COND_MUL:
     case IFN_COND_MIN:
     case IFN_COND_MAX:
+    case IFN_COND_FMIN:
+    case IFN_COND_FMAX:
     case IFN_COND_AND:
     case IFN_COND_IOR:
     case IFN_COND_XOR:
@@ -3810,6 +3972,9 @@ first_commutative_argument (internal_fn fn)
       return 1;
 
     default:
+      if (commutative_binary_fn_p (fn)
+	  || commutative_ternary_fn_p (fn))
+	return 0;
       return -1;
     }
 }
@@ -3870,7 +4035,8 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
   T (BIT_IOR_EXPR, IFN_COND_IOR) \
   T (BIT_XOR_EXPR, IFN_COND_XOR) \
   T (LSHIFT_EXPR, IFN_COND_SHL) \
-  T (RSHIFT_EXPR, IFN_COND_SHR)
+  T (RSHIFT_EXPR, IFN_COND_SHR) \
+  T (NEGATE_EXPR, IFN_COND_NEG)
 
 /* Return a function that only performs CODE when a certain condition is met
    and that uses a given fallback value otherwise.  For example, if CODE is
@@ -3918,6 +4084,8 @@ conditional_internal_fn_code (internal_fn ifn)
 /* Invoke T(IFN) for each internal function IFN that also has an
    IFN_COND_* form.  */
 #define FOR_EACH_COND_FN_PAIR(T) \
+  T (FMAX) \
+  T (FMIN) \
   T (FMA) \
   T (FMS) \
   T (FNMA) \
@@ -4172,6 +4340,30 @@ internal_check_ptrs_fn_supported_p (internal_fn ifn, tree type,
 	  && insn_operand_matches (icode, 4, GEN_INT (align)));
 }
 
+/* Return the supported bias for IFN which is either IFN_LEN_LOAD
+   or IFN_LEN_STORE.  For now we only support the biases of 0 and -1
+   (in case 0 is not an allowable length for len_load or len_store).
+   If none of the biases match what the backend provides, return
+   VECT_PARTIAL_BIAS_UNSUPPORTED.  */
+
+signed char
+internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
+{
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, mode);
+
+  if (icode != CODE_FOR_nothing)
+    {
+      /* For now we only support biases of 0 or -1.  Try both of them.  */
+      if (insn_operand_matches (icode, 3, GEN_INT (0)))
+	return 0;
+      if (insn_operand_matches (icode, 3, GEN_INT (-1)))
+	return -1;
+    }
+
+  return VECT_PARTIAL_BIAS_UNSUPPORTED;
+}
+
 /* Expand STMT as though it were a call to internal function FN.  */
 
 void
@@ -4233,5 +4425,27 @@ expand_SHUFFLEVECTOR (internal_fn, gcall *)
 void
 expand_PHI (internal_fn, gcall *)
 {
-    gcc_unreachable ();
+  gcc_unreachable ();
+}
+
+void
+expand_SPACESHIP (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree rhs1 = gimple_call_arg (stmt, 0);
+  tree rhs2 = gimple_call_arg (stmt, 1);
+  tree type = TREE_TYPE (rhs1);
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx op1 = expand_normal (rhs1);
+  rtx op2 = expand_normal (rhs2);
+
+  class expand_operand ops[3];
+  create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (lhs)));
+  create_input_operand (&ops[1], op1, TYPE_MODE (type));
+  create_input_operand (&ops[2], op2, TYPE_MODE (type));
+  insn_code icode = optab_handler (spaceship_optab, TYPE_MODE (type));
+  expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }

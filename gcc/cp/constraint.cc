@@ -1,5 +1,5 @@
 /* Processing rules for constraints.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -202,15 +202,8 @@ finish_constraint_binary_op (location_t loc,
     return error_mark_node;
   if (!check_constraint_operands (loc, lhs, rhs))
     return error_mark_node;
-  tree overload;
-  cp_expr expr = build_x_binary_op (loc, code,
-				    lhs, TREE_CODE (lhs),
-				    rhs, TREE_CODE (rhs),
-				    &overload, tf_none);
-  /* When either operand is dependent, the overload set may be non-empty.  */
-  if (expr == error_mark_node)
-    return error_mark_node;
-  expr.set_location (loc);
+  cp_expr expr
+    = build_min_nt_loc (loc, code, lhs.get_value (), rhs.get_value ());
   expr.set_range (lhs.get_start (), rhs.get_finish ());
   return expr;
 }
@@ -456,8 +449,6 @@ deduce_concept_introduction (tree check)
 
 /* Build a constrained placeholder type where SPEC is a type-constraint.
    SPEC can be anything were concept_definition_p is true.
-
-   If DECLTYPE_P is true, then the placeholder is decltype(auto).
 
    Returns a pair whose FIRST is the concept being checked and whose
    SECOND is the prototype parameter.  */
@@ -2016,14 +2007,6 @@ type_deducible_p (tree expr, tree type, tree placeholder, tree args,
      references are preserved in the result.  */
   expr = force_paren_expr_uneval (expr);
 
-  /* When args is NULL, we're evaluating a non-templated requires expression,
-     but even those are parsed under processing_template_decl == 1, and so the
-     placeholder 'auto' inside this return-type-requirement has level 2.  In
-     order to have all parms and arguments match up for satisfaction, we need
-     to pass an empty level of OUTER_TARGS in this case.  */
-  if (!args)
-    args = make_tree_vec (0);
-
   tree deduced_type = do_auto_deduction (type, expr, placeholder,
 					 info.complain, adc_requirement,
 					 /*outer_targs=*/args);
@@ -3064,14 +3047,6 @@ normalize_placeholder_type_constraints (tree t, bool diag)
      parameters for normalization.  */
   tree initial_parms = TREE_PURPOSE (ci);
 
-  if (!initial_parms && TEMPLATE_TYPE_LEVEL (t) == 2)
-    /* This is a return-type-requirement of a non-templated requires-expression,
-       which are parsed under processing_template_decl == 1 and empty
-       current_template_parms; hence the 'auto' has level 2 and initial_parms
-       is empty.  Fix up initial_parms to be consistent with the value of
-       processing_template_decl whence the 'auto' was created.  */
-    initial_parms = build_tree_list (size_int (1), make_tree_vec (0));
-
   /* The 'auto' itself is used as the first argument in its own constraints,
      and its level is one greater than its template depth.  So in order to
      capture all used template parameters, we need to add an extra level of
@@ -3202,9 +3177,11 @@ satisfy_declaration_constraints (tree t, sat_info info)
     {
       if (!push_tinst_level (t))
 	return result;
+      push_to_top_level ();
       push_access_scope (t);
       result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (t);
+      pop_from_top_level ();
       pop_tinst_level ();
     }
 
@@ -3260,9 +3237,11 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
       if (!push_tinst_level (t, args))
 	return result;
       tree pattern = DECL_TEMPLATE_RESULT (t);
+      push_to_top_level ();
       push_access_scope (pattern);
       result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (pattern);
+      pop_from_top_level ();
       pop_tinst_level ();
     }
 

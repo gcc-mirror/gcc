@@ -153,6 +153,9 @@ version (CRuntime_Glibc)
     int sched_getcpu();
 }
 
+/* Reassociate the calling thread with namespace referred to by fd */
+int setns(int fd, int nstype);
+
 enum CLONE_FILES = 0x400;
 enum CLONE_FS = 0x200;
 enum CLONE_NEWCGROUP = 0x2000000;

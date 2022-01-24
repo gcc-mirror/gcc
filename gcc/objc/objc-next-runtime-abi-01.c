@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-0/1) private.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.c)
 
 This file is part of GCC.
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-family/c-objc.h"
 #include "objc-act.h"
+#include "opts.h"
 
 /* When building Objective-C++, we are not linking against the C
    front-end and so need to replicate the C tree-construction
@@ -54,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
+#include "objc-next-metadata-tags.h"
 #include "objc-encoding.h"
 
 /* NeXT ABI 0 and 1 private definitions.  */
@@ -97,14 +99,6 @@ along with GCC; see the file COPYING3.  If not see
 #define UTAG_PROTOCOL_EXT		"_objc_protocol_extension"
 
 #define CLS_HAS_CXX_STRUCTORS		0x2000L
-
-/* rt_trees identifiers - shared between NeXT implementations.  These
-   allow the FE to tag meta-data in a manner that survives LTO and can
-   be used when the runtime requires that certain meta-data items
-   appear in particular named sections.  */
-
-#include "objc-next-metadata-tags.h"
-extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
 
 static void next_runtime_01_initialize (void);
 
@@ -259,7 +253,7 @@ static void next_runtime_01_initialize (void)
 #ifdef OBJCPLUS
   /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by
      default.  */
-  if (!global_options_set.x_flag_objc_call_cxx_cdtors)
+  if (!OPTION_SET_P (flag_objc_call_cxx_cdtors))
     global_options.x_flag_objc_call_cxx_cdtors = 1;
 #endif
 
@@ -889,7 +883,7 @@ build_objc_method_call (location_t loc, int super_flag, tree method_prototype,
 
   /* Build an obj_type_ref, with the correct cast for the method call.  */
   t = build3 (OBJ_TYPE_REF, sender_cast, method,
-			    lookup_object, size_zero_node);
+	      lookup_object, build_int_cst (TREE_TYPE (lookup_object), 0));
   t = build_function_call_vec (loc, vNULL, t, parms, NULL);
   vec_free (parms);
   return t;

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,19 @@ test02()
 {
   const std::error_category& cat = std::system_category();
   std::error_condition cond;
+
+#if defined __MING32__ || defined __MINGW64__
+  cond = cat.default_error_condition(8); // ERROR_NOT_ENOUGH_MEMORY
+  VERIFY( cond.value() == ENOMEM );
+  VERIFY( cond.category() == std::generic_category() );
+  VERIFY( cond == std::errc::not_enough_memory );
+
+  cond = cat.default_error_condition(5); // ERROR_ACCESS_DENIED
+  VERIFY( cond.value() == EACCES );
+  VERIFY( cond.category() == std::generic_category() );
+  VERIFY( cond == std::errc::permission_denied );
+  return;
+#endif
 
   // As of 2011, ISO C only defines EDOM, EILSEQ and ERANGE:
   cond = cat.default_error_condition(EDOM);
@@ -99,8 +112,13 @@ test03()
   // set "C" locale to get expected message
   auto loc = std::locale::global(std::locale::classic());
 
+#if defined __MING32__ || defined __MINGW64__
+  std::string msg = std::system_category().message(5); // ERROR_ACCESS_DENIED
+  VERIFY(msg == "Access denied");
+#else
   std::string msg = std::system_category().message(EBADF);
   VERIFY( msg.find("file") != std::string::npos );
+#endif
 
   std::locale::global(loc);
 }

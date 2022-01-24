@@ -11,7 +11,7 @@ Macros:
 
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 
-Source: $(PHOBOSSRC std/digest/_hmac.d)
+Source: $(PHOBOSSRC std/digest/hmac.d)
  */
 
 module std.digest.hmac;
@@ -73,18 +73,20 @@ if (hashBlockSize % 8 == 0)
     {
         // if secret is too long, shorten it by computing its hash
         typeof(digest.finish()) buffer = void;
+        typeof(secret) secretBytes = secret;
+
         if (secret.length > blockSize / 8)
         {
             digest.start();
             digest.put(secret);
             buffer = digest.finish();
-            secret = buffer[];
+            secretBytes = buffer[];
         }
 
         // if secret is too short, it will be padded with zeroes
         // (the key buffer is already zero-initialized)
         import std.algorithm.mutation : copy;
-        secret.copy(key[]);
+        secretBytes.copy(key[]);
 
         start();
     }
@@ -92,7 +94,7 @@ if (hashBlockSize % 8 == 0)
     ///
     @safe pure nothrow @nogc unittest
     {
-        import std.digest.hmac, std.digest.sha;
+        import std.digest.sha : SHA1;
         import std.string : representation;
         auto hmac = HMAC!SHA1("My s3cR3T keY".representation);
         hmac.put("Hello, world".representation);
@@ -129,7 +131,7 @@ if (hashBlockSize % 8 == 0)
     ///
     @safe pure nothrow @nogc unittest
     {
-        import std.digest.hmac, std.digest.sha;
+        import std.digest.sha : SHA1;
         import std.string : representation;
         string data1 = "Hello, world", data2 = "Hola mundo";
         auto hmac = HMAC!SHA1("My s3cR3T keY".representation);
@@ -196,7 +198,7 @@ if (hashBlockSize % 8 == 0)
     ///
     @safe pure nothrow @nogc unittest
     {
-        import std.digest.hmac, std.digest.sha;
+        import std.digest.sha : SHA1;
         import std.string : representation;
         string data1 = "Hello, world", data2 = "Hola mundo";
         auto hmac = HMAC!SHA1("My s3cR3T keY".representation);
@@ -211,7 +213,7 @@ if (hashBlockSize % 8 == 0)
     }
 }
 
-/// Convenience constructor for $(LREF HMAC).
+/// ditto
 template hmac(H)
 if (isDigest!H && hasBlockSize!H)
 {
@@ -237,7 +239,7 @@ if (isDigest!H)
     ///
     @safe pure nothrow @nogc unittest
     {
-        import std.digest.hmac, std.digest.sha;
+        import std.digest.sha : SHA1;
         import std.string : representation;
         string data1 = "Hello, world", data2 = "Hola mundo";
         auto digest = hmac!SHA1("My s3cR3T keY".representation)
@@ -272,7 +274,7 @@ if (isDigest!H)
     @safe pure nothrow @nogc unittest
     {
         import std.algorithm.iteration : map;
-        import std.digest.hmac, std.digest.sha;
+        import std.digest.sha : SHA1;
         import std.string : representation;
         string data = "Hello, world";
         auto digest = data.representation
@@ -287,10 +289,21 @@ if (isDigest!H)
     }
 }
 
-version (unittest)
+///
+@safe pure nothrow @nogc unittest
 {
-    import std.digest : toHexString, LetterCase;
-    alias hex = toHexString!(LetterCase.lower);
+    import std.digest.sha : SHA1;
+    import std.string : representation;
+    string data1 = "Hello, world", data2 = "Hola mundo";
+    auto hmac = HMAC!SHA1("My s3cR3T keY".representation);
+    auto digest = hmac.put(data1.representation)
+                      .put(data2.representation)
+                      .finish();
+    static immutable expected = [
+        197, 57, 52, 3, 13, 194, 13,
+        36, 117, 228, 8, 11, 111, 51,
+        165, 3, 123, 31, 251, 113];
+    assert(digest == expected);
 }
 
 @safe pure nothrow @nogc
@@ -309,10 +322,15 @@ unittest
     import std.digest.md : MD5;
     import std.digest.sha : SHA1, SHA256;
 
+    // Note, can't be UFCS because we don't want to import inside
+    // version (StdUnittest).
+    import std.digest : toHexString, LetterCase;
+    alias hex = toHexString!(LetterCase.lower);
+
     ubyte[] nada;
-    assert(hmac!MD5   (nada, nada).hex == "74e6f7298a9c2d168935f58c001bad88");
-    assert(hmac!SHA1  (nada, nada).hex == "fbdb1d1b18aa6c08324b7d64b71fb76370690e1d");
-    assert(hmac!SHA256(nada, nada).hex == "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad");
+    assert(hex(hmac!MD5   (nada, nada)) == "74e6f7298a9c2d168935f58c001bad88");
+    assert(hex(hmac!SHA1  (nada, nada)) == "fbdb1d1b18aa6c08324b7d64b71fb76370690e1d");
+    assert(hex(hmac!SHA256(nada, nada)) == "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad");
 
     import std.string : representation;
     auto key      = "key".representation,
@@ -322,13 +340,13 @@ unittest
          data2    = "jumps over the lazy dog".representation,
          data     = data1 ~ data2;
 
-    assert(data.hmac!MD5   (key).hex == "80070713463e7749b90c2dc24911e275");
-    assert(data.hmac!SHA1  (key).hex == "de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9");
-    assert(data.hmac!SHA256(key).hex == "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8");
+    assert(hex(data.hmac!MD5   (key)) == "80070713463e7749b90c2dc24911e275");
+    assert(hex(data.hmac!SHA1  (key)) == "de7c9b85b8b78aa6bc8a7a36f70a90701c9db4d9");
+    assert(hex(data.hmac!SHA256(key)) == "f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8");
 
-    assert(data.hmac!MD5   (long_key).hex == "e1728d68e05beae186ea768561963778");
-    assert(data.hmac!SHA1  (long_key).hex == "560d3cd77316e57ab4bba0c186966200d2b37ba3");
-    assert(data.hmac!SHA256(long_key).hex == "a1b0065a5d1edd93152c677e1bc1b1e3bc70d3a76619842e7f733f02b8135c04");
+    assert(hex(data.hmac!MD5   (long_key)) == "e1728d68e05beae186ea768561963778");
+    assert(hex(data.hmac!SHA1  (long_key)) == "560d3cd77316e57ab4bba0c186966200d2b37ba3");
+    assert(hex(data.hmac!SHA256(long_key)) == "a1b0065a5d1edd93152c677e1bc1b1e3bc70d3a76619842e7f733f02b8135c04");
 
     assert(hmac!MD5   (key).put(data1).put(data2).finish == data.hmac!MD5   (key));
     assert(hmac!SHA1  (key).put(data1).put(data2).finish == data.hmac!SHA1  (key));

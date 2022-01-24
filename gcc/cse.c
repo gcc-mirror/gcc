@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "function-abi.h"
 #include "rtlanal.h"
+#include "expr.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -490,14 +491,6 @@ static struct table_elt *table[HASH_SIZE];
    but currently removed from the table.  */
 
 static struct table_elt *free_element_chain;
-
-/* Set to the cost of a constant pool reference if one was found for a
-   symbolic constant.  If this was found, it means we should try to
-   convert constants into constant pool entries if they don't fit in
-   the insn.  */
-
-static int constant_pool_entries_cost;
-static int constant_pool_entries_regcost;
 
 /* Trace a patch through the CFG.  */
 
@@ -4247,14 +4240,21 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
 	}
     }
 }
-
+
+/* Add an entry containing RTL X into SETS.  */
+static inline void
+add_to_set (vec<struct set> *sets, rtx x)
+{
+  struct set entry = {};
+  entry.rtl = x;
+  sets->safe_push (entry);
+}
+
 /* Record all the SETs in this instruction into SETS_PTR,
    and return the number of recorded sets.  */
 static int
-find_sets_in_insn (rtx_insn *insn, struct set **psets)
+find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 {
-  struct set *sets = *psets;
-  int n_sets = 0;
   rtx x = PATTERN (insn);
 
   if (GET_CODE (x) == SET)
@@ -4274,8 +4274,30 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
 	 someplace else, so it isn't worth cse'ing.  */
       else if (GET_CODE (SET_SRC (x)) == CALL)
 	;
+      else if (GET_CODE (SET_SRC (x)) == CONST_VECTOR
+	       && GET_MODE_CLASS (GET_MODE (SET_SRC (x))) != MODE_VECTOR_BOOL
+	       /* Prevent duplicates from being generated if the type is a V1
+		  type and a subreg.  Folding this will result in the same
+		  element as folding x itself.  */
+	       && !(SUBREG_P (SET_DEST (x))
+		    && known_eq (GET_MODE_NUNITS (GET_MODE (SET_SRC (x))), 1)))
+	{
+	  /* First register the vector itself.  */
+	  add_to_set (psets, x);
+	  rtx src = SET_SRC (x);
+	  /* Go over the constants of the CONST_VECTOR in forward order, to
+	     put them in the same order in the SETS array.  */
+	  for (unsigned i = 0; i < const_vector_encoded_nelts (src) ; i++)
+	    {
+	      /* These are templates and don't actually get emitted but are
+		 used to tell CSE how to get to a particular constant.  */
+	      rtx y = simplify_gen_vec_select (SET_DEST (x), i);
+	      gcc_assert (y);
+	      add_to_set (psets, gen_rtx_SET (y, CONST_VECTOR_ELT (src, i)));
+	    }
+	}
       else
-	sets[n_sets++].rtl = x;
+	add_to_set (psets, x);
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -4296,12 +4318,12 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
 	      else if (GET_CODE (SET_SRC (y)) == CALL)
 		;
 	      else
-		sets[n_sets++].rtl = y;
+		add_to_set (psets, y);
 	    }
 	}
     }
 
-  return n_sets;
+  return psets->length ();
 }
 
 /* Subroutine of canonicalize_insn.  X is an ASM_OPERANDS in INSN.  */
@@ -4349,9 +4371,10 @@ canon_asm_operands (rtx x, rtx_insn *insn)
    see canon_reg.  */
 
 static void
-canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
+canonicalize_insn (rtx_insn *insn, vec<struct set> *psets)
 {
-  struct set *sets = *psets;
+  vec<struct set> sets = *psets;
+  int n_sets = sets.length ();
   rtx tem;
   rtx x = PATTERN (insn);
   int i;
@@ -4510,13 +4533,6 @@ cse_insn (rtx_insn *insn)
   int src_eqv_in_memory = 0;
   unsigned src_eqv_hash = 0;
 
-  struct set *sets = (struct set *) 0;
-
-  if (GET_CODE (x) == SET)
-    sets = XALLOCA (struct set);
-  else if (GET_CODE (x) == PARALLEL)
-    sets = XALLOCAVEC (struct set, XVECLEN (x, 0));
-
   this_insn = insn;
 
   /* Find all regs explicitly clobbered in this insn,
@@ -4525,10 +4541,11 @@ cse_insn (rtx_insn *insn)
   invalidate_from_sets_and_clobbers (insn);
 
   /* Record all the SETs in this instruction.  */
-  n_sets = find_sets_in_insn (insn, &sets);
+  auto_vec<struct set, 8> sets;
+  n_sets = find_sets_in_insn (insn, (vec<struct set>*)&sets);
 
   /* Substitute the canonical register where possible.  */
-  canonicalize_insn (insn, &sets, n_sets);
+  canonicalize_insn (insn, (vec<struct set>*)&sets);
 
   /* If this insn has a REG_EQUAL note, store the equivalent value in SRC_EQV,
      if different, or if the DEST is a STRICT_LOW_PART/ZERO_EXTRACT.  The
@@ -4609,9 +4626,6 @@ cse_insn (rtx_insn *insn)
       int src_folded_regcost = MAX_COST;
       int src_related_regcost = MAX_COST;
       int src_elt_regcost = MAX_COST;
-      /* Set nonzero if we need to call force_const_mem on with the
-	 contents of src_folded before using it.  */
-      int src_folded_force_flag = 0;
       scalar_int_mode int_mode;
 
       dest = SET_DEST (sets[i].rtl);
@@ -4997,6 +5011,30 @@ cse_insn (rtx_insn *insn)
 	  src_related_is_const_anchor = src_related != NULL_RTX;
 	}
 
+      /* Try to re-materialize a vec_dup with an existing constant.   */
+      rtx src_elt;
+      if ((!src_eqv_here || CONSTANT_P (src_eqv_here))
+	  && const_vec_duplicate_p (src, &src_elt))
+	{
+	   machine_mode const_mode = GET_MODE_INNER (GET_MODE (src));
+	   struct table_elt *related_elt
+		= lookup (src_elt, HASH (src_elt, const_mode), const_mode);
+	   if (related_elt)
+	    {
+	      for (related_elt = related_elt->first_same_value;
+		   related_elt; related_elt = related_elt->next_same_value)
+		if (REG_P (related_elt->exp))
+		  {
+		   /* We don't need to compare costs with an existing (constant)
+		      src_eqv_here, since any such src_eqv_here should already be
+		      available in src_const.  */
+		    src_eqv_here
+			= gen_rtx_VEC_DUPLICATE (GET_MODE (src),
+						 related_elt->exp);
+		    break;
+		  }
+	    }
+	}
 
       if (src == src_folded)
 	src_folded = 0;
@@ -5166,15 +5204,7 @@ cse_insn (rtx_insn *insn)
 			     src_related_cost, src_related_regcost) <= 0
 	      && preferable (src_folded_cost, src_folded_regcost,
 			     src_elt_cost, src_elt_regcost) <= 0)
-	    {
-	      trial = src_folded, src_folded_cost = MAX_COST;
-	      if (src_folded_force_flag)
-		{
-		  rtx forced = force_const_mem (mode, trial);
-		  if (forced)
-		    trial = forced;
-		}
-	    }
+	    trial = src_folded, src_folded_cost = MAX_COST;
 	  else if (src
 		   && preferable (src_cost, src_regcost,
 				  src_eqv_cost, src_eqv_regcost) <= 0
@@ -5361,23 +5391,24 @@ cse_insn (rtx_insn *insn)
 	      break;
 	    }
 
-	  /* If we previously found constant pool entries for
-	     constants and this is a constant, try making a
-	     pool entry.  Put it in src_folded unless we already have done
-	     this since that is where it likely came from.  */
+	  /* If the current function uses a constant pool and this is a
+	     constant, try making a pool entry. Put it in src_folded
+	     unless we already have done this since that is where it
+	     likely came from.  */
 
-	  else if (constant_pool_entries_cost
+	  else if (crtl->uses_const_pool
 		   && CONSTANT_P (trial)
-		   && (src_folded == 0
-		       || (!MEM_P (src_folded)
-			   && ! src_folded_force_flag))
+		   && !CONST_INT_P (trial)
+		   && (src_folded == 0 || !MEM_P (src_folded))
 		   && GET_MODE_CLASS (mode) != MODE_CC
 		   && mode != VOIDmode)
 	    {
-	      src_folded_force_flag = 1;
-	      src_folded = trial;
-	      src_folded_cost = constant_pool_entries_cost;
-	      src_folded_regcost = constant_pool_entries_regcost;
+	      src_folded = force_const_mem (mode, trial);
+	      if (src_folded)
+		{
+		  src_folded_cost = COST (src_folded, mode);
+		  src_folded_regcost = approx_reg_cost (src_folded);
+		}
 	    }
 	}
 
@@ -6630,8 +6661,6 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
   cse_cfg_altered = false;
   cse_jumps_altered = false;
   recorded_label_ref = false;
-  constant_pool_entries_cost = 0;
-  constant_pool_entries_regcost = 0;
   ebb_data.path_size = 0;
   ebb_data.nsets = 0;
   rtl_hooks = cse_rtl_hooks;

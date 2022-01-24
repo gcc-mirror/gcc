@@ -1,7 +1,6 @@
 /* { dg-require-effective-target vect_int } */
-
-/* See note below as to why we disable threading.  */
-/* { dg-additional-options "-fdisable-tree-thread1" } */
+/* The SLP vectorization happens as part of the if-converted loop body.  */
+/* { dg-additional-options "-fdump-tree-vect-details" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -30,10 +29,6 @@ main1 (int dummy)
       *pout++ = *pin++ + a;
       *pout++ = *pin++ + a;
       *pout++ = *pin++ + a;
-      /* In some architectures like ppc64, jump threading may thread
-	 the iteration where i==0 such that we no longer optimize the
-	 BB.  Another alternative to disable jump threading would be
-	 to wrap the read from `i' into a function returning i.  */
       if (arr[i] = i)
         a = i;
       else
@@ -72,5 +67,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" } } */
-  
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "vect" } } */

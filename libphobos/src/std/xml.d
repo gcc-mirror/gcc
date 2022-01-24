@@ -2,9 +2,11 @@
 
 /**
 $(RED Warning: This module is considered out-dated and not up to Phobos'
-      current standards. It will remain until we have a suitable replacement,
-      but be aware that it will not remain long term.)
+      current standards. It will be removed from Phobos in 2.101.0.
+      If you still need it, go to $(LINK https://github.com/DigitalMars/undeaD))
+ */
 
+/*
 Classes and functions for creating and parsing XML
 
 The basic architecture of this module is that there are standalone functions,
@@ -115,7 +117,7 @@ void main()
 Copyright: Copyright Janice Caron 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   Janice Caron
-Source:    $(PHOBOSSRC std/_xml.d)
+Source:    $(PHOBOSSRC std/xml.d)
 */
 /*
          Copyright Janice Caron 2008 - 2009.
@@ -123,11 +125,12 @@ Distributed under the Boost Software License, Version 1.0.
    (See accompanying file LICENSE_1_0.txt or copy at
          http://www.boost.org/LICENSE_1_0.txt)
 */
+deprecated("Will be removed from Phobos in 2.101.0. If you still need it, go to https://github.com/DigitalMars/undeaD")
 module std.xml;
 
 enum cdata = "<![CDATA[";
 
-/**
+/*
  * Returns true if the character is a character according to the XML standard
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -189,7 +192,7 @@ bool isChar(dchar c) @safe @nogc pure nothrow // rule 2
     }
 }
 
-/**
+/*
  * Returns true if the character is whitespace according to the XML standard
  *
  * Only the following characters are considered whitespace in XML - space, tab,
@@ -205,7 +208,7 @@ bool isSpace(dchar c) @safe @nogc pure nothrow
     return c == '\u0020' || c == '\u0009' || c == '\u000A' || c == '\u000D';
 }
 
-/**
+/*
  * Returns true if the character is a digit according to the XML standard
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -230,7 +233,7 @@ bool isDigit(dchar c) @safe @nogc pure nothrow
     }
 }
 
-/**
+/*
  * Returns true if the character is a letter according to the XML standard
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -243,7 +246,7 @@ bool isLetter(dchar c) @safe @nogc nothrow pure // rule 84
     return isIdeographic(c) || isBaseChar(c);
 }
 
-/**
+/*
  * Returns true if the character is an ideographic character according to the
  * XML standard
  *
@@ -278,7 +281,7 @@ bool isIdeographic(dchar c) @safe @nogc nothrow pure
     }
 }
 
-/**
+/*
  * Returns true if the character is a base character according to the XML
  * standard
  *
@@ -292,7 +295,7 @@ bool isBaseChar(dchar c) @safe @nogc nothrow pure
     return lookup(BaseCharTable,c);
 }
 
-/**
+/*
  * Returns true if the character is a combining character according to the
  * XML standard
  *
@@ -306,7 +309,7 @@ bool isCombiningChar(dchar c) @safe @nogc nothrow pure
     return lookup(CombiningCharTable,c);
 }
 
-/**
+/*
  * Returns true if the character is an extender according to the XML standard
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -319,7 +322,7 @@ bool isExtender(dchar c) @safe @nogc nothrow pure
     return lookup(ExtenderTable,c);
 }
 
-/**
+/*
  * Encodes a string by replacing all characters which need to be escaped with
  * appropriate predefined XML entities.
  *
@@ -384,7 +387,7 @@ S encode(S)(S s)
     assert(encode("cat & dog") == "cat &amp; dog");
 }
 
-/**
+/*
  * Mode to use for decoding.
  *
  * $(DDOC_ENUM_MEMBERS NONE) Do not decode
@@ -396,7 +399,7 @@ enum DecodeMode
     NONE, LOOSE, STRICT
 }
 
-/**
+/*
  * Decodes a string by unescaping all predefined XML entities.
  *
  * encode() escapes certain characters (ampersand, quote, apostrophe, less-than
@@ -521,7 +524,7 @@ string decode(string s, DecodeMode mode=DecodeMode.LOOSE) @safe pure
     assertNot("&#x2G;");
 }
 
-/**
+/*
  * Class representing an XML document.
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -529,18 +532,18 @@ string decode(string s, DecodeMode mode=DecodeMode.LOOSE) @safe pure
  */
 class Document : Element
 {
-    /**
+    /*
      * Contains all text which occurs before the root element.
      * Defaults to &lt;?xml version="1.0"?&gt;
      */
     string prolog = "<?xml version=\"1.0\"?>";
-    /**
+    /*
      * Contains all text which occurs after the root element.
      * Defaults to the empty string
      */
     string epilog;
 
-    /**
+    /*
      * Constructs a Document by parsing XML text.
      *
      * This function creates a complete DOM (Document Object Model) tree.
@@ -556,7 +559,7 @@ class Document : Element
     {
         assert(s.length != 0);
     }
-    body
+    do
     {
         auto xml = new DocumentParser(s);
         string tagString = xml.tag.tagString;
@@ -567,7 +570,7 @@ class Document : Element
         epilog = *xml.s;
     }
 
-    /**
+    /*
      * Constructs a Document from a Tag.
      *
      * Params:
@@ -580,7 +583,7 @@ class Document : Element
 
     const
     {
-        /**
+        /*
          * Compares two Documents for equality
          *
          * Example:
@@ -597,7 +600,7 @@ class Document : Element
                 && epilog == doc.epilog;
         }
 
-        /**
+        /*
          * Compares two Documents
          *
          * You should rarely need to call this function. It exists so that
@@ -621,7 +624,7 @@ class Document : Element
             return 0;
         }
 
-        /**
+        /*
          * Returns the hash of a Document
          *
          * You should rarely need to call this function. It exists so that
@@ -632,7 +635,7 @@ class Document : Element
             return hash(prolog, hash(epilog, (cast() this).Element.toHash()));
         }
 
-        /**
+        /*
          * Returns the string representation of a Document. (That is, the
          * complete XML of a document).
          */
@@ -661,22 +664,22 @@ class Document : Element
     assert(b > a);
 }
 
-/**
+/*
  * Class representing an XML element.
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
  */
 class Element : Item
 {
-    Tag tag; /// The start tag of the element
-    Item[] items; /// The element's items
-    Text[] texts; /// The element's text items
-    CData[] cdatas; /// The element's CData items
-    Comment[] comments; /// The element's comments
-    ProcessingInstruction[] pis; /// The element's processing instructions
-    Element[] elements; /// The element's child elements
+    Tag tag; // The start tag of the element
+    Item[] items; // The element's items
+    Text[] texts; // The element's text items
+    CData[] cdatas; // The element's CData items
+    Comment[] comments; // The element's comments
+    ProcessingInstruction[] pis; // The element's processing instructions
+    Element[] elements; // The element's child elements
 
-    /**
+    /*
      * Constructs an Element given a name and a string to be used as a Text
      * interior.
      *
@@ -693,10 +696,10 @@ class Element : Item
     this(string name, string interior=null) @safe pure
     {
         this(new Tag(name));
-        if (interior.length != 0) opCatAssign(new Text(interior));
+        if (interior.length != 0) opOpAssign!("~")(new Text(interior));
     }
 
-    /**
+    /*
      * Constructs an Element from a Tag.
      *
      * Params:
@@ -710,7 +713,7 @@ class Element : Item
         tag.tagString = tag_.tagString;
     }
 
-    /**
+    /*
      * Append a text item to the interior of this element
      *
      * Params:
@@ -722,13 +725,14 @@ class Element : Item
      * element ~= new Text("hello");
      * --------------
      */
-    void opCatAssign(Text item) @safe pure
+    void opOpAssign(string op)(Text item) @safe pure
+        if (op == "~")
     {
         texts ~= item;
         appendItem(item);
     }
 
-    /**
+    /*
      * Append a CData item to the interior of this element
      *
      * Params:
@@ -740,13 +744,14 @@ class Element : Item
      * element ~= new CData("hello");
      * --------------
      */
-    void opCatAssign(CData item) @safe pure
+    void opOpAssign(string op)(CData item) @safe pure
+        if (op == "~")
     {
         cdatas ~= item;
         appendItem(item);
     }
 
-    /**
+    /*
      * Append a comment to the interior of this element
      *
      * Params:
@@ -758,13 +763,14 @@ class Element : Item
      * element ~= new Comment("hello");
      * --------------
      */
-    void opCatAssign(Comment item) @safe pure
+    void opOpAssign(string op)(Comment item) @safe pure
+        if (op == "~")
     {
         comments ~= item;
         appendItem(item);
     }
 
-    /**
+    /*
      * Append a processing instruction to the interior of this element
      *
      * Params:
@@ -776,13 +782,14 @@ class Element : Item
      * element ~= new ProcessingInstruction("hello");
      * --------------
      */
-    void opCatAssign(ProcessingInstruction item) @safe pure
+    void opOpAssign(string op)(ProcessingInstruction item) @safe pure
+        if (op == "~")
     {
         pis ~= item;
         appendItem(item);
     }
 
-    /**
+    /*
      * Append a complete element to the interior of this element
      *
      * Params:
@@ -796,7 +803,8 @@ class Element : Item
      *    // appends element representing <br />
      * --------------
      */
-    void opCatAssign(Element item) @safe pure
+    void opOpAssign(string op)(Element item) @safe pure
+        if (op == "~")
     {
         elements ~= item;
         appendItem(item);
@@ -811,22 +819,22 @@ class Element : Item
 
     private void parse(ElementParser xml)
     {
-        xml.onText = (string s) { opCatAssign(new Text(s)); };
-        xml.onCData = (string s) { opCatAssign(new CData(s)); };
-        xml.onComment = (string s) { opCatAssign(new Comment(s)); };
-        xml.onPI = (string s) { opCatAssign(new ProcessingInstruction(s)); };
+        xml.onText = (string s) { opOpAssign!("~")(new Text(s)); };
+        xml.onCData = (string s) { opOpAssign!("~")(new CData(s)); };
+        xml.onComment = (string s) { opOpAssign!("~")(new Comment(s)); };
+        xml.onPI = (string s) { opOpAssign!("~")(new ProcessingInstruction(s)); };
 
         xml.onStartTag[null] = (ElementParser xml)
         {
             auto e = new Element(xml.tag);
             e.parse(xml);
-            opCatAssign(e);
+            opOpAssign!("~")(e);
         };
 
         xml.parse();
     }
 
-    /**
+    /*
      * Compares two Elements for equality
      *
      * Example:
@@ -847,7 +855,7 @@ class Element : Item
         return true;
     }
 
-    /**
+    /*
      * Compares two Elements
      *
      * You should rarely need to call this function. It exists so that Elements
@@ -872,7 +880,7 @@ class Element : Item
         }
     }
 
-    /**
+    /*
      * Returns the hash of an Element
      *
      * You should rarely need to call this function. It exists so that Elements
@@ -887,7 +895,7 @@ class Element : Item
 
     const
     {
-        /**
+        /*
          * Returns the decoded interior of an element.
          *
          * The element is assumed to contain text <i>only</i>. So, for
@@ -911,7 +919,7 @@ class Element : Item
             return buffer;
         }
 
-        /**
+        /*
          * Returns an indented string representation of this item
          *
          * Params:
@@ -947,7 +955,7 @@ class Element : Item
             return a;
         }
 
-        /**
+        /*
          * Returns the string representation of an Element
          *
          * Example:
@@ -970,7 +978,7 @@ class Element : Item
     }
 }
 
-/**
+/*
  * Tag types.
  *
  * $(DDOC_ENUM_MEMBERS START) Used for start tags
@@ -980,7 +988,7 @@ class Element : Item
  */
 enum TagType { START, END, EMPTY }
 
-/**
+/*
  * Class representing an XML tag.
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -994,9 +1002,9 @@ enum TagType { START, END, EMPTY }
  */
 class Tag
 {
-    TagType type = TagType.START;   /// Type of tag
-    string name;                    /// Tag name
-    string[string] attr;            /// Associative array of attributes
+    TagType type = TagType.START;   // Type of tag
+    string name;                    // Tag name
+    string[string] attr;            // Associative array of attributes
     private string tagString;
 
     invariant()
@@ -1017,11 +1025,11 @@ class Tag
             s = k;
             try { checkName(s,t); }
             catch (Err e)
-                { assert(false,"Invalid atrribute name:" ~ e.toString()); }
+                { assert(false,"Invalid attribute name:" ~ e.toString()); }
         }
     }
 
-    /**
+    /*
      * Constructs an instance of Tag with a specified name and type
      *
      * The constructor does not initialize the attributes. To initialize the
@@ -1111,7 +1119,7 @@ class Tag
 
     const
     {
-        /**
+        /*
          * Compares two Tags for equality
          *
          * You should rarely need to call this function. It exists so that Tags
@@ -1133,7 +1141,7 @@ class Tag
             true )));
         }
 
-        /**
+        /*
          * Compares two Tags
          *
          * Example:
@@ -1153,7 +1161,7 @@ class Tag
             0 )));
         }
 
-        /**
+        /*
          * Returns the hash of a Tag
          *
          * You should rarely need to call this function. It exists so that Tags
@@ -1161,10 +1169,10 @@ class Tag
          */
         override size_t toHash()
         {
-            return typeid(name).getHash(&name);
+            return .hashOf(name);
         }
 
-        /**
+        /*
          * Returns the string representation of a Tag
          *
          * Example:
@@ -1198,7 +1206,7 @@ class Tag
             string toEmptyString() @safe { return toNonEndString() ~ " />"; }
         }
 
-        /**
+        /*
          * Returns true if the Tag is a start tag
          *
          * Example:
@@ -1208,7 +1216,7 @@ class Tag
          */
         @property bool isStart() @safe @nogc pure nothrow { return type == TagType.START; }
 
-        /**
+        /*
          * Returns true if the Tag is an end tag
          *
          * Example:
@@ -1218,7 +1226,7 @@ class Tag
          */
         @property bool isEnd() @safe @nogc pure nothrow { return type == TagType.END;   }
 
-        /**
+        /*
          * Returns true if the Tag is an empty tag
          *
          * Example:
@@ -1230,14 +1238,14 @@ class Tag
     }
 }
 
-/**
+/*
  * Class representing a comment
  */
 class Comment : Item
 {
     private string content;
 
-    /**
+    /*
      * Construct a comment
      *
      * Params:
@@ -1261,7 +1269,7 @@ class Comment : Item
         this.content = content;
     }
 
-    /**
+    /*
      * Compares two comments for equality
      *
      * Example:
@@ -1277,7 +1285,7 @@ class Comment : Item
         return t !is null && content == t.content;
     }
 
-    /**
+    /*
      * Compares two comments
      *
      * You should rarely need to call this function. It exists so that Comments
@@ -1297,7 +1305,7 @@ class Comment : Item
             ? (content < t.content ? -1 : 1 ) : 0 );
     }
 
-    /**
+    /*
      * Returns the hash of a Comment
      *
      * You should rarely need to call this function. It exists so that Comments
@@ -1305,15 +1313,16 @@ class Comment : Item
      */
     override size_t toHash() scope const nothrow { return hash(content); }
 
-    /**
+    /*
      * Returns a string representation of this comment
      */
     override string toString() scope const @safe pure nothrow { return "<!--" ~ content ~ "-->"; }
 
-    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } /// Returns false always
+    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } // Returns false always
 }
 
-@safe unittest // issue 16241
+// https://issues.dlang.org/show_bug.cgi?id=16241
+@safe unittest
 {
     import std.exception : assertThrown;
     auto c = new Comment("==");
@@ -1321,14 +1330,14 @@ class Comment : Item
     assertThrown!CommentException(new Comment("--"));
 }
 
-/**
+/*
  * Class representing a Character Data section
  */
 class CData : Item
 {
     private string content;
 
-    /**
+    /*
      * Construct a character data section
      *
      * Params:
@@ -1349,7 +1358,7 @@ class CData : Item
         this.content = content;
     }
 
-    /**
+    /*
      * Compares two CDatas for equality
      *
      * Example:
@@ -1365,7 +1374,7 @@ class CData : Item
         return t !is null && content == t.content;
     }
 
-    /**
+    /*
      * Compares two CDatas
      *
      * You should rarely need to call this function. It exists so that CDatas
@@ -1385,7 +1394,7 @@ class CData : Item
             ? (content < t.content ? -1 : 1 ) : 0 );
     }
 
-    /**
+    /*
      * Returns the hash of a CData
      *
      * You should rarely need to call this function. It exists so that CDatas
@@ -1393,22 +1402,22 @@ class CData : Item
      */
     override size_t toHash() scope const nothrow { return hash(content); }
 
-    /**
+    /*
      * Returns a string representation of this CData section
      */
     override string toString() scope const @safe pure nothrow { return cdata ~ content ~ "]]>"; }
 
-    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } /// Returns false always
+    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } // Returns false always
 }
 
-/**
+/*
  * Class representing a text (aka Parsed Character Data) section
  */
 class Text : Item
 {
     private string content;
 
-    /**
+    /*
      * Construct a text (aka PCData) section
      *
      * Params:
@@ -1426,7 +1435,7 @@ class Text : Item
         this.content = encode(content);
     }
 
-    /**
+    /*
      * Compares two text sections for equality
      *
      * Example:
@@ -1442,7 +1451,7 @@ class Text : Item
         return t !is null && content == t.content;
     }
 
-    /**
+    /*
      * Compares two text sections
      *
      * You should rarely need to call this function. It exists so that Texts
@@ -1462,7 +1471,7 @@ class Text : Item
             && (content != t.content ? (content < t.content ? -1 : 1 ) : 0 );
     }
 
-    /**
+    /*
      * Returns the hash of a text section
      *
      * You should rarely need to call this function. It exists so that Texts
@@ -1470,25 +1479,25 @@ class Text : Item
      */
     override size_t toHash() scope const nothrow { return hash(content); }
 
-    /**
+    /*
      * Returns a string representation of this Text section
      */
     override string toString() scope const @safe @nogc pure nothrow { return content; }
 
-    /**
+    /*
      * Returns true if the content is the empty string
      */
     override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return content.length == 0; }
 }
 
-/**
+/*
  * Class representing an XML Instruction section
  */
 class XMLInstruction : Item
 {
     private string content;
 
-    /**
+    /*
      * Construct an XML Instruction section
      *
      * Params:
@@ -1509,7 +1518,7 @@ class XMLInstruction : Item
         this.content = content;
     }
 
-    /**
+    /*
      * Compares two XML instructions for equality
      *
      * Example:
@@ -1525,7 +1534,7 @@ class XMLInstruction : Item
         return t !is null && content == t.content;
     }
 
-    /**
+    /*
      * Compares two XML instructions
      *
      * You should rarely need to call this function. It exists so that
@@ -1545,7 +1554,7 @@ class XMLInstruction : Item
             && (content != t.content ? (content < t.content ? -1 : 1 ) : 0 );
     }
 
-    /**
+    /*
      * Returns the hash of an XMLInstruction
      *
      * You should rarely need to call this function. It exists so that
@@ -1553,22 +1562,22 @@ class XMLInstruction : Item
      */
     override size_t toHash() scope const nothrow { return hash(content); }
 
-    /**
+    /*
      * Returns a string representation of this XmlInstruction
      */
     override string toString() scope const @safe pure nothrow { return "<!" ~ content ~ ">"; }
 
-    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } /// Returns false always
+    override @property @safe @nogc pure nothrow scope bool isEmptyXML() const { return false; } // Returns false always
 }
 
-/**
+/*
  * Class representing a Processing Instruction section
  */
 class ProcessingInstruction : Item
 {
     private string content;
 
-    /**
+    /*
      * Construct a Processing Instruction section
      *
      * Params:
@@ -1589,7 +1598,7 @@ class ProcessingInstruction : Item
         this.content = content;
     }
 
-    /**
+    /*
      * Compares two processing instructions for equality
      *
      * Example:
@@ -1605,7 +1614,7 @@ class ProcessingInstruction : Item
         return t !is null && content == t.content;
     }
 
-    /**
+    /*
      * Compares two processing instructions
      *
      * You should rarely need to call this function. It exists so that
@@ -1625,7 +1634,7 @@ class ProcessingInstruction : Item
             && (content != t.content ? (content < t.content ? -1 : 1 ) : 0 );
     }
 
-    /**
+    /*
      * Returns the hash of a ProcessingInstruction
      *
      * You should rarely need to call this function. It exists so that
@@ -1633,32 +1642,32 @@ class ProcessingInstruction : Item
      */
     override size_t toHash() scope const nothrow { return hash(content); }
 
-    /**
+    /*
      * Returns a string representation of this ProcessingInstruction
      */
     override string toString() scope const @safe pure nothrow { return "<?" ~ content ~ "?>"; }
 
-    override @property @safe @nogc pure nothrow bool isEmptyXML() scope const { return false; } /// Returns false always
+    override @property @safe @nogc pure nothrow bool isEmptyXML() scope const { return false; } // Returns false always
 }
 
-/**
+/*
  * Abstract base class for XML items
  */
 abstract class Item
 {
-    /// Compares with another Item of same type for equality
+    // Compares with another Item of same type for equality
     abstract override bool opEquals(scope const Object o) @safe const;
 
-    /// Compares with another Item of same type
+    // Compares with another Item of same type
     abstract override int opCmp(scope const Object o) @safe const;
 
-    /// Returns the hash of this item
+    // Returns the hash of this item
     abstract override size_t toHash() @safe scope const;
 
-    /// Returns a string representation of this item
+    // Returns a string representation of this item
     abstract override string toString() @safe scope const;
 
-    /**
+    /*
      * Returns an indented string representation of this item
      *
      * Params:
@@ -1671,11 +1680,11 @@ abstract class Item
         return s.length == 0 ? [] : [ s ];
     }
 
-    /// Returns true if the item represents empty XML text
+    // Returns true if the item represents empty XML text
     abstract @property @safe @nogc pure nothrow bool isEmptyXML() scope const;
 }
 
-/**
+/*
  * Class for parsing an XML Document.
  *
  * This is a subclass of ElementParser. Most of the useful functions are
@@ -1693,7 +1702,7 @@ class DocumentParser : ElementParser
 {
     string xmlText;
 
-    /**
+    /*
      * Constructs a DocumentParser.
      *
      * The input to this function MUST be valid XML.
@@ -1718,7 +1727,7 @@ class DocumentParser : ElementParser
             assert(false, "\n" ~ e.toString());
         }
     }
-    body
+    do
     {
         xmlText = xmlText_;
         s = &xmlText;
@@ -1735,7 +1744,7 @@ class DocumentParser : ElementParser
     assert(doc.items == doc.elements);
 }
 
-/**
+/*
  * Class for parsing an XML element.
  *
  * Standards: $(LINK2 http://www.w3.org/TR/1998/REC-xml-19980210, XML 1.0)
@@ -1782,13 +1791,13 @@ class ElementParser
         }
     }
 
-    /**
+    /*
      * The Tag at the start of the element being parsed. You can read this to
      * determine the tag's name and attributes.
      */
     @property @safe @nogc pure nothrow const(Tag) tag() const { return tag_; }
 
-    /**
+    /*
      * Register a handler which will be called whenever a start tag is
      * encountered which matches the specified name. You can also pass null as
      * the name, in which case the handler will be called for any unmatched
@@ -1824,7 +1833,7 @@ class ElementParser
      */
     ParserHandler[string] onStartTag;
 
-    /**
+    /*
      * Register a handler which will be called whenever an end tag is
      * encountered which matches the specified name. You can also pass null as
      * the name, in which case the handler will be called for any unmatched
@@ -1860,7 +1869,7 @@ class ElementParser
         elementStart = *s;
     }
 
-    /**
+    /*
      * Register a handler which will be called whenever text is encountered.
      *
      * Example:
@@ -1880,7 +1889,7 @@ class ElementParser
      */
     @property @safe @nogc pure nothrow void onText(Handler handler) { textHandler = handler; }
 
-    /**
+    /*
      * Register an alternative handler which will be called whenever text
      * is encountered. This differs from onText in that onText will decode
      * the text, whereas onTextRaw will not. This allows you to make design
@@ -1906,7 +1915,7 @@ class ElementParser
      */
     @safe @nogc pure nothrow void onTextRaw(Handler handler) { rawTextHandler = handler; }
 
-    /**
+    /*
      * Register a handler which will be called whenever a character data
      * segment is encountered.
      *
@@ -1927,7 +1936,7 @@ class ElementParser
      */
     @property @safe @nogc pure nothrow void onCData(Handler handler) { cdataHandler = handler; }
 
-    /**
+    /*
      * Register a handler which will be called whenever a comment is
      * encountered.
      *
@@ -1948,7 +1957,7 @@ class ElementParser
      */
     @property @safe @nogc pure nothrow void onComment(Handler handler) { commentHandler = handler; }
 
-    /**
+    /*
      * Register a handler which will be called whenever a processing
      * instruction is encountered.
      *
@@ -1969,7 +1978,7 @@ class ElementParser
      */
     @property @safe @nogc pure nothrow void onPI(Handler handler) { piHandler = handler; }
 
-    /**
+    /*
      * Register a handler which will be called whenever an XML instruction is
      * encountered.
      *
@@ -1992,7 +2001,7 @@ class ElementParser
      */
     @property @safe @nogc pure nothrow void onXI(Handler handler) { xiHandler = handler; }
 
-    /**
+    /*
      * Parse an XML element.
      *
      * Parsing will continue until the end of the current element. Any items
@@ -2091,8 +2100,8 @@ class ElementParser
                 {
                     Tag startTag = new Tag(tag_.name);
 
-                    // FIX by hed010gy, for bug 2979
-                    // http://d.puremagic.com/issues/show_bug.cgi?id=2979
+                    // FIX by hed010gy
+                    // https://issues.dlang.org/show_bug.cgi?id=2979
                     if (tag_.attr.length > 0)
                           foreach (tn,tv; tag_.attr) startTag.attr[tn]=tv;
                     // END FIX
@@ -2130,7 +2139,7 @@ class ElementParser
         }
     }
 
-    /**
+    /*
      * Returns that part of the element which has already been parsed
      */
     override string toString() const @nogc @safe pure nothrow
@@ -2716,7 +2725,7 @@ private
     }
 }
 
-/**
+/*
  * Check an entire XML document for well-formedness
  *
  * Params:
@@ -2858,57 +2867,57 @@ EOS";
     assert(doc.toString() == s);
 }
 
-/** The base class for exceptions thrown by this module */
+/* The base class for exceptions thrown by this module */
 class XMLException : Exception { this(string msg) @safe pure { super(msg); } }
 
 // Other exceptions
 
-/// Thrown during Comment constructor
+// Thrown during Comment constructor
 class CommentException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown during CData constructor
+// Thrown during CData constructor
 class CDataException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown during XMLInstruction constructor
+// Thrown during XMLInstruction constructor
 class XIException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown during ProcessingInstruction constructor
+// Thrown during ProcessingInstruction constructor
 class PIException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown during Text constructor
+// Thrown during Text constructor
 class TextException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown during decode()
+// Thrown during decode()
 class DecodeException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown if comparing with wrong type
+// Thrown if comparing with wrong type
 class InvalidTypeException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/// Thrown when parsing for Tags
+// Thrown when parsing for Tags
 class TagException : XMLException
 { private this(string msg) @safe pure { super(msg); } }
 
-/**
+/*
  * Thrown during check()
  */
 class CheckException : XMLException
 {
-    CheckException err; /// Parent in hierarchy
+    CheckException err; // Parent in hierarchy
     private string tail;
-    /**
+    /*
      * Name of production rule which failed to parse,
      * or specific error message
      */
     string msg;
-    size_t line = 0; /// Line number at which parse failure occurred
-    size_t column = 0; /// Column number at which parse failure occurred
+    size_t line = 0; // Line number at which parse failure occurred
+    size_t column = 0; // Column number at which parse failure occurred
 
     private this(string tail,string msg,Err err=null) @safe pure
     {
@@ -2950,7 +2959,7 @@ private alias Err = CheckException;
 
 private
 {
-    inout(T) toType(T)(inout Object o)
+    inout(T) toType(T)(inout return scope Object o)
     {
         T t = cast(T)(o);
         if (t is null)
@@ -2993,10 +3002,7 @@ private
         return ch;
     }
 
-    size_t hash(string s,size_t h=0) @trusted nothrow
-    {
-        return typeid(s).getHash(&s) + h;
-    }
+    alias hash = .hashOf;
 
     // Definitions from the XML specification
     immutable CharTable=[0x9,0x9,0xA,0xA,0xD,0xD,0x20,0xD7FF,0xE000,0xFFFD,

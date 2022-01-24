@@ -297,8 +297,6 @@ end function
 ! coshape, lcobound, ucobound: requires CODIMENSION attribute, which is
 !   not permitted on an assumed-rank variable.
 !
-! extends_type_of, same_type_as: require a class argument.
-
 
 ! F2018 additionally permits the first arg to C_SIZEOF to be
 ! assumed-rank (C838).

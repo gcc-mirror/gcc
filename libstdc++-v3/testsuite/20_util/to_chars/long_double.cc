@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 // more portable and robust to differences in system printf behavior.
 // { dg-xfail-run-if "Non-conforming printf (see PR98384)" { *-*-solaris* *-*-darwin* } }
 
-// { dg-require-effective-target ieee-floats }
+// { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
 
 #include <charconv>

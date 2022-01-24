@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,7 @@ pragma Elaborate_All (System.File_IO);
 --  Needed because of calls to Chain_File in package body elaboration
 
 package body Ada.Text_IO with
+  SPARK_Mode => Off,
   Refined_State => (File_System => (Standard_In,
                                     Standard_Out,
                                     Standard_Err,
@@ -66,7 +67,7 @@ is
 
    use type System.CRTL.size_t;
 
-   WC_Encoding : Character;
+   WC_Encoding : constant Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Default wide character encoding
 
@@ -402,7 +403,7 @@ is
    -----------------
 
    function End_Of_Page (File : File_Type) return Boolean is
-      ch  : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));
@@ -597,7 +598,7 @@ is
      (File : File_Type;
       Item : out Character)
    is
-      ch          : int;
+      ch : int;
 
    begin
       FIO.Check_Read_Status (AP (File));

@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ctfe14207.d(13): Error: cannot convert &immutable(ulong) to ubyte[8]* at compile time
-fail_compilation/ctfe14207.d(18):        called from here: nativeToBigEndian()
-fail_compilation/ctfe14207.d(22):        called from here: digest()
+fail_compilation/ctfe14207.d(13): Error: cannot convert `&immutable(ulong)` to `ubyte[8]*` at compile time
+fail_compilation/ctfe14207.d(18):        called from here: `nativeToBigEndian()`
+fail_compilation/ctfe14207.d(22):        called from here: `digest()`
 ---
 */
 

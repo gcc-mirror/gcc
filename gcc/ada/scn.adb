@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,7 +159,7 @@ package body Scn is
             --  Int_Literal_Value can be No_Uint in some cases in syntax-only
             --  mode (see Scng.Scan.Nlit).
 
-            if Int_Literal_Value /= No_Uint then
+            if Present (Int_Literal_Value) then
                Set_Intval (Token_Node, Int_Literal_Value);
             end if;
 

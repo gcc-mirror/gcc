@@ -1,5 +1,5 @@
 /* A C++ API for libgccjit, purely as inline wrapper functions.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -196,6 +196,20 @@ namespace gccjit
     rvalue new_rvalue (const std::string &value) const;
     rvalue new_rvalue (type vector_type,
 		       std::vector<rvalue> elements) const;
+
+    rvalue new_struct_ctor (type type_,
+			    std::vector<field> &fields,
+			    std::vector<rvalue> &values,
+			    location loc = location ());
+
+    rvalue new_array_ctor (type type_,
+			   std::vector<rvalue> &values,
+			   location loc = location ());
+
+    rvalue new_union_ctor (type type_,
+			   field field,
+			   rvalue value,
+			   location loc = location ());
 
     /* Generic unary operations...  */
     rvalue new_unary_op (enum gcc_jit_unary_op op,
@@ -500,6 +514,7 @@ namespace gccjit
 
     rvalue get_address (location loc = location ());
     lvalue set_initializer (const void *blob, size_t num_bytes);
+    lvalue set_initializer_rvalue (rvalue init_value);
   };
 
   class param : public lvalue
@@ -1830,6 +1845,81 @@ lvalue::set_initializer (const void *blob, size_t num_bytes)
                                   num_bytes);
   return *this;
 }
+
+inline lvalue
+lvalue::set_initializer_rvalue (rvalue init_value)
+{
+  return lvalue (gcc_jit_global_set_initializer_rvalue (
+		   get_inner_lvalue (),
+		   init_value.get_inner_rvalue ()));
+}
+
+inline rvalue
+context::new_struct_ctor (type type_,
+			  std::vector<field> &fields,
+			  std::vector<rvalue> &values,
+			  location loc)
+{
+  field *pfields = nullptr;
+  if (fields.size ())
+    pfields = &fields[0];
+
+  gcc_jit_field **fields_arr =
+    reinterpret_cast<gcc_jit_field **> (pfields);
+
+  rvalue *pvalues = nullptr;
+  if (values.size ())
+    pvalues = &values[0];
+
+  gcc_jit_rvalue **values_arr =
+    reinterpret_cast<gcc_jit_rvalue **> (pvalues);
+
+  return rvalue (
+	   gcc_jit_context_new_struct_constructor (
+	     m_inner_ctxt,
+	     loc.get_inner_location (),
+	     type_.get_inner_type (),
+	     (int)values.size (),
+	     fields_arr,
+	     values_arr));
+}
+
+inline rvalue
+context::new_array_ctor (type type_,
+			 std::vector<rvalue> &values,
+			 location loc)
+{
+  rvalue *pvalues = nullptr;
+  if (values.size ())
+    pvalues = &values[0];
+
+  gcc_jit_rvalue **values_arr =
+    reinterpret_cast<gcc_jit_rvalue **> (pvalues);
+
+  return rvalue (
+	   gcc_jit_context_new_array_constructor (
+	     m_inner_ctxt,
+	     loc.get_inner_location (),
+	     type_.get_inner_type (),
+	     (int)values.size (),
+	     values_arr));
+}
+
+inline rvalue
+context::new_union_ctor (type type_,
+			 field field,
+			 rvalue value,
+			 location loc)
+{
+  return rvalue (
+	   gcc_jit_context_new_union_constructor (
+	     m_inner_ctxt,
+	     loc.get_inner_location (),
+	     type_.get_inner_type (),
+	     field.get_inner_field (),
+	     value.get_inner_rvalue ()));
+}
+
 
 // class param : public lvalue
 inline param::param () : lvalue () {}

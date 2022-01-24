@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -240,7 +240,7 @@ namespace ana {
 class region_model_manager
 {
 public:
-  region_model_manager ();
+  region_model_manager (logger *logger = NULL);
   ~region_model_manager ();
 
   /* svalue consolidation.  */
@@ -285,6 +285,11 @@ public:
 
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
+
+  /* Dynamically-allocated svalue instances.
+     The number of these within the analysis can grow arbitrarily.
+     They are still owned by the manager.  */
+  const svalue *create_unique_svalue (tree type);
 
   /* region consolidation.  */
   const stack_region * get_stack_region () const { return &m_stack_region; }
@@ -332,8 +337,10 @@ public:
 
   void log_stats (logger *logger, bool show_objs) const;
 
-  void enable_complexity_check (void) { m_check_complexity = true; }
-  void disable_complexity_check (void) { m_check_complexity = false; }
+  void begin_checking_feasibility (void) { m_checking_feasibility = true; }
+  void end_checking_feasibility (void) { m_checking_feasibility = false; }
+
+  logger *get_logger () const { return m_logger; }
 
 private:
   bool too_complex_p (const complexity &c) const;
@@ -357,6 +364,8 @@ private:
 						       tree cst, const svalue *arg1);
   const svalue *maybe_fold_asm_output_svalue (tree type,
 					      const vec<const svalue *> &inputs);
+
+  logger *m_logger;
 
   unsigned m_next_region_id;
   root_region m_root_region;
@@ -425,7 +434,12 @@ private:
 		   asm_output_svalue *> asm_output_values_map_t;
   asm_output_values_map_t m_asm_output_values_map;
 
-  bool m_check_complexity;
+  bool m_checking_feasibility;
+
+  /* "Dynamically-allocated" svalue instances.
+     The number of these within the analysis can grow arbitrarily.
+     They are still owned by the manager.  */
+  auto_delete_vec<svalue> m_managed_dynamic_svalues;
 
   /* Maximum complexity of svalues that weren't rejected.  */
   complexity m_max_complexity;
@@ -573,6 +587,7 @@ class region_model
 				    region_model_context *ctxt);
   void impl_call_analyzer_dump_capacity (const gcall *call,
 					 region_model_context *ctxt);
+  void impl_call_analyzer_dump_escaped (const gcall *call);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
   void impl_call_builtin_expect (const call_details &cd);
@@ -586,6 +601,7 @@ class region_model
   void impl_call_memcpy (const call_details &cd);
   void impl_call_memset (const call_details &cd);
   void impl_call_realloc (const call_details &cd);
+  void impl_call_strchr (const call_details &cd);
   void impl_call_strcpy (const call_details &cd);
   void impl_call_strlen (const call_details &cd);
   void impl_call_operator_new (const call_details &cd);
@@ -676,8 +692,10 @@ class region_model
 		       region_model_context *ctxt,
 		       rejected_constraint **out);
 
-  const region *create_region_for_heap_alloc (const svalue *size_in_bytes);
-  const region *create_region_for_alloca (const svalue *size_in_bytes);
+  const region *create_region_for_heap_alloc (const svalue *size_in_bytes,
+					      region_model_context *ctxt);
+  const region *create_region_for_alloca (const svalue *size_in_bytes,
+					  region_model_context *ctxt);
 
   tree get_representative_tree (const svalue *sval) const;
   path_var
@@ -703,7 +721,8 @@ class region_model
   }
   const svalue *get_dynamic_extents (const region *reg) const;
   void set_dynamic_extents (const region *reg,
-			    const svalue *size_in_bytes);
+			    const svalue *size_in_bytes,
+			    region_model_context *ctxt);
   void unset_dynamic_extents (const region *reg);
 
   region_model_manager *get_manager () const { return m_mgr; }
@@ -717,7 +736,10 @@ class region_model
 
   bool can_merge_with_p (const region_model &other_model,
 			 const program_point &point,
-			 region_model *out_model) const;
+			 region_model *out_model,
+			 const extrinsic_state *ext_state = NULL,
+			 const program_state *state_a = NULL,
+			 const program_state *state_b = NULL) const;
 
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);
@@ -791,6 +813,14 @@ class region_model
   const svalue *check_for_poison (const svalue *sval,
 				  tree expr,
 				  region_model_context *ctxt) const;
+
+  void check_dynamic_size_for_taint (enum memory_space mem_space,
+				     const svalue *size_in_bytes,
+				     region_model_context *ctxt) const;
+
+  void check_region_for_taint (const region *reg,
+			       enum access_direction dir,
+			       region_model_context *ctxt) const;
 
   void check_for_writable_region (const region* dest_reg,
 				  region_model_context *ctxt) const;
@@ -891,6 +921,10 @@ class region_model_context
   virtual bool get_malloc_map (sm_state_map **out_smap,
 			       const state_machine **out_sm,
 			       unsigned *out_sm_idx) = 0;
+  /* Likewise for the "taint" state machine.  */
+  virtual bool get_taint_map (sm_state_map **out_smap,
+			      const state_machine **out_sm,
+			      unsigned *out_sm_idx) = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -935,6 +969,12 @@ public:
   {
     return false;
   }
+  bool get_taint_map (sm_state_map **,
+		      const state_machine **,
+		      unsigned *) OVERRIDE
+  {
+    return false;
+  }
 };
 
 /* A subclass of region_model_context for determining if operations fail
@@ -965,10 +1005,15 @@ struct model_merger
   model_merger (const region_model *model_a,
 		const region_model *model_b,
 		const program_point &point,
-		region_model *merged_model)
+		region_model *merged_model,
+		const extrinsic_state *ext_state,
+		const program_state *state_a,
+		const program_state *state_b)
   : m_model_a (model_a), m_model_b (model_b),
     m_point (point),
-    m_merged_model (merged_model)
+    m_merged_model (merged_model),
+    m_ext_state (ext_state),
+    m_state_a (state_a), m_state_b (state_b)
   {
   }
 
@@ -981,10 +1026,16 @@ struct model_merger
     return m_model_a->get_manager ();
   }
 
+  bool mergeable_svalue_p (const svalue *) const;
+
   const region_model *m_model_a;
   const region_model *m_model_b;
   const program_point &m_point;
   region_model *m_merged_model;
+
+  const extrinsic_state *m_ext_state;
+  const program_state *m_state_a;
+  const program_state *m_state_b;
 };
 
 /* A record that can (optionally) be written out when
@@ -1043,6 +1094,7 @@ private:
 class engine
 {
 public:
+  engine (logger *logger = NULL);
   region_model_manager *get_model_manager () { return &m_mgr; }
 
   void log_stats (logger *logger) const;

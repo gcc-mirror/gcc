@@ -1,5 +1,5 @@
 /* Header file for gimple ranger SSA cache.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -92,16 +92,19 @@ private:
 class ranger_cache : public range_query
 {
 public:
-  ranger_cache ();
+  ranger_cache (int not_executable_flag);
   ~ranger_cache ();
 
   virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
   virtual bool range_on_edge (irange &r, edge e, tree expr);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
+  bool range_from_dom (irange &r, tree name, basic_block bb);
 
   bool get_global_range (irange &r, tree name) const;
-  bool get_non_stale_global_range (irange &r, tree name);
+  bool get_global_range (irange &r, tree name, bool &current_p);
   void set_global_range (tree name, const irange &r);
+
+  void propagate_updated_value (tree name, basic_block bb);
 
   non_null_ref m_non_null;
   gori_compute m_gori;
@@ -112,7 +115,6 @@ private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
   class temporal_cache *m_temporal;
-  void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
 
@@ -120,11 +122,8 @@ private:
   void entry_range (irange &r, tree expr, basic_block bb);
   void exit_range (irange &r, tree expr, basic_block bb);
 
-  void propagate_updated_value (tree name, basic_block bb);
-
-  bitmap m_propfail;
   vec<basic_block> m_workback;
-  vec<basic_block> m_update_list;
+  class update_list *m_update;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

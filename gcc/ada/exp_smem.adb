@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package body Exp_Smem is
 
    function Build_Shared_Var_Proc_Call
      (Loc : Source_Ptr;
-      E   : Node_Id;
+      E   : Entity_Id;
       N   : Name_Id) return Node_Id;
    --  Build a call to support procedure N for shared object E (provided by the
    --  instance of System.Shared_Storage.Shared_Var_Procs associated to E).

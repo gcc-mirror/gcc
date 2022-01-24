@@ -2,11 +2,16 @@
 
 ! See also 'c-c++-common/goacc/nested-reductions-1-kernels.c'.
 
+! { dg-additional-options -Wuninitialized }
+
 subroutine acc_kernels ()
   implicit none (type, external)
   integer :: i, j, k, sum, diff
 
   !$acc kernels
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       do j = 1, 10
@@ -94,6 +99,9 @@ subroutine acc_kernels_loop ()
   integer :: h, i, j, k, l, sum, diff
 
   !$acc kernels loop
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
   do h = 1, 10
     !$acc loop reduction(+:sum)
     do i = 1, 10
@@ -192,6 +200,9 @@ subroutine acc_kernels_loop_reduction ()
   integer :: h, i, j, k, sum, diff
 
   !$acc kernels loop reduction(+:sum)
+  ! implicit 'copy (sum, diff)'
+  ! { dg-warning {'sum' is used uninitialized} TODO { xfail *-*-* } .-2 }
+  ! { dg-warning {'diff' is used uninitialized} TODO { xfail *-*-* } .-3 }
   do h = 1, 10
     do i = 1, 10
       do j = 1, 10

@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -145,6 +145,11 @@ public:
 
 enum dep_kind { lim_raw, sm_war, sm_waw };
 enum dep_state { dep_unknown, dep_independent, dep_dependent };
+
+/* coldest outermost loop for given loop.  */
+vec<class loop *> coldest_outermost_loop;
+/* hotter outer loop nearest to given loop.  */
+vec<class loop *> hotter_than_inner_loop;
 
 /* Populate the loop dependence cache of REF for LOOP, KIND with STATE.  */
 
@@ -417,6 +422,63 @@ movement_possibility (gimple *stmt)
   return ret;
 }
 
+/* Compare the profile count inequality of bb and loop's preheader, it is
+   three-state as stated in profile-count.h, FALSE is returned if inequality
+   cannot be decided.  */
+bool
+bb_colder_than_loop_preheader (basic_block bb, class loop *loop)
+{
+  gcc_assert (bb && loop);
+  return bb->count < loop_preheader_edge (loop)->src->count;
+}
+
+/* Check coldest loop between OUTERMOST_LOOP and LOOP by comparing profile
+   count.
+  It does three steps check:
+  1) Check whether CURR_BB is cold in it's own loop_father, if it is cold, just
+  return NULL which means it should not be moved out at all;
+  2) CURR_BB is NOT cold, check if pre-computed COLDEST_LOOP is outside of
+  OUTERMOST_LOOP, if it is inside of OUTERMOST_LOOP, return the COLDEST_LOOP;
+  3) If COLDEST_LOOP is outside of OUTERMOST_LOOP, check whether there is a
+  hotter loop between OUTERMOST_LOOP and loop in pre-computed
+  HOTTER_THAN_INNER_LOOP, return it's nested inner loop, otherwise return
+  OUTERMOST_LOOP.
+  At last, the coldest_loop is inside of OUTERMOST_LOOP, just return it as
+  the hoist target.  */
+
+static class loop *
+get_coldest_out_loop (class loop *outermost_loop, class loop *loop,
+		      basic_block curr_bb)
+{
+  gcc_assert (outermost_loop == loop
+	      || flow_loop_nested_p (outermost_loop, loop));
+
+  /* If bb_colder_than_loop_preheader returns false due to three-state
+    comparision, OUTERMOST_LOOP is returned finally to preserve the behavior.
+    Otherwise, return the coldest loop between OUTERMOST_LOOP and LOOP.  */
+  if (curr_bb && bb_colder_than_loop_preheader (curr_bb, loop))
+    return NULL;
+
+  class loop *coldest_loop = coldest_outermost_loop[loop->num];
+  if (loop_depth (coldest_loop) < loop_depth (outermost_loop))
+    {
+      class loop *hotter_loop = hotter_than_inner_loop[loop->num];
+      if (!hotter_loop
+	  || loop_depth (hotter_loop) < loop_depth (outermost_loop))
+	return outermost_loop;
+
+      /*  hotter_loop is between OUTERMOST_LOOP and LOOP like:
+	[loop tree root, ..., coldest_loop, ..., outermost_loop, ...,
+	hotter_loop, second_coldest_loop, ..., loop]
+	return second_coldest_loop to be the hoist target.  */
+      class loop *aloop;
+      for (aloop = hotter_loop->inner; aloop; aloop = aloop->next)
+	if (aloop == loop || flow_loop_nested_p (aloop, loop))
+	  return aloop;
+    }
+  return coldest_loop;
+}
+
 /* Suppose that operand DEF is used inside the LOOP.  Returns the outermost
    loop to that we could move the expression using DEF if it did not have
    other operands, i.e. the outermost loop enclosing LOOP in that the value
@@ -685,7 +747,9 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
     level = ALWAYS_EXECUTED_IN (bb);
   else
     level = superloop_at_depth (loop, 1);
-  lim_data->max_loop = level;
+  lim_data->max_loop = get_coldest_out_loop (level, loop, bb);
+  if (!lim_data->max_loop)
+    return false;
 
   if (gphi *phi = dyn_cast <gphi *> (stmt))
     {
@@ -1183,14 +1247,10 @@ move_computations_worker (basic_block bb)
 					  COND_EXPR, t, arg0, arg1);
 	  todo |= TODO_cleanup_cfg;
 	}
-      if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (new_stmt)))
-	  && (!ALWAYS_EXECUTED_IN (bb)
-	      || (ALWAYS_EXECUTED_IN (bb) != level
-		  && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_assign_lhs (new_stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+      if (!ALWAYS_EXECUTED_IN (bb)
+	  || (ALWAYS_EXECUTED_IN (bb) != level
+	      && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level)))
+	reset_flow_sensitive_info (gimple_assign_lhs (new_stmt));
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
     }
@@ -1221,7 +1281,10 @@ move_computations_worker (basic_block bb)
       /* We do not really want to move conditionals out of the loop; we just
 	 placed it here to force its operands to be moved if necessary.  */
       if (gimple_code (stmt) == GIMPLE_COND)
-	continue;
+	{
+	  gsi_next (&bsi);
+	  continue;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1253,14 +1316,10 @@ move_computations_worker (basic_block bb)
       gsi_remove (&bsi, false);
       if (gimple_has_lhs (stmt)
 	  && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_get_lhs (stmt)))
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_get_lhs (stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+	reset_flow_sensitive_info (gimple_get_lhs (stmt));
       /* In case this is a stmt that is not unconditionally executed
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
@@ -1919,10 +1978,13 @@ first_mem_ref_loc (class loop *loop, im_mem_ref *ref)
        }
      }
      if (lsm_flag)	<--
-       MEM = lsm;	<--
+       MEM = lsm;	<-- (X)
+
+  In case MEM and TMP_VAR are NULL the function will return the then
+  block so the caller can insert (X) and other related stmts. 
 */
 
-static void
+static basic_block
 execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 		       edge preheader, hash_set <basic_block> *flag_bbs,
 		       edge &append_cond_position, edge &last_cond_fallthru)
@@ -2017,10 +2079,13 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 			    NULL_TREE, NULL_TREE);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
-  gsi = gsi_start_bb (then_bb);
   /* Insert actual store.  */
-  stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
-  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+  if (mem)
+    {
+      gsi = gsi_start_bb (then_bb);
+      stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+    }
 
   edge e1 = single_succ_edge (new_bb);
   edge e2 = make_edge (new_bb, then_bb,
@@ -2068,6 +2133,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 	      update_stmt (phi);
 	    }
       }
+
+  return then_bb;
 }
 
 /* When REF is set on the location, set flag indicating the store.  */
@@ -2125,7 +2192,8 @@ struct sm_aux
 
 static void
 execute_sm (class loop *loop, im_mem_ref *ref,
-	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt)
+	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt,
+	    bool use_other_flag_var)
 {
   gassign *load;
   struct fmt_data fmt_data;
@@ -2154,7 +2222,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
 	  || (! flag_store_data_races && ! always_stored)))
     multi_threaded_model_p = true;
 
-  if (multi_threaded_model_p)
+  if (multi_threaded_model_p && !use_other_flag_var)
     aux->store_flag
       = execute_sm_if_changed_flag_set (loop, ref, &aux->flag_bbs);
   else
@@ -2190,7 +2258,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
   lim_data->tgt_loop = loop;
   gsi_insert_before (&gsi, load, GSI_SAME_STMT);
 
-  if (multi_threaded_model_p)
+  if (aux->store_flag)
     {
       load = gimple_build_assign (aux->store_flag, boolean_false_node);
       lim_data = init_lim_data (load);
@@ -2563,6 +2631,140 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   unsigned  i;
   bitmap_iterator bi;
 
+  /* There's a special case we can use ordered re-materialization for
+     conditionally excuted stores which is when all stores in the loop
+     happen in the same basic-block.  In that case we know we'll reach
+     all stores and thus can simply process that BB and emit a single
+     conditional block of ordered materializations.  See PR102436.  */
+  basic_block single_store_bb = NULL;
+  EXECUTE_IF_SET_IN_BITMAP (&memory_accesses.all_refs_stored_in_loop[loop->num],
+			    0, i, bi)
+    {
+      bool fail = false;
+      ref = memory_accesses.refs_list[i];
+      for (auto loc : ref->accesses_in_loop)
+	if (!gimple_vdef (loc.stmt))
+	  ;
+	else if (!single_store_bb)
+	  {
+	    single_store_bb = gimple_bb (loc.stmt);
+	    bool conditional = false;
+	    for (edge e : exits)
+	      if (!dominated_by_p (CDI_DOMINATORS, e->src, single_store_bb))
+		{
+		  /* Conditional as seen from e.  */
+		  conditional = true;
+		  break;
+		}
+	    if (!conditional)
+	      {
+		fail = true;
+		break;
+	      }
+	  }
+	else if (single_store_bb != gimple_bb (loc.stmt))
+	  {
+	    fail = true;
+	    break;
+	  }
+      if (fail)
+	{
+	  single_store_bb = NULL;
+	  break;
+	}
+    }
+  if (single_store_bb)
+    {
+      /* Analyze the single block with stores.  */
+      auto_bitmap fully_visited;
+      auto_bitmap refs_not_supported;
+      auto_bitmap refs_not_in_seq;
+      auto_vec<seq_entry> seq;
+      bitmap_copy (refs_not_in_seq, mem_refs);
+      int res = sm_seq_valid_bb (loop, single_store_bb, NULL_TREE,
+				 seq, refs_not_in_seq, refs_not_supported,
+				 false, fully_visited);
+      if (res != 1)
+	{
+	  /* Unhandled refs can still fail this.  */
+	  bitmap_clear (mem_refs);
+	  return;
+	}
+
+      /* We cannot handle sm_other since we neither remember the
+	 stored location nor the value at the point we execute them.  */
+      for (unsigned i = 0; i < seq.length (); ++i)
+	{
+	  unsigned new_i;
+	  if (seq[i].second == sm_other
+	      && seq[i].from != NULL_TREE)
+	    seq[i].from = NULL_TREE;
+	  else if ((seq[i].second == sm_ord
+		    || (seq[i].second == sm_other
+			&& seq[i].from != NULL_TREE))
+		   && !sm_seq_push_down (seq, i, &new_i))
+	    {
+	      bitmap_set_bit (refs_not_supported, seq[new_i].first);
+	      seq[new_i].second = sm_other;
+	      seq[new_i].from = NULL_TREE;
+	    }
+	}
+      bitmap_and_compl_into (mem_refs, refs_not_supported);
+      if (bitmap_empty_p (mem_refs))
+	return;
+
+      /* Prune seq.  */
+      while (seq.last ().second == sm_other
+	     && seq.last ().from == NULL_TREE)
+	seq.pop ();
+
+      hash_map<im_mem_ref *, sm_aux *> aux_map;
+
+      /* Execute SM but delay the store materialization for ordered
+	 sequences on exit.  */
+      bool first_p = true;
+      EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
+	{
+	  ref = memory_accesses.refs_list[i];
+	  execute_sm (loop, ref, aux_map, true, !first_p);
+	  first_p = false;
+	}
+
+      /* Get at the single flag variable we eventually produced.  */
+      im_mem_ref *ref
+	= memory_accesses.refs_list[bitmap_first_set_bit (mem_refs)];
+      sm_aux *aux = *aux_map.get (ref);
+
+      /* Materialize ordered store sequences on exits.  */
+      edge e;
+      FOR_EACH_VEC_ELT (exits, i, e)
+	{
+	  edge append_cond_position = NULL;
+	  edge last_cond_fallthru = NULL;
+	  edge insert_e = e;
+	  /* Construct the single flag variable control flow and insert
+	     the ordered seq of stores in the then block.  With
+	     -fstore-data-races we can do the stores unconditionally.  */
+	  if (aux->store_flag)
+	    insert_e
+	      = single_pred_edge
+		  (execute_sm_if_changed (e, NULL_TREE, NULL_TREE,
+					  aux->store_flag,
+					  loop_preheader_edge (loop),
+					  &aux->flag_bbs, append_cond_position,
+					  last_cond_fallthru));
+	  execute_sm_exit (loop, insert_e, seq, aux_map, sm_ord,
+			   append_cond_position, last_cond_fallthru);
+	  gsi_commit_one_edge_insert (insert_e, NULL);
+	}
+
+      for (hash_map<im_mem_ref *, sm_aux *>::iterator iter = aux_map.begin ();
+	   iter != aux_map.end (); ++iter)
+	delete (*iter).second;
+
+      return;
+    }
+
   /* To address PR57359 before actually applying store-motion check
      the candidates found for validity with regards to reordering
      relative to other stores which we until here disambiguated using
@@ -2701,7 +2903,8 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
     {
       ref = memory_accesses.refs_list[i];
-      execute_sm (loop, ref, aux_map, bitmap_bit_p (refs_not_supported, i));
+      execute_sm (loop, ref, aux_map, bitmap_bit_p (refs_not_supported, i),
+		  false);
     }
 
   /* Materialize ordered store sequences on exits.  */
@@ -2887,6 +3090,26 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
   return indep_p;
 }
 
+class ref_in_loop_hot_body
+{
+public:
+  ref_in_loop_hot_body (class loop *loop_) : l (loop_) {}
+  bool operator () (mem_ref_loc *loc);
+  class loop *l;
+};
+
+/* Check the coldest loop between loop L and innermost loop.  If there is one
+   cold loop between L and INNER_LOOP, store motion can be performed, otherwise
+   no cold loop means no store motion.  get_coldest_out_loop also handles cases
+   when l is inner_loop.  */
+bool
+ref_in_loop_hot_body::operator () (mem_ref_loc *loc)
+{
+  basic_block curr_bb = gimple_bb (loc->stmt);
+  class loop *inner_loop = curr_bb->loop_father;
+  return get_coldest_out_loop (l, inner_loop, curr_bb);
+}
+
 
 /* Returns true if we can perform store motion of REF from LOOP.  */
 
@@ -2939,6 +3162,12 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
      against stores is done later when we cannot guarantee preserving
      the order of stores.  */
   if (!ref_indep_loop_p (loop, ref, sm_war))
+    return false;
+
+  /* Verify whether the candidate is hot for LOOP.  Only do store motion if the
+    candidate's profile count is hot.  Statement in cold BB shouldn't be moved
+    out of it's loop_father.  */
+  if (!for_all_locs_in_loop (loop, ref, ref_in_loop_hot_body (loop)))
     return false;
 
   return true;
@@ -3153,6 +3382,48 @@ fill_always_executed_in (void)
     fill_always_executed_in_1 (loop, contains_call);
 }
 
+/* Find the coldest loop preheader for LOOP, also find the nearest hotter loop
+   to LOOP.  Then recursively iterate each inner loop.  */
+
+void
+fill_coldest_and_hotter_out_loop (class loop *coldest_loop,
+				  class loop *hotter_loop, class loop *loop)
+{
+  if (bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+				     coldest_loop))
+    coldest_loop = loop;
+
+  coldest_outermost_loop[loop->num] = coldest_loop;
+
+  hotter_than_inner_loop[loop->num] = NULL;
+  class loop *outer_loop = loop_outer (loop);
+  if (hotter_loop
+      && bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+					hotter_loop))
+    hotter_than_inner_loop[loop->num] = hotter_loop;
+
+  if (outer_loop && outer_loop != current_loops->tree_root
+      && bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+					outer_loop))
+    hotter_than_inner_loop[loop->num] = outer_loop;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf (MSG_NOTE, "loop %d's coldest_outermost_loop is %d, ",
+		   loop->num, coldest_loop->num);
+      if (hotter_than_inner_loop[loop->num])
+	dump_printf (MSG_NOTE, "hotter_than_inner_loop is %d\n",
+		     hotter_than_inner_loop[loop->num]->num);
+      else
+	dump_printf (MSG_NOTE, "hotter_than_inner_loop is NULL\n");
+    }
+
+  class loop *inner_loop;
+  for (inner_loop = loop->inner; inner_loop; inner_loop = inner_loop->next)
+    fill_coldest_and_hotter_out_loop (coldest_loop,
+				      hotter_than_inner_loop[loop->num],
+				      inner_loop);
+}
 
 /* Compute the global information needed by the loop invariant motion pass.  */
 
@@ -3237,6 +3508,9 @@ tree_ssa_lim_finalize (void)
     free_affine_expand_cache (&memory_accesses.ttae_cache);
 
   free (bb_loop_postorder);
+
+  coldest_outermost_loop.release ();
+  hotter_than_inner_loop.release ();
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
@@ -3255,6 +3529,16 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
 
   /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
   fill_always_executed_in ();
+
+  /* Pre-compute coldest outermost loop and nearest hotter loop of each loop.
+   */
+  class loop *loop;
+  coldest_outermost_loop.create (number_of_loops (cfun));
+  coldest_outermost_loop.safe_grow_cleared (number_of_loops (cfun));
+  hotter_than_inner_loop.create (number_of_loops (cfun));
+  hotter_than_inner_loop.safe_grow_cleared (number_of_loops (cfun));
+  for (loop = current_loops->tree_root->inner; loop != NULL; loop = loop->next)
+    fill_coldest_and_hotter_out_loop (loop, NULL, loop);
 
   int *rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
   int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);

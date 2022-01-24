@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -759,6 +759,8 @@ package body Sem_Ch7 is
                  ("optional package body (not allowed in Ada 95)??", N);
             else
                Error_Msg_N ("spec of this package does not allow a body", N);
+               Error_Msg_N ("\either remove the body or add pragma "
+                            & "Elaborate_Body in the spec", N);
             end if;
          end if;
       end if;
@@ -1768,14 +1770,34 @@ package body Sem_Ch7 is
          end if;
 
          --  Check preelaborable initialization for full type completing a
-         --  private type for which pragma Preelaborable_Initialization given.
+         --  private type when aspect Preelaborable_Initialization is True
+         --  or is specified by Preelaborable_Initialization attributes
+         --  (in the case of a private type in a generic unit). We pass
+         --  the expression of the aspect (when present) to the parameter
+         --  Preelab_Init_Expr to take into account the rule that presumes
+         --  that subcomponents of generic formal types mentioned in the
+         --  type's P_I aspect have preelaborable initialization (see
+         --  AI12-0409 and RM 10.2.1(11.8/5)).
 
-         if Is_Type (E)
-           and then Must_Have_Preelab_Init (E)
-           and then not Has_Preelaborable_Initialization (E)
-         then
-            Error_Msg_N
-              ("full view of & does not have preelaborable initialization", E);
+         if Is_Type (E) and then Must_Have_Preelab_Init (E) then
+            declare
+               PI_Aspect : constant Node_Id :=
+                             Find_Aspect
+                               (E, Aspect_Preelaborable_Initialization);
+               PI_Expr   : Node_Id := Empty;
+            begin
+               if Present (PI_Aspect) then
+                  PI_Expr := Expression (PI_Aspect);
+               end if;
+
+               if not Has_Preelaborable_Initialization
+                        (E, Preelab_Init_Expr => PI_Expr)
+               then
+                  Error_Msg_N
+                    ("full view of & does not have "
+                     & "preelaborable initialization", E);
+               end if;
+            end;
          end if;
 
          Next_Entity (E);
@@ -1891,7 +1913,7 @@ package body Sem_Ch7 is
    begin
       Generate_Definition (Id);
       Set_Is_Pure         (Id, PF);
-      Init_Size_Align     (Id);
+      Reinit_Size_Align   (Id);
 
       if not Is_Package_Or_Generic_Package (Current_Scope)
         or else In_Private_Part (Current_Scope)
@@ -2568,7 +2590,7 @@ package body Sem_Ch7 is
       Set_Etype              (Id, Id);
       Set_Has_Delayed_Freeze (Id);
       Set_Is_First_Subtype   (Id);
-      Init_Size_Align        (Id);
+      Reinit_Size_Align      (Id);
 
       Set_Is_Constrained (Id,
         No (Discriminant_Specifications (N))
@@ -2613,13 +2635,13 @@ package body Sem_Ch7 is
       elsif Abstract_Present (Def) then
          Error_Msg_N ("only a tagged type can be abstract", N);
 
-      --  When extensions are enabled, we initialize the primitive operations
-      --  list of an untagged private type to an empty element list. (Note:
-      --  This could be done for all private types and shared with the tagged
-      --  case above, but for now we do it separately when the feature of
-      --  prefixed calls for untagged types is enabled.)
+      --  We initialize the primitive operations list of an untagged private
+      --  type to an empty element list. Do this even when Extensions_Allowed
+      --  is False to issue better error messages. (Note: This could be done
+      --  for all private types and shared with the tagged case above, but
+      --  for now we do it separately.)
 
-      elsif Extensions_Allowed then
+      else
          Set_Direct_Primitive_Operations (Id, New_Elmt_List);
       end if;
    end New_Private_Type;
@@ -2728,7 +2750,7 @@ package body Sem_Ch7 is
 
       begin
          Set_Size_Info               (Priv,                             Full);
-         Set_RM_Size                 (Priv, RM_Size                    (Full));
+         Copy_RM_Size                (To => Priv, From => Full);
          Set_Size_Known_At_Compile_Time
                                      (Priv, Size_Known_At_Compile_Time (Full));
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
@@ -3343,12 +3365,12 @@ package body Sem_Ch7 is
       --  Body required if library package with pragma Elaborate_Body
 
       elsif Has_Pragma_Elaborate_Body (Pack_Id) then
-         Error_Msg_N ("info: & requires body (Elaborate_Body)?Y?", Pack_Id);
+         Error_Msg_N ("info: & requires body (Elaborate_Body)?.y?", Pack_Id);
 
       --  Body required if subprogram
 
       elsif Is_Subprogram_Or_Generic_Subprogram (Pack_Id) then
-         Error_Msg_N ("info: & requires body (subprogram case)?Y?", Pack_Id);
+         Error_Msg_N ("info: & requires body (subprogram case)?.y?", Pack_Id);
 
       --  Body required if generic parent has Elaborate_Body
 
@@ -3361,7 +3383,7 @@ package body Sem_Ch7 is
          begin
             if Has_Pragma_Elaborate_Body (G_P) then
                Error_Msg_N
-                 ("info: & requires body (generic parent Elaborate_Body)?Y?",
+                 ("info: & requires body (generic parent Elaborate_Body)?.y?",
                   Pack_Id);
             end if;
          end;
@@ -3379,7 +3401,7 @@ package body Sem_Ch7 is
                        (Node (First_Elmt (Abstract_States (Pack_Id))))
       then
          Error_Msg_N
-           ("info: & requires body (non-null abstract state aspect)?Y?",
+           ("info: & requires body (non-null abstract state aspect)?.y?",
             Pack_Id);
       end if;
 
@@ -3390,7 +3412,8 @@ package body Sem_Ch7 is
          if Requires_Completion_In_Body (E, Pack_Id) then
             Error_Msg_Node_2 := E;
             Error_Msg_NE
-              ("info: & requires body (& requires completion)?Y?", E, Pack_Id);
+              ("info: & requires body (& requires completion)?.y?", E,
+               Pack_Id);
          end if;
 
          Next_Entity (E);

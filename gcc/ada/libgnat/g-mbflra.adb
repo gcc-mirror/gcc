@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -118,7 +118,6 @@ package body GNAT.MBBS_Float_Random is
 
    function Euclid (P, Q : Int) return Int is
       X, Y, GCD : Int;
-      pragma Unreferenced (Y, GCD);
    begin
       Euclid (P, Q, X, Y, GCD);
       return X;

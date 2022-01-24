@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C - C language.
-# Copyright (C) 1994-2021 Free Software Foundation, Inc.
+# Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -99,6 +99,7 @@ c.dvi:
 c.pdf:
 c.html:
 c.install-info:
+c.install-dvi:
 c.install-pdf:
 c.install-html:
 c.all.cross:
@@ -108,8 +109,8 @@ c.srcinfo:
 c.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
 c.tags: force
-	cd $(srcdir)/c; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/c; $(ETAGS) -o TAGS.sub *.c *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 c.man:
 c.srcman:
 

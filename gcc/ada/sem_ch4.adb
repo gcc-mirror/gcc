@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,8 +239,7 @@ package body Sem_Ch4 is
    --  operand types. If one of the operands has a universal interpretation,
    --  the legality check uses some compatible non-universal interpretation of
    --  the other operand. N can be an operator node, or a function call whose
-   --  name is an operator designator. Any_Access, which is the initial type of
-   --  the literal NULL, is a universal type for the purpose of this routine.
+   --  name is an operator designator.
 
    function Find_Primitive_Operation (N : Node_Id) return Boolean;
    --  Find candidate interpretations for the name Obj.Proc when it appears in
@@ -280,6 +279,19 @@ package body Sem_Ch4 is
    --  every type compatible with the operator, even if the operator for the
    --  type is not directly visible. The routine uses this type to emit a more
    --  informative message.
+
+   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean;
+   --  Ada_2022: if an operand is a literal it may be subject to an
+   --  implicit conversion to a type for which a user-defined literal
+   --  function exists. During the first pass of type resolution we do
+   --  not know the context imposed on the literal, so we assume that
+   --  the literal type is a valid candidate and rely on the second pass
+   --  of resolution to find the type with the proper aspect. We only
+   --  add this interpretation if no other one was found, which may be
+   --  too restrictive but seems sufficient to handle most proper uses
+   --  of the new aspect. It is unclear whether a full implementation of
+   --  these aspects can be achieved without larger modifications to the
+   --  two-pass resolution algorithm.
 
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
@@ -503,7 +515,7 @@ package body Sem_Ch4 is
             --  parameters. Note that this is now a static error even if the
             --  subprogram is not the main program (this is a change, in an
             --  earlier version only the main program was affected, and the
-            --  check had to be done in the binder.
+            --  check had to be done in the binder).
 
             if Nkind (P) = N_Subprogram_Body
               and then Nkind (Parent (P)) = N_Compilation_Unit
@@ -551,7 +563,7 @@ package body Sem_Ch4 is
          Find_Type (Subtype_Mark (E));
 
          --  Analyze the qualified expression, and apply the name resolution
-         --  rule given in  4.7(3).
+         --  rule given in 4.7(3).
 
          Analyze (E);
          Type_Id := Etype (E);
@@ -576,59 +588,58 @@ package body Sem_Ch4 is
       --  Case where allocator has a subtype indication
 
       else
-         declare
-            Def_Id   : Entity_Id;
-            Base_Typ : Entity_Id;
+         --  If the allocator includes a N_Subtype_Indication then a
+         --  constraint is present, otherwise the node is a subtype mark.
+         --  Introduce an explicit subtype declaration into the tree
+         --  defining some anonymous subtype and rewrite the allocator to
+         --  use this subtype rather than the subtype indication.
 
-         begin
-            --  If the allocator includes a N_Subtype_Indication then a
-            --  constraint is present, otherwise the node is a subtype mark.
-            --  Introduce an explicit subtype declaration into the tree
-            --  defining some anonymous subtype and rewrite the allocator to
-            --  use this subtype rather than the subtype indication.
+         --  It is important to introduce the explicit subtype declaration
+         --  so that the bounds of the subtype indication are attached to
+         --  the tree in case the allocator is inside a generic unit.
 
-            --  It is important to introduce the explicit subtype declaration
-            --  so that the bounds of the subtype indication are attached to
-            --  the tree in case the allocator is inside a generic unit.
+         --  Finally, if there is no subtype indication and the type is
+         --  a tagged unconstrained type with discriminants, the designated
+         --  object is constrained by their default values, and it is
+         --  simplest to introduce an explicit constraint now. In some cases
+         --  this is done during expansion, but freeze actions are certain
+         --  to be emitted in the proper order if constraint is explicit.
 
-            --  Finally, if there is no subtype indication and the type is
-            --  a tagged unconstrained type with discriminants, the designated
-            --  object is constrained by their default values, and it is
-            --  simplest to introduce an explicit constraint now. In some cases
-            --  this is done during expansion, but freeze actions are certain
-            --  to be emitted in the proper order if constraint is explicit.
+         if Is_Entity_Name (E) and then Expander_Active then
+            Find_Type (E);
+            Type_Id := Entity (E);
 
-            if Is_Entity_Name (E) and then Expander_Active then
-               Find_Type (E);
-               Type_Id := Entity (E);
+            if Is_Tagged_Type (Type_Id)
+              and then Has_Defaulted_Discriminants (Type_Id)
+              and then not Is_Constrained (Type_Id)
+            then
+               declare
+                  Constr : constant List_Id    := New_List;
+                  Loc    : constant Source_Ptr := Sloc (E);
+                  Discr  : Entity_Id := First_Discriminant (Type_Id);
 
-               if Is_Tagged_Type (Type_Id)
-                 and then Has_Defaulted_Discriminants (Type_Id)
-                 and then not Is_Constrained (Type_Id)
-               then
-                  declare
-                     Constr : constant List_Id    := New_List;
-                     Loc    : constant Source_Ptr := Sloc (E);
-                     Discr  : Entity_Id := First_Discriminant (Type_Id);
+               begin
+                  while Present (Discr) loop
+                     Append (Discriminant_Default_Value (Discr), Constr);
+                     Next_Discriminant (Discr);
+                  end loop;
 
-                  begin
-                     while Present (Discr) loop
-                        Append (Discriminant_Default_Value (Discr), Constr);
-                        Next_Discriminant (Discr);
-                     end loop;
-
-                     Rewrite (E,
-                       Make_Subtype_Indication (Loc,
-                         Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
-                         Constraint   =>
-                           Make_Index_Or_Discriminant_Constraint (Loc,
-                             Constraints => Constr)));
-                  end;
-               end if;
+                  Rewrite (E,
+                    Make_Subtype_Indication (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                      Constraint   =>
+                        Make_Index_Or_Discriminant_Constraint (Loc,
+                          Constraints => Constr)));
+               end;
             end if;
+         end if;
 
-            if Nkind (E) = N_Subtype_Indication then
+         if Nkind (E) = N_Subtype_Indication then
+            declare
+               Def_Id   : Entity_Id;
+               Base_Typ : Entity_Id;
 
+            begin
                --  A constraint is only allowed for a composite type in Ada
                --  95. In Ada 83, a constraint is also allowed for an
                --  access-to-composite type, but the constraint is ignored.
@@ -681,151 +692,151 @@ package body Sem_Ch4 is
                                N_Index_Or_Discriminant_Constraint
                   then
                      Error_Msg_N -- CODEFIX
-                       ("if qualified expression was meant, "
-                        & "use apostrophe!", Constraint (E));
+                       ("if qualified expression was meant, use apostrophe!",
+                        Constraint (E));
                   end if;
 
                   E := New_Occurrence_Of (Def_Id, Loc);
                   Rewrite (Expression (N), E);
                end if;
-            end if;
+            end;
+         end if;
 
-            Type_Id := Process_Subtype (E, N);
-            Acc_Type := Create_Itype (E_Allocator_Type, N);
-            Set_Etype (Acc_Type, Acc_Type);
-            Set_Directly_Designated_Type (Acc_Type, Type_Id);
-            Check_Fully_Declared (Type_Id, N);
+         Type_Id := Process_Subtype (E, N);
+         Acc_Type := Create_Itype (E_Allocator_Type, N);
+         Set_Etype (Acc_Type, Acc_Type);
+         Set_Directly_Designated_Type (Acc_Type, Type_Id);
+         Check_Fully_Declared (Type_Id, N);
 
-            --  Ada 2005 (AI-231): If the designated type is itself an access
-            --  type that excludes null, its default initialization will
-            --  be a null object, and we can insert an unconditional raise
-            --  before the allocator.
+         --  Ada 2005 (AI-231): If the designated type is itself an access
+         --  type that excludes null, its default initialization will
+         --  be a null object, and we can insert an unconditional raise
+         --  before the allocator.
 
-            --  Ada 2012 (AI-104): A not null indication here is altogether
-            --  illegal.
+         --  Ada 2012 (AI-104): A not null indication here is altogether
+         --  illegal.
 
-            if Can_Never_Be_Null (Type_Id) then
-               declare
-                  Not_Null_Check : constant Node_Id :=
-                                     Make_Raise_Constraint_Error (Sloc (E),
-                                       Reason => CE_Null_Not_Allowed);
+         if Can_Never_Be_Null (Type_Id) then
+            declare
+               Not_Null_Check : constant Node_Id :=
+                                  Make_Raise_Constraint_Error (Sloc (E),
+                                    Reason => CE_Null_Not_Allowed);
 
-               begin
-                  if Expander_Active then
-                     Insert_Action (N, Not_Null_Check);
-                     Analyze (Not_Null_Check);
+            begin
+               if Expander_Active then
+                  Insert_Action (N, Not_Null_Check);
+                  Analyze (Not_Null_Check);
 
-                  elsif Warn_On_Ada_2012_Compatibility then
-                     Error_Msg_N
-                       ("null value not allowed here in Ada 2012?y?", E);
-                  end if;
-               end;
-            end if;
-
-            --  Check for missing initialization. Skip this check if we already
-            --  had errors on analyzing the allocator, since in that case these
-            --  are probably cascaded errors.
-
-            if not Is_Definite_Subtype (Type_Id)
-              and then Serious_Errors_Detected = Sav_Errs
-            then
-               --  The build-in-place machinery may produce an allocator when
-               --  the designated type is indefinite but the underlying type is
-               --  not. In this case the unknown discriminants are meaningless
-               --  and should not trigger error messages. Check the parent node
-               --  because the allocator is marked as coming from source.
-
-               if Present (Underlying_Type (Type_Id))
-                 and then Is_Definite_Subtype (Underlying_Type (Type_Id))
-                 and then not Comes_From_Source (Parent (N))
-               then
-                  null;
-
-               --  An unusual case arises when the parent of a derived type is
-               --  a limited record extension  with unknown discriminants, and
-               --  its full view has no discriminants.
-               --
-               --  A more general fix might be to create the proper underlying
-               --  type for such a derived type, but it is a record type with
-               --  no private attributes, so this required extending the
-               --  meaning of this attribute. ???
-
-               elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
-                 and then Present (Underlying_Type (Etype (Type_Id)))
-                 and then
-                   not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
-                 and then not Comes_From_Source (Parent (N))
-               then
-                  null;
-
-               elsif Is_Class_Wide_Type (Type_Id) then
+               elsif Warn_On_Ada_2012_Compatibility then
                   Error_Msg_N
-                    ("initialization required in class-wide allocation", N);
+                    ("null value not allowed here in Ada 2012?y?", E);
+               end if;
+            end;
+         end if;
+
+         --  Check for missing initialization. Skip this check if we already
+         --  had errors on analyzing the allocator, since in that case these
+         --  are probably cascaded errors.
+
+         if not Is_Definite_Subtype (Type_Id)
+           and then Serious_Errors_Detected = Sav_Errs
+         then
+            --  The build-in-place machinery may produce an allocator when
+            --  the designated type is indefinite but the underlying type is
+            --  not. In this case the unknown discriminants are meaningless
+            --  and should not trigger error messages. Check the parent node
+            --  because the allocator is marked as coming from source.
+
+            if Present (Underlying_Type (Type_Id))
+              and then Is_Definite_Subtype (Underlying_Type (Type_Id))
+              and then not Comes_From_Source (Parent (N))
+            then
+               null;
+
+            --  An unusual case arises when the parent of a derived type is
+            --  a limited record extension  with unknown discriminants, and
+            --  its full view has no discriminants.
+            --
+            --  A more general fix might be to create the proper underlying
+            --  type for such a derived type, but it is a record type with
+            --  no private attributes, so this required extending the
+            --  meaning of this attribute. ???
+
+            elsif Ekind (Etype (Type_Id)) = E_Record_Type_With_Private
+              and then Present (Underlying_Type (Etype (Type_Id)))
+              and then
+                not Has_Discriminants (Underlying_Type (Etype (Type_Id)))
+              and then not Comes_From_Source (Parent (N))
+            then
+               null;
+
+            elsif Is_Class_Wide_Type (Type_Id) then
+               Error_Msg_N
+                 ("initialization required in class-wide allocation", N);
+
+            else
+               if Ada_Version < Ada_2005
+                 and then Is_Limited_Type (Type_Id)
+               then
+                  Error_Msg_N ("unconstrained allocation not allowed", N);
+
+                  if Is_Array_Type (Type_Id) then
+                     Error_Msg_N
+                       ("\constraint with array bounds required", N);
+
+                  elsif Has_Unknown_Discriminants (Type_Id) then
+                     null;
+
+                  else pragma Assert (Has_Discriminants (Type_Id));
+                     Error_Msg_N
+                       ("\constraint with discriminant values required", N);
+                  end if;
+
+               --  Limited Ada 2005 and general nonlimited case.
+               --  This is an error, except in the case of an
+               --  uninitialized allocator that is generated
+               --  for a build-in-place function return of a
+               --  discriminated but compile-time-known-size
+               --  type.
 
                else
-                  if Ada_Version < Ada_2005
-                    and then Is_Limited_Type (Type_Id)
+                  if Original_Node (N) /= N
+                    and then Nkind (Original_Node (N)) = N_Allocator
                   then
-                     Error_Msg_N ("unconstrained allocation not allowed", N);
+                     declare
+                        Qual : constant Node_Id :=
+                          Expression (Original_Node (N));
+                        pragma Assert
+                          (Nkind (Qual) = N_Qualified_Expression);
+                        Call : constant Node_Id := Expression (Qual);
+                        pragma Assert
+                          (Is_Expanded_Build_In_Place_Call (Call));
+                     begin
+                        null;
+                     end;
+
+                  else
+                     Error_Msg_N
+                       ("uninitialized unconstrained allocation not "
+                        & "allowed", N);
 
                      if Is_Array_Type (Type_Id) then
                         Error_Msg_N
-                          ("\constraint with array bounds required", N);
+                          ("\qualified expression or constraint with "
+                           & "array bounds required", N);
 
                      elsif Has_Unknown_Discriminants (Type_Id) then
-                        null;
+                        Error_Msg_N ("\qualified expression required", N);
 
                      else pragma Assert (Has_Discriminants (Type_Id));
                         Error_Msg_N
-                          ("\constraint with discriminant values required", N);
-                     end if;
-
-                  --  Limited Ada 2005 and general nonlimited case.
-                  --  This is an error, except in the case of an
-                  --  uninitialized allocator that is generated
-                  --  for a build-in-place function return of a
-                  --  discriminated but compile-time-known-size
-                  --  type.
-
-                  else
-                     if Original_Node (N) /= N
-                       and then Nkind (Original_Node (N)) = N_Allocator
-                     then
-                        declare
-                           Qual : constant Node_Id :=
-                             Expression (Original_Node (N));
-                           pragma Assert
-                             (Nkind (Qual) = N_Qualified_Expression);
-                           Call : constant Node_Id := Expression (Qual);
-                           pragma Assert
-                             (Is_Expanded_Build_In_Place_Call (Call));
-                        begin
-                           null;
-                        end;
-
-                     else
-                        Error_Msg_N
-                          ("uninitialized unconstrained allocation not "
-                           & "allowed", N);
-
-                        if Is_Array_Type (Type_Id) then
-                           Error_Msg_N
-                             ("\qualified expression or constraint with "
-                              & "array bounds required", N);
-
-                        elsif Has_Unknown_Discriminants (Type_Id) then
-                           Error_Msg_N ("\qualified expression required", N);
-
-                        else pragma Assert (Has_Discriminants (Type_Id));
-                           Error_Msg_N
-                             ("\qualified expression or constraint with "
-                              & "discriminant values required", N);
-                        end if;
+                          ("\qualified expression or constraint with "
+                           & "discriminant values required", N);
                      end if;
                   end if;
                end if;
             end if;
-         end;
+         end if;
       end if;
 
       if Is_Abstract_Type (Type_Id) then
@@ -1485,7 +1496,7 @@ package body Sem_Ch4 is
             while Present (Form) and then Present (Act) loop
                --  Check whether the formal is aliased and if the accessibility
                --  level of the actual is deeper than the accessibility level
-               --  of the enclosing subprogam to which the current return
+               --  of the enclosing subprogram to which the current return
                --  statement applies.
 
                --  Should we be checking Is_Entity_Name on Act? Won't this miss
@@ -1624,10 +1635,6 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Case_Expression
 
    begin
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("case expression", N);
-      end if;
-
       Analyze_And_Resolve (Expr, Any_Discrete);
       Check_Unset_Reference (Expr);
       Exp_Type := Etype (Expr);
@@ -2388,10 +2395,6 @@ package body Sem_Ch4 is
 
       Else_Expr := Next (Then_Expr);
 
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("if expression", N);
-      end if;
-
       --  Analyze and resolve the condition. We need to resolve this now so
       --  that it gets folded to True/False if possible, before we analyze
       --  the THEN/ELSE branches, because when analyzing these branches, we
@@ -2534,6 +2537,7 @@ package body Sem_Ch4 is
               and then Is_Entity_Name (Actual)
               and then Is_Type (Entity (Actual))
               and then Is_Discrete_Type (Entity (Actual))
+              and then not Is_Current_Instance (Actual)
             then
                Replace (N,
                  Make_Slice (Loc,
@@ -2956,46 +2960,19 @@ package body Sem_Ch4 is
       I_F   : Interp_Index;
       T_F   : Entity_Id;
 
+      procedure Analyze_Set_Membership;
+      --  If a set of alternatives is present, analyze each and find the
+      --  common type to which they must all resolve.
+
+      procedure Find_Interpretation;
+      function Find_Interpretation return Boolean;
+      --  Routine and wrapper to find a matching interpretation
+
       procedure Try_One_Interp (T1 : Entity_Id);
       --  Routine to try one proposed interpretation. Note that the context
       --  of the operation plays no role in resolving the arguments, so that
       --  if there is more than one interpretation of the operands that is
       --  compatible with a membership test, the operation is ambiguous.
-
-      --------------------
-      -- Try_One_Interp --
-      --------------------
-
-      procedure Try_One_Interp (T1 : Entity_Id) is
-      begin
-         if Has_Compatible_Type (R, T1) then
-            if Found
-              and then Base_Type (T1) /= Base_Type (T_F)
-            then
-               It := Disambiguate (L, I_F, Index, Any_Type);
-
-               if It = No_Interp then
-                  Ambiguous_Operands (N);
-                  Set_Etype (L, Any_Type);
-                  return;
-
-               else
-                  T_F := It.Typ;
-               end if;
-
-            else
-               Found := True;
-               T_F   := T1;
-               I_F   := Index;
-            end if;
-
-            Set_Etype (L, T_F);
-         end if;
-      end Try_One_Interp;
-
-      procedure Analyze_Set_Membership;
-      --  If a set of alternatives is present, analyze each and find the
-      --  common type to which they must all resolve.
 
       ----------------------------
       -- Analyze_Set_Membership --
@@ -3009,10 +2986,6 @@ package body Sem_Ch4 is
          Common_Type       : Entity_Id := Empty;
 
       begin
-         if Comes_From_Source (N) then
-            Check_Compiler_Unit ("set membership", N);
-         end if;
-
          Analyze (L);
          Candidate_Interps := L;
 
@@ -3095,6 +3068,62 @@ package body Sem_Ch4 is
          end if;
       end Analyze_Set_Membership;
 
+      -------------------------
+      -- Find_Interpretation --
+      -------------------------
+
+      procedure Find_Interpretation is
+      begin
+         if not Is_Overloaded (L) then
+            Try_One_Interp (Etype (L));
+
+         else
+            Get_First_Interp (L, Index, It);
+            while Present (It.Typ) loop
+               Try_One_Interp (It.Typ);
+               Get_Next_Interp (Index, It);
+            end loop;
+         end if;
+      end Find_Interpretation;
+
+      function Find_Interpretation return Boolean is
+      begin
+         Find_Interpretation;
+
+         return Found;
+      end Find_Interpretation;
+
+      --------------------
+      -- Try_One_Interp --
+      --------------------
+
+      procedure Try_One_Interp (T1 : Entity_Id) is
+      begin
+         if Has_Compatible_Type (R, T1, For_Comparison => True) then
+            if Found
+              and then Base_Type (T1) /= Base_Type (T_F)
+            then
+               It := Disambiguate (L, I_F, Index, Any_Type);
+
+               if It = No_Interp then
+                  Ambiguous_Operands (N);
+                  Set_Etype (L, Any_Type);
+                  return;
+
+               else
+                  T_F := It.Typ;
+               end if;
+
+            else
+               Found := True;
+               T_F   := T1;
+               I_F   := Index;
+            end if;
+
+            Set_Etype (L, T_F);
+         end if;
+      end Try_One_Interp;
+
       Op : Node_Id;
 
    --  Start of processing for Analyze_Membership_Op
@@ -3115,16 +3144,7 @@ package body Sem_Ch4 is
       then
          Analyze (R);
 
-         if not Is_Overloaded (L) then
-            Try_One_Interp (Etype (L));
-
-         else
-            Get_First_Interp (L, Index, It);
-            while Present (It.Typ) loop
-               Try_One_Interp (It.Typ);
-               Get_Next_Interp (Index, It);
-            end loop;
-         end if;
+         Find_Interpretation;
 
       --  If not a range, it can be a subtype mark, or else it is a degenerate
       --  membership test with a singleton value, i.e. a test for equality,
@@ -3133,19 +3153,15 @@ package body Sem_Ch4 is
       else
          Analyze (R);
 
-         if Is_Entity_Name (R)
-           and then Is_Type (Entity (R))
-         then
+         if Is_Entity_Name (R) and then Is_Type (Entity (R)) then
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
 
-         elsif Ada_Version >= Ada_2012
-           and then Has_Compatible_Type (R, Etype (L))
-         then
+         elsif Ada_Version >= Ada_2012 and then Find_Interpretation then
             if Nkind (N) = N_In then
-               Op := Make_Op_Eq (Loc, Left_Opnd  => L, Right_Opnd => R);
+               Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
             else
-               Op := Make_Op_Ne (Loc, Left_Opnd  => L, Right_Opnd => R);
+               Op := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
             end if;
 
             if Is_Record_Or_Limited_Type (Etype (L)) then
@@ -3204,7 +3220,7 @@ package body Sem_Ch4 is
         and then Intval (Right_Opnd (Parent (N))) <= Uint_128
       then
          Error_Msg_N
-           ("suspicious MOD value, was '*'* intended'??M?", Parent (N));
+           ("suspicious MOD value, was '*'* intended'??.m?", Parent (N));
       end if;
 
       --  Remaining processing is same as for other arithmetic operators
@@ -3255,7 +3271,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Null (N : Node_Id) is
    begin
-      Set_Etype (N, Any_Access);
+      Set_Etype (N, Universal_Access);
    end Analyze_Null;
 
    ----------------------
@@ -3707,6 +3723,24 @@ package body Sem_Ch4 is
                elsif Compatible_Types_In_Predicate
                        (Etype (Formal), Etype (Actual))
                then
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
+               --  A current instance used as an actual of a function,
+               --  whose body has not been seen, may include a formal
+               --  whose type is an incomplete view of an enclosing
+               --  type declaration containing the current call (e.g.
+               --  in the Expression for a component declaration).
+
+               --  In this case, update the signature of the subprogram
+               --  so the formal has the type of the full view.
+
+               elsif Inside_Init_Proc
+                 and then Nkind (Actual) = N_Identifier
+                 and then Ekind (Etype (Formal)) = E_Incomplete_Type
+                 and then Etype (Actual) = Full_View (Etype (Formal))
+               then
+                  Set_Etype (Formal, Etype (Actual));
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
@@ -4274,21 +4308,67 @@ package body Sem_Ch4 is
          Loop_Id := Defining_Identifier (Loop_Parameter_Specification (N));
       end if;
 
-      if Warn_On_Suspicious_Contract
-        and then not Referenced (Loop_Id, Cond)
-        and then not Is_Internal_Name (Chars (Loop_Id))
-      then
-         --  Generating C, this check causes spurious warnings on inlined
-         --  postconditions; we can safely disable it because this check
-         --  was previously performed when analyzing the internally built
-         --  postconditions procedure.
+      declare
+         type Subexpr_Kind is (Full, Conjunct, Disjunct);
 
-         if Modify_Tree_For_C and then In_Inlined_Body then
-            null;
-         else
-            Error_Msg_N ("?T?unused variable &", Loop_Id);
+         procedure Check_Subexpr (Expr : Node_Id; Kind : Subexpr_Kind);
+         --  Check that the quantified variable appears in every sub-expression
+         --  of the quantified expression. If Kind is Full, Expr is the full
+         --  expression. If Kind is Conjunct (resp. Disjunct), Expr is a
+         --  conjunct (resp. disjunct) of the full expression.
+
+         -------------------
+         -- Check_Subexpr --
+         -------------------
+
+         procedure Check_Subexpr (Expr : Node_Id; Kind : Subexpr_Kind) is
+         begin
+            if Nkind (Expr) in N_Op_And | N_And_Then
+              and then Kind /= Disjunct
+            then
+               Check_Subexpr (Left_Opnd (Expr), Conjunct);
+               Check_Subexpr (Right_Opnd (Expr), Conjunct);
+
+            elsif Nkind (Expr) in N_Op_Or | N_Or_Else
+              and then Kind /= Conjunct
+            then
+               Check_Subexpr (Left_Opnd (Expr), Disjunct);
+               Check_Subexpr (Right_Opnd (Expr), Disjunct);
+
+            elsif Kind /= Full
+              and then not Referenced (Loop_Id, Expr)
+            then
+               declare
+                  Sub : constant String :=
+                    (if Kind = Conjunct then "conjunct" else "disjunct");
+               begin
+                  Error_Msg_NE
+                    ("?.t?unused variable & in " & Sub, Expr, Loop_Id);
+                  Error_Msg_NE
+                    ("\consider extracting " & Sub & " from quantified "
+                     & "expression", Expr, Loop_Id);
+               end;
+            end if;
+         end Check_Subexpr;
+
+      begin
+         if Warn_On_Suspicious_Contract
+           and then not Is_Internal_Name (Chars (Loop_Id))
+
+           --  Generating C, this check causes spurious warnings on inlined
+           --  postconditions; we can safely disable it because this check
+           --  was previously performed when analyzing the internally built
+           --  postconditions procedure.
+
+           and then not (Modify_Tree_For_C and In_Inlined_Body)
+         then
+            if not Referenced (Loop_Id, Cond) then
+               Error_Msg_N ("?.t?unused variable &", Loop_Id);
+            else
+               Check_Subexpr (Cond, Kind => Full);
+            end if;
          end if;
-      end if;
+      end;
 
       --  Diagnose a possible misuse of the SOME existential quantifier. When
       --  we have a quantified expression of the form:
@@ -4304,7 +4384,7 @@ package body Sem_Ch4 is
         and then Nkind (Cond) = N_If_Expression
         and then No_Else_Or_Trivial_True (Cond)
       then
-         Error_Msg_N ("?T?suspicious expression", N);
+         Error_Msg_N ("?.t?suspicious expression", N);
          Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
          Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
       end if;
@@ -5834,14 +5914,16 @@ package body Sem_Ch4 is
       begin
          --  Verify that Op_Id is a visible binary function. Note that since
          --  we know Op_Id is overloaded, potentially use visible means use
-         --  visible for sure (RM 9.4(11)).
+         --  visible for sure (RM 9.4(11)). Be prepared for previous errors.
 
          if Ekind (Op_Id) = E_Function
            and then Present (F2)
            and then (Is_Immediately_Visible (Op_Id)
                       or else Is_Potentially_Use_Visible (Op_Id))
-           and then Has_Compatible_Type (Left_Opnd (N), Etype (F1))
-           and then Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+           and then (Has_Compatible_Type (Left_Opnd (N), Etype (F1))
+                      or else Etype (F1) = Any_Type)
+           and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+                      or else Etype (F2) = Any_Type)
          then
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
 
@@ -6528,7 +6610,9 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         if Valid_Comparison_Arg (T1) and then Has_Compatible_Type (R, T1) then
+         if Valid_Comparison_Arg (T1)
+           and then Has_Compatible_Type (R, T1, For_Comparison => True)
+         then
             if Found and then Base_Type (T1) /= Base_Type (T_F) then
                It := Disambiguate (L, I_F, Index, Any_Type);
 
@@ -6604,14 +6688,15 @@ package body Sem_Ch4 is
       It    : Interp;
 
    begin
-      if T1 = Universal_Integer or else T1 = Universal_Real
+      --  Defend against previous error
 
-        --  If the left operand of an equality operator is null, the visibility
-        --  of the operator must be determined from the interpretation of the
-        --  right operand. This processing must be done for Any_Access, which
-        --  is the internal representation of the type of the literal null.
+      if Nkind (R) = N_Error then
+         return;
+      end if;
 
-        or else T1 = Any_Access
+      if T1 = Universal_Integer
+        or else T1 = Universal_Real
+        or else T1 = Universal_Access
       then
          if not Is_Overloaded (R) then
             Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (Etype (R)));
@@ -6626,7 +6711,8 @@ package body Sem_Ch4 is
                Get_Next_Interp (Index, It);
             end loop;
          end if;
-      else
+
+      elsif Has_Compatible_Type (R, T1) or else Covers (Etype (R), T1) then
          Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (T1));
       end if;
    end Find_Non_Universal_Interpretations;
@@ -6695,7 +6781,7 @@ package body Sem_Ch4 is
       --  operator.
       --  This is because the expected type for Obj'Access in a call to
       --  the Standard."=" operator whose formals are of type
-      --  Universal_Access is Universal_Integer, and Universal_Access
+      --  Universal_Access is Universal_Access, and Universal_Access
       --  doesn't have a designated type. For more detail see RM 6.4.1(3)
       --  and 3.10.2.
       --  This procedure assumes that the context is a universal_access.
@@ -6917,7 +7003,7 @@ package body Sem_Ch4 is
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Universal_Access : Boolean;
+         Anonymous_Access : Boolean;
          Bas              : Entity_Id;
 
       begin
@@ -6938,7 +7024,7 @@ package body Sem_Ch4 is
          --  In Ada 2005, the equality operator for anonymous access types
          --  is declared in Standard, and preference rules apply to it.
 
-         Universal_Access := Is_Anonymous_Access_Type (T1)
+         Anonymous_Access := Is_Anonymous_Access_Type (T1)
            or else References_Anonymous_Access_Type (R, T1);
 
          if Present (Scop) then
@@ -6953,7 +7039,7 @@ package body Sem_Ch4 is
               or else In_Instance
               or else T1 = Universal_Integer
               or else T1 = Universal_Real
-              or else T1 = Any_Access
+              or else T1 = Universal_Access
               or else T1 = Any_String
               or else T1 = Any_Composite
               or else (Ekind (T1) = E_Access_Subprogram_Type
@@ -6961,7 +7047,7 @@ package body Sem_Ch4 is
             then
                null;
 
-            elsif Scop /= Standard_Standard or else not Universal_Access then
+            elsif Scop /= Standard_Standard or else not Anonymous_Access then
 
                --  The scope does not contain an operator for the type
 
@@ -6982,7 +7068,7 @@ package body Sem_Ch4 is
          then
             null;
 
-         elsif not Universal_Access then
+         elsif not Anonymous_Access then
             --  Save candidate type for subsequent error message, if any
 
             if not Is_Limited_Type (T1) then
@@ -6995,7 +7081,7 @@ package body Sem_Ch4 is
          --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:
          --  Do not allow anonymous access types in equality operators.
 
-         if Ada_Version < Ada_2005 and then Universal_Access then
+         if Ada_Version < Ada_2005 and then Anonymous_Access then
             return;
          end if;
 
@@ -7016,7 +7102,9 @@ package body Sem_Ch4 is
          --  Finally, also check for RM 4.5.2 (9.6/2).
 
          if T1 /= Standard_Void_Type
-           and then (Universal_Access or else Has_Compatible_Type (R, T1))
+           and then (Anonymous_Access
+                      or else
+                     Has_Compatible_Type (R, T1, For_Comparison => True))
 
            and then
              ((not Is_Limited_Type (T1)
@@ -7032,7 +7120,7 @@ package body Sem_Ch4 is
                or else not Is_Tagged_Type (T1)
                or else Chars (Op_Id) = Name_Op_Eq)
 
-           and then (not Universal_Access
+           and then (not Anonymous_Access
                       or else Check_Access_Object_Types (R, T1))
          then
             if Found
@@ -7047,14 +7135,14 @@ package body Sem_Ch4 is
 
                else
                   T_F := It.Typ;
-                  Is_Universal_Access := Universal_Access;
+                  Is_Universal_Access := Anonymous_Access;
                end if;
 
             else
                Found := True;
                T_F   := T1;
                I_F   := Index;
-               Is_Universal_Access := Universal_Access;
+               Is_Universal_Access := Anonymous_Access;
             end if;
 
             if not Analyzed (L) then
@@ -7077,9 +7165,7 @@ package body Sem_Ch4 is
       --  If left operand is aggregate, the right operand has to
       --  provide a usable type for it.
 
-      if Nkind (L) = N_Aggregate
-        and then Nkind (R) /= N_Aggregate
-      then
+      if Nkind (L) = N_Aggregate and then Nkind (R) /= N_Aggregate then
          Find_Equality_Types (L => R, R => L, Op_Id => Op_Id, N => N);
          return;
       end if;
@@ -7470,6 +7556,9 @@ package body Sem_Ch4 is
             then
                return;
 
+            elsif Has_Possible_Literal_Aspects (N) then
+               return;
+
             --  If we have a logical operator, one of whose operands is
             --  Boolean, then we know that the other operand cannot resolve to
             --  Boolean (since we got no interpretations), but in that case we
@@ -7786,6 +7875,69 @@ package body Sem_Ch4 is
       end if;
    end Operator_Check;
 
+   ----------------------------------
+   -- Has_Possible_Literal_Aspects --
+   ----------------------------------
+
+   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean is
+      R : constant Node_Id := Right_Opnd (N);
+      L : Node_Id := Empty;
+
+      procedure Check_Literal_Opnd (Opnd : Node_Id);
+      --  If an operand is a literal to which an aspect may apply,
+      --  add the corresponding type to operator node.
+
+      ------------------------
+      -- Check_Literal_Opnd --
+      ------------------------
+
+      procedure Check_Literal_Opnd (Opnd : Node_Id) is
+      begin
+         if Nkind (Opnd) in N_Numeric_Or_String_Literal
+           or else (Is_Entity_Name (Opnd)
+             and then Present (Entity (Opnd))
+             and then Is_Named_Number (Entity (Opnd)))
+         then
+            Add_One_Interp (N, Etype (Opnd), Etype (Opnd));
+         end if;
+      end Check_Literal_Opnd;
+
+   --  Start of processing for Has_Possible_Literal_Aspects
+
+   begin
+      if Ada_Version < Ada_2022 then
+         return False;
+      end if;
+
+      if Nkind (N) in N_Binary_Op then
+         L := Left_Opnd (N);
+      else
+         L := Empty;
+      end if;
+      Check_Literal_Opnd (R);
+
+      --  Check left operand only if right one did not provide a
+      --  possible interpretation. Note that literal types are not
+      --  overloadable, in the sense that there is no overloadable
+      --  entity name whose several interpretations can be used to
+      --  indicate possible resulting types, so there is no way to
+      --  provide more than one interpretation to the operator node.
+      --  The choice of one operand over the other is arbitrary at
+      --  this point, and may lead to spurious resolution when both
+      --  operands are literals of different kinds, but the second
+      --  pass of resolution will examine anew both operands to
+      --  determine whether a user-defined literal may apply to
+      --  either or both.
+
+      if Present (L)
+        and then Etype (N) = Any_Type
+      then
+         Check_Literal_Opnd (L);
+      end if;
+
+      return Etype (N) /= Any_Type;
+   end Has_Possible_Literal_Aspects;
+
    --------------------------------
    -- Remove_Abstract_Operations --
    --------------------------------
@@ -8029,6 +8181,7 @@ package body Sem_Ch4 is
                while Present (It.Nam) loop
                   if Is_Numeric_Type (It.Typ)
                     and then Scope (It.Typ) = Standard_Standard
+                    and then Ekind (It.Nam) = E_Operator
                   then
                      Set_Abstract_Op (I, Abstract_Op);
                   end if;
@@ -8109,7 +8262,7 @@ package body Sem_Ch4 is
               and then Is_Entity_Name (Name (Parent (Par)))
             then
                declare
-                  Proc   : Entity_Id;
+                  Proc : Entity_Id;
 
                begin
                   --  We should look for an interpretation with the proper
@@ -8598,10 +8751,6 @@ package body Sem_Ch4 is
       --  with the generalized indexing node, which is a call, possibly with a
       --  dereference operation.
 
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("generalized indexing", N);
-      end if;
-
       --  Create argument list for function call that represents generalized
       --  indexing. Note that indices (i.e. actuals) may themselves be
       --  overloaded.
@@ -8878,7 +9027,9 @@ package body Sem_Ch4 is
    --------------------------
 
    function Try_Object_Operation
-     (N : Node_Id; CW_Test_Only : Boolean := False) return Boolean
+     (N                : Node_Id;
+      CW_Test_Only     : Boolean := False;
+      Allow_Extensions : Boolean := False) return Boolean
    is
       K              : constant Node_Kind  := Nkind (Parent (N));
       Is_Subprg_Call : constant Boolean    := K in N_Subprogram_Call;
@@ -9445,31 +9596,29 @@ package body Sem_Ch4 is
          begin
             Error := False;
 
-            if Is_Non_Empty_List (Intface_List) then
-               Intface := First (Intface_List);
-               while Present (Intface) loop
+            Intface := First (Intface_List);
+            while Present (Intface) loop
 
-                  --  Look for acceptable class-wide homonyms associated with
-                  --  the interface.
+               --  Look for acceptable class-wide homonyms associated with the
+               --  interface.
 
-                  Traverse_Homonyms (Etype (Intface), Error);
+               Traverse_Homonyms (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  --  Continue the search by looking at each of the interface's
-                  --  associated interface ancestors.
+               --  Continue the search by looking at each of the interface's
+               --  associated interface ancestors.
 
-                  Traverse_Interfaces (Etype (Intface), Error);
+               Traverse_Interfaces (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  Next (Intface);
-               end loop;
-            end if;
+               Next (Intface);
+            end loop;
          end Traverse_Interfaces;
 
       --  Start of processing for Try_Class_Wide_Operation
@@ -9565,7 +9714,7 @@ package body Sem_Ch4 is
 
          if (not Is_Tagged_Type (Obj_Type)
               and then
-                (not Extensions_Allowed
+                (not (Extensions_Allowed or Allow_Extensions)
                   or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
@@ -9594,7 +9743,7 @@ package body Sem_Ch4 is
                --  have homographic prefixed-view operations that could result
                --  in an ambiguity, but handling properly may be tricky. ???)
 
-               if Extensions_Allowed
+               if (Extensions_Allowed or Allow_Extensions)
                  and then not Prim_Result
                  and then Is_Named_Access_Type (Prev_Obj_Type)
                  and then Present (Direct_Primitive_Operations (Prev_Obj_Type))

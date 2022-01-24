@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -260,6 +260,9 @@ md_file=
 case ${target} in
   tile*-*-*				\
  | cr16-*-*				\
+ | hppa[12]*-*-hpux10*			\
+ | hppa[12]*-*-hpux11*			\
+ | m32c-*-rtems*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -363,7 +366,7 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o aarch-common.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
@@ -371,7 +374,7 @@ arm*-*-*)
 	d_target_objs="arm-d.o"
 	rust_target_objs="arm-rust.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
-	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c"
+	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c \$(srcdir)/config/arm/arm-mve-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.cc"
 	;;
 avr-*-*)
 	cpu_type=avr
@@ -513,6 +516,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h smmintrin.h"
+	extra_headers="${extra_headers} nmmintrin.h immintrin.h x86gprintrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
@@ -697,6 +701,7 @@ case ${target} in
 *-*-darwin*)
   tmake_file="t-darwin "
   tm_file="${tm_file} darwin.h"
+  tm_d_file="${tm_d_file} tm-dwarf2.h"
   darwin_os=`echo ${target} | sed 's/.*darwin\([0-9.]*\).*$/\1/'`
   darwin_maj=`expr "$darwin_os" : '\([0-9]*\).*'`
   macos_min=`expr "$darwin_os" : '[0-9]*\.\([0-9]*\).*'`
@@ -705,14 +710,28 @@ case ${target} in
     macos_min=0
   fi
   def_ld64=85.2
+  # Tools hosted on earlier versions of Darwin constrained all object
+  # alignment to be 2^15 or smaller.  From Darwin11 (macOS 10.7) the
+  # alignment of non-common is allowed to be up to 2^28.  Note that the
+  # larger alignment is permitted when targeting 10.6 from 10.7 so that
+  # the constraint only need be applied per host (and only if the host
+  # is Darwin).
+  case ${host} in
+      *-*-darwin[4-9]* | *-*-darwin10*)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=15U"
+          ;;
+      *)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=28U"
+          ;;
+  esac
   case ${target} in
       # Darwin 4 to 19 correspond to macOS 10.0 to 10.15
       *-*-darwin[4-9]* | *-*-darwin1[0-9]*)
         macos_min=`expr $darwin_maj - 4`
         ;;
-      *-*-darwin20*)
-        # Darwin 20 corresponds to macOS 11.
-        macos_maj=11
+      *-*-darwin2*)
+        # Darwin 20 corresponds to macOS 11, Darwin 21 to macOS 12.
+        macos_maj=`expr $darwin_maj - 9`
         def_ld64=609.0
         ;;
       *-*-darwin)
@@ -1048,16 +1067,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
   extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
 
-  # We provide stdint.h ...
-
+  # We provide (a tailored version of) stdint.h
   tm_file="${tm_file} vxworks-stdint.h"
-
-  # .. only through the yvals conditional wrapping mentioned above
-  # to abide by the VxWorks 7 expectations.  The final copy is performed
-  # explicitly by a t-vxworks Makefile rule.
-
-  use_gcc_stdint=none
-  extra_headers="${extra_headers} ../../ginclude/stdint-gcc.h"
+  use_gcc_stdint=provide
 
   case ${enable_threads} in
     no) ;;
@@ -1562,7 +1574,6 @@ bpf-*-*)
         use_collect2=no
         extra_headers="bpf-helpers.h"
         use_gcc_stdint=provide
-        extra_headers="coreout.h"
         extra_objs="coreout.o"
         target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.c"
         ;;
@@ -1644,7 +1655,7 @@ csky-*-*)
 	rust_target_objs="csky-rust.o"
 	;;
 epiphany-*-elf | epiphany-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h"
+	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file="${tmake_file} epiphany/t-epiphany"
 	case ${target} in
 	epiphany-*-rtems*)
@@ -1887,7 +1898,7 @@ hppa[12]*-*-hpux11*)
 		dwarf2=no
 	fi
 	;;
-i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2[0-9]*)
+i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2*)
 	echo "Error: 32bit target is not supported after Darwin17" 1>&2
 	;;
 i[34567]86-*-darwin*)
@@ -1897,7 +1908,7 @@ i[34567]86-*-darwin*)
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch t-slibgcc"
 	tm_file="${cpu_type}/darwin32-biarch.h ${tm_file} "
 	;;
-x86_64-*-darwin1[89]* | x86_64-*-darwin2[01]*)
+x86_64-*-darwin1[89]* | x86_64-*-darwin2*)
 	# Only 64b from now
 	tm_defines="${tm_defines} TARGET_64BIT_DEFAULT=(OPTION_MASK_ISA_64BIT|OPTION_MASK_ABI_64)"
 	tm_defines="${tm_defines} TARGET_BI_ARCH=0"
@@ -4355,6 +4366,13 @@ case "${target}" in
 		fi
 		;;
 
+	avr-*-*)
+		# Handle --with-multilib-list.
+		if test "x${with_multilib_list}" != xdefault; then
+			TM_MULTILIB_CONFIG="${with_multilib_list}"
+		fi
+	;;
+
     csky-*-*)
 	supported_defaults="cpu endian float"
 	;;
@@ -5127,16 +5145,6 @@ case "${target}" in
 			tm_file="$tm_file ./advance-toolchain.h"
 			(at="/opt/$with_advance_toolchain"
 			 echo "/* Use Advance Toolchain $at */"
-			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC32"
-			 echo "#define LINK_OS_EXTRA_SPEC32" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib -rpath $at/lib\""
-			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC64"
-			 echo "#define LINK_OS_EXTRA_SPEC64" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib64 -rpath $at/lib64\""
 			 echo
 			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
 			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \

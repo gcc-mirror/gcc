@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2151,6 +2151,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  && !(gfc_matching_procptr_assignment
 	       && sym->attr.flavor == FL_PROCEDURE))
       || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	  && sym->ts.u.derived && CLASS_DATA (sym)
 	  && (CLASS_DATA (sym)->attr.dimension
 	      || CLASS_DATA (sym)->attr.codimension)))
     {
@@ -2627,7 +2628,7 @@ check_substring:
 symbol_attribute
 gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 {
-  int dimension, codimension, pointer, allocatable, target;
+  int dimension, codimension, pointer, allocatable, target, optional;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2640,12 +2641,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   sym = expr->symtree->n.sym;
   attr = sym->attr;
 
+  optional = attr.optional;
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok && sym->ts.u.derived)
     {
       dimension = CLASS_DATA (sym)->attr.dimension;
       codimension = CLASS_DATA (sym)->attr.codimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
+      optional |= CLASS_DATA (sym)->attr.optional;
     }
   else
     {
@@ -2667,6 +2670,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
     if (ref->type == REF_INQUIRY)
       {
 	has_inquiry_part = true;
+	optional = false;
 	break;
       }
 
@@ -2684,12 +2688,13 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	  case AR_SECTION:
 	    allocatable = pointer = 0;
 	    dimension = 1;
+	    optional = false;
 	    break;
 
 	  case AR_ELEMENT:
 	    /* Handle coarrays.  */
 	    if (ref->u.ar.dimen > 0)
-	      allocatable = pointer = 0;
+	      allocatable = pointer = optional = false;
 	    break;
 
 	  case AR_UNKNOWN:
@@ -2702,6 +2707,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	break;
 
       case REF_COMPONENT:
+	optional = false;
 	comp = ref->u.c.component;
 	attr = comp->attr;
 	if (ts != NULL && !has_inquiry_part)
@@ -2723,7 +2729,10 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	else
 	  {
 	    codimension = comp->attr.codimension;
-	    pointer = comp->attr.pointer;
+	    if (expr->ts.type == BT_CLASS && strcmp (comp->name, "_data") == 0)
+	      pointer = comp->attr.class_pointer;
+	    else
+	      pointer = comp->attr.pointer;
 	    allocatable = comp->attr.allocatable;
 	  }
 	if (pointer || attr.proc_pointer)
@@ -2733,7 +2742,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
       case REF_INQUIRY:
       case REF_SUBSTRING:
-	allocatable = pointer = 0;
+	allocatable = pointer = optional = false;
 	break;
       }
 
@@ -2743,6 +2752,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   attr.allocatable = allocatable;
   attr.target = target;
   attr.save = sym->attr.save;
+  attr.optional = optional;
 
   return attr;
 }
@@ -3354,6 +3364,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
   match m;
   gfc_expr *e;
   gfc_symtree *symtree;
+  bool t = true;
 
   gfc_get_ha_sym_tree (sym->name, &symtree);
 
@@ -3384,10 +3395,18 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
      in the structure constructor must be a constant.  Try to reduce the
      expression here.  */
   if (gfc_in_match_data ())
-    gfc_reduce_init_expr (e);
+    t = gfc_reduce_init_expr (e);
 
-  *result = e;
-  return MATCH_YES;
+  if (t)
+    {
+      *result = e;
+      return MATCH_YES;
+    }
+  else
+    {
+      gfc_free_expr (e);
+      return MATCH_ERROR;
+    }
 }
 
 

@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -3816,7 +3816,6 @@ sched_analyze (class deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 
   for (insn = head;; insn = NEXT_INSN (insn))
     {
-
       if (INSN_P (insn))
 	{
 	  /* And initialize deps_lists.  */
@@ -3836,7 +3835,6 @@ sched_analyze (class deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 	  return;
 	}
     }
-  gcc_unreachable ();
 }
 
 /* Helper for sched_free_deps ().

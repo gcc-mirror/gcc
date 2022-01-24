@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree-inline.h"
 #include "tree-ssa-live.h"
+#include "tree-ssa-dce.h"
 #include "omp-general.h"
 #include "omp-expand.h"
 #include "tree-cfgcleanup.h"
@@ -63,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "asan.h"
 #include "profile.h"
+#include "sreal.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -3453,19 +3455,14 @@ verify_gimple_call (gcall *stmt)
     }
 
   /* For a call to .DEFERRED_INIT,
-     LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, IS_VLA)
-     we should guarantee that the 1st and the 3rd arguments are consistent:
-     1st argument: SIZE of the DECL;
-     3rd argument: IS_VLA, 0 NO, 1 YES;
+     LHS = DEFERRED_INIT (SIZE of the DECL, INIT_TYPE, NAME of the DECL)
+     we should guarantee that when the 1st argument is a constant, it should
+     be the same as the size of the LHS.  */
 
-     if IS_VLA is false, the 1st argument should be a constant and the same as
-     the size of the LHS.  */
   if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
     {
       tree size_of_arg0 = gimple_call_arg (stmt, 0);
       tree size_of_lhs = TYPE_SIZE_UNIT (TREE_TYPE (lhs));
-      tree is_vla_node = gimple_call_arg (stmt, 2);
-      bool is_vla = (bool) TREE_INT_CST_LOW (is_vla_node);
 
       if (TREE_CODE (lhs) == SSA_NAME)
 	lhs = SSA_NAME_VAR (lhs);
@@ -3475,27 +3472,13 @@ verify_gimple_call (gcall *stmt)
 						    &size_from_arg0);
       bool is_constant_size_lhs = poly_int_tree_p (size_of_lhs,
 						   &size_from_lhs);
-      if (!is_vla)
-	{
-	  if (!is_constant_size_arg0)
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have "
-		     "constant size for the first argument");
-	      return true;
-	    }
-	  else if (!is_constant_size_lhs)
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have "
-		     "constant size for the LHS");
-	      return true;
-	    }
-	  else if (maybe_ne (size_from_arg0, size_from_lhs))
-	    {
-	      error ("%<DEFFERED_INIT%> calls for non-VLA should have same "
-		     "constant size for the first argument and LHS");
-	      return true;
-	    }
-	}
+      if (is_constant_size_arg0 && is_constant_size_lhs)
+	if (maybe_ne (size_from_arg0, size_from_lhs))
+	  {
+	    error ("%<DEFFERED_INIT%> calls should have same "
+		   "constant size for the first argument and LHS");
+	    return true;
+	  }
     }
 
   /* ???  The C frontend passes unpromoted arguments in case it
@@ -7945,18 +7928,14 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   if (eh_map)
     delete eh_map;
 
-  if (gimple_in_ssa_p (cfun))
-    {
-      /* We need to release ssa-names in a defined order, so first find them,
-	 and then iterate in ascending version order.  */
-      bitmap release_names = BITMAP_ALLOC (NULL);
-      vars_map.traverse<void *, gather_ssa_name_hash_map_from> (release_names);
-      bitmap_iterator bi;
-      unsigned i;
-      EXECUTE_IF_SET_IN_BITMAP (release_names, 0, i, bi)
-	release_ssa_name (ssa_name (i));
-      BITMAP_FREE (release_names);
-    }
+  /* We need to release ssa-names in a defined order, so first find them,
+     and then iterate in ascending version order.  */
+  bitmap release_names = BITMAP_ALLOC (NULL);
+  vars_map.traverse<void *, gather_ssa_name_hash_map_from> (release_names);
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (release_names, 0, i, bi)
+    release_ssa_name (ssa_name (i));
+  BITMAP_FREE (release_names);
 
   /* Rewire the entry and exit blocks.  The successor to the entry
      block turns into the successor of DEST_FN's ENTRY_BLOCK_PTR in
@@ -8127,14 +8106,22 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	    fprintf (file, ",%s(%" PRIu64 ")",
 		     profile_quality_as_string (bb->count.quality ()),
 		     bb->count.value ());
-	  fprintf (file, ")\n%s (", function_name (fun));
+	  if (dump_flags & TDF_UID)
+	    fprintf (file, ")\n%sD_%u (", function_name (fun),
+		     DECL_UID (fndecl));
+	  else
+	    fprintf (file, ")\n%s (", function_name (fun));
 	}
     }
   else
     {
       print_generic_expr (file, TREE_TYPE (fntype), dump_flags);
-      fprintf (file, " %s %s(", function_name (fun),
-	       tmclone ? "[tm-clone] " : "");
+      if (dump_flags & TDF_UID)
+	fprintf (file, " %sD.%u %s(", function_name (fun), DECL_UID (fndecl),
+		 tmclone ? "[tm-clone] " : "");
+      else
+	fprintf (file, " %s %s(", function_name (fun),
+		 tmclone ? "[tm-clone] " : "");
     }
 
   arg = DECL_ARGUMENTS (fndecl);
@@ -9075,18 +9062,32 @@ gimple_account_profile_record (basic_block bb,
 			       struct profile_record *record)
 {
   gimple_stmt_iterator i;
-  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+  for (i = gsi_start_nondebug_after_labels_bb (bb); !gsi_end_p (i);
+       gsi_next_nondebug (&i))
     {
       record->size
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (bb->count.initialized_p ())
+      if (profile_info)
+	{
+	  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().initialized_p ()
+	      && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().nonzero_p ()
+	      && bb->count.ipa ().initialized_p ())
+	    record->time
+	      += estimate_num_insns (gsi_stmt (i),
+				     &eni_time_weights)
+				     * bb->count.ipa ().to_gcov_type ();
+	}
+      else if (bb->count.initialized_p ()
+	       && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
 	record->time
-	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count.to_gcov_type ();
-      else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	record->time
-	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count.to_frequency (cfun);
+	  += estimate_num_insns
+		(gsi_stmt (i),
+		 &eni_time_weights)
+		 * bb->count.to_sreal_scale
+			(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).to_double ();
+     else
+      record->time
+	+= estimate_num_insns (gsi_stmt (i), &eni_time_weights);
     }
 }
 
@@ -9117,7 +9118,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_flow_call_edges_add,   /* flow_call_edges_add */
   gimple_execute_on_growing_pred,	/* execute_on_growing_pred */
   gimple_execute_on_shrinking_pred, /* execute_on_shrinking_pred */
-  gimple_duplicate_loop_to_header_edge, /* duplicate loop for trees */
+  gimple_duplicate_loop_body_to_header_edge, /* duplicate loop for trees */
   gimple_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   gimple_lv_adjust_loop_header_phi, /* lv_adjust_loop_header_phi*/
   extract_true_false_edges_from_block, /* extract_cond_bb_edges */
@@ -9409,6 +9410,31 @@ gimple_switch_default_edge (function *ifun, gswitch *gs)
   return gimple_switch_edge (ifun, gs, 0);
 }
 
+/* Return true if the only executable statement in BB is a GIMPLE_COND.  */
+
+bool
+cond_only_block_p (basic_block bb)
+{
+  /* BB must have no executable statements.  */
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
+  if (phi_nodes (bb))
+    return false;
+  while (!gsi_end_p (gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	;
+      else if (gimple_code (stmt) == GIMPLE_NOP
+	       || gimple_code (stmt) == GIMPLE_PREDICT
+	       || gimple_code (stmt) == GIMPLE_COND)
+	;
+      else
+	return false;
+      gsi_next (&gsi);
+    }
+  return true;
+}
+
 
 /* Emit return warnings.  */
 
@@ -9658,13 +9684,52 @@ make_pass_warn_unused_result (gcc::context *ctxt)
   return new pass_warn_unused_result (ctxt);
 }
 
+/* Maybe Remove stores to variables we marked write-only.
+   Return true if a store was removed. */
+static bool
+maybe_remove_writeonly_store (gimple_stmt_iterator &gsi, gimple *stmt,
+			      bitmap dce_ssa_names)
+{
+  /* Keep access when store has side effect, i.e. in case when source
+     is volatile.  */  
+  if (!gimple_store_p (stmt)
+      || gimple_has_side_effects (stmt)
+      || optimize_debug)
+    return false;
+
+  tree lhs = get_base_address (gimple_get_lhs (stmt));
+
+  if (!VAR_P (lhs)
+      || (!TREE_STATIC (lhs) && !DECL_EXTERNAL (lhs))
+      || !varpool_node::get (lhs)->writeonly)
+    return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Removing statement, writes"
+	       " to write only var:\n");
+      print_gimple_stmt (dump_file, stmt, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+    }
+
+  /* Mark ssa name defining to be checked for simple dce. */
+  if (gimple_assign_single_p (stmt))
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      if (TREE_CODE (rhs) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (rhs))
+	bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION (rhs));
+    }
+  unlink_stmt_vdef (stmt);
+  gsi_remove (&gsi, true);
+  release_defs (stmt);
+  return true;
+}
+
 /* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
    pure, const or noreturn.
-   Remove redundant edges and basic blocks, and create new ones if necessary.
-
-   This pass can't be executed as stand alone pass from pass manager, because
-   in between inlining and this fixup the verify_flow_info would fail.  */
+   Remove redundant edges and basic blocks, and create new ones if necessary. */
 
 unsigned int
 execute_fixup_cfg (void)
@@ -9677,6 +9742,7 @@ execute_fixup_cfg (void)
   profile_count num = node->count;
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   bool scale = num.initialized_p () && !(num == den);
+  auto_bitmap dce_ssa_names;
 
   if (scale)
     {
@@ -9716,26 +9782,13 @@ execute_fixup_cfg (void)
 		todo |= TODO_cleanup_cfg;
 	     }
 
-	  /* Remove stores to variables we marked write-only.
-	     Keep access when store has side effect, i.e. in case when source
-	     is volatile.  */
-	  if (gimple_store_p (stmt)
-	      && !gimple_has_side_effects (stmt)
-	      && !optimize_debug)
+	  /* Remove stores to variables we marked write-only. */
+	  if (maybe_remove_writeonly_store (gsi, stmt, dce_ssa_names))
 	    {
-	      tree lhs = get_base_address (gimple_get_lhs (stmt));
-
-	      if (VAR_P (lhs)
-		  && (TREE_STATIC (lhs) || DECL_EXTERNAL (lhs))
-		  && varpool_node::get (lhs)->writeonly)
-		{
-		  unlink_stmt_vdef (stmt);
-		  gsi_remove (&gsi, true);
-		  release_defs (stmt);
-	          todo |= TODO_update_ssa | TODO_cleanup_cfg;
-	          continue;
-		}
+	      todo |= TODO_update_ssa | TODO_cleanup_cfg;
+	      continue;
 	    }
+
 	  /* For calls we can simply remove LHS when it is known
 	     to be write-only.  */
 	  if (is_gimple_call (stmt)
@@ -9795,6 +9848,8 @@ execute_fixup_cfg (void)
   if (current_loops
       && (todo & TODO_cleanup_cfg))
     loops_state_set (LOOPS_NEED_FIXUP);
+
+  simple_dce_from_worklist (dce_ssa_names);
 
   return todo;
 }
@@ -9893,13 +9948,13 @@ void
 gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
 {
   tree block = LOCATION_BLOCK (e->goto_locus);
-  op (&(e->src), cookie);
-  op (&(e->dest), cookie);
+  op (&(e->src), NULL, cookie);
+  op (&(e->dest), NULL, cookie);
   if (current_ir_type () == IR_GIMPLE)
-    op (&(e->insns.g), cookie);
+    op (&(e->insns.g), NULL, cookie);
   else
-    op (&(e->insns.r), cookie);
-  op (&(block), cookie);
+    op (&(e->insns.r), NULL, cookie);
+  op (&(block), &(block), cookie);
 }
 
 #if CHECKING_P

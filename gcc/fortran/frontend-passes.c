@@ -1,5 +1,5 @@
 /* Pass manager for Fortran front end.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
    Contributed by Thomas König.
 
 This file is part of GCC.
@@ -2390,7 +2390,7 @@ doloop_contained_procedure_code (gfc_code **c,
   switch (co->op)
     {
     case EXEC_ASSIGN:
-      if (co->expr1->symtree->n.sym == do_var)
+      if (co->expr1->symtree && co->expr1->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->loc, info->procedure->name,
 		       &info->where_do);
       break;
@@ -2411,14 +2411,14 @@ doloop_contained_procedure_code (gfc_code **c,
       break;
 
     case EXEC_OPEN:
-      if (co->ext.open->iostat
+      if (co->ext.open && co->ext.open->iostat
 	  && co->ext.open->iostat->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->ext.open->iostat->where,
 		       info->procedure->name, &info->where_do);
       break;
 
     case EXEC_CLOSE:
-      if (co->ext.close->iostat
+      if (co->ext.close && co->ext.close->iostat
 	  && co->ext.close->iostat->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->ext.close->iostat->where,
 		       info->procedure->name, &info->where_do);
@@ -2429,7 +2429,8 @@ doloop_contained_procedure_code (gfc_code **c,
 	{
 
 	case EXEC_INQUIRE:
-#define CHECK_INQ(a) do { if (co->ext.inquire->a &&			\
+#define CHECK_INQ(a) do { if (co->ext.inquire    &&			\
+			      co->ext.inquire->a &&			\
 			      co->ext.inquire->a->symtree->n.sym == do_var) \
 	      gfc_error_now (errmsg, do_var->name,			\
 			     &co->ext.inquire->a->where,		\
@@ -2448,21 +2449,23 @@ doloop_contained_procedure_code (gfc_code **c,
 #undef CHECK_INQ
 
 	case EXEC_READ:
-	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	  if (co->expr1 && co->expr1->symtree
+	      && co->expr1->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
 			   info->procedure->name, &info->where_do);
 
 	  /* Fallthrough.  */
 
 	case EXEC_WRITE:
-	  if (co->ext.dt->iostat
+	  if (co->ext.dt && co->ext.dt->iostat && co->ext.dt->iostat->symtree
 	      && co->ext.dt->iostat->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->ext.dt->iostat->where,
 			   info->procedure->name, &info->where_do);
 	  break;
 
 	case EXEC_IOLENGTH:
-	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	  if (co->expr1 && co->expr1->symtree
+	      && co->expr1->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
 			   info->procedure->name, &info->where_do);
 	  break;
@@ -2650,7 +2653,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
 	      do_sym = cl->ext.iterator->var->symtree->n.sym;
 
-	      if (a->expr && a->expr->symtree
+	      if (a->expr && a->expr->symtree && f->sym
 		  && a->expr->symtree->n.sym == do_sym)
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)
@@ -2914,6 +2917,7 @@ do_subscript (gfc_expr **e)
 		    {
 		      if (ar->as->lower[i]
 			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->lower[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld < %ld) in loop beginning at %L",
@@ -2923,6 +2927,7 @@ do_subscript (gfc_expr **e)
 
 		      if (ar->as->upper[i]
 			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->upper[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
 			    gfc_warning (warn, "Array reference at %L out of bounds "
 					 "(%ld > %ld) in loop beginning at %L",
@@ -2938,6 +2943,7 @@ do_subscript (gfc_expr **e)
 		    {
 		      if (ar->as->lower[i]
 			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->lower[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld < %ld) in loop beginning at %L",
@@ -2947,6 +2953,7 @@ do_subscript (gfc_expr **e)
 
 		      if (ar->as->upper[i]
 			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->upper[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld > %ld) in loop beginning at %L",
@@ -5229,7 +5236,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	  case EXPR_OP:
 	    WALK_SUBEXPR ((*e)->value.op.op1);
 	    WALK_SUBEXPR_TAIL ((*e)->value.op.op2);
-	    break;
+	    /* No fallthru because of the tail recursion above.  */
 	  case EXPR_FUNCTION:
 	    for (a = (*e)->value.function.actual; a; a = a->next)
 	      WALK_SUBEXPR (a->expr);
@@ -5634,7 +5641,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
 		  WALK_SUBEXPR (co->ext.omp_clauses->safelen_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->simdlen_expr);
-		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams_lower);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams_upper);
 		  WALK_SUBEXPR (co->ext.omp_clauses->device);
 		  WALK_SUBEXPR (co->ext.omp_clauses->thread_limit);
 		  WALK_SUBEXPR (co->ext.omp_clauses->dist_chunk_size);

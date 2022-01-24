@@ -1,6 +1,6 @@
 # Rules common to all arm targets
 #
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -152,6 +152,16 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.c $(CONFIG_H) \
   $(srcdir)/config/arm/arm-simd-builtin-types.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-builtins.c
+
+arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
+  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+  fold-const.h langhooks.h stringpool.h attribs.h diagnostic.h \
+  $(srcdir)/config/arm/arm-protos.h \
+  $(srcdir)/config/arm/arm-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.h \
+  $(srcdir)/config/arm/arm-mve-builtins.def
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/arm-mve-builtins.cc
 
 arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)

@@ -1,4 +1,4 @@
-#  Copyright (C) 2003-2021 Free Software Foundation, Inc.
+#  Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -303,7 +303,7 @@ function var_set(flags)
 		return "0, CLVC_STRING, 0"
 	if (flag_set_p("ByteSize", flags))
 		return "0, CLVC_SIZE, 0"
-	return "0, CLVC_BOOLEAN, 0"
+	return "0, CLVC_INTEGER, 0"
 }
 
 # Given that an option called NAME has flags FLAGS, return an initializer
@@ -356,7 +356,7 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
     return ""
 }
 
-function integer_range_info(range_option, init, option)
+function integer_range_info(range_option, init, option, uinteger_used)
 {
     if (range_option != "") {
 	ival = init + 0;
@@ -364,6 +364,8 @@ function integer_range_info(range_option, init, option)
 	end = nth_arg(1, range_option) + 0;
 	if (init != "" && init != "-1" && (ival < start || ival > end))
 	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
+	if (uinteger_used && start < 0)
+	  print "#error '" option"': negative IntegerRange (" start ", " end ") cannot be combined with UInteger"
 	return start ", " end
     }
     else

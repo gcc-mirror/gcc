@@ -11,10 +11,43 @@ crttms.o: $(srcdir)/config/darwin-crt-tm.c
 crttme.o: $(srcdir)/config/darwin-crt-tm.c
 	$(crt_compile) -mmacosx-version-min=10.4 -DEND -c $<
 
-# Use unwind-dw2-fde-darwin
-LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/config/unwind-dw2-fde-darwin.c \
-  $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
+# Make emutls weak so that we can deal with -static-libgcc, override the
+# hidden visibility when this is present in libgcc_eh.
+emutls.o: HOST_LIBGCC2_CFLAGS += \
+  -DEMUTLS_ATTR='__attribute__((__weak__,__visibility__("default")))'
+emutls_s.o: HOST_LIBGCC2_CFLAGS += \
+  -DEMUTLS_ATTR='__attribute__((__weak__,__visibility__("default")))'
+
+# Make the emutls crt as a convenience lib so that it can be linked
+# optionally, use the shared version so that we can link with DSO.
+libemutls_w.a: emutls_s.o
+	$(AR_CREATE_FOR_TARGET) $@ $<
+	$(RANLIB_FOR_TARGET) $@
 
 # Patch to __Unwind_Find_Enclosing_Function for Darwin10.
-d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c
+d10-uwfef.o: $(srcdir)/config/darwin10-unwind-find-enc-func.c libgcc_tm.h
 	$(crt_compile) -mmacosx-version-min=10.6 -c $<
+
+# Using this crt as a library means that it will not be added to an exe
+# (or module) unless needed.
+libd10-uwfef.a: d10-uwfef.o
+	$(AR_CREATE_FOR_TARGET) $@ d10-uwfef.o
+	$(RANLIB_FOR_TARGET) $@
+
+###### Unwinder #######
+# Most Darwin versions get their unwinder from libSystem; older versions
+# have an installed /usr/lib/libgcc_s.1.dylib.
+# So do not add the unwinder to the shared libgcc.
+LIB2ADDEHSHARED =
+
+# We still need it in the _eh.a for earlier platform versions.
+# Use unwind-dw2-fde-darwin
+LIB2ADDEH = $(srcdir)/unwind-dw2.c \
+	    $(srcdir)/config/unwind-dw2-fde-darwin.c \
+	    $(srcdir)/unwind-c.c
+
+# Do not build a shared unwind lib by default.
+LIBEHSOBJS=
+
+# Symbols for all the sub-ports.
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/libgcc-libsystem.ver

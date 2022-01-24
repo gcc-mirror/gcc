@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -847,7 +847,7 @@ package body Checks is
             else
                Error_Msg_N
                  ("\address value may be incompatible with alignment of "
-                  & "object?X?", AC);
+                  & "object?.x?", AC);
             end if;
          end if;
 
@@ -1388,6 +1388,8 @@ package body Checks is
 
          if Nkind (N) = N_Aggregate
            and then No (Expressions (N))
+           and then Nkind (First (Component_Associations (N))) =
+             N_Component_Association
            and then Nkind
             (First (Choices (First (Component_Associations (N)))))
               = N_Others_Choice
@@ -2171,7 +2173,7 @@ package body Checks is
          Lo_OK := (Ifirst > 0);
 
       else
-         Lo := Machine (Expr_Type, UR_From_Uint (Ifirst), Round_Even, Expr);
+         Lo := Machine_Number (Expr_Type, UR_From_Uint (Ifirst), Expr);
          Lo_OK := (Lo >= UR_From_Uint (Ifirst));
       end if;
 
@@ -2214,7 +2216,7 @@ package body Checks is
          Hi := UR_From_Uint (Ilast) + Ureal_Half;
          Hi_OK := (Ilast < 0);
       else
-         Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Expr);
+         Hi := Machine_Number (Expr_Type, UR_From_Uint (Ilast), Expr);
          Hi_OK := (Hi <= UR_From_Uint (Ilast));
       end if;
 
@@ -3552,9 +3554,12 @@ package body Checks is
    -- Apply_Subscript_Validity_Checks --
    -------------------------------------
 
-   procedure Apply_Subscript_Validity_Checks (Expr : Node_Id) is
+   procedure Apply_Subscript_Validity_Checks
+     (Expr            : Node_Id;
+      No_Check_Needed : Dimension_Set := Empty_Dimension_Set) is
       Sub : Node_Id;
 
+      Dimension : Pos := 1;
    begin
       pragma Assert (Nkind (Expr) = N_Indexed_Component);
 
@@ -3568,11 +3573,16 @@ package body Checks is
          --  for the subscript, and that convert will do the necessary validity
          --  check.
 
-         Ensure_Valid (Sub, Holes_OK => True);
+         if (No_Check_Needed = Empty_Dimension_Set)
+           or else not No_Check_Needed.Elements (Dimension)
+         then
+            Ensure_Valid (Sub, Holes_OK => True);
+         end if;
 
          --  Move to next subscript
 
          Next (Sub);
+         Dimension := Dimension + 1;
       end loop;
    end Apply_Subscript_Validity_Checks;
 
@@ -4445,8 +4455,8 @@ package body Checks is
 
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding component % of object % must "
                     & "be initialized??",
                   Ent => Defining_Identifier (Comp)));
@@ -4457,8 +4467,8 @@ package body Checks is
          elsif Array_Comp then
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding array components must "
                     & "be initialized??",
                   Ent => Defining_Identifier (N)));
@@ -5555,7 +5565,7 @@ package body Checks is
       --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
 
       function Round_Machine (B : Ureal) return Ureal;
-      --  B is a real bound. Round it using mode Round_Even.
+      --  B is a real bound. Round it to the nearest machine number.
 
       -----------------
       -- OK_Operands --
@@ -5581,7 +5591,7 @@ package body Checks is
 
       function Round_Machine (B : Ureal) return Ureal is
       begin
-         return Machine (Typ, B, Round_Even, N);
+         return Machine_Number (Typ, B, N);
       end Round_Machine;
 
    --  Start of processing for Determine_Range_R
@@ -6668,8 +6678,9 @@ package body Checks is
       elsif not Comes_From_Source (Expr)
         and then not
           (Nkind (Expr) = N_Identifier
-            and then Present (Renamed_Object (Entity (Expr)))
-            and then Comes_From_Source (Renamed_Object (Entity (Expr))))
+            and then Present (Renamed_Entity_Or_Object (Entity (Expr)))
+            and then
+              Comes_From_Source (Renamed_Entity_Or_Object (Entity (Expr))))
         and then not Force_Validity_Checks
         and then (Nkind (Expr) /= N_Unchecked_Type_Conversion
                     or else Kill_Range_Check (Expr))
@@ -6892,6 +6903,7 @@ package body Checks is
       elsif Is_Known_Valid (Typ) then
          if Is_Entity_Name (Expr)
            and then Ekind (Entity (Expr)) = E_Variable
+           and then Known_Esize (Entity (Expr))
            and then Esize (Entity (Expr)) > Esize (Typ)
          then
             return False;
@@ -7232,7 +7244,10 @@ package body Checks is
    -- Generate_Index_Checks --
    ---------------------------
 
-   procedure Generate_Index_Checks (N : Node_Id) is
+   procedure Generate_Index_Checks
+     (N                : Node_Id;
+      Checks_Generated : out Dimension_Set)
+   is
 
       function Entity_Of_Prefix return Entity_Id;
       --  Returns the entity of the prefix of N (or Empty if not found)
@@ -7267,6 +7282,8 @@ package body Checks is
    --  Start of processing for Generate_Index_Checks
 
    begin
+      Checks_Generated.Elements := (others => False);
+
       --  Ignore call if the prefix is not an array since we have a serious
       --  error in the sources. Ignore it also if index checks are suppressed
       --  for array object or type.
@@ -7329,6 +7346,8 @@ package body Checks is
                          Prefix         => New_Occurrence_Of (Etype (A), Loc),
                          Attribute_Name => Name_Range)),
                 Reason => CE_Index_Check_Failed));
+
+            Checks_Generated.Elements (1) := True;
          end if;
 
       --  General case
@@ -7415,6 +7434,8 @@ package body Checks is
                                Duplicate_Subexpr_Move_Checks (Sub)),
                            Right_Opnd => Range_N),
                       Reason => CE_Index_Check_Failed));
+
+                  Checks_Generated.Elements (Ind) := True;
                end if;
 
                Next_Index (A_Idx);
@@ -8059,7 +8080,7 @@ package body Checks is
       Is_High_Bound : Boolean   := False)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-      Typ : constant Entity_Id  := Etype (Expr);
+      Typ : Entity_Id           := Etype (Expr);
       Exp : Node_Id;
 
    begin
@@ -8119,6 +8140,7 @@ package body Checks is
       while Nkind (Exp) = N_Type_Conversion loop
          Exp := Expression (Exp);
       end loop;
+      Typ := Etype (Exp);
 
       --  Do not generate a check for a variable which already validates the
       --  value of an assignable object.
@@ -8197,6 +8219,14 @@ package body Checks is
             if Do_Range_Check (Validated_Object (Var_Id)) then
                Set_Do_Range_Check (Exp);
                Set_Do_Range_Check (Validated_Object (Var_Id), False);
+            end if;
+
+            --  In case of a type conversion, an expansion of the expr may be
+            --  needed (eg. fixed-point as actual).
+
+            if Exp /= Expr then
+               pragma Assert (Nkind (Expr) = N_Type_Conversion);
+               Analyze_And_Resolve (Expr);
             end if;
 
             PV := New_Occurrence_Of (Var_Id, Loc);
@@ -9059,7 +9089,7 @@ package body Checks is
 
       function In_Result_Range return Boolean is
       begin
-         if Lo = No_Uint or else Hi = No_Uint then
+         if No (Lo) or else No (Hi) then
             return False;
 
          elsif Is_OK_Static_Subtype (Etype (N)) then
@@ -9080,7 +9110,7 @@ package body Checks is
 
       procedure Max (A : in out Uint; B : Uint) is
       begin
-         if A = No_Uint or else B > A then
+         if No (A) or else B > A then
             A := B;
          end if;
       end Max;
@@ -9091,7 +9121,7 @@ package body Checks is
 
       procedure Min (A : in out Uint; B : Uint) is
       begin
-         if A = No_Uint or else B < A then
+         if No (A) or else B < A then
             A := B;
          end if;
       end Min;
@@ -9197,14 +9227,14 @@ package body Checks is
             Minimize_Eliminate_Overflows
               (Then_DE, Lo, Hi, Top_Level => False);
 
-            if Lo = No_Uint then
+            if No (Lo) then
                Bignum_Operands := True;
             end if;
 
             Minimize_Eliminate_Overflows
               (Else_DE, Rlo, Rhi, Top_Level => False);
 
-            if Rlo = No_Uint then
+            if No (Rlo) then
                Bignum_Operands := True;
             else
                Long_Long_Integer_Operands :=
@@ -9279,7 +9309,7 @@ package body Checks is
                   Minimize_Eliminate_Overflows
                     (Aexp, Lo, Hi, Top_Level => False);
 
-                  if Lo = No_Uint then
+                  if No (Lo) then
                      Bignum_Operands := True;
                   elsif Etype (Aexp) = LLIB then
                      Long_Long_Integer_Operands := True;
@@ -9368,7 +9398,7 @@ package body Checks is
       --  numbers at compile time for very little gain (the number of cases
       --  in which we could slip back from bignum mode is small).
 
-      if Rlo = No_Uint or else (Binary and then Llo = No_Uint) then
+      if No (Rlo) or else (Binary and then No (Llo)) then
          Lo := No_Uint;
          Hi := No_Uint;
          Bignum_Operands := True;
@@ -9441,7 +9471,7 @@ package body Checks is
       --  0 .. 1, but the cases are rare and it is not worth the effort.
       --  Failing to do this switching back is only an efficiency issue.
 
-      elsif Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
+      elsif No (Lo) or else Lo < LLLo or else Hi > LLHi then
 
          --  OK, we are definitely outside the range of Long_Long_Integer. The
          --  question is whether to move to Bignum mode, or stay in the domain
@@ -10382,7 +10412,7 @@ package body Checks is
       Exptyp      : Entity_Id;
       Cond        : Node_Id := Empty;
       Do_Access   : Boolean := False;
-      Wnode       : Node_Id  := Warn_Node;
+      Wnode       : Node_Id := Warn_Node;
       Ret_Result  : Check_Result := (Empty, Empty);
       Num_Checks  : Natural := 0;
 
@@ -10866,8 +10896,8 @@ package body Checks is
                   Add_Check
                     (Compile_Time_Constraint_Error
                        ((if Present (Warn_Node)
-                        then Warn_Node else Low_Bound (Expr)),
-                        "static value does not equal lower bound of}??",
+                         then Warn_Node else Low_Bound (Expr)),
+                         "static value does not equal lower bound of}??",
                         T_Typ));
                   Check_Added := True;
                end if;
@@ -11306,7 +11336,7 @@ package body Checks is
                     renames Alignment_Warnings.Table (J);
          begin
             if Known_Alignment (AWR.E)
-              and then ((AWR.A /= No_Uint
+              and then ((Present (AWR.A)
                           and then AWR.A mod Alignment (AWR.E) = 0)
                         or else (Present (AWR.P)
                                   and then Has_Compatible_Alignment

@@ -1,5 +1,5 @@
 /* Darwin support needed only by C/C++ frontends.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -691,7 +691,7 @@ macosx_version_as_macro (void)
   if (!version_array)
     goto fail;
 
-  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 11)
+  if (version_array[MAJOR] < 10 || version_array[MAJOR] > 12)
     goto fail;
 
   if (version_array[MAJOR] == 10 && version_array[MINOR] < 10)

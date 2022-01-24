@@ -1,5 +1,5 @@
 /* { dg-do run { target { power10_hw } } } */
-/* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target rop_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10 -mrop-protect" } */
 
 /* Verify that ROP-protect instructions execute correctly when a

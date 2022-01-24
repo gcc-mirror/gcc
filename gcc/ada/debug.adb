@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,7 +112,7 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A
+   --  d.A  Enable statistics printing in Atree
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
@@ -158,8 +158,8 @@ package body Debug is
    --  d_q
    --  d_r
    --  d_s  Stop elaboration checks on synchronous suspension
-   --  d_t
-   --  d_u
+   --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
+   --  d_u  In LLVM-based CCG, dump flows
    --  d_v  Enable additional checks and debug printouts in Atree
    --  d_w
    --  d_x  Disable inline expansion of Image attribute for enumeration types
@@ -183,7 +183,7 @@ package body Debug is
    --  d_O
    --  d_P
    --  d_Q
-   --  d_R
+   --  d_R  For LLVM, dump the representation of records
    --  d_S
    --  d_T  Output trace information on invocation path recording
    --  d_U  Disable prepending messages with "error:".
@@ -210,7 +210,7 @@ package body Debug is
    --  d.5  Do not generate imported subprogram definitions in C code
    --  d.6  Do not avoid declaring unreferenced types in C code
    --  d.7  Disable unsound heuristics in gnat2scil (for CP as SPARK prover)
-   --  d.8
+   --  d.8  Disable unconditional inlining of expression functions
    --  d.9  Disable build-in-place for nonlimited types
 
    --  d_1
@@ -830,6 +830,11 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
+   --  d.A  Enable statistics printing in Atree. First set Statistics_Enabled
+   --       in gen_il-gen.adb to True, then rebuild, then run the compiler
+   --       with -gnatd.A. You might want to apply "sort -nr" to parts of the
+   --       output.
+
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -992,6 +997,13 @@ package body Debug is
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
 
+   --  d_t  In the LLVM-based CCG, do an additional dump of the LLVM IR
+   --       after the pass that does transformations to the IR into a
+   --       filename ending with .trans.ll.
+
+   --  d_u  In the LLVM-based CCG, dump flows, both when originally created
+   --       and after transformations.
+
    --  d_v  Enable additional checks and debug printouts in Atree
 
    --  d_x  The compiler does not expand in line the Image attribute for user-
@@ -1014,6 +1026,9 @@ package body Debug is
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
+
+   --  d_R  In the LLVM backend, output the internal representation of
+   --       each record
 
    --  d_T  The compiler outputs trace information to standard output whenever
    --       an invocation path is recorded.
@@ -1100,6 +1115,10 @@ package body Debug is
    --       avoid SCIL generation strategies which can introduce soundness
    --       issues (e.g., assuming that a low bound of an array parameter
    --       of an unconstrained subtype belongs to the index subtype).
+
+   --  d.8  By default calls to expression functions are always inlined.
+   --       This debug flag turns off this behavior, making them subject
+   --       to the usual inlining heuristics of the code generator.
 
    --  d.9  Disable build-in-place for function calls returning nonlimited
    --       types.

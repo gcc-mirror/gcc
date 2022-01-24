@@ -1,5 +1,5 @@
 /* d-attribs.c -- D attributes handling.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/attrib.h"
 #include "dmd/declaration.h"
+#include "dmd/expression.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
 #include "dmd/template.h"
@@ -336,10 +337,10 @@ build_attributes (Expressions *eattrs)
 	continue;
 
       /* Get the result of the attribute if it hasn't already been folded.  */
-      if (attr->op == TOKcall)
+      if (attr->op == EXP::call)
 	attr = attr->ctfeInterpret ();
 
-      if (attr->op != TOKstructliteral)
+      if (attr->op != EXP::structLiteral)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "%qE attribute has no effect",
@@ -352,7 +353,7 @@ build_attributes (Expressions *eattrs)
       Expressions *elems = attr->isStructLiteralExp ()->elements;
       Expression *e0 = (*elems)[0];
 
-      if (e0->op != TOKstring)
+      if (e0->op != EXP::string_)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "unknown attribute %qs", e0->toChars());
@@ -852,7 +853,9 @@ parse_optimize_options (tree args)
   unsigned j = 1;
   for (unsigned i = 1; i < decoded_options_count; ++i)
     {
-      if (! (cl_options[decoded_options[i].opt_index].flags & CL_OPTIMIZATION))
+      unsigned opt_index = decoded_options[i].opt_index;
+      if (opt_index >= cl_options_count
+	  || ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
 	{
 	  ret = false;
 	  warning (OPT_Wattributes,
@@ -896,6 +899,8 @@ d_handle_optimize_attribute (tree *node, tree name, tree args, int,
 
       /* Save current options.  */
       cl_optimization_save (&cur_opts, &global_options, &global_options_set);
+      tree prev_target_node = build_target_option_node (&global_options,
+							&global_options_set);
 
       /* If we previously had some optimization options, use them as the
 	 default.  */
@@ -914,10 +919,16 @@ d_handle_optimize_attribute (tree *node, tree name, tree args, int,
       parse_optimize_options (args);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
 	= build_optimization_node (&global_options, &global_options_set);
+      tree target_node = build_target_option_node (&global_options,
+						   &global_options_set);
+      if (prev_target_node != target_node)
+	DECL_FUNCTION_SPECIFIC_TARGET (*node) = target_node;
 
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &global_options_set,
 			       &cur_opts);
+      cl_target_option_restore (&global_options, &global_options_set,
+				TREE_TARGET_OPTION (prev_target_node));
       if (saved_global_options != NULL)
 	{
 	  cl_optimization_compare (saved_global_options, &global_options);

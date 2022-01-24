@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2007-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2007-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,8 +79,8 @@ package System.Task_Info is
 
    subtype CPU_Set is System.OS_Interface.cpu_set_t;
 
-   Any_CPU : constant CPU_Set := (bits => (others => True));
-   No_CPU  : constant CPU_Set := (bits => (others => False));
+   Any_CPU : constant CPU_Set := (bits => [others => True]);
+   No_CPU  : constant CPU_Set := (bits => [others => False]);
 
    Invalid_CPU_Number : exception;
    --  Raised when an invalid CPU mask has been specified

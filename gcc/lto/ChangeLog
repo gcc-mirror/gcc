@@ -1,3 +1,24 @@
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (promote_symbol): Clear semantic_interposition flag.
+
+2021-11-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103070
+	PR ipa/103058
+	* lto-partition.c (must_not_rename): Update comment.
+	(promote_symbol): Set resolution to LDPR_PREVAILING_DEF_IRONLY.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy lto.install-dvi target.
+
+2021-09-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (lto_init_options_struct): Set also
+	  x_flag_default_complex_method.
+
 2021-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/102024
@@ -6518,7 +6539,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2021 Free Software Foundation, Inc.
+Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

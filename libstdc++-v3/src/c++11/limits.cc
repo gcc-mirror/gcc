@@ -1,6 +1,6 @@
 // Static data members of -*- C++ -*- numeric_limits classes
 
-// Copyright (C) 1999-2021 Free Software Foundation, Inc.
+// Copyright (C) 1999-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,10 @@
 // ISO C++ 14882:1998
 // 18.2.1
 //
+
+#if __cpp_inline_variables
+# error This file must be compiled as C++11 or C++14
+#endif
 
 #include <limits>
 

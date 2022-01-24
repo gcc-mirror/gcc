@@ -1,5 +1,5 @@
 /* Helper functions in C for IEEE modules
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -25,6 +25,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
+
+/* Check support for issignaling macro.
+   TODO: In the future, provide fallback implementations for IEEE types,
+   because many libc's do not have issignaling yet.  */
+#ifndef issignaling
+# define issignaling(X) 0
+#endif
+
+
 /* Prototypes.  */
 
 extern int ieee_class_helper_4 (GFC_REAL_4 *);
@@ -47,11 +56,22 @@ internal_proto(ieee_class_helper_16);
    correspond to the hidden arguments of the IEEE_CLASS_TYPE
    derived-type of IEEE_ARITHMETIC.  */
 
-enum { IEEE_OTHER_VALUE = 0, IEEE_SIGNALING_NAN, IEEE_QUIET_NAN,
-  IEEE_NEGATIVE_INF, IEEE_NEGATIVE_NORMAL, IEEE_NEGATIVE_DENORMAL,
-  IEEE_NEGATIVE_ZERO, IEEE_POSITIVE_ZERO, IEEE_POSITIVE_DENORMAL,
-  IEEE_POSITIVE_NORMAL, IEEE_POSITIVE_INF, IEEE_SUBNORMAL,
-  IEEE_NEGATIVE_SUBNORMAL, IEEE_POSITIVE_SUBNORMAL };
+enum {
+  IEEE_OTHER_VALUE = 0,
+  IEEE_SIGNALING_NAN,
+  IEEE_QUIET_NAN,
+  IEEE_NEGATIVE_INF,
+  IEEE_NEGATIVE_NORMAL,
+  IEEE_NEGATIVE_DENORMAL,
+  IEEE_NEGATIVE_SUBNORMAL = IEEE_NEGATIVE_DENORMAL,
+  IEEE_NEGATIVE_ZERO,
+  IEEE_POSITIVE_ZERO,
+  IEEE_POSITIVE_DENORMAL,
+  IEEE_POSITIVE_SUBNORMAL = IEEE_POSITIVE_DENORMAL,
+  IEEE_POSITIVE_NORMAL,
+  IEEE_POSITIVE_INF
+};
+
 
 #define CLASSMACRO(TYPE) \
   int ieee_class_helper_ ## TYPE (GFC_REAL_ ## TYPE *value) \
@@ -75,8 +95,10 @@ enum { IEEE_OTHER_VALUE = 0, IEEE_SIGNALING_NAN, IEEE_QUIET_NAN,
  \
     if (res == IEEE_QUIET_NAN) \
     { \
-      /* TODO: Handle signaling NaNs  */ \
-      return res; \
+      if (issignaling (*value)) \
+	return IEEE_SIGNALING_NAN; \
+      else \
+	return IEEE_QUIET_NAN; \
     } \
  \
     return res; \
@@ -91,6 +113,80 @@ CLASSMACRO(10)
 
 #ifdef HAVE_GFC_REAL_16
 CLASSMACRO(16)
+#endif
+
+
+extern GFC_REAL_4 ieee_value_helper_4 (int);
+internal_proto(ieee_value_helper_4);
+
+extern GFC_REAL_8 ieee_value_helper_8 (int);
+internal_proto(ieee_value_helper_8);
+
+#ifdef HAVE_GFC_REAL_10
+extern GFC_REAL_10 ieee_value_helper_10 (int);
+internal_proto(ieee_value_helper_10);
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+extern GFC_REAL_16 ieee_value_helper_16 (int);
+internal_proto(ieee_value_helper_16);
+#endif
+
+
+#define VALUEMACRO(TYPE, SUFFIX) \
+  GFC_REAL_ ## TYPE ieee_value_helper_ ## TYPE (int type) \
+  { \
+    switch (type) \
+    { \
+      case IEEE_SIGNALING_NAN: \
+	return __builtin_nans ## SUFFIX (""); \
+   \
+      case IEEE_QUIET_NAN: \
+	return __builtin_nan ## SUFFIX (""); \
+   \
+      case IEEE_NEGATIVE_INF: \
+	return - __builtin_inf ## SUFFIX (); \
+   \
+      case IEEE_NEGATIVE_NORMAL: \
+	return -42; \
+   \
+      case IEEE_NEGATIVE_DENORMAL: \
+	return -(GFC_REAL_ ## TYPE ## _TINY) / 2; \
+   \
+      case IEEE_NEGATIVE_ZERO: \
+	return -(GFC_REAL_ ## TYPE) 0; \
+   \
+      case IEEE_POSITIVE_ZERO: \
+	return 0; \
+   \
+      case IEEE_POSITIVE_DENORMAL: \
+	return (GFC_REAL_ ## TYPE ## _TINY) / 2; \
+   \
+      case IEEE_POSITIVE_NORMAL: \
+	return 42; \
+   \
+      case IEEE_POSITIVE_INF: \
+	return __builtin_inf ## SUFFIX (); \
+   \
+      default: \
+	return 0; \
+    } \
+  }
+
+
+VALUEMACRO(4, f)
+VALUEMACRO(8, )
+
+#ifdef HAVE_GFC_REAL_10
+VALUEMACRO(10, l)
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+# ifdef GFC_REAL_16_IS_FLOAT128
+VALUEMACRO(16, f128)
+# else
+VALUEMACRO(16, l)
+# endif
 #endif
 
 

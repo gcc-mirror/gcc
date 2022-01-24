@@ -64,7 +64,7 @@ alias cm = C.m;
 alias cmset = C.m.set;
 
 
-// adapted from http://thecybershadow.net/d/dconf2017/#/21
+// adapted from https://thecybershadow.net/d/dconf2017/#/21
 struct S { string a, b, c; }
 
 static string printField(alias field)()

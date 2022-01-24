@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1161,7 +1161,7 @@ is
 
          Container.Elements := new Elements_Type'
                                      (Last => New_Last,
-                                      EA   => (others => New_Item));
+                                      EA   => [others => New_Item]);
 
          --  The allocation of the new, internal array succeeded, so it is now
          --  safe to update the Last index, restoring container invariants.
@@ -1189,7 +1189,7 @@ is
                --  The new items are being appended to the vector, so no
                --  sliding of existing elements is required.
 
-               EA (Before .. New_Last) := (others => New_Item);
+               EA (Before .. New_Last) := [others => New_Item];
 
             else
                --  The new items are being inserted before some existing
@@ -1204,7 +1204,7 @@ is
                end if;
 
                EA (Index .. New_Last) := EA (Before .. Container.Last);
-               EA (Before .. Index - 1) := (others => New_Item);
+               EA (Before .. Index - 1) := [others => New_Item];
             end if;
          end;
 
@@ -1264,13 +1264,14 @@ is
       declare
          SA : Elements_Array renames Container.Elements.EA; -- source
          DA : Elements_Array renames Dst.EA;                -- destination
+         pragma Unreferenced (DA);
 
       begin
          DA (Index_Type'First .. Before - 1) :=
            SA (Index_Type'First .. Before - 1);
 
          if Before > Container.Last then
-            DA (Before .. New_Last) := (others => New_Item);
+            DA (Before .. New_Last) := [others => New_Item];
 
          else
             --  The new items are being inserted before some existing elements,
@@ -1282,7 +1283,7 @@ is
                Index := Index_Type'Base (Count_Type'Base (Before) + Count);
             end if;
 
-            DA (Before .. Index - 1) := (others => New_Item);
+            DA (Before .. Index - 1) := [others => New_Item];
             DA (Index .. New_Last) := SA (Before .. Container.Last);
          end if;
 
@@ -1918,6 +1919,7 @@ is
       declare
          SA : Elements_Array renames Container.Elements.EA;  -- source
          DA : Elements_Array renames Dst.EA;                 -- destination
+         pragma Unreferenced (DA);
 
       begin
          DA (Index_Type'First .. Before - 1) :=
@@ -3265,7 +3267,7 @@ is
          Last := Index_Type'Base (Count_Type'Base (No_Index) + Length);
       end if;
 
-      Elements := new Elements_Type'(Last, EA => (others => New_Item));
+      Elements := new Elements_Type'(Last, EA => [others => New_Item]);
 
       return (Controlled with Elements, Last, TC => <>);
    end To_Vector;

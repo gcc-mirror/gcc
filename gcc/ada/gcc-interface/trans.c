@@ -75,7 +75,7 @@
 #define ALLOCA_THRESHOLD 1000
 
 /* Pointers to front-end tables accessed through macros.  */
-Field_Offset *Node_Offsets_Ptr;
+Node_Header *Node_Offsets_Ptr;
 any_slot *Slots_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
@@ -279,7 +279,7 @@ void
 gigi (Node_Id gnat_root,
       int max_gnat_node,
       int number_name ATTRIBUTE_UNUSED,
-      Field_Offset *node_offsets_ptr,
+      Node_Header *node_offsets_ptr,
       any_slot *slots_ptr,
       Node_Id *next_node_ptr,
       Node_Id *prev_node_ptr,
@@ -865,6 +865,20 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || must_pass_by_ref (gnu_type)
 	      || default_pass_by_ref (gnu_type));
 
+    case N_Pragma_Argument_Association:
+      return lvalue_required_p (gnat_parent, gnu_type, constant,
+				address_of_constant);
+
+    case N_Pragma:
+      if (Is_Pragma_Name (Chars (Pragma_Identifier (gnat_parent))))
+	{
+	  const unsigned char id
+	    = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_parent)));
+	  return id == Pragma_Inspection_Point;
+	}
+      else
+	return 0;
+
     case N_Indexed_Component:
       /* Only the array expression can require an lvalue.  */
       if (Prefix (gnat_parent) != gnat_node)
@@ -1157,7 +1171,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      specific circumstances only, so evaluated lazily.  < 0 means
      unknown, > 0 means known true, 0 means known false.  */
   int require_lvalue = -1;
-  Node_Id gnat_result_type;
+  Entity_Id gnat_result_type;
   tree gnu_result, gnu_result_type;
 
   /* If the Etype of this node is not the same as that of the Entity, then
@@ -1387,6 +1401,9 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  char *comment;
 #endif
 	  gnu_expr = maybe_unconstrained_array (gnu_expr);
+	  if (TREE_CODE (gnu_expr) == CONST_DECL
+	      && DECL_CONST_CORRESPONDING_VAR (gnu_expr))
+	    gnu_expr = DECL_CONST_CORRESPONDING_VAR (gnu_expr);
 	  gnat_mark_addressable (gnu_expr);
 
 #ifdef ASM_COMMENT_START
@@ -3893,7 +3910,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
   /* If the body comes from an expression function, arrange it to be inlined
      in almost all cases.  */
-  if (Was_Expression_Function (gnat_node))
+  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
     DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
@@ -4440,6 +4457,22 @@ return_slot_opt_for_pure_call_p (tree target, tree call)
   return !bitmap_bit_p (decls, DECL_UID (target));
 }
 
+/* Elaborate types referenced in the profile (FIRST_FORMAL, RESULT_TYPE).  */
+
+static void
+elaborate_profile (Entity_Id first_formal, Entity_Id result_type)
+{
+  Entity_Id formal;
+
+  for (formal = first_formal;
+       Present (formal);
+       formal = Next_Formal_With_Extras (formal))
+    (void) gnat_to_gnu_type (Etype (formal));
+
+  if (Present (result_type) && Ekind (result_type) != E_Void)
+    (void) gnat_to_gnu_type (result_type);
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -4459,11 +4492,12 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
      be a FUNCTION_DECL node if we are dealing with a standard subprogram call,
      or an indirect reference expression (an INDIRECT_REF node) pointing to a
      subprogram.  */
-  tree gnu_subprog = gnat_to_gnu (Name (gnat_node));
+  const Node_Id gnat_subprog = Name (gnat_node);
+  tree gnu_subprog = gnat_to_gnu (gnat_subprog);
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
   /* The return type of the FUNCTION_TYPE.  */
-  tree gnu_result_type = TREE_TYPE (gnu_subprog_type);
+  tree gnu_result_type;;
   const bool frontend_builtin
     = (TREE_CODE (gnu_subprog) == FUNCTION_DECL
        && DECL_BUILT_IN_CLASS (gnu_subprog) == BUILT_IN_FRONTEND);
@@ -4478,32 +4512,79 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   bool variadic;
   bool by_descriptor;
   Entity_Id gnat_formal;
+  Entity_Id gnat_result_type;
   Node_Id gnat_actual;
   atomic_acces_t aa_type;
   bool aa_sync;
 
-  gcc_assert (FUNC_OR_METHOD_TYPE_P (gnu_subprog_type));
-
-  /* If we are calling a stubbed function, raise Program_Error, but Elaborate
-     all our args first.  */
-  if (TREE_CODE (gnu_subprog) == FUNCTION_DECL && DECL_STUBBED_P (gnu_subprog))
+  /* The only way we can make a call via an access type is if GNAT_NAME is an
+     explicit dereference.  In that case, get the list of formal args from the
+     type the access type is pointing to.  Otherwise, get the formals from the
+     entity being called.  */
+  if (Nkind (gnat_subprog) == N_Explicit_Dereference)
     {
-      tree call_expr = build_call_raise (PE_Stubbed_Subprogram_Called,
-					 gnat_node, N_Raise_Program_Error);
+      const Entity_Id gnat_prefix_type
+	= Underlying_Type (Etype (Prefix (gnat_subprog)));
 
-      for (gnat_actual = First_Actual (gnat_node);
-	   Present (gnat_actual);
-	   gnat_actual = Next_Actual (gnat_actual))
-	add_stmt (gnat_to_gnu (gnat_actual));
+      gnat_formal = First_Formal_With_Extras (Etype (gnat_subprog));
+      gnat_result_type = Etype (Etype (gnat_subprog));
+      variadic = IN (Convention (gnat_prefix_type), Convention_C_Variadic);
 
-      if (returning_value)
-	{
-	  *gnu_result_type_p = gnu_result_type;
-	  return build1 (NULL_EXPR, gnu_result_type, call_expr);
-	}
-
-      return call_expr;
+      /* If the access type doesn't require foreign-compatible representation,
+	 be prepared for descriptors.  */
+      by_descriptor
+	= targetm.calls.custom_function_descriptors > 0
+	  && Can_Use_Internal_Rep (gnat_prefix_type);
     }
+
+  else if (Nkind (gnat_subprog) == N_Attribute_Reference)
+    {
+      /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
+      gnat_formal = Empty;
+      gnat_result_type = Empty;
+      variadic = false;
+      by_descriptor = false;
+    }
+
+  else
+    {
+      gcc_checking_assert (Is_Entity_Name (gnat_subprog));
+
+      gnat_formal = First_Formal_With_Extras (Entity (gnat_subprog));
+      gnat_result_type = Etype (Entity_Id (gnat_subprog));
+      variadic = IN (Convention (Entity (gnat_subprog)), Convention_C_Variadic);
+      by_descriptor = false;
+
+      /* If we are calling a stubbed function, then raise Program_Error, but
+	 elaborate all our args first.  */
+      if (Convention (Entity (gnat_subprog)) == Convention_Stubbed)
+	{
+	  tree call_expr = build_call_raise (PE_Stubbed_Subprogram_Called,
+					     gnat_node, N_Raise_Program_Error);
+
+	  for (gnat_actual = First_Actual (gnat_node);
+	       Present (gnat_actual);
+	       gnat_actual = Next_Actual (gnat_actual))
+	    add_stmt (gnat_to_gnu (gnat_actual));
+
+	  if (returning_value)
+	    {
+	      gnu_result_type = TREE_TYPE (gnu_subprog_type);
+	      *gnu_result_type_p = gnu_result_type;
+	      return build1 (NULL_EXPR, gnu_result_type, call_expr);
+	    }
+
+	  return call_expr;
+	}
+    }
+
+  /* We must elaborate the entire profile now because, if it references types
+     that were initially incomplete,, their elaboration changes the contents
+     of GNU_SUBPROG_TYPE and, in particular, may change the result type.  */
+  elaborate_profile (gnat_formal, gnat_result_type);
+
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (gnu_subprog_type));
+  gnu_result_type = TREE_TYPE (gnu_subprog_type);
 
   if (TREE_CODE (gnu_subprog) == FUNCTION_DECL)
     {
@@ -4514,39 +4595,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       /* For a recursive call, avoid explosion due to recursive inlining.  */
       if (gnu_subprog == current_function_decl)
 	DECL_DISREGARD_INLINE_LIMITS (gnu_subprog) = 0;
-    }
-
-  /* The only way we can be making a call via an access type is if Name is an
-     explicit dereference.  In that case, get the list of formal args from the
-     type the access type is pointing to.  Otherwise, get the formals from the
-     entity being called.  */
-  if (Nkind (Name (gnat_node)) == N_Explicit_Dereference)
-    {
-      const Entity_Id gnat_prefix_type
-	= Underlying_Type (Etype (Prefix (Name (gnat_node))));
-
-      gnat_formal = First_Formal_With_Extras (Etype (Name (gnat_node)));
-      variadic = IN (Convention (gnat_prefix_type), Convention_C_Variadic);
-
-      /* If the access type doesn't require foreign-compatible representation,
-	 be prepared for descriptors.  */
-      by_descriptor
-	= targetm.calls.custom_function_descriptors > 0
-	  && Can_Use_Internal_Rep (gnat_prefix_type);
-    }
-  else if (Nkind (Name (gnat_node)) == N_Attribute_Reference)
-    {
-      /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
-      gnat_formal = Empty;
-      variadic = false;
-      by_descriptor = false;
-    }
-  else
-    {
-      gnat_formal = First_Formal_With_Extras (Entity (Name (gnat_node)));
-      variadic
-	= IN (Convention (Entity (Name (gnat_node))), Convention_C_Variadic);
-      by_descriptor = false;
     }
 
   /* The lifetime of the temporaries created for the call ends right after the
@@ -4765,8 +4813,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Do not initialize it for the _Init parameter of an initialization
 	     procedure since no data is meant to be passed in.  */
 	  if (Ekind (gnat_formal) == E_Out_Parameter
-	      && Is_Entity_Name (Name (gnat_node))
-	      && Is_Init_Proc (Entity (Name (gnat_node))))
+	      && Is_Entity_Name (gnat_subprog)
+	      && Is_Init_Proc (Entity (gnat_subprog)))
 	    gnu_name = gnu_temp = create_temporary ("A", TREE_TYPE (gnu_name));
 
 	  /* Initialize it on the fly like for an implicit temporary in the
@@ -5097,10 +5145,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       if (function_call)
 	gnu_cico_list = TREE_CHAIN (gnu_cico_list);
 
-      if (Nkind (Name (gnat_node)) == N_Explicit_Dereference)
-	gnat_formal = First_Formal_With_Extras (Etype (Name (gnat_node)));
+      if (Nkind (gnat_subprog) == N_Explicit_Dereference)
+	gnat_formal = First_Formal_With_Extras (Etype (gnat_subprog));
       else
-	gnat_formal = First_Formal_With_Extras (Entity (Name (gnat_node)));
+	gnat_formal = First_Formal_With_Extras (Entity (gnat_subprog));
 
       for (gnat_actual = First_Actual (gnat_node);
 	   Present (gnat_actual);
@@ -7872,21 +7920,24 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Pop_Constraint_Error_Label:
       gnat_temp = gnu_constraint_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Storage_Error_Label:
       gnat_temp = gnu_storage_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Program_Error_Label:
       gnat_temp = gnu_program_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
@@ -8261,6 +8312,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  || kind == N_Selected_Component)
       && TREE_CODE (get_base_type (gnu_result_type)) == BOOLEAN_TYPE
       && Nkind (Parent (gnat_node)) != N_Attribute_Reference
+      && Nkind (Parent (gnat_node)) != N_Pragma_Argument_Association
       && Nkind (Parent (gnat_node)) != N_Variant_Part
       && !lvalue_required_p (gnat_node, gnu_result_type, false, false))
     {
@@ -8292,7 +8344,7 @@ gnat_to_gnu (Node_Id gnat_node)
   /* If the result is a constant that overflowed, raise Constraint_Error.  */
   if (TREE_CODE (gnu_result) == INTEGER_CST && TREE_OVERFLOW (gnu_result))
     {
-      post_error ("??`Constraint_Error` will be raised at run time", gnat_node);
+      post_error ("??Constraint_Error will be raised at run time", gnat_node);
       gnu_result
 	= build1 (NULL_EXPR, gnu_result_type,
 		  build_call_raise (CE_Overflow_Check_Failed, gnat_node,
@@ -9075,7 +9127,7 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	continue;
 
       /* Skip stuff internal to the compiler.  */
-      if (Convention (gnat_entity) == Convention_Intrinsic)
+      if (Is_Intrinsic_Subprogram (gnat_entity))
 	continue;
       if (kind == E_Operator)
 	continue;
@@ -9279,10 +9331,10 @@ process_freeze_entity (Node_Id gnat_node)
 	Copy_Alignment (gnat_entity, full_view);
 
       if (!Known_Esize (gnat_entity))
-	Set_Esize (gnat_entity, Esize (full_view));
+	Copy_Esize (gnat_entity, full_view);
 
       if (!Known_RM_Size (gnat_entity))
-	Set_RM_Size (gnat_entity, RM_Size (full_view));
+	Copy_RM_Size (gnat_entity, full_view);
 
       /* The above call may have defined this entity (the simplest example
 	 of this is when we have a private enumeral type since the bounds
@@ -10507,10 +10559,15 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
     case N_Package_Body:
     case N_Subprogram_Body:
     case N_Block_Statement:
-      gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      if (Present (Handled_Statement_Sequence (gnat_node)))
+	gnat_end_label = End_Label (Handled_Statement_Sequence (gnat_node));
+      else
+	gnat_end_label = Empty;
+
       break;
 
     case N_Package_Declaration:
+      gcc_checking_assert (Present (Specification (gnat_node)));
       gnat_end_label = End_Label (Specification (gnat_node));
       break;
 

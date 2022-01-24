@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag8178.d(14): Error: cannot modify manifest constant 's'
+fail_compilation/diag8178.d(14): Error: cannot modify manifest constant `s`
 ---
 */
 

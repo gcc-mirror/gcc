@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -1388,7 +1388,7 @@ void
 gt_pch_nx (vec<T *, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
 {
   for (unsigned i = 0; i < v->length (); i++)
-    op (&((*v)[i]), cookie);
+    op (&((*v)[i]), NULL, cookie);
 }
 
 template<typename T, typename A>

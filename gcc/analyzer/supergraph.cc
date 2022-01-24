@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphviz.h"
 #include "cgraph.h"
 #include "tree-dfa.h"
+#include "bitmap.h"
 #include "cfganal.h"
 #include "function.h"
 #include "json.h"

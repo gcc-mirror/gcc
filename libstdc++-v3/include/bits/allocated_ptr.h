@@ -1,6 +1,6 @@
 // Guarded Allocation -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +40,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   /// Non-standard RAII type for managing pointers obtained from allocators.
   template<typename _Alloc>
@@ -97,6 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return { __a, std::allocator_traits<_Alloc>::allocate(__a, 1) };
     }
 
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

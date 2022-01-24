@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -514,6 +514,25 @@ lhd_simulate_enum_decl (location_t loc, const char *name,
   lang_hooks.decls.pushdecl (enumdecl);
 
   return enumtype;
+}
+
+/* Default implementation of LANG_HOOKS_SIMULATE_RECORD_DECL.
+   Just create a normal RECORD_TYPE and a TYPE_DECL for it.  */
+tree
+lhd_simulate_record_decl (location_t loc, const char *name,
+			  array_slice<const tree> fields)
+{
+  for (unsigned int i = 1; i < fields.size (); ++i)
+    /* Reversed by finish_builtin_struct.  */
+    DECL_CHAIN (fields[i]) = fields[i - 1];
+
+  tree type = lang_hooks.types.make_type (RECORD_TYPE);
+  finish_builtin_struct (type, name, fields.back (), NULL_TREE);
+
+  tree decl = build_decl (loc, TYPE_DECL, get_identifier (name), type);
+  lang_hooks.decls.pushdecl (decl);
+
+  return type;
 }
 
 /* Default implementation of LANG_HOOKS_TYPE_FOR_SIZE.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,6 +45,8 @@ pragma Assertion_Policy (Pre => Ignore);
 
 --  This version is supported on:
 --    - all Alpha platforms
+--    - all AARCH64 platforms
+--    - all ARM platforms
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms
@@ -85,7 +87,8 @@ package Ada.Strings.Unbounded with
 is
    pragma Preelaborate;
 
-   type Unbounded_String is private;
+   type Unbounded_String is private with
+     Default_Initial_Condition => Length (Unbounded_String) = 0;
    pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;

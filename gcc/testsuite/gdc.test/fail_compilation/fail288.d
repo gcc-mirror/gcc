@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail288.d(14): Error: case ranges not allowed in final switch
+fail_compilation/fail288.d(14): Error: case ranges not allowed in `final switch`
 ---
 */
 

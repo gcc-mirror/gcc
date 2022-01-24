@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -8789,6 +8789,7 @@ trees_out::type_node (tree type)
     case DECLTYPE_TYPE:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
+    case DEPENDENT_OPERATOR_TYPE:
       tree_node (TYPE_VALUES_RAW (type));
       if (TREE_CODE (type) == DECLTYPE_TYPE)
 	/* We stash a whole bunch of things into decltype's
@@ -9311,6 +9312,7 @@ trees_in::tree_node (bool is_use)
 	  case DECLTYPE_TYPE:
 	  case TYPEOF_TYPE:
 	  case UNDERLYING_TYPE:
+	  case DEPENDENT_OPERATOR_TYPE:
 	    {
 	      tree expr = tree_node ();
 	      if (!get_overrun ())
@@ -10065,9 +10067,10 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
 	{
-	  /* USING_DECLs cannot have DECL_TEMPLATE_INFO -- this isn't
-	     permitting them to have one.   */
+	  /* USING_DECLs and NAMESPACE_DECLs cannot have DECL_TEMPLATE_INFO --
+	     this isn't permitting them to have one.   */
 	  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
+			       || TREE_CODE (decl) == NAMESPACE_DECL
 			       || !DECL_LANG_SPECIFIC (decl)
 			       || !DECL_TEMPLATE_INFO (decl));
 
@@ -11750,7 +11753,7 @@ trees_out::mark_class_def (tree defn)
 /* Nop sorting, needed for resorting the member vec.  */
 
 static void
-nop (void *, void *)
+nop (void *, void *, void *)
 {
 }
 

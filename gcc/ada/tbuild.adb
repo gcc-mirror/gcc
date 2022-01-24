@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -699,11 +699,10 @@ package body Tbuild is
       Loc    : Source_Ptr) return Node_Id
    is
       pragma Assert (Present (Def_Id) and then Nkind (Def_Id) in N_Entity);
-      Occurrence : Node_Id;
+      Occurrence : constant Node_Id :=
+        Make_Identifier (Loc, Chars (Def_Id));
 
    begin
-      Occurrence := New_Node (N_Identifier, Loc);
-      Set_Chars (Occurrence, Chars (Def_Id));
       Set_Entity (Occurrence, Def_Id);
 
       if Is_Type (Def_Id) then

@@ -5,7 +5,7 @@
  *
  * Authors: Vladimir Vlasov
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_setupapi.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_setupapi.d)
  */
 module core.sys.windows.setupapi;
 version (Windows):

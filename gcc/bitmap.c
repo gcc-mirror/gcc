@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -983,7 +983,7 @@ bitmap_set_bit (bitmap head, int bit)
 
 /* Return whether a bit is set within a bitmap.  */
 
-int
+bool
 bitmap_bit_p (const_bitmap head, int bit)
 {
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;
@@ -2828,6 +2828,18 @@ debug (const bitmap_head *ptr)
     debug (*ptr);
   else
     fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug (const auto_bitmap &ref)
+{
+  debug ((const bitmap_head &) ref);
+}
+
+DEBUG_FUNCTION void
+debug (const auto_bitmap *ptr)
+{
+  debug ((const bitmap_head *) ptr);
 }
 
 void

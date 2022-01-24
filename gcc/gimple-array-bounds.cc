@@ -1,5 +1,5 @@
 /* Array bounds checking.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -372,31 +372,6 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   return warned;
 }
 
-/* Wrapper around build_array_type_nelts that makes sure the array
-   can be created at all and handles zero sized arrays specially.  */
-
-static tree
-build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
-{
-  if (TYPE_SIZE_UNIT (eltype)
-      && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
-      && !integer_zerop (TYPE_SIZE_UNIT (eltype))
-      && TYPE_ALIGN_UNIT (eltype) > 1
-      && wi::zext (wi::to_wide (TYPE_SIZE_UNIT (eltype)),
-		   ffs_hwi (TYPE_ALIGN_UNIT (eltype)) - 1) != 0)
-    eltype = TYPE_MAIN_VARIANT (eltype);
-
-  if (nelts)
-    return build_array_type_nelts (eltype, nelts);
-
-  tree idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
-  tree arrtype = build_array_type (eltype, idxtype);
-  arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
-  TYPE_SIZE (arrtype) = bitsize_zero_node;
-  TYPE_SIZE_UNIT (arrtype) = size_zero_node;
-  return arrtype;
-}
-
 /* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
    references to string constants.  If VRP can determine that the array
    subscript is a constant, check if it is outside valid range.
@@ -426,7 +401,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       axssize = wi::to_offset (access_size);
 
   access_ref aref;
-  if (!compute_objsize (ref, 0, &aref, ranges))
+  if (!compute_objsize (ref, m_stmt, 0, &aref, ranges))
     return false;
 
   if (aref.offset_in_range (axssize))
@@ -667,7 +642,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
    problems discussed in pr98266 and pr97595.  */
 
 static bool
-inbounds_memaccess_p (tree t)
+inbounds_memaccess_p (tree t, gimple *stmt)
 {
   if (TREE_CODE (t) != COMPONENT_REF)
     return false;
@@ -686,7 +661,7 @@ inbounds_memaccess_p (tree t)
      allocated).  */
   access_ref aref;   // unused
   tree refop = TREE_OPERAND (mref, 0);
-  tree refsize = compute_objsize (refop, 1, &aref);
+  tree refsize = compute_objsize (refop, stmt, 1, &aref);
   if (!refsize || TREE_CODE (refsize) != INTEGER_CST)
     return false;
 
@@ -724,6 +699,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
 {
   tree t = *tp;
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+
   location_t location;
 
   if (EXPR_HAS_LOCATION (t))
@@ -735,6 +711,8 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
 
   bool warned = false;
   array_bounds_checker *checker = (array_bounds_checker *) wi->info;
+  gcc_assert (checker->m_stmt == wi->stmt);
+
   if (TREE_CODE (t) == ARRAY_REF)
     warned = checker->check_array_ref (location, t, wi->stmt,
 				       false/*ignore_off_by_one*/);
@@ -746,7 +724,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
       checker->check_addr_expr (location, t, wi->stmt);
       *walk_subtree = false;
     }
-  else if (inbounds_memaccess_p (t))
+  else if (inbounds_memaccess_p (t, wi->stmt))
     /* Hack: Skip MEM_REF checks in accesses to a member of a base class
        at an offset that's within the bounds of the enclosing object.
        See pr98266 and pr97595.  */
@@ -794,14 +772,13 @@ check_array_bounds_dom_walker::before_dom_children (basic_block bb)
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
       gimple *stmt = gsi_stmt (si);
-      struct walk_stmt_info wi;
       if (!gimple_has_location (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
 
-      memset (&wi, 0, sizeof (wi));
-
+      struct walk_stmt_info wi{ };
       wi.info = checker;
+      checker->m_stmt = stmt;
 
       walk_gimple_op (stmt, array_bounds_checker::check_array_bounds, &wi);
     }

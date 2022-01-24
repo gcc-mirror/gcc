@@ -1,5 +1,17 @@
-// EXTRA_SOURCES: imports/test45a.d imports/test45b.d
-// PERMUTE_ARGS:
+/*
+EXTRA_SOURCES: imports/test45a.d imports/test45b.d
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+foo()
+foo(int)
+foo()
+foo()
+foo(int)
+bar(t)
+bar(t,i)
+---
+*/
 
 import imports.test45a;
 import imports.test45b;

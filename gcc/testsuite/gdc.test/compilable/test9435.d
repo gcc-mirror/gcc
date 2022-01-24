@@ -1,3 +1,4 @@
+// EXTRA_FILES: test9434.d
 import test9434;//expression;
 
 enum TokenType { Dot }

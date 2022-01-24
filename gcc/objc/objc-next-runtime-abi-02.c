@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-2) private.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
    Contributed by Iain Sandoe and based, in part, on an implementation in
    'branches/apple/trunk' contributed by Apple Computer Inc.
@@ -51,9 +51,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "target.h"
 #include "tree-iterator.h"
+#include "opts.h"
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
+#include "objc-next-metadata-tags.h"
 #include "objc-encoding.h"
 
 /* ABI 2 Private definitions. */
@@ -179,14 +181,6 @@ enum objc_v2_tree_index
 #define objc_rethrow_exception_decl \
 				objc_v2_global_trees[OCTI_V2_RETHROW_DECL]
 
-/* rt_trees identifiers - shared between NeXT implementations.  These allow
-   the FE to tag meta-data in a manner that survives LTO and can be used when
-   the  runtime requires that certain meta-data items appear in particular
-   named sections.  */
-
-#include "objc-next-metadata-tags.h"
-extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
-
 /* The OCTI_V2_... enumeration itself is in above.  */
 static GTY(()) tree objc_v2_global_trees[OCTI_V2_MAX];
 
@@ -255,7 +249,7 @@ objc_next_runtime_abi_02_init (objc_runtime_hooks *rthooks)
     }
 
   /* NeXT ABI 2 is intended to default to checking for nil receivers.  */
-  if (! global_options_set.x_flag_objc_nilcheck)
+  if (! OPTION_SET_P (flag_objc_nilcheck))
     flag_objc_nilcheck = 1;
 
   rthooks->initialize = next_runtime_02_initialize;
@@ -366,7 +360,7 @@ static void next_runtime_02_initialize (void)
 #ifdef OBJCPLUS
   /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by
      default.  */
-  if (!global_options_set.x_flag_objc_call_cxx_cdtors)
+  if (!OPTION_SET_P (flag_objc_call_cxx_cdtors))
     global_options.x_flag_objc_call_cxx_cdtors = 1;
 #endif
 
@@ -1669,7 +1663,8 @@ build_v2_objc_method_fixup_call (int super_flag, tree method_prototype,
   method_params = tree_cons (NULL_TREE, lookup_object,
                              tree_cons (NULL_TREE, selector,
                                         method_params));
-  t = build3 (OBJ_TYPE_REF, sender_cast, sender, lookup_object, size_zero_node);
+  t = build3 (OBJ_TYPE_REF, sender_cast, sender, lookup_object,
+	      build_int_cst (TREE_TYPE (lookup_object), 0));
   ret_val =  build_function_call (input_location, t, method_params);
   if (check_for_nil)
     {
@@ -1778,7 +1773,7 @@ build_v2_build_objc_method_call (int super, tree method_prototype,
 
   /* Build an obj_type_ref, with the correct cast for the method call.  */
   t = build3 (OBJ_TYPE_REF, sender_cast, method,
-			    lookup_object, size_zero_node);
+	      lookup_object, build_int_cst (TREE_TYPE (lookup_object), 0));
   tree ret_val = build_function_call_vec (loc, vNULL, t, parms, NULL);
   vec_free (parms);
   if (check_for_nil)

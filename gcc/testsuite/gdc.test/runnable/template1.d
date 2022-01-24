@@ -715,7 +715,7 @@ public template TRange29(T) {
                     recursing = false;
                 }
             }
-        } body {
+        } do {
             return contains(other.lower()) || contains(other.upper()) || other.includes(this);
         }
         public bool includes(Range other)
@@ -723,7 +723,7 @@ public template TRange29(T) {
             assert(other !is null);
         } out (result) {
             assert(result == (contains(other.lower()) && contains(other.upper())));
-        } body {
+        } do {
             return contains(other.lower()) && contains(other.upper());
         }
     }
@@ -771,22 +771,22 @@ void test30()
     assert(i == 3);
 
     copystr.copy(s, "Here it comes");
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     assert(s == "Here it comes");
 }
 
 /******************************************/
 
-import std.string;
+import core.demangle;
 
 template Foo31(alias X)
 {
-        alias X.toStringz y;
+        alias X.demangle y;
 }
 
 void test31()
 {
-    alias Foo31!(std.string) bar;
+    alias Foo31!(core.demangle) bar;
 }
 
 
@@ -1367,7 +1367,7 @@ void test56()
 {
   alias CT56!(int) Ct;
   Ct.C c= new Ct.C();
-  printf("%.*s\n", c.arrArr[0].length, c.arrArr[0].ptr);
+  printf("%.*s\n", cast(int)c.arrArr[0].length, c.arrArr[0].ptr);
   assert(c.arrArr[0] == "foo");
 }
 
@@ -1449,15 +1449,15 @@ void test60()
         B60!(int, long).Thing   thing1;
         B60!(int).Thing         thing2;
 
-        printf("thing1.sizeof: %u\n", thing1.sizeof);
-        printf("thing2.sizeof: %u\n", thing2.sizeof);
+        printf("thing1.sizeof: %zu\n", thing1.sizeof);
+        printf("thing2.sizeof: %zu\n", thing2.sizeof);
 
         assert(thing1.sizeof == long.alignof + long.sizeof);
         assert(thing2.sizeof == 8);
 
         C60!(int /*,A60*/ )     container1;
 
-        printf("container1.sizeof: %u\n", container1.sizeof);
+        printf("container1.sizeof: %zu\n", container1.sizeof);
         assert(container1.sizeof == (void*).sizeof);
 }
 
@@ -1554,7 +1554,7 @@ void test64()
 }
 
 /******************************************/
-// http://www.digitalmars.com/d/archives/28052.html
+// https://www.digitalmars.com/d/archives/28052.html
 
 alias int value_type;
 
@@ -1604,7 +1604,7 @@ template Foo67(alias T)
 {
     void Foo67()
     {
-        printf("T = '%.*s'\n", T.length, T.ptr);
+        printf("T = '%.*s'\n", cast(int)T.length, T.ptr);
         assert(T == "hello");
     }
 }
@@ -1620,7 +1620,7 @@ void test67()
 /******************************************/
 
 template T68(int a) {
-    int vec[a];
+    int[a] vec;
 }
 
 void test68()
@@ -1637,7 +1637,7 @@ void test68()
 
 size_t printx(string s)
 {
-    printf("s = '%.*s'\n", s.length, s.ptr);
+    printf("s = '%.*s'\n", cast(int)s.length, s.ptr);
     return s.length;
 }
 
@@ -1735,8 +1735,8 @@ void test72()
     static ulong[5] a = [0,1,2,3,4];
     static uint[5] b = [0,1,2,3,4];
     char[] r;
-    r = foo72!(ulong[5])(a); printf("%.*s\n", r.length, r.ptr);
-    r = foo72!(uint[5])(b);  printf("%.*s\n", r.length, r.ptr);
+    r = foo72!(ulong[5])(a); printf("%.*s\n", cast(int)r.length, r.ptr);
+    r = foo72!(uint[5])(b);  printf("%.*s\n", cast(int)r.length, r.ptr);
 }
 
 
@@ -1923,7 +1923,7 @@ specialization:: first int
 
 
 /******************************************/
-// http://www.digitalmars.com/pnews/read.php?server=news.digitalmars.com&group=digitalmars.D.bugs&artnum=2117
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/2117.html
 
 class Conversion(T,U){
         alias char Small;

@@ -1,5 +1,5 @@
 /* read-rtl-function.c - Reader for RTL function dumps
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -886,8 +886,9 @@ function_reader::read_rtx_operand (rtx x, int idx)
       if (idx == 7 && CALL_P (x))
 	{
 	  m_in_call_function_usage = true;
-	  return rtx_reader::read_rtx_operand (x, idx);
+	  rtx tem = rtx_reader::read_rtx_operand (x, idx);
 	  m_in_call_function_usage = false;
+	  return tem;
 	}
       else
 	return rtx_reader::read_rtx_operand (x, idx);
@@ -1497,6 +1498,9 @@ function_reader::consolidate_singletons (rtx x)
 
     case CONST_INT:
       return gen_rtx_CONST_INT (GET_MODE (x), INTVAL (x));
+
+    case CONST_VECTOR:
+      return gen_rtx_CONST_VECTOR (GET_MODE (x), XVEC (x, 0));
 
     default:
       break;

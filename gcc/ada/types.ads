@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,6 +58,15 @@ package Types is
 
    subtype Pos is Int range 1 .. Int'Last;
    --  Positive Int values
+
+   subtype Nonzero_Int is Int with Predicate => Nonzero_Int /= 0;
+
+   type Int_64 is range -2 ** 63 .. +2 ** 63 - 1;
+   --  Signed 64-bit integer
+
+   subtype Nat_64 is Int_64 range 0 .. Int_64'Last;
+   subtype Pos_64 is Int_64 range 1 .. Int_64'Last;
+   subtype Nonzero_Int_64 is Int_64 with Predicate => Nonzero_Int_64 /= 0;
 
    type Word is mod 2 ** 32;
    --  Unsigned 32-bit integer
@@ -988,6 +997,8 @@ package Types is
    type Field_Offset is new Nat;
    --  Offset of a node field, in units of the size of the field, which is
    --  always a power of 2.
+
+   subtype Node_Offset is Field_Offset'Base range 1 .. Field_Offset'Base'Last;
 
    subtype Slot_Count is Field_Offset;
    --  Count of number of slots. Same type as Field_Offset to avoid

@@ -1,5 +1,5 @@
 /* Statement translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -356,24 +356,22 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 }
 
 
-/* Get the interface symbol for the procedure corresponding to the given call.
-   We can't get the procedure symbol directly as we have to handle the case
-   of (deferred) type-bound procedures.  */
+/* Given an executable statement referring to an intrinsic function call,
+   returns the intrinsic symbol.  */
 
-static gfc_symbol *
-get_proc_ifc_for_call (gfc_code *c)
+static gfc_intrinsic_sym *
+get_intrinsic_for_code (gfc_code *code)
 {
-  gfc_symbol *sym;
+  if (code->op == EXEC_CALL)
+    {
+      gfc_intrinsic_sym * const isym = code->resolved_isym;
+      if (isym)
+	return isym;
+      else
+	return gfc_get_intrinsic_for_expr (code->expr1);
+    }
 
-  gcc_assert (c->op == EXEC_ASSIGN_CALL || c->op == EXEC_CALL);
-
-  sym = gfc_get_proc_ifc_for_expr (c->expr1);
-
-  /* Fall back/last resort try.  */
-  if (sym == NULL)
-    sym = c->resolved_sym;
-
-  return sym;
+  return NULL;
 }
 
 
@@ -402,7 +400,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
   ss = gfc_ss_terminator;
   if (code->resolved_sym->attr.elemental)
     ss = gfc_walk_elemental_function_args (ss, code->ext.actual,
-					   get_proc_ifc_for_call (code),
+					   get_intrinsic_for_code (code),
 					   GFC_SS_REFERENCE);
 
   /* MVBITS is inlined but needs the dependency checking found here.  */
@@ -1788,9 +1786,10 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  /* Go straight to the class data.  */
 	  if (sym2->attr.dummy && !sym2->attr.optional)
 	    {
-	      class_decl = DECL_LANG_SPECIFIC (sym2->backend_decl) ?
-			   GFC_DECL_SAVED_DESCRIPTOR (sym2->backend_decl) :
-			   sym2->backend_decl;
+	      class_decl = sym2->backend_decl;
+	      if (DECL_LANG_SPECIFIC (class_decl)
+		  && GFC_DECL_SAVED_DESCRIPTOR (class_decl))
+		class_decl = GFC_DECL_SAVED_DESCRIPTOR (class_decl);
 	      if (POINTER_TYPE_P (TREE_TYPE (class_decl)))
 		class_decl = build_fold_indirect_ref_loc (input_location,
 							  class_decl);
@@ -3669,10 +3668,7 @@ gfc_trans_select_rank_cases (gfc_code * code)
   tree tmp;
   tree cond;
   tree low;
-  tree sexpr;
   tree rank;
-  tree rank_minus_one;
-  tree minus_one;
   gfc_se se;
   gfc_se cse;
   stmtblock_t block;
@@ -3686,24 +3682,25 @@ gfc_trans_select_rank_cases (gfc_code * code)
   gfc_conv_expr_descriptor (&se, code->expr1);
   rank = gfc_conv_descriptor_rank (se.expr);
   rank = gfc_evaluate_now (rank, &block);
-  minus_one = build_int_cst (TREE_TYPE (rank), -1);
-  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			 gfc_array_index_type,
-			 fold_convert (gfc_array_index_type, rank),
-			 build_int_cst (gfc_array_index_type, 1));
-  rank_minus_one = gfc_evaluate_now (tmp, &block);
-  tmp = gfc_conv_descriptor_ubound_get (se.expr, rank_minus_one);
-  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
-			  tmp, build_int_cst (TREE_TYPE (tmp), -1));
-  tmp = fold_build3_loc (input_location, COND_EXPR,
-			 TREE_TYPE (rank), cond,
-			 rank, minus_one);
-  cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
-			  rank, build_int_cst (TREE_TYPE (rank), 0));
-  sexpr = fold_build3_loc (input_location, COND_EXPR,
-			   TREE_TYPE (rank), cond,
-			   rank, tmp);
-  sexpr = gfc_evaluate_now (sexpr, &block);
+  symbol_attribute attr = gfc_expr_attr (code->expr1);
+  if (!attr.pointer && !attr.allocatable)
+    {
+      /* Special case for assumed-rank ('rank(*)', internally -1):
+	 rank = (rank == 0 || ubound[rank-1] != -1) ? rank : -1.  */
+      cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			      rank, build_int_cst (TREE_TYPE (rank), 0));
+      tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			     fold_convert (gfc_array_index_type, rank),
+			     gfc_index_one_node);
+      tmp = gfc_conv_descriptor_ubound_get (se.expr, tmp);
+      tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			     tmp, build_int_cst (TREE_TYPE (tmp), -1));
+      cond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			      logical_type_node, cond, tmp);
+      tmp = fold_build3_loc (input_location, COND_EXPR, TREE_TYPE (rank),
+			     cond, rank, build_int_cst (TREE_TYPE (rank), -1));
+      rank = gfc_evaluate_now (tmp, &block);
+    }
   TREE_USED (code->exit_label) = 0;
 
 repeat:
@@ -3747,8 +3744,8 @@ repeat:
       if (low != NULL_TREE)
 	{
 	  cond = fold_build2_loc (input_location, EQ_EXPR,
-				  TREE_TYPE (sexpr), sexpr,
-				  fold_convert (TREE_TYPE (sexpr), low));
+				  TREE_TYPE (rank), rank,
+				  fold_convert (TREE_TYPE (rank), low));
 	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
 				 cond, tmp,
 				 build_empty_stmt (input_location));
@@ -6641,16 +6638,13 @@ gfc_trans_allocate (gfc_code * code)
       else
 	e3rhs = gfc_copy_expr (code->expr3);
 
-      // We need to propagate the bounds of the expr3 for source=/mold=;
-      // however, for nondescriptor arrays, we use internally a lower bound
-      // of zero instead of one, which needs to be corrected for the allocate obj
-      if (e3_is == E3_DESC)
-	{
-	  symbol_attribute attr = gfc_expr_attr (code->expr3);
-	  if (code->expr3->expr_type == EXPR_ARRAY ||
-	      (!attr.allocatable && !attr.pointer))
-	    e3_has_nodescriptor = true;
-	}
+      // We need to propagate the bounds of the expr3 for source=/mold=.
+      // However, for non-named arrays, the lbound has to be 1 and neither the
+      // bound used inside the called function even when returning an
+      // allocatable/pointer nor the zero used internally.
+      if (e3_is == E3_DESC
+	  && code->expr3->expr_type != EXPR_VARIABLE)
+	e3_has_nodescriptor = true;
     }
 
   /* Loop over all objects to allocate.  */

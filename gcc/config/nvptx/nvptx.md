@@ -1,5 +1,5 @@
 ;; Machine description for NVPTX.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ;;
 ;; This file is part of GCC.
@@ -26,6 +26,7 @@
    UNSPEC_EXP2
    UNSPEC_SIN
    UNSPEC_COS
+   UNSPEC_TANH
 
    UNSPEC_FPINT_FLOOR
    UNSPEC_FPINT_BTRUNC
@@ -196,6 +197,7 @@
 (define_mode_iterator QHIM [QI HI])
 (define_mode_iterator QHSIM [QI HI SI])
 (define_mode_iterator SDFM [SF DF])
+(define_mode_iterator HSFM [HF SF])
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
@@ -213,7 +215,7 @@
 ;; get variables in this mode and pseudos are never spilled.
 (define_insn "movbi"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R,R,R")
-	(match_operand:BI 1 "nvptx_nonmemory_operand" "R,P0,Pn"))]
+	(match_operand:BI 1 "nvptx_nonmemory_operand" "R,P0,P1"))]
   ""
   "@
    %.\\tmov%t0\\t%0, %1;
@@ -272,6 +274,48 @@
   return nvptx_output_mov_insn (operands[0], operands[1]);
 }
   [(set_attr "subregs_ok" "true")])
+
+(define_insn "*movhf_insn"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=R,R,m")
+	(match_operand:HF 1 "nonimmediate_operand" "R,m,R"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
+  "@
+   %.\\tmov.b16\\t%0, %1;
+   %.\\tld.b16\\t%0, %1;
+   %.\\tst.b16\\t%0, %1;")
+
+(define_expand "movhf"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "")
+	(match_operand:HF 1 "nonimmediate_operand" ""))]
+  ""
+{
+  /* Load HFmode constants as SFmode with an explicit FLOAT_TRUNCATE.  */
+  if (CONST_DOUBLE_P (operands[1]))
+    {
+      rtx tmp1 = gen_reg_rtx (SFmode);
+      REAL_VALUE_TYPE d = *CONST_DOUBLE_REAL_VALUE (operands[1]);
+      real_convert (&d, SFmode, &d);
+      emit_move_insn (tmp1, const_double_from_real_value (d, SFmode));
+
+      if (!REG_P (operands[0]))
+	{
+	  rtx tmp2 = gen_reg_rtx (HFmode);
+	  emit_insn (gen_truncsfhf2 (tmp2, tmp1));
+	  emit_move_insn (operands[0], tmp2);
+	}
+      else
+        emit_insn (gen_truncsfhf2 (operands[0], tmp1));
+      DONE;
+    }
+
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
+    {
+      rtx tmp = gen_reg_rtx (HFmode);
+      emit_move_insn (tmp, operands[1]);
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
+})
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:QHIM 0 "nvptx_register_operand" "=R")
@@ -401,6 +445,32 @@
    %.\\tst%A0.u%T0\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
 
+;; Sign-extensions of truncations
+
+(define_insn "*extend_trunc_<mode>2_qi"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:HSDIM
+	 (truncate:QI (match_operand:HSDIM 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s%T0.s8\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
+(define_insn "*extend_trunc_<mode>2_hi"
+  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:SDIM
+	 (truncate:HI (match_operand:SDIM 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s%T0.s16\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
+(define_insn "*extend_trunc_di2_si"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(sign_extend:DI
+	 (truncate:SI (match_operand:DI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s64.s32\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
 ;; Integer arithmetic
 
 (define_insn "add<mode>3"
@@ -521,6 +591,13 @@
 	(not:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tnot.b%T0\\t%0, %1;")
+
+(define_insn "*cnot<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(eq:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+		  (const_int 0)))]
+  ""
+  "%.\\tcnot.b%T0\\t%0, %1;")
 
 (define_insn "bitrev<mode>2"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
@@ -789,12 +866,26 @@
 
 ;; Conditional stores
 
-(define_insn "setcc_from_bi"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(ne:SI (match_operand:BI 1 "nvptx_register_operand" "R")
-	       (const_int 0)))]
+(define_insn "setcc<mode>_from_bi"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(ne:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+		   (const_int 0)))]
   ""
-  "%.\\tselp%t0 %0,-1,0,%1;")
+  "%.\\tselp%t0\\t%0, 1, 0, %1;")
+
+(define_insn "extendbi<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:HSDIM
+	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tselp%t0\\t%0, -1, 0, %1;")
+
+(define_insn "zero_extendbi<mode>2"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(zero_extend:HSDIM
+	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tselp%t0\\t%0, 1, 0, %1;")
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
@@ -831,22 +922,6 @@
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
   ""
   "%.\\tselp%t0\\t%0, %3, %2, %1;")
-
-(define_insn "setcc_int<mode>"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(match_operator:SI 1 "nvptx_comparison_operator"
-	  [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
-	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")]))]
-  ""
-  "%.\\tset%t0%c1\\t%0, %2, %3;")
-
-(define_insn "setcc_int<mode>"
-  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(match_operator:SI 1 "nvptx_float_comparison_operator"
-	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
-	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
-  ""
-  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
@@ -864,29 +939,35 @@
   ""
   "%.\\tset%t0%c1\\t%0, %2, %3;")
 
-(define_expand "cstorebi4"
-  [(set (match_operand:SI 0 "nvptx_register_operand")
-	(match_operator:SI 1 "ne_operator"
-         [(match_operand:BI 2 "nvptx_register_operand")
-          (match_operand:BI 3 "const0_operand")]))]
-  ""
-  "")
-
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
 	(match_operator:SI 1 "nvptx_comparison_operator"
-         [(match_operand:HSDIM 2 "nvptx_register_operand")
-          (match_operand:HSDIM 3 "nvptx_nonmemory_operand")]))]
+	  [(match_operand:HSDIM 2 "nvptx_register_operand")
+	   (match_operand:HSDIM 3 "nvptx_nonmemory_operand")]))]
   ""
-  "")
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
 
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "nvptx_register_operand")
 	(match_operator:SI 1 "nvptx_float_comparison_operator"
-         [(match_operand:SDFM 2 "nvptx_register_operand")
-          (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
+	  [(match_operand:SDFM 2 "nvptx_register_operand")
+	   (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
   ""
-  "")
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
 
 ;; Calls
 
@@ -1052,6 +1133,59 @@
   "flag_unsafe_math_optimizations"
   "%.\\tex2.approx%t0\\t%0, %1;")
 
+;; HFmode floating point arithmetic.
+
+(define_insn "addhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(plus:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tadd.f16\\t%0, %1, %2;")
+
+(define_insn "subhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(minus:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		  (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tsub.f16\\t%0, %1, %2;")
+
+(define_insn "mulhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(mult:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tmul.f16\\t%0, %1, %2;")
+
+(define_insn "exp2hf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(unspec:HF [(match_operand:HF 1 "nvptx_register_operand" "R")]
+		   UNSPEC_EXP2))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\tex2.approx.f16\\t%0, %1;")
+
+(define_insn "tanh<mode>2"
+  [(set (match_operand:HSFM 0 "nvptx_register_operand" "=R")
+	(unspec:HSFM [(match_operand:HSFM 1 "nvptx_register_operand" "R")]
+		     UNSPEC_TANH))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\ttanh.approx%t0\\t%0, %1;")
+
+;; HFmode floating point arithmetic.
+
+(define_insn "sminhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smin:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmin.f16\\t%0, %1, %2;")
+
+(define_insn "smaxhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smax:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmax.f16\\t%0, %1, %2;")
+
 ;; Conversions involving floating point
 
 (define_insn "extendsfdf2"
@@ -1144,6 +1278,18 @@
 		     FPINT2))]
   ""
   "%.\\tcvt<FPINT2:fpint2_roundingmode>.s%T0%t1\\t%0, %1;")
+
+(define_insn "extendhf<mode>2"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+	(float_extend:SDFM (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tcvt%t0%t1\\t%0, %1;")
+
+(define_insn "trunc<mode>hf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(float_truncate:HF (match_operand:SDFM 1 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tcvt%#%t0%t1\\t%0, %1;")
 
 ;; Vector operations
 

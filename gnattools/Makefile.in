@@ -259,9 +259,11 @@ install-info:
 
 install-pdf:
 
+install-dvi:
+
 install-html:
 
-.PHONY: install install-strip install-info install-pdf install-html
+.PHONY: install install-strip install-info install-pdf install-dvi install-html
 
 # Cleaning rules.
 mostlyclean:

@@ -1,6 +1,6 @@
 // Simd Abi specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,8 @@ template <typename _V, typename = _VectorTraits<_V>>
 //}}}
 // __vector_permute<Indices...>{{{
 // Index == -1 requests zeroing of the output element
-template <int... _Indices, typename _Tp, typename _TVT = _VectorTraits<_Tp>>
+template <int... _Indices, typename _Tp, typename _TVT = _VectorTraits<_Tp>,
+	  typename = __detail::__odr_helper>
   _Tp
   __vector_permute(_Tp __x)
   {
@@ -62,7 +63,8 @@ template <int... _Indices, typename _Tp, typename _TVT = _VectorTraits<_Tp>>
 // }}}
 // __vector_shuffle<Indices...>{{{
 // Index == -1 requests zeroing of the output element
-template <int... _Indices, typename _Tp, typename _TVT = _VectorTraits<_Tp>>
+template <int... _Indices, typename _Tp, typename _TVT = _VectorTraits<_Tp>,
+	  typename = __detail::__odr_helper>
   _Tp
   __vector_shuffle(_Tp __x, _Tp __y)
   {
@@ -820,10 +822,12 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
     // _SimdBase / base class for simd, providing extra conversions {{{
     struct _SimdBase2
     {
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __intrinsic_type_t<_Tp, _Np>() const
       {
 	return __to_intrin(static_cast<const simd<_Tp, _Abi>*>(this)->_M_data);
       }
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __vector_type_t<_Tp, _Np>() const
       {
 	return static_cast<const simd<_Tp, _Abi>*>(this)->_M_data.__builtin();
@@ -832,6 +836,7 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
 
     struct _SimdBase1
     {
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __intrinsic_type_t<_Tp, _Np>() const
       { return __data(*static_cast<const simd<_Tp, _Abi>*>(this)); }
     };
@@ -844,11 +849,13 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
     // _MaskBase {{{
     struct _MaskBase2
     {
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __intrinsic_type_t<_Tp, _Np>() const
       {
 	return static_cast<const simd_mask<_Tp, _Abi>*>(this)
 	  ->_M_data.__intrin();
       }
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __vector_type_t<_Tp, _Np>() const
       {
 	return static_cast<const simd_mask<_Tp, _Abi>*>(this)->_M_data._M_data;
@@ -857,6 +864,7 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
 
     struct _MaskBase1
     {
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       explicit operator __intrinsic_type_t<_Tp, _Np>() const
       { return __data(*static_cast<const simd_mask<_Tp, _Abi>*>(this)); }
     };
@@ -874,7 +882,9 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
       _Up _M_data;
 
     public:
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       _MaskCastType(_Up __x) : _M_data(__x) {}
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       operator _MaskMember() const { return _M_data; }
     };
 
@@ -887,7 +897,9 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
       _SimdMember _M_data;
 
     public:
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       _SimdCastType1(_Ap __a) : _M_data(__vector_bitcast<_Tp>(__a)) {}
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       operator _SimdMember() const { return _M_data; }
     };
 
@@ -898,8 +910,11 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
       _SimdMember _M_data;
 
     public:
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       _SimdCastType2(_Ap __a) : _M_data(__vector_bitcast<_Tp>(__a)) {}
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       _SimdCastType2(_Bp __b) : _M_data(__b) {}
+      _GLIBCXX_SIMD_ALWAYS_INLINE
       operator _SimdMember() const { return _M_data; }
     };
 
@@ -913,14 +928,14 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
 struct _CommonImplX86;
 struct _CommonImplNeon;
 struct _CommonImplBuiltin;
-template <typename _Abi> struct _SimdImplBuiltin;
-template <typename _Abi> struct _MaskImplBuiltin;
-template <typename _Abi> struct _SimdImplX86;
-template <typename _Abi> struct _MaskImplX86;
-template <typename _Abi> struct _SimdImplNeon;
-template <typename _Abi> struct _MaskImplNeon;
-template <typename _Abi> struct _SimdImplPpc;
-template <typename _Abi> struct _MaskImplPpc;
+template <typename _Abi, typename = __detail::__odr_helper> struct _SimdImplBuiltin;
+template <typename _Abi, typename = __detail::__odr_helper> struct _MaskImplBuiltin;
+template <typename _Abi, typename = __detail::__odr_helper> struct _SimdImplX86;
+template <typename _Abi, typename = __detail::__odr_helper> struct _MaskImplX86;
+template <typename _Abi, typename = __detail::__odr_helper> struct _SimdImplNeon;
+template <typename _Abi, typename = __detail::__odr_helper> struct _MaskImplNeon;
+template <typename _Abi, typename = __detail::__odr_helper> struct _SimdImplPpc;
+template <typename _Abi, typename = __detail::__odr_helper> struct _MaskImplPpc;
 
 // simd_abi::_VecBuiltin {{{
 template <int _UsedBytes>
@@ -1369,7 +1384,7 @@ struct _CommonImplBuiltin
 
 // }}}
 // _SimdImplBuiltin {{{1
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _SimdImplBuiltin
   {
     // member types {{{2
@@ -2618,7 +2633,7 @@ struct _MaskImplBuiltinMixin
 };
 
 // _MaskImplBuiltin {{{1
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _MaskImplBuiltin : _MaskImplBuiltinMixin
   {
     using _MaskImplBuiltinMixin::_S_to_bits;
@@ -2953,4 +2968,4 @@ _GLIBCXX_SIMD_END_NAMESPACE
 #endif // __cplusplus >= 201703L
 #endif // _GLIBCXX_EXPERIMENTAL_SIMD_ABIS_H_
 
-// vim: foldmethod=marker foldmarker={{{,}}} sw=2 noet ts=8 sts=2 tw=80
+// vim: foldmethod=marker foldmarker={{{,}}} sw=2 noet ts=8 sts=2 tw=100

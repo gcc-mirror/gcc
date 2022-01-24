@@ -1,5 +1,5 @@
 /* Declarations for ISO Fortran binding.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by Daniel Celis Garza  <celisdanieljr@gmail.com>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -152,14 +152,10 @@ extern int CFI_setpointer (CFI_cdesc_t *, CFI_cdesc_t *, const CFI_index_t []);
 #define CFI_type_Complex 4
 #define CFI_type_Character 5
 
-/* Types with no kind.  FIXME: GFC descriptors currently use BT_VOID for
-   both C_PTR and C_FUNPTR, so we have no choice but to make them
-   identical here too.  That can potentially break on targets where
-   function and data pointers have different sizes/representations.
-   See PR 100915.  */
+/* Types with no kind.  */
 #define CFI_type_struct 6
 #define CFI_type_cptr 7
-#define CFI_type_cfunptr CFI_type_cptr
+#define CFI_type_cfunptr 8
 #define CFI_type_other -1
 
 /* Types with kind parameter.

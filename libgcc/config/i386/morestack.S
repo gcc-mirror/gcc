@@ -1,5 +1,5 @@
 # x86/x86_64 support for -fsplit-stack.
-# Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 # Contributed by Ian Lance Taylor <iant@google.com>.
 
 # This file is part of GCC.
@@ -23,6 +23,7 @@
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+#include "auto-host.h"
 
 # Support for allocating more stack space when using -fsplit-stack.
 # When a function discovers that it needs more stack space, it will
@@ -75,7 +76,7 @@
 # The amount of extra space we ask for.  In general this has to be
 # enough for the dynamic loader to find a symbol and for a signal
 # handler to run.
-	
+
 #ifndef __x86_64__
 #define BACKOFF (1024)
 #else
@@ -160,7 +161,7 @@ __morestack_non_split:
 	cmpb	$0x55,1(%eax)
 	je	2f
 
-3:	
+3:
 	movl	%eax,4(%esp)		# Update return address.
 
 	popl	%eax			# Restore %eax and stack.
@@ -426,7 +427,7 @@ __morestack:
 
 # This is the cleanup code called by the stack unwinder when unwinding
 # through the code between .LEHB0 and .LEHE0 above.
-	
+
 .L1:
 	.cfi_restore_state
 	subl	$16,%esp		# Maintain 16 byte alignment.
@@ -600,7 +601,7 @@ __morestack:
 
 # This is the cleanup code called by the stack unwinder when unwinding
 # through the code between .LEHB0 and .LEHE0 above.
-	
+
 .L1:
 	.cfi_restore_state
 	subq	$16,%rsp		# Maintain 16 byte alignment.
@@ -848,7 +849,11 @@ __morestack_make_guard:
 # Make __stack_split_initialize a high priority constructor.  FIXME:
 # This is ELF specific.
 
+#if HAVE_INITFINI_ARRAY_SUPPORT
+	.section	.init_array.00000,"aw",@progbits
+#else
 	.section	.ctors.65535,"aw",@progbits
+#endif
 
 #ifndef __LP64__
 	.align	4

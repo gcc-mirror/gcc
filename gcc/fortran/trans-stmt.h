@@ -1,5 +1,5 @@
 /* Header for statement translation functions
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -66,11 +66,11 @@ tree gfc_trans_sync_team (gfc_code *);
 tree gfc_trans_where (gfc_code *);
 tree gfc_trans_allocate (gfc_code *);
 tree gfc_trans_deallocate (gfc_code *);
-tree gfc_trans_deallocate_array (tree);
 
 /* trans-openmp.c */
 tree gfc_trans_omp_directive (gfc_code *);
 void gfc_trans_omp_declare_simd (gfc_namespace *);
+void gfc_trans_omp_declare_variant (gfc_namespace *);
 tree gfc_trans_oacc_directive (gfc_code *);
 tree gfc_trans_oacc_declare (gfc_namespace *);
 

@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -57,14 +57,13 @@ build_lambda_object (tree lambda_expr)
      - cp_parser_functional_cast  */
   vec<constructor_elt, va_gc> *elts = NULL;
   tree node, expr, type;
-  location_t saved_loc;
 
   if (processing_template_decl || lambda_expr == error_mark_node)
     return lambda_expr;
 
   /* Make sure any error messages refer to the lambda-introducer.  */
-  saved_loc = input_location;
-  input_location = LAMBDA_EXPR_LOCATION (lambda_expr);
+  location_t loc = LAMBDA_EXPR_LOCATION (lambda_expr);
+  iloc_sentinel il (loc);
 
   for (node = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
        node;
@@ -117,10 +116,10 @@ build_lambda_object (tree lambda_expr)
   type = LAMBDA_EXPR_CLOSURE (lambda_expr);
   CLASSTYPE_NON_AGGREGATE (type) = 0;
   expr = finish_compound_literal (type, expr, tf_warning_or_error);
+  protected_set_expr_location (expr, loc);
   CLASSTYPE_NON_AGGREGATE (type) = 1;
 
  out:
-  input_location = saved_loc;
   return expr;
 }
 
@@ -196,7 +195,9 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
   tree type;
   bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
 
-  if (!is_this && explicit_init_p)
+  if (is_this)
+    type = TREE_TYPE (expr);
+  else if (explicit_init_p)
     {
       tree auto_node = make_auto ();
       
@@ -210,7 +211,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
       else
 	type = do_auto_deduction (type, expr, auto_node);
     }
-  else if (!is_this && type_dependent_expression_p (expr))
+  else if (type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -220,10 +221,21 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     }
   else
     {
+      STRIP_ANY_LOCATION_WRAPPER (expr);
+
+      if (!by_reference_p && is_capture_proxy (expr))
+	{
+	  /* When capturing by-value another capture proxy from an enclosing
+	     lambda, consider the type of the corresponding field instead,
+	     as the proxy may be additionally const-qualifed if the enclosing
+	     lambda is non-mutable (PR94376).  */
+	  gcc_assert (TREE_CODE (DECL_VALUE_EXPR (expr)) == COMPONENT_REF);
+	  expr = TREE_OPERAND (DECL_VALUE_EXPR (expr), 1);
+	}
+
       type = non_reference (unlowered_expr_type (expr));
 
-      if (!is_this
-	  && (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE))
+      if (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_reference_type (type);
     }
 
@@ -236,6 +248,10 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 bool
 is_capture_proxy (tree decl)
 {
+  /* Location wrappers should be stripped or otherwise handled by the
+     caller before using this predicate.  */
+  gcc_checking_assert (!location_wrapper_p (decl));
+
   return (VAR_P (decl)
 	  && DECL_HAS_VALUE_EXPR_P (decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
@@ -1486,7 +1502,8 @@ mark_const_cap_r (tree *t, int *walk_subtrees, void *data)
 	  *walk_subtrees = 0;
 	}
     }
-  else if (is_constant_capture_proxy (*t))
+  else if (!location_wrapper_p (*t) /* is_capture_proxy dislikes them.  */
+	   && is_constant_capture_proxy (*t))
     var = DECL_CAPTURED_VARIABLE (*t);
 
   if (var)

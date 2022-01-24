@@ -15,6 +15,8 @@
 ! Prune a few: uninteresting, and varying depending on GCC configuration (data types):
 ! { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} }
 
+! { dg-additional-options -Wuninitialized }
+
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
 ! passed to 'incr' may be unset, and in that case, it will be set to [...]",
 ! so to maintain compatibility with earlier Tcl releases, we manually
@@ -27,10 +29,16 @@ program main
   implicit none (type, external)
   integer :: j
   integer, allocatable :: A(:)
+  ! { dg-note {'a' declared here} {} { target *-*-* } .-1 }
   character(len=:), allocatable :: my_str
   character(len=15), allocatable :: my_str15
 
   A = [(3*j, j=1, 10)]
+  ! { dg-bogus {'a\.offset' is used uninitialized} {PR77504 etc.} { xfail *-*-* } .-1 }
+  ! { dg-bogus {'a\.dim\[0\]\.lbound' is used uninitialized} {PR77504 etc.} { xfail *-*-* } .-2 }
+  ! { dg-bogus {'a\.dim\[0\]\.ubound' is used uninitialized} {PR77504 etc.} { xfail *-*-* } .-3 }
+  ! { dg-bogus {'a\.dim\[0\]\.lbound' may be used uninitialized} {PR77504 etc.} { xfail { ! __OPTIMIZE__ } } .-4 }
+  ! { dg-bogus {'a\.dim\[0\]\.ubound' may be used uninitialized} {PR77504 etc.} { xfail { ! __OPTIMIZE__ } } .-5 }
   call foo (A, size(A))
   call bar (A)
   my_str = "1234567890"
@@ -71,9 +79,7 @@ contains
     ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'test\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'parm\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'parm\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'parm\.[0-9]+' adjusted for OpenACC privatization level: 'gang'} "" { target { ! { openacc_host_selected || openacc_nvidia_accel_selected } } } l_compute$c_compute }
+    ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'A\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_compute$c_compute }
     array = [(-2*i, i = 1, size(array))]
     !$acc loop gang private(array) ! { dg-line l_loop[incr c_loop] }

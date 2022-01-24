@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -370,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator-(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       {
 	return difference_type(_S_buffer_size())
-	  * (__x._M_node - __y._M_node - int(__x._M_node != 0))
+	  * (__x._M_node - __y._M_node - bool(__x._M_node))
 	  + (__x._M_cur - __x._M_first)
 	  + (__y._M_last - __y._M_cur);
       }
@@ -383,10 +383,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX_NODISCARD
 	friend difference_type
 	operator-(const _Self& __x,
-		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
+		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y)
+	_GLIBCXX_NOEXCEPT
 	{
 	  return difference_type(_S_buffer_size())
-	    * (__x._M_node - __y._M_node - int(__x._M_node != 0))
+	    * (__x._M_node - __y._M_node - bool(__x._M_node))
 	    + (__x._M_cur - __x._M_first)
 	    + (__y._M_last - __y._M_cur);
 	}
@@ -932,14 +933,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       deque(deque&&) = default;
 
       /// Copy constructor with alternative allocator
-      deque(const deque& __x, const allocator_type& __a)
+      deque(const deque& __x, const __type_identity_t<allocator_type>& __a)
       : _Base(__a, __x.size())
       { std::__uninitialized_copy_a(__x.begin(), __x.end(),
 				    this->_M_impl._M_start,
 				    _M_get_Tp_allocator()); }
 
       /// Move constructor with alternative allocator
-      deque(deque&& __x, const allocator_type& __a)
+      deque(deque&& __x, const __type_identity_t<allocator_type>& __a)
       : deque(std::move(__x), __a, typename _Alloc_traits::is_always_equal{})
       { }
 

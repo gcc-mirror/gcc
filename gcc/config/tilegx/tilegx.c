@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Tilera TILE-Gx.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -56,6 +56,7 @@
 #include "tilegx-builtins.h"
 #include "tilegx-multiply.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -76,7 +77,7 @@ static bool output_memory_autoinc_first;
 static void
 tilegx_option_override (void)
 {
-  if (global_options_set.x_tilegx_cmodel)
+  if (OPTION_SET_P (tilegx_cmodel))
     {
       switch (tilegx_cmodel)
 	{

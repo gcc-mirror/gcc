@@ -1,5 +1,5 @@
 ; Overloaded built-in functions for PowerPC.
-; Copyright (C) 2020-21 Free Software Foundation, Inc.
+; Copyright (C) 2020-2022 Free Software Foundation, Inc.
 ; Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 ;
 ; This file is part of GCC.
@@ -1154,9 +1154,9 @@
   vus __builtin_vec_convert_4f32_8f16 (vf, vf);
     CONVERT_4F32_8F16
 
-[VEC_COPYSIGN, vec_cpsgn, __builtin_vec_copysign]
+[VEC_COPYSIGN, SKIP, __builtin_vec_copysign]
   vf __builtin_vec_copysign (vf, vf);
-    CPSGNSP
+    COPYSIGN_V4SF
   vd __builtin_vec_copysign (vd, vd);
     CPSGNDP
 
@@ -3021,7 +3021,7 @@
 ; is replaced by a constructor.  The single overload here causes
 ; __builtin_vec_promote to be registered with the front end so that can happen.
 [VEC_PROMOTE, vec_promote, __builtin_vec_promote]
-  vsi __builtin_vec_promote (vsi);
+  vsi __builtin_vec_promote (vsi, const int);
     ABS_V4SI PROMOTE_FAKERY
 
 [VEC_RE, vec_re, __builtin_vec_re]

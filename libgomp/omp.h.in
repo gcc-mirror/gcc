@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -157,7 +157,7 @@ typedef enum omp_alloctrait_value_t
   omp_atv_contended = 3,
   omp_atv_uncontended = 4,
   omp_atv_serialized = 5,
-  omp_atv_sequential = omp_atv_serialized,
+  omp_atv_sequential __GOMP_DEPRECATED_5_1 = omp_atv_serialized,
   omp_atv_private = 6,
   omp_atv_all = 7,
   omp_atv_thread = 8,
@@ -261,6 +261,11 @@ extern int omp_get_max_task_priority (void) __GOMP_NOTHROW;
 
 extern void omp_fulfill_event (omp_event_handle_t) __GOMP_NOTHROW;
 
+extern void omp_set_num_teams (int) __GOMP_NOTHROW;
+extern int omp_get_max_teams (void) __GOMP_NOTHROW;
+extern void omp_set_teams_thread_limit (int) __GOMP_NOTHROW;
+extern int omp_get_teams_thread_limit (void) __GOMP_NOTHROW;
+
 extern void *omp_target_alloc (__SIZE_TYPE__, int) __GOMP_NOTHROW;
 extern void omp_target_free (void *, int) __GOMP_NOTHROW;
 extern int omp_target_is_present (const void *, int) __GOMP_NOTHROW;
@@ -295,12 +300,31 @@ extern omp_allocator_handle_t omp_init_allocator (omp_memspace_handle_t,
 extern void omp_destroy_allocator (omp_allocator_handle_t) __GOMP_NOTHROW;
 extern void omp_set_default_allocator (omp_allocator_handle_t) __GOMP_NOTHROW;
 extern omp_allocator_handle_t omp_get_default_allocator (void) __GOMP_NOTHROW;
-extern void *omp_alloc (__SIZE_TYPE__,
-			omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
-  __GOMP_NOTHROW __attribute__((__malloc__, __alloc_size__ (1)));
 extern void omp_free (void *,
 		      omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
   __GOMP_NOTHROW;
+extern void *omp_alloc (__SIZE_TYPE__,
+			omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
+				__alloc_size__ (1)));
+extern void *omp_aligned_alloc (__SIZE_TYPE__, __SIZE_TYPE__,
+				omp_allocator_handle_t
+				__GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
+				__alloc_size__ (2), __alloc_align__ (1)));
+extern void *omp_calloc (__SIZE_TYPE__, __SIZE_TYPE__,
+			 omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
+				__alloc_size__ (1, 2)));
+extern void *omp_aligned_calloc (__SIZE_TYPE__, __SIZE_TYPE__, __SIZE_TYPE__,
+				 omp_allocator_handle_t
+				 __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW __attribute__((__malloc__, __malloc__ (omp_free),
+				__alloc_size__ (2, 3), __alloc_align__ (1)));
+extern void *omp_realloc (void *, __SIZE_TYPE__,
+			  omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR,
+			  omp_allocator_handle_t __GOMP_DEFAULT_NULL_ALLOCATOR)
+  __GOMP_NOTHROW __attribute__((__malloc__ (omp_free), __alloc_size__ (2)));
 
 extern void omp_display_env (int) __GOMP_NOTHROW;
 

@@ -1,3 +1,48 @@
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* objc-act.c (objc_rewrite_function_call): Build OBJ_TYPE_REF
+	with INTEGER_CST OBJ_TYPE_REF_TOKEN with type equal to
+	OBJ_TYPE_REF_OBJECT type.
+	* objc-next-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-gnu-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call,
+	build_v2_build_objc_method_call): Likewise.
+
+2021-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (objc_rt_trees): Declare here.
+	* objc-next-runtime-abi-01.c: Remove from here.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Reorder headers, provide
+	a GTY declaration the definition of objc_rt_trees.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* objc-act.c (objc_build_setter_call): Remove unreachable
+	return.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy objc.install-dvi target.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-next-runtime-abi-01.c: Add missing include.
+	* objc-next-runtime-abi-02.c: Likewise.
+
+2021-10-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-next-runtime-abi-01.c: Use new macro
+	OPTION_SET_P.
+	* objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init): Likewise.
+
 2021-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR objc/101718
@@ -4137,7 +4182,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -651,7 +651,7 @@ go_force_record_alignment (struct obstack *ob, const char *type_string,
 			   unsigned int index, const char *error_string)
 {
   index = go_append_artificial_name (ob, index);
-  obstack_grow (ob, "_align ", 7);
+  obstack_grow (ob, "_ ", 2);
   if (type_string == NULL)
     obstack_grow (ob, error_string, strlen (error_string));
   else

@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1342,9 +1342,6 @@ op_by_pieces_d::run ()
 	}
     }
   while (1);
-
-  /* The code above should have handled everything.  */
-  gcc_assert (!length);
 }
 
 /* Derived class from op_by_pieces_d, providing support for block move
@@ -2507,19 +2504,6 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
 					   0, 1, NULL_RTX, mode, mode, false,
 					   NULL);
 	    }
-	}
-      /* FIXME: A SIMD parallel will eventually lead to a subreg of a
-	 SIMD register, which is currently broken.  While we get GCC
-	 to emit proper RTL for these cases, let's dump to memory.  */
-      else if (VECTOR_MODE_P (GET_MODE (dst))
-	       && REG_P (src))
-	{
-	  poly_uint64 slen = GET_MODE_SIZE (GET_MODE (src));
-	  rtx mem;
-
-	  mem = assign_stack_temp (GET_MODE (src), slen);
-	  emit_move_insn (mem, src);
-	  tmps[i] = adjust_address (mem, mode, bytepos);
 	}
       else if (CONSTANT_P (src) && GET_MODE (dst) != BLKmode
                && XVECLEN (dst, 0) > 1)
@@ -3945,7 +3929,7 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
      hard regs shouldn't appear here except as return values.
      We never want to emit such a clobber after reload.  */
   if (x != y
-      && ! (reload_in_progress || reload_completed)
+      && ! (lra_in_progress || reload_in_progress || reload_completed)
       && need_clobber != 0)
     emit_clobber (x);
 
@@ -5305,7 +5289,7 @@ get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
    has non-BLKmode.  DECL_RTL must not be a MEM; if
    DECL_RTL was not set yet, return false.  */
 
-static inline bool
+bool
 non_mem_decl_p (tree base)
 {
   if (!DECL_P (base)
@@ -5322,7 +5306,7 @@ non_mem_decl_p (tree base)
 /* Returns true if REF refers to an object that does not
    reside in memory and has non-BLKmode.  */
 
-static inline bool
+bool
 mem_ref_refers_to_non_mem_p (tree ref)
 {
   tree base;
@@ -10356,7 +10340,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
   enum tree_code code = TREE_CODE (exp);
   rtx subtarget, original_target;
   int ignore;
-  tree context;
   bool reduce_bit_field;
   location_t loc = EXPR_LOCATION (exp);
   struct separate_ops ops;
@@ -10595,14 +10578,16 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       /* Variables inherited from containing functions should have
 	 been lowered by this point.  */
       if (exp)
-	context = decl_function_context (exp);
-      gcc_assert (!exp
-		  || SCOPE_FILE_SCOPE_P (context)
-		  || context == current_function_decl
-		  || TREE_STATIC (exp)
-		  || DECL_EXTERNAL (exp)
-		  /* ??? C++ creates functions that are not TREE_STATIC.  */
-		  || TREE_CODE (exp) == FUNCTION_DECL);
+	{
+	  tree context = decl_function_context (exp);
+	  gcc_assert (SCOPE_FILE_SCOPE_P (context)
+		      || context == current_function_decl
+		      || TREE_STATIC (exp)
+		      || DECL_EXTERNAL (exp)
+		      /* ??? C++ creates functions that are not
+			 TREE_STATIC.  */
+		      || TREE_CODE (exp) == FUNCTION_DECL);
+	}
 
       /* This is the case of an array whose size is to be determined
 	 from its initializer, while the initializer is still being parsed.

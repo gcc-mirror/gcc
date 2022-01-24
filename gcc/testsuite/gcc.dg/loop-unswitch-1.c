@@ -1,6 +1,6 @@
 /* For PR rtl-optimization/27735  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details -fno-finite-loops" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-all -fno-finite-loops" } */
 
 void set_color(void);
 void xml_colorize_line(unsigned int *p, int state)
@@ -33,4 +33,4 @@ parse_tag: ;
 }
 
 /* Test that we actually unswitched something.  */
-/* { dg-final { scan-tree-dump ";; Unswitching loop" "unswitch" } } */
+/* { dg-final { scan-tree-dump "Unswitching loop" "unswitch" } } */

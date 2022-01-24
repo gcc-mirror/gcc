@@ -2,6 +2,7 @@ LIB2ADD += $(srcdir)/config/i386/sfp-exceptions.c
 
 # Replace _divhc3 and _mulhc3.
 libgcc2-hf-functions = _divhc3 _mulhc3
+LIB2FUNCS_EXCLUDE += $(libgcc2-hf-functions)
 libgcc2-hf-extras = $(addsuffix .c, $(libgcc2-hf-functions))
 LIB2ADD += $(addprefix $(srcdir)/config/i386/, $(libgcc2-hf-extras))
 

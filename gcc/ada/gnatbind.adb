@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -125,7 +125,6 @@ procedure Gnatbind is
         Scan_ALI
           (F             => Std_Lib_File,
            T             => Text,
-           Ignore_ED     => False,
            Err           => False,
            Ignore_Errors => Debug_Flag_I);
 
@@ -770,7 +769,6 @@ begin
             Id := Scan_ALI
                     (F                => Main_Lib_File,
                      T                => Text,
-                     Ignore_ED        => False,
                      Err              => False,
                      Ignore_Errors    => Debug_Flag_I,
                      Directly_Scanned => True);

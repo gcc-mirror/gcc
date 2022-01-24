@@ -1,6 +1,6 @@
 ! PR 101305
 ! xfailed due to PR 101308
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-require-effective-target fortran_integer_16 }
 ! { dg-additional-sources "typecodes-scalar-int128-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }

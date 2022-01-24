@@ -1,5 +1,5 @@
 /* IPA function body analysis.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -76,11 +76,11 @@ class size_time_entry
 {
 public:
   /* Predicate for code to be executed.  */
-  predicate exec_predicate;
+  ipa_predicate exec_predicate;
   /* Predicate for value to be constant and optimized out in a specialized copy.
      When deciding on specialization this makes it possible to see how much
      the executed code paths will simplify.  */
-  predicate nonconst_predicate;
+  ipa_predicate nonconst_predicate;
   int size;
   sreal time;
 };
@@ -114,7 +114,7 @@ struct GTY(()) ipa_freqcounting_predicate
   /* The described event happens with this frequency... */
   sreal freq;
   /* ...when this predicate evaluates to false. */
-  class predicate * GTY((skip)) predicate;
+  ipa_predicate * GTY((skip)) predicate;
 };
 
 /* Function inlining information.  */
@@ -126,7 +126,7 @@ public:
   ipa_fn_summary ()
     : min_size (0),
       inlinable (false), single_caller (false),
-      fp_expressions (false),
+      fp_expressions (false), target_info (0),
       estimated_stack_size (false),
       time (0), conds (NULL),
       size_time_table (), call_size_time_table (vNULL),
@@ -141,6 +141,7 @@ public:
     : min_size (s.min_size),
     inlinable (s.inlinable), single_caller (s.single_caller),
     fp_expressions (s.fp_expressions),
+    target_info (s.target_info),
     estimated_stack_size (s.estimated_stack_size),
     time (s.time), conds (s.conds), size_time_table (),
     call_size_time_table (vNULL),
@@ -164,6 +165,10 @@ public:
   unsigned int single_caller : 1;
   /* True if function contains any floating point expressions.  */
   unsigned int fp_expressions : 1;
+  /* Like fp_expressions field above, but it's to hold some target specific
+     information, such as some target specific isa flags.  Note that for
+     offloading target compilers, this field isn't streamed.  */
+  unsigned int target_info;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to
@@ -203,7 +208,8 @@ public:
   int scc_no;
 
   /* Record time and size under given predicates.  */
-  void account_size_time (int, sreal, const predicate &, const predicate &,
+  void account_size_time (int, sreal, const ipa_predicate &,
+			  const ipa_predicate &,
 		  	  bool call = false);
 
   /* We keep values scaled up, so fractional sizes can be accounted.  */
@@ -286,7 +292,7 @@ public:
   /* Default destructor.  */
   ~ipa_call_summary ();
 
-  class predicate *predicate;
+  ipa_predicate *predicate;
   /* Vector indexed by parameters.  */
   vec<inline_param_summary> param;
   /* Estimated size and time of the call statement.  */

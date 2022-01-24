@@ -1,5 +1,5 @@
 /* btest.c -- Test for libbacktrace library
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "filenames.h"
 
@@ -458,16 +459,29 @@ test5 (void)
   return failures;
 }
 
+#define MIN_DESCRIPTOR 3
+#define MAX_DESCRIPTOR 10
+
+static int fstat_status[MAX_DESCRIPTOR];
+
+/* Check files that are available.  */
+
+static void
+check_available_files (void)
+{
+  struct stat s;
+  for (unsigned i = MIN_DESCRIPTOR; i < MAX_DESCRIPTOR; i++)
+    fstat_status[i] = fstat (i, &s);
+}
+
 /* Check that are no files left open.  */
 
 static void
 check_open_files (void)
 {
-  int i;
-
-  for (i = 3; i < 10; i++)
+  for (unsigned i = MIN_DESCRIPTOR; i < MAX_DESCRIPTOR; i++)
     {
-      if (close (i) == 0)
+      if (fstat_status[i] != 0 && close (i) == 0)
 	{
 	  fprintf (stderr,
 		   "ERROR: descriptor %d still open after tests complete\n",
@@ -482,6 +496,8 @@ check_open_files (void)
 int
 main (int argc ATTRIBUTE_UNUSED, char **argv)
 {
+  check_available_files ();
+
   state = backtrace_create_state (argv[0], BACKTRACE_SUPPORTS_THREADS,
 				  error_callback_create, NULL);
 

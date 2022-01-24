@@ -1,5 +1,5 @@
 # s390 support for -fsplit-stack.
-# Copyright (C) 2015-2021 Free Software Foundation, Inc.
+# Copyright (C) 2015-2022 Free Software Foundation, Inc.
 # Contributed by Marcin Kościelnicki <koriakin@0x04.net>.
 
 # This file is part of GCC.
@@ -27,6 +27,8 @@
 # resolution.  Go uses sigaltstack so this doesn't need to
 # also cover signal frame size.
 #define BACKOFF 0x1000
+
+#include <auto-host.h>
 
 # The __morestack function.
 
@@ -594,7 +596,11 @@ __morestack_make_guard:
 
 # Make __stack_split_initialize a high priority constructor.
 
+#if HAVE_INITFINI_ARRAY_SUPPORT
+	.section .init_array.00000,"aw",@progbits
+#else
 	.section .ctors.65535,"aw",@progbits
+#endif
 
 #ifndef __LP64__
 	.align	4

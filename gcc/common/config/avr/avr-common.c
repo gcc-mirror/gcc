@@ -1,5 +1,5 @@
 /* Common hooks for ATMEL AVR.
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -77,7 +77,8 @@ static const struct default_options avr_option_optimization_table[] =
 
 static bool
 avr_handle_option (struct gcc_options *opts, struct gcc_options*,
-                   const struct cl_decoded_option *decoded, location_t loc)
+                   const struct cl_decoded_option *decoded,
+                   location_t loc ATTRIBUTE_UNUSED)
 {
   int value = decoded->value;
 

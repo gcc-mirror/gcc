@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2021, AdaCore                    --
+--                      Copyright (C) 1999-2022, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -199,7 +199,7 @@ package body System.Regpat is
 
    type Bit_Conversion_Array is array (Class_Byte range 0 .. 7) of Class_Byte;
    Bit_Conversion : constant Bit_Conversion_Array :=
-                      (1, 2, 4, 8, 16, 32, 64, 128);
+                      [1, 2, 4, 8, 16, 32, 64, 128];
 
    type Std_Class is (ANYOF_NONE,
                       ANYOF_ALNUM,   --  Alphanumeric class [a-zA-Z0-9]
@@ -664,7 +664,7 @@ package body System.Regpat is
          Operand : Pointer;
          Greedy  : Boolean := True)
       is
-         Old    : Pointer;
+         Old : Pointer;
       begin
          Old := Insert_Operator_Before (Op, Operand, Greedy, Opsize => 7);
          Emit_Natural (Old + Next_Pointer_Bytes, Min);
@@ -1974,7 +1974,6 @@ package body System.Regpat is
       Result : Pointer;
 
       Expr_Flags : Expression_Flags;
-      pragma Unreferenced (Expr_Flags);
 
    --  Start of processing for Compile
 
@@ -2109,11 +2108,11 @@ package body System.Regpat is
 
          if Do_Print then
             declare
-               Point   : constant String := Pointer'Image (Index);
+               Point : constant String := Pointer'Image (Index);
             begin
-               Put ((1 .. 4 - Point'Length => ' ')
+               Put ([1 .. 4 - Point'Length => ' ']
                     & Point & ":"
-                    & (1 .. Local_Indent * 2 => ' ') & Opcode'Image (Op));
+                    & [1 .. Local_Indent * 2 => ' '] & Opcode'Image (Op));
             end;
 
             --  Print the parenthesis number
@@ -2506,11 +2505,11 @@ package body System.Regpat is
 
       begin
          if Prefix then
-            Put ((1 .. 5 - Pos'Length => ' '));
+            Put ([1 .. 5 - Pos'Length => ' ']);
             Put (Pos & " <"
                  & Data (Input_Pos
                      .. Integer'Min (Last_In_Data, Input_Pos + Length - 1)));
-            Put ((1 .. Length - 1 - Last_In_Data + Input_Pos => ' '));
+            Put ([1 .. Length - 1 - Last_In_Data + Input_Pos => ' ']);
             Put ("> |");
 
          else
@@ -2527,7 +2526,7 @@ package body System.Regpat is
       procedure Dump_Error (Msg : String) is
       begin
          Put ("                   |     ");
-         Put ((1 .. Dump_Indent * 2 => ' '));
+         Put ([1 .. Dump_Indent * 2 => ' ']);
          Put_Line (Msg);
       end Dump_Error;
 
@@ -3381,7 +3380,7 @@ package body System.Regpat is
       begin
          Input_Pos  := Pos;
          Last_Paren := 0;
-         Matches_Full := (others => No_Match);
+         Matches_Full := [others => No_Match];
 
          if Match (Program_First) then
             Matches_Full (0) := (Pos, Input_Pos - 1);
@@ -3397,7 +3396,7 @@ package body System.Regpat is
       --  Do we have the regexp Never_Match?
 
       if Self.Size = 0 then
-         Matches := (others => No_Match);
+         Matches := [others => No_Match];
          return;
       end if;
 
@@ -3420,7 +3419,7 @@ package body System.Regpat is
             end loop;
 
             if Next_Try = 0 then
-               Matches := (others => No_Match);
+               Matches := [others => No_Match];
                return;                  -- Not present
             end if;
          end;
@@ -3463,18 +3462,58 @@ package body System.Regpat is
          end;
 
       elsif Self.First /= ASCII.NUL then
-         --  We know what char it must start with
+         --  We know what char (modulo casing) it must start with
 
-         declare
-            Next_Try : Natural := Index (First_In_Data, Self.First);
+         if (Self.Flags and Case_Insensitive) = 0
+           or else Self.First not in 'a' .. 'z'
+         then
+            declare
+               Next_Try : Natural := Index (First_In_Data, Self.First);
+            begin
+               while Next_Try /= 0 loop
+                  Matched := Try (Next_Try);
+                  exit when Matched;
+                  Next_Try := Index (Next_Try + 1, Self.First);
+               end loop;
+            end;
+         else
+            declare
+               Uc_First : constant Character := To_Upper (Self.First);
 
-         begin
-            while Next_Try /= 0 loop
-               Matched := Try (Next_Try);
-               exit when Matched;
-               Next_Try := Index (Next_Try + 1, Self.First);
-            end loop;
-         end;
+               function Case_Insensitive_Index
+                 (Start : Positive) return Natural;
+               --  Search for both Self.First and To_Upper (Self.First).
+               --  If both are nonzero, return the smaller one; if exactly
+               --  one is nonzero, return it; if both are zero, return zero.
+
+               ---------------------------
+               -- Case_Insenstive_Index --
+               ---------------------------
+
+               function Case_Insensitive_Index
+                 (Start : Positive) return Natural
+               is
+                  Lc_Index : constant Natural := Index (Start, Self.First);
+                  Uc_Index : constant Natural := Index (Start, Uc_First);
+               begin
+                  if Lc_Index = 0 then
+                     return Uc_Index;
+                  elsif Uc_Index = 0 then
+                     return Lc_Index;
+                  else
+                     return Natural'Min (Lc_Index, Uc_Index);
+                  end if;
+               end Case_Insensitive_Index;
+
+               Next_Try : Natural := Case_Insensitive_Index (First_In_Data);
+            begin
+               while Next_Try /= 0 loop
+                  Matched := Try (Next_Try);
+                  exit when Matched;
+                  Next_Try := Case_Insensitive_Index (Next_Try + 1);
+               end loop;
+            end;
+         end if;
 
       else
          --  Messy cases: try all locations (including for the empty string)
@@ -3542,7 +3581,6 @@ package body System.Regpat is
    is
       PM            : Pattern_Matcher (Size);
       Finalize_Size : Program_Size;
-      pragma Unreferenced (Finalize_Size);
    begin
       if Size = 0 then
          Match (Compile (Expression), Data, Matches, Data_First, Data_Last);
@@ -3565,7 +3603,6 @@ package body System.Regpat is
    is
       PM         : Pattern_Matcher (Size);
       Final_Size : Program_Size;
-      pragma Unreferenced (Final_Size);
    begin
       if Size = 0 then
          return Match (Compile (Expression), Data, Data_First, Data_Last);
@@ -3589,7 +3626,6 @@ package body System.Regpat is
       Matches    : Match_Array (0 .. 0);
       PM         : Pattern_Matcher (Size);
       Final_Size : Program_Size;
-      pragma Unreferenced (Final_Size);
    begin
       if Size = 0 then
          Match (Compile (Expression), Data, Matches, Data_First, Data_Last);
@@ -3633,6 +3669,9 @@ package body System.Regpat is
 
       if Program (Scan) = EXACT then
          Self.First := Program (String_Operand (Scan));
+
+      elsif Program (Scan) = EXACTF then
+         Self.First := To_Lower (Program (String_Operand (Scan)));
 
       elsif Program (Scan) = BOL
         or else Program (Scan) = SBOL
@@ -3697,7 +3736,7 @@ package body System.Regpat is
 
    procedure Reset_Class (Bitmap : out Character_Class) is
    begin
-      Bitmap := (others => 0);
+      Bitmap := [others => 0];
    end Reset_Class;
 
    ------------------

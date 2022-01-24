@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,4 +36,9 @@ generic
 
    type Int is range <>;
 
-function System.Width_I (Lo, Hi : Int) return Natural;
+function System.Width_I (Lo, Hi : Int) return Natural
+with
+  Post => (if Lo > Hi then
+             System.Width_I'Result = 0
+           else
+             System.Width_I'Result > 0);

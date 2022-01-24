@@ -1,5 +1,5 @@
 /* Unit tests for GIMPLE range related routines.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

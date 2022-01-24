@@ -1,3 +1,53 @@
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_posix_open): New hack.
+	* tests/base/fcntl.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_time_h_syslib): New hack.
+	* tests/base/time.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-16  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_math_h_fp_c99): New hack.
+	* tests/base/math.h: Update.
+	* fixincl.x: Regenerate.
+
+2022-01-06  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_next_yvals): New hack.
+	* tests/base/yvals.h: New expected test result.
+	* fixincl.x: Regenerate.
+
+2022-01-04  Olivier Hainque  <hainque@adacore.com>
+
+	* inclhack.def (vxworks_posix_mkdir): Refine to expose a
+	varargs interface.
+	* tests/base/sys/stat.h: Update expected results.
+	* fixincl.x: Regenerate.
+
+2022-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* inclhack.def: Add new fix on darwin.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Regenerate.
+
+2021-11-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR bootstrap/103306
+	* fixincl.c (process): Don't call abort().
+
+2021-11-13  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR other/21823
+	PR bootstrap/80047
+	* fixincl.c (process): Simplify the handling for highly
+	  unlikely access() failure, to avoid using non-standard
+	  extensions.
+
 2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* inclhack.def (hpux_c99_inttypes5): New hack to define PRIdPTR, etc.

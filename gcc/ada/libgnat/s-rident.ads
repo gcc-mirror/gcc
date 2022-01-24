@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,9 @@
 --  so we can do the instantiation under control of Discard_Names to remove
 --  the tables.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 ---------------------------------------------------
 -- Note On Compile/Run-Time Consistency Checking --
 ---------------------------------------------------
@@ -68,8 +71,6 @@
 --  happens at bind time in inconsistent builds is that unrecognized
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
-
-pragma Compiler_Unit_Warning;
 
 generic
 package System.Rident is
@@ -144,6 +145,7 @@ package System.Rident is
       No_Standard_Storage_Pools,                 -- GNAT
       No_Stream_Optimizations,                   -- GNAT
       No_Streams,                                -- GNAT
+      No_Tagged_Type_Registration,               -- GNAT
       No_Task_Allocators,                        -- (RM D.7(7))
       No_Task_Attributes_Package,                -- GNAT
       No_Task_At_Interrupt_Priority,             -- GNAT

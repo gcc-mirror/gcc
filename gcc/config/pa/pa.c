@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -497,7 +497,7 @@ fix_range (const char *const_str)
       break;
 
   if (i > FP_REG_LAST)
-    target_flags |= MASK_DISABLE_FPREGS;
+    target_flags |= MASK_SOFT_FLOAT;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -539,6 +539,16 @@ pa_option_override (void)
       warning (0, "%<-g%> is only supported when using GAS on this processor");
       warning (0, "%<-g%> option disabled");
       write_symbols = NO_DEBUG;
+    }
+
+  if (TARGET_64BIT && TARGET_HPUX)
+    {
+      /* DWARF5 is not supported by gdb.  Don't emit DWARF5 unless
+	 specifically selected.  */
+      if (!OPTION_SET_P (dwarf_strict))
+	dwarf_strict = 1;
+      if (!OPTION_SET_P (dwarf_version))
+	dwarf_version = 4;
     }
 
   /* We only support the "big PIC" model now.  And we always generate PIC
@@ -1568,14 +1578,14 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
       else if (mode == DImode)
 	{
-	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
-	    *total = COSTS_N_INSNS (32);
+	  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
+	    *total = COSTS_N_INSNS (25);
 	  else
 	    *total = COSTS_N_INSNS (80);
 	}
       else
 	{
-	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
 	    *total = COSTS_N_INSNS (8);
 	  else
 	    *total = COSTS_N_INSNS (20);
@@ -6540,17 +6550,15 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
-   the arithmetic is supported.
-
-   Currently, TImode is not valid as the HP 64-bit runtime documentation
-   doesn't document the alignment and calling conventions for this type. 
-   Thus, we return false when PRECISION is 2 * BITS_PER_WORD and
-   2 * BITS_PER_WORD isn't equal LONG_LONG_TYPE_SIZE.  */
+   the arithmetic is supported.  */
 
 static bool
 pa_scalar_mode_supported_p (scalar_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
+
+  if (TARGET_64BIT && mode == TImode)
+    return true;
 
   switch (GET_MODE_CLASS (mode))
     {
@@ -10001,7 +10009,7 @@ pa_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
    to the default text subspace.  */
 
 static void
-som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+som_output_text_section_asm_op (const char *data ATTRIBUTE_UNUSED)
 {
   gcc_assert (TARGET_SOM);
   if (TARGET_GAS)
@@ -10045,7 +10053,7 @@ som_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
    sections.  This function is only used with SOM.  */
 
 static void
-som_output_comdat_data_section_asm_op (const void *data)
+som_output_comdat_data_section_asm_op (const char *data)
 {
   in_section = NULL;
   output_section_asm_op (data);
@@ -10617,7 +10625,7 @@ pa_conditional_register_usage (void)
       for (i = 33; i < 56; i += 2)
 	fixed_regs[i] = call_used_regs[i] = 1;
     }
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_SOFT_FLOAT)
     {
       for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
 	fixed_regs[i] = call_used_regs[i] = 1;
@@ -11013,82 +11021,6 @@ pa_output_addr_diff_vec (rtx lab, rtx body)
     }
   if (TARGET_GAS)
     fputs ("\t.end_brtab\n", asm_out_file);
-}
-
-/* This is a helper function for the other atomic operations.  This function
-   emits a loop that contains SEQ that iterates until a compare-and-swap
-   operation at the end succeeds.  MEM is the memory to be modified.  SEQ is
-   a set of instructions that takes a value from OLD_REG as an input and
-   produces a value in NEW_REG as an output.  Before SEQ, OLD_REG will be
-   set to the current contents of MEM.  After SEQ, a compare-and-swap will
-   attempt to update MEM with NEW_REG.  The function returns true when the
-   loop was generated successfully.  */
-
-static bool
-pa_expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
-{
-  machine_mode mode = GET_MODE (mem);
-  rtx_code_label *label;
-  rtx cmp_reg, success, oldval;
-
-  /* The loop we want to generate looks like
-
-        cmp_reg = mem;
-      label:
-        old_reg = cmp_reg;
-        seq;
-        (success, cmp_reg) = compare-and-swap(mem, old_reg, new_reg)
-        if (success)
-          goto label;
-
-     Note that we only do the plain load from memory once.  Subsequent
-     iterations use the value loaded by the compare-and-swap pattern.  */
-
-  label = gen_label_rtx ();
-  cmp_reg = gen_reg_rtx (mode);
-
-  emit_move_insn (cmp_reg, mem);
-  emit_label (label);
-  emit_move_insn (old_reg, cmp_reg);
-  if (seq)
-    emit_insn (seq);
-
-  success = NULL_RTX;
-  oldval = cmp_reg;
-  if (!expand_atomic_compare_and_swap (&success, &oldval, mem, old_reg,
-                                       new_reg, false, MEMMODEL_SYNC_SEQ_CST,
-                                       MEMMODEL_RELAXED))
-    return false;
-
-  if (oldval != cmp_reg)
-    emit_move_insn (cmp_reg, oldval);
-
-  /* Mark this jump predicted not taken.  */
-  emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
-                           GET_MODE (success), 1, label,
-			   profile_probability::guessed_never ());
-  return true;
-}
-
-/* This function tries to implement an atomic exchange operation using a 
-   compare_and_swap loop. VAL is written to *MEM.  The previous contents of
-   *MEM are returned, using TARGET if possible.  No memory model is required
-   since a compare_and_swap loop is seq-cst.  */
-
-rtx
-pa_maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
-{
-  machine_mode mode = GET_MODE (mem);
-
-  if (can_compare_and_swap_p (mode, true))
-    {
-      if (!target || !register_operand (target, mode))
-        target = gen_reg_rtx (mode);
-      if (pa_expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
-        return target;
-    }
-
-  return NULL_RTX;
 }
 
 /* Implement TARGET_CALLEE_COPIES.  The callee is responsible for copying

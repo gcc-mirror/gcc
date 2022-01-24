@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,19 +38,21 @@ generic
 
    type Uns is mod <>;
 
-   with function Scan_Raw_Unsigned
+   with procedure Scan_Raw_Unsigned
           (Str : String;
            Ptr : not null access Integer;
-           Max : Integer) return Uns;
+           Max : Integer;
+           Res : out Uns);
 
 package System.Value_I is
    pragma Preelaborate;
 
-   function Scan_Integer
+   procedure Scan_Integer
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Int;
-   --  This function scans the string starting at Str (Ptr.all) for a valid
+      Max : Integer;
+      Res : out Int);
+   --  This procedure scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
    --  scanned extends no further than Str (Max). There are three cases for the
    --  return:

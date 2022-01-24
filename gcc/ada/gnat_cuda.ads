@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,31 +77,19 @@ with Types; use Types;
 
 package GNAT_CUDA is
 
+   procedure Add_CUDA_Device_Entity (Pack_Id : Entity_Id; E : Entity_Id);
+   --  And E to the list of CUDA_Device entities that belong to Pack_Id
+
    procedure Add_CUDA_Kernel (Pack_Id : Entity_Id; Kernel : Entity_Id);
    --  Add Kernel to the list of CUDA_Global nodes that belong to Pack_Id.
    --  Kernel is a procedure entity marked with CUDA_Global, Pack_Id is the
    --  entity of its parent package body.
 
-   procedure Build_And_Insert_CUDA_Initialization (N : Node_Id);
-   --  Builds declarations necessary for CUDA initialization and inserts them
-   --  in N, the package body that contains CUDA_Global nodes. These
-   --  declarations are:
-   --
-   --    * A symbol to hold the pointer to the CUDA fat binary
-   --
-   --    * A type definition for a wrapper that contains the pointer to the
-   --      CUDA fat binary
-   --
-   --    * An object of the aforementioned type to hold the aforementioned
-   --      pointer.
-   --
-   --    * For each CUDA_Global procedure in the package, a declaration of a C
-   --      string containing the function's name.
-   --
-   --    * A function that takes care of calling CUDA functions that register
-   --      CUDA_Global procedures with the runtime.
-   --
-   --    * A boolean that holds the result of the call to the aforementioned
-   --      function.
+   procedure Expand_CUDA_Package (N : Node_Id);
+   --  When compiling for the host:
+   --  - Generate code to register kernels with the CUDA runtime and
+   --    post-process kernels.
+   --  - Empty content of CUDA_Global procedures.
+   --  - Remove declarations of CUDA_Device entities.
 
 end GNAT_CUDA;

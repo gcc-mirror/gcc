@@ -14,6 +14,7 @@ int test (struct s *ptr)
 
 /* { dg-regexp "\"kind\": \"error\"" } */
 /* { dg-regexp "\"column-origin\": 1" } */
+/* { dg-regexp "\"escape-source\": false" } */
 /* { dg-regexp "\"message\": \".*\"" } */
 
 /* Verify fix-it hints.  */

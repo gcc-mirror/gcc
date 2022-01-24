@@ -16,7 +16,7 @@
    to the larger of the two objects and mentions the offset into it
    (although the offset might be better included in the warning).  */
 extern char a3[3];
-extern char a5[5];  // { dg-message "at offset 5 into destination object 'a5' of size 5" "note" }
+extern char a5[5];  // { dg-message "at offset \[^a-zA-Z\n\r\]*5\[^a-zA-Z0-9\]* into destination object 'a5' of size 5" "note" }
 
 void max_a3_a5 (int i)
 {
@@ -27,16 +27,16 @@ void max_a3_a5 (int i)
      by its own warning independently of -Wstringop-overflow.  */
   char *d = MAX (p, q);
 
-  d[2] = 0;
+  d[2] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "pr102706" { target { vect_slp_v4qi_store_unalign } } }
   d[3] = 0;
   d[4] = 0;
-  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102706" { xfail { vect_slp_v4qi_store_unalign } } }
 }
 
 
 // Same as above but with the larger array as the first MAX_EXPR operand.
 extern char b4[4];
-extern char b6[6];  // { dg-message "at offset 6 into destination object 'b6' of size 6" "note" }
+extern char b6[6];  // { dg-message "at offset \[^a-zA-Z\n\r\]*6\[^a-zA-Z0-9\]* into destination object 'b6' of size 6" "note" }
 
 void max_b6_b4 (int i)
 {
@@ -44,45 +44,46 @@ void max_b6_b4 (int i)
   char *q = b4 + i;
   char *d = MAX (p, q);
 
-  d[3] = 0;
+  d[3] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "pr102706" { target { vect_slp_v4qi_store_unalign } } }
   d[4] = 0;
   d[5] = 0;
-  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102706" { xfail { vect_slp_v4qi_store_unalign } } }
 }
 
 
 /* Same as above but with the first MAX_EXPR operand pointing to an unknown
    object.  */
-extern char c7[7];  // { dg-message "at offset 7 into destination object 'c7' of size 7" "note" }
+extern char c7[7];  // { dg-message "at offset 7 into destination object 'c7' of size 7" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 
 void max_p_c7 (char *p, int i)
 {
   char *q = c7 + i;
   char *d = MAX (p, q);
 
-  d[6] = 0;
-  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[6] = 0;         // { dg-warning "writing 2 bytes into a region of size 1" "" { target { vect_slp_v2qi_store_unalign } } }
+  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
 /* Same as above but with the second MIN_EXPR operand pointing to an unknown
    object.  */
-extern char d8[8];  // { dg-message "at offset 8 into destination object 'd8' of size 8" "note" }
+extern char d8[8];  // { dg-message "at offset 8 into destination object 'd8' of size 8" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 
 void max_d8_p (char *q, int i)
 {
   char *p = d8 + i;
   char *d = MAX (p, q);
 
-  d[7] = 0;
-  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[7] = 0;         // { dg-warning "writing 2 bytes into a region of size 1" "" { target { vect_slp_v2qi_store_unalign } } }
+  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
 struct A3_5
 {
   char a3[3];  // { dg-message "at offset 3 into destination object 'a3' of size 3" "pr??????" { xfail *-*-* } }
-  char a5[5];  // { dg-message "at offset 5 into destination object 'a5' of size 5" "note" }
+  // refer to pr102697 for xfail
+  char a5[5];  // { dg-message "at offset 5 into destination object 'a5' of size 5" "note" { xfail { vect_slp_v4qi_store_unalign } } }
 };
 
 void max_A3_A5 (int i, struct A3_5 *pa3_5)
@@ -95,14 +96,15 @@ void max_A3_A5 (int i, struct A3_5 *pa3_5)
   d[2] = 0;
   d[3] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr??????" { xfail *-*-* } }
   d[4] = 0;
-  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102697" { xfail { vect_slp_v4qi_store_unalign } } }
 }
 
 
 struct B4_B6
 {
   char b4[4];
-  char b6[6];       // { dg-message "at offset 6 into destination object 'b6' of size 6" "note" }
+  // refer to pr102697 for xfail
+  char b6[6];       // { dg-message "at offset \[^a-zA-Z\n\r\]*6\[^a-zA-Z0-9\]* into destination object 'b6' of size 6" "note" { xfail { vect_slp_v4qi_store_unalign } } }
 };
 
 void max_B6_B4 (int i, struct B4_B6 *pb4_b6)
@@ -114,13 +116,13 @@ void max_B6_B4 (int i, struct B4_B6 *pb4_b6)
   d[3] = 0;
   d[4] = 0;
   d[5] = 0;
-  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102697" { xfail { vect_slp_v4qi_store_unalign } } }
 }
 
 
 struct C7
 {
-  char c7[7];       // { dg-message "at offset 7 into destination object 'c7' of size 7" "note" }
+  char c7[7];       // { dg-message "at offset 7 into destination object 'c7' of size 7" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 };
 
 void max_p_C7 (char *p, int i, struct C7 *pc7)
@@ -129,13 +131,13 @@ void max_p_C7 (char *p, int i, struct C7 *pc7)
   char *d = MAX (p, q);
 
   d[6] = 0;
-  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[7] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }
 
 
 struct D8
 {
-  char d8[8];       // { dg-message "at offset 8 into destination object 'd8' of size 8" "note" }
+  char d8[8];       // { dg-message "at offset 8 into destination object 'd8' of size 8" "note"  { xfail { vect_slp_v2qi_store_unalign } } }
 };
 
 void max_D8_p (char *q, int i, struct D8 *pd8)
@@ -144,5 +146,5 @@ void max_D8_p (char *q, int i, struct D8 *pd8)
   char *d = MAX (p, q);
 
   d[7] = 0;
-  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" }
+  d[8] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { vect_slp_v2qi_store_unalign } } }
 }

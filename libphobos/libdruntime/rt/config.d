@@ -1,68 +1,73 @@
 /**
-* Configuration options for druntime
-*
-* Copyright: Copyright Digital Mars 2014.
-* License: Distributed under the
-*      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
-*    (See accompanying file LICENSE)
-* Authors:   Rainer Schuetze
-* Source: $(DRUNTIMESRC src/rt/_config.d)
+Configuration options for druntime.
+
+The default way to configure the runtime is by passing command line arguments
+starting with `--DRT-` and followed by the option name, e.g. `--DRT-gcopt` to
+configure the GC.
+When command line parsing is enabled, command line options starting
+with `--DRT-` are filtered out before calling main, so the program
+will not see them. They are still available via `rt_args()`.
+
+Configuration via the command line can be disabled by declaring a variable for the
+linker to pick up before using it's default from the runtime:
+
+---
+extern(C) __gshared bool rt_cmdline_enabled = false;
+---
+
+Likewise, declare a boolean rt_envvars_enabled to enable configuration via the
+environment variable `DRT_` followed by the option name, e.g. `DRT_GCOPT`:
+
+---
+extern(C) __gshared bool rt_envvars_enabled = true;
+---
+
+Setting default configuration properties in the executable can be done by specifying an
+array of options named `rt_options`:
+
+---
+extern(C) __gshared string[] rt_options = [ "gcopt=precise:1 profile:1"];
+---
+
+Evaluation order of options is `rt_options`, then environment variables, then command
+line arguments, i.e. if command line arguments are not disabled, they can override
+options specified through the environment or embedded in the executable.
+
+Copyright: Copyright Digital Mars 2014.
+License: Distributed under the
+     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
+   (See accompanying file LICENSE)
+Authors:   Rainer Schuetze
+Source: $(DRUNTIMESRC rt/_config.d)
 */
 
 module rt.config;
 
-// The default way to configure the runtime is by passing command line arguments
-// starting with "--DRT-" and followed by the option name, e.g. "--DRT-gcopt" to
-// configure the GC.
-// Command line options starting with "--DRT-" are filtered out before calling main,
-// so the program will not see them. They are still available via rt_args().
-//
-// Configuration via the command line can be disabled by declaring a variable for the
-// linker to pick up before using it's default from the runtime:
-//
-//   extern(C) __gshared bool rt_cmdline_enabled = false;
-//
-// Likewise, declare a boolean rt_envvars_enabled to enable configuration via the
-// environment variable "DRT_" followed by the option name, e.g. "DRT_GCOPT":
-//
-//   extern(C) __gshared bool rt_envvars_enabled = true;
-//
-// Setting default configuration properties in the executable can be done by specifying an
-// array of options named rt_options:
-//
-//   extern(C) __gshared string[] rt_options = [ "gcopt=precise:1 profile:1"];
-//
-// Evaluation order of options is rt_options, then environment variables, then command
-// line arguments, i.e. if command line arguments are not disabled, they can override
-// options specified through the environment or embedded in the executable.
-
-import core.demangle : cPrefix;
-
 // put each variable in its own COMDAT by making them template instances
 template rt_envvars_enabled()
 {
-    pragma(mangle, cPrefix ~ "rt_envvars_enabled") __gshared bool rt_envvars_enabled = false;
+    extern(C) pragma(mangle, "rt_envvars_enabled") __gshared bool rt_envvars_enabled = false;
 }
 template rt_cmdline_enabled()
 {
-    pragma(mangle, cPrefix ~ "rt_cmdline_enabled") __gshared bool rt_cmdline_enabled = true;
+    extern(C) pragma(mangle, "rt_cmdline_enabled") __gshared bool rt_cmdline_enabled = true;
 }
 template rt_options()
 {
-    pragma(mangle, cPrefix ~ "rt_options") __gshared string[] rt_options = [];
+    extern(C) pragma(mangle, "rt_options") __gshared string[] rt_options = [];
 }
 
 import core.stdc.ctype : toupper;
 import core.stdc.stdlib : getenv;
 import core.stdc.string : strlen;
 
-extern extern(C) string[] rt_args() @nogc nothrow;
+extern extern(C) string[] rt_args() @nogc nothrow @system;
 
 alias rt_configCallBack = string delegate(string) @nogc nothrow;
 
 /**
 * get a druntime config option using standard configuration options
-*      opt             name of the option to retreive
+*      opt             name of the option to retrieve
 *      dg              if non-null, passes the option through this
 *                      delegate and only returns its return value if non-null
 *      reverse         reverse the default processing order cmdline/envvar/rt_options
@@ -96,6 +101,9 @@ string rt_cmdlineOption(string opt, scope rt_configCallBack dg) @nogc nothrow
     {
         foreach (a; rt_args)
         {
+            if (a == "--")
+                break;
+
             if (a.length >= opt.length + 7 && a[0..6] == "--DRT-" &&
                 a[6 .. 6 + opt.length] == opt && a[6 + opt.length] == '=')
             {

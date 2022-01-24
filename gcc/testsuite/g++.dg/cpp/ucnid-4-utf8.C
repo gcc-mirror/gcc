@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=gnu++98"} */
+/* { dg-options "-std=gnu++98" } */
 
 ª
 « /* { dg-error "not valid in an identifier" } */

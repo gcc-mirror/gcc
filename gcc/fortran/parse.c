@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <setjmp.h>
 #include "match.h"
 #include "parse.h"
+#include "tree-core.h"
+#include "omp-general.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */
@@ -860,6 +862,8 @@ decode_omp_directive (void)
 	       ST_OMP_DECLARE_SIMD);
       matchdo ("declare target", gfc_match_omp_declare_target,
 	       ST_OMP_DECLARE_TARGET);
+      matchdo ("declare variant", gfc_match_omp_declare_variant,
+	       ST_OMP_DECLARE_VARIANT);
       break;
     case 's':
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
@@ -920,6 +924,7 @@ decode_omp_directive (void)
       matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
+      matcho ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
@@ -935,6 +940,8 @@ decode_omp_directive (void)
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
       matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel loop", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_LOOP);
       matcho ("end parallel masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD);
       matcho ("end parallel masked taskloop", gfc_match_omp_eos_error,
@@ -956,24 +963,29 @@ decode_omp_directive (void)
       matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
       matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
       matcho ("end target data", gfc_match_omp_eos_error, ST_OMP_END_TARGET_DATA);
-      matchs ("end target parallel do simd", gfc_match_omp_eos_error,
+      matchs ("end target parallel do simd", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL_DO_SIMD);
-      matcho ("end target parallel do", gfc_match_omp_eos_error,
+      matcho ("end target parallel do", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL_DO);
-      matcho ("end target parallel", gfc_match_omp_eos_error,
+      matcho ("end target parallel loop", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_PARALLEL_LOOP);
+      matcho ("end target parallel", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL);
-      matchs ("end target simd", gfc_match_omp_eos_error, ST_OMP_END_TARGET_SIMD);
+      matchs ("end target simd", gfc_match_omp_end_nowait, ST_OMP_END_TARGET_SIMD);
       matchs ("end target teams distribute parallel do simd",
-	      gfc_match_omp_eos_error,
+	      gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end target teams distribute parallel do", gfc_match_omp_eos_error,
+      matcho ("end target teams distribute parallel do", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end target teams distribute simd", gfc_match_omp_eos_error,
+      matchs ("end target teams distribute simd", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end target teams distribute", gfc_match_omp_eos_error,
+      matcho ("end target teams distribute", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE);
-      matcho ("end target teams", gfc_match_omp_eos_error, ST_OMP_END_TARGET_TEAMS);
-      matcho ("end target", gfc_match_omp_eos_error, ST_OMP_END_TARGET);
+      matcho ("end target teams loop", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_TEAMS_LOOP);
+      matcho ("end target teams", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_TEAMS);
+      matcho ("end target", gfc_match_omp_end_nowait, ST_OMP_END_TARGET);
       matcho ("end taskgroup", gfc_match_omp_eos_error, ST_OMP_END_TASKGROUP);
       matchs ("end taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TASKLOOP_SIMD);
@@ -987,6 +999,7 @@ decode_omp_directive (void)
 	      ST_OMP_END_TEAMS_DISTRIBUTE_SIMD);
       matcho ("end teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE);
+      matcho ("end teams loop", gfc_match_omp_eos_error, ST_OMP_END_TEAMS_LOOP);
       matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
@@ -1718,6 +1731,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
+  case ST_OMP_DECLARE_VARIANT: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
@@ -2361,6 +2375,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_DECLARE_TARGET:
       p = "!$OMP DECLARE TARGET";
       break;
+    case ST_OMP_DECLARE_VARIANT:
+      p = "!$OMP DECLARE VARIANT";
+      break;
     case ST_OMP_DEPOBJ:
       p = "!$OMP DEPOBJ";
       break;
@@ -2545,7 +2562,7 @@ gfc_ascii_statement (gfc_statement st)
       p = "!$OMP END TEAMS DISTRIBUTE SIMD";
       break;
     case ST_OMP_END_TEAMS_LOOP:
-      p = "!$OMP END TEAMS LOP";
+      p = "!$OMP END TEAMS LOOP";
       break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
@@ -5296,7 +5313,22 @@ parse_omp_oacc_atomic (bool omp_p)
       st = next_statement ();
       if (st == ST_NONE)
 	unexpected_eof ();
-      else if (st == ST_ASSIGNMENT)
+      else if (np->ext.omp_clauses->compare
+	       && (st == ST_SIMPLE_IF || st == ST_IF_BLOCK))
+	{
+	  count--;
+	  if (st == ST_IF_BLOCK)
+	    {
+	      parse_if_block ();
+	      /* With else (or elseif).  */
+	      if (gfc_state_stack->tail->block->block)
+		count--;
+	    }
+	  accept_statement (st);
+	}
+      else if (st == ST_ASSIGNMENT
+	       && (!np->ext.omp_clauses->compare
+		   || np->ext.omp_clauses->capture))
 	{
 	  accept_statement (st);
 	  count--;
@@ -5315,8 +5347,6 @@ parse_omp_oacc_atomic (bool omp_p)
       gfc_warning_check ();
       st = next_statement ();
     }
-  else if (np->ext.omp_clauses->capture)
-    gfc_error ("Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C");
   return st;
 }
 
@@ -5451,7 +5481,7 @@ parse_oacc_loop (gfc_statement acc_st)
 
 /* Parse the statements of an OpenMP structured block.  */
 
-static void
+static gfc_statement
 parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
   gfc_statement st, omp_end_st;
@@ -5538,6 +5568,32 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       gcc_unreachable ();
     }
 
+  bool block_construct = false;
+  gfc_namespace *my_ns = NULL;
+  gfc_namespace *my_parent = NULL;
+
+  st = next_statement ();
+
+  if (st == ST_BLOCK)
+    {
+      /* Adjust state to a strictly-structured block, now that we found that
+	 the body starts with a BLOCK construct.  */
+      s.state = COMP_OMP_STRICTLY_STRUCTURED_BLOCK;
+
+      block_construct = true;
+      gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
+
+      my_ns = gfc_build_block_ns (gfc_current_ns);
+      gfc_current_ns = my_ns;
+      my_parent = my_ns->parent;
+
+      new_st.op = EXEC_BLOCK;
+      new_st.ext.block.ns = my_ns;
+      new_st.ext.block.assoc = NULL;
+      accept_statement (ST_BLOCK);
+      st = parse_spec (ST_NONE);
+    }
+
   do
     {
       if (workshare_stmts_only)
@@ -5554,7 +5610,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	     restrictions apply recursively.  */
 	  bool cycle = true;
 
-	  st = next_statement ();
 	  for (;;)
 	    {
 	      switch (st)
@@ -5580,13 +5635,13 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
 		case ST_OMP_PARALLEL_SECTIONS:
-		  parse_omp_structured_block (st, false);
-		  break;
+		  st = parse_omp_structured_block (st, false);
+		  continue;
 
 		case ST_OMP_PARALLEL_WORKSHARE:
 		case ST_OMP_CRITICAL:
-		  parse_omp_structured_block (st, true);
-		  break;
+		  st = parse_omp_structured_block (st, true);
+		  continue;
 
 		case ST_OMP_PARALLEL_DO:
 		case ST_OMP_PARALLEL_DO_SIMD:
@@ -5609,7 +5664,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	    }
 	}
       else
-	st = parse_executable (ST_NONE);
+	st = parse_executable (st);
       if (st == ST_NONE)
 	unexpected_eof ();
       else if (st == ST_OMP_SECTION
@@ -5619,9 +5674,27 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	  np = new_level (np);
 	  np->op = cp->op;
 	  np->block = NULL;
+	  st = next_statement ();
+	}
+      else if (block_construct && st == ST_END_BLOCK)
+	{
+	  accept_statement (st);
+	  gfc_current_ns = my_parent;
+	  pop_state ();
+
+	  st = next_statement ();
+	  if (st == omp_end_st)
+	    {
+	      accept_statement (st);
+	      st = next_statement ();
+	    }
+	  return st;
 	}
       else if (st != omp_end_st)
-	unexpected_statement (st);
+	{
+	  unexpected_statement (st);
+	  st = next_statement ();
+	}
     }
   while (st != omp_end_st);
 
@@ -5657,6 +5730,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   gfc_commit_symbols ();
   gfc_warning_check ();
   pop_state ();
+  st = next_statement ();
+  return st;
 }
 
 
@@ -5797,13 +5872,13 @@ parse_executable (gfc_statement st)
 	case ST_OMP_TEAMS:
 	case ST_OMP_TASK:
 	case ST_OMP_TASKGROUP:
-	  parse_omp_structured_block (st, false);
-	  break;
+	  st = parse_omp_structured_block (st, false);
+	  continue;
 
 	case ST_OMP_WORKSHARE:
 	case ST_OMP_PARALLEL_WORKSHARE:
-	  parse_omp_structured_block (st, true);
-	  break;
+	  st = parse_omp_structured_block (st, true);
+	  continue;
 
 	case ST_OMP_DISTRIBUTE:
 	case ST_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -6516,7 +6591,7 @@ resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 
 
 static void
-clean_up_modules (gfc_gsymbol *gsym)
+clean_up_modules (gfc_gsymbol *&gsym)
 {
   if (gsym == NULL)
     return;
@@ -6524,14 +6599,18 @@ clean_up_modules (gfc_gsymbol *gsym)
   clean_up_modules (gsym->left);
   clean_up_modules (gsym->right);
 
-  if (gsym->type != GSYM_MODULE || !gsym->ns)
+  if (gsym->type != GSYM_MODULE)
     return;
 
-  gfc_current_ns = gsym->ns;
-  gfc_derived_types = gfc_current_ns->derived_types;
-  gfc_done_2 ();
-  gsym->ns = NULL;
-  return;
+  if (gsym->ns)
+    {
+      gfc_current_ns = gsym->ns;
+      gfc_derived_types = gfc_current_ns->derived_types;
+      gfc_done_2 ();
+      gsym->ns = NULL;
+    }
+  free (gsym);
+  gsym = NULL;
 }
 
 
@@ -6792,6 +6871,24 @@ done:
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
     gfc_check_omp_requires (gfc_current_ns, omp_requires);
+
+  /* Populate omp_requires_mask (needed for resolving OpenMP
+     metadirectives and declare variant).  */
+  switch (omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+    {
+    case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_SEQ_CST);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
+    }
 
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;

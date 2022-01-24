@@ -1,6 +1,6 @@
 // std::this_thread::sleep_for/until declarations -*- C++ -*-
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,9 +33,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201103L
-#include <bits/c++config.h>
-
-#include <chrono> // std::chrono::*
+#include <bits/chrono.h> // std::chrono::*
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR

@@ -1,6 +1,6 @@
 // Safe container implementation  -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,10 +48,6 @@ namespace __gnu_debug
       { return *static_cast<_SafeContainer*>(this); }
 
     protected:
-      _Safe_container&
-      _M_safe() _GLIBCXX_NOEXCEPT
-      { return *this; }
-
 #if __cplusplus >= 201103L
       _Safe_container() = default;
       _Safe_container(const _Safe_container&) = default;
@@ -78,7 +74,6 @@ namespace __gnu_debug
       { }
 #endif
 
-    public:
       // Copy assignment invalidate all iterators.
       _Safe_container&
       operator=(const _Safe_container&) _GLIBCXX_NOEXCEPT

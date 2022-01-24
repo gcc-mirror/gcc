@@ -1,7 +1,7 @@
 /* Decompose OpenACC 'kernels' constructs into parts, a sequence of compute
    constructs
 
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -793,7 +793,8 @@ make_data_region_try_statement (location_t loc, gimple *body)
 
 /* If INNER_BIND_VARS holds variables, build an OpenACC data region with
    location LOC containing BODY and having 'create (var)' clauses for each
-   variable.  If INNER_CLEANUP is present, add a try-finally statement with
+   variable (as a side effect, such variables also get TREE_ADDRESSABLE set).
+   If INNER_CLEANUP is present, add a try-finally statement with
    this cleanup code in the finally block.  Return the new data region, or
    the original BODY if no data region was needed.  */
 
@@ -842,6 +843,9 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  inner_data_clauses = new_clause;
 
 	  prev_mapped_var = v;
+
+	  /* See <https://gcc.gnu.org/PR100280>.  */
+	  TREE_ADDRESSABLE (v) = 1;
 	}
     }
 
@@ -874,6 +878,18 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
   return body;
 }
 
+static void
+add_wait (location_t loc, gimple_seq *region_body)
+{
+  /* A "#pragma acc wait" is just a call GOACC_wait (acc_async_sync, 0).  */
+  tree wait_fn = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
+  tree sync_arg = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
+  gimple *wait_call = gimple_build_call (wait_fn, 2,
+					 sync_arg, integer_zero_node);
+  gimple_set_location (wait_call, loc);
+  gimple_seq_add_stmt (region_body, wait_call);
+}
+
 /* Helper function of decompose_kernels_region_body.  The statements in
    REGION_BODY are expected to be decomposed parts; add an 'async' clause to
    each.  Also add a 'wait' directive at the end of the sequence.  */
@@ -896,13 +912,7 @@ add_async_clauses_and_wait (location_t loc, gimple_seq *region_body)
       gimple_omp_target_set_clauses (as_a <gomp_target *> (stmt),
 				     target_clauses);
     }
-  /* A '#pragma acc wait' is just a call 'GOACC_wait (acc_async_sync, 0)'.  */
-  tree wait_fn = builtin_decl_explicit (BUILT_IN_GOACC_WAIT);
-  tree sync_arg = build_int_cst (integer_type_node, GOMP_ASYNC_SYNC);
-  gimple *wait_call = gimple_build_call (wait_fn, 2,
-					 sync_arg, integer_zero_node);
-  gimple_set_location (wait_call, loc);
-  gimple_seq_add_stmt (region_body, wait_call);
+  add_wait (loc, region_body);
 }
 
 /* Auxiliary analysis of the body of a kernels region, to determine for each
@@ -1348,6 +1358,17 @@ decompose_kernels_region_body (gimple *kernels_region, tree kernels_clauses)
      a wait directive at the end.  */
   if (async_clause == NULL)
     add_async_clauses_and_wait (loc, &region_body);
+  else
+    /* !!! If we have asynchronous parallel blocks inside a (synchronous) data
+       region, then target memory will get unmapped at the point the data
+       region ends, even if the inner asynchronous parallels have not yet
+       completed.  For kernels marked "async", we might want to use "enter data
+       async(...)" and "exit data async(...)" instead, or asynchronous data
+       regions (see also <https://gcc.gnu.org/PR97390>
+       "[OpenACC] 'async' clause on 'data' construct",
+       which is to share the same implementation).
+       For now, insert a (synchronous) wait at the end of the block.  */
+    add_wait (loc, &region_body);
 
   tree kernels_locals = gimple_bind_vars (as_a <gbind *> (kernels_body));
   gimple *body = gimple_build_bind (kernels_locals, region_body,

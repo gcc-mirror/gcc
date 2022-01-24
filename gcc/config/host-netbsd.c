@@ -1,5 +1,5 @@
 /* NetBSD host-specific hook definitions.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -66,7 +66,7 @@ netbsd_gt_pch_get_address (size_t size, int fd)
    mapping the data at BASE, -1 if we couldn't.  */
 
 static int
-netbsd_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+netbsd_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
 {
   void *addr;
 

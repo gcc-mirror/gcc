@@ -9,3 +9,6 @@ struct Y {
 };
 
 Y::Y () : x(1) {}		// { dg-warning "temporary" }
+
+/* The initialization of x with the temporary might also trigger:
+   { dg-prune-output "-Wdangling-pointer" } */

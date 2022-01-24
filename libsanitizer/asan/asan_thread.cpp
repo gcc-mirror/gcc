@@ -43,11 +43,11 @@ void AsanThreadContext::OnFinished() {
 static ALIGNED(16) char thread_registry_placeholder[sizeof(ThreadRegistry)];
 static ThreadRegistry *asan_thread_registry;
 
-static BlockingMutex mu_for_thread_context(LINKER_INITIALIZED);
+static Mutex mu_for_thread_context;
 static LowLevelAllocator allocator_for_thread_context;
 
 static ThreadContextBase *GetAsanThreadContext(u32 tid) {
-  BlockingMutexLock lock(&mu_for_thread_context);
+  Lock lock(&mu_for_thread_context);
   return new(allocator_for_thread_context) AsanThreadContext(tid);
 }
 
@@ -254,7 +254,7 @@ void AsanThread::Init(const InitOptions *options) {
   int local = 0;
   VReport(1, "T%d: stack [%p,%p) size 0x%zx; local=%p\n", tid(),
           (void *)stack_bottom_, (void *)stack_top_, stack_top_ - stack_bottom_,
-          &local);
+          (void *)&local);
 }
 
 // Fuchsia doesn't use ThreadStart.
@@ -443,7 +443,7 @@ AsanThread *GetCurrentThread() {
 
 void SetCurrentThread(AsanThread *t) {
   CHECK(t->context());
-  VReport(2, "SetCurrentThread: %p for thread %p\n", t->context(),
+  VReport(2, "SetCurrentThread: %p for thread %p\n", (void *)t->context(),
           (void *)GetThreadSelf());
   // Make sure we do not reset the current AsanThread.
   CHECK_EQ(0, AsanTSDGet());

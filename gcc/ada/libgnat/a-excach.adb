@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ pragma Warnings (On);
 separate (Ada.Exceptions)
 procedure Call_Chain (Excep : EOA) is
 
-   Exception_Tracebacks : Integer;
+   Exception_Tracebacks : constant Integer;
    pragma Import (C, Exception_Tracebacks, "__gl_exception_tracebacks");
    --  Boolean indicating whether tracebacks should be stored in exception
    --  occurrences.

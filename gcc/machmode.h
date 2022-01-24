@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1199,7 +1199,7 @@ gt_pch_nx (pod_mode<T> *)
 
 template<typename T>
 void
-gt_pch_nx (pod_mode<T> *, void (*) (void *, void *), void *)
+gt_pch_nx (pod_mode<T> *, gt_pointer_operator, void *)
 {
 }
 

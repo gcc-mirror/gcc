@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2021 Free Software Foundation, Inc.
+; Copyright (C) 2003-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -59,6 +59,9 @@ enum incremental_link flag_incremental_link = INCREMENTAL_LINK_NONE
 Variable
 int flag_complex_method = 1
 
+Variable
+int flag_default_complex_method = 1
+
 ; Language specific warning pass for unused results.
 Variable
 bool flag_warn_unused_result = false
@@ -80,13 +83,16 @@ int flag_gen_aux_info = 0
 Variable
 int flag_shlib
 
-; These two are really VEC(char_p,heap) *.
+; These three are really VEC(char_p,heap) *.
 
 Variable
 void *flag_instrument_functions_exclude_functions
 
 Variable
 void *flag_instrument_functions_exclude_files
+
+Variable
+void *flag_ignored_attributes
 
 ; Generic structs (e.g. templates not explicitly specialized)
 ; may not have a compilation unit associated with them, and so
@@ -477,6 +483,10 @@ Og
 Common Optimization
 Optimize for debugging experience rather than speed or size.
 
+Oz
+Common Optimization
+Optimize for space aggressively rather than speed.
+
 Q
 Driver
 
@@ -542,9 +552,21 @@ Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
 
+Wuse-after-free
+Common Var(warn_use_after_free) Warning
+Warn for uses of pointers to deallocated strorage.
+
+Wuse-after-free=
+Common Joined RejectNegative UInteger Var(warn_use_after_free) Warning IntegerRange(0, 3)
+Warn for uses of pointers to deallocated strorage.
+
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
+
+Wattributes=
+Common Joined
+Do not warn about specified attributes.
 
 Wattribute-alias
 Common Alias(Wattribute_alias=, 1, 0) Warning
@@ -625,6 +647,10 @@ Common Alias(Wimplicit-fallthrough=,3,0) Warning
 Wimplicit-fallthrough=
 Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning IntegerRange(0, 5)
 Warn when a switch case falls through.
+
+Winfinite-recursion
+Var(warn_infinite_recursion) Warning
+Warn for infinitely recursive calls.
 
 Winline
 Common Var(warn_inline) Warning Optimization
@@ -975,6 +1001,10 @@ Driver Undocumented
 ; 16: Changes the mangling of __alignof__ to be distinct from that of alignof.
 ;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
+;
+; 17: Fixes layout of classes that inherit from aggregate classes with default
+;     member initializers in C++14 and up.
+;     Default in G++ 12.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1362,6 +1392,10 @@ fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json]	Select output format.
 
+fdiagnostics-escape-format=
+Common Joined RejectNegative Enum(diagnostics_escape_format)
+-fdiagnostics-escape-format=[unicode|bytes]	Select how to escape non-printable-ASCII bytes in the source for diagnostics that suggest it.
+
 ; Required for these enum values.
 SourceInclude
 diagnostic.h
@@ -1374,6 +1408,15 @@ Enum(diagnostics_column_unit) String(display) Value(DIAGNOSTICS_COLUMN_UNIT_DISP
 
 EnumValue
 Enum(diagnostics_column_unit) String(byte) Value(DIAGNOSTICS_COLUMN_UNIT_BYTE)
+
+Enum
+Name(diagnostics_escape_format) Type(int)
+
+EnumValue
+Enum(diagnostics_escape_format) String(unicode) Value(DIAGNOSTICS_ESCAPE_FORMAT_UNICODE)
+
+EnumValue
+Enum(diagnostics_escape_format) String(bytes) Value(DIAGNOSTICS_ESCAPE_FORMAT_BYTES)
 
 Enum
 Name(diagnostics_output_format) Type(int)
@@ -1719,6 +1762,14 @@ fguess-branch-probability
 Common Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
 
+fharden-compares
+Common Var(flag_harden_compares) Optimization
+Harden conditionals not used in branches, checking reversed conditions.
+
+fharden-conditional-branches
+Common Var(flag_harden_conditional_branches) Optimization
+Harden conditional branches by checking reversed conditions.
+
 ; Nonzero means ignore `#ident' directives.  0 means handle them.
 ; Generate position-independent code for executables if possible
 ; On SVR4 targets, it also controls whether or not to emit a
@@ -1910,6 +1961,10 @@ fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.
 
+fipa-strict-aliasing
+Common Var(flag_ipa_strict_aliasing) Init(1) Optimization
+Assume strict aliasing rules apply across (uninlined) function boundaries.
+
 Enum
 Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)
 
@@ -1920,7 +1975,7 @@ EnumValue
 Enum(ira_algorithm) String(priority) Value(IRA_ALGORITHM_PRIORITY)
 
 fira-region=
-Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_AUTODETECT) Optimization
+Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_ONE) Optimization
 -fira-region=[one|all|mixed]	Set regions for IRA.
 
 Enum
@@ -2292,6 +2347,10 @@ fprofile-prefix-path=
 Common Joined RejectNegative Var(profile_prefix_path)
 Remove prefix from absolute path before mangling name for -fprofile-generate= and -fprofile-use=.
 
+fprofile-prefix-map=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fprofile-prefix-map=<old>=<new>	Map one directory name to another in GCOV coverage result.
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.
@@ -2396,7 +2455,7 @@ Common Var(flag_live_range_shrinkage) Init(0) Optimization
 Relief of register pressure through live range shrinkage.
 
 frename-registers
-Common Var(flag_rename_registers) Init(2) Optimization
+Common Var(flag_rename_registers) Optimization EnabledBy(funroll-loops)
 Perform a register renaming optimization pass.
 
 fschedule-fusion
@@ -2508,7 +2567,7 @@ Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining.
 
 fsemantic-interposition
-Common Var(flag_semantic_interposition) Init(1)
+Common Var(flag_semantic_interposition) Init(1) Optimization
 Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker.
 
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
@@ -2794,7 +2853,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-cselim
-Common Var(flag_tree_cselim) Init(2) Optimization
+Common Var(flag_tree_cselim) Optimization
 Transform condition stores into unconditional ones.
 
 ftree-switch-conversion
@@ -2932,7 +2991,7 @@ Common Var(flag_unit_at_a_time) Init(1)
 Compile whole compilation unit at a time.
 
 funroll-loops
-Common Var(flag_unroll_loops) Optimization
+Common Var(flag_unroll_loops) Optimization EnabledBy(funroll-all-loops)
 Perform loop unrolling when iteration count is known.
 
 funroll-all-loops
@@ -2995,24 +3054,25 @@ fuse-ld=lld
 Common Driver Negative(fuse-ld=lld)
 Use the lld LLVM linker instead of the default linker.
 
+fuse-ld=mold
+Common Driver Negative(fuse-ld=mold)
+Use the Modern linker (MOLD) linker instead of the default linker.
+
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)
 
 ; Positive if we should track variables, negative if we should run
 ; the var-tracking pass only to discard debug annotations, zero if
-; we're not to run it.  When flag_var_tracking == 2 (AUTODETECT_VALUE) it
-; will be set according to optimize, debug_info_level and debug_hooks
-; in process_options ().
+; we're not to run it.
 fvar-tracking
-Common Var(flag_var_tracking) Init(2) PerFunction
+Common Var(flag_var_tracking) PerFunction EnabledBy(fvar-tracking-uninit)
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_assignments ==
-; AUTODETECT_VALUE it will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-assignments
-Common Var(flag_var_tracking_assignments) Init(2) PerFunction
+Common Var(flag_var_tracking_assignments) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
@@ -3023,15 +3083,14 @@ Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
-; will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-uninit
 Common Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
 
 ; Alias to enable both -ftree-loop-vectorize and -ftree-slp-vectorize.
 ftree-vectorize
-Common Optimization
+Common Var(flag_tree_vectorize) Optimization
 Enable vectorization on trees.
 
 ftree-vectorizer-verbose=
@@ -3155,7 +3214,7 @@ Common Var(flag_value_profile_transformations) Optimization
 Use expression value profiles in optimizations.
 
 fweb
-Common Var(flag_web) Init(2) Optimization
+Common Var(flag_web) Optimization EnabledBy(funroll-loops)
 Construct webs and split unrelated uses of single variable.
 
 ftree-builtin-call-dce
@@ -3187,11 +3246,11 @@ Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
 gas-loc-support
-Common Driver Var(dwarf2out_as_loc_support) Init(2)
+Common Driver Var(dwarf2out_as_loc_support)
 Assume assembler support for (DWARF2+) .loc directives.
 
 gas-locview-support
-Common Driver Var(dwarf2out_as_locview_support) Init(2)
+Common Driver Var(dwarf2out_as_locview_support)
 Assume assembler support for view in (DWARF2+) .loc directives.
 
 gcoff
@@ -3245,7 +3304,7 @@ Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
 ginline-points
-Common Driver Var(debug_inline_points) Init(2)
+Common Driver Var(debug_inline_points)
 Generate extended entry point information for inlined functions.
 
 ginternal-reset-location-views
@@ -3285,7 +3344,7 @@ Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
 gstatement-frontiers
-Common Driver Var(debug_nonbind_markers_p) Init(2)
+Common Driver Var(debug_nonbind_markers_p) PerFunction
 Emit progressive recommended breakpoint locations.
 
 gstrict-dwarf
@@ -3301,7 +3360,7 @@ Common Driver Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvariable-location-views
-Common Driver Var(debug_variable_location_views, 1) Init(2)
+Common Driver Var(debug_variable_location_views, 1)
 Augment variable location lists with progressive views.
 
 gvariable-location-views=incompat5
@@ -3499,6 +3558,10 @@ Driver
 static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
+
+static-libphobos
+Driver
+; Documented for D, but always accepted by driver.
 
 static-libstdc++
 Driver

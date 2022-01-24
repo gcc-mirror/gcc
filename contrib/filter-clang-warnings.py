@@ -38,7 +38,7 @@ def skip_warning(filename, message):
                  'when in C++ mode, this behavior is deprecated',
                  '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
                  '-Wformat-security', '-Wundefined-internal',
-                 '-Wunknown-warning-option'],
+                 '-Wunknown-warning-option', '-Wc++20-extensions'],
             'insn-modes.c': ['-Wshift-count-overflow'],
             'insn-emit.c': ['-Wtautological-compare'],
             'insn-attrtab.c': ['-Wparentheses-equality'],
@@ -47,7 +47,9 @@ def skip_warning(filename, message):
             'i386.md': ['-Wparentheses-equality', '-Wtautological-compare',
                         '-Wtautological-overlap-compare'],
             'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'mmx.md': ['-Wtautological-compare'],
             'genautomata.c': ['-Wstring-plus-int'],
+            'fold-const-call.c': ['-Wreturn-type'],
             'gfortran.texi': [''],
             'libtool': ['']
     }

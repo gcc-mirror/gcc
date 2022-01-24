@@ -104,17 +104,16 @@ ENTRY(ffi_call_SYSV)
 	bctrl
 
 	/* Now, deal with the return value.  */
-	mtcrf	0x01,%r31 /* cr7  */
+	mtcrf	0x03,%r31 /* cr6-cr7  */
 	bt-	31,L(small_struct_return_value)
 	bt-	30,L(done_return_value)
 #ifndef __NO_FPRS__
 	bt-	29,L(fp_return_value)
 #endif
 	stw	%r3,0(%r30)
-	bf+	28,L(done_return_value)
+	bf+	27,L(done_return_value)
 	stw	%r4,4(%r30)
-	mtcrf	0x02,%r31 /* cr6  */
-	bf	27,L(done_return_value)
+	bf	26,L(done_return_value)
 	stw     %r5,8(%r30)
 	stw	%r6,12(%r30)
 	/* Fall through...  */
@@ -145,10 +144,9 @@ L(done_return_value):
 #ifndef __NO_FPRS__
 L(fp_return_value):
 	.cfi_restore_state
-	bf	28,L(float_return_value)
+	bf	27,L(float_return_value)
 	stfd	%f1,0(%r30)
-	mtcrf   0x02,%r31 /* cr6  */
-	bf	27,L(done_return_value)
+	bf	26,L(done_return_value)
 	stfd	%f2,8(%r30)
 	b	L(done_return_value)
 L(float_return_value):

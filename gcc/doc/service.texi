@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -24,4 +24,4 @@ The service directory is found at
 @end itemize
 
 For further information, see
-@uref{http://gcc.gnu.org/faq.html#support}.
+@uref{https://gcc.gnu.org/faq.html#support}.

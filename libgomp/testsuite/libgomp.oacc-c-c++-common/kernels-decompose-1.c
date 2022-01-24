@@ -1,11 +1,11 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
-/* { dg-additional-options "-fopt-info-omp-all" } */
 /* { dg-additional-options "--param=openacc-kernels=decompose" } */
 
 /* { dg-additional-options "-fopt-info-all-omp" }
-   { dg-additional-options "--param=openacc-privatization=noisy" }
-   { dg-additional-options "-foffload=-fopt-info-all-omp" }
+   { dg-additional-options "-foffload=-fopt-info-all-omp" } */
+
+/* { dg-additional-options "--param=openacc-privatization=noisy" }
    { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
    for testing/documenting aspects of that functionality.  */
 
@@ -30,22 +30,20 @@ int main()
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
   {
-    int c = 234; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
-    /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute }
-       { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-
-    /*TODO Hopefully, this is the same issue as '../../../gcc/testsuite/c-c++-common/goacc/kernels-decompose-ice-1.c'.  */
-    (volatile int *) &c;
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    int c = 234;
+    /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
 
 #pragma acc loop independent gang /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; ++i)
       b[i] = c;
 
-    a = c; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    a = c;
   }
 
   for (int i = 0; i < N; ++i)

@@ -41,7 +41,7 @@ TEST (void)
   V a = (V) { 0xdeadbeefcafebabeULL, 0x123456789abcdef0ULL };
   V b = (V) { 0x173a74be8a95134cULL, 0x817bae35ac0ebf12ULL };
   int i;
-  for (i = 0; tests[i].n; i++)
+  for (i = 0; i < ARRAY_SIZE (tests); i++)
     {
       V c = tests[i].fn (a);
       if (c[0] != a[0] >> tests[i].n || c[1] != a[1] >> tests[i].n)

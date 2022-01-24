@@ -1,5 +1,5 @@
 /* Definitions for LM32 running Linux-based GNU systems using ELF
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
    This file is part of GCC.
@@ -69,6 +69,7 @@
 
 #define TARGET_RUST_OS_INFO() GNU_USER_TARGET_RUST_OS_INFO()
 
+#undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"

@@ -1,6 +1,6 @@
 // Stream iterators
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// Provides input iterator semantics for streams.
   template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t>
@@ -65,6 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       ///  Construct end of input stream iterator.
       _GLIBCXX_CONSTEXPR istream_iterator()
+      _GLIBCXX_NOEXCEPT_IF(is_nothrow_default_constructible<_Tp>::value)
       : _M_stream(0), _M_value(), _M_ok(false) {}
 
       ///  Construct start of input stream iterator.
@@ -73,6 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_read(); }
 
       istream_iterator(const istream_iterator& __obj)
+      _GLIBCXX_NOEXCEPT_IF(is_nothrow_copy_constructible<_Tp>::value)
       : _M_stream(__obj._M_stream), _M_value(__obj._M_value),
         _M_ok(__obj._M_ok)
       { }
@@ -91,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_NODISCARD
       const _Tp&
-      operator*() const
+      operator*() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_requires_cond(_M_ok,
 				_M_message(__gnu_debug::__msg_deref_istream)
@@ -101,7 +107,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_NODISCARD
       const _Tp*
-      operator->() const { return std::__addressof((operator*())); }
+      operator->() const _GLIBCXX_NOEXCEPT
+      { return std::__addressof((operator*())); }
 
       istream_iterator&
       operator++()
@@ -126,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       bool
-      _M_equal(const istream_iterator& __x) const
+      _M_equal(const istream_iterator& __x) const _GLIBCXX_NOEXCEPT
       {
 	// Ideally this would just return _M_stream == __x._M_stream,
 	// but code compiled with old versions never sets _M_stream to null.
@@ -148,6 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD
       friend bool
       operator==(const istream_iterator& __x, const istream_iterator& __y)
+      _GLIBCXX_NOEXCEPT
       { return __x._M_equal(__y); }
 
 #if __cpp_impl_three_way_comparison < 201907L
@@ -156,13 +164,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD
       friend bool
       operator!=(const istream_iterator& __x, const istream_iterator& __y)
+      _GLIBCXX_NOEXCEPT
       { return !__x._M_equal(__y); }
 #endif
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
       [[nodiscard]]
       friend bool
-      operator==(const istream_iterator& __i, default_sentinel_t)
+      operator==(const istream_iterator& __i, default_sentinel_t) noexcept
       { return !__i._M_stream; }
 #endif
     };
@@ -200,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       /// Construct from an ostream.
-      ostream_iterator(ostream_type& __s)
+      ostream_iterator(ostream_type& __s) _GLIBCXX_NOEXCEPT
       : _M_stream(std::__addressof(__s)), _M_string(0) {}
 
       /**
@@ -213,11 +222,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __s  Underlying ostream to write to.
        *  @param  __c  CharT delimiter string to insert.
       */
-      ostream_iterator(ostream_type& __s, const _CharT* __c)
+      ostream_iterator(ostream_type& __s, const _CharT* __c) _GLIBCXX_NOEXCEPT
       : _M_stream(std::__addressof(__s)), _M_string(__c)  { }
 
       /// Copy constructor.
-      ostream_iterator(const ostream_iterator& __obj)
+      ostream_iterator(const ostream_iterator& __obj) _GLIBCXX_NOEXCEPT
       : _M_stream(__obj._M_stream), _M_string(__obj._M_string)  { }
 
 #if __cplusplus >= 201103L
@@ -240,17 +249,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX_NODISCARD
       ostream_iterator&
-      operator*()
+      operator*() _GLIBCXX_NOEXCEPT
       { return *this; }
 
       ostream_iterator&
-      operator++()
+      operator++() _GLIBCXX_NOEXCEPT
       { return *this; }
 
       ostream_iterator&
-      operator++(int)
+      operator++(int) _GLIBCXX_NOEXCEPT
       { return *this; }
     };
+#pragma GCC diagnostic pop
 
   /// @} group iterators
 

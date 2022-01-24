@@ -1,6 +1,6 @@
 // <coroutine> -*- C++ -*-
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,21 +34,22 @@
 // It is very likely that earlier versions would work, but they are untested.
 #if __cplusplus >= 201402L
 
-#include <bits/c++config.h>
+#include <type_traits>
+#if __cplusplus > 201703L
+# include <compare>
+#endif
+
+#if !defined __cpp_lib_three_way_comparison && _GLIBCXX_HOSTED
+# include <bits/stl_function.h> // for std::less
+#endif
 
 /**
  * @defgroup coroutines Coroutines
  *
  * Components for supporting coroutine implementations.
+ *
+ * @since C++20 (and since C++14 as a libstdc++ extension)
  */
-
-#if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
-#  include <compare>
-#  define _COROUTINES_USE_SPACESHIP 1
-#else
-#  include <bits/stl_function.h> // for std::less
-#  define _COROUTINES_USE_SPACESHIP 0
-#endif
 
 namespace std _GLIBCXX_VISIBILITY (default)
 {
@@ -60,25 +61,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline namespace __n4861 {
 
-  // 17.12.2 coroutine traits
+  // C++20 17.12.2 coroutine traits
   /// [coroutine.traits]
   /// [coroutine.traits.primary]
   /// If _Result::promise_type is valid and denotes a type then the traits
   /// have a single publicly accessible member, otherwise they are empty.
+  template <typename _Result, typename... _ArgTypes>
+    struct coroutine_traits;
+
   template <typename _Result, typename = void>
    struct __coroutine_traits_impl {};
 
   template <typename _Result>
+#if __cpp_concepts
+    requires requires { typename _Result::promise_type; }
+    struct __coroutine_traits_impl<_Result, void>
+#else
     struct __coroutine_traits_impl<_Result,
-				    __void_t<typename _Result::promise_type>>
+				   __void_t<typename _Result::promise_type>>
+#endif
     {
       using promise_type = typename _Result::promise_type;
     };
 
-  template <typename _Result, typename...>
+  template <typename _Result, typename... _ArgTypes>
     struct coroutine_traits : __coroutine_traits_impl<_Result> {};
 
-  // 17.12.3 Class template coroutine_handle
+  // C++20 17.12.3 Class template coroutine_handle
   /// [coroutine.handle]
   template <typename _Promise = void>
     struct coroutine_handle;
@@ -139,7 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __a.address() == __b.address();
   }
 
-#if _COROUTINES_USE_SPACESHIP
+#ifdef __cpp_lib_three_way_comparison
   constexpr strong_ordering
   operator<=>(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
@@ -156,7 +165,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr bool
   operator<(coroutine_handle<> __a, coroutine_handle<> __b) noexcept
   {
+#if _GLIBCXX_HOSTED
     return less<void*>()(__a.address(), __b.address());
+#else
+    return (__UINTPTR_TYPE__)__a.address() < (__UINTPTR_TYPE__)__b.address();
+#endif
   }
 
   constexpr bool
@@ -329,6 +342,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
   } // namespace __n4861
+
+#if _GLIBCXX_HOSTED
+  template<typename _Tp> struct hash;
+
+  template<typename _Promise>
+    struct hash<coroutine_handle<_Promise>>
+    {
+      size_t
+      operator()(const coroutine_handle<_Promise>& __h) noexcept
+      {
+	return reinterpret_cast<size_t>(__h.address());
+      }
+    };
+#endif
 
 #else
 #error "the coroutine header requires -fcoroutines"

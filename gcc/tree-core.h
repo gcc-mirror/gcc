@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -97,28 +97,29 @@ struct die_struct;
 #define ECF_COLD		  (1 << 15)
 
 /* Call argument flags.  */
-/* Nonzero if the argument is not dereferenced recursively, thus only
-   directly reachable memory is read or written.  */
-#define EAF_DIRECT		(1 << 0)
-
-/* Nonzero if memory reached by the argument is not clobbered.  */
-#define EAF_NOCLOBBER		(1 << 1)
-
-/* Nonzero if the argument does not escape.  */
-#define EAF_NOESCAPE		(1 << 2)
 
 /* Nonzero if the argument is not used by the function.  */
-#define EAF_UNUSED		(1 << 3)
+#define EAF_UNUSED		(1 << 1)
 
-/* Nonzero if the argument itself does not escape but memory
-   referenced by it can escape.  */
-#define EAF_NODIRECTESCAPE	(1 << 4)
+/* Following flags come in pairs.  First one is about direct dereferences
+   from the parameter, while the second is about memory reachable by
+   recursive dereferences.  */
+
+/* Nonzero if memory reached by the argument is not clobbered.  */
+#define EAF_NO_DIRECT_CLOBBER	(1 << 2)
+#define EAF_NO_INDIRECT_CLOBBER	(1 << 3)
+
+/* Nonzero if the argument does not escape.  */
+#define EAF_NO_DIRECT_ESCAPE	(1 << 4)
+#define EAF_NO_INDIRECT_ESCAPE	(1 << 5)
 
 /* Nonzero if the argument does not escape to return value.  */
-#define EAF_NOT_RETURNED	(1 << 5)
+#define EAF_NOT_RETURNED_DIRECTLY (1 << 6)
+#define EAF_NOT_RETURNED_INDIRECTLY (1 << 7)
 
 /* Nonzero if the argument is not read.  */
-#define EAF_NOREAD		(1 << 6)
+#define EAF_NO_DIRECT_READ	(1 << 8)
+#define EAF_NO_INDIRECT_READ	(1 << 9)
 
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of
@@ -1960,7 +1961,7 @@ struct GTY(()) tree_function_decl {
 struct GTY(()) tree_translation_unit_decl {
   struct tree_decl_common common;
   /* Source language of this translation unit.  Used for DWARF output.  */
-  const char * GTY((skip(""))) language;
+  const char *language;
   /* TODO: Non-optimization used to build this translation unit.  */
   /* TODO: Root of a partial DWARF tree for global types and decls.  */
 };
@@ -2076,7 +2077,9 @@ struct attribute_spec {
   /* The minimum length of the list of arguments of the attribute.  */
   int min_length;
   /* The maximum length of the list of arguments of the attribute
-     (-1 for no maximum).  */
+     (-1 for no maximum).  It can also be -2 for fake attributes
+     created for the sake of -Wno-attributes; in that case, we
+     should skip the balanced token sequence when parsing the attribute.  */
   int max_length;
   /* Whether this attribute requires a DECL.  If it does, it will be passed
      from types of DECLs, function return types and array element types to

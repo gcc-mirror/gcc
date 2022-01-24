@@ -1,5 +1,5 @@
 /* Subroutine declarations for TI PRU target support.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -62,7 +62,10 @@ extern int pru_get_ctable_exact_base_index (unsigned HOST_WIDE_INT caddr);
 extern int pru_get_ctable_base_index (unsigned HOST_WIDE_INT caddr);
 extern int pru_get_ctable_base_offset (unsigned HOST_WIDE_INT caddr);
 
+extern int pru_symref2ioregno (rtx op);
+
 extern void pru_register_abicheck_pass (void);
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

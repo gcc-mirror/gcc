@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -207,6 +207,9 @@ static struct
 
   /* Number of divmod calls inserted.  */
   int divmod_calls_inserted;
+
+  /* Number of highpart multiplication ops inserted.  */
+  int highpart_mults_inserted;
 } widen_mul_stats;
 
 /* The instance of "struct occurrence" representing the highest
@@ -2723,7 +2726,16 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 	  from_unsigned1 = from_unsigned2 = false;
 	}
       else
-	return false;
+	{
+	  /* Expand can synthesize smul_widen_optab if the target
+	     supports umul_widen_optab.  */
+	  op = umul_widen_optab;
+	  handler = find_widening_optab_handler_and_mode (op, to_mode,
+							  from_mode,
+							  &actual_mode);
+	  if (handler == CODE_FOR_nothing)
+	    return false;
+	}
     }
 
   /* Ensure that the inputs to the handler are in the correct precison
@@ -3224,6 +3236,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
+  /* If there isn't a LHS then this can't be an FMA.  There can be no LHS
+     if the statement was left just for the side-effects.  */
+  if (!mul_result)
+    return false;
   tree type = TREE_TYPE (mul_result);
   gimple *use_stmt, *neguse_stmt;
   use_operand_p use_p;
@@ -4535,9 +4551,317 @@ convert_to_divmod (gassign *stmt)
   return true; 
 }    
 
+/* Process a single gimple assignment STMT, which has a RSHIFT_EXPR as
+   its rhs, and try to convert it into a MULT_HIGHPART_EXPR.  The return
+   value is true iff we converted the statement.  */
+
+static bool
+convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
+{
+  tree lhs = gimple_assign_lhs (stmt);
+  tree stype = TREE_TYPE (lhs);
+  tree sarg0 = gimple_assign_rhs1 (stmt);
+  tree sarg1 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (stype) != INTEGER_TYPE
+      || TREE_CODE (sarg1) != INTEGER_CST
+      || TREE_CODE (sarg0) != SSA_NAME
+      || !tree_fits_uhwi_p (sarg1)
+      || !has_single_use (sarg0))
+    return false;
+
+  gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (sarg0));
+  if (!def)
+    return false;
+
+  enum tree_code mcode = gimple_assign_rhs_code (def);
+  if (mcode == NOP_EXPR)
+    {
+      tree tmp = gimple_assign_rhs1 (def);
+      if (TREE_CODE (tmp) != SSA_NAME || !has_single_use (tmp))
+	return false;
+      def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (tmp));
+      if (!def)
+	return false;
+      mcode = gimple_assign_rhs_code (def);
+    }
+
+  if (mcode != WIDEN_MULT_EXPR
+      || gimple_bb (def) != gimple_bb (stmt))
+    return false;
+  tree mtype = TREE_TYPE (gimple_assign_lhs (def));
+  if (TREE_CODE (mtype) != INTEGER_TYPE
+      || TYPE_PRECISION (mtype) != TYPE_PRECISION (stype))
+    return false;
+
+  tree mop1 = gimple_assign_rhs1 (def);
+  tree mop2 = gimple_assign_rhs2 (def);
+  tree optype = TREE_TYPE (mop1);
+  bool unsignedp = TYPE_UNSIGNED (optype);
+  unsigned int prec = TYPE_PRECISION (optype);
+
+  if (unsignedp != TYPE_UNSIGNED (mtype)
+      || TYPE_PRECISION (mtype) != 2 * prec)
+    return false;
+
+  unsigned HOST_WIDE_INT bits = tree_to_uhwi (sarg1);
+  if (bits < prec || bits >= 2 * prec)
+    return false;
+
+  machine_mode mode = TYPE_MODE (optype);
+  optab tab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
+  if (optab_handler (tab, mode) == CODE_FOR_nothing)
+    return false;
+
+  location_t loc = gimple_location (stmt);
+  tree highpart1 = build_and_insert_binop (gsi, loc, "highparttmp",
+					   MULT_HIGHPART_EXPR, mop1, mop2);
+  tree highpart2 = highpart1;
+  tree ntype = optype;
+
+  if (TYPE_UNSIGNED (stype) != TYPE_UNSIGNED (optype))
+    {
+      ntype = TYPE_UNSIGNED (stype) ? unsigned_type_for (optype)
+				    : signed_type_for (optype);
+      highpart2 = build_and_insert_cast (gsi, loc, ntype, highpart1);
+    }
+  if (bits > prec)
+    highpart2 = build_and_insert_binop (gsi, loc, "highparttmp",
+					RSHIFT_EXPR, highpart2, 
+					build_int_cst (ntype, bits - prec));
+
+  gassign *new_stmt = gimple_build_assign (lhs, NOP_EXPR, highpart2);
+  gsi_replace (gsi, new_stmt, true);
+
+  widen_mul_stats.highpart_mults_inserted++;
+  return true;
+}
+
+/* If target has spaceship<MODE>3 expander, pattern recognize
+   <bb 2> [local count: 1073741824]:
+   if (a_2(D) == b_3(D))
+     goto <bb 6>; [34.00%]
+   else
+     goto <bb 3>; [66.00%]
+
+   <bb 3> [local count: 708669601]:
+   if (a_2(D) < b_3(D))
+     goto <bb 6>; [1.04%]
+   else
+     goto <bb 4>; [98.96%]
+
+   <bb 4> [local count: 701299439]:
+   if (a_2(D) > b_3(D))
+     goto <bb 5>; [48.89%]
+   else
+     goto <bb 6>; [51.11%]
+
+   <bb 5> [local count: 342865295]:
+
+   <bb 6> [local count: 1073741824]:
+   and turn it into:
+   <bb 2> [local count: 1073741824]:
+   _1 = .SPACESHIP (a_2(D), b_3(D));
+   if (_1 == 0)
+     goto <bb 6>; [34.00%]
+   else
+     goto <bb 3>; [66.00%]
+
+   <bb 3> [local count: 708669601]:
+   if (_1 == -1)
+     goto <bb 6>; [1.04%]
+   else
+     goto <bb 4>; [98.96%]
+
+   <bb 4> [local count: 701299439]:
+   if (_1 == 1)
+     goto <bb 5>; [48.89%]
+   else
+     goto <bb 6>; [51.11%]
+
+   <bb 5> [local count: 342865295]:
+
+   <bb 6> [local count: 1073741824]:
+   so that the backend can emit optimal comparison and
+   conditional jump sequence.  */
+
+static void
+optimize_spaceship (gimple *stmt)
+{
+  enum tree_code code = gimple_cond_code (stmt);
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+  tree arg1 = gimple_cond_lhs (stmt);
+  tree arg2 = gimple_cond_rhs (stmt);
+  if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1))
+      || optab_handler (spaceship_optab,
+			TYPE_MODE (TREE_TYPE (arg1))) == CODE_FOR_nothing
+      || operand_equal_p (arg1, arg2, 0))
+    return;
+
+  basic_block bb0 = gimple_bb (stmt), bb1, bb2 = NULL;
+  edge em1 = NULL, e1 = NULL, e2 = NULL;
+  bb1 = EDGE_SUCC (bb0, 1)->dest;
+  if (((EDGE_SUCC (bb0, 0)->flags & EDGE_TRUE_VALUE) != 0) ^ (code == EQ_EXPR))
+    bb1 = EDGE_SUCC (bb0, 0)->dest;
+
+  gimple *g = last_stmt (bb1);
+  if (g == NULL
+      || gimple_code (g) != GIMPLE_COND
+      || !single_pred_p (bb1)
+      || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
+	  ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
+	  : (!operand_equal_p (gimple_cond_lhs (g), arg2, 0)
+	     || !operand_equal_p (gimple_cond_rhs (g), arg1, 0)))
+      || !cond_only_block_p (bb1))
+    return;
+
+  enum tree_code ccode = (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
+			  ? LT_EXPR : GT_EXPR);
+  switch (gimple_cond_code (g))
+    {
+    case LT_EXPR:
+    case LE_EXPR:
+      break;
+    case GT_EXPR:
+    case GE_EXPR:
+      ccode = ccode == LT_EXPR ? GT_EXPR : LT_EXPR;
+      break;
+    default:
+      return;
+    }
+
+  for (int i = 0; i < 2; ++i)
+    {
+      /* With NaNs, </<=/>/>= are false, so we need to look for the
+	 third comparison on the false edge from whatever non-equality
+	 comparison the second comparison is.  */
+      if (HONOR_NANS (TREE_TYPE (arg1))
+	  && (EDGE_SUCC (bb1, i)->flags & EDGE_TRUE_VALUE) != 0)
+	continue;
+
+      bb2 = EDGE_SUCC (bb1, i)->dest;
+      g = last_stmt (bb2);
+      if (g == NULL
+	  || gimple_code (g) != GIMPLE_COND
+	  || !single_pred_p (bb2)
+	  || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
+	      ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
+	      : (!operand_equal_p (gimple_cond_lhs (g), arg2, 0)
+		 || !operand_equal_p (gimple_cond_rhs (g), arg1, 0)))
+	  || !cond_only_block_p (bb2)
+	  || EDGE_SUCC (bb2, 0)->dest == EDGE_SUCC (bb2, 1)->dest)
+	continue;
+
+      enum tree_code ccode2
+	= (operand_equal_p (gimple_cond_lhs (g), arg1, 0) ? LT_EXPR : GT_EXPR);
+      switch (gimple_cond_code (g))
+	{
+	case LT_EXPR:
+	case LE_EXPR:
+	  break;
+	case GT_EXPR:
+	case GE_EXPR:
+	  ccode2 = ccode2 == LT_EXPR ? GT_EXPR : LT_EXPR;
+	  break;
+	default:
+	  continue;
+	}
+      if (HONOR_NANS (TREE_TYPE (arg1)) && ccode == ccode2)
+	continue;
+
+      if ((ccode == LT_EXPR)
+	  ^ ((EDGE_SUCC (bb1, i)->flags & EDGE_TRUE_VALUE) != 0))
+	{
+	  em1 = EDGE_SUCC (bb1, 1 - i);
+	  e1 = EDGE_SUCC (bb2, 0);
+	  e2 = EDGE_SUCC (bb2, 1);
+	  if ((ccode2 == LT_EXPR) ^ ((e1->flags & EDGE_TRUE_VALUE) == 0))
+	    std::swap (e1, e2);
+	}
+      else
+	{
+	  e1 = EDGE_SUCC (bb1, 1 - i);
+	  em1 = EDGE_SUCC (bb2, 0);
+	  e2 = EDGE_SUCC (bb2, 1);
+	  if ((ccode2 != LT_EXPR) ^ ((em1->flags & EDGE_TRUE_VALUE) == 0))
+	    std::swap (em1, e2);
+	}
+      break;
+    }
+
+  if (em1 == NULL)
+    {
+      if ((ccode == LT_EXPR)
+	  ^ ((EDGE_SUCC (bb1, 0)->flags & EDGE_TRUE_VALUE) != 0))
+	{
+	  em1 = EDGE_SUCC (bb1, 1);
+	  e1 = EDGE_SUCC (bb1, 0);
+	  e2 = (e1->flags & EDGE_TRUE_VALUE) ? em1 : e1;
+	}
+      else
+	{
+	  em1 = EDGE_SUCC (bb1, 0);
+	  e1 = EDGE_SUCC (bb1, 1);
+	  e2 = (e1->flags & EDGE_TRUE_VALUE) ? em1 : e1;
+	}
+    }
+
+  g = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
+  tree lhs = make_ssa_name (integer_type_node);
+  gimple_call_set_lhs (g, lhs);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+
+  gcond *cond = as_a <gcond *> (stmt);
+  gimple_cond_set_lhs (cond, lhs);
+  gimple_cond_set_rhs (cond, integer_zero_node);
+  update_stmt (stmt);
+
+  g = last_stmt (bb1);
+  cond = as_a <gcond *> (g);
+  gimple_cond_set_lhs (cond, lhs);
+  if (em1->src == bb1 && e2 != em1)
+    {
+      gimple_cond_set_rhs (cond, integer_minus_one_node);
+      gimple_cond_set_code (cond, (em1->flags & EDGE_TRUE_VALUE)
+				  ? EQ_EXPR : NE_EXPR);
+    }
+  else
+    {
+      gcc_assert (e1->src == bb1 && e2 != e1);
+      gimple_cond_set_rhs (cond, integer_one_node);
+      gimple_cond_set_code (cond, (e1->flags & EDGE_TRUE_VALUE)
+				  ? EQ_EXPR : NE_EXPR);
+    }
+  update_stmt (g);
+
+  if (e2 != e1 && e2 != em1)
+    {
+      g = last_stmt (bb2);
+      cond = as_a <gcond *> (g);
+      gimple_cond_set_lhs (cond, lhs);
+      if (em1->src == bb2)
+	gimple_cond_set_rhs (cond, integer_minus_one_node);
+      else
+	{
+	  gcc_assert (e1->src == bb2);
+	  gimple_cond_set_rhs (cond, integer_one_node);
+	}
+      gimple_cond_set_code (cond,
+			    (e2->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR);
+      update_stmt (g);
+    }
+
+  wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
+  wide_int w2 = wi::two (TYPE_PRECISION (integer_type_node));
+  set_range_info (lhs, VR_RANGE, wm1, w2);
+}
+
+
 /* Find integer multiplications where the operands are extended from
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
-   where appropriate.  */
+   or MULT_HIGHPART_EXPR where appropriate.  */
 
 namespace {
 
@@ -4643,6 +4967,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      convert_to_divmod (as_a<gassign *> (stmt));
 	      break;
 
+	    case RSHIFT_EXPR:
+	      convert_mult_to_highpart (as_a<gassign *> (stmt), &gsi);
+	      break;
+
 	    default:;
 	    }
 	}
@@ -4691,6 +5019,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 	    }
 	}
+      else if (gimple_code (stmt) == GIMPLE_COND)
+	optimize_spaceship (stmt);
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p
@@ -4725,6 +5055,8 @@ pass_optimize_widening_mul::execute (function *fun)
 			    widen_mul_stats.fmas_inserted);
   statistics_counter_event (fun, "divmod calls inserted",
 			    widen_mul_stats.divmod_calls_inserted);
+  statistics_counter_event (fun, "highpart multiplications inserted",
+			    widen_mul_stats.highpart_mults_inserted);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }

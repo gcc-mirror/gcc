@@ -1,6 +1,6 @@
 /* Verify the strength reduction adjustment for -ftrivial-auto-var-init.  */ 
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftrivial-auto-var-init=zero -fdump-tree-gimple -fdump-tree-esra" } */
+/* { dg-options "-O2 -ftrivial-auto-var-init=zero -fno-PIC -fdump-tree-gimple -fdump-tree-esra" } */
 
 
 typedef double VECTOR[3];
@@ -31,5 +31,5 @@ void VCross(VECTOR a, const VECTOR b, const VECTOR c)
  Assign_Vector(a, tmp);
 }
 
-/* { dg-final { scan-tree-dump-times "tmp = .DEFERRED_INIT \\(24, 2, 0\\)" 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times ".DEFERRED_INIT \\(8, 2, 0\\)" 3 "esra" } } */
+/* { dg-final { scan-tree-dump-times "tmp = .DEFERRED_INIT \\(24, 2, \&\"tmp\"" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times ".DEFERRED_INIT \\(8, 2, \&\"tmp\"" 3 "esra" } } */

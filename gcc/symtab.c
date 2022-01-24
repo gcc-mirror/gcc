@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "builtins.h"
+#include "fold-const.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
@@ -929,6 +930,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " forced_by_abi");
   if (externally_visible)
     fprintf (f, " externally_visible");
+  if (semantic_interposition)
+    fprintf (f, " semantic_interposition");
   if (no_reorder)
     fprintf (f, " no_reorder");
   if (resolution != LDPR_UNKNOWN)
@@ -2255,7 +2258,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   if (rs1->alias || rs2->alias)
     return -1;
 
-  /* If we have a non-interposale definition of at least one of the symbols
+  /* If we have a non-interposable definition of at least one of the symbols
      and the other symbol is different, we know other unit cannot interpose
      it to the first symbol; all aliases of the definition needs to be 
      present in the current unit.  */
@@ -2274,13 +2277,28 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
       return 0;
     }
 
+  if (rs1 == rs2)
+    return -1;
+
+  /* If the FE tells us at least one of the decls will never be aliased nor
+     overlapping with other vars in some other way, return 0.  */
+  if (VAR_P (decl)
+      && (lookup_attribute ("non overlapping", DECL_ATTRIBUTES (decl))
+	  || lookup_attribute ("non overlapping", DECL_ATTRIBUTES (s2->decl))))
+    return 0;
+
   /* TODO: Alias oracle basically assume that addresses of global variables
      are different unless they are declared as alias of one to another while
      the code folding comparisons doesn't.
      We probably should be consistent and use this fact here, too, but for
-     the moment return false only when we are called from the alias oracle.  */
+     the moment return false only when we are called from the alias oracle.
+     Return 0 in C constant initializers and C++ manifestly constant
+     expressions, the likelyhood that different vars will be aliases is
+     small and returning -1 lets us reject too many initializers.  */
+  if (memory_accessed || folding_initializer)
+    return 0;
 
-  return memory_accessed && rs1 != rs2 ? 0 : -1;
+  return -1;
 }
 
 /* Worker for call_for_symbol_and_aliases.  */

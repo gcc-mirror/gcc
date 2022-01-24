@@ -1,5 +1,5 @@
 /* A representation of vector permutation indices.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -228,7 +228,6 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
 
       out_base += out_step;
     }
-  return true;
 }
 
 /* Return true if all elements of the permutation vector are in the range

@@ -234,7 +234,7 @@ extern "C" {
 extern void gigi (Node_Id gnat_root,
 	          int max_gnat_node,
 		  int number_name,
-		  Field_Offset *node_offsets_ptr,
+		  Node_Header *node_offsets_ptr,
 		  any_slot *slots_ptr,
 		  Node_Id *next_node_ptr,
 		  Node_Id *prev_node_ptr,
@@ -838,10 +838,9 @@ extern tree get_base_type (tree type);
    in bits.  If we don't know anything about the alignment, return 0.  */
 extern unsigned int known_alignment (tree exp);
 
-/* Return true if TYPE, an aggregate type, contains (or is) an array.
-   If SELF_REFERENTIAL is true, then an additional requirement on the
-   array is that it be self-referential.  */
-extern bool aggregate_type_contains_array_p (tree type, bool self_referential);
+/* Return true if TYPE is a type with variable size or a padding type with a
+   field of variable size or a record that has a field with such a type.  */
+extern bool type_has_variable_size (tree type);
 
 /* Return true if VALUE is a multiple of FACTOR. FACTOR must be a power
    of 2.  */
@@ -1025,6 +1024,9 @@ extern Entity_Id get_debug_scope (Node_Id gnat_node, bool *is_subprogram);
    declaration, can be materialized as a reference (REFERENCE_TYPE).  This
    should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
 extern bool can_materialize_object_renaming_p (Node_Id expr);
+
+/* Return the size of TYPE, which must be a positive power of 2.  */
+extern unsigned int resolve_atomic_size (tree type);
 
 #ifdef __cplusplus
 extern "C" {
@@ -1222,4 +1224,12 @@ static inline tree
 operand_type (tree expr)
 {
   return TREE_TYPE (TREE_OPERAND (expr, 0));
+}
+
+/* Return the third value of a list.  */
+
+static inline tree
+list_third (tree list)
+{
+  return TREE_VALUE (TREE_CHAIN (TREE_CHAIN (list)));
 }

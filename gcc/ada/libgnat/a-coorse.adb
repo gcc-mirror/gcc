@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -693,25 +693,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            Tree : Tree_Type renames Container'Unrestricted_Access.all.Tree;
-            TC : constant Tamper_Counts_Access :=
-              Tree.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Node.Element'Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -915,28 +904,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         declare
-            Tree : Tree_Type renames Container.Tree;
-         begin
-            return R : constant Reference_Type :=
-              (Element  => Node.Element'Access,
-                 Control =>
-                   (Controlled with
-                     Tree.TC'Unrestricted_Access,
-                     Container => Container'Unchecked_Access,
-                     Pos       => Find (Container, Key),
-                     Old_Key   => new Key_Type'(Key)))
-            do
-               Busy (Tree.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------
@@ -1082,8 +1057,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin
@@ -1148,7 +1121,6 @@ is
       Dst_Node : out Node_Access)
    is
       Success : Boolean;
-      pragma Unreferenced (Success);
 
       function New_Node return Node_Access;
       pragma Inline (New_Node);
@@ -1960,7 +1932,6 @@ is
       Tree     : Tree_Type;
       Node     : Node_Access;
       Inserted : Boolean;
-      pragma Unreferenced (Node, Inserted);
    begin
       Insert_Sans_Hint (Tree, New_Item, Node, Inserted);
       return Set'(Controlled with Tree);

@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -46,8 +46,9 @@
 	cortexa73cortexa53,cortexa55,cortexa75,
 	cortexa76,cortexa76ae,cortexa77,
 	cortexa78,cortexa78ae,cortexa78c,
-	cortexx1,neoversen1,cortexa75cortexa55,
-	cortexa76cortexa55,neoversev1,neoversen2,
-	cortexm23,cortexm33,cortexm35p,
-	cortexm55,cortexr52"
+	cortexa710,cortexx1,neoversen1,
+	cortexa75cortexa55,cortexa76cortexa55,neoversev1,
+	neoversen2,cortexm23,cortexm33,
+	cortexm35p,cortexm55,cortexr52,
+	cortexr52plus"
 	(const (symbol_ref "((enum attr_tune) arm_tune)")))

@@ -5,7 +5,7 @@
 //
 // 2013-08-29  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,12 +35,14 @@ using namespace std;
 void
 test01()
 {
+#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring str2 = L"ÜBER";
   std::wregex re2;
   re2.imbue(std::locale("de_DE.UTF-8"));
   re2.assign(L"[[:upper:]]*", std::regex::extended);
   std::wsmatch m2;
   VERIFY(regex_match_debug(str2, m2, re2));
+#endif
 }
 
 int

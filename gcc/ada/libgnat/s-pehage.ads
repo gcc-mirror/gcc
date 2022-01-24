@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2021, AdaCore                     --
+--                     Copyright (C) 2002-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,8 +63,6 @@
 --  order preserving. If w2 is inserted after w1 in the generator, then h (w1)
 --  < h (w2). These hashing functions are convenient for use with realtime
 --  applications.
-
-pragma Compiler_Unit_Warning;
 
 package System.Perfect_Hash_Generators is
 

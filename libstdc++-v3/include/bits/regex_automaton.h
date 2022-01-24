@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2021 Free Software Foundation, Inc.
+// Copyright (C) 2013-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -95,13 +95,13 @@ namespace __detail
     };
 
   protected:
-    explicit _State_base(_Opcode __opcode)
+    explicit _State_base(_Opcode __opcode) noexcept
     : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
     { }
 
   public:
     bool
-    _M_has_alt()
+    _M_has_alt() const noexcept
     {
       return _M_opcode == _S_opcode_alternative
 	|| _M_opcode == _S_opcode_repeat
@@ -130,7 +130,7 @@ namespace __detail
 		    "std::function<bool(char)>");
 
       explicit
-      _State(_Opcode __opcode) : _State_base(__opcode)
+      _State(_Opcode __opcode) noexcept : _State_base(__opcode)
       {
 	if (_M_opcode() == _S_opcode_match)
 	  new (this->_M_matcher_storage._M_addr()) _MatcherT();
@@ -143,7 +143,7 @@ namespace __detail
 	    _MatcherT(__rhs._M_get_matcher());
       }
 
-      _State(_State&& __rhs) : _State_base(__rhs)
+      _State(_State&& __rhs) noexcept : _State_base(__rhs)
       {
 	if (__rhs._M_opcode() == _S_opcode_match)
 	  new (this->_M_matcher_storage._M_addr())
@@ -162,7 +162,7 @@ namespace __detail
       // Since correct ctor and dtor rely on _M_opcode, it's better not to
       // change it over time.
       _Opcode
-      _M_opcode() const
+      _M_opcode() const noexcept
       { return _State_base::_M_opcode; }
 
       bool
@@ -170,11 +170,11 @@ namespace __detail
       { return _M_get_matcher()(__char); }
 
       _MatcherT&
-      _M_get_matcher()
+      _M_get_matcher() noexcept
       { return *static_cast<_MatcherT*>(this->_M_matcher_storage._M_addr()); }
 
       const _MatcherT&
-      _M_get_matcher() const
+      _M_get_matcher() const noexcept
       {
 	return *static_cast<const _MatcherT*>(
 	    this->_M_matcher_storage._M_addr());
@@ -183,11 +183,10 @@ namespace __detail
 
   struct _NFA_base
   {
-    typedef size_t                              _SizeT;
     typedef regex_constants::syntax_option_type _FlagT;
 
     explicit
-    _NFA_base(_FlagT __f)
+    _NFA_base(_FlagT __f) noexcept
     : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
     _M_has_backref(false)
     { }
@@ -199,21 +198,21 @@ namespace __detail
 
   public:
     _FlagT
-    _M_options() const
+    _M_options() const noexcept
     { return _M_flags; }
 
     _StateIdT
-    _M_start() const
+    _M_start() const noexcept
     { return _M_start_state; }
 
-    _SizeT
-    _M_sub_count() const
+    size_t
+    _M_sub_count() const noexcept
     { return _M_subexpr_count; }
 
     _GLIBCXX_STD_C::vector<size_t> _M_paren_stack;
     _FlagT                    _M_flags;
     _StateIdT                 _M_start_state;
-    _SizeT                    _M_subexpr_count;
+    size_t                    _M_subexpr_count;
     bool                      _M_has_backref;
   };
 

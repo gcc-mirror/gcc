@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -230,6 +230,7 @@ struct gcov_info
   struct gcov_info *next;	/* link to next, used by libgcov */
 
   gcov_unsigned_t stamp;	/* uniquifying time stamp */
+  gcov_unsigned_t checksum;	/* unique object checksum */
   const char *filename;		/* output file name */
 
   gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for

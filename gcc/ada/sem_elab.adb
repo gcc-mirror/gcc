@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1308,15 +1308,11 @@ package body Sem_Elab is
       --  is set, then string " in SPARK" is added to the end of the message.
 
       procedure Info_Variable_Reference
-        (Ref      : Node_Id;
-         Var_Id   : Entity_Id;
-         Info_Msg : Boolean;
-         In_SPARK : Boolean);
+        (Ref    : Node_Id;
+         Var_Id : Entity_Id);
       pragma Inline (Info_Variable_Reference);
       --  Output information concerning reference Ref which mentions variable
-      --  Var_Id. If flag Info_Msg is set, the routine emits an information
-      --  message, otherwise it emits an error. If flag In_SPARK is set, then
-      --  string " in SPARK" is added to the end of the message.
+      --  Var_Id. The routine emits an error suffixed with " in SPARK".
 
    end Diagnostics;
    use Diagnostics;
@@ -1756,13 +1752,13 @@ package body Sem_Elab is
 
       function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Ada_Semantic_Target);
-      --  Determine whether arbitrary entity Id denodes a source or internally
+      --  Determine whether arbitrary entity Id denotes a source or internally
       --  generated subprogram which emulates Ada semantics.
 
       function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Assertion_Pragma_Target);
       --  Determine whether arbitrary entity Id denotes a procedure which
-      --  varifies the run-time semantics of an assertion pragma.
+      --  verifies the run-time semantics of an assertion pragma.
 
       function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean;
       pragma Inline (Is_Bodiless_Subprogram);
@@ -2070,7 +2066,7 @@ package body Sem_Elab is
    --  Change the status of the elaboration phase of the compiler to Status
 
    procedure Spec_And_Body_From_Entity
-     (Id        : Node_Id;
+     (Id        : Entity_Id;
       Spec_Decl : out Node_Id;
       Body_Decl : out Node_Id);
    pragma Inline (Spec_And_Body_From_Entity);
@@ -3036,11 +3032,9 @@ package body Sem_Elab is
       pragma Inline (Nested_Scenarios);
       --  Obtain the list of scenarios associated with subprogram body N
 
-      procedure Set_Is_Traversed_Body
-        (N   : Node_Id;
-         Val : Boolean := True);
+      procedure Set_Is_Traversed_Body (N : Node_Id);
       pragma Inline (Set_Is_Traversed_Body);
-      --  Mark subprogram body N as traversed depending on value Val
+      --  Mark subprogram body N as traversed
 
       procedure Set_Nested_Scenarios
         (N         : Node_Id;
@@ -3105,18 +3099,11 @@ package body Sem_Elab is
       -- Set_Is_Traversed_Body --
       ---------------------------
 
-      procedure Set_Is_Traversed_Body
-        (N   : Node_Id;
-         Val : Boolean := True)
-      is
+      procedure Set_Is_Traversed_Body (N : Node_Id) is
          pragma Assert (Present (N));
 
       begin
-         if Val then
-            NE_Set.Insert (Traversed_Bodies_Set, N);
-         else
-            NE_Set.Delete (Traversed_Bodies_Set, N);
-         end if;
+         NE_Set.Insert (Traversed_Bodies_Set, N);
       end Set_Is_Traversed_Body;
 
       --------------------------
@@ -3828,14 +3815,14 @@ package body Sem_Elab is
       -----------------------
 
       function Ultimate_Variable (Var_Id : Entity_Id) return Entity_Id is
+         pragma Assert (Ekind (Var_Id) = E_Variable);
          Ren_Id : Entity_Id;
-
       begin
          Ren_Id := Var_Id;
-         while Present (Renamed_Entity (Ren_Id))
-           and then Nkind (Renamed_Entity (Ren_Id)) in N_Entity
+         while Present (Renamed_Object (Ren_Id))
+           and then Nkind (Renamed_Object (Ren_Id)) in N_Entity
          loop
-            Ren_Id := Renamed_Entity (Ren_Id);
+            Ren_Id := Renamed_Object (Ren_Id);
          end loop;
 
          return Ren_Id;
@@ -4962,7 +4949,7 @@ package body Sem_Elab is
          --  which started the recursive search. If this is not the case, then
          --  there is a potential ABE if the access value is used to call the
          --  subprogram. Emit a warning only when switch -gnatw.f (warnings on
-         --  suspucious 'Access) is in effect.
+         --  suspicious 'Access) is in effect.
 
          elsif Warn_On_Elab_Access
            and then Present (Body_Decl)
@@ -6697,10 +6684,8 @@ package body Sem_Elab is
       -----------------------------
 
       procedure Info_Variable_Reference
-        (Ref      : Node_Id;
-         Var_Id   : Entity_Id;
-         Info_Msg : Boolean;
-         In_SPARK : Boolean)
+        (Ref    : Node_Id;
+         Var_Id : Entity_Id)
       is
       begin
          if Is_Read (Ref) then
@@ -6708,8 +6693,8 @@ package body Sem_Elab is
               (Msg      => "read of variable & during elaboration",
                N        => Ref,
                Id       => Var_Id,
-               Info_Msg => Info_Msg,
-               In_SPARK => In_SPARK);
+               Info_Msg => False,
+               In_SPARK => True);
          end if;
       end Info_Variable_Reference;
    end Diagnostics;
@@ -6980,6 +6965,11 @@ package body Sem_Elab is
          --  Determine whether arbitrary node N denotes a suitable construct
          --  for inclusion into the early call region.
 
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id;
+         pragma Inline (Previous_Suitable_Construct);
+         --  Return the previous node suitable for inclusion into the early
+         --  call region.
+
          procedure Transition_Body_Declarations
            (Bod  : Node_Id;
             Curr : out Node_Id);
@@ -7224,7 +7214,7 @@ package body Sem_Elab is
          begin
             --  The early call region starts at N
 
-            Curr  := Prev (N);
+            Curr  := Previous_Suitable_Construct (N);
             Start := N;
 
             --  Inspect each node in reverse declarative order while going in
@@ -7301,7 +7291,7 @@ package body Sem_Elab is
             --  Otherwise the input node is still within some list
 
             else
-               Curr := Prev (Start);
+               Curr := Previous_Suitable_Construct (Start);
             end if;
          end Include;
 
@@ -7392,6 +7382,23 @@ package body Sem_Elab is
                   return True;
             end case;
          end Is_Suitable_Construct;
+
+         ---------------------------------
+         -- Previous_Suitable_Construct --
+         ---------------------------------
+
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id is
+            P : Node_Id;
+
+         begin
+            P := Prev (N);
+
+            while Present (P) and then not Is_Suitable_Construct (P) loop
+               Prev (P);
+            end loop;
+
+            return P;
+         end Previous_Suitable_Construct;
 
          ----------------------------------
          -- Transition_Body_Declarations --
@@ -8638,10 +8645,8 @@ package body Sem_Elab is
 
             elsif Is_Suitable_Variable_Reference (N) then
                Info_Variable_Reference
-                 (Ref      => N,
-                  Var_Id   => Targ_Id,
-                  Info_Msg => False,
-                  In_SPARK => True);
+                 (Ref    => N,
+                  Var_Id => Targ_Id);
 
             --  No other scenario may impose a requirement on the context of
             --  the main unit.
@@ -9028,7 +9033,7 @@ package body Sem_Elab is
             if not Comes_From_Source (Curr) then
                null;
 
-            --  If the traversal came from the handled sequence of statments,
+            --  If the traversal came from the handled sequence of statements,
             --  then the node appears at the level of the enclosing construct.
             --  This is a more reliable test because transients scopes within
             --  the declarative region of the encapsulator are hard to detect.
@@ -9050,7 +9055,7 @@ package body Sem_Elab is
          elsif Nkind (Curr) in
                  N_Entry_Body | N_Subprogram_Body | N_Task_Body
          then
-            --  If the traversal came from the handled sequence of statments,
+            --  If the traversal came from the handled sequence of statements,
             --  then the node cannot possibly appear at any level. This is
             --  a more reliable test because transients scopes within the
             --  declarative region of the encapsulator are hard to detect.
@@ -11805,19 +11810,15 @@ package body Sem_Elab is
       --  by creating an entry for it in the ALI file of the main unit. Formal
       --  In_State denotes the current state of the Processing phase.
 
-      procedure Set_Is_Saved_Construct
-        (Constr : Entity_Id;
-         Val    : Boolean := True);
+      procedure Set_Is_Saved_Construct (Constr : Entity_Id);
       pragma Inline (Set_Is_Saved_Construct);
       --  Mark invocation construct Constr as declared in the ALI file of the
-      --  main unit depending on value Val.
+      --  main unit.
 
-      procedure Set_Is_Saved_Relation
-        (Rel : Invoker_Target_Relation;
-         Val : Boolean := True);
+      procedure Set_Is_Saved_Relation (Rel : Invoker_Target_Relation);
       pragma Inline (Set_Is_Saved_Relation);
       --  Mark simple invocation relation Rel as recorded in the ALI file of
-      --  the main unit depending on value Val.
+      --  the main unit.
 
       function Target_Of
         (Pos      : Active_Scenario_Pos;
@@ -13307,34 +13308,20 @@ package body Sem_Elab is
       -- Set_Is_Saved_Construct --
       ----------------------------
 
-      procedure Set_Is_Saved_Construct
-        (Constr : Entity_Id;
-         Val    : Boolean := True)
-      is
+      procedure Set_Is_Saved_Construct (Constr : Entity_Id) is
          pragma Assert (Present (Constr));
 
       begin
-         if Val then
-            NE_Set.Insert (Saved_Constructs_Set, Constr);
-         else
-            NE_Set.Delete (Saved_Constructs_Set, Constr);
-         end if;
+         NE_Set.Insert (Saved_Constructs_Set, Constr);
       end Set_Is_Saved_Construct;
 
       ---------------------------
       -- Set_Is_Saved_Relation --
       ---------------------------
 
-      procedure Set_Is_Saved_Relation
-        (Rel : Invoker_Target_Relation;
-         Val : Boolean := True)
-      is
+      procedure Set_Is_Saved_Relation (Rel : Invoker_Target_Relation) is
       begin
-         if Val then
-            IR_Set.Insert (Saved_Relations_Set, Rel);
-         else
-            IR_Set.Delete (Saved_Relations_Set, Rel);
-         end if;
+         IR_Set.Insert (Saved_Relations_Set, Rel);
       end Set_Is_Saved_Relation;
 
       ------------------
@@ -13619,6 +13606,13 @@ package body Sem_Elab is
       elsif Nkind (Spec_Decl) = N_Subprogram_Body_Stub
         and then No (Corresponding_Spec_Of_Stub (Spec_Decl))
       then
+         return True;
+
+      --  A call to an expression function that is not a completion cannot
+      --  cause an ABE because it has no prior declaration; this remains
+      --  true even if the FE transforms the callee into something else.
+
+      elsif Nkind (Original_Node (Spec_Decl)) = N_Expression_Function then
          return True;
 
       --  Subprogram bodies which wrap attribute references used as actuals
@@ -15388,7 +15382,7 @@ package body Sem_Elab is
 
                elsif Present (Vis_Decls)
                  and then List_Containing (FNode) = Vis_Decls
-                 and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
+                 and then Is_Empty_List (Prv_Decls)
                then
                   null;
 
@@ -15835,7 +15829,7 @@ package body Sem_Elab is
    -------------------------------
 
    procedure Spec_And_Body_From_Entity
-     (Id        : Node_Id;
+     (Id        : Entity_Id;
       Spec_Decl : out Node_Id;
       Body_Decl : out Node_Id)
    is

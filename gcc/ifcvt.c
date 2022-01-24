@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -3064,6 +3064,12 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 
   if (!insn_valid_noce_process_p (last_insn, cc))
     return false;
+
+  /* Punt on blocks ending with asm goto or jumps with other side-effects,
+     last_active_insn ignores JUMP_INSNs.  */
+  if (JUMP_P (BB_END (test_bb)) && !onlyjump_p (BB_END (test_bb)))
+    return false;
+
   last_set = single_set (last_insn);
 
   rtx x = SET_DEST (last_set);
@@ -4726,7 +4732,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* If that results in an invalid insn, back out.  */
   for (rtx_insn *x = seq; x; x = NEXT_INSN (x))
-    if (recog_memoized (x) < 0)
+    if (reload_completed
+	? !valid_insn_p (x)
+	: recog_memoized (x) < 0)
       return FALSE;
 
   /* Emit the new insns before cond_earliest.  */

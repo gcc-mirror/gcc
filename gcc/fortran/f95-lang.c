@@ -1,5 +1,5 @@
 /* gfortran backend interface
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook.
 
 This file is part of GCC.
@@ -259,8 +259,8 @@ gfc_init (void)
 
   gfc_init_1 ();
 
-  if (!gfc_new_file ())
-    fatal_error (input_location, "cannot open input file: %s", gfc_source_file);
+  /* Calls exit in case of a fail. */
+  gfc_new_file ();
 
   if (flag_preprocess_only)
     return false;

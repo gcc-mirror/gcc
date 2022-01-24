@@ -1,5 +1,5 @@
 /* Miscellaneous stuff that doesn't fit anywhere else.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -130,7 +130,6 @@ gfc_typename (gfc_typespec *ts, bool for_hash)
   static char buffer2[GFC_MAX_SYMBOL_LEN + 8];
   static int flag = 0;
   char *buffer;
-  gfc_typespec *ts1;
   gfc_charlen_t length = 0;
 
   buffer = flag ? buffer1 : buffer2;
@@ -180,16 +179,17 @@ gfc_typename (gfc_typespec *ts, bool for_hash)
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
-      if (ts->u.derived == NULL)
+      if (!ts->u.derived || !ts->u.derived->components
+	  || !ts->u.derived->components->ts.u.derived)
 	{
 	  sprintf (buffer, "invalid class");
 	  break;
 	}
-      ts1 = ts->u.derived->components ? &ts->u.derived->components->ts : NULL;
-      if (ts1 && ts1->u.derived && ts1->u.derived->attr.unlimited_polymorphic)
+      if (ts->u.derived->components->ts.u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");
       else
-	sprintf (buffer, "CLASS(%s)", ts->u.derived->name);
+	sprintf (buffer, "CLASS(%s)",
+		 ts->u.derived->components->ts.u.derived->name);
       break;
     case BT_ASSUMED:
       sprintf (buffer, "TYPE(*)");
@@ -284,7 +284,7 @@ gfc_dummy_typename (gfc_typespec *ts)
 	{
 	  if (ts->kind == gfc_default_character_kind)
 	    sprintf(buffer, "CHARACTER(*)");
-	  else if (ts->kind < 10)
+	  else if (ts->kind >= 0 && ts->kind < 10)
 	    sprintf(buffer, "CHARACTER(*,%d)", ts->kind);
 	  else
 	    sprintf(buffer, "CHARACTER(*,?)");

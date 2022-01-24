@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-ssa.h"
 #include "cfgloop.h"
+#include "sreal.h"
+#include "profile.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics.  */
 #if __GNUC__ >= 10
@@ -161,6 +163,12 @@ verify_flow_info (void)
 	  err = 1;
 	}
 
+      if (bb->flags & ~cfun->cfg->bb_flags_allocated)
+	{
+	  error ("verify_flow_info: unallocated flag set on BB %d", bb->index);
+	  err = 1;
+	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (last_visited [e->dest->index] == bb)
@@ -199,6 +207,13 @@ verify_flow_info (void)
 	      fprintf (stderr, "\nSuccessor: ");
 	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fprintf (stderr, "\n");
+	      err = 1;
+	    }
+
+	  if (e->flags & ~cfun->cfg->edge_flags_allocated)
+	    {
+	      error ("verify_flow_info: unallocated edge flag set on %d -> %d",
+		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
 
@@ -1226,25 +1241,22 @@ lv_flush_pending_stmts (edge e)
     cfg_hooks->flush_pending_stmts (e);
 }
 
-/* Loop versioning uses the duplicate_loop_to_header_edge to create
+/* Loop versioning uses the duplicate_loop_body_to_header_edge to create
    a new version of the loop basic-blocks, the parameters here are
-   exactly the same as in duplicate_loop_to_header_edge or
-   tree_duplicate_loop_to_header_edge; while in tree-ssa there is
+   exactly the same as in duplicate_loop_body_to_header_edge or
+   tree_duplicate_loop_body_to_header_edge; while in tree-ssa there is
    additional work to maintain ssa information that's why there is
-   a need to call the tree_duplicate_loop_to_header_edge rather
-   than duplicate_loop_to_header_edge when we are in tree mode.  */
+   a need to call the tree_duplicate_loop_body_to_header_edge rather
+   than duplicate_loop_body_to_header_edge when we are in tree mode.  */
 bool
-cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge e,
-					unsigned int ndupl,
-					sbitmap wont_exit, edge orig,
-					vec<edge> *to_remove,
-					int flags)
+cfg_hook_duplicate_loop_body_to_header_edge (class loop *loop, edge e,
+					     unsigned int ndupl,
+					     sbitmap wont_exit, edge orig,
+					     vec<edge> *to_remove, int flags)
 {
-  gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);
-  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e,
-							    ndupl, wont_exit,
-							    orig, to_remove,
-							    flags);
+  gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_body_to_header_edge);
+  return cfg_hooks->cfg_hook_duplicate_loop_body_to_header_edge (
+    loop, e, ndupl, wont_exit, orig, to_remove, flags);
 }
 
 /* Conditional jumps are represented differently in trees and RTL,
@@ -1457,41 +1469,73 @@ profile_record_check_consistency (profile_record *record)
   FOR_ALL_BB_FN (bb, cfun)
    {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
+	  && profile_status_for_fn (cfun) != PROFILE_ABSENT
+	  && EDGE_COUNT (bb->succs))
 	{
-	  profile_probability sum = profile_probability::never ();
+	  sreal sum = 0;
+	  bool found = false;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    sum += e->probability;
-	  if (EDGE_COUNT (bb->succs)
-	      && sum.differs_from_p (profile_probability::always ()))
-	    record->num_mismatched_freq_out++;
-	  profile_count lsum = profile_count::zero ();
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    lsum += e->count ();
-	  if (EDGE_COUNT (bb->succs) && (lsum.differs_from_p (bb->count)))
-	    record->num_mismatched_count_out++;
+	    {
+	      if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
+		found = true;
+	      if (e->probability.initialized_p ())
+	        sum += e->probability.to_sreal ();
+	    }
+	  double dsum = sum.to_double ();
+	  if (found && (dsum < 0.9 || dsum > 1.1)
+	      && !(bb->count == profile_count::zero ()))
+	    {
+	      record->num_mismatched_prob_out++;
+	      dsum = dsum > 1 ? dsum - 1 : 1 - dsum;
+	      if (profile_info)
+		{
+		  if (ENTRY_BLOCK_PTR_FOR_FN
+			 (cfun)->count.ipa ().initialized_p ()
+		      && ENTRY_BLOCK_PTR_FOR_FN
+			 (cfun)->count.ipa ().nonzero_p ()
+		      && bb->count.ipa ().initialized_p ())
+		    record->dyn_mismatched_prob_out
+			+= dsum * bb->count.ipa ().to_gcov_type ();
+		}
+	      else if (bb->count.initialized_p ())
+		record->dyn_mismatched_prob_out
+		    += dsum * bb->count.to_sreal_scale
+			(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).to_double ();
+	    }
 	}
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
-	  profile_probability sum = profile_probability::never ();
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    {
-	      sum += e->probability;
-	      lsum += e->count ();
-	    }
-	  if (EDGE_COUNT (bb->preds)
-	      && sum.differs_from_p (profile_probability::always ()))
-	    record->num_mismatched_freq_in++;
+	    lsum += e->count ();
 	  if (lsum.differs_from_p (bb->count))
-	    record->num_mismatched_count_in++;
+	    {
+	      record->num_mismatched_count_in++;
+	      profile_count max;
+	      if (lsum < bb->count)
+		max = bb->count;
+	      else
+		max = lsum;
+	      if (profile_info)
+		{
+		  if (ENTRY_BLOCK_PTR_FOR_FN
+			 (cfun)->count.ipa ().initialized_p ()
+		      && ENTRY_BLOCK_PTR_FOR_FN
+			 (cfun)->count.ipa ().nonzero_p ()
+		      && max.ipa ().initialized_p ())
+		    record->dyn_mismatched_count_in
+			+= max.ipa ().to_gcov_type ();
+		}
+	      else if (bb->count.initialized_p ())
+		record->dyn_mismatched_prob_out
+		    += max.to_sreal_scale
+			(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).to_double ();
+	    }
 	}
       if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
-      gcc_assert (cfg_hooks->account_profile_record);
-      cfg_hooks->account_profile_record (bb, record);
    }
 }
 

@@ -1,6 +1,6 @@
 #ifdef __powerpc64__
 # PowerPC64 support for -fsplit-stack.
-# Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 # Contributed by Alan Modra <amodra@gmail.com>.
 
 # This file is part of GCC.
@@ -23,6 +23,8 @@
 # a copy of the GCC Runtime Library Exception along with this program;
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
+
+#include <auto-host.h>
 
 #if _CALL_ELF == 2
 	.abiversion 2
@@ -396,7 +398,11 @@ ENTRY0(__morestack_make_guard)
 
 
 # Make __stack_split_initialize a high priority constructor.
+#if HAVE_INITFINI_ARRAY_SUPPORT
+	.section .init_array.00000,"aw",@progbits
+#else
 	.section .ctors.65535,"aw",@progbits
+#endif
 	.p2align 3
 	.quad __stack_split_initialize
 	.quad __morestack_load_mmap

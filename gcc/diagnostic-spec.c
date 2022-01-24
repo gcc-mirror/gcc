@@ -1,6 +1,6 @@
 /* Functions to enable and disable individual warnings on an expression
    and statement basis.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>
 
    This file is part of GCC.
@@ -99,6 +99,12 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
 	m_bits = NW_UNINIT;
       break;
 
+    case OPT_Wdangling_pointer_:
+    case OPT_Wreturn_local_addr:
+    case OPT_Wuse_after_free_:
+      m_bits = NW_DANGLING;
+      break;
+
     default:
       /* A catchall group for everything else.  */
       m_bits = NW_OTHER;
@@ -107,7 +113,7 @@ nowarn_spec_t::nowarn_spec_t (opt_code opt)
 
 /* A mapping from a 'location_t' to the warning spec set for it.  */
 
-GTY(()) xint_hash_map_t *nowarn_map;
+GTY(()) nowarn_map_t *nowarn_map;
 
 /* Return the no-warning disposition for location LOC and option OPT
    or for all/any otions by default.  */
@@ -163,7 +169,7 @@ suppress_warning_at (location_t loc, opt_code opt /* = all_warnings */,
     return false;
 
   if (!nowarn_map)
-    nowarn_map = xint_hash_map_t::create_ggc (32);
+    nowarn_map = nowarn_map_t::create_ggc (32);
 
   nowarn_map->put (loc, optspec);
   return true;
@@ -189,7 +195,10 @@ copy_warning (location_t to, location_t from)
   else
     {
       if (from_spec)
-	nowarn_map->put (to, *from_spec);
+	{
+	  nowarn_spec_t tem = *from_spec;
+	  nowarn_map->put (to, tem);
+	}
       else
 	nowarn_map->remove (to);
     }

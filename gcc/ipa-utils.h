@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -46,6 +46,12 @@ tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
+
+/* In ipa-pure-const.c  */
+bool finite_function_p ();
+bool builtin_safe_for_const_function_p (bool *, tree);
+bool ipa_make_function_const (cgraph_node *, bool, bool);
+bool ipa_make_function_pure (cgraph_node *, bool, bool);
 
 /* In ipa-profile.c  */
 bool ipa_propagate_frequency (struct cgraph_node *node);

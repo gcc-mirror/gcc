@@ -1,5 +1,5 @@
 /* imports.cc -- Build imported modules/declarations.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ public:
   void visit (Module *m)
   {
     Loc loc = (m->md != NULL) ? m->md->loc
-      : Loc (m->srcfile->toChars (), 1, 0);
+      : Loc (m->srcfile.toChars (), 1, 0);
 
     m->isym = build_decl (make_location_t (loc), NAMESPACE_DECL,
 			  get_identifier (m->toPrettyChars ()),
@@ -130,11 +130,11 @@ public:
 	/* Type imports should really be part of their own visit method.  */
 	if (type != NULL)
 	  {
-	    if (type->ty == Tenum)
+	    if (type->ty == TY::Tenum)
 	      dsym = type->isTypeEnum ()->sym;
-	    else if (type->ty == Tstruct)
+	    else if (type->ty == TY::Tstruct)
 	      dsym = type->isTypeStruct ()->sym;
-	    else if (type->ty == Tclass)
+	    else if (type->ty == TY::Tclass)
 	      dsym = type->isTypeClass ()->sym;
 	  }
       }

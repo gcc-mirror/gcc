@@ -1,4 +1,4 @@
-@c Copyright (C) 2019-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2019-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by David Malcolm <dmalcolm@redhat.com>.
@@ -487,6 +487,14 @@ will emit a warning describing the capacity of the base region of
 the region pointed to by the 1st argument.
 
 @smallexample
+extern void __analyzer_dump_escaped (void);
+@end smallexample
+
+will emit a warning giving the number of decls that have escaped on this
+analysis path, followed by a comma-separated list of their names,
+in alphabetical order.
+
+@smallexample
 __analyzer_dump_path ();
 @end smallexample
 
@@ -545,3 +553,13 @@ and the exploded graph in compressed JSON form.
 One approach when tracking down where a particular bogus state is
 introduced into the @code{exploded_graph} is to add custom code to
 @code{program_state::validate}.
+
+The debug function @code{region::is_named_decl_p} can be used when debugging,
+such as for assertions and conditional breakpoints.  For example, when
+tracking down a bug in handling a decl called @code{yy_buffer_stack}, I
+temporarily added a:
+@smallexample
+  gcc_assert (!m_base_region->is_named_decl_p ("yy_buffer_stack"));
+@end smallexample
+to @code{binding_cluster::mark_as_escaped} to trap a point where
+@code{yy_buffer_stack} was mistakenly being treated as having escaped.

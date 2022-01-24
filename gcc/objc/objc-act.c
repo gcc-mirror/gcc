@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GCC.
@@ -1904,9 +1904,6 @@ objc_build_setter_call (tree lhs, tree rhs)
 					 setter_argument, NULL);
       return setter;
     }
-
-  /* Unreachable, but the compiler may not realize.  */
-  return error_mark_node;
 }
 
 /* This hook routine is called when a MODIFY_EXPR is being built.  We
@@ -9647,11 +9644,9 @@ objc_rewrite_function_call (tree function, tree first_param)
       && TREE_CODE (TREE_OPERAND (function, 0)) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (function, 0), 0))
 	 == FUNCTION_DECL)
-    {
-      function = build3 (OBJ_TYPE_REF, TREE_TYPE (function),
-			 TREE_OPERAND (function, 0),
-			 first_param, size_zero_node);
-    }
+    function = build3 (OBJ_TYPE_REF, TREE_TYPE (function),
+		       TREE_OPERAND (function, 0), first_param,
+		       build_int_cst (TREE_TYPE (first_param), 0));
 
   return function;
 }

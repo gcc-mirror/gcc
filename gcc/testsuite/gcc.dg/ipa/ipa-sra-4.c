@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-sra -fno-ipa-pure-const -fdump-ipa-sra" } */
+/* { dg-options "-O2 -fipa-sra -fno-ipa-pure-const -fdump-ipa-sra -fno-ipa-modref" } */
 
 static int
 __attribute__((noinline))

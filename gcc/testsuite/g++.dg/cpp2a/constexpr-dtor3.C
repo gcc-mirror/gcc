@@ -7,16 +7,16 @@ struct S
   constexpr ~S () {}
   int s;
 };
-struct T	// { dg-message "'T' is not literal because" }
-{		// { dg-message "'T' does not have 'constexpr' destructor" "" { target *-*-* } .-1 }
+struct T	// { dg-message "'T' is not literal because" "" { target { ! implicit_constexpr } } }
+{		// { dg-message "'T' does not have 'constexpr' destructor" "" { target { ! implicit_constexpr } } .-1 }
   constexpr T () : t (0) {}
-  ~T () {}	// { dg-message "defaulted destructor calls non-'constexpr' 'T::~T\\(\\)'" }
+  ~T () {}	// { dg-message "defaulted destructor calls non-'constexpr' 'T::~T\\(\\)'" "" { target { ! implicit_constexpr } } }
   int t;
 };
 struct U : public S
 {
   constexpr U () : u (0) {}
-  constexpr ~U () = default;	// { dg-error "explicitly defaulted function 'constexpr U::~U\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" }
+  constexpr ~U () = default;	// { dg-error "explicitly defaulted function 'constexpr U::~U\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" "" { target { ! implicit_constexpr } } }
   int u;
   T t;
 };
@@ -100,11 +100,11 @@ struct W8
 struct X : public T
 {
   constexpr X () : x (0) {}
-  constexpr ~X () = default;	// { dg-error "explicitly defaulted function 'constexpr X::~X\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" }
+  constexpr ~X () = default;	// { dg-error "explicitly defaulted function 'constexpr X::~X\\(\\)' cannot be declared 'constexpr' because the implicit declaration is not 'constexpr'" "" { target { ! implicit_constexpr } } }
   int x;
 };
 constexpr S s;
-constexpr T t;	// { dg-error "the type 'const T' of 'constexpr' variable 't' is not literal" }
+constexpr T t;	// { dg-error "the type 'const T' of 'constexpr' variable 't' is not literal" "" { target { ! implicit_constexpr } } }
 constexpr W0 w1;
 constexpr W0 w2 = 12;
 constexpr W1 w3 = 5;	// { dg-message "in 'constexpr' expansion of" }
@@ -167,19 +167,19 @@ constexpr int x5 = f5 ();	// { dg-message "in 'constexpr' expansion of" }
 void
 f6 ()
 {
-  constexpr T t2;	// { dg-error "the type 'const T' of 'constexpr' variable 't2' is not literal" }
+  constexpr T t2;	// { dg-error "the type 'const T' of 'constexpr' variable 't2' is not literal" "" { target { ! implicit_constexpr } } }
 }
 
 constexpr int
 f7 ()
 {
-  constexpr T t3;	// { dg-error "the type 'const T' of 'constexpr' variable 't3' is not literal" }
+  constexpr T t3;	// { dg-error "the type 'const T' of 'constexpr' variable 't3' is not literal" "" { target { ! implicit_constexpr } } }
   return 0;
 }
 
 constexpr int
 f8 ()
 {
-  T t4;			// { dg-error "variable 't4' of non-literal type 'T' in 'constexpr' function" }
+  T t4;			// { dg-error "variable 't4' of non-literal type 'T' in 'constexpr' function only available with" "" { target { c++20_down && { ! implicit_constexpr } } } }
   return 0;
 }

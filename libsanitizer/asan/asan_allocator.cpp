@@ -102,19 +102,18 @@ class ChunkHeader {
 
  public:
   uptr UsedSize() const {
-    uptr R = user_requested_size_lo;
-    if (sizeof(uptr) > sizeof(user_requested_size_lo))
-      R += (uptr)user_requested_size_hi << (8 * sizeof(user_requested_size_lo));
-    return R;
+    static_assert(sizeof(user_requested_size_lo) == 4,
+                  "Expression below requires this");
+    return FIRST_32_SECOND_64(0, ((uptr)user_requested_size_hi << 32)) +
+           user_requested_size_lo;
   }
 
   void SetUsedSize(uptr size) {
     user_requested_size_lo = size;
-    if (sizeof(uptr) > sizeof(user_requested_size_lo)) {
-      size >>= (8 * sizeof(user_requested_size_lo));
-      user_requested_size_hi = size;
-      CHECK_EQ(user_requested_size_hi, size);
-    }
+    static_assert(sizeof(user_requested_size_lo) == 4,
+                  "Expression below requires this");
+    user_requested_size_hi = FIRST_32_SECOND_64(0, size >> 32);
+    CHECK_EQ(UsedSize(), size);
   }
 
   void SetAllocContext(u32 tid, u32 stack) {
@@ -522,7 +521,7 @@ struct Allocator {
         size > max_user_defined_malloc_size) {
       if (AllocatorMayReturnNull()) {
         Report("WARNING: AddressSanitizer failed to allocate 0x%zx bytes\n",
-               (void*)size);
+               size);
         return nullptr;
       }
       uptr malloc_limit =
@@ -908,13 +907,6 @@ AllocType AsanChunkView::GetAllocType() const {
   return (AllocType)chunk_->alloc_type;
 }
 
-static StackTrace GetStackTraceFromId(u32 id) {
-  CHECK(id);
-  StackTrace res = StackDepotGet(id);
-  CHECK(res.trace);
-  return res;
-}
-
 u32 AsanChunkView::GetAllocStackId() const {
   u32 tid = 0;
   u32 stack = 0;
@@ -929,14 +921,6 @@ u32 AsanChunkView::GetFreeStackId() const {
   u32 stack = 0;
   chunk_->GetFreeContext(tid, stack);
   return stack;
-}
-
-StackTrace AsanChunkView::GetAllocStack() const {
-  return GetStackTraceFromId(GetAllocStackId());
-}
-
-StackTrace AsanChunkView::GetFreeStack() const {
-  return GetStackTraceFromId(GetFreeStackId());
 }
 
 void InitializeAllocator(const AllocatorOptions &options) {

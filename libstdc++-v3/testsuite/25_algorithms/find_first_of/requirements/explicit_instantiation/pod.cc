@@ -1,8 +1,9 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-deprecated-declarations" { target c++11 } }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,4 +38,4 @@ namespace std
   template iterator_type find_first_of(iterator_type, iterator_type,
 				       iterator_type, iterator_type,
 				       predicate_type);
-} 
+}

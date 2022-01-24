@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
+#include "analyzer/program-state.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -998,6 +999,8 @@ region_model::on_stmt_pre (const gimple *stmt,
 	  impl_call_analyzer_describe (call, ctxt);
 	else if (is_special_named_call_p (call, "__analyzer_dump_capacity", 1))
 	  impl_call_analyzer_dump_capacity (call, ctxt);
+	else if (is_special_named_call_p (call, "__analyzer_dump_escaped", 0))
+	  impl_call_analyzer_dump_escaped (call);
 	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a
@@ -1133,6 +1136,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    return false;
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
+	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	    impl_call_strcpy (cd);
@@ -1223,6 +1229,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
+	  return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2161,8 +2173,23 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
-			      "write to %<const%> object %qE", m_decl);
+    auto_diagnostic_group d;
+    bool warned;
+    switch (m_reg->get_kind ())
+      {
+      default:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to %<const%> object %qE", m_decl);
+	break;
+      case RK_FUNCTION:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to function %qE", m_decl);
+	break;
+      case RK_LABEL:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to label %qE", m_decl);
+	break;
+      }
     if (warned)
       inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
     return warned;
@@ -2170,7 +2197,15 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+    switch (m_reg->get_kind ())
+      {
+      default:
+	return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+      case RK_FUNCTION:
+	return ev.formatted_print ("write to function %qE here", m_decl);
+      case RK_LABEL:
+	return ev.formatted_print ("write to label %qE here", m_decl);
+      }
   }
 
 private:
@@ -2230,6 +2265,20 @@ region_model::check_for_writable_region (const region* dest_reg,
   switch (base_reg->get_kind ())
     {
     default:
+      break;
+    case RK_FUNCTION:
+      {
+	const function_region *func_reg = as_a <const function_region *> (base_reg);
+	tree fndecl = func_reg->get_fndecl ();
+	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+      }
+      break;
+    case RK_LABEL:
+      {
+	const label_region *label_reg = as_a <const label_region *> (base_reg);
+	tree label = label_reg->get_label ();
+	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+      }
       break;
     case RK_DECL:
       {
@@ -2300,6 +2349,8 @@ region_model::check_region_access (const region *reg,
   /* Fail gracefully if CTXT is NULL.  */
   if (!ctxt)
     return;
+
+  check_region_for_taint (reg, dir, ctxt);
 
   switch (dir)
     {
@@ -2861,6 +2912,17 @@ region_model::get_representative_path_var_1 (const svalue *sval,
 				   NULL_TREE),
 			   parent_pv.m_stack_depth);
     }
+
+  /* Handle binops.  */
+  if (const binop_svalue *binop_sval = sval->dyn_cast_binop_svalue ())
+    if (path_var lhs_pv
+	= get_representative_path_var (binop_sval->get_arg0 (), visited))
+      if (path_var rhs_pv
+	  = get_representative_path_var (binop_sval->get_arg1 (), visited))
+	return path_var (build2 (binop_sval->get_op (),
+				 sval->get_type (),
+				 lhs_pv.m_tree, rhs_pv.m_tree),
+			 lhs_pv.m_stack_depth);
 
   if (pvs.length () < 1)
     return path_var (NULL_TREE, 0);
@@ -3624,7 +3686,10 @@ region_model::poison_any_pointers_to_descendents (const region *reg,
 bool
 region_model::can_merge_with_p (const region_model &other_model,
 				const program_point &point,
-				region_model *out_model) const
+				region_model *out_model,
+				const extrinsic_state *ext_state,
+				const program_state *state_a,
+				const program_state *state_b) const
 {
   gcc_assert (out_model);
   gcc_assert (m_mgr == other_model.m_mgr);
@@ -3634,7 +3699,8 @@ region_model::can_merge_with_p (const region_model &other_model,
     return false;
   out_model->m_current_frame = m_current_frame;
 
-  model_merger m (this, &other_model, point, out_model);
+  model_merger m (this, &other_model, point, out_model,
+		  ext_state, state_a, state_b);
 
   if (!store::can_merge_p (&m_store, &other_model.m_store,
 			   &out_model->m_store, m_mgr->get_store_manager (),
@@ -3720,36 +3786,45 @@ region_model::append_ssa_names_cb (const region *base_reg,
     }
 }
 
-/* Return a new region describing a heap-allocated block of memory.  */
+/* Return a new region describing a heap-allocated block of memory.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_heap_alloc (const svalue *size_in_bytes)
+region_model::create_region_for_heap_alloc (const svalue *size_in_bytes,
+					    region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_heap_alloc ();
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
 /* Return a new region describing a block of memory allocated within the
-   current frame.  */
+   current frame.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_alloca (const svalue *size_in_bytes)
+region_model::create_region_for_alloca (const svalue *size_in_bytes,
+					region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_alloca (m_current_frame);
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
-/* Record that the size of REG is SIZE_IN_BYTES.  */
+/* Record that the size of REG is SIZE_IN_BYTES.
+   Use CTXT to complain about tainted sizes.  */
 
 void
 region_model::set_dynamic_extents (const region *reg,
-				   const svalue *size_in_bytes)
+				   const svalue *size_in_bytes,
+				   region_model_context *ctxt)
 {
   assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  if (ctxt)
+    check_dynamic_size_for_taint (reg->get_memory_space (), size_in_bytes,
+				  ctxt);
   m_dynamic_extents.put (reg, size_in_bytes);
 }
 
@@ -3829,6 +3904,30 @@ model_merger::dump (bool simple) const
   dump (stderr, simple);
 }
 
+/* Return true if it's OK to merge SVAL with other svalues.  */
+
+bool
+model_merger::mergeable_svalue_p (const svalue *sval) const
+{
+  if (m_ext_state)
+    {
+      /* Reject merging svalues that have non-purgable sm-state,
+	 to avoid falsely reporting memory leaks by merging them
+	 with something else.  For example, given a local var "p",
+	 reject the merger of a:
+	   store_a mapping "p" to a malloc-ed ptr
+	 with:
+	   store_b mapping "p" to a NULL ptr.  */
+      if (m_state_a)
+	if (!m_state_a->can_purge_p (*m_ext_state, sval))
+	  return false;
+      if (m_state_b)
+	if (!m_state_b->can_purge_p (*m_ext_state, sval))
+	  return false;
+    }
+  return true;
+}
+
 } // namespace ana
 
 /* Dump RMODEL fully to stderr (i.e. without summarization).  */
@@ -3865,6 +3964,13 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 }
 
 /* class engine.  */
+
+/* engine's ctor.  */
+
+engine::engine (logger *logger)
+: m_mgr (logger)
+{
+}
 
 /* Dump the managed objects by class to LOGGER, and the per-class totals.  */
 
@@ -4449,6 +4555,39 @@ test_binop_svalue_folding ()
     = mgr.get_or_create_binop (integer_type_node, PLUS_EXPR,
 			       x_init_plus_one, cst_sval[1]);
   ASSERT_EQ (x_init_plus_one_plus_one, x_init_plus_two);
+
+  /* Verify various binops on booleans.  */
+  {
+    const svalue *sval_true = mgr.get_or_create_int_cst (boolean_type_node, 1);
+    const svalue *sval_false = mgr.get_or_create_int_cst (boolean_type_node, 0);
+    const svalue *sval_unknown
+      = mgr.get_or_create_unknown_svalue (boolean_type_node);
+    const placeholder_svalue sval_placeholder (boolean_type_node, "v");
+    for (auto op : {BIT_IOR_EXPR, TRUTH_OR_EXPR})
+      {
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, sval_unknown),
+		   sval_true);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, sval_unknown),
+		   sval_unknown);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, &sval_placeholder),
+		   &sval_placeholder);
+      }
+    for (auto op : {BIT_AND_EXPR, TRUTH_AND_EXPR})
+      {
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_false, sval_unknown),
+		   sval_false);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, sval_unknown),
+		   sval_unknown);
+	ASSERT_EQ (mgr.get_or_create_binop (boolean_type_node, op,
+					    sval_true, &sval_placeholder),
+		   &sval_placeholder);
+      }
+  }
 }
 
 /* Verify that sub_svalues are folded as expected.  */
@@ -5096,7 +5235,8 @@ test_state_merging ()
     region_model model0 (&mgr);
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
-    const region *new_reg = model0.create_region_for_heap_alloc (size_sval);
+    const region *new_reg
+      = model0.create_region_for_heap_alloc (size_sval, &ctxt);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
     model0.set_value (model0.get_lvalue (p, &ctxt),
 		      ptr_sval, &ctxt);
@@ -5484,7 +5624,7 @@ test_malloc_constraints ()
 
   const svalue *size_in_bytes
     = mgr.get_or_create_unknown_svalue (size_type_node);
-  const region *reg = model.create_region_for_heap_alloc (size_in_bytes);
+  const region *reg = model.create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
   model.set_value (q, p, NULL);
@@ -5705,7 +5845,7 @@ test_malloc ()
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_heap_alloc (size_sval);
+  const region *reg = model.create_region_for_heap_alloc (size_sval, &ctxt);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);
@@ -5739,7 +5879,7 @@ test_alloca ()
 			NULL, &ctxt);
   /* "p = alloca (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_alloca (size_sval);
+  const region *reg = model.create_region_for_alloca (size_sval, &ctxt);
   ASSERT_EQ (reg->get_parent_region (), frame_reg);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);

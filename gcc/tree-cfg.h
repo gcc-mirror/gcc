@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -111,6 +111,7 @@ extern basic_block gimple_switch_label_bb (function *, gswitch *, unsigned);
 extern basic_block gimple_switch_default_bb (function *, gswitch *);
 extern edge gimple_switch_edge (function *, gswitch *, unsigned);
 extern edge gimple_switch_default_edge (function *, gswitch *);
+extern bool cond_only_block_p (basic_block);
 
 /* Return true if the LHS of a call should be removed.  */
 

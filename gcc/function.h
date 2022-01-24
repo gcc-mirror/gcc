@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -718,16 +718,5 @@ extern const char *function_name (struct function *);
 extern const char *current_function_name (void);
 
 extern void used_types_insert (tree);
-
-/* Returns the currently active range access class.  When there is no active
-   range class, global ranges are used.  Never returns null.  */
-
-ATTRIBUTE_RETURNS_NONNULL inline range_query *
-get_range_query (const struct function *fun)
-{
-  return fun->x_range_query;
-}
-
-extern range_query *get_global_range_query ();
 
 #endif  /* GCC_FUNCTION_H */

@@ -1,5 +1,5 @@
 /* Straight-line strength reduction.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -763,7 +763,6 @@ stmt_cost (gimple *gs, bool speed)
     }
   
   gcc_unreachable ();
-  return 0;
 }
 
 /* Look up the defining statement for BASE_IN and return a pointer

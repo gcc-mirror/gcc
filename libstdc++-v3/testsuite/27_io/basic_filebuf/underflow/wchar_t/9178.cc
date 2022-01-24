@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -178,7 +178,7 @@ void test01()
     {
       transform(tmpstr.begin(), tmpstr.end(),
 		back_inserter(str1),
-		bind1st(std::mem_fun(&std::wios::widen), &stream));
+		bind1st(std::mem_fun(&std::wios::widen), &stream)); // { dg-warning "is deprecated" "" { target c++11 } }
     }
 	
   fbuf1.sputn(str1.data(), str1.size());

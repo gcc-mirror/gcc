@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,7 +108,7 @@ enum rid
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
-  RID_BUILTIN_HAS_ATTRIBUTE,
+  RID_BUILTIN_HAS_ATTRIBUTE,   RID_BUILTIN_ASSOC_BARRIER,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -886,7 +886,7 @@ extern tree c_alignof_expr (location_t, tree);
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
-extern tree convert_and_check (location_t, tree, tree);
+extern tree convert_and_check (location_t, tree, tree, bool = false);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
@@ -908,6 +908,8 @@ extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
 
+/* Used by convert_and_check; in front ends.  */
+extern tree convert_init (tree, tree);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)
@@ -1234,8 +1236,8 @@ extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
 			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
-extern bool c_omp_check_loop_iv_exprs (location_t, tree, int, tree, tree, tree,
-				       walk_tree_lh);
+extern bool c_omp_check_loop_iv_exprs (location_t, enum tree_code, tree, int,
+				       tree, tree, tree, walk_tree_lh);
 extern tree c_finish_oacc_wait (location_t, tree, tree);
 extern tree c_oacc_split_loop_clauses (tree, tree *, bool);
 extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
@@ -1421,6 +1423,7 @@ extern bool warn_for_restrict (unsigned, tree *, unsigned);
 extern void warn_for_address_or_pointer_of_packed_member (tree, tree);
 extern void warn_parm_array_mismatch (location_t, tree, tree);
 extern void maybe_warn_sizeof_array_div (location_t, tree, tree, tree, tree);
+extern void do_warn_array_compare (location_t, tree_code, tree, tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
    Used to select diagnostic messages in lvalue_error and

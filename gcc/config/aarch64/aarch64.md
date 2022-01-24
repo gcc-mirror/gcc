@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -143,6 +143,7 @@
     UNSPEC_AUTIBSP
     UNSPEC_CALLEE_ABI
     UNSPEC_CASESI
+    UNSPEC_CPYMEM
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
     UNSPEC_CRC32CH
@@ -187,7 +188,14 @@
     UNSPEC_LD2_LANE
     UNSPEC_LD3_LANE
     UNSPEC_LD4_LANE
+    UNSPEC_LD64B
+    UNSPEC_ST64B
+    UNSPEC_ST64BV
+    UNSPEC_ST64BV_RET
+    UNSPEC_ST64BV0
+    UNSPEC_ST64BV0_RET
     UNSPEC_MB
+    UNSPEC_MOVMEM
     UNSPEC_NOP
     UNSPEC_PACIA1716
     UNSPEC_PACIB1716
@@ -202,6 +210,7 @@
     UNSPEC_SABDL2
     UNSPEC_SADALP
     UNSPEC_SCVTF
+    UNSPEC_SETMEM
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
     UNSPEC_SISD_USHL
@@ -879,8 +888,7 @@
   {
     const char *ret = NULL;
     if (aarch64_return_address_signing_enabled ()
-	&& (TARGET_PAUTH)
-	&& !crtl->calls_eh_return)
+	&& (TARGET_PAUTH))
       {
 	if (aarch64_ra_sign_key == AARCH64_KEY_B)
 	  ret = "retab";
@@ -1263,8 +1271,8 @@
 )
 
 (define_insn_and_split "*movsi_aarch64"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r, w,r,w, w")
-	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usa,Ush,rZ,w,w,Ds"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r,  r, w,r,w, w")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Ds"))]
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   "@
@@ -1278,6 +1286,7 @@
    ldr\\t%s0, %1
    str\\t%w1, %0
    str\\t%s1, %0
+   adrp\\t%x0, %A1\;ldr\\t%w0, [%x0, %L1]
    adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%s0, %w1
@@ -1293,13 +1302,15 @@
     }"
   ;; The "mov_imm" type for CNT is just a placeholder.
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_4,
-		    load_4,store_4,store_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
-   (set_attr "arch" "*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
+		    load_4,store_4,store_4,load_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
+   (set_attr "arch"   "*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
+   (set_attr "length" "4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")
+]
 )
 
 (define_insn_and_split "*movdi_aarch64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,r,r, r,w, m,m,  r,  r, w,r,w, w")
-	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,M,n,Usv,m,m,rZ,w,Usa,Ush,rZ,w,w,Dd"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,r,r, r,w, m,m,   r,  r,  r, w,r,w, w")
+	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,M,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Dd"))]
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   "@
@@ -1314,13 +1325,14 @@
    ldr\\t%d0, %1
    str\\t%x1, %0
    str\\t%d1, %0
+   * return TARGET_ILP32 ? \"adrp\\t%0, %A1\;ldr\\t%w0, [%0, %L1]\" : \"adrp\\t%0, %A1\;ldr\\t%0, [%0, %L1]\";
    adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    * return aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);"
-   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))
+   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
     && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
@@ -1329,9 +1341,10 @@
     }"
   ;; The "mov_imm" type for CNTD is just a placeholder.
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,mov_imm,
-		     load_8,load_8,store_8,store_8,adr,adr,f_mcr,f_mrc,fmov,
-		     neon_move")
-   (set_attr "arch" "*,*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
+		     load_8,load_8,store_8,store_8,load_8,adr,adr,f_mcr,f_mrc,
+		     fmov,neon_move")
+   (set_attr "arch"   "*,*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
+   (set_attr "length" "4,4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")]
 )
 
 (define_insn "insv_imm<mode>"
@@ -1568,6 +1581,18 @@
   }
 )
 
+(define_insn "aarch64_cpymemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))])]
+ "TARGET_MOPS"
+ "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is src
 ;; 2 is size of copy in bytes
@@ -1576,9 +1601,9 @@
 (define_expand "cpymemdi"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand:BLK 1 "memory_operand")
-   (match_operand:DI 2 "immediate_operand")
+   (match_operand:DI 2 "general_operand")
    (match_operand:DI 3 "immediate_operand")]
-   "!STRICT_ALIGNMENT"
+   "!STRICT_ALIGNMENT || TARGET_MOPS"
 {
   if (aarch64_expand_cpymem (operands))
     DONE;
@@ -1586,18 +1611,75 @@
 }
 )
 
+(define_insn "aarch64_movmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_MOVMEM))])]
+ "TARGET_MOPS"
+ "cpyp\t[%x0]!, [%x1]!, %x2!\;cpym\t[%x0]!, [%x1]!, %x2!\;cpye\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
+;; 0 is dst
+;; 1 is src
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "movmemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "general_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   "TARGET_MOPS"
+{
+   rtx sz_reg = operands[2];
+   /* For constant-sized memmoves check the threshold.
+      FIXME: We should add a non-MOPS memmove expansion for smaller,
+      constant-sized memmove to avoid going to a libcall.  */
+   if (CONST_INT_P (sz_reg)
+       && INTVAL (sz_reg) < aarch64_mops_memmove_size_threshold)
+     FAIL;
+
+   rtx addr_dst = XEXP (operands[0], 0);
+   rtx addr_src = XEXP (operands[1], 0);
+
+   if (!REG_P (sz_reg))
+     sz_reg = force_reg (DImode, sz_reg);
+   if (!REG_P (addr_dst))
+     addr_dst = force_reg (DImode, addr_dst);
+   if (!REG_P (addr_src))
+     addr_src = force_reg (DImode, addr_src);
+   emit_insn (gen_aarch64_movmemdi (addr_dst, addr_src, sz_reg));
+   DONE;
+}
+)
+
+(define_insn "aarch64_setmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
+                    (match_dup 2)] UNSPEC_SETMEM))])]
+ "TARGET_MOPS"
+ "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is val
 ;; 2 is size of copy in bytes
 ;; 3 is alignment
-
 (define_expand "setmemdi"
   [(set (match_operand:BLK 0 "memory_operand")     ;; Dest
         (match_operand:QI  2 "nonmemory_operand")) ;; Value
-   (use (match_operand:DI  1 "immediate_operand")) ;; Length
+   (use (match_operand:DI  1 "general_operand")) ;; Length
    (match_operand          3 "immediate_operand")] ;; Align
-  "TARGET_SIMD"
-{
+ "TARGET_SIMD || TARGET_MOPS"
+ {
   if (aarch64_expand_setmem (operands))
     DONE;
 
@@ -5920,7 +6002,7 @@
 ;; -------------------------------------------------------------------
 
 ;; frint floating-point round to integral standard patterns.
-;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
+;; Expands to btrunc, ceil, floor, nearbyint, rint, round, roundeven.
 
 (define_insn "<frint_pattern><mode>2"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
@@ -6471,7 +6553,7 @@
 ;; Scalar forms for fmax, fmin, fmaxnm, fminnm.
 ;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
 ;; which implement the IEEE fmax ()/fmin () functions.
-(define_insn "<maxmin_uns><mode>3"
+(define_insn "<fmaxmin><mode>3"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
 	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")
 		     (match_operand:GPF_F16 2 "register_operand" "w")]
@@ -6705,29 +6787,6 @@
   ""
   "add\\t%<w>0, %<w>1, :lo12:%c2"
   [(set_attr "type" "alu_imm")]
-)
-
-(define_insn "ldr_got_small_<mode>"
-  [(set (match_operand:PTR 0 "register_operand" "=r")
-	(unspec:PTR [(mem:PTR (lo_sum:PTR
-			      (match_operand:PTR 1 "register_operand" "r")
-			      (match_operand:PTR 2 "aarch64_valid_symref" "S")))]
-		    UNSPEC_GOTSMALLPIC))]
-  ""
-  "ldr\\t%<w>0, [%1, #:got_lo12:%c2]"
-  [(set_attr "type" "load_<ldst_sz>")]
-)
-
-(define_insn "ldr_got_small_sidi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	 (unspec:SI [(mem:SI (lo_sum:DI
-			     (match_operand:DI 1 "register_operand" "r")
-			     (match_operand:DI 2 "aarch64_valid_symref" "S")))]
-		    UNSPEC_GOTSMALLPIC)))]
-  "TARGET_ILP32"
-  "ldr\\t%w0, [%1, #:got_lo12:%c2]"
-  [(set_attr "type" "load_4")]
 )
 
 (define_insn "ldr_got_small_28k_<mode>"
@@ -7516,6 +7575,52 @@
   "TARGET_MEMTAG"
   "stg\\t%0, [%1, #%2]"
   [(set_attr "type" "memtag")]
+)
+
+;; Load/Store 64-bit (LS64) instructions.
+(define_insn "ld64b"
+  [(set (match_operand:V8DI 0 "register_operand" "=r")
+        (unspec_volatile:V8DI
+          [(mem:V8DI (match_operand:DI 1 "register_operand" "r"))]
+            UNSPEC_LD64B)
+  )]
+  "TARGET_LS64"
+  "ld64b\\t%0, [%1]"
+  [(set_attr "type" "ls64")]
+)
+
+(define_insn "st64b"
+  [(set (mem:V8DI (match_operand:DI 0 "register_operand" "=r"))
+        (unspec_volatile:V8DI [(match_operand:V8DI 1 "register_operand" "r")]
+            UNSPEC_ST64B)
+  )]
+  "TARGET_LS64"
+  "st64b\\t%1, [%0]"
+  [(set_attr "type" "ls64")]
+)
+
+(define_insn "st64bv"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV_RET))
+   (set (mem:V8DI (match_operand:DI 1 "register_operand" "r"))
+        (unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
+            UNSPEC_ST64BV)
+  )]
+  "TARGET_LS64"
+  "st64bv\\t%0, %2, [%1]"
+  [(set_attr "type" "ls64")]
+)
+
+(define_insn "st64bv0"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec_volatile:DI [(const_int 0)] UNSPEC_ST64BV0_RET))
+   (set (mem:V8DI (match_operand:DI 1 "register_operand" "r"))
+        (unspec_volatile:V8DI [(match_operand:V8DI 2 "register_operand" "r")]
+            UNSPEC_ST64BV0)
+  )]
+  "TARGET_LS64"
+  "st64bv0\\t%0, %2, [%1]"
+  [(set_attr "type" "ls64")]
 )
 
 ;; AdvSIMD Stuff

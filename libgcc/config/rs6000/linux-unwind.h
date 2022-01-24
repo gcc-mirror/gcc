@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PowerPC and PowerPC64 Linux.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -94,6 +94,15 @@ struct gcc_ucontext
 
 enum { SIGNAL_FRAMESIZE = 128 };
 
+struct rt_sigframe {
+  char gap[SIGNAL_FRAMESIZE];
+  struct gcc_ucontext uc;
+  unsigned long pad[2];
+  int tramp[6];
+  void *pinfo;
+  struct gcc_ucontext *puc;
+};
+
 /* If PC is at a sigreturn trampoline, return a pointer to the
    regs.  Otherwise return NULL.  */
 
@@ -136,14 +145,7 @@ get_regs (struct _Unwind_Context *context)
 #endif
 	{
 	  /* This works for 2.4.21 and later kernels.  */
-	  struct rt_sigframe {
-	    char gap[SIGNAL_FRAMESIZE];
-	    struct gcc_ucontext uc;
-	    unsigned long pad[2];
-	    int tramp[6];
-	    void *pinfo;
-	    struct gcc_ucontext *puc;
-	  } *frame = (struct rt_sigframe *) context->cfa;
+	  struct rt_sigframe *frame = (struct rt_sigframe *) context->cfa;
 	  return frame->uc.regs;
 	}
     }
@@ -153,6 +155,12 @@ get_regs (struct _Unwind_Context *context)
 #else  /* !__powerpc64__ */
 
 enum { SIGNAL_FRAMESIZE = 64 };
+
+struct rt_sigframe {
+  char gap[SIGNAL_FRAMESIZE + 16];
+  char siginfo[128];
+  struct gcc_ucontext uc;
+};
 
 static struct gcc_regs *
 get_regs (struct _Unwind_Context *context)
@@ -176,11 +184,7 @@ get_regs (struct _Unwind_Context *context)
     }
   else if (pc[0] == 0x38006666 || pc[0] == 0x380000AC)
     {
-      struct rt_sigframe {
-	char gap[SIGNAL_FRAMESIZE + 16];
-	char siginfo[128];
-	struct gcc_ucontext uc;
-      } *frame = (struct rt_sigframe *) context->cfa;
+      struct rt_sigframe *frame = (struct rt_sigframe *) context->cfa;
       return frame->uc.regs;
     }
   return NULL;
@@ -203,7 +207,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   int i;
 
   if (regs == NULL)
-    return _URC_END_OF_STACK;
+    return _URC_NORMAL_STOP;
 
   new_cfa = regs->gpr[__LIBGCC_STACK_POINTER_REGNUM__];
   fs->regs.cfa_how = CFA_REG_OFFSET;
@@ -351,4 +355,81 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 	}
     }
 #endif
+}
+
+#define MD_BACKCHAIN_FALLBACK ppc_backchain_fallback
+
+struct trace_arg
+{
+  /* Stores the list of addresses.  */
+  void **array;
+  struct unwind_link *unwind_link;
+  _Unwind_Word cfa;
+  /* Number of addresses currently stored.  */
+  int count;
+  /* Maximum number of addresses.  */
+  int size;
+};
+
+/* This is the stack layout we see with every stack frame.
+   Note that every routine is required by the ABI to lay out the stack
+   like this.
+
+	    +----------------+        +-----------------+
+    %r1  -> | previous frame--------> | previous frame--->...  --> NULL
+	    |                |        |                 |
+	    | cr save        |        | cr save	        |
+	    |                |        |                 |
+	    | (unused)       |        | lr save         |
+	    +----------------+        +-----------------+
+
+  The CR save is only present on 64-bit ABIs.
+*/
+struct frame_layout
+{
+  struct frame_layout *backchain;
+#ifdef __powerpc64__
+  long int cr_save;
+#endif
+  void *lr_save;
+};
+
+
+static void
+ppc_backchain_fallback (struct _Unwind_Context *context, void *a)
+{
+  struct frame_layout *current;
+  struct trace_arg *arg = a;
+  int count;
+
+  /* Get the last address computed.  */
+  current = context->cfa;
+
+  /* If the trace CFA is not the context CFA the backtrace is done.  */
+  if (arg == NULL || arg->cfa != current)
+	return;
+
+  /* Start with next address.  */
+  current = current->backchain;
+
+  for (count = arg->count; current != NULL; current = current->backchain)
+    {
+      arg->array[count] = current->lr_save;
+
+      /* Check if the symbol is the signal trampoline and get the interrupted
+	 symbol address from the trampoline saved area.  */
+      context->ra = current->lr_save;
+      if (current->lr_save && get_regs (context))
+	{
+	  struct rt_sigframe *sigframe = (struct rt_sigframe *) current;
+	  if (count + 1 == arg->size)
+	    break;
+	  arg->array[++count] = (void *) sigframe->uc.rsave.nip;
+	  current = (void *) sigframe->uc.rsave.gpr[1];
+	}
+      if (count++ >= arg->size)
+	break;
+    }
+
+  arg->count = count-1;
 }

@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the NVPTX architecture.
- * Copyright (C) 2021 Free Software Foundation, Inc.
+ * Copyright (C) 2021-2022 Free Software Foundation, Inc.
  *
  * This file is part of GCC.
  *
@@ -39,7 +39,13 @@ nvptx_cpu_cpp_builtins (void)
     cpp_define (parse_in, "__nvptx_softstack__");
   if (TARGET_UNIFORM_SIMT)
     cpp_define (parse_in,"__nvptx_unisimt__");
-  if (TARGET_SM35)
+  if (TARGET_SM80)
+    cpp_define (parse_in, "__PTX_SM__=800");
+  else if (TARGET_SM75)
+    cpp_define (parse_in, "__PTX_SM__=750");
+  else if (TARGET_SM53)
+    cpp_define (parse_in, "__PTX_SM__=530");
+  else if (TARGET_SM35)
     cpp_define (parse_in, "__PTX_SM__=350");
   else
     cpp_define (parse_in,"__PTX_SM__=300");

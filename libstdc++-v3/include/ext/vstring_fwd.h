@@ -1,6 +1,6 @@
 // <vstring.h> Forward declarations -*- C++ -*-
 
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,13 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __versa_string<char, std::char_traits<char>,
 		 std::allocator<char>, __rc_string_base>    __rc_string;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef __versa_string<wchar_t>                           __wvstring;
   typedef __wvstring                                        __wsso_string;
   typedef
   __versa_string<wchar_t, std::char_traits<wchar_t>,
 		 std::allocator<wchar_t>, __rc_string_base> __wrc_string;
-#endif  
 
 #if __cplusplus >= 201103L
   typedef __versa_string<char16_t>                          __u16vstring;

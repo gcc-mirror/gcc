@@ -1,5 +1,5 @@
 /* types.cc -- Lower D frontend types to GCC trees.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ bool
 valist_array_p (Type *type)
 {
   Type *tvalist = target.va_listType (Loc (), NULL);
-  if (tvalist->ty == Tsarray)
+  if (tvalist->ty == TY::Tsarray)
     {
       Type *tb = type->toBasetype ();
       if (same_type_p (tb, tvalist))
@@ -170,7 +170,7 @@ make_array_type (Type *type, unsigned HOST_WIDE_INT size)
 {
   /* In [arrays/void-arrays], void arrays can also be static, the length is
      specified in bytes.  */
-  if (type->toBasetype ()->ty == Tvoid)
+  if (type->toBasetype ()->ty == TY::Tvoid)
     type = Type::tuns8;
 
   /* In [arrays/static-arrays], a static array with a dimension of 0 is allowed,
@@ -338,7 +338,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  RootObject *ro = (*td->objects)[j];
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
-		  gcc_assert (e->op == TOKdsymbol);
+		  gcc_assert (e->op == EXP::dSymbol);
 		  DsymbolExp *se = e->isDsymbolExp ();
 
 		  tmembers.push (se->s);
@@ -546,9 +546,9 @@ merge_aggregate_types (Type *type, tree deco)
 {
   AggregateDeclaration *sym;
 
-  if (type->ty == Tstruct)
+  if (type->ty == TY::Tstruct)
     sym = type->isTypeStruct ()->sym;
-  else if (type->ty == Tclass)
+  else if (type->ty == TY::Tclass)
     sym = type->isTypeClass ()->sym;
   else
     gcc_unreachable ();
@@ -610,7 +610,8 @@ public:
 
   void visit (TypeNoreturn *t)
   {
-    t->ctype = void_type_node;
+    t->ctype = noreturn_type_node;
+    TYPE_NAME (t->ctype) = get_identifier (t->toChars ());
   }
 
   /* Basic Data Types.  */
@@ -646,31 +647,31 @@ public:
 
     switch (t->ty)
       {
-      case Tvoid:	  t->ctype = void_type_node; break;
-      case Tbool:	  t->ctype = d_bool_type; break;
-      case Tint8:	  t->ctype = d_byte_type; break;
-      case Tuns8:	  t->ctype = d_ubyte_type; break;
-      case Tint16:	  t->ctype = d_short_type; break;
-      case Tuns16:	  t->ctype = d_ushort_type; break;
-      case Tint32:	  t->ctype = d_int_type; break;
-      case Tuns32:	  t->ctype = d_uint_type; break;
-      case Tint64:	  t->ctype = d_long_type; break;
-      case Tuns64:	  t->ctype = d_ulong_type; break;
-      case Tint128:	  t->ctype = d_cent_type; break;
-      case Tuns128:	  t->ctype = d_ucent_type; break;
-      case Tfloat32:	  t->ctype = float_type_node; break;
-      case Tfloat64:	  t->ctype = double_type_node; break;
-      case Tfloat80:	  t->ctype = long_double_type_node; break;
-      case Timaginary32:  t->ctype = ifloat_type_node; break;
-      case Timaginary64:  t->ctype = idouble_type_node; break;
-      case Timaginary80:  t->ctype = ireal_type_node; break;
-      case Tcomplex32:	  t->ctype = complex_float_type_node; break;
-      case Tcomplex64:	  t->ctype = complex_double_type_node; break;
-      case Tcomplex80:	  t->ctype = complex_long_double_type_node; break;
-      case Tchar:	  t->ctype = char8_type_node; break;
-      case Twchar:	  t->ctype = char16_type_node; break;
-      case Tdchar:	  t->ctype = char32_type_node; break;
-      default:		  gcc_unreachable ();
+      case TY::Tvoid:	     t->ctype = void_type_node; break;
+      case TY::Tbool:	     t->ctype = d_bool_type; break;
+      case TY::Tint8:	     t->ctype = d_byte_type; break;
+      case TY::Tuns8:	     t->ctype = d_ubyte_type; break;
+      case TY::Tint16:	     t->ctype = d_short_type; break;
+      case TY::Tuns16:	     t->ctype = d_ushort_type; break;
+      case TY::Tint32:	     t->ctype = d_int_type; break;
+      case TY::Tuns32:	     t->ctype = d_uint_type; break;
+      case TY::Tint64:	     t->ctype = d_long_type; break;
+      case TY::Tuns64:	     t->ctype = d_ulong_type; break;
+      case TY::Tint128:	     t->ctype = d_cent_type; break;
+      case TY::Tuns128:	     t->ctype = d_ucent_type; break;
+      case TY::Tfloat32:     t->ctype = float_type_node; break;
+      case TY::Tfloat64:     t->ctype = double_type_node; break;
+      case TY::Tfloat80:     t->ctype = long_double_type_node; break;
+      case TY::Timaginary32: t->ctype = ifloat_type_node; break;
+      case TY::Timaginary64: t->ctype = idouble_type_node; break;
+      case TY::Timaginary80: t->ctype = ireal_type_node; break;
+      case TY::Tcomplex32:   t->ctype = complex_float_type_node; break;
+      case TY::Tcomplex64:   t->ctype = complex_double_type_node; break;
+      case TY::Tcomplex80:   t->ctype = complex_long_double_type_node; break;
+      case TY::Tchar:	     t->ctype = char8_type_node; break;
+      case TY::Twchar:	     t->ctype = char16_type_node; break;
+      case TY::Tdchar:	     t->ctype = char32_type_node; break;
+      default:		     gcc_unreachable ();
       }
 
     TYPE_NAME (t->ctype) = get_identifier (t->toChars ());
@@ -770,11 +771,17 @@ public:
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
-    size_t n_args = t->parameterList.length ();
+    const size_t n_args = t->parameterList.length ();
 
     for (size_t i = 0; i < n_args; i++)
       {
 	tree type = parameter_type (t->parameterList[i]);
+
+	/* Type `noreturn` is a terminator, as no other arguments can possibly
+	   be evaluated after it.  */
+	if (type == noreturn_type_node)
+	  break;
+
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
@@ -786,7 +793,7 @@ public:
     if (t->next != NULL)
       {
 	fntype = build_ctype (t->next);
-	if (t->isref)
+	if (t->isref ())
 	  fntype = build_reference_type (fntype);
       }
     else
@@ -797,10 +804,14 @@ public:
     TYPE_LANG_SPECIFIC (t->ctype) = build_lang_type (t);
     d_keep (t->ctype);
 
+    /* Qualify function types that have the type `noreturn` as volatile.  */
+    if (fntype == noreturn_type_node)
+      t->ctype = build_qualified_type (t->ctype, TYPE_QUAL_VOLATILE);
+
     /* Handle any special support for calling conventions.  */
     switch (t->linkage)
       {
-      case LINKwindows:
+      case LINK::windows:
 	{
 	  /* [attribute/linkage]
 
@@ -815,10 +826,10 @@ public:
 	  break;
 	}
 
-      case LINKc:
-      case LINKcpp:
-      case LINKd:
-      case LINKobjc:
+      case LINK::c:
+      case LINK::cpp:
+      case LINK::d:
+      case LINK::objc:
 	/* [abi/function-calling-conventions]
 
 	  The extern (C) and extern (D) calling convention matches
@@ -995,8 +1006,8 @@ public:
 	   the context or laying out fields as those types may make
 	   recursive references to this type.  */
 	unsigned structsize = t->sym->structsize;
-	unsigned alignsize = (t->sym->alignment != STRUCTALIGN_DEFAULT)
-	  ? t->sym->alignment : t->sym->alignsize;
+	unsigned alignsize = t->sym->alignment.isDefault ()
+	  ? t->sym->alignsize : t->sym->alignment.get ();
 
 	TYPE_SIZE (t->ctype) = bitsize_int (structsize * BITS_PER_UNIT);
 	TYPE_SIZE_UNIT (t->ctype) = size_int (structsize);
@@ -1013,8 +1024,8 @@ public:
     TYPE_CONTEXT (t->ctype) = d_decl_context (t->sym);
     build_type_decl (t->ctype, t->sym);
 
-    /* For structs with a user defined postblit or a destructor,
-       also set TREE_ADDRESSABLE on the type and all variants.
+    /* For structs with a user defined postblit, copy constructor, or a
+       destructor, also set TREE_ADDRESSABLE on the type and all variants.
        This will make the struct be passed around by reference.  */
     if (!t->sym->isPOD ())
       {

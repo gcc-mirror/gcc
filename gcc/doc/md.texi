@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3336,6 +3336,14 @@ A constant whose negation is a signed 16-bit constant.
 @item eI
 A signed 34-bit integer constant if prefixed instructions are supported.
 
+@item eP
+A scalar floating point constant or a vector constant that can be
+loaded to a VSX register with one prefixed instruction.
+
+@item eQ
+An IEEE 128-bit constant that can be loaded into a VSX register with
+the @code{lxvkq} instruction.
+
 @ifset INTERNALS
 @item G
 A floating point constant that can be loaded into a register with one
@@ -5206,25 +5214,43 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load the number of vector elements specified by operand 2 from memory
-operand 1 into vector register operand 0, setting the other elements of
+Load (operand 2 - operand 3) elements from vector memory operand 1
+into vector register operand 0, setting the other elements of
 operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 2 has whichever integer mode the
-target prefers.  If operand 2 exceeds the number of elements in mode
-@var{m}, the behavior is undefined.  If the target prefers the length
-to be measured in bytes rather than elements, it should only implement
-this pattern for vectors of @code{QI} elements.
+target prefers.  Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes rather than
+elements, it should only implement this pattern for vectors of @code{QI}
+elements.
 
 This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_store_@var{m}} instruction pattern
 @item @samp{len_store_@var{m}}
-Store the number of vector elements specified by operand 2 from vector
-register operand 1 into memory operand 0, leaving the other elements of
+Store (operand 2 - operand 3) vector elements from vector register operand 1
+into memory operand 0, leaving the other elements of
 operand 0 unchanged.  Operands 0 and 1 have mode @var{m}, which must be
 a vector mode.  Operand 2 has whichever integer mode the target prefers.
-If operand 2 exceeds the number of elements in mode @var{m}, the behavior
-is undefined.  If the target prefers the length to be measured in bytes
+Operand 3 conceptually has mode @code{QI}.
+
+Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+constant bias: it is either a constant 0 or a constant -1.  The predicate on
+operand 3 must only accept the bias values that the target actually supports.
+GCC handles a bias of 0 more efficiently than a bias of -1.
+
+If (operand 2 - operand 3) exceeds the number of elements in mode
+@var{m}, the behavior is undefined.
+
+If the target prefers the length to be measured in bytes
 rather than elements, it should only implement this pattern for vectors
 of @code{QI} elements.
 
@@ -5399,6 +5425,14 @@ the elements of the input vector.
 Find the unsigned minimum/maximum of the elements of a vector. The vector is
 operand 1, and operand 0 is the scalar result, with mode equal to the mode of
 the elements of the input vector.
+
+@cindex @code{reduc_fmin_scal_@var{m}} instruction pattern
+@cindex @code{reduc_fmax_scal_@var{m}} instruction pattern
+@item @samp{reduc_fmin_scal_@var{m}}, @samp{reduc_fmax_scal_@var{m}}
+Find the floating-point minimum/maximum of the elements of a vector,
+using the same rules as @code{fmin@var{m}3} and @code{fmax@var{m}3}.
+Operand 1 is a vector of mode @var{m} and operand 0 is the scalar
+result, which has mode @code{GET_MODE_INNER (@var{m})}.
 
 @cindex @code{reduc_plus_scal_@var{m}} instruction pattern
 @item @samp{reduc_plus_scal_@var{m}}
@@ -5776,11 +5810,13 @@ multiplication.
 @item @samp{smul@var{m}3_highpart}
 Perform a signed multiplication of operands 1 and 2, which have mode
 @var{m}, and store the most significant half of the product in operand 0.
-The least significant half of the product is discarded.
+The least significant half of the product is discarded.  This may be
+represented in RTL using a @code{smul_highpart} RTX expression.
 
 @cindex @code{umul@var{m}3_highpart} instruction pattern
 @item @samp{umul@var{m}3_highpart}
-Similar, but the multiplication is unsigned.
+Similar, but the multiplication is unsigned.  This may be represented
+in RTL using an @code{umul_highpart} RTX expression.
 
 @cindex @code{madd@var{m}@var{n}4} instruction pattern
 @item @samp{madd@var{m}@var{n}4}
@@ -6695,6 +6731,13 @@ operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
 
+@cindex @code{rawmemchr@var{m}} instruction pattern
+@item @samp{rawmemchr@var{m}}
+Scan memory referred to by operand 1 for the first occurrence of operand 2.
+Operand 1 is a @code{mem} and operand 2 a @code{const_int} of mode @var{m}.
+Operand 0 is the result, i.e., a pointer to the first occurrence of operand 2
+in the memory block given by operand 1.
+
 @cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
 Convert signed integer operand 1 (valid for fixed point mode @var{m}) to
@@ -6921,6 +6964,8 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @cindex @code{cond_smax@var{mode}} instruction pattern
 @cindex @code{cond_umin@var{mode}} instruction pattern
 @cindex @code{cond_umax@var{mode}} instruction pattern
+@cindex @code{cond_fmin@var{mode}} instruction pattern
+@cindex @code{cond_fmax@var{mode}} instruction pattern
 @cindex @code{cond_ashl@var{mode}} instruction pattern
 @cindex @code{cond_ashr@var{mode}} instruction pattern
 @cindex @code{cond_lshr@var{mode}} instruction pattern
@@ -6938,6 +6983,8 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
+@itemx @samp{cond_fmin@var{mode}}
+@itemx @samp{cond_fmax@var{mode}}
 @itemx @samp{cond_ashl@var{mode}}
 @itemx @samp{cond_ashr@var{mode}}
 @itemx @samp{cond_lshr@var{mode}}
@@ -7889,6 +7936,30 @@ If these patterns are not defined, attempts will be made to use
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
 
+@cindex @code{atomic_add_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_sub_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_and_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_or_fetch_cmp_0@var{mode}} instruction pattern
+@cindex @code{atomic_xor_fetch_cmp_0@var{mode}} instruction pattern
+@item @samp{atomic_add_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_sub_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_and_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_or_fetch_cmp_0@var{mode}}
+@itemx @samp{atomic_xor_fetch_cmp_0@var{mode}}
+These patterns emit code for an atomic operation on memory with memory
+model semantics if the fetch result is used only in a comparison against
+zero.
+Operand 0 is an output operand which contains a boolean result of comparison
+of the value after the operation against zero.  Operand 1 is the memory on
+which the atomic operation is performed.  Operand 2 is the second operand
+to the binary operator.  Operand 3 is the memory model to be used by the
+operation.  Operand 4 is an integer holding the comparison code, one of
+@code{EQ}, @code{NE}, @code{LT}, @code{GT}, @code{LE} or @code{GE}.
+
+If these patterns are not defined, attempts will be made to use separate
+atomic operation and fetch pattern followed by comparison of the result
+against zero.
+
 @cindex @code{mem_thread_fence} instruction pattern
 @item @samp{mem_thread_fence}
 This pattern emits code required to implement a thread fence with
@@ -7983,6 +8054,15 @@ inclusive and operand 1 exclusive.
 
 If this pattern is not defined, a call to the library function
 @code{__clear_cache} is used.
+
+@cindex @code{spaceship@var{m}3} instruction pattern
+@item @samp{spaceship@var{m}3}
+Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
+if operand 1 with mode @var{m} compares less than operand 2, equal to
+operand 2, greater than operand 2 or is unordered with operand 2.
+@var{m} should be a scalar floating point mode.
+
+This pattern is not allowed to @code{FAIL}.
 
 @end table
 

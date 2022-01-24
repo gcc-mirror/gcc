@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -52,6 +52,7 @@
 #include "builtins.h"
 #include "tree-pass.h"
 #include "xregex.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1363,7 +1364,7 @@ nios2_option_override (void)
   init_machine_status = &nios2_init_machine_status;
 
   nios2_section_threshold
-    = (global_options_set.x_g_switch_value
+    = (OPTION_SET_P (g_switch_value)
        ? g_switch_value : NIOS2_DEFAULT_GVALUE);
 
   if (nios2_gpopt_option == gpopt_unspecified)
@@ -4161,6 +4162,40 @@ nios2_option_restore (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	  sizeof (custom_code_index));
 }
 
+static bool
+nios2_can_inline_p (tree caller, tree callee)
+{
+  tree callee_opts = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+  tree caller_opts = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  struct cl_target_option *callee_ptr, *caller_ptr;
+  unsigned int i;
+
+  if (! callee_opts)
+    callee_opts = target_option_default_node;
+  if (! caller_opts)
+    caller_opts = target_option_default_node;
+
+  /* If both caller and callee have attributes, assume that if the
+     pointer is different, the two functions have different target
+     options since build_target_option_node uses a hash table for the
+     options.  */
+  if (callee_opts == caller_opts)
+    return true;
+
+  /* The only target options we recognize via function attributes are
+     those related to custom instructions.  If we failed the above test,
+     check that any custom instructions enabled in the callee are also
+     enabled with the same value in the caller.  */
+  callee_ptr = TREE_TARGET_OPTION (callee_opts);
+  caller_ptr = TREE_TARGET_OPTION (caller_opts);
+  for (i = 0; i < ARRAY_SIZE (nios2_fpu_insn); i++)
+    if (callee_ptr->saved_fpu_custom_code[i] != -1
+	&& (callee_ptr->saved_fpu_custom_code[i]
+	    != caller_ptr->saved_fpu_custom_code[i]))
+      return false;
+  return true;
+}
+
 /* Inner function to process the attribute((target(...))), take an argument and
    set the current options from the argument.  If we have a list, recursively
    go over the list.  */
@@ -5552,6 +5587,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE nios2_option_restore
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P nios2_can_inline_p
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION nios2_set_current_function

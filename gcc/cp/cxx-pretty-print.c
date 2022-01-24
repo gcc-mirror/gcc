@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -2541,8 +2541,8 @@ pp_cxx_addressof_expression (cxx_pretty_printer *pp, tree t)
 static char const*
 get_fold_operator (tree t)
 {
-  int op = int_cst_value (FOLD_EXPR_OP (t));
-  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t), op);
+  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t),
+				     FOLD_EXPR_OP (t));
   return info->name;
 }
 
@@ -2891,8 +2891,10 @@ pp_cxx_parameter_mapping (cxx_pretty_printer *pp, tree map)
 
       if (TYPE_P (parm))
 	pp->type_id (parm);
+      else if (tree name = DECL_NAME (TEMPLATE_PARM_DECL (parm)))
+	pp_cxx_tree_identifier (pp, name);
       else
-	pp_cxx_tree_identifier (pp, DECL_NAME (TEMPLATE_PARM_DECL (parm)));
+	pp->translate_string ("<unnamed>");
 
       pp_cxx_whitespace (pp);
       pp_equal (pp);

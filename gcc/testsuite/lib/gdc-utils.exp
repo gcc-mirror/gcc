@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,15 @@ proc gdc-convert-args { args } {
 	    set compilable_output_file_ext "di"
 	    lappend out "-H"
 
+	} elseif [string match "-HC" $arg] {
+	    upvar 1 compilable_output_file_ext compilable_output_file_ext
+	    upvar 1 name name
+	    set compilable_output_file_ext "h"
+	    lappend out "-fdump-c++-spec=[file rootname $name].h"
+
+	} elseif [string match "-HC=verbose" $arg] {
+	    lappend out "-fdump-c++-spec-verbose"
+
 	} elseif { [regexp -- {^-I([\w+/-]+)} $arg pattern path] } {
 	    lappend out "-I$path"
 
@@ -54,17 +63,23 @@ proc gdc-convert-args { args } {
 
 	} elseif { [string match "-boundscheck" $arg]
 		 || [string match "-boundscheck=on" $arg] } {
-	    lappend out "-fbounds-check"
+	    lappend out "-fbounds-check=on"
 
 	} elseif { [string match "-boundscheck=off" $arg]
 		   || [string match "-noboundscheck" $arg] } {
-	    lappend out "-fno-bounds-check"
+	    lappend out "-fbounds-check=off"
 
 	} elseif [string match "-boundscheck=safeonly" $arg] {
 	    lappend out "-fbounds-check=safeonly"
 
 	} elseif [string match "-c" $arg] {
 	    lappend out "-c"
+
+	} elseif [regexp -- {^-check=(\w+)=off} $arg pattern value] {
+	    lappend out "-fno-check=$value"
+
+	} elseif [string match "-checkaction=context" $arg] {
+	    lappend out "-fcheckaction=context"
 
 	} elseif [string match "-d" $arg] {
 	    lappend out "-Wno-deprecated"
@@ -79,22 +94,34 @@ proc gdc-convert-args { args } {
 	} elseif [regexp -- {^-debug=(\w+)} $arg pattern value] {
 	    lappend out "-fdebug=$value"
 
-	} elseif [string match "-dip1000" $arg] {
-	    lappend out "-ftransition=dip1000"
-
 	} elseif [string match "-dip25" $arg] {
-	    lappend out "-ftransition=dip25"
+	    lappend out "-fpreview=dip25"
+
+	} elseif [string match "-dip1000" $arg] {
+	    lappend out "-fpreview=dip1000"
+
+	} elseif [string match "-dip1008" $arg] {
+	    lappend out "-fpreview=dip1008"
 
 	} elseif [string match "-dw" $arg] {
 	    lappend out "-Wdeprecated"
 	    lappend out "-Wno-error"
 
+	} elseif [regexp -- {^-extern-std=([\w+]+)} $arg pattern value] {
+	    lappend out "-fextern-std=$value"
+
 	} elseif [string match "-fPIC" $arg] {
 	    lappend out "-fPIC"
+
+	} elseif [string match "-fPIE" $arg] {
+	    lappend out "-fPIE"
 
 	} elseif { [string match "-g" $arg]
 		   || [string match "-gc" $arg] } {
 	    lappend out "-g"
+
+	} elseif [string match "-ignore" $arg] {
+	    lappend out "-fignore-unknown-pragmas"
 
 	} elseif [string match "-inline" $arg] {
 	    lappend out "-finline-functions"
@@ -108,11 +135,17 @@ proc gdc-convert-args { args } {
 	} elseif [string match "-O" $arg] {
 	    lappend out "-O2"
 
+	} elseif [regexp -- {^-preview=(\w+)} $arg pattern value] {
+	    lappend out "-fpreview=[string tolower $value]"
+
 	} elseif [string match "-release" $arg] {
 	    lappend out "-frelease"
 
+	} elseif [regexp -- {^-revert=(\w+)} $arg pattern value] {
+	    lappend out "-frevert=[string tolower $value]"
+
 	} elseif [regexp -- {^-transition=(\w+)} $arg pattern value] {
-	    lappend out "-ftransition=$value"
+	    lappend out "-ftransition=[string tolower $value]"
 
 	} elseif [string match "-unittest" $arg] {
 	    lappend out "-funittest"
@@ -125,6 +158,16 @@ proc gdc-convert-args { args } {
 
 	} elseif [regexp -- {^-version=(\w+)} $arg pattern value] {
 	    lappend out "-fversion=$value"
+
+	} elseif [string match "-o-" $arg] {
+	    upvar 2 compilable_do_what compilable_do_what
+	    set compilable_do_what "compile"
+
+	} elseif [string match "-vgc" $arg] {
+	    lappend out "-ftransition=nogc"
+
+	} elseif [string match "-vtemplates" $arg] {
+	    lappend out "-ftransition=templates"
 
 	} elseif [string match "-vtls" $arg] {
 	    lappend out "-ftransition=tls"
@@ -184,10 +227,15 @@ proc gdc-copy-file { srcdir filename } {
 #			the test.
 #   EXTRA_CPP_SOURCES:	List of extra C++ files to build and link along with
 #			the test.
+#   CXXFLAGS:		list of extra arguments passed when compiling C++
+#			sources defined in EXTRA_CPP_SOURCES.
+#   EXTRA_OBJC_SOURCES:	List of extra Objective-C file to build and link along
+#			with the test.  Currently not handled.
 #   EXTRA_FILES:	List of extra files to copy for the test runs.
 #   PERMUTE_ARGS:	The set of arguments to permute in multiple compiler
 #			invocations.  An empty set means only one permutation
 #			with no arguments.
+#   ARG_SETS:		Not handled.
 #   LINK:		Enables linking.
 #   TEST_OUTPUT:	The output expected from the compilation.
 #   POST_SCRIPT:	Not handled.
@@ -241,6 +289,10 @@ proc gdc-convert-test { base test } {
 	    # LINK sets dg-do-what-default "link"
 	    set compilable_do_what "link"
 
+	} elseif [regexp -- {ARG_SETS} $copy_line] {
+	    # ARG_SETS is not handled.
+	    regsub -- {ARG_SETS.*$} $copy_line "" out_line
+
 	} elseif [regexp -- {POST_SCRIPT} $copy_line] {
 	    # POST_SCRIPT is not handled
 
@@ -278,6 +330,16 @@ proc gdc-convert-test { base test } {
 		# C++ sources are found in the extra-files directory.
 		lappend extra_sources "extra-files/$srcfile"
 	    }
+
+	} elseif [regexp -- {CXXFLAGS\s*:\s*(.*)} $copy_line match args] {
+	    # Both C++ and D sources are compiled together, so include each
+	    # other's command line flags too.
+	    set new_option "{ dg-additional-options \"$args\" }"
+	    regsub -- {CXXFLAGS.*$} $copy_line $new_option out_line
+
+	} elseif [regexp -- {EXTRA_OBJC_SOURCES\s*:\s*(.*)} $copy_line match sources] {
+	    # EXTRA_OBJC_SOURCES is not handled.
+	    regsub -- {EXTRA_OBJC_SOURCES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXTRA_FILES\s*:\s*(.*)} $copy_line match files] {
 	    # EXTRA_FILES are appended to extra_files list
@@ -365,6 +427,11 @@ proc gdc-convert-test { base test } {
 	}
 
 	fail_compilation {
+	    # Fail compilation tests only check for language errors from the
+	    # front-end.  No need to run all permutations of the default DFLAGS.
+	    if { $PERMUTE_ARGS == $DEFAULT_DFLAGS } {
+		set PERMUTE_ARGS ""
+	    }
 	    puts $fdout "// { dg-final { output-exists-not } }"
 	}
     }
@@ -434,7 +501,7 @@ proc gdc-do-test { testcases } {
 	regexp -- "(.*)/(.+)/(.+)\.(.+)$" $test match base type name ext
 
 	# Convert to DG test.
-	set imports [format "-I%s/%s" $base $type]
+	set imports [format "-I%s" $type]
 	set cleanup_extra_files ""
 	set compilable_do_what "compile"
 	set filename "[gdc-convert-test $base $type/$name.$ext]"

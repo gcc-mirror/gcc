@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GCC
-   Copyright (C) 1990-2021 Free Software Foundation, Inc.
+   Copyright (C) 1990-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -484,6 +484,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fputs (" decl_6", file);
 	  if (DECL_LANG_FLAG_7 (node))
 	    fputs (" decl_7", file);
+	  if (DECL_LANG_FLAG_8 (node))
+	    fputs (" decl_8", file);
 
 	  mode = DECL_MODE (node);
 	  fprintf (file, " %s", GET_MODE_NAME (mode));
@@ -1004,8 +1006,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  break;
 
 	default:
-	  if (EXCEPTIONAL_CLASS_P (node))
-	    lang_hooks.print_xnode (file, node, indent);
+	  lang_hooks.print_xnode (file, node, indent);
 	  break;
 	}
 

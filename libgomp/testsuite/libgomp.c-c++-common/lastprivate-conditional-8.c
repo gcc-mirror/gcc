@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-additional-options "-O2 -fdump-tree-vect-details" } */
+/* { dg-additional-options "-O2 -fvect-cost-model=cheap -fdump-tree-vect-details" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" { target avx_runtime } } } */
 

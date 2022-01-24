@@ -1,5 +1,5 @@
 /* d-port.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -145,6 +145,8 @@ Port::readlongBE (const void *buffer)
 void
 Port::valcpy (void *buffer, uint64_t value, size_t sz)
 {
+  gcc_assert (((size_t) buffer) % sz == 0);
+
   switch (sz)
     {
     case 1:

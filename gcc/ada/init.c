@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -660,6 +660,28 @@ __gnat_install_handler (void)
 
 #include <signal.h>
 #include <unistd.h>
+
+/* SA_SIGINFO is not supported by default on LynxOS, so all we have
+   available here is the "sig" argument. On newer LynxOS versions it's
+   possible to support SA_SIGINFO by setting a kernel configuration macro.
+
+   To wit:
+
+   #define NONPOSIX_SA_HANDLER_PROTO (0)
+
+   This macro must be set to 1 in either sys/bsp.<bspname>/uparam.h
+   or in the associated uparam.h customization file sys/bsp.<bspname>/xparam.h
+   (uparam.h includes xparam.h for customization)
+
+   The NONPOSIX_SA_HANDLER_PROTO macro makes it possible to provide
+   signal-catching function with 'info' and 'context' input parameters
+   even if SA_SIGINFO flag is not set or it is set for a non-realtime signal.
+
+   It also allows signal-catching function to update thread context even
+   if SA_UPDATECTX flag is not set.
+
+   This would be useful, but relying on that would transmit the requirement
+   to users to configure that feature as well, which is undesirable.  */
 
 static void
 __gnat_error_handler (int sig)
@@ -2529,6 +2551,7 @@ __gnat_install_handler (void)
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "sigtramp.h"
 
 void
@@ -2619,6 +2642,68 @@ __gnat_install_handler (void)
       perror (strerror (err));
     }
   }
+  __gnat_handler_installed = 1;
+}
+
+/*****************/
+/* RTEMS Section */
+/*****************/
+
+#elif defined(__rtems__)
+
+#include <signal.h>
+#include <unistd.h>
+
+static void
+__gnat_error_handler (int sig)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch(sig)
+  {
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+    case SIGILL:
+      exception = &constraint_error;
+      msg = "SIGILL";
+      break;
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "erroneous memory access";
+      break;
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+    Raise_From_Signal_Handler (exception, msg);
+}
+
+void
+__gnat_install_handler (void)
+{
+  struct sigaction act;
+
+  act.sa_handler = __gnat_error_handler;
+  sigemptyset (&act.sa_mask);
+
+  /* Do not install handlers if interrupt state is "System".  */
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
+
   __gnat_handler_installed = 1;
 }
 

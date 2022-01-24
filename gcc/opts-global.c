@@ -1,6 +1,6 @@
 /* Command line option handling.  Code involving global state that
    should not be shared with the driver.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -384,6 +384,10 @@ handle_common_deferred_options (void)
 
 	case OPT_ffile_prefix_map_:
 	  add_file_prefix_map (opt->arg);
+	  break;
+
+	case OPT_fprofile_prefix_map_:
+	  add_profile_prefix_map (opt->arg);
 	  break;
 
 	case OPT_fdump_:

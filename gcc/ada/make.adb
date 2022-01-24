@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1168,7 +1168,7 @@ package body Make is
          end if;
 
       else
-         ALI := Scan_ALI (Lib_File, Text, Ignore_ED => False, Err => True);
+         ALI := Scan_ALI (Lib_File, Text, Err => True);
          Free (Text);
 
          if ALI = No_ALI_Id then
@@ -2647,7 +2647,7 @@ package body Make is
                if Text /= null then
                   ALI :=
                     Scan_ALI
-                      (Data.Lib_File, Text, Ignore_ED => False, Err => True);
+                      (Data.Lib_File, Text, Err => True);
 
                   if ALI = No_ALI_Id then
 
@@ -3765,7 +3765,7 @@ package body Make is
                declare
                   Arg : constant String := Argument (J);
                begin
-                  if Arg = "-cargs" or Arg = "-bargs" or Arg = "-largs" then
+                  if Arg in "-cargs" | "-bargs" | "-largs" then
                      In_Gnatmake_Switches := False;
 
                   elsif Arg = "-margs" then

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice12362.d(12): Error: cannot interpret foo at compile time
+fail_compilation/ice12362.d(12): Error: initializer must be an expression, not `foo`
 ---
 */
 

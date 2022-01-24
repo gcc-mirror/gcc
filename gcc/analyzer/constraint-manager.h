@@ -1,5 +1,5 @@
 /* Tracking equivalence classes and constraints at a point on an execution path.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -247,6 +247,8 @@ public:
   void print (pretty_printer *pp) const;
 
   json::object *to_json () const;
+
+  bool contains_non_constant_p () const;
 
   /* An equivalence class can contain multiple constants (e.g. multiple
      different zeroes, for different types); these are just for the last

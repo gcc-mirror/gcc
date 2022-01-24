@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -203,6 +203,11 @@ extern bool arm_pad_reg_upward (machine_mode, tree, int);
 extern int arm_apply_result_size (void);
 
 #endif /* RTX_CODE */
+
+/* MVE functions.  */
+namespace arm_mve {
+  void handle_arm_mve_types_h ();
+}
 
 /* Thumb functions.  */
 extern void arm_init_expanders (void);

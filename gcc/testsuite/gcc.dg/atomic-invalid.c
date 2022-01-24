@@ -13,7 +13,7 @@ bool x;
 int
 main ()
 {
-  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_RELAXED, __ATOMIC_SEQ_CST); /* { dg-warning "failure memory model cannot be stronger" } */
+  __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_RELAXED, __ATOMIC_SEQ_CST); /* { dg-warning "failure memory model 'memory_order_seq_cst' cannot be stronger" } */
   __atomic_compare_exchange_n (&i, &e, 1, 0, __ATOMIC_SEQ_CST, __ATOMIC_RELEASE); /* { dg-warning "invalid failure memory" } */
   __atomic_compare_exchange_n (&i, &e, 1, 1, __ATOMIC_SEQ_CST, __ATOMIC_ACQ_REL); /* { dg-warning "invalid failure memory" } */
 

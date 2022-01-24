@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,9 +48,7 @@ test01()
 {
   VERIFY( check_to_chars(u'\x21') );
   VERIFY( check_to_chars(U'\x21') );
-#if _GLIBCXX_USE_WCHAR_T
   VERIFY( check_to_chars(L'\x21') );
-#endif
 }
 
 int main()

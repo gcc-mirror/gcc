@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for eBPF.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -129,8 +129,8 @@ bpf_handle_fndecl_attribute (tree *node, tree name,
 
 static tree
 bpf_handle_preserve_access_index_attribute (tree *node, tree name,
-					    tree args,
-					    int flags,
+					    tree args ATTRIBUTE_UNUSED,
+					    int flags ATTRIBUTE_UNUSED,
 					    bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
@@ -257,20 +257,6 @@ bpf_option_override (void)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE bpf_option_override
-
-/* Return FALSE iff -mcore has been specified.  */
-
-static bool
-ctfc_debuginfo_early_finish_p (void)
-{
-  if (TARGET_BPF_CORE)
-    return false;
-  else
-    return true;
-}
-
-#undef TARGET_CTFC_DEBUGINFO_EARLY_FINISH_P
-#define TARGET_CTFC_DEBUGINFO_EARLY_FINISH_P ctfc_debuginfo_early_finish_p
 
 /* Implement TARGET_ASM_INIT_SECTIONS.  */
 
@@ -1266,15 +1252,14 @@ bpf_core_get_index (const tree node)
   return -1;
 }
 
-/* Synthesize a new builtin function declaration at LOC with signature TYPE.
+/* Synthesize a new builtin function declaration with signature TYPE.
    Used by bpf_resolve_overloaded_builtin to resolve calls to
    __builtin_preserve_access_index.  */
 
 static tree
-bpf_core_newdecl (location_t loc, tree type)
+bpf_core_newdecl (tree type)
 {
   tree rettype = build_function_type_list (type, type, NULL);
-  tree newdecl = NULL_TREE;
   char name[80];
   int len = snprintf (name, sizeof (name), "%s", "__builtin_pai_");
 
@@ -1317,7 +1302,7 @@ bpf_core_walk (tree *tp, int *walk_subtrees, void *data)
 
   if (bpf_core_is_maybe_aggregate_access (*tp))
     {
-      tree newdecl = bpf_core_newdecl (loc, TREE_TYPE (*tp));
+      tree newdecl = bpf_core_newdecl (TREE_TYPE (*tp));
       tree newcall = build_call_expr_loc (loc, newdecl, 1, *tp);
       *tp = newcall;
       *walk_subtrees = 0;
@@ -1497,7 +1482,7 @@ handle_attr_preserve (function *fn)
 		      && TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME)
 		    {
 		      gimple *def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (expr, 0));
-		      if (is_gimple_assign (def_stmt))
+		      if (def_stmt && is_gimple_assign (def_stmt))
 			expr = gimple_assign_rhs1 (def_stmt);
 		    }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2021, AdaCore                     --
+--                     Copyright (C) 2000-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package body GNAT.Expect is
       Str       : String;
       Filter_On : Filter_Type)
    is
-      Current_Filter  : Filter_List;
+      Current_Filter : Filter_List;
 
    begin
       if Pid.Filters_Lock = 0 then
@@ -264,7 +264,6 @@ package body GNAT.Expect is
 
    procedure Close (Descriptor : in out Process_Descriptor) is
       Status : Integer;
-      pragma Unreferenced (Status);
    begin
       Close (Descriptor, Status);
    end Close;
@@ -351,7 +350,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       N           : Expect_Match;
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
       Try_Until   : constant Time := Clock + Duration (Timeout) / 1000.0;
       Timeout_Tmp : Integer := Timeout;
 
@@ -508,7 +507,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       N           : Expect_Match;
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
 
    begin
       pragma Assert (Matched'First = 0);
@@ -976,7 +975,6 @@ package body GNAT.Expect is
 
       declare
          Result : Expect_Match;
-         pragma Unreferenced (Result);
 
       begin
          --  This loop runs until the call to Expect raises Process_Died
@@ -1078,7 +1076,7 @@ package body GNAT.Expect is
 
    function Has_Process (Regexp : Multiprocess_Regexp_Array) return Boolean is
    begin
-      return Regexp /= (Regexp'Range => (null, null));
+      return Regexp /= [Regexp'Range => (null, null)];
    end Has_Process;
 
    ---------------
@@ -1294,8 +1292,8 @@ package body GNAT.Expect is
       Add_LF       : Boolean := True;
       Empty_Buffer : Boolean := False)
    is
-      Line_Feed   : aliased constant String := (1 .. 1 => ASCII.LF);
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Line_Feed   : aliased constant String := [1 .. 1 => ASCII.LF];
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
 
       Result  : Expect_Match;
       Discard : Natural;
@@ -1439,7 +1437,7 @@ package body GNAT.Expect is
       Pipe3      : not null access Pipe_Type)
    is
       Status : Boolean;
-      pragma Unreferenced (Status);
+      pragma Warnings (Off, "modified by call, but value overwritten");
 
    begin
       --  Create the pipes

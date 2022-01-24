@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -435,6 +435,7 @@ rm -f a.out a.exe b.out
 AC_PROG_CC
 AC_PROG_CXX
 ACX_PROG_GNAT([-I"$srcdir"/ada/libgnat])
+ACX_PROG_GDC([-I"$srcdir"/d])
 
 # Do configure tests with the C++ compiler, since that's what we build with.
 AC_LANG(C++)
@@ -448,6 +449,7 @@ case "$CC" in
 esac
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
+AC_SUBST(GDCFLAGS)
 
 # Determine PICFLAG for target gnatlib.
 GCC_PICFLAG_FOR_TARGET
@@ -463,6 +465,20 @@ AC_PROG_CPP
 AC_C_INLINE
 
 AC_SYS_LARGEFILE
+AC_CHECK_SIZEOF(ino_t)
+AC_CHECK_SIZEOF(dev_t)
+
+# Select the right stat being able to handle 64bit inodes, if needed.
+if test "$enable_largefile" != no; then
+  case "$host, $build" in
+    *-*-aix*,*|*,*-*-aix*)
+      if test "$ac_cv_sizeof_ino_t" == "4" -a "$ac_cv_sizeof_dev_t" == 4; then
+	AC_DEFINE(HOST_STAT_FOR_64BIT_INODES, stat64x,
+	  [Define which stat syscall is able to handle 64bit indodes.])
+      fi;;
+  esac
+fi
+
 
 # sizeof(char) is 1 by definition.
 AC_CHECK_SIZEOF(void *)
@@ -1169,7 +1185,7 @@ if test "x$enable_offload_defaulted" = xyes; then
 fi
 
 AC_ARG_WITH(multilib-list,
-[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, SH and x86-64 only)])],
+[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, OR1K, RISC-V, SH and x86-64 only)])],
 :,
 with_multilib_list=default)
 
@@ -2065,7 +2081,7 @@ else
 	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
 	CXX="${CXX_FOR_BUILD}" CXXFLAGS="${CXXFLAGS_FOR_BUILD}" \
 	LD="${LD_FOR_BUILD}" LDFLAGS="${LDFLAGS_FOR_BUILD}" \
-	GMPINC="" CPPFLAGS="${CPPFLAGS} -DGENERATOR_FILE" \
+	GMPINC="" CPPFLAGS="${CPPFLAGS_FOR_BUILD} -DGENERATOR_FILE" \
 	${realsrcdir}/configure \
 		--enable-languages=${enable_languages-all} \
 		${enable_obsolete+--enable-obsolete="$enable_obsolete"} \
@@ -4706,7 +4722,7 @@ foo:	nop
 	;;
     esac
     case $target_os in
-       darwin2[[0-9]]* | darwin19*)
+       darwin2* | darwin19*)
         gcc_GAS_CHECK_FEATURE([llvm assembler x86-pad-for-align option],
           gcc_cv_as_mllvm_x86_pad_for_align,
           [-mllvm -x86-pad-for-align=false], [.text],,
@@ -5348,31 +5364,117 @@ esac
 
 case "$target" in
   amdgcn-* | gcn-*)
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for fiji],
+    # Test the LLVM assembler syntax dialect; they have made a number of
+    # changes between LLVM 12 & 13 without any backward compatibility.
+    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v2/3 syntax],
+      gcc_cv_as_gcn_asm_v3_syntax,
+      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+xnack"],,
+      [AC_DEFINE(HAVE_GCN_ASM_V3_SYNTAX, 1,
+       [Define if your assembler expects amdgcn_target gfx908+xnack syntax.])])
+    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v4 syntax],
+      gcc_cv_as_gcn_asm_v4_syntax,
+      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack],
+      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx908:xnack+"],,
+      [AC_DEFINE(HAVE_GCN_ASM_V4_SYNTAX, 1,
+       [Define if your assembler expects amdgcn_target gfx908:xnack+ syntax.])])
+
+    # Some attribute names changed in the move to v4 ...
+    if test $gcc_cv_as_gcn_asm_v3_syntax = yes; then
+	sramopt="+sram-ecc"
+	sramattr="+sram-ecc"
+	xnackattr="+xnack"
+    elif test $gcc_cv_as_gcn_asm_v4_syntax = yes; then
+	sramopt="+sramecc"
+	sramattr=":sramecc+"
+	xnackattr=":xnack+"
+    else
+	AC_MSG_ERROR([Unrecognised assembler version])
+    fi
+
+    # Test whether the LLVM assembler accepts -mattr=+xnack without any
+    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
+    # LLVM 12+ throws a warning for GPUs without support.
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for fiji],
+      gcc_cv_as_gcn_xnack_ecc_fiji,
+      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=+xnack 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_xnack_ecc_fiji=yes],
+      [AC_DEFINE(HAVE_GCN_XNACK_FIJI, 1,
+       [Define if your assembler allows -mattr=+xnack for fiji.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx900],
+      gcc_cv_as_gcn_xnack_ecc_gfx900,
+      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=+xnack 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_xnack_ecc_gfx900=yes],
+      [AC_DEFINE(HAVE_GCN_XNACK_GFX900, 1,
+       [Define if your assembler allows -mattr=+xnack for gfx900.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx906],
+      gcc_cv_as_gcn_xnack_ecc_gfx906,
+      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_xnack_ecc_gfx906=yes],
+      [AC_DEFINE(HAVE_GCN_XNACK_GFX906, 1,
+       [Define if your assembler allows -mattr=+xnack for gfx906.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx908],
+      gcc_cv_as_gcn_xnack_ecc_gfx908,
+      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_xnack_ecc_gfx908=yes],
+      [AC_DEFINE(HAVE_GCN_XNACK_GFX908, 1,
+       [Define if your assembler allows -mattr=+xnack for gfx908.])])
+    rm -f conftest.err
+
+    # Test whether the LLVM assembler accepts -mattr=+sramecc without any
+    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
+    # (some?) LLVM 12 rejects it for all GPUs, and LLVM13 throws a warning
+    # for GPUs without support.
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for fiji],
       gcc_cv_as_gcn_sram_ecc_fiji,
-      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=-xnack -mattr=+sram-ecc],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx803+sram-ecc"],,
+      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=$sramopt 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_sram_ecc_fiji=yes],
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_FIJI, 1,
-       [Define if your assembler allows -mattr=+sram-ecc for fiji.])])
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx900],
+       [Define if your assembler allows -mattr=+sramecc for fiji.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx900],
       gcc_cv_as_gcn_sram_ecc_gfx900,
-      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=-xnack -mattr=+sram-ecc],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx900+sram-ecc"],,
+      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=$sramopt 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_sram_ecc_gfx900=yes],
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX900, 1,
-       [Define if your assembler allows -mattr=+sram-ecc for gfx900.])])
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx906],
+       [Define if your assembler allows -mattr=+sramecc for gfx900.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx906],
       gcc_cv_as_gcn_sram_ecc_gfx906,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=-xnack -mattr=+sram-ecc],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+sram-ecc"],,
+      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=$sramopt 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_sram_ecc_gfx906=yes],
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX906, 1,
-       [Define if your assembler allows -mattr=+sram-ecc for gfx906.])])
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+sram-ecc for gfx908],
+       [Define if your assembler allows -mattr=+sramecc for gfx906.])])
+    rm -f conftest.err
+    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx908],
       gcc_cv_as_gcn_sram_ecc_gfx908,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=-xnack -mattr=+sram-ecc],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx908+sram-ecc"],,
+      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=$sramopt 2>conftest.err], [],
+      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
+       || gcc_cv_as_gcn_sram_ecc_gfx908=yes],
       [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
-       [Define if your assembler allows -mattr=+sram-ecc for gfx908.])])
+       [Define if your assembler allows -mattr=+sramecc for gfx908.])])
+    rm -f conftest.err
     ;;
+  arm*)
+    gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
+      gcc_cv_as_arm_option_extensions,
+      [-march=armv8.1-m.main+mve],
+      [.text
+	.thumb
+	.syntax unified
+	vmov.f32 s0, s1],,
+      [AC_DEFINE(HAVE_GAS_ARM_EXTENDED_ARCH, 1,
+       [Define if your Arm assembler permits context-specific feature extensions.])])
 esac
 
 # ??? Not all targets support dwarf2 debug_line, even within a version
@@ -6183,6 +6285,7 @@ if test x"$ld64_flag" = x"yes"; then
 
   # Set defaults for possibly untestable items.
   gcc_cv_ld64_export_dynamic=0
+  gcc_cv_ld64_platform_version=0
 
   if test "$build" = "$host"; then
     darwin_try_test=1
@@ -6204,8 +6307,11 @@ if test x"$ld64_flag" = x"yes"; then
     AC_MSG_CHECKING(ld64 specified version)
     gcc_cv_ld64_major=`echo "$gcc_cv_ld64_version" | sed -e 's/\..*//'`
     AC_MSG_RESULT($gcc_cv_ld64_major)
-   if test "$gcc_cv_ld64_major" -ge 236; then
+    if test "$gcc_cv_ld64_major" -ge 236; then
       gcc_cv_ld64_export_dynamic=1
+    fi
+    if test "$gcc_cv_ld64_major" -ge 512; then
+      gcc_cv_ld64_platform_version=1
     fi
   elif test -x "$gcc_cv_ld" -a "$darwin_try_test" -eq 1; then
     # If the version was not specified, try to find it.
@@ -6221,6 +6327,13 @@ if test x"$ld64_flag" = x"yes"; then
       gcc_cv_ld64_export_dynamic=0
     fi
     AC_MSG_RESULT($gcc_cv_ld64_export_dynamic)
+
+    AC_MSG_CHECKING(linker for -platform_version support)
+    gcc_cv_ld64_platform_version=1
+    if $gcc_cv_ld -platform_version macos 10.5 0.0 < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_platform_version=0
+    fi
+    AC_MSG_RESULT($gcc_cv_ld64_platform_version)
   fi
 
   if test x"${gcc_cv_ld64_version}" != x; then
@@ -6230,6 +6343,9 @@ if test x"$ld64_flag" = x"yes"; then
 
   AC_DEFINE_UNQUOTED(LD64_HAS_EXPORT_DYNAMIC, $gcc_cv_ld64_export_dynamic,
   [Define to 1 if ld64 supports '-export_dynamic'.])
+
+  AC_DEFINE_UNQUOTED(LD64_HAS_PLATFORM_VERSION, $gcc_cv_ld64_platform_version,
+  [Define to 1 if ld64 supports '-platform_version'.])
 fi
 
 if test x"$dsymutil_flag" = x"yes"; then
@@ -6445,7 +6561,7 @@ EOF
 esac
 
 case "$target:$tm_file" in
-  powerpc64-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
+  powerpc64*-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
   case "$target" in
      *le-*-linux*)
      emul_name="-melf64lppc"
@@ -6877,6 +6993,9 @@ fi
 # Check if the target LIBC handles PT_GNU_STACK.
 gcc_cv_libc_gnustack=unknown
 case "$target" in
+  mips*-*-linux-musl*)
+    gcc_cv_libc_gnustack=yes
+    ;;
   mips*-*-linux*)
     GCC_GLIBC_VERSION_GTE_IFELSE([2], [31], [gcc_cv_libc_gnustack=yes], )
     ;;
@@ -6955,6 +7074,20 @@ else
   MAINT='#'
 fi
 AC_SUBST(MAINT)dnl
+
+dnl Variables for tags utilities; copied from automake 1.16.4+'s init.m4
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+AC_SUBST([CTAGS])
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+if test -z "$CSCOPE"; then
+  CSCOPE=cscope
+fi
+AC_SUBST([CSCOPE])
 
 dnl Whether to prevent multiple front-ends from linking at the same time
 
@@ -7148,8 +7281,8 @@ done
 rm -f Make-hooks
 touch Make-hooks
 target_list="all.cross start.encap rest.encap tags \
-	install-common install-man install-info install-pdf install-html dvi \
-	pdf html uninstall info man srcextra srcman srcinfo \
+	install-common install-man install-info install-dvi install-pdf \
+	install-html dvi pdf html uninstall info man srcextra srcman srcinfo \
 	mostlyclean clean distclean maintainer-clean install-plugin"
 
 for t in $target_list

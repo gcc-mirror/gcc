@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---          Copyright (C) 1993-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1993-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -61,7 +61,7 @@ package Interfaces.COBOL is
 
    type COBOL_Character is new Character;
 
-   Ada_To_COBOL : array (Standard.Character) of COBOL_Character := (
+   Ada_To_COBOL : array (Standard.Character) of COBOL_Character := [
      COBOL_Character'Val (000), COBOL_Character'Val (001),
      COBOL_Character'Val (002), COBOL_Character'Val (003),
      COBOL_Character'Val (004), COBOL_Character'Val (005),
@@ -189,9 +189,9 @@ package Interfaces.COBOL is
      COBOL_Character'Val (248), COBOL_Character'Val (249),
      COBOL_Character'Val (250), COBOL_Character'Val (251),
      COBOL_Character'Val (252), COBOL_Character'Val (253),
-     COBOL_Character'Val (254), COBOL_Character'Val (255));
+     COBOL_Character'Val (254), COBOL_Character'Val (255)];
 
-   COBOL_To_Ada : array (COBOL_Character) of Standard.Character := (
+   COBOL_To_Ada : array (COBOL_Character) of Standard.Character := [
      Standard.Character'Val (000), Standard.Character'Val (001),
      Standard.Character'Val (002), Standard.Character'Val (003),
      Standard.Character'Val (004), Standard.Character'Val (005),
@@ -319,7 +319,7 @@ package Interfaces.COBOL is
      Standard.Character'Val (248), Standard.Character'Val (249),
      Standard.Character'Val (250), Standard.Character'Val (251),
      Standard.Character'Val (252), Standard.Character'Val (253),
-     Standard.Character'Val (254), Standard.Character'Val (255));
+     Standard.Character'Val (254), Standard.Character'Val (255)];
 
    type Alphanumeric is array (Positive range <>) of COBOL_Character;
    --  pragma Pack (Alphanumeric);

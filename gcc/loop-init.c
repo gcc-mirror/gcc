@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines and RTL loop optimization passes.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -201,7 +201,6 @@ fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   int record_exits = 0;
-  class loop *loop;
   unsigned old_nloops, i;
 
   timevar_push (TV_LOOP_INIT);
@@ -279,6 +278,7 @@ fix_loop_structure (bitmap changed_bbs)
 
   /* Finally free deleted loops.  */
   bool any_deleted = false;
+  class loop *loop;
   FOR_EACH_VEC_ELT (*get_loops (cfun), i, loop)
     if (loop && loop->header == NULL)
       {

@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 11
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 /// The various floating point exceptions
 enum

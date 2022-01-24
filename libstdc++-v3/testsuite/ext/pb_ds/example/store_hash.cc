@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -53,9 +53,9 @@ using namespace std;
 using namespace __gnu_pbds;
 
 // A string hash functor.
-struct string_hash : public unary_function<string, size_t>
+struct string_hash
 {
-  inline size_t
+  size_t
   operator()(string str) const
   {
     string::const_iterator b = str.begin();

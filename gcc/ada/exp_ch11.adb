@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1089,7 +1089,7 @@ package body Exp_Ch11 is
    --  (protecting test only needed if not at library level)
 
    --     exceptF : aliased System.Atomic_Operations.Test_And_Set.
-   --                         .Test_And_Set_Flag := 0; --  static data
+   --                         .Test_And_Set_Flag; --  static data
    --     if not Atomic_Test_And_Set (exceptF) then
    --        Register_Exception (except'Unrestricted_Access);
    --     end if;
@@ -1321,9 +1321,7 @@ package body Exp_Ch11 is
                       Defining_Identifier => Flag_Id,
                       Aliased_Present     => True,
                       Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc),
-                      Expression          =>
-                        Make_Integer_Literal (Loc, 0));
+                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc));
                else
                   Flag_Decl :=
                     Make_Object_Declaration (Loc,
@@ -1667,8 +1665,8 @@ package body Exp_Ch11 is
             --  If the exception is a renaming, use the exception that it
             --  renames (which might be a predefined exception, e.g.).
 
-            if Present (Renamed_Object (Id)) then
-               Id := Renamed_Object (Id);
+            if Present (Renamed_Entity (Id)) then
+               Id := Renamed_Entity (Id);
             end if;
 
             --  Build a C-compatible string in case of no exception handlers,
@@ -1861,10 +1859,10 @@ package body Exp_Ch11 is
 
             if Configurable_Run_Time_Mode then
                Error_Msg_NE
-                 ("\?X?& may call Last_Chance_Handler", N, E);
+                 ("\?.x?& may call Last_Chance_Handler", N, E);
             else
                Error_Msg_NE
-                 ("\?X?& may result in unhandled exception", N, E);
+                 ("\?.x?& may result in unhandled exception", N, E);
             end if;
          end if;
       end;
@@ -2163,7 +2161,7 @@ package body Exp_Ch11 is
          Warn_No_Exception_Propagation_Active (N);
 
          Error_Msg_N
-           ("\?X?this handler can never be entered, and has been removed", N);
+           ("\?.x?this handler can never be entered, and has been removed", N);
       end if;
    end Warn_If_No_Local_Raise;
 
@@ -2180,10 +2178,10 @@ package body Exp_Ch11 is
 
          if Configurable_Run_Time_Mode then
             Error_Msg_N
-              ("\?X?Last_Chance_Handler will be called on exception", N);
+              ("\?.x?Last_Chance_Handler will be called on exception", N);
          else
             Error_Msg_N
-              ("\?X?execution may raise unhandled exception", N);
+              ("\?.x?execution may raise unhandled exception", N);
          end if;
       end if;
    end Warn_If_No_Propagation;
@@ -2195,7 +2193,7 @@ package body Exp_Ch11 is
    procedure Warn_No_Exception_Propagation_Active (N : Node_Id) is
    begin
       Error_Msg_N
-        ("?X?pragma Restrictions (No_Exception_Propagation) in effect", N);
+        ("?.x?pragma Restrictions (No_Exception_Propagation) in effect", N);
    end Warn_No_Exception_Propagation_Active;
 
 end Exp_Ch11;

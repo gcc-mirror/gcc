@@ -1,5 +1,5 @@
 /* Prototypes for OpenRISC functions used in the md file & elsewhere.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 extern HOST_WIDE_INT or1k_initial_elimination_offset (int, int);
 extern void or1k_expand_prologue (void);
 extern void or1k_expand_epilogue (void);
+extern void or1k_profile_hook (void);
 extern void or1k_expand_eh_return (rtx);
 extern rtx  or1k_initial_frame_addr (void);
 extern rtx  or1k_dynamic_chain_addr (rtx);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-vrp1-details" } */
+/* { dg-options "-Ofast -fdisable-tree-cunrolli -fdump-tree-threadfull1-details" } */
 
 typedef unsigned short u16;
 typedef unsigned char u8;
@@ -56,6 +56,8 @@ main (int argc, char argv[])
   return crc;
 }
 
-/* { dg-final { scan-tree-dump-times "Registering jump thread" 3 "vrp1" } } */
-/* { dg-final { scan-tree-dump-not "joiner" "vrp1" } } */
-/* { dg-final { scan-tree-dump-times "Threaded jump" 3 "vrp1" } } */
+/* We used to have no threads in vrp-thread1 because all the attempted
+   ones would cross loops.  Now we get 30+ threads before VRP because
+   of loop unrolling.  A better option is to disable unrolling and
+   test for the original 4 threads that this test was testing.  */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 4 "threadfull1" } } */

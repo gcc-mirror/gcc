@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 2002-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 2002-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,11 +62,11 @@ package GNAT.Secure_Hashes.SHA1 is
 private
 
    Initial_State : constant Hash_State.State :=
-                     (0 => 16#67452301#,
+                     [0 => 16#67452301#,
                       1 => 16#EFCDAB89#,
                       2 => 16#98BADCFE#,
                       3 => 16#10325476#,
-                      4 => 16#C3D2E1F0#);
+                      4 => 16#C3D2E1F0#];
    --  Initialization vector from FIPS PUB 180-3
 
 end GNAT.Secure_Hashes.SHA1;

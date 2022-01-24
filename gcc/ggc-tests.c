@@ -1,5 +1,5 @@
 /* Unit tests for GCC's garbage collector (and gengtype etc).
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -415,7 +415,7 @@ gt_pch_nx (user_struct *p)
 static void
 gt_pch_nx (user_struct *p, gt_pointer_operator op, void *cookie)
 {
-  op (&(p->m_ptr), cookie);
+  op (&(p->m_ptr), NULL, cookie);
 }
 
 /* Verify that GTY((user)) works.  */

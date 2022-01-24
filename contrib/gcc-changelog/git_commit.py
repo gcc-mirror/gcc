@@ -134,6 +134,7 @@ ignored_prefixes = {
     'gcc/go/gofrontend/',
     'gcc/testsuite/gdc.test/',
     'gcc/testsuite/go.test/test/',
+    'libffi/',
     'libgo/',
     'libphobos/libdruntime/',
     'libphobos/src/',
@@ -196,9 +197,10 @@ def decode_path(path):
 
 
 class Error:
-    def __init__(self, message, line=None):
+    def __init__(self, message, line=None, details=None):
         self.message = message
         self.line = line
+        self.details = details
 
     def __repr__(self):
         s = self.message
@@ -217,7 +219,7 @@ class ChangeLogEntry:
         self.lines = []
         self.files = []
         self.file_patterns = []
-        self.opened_parentheses = 0
+        self.parentheses_stack = []
 
     def parse_file_names(self):
         # Whether the content currently processed is between a star prefix the
@@ -551,7 +553,7 @@ class GitCommit:
                     m = star_prefix_regex.match(line)
                     if m:
                         if (len(m.group('spaces')) != 1 and
-                                last_entry.opened_parentheses == 0):
+                                not last_entry.parentheses_stack):
                             msg = 'one space should follow asterisk'
                             self.errors.append(Error(msg, line))
                         else:
@@ -576,13 +578,13 @@ class GitCommit:
     def process_parentheses(self, last_entry, line):
         for c in line:
             if c == '(':
-                last_entry.opened_parentheses += 1
+                last_entry.parentheses_stack.append(line)
             elif c == ')':
-                if last_entry.opened_parentheses == 0:
+                if not last_entry.parentheses_stack:
                     msg = 'bad wrapping of parenthesis'
                     self.errors.append(Error(msg, line))
                 else:
-                    last_entry.opened_parentheses -= 1
+                    del last_entry.parentheses_stack[-1]
 
     def parse_file_names(self):
         for entry in self.changelog_entries:
@@ -608,9 +610,9 @@ class GitCommit:
 
     def check_for_broken_parentheses(self):
         for entry in self.changelog_entries:
-            if entry.opened_parentheses != 0:
+            if entry.parentheses_stack:
                 msg = 'bad parentheses wrapping'
-                self.errors.append(Error(msg, entry.lines[0]))
+                self.errors.append(Error(msg, entry.parentheses_stack[-1]))
 
     def get_file_changelog_location(self, changelog_file):
         for file in self.info.modified_files:
@@ -686,9 +688,11 @@ class GitCommit:
         for file in sorted(mentioned_files - changed_files):
             msg = 'unchanged file mentioned in a ChangeLog'
             candidates = difflib.get_close_matches(file, changed_files, 1)
+            details = None
             if candidates:
                 msg += f' (did you mean "{candidates[0]}"?)'
-            self.errors.append(Error(msg, file))
+                details = '\n'.join(difflib.Differ().compare([file], [candidates[0]])).rstrip()
+            self.errors.append(Error(msg, file, details))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
                 if file in self.new_files:

@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1870,11 +1870,6 @@ path::_M_split_cmpts()
   if (_M_pathname.empty())
     {
       _M_cmpts.type(_Type::_Filename);
-      return;
-    }
-  if (_M_pathname.length() == 1 && _M_pathname[0] == preferred_separator)
-    {
-      _M_cmpts.type(_Type::_Root_dir);
       return;
     }
 

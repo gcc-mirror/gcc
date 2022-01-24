@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -224,7 +224,7 @@ merge_flto_options (vec<cl_decoded_option> &decoded_options,
    ontop of DECODED_OPTIONS.  */
 
 static void
-merge_and_complain (vec<cl_decoded_option> decoded_options,
+merge_and_complain (vec<cl_decoded_option> &decoded_options,
 		    vec<cl_decoded_option> fdecoded_options,
 		    vec<cl_decoded_option> decoded_cl_options)
 {
@@ -370,12 +370,14 @@ merge_and_complain (vec<cl_decoded_option> decoded_options,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	case OPT_Oz:
 	  existing_opt = -1;
 	  for (j = 0; j < decoded_options.length (); ++j)
 	    if (decoded_options[j].opt_index == OPT_O
 		|| decoded_options[j].opt_index == OPT_Ofast
 		|| decoded_options[j].opt_index == OPT_Og
-		|| decoded_options[j].opt_index == OPT_Os)
+		|| decoded_options[j].opt_index == OPT_Os
+		|| decoded_options[j].opt_index == OPT_Oz)
 	      {
 		existing_opt = j;
 		break;
@@ -407,6 +409,7 @@ merge_and_complain (vec<cl_decoded_option> decoded_options,
 		  level = MAX (level, 1);
 		  break;
 		case OPT_Os:
+		case OPT_Oz:
 		  level = MAX (level, 2);
 		  break;
 		default:
@@ -428,6 +431,7 @@ merge_and_complain (vec<cl_decoded_option> decoded_options,
 		  level = MAX (level, 1);
 		  break;
 		case OPT_Os:
+		case OPT_Oz:
 		  level = MAX (level, 2);
 		  break;
 		default:
@@ -725,6 +729,7 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	case OPT_Oz:
 	  break;
 
 	case OPT_Xassembler:
@@ -1983,7 +1988,9 @@ cont:
 	  output_name = XOBFINISH (&env_obstack, char *);
 
 	  /* Adjust the dumpbase if the linker output file was seen.  */
-	  int dumpbase_len = (strlen (dumppfx) + sizeof (DUMPBASE_SUFFIX));
+	  int dumpbase_len = (strlen (dumppfx)
+			      + sizeof (DUMPBASE_SUFFIX)
+			      + sizeof (".ltrans"));
 	  char *dumpbase = (char *) xmalloc (dumpbase_len + 1);
 	  snprintf (dumpbase, dumpbase_len, "%sltrans%u.ltrans", dumppfx, i);
 	  argv_ptr[0] = dumpbase;
@@ -2009,9 +2016,11 @@ cont:
 	    }
 	  else
 	    {
-	      char argsuffix[sizeof (DUMPBASE_SUFFIX) + 1];
+	      char argsuffix[sizeof (DUMPBASE_SUFFIX)
+			     + sizeof (".ltrans_args") + 1];
 	      if (save_temps)
-		snprintf (argsuffix, sizeof (DUMPBASE_SUFFIX),
+		snprintf (argsuffix,
+			  sizeof (DUMPBASE_SUFFIX) + sizeof (".ltrans_args"),
 			  "ltrans%u.ltrans_args", i);
 	      fork_execute (new_argv[0], CONST_CAST (char **, new_argv),
 			    true, save_temps ? argsuffix : NULL);

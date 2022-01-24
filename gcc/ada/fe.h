@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -61,13 +61,24 @@ extern void Compiler_Abort (String_Pointer, String_Pointer, Boolean) ATTRIBUTE_N
 
 #define Debug_Flag_Dot_KK	debug__debug_flag_dot_kk
 #define Debug_Flag_Dot_R	debug__debug_flag_dot_r
+#define Debug_Flag_Dot_8	debug__debug_flag_dot_8
 #define Debug_Flag_NN		debug__debug_flag_nn
 
 extern Boolean Debug_Flag_Dot_KK;
 extern Boolean Debug_Flag_Dot_R;
+extern Boolean Debug_Flag_Dot_8;
 extern Boolean Debug_Flag_NN;
 
 /* einfo: */
+
+/* Valid_Uint is used to preserve the old behavior of Esize and
+   friends, where Uint_0 was the default. All calls to this
+   are questionable. */
+INLINE Valid_Uint
+No_Uint_To_0 (Uint X)
+{
+  return X == No_Uint ? Uint_0 : X;
+}
 
 #define Set_Alignment			einfo__entities__set_alignment
 #define Set_Component_Bit_Offset	einfo__entities__set_component_bit_offset
@@ -249,6 +260,8 @@ extern Boolean Back_End_Exceptions	(void);
   restrict__check_no_implicit_task_alloc
 #define No_Exception_Handlers_Set	\
   restrict__no_exception_handlers_set
+#define No_Exception_Propagation_Active	\
+  restrict__no_exception_propagation_active
 
 extern void Check_Elaboration_Code_Allowed	(Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed	(Node_Id);
@@ -256,6 +269,7 @@ extern void Check_No_Implicit_Heap_Alloc	(Node_Id);
 extern void Check_No_Implicit_Protected_Alloc	(Node_Id);
 extern void Check_No_Implicit_Task_Alloc	(Node_Id);
 extern Boolean No_Exception_Handlers_Set	(void);
+extern Boolean No_Exception_Propagation_Active	(void);
 
 /* sem_aggr:  */
 
@@ -615,29 +629,14 @@ B Known_Normalized_Position_Max         (Entity_Id E);
 #define Known_RM_Size einfo__utils__known_rm_size
 B Known_RM_Size                         (Entity_Id E);
 
-#define Known_Static_Component_Bit_Offset einfo__utils__known_static_component_bit_offset
-B Known_Static_Component_Bit_Offset     (Entity_Id E);
-
-#define Known_Static_Component_Size einfo__utils__known_static_component_size
-B Known_Static_Component_Size           (Entity_Id E);
-
-#define Known_Static_Esize einfo__utils__known_static_esize
-B Known_Static_Esize                    (Entity_Id E);
-
-#define Known_Static_Normalized_First_Bit einfo__utils__known_static_normalized_first_bit
-B Known_Static_Normalized_First_Bit     (Entity_Id E);
-
-#define Known_Static_Normalized_Position einfo__utils__known_static_normalized_position
-B Known_Static_Normalized_Position      (Entity_Id E);
-
-#define Known_Static_Normalized_Position_Max einfo__utils__known_static_normalized_position_max
-B Known_Static_Normalized_Position_Max  (Entity_Id E);
-
-#define Known_Static_RM_Size einfo__utils__known_static_rm_size
-B Known_Static_RM_Size                  (Entity_Id E);
-
 #define Copy_Alignment einfo__utils__copy_alignment
 B Copy_Alignment(Entity_Id To, Entity_Id From);
+
+#define Copy_Esize einfo__utils__copy_esize
+B Copy_Esize(Entity_Id To, Entity_Id From);
+
+#define Copy_RM_Size einfo__utils__copy_rm_size
+B Copy_RM_Size(Entity_Id To, Entity_Id From);
 
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
 B Is_Discrete_Or_Fixed_Point_Type     (E Id);

@@ -1,5 +1,5 @@
 /* Subroutines used for macro/preprocessor support on the ia-32.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -702,12 +702,14 @@ ix86_pragma_target_parse (tree args, tree pop_target)
     cur_tune = prev_tune = PROCESSOR_max;
 
   /* Undef all of the macros for that are no longer current.  */
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
   ix86_target_macros_internal (prev_isa & diff_isa,
 			       prev_isa2 & diff_isa2,
 			       prev_arch,
 			       prev_tune,
 			       (enum fpmath_unit) prev_opt->x_ix86_fpmath,
 			       cpp_undef);
+  cpp_stop_forcing_token_locations (parse_in);
 
   /* For the definitions, ensure all newly defined macros are considered
      as used for -Wunused-macros.  There is no point warning about the
@@ -717,12 +719,14 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   cpp_opts->warn_unused_macros = 0;
 
   /* Define all of the macros for new options that were just turned on.  */
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
   ix86_target_macros_internal (cur_isa & diff_isa,
 			       cur_isa2 & diff_isa2,
 			       cur_arch,
 			       cur_tune,
 			       (enum fpmath_unit) cur_opt->x_ix86_fpmath,
 			       cpp_define);
+  cpp_stop_forcing_token_locations (parse_in);
 
   cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 

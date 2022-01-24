@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # Top level makefile fragment for GNU gfortran, the GNU Fortran 95 compiler.
-# Copyright (C) 2002-2021 Free Software Foundation, Inc.
+# Copyright (C) 2002-2022 Free Software Foundation, Inc.
 # Contributed by Paul Brook <paul@nowt.org
 # and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -113,11 +113,24 @@ fortran.srcinfo: doc/gfortran.info
 	-cp -p $^ $(srcdir)/fortran
 
 fortran.tags: force
-	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/fortran; $(ETAGS) -o TAGS.sub *.c *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 fortran.info: doc/gfortran.info doc/gfc-internals.info
-fortran.dvi: doc/gfortran.dvi doc/gfc-internals.dvi
+
+F95_DVIFILES = doc/gfortran.dvi
+
+fortran.dvi: $(F95_DVIFILES) doc/gfc-internals.dvi
+
+fortran.install-dvi: $(F95_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(F95_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
 
 F95_HTMLFILES = $(build_htmldir)/gfortran
 

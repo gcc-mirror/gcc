@@ -1,6 +1,6 @@
 // <array> -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -310,14 +310,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr __detail::__synth3way_t<_Tp>
     operator<=>(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
     {
-#ifdef __cpp_lib_is_constant_evaluated
       if constexpr (_Nm && __is_memcmp_ordered<_Tp>::__value)
-	if (!std::is_constant_evaluated())
+	if (!std::__is_constant_evaluated())
 	  {
 	    constexpr size_t __n = _Nm * sizeof(_Tp);
 	    return __builtin_memcmp(__a.data(), __b.data(), __n) <=> 0;
 	  }
-#endif
 
       for (size_t __i = 0; __i < _Nm; ++__i)
 	{
@@ -480,6 +478,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(_Ind < _Nm, "array index is in range");
       using type = _Tp;
     };
+
+#if __cplusplus >= 201703L
+  template<typename _Tp, size_t _Nm>
+    inline constexpr size_t tuple_size_v<array<_Tp, _Nm>> = _Nm;
+
+  template<typename _Tp, size_t _Nm>
+    inline constexpr size_t tuple_size_v<const array<_Tp, _Nm>> = _Nm;
+#endif
 
   template<typename _Tp, size_t _Nm>
     struct __is_tuple_like_impl<array<_Tp, _Nm>> : true_type

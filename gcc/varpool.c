@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -372,7 +372,8 @@ varpool_node::ctor_useable_for_folding_p (void)
    */
   if ((!DECL_INITIAL (real_node->decl)
        || (DECL_WEAK (decl) && !DECL_COMDAT (decl)))
-      && (DECL_EXTERNAL (decl) || decl_replaceable_p (decl)))
+      && ((DECL_EXTERNAL (decl) && !in_other_partition)
+	  || decl_replaceable_p (decl, semantic_interposition)))
     return false;
 
   /* Variables declared `const' with an initializer are considered
@@ -511,8 +512,8 @@ varpool_node::get_availability (symtab_node *ref)
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least one notable extension - the COMDAT variables
      used to share template instantiations in C++.  */
-  if (decl_replaceable_p (decl)
-      || DECL_EXTERNAL (decl))
+  if (decl_replaceable_p (decl, semantic_interposition)
+      || (DECL_EXTERNAL (decl) && !in_other_partition))
     return AVAIL_INTERPOSABLE;
   return AVAIL_AVAILABLE;
 }
@@ -779,6 +780,7 @@ varpool_node::create_alias (tree alias, tree decl)
   alias_node = varpool_node::get_create (alias);
   alias_node->alias = true;
   alias_node->definition = true;
+  alias_node->semantic_interposition = flag_semantic_interposition;
   alias_node->alias_target = decl;
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
     alias_node->weakref = alias_node->transparent_alias = true;

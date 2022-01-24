@@ -8,6 +8,7 @@ AM_CXXFLAGS = -Wall -W -Wno-unused-parameter -Wwrite-strings -pedantic -Wno-long
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -std=gnu++14
 AM_CXXFLAGS += $(EXTRA_CXXFLAGS)
+AM_CCASFLAGS = $(EXTRA_ASFLAGS)
 ACLOCAL_AMFLAGS = -I m4
 
 toolexeclib_LTLIBRARIES = libtsan.la
@@ -29,7 +30,6 @@ tsan_files = \
 	tsan_malloc_mac.cpp \
 	tsan_md5.cpp \
 	tsan_mman.cpp \
-	tsan_mutex.cpp \
 	tsan_mutexset.cpp \
 	tsan_new_delete.cpp \
 	tsan_platform_linux.cpp \
@@ -38,6 +38,7 @@ tsan_files = \
 	tsan_platform_windows.cpp \
 	tsan_report.cpp \
 	tsan_rtl.cpp \
+	tsan_rtl_access.cpp \
 	tsan_rtl_mutex.cpp \
 	tsan_rtl_proc.cpp \
 	tsan_rtl_report.cpp \
@@ -45,7 +46,8 @@ tsan_files = \
 	tsan_stack_trace.cpp \
 	tsan_suppressions.cpp \
 	tsan_symbolize.cpp \
-	tsan_sync.cpp 
+	tsan_sync.cpp \
+	tsan_vector_clock.cpp
 
 libtsan_la_SOURCES = $(tsan_files)
 EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S tsan_rtl_s390x.S

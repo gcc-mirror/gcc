@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1859,7 +1859,7 @@ predict_iv_comparison (class loop *loop, basic_block bb,
    exits to predict them using PRED_LOOP_EXTRA_EXIT.  */
 
 static void
-predict_extra_loop_exits (edge exit_edge)
+predict_extra_loop_exits (class loop *loop, edge exit_edge)
 {
   unsigned i;
   bool check_value_one;
@@ -1912,12 +1912,14 @@ predict_extra_loop_exits (edge exit_edge)
 	continue;
       if (EDGE_COUNT (e->src->succs) != 1)
 	{
-	  predict_paths_leading_to_edge (e, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
+	  predict_paths_leading_to_edge (e, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN,
+					 loop);
 	  continue;
 	}
 
       FOR_EACH_EDGE (e1, ei, e->src->preds)
-	predict_paths_leading_to_edge (e1, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
+	predict_paths_leading_to_edge (e1, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN,
+				       loop);
     }
 }
 
@@ -1927,7 +1929,6 @@ predict_extra_loop_exits (edge exit_edge)
 static void
 predict_loops (void)
 {
-  class loop *loop;
   basic_block bb;
   hash_set <class loop *> with_recursion(10);
 
@@ -1941,7 +1942,7 @@ predict_loops (void)
 	    && (decl = gimple_call_fndecl (gsi_stmt (gsi))) != NULL
 	    && recursive_call_p (current_function_decl, decl))
 	  {
-	    loop = bb->loop_father;
+	    class loop *loop = bb->loop_father;
 	    while (loop && !with_recursion.add (loop))
 	      loop = loop_outer (loop);
 	  }
@@ -2009,7 +2010,7 @@ predict_loops (void)
 			 ex->src->index, ex->dest->index);
 	      continue;
 	    }
-	  predict_extra_loop_exits (ex);
+	  predict_extra_loop_exits (loop, ex);
 
 	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	    niter = niter_desc.niter;
@@ -3045,7 +3046,7 @@ assert_is_empty (const_basic_block const &, edge_prediction *const &value,
 		 void *)
 {
   gcc_assert (!value);
-  return false;
+  return true;
 }
 
 /* Predict branch probabilities and estimate profile for basic block BB.
@@ -4479,6 +4480,43 @@ force_edge_cold (edge e, bool impossible)
 	fprintf (dump_file, "Giving up on making bb %i %s.\n", e->src->index,
 		 impossible ? "impossible" : "cold");
     }
+}
+
+/* Change E's probability to NEW_E_PROB, redistributing the probabilities
+   of other outgoing edges proportionally.
+
+   Note that this function does not change the profile counts of any
+   basic blocks.  The caller must do that instead, using whatever
+   information it has about the region that needs updating.  */
+
+void
+change_edge_frequency (edge e, profile_probability new_e_prob)
+{
+  profile_probability old_e_prob = e->probability;
+  profile_probability old_other_prob = old_e_prob.invert ();
+  profile_probability new_other_prob = new_e_prob.invert ();
+
+  e->probability = new_e_prob;
+  profile_probability cumulative_prob = new_e_prob;
+
+  unsigned int num_other = EDGE_COUNT (e->src->succs) - 1;
+  edge other_e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (other_e, ei, e->src->succs)
+    if (other_e != e)
+      {
+	num_other -= 1;
+	if (num_other == 0)
+	  /* Ensure that the probabilities add up to 1 without
+	     rounding error.  */
+	  other_e->probability = cumulative_prob.invert ();
+	else
+	  {
+	    other_e->probability /= old_other_prob;
+	    other_e->probability *= new_other_prob;
+	    cumulative_prob += other_e->probability;
+	  }
+      }
 }
 
 #if CHECKING_P

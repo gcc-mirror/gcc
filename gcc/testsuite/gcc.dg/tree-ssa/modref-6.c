@@ -28,10 +28,10 @@ int test2()
    return a;
 }
 /* Flags for normal call.  */
-/* { dg-final { scan-tree-dump "parm 0 flags: direct noclobber noescape nodirectescape not_returned" "modref1"  } } */
+/* { dg-final { scan-tree-dump "parm 0 flags: no_direct_clobber no_indirect_clobber no_direct_escape no_indirect_escape not_returned_directly not_returned_indirectly no_indirect_read" "modref1"  } } */
 /* Flags for pure call.  */
-/* { dg-final { scan-tree-dump "parm 0 flags: direct not_returned" "modref1"  } } */
+/* { dg-final { scan-tree-dump "parm 0 flags: not_returned_directly not_returned_indirectly no_indirect_read" "modref1"  } } */
 /* Flags for const call.  */
-/* { dg-final { scan-tree-dump "parm 0 flags: not_returned" "modref1"  } } */
+/* { dg-final { scan-tree-dump "parm 0 flags: not_returned_directly" "modref1"  } } */
 /* Overall we want to make "int a" non escaping.  */
 /* { dg-final { scan-tree-dump "return 42" "optimized"  } } */

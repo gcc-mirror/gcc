@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -38,6 +38,10 @@
 #include <bits/cxxabi_init_exception.h>
 #include <typeinfo>
 #include <new>
+
+#if __cplusplus >= 201103L
+# include <bits/move.h>
+#endif
 
 #ifdef _GLIBCXX_EH_PTR_RELOPS_COMPAT
 # define _GLIBCXX_EH_PTR_USED __attribute__((__used__))
@@ -175,13 +179,14 @@ namespace std
 
     _GLIBCXX_EH_PTR_USED
     inline
-    exception_ptr::exception_ptr() _GLIBCXX_NOEXCEPT
+    exception_ptr::exception_ptr() _GLIBCXX_USE_NOEXCEPT
     : _M_exception_object(0)
     { }
 
     _GLIBCXX_EH_PTR_USED
     inline
-    exception_ptr::exception_ptr(const exception_ptr& __other) _GLIBCXX_NOEXCEPT
+    exception_ptr::exception_ptr(const exception_ptr& __other)
+    _GLIBCXX_USE_NOEXCEPT
     : _M_exception_object(__other._M_exception_object)
     {
       if (_M_exception_object)
@@ -220,6 +225,7 @@ namespace std
 
     /// @cond undocumented
     template<typename _Ex>
+      _GLIBCXX_CDTOR_CALLABI
       inline void
       __dest_thunk(void* __x)
       { static_cast<_Ex*>(__x)->~_Ex(); }
@@ -228,26 +234,28 @@ namespace std
   } // namespace __exception_ptr
 
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
+#if (__cplusplus >= 201103L && __cpp_rtti) || __cpp_exceptions
   template<typename _Ex>
-    exception_ptr 
+    exception_ptr
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-#if __cpp_exceptions && __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI
+#if __cplusplus >= 201103L && __cpp_rtti
+      using _Ex2 = typename decay<_Ex>::type;
       void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
       (void) __cxxabiv1::__cxa_init_primary_exception(
-	  __e, const_cast<std::type_info*>(&typeid(__ex)),
-	  __exception_ptr::__dest_thunk<_Ex>);
-      try
+	  __e, const_cast<std::type_info*>(&typeid(_Ex)),
+	  __exception_ptr::__dest_thunk<_Ex2>);
+      __try
 	{
-          ::new (__e) _Ex(__ex);
-          return exception_ptr(__e);
+	  ::new (__e) _Ex2(__ex);
+	  return exception_ptr(__e);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  __cxxabiv1::__cxa_free_exception(__e);
 	  return current_exception();
 	}
-#elif __cpp_exceptions
+#else
       try
 	{
           throw __ex;
@@ -256,10 +264,17 @@ namespace std
 	{
 	  return current_exception();
 	}
-#else // no RTTI and no exceptions
-      return exception_ptr();
 #endif
     }
+#else // no RTTI and no exceptions
+  // This is always_inline so the linker will never use this useless definition
+  // instead of a working one compiled with RTTI and/or exceptions enabled.
+  template<typename _Ex>
+    __attribute__ ((__always_inline__))
+    exception_ptr
+    make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
+    { return exception_ptr(); }
+#endif
 
 #undef _GLIBCXX_EH_PTR_USED
 

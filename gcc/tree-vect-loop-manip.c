@@ -1,5 +1,5 @@
 /* Vectorizer Specific Loop Manipulations
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -421,6 +421,7 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_controls *dest_rgm,
 static tree
 vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 				 gimple_seq *preheader_seq,
+				 gimple_seq *header_seq,
 				 gimple_stmt_iterator loop_cond_gsi,
 				 rgroup_controls *rgc, tree niters,
 				 tree niters_skip, bool might_wrap_p)
@@ -664,6 +665,19 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 
       vect_set_loop_control (loop, ctrl, init_ctrl, next_ctrl);
     }
+
+  int partial_load_bias = LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo);
+  if (partial_load_bias != 0)
+    {
+      tree adjusted_len = rgc->bias_adjusted_ctrl;
+      gassign *minus = gimple_build_assign (adjusted_len, PLUS_EXPR,
+					    rgc->controls[0],
+					    build_int_cst
+					    (TREE_TYPE (rgc->controls[0]),
+					     partial_load_bias));
+      gimple_seq_add_stmt (header_seq, minus);
+    }
+
   return next_ctrl;
 }
 
@@ -744,6 +758,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop,
 	/* Set up all controls for this group.  */
 	test_ctrl = vect_set_loop_controls_directly (loop, loop_vinfo,
 						     &preheader_seq,
+						     &header_seq,
 						     loop_cond_gsi, rgc,
 						     niters, niters_skip,
 						     might_wrap_p);
@@ -1625,7 +1640,9 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
 					size_zero_node) < 0;
   tree offset = (negative
-		 ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+		 ? size_int ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+			     * TREE_INT_CST_LOW
+				 (TYPE_SIZE_UNIT (TREE_TYPE (vectype))))
 		 : size_zero_node);
   tree start_addr = vect_create_addr_base_for_vector_ref (loop_vinfo,
 							  stmt_info, seq,
@@ -1820,7 +1837,8 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt))
+      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt)
+	  && !STMT_VINFO_SIMD_LANE_ACCESS_P (dr_info->stmt))
 	vect_update_init_of_dr (dr_info, niters, code);
     }
 }
@@ -3226,7 +3244,9 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       bool negative = tree_int_cst_compare
 	(DR_STEP (STMT_VINFO_DATA_REF (stmt_info)), size_zero_node) < 0;
       tree offset = negative
-	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
+	? size_int ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+		    * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))))
+	: size_zero_node;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
@@ -3557,11 +3577,28 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "applying loop versioning to outer loop %d\n",
 			 loop_to_version->num);
 
+      unsigned orig_pe_idx = loop_preheader_edge (loop)->dest_idx;
+
       initialize_original_copy_tables ();
       nloop = loop_version (loop_to_version, cond_expr, &condition_bb,
 			    prob, prob.invert (), prob, prob.invert (), true);
       gcc_assert (nloop);
       nloop = get_loop_copy (loop);
+
+      /* For cycle vectorization with SLP we rely on the PHI arguments
+	 appearing in the same order as the SLP node operands which for the
+	 loop PHI nodes means the preheader edge dest index needs to remain
+	 the same for the analyzed loop which also becomes the vectorized one.
+	 Make it so in case the state after versioning differs by redirecting
+	 the first edge into the header to the same destination which moves
+	 it last.  */
+      if (loop_preheader_edge (loop)->dest_idx != orig_pe_idx)
+	{
+	  edge e = EDGE_PRED (loop->header, 0);
+	  ssa_redirect_edge (e, e->dest);
+	  flush_pending_stmts (e);
+	}
+      gcc_assert (loop_preheader_edge (loop)->dest_idx == orig_pe_idx);
 
       /* Kill off IFN_LOOP_VECTORIZED_CALL in the copy, nobody will
          reap those otherwise;  they also refer to the original

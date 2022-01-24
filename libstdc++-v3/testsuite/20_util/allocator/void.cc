@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,8 +87,23 @@ static_assert( std::is_same<std::allocator<void>::const_pointer, const void*>(),
     "const_pointer is const void*" );
 #endif // C++20
 
+void
+test02()
+{
+  std::allocator<void> av;
+  int* p = std::allocator<int>().allocate(1);
+  const int* c = p;
+  std::allocator_traits<std::allocator<void>>::construct(av, c, 0);
+  volatile int* v = p;
+  std::allocator_traits<std::allocator<void>>::construct(av, v, 0);
+  const volatile int* cv = p;
+  std::allocator_traits<std::allocator<void>>::construct(av, cv, 0);
+  std::allocator<int>().deallocate(p, 1);
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

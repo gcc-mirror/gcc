@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -119,7 +119,12 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 	bp_pack_value (bp, TYPE_REVERSE_STORAGE_ORDER (expr), 1);
       else
 	bp_pack_value (bp, TYPE_SATURATING (expr), 1);
-      bp_pack_value (bp, TYPE_ADDR_SPACE (expr), 8);
+      if (lto_stream_offload_p)
+	/* Host and offload targets have no common meaning of address
+	   spaces.  */
+	;
+      else
+	bp_pack_value (bp, TYPE_ADDR_SPACE (expr), 8);
     }
   else if (TREE_CODE (expr) == BIT_FIELD_REF || TREE_CODE (expr) == MEM_REF)
     {

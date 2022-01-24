@@ -1,7 +1,7 @@
 /* Bits of OpenMP and OpenACC handling that is specific to device offloading
    and a lowering pass for OpenACC device directives.
 
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "context.h"
 #include "convert.h"
+#include "opts.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -633,7 +634,7 @@ oacc_xform_loop (gcall *call)
 	  /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	     the loop.  */
 	  && (flag_tree_loop_vectorize
-	      || !global_options_set.x_flag_tree_loop_vectorize))
+	      || !OPTION_SET_P (flag_tree_loop_vectorize)))
 	{
 	  basic_block bb = gsi_bb (gsi);
 	  class loop *parent = bb->loop_father;
@@ -1379,10 +1380,10 @@ oacc_loop_xform_head_tail (gcall *from, int level)
    partitioning level etc.  */
 
 static void
-oacc_loop_process (oacc_loop *loop)
+oacc_loop_process (oacc_loop *loop, int fn_level)
 {
   if (loop->child)
-    oacc_loop_process (loop->child);
+    oacc_loop_process (loop->child, fn_level);
 
   if (loop->mask && !loop->routine)
     {
@@ -1431,7 +1432,19 @@ oacc_loop_process (oacc_loop *loop)
     }
 
   if (loop->sibling)
-    oacc_loop_process (loop->sibling);
+    oacc_loop_process (loop->sibling, fn_level);
+
+
+  /* OpenACC 2.6, 2.9.11. "reduction clause" places a restriction such that
+     "The 'reduction' clause may not be specified on an orphaned 'loop'
+     construct with the 'gang' clause, or on an orphaned 'loop' construct that
+     will generate gang parallelism in a procedure that is compiled with the
+     'routine gang' clause."  */
+  if (fn_level == GOMP_DIM_GANG
+      && (loop->mask & GOMP_DIM_MASK (GOMP_DIM_GANG))
+      && (loop->flags & OLF_REDUCTION))
+    error_at (loop->loc,
+	      "gang reduction on an orphan loop");
 }
 
 /* Walk the OpenACC loop heirarchy checking and assigning the
@@ -2064,7 +2077,7 @@ execute_oacc_loop_designation ()
   if (is_oacc_parallel_kernels_gang_single)
     gcc_checking_assert (dims[GOMP_DIM_GANG] == 1);
 
-  oacc_loop_process (loops);
+  oacc_loop_process (loops, fn_level);
   if (dump_file)
     {
       fprintf (dump_file, "OpenACC loops\n");

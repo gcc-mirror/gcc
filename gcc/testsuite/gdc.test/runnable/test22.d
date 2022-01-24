@@ -1,7 +1,5 @@
-// RUNNABLE_PHOBOS_TEST
 // REQUIRED_ARGS:
 
-import std.math: poly;
 import core.stdc.stdarg;
 
 extern(C)
@@ -18,7 +16,7 @@ extern(C)
 
 /*************************************/
 
-// http://www.digitalmars.com/d/archives/digitalmars/D/bugs/4766.html
+// https://www.digitalmars.com/d/archives/digitalmars/D/bugs/4766.html
 // Only with -O
 
 real randx()
@@ -119,67 +117,6 @@ void test5()
 
 /*************************************/
 
-void test6()
-{
-    ireal a = 6.5i % 3i;
-    printf("%Lfi %Lfi\n", a, a - .5i);
-    assert(a == .5i);
-
-    a = 6.5i % 3;
-    printf("%Lfi %Lfi\n", a, a - .5i);
-    assert(a == .5i);
-
-    real b = 6.5 % 3i;
-    printf("%Lf %Lf\n", b, b - .5);
-    assert(b == .5);
-
-    b = 6.5 % 3;
-    printf("%Lf %Lf\n", b, b - .5);
-    assert(b == .5);
-}
-
-/*************************************/
-
-void test7()
-{
-    cfloat f = 1+0i;
-    f %= 2fi;
-    printf("%f + %fi\n", f.re, f.im);
-    assert(f == 1 + 0i);
-
-    cdouble d = 1+0i;
-    d %= 2i;
-    printf("%f + %fi\n", d.re, d.im);
-    assert(d == 1 + 0i);
-
-    creal r = 1+0i;
-    r %= 2i;
-    printf("%Lf + %Lfi\n", r.re, r.im);
-    assert(r == 1 + 0i);
-}
-
-/*************************************/
-
-void test8()
-{
-    cfloat f = 1+0i;
-    f %= 2i;
-    printf("%f + %fi\n", f.re, f.im);
-    assert(f == 1);
-
-    cdouble d = 1+0i;
-    d = d % 2i;
-    printf("%f + %fi\n", d.re, d.im);
-    assert(d == 1);
-
-    creal r = 1+0i;
-    r = r % 2i;
-    printf("%Lf + %Lfi\n", r.re, r.im);
-    assert(r == 1);
-}
-
-/*************************************/
-
 class A9
 {
     this(int[] params ...)
@@ -219,7 +156,7 @@ void test10()
 {
     auto i = 5u;
     auto s = typeid(typeof(i)).toString;
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     assert(typeid(typeof(i)) == typeid(uint));
 }
 
@@ -229,103 +166,6 @@ void test11()
 {
     printf("%d\n", 3);
     printf("xhello world!\n");
-}
-
-/*************************************/
-
-void assertEqual(real* a, real* b, string file = __FILE__, size_t line = __LINE__)
-{
-    auto x = cast(ubyte*)a;
-    auto y = cast(ubyte*)b;
-
-    // Only compare the 10 value bytes, the padding bytes are of undefined
-    // value.
-    version (X86) enum count = 10;
-    else version (X86_64) enum count = 10;
-    else enum count = real.sizeof;
-    for (size_t i = 0; i < count; i++)
-    {
-        if (x[i] != y[i])
-        {
-            printf("%02d: %02x %02x\n", i, x[i], y[i]);
-            import core.exception;
-            throw new AssertError(file, line);
-        }
-    }
-}
-
-void assertEqual(creal* a, creal* b, string file = __FILE__, size_t line = __LINE__)
-{
-    assertEqual(cast(real*)a, cast(real*)b, file, line);
-    assertEqual(cast(real*)a + 1, cast(real*)b + 1, file, line);
-}
-
-void test12()
-{
-    creal a = creal.nan;
-    creal b = real.nan + ireal.nan;
-    assertEqual(&a, &b);
-
-    real c= real.nan;
-    real d=a.re;
-    assertEqual(&c, &d);
-
-    d=a.im;
-    assertEqual(&c, &d);
-}
-
-/*************************************/
-
-void test13()
-{
-    creal a = creal.infinity;
-    creal b = real.infinity + ireal.infinity;
-    assertEqual(&a, &b);
-
-    real c = real.infinity;
-    real d=a.re;
-    assertEqual(&c, &d);
-
-    d=a.im;
-    assertEqual(&c, &d);
-}
-
-/*************************************/
-
-void test14()
-{
-    creal a = creal.nan;
-    creal b = creal.nan;
-    b = real.nan + ireal.nan;
-    assertEqual(&a, &b);
-
-    real c = real.nan;
-    real d=a.re;
-    assertEqual(&c, &d);
-
-    d=a.im;
-    assertEqual(&c, &d);
-}
-
-/*************************************/
-
-ireal x15;
-
-void foo15()
-{
-    x15 = -x15;
-}
-
-void bar15()
-{
-    return foo15();
-}
-
-void test15()
-{
-    x15=2i;
-    bar15();
-    assert(x15==-2i);
 }
 
 /*************************************/
@@ -358,7 +198,7 @@ class Bar17
 
 class Foo17
 {
-        void opAdd (Bar17 b) {}
+        void opBinary(string op : "+") (Bar17 b) {}
 }
 
 void test17()
@@ -427,41 +267,6 @@ void test21()
 
 /*************************************/
 
-void test22()
-{
-    static creal[] params = [1+0i, 3+0i, 5+0i];
-
-    printf("params[0] = %Lf + %Lfi\n", params[0].re, params[0].im);
-    printf("params[1] = %Lf + %Lfi\n", params[1].re, params[1].im);
-    printf("params[2] = %Lf + %Lfi\n", params[2].re, params[2].im);
-
-    creal[] sums = new creal[3];
-    sums[] = 0+0i;
-
-    foreach(creal d; params)
-    {
-        creal prod = d;
-
-        printf("prod = %Lf + %Lfi\n", prod.re, prod.im);
-        for(int i; i<2; i++)
-        {
-            sums[i] += prod;
-            prod *= d;
-        }
-        sums[2] += prod;
-    }
-
-    printf("sums[0] = %Lf + %Lfi", sums[0].re, sums[0].im);
-    assert(sums[0].re==9);
-    assert(sums[0].im==0);
-    assert(sums[1].re==35);
-    assert(sums[1].im==0);
-    assert(sums[2].re==153);
-    assert(sums[2].im==0);
-}
-
-/*************************************/
-
 const int c23 = b23 * b23;
 const int a23 = 1;
 const int b23 = a23 * 3;
@@ -476,51 +281,6 @@ mixin T23!(c23);
 void test23()
 {
     assert(x23.length==9);
-}
-
-/*************************************/
-
-ifloat func_24_1(ifloat f, double d)
-{
-//    f /= cast(cdouble)d;
-    return f;
-}
-
-ifloat func_24_2(ifloat f, double d)
-{
-    f = cast(ifloat)(f / cast(cdouble)d);
-    return f;
-}
-
-float func_24_3(float f, double d)
-{
-//    f /= cast(cdouble)d;
-    return f;
-}
-
-float func_24_4(float f, double d)
-{
-    f = cast(float)(f / cast(cdouble)d);
-    return f;
-}
-
-void test24()
-{
-    ifloat f = func_24_1(10i, 8);
-    printf("%fi\n", f);
-//    assert(f == 1.25i);
-
-    f = func_24_2(10i, 8);
-    printf("%fi\n", f);
-    assert(f == 1.25i);
-
-    float g = func_24_3(10, 8);
-    printf("%f\n", g);
-//    assert(g == 1.25);
-
-    g = func_24_4(10, 8);
-    printf("%f\n", g);
-    assert(g == 1.25);
 }
 
 /*************************************/
@@ -541,59 +301,14 @@ void test25()
 
 /*************************************/
 
-string toString26(cdouble z)
-{
-    char[ulong.sizeof*8] buf;
-
-    auto len = snprintf(buf.ptr, buf.sizeof, "%f+%fi", z.re, z.im);
-    return buf[0 .. len].idup;
-}
-
-void test26()
-{
-  static cdouble[] A = [1+0i, 0+1i, 1+1i];
-  string s;
-
-  foreach( cdouble z; A )
-  {
-    s = toString26(z);
-    printf("%.*s  ", s.length, s.ptr);
-  }
-  printf("\n");
-
-  for(int ii=0; ii<A.length; ii++ )
-    A[ii] += -1i*A[ii];
-
-  assert(A[0] == 1 - 1i);
-  assert(A[1] == 1 + 1i);
-  assert(A[2] == 2);
-
-  foreach( cdouble z; A )
-  {
-    s = toString26(z);
-    printf("%.*s  ", s.length, s.ptr);
-  }
-  printf("\n");
-}
-
-/*************************************/
-
 void test27()
 {   int x;
 
     string s = (int*function(int ...)[]).mangleof;
-    printf("%.*s\n", s.length, s.ptr);
+    printf("%.*s\n", cast(int)s.length, s.ptr);
     assert((int*function(int ...)[]).mangleof == "APFiXPi");
     assert(typeof(x).mangleof == "i");
     assert(x.mangleof == "_D6test226test27FZ1xi");
-}
-
-/*************************************/
-
-void test28()
-{
-    alias cdouble X;
-    X four = cast(X) (4.0i + 0.4);
 }
 
 /*************************************/
@@ -603,7 +318,7 @@ void test29()
     ulong a = 10_000_000_000_000_000,
           b =  1_000_000_000_000_000;
 
-    printf("test29\n%lx\n%lx\n%lx\n", a, b, a / b);
+    printf("test29\n%llx\n%llx\n%llx\n", a, b, a / b);
     assert((a / b) == 10);
 }
 
@@ -666,7 +381,7 @@ struct particle
     float yg;     /* Y Gravity       */
 }
 
-particle particles[10000];
+particle[10000] particles;
 
 void test32()
 {
@@ -923,7 +638,7 @@ in
 {
     assert(A.length > 0);
 }
-body
+do
 {
     version (D_InlineAsm_X86)
     {
@@ -1086,7 +801,7 @@ in
 {
     assert(A.length > 0);
 }
-body
+do
 {
     ptrdiff_t i = A.length - 1;
     real r = A[i];
@@ -1101,19 +816,17 @@ body
 void test47()
 {
     real x = 3.1;
-    static real pp[] = [56.1, 32.7, 6];
+    static real[] pp = [56.1, 32.7, 6];
     real r;
 
     printf("The result should be %Lf\n",(56.1L + (32.7L + 6L * x) * x));
     printf("The C version outputs %Lf\n", poly_c(x, pp));
     printf("The asm version outputs %Lf\n", poly_asm(x, pp));
-    printf("The std.math version outputs %Lf\n", poly(x, pp));
 
     r = (56.1L + (32.7L + 6L * x) * x);
     assert(r == poly_c(x, pp));
     version (D_InlineAsm_X86)
         assert(r == poly_asm(x, pp));
-    assert(r == poly(x, pp));
 }
 
 /*************************************/
@@ -1211,28 +924,36 @@ void test52()
 }
 
 /*************************************/
-import std.stdio;
-import core.stdc.stdarg;
 
 void myfunc(int a1, ...) {
         va_list argument_list;
         TypeInfo argument_type;
         string sa; int ia; double da;
-        writefln("%d variable arguments", _arguments.length);
-        writefln("argument types %s", _arguments);
+        assert(_arguments.length == 9);
+
         va_start(argument_list, a1);
         for (int i = 0; i < _arguments.length; ) {
                 if ((argument_type=_arguments[i++]) == typeid(string)) {
                         va_arg(argument_list, sa);
-                        writefln("%d) string arg = '%s', length %d", i+1, sa.length<=20? sa : "?", sa.length);
+                        switch (i)
+                        {
+                            case 1: assert(sa == "2"); break;
+                            case 7: assert(sa == "8"); break;
+                            case 8: assert(sa == "9"); break;
+                            case 9: assert(sa == "10"); break;
+                            default:
+                                printf("i = %d\n", i);
+                                assert(false);
+                        }
                 } else if (argument_type == typeid(int)) {
                         va_arg(argument_list, ia);
-                        writefln("%d) int arg = %d", i+1, ia);
+                        assert(ia == i+1);
                 } else if (argument_type == typeid(double)) {
                         va_arg(argument_list, da);
-                        writefln("%d) double arg = %f", i+1, da);
+                        const e = i+1;
+                        assert((e - 0.0001) < da && da < (e + 0.0001));
                 } else {
-                        throw new Exception("invalid argument type");
+                        assert(false, argument_type.toString());
                 }
         }
         va_end(argument_list);
@@ -1248,6 +969,24 @@ void test6758() {
 
 /*************************************/
 
+real f18573() { return 1; }
+
+void test18573()
+{
+    cast(void) f18573();
+    cast(void) f18573();
+    cast(void) f18573();
+    cast(void) f18573();
+    cast(void) f18573();
+    cast(void) f18573();
+    cast(void) f18573();
+
+    real b = 2;
+    assert(b == 2); /* fails; should pass */
+}
+
+/*************************************/
+
 int main()
 {
     test1();
@@ -1255,29 +994,18 @@ int main()
     test3();
     test4();
     test5();
-    test6();
-    test7();
-    test8();
     test9();
     test10();
     test11();
-    test12();
-    test13();
-    test14();
-    test15();
     test16();
     test17();
     test18();
     test19();
     test20();
     test21();
-    test22();
     test23();
-    test24();
     test25();
-    test26();
     test27();
-    test28();
     test29();
     test30();
     test31();
@@ -1305,6 +1033,7 @@ int main()
     test51();
     test52();
     test6758();
+    test18573();
 
     printf("Success\n");
     return 0;

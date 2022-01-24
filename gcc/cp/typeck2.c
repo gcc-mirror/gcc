@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -459,13 +459,35 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 }
 
 
+/* We've just initialized subobject SUB; also insert a TARGET_EXPR with an
+   EH-only cleanup for SUB.  Because of EH region nesting issues, we need to
+   make the cleanup conditional on a flag that we will clear once the object is
+   fully initialized, so push a new flag onto FLAGS.  */
+
+static void
+maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
+{
+  if (tree cleanup
+      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
+    {
+      tree tx = get_target_expr (boolean_true_node);
+      tree flag = TARGET_EXPR_SLOT (tx);
+      CLEANUP_EH_ONLY (tx) = true;
+      TARGET_EXPR_CLEANUP (tx) = build3 (COND_EXPR, void_type_node,
+					 flag, cleanup, void_node);
+      add_stmt (tx);
+      vec_safe_push (*flags, flag);
+    }
+}
+
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
    expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
    Return true if the whole of the value was initialized by the
    generated statements.  */
 
 static bool
-split_nonconstant_init_1 (tree dest, tree init, bool nested)
+split_nonconstant_init_1 (tree dest, tree init, bool last,
+			  vec<tree,va_gc> **flags)
 {
   unsigned HOST_WIDE_INT idx, tidx = HOST_WIDE_INT_M1U;
   tree field_index, value;
@@ -484,17 +506,20 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	  || vla_type_p (type))
 	{
+	  if (!TYPE_DOMAIN (type)
+	      && TREE_CODE (init) == CONSTRUCTOR
+	      && CONSTRUCTOR_NELTS (init))
+	    {
+	      /* Flexible array.  */
+	      cp_complete_array_type (&type, init, /*default*/true);
+	      dest = build1 (VIEW_CONVERT_EXPR, type, dest);
+	    }
+
 	  /* For an array, we only need/want a single cleanup region rather
-	     than one per element.  */
+	     than one per element.  build_vec_init will handle it.  */
 	  tree code = build_vec_init (dest, NULL_TREE, init, false, 1,
-				      tf_warning_or_error);
+				      tf_warning_or_error, flags);
 	  add_stmt (code);
-	  if (nested)
-	    /* Also clean up the whole array if something later in an enclosing
-	       init-list throws.  */
-	    if (tree cleanup = cxx_maybe_build_cleanup (dest,
-							tf_warning_or_error))
-	    finish_eh_cleanup (cleanup);
 	  return true;
 	}
       /* FALLTHRU */
@@ -513,18 +538,19 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 	  if (!array_type_p)
 	    inner_type = TREE_TYPE (field_index);
 
+	  tree sub;
+	  if (array_type_p)
+	    sub = build4 (ARRAY_REF, inner_type, dest, field_index,
+			  NULL_TREE, NULL_TREE);
+	  else
+	    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
+			  NULL_TREE);
+
+	  bool elt_last = last && idx == CONSTRUCTOR_NELTS (init) - 1;
+
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
-	      tree sub;
-
-	      if (array_type_p)
-		sub = build4 (ARRAY_REF, inner_type, dest, field_index,
-			      NULL_TREE, NULL_TREE);
-	      else
-		sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
-			      NULL_TREE);
-
-	      if (!split_nonconstant_init_1 (sub, value, true)
+	      if (!split_nonconstant_init_1 (sub, value, elt_last, flags)
 		      /* For flexible array member with initializer we
 			 can't remove the initializer, because only the
 			 initializer determines how many elements the
@@ -535,7 +561,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		      && TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 		      && COMPLETE_TYPE_P (TREE_TYPE (value))
 		      && !integer_zerop (TYPE_SIZE (TREE_TYPE (value)))
-		      && idx == CONSTRUCTOR_NELTS (init) - 1
+		      && elt_last
 		      && TYPE_HAS_TRIVIAL_DESTRUCTOR
 				(strip_array_types (inner_type))))
 		complete_p = false;
@@ -548,10 +574,20 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		  num_split_elts++;
 		}
 	    }
+	  else if (TREE_CODE (value) == VEC_INIT_EXPR)
+	    {
+	      add_stmt (expand_vec_init_expr (sub, value, tf_warning_or_error,
+					      flags));
+
+	      /* Mark element for removal.  */
+	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
+	      if (idx < tidx)
+		tidx = idx;
+	      num_split_elts++;
+	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
-	      tree sub;
 
 	      /* Mark element for removal.  */
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
@@ -575,13 +611,6 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		}
 	      else
 		{
-		  if (array_type_p)
-		    sub = build4 (ARRAY_REF, inner_type, dest, field_index,
-				  NULL_TREE, NULL_TREE);
-		  else
-		    sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
-				  NULL_TREE);
-
 		  /* We may need to add a copy constructor call if
 		     the field has [[no_unique_address]].  */
 		  if (unsafe_return_slot_p (sub))
@@ -607,11 +636,9 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 		      code = build2 (INIT_EXPR, inner_type, sub, value);
 		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
-		  code = maybe_cleanup_point_expr_void (code);
 		  add_stmt (code);
-		  if (tree cleanup
-		      = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
-		    finish_eh_cleanup (cleanup);
+		  if (!elt_last)
+		    maybe_push_temp_cleanup (sub, flags);
 		}
 
 	      num_split_elts++;
@@ -678,10 +705,40 @@ split_nonconstant_init (tree dest, tree init)
     init = TARGET_EXPR_INITIAL (init);
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
+      /* Subobject initializers are not full-expressions.  */
+      auto fe = (make_temp_override
+		 (current_stmt_tree ()->stmts_are_full_exprs_p, 0));
+
       init = cp_fully_fold_init (init);
       code = push_stmt_list ();
-      if (split_nonconstant_init_1 (dest, init, false))
+
+      /* If the complete object is an array, build_vec_init's cleanup is
+	 enough.  Otherwise, collect flags for disabling subobject
+	 cleanups once the complete object is fully constructed.  */
+      vec<tree, va_gc> *flags = nullptr;
+      if (TREE_CODE (TREE_TYPE (dest)) != ARRAY_TYPE)
+	flags = make_tree_vector ();
+
+      if (split_nonconstant_init_1 (dest, init, true, &flags))
 	init = NULL_TREE;
+
+      for (tree f : flags)
+	{
+	  /* See maybe_push_temp_cleanup.  */
+	  tree d = f;
+	  tree i = boolean_false_node;
+	  if (TREE_CODE (f) == TREE_LIST)
+	    {
+	      /* To disable a build_vec_init cleanup, set
+		 iterator = maxindex.  */
+	      d = TREE_PURPOSE (f);
+	      i = TREE_VALUE (f);
+	      ggc_free (f);
+	    }
+	  add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (d), d, i));
+	}
+      release_tree_vector (flags);
+
       code = pop_stmt_list (code);
       if (VAR_P (dest) && !is_local_temp (dest))
 	{
@@ -892,7 +949,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 
   /* Even non-dependent expressions can still have template
      codes like CAST_EXPR, so use *_non_dependent_expr to cope.  */
-  init = fold_non_dependent_expr (init, complain);
+  init = fold_non_dependent_expr (init, complain, /*manifest*/true);
   if (init == error_mark_node)
     return ok;
 
@@ -1229,6 +1286,9 @@ digest_init_r (tree type, tree init, int nested, int flags,
 	}
     }
 
+  if (SIMPLE_TARGET_EXPR_P (stripped_init))
+    stripped_init = TARGET_EXPR_INITIAL (stripped_init);
+
   if (BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
     return process_init_constructor (type, stripped_init, nested, flags,
@@ -1308,6 +1368,7 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
 #define PICFLAG_NOT_ALL_CONSTANT 2
 #define PICFLAG_NOT_ALL_SIMPLE 4
 #define PICFLAG_SIDE_EFFECTS 8
+#define PICFLAG_VEC_INIT 16
 
 /* Given an initializer INIT, return the flag (PICFLAG_*) which better
    describe it.  */
@@ -1451,10 +1512,19 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
 
 	if (next)
 	  {
-	    picflags |= picflag_from_initializer (next);
-	    if (len > i+1
+	    if (next != error_mark_node
+		&& ! seen_error () // Improves error-recovery on anew5.C.
 		&& (initializer_constant_valid_p (next, TREE_TYPE (next))
-		    == null_pointer_node))
+		    != null_pointer_node))
+	      {
+		/* Use VEC_INIT_EXPR for non-constant initialization of
+		   trailing elements with no explicit initializers.  */
+		picflags |= PICFLAG_VEC_INIT;
+		break;
+	      }
+
+	    picflags |= picflag_from_initializer (next);
+	    if (len > i+1)
 	      {
 		tree range = build2 (RANGE_EXPR, size_type_node,
 				     build_int_cst (size_type_node, i),
@@ -1849,6 +1919,13 @@ process_init_constructor (tree type, tree init, int nested, int flags,
       if (!(picflags & PICFLAG_NOT_ALL_SIMPLE))
 	TREE_STATIC (init) = 1;
     }
+  if (picflags & PICFLAG_VEC_INIT)
+    {
+      /* Defer default-initialization of array elements with no corresponding
+	 initializer-clause until later so we can use a loop.  */
+      TREE_TYPE (init) = init_list_type_node;
+      init = build_vec_init_expr (type, init, complain);
+    }
   return init;
 }
 
@@ -1947,7 +2024,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
       while ((expr = build_new_op (loc, COMPONENT_REF,
 				   LOOKUP_NORMAL, expr, NULL_TREE, NULL_TREE,
-				   &fn, complain)))
+				   NULL_TREE, &fn, complain)))
 	{
 	  if (expr == error_mark_node)
 	    return error_mark_node;
@@ -2192,19 +2269,29 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 
   if (tree anode = type_uses_auto (type))
     {
-      if (!CLASS_PLACEHOLDER_TEMPLATE (anode))
+      tree init;
+      if (CLASS_PLACEHOLDER_TEMPLATE (anode))
+	init = parms;
+      /* C++23 auto(x).  */
+      else if (!AUTO_IS_DECLTYPE (anode)
+	       && list_length (parms) == 1)
+	{
+	  init = TREE_VALUE (parms);
+	  if (cxx_dialect < cxx23)
+	    pedwarn (loc, OPT_Wc__23_extensions,
+		     "%<auto(x)%> only available with "
+		     "%<-std=c++2b%> or %<-std=gnu++2b%>");
+	}
+      else
 	{
 	  if (complain & tf_error)
 	    error_at (loc, "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
-      else
-	{
-	  type = do_auto_deduction (type, parms, anode, complain,
-				    adc_variable_type);
-	  if (type == error_mark_node)
-	    return error_mark_node;
-	}
+      type = do_auto_deduction (type, init, anode, complain,
+				adc_variable_type);
+      if (type == error_mark_node)
+	return error_mark_node;
     }
 
   if (processing_template_decl)

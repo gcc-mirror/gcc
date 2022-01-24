@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ struct A { };
 namespace std
 {
   template<>
-    struct less<A*> : binary_function<A*,A*,bool>
+    struct less<A*>
     {
       static int count;
       bool operator()(A* l, A* r) { ++count; return l < r; }

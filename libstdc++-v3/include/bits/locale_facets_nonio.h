@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -243,6 +243,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       void
+      _M_am_pm_format(const _CharT** __ampm_format) const
+      {
+	__ampm_format[0] = _M_data->_M_am_pm_format;
+      }
+
+      void
       _M_am_pm(const _CharT** __ampm) const
       {
 	__ampm[0] = _M_data->_M_am;
@@ -348,6 +354,30 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  struct __time_get_state
+  {
+    // Finalize state.
+    void
+    _M_finalize_state(tm* __tm);
+
+    unsigned int _M_have_I : 1;
+    unsigned int _M_have_wday : 1;
+    unsigned int _M_have_yday : 1;
+    unsigned int _M_have_mon : 1;
+    unsigned int _M_have_mday : 1;
+    unsigned int _M_have_uweek : 1;
+    unsigned int _M_have_wweek : 1;
+    unsigned int _M_have_century : 1;
+    unsigned int _M_is_pm : 1;
+    unsigned int _M_want_century : 1;
+    unsigned int _M_want_xday : 1;
+    unsigned int _M_pad1 : 5;
+    unsigned int _M_week_no : 6;
+    unsigned int _M_pad2 : 10;
+    int _M_century;
+    int _M_pad3;
+  };
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
@@ -750,6 +780,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_extract_via_format(iter_type __beg, iter_type __end, ios_base& __io,
 			    ios_base::iostate& __err, tm* __tm,
 			    const _CharT* __format) const;
+
+      // Extract on a component-by-component basis, via __format argument, with
+      // state.
+      iter_type
+      _M_extract_via_format(iter_type __beg, iter_type __end, ios_base& __io,
+			    ios_base::iostate& __err, tm* __tm,
+			    const _CharT* __format,
+			    __time_get_state &__state) const;
     };
 
   template<typename _CharT, typename _InIter>

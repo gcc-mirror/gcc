@@ -719,7 +719,7 @@ class Thread : ThreadBase
                     // the effective maximum.
 
                     // maxupri
-                    result.PRIORITY_MIN = -clinfo[0];
+                    result.PRIORITY_MIN = -cast(int)(clinfo[0]);
                     // by definition
                     result.PRIORITY_DEFAULT = 0;
                 }
@@ -1049,7 +1049,7 @@ class Thread : ThreadBase
     }
 }
 
-private Thread toThread(ThreadBase t) @trusted nothrow @nogc pure
+private Thread toThread(return scope ThreadBase t) @trusted nothrow @nogc pure
 {
     return cast(Thread) cast(void*) t;
 }
@@ -1109,6 +1109,7 @@ unittest
     try
     {
         new Thread(
+        function()
         {
             throw new Exception( MSG );
         }).start().join();
@@ -1207,6 +1208,18 @@ unittest
     semb.notify();
 
     thr.join();
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22124
+unittest
+{
+    Thread thread = new Thread({});
+    auto fun(Thread t, int x)
+    {
+        t.__ctor({x = 3;});
+        return t;
+    }
+    static assert(!__traits(compiles, () @nogc => fun(thread, 3) ));
 }
 
 unittest
@@ -1474,6 +1487,35 @@ in (fn)
                 }
             }}
             sp = cast(void*)&regs[0];
+        }
+        else version (AArch64)
+        {
+            // Callee-save registers, x19-x28 according to AAPCS64, section
+            // 5.1.1.  Include x29 fp because it optionally can be a callee
+            // saved reg
+            size_t[11] regs = void;
+            // store the registers in pairs
+            asm pure nothrow @nogc
+            {
+                "stp x19, x20, %0" : "=m" (regs[ 0]), "=m" (regs[1]);
+                "stp x21, x22, %0" : "=m" (regs[ 2]), "=m" (regs[3]);
+                "stp x23, x24, %0" : "=m" (regs[ 4]), "=m" (regs[5]);
+                "stp x25, x26, %0" : "=m" (regs[ 6]), "=m" (regs[7]);
+                "stp x27, x28, %0" : "=m" (regs[ 8]), "=m" (regs[9]);
+                "str x29, %0"      : "=m" (regs[10]);
+                "mov %0, sp"       : "=r" (sp);
+            }
+        }
+        else version (ARM)
+        {
+            // Callee-save registers, according to AAPCS, section 5.1.1.
+            // arm and thumb2 instructions
+            size_t[8] regs = void;
+            asm pure nothrow @nogc
+            {
+                "stm %0, {r4-r11}" : : "r" (regs.ptr) : "memory";
+                "mov %0, sp"       : "=r" (sp);
+            }
         }
         else
         {
@@ -2154,8 +2196,7 @@ extern (C) void thread_init() @nogc
         status = sem_init( &suspendCount, 0, 0 );
         assert( status == 0 );
     }
-    if (typeid(Thread).initializer.ptr)
-        _mainThreadStore[] = typeid(Thread).initializer[];
+    _mainThreadStore[] = __traits(initSymbol, Thread)[];
     Thread.sm_main = attachThread((cast(Thread)_mainThreadStore.ptr).__ctor());
 }
 
@@ -2212,15 +2253,7 @@ version (Windows)
 
             void append( Throwable t )
             {
-                if ( obj.m_unhandled is null )
-                    obj.m_unhandled = t;
-                else
-                {
-                    Throwable last = obj.m_unhandled;
-                    while ( last.next !is null )
-                        last = last.next;
-                    last.next = t;
-                }
+                obj.m_unhandled = Throwable.chainTogether(obj.m_unhandled, t);
             }
 
             version (D_InlineAsm_X86)
@@ -2367,15 +2400,7 @@ else version (Posix)
 
             void append( Throwable t )
             {
-                if ( obj.m_unhandled is null )
-                    obj.m_unhandled = t;
-                else
-                {
-                    Throwable last = obj.m_unhandled;
-                    while ( last.next !is null )
-                        last = last.next;
-                    last.next = t;
-                }
+                obj.m_unhandled = Throwable.chainTogether(obj.m_unhandled, t);
             }
             try
             {

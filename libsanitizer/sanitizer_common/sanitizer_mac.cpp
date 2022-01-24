@@ -524,25 +524,6 @@ void FutexWait(atomic_uint32_t *p, u32 cmp) {
 
 void FutexWake(atomic_uint32_t *p, u32 count) {}
 
-BlockingMutex::BlockingMutex() {
-  internal_memset(this, 0, sizeof(*this));
-}
-
-void BlockingMutex::Lock() {
-  CHECK(sizeof(OSSpinLock) <= sizeof(opaque_storage_));
-  CHECK_EQ(OS_SPINLOCK_INIT, 0);
-  CHECK_EQ(owner_, 0);
-  OSSpinLockLock((OSSpinLock*)&opaque_storage_);
-}
-
-void BlockingMutex::Unlock() {
-  OSSpinLockUnlock((OSSpinLock*)&opaque_storage_);
-}
-
-void BlockingMutex::CheckLocked() const {
-  CHECK_NE(*(OSSpinLock*)&opaque_storage_, 0);
-}
-
 u64 NanoTime() {
   timeval tv;
   internal_memset(&tv, 0, sizeof(tv));
@@ -570,6 +551,9 @@ uptr TlsBaseAddr() {
   asm("movq %%gs:0,%0" : "=r"(segbase));
 #elif defined(__i386__)
   asm("movl %%gs:0,%0" : "=r"(segbase));
+#elif defined(__aarch64__)
+  asm("mrs %x0, tpidrro_el0" : "=r"(segbase));
+  segbase &= 0x07ul;  // clearing lower bits, cpu id stored there
 #endif
   return segbase;
 }
@@ -792,8 +776,8 @@ void *internal_start_thread(void *(*func)(void *arg), void *arg) {
 void internal_join_thread(void *th) { pthread_join((pthread_t)th, 0); }
 
 #if !SANITIZER_GO
-static BlockingMutex syslog_lock(LINKER_INITIALIZED);
-#endif
+static Mutex syslog_lock;
+#  endif
 
 void WriteOneLineToSyslog(const char *s) {
 #if !SANITIZER_GO
@@ -808,7 +792,7 @@ void WriteOneLineToSyslog(const char *s) {
 
 // buffer to store crash report application information
 static char crashreporter_info_buff[__sanitizer::kErrorMessageBufferSize] = {};
-static BlockingMutex crashreporter_info_mutex(LINKER_INITIALIZED);
+static Mutex crashreporter_info_mutex;
 
 extern "C" {
 // Integrate with crash reporter libraries.
@@ -838,7 +822,7 @@ asm(".desc ___crashreporter_info__, 0x10");
 }  // extern "C"
 
 static void CRAppendCrashLogMessage(const char *msg) {
-  BlockingMutexLock l(&crashreporter_info_mutex);
+  Lock l(&crashreporter_info_mutex);
   internal_strlcat(crashreporter_info_buff, msg,
                    sizeof(crashreporter_info_buff));
 #if HAVE_CRASHREPORTERCLIENT_H
@@ -882,7 +866,7 @@ void LogFullErrorReport(const char *buffer) {
   // the reporting thread holds the thread registry mutex, and asl_log waits
   // for GCD to dispatch a new thread, the process will deadlock, because the
   // pthread_create wrapper needs to acquire the lock as well.
-  BlockingMutexLock l(&syslog_lock);
+  Lock l(&syslog_lock);
   if (common_flags()->log_to_syslog)
     WriteToSyslog(buffer);
 
@@ -1338,7 +1322,7 @@ uptr FindAvailableMemoryRange(uptr size, uptr alignment, uptr left_padding,
 }
 
 // FIXME implement on this platform.
-void GetMemoryProfile(fill_profile_f cb, uptr *stats, uptr stats_size) { }
+void GetMemoryProfile(fill_profile_f cb, uptr *stats) {}
 
 void SignalContext::DumpAllRegisters(void *context) {
   Report("Register values:\n");

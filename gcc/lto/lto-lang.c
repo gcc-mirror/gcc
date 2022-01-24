@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -813,6 +813,7 @@ lto_init_options_struct (struct gcc_options *opts)
      safe choice.  This will pessimize Fortran code with LTO unless
      people specify a complex method manually or use -ffast-math.  */
   opts->x_flag_complex_method = 2;
+  opts->x_flag_default_complex_method = opts->x_flag_complex_method;
 }
 
 /* Handle command-line option SCODE.  If the option takes an argument, it is

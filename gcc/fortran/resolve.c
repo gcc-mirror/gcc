@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1452,6 +1452,41 @@ resolve_structure_cons (gfc_expr *expr, int init)
 			     " %s", comp->name, &cons->expr->where, err);
 	      return false;
 	    }
+	}
+
+      /* Validate shape, except for dynamic or PDT arrays.  */
+      if (cons->expr->expr_type == EXPR_ARRAY && rank == cons->expr->rank
+	  && comp->as && !comp->attr.allocatable && !comp->attr.pointer
+	  && !comp->attr.pdt_array)
+	{
+	  mpz_t len;
+	  mpz_init (len);
+	  for (int n = 0; n < rank; n++)
+	    {
+	      if (comp->as->upper[n]->expr_type != EXPR_CONSTANT
+		  || comp->as->lower[n]->expr_type != EXPR_CONSTANT)
+		{
+		  gfc_error ("Bad array spec of component %qs referenced in "
+			     "structure constructor at %L",
+			     comp->name, &cons->expr->where);
+		  t = false;
+		  break;
+		};
+	      mpz_set_ui (len, 1);
+	      mpz_add (len, len, comp->as->upper[n]->value.integer);
+	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
+	      if (mpz_cmp (cons->expr->shape[n], len) != 0)
+		{
+		  gfc_error ("The shape of component %qs in the structure "
+			     "constructor at %L differs from the shape of the "
+			     "declared component for dimension %d (%ld/%ld)",
+			     comp->name, &cons->expr->where, n+1,
+			     mpz_get_si (cons->expr->shape[n]),
+			     mpz_get_si (len));
+		  t = false;
+		}
+	    }
+	  mpz_clear (len);
 	}
 
       if (!comp->attr.pointer || comp->attr.proc_pointer
@@ -2939,6 +2974,19 @@ resolve_unknown_f (gfc_expr *expr)
       return false;
     }
 
+  /* IMPLICIT NONE (external) procedures require an explicit EXTERNAL attr.  */
+  /* Intrinsics were handled above, only non-intrinsics left here.  */
+  if (sym->attr.flavor == FL_PROCEDURE
+      && sym->attr.implicit_type
+      && sym->ns
+      && sym->ns->has_implicit_none_export)
+    {
+	  gfc_error ("Missing explicit declaration with EXTERNAL attribute "
+	      "for symbol %qs at %L", sym->name, &sym->declared_at);
+	  sym->error = 1;
+	  return false;
+    }
+
   /* The reference is to an external name.  */
 
   sym->attr.proc = PROC_EXTERNAL;
@@ -4016,7 +4064,7 @@ resolve_operator (gfc_expr *e)
     {
     default:
       if (!gfc_resolve_expr (e->value.op.op2))
-	return false;
+	t = false;
 
     /* Fall through.  */
 
@@ -4042,6 +4090,9 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   if (op1 == NULL && op2 == NULL)
+    return false;
+  /* Error out if op2 did not resolve. We already diagnosed op1.  */
+  if (t == false)
     return false;
 
   dual_locus_error = false;
@@ -5685,6 +5736,8 @@ resolve_variable (gfc_expr *e)
      can't be translated that way.  */
   if (sym->assoc && e->rank == 0 && e->ref && sym->ts.type == BT_CLASS
       && sym->assoc->target && sym->assoc->target->ts.type == BT_CLASS
+      && sym->assoc->target->ts.u.derived
+      && CLASS_DATA (sym->assoc->target)
       && CLASS_DATA (sym->assoc->target)->as)
     {
       gfc_ref *ref = e->ref;
@@ -5748,7 +5801,8 @@ resolve_variable (gfc_expr *e)
   /* Like above, but for class types, where the checking whether an array
      ref is present is more complicated.  Furthermore make sure not to add
      the full array ref to _vptr or _len refs.  */
-  if (sym->assoc && sym->ts.type == BT_CLASS
+  if (sym->assoc && sym->ts.type == BT_CLASS && sym->ts.u.derived
+      && CLASS_DATA (sym)
       && CLASS_DATA (sym)->attr.dimension
       && (e->ts.type != BT_DERIVED || !e->ts.u.derived->attr.vtype))
     {
@@ -8735,11 +8789,11 @@ resolve_select (gfc_code *code, bool select_type)
 
 	      if (cp->low != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->low))
-		gfc_convert_type_warn (case_expr, &cp->low->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->low->ts, 1, 0);
 
 	      if (cp->high != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->high))
-		gfc_convert_type_warn (case_expr, &cp->high->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->high->ts, 1, 0);
 	    }
 	 }
     }
@@ -8795,7 +8849,8 @@ resolve_select (gfc_code *code, bool select_type)
 		  || cp->low != cp->high))
 	    {
 	      gfc_error ("Logical range in CASE statement at %L is not "
-			 "allowed", &cp->low->where);
+			 "allowed",
+			 cp->low ? &cp->low->where : &cp->high->where);
 	      t = false;
 	      break;
 	    }
@@ -9380,6 +9435,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
       /* Check F03:C815.  */
       if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	  && selector_type
 	  && !selector_type->attr.unlimited_polymorphic
 	  && !gfc_type_is_extensible (c->ts.u.derived))
 	{
@@ -9390,7 +9446,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	}
 
       /* Check F03:C816.  */
-      if (c->ts.type != BT_UNKNOWN && !selector_type->attr.unlimited_polymorphic
+      if (c->ts.type != BT_UNKNOWN
+	  && selector_type && !selector_type->attr.unlimited_polymorphic
 	  && ((c->ts.type != BT_DERIVED && c->ts.type != BT_CLASS)
 	      || !gfc_type_is_extension_of (selector_type, c->ts.u.derived)))
 	{
@@ -10797,13 +10854,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	  {
 	    /* Verify this before calling gfc_resolve_code, which might
 	       change it.  */
-	    gcc_assert (b->next && b->next->op == EXEC_ASSIGN);
-	    gcc_assert ((!b->ext.omp_clauses->capture
-			 && b->next->next == NULL)
-			|| (b->ext.omp_clauses->capture
-			    && b->next->next != NULL
-			    && b->next->next->op == EXEC_ASSIGN
-			    && b->next->next->next == NULL));
+	    gcc_assert (b->op == EXEC_OMP_ATOMIC
+			|| (b->next && b->next->op == EXEC_ASSIGN));
 	  }
 	  break;
 
@@ -12351,7 +12403,7 @@ resolve_values (gfc_symbol *sym)
   if (sym->value == NULL)
     return;
 
-  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED))
+  if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED) && sym->attr.referenced)
     gfc_warning (OPT_Wdeprecated_declarations,
 		 "Using parameter %qs declared at %L is deprecated",
 		 sym->name, &sym->declared_at);
@@ -12676,7 +12728,8 @@ can_generate_init (gfc_symbol *sym)
     || a->cray_pointer
     || sym->assoc
     || (!a->referenced && !a->result)
-    || (a->dummy && a->intent != INTENT_OUT)
+    || (a->dummy && (a->intent != INTENT_OUT
+		     || sym->ns->proc_name->attr.if_source == IFSRC_IFBODY))
     || (a->function && sym != sym->result)
   );
 }
@@ -12913,7 +12966,9 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
-      && (!no_init_flag || sym->attr.intent == INTENT_OUT))
+      && (!no_init_flag
+	  || (sym->attr.intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)))
     sym->value = gfc_generate_initializer (&sym->ts, can_generate_init (sym));
 
   return true;
@@ -13141,7 +13196,7 @@ static bool
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
-  bool allocatable_or_pointer;
+  bool allocatable_or_pointer = false;
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))
@@ -13244,7 +13299,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 
   /* An elemental function is required to return a scalar 12.7.1  */
   if (sym->attr.elemental && sym->attr.function
-      && (sym->as || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)))
+      && (sym->as || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+		      && CLASS_DATA (sym)->as)))
     {
       gfc_error ("ELEMENTAL function %qs at %L must have a scalar "
 		 "result", sym->name, &sym->declared_at);
@@ -16154,7 +16210,8 @@ resolve_symbol (gfc_symbol *sym)
 		    || sym->ts.u.derived->attr.alloc_comp
 		    || sym->ts.u.derived->attr.pointer_comp))
 	   && !(a->function && sym != sym->result))
-	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
+	  || (a->dummy && !a->pointer && a->intent == INTENT_OUT
+	      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY))
 	apply_default_init (sym);
       else if (a->function && sym->result && a->access != ACCESS_PRIVATE
 	       && (sym->ts.u.derived->attr.alloc_comp
@@ -16166,6 +16223,7 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT
+      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY
       && !CLASS_DATA (sym)->attr.class_pointer
       && !CLASS_DATA (sym)->attr.allocatable)
     apply_default_init (sym);

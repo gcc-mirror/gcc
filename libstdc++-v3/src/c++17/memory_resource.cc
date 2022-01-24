@@ -1,6 +1,6 @@
 // <memory_resource> implementation -*- C++ -*-
 
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -603,7 +603,7 @@ namespace pmr
     void* pointer = nullptr;
     aligned_size<min> _M_size;
 
-    size_t size() const noexcept
+    constexpr size_t size() const noexcept
     {
       if (_M_size.value == size_t(-1)) [[unlikely]]
 	return size_t(-1);

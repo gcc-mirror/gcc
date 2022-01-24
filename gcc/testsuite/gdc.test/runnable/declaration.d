@@ -15,7 +15,7 @@ Success
 extern(C) int printf(const char*, ...);
 
 /***************************************************/
-// 6475
+// https://issues.dlang.org/show_bug.cgi?id=6475
 
 class Foo6475(Value)
 {
@@ -34,7 +34,7 @@ void test6475()
 }
 
 /***************************************************/
-// 6905
+// https://issues.dlang.org/show_bug.cgi?id=6905
 
 void test6905()
 {
@@ -62,7 +62,7 @@ void test6905()
 }
 
 /***************************************************/
-// 7019
+// https://issues.dlang.org/show_bug.cgi?id=7019
 
 struct S7019
 {
@@ -106,7 +106,7 @@ void test7019()
 }
 
 /***************************************************/
-// 7239
+// https://issues.dlang.org/show_bug.cgi?id=7239
 
 struct vec7239
 {
@@ -145,7 +145,7 @@ void test10635()
 }
 
 /***************************************************/
-// 8123
+// https://issues.dlang.org/show_bug.cgi?id=8123
 
 void test8123()
 {
@@ -169,7 +169,7 @@ void test8123()
 }
 
 /***************************************************/
-// 8147
+// https://issues.dlang.org/show_bug.cgi?id=8147
 
 enum A8147 { a, b, c }
 
@@ -195,7 +195,7 @@ void test8147()
 }
 
 /***************************************************/
-// 8410
+// https://issues.dlang.org/show_bug.cgi?id=8410
 
 void test8410()
 {
@@ -207,7 +207,7 @@ void test8410()
 }
 
 /***************************************************/
-// 8942
+// https://issues.dlang.org/show_bug.cgi?id=8942
 
 alias const int A8942_0;
 static assert(is(A8942_0 == const int)); // passes
@@ -230,7 +230,7 @@ void test8942()
 }
 
 /***************************************************/
-// 10144
+// https://issues.dlang.org/show_bug.cgi?id=10144
 
 final class TNFA10144(char_t)
 {
@@ -258,7 +258,7 @@ class C10144
 
 /***************************************************/
 
-// 10142
+// https://issues.dlang.org/show_bug.cgi?id=10142
 
 class File10142
 {
@@ -291,7 +291,7 @@ void test10142()
 }
 
 /***************************************************/
-// 11421
+// https://issues.dlang.org/show_bug.cgi?id=11421
 
 void test11421()
 {
@@ -308,7 +308,7 @@ void test11421()
 }
 
 /***************************************************/
-// 13776
+// https://issues.dlang.org/show_bug.cgi?id=13776
 
 enum a13776(T) = __traits(compiles, { T; });
 
@@ -364,7 +364,7 @@ void test13776()
 }
 
 /***************************************************/
-// 14090
+// https://issues.dlang.org/show_bug.cgi?id=14090
 
 template Packed14090(Args...)
 {
@@ -389,7 +389,7 @@ template RoundRobin14090()
 alias roundRobin14090 = RoundRobin14090!();
 
 /***************************************************/
-// 13950
+// https://issues.dlang.org/show_bug.cgi?id=13950
 
 template Tuple13950(T...) { alias T Tuple13950; }
 

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2021 Free Software Foundation, Inc.
+   Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -1441,7 +1441,7 @@ arc_override_options (void)
     target_flags |= MASK_NO_SDATA_SET;
 
   /* Check for small data option */
-  if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
+  if (!OPTION_SET_P (g_switch_value) && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
 
   /* A7 has an issue with delay slots.  */
@@ -1455,7 +1455,7 @@ arc_override_options (void)
     target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
   /* Set unaligned to all HS cpus.  */
-  if (!global_options_set.x_unaligned_access && TARGET_HS)
+  if (!OPTION_SET_P (unaligned_access) && TARGET_HS)
     unaligned_access = 1;
 
   /* These need to be done at start up.  It's convenient to do them here.  */
@@ -2897,9 +2897,8 @@ arc_compute_frame_size (void)
 			      cfun, TARGET_DPFP))
     reg_size += UNITS_PER_WORD * 2;
 
-  /* Check for special MLO/MHI case used by ARC600' MUL64
-     extension.  */
-  if (arc_must_save_register (R58_REG, cfun, TARGET_MUL64_SET))
+  /* Check if R58 is used.  */
+  if (arc_must_save_register (R58_REG, cfun, true))
     reg_size += UNITS_PER_WORD * 2;
 
   /* 4) Calculate extra size made up of the blink + fp size.  */
@@ -3878,7 +3877,7 @@ arc_expand_prologue (void)
 	}
     }
 
-  /* Save ARC600' MUL64 registers.  */
+  /* Save accumulator registers.  */
   if (arc_must_save_register (R58_REG, cfun, true))
     frame_size_to_allocate -= arc_save_callee_saves (3ULL << 58,
 						     false, false, 0, false);
@@ -3971,7 +3970,7 @@ arc_expand_epilogue (int sibcall_p)
       first_offset = 0;
     }
 
-  /* Restore ARC600' MUL64 registers.  */
+  /* Restore accumulator registers.  */
   if (arc_must_save_register (R58_REG, cfun, true))
     {
       rtx insn;

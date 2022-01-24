@@ -118,12 +118,10 @@
 
  <varlistentry><term><code>--enable-libstdcxx-allocator=OPTION  </code></term>
  <listitem><para>Select a target-specific underlying std::allocator.  The
-	choices are 'new' to specify a wrapper for new, 'malloc' to
-	specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
-	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	See this page for more information on allocator
-	<link linkend="allocator.ext">extensions</link>. This option
-	can change the library ABI.
+	choices are 'new' to specify a wrapper for new, and 'malloc' to
+	specify a wrapper for malloc.
+	See <xref linkend="allocator.ext"/> for more information.
+	This option can change the library ABI.
      </para>
  </listitem></varlistentry>
 

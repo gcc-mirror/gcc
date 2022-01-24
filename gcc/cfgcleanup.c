@@ -1,5 +1,5 @@
 /* Control flow optimization code for GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -256,7 +256,6 @@ thread_jump (edge e, basic_block b)
   unsigned i;
   regset nonequal;
   bool failed = false;
-  reg_set_iterator rsi;
 
   /* Jump threading may cause fixup_partitions to introduce new crossing edges,
      which is not allowed after reload.  */
@@ -379,7 +378,7 @@ thread_jump (edge e, basic_block b)
       goto failed_exit;
     }
 
-  EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
+  if (!REG_SET_EMPTY_P (nonequal))
     goto failed_exit;
 
   BITMAP_FREE (nonequal);
@@ -3239,7 +3238,8 @@ pass_jump::execute (function *)
   if (dump_file)
     dump_flow_info (dump_file, dump_flags);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
-	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+	       | (flag_thread_jumps && flag_expensive_optimizations
+		  ? CLEANUP_THREADING : 0));
   return 0;
 }
 
@@ -3274,7 +3274,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_thread_jumps; }
+  virtual bool gate (function *)
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
   virtual unsigned int execute (function *);
 
 }; // class pass_jump_after_combine

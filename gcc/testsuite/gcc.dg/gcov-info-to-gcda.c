@@ -1,5 +1,4 @@
-/* { dg-do run } */
-/* { dg-skip-if "profile-info-section" { powerpc-ibm-aix* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-fprofile-arcs -fprofile-info-section" } */
 
 #define assert(expr)                                            \

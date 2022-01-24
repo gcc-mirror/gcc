@@ -1,5 +1,5 @@
 /* intrinsics.cc -- D language compiler intrinsics.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "dmd/declaration.h"
+#include "dmd/expression.h"
 #include "dmd/identifier.h"
-#include "dmd/mangle.h"
 #include "dmd/mangle.h"
 #include "dmd/module.h"
 #include "dmd/template.h"
@@ -76,12 +76,12 @@ static const intrinsic_decl intrinsic_decls[] =
 void
 maybe_set_intrinsic (FuncDeclaration *decl)
 {
-  if (!decl->ident || decl->builtin != BUILTINunknown)
+  if (!decl->ident || decl->builtin != BUILTIN::unknown)
     return;
 
   /* The builtin flag is updated only if we can evaluate the intrinsic
      at compile-time.  Such as the math or bitop intrinsics.  */
-  decl->builtin = BUILTINunimp;
+  decl->builtin = BUILTIN::unimp;
 
   /* Check if it's a compiler intrinsic.  We only require that any
      internally recognised intrinsics are declared in a module with
@@ -177,12 +177,12 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 		 built-in function.  It could be `int pow(int, int)'.  */
 	      tree rettype = TREE_TYPE (TREE_TYPE (decl->csym));
 	      if (mathfn_built_in (rettype, BUILT_IN_POW) != NULL_TREE)
-		decl->builtin = BUILTINgcc;
+		decl->builtin = BUILTIN::gcc;
 	      break;
 	    }
 
 	    default:
-	      decl->builtin = BUILTINgcc;
+	      decl->builtin = BUILTIN::gcc;
 	      break;
 	    }
 
@@ -431,7 +431,7 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
       Expression *e = isExpression ((*ti->tiargs)[0]);
-      gcc_assert (e && e->op == TOKint64);
+      gcc_assert (e && e->op == EXP::int64);
       count = build_expr (e, true);
     }
 

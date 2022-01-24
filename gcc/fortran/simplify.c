@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2108,6 +2108,9 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
     }
   else
     which = 0;
+
+  if (array->shape == NULL)
+    return NULL;
 
   gfc_array_size (array, &size);
   arraysize = mpz_get_ui (size);
@@ -4263,6 +4266,12 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	     || (as->type == AS_ASSUMED_SHAPE && upper)))
     return NULL;
 
+  /* 'array' shall not be an unallocated allocatable variable or a pointer that
+     is not associated.  */
+  if (array->expr_type == EXPR_VARIABLE
+      && (gfc_expr_attr (array).allocatable || gfc_expr_attr (array).pointer))
+    return NULL;
+
   gcc_assert (!as
 	      || (as->type != AS_DEFERRED
 		  && array->expr_type == EXPR_VARIABLE
@@ -4869,6 +4878,9 @@ gfc_simplify_maskr (gfc_expr *i, gfc_expr *kind_arg)
   bool fail = gfc_extract_int (i, &arg);
   gcc_assert (!fail);
 
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
   /* MASKR(n) = 2^n - 1 */
@@ -4899,6 +4911,9 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
 
   bool fail = gfc_extract_int (i, &arg);
   gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
@@ -5087,6 +5102,7 @@ min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign, bool back_val)
 static gfc_expr *
 simplify_min_max (gfc_expr *expr, int sign)
 {
+  int tmp1, tmp2;
   gfc_actual_arglist *arg, *last, *extremum;
   gfc_expr *tmp, *ret;
   const char *fname;
@@ -5131,7 +5147,16 @@ simplify_min_max (gfc_expr *expr, int sign)
   if ((tmp->ts.type != BT_INTEGER || tmp->ts.kind != gfc_integer_4_kind)
       && (strcmp (fname, "min1") == 0 || strcmp (fname, "max1") == 0))
     {
+      /* Explicit conversion, turn off -Wconversion and -Wconversion-extra
+	 warnings.  */
+      tmp1 = warn_conversion;
+      tmp2 = warn_conversion_extra;
+      warn_conversion = warn_conversion_extra = 0;
+
       ret = gfc_convert_constant (tmp, BT_INTEGER, gfc_integer_4_kind);
+
+      warn_conversion = tmp1;
+      warn_conversion_extra = tmp2;
     }
   else if ((tmp->ts.type != BT_REAL || tmp->ts.kind != gfc_real_4_kind)
 	   && (strcmp (fname, "amin0") == 0 || strcmp (fname, "amax0") == 0))
@@ -5269,6 +5294,9 @@ simplify_minmaxloc_nodim (gfc_expr *result, gfc_expr *extremum,
   if (mask
       && mask->expr_type == EXPR_CONSTANT
       && !mask->value.logical)
+    goto finish;
+
+  if (array->shape == NULL)
     goto finish;
 
   for (i = 0; i < array->rank; i++)
@@ -6840,7 +6868,13 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
       gfc_extract_int (e, &shape[rank]);
 
       gcc_assert (rank >= 0 && rank < GFC_MAX_DIMENSIONS);
-      gcc_assert (shape[rank] >= 0);
+      if (shape[rank] < 0)
+	{
+	  gfc_error ("The SHAPE array for the RESHAPE intrinsic at %L has a "
+		     "negative value %d for dimension %d",
+		     &shape_exp->where, shape[rank], rank+1);
+	  return &gfc_bad_expr;
+	}
 
       rank++;
     }
@@ -7471,6 +7505,7 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
   mpz_t size;
   gfc_expr *return_value;
   int d;
+  gfc_ref *ref;
 
   /* For unary operations, the size of the result is given by the size
      of the operand.  For binary ones, it's the size of the first operand
@@ -7526,6 +7561,10 @@ simplify_size (gfc_expr *array, gfc_expr *dim, int k)
 	}
       return simplified;
     }
+
+  for (ref = array->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.as)
+      gfc_resolve_array_spec (ref->u.ar.as, 0);
 
   if (dim == NULL)
     {
@@ -8162,6 +8201,9 @@ gfc_simplify_transpose (gfc_expr *matrix)
     return NULL;
 
   gcc_assert (matrix->rank == 2);
+
+  if (matrix->shape == NULL)
+    return NULL;
 
   result = gfc_get_array_expr (matrix->ts.type, matrix->ts.kind,
 			       &matrix->where);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -270,7 +270,9 @@ package body Exp_Unst is
    begin
       pragma Assert (Is_Subprogram (E));
 
-      if Subps_Index (E) = Uint_0 then
+      if Field_Is_Initial_Zero (E, F_Subps_Index)
+        or else Subps_Index (E) = Uint_0
+      then
          E := Ultimate_Alias (E);
 
          --  The body of a protected operation has a different name and
@@ -886,6 +888,7 @@ package body Exp_Unst is
                      if Is_Subprogram (Ent)
                        and then not Is_Generic_Subprogram (Ent)
                        and then not Is_Imported (Ent)
+                       and then not Is_Intrinsic_Subprogram (Ent)
                        and then Scope_Within (Ultimate_Alias (Ent), Subp)
                      then
                         Append_Unique_Call ((N, Current_Subprogram, Ent));
@@ -1752,7 +1755,7 @@ package body Exp_Unst is
 
                      procedure Add_Form_To_Spec (F : Entity_Id; S : Node_Id);
                      --  S is an N_Function/Procedure_Specification node, and F
-                     --  is the new entity to add to this subprogramn spec as
+                     --  is the new entity to add to this subprogram spec as
                      --  the last Extra_Formal.
 
                      ----------------------
@@ -2090,7 +2093,8 @@ package body Exp_Unst is
 
                                  --  Build and insert the assignment:
                                  --    ARECn.nam := nam'Address
-                                 --  or else 'Access for unconstrained array
+                                 --  or else 'Unchecked_Access for
+                                 --  unconstrained array.
 
                                  if Needs_Fat_Pointer (Ent) then
                                     Attr := Name_Unchecked_Access;
@@ -2203,7 +2207,7 @@ package body Exp_Unst is
 
          begin
             --  Ignore type references, these are implicit references that do
-            --  not need rewriting (e.g. the appearence in a conversion).
+            --  not need rewriting (e.g. the appearance in a conversion).
             --  Also ignore if no reference was specified or if the rewriting
             --  has already been done (this can happen if the N_Identifier
             --  occurs more than one time in the tree). Also ignore references

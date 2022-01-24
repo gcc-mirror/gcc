@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -100,6 +100,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     }
 
+  /// @cond undocumented
+
+  // Constraint for overloads taking non-array types.
+#if __cpp_concepts && __cpp_lib_type_trait_variable_templates
+  template<typename _Tp>
+    requires (!is_array_v<_Tp>)
+    using _NonArray = _Tp;
+#else
+  template<typename _Tp>
+    using _NonArray = __enable_if_t<!is_array<_Tp>::value, _Tp>;
+#endif
+
+#if __cpp_lib_shared_ptr_arrays >= 201707L
+  // Constraint for overloads taking array types with unknown bound, U[].
+#if __cpp_concepts
+  template<typename _Tp>
+    requires is_array_v<_Tp> && (extent_v<_Tp> == 0)
+    using _UnboundedArray = _Tp;
+#else
+  template<typename _Tp>
+    using _UnboundedArray
+      = __enable_if_t<__is_array_unknown_bounds<_Tp>::value, _Tp>;
+#endif
+
+  // Constraint for overloads taking array types with known bound, U[N].
+#if __cpp_concepts
+  template<typename _Tp>
+    requires (extent_v<_Tp> != 0)
+    using _BoundedArray = _Tp;
+#else
+  template<typename _Tp>
+    using _BoundedArray
+      = __enable_if_t<__is_array_known_bounds<_Tp>::value, _Tp>;
+#endif
+
+#if __cpp_lib_smart_ptr_for_overwrite
+  // Constraint for overloads taking either non-array or bounded array, U[N].
+#if __cpp_concepts
+  template<typename _Tp>
+    requires (!is_array_v<_Tp>) || (extent_v<_Tp> != 0)
+    using _NotUnboundedArray = _Tp;
+#else
+  template<typename _Tp>
+    using _NotUnboundedArray
+      = __enable_if_t<!__is_array_unknown_bounds<_Tp>::value, _Tp>;
+#endif
+#endif // smart_ptr_for_overwrite
+#endif // shared_ptr_arrays
+
+  /// @endcond
+
   /**
    *  @brief  A smart pointer with reference-counted copy semantics.
    *  @headerfile memory
@@ -139,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using element_type = typename __shared_ptr<_Tp>::element_type;
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_shared_ptr_weak_type 201606
+# define __cpp_lib_shared_ptr_weak_type 201606L
       /// The corresponding weak_ptr type for this shared_ptr
       /// @since C++17
       using weak_type = weak_ptr<_Tp>;
@@ -414,8 +465,71 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Yp, typename _Alloc, typename... _Args>
-	friend shared_ptr<_Yp>
-	allocate_shared(const _Alloc& __a, _Args&&... __args);
+	friend shared_ptr<_NonArray<_Yp>>
+	allocate_shared(const _Alloc&, _Args&&...);
+
+      template<typename _Yp, typename... _Args>
+	friend shared_ptr<_NonArray<_Yp>>
+	make_shared(_Args&&...);
+
+#if __cpp_lib_shared_ptr_arrays >= 201707L
+      // This constructor is non-standard, it is used by allocate_shared<T[]>.
+      template<typename _Alloc, typename _Init = const remove_extent_t<_Tp>*>
+	shared_ptr(const _Sp_counted_array_base<_Alloc>& __a,
+		   _Init __init = nullptr)
+	: __shared_ptr<_Tp>(__a, __init)
+	{ }
+
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	allocate_shared(const _Alloc&, size_t);
+
+      template<typename _Yp>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	make_shared(size_t);
+
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	allocate_shared(const _Alloc&, size_t, const remove_extent_t<_Yp>&);
+
+      template<typename _Yp>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	make_shared(size_t, const remove_extent_t<_Yp>&);
+
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_BoundedArray<_Yp>>
+	allocate_shared(const _Alloc&);
+
+      template<typename _Yp>
+	friend shared_ptr<_BoundedArray<_Yp>>
+	make_shared();
+
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_BoundedArray<_Yp>>
+	allocate_shared(const _Alloc&, const remove_extent_t<_Yp>&);
+
+      template<typename _Yp>
+	friend shared_ptr<_BoundedArray<_Yp>>
+	make_shared(const remove_extent_t<_Yp>&);
+
+#if __cpp_lib_smart_ptr_for_overwrite
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_NotUnboundedArray<_Yp>>
+	allocate_shared_for_overwrite(const _Alloc&);
+
+      template<typename _Yp>
+	friend shared_ptr<_NotUnboundedArray<_Yp>>
+	make_shared_for_overwrite();
+
+      template<typename _Yp, typename _Alloc>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	allocate_shared_for_overwrite(const _Alloc&, size_t);
+
+      template<typename _Yp>
+	friend shared_ptr<_UnboundedArray<_Yp>>
+	make_shared_for_overwrite(size_t);
+#endif
+#endif
 
       // This constructor is non-standard, it is used by weak_ptr::lock().
       shared_ptr(const weak_ptr<_Tp>& __r, std::nothrow_t) noexcept
@@ -872,11 +986,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  and the new object.
    */
   template<typename _Tp, typename _Alloc, typename... _Args>
-    inline shared_ptr<_Tp>
+    inline shared_ptr<_NonArray<_Tp>>
     allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
-      static_assert(!is_array<_Tp>::value, "make_shared<T[]> not supported");
-
       return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc>{__a},
 			     std::forward<_Args>(__args)...);
     }
@@ -889,13 +1001,152 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *          constructor of @a _Tp.
    */
   template<typename _Tp, typename... _Args>
-    inline shared_ptr<_Tp>
+    inline shared_ptr<_NonArray<_Tp>>
     make_shared(_Args&&... __args)
     {
-      typedef typename std::remove_cv<_Tp>::type _Tp_nc;
-      return std::allocate_shared<_Tp>(std::allocator<_Tp_nc>(),
-				       std::forward<_Args>(__args)...);
+      using _Alloc = allocator<void>;
+      _Alloc __a;
+      return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc>{__a},
+			     std::forward<_Args>(__args)...);
     }
+
+#if __cpp_lib_shared_ptr_arrays >= 201707L
+  /// @cond undocumented
+  template<typename _Tp, typename _Alloc = allocator<void>>
+    auto
+    __make_shared_arr_tag(size_t __n, const _Alloc& __a = _Alloc()) noexcept
+    {
+      using _Up = remove_all_extents_t<_Tp>;
+      using _UpAlloc = __alloc_rebind<_Alloc, _Up>;
+      size_t __s = sizeof(remove_extent_t<_Tp>) / sizeof(_Up);
+      if (__builtin_mul_overflow(__s, __n, &__n))
+	std::__throw_bad_array_new_length();
+      return _Sp_counted_array_base<_UpAlloc>{_UpAlloc(__a), __n};
+    }
+  /// @endcond
+
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    allocate_shared(const _Alloc& __a, size_t __n)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n, __a));
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    make_shared(size_t __n)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n));
+    }
+
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    allocate_shared(const _Alloc& __a, size_t __n,
+		    const remove_extent_t<_Tp>& __u)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n, __a),
+			     std::__addressof(__u));
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    make_shared(size_t __n, const remove_extent_t<_Tp>& __u)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n),
+			     std::__addressof(__u));
+    }
+
+  /// @cond undocumented
+  template<typename _Tp, typename _Alloc = allocator<void>>
+    auto
+    __make_shared_arrN_tag(const _Alloc& __a = _Alloc()) noexcept
+    {
+      using _Up = remove_all_extents_t<_Tp>;
+      using _UpAlloc = __alloc_rebind<_Alloc, _Up>;
+      size_t __n = sizeof(_Tp) / sizeof(_Up);
+      return _Sp_counted_array_base<_UpAlloc>{_UpAlloc(__a), __n};
+    }
+  /// @endcond
+
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_BoundedArray<_Tp>>
+    allocate_shared(const _Alloc& __a)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>(__a));
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_BoundedArray<_Tp>>
+    make_shared()
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>());
+    }
+
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_BoundedArray<_Tp>>
+    allocate_shared(const _Alloc& __a, const remove_extent_t<_Tp>& __u)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>(__a),
+			     std::__addressof(__u));
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_BoundedArray<_Tp>>
+    make_shared(const remove_extent_t<_Tp>& __u)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>(),
+			     std::__addressof(__u));
+    }
+
+#if __cpp_lib_smart_ptr_for_overwrite
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_NotUnboundedArray<_Tp>>
+    allocate_shared_for_overwrite(const _Alloc& __a)
+    {
+      if constexpr (is_array_v<_Tp>)
+	return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>(__a),
+			       _Sp_overwrite_tag{});
+      else
+	{
+	  // Rebind the allocator to _Sp_overwrite_tag, so that the
+	  // relevant _Sp_counted_ptr_inplace specialization is used.
+	  using _Alloc2 = __alloc_rebind<_Alloc, _Sp_overwrite_tag>;
+	  _Alloc2 __a2 = __a;
+	  return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc2>{__a2});
+	}
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_NotUnboundedArray<_Tp>>
+    make_shared_for_overwrite()
+    {
+      if constexpr (is_array_v<_Tp>)
+	return shared_ptr<_Tp>(std::__make_shared_arrN_tag<_Tp>(),
+			       _Sp_overwrite_tag{});
+      else
+	{
+	  using _Alloc = allocator<_Sp_overwrite_tag>;
+	  return shared_ptr<_Tp>(_Sp_alloc_shared_tag<_Alloc>{{}});
+	}
+    }
+
+  template<typename _Tp, typename _Alloc>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    allocate_shared_for_overwrite(const _Alloc& __a, size_t __n)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n, __a),
+			     _Sp_overwrite_tag{});
+    }
+
+  template<typename _Tp>
+    inline shared_ptr<_UnboundedArray<_Tp>>
+    make_shared_for_overwrite(size_t __n)
+    {
+      return shared_ptr<_Tp>(std::__make_shared_arr_tag<_Tp>(__n),
+			     _Sp_overwrite_tag{});
+    }
+#endif // smart_ptr_for_overwrite
+#endif // shared_ptr_arrays
 
   /// std::hash specialization for shared_ptr.
   template<typename _Tp>

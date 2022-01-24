@@ -61,7 +61,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 
       /* Align if necessary.  */
       if (((*p_arg)->alignment - 1) & (unsigned) argp)
-	argp = (char *) ALIGN (argp, (*p_arg)->alignment);
+	argp = (char *) FFI_ALIGN (argp, (*p_arg)->alignment);
 
       if (avn != 0) 
 	{

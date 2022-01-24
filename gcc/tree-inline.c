@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -193,7 +193,6 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && id->entry_bb == NULL
 	  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
 	{
-	  tree vexpr = make_node (DEBUG_EXPR_DECL);
 	  gimple *def_temp;
 	  gimple_stmt_iterator gsi;
 	  tree val = SSA_NAME_VAR (name);
@@ -210,10 +209,10 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  n = id->decl_map->get (val);
 	  if (n && TREE_CODE (*n) == DEBUG_EXPR_DECL)
 	    return *n;
-	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (name);
+	  tree vexpr = build_debug_expr_decl (TREE_TYPE (name));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (name)));
+	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
 	  insert_decl_map (id, val, vexpr);
@@ -823,9 +822,6 @@ remap_block (tree *block, copy_body_data *id)
   BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block),
   					&BLOCK_NONLOCALIZED_VARS (new_block),
 					id);
-
-  if (id->transform_lang_insert_block)
-    id->transform_lang_insert_block (new_block);
 
   /* Remember the remapped block.  */
   insert_decl_map (id, old_block, new_block);
@@ -1529,7 +1525,21 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
   if (!is_gimple_debug (stmt)
       && id->param_body_adjs
       && id->param_body_adjs->m_dead_stmts.contains (stmt))
-    return NULL;
+    {
+      tree *dval = id->param_body_adjs->m_dead_stmt_debug_equiv.get (stmt);
+      if (!dval)
+	return NULL;
+
+      gcc_assert (is_gimple_assign (stmt));
+      tree lhs = gimple_assign_lhs (stmt);
+      tree *dvar = id->param_body_adjs->m_dead_ssa_debug_equiv.get (lhs);
+      gdebug *bind = gimple_build_debug_bind (*dvar, *dval, stmt);
+      if (id->reset_location)
+	gimple_set_location (bind, input_location);
+      id->debug_stmts.safe_push (bind);
+      gimple_seq_add_stmt (&stmts, bind);
+      return stmts;
+    }
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -1807,15 +1817,16 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
       if (gimple_debug_bind_p (stmt))
 	{
-	  tree value;
+	  tree var = gimple_debug_bind_get_var (stmt);
+	  tree value = gimple_debug_bind_get_value (stmt);
 	  if (id->param_body_adjs
 	      && id->param_body_adjs->m_dead_stmts.contains (stmt))
-	    value = NULL_TREE;
-	  else
-	    value = gimple_debug_bind_get_value (stmt);
-	  gdebug *copy
-	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
-				       value, stmt);
+	    {
+	      value = unshare_expr_without_location (value);
+	      id->param_body_adjs->remap_with_debug_expressions (&value);
+	    }
+
+	  gdebug *copy = gimple_build_debug_bind (var, value, stmt);
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
@@ -2117,7 +2128,13 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      size_t nargs = nargs_caller;
 
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
-		nargs--;
+		{
+		  /* Avoid crashing on invalid IL that doesn't have a
+		     varargs function or that passes not enough arguments.  */
+		  if (nargs == 0)
+		    break;
+		  nargs--;
+		}
 
 	      /* Create the new array of arguments.  */
 	      size_t nargs_callee = gimple_call_num_args (call_stmt);
@@ -3490,7 +3507,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
       /* We may produce non-gimple trees by adding NOPs or introduce invalid
 	 sharing when the value is not constant or DECL.  And we need to make
 	 sure that it cannot be modified from another path in the callee.  */
-      if ((is_gimple_min_invariant (value)
+      if (((is_gimple_min_invariant (value)
+	    /* When the parameter is used in a context that forces it to
+	       not be a GIMPLE register avoid substituting something that
+	       is not a decl there.  */
+	    && ! DECL_NOT_GIMPLE_REG_P (p))
 	   || (DECL_P (value) && TREE_READONLY (value))
 	   || (auto_var_in_fn_p (value, id->dst_fn)
 	       && !TREE_ADDRESSABLE (value)))
@@ -3587,7 +3608,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	      init_stmt = gimple_build_assign (def, rhs);
 	    }
 	}
-      else
+      else if (!is_empty_type (TREE_TYPE (var)))
         init_stmt = gimple_build_assign (var, rhs);
 
       if (bb && init_stmt)
@@ -5449,7 +5470,6 @@ optimize_inline_calls (tree fn)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = true;
   id.transform_parameter = true;
-  id.transform_lang_insert_block = NULL;
   id.statements_to_fold = new hash_set<gimple *>;
 
   push_gimplify_context ();
@@ -5833,7 +5853,6 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
   id.transform_parameter = false;
-  id.transform_lang_insert_block = NULL;
 
   /* Walk the tree once to find local labels.  */
   memset (&wi, 0, sizeof (wi));
@@ -6228,7 +6247,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
   id.transform_parameter = false;
-  id.transform_lang_insert_block = NULL;
 
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FN
     (DECL_STRUCT_FUNCTION (old_decl));
@@ -6425,9 +6443,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      debug_args = decl_debug_args_insert (new_decl);
 	      len = vec_safe_length (*debug_args);
 	    }
-	  ddecl = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (ddecl) = 1;
-	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
+	  ddecl = build_debug_expr_decl (TREE_TYPE (parm));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (ddecl, DECL_MODE (parm));
 	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
 	  vec_safe_push (*debug_args, ddecl);
@@ -6442,7 +6459,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	     in the debug info that var (whole DECL_ORIGIN is the parm
 	     PARM_DECL) is optimized away, but could be looked up at the
 	     call site as value of D#X there.  */
-	  tree vexpr;
 	  gimple_stmt_iterator cgsi
 	    = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gimple *def_temp;
@@ -6450,17 +6466,24 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  i = vec_safe_length (*debug_args);
 	  do
 	    {
+	      tree vexpr = NULL_TREE;
 	      i -= 2;
 	      while (var != NULL_TREE
 		     && DECL_ABSTRACT_ORIGIN (var) != (**debug_args)[i])
 		var = TREE_CHAIN (var);
 	      if (var == NULL_TREE)
 		break;
-	      vexpr = make_node (DEBUG_EXPR_DECL);
 	      tree parm = (**debug_args)[i];
-	      DECL_ARTIFICIAL (vexpr) = 1;
-	      TREE_TYPE (vexpr) = TREE_TYPE (parm);
-	      SET_DECL_MODE (vexpr, DECL_MODE (parm));
+	      if (tree parm_ddef = ssa_default_def (id.src_cfun, parm))
+		if (tree *d
+		    = param_body_adjs->m_dead_ssa_debug_equiv.get (parm_ddef))
+		  vexpr = *d;
+	      if (!vexpr)
+		{
+		  vexpr = build_debug_expr_decl (TREE_TYPE (parm));
+		  /* FIXME: Is setting the mode really necessary? */
+		  SET_DECL_MODE (vexpr, DECL_MODE (parm));
+		}
 	      def_temp = gimple_build_debug_bind (var, vexpr, NULL);
 	      gsi_insert_before (&cgsi, def_temp, GSI_NEW_STMT);
 	      def_temp = gimple_build_debug_source_bind (vexpr, parm, NULL);
@@ -6512,7 +6535,6 @@ maybe_inline_call_in_expr (tree exp)
       id.transform_new_cfg = false;
       id.transform_return_to_modify = true;
       id.transform_parameter = true;
-      id.transform_lang_insert_block = NULL;
 
       /* Make sure not to unshare trees behind the front-end's back
 	 since front-end specific mechanisms may rely on sharing.  */
@@ -6584,7 +6606,6 @@ copy_fn (tree fn, tree& parms, tree& result)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
   id.transform_parameter = true;
-  id.transform_lang_insert_block = NULL;
 
   /* Make sure not to unshare trees behind the front-end's back
      since front-end specific mechanisms may rely on sharing.  */

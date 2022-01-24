@@ -2,7 +2,7 @@
 
 // 2005-01-24  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,14 +28,12 @@ void test01()
   using namespace __gnu_test;
 
   static_assert(test_category<is_unsigned, void>(false), "");
-  
+
   static_assert(test_category<is_unsigned, char>(char(-1) > char(0)), "");
   static_assert(test_category<is_unsigned, signed char>(false), "");
   static_assert(test_category<is_unsigned, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_unsigned, wchar_t>
 		(wchar_t(-1) > wchar_t(0)), "");
-#endif
   static_assert(test_category<is_unsigned, short>(false), "");
   static_assert(test_category<is_unsigned, unsigned short>(true), "");
   static_assert(test_category<is_unsigned, int>(false), "");
@@ -51,7 +49,7 @@ void test01()
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   static_assert(test_category<is_unsigned, unsigned __int128>(true), "");
   static_assert(test_category<is_unsigned, __int128>(false), "");
 #endif

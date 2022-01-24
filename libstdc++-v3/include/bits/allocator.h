@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -178,10 +178,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tp*
       allocate(size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
+	if (std::__is_constant_evaluated())
 	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
-#endif
 	return __allocator_base<_Tp>::allocate(__n, 0);
       }
 
@@ -189,13 +187,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr void
       deallocate(_Tp* __p, size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
+	if (std::__is_constant_evaluated())
 	  {
 	    ::operator delete(__p);
 	    return;
 	  }
-#endif
 	__allocator_base<_Tp>::deallocate(__p, __n);
       }
 #endif // C++20
@@ -309,6 +305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __shrink_to_fit_aux<_Tp, true>
     {
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_do_it(_Tp& __c) noexcept
       {

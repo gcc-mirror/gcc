@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,7 +47,7 @@ package body System.Tasking.Task_Attributes is
    end record;
 
    Index_Array : array (1 .. Max_Attribute_Count) of Index_Info :=
-                   (others => (False, False));
+                   [others => (False, False)];
 
    --  Note that this package will use an efficient implementation with no
    --  locks and no extra dynamic memory allocation if Attribute can fit in a

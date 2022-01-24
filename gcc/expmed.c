@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -806,7 +806,8 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	    }
 	}
       else if (constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
-	       && multiple_p (bitsize, regsize * BITS_PER_UNIT))
+	       && multiple_p (bitsize, regsize * BITS_PER_UNIT)
+	       && known_ge (GET_MODE_BITSIZE (GET_MODE (op0)), bitsize))
 	{
 	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
 				     regnum * regsize);
@@ -1734,7 +1735,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       FOR_EACH_MODE_FROM (new_mode, new_mode)
 	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (GET_MODE (op0)))
 	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
-	    && targetm.vector_mode_supported_p (new_mode))
+	    && targetm.vector_mode_supported_p (new_mode)
+	    && targetm.modes_tieable_p (GET_MODE (op0), new_mode))
 	  break;
       if (new_mode != VOIDmode)
 	op0 = gen_lowpart (new_mode, op0);

@@ -27,7 +27,7 @@ void test2()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(37): Error: cannot modify const expression p
+fail_compilation/fail163.d(37): Error: cannot modify `const` expression `p`
 ---
 */
 void test3()
@@ -53,7 +53,7 @@ void test4()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(63): Error: cannot modify const expression *p
+fail_compilation/fail163.d(63): Error: cannot modify `const` expression `*p`
 ---
 */
 void test5()
@@ -67,7 +67,7 @@ void test5()
 TEST_OUTPUT:
 ---
 fail_compilation/fail163.d(76): Error: cannot implicitly convert expression `& x` of type `int*` to `immutable(int)*`
-fail_compilation/fail163.d(77): Error: cannot modify immutable expression *p
+fail_compilation/fail163.d(77): Error: cannot modify `immutable` expression `*p`
 ---
 */
 void test6()

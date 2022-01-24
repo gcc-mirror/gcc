@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -543,7 +543,7 @@ gfc_free_actual_arglist (gfc_actual_arglist *a1)
     {
       a2 = a1->next;
       if (a1->expr)
-      gfc_free_expr (a1->expr);
+	gfc_free_expr (a1->expr);
       free (a1);
       a1 = a2;
     }
@@ -990,6 +990,34 @@ done:
 }
 
 
+/* Standard intrinsics listed under F2018:10.1.12 (6), which are excluded in
+   constant expressions, except TRANSFER (c.f. item (8)), which would need
+   separate treatment.  */
+
+static bool
+is_non_constant_intrinsic (gfc_expr *e)
+{
+  if (e->expr_type == EXPR_FUNCTION
+      && e->value.function.isym)
+    {
+      switch (e->value.function.isym->id)
+	{
+	  case GFC_ISYM_COMMAND_ARGUMENT_COUNT:
+	  case GFC_ISYM_GET_TEAM:
+	  case GFC_ISYM_NULL:
+	  case GFC_ISYM_NUM_IMAGES:
+	  case GFC_ISYM_TEAM_NUMBER:
+	  case GFC_ISYM_THIS_IMAGE:
+	    return true;
+
+	default:
+	  return false;
+	}
+    }
+  return false;
+}
+
+
 /* Determine if an expression is constant in the sense of F08:7.1.12.
  * This function expects that the expression has already been simplified.  */
 
@@ -1022,6 +1050,10 @@ gfc_is_constant_expr (gfc_expr *e)
     case EXPR_COMPCALL:
       gcc_assert (e->symtree || e->value.function.esym
 		  || e->value.function.isym);
+
+      /* Check for intrinsics excluded in constant expressions.  */
+      if (e->value.function.isym && is_non_constant_intrinsic (e))
+	return false;
 
       /* Call to intrinsic with at least one argument.  */
       if (e->value.function.isym && e->value.function.actual)
@@ -1078,11 +1110,13 @@ is_CFI_desc (gfc_symbol *sym, gfc_expr *e)
 
   if (sym && sym->attr.dummy
       && sym->ns->proc_name->attr.is_bind_c
-      && sym->attr.dimension
       && (sym->attr.pointer
 	  || sym->attr.allocatable
-	  || sym->as->type == AS_ASSUMED_SHAPE
-	  || sym->as->type == AS_ASSUMED_RANK))
+	  || (sym->attr.dimension
+	      && (sym->as->type == AS_ASSUMED_SHAPE
+		  || sym->as->type == AS_ASSUMED_RANK))
+	  || (sym->ts.type == BT_CHARACTER
+	      && (!sym->ts.u.cl || !sym->ts.u.cl->length))))
     return true;
 
 return false;
@@ -2094,6 +2128,8 @@ simplify_parameter_variable (gfc_expr *p, int type)
       if (e == NULL)
 	return false;
 
+      gfc_free_shape (&e->shape, e->rank);
+      e->shape = gfc_copy_shape (p->shape, p->rank);
       e->rank = p->rank;
 
       if (e->ts.type == BT_CHARACTER && p->ts.u.cl)
@@ -2171,7 +2207,8 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  (p->value.function.isym->id == GFC_ISYM_LBOUND
 	   || p->value.function.isym->id == GFC_ISYM_UBOUND
 	   || p->value.function.isym->id == GFC_ISYM_LCOBOUND
-	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND))
+	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND
+	   || p->value.function.isym->id == GFC_ISYM_SHAPE))
 	ap = ap->next;
 
       for ( ; ap; ap = ap->next)
@@ -2182,10 +2219,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  && gfc_intrinsic_func_interface (p, 1) == MATCH_ERROR)
 	return false;
 
-      if (p->expr_type == EXPR_FUNCTION)
+      if (p->symtree && (p->value.function.isym || p->ts.type == BT_UNKNOWN))
 	{
-	  if (p->symtree)
-	    isym = gfc_find_function (p->symtree->n.sym->name);
+	  isym = gfc_find_function (p->symtree->n.sym->name);
 	  if (isym && isym->elemental)
 	    scalarize_intrinsic_call (p, false);
 	}
@@ -2291,6 +2327,31 @@ gfc_simplify_expr (gfc_expr *p, int type)
     }
 
   return true;
+}
+
+
+/* Try simplification of an expression via gfc_simplify_expr.
+   When an error occurs (arithmetic or otherwise), roll back.  */
+
+bool
+gfc_try_simplify_expr (gfc_expr *e, int type)
+{
+  gfc_expr *n;
+  bool t, saved_div0;
+
+  if (e == NULL || e->expr_type == EXPR_CONSTANT)
+    return true;
+
+  saved_div0 = gfc_seen_div0;
+  gfc_seen_div0 = false;
+  n = gfc_copy_expr (e);
+  t = gfc_simplify_expr (n, type) && !gfc_seen_div0;
+  if (t)
+    gfc_replace_expr (e, n);
+  else
+    gfc_free_expr (n);
+  gfc_seen_div0 = saved_div0;
+  return t;
 }
 
 
@@ -4281,6 +4342,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
     {
       gfc_symbol *sym;
       bool target;
+      gfc_ref *ref;
 
       if (gfc_is_size_zero_array (rvalue))
 	{
@@ -4309,6 +4371,39 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 		     "does not have the TARGET attribute at %L",
 		     &rvalue->where);
 	  return false;
+	}
+
+      for (ref = rvalue->ref; ref; ref = ref->next)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_ARRAY:
+	      for (int n = 0; n < ref->u.ar.dimen; n++)
+		if (!gfc_is_constant_expr (ref->u.ar.start[n])
+		    || !gfc_is_constant_expr (ref->u.ar.end[n])
+		    || !gfc_is_constant_expr (ref->u.ar.stride[n]))
+		  {
+		    gfc_error ("Every subscript of target specification "
+			       "at %L must be a constant expression",
+			       &ref->u.ar.where);
+		    return false;
+		  }
+	      break;
+
+	    case REF_SUBSTRING:
+	      if (!gfc_is_constant_expr (ref->u.ss.start)
+		  || !gfc_is_constant_expr (ref->u.ss.end))
+		{
+		  gfc_error ("Substring starting and ending points of target "
+			     "specification at %L must be constant expressions",
+			     &ref->u.ss.start->where);
+		  return false;
+		}
+	      break;
+
+	    default:
+	      break;
+	    }
 	}
     }
   else
@@ -4552,21 +4647,12 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
   return true;
 }
 
-/* Invoke gfc_build_init_expr to create an initializer expression, but do not
- * require that an expression be built.  */
-
-gfc_expr *
-gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
-{
-  return gfc_build_init_expr (ts, where, false);
-}
-
 /* Build an initializer for a local integer, real, complex, logical, or
    character variable, based on the command line flags finit-local-zero,
    finit-integer=, finit-real=, finit-logical=, and finit-character=.
    With force, an initializer is ALWAYS generated.  */
 
-gfc_expr *
+static gfc_expr *
 gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
 {
   gfc_expr *init_expr;
@@ -4723,6 +4809,15 @@ gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
   return init_expr;
 }
 
+/* Invoke gfc_build_init_expr to create an initializer expression, but do not
+ * require that an expression be built.  */
+
+gfc_expr *
+gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
+{
+  return gfc_build_init_expr (ts, where, false);
+}
+
 /* Apply an initialization expression to a typespec. Can be used for symbols or
    components. Similar to add_init_expr_to_sym in decl.c; could probably be
    combined with some effort.  */
@@ -4782,7 +4877,7 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 /* Check whether an expression is a structure constructor and whether it has
    other values than NULL.  */
 
-bool
+static bool
 is_non_empty_structure_constructor (gfc_expr * e)
 {
   if (e->expr_type != EXPR_STRUCTURE)
@@ -5104,7 +5199,8 @@ gfc_get_variable_expr (gfc_symtree *var)
 
   if (var->n.sym->attr.flavor != FL_PROCEDURE
       && ((var->n.sym->as != NULL && var->n.sym->ts.type != BT_CLASS)
-	   || (var->n.sym->ts.type == BT_CLASS && CLASS_DATA (var->n.sym)
+	   || (var->n.sym->ts.type == BT_CLASS && var->n.sym->ts.u.derived
+	       && CLASS_DATA (var->n.sym)
 	       && CLASS_DATA (var->n.sym)->as)))
     {
       e->rank = var->n.sym->ts.type == BT_CLASS
@@ -5820,8 +5916,16 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 
   if (expr->expr_type == EXPR_FUNCTION)
     {
-      if (expr->value.function.esym)
-	return expr->value.function.esym->result->attr.contiguous;
+      if (expr->value.function.isym)
+	/* TRANSPOSE is the only intrinsic that may return a
+	   non-contiguous array.  It's treated as a special case in
+	   gfc_conv_expr_descriptor too.  */
+	return (expr->value.function.isym->id != GFC_ISYM_TRANSPOSE);
+      else if (expr->value.function.esym)
+	/* Only a pointer to an array without the contiguous attribute
+	   can be non-contiguous as a result value.  */
+	return (expr->value.function.esym->result->attr.contiguous
+		|| !expr->value.function.esym->result->attr.pointer);
       else
 	{
 	  /* Type-bound procedures.  */
@@ -6192,10 +6296,13 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
     {
       if (ptr_component && ref->type == REF_COMPONENT)
 	check_intentin = false;
-      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
+      if (ref->type == REF_COMPONENT)
 	{
-	  ptr_component = true;
-	  if (!pointer)
+	  gfc_component *comp = ref->u.c.component;
+	  ptr_component = (comp->ts.type == BT_CLASS && comp->attr.class_ok)
+			? CLASS_DATA (comp)->attr.class_pointer
+			: comp->attr.pointer;
+	  if (ptr_component && !pointer)
 	    check_intentin = false;
 	}
       if (ref->type == REF_INQUIRY

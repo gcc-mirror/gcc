@@ -1,0 +1,8 @@
+# Soft float configuration for PA64
+LIB2ADD += $(srcdir)/config/pa/sfp-exceptions.c
+
+softfp_float_modes := sf df tf
+softfp_int_modes := si di ti
+softfp_extensions := sfdf sftf dftf
+softfp_truncations := dfsf tfsf tfdf
+softfp_exclude_libgcc2 := n

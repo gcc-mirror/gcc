@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1194,7 +1194,7 @@ package body Ch4 is
      (Prefix_Node : Node_Id)
       return        Node_Id
    is
-      Attr_Node  : Node_Id;
+      Attr_Node : Node_Id;
 
    begin
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
@@ -1694,6 +1694,10 @@ package body Ch4 is
                end if;
             end if;
          when Tok_Left_Paren =>
+            if Nkind (Aggregate_Node) = N_Aggregate then
+               Set_Is_Parenthesis_Aggregate (Aggregate_Node);
+            end if;
+
             T_Right_Paren;
          when others => raise Program_Error;
       end case;
@@ -2467,9 +2471,6 @@ package body Ch4 is
               and then Num_Concats >= Num_Concats_Threshold
             then
                declare
-                  Empty_String_Val : String_Id;
-                  --  String_Id for ""
-
                   Strlit_Concat_Val : String_Id;
                   --  Contains the folded value (which will be correct if the
                   --  "&" operators are the predefined ones).
@@ -2505,11 +2506,9 @@ package body Ch4 is
                   --  Create new folded node, and rewrite result with a concat-
                   --  enation of an empty string literal and the folded node.
 
-                  Start_String;
-                  Empty_String_Val := End_String;
                   New_Node :=
                     Make_Op_Concat (Loc,
-                      Make_String_Literal (Loc, Empty_String_Val),
+                      Make_String_Literal (Loc, Null_String_Id),
                       Make_String_Literal (Loc, Strlit_Concat_Val,
                         Is_Folded_In_Parser => True));
                   Rewrite (Node1, New_Node);
@@ -2892,8 +2891,10 @@ package body Ch4 is
                if Token_Is_At_Start_Of_Line
                  and then not
                    (Ada_Version >= Ada_2012
-                     and then Style_Check_Indentation /= 0
-                     and then Start_Column rem Style_Check_Indentation /= 0)
+                      and then
+                        (Style_Check_Indentation = 0
+                           or else
+                             Start_Column rem Style_Check_Indentation /= 0))
                then
                   Error_Msg_AP ("missing operand");
                   return Error;
@@ -2967,7 +2968,7 @@ package body Ch4 is
                   Save_Scan_State (Scan_State);
                   Scan;   --  past FOR
 
-                  if Token = Tok_All or else Token = Tok_Some  then
+                  if Token = Tok_All or else Token = Tok_Some then
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Quantified_Expression;
 
@@ -3480,7 +3481,7 @@ package body Ch4 is
            New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
          Set_Defining_Identifier (Loop_Spec, Id);
 
-         Choice :=  First (Discrete_Choices (Assoc_Node));
+         Choice := First (Discrete_Choices (Assoc_Node));
          Assoc_Node :=
            New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
          Set_Loop_Parameter_Specification (Assoc_Node, Loop_Spec);
@@ -3518,62 +3519,62 @@ package body Ch4 is
       Assoc_Node :=
         New_Node (N_Iterated_Component_Association, Prev_Token_Ptr);
 
-      if Token = Tok_In then
-         Set_Defining_Identifier (Assoc_Node, Id);
-         T_In;
-         Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
+      case Token is
+         when Tok_In =>
+            Set_Defining_Identifier (Assoc_Node, Id);
+            T_In;
+            Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
 
-         --  The iterator may include a filter
+            --  The iterator may include a filter
 
-         if Token = Tok_When then
-            Scan;    -- past WHEN
-            Filter := P_Condition;
-         end if;
+            if Token = Tok_When then
+               Scan;    -- past WHEN
+               Filter := P_Condition;
+            end if;
 
-         if Token = Tok_Use then
+            if Token = Tok_Use then
 
-            --  Ada 2022 Key-expression is present, rewrite node as an
-            --  Iterated_Element_Association.
+               --  Ada 2022 Key-expression is present, rewrite node as an
+               --  Iterated_Element_Association.
 
-            Scan;  --  past USE
-            Build_Iterated_Element_Association;
-            Set_Key_Expression (Assoc_Node, P_Expression);
+               Scan;  --  past USE
+               Build_Iterated_Element_Association;
+               Set_Key_Expression (Assoc_Node, P_Expression);
 
-         elsif Present (Filter) then
-            --  A loop_parameter_specification also indicates an Ada 2022
-            --  construct, in contrast with a subtype indication used in
-            --  array aggregates.
+            elsif Present (Filter) then
+               --  A loop_parameter_specification also indicates an Ada 2022
+               --  construct, in contrast with a subtype indication used in
+               --  array aggregates.
 
-            Build_Iterated_Element_Association;
-         end if;
+               Build_Iterated_Element_Association;
+            end if;
 
-         TF_Arrow;
-         Set_Expression (Assoc_Node, P_Expression);
+            TF_Arrow;
+            Set_Expression (Assoc_Node, P_Expression);
 
-      elsif Ada_Version >= Ada_2022
-        and then Token = Tok_Of
-      then
-         Restore_Scan_State (State);
-         Scan;  -- past OF
-         Set_Defining_Identifier (Assoc_Node, Id);
-         Iter_Spec := P_Iterator_Specification (Id);
-         Set_Iterator_Specification (Assoc_Node, Iter_Spec);
-
-         if Token = Tok_Use then
-            Scan;  -- past USE
-            --  This is an iterated_element_association
-
-            Assoc_Node :=
-              New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
+         when Tok_Of =>
+            Restore_Scan_State (State);
+            Scan;  -- past OF
+            Set_Defining_Identifier (Assoc_Node, Id);
+            Iter_Spec := P_Iterator_Specification (Id);
             Set_Iterator_Specification (Assoc_Node, Iter_Spec);
-            Set_Key_Expression (Assoc_Node, P_Expression);
-         end if;
 
-         TF_Arrow;
-         Set_Expression (Assoc_Node, P_Expression);
-      end if;
+            if Token = Tok_Use then
+               Scan;  -- past USE
+               --  This is an iterated_element_association
 
-      Error_Msg_Ada_2022_Feature ("iterated component", Token_Ptr);
+               Assoc_Node :=
+                 New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
+               Set_Iterator_Specification (Assoc_Node, Iter_Spec);
+               Set_Key_Expression (Assoc_Node, P_Expression);
+            end if;
+
+            TF_Arrow;
+            Set_Expression (Assoc_Node, P_Expression);
+
+         when others =>
+            Error_Msg_AP ("missing IN or OF");
+      end case;
 
       return Assoc_Node;
    end P_Iterated_Component_Association;

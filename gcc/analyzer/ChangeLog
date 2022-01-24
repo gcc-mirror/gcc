@@ -1,3 +1,300 @@
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (taint_state_machine::combine_states): Handle combination
+	of has_ub and has_lb.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104029
+	* sm-taint.cc (taint_state_machine::alt_get_inherited_state):
+	Remove gcc_unreachable from default case for unary ops.
+
+2022-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc: Include "stringpool.h", "attribs.h", and
+	"tree-dfa.h".
+	(mark_params_as_tainted): New.
+	(class tainted_args_function_custom_event): New.
+	(class tainted_args_function_info): New.
+	(exploded_graph::add_function_entry): Handle functions with
+	"tainted_args" attribute.
+	(class tainted_args_field_custom_event): New.
+	(class tainted_args_callback_custom_event): New.
+	(class tainted_args_call_info): New.
+	(add_tainted_args_callback): New.
+	(add_any_callbacks): New.
+	(exploded_graph::build_initial_worklist): Likewise.
+	(exploded_graph::build_initial_worklist): Find callbacks that are
+	reachable from global initializers, calling add_any_callbacks on
+	them.
+
+2022-01-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103940
+	* engine.cc (impl_sm_context::impl_sm_context): Add
+	"unknown_side_effects" param and use it to initialize
+	new m_unknown_side_effects field.
+	(impl_sm_context::unknown_side_effects_p): New.
+	(impl_sm_context::m_unknown_side_effects): New.
+	(exploded_node::on_stmt): Pass unknown_side_effects to sm_ctxt
+	ctor.
+	* sm-taint.cc: Include "stringpool.h" and "attribs.h".
+	(tainted_size::tainted_size): Drop "dir" param.
+	(tainted_size::get_kind): Drop "FINAL".
+	(tainted_size::emit): Likewise.
+	(tainted_size::m_dir): Drop unused field.
+	(class tainted_access_attrib_size): New subclass.
+	(taint_state_machine::on_stmt): Call check_for_tainted_size_arg on
+	external functions with unknown side effects.
+	(taint_state_machine::check_for_tainted_size_arg): New.
+	(region_model::check_region_for_taint): Drop "dir" param from
+	tainted_size ctor.
+	* sm.h (sm_context::unknown_side_effects_p): New.
+
+2022-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102692
+	* diagnostic-manager.cc
+	(class auto_disable_complexity_checks): Rename to...
+	(class auto_checking_feasibility): ...this, updating
+	the calls accordingly.
+	(epath_finder::explore_feasible_paths): Update for renaming.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Update for change from
+	m_check_complexity to m_checking_feasibility.
+	(region_model_manager::reject_if_too_complex): Likewise.
+	(region_model_manager::get_or_create_unknown_svalue): Handle
+	m_checking_feasibility.
+	(region_model_manager::create_unique_svalue): New.
+	(region_model_manager::maybe_fold_binop): Handle BIT_AND_EXPR and
+	BIT_IOR_EXPRs on booleans where we know the result.
+	* region-model.cc (test_binop_svalue_folding): Add test coverage
+	for the above.
+	* region-model.h (region_model_manager::create_unique_svalue): New
+	decl.
+	(region_model_manager::enable_complexity_check): Replace with...
+	(region_model_manager::begin_checking_feasibility): ...this.
+	(region_model_manager::disable_complexity_check): Replace with...
+	(region_model_manager::end_checking_feasibility): ...this.
+	(region_model_manager::m_check_complexity): Replace with...
+	(region_model_manager::m_checking_feasibility): ...this.
+	(region_model_manager::m_managed_dynamic_svalues): New field.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (impl_run_checkers): Pass logger to engine ctor.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Add logger param and
+	use it to initialize m_logger.
+	* region-model.cc (engine::engine): New.
+	* region-model.h (region_model_manager::region_model_manager):
+	Add logger param.
+	(region_model_manager::get_logger): New.
+	(region_model_manager::m_logger): New field.
+	(engine::engine): New.
+	* store.cc (store_manager::get_logger): New.
+	(store::set_value): Log scope.  Log when marking a cluster as
+	unknown due to possible aliasing.
+	* store.h (store_manager::get_logger): New decl.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (cmp_decls): New.
+	(cmp_decls_ptr_ptr): New.
+	(region_model::impl_call_analyzer_dump_escaped): New.
+	* region-model.cc (region_model::on_stmt_pre): Handle
+	__analyzer_dump_escaped.
+	* region-model.h (region_model::impl_call_analyzer_dump_escaped):
+	New decl.
+	* store.h (binding_cluster::get_base_region): New accessor.
+
+2022-01-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.cc (region::is_named_decl_p): New.
+	* region.h (region::is_named_decl_p): New decl.
+
+2022-01-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103546
+	* store.cc (store::eval_alias_1): Refactor handling of decl
+	regions, adding a test for may_be_aliased, rejecting those for
+	which it returns false.
+
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* engine.cc: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+
+2021-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* constraint-manager.cc (equiv_class::contains_non_constant_p):
+	New.
+	(constraint_manager::canonicalize): Call it when determining
+	redundant ECs.
+	(selftest::test_purging): New selftest.
+	(selftest::run_constraint_manager_tests): Likewise.
+	* constraint-manager.h (equiv_class::contains_non_constant_p):
+	New decl.
+
+2021-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102471
+	* region-model-reachability.cc (reachable_regions::handle_parm):
+	Treat all svalues within a compound parm has reachable, and those
+	wrapped in a cast.
+
+2021-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* store.cc (binding_cluster::can_merge_p): For the "key is bound"
+	vs "key is not bound" merger case, check that the bound svalue
+	is mergeable before merging it to "unknown", rejecting the merger
+	otherwise.
+
+2021-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* engine.cc (exploded_graph::get_or_create_node): Pass in
+	m_ext_state to program_state::can_merge_with_p.
+	(exploded_graph::process_worklist): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Likewise.
+	(exploded_graph::process_node): Add missing call to detect_leaks
+	when handling phi nodes.
+	* program-state.cc (program_state::can_merge_with_p): Add
+	"ext_state" param.  Pass it and state ptrs to
+	region_model::can_merge_with_p.
+	(selftest::test_program_state_merging): Update for new ext_state
+	param of program_state::can_merge_with_p.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (program_state::can_purge_p): Make const.
+	(program_state::can_merge_with_p): Add "ext_state" param.
+	* region-model.cc: Include "analyzer/program-state.h".
+	(region_model::can_merge_with_p): Add params "ext_state",
+	"state_a", and "state_b", use them when creating model_merger
+	object.
+	(model_merger::mergeable_svalue_p): New.
+	* region-model.h (region_model::can_merge_with_p): Add params
+	"ext_state", "state_a", and "state_b".
+	(model_merger::model_merger) Likewise, initializing new fields.
+	(model_merger::mergeable_svalue_p): New decl.
+	(model_merger::m_ext_state): New field.
+	(model_merger::m_state_a): New field.
+	(model_merger::m_state_b): New field.
+	* svalue.cc (svalue::can_merge_p): Call
+	model_merger::mergeable_svalue_p on both states and reject the
+	merger accordingly.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102695
+	* region-model-impl-calls.cc (region_model::impl_call_strchr): New.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Simplify cast to
+	pointer type of an existing pointer to a region.
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_STRCHR and "strchr".
+	(write_to_const_diagnostic::emit): Add auto_diagnostic_group.  Add
+	alternate wordings for functions and labels.
+	(write_to_const_diagnostic::describe_final_event): Add alternate
+	wordings for functions and labels.
+	(region_model::check_for_writable_region): Handle RK_FUNCTION and
+	RK_LABEL.
+	* region-model.h (region_model::impl_call_strchr): New decl.
+
+2021-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102662
+	* constraint-manager.cc (bounded_range::operator==): Require the
+	types to be the same for equality.
+
+2021-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (Wanalyzer-tainted-allocation-size): New.
+	(Wanalyzer-tainted-divisor): New.
+	(Wanalyzer-tainted-offset): New.
+	(Wanalyzer-tainted-size): New.
+	* engine.cc (impl_region_model_context::get_taint_map): New.
+	* exploded-graph.h (impl_region_model_context::get_taint_map):
+	New decl.
+	* program-state.cc (sm_state_map::get_state): Call
+	alt_get_inherited_state.
+	(sm_state_map::impl_set_state): Modify states within
+	compound svalues.
+	(program_state::impl_call_analyzer_dump_state): Undo casts.
+	(selftest::test_program_state_1): Update for new context param of
+	create_region_for_heap_alloc.
+	(selftest::test_program_state_merging): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_alloca):
+	Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_realloc): Likewise.
+	* region-model.cc (region_model::check_region_access): Call
+	check_region_for_taint.
+	(region_model::get_representative_path_var_1): Handle binops.
+	(region_model::create_region_for_heap_alloc): Add "ctxt" param and
+	pass it to set_dynamic_extents.
+	(region_model::create_region_for_alloca): Likewise.
+	(region_model::set_dynamic_extents): Add "ctxt" param and use it
+	to call check_dynamic_size_for_taint.
+	(selftest::test_state_merging): Update for new context param of
+	create_region_for_heap_alloc.
+	(selftest::test_malloc_constraints): Likewise.
+	(selftest::test_malloc): Likewise.
+	(selftest::test_alloca): Likewise for create_region_for_alloca.
+	* region-model.h (region_model::create_region_for_heap_alloc): Add
+	"ctxt" param.
+	(region_model::create_region_for_alloca): Likewise.
+	(region_model::set_dynamic_extents): Likewise.
+	(region_model::check_dynamic_size_for_taint): New decl.
+	(region_model::check_region_for_taint): New decl.
+	(region_model_context::get_taint_map): New vfunc.
+	(noop_region_model_context::get_taint_map): New.
+	* sm-taint.cc: Remove include of "diagnostic-event-id.h"; add
+	includes of "gimple-iterator.h", "tristate.h", "selftest.h",
+	"ordered-hash-map.h", "cgraph.h", "cfg.h", "digraph.h",
+	"analyzer/supergraph.h", "analyzer/call-string.h",
+	"analyzer/program-point.h", "analyzer/store.h",
+	"analyzer/region-model.h", and "analyzer/program-state.h".
+	(enum bounds): Move to top of file.
+	(class taint_diagnostic): New.
+	(class tainted_array_index): Convert to subclass of taint_diagnostic.
+	(tainted_array_index::emit): Add CWE-129.  Reword warning to use
+	"attacker-controlled" rather than "tainted".
+	(tainted_array_index::describe_state_change): Move to
+	taint_diagnostic::describe_state_change.
+	(tainted_array_index::describe_final_event): Reword to use
+	"attacker-controlled" rather than "tainted".
+	(class tainted_offset): New.
+	(class tainted_size): New.
+	(class tainted_divisor): New.
+	(class tainted_allocation_size): New.
+	(taint_state_machine::alt_get_inherited_state): New.
+	(taint_state_machine::on_stmt): In assignment handling, remove
+	ARRAY_REF handling in favor of check_region_for_taint.  Add
+	detection of tainted divisors.
+	(taint_state_machine::get_taint): New.
+	(taint_state_machine::combine_states): New.
+	(region_model::check_region_for_taint): New.
+	(region_model::check_dynamic_size_for_taint): New.
+	* sm.h (state_machine::alt_get_inherited_state): New.
+
+2021-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt_pre): Return when handling
+	"__analyzer_dump_state".
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* supergraph.cc: Include bitmap.h.
+
+2021-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::dump): Use default_tree_printer
+	as format decoder.
+
 2021-09-16  Maxim Blinov  <maxim.blinov@embecosm.com>
 
 	PR bootstrap/102242
@@ -5973,7 +6270,7 @@
 	* Initial creation
 
 
-Copyright (C) 2019-2021 Free Software Foundation, Inc.
+Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

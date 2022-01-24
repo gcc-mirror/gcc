@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -1234,7 +1234,6 @@ fully_constant_expression (pre_expr e)
     default:
       return e;
     }
-  return e;
 }
 
 /* Translate the VUSE backwards through phi nodes in E->dest, so that
@@ -1391,6 +1390,7 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
   vn_ssa_aux_t vn_info = VN_INFO (name);
   vn_info->value_id = value_id;
   vn_info->valnum = valnum ? valnum : name;
+  vn_info->visited = true;
   /* ???  For now mark this SSA name for release by VN.  */
   vn_info->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
@@ -1508,10 +1508,6 @@ phi_translate_1 (bitmap_set_t dest,
 		  return constant;
 	      }
 
-	    /* vn_nary_* do not valueize operands.  */
-	    for (i = 0; i < newnary->length; ++i)
-	      if (TREE_CODE (newnary->op[i]) == SSA_NAME)
-		newnary->op[i] = VN_INFO (newnary->op[i])->valnum;
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
 						    newnary->type,
@@ -1587,6 +1583,21 @@ phi_translate_1 (bitmap_set_t dest,
 	      {
 		newoperands.release ();
 		return NULL;
+	      }
+	    /* When we translate a MEM_REF across a backedge and we have
+	       restrict info that's not from our functions parameters
+	       we have to remap it since we now may deal with a different
+	       instance where the dependence info is no longer valid.
+	       See PR102970.  Note instead of keeping a remapping table
+	       per backedge we simply throw away restrict info.  */
+	    if ((newop.opcode == MEM_REF
+		 || newop.opcode == TARGET_MEM_REF)
+		&& newop.clique > 1
+		&& (e->flags & EDGE_DFS_BACK))
+	      {
+		newop.clique = 0;
+		newop.base = 0;
+		changed = true;
 	      }
 	    if (!changed)
 	      continue;
@@ -2855,9 +2866,13 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	  unsigned int operand = 1;
 	  vn_reference_op_t currop = &ref->operands[0];
 	  tree sc = NULL_TREE;
-	  tree fn  = find_or_generate_expression (block, currop->op0, stmts);
-	  if (!fn)
-	    return NULL_TREE;
+	  tree fn = NULL_TREE;
+	  if (currop->op0)
+	    {
+	      fn = find_or_generate_expression (block, currop->op0, stmts);
+	      if (!fn)
+		return NULL_TREE;
+	    }
 	  if (currop->op1)
 	    {
 	      sc = find_or_generate_expression (block, currop->op1, stmts);
@@ -2873,12 +2888,19 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		return NULL_TREE;
 	      args.quick_push (arg);
 	    }
-	  gcall *call = gimple_build_call_vec (fn, args);
+	  gcall *call;
+	  if (currop->op0)
+	    {
+	      call = gimple_build_call_vec (fn, args);
+	      gimple_call_set_fntype (call, currop->type);
+	    }
+	  else
+	    call = gimple_build_call_internal_vec ((internal_fn)currop->clique,
+						   args);
 	  gimple_set_location (call, expr->loc);
-	  gimple_call_set_fntype (call, currop->type);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
-	  tree forcedname = make_ssa_name (TREE_TYPE (currop->type));
+	  tree forcedname = make_ssa_name (ref->type);
 	  gimple_call_set_lhs (call, forcedname);
 	  /* There's no CCP pass after PRE which would re-compute alignment
 	     information so make sure we re-materialize this here.  */
@@ -4004,10 +4026,6 @@ compute_avail (function *fun)
 		vn_reference_s ref1;
 		pre_expr result = NULL;
 
-		/* We can value number only calls to real functions.  */
-		if (gimple_call_internal_p (stmt))
-		  continue;
-
 		vn_reference_lookup_call (as_a <gcall *> (stmt), &ref, &ref1);
 		/* There is no point to PRE a call without a value.  */
 		if (!ref || !ref->result)
@@ -4288,7 +4306,6 @@ fini_pre ()
   value_expressions.release ();
   constant_value_expressions.release ();
   expressions.release ();
-  BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
   pre_expr_pool.release ();
@@ -4413,25 +4430,35 @@ pass_pre::execute (function *fun)
 
   vn_valueize = NULL;
 
+  fini_pre ();
+
+  scev_finalize ();
+  loop_optimizer_finalize ();
+
+  /* Perform a CFG cleanup before we run simple_dce_from_worklist since
+     unreachable code regions will have not up-to-date SSA form which
+     confuses it.  */
+  bool need_crit_edge_split = false;
+  if (todo & TODO_cleanup_cfg)
+    {
+      cleanup_tree_cfg ();
+      need_crit_edge_split = true;
+    }
+
   /* Because we don't follow exactly the standard PRE algorithm, and decide not
      to insert PHI nodes sometimes, and because value numbering of casts isn't
      perfect, we sometimes end up inserting dead code.   This simple DCE-like
      pass removes any insertions we made that weren't actually used.  */
   simple_dce_from_worklist (inserted_exprs);
-
-  fini_pre ();
-
-  scev_finalize ();
-  loop_optimizer_finalize ();
+  BITMAP_FREE (inserted_exprs);
 
   /* TODO: tail_merge_optimize may merge all predecessors of a block, in which
      case we can merge the block with the remaining predecessor of the block.
      It should either:
      - call merge_blocks after each tail merge iteration
      - call merge_blocks after all tail merge iterations
-     - mark TODO_cleanup_cfg when necessary
-     - share the cfg cleanup with fini_pre.  */
-  todo |= tail_merge_optimize (todo);
+     - mark TODO_cleanup_cfg when necessary.  */
+  todo |= tail_merge_optimize (need_crit_edge_split);
 
   free_rpo_vn ();
 

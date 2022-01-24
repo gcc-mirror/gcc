@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1415,18 +1415,24 @@ begin
 
       if Back_End_Mode = Skip then
 
-         --  An ignored Ghost unit is rewritten into a null statement because
-         --  it must not produce an ALI or object file. Do not emit any errors
-         --  related to code generation because the unit does not exist.
+         --  An ignored Ghost unit is rewritten into a null statement. Do
+         --  not emit any errors related to code generation because the
+         --  unit does not exist.
 
          if Is_Ignored_Ghost_Unit (Main_Unit_Node) then
 
             --  Exit the gnat driver with success, otherwise external builders
             --  such as gnatmake and gprbuild will treat the compilation of an
-            --  ignored Ghost unit as a failure. Note that this will produce
-            --  an empty object file for the unit.
+            --  ignored Ghost unit as a failure. Be sure we produce an empty
+            --  object file for the unit.
 
             Ecode := E_Success;
+            Back_End.Gen_Or_Update_Object_File;
+
+            --  Use a goto instead of calling Exit_Program so that finalization
+            --  occurs normally.
+
+            goto End_Of_Program;
 
          --  Otherwise the unit is missing a crucial piece that prevents code
          --  generation.
@@ -1616,7 +1622,14 @@ begin
 
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
-      Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
+
+      --  Back annotation of representation info is not done in CodePeer and
+      --  SPARK modes.
+
+      if not (Generate_SCIL or GNATprove_Mode) then
+         Repinfo.List_Rep_Info (Ttypes.Bytes_Big_Endian);
+      end if;
+
       Inline.List_Inlining_Info;
 
       --  Only write the library if the backend did not generate any error
@@ -1687,6 +1700,10 @@ begin
    end;
 
    <<End_Of_Program>>
+
+   if Debug_Flag_Dot_AA then
+      Atree.Print_Statistics;
+   end if;
 
 --  The outer exception handler handles an unrecoverable error
 

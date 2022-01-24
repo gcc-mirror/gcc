@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -450,6 +450,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    move-instruction pairs, we will do a cpymem or libcall instead.  */
 #define MOVE_RATIO(speed) ((speed) ? 6 : 3)
 #define CLEAR_RATIO(speed) ((speed) ? 6 : 2)
+#define SET_RATIO(speed) ((speed) ? 6 : 2)
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0

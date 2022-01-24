@@ -1,5 +1,5 @@
 /* Header file for the GIMPLE range tracing/debugging facilties.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -71,5 +71,8 @@ private:
   FILE *old_dump_file;
   dump_flags_t old_dump_flags;
 };
+
+void dump_ranger (FILE *);
+void dump_ranger (FILE *, const vec<basic_block> &path);
 
 #endif // GCC_GIMPLE_RANGE_TRACE_H

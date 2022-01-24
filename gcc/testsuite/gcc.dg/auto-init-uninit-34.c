@@ -4,8 +4,6 @@
    to functions declared with attribute access is diagnosed where expected.
    { dg-do compile }
    { dg-options "-O -Wall -ftrivial-auto-var-init=zero" } */
-/* -ftrivial-auto-var-init will make the uninitialized warning for address
-   taken auto var going away, FIXME later.  */
 
 #define RW(...) __attribute__ ((access (read_write, __VA_ARGS__)))
 
@@ -21,10 +19,10 @@ void nowarn_scalar (void)
 
 void warn_scalar_1 (void)
 {
-  int i1;                         // { dg-message "declared here" "" { xfail *-*-* } }
+  int i1;                         // { dg-message "declared here" "" }
   int i2, i3 = 1, i4;
 
-  f4pi (&i1, &i2, &i3, &i4);      // { dg-warning "'i1' may be used uninitialized" "" { xfail *-*-* } }
+  f4pi (&i1, &i2, &i3, &i4);      // { dg-warning "'i1' may be used uninitialized" "" }
 }
 
 void warn_scalar_2 (void)
@@ -32,7 +30,7 @@ void warn_scalar_2 (void)
   int j1 = 0, j2, j4;
   int j3;
 
-  f4pi (&j1, &j2, &j3, &j4);      // { dg-warning "'j3' may be used uninitialized" "" { xfail *-*-* } }
+  f4pi (&j1, &j2, &j3, &j4);      // { dg-warning "'j3' may be used uninitialized" "" }
 }
 
 

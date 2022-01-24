@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -228,15 +228,17 @@ enum stack_protector {
   SPCT_FLAG_EXPLICIT = 4
 };
 
-/* Types of unwind/exception handling info that can be generated.  */
+/* Types of unwind/exception handling info that can be generated.
+   Note that a UI_TARGET (or larger) setting is considered to be
+   incompatible with -freorder-blocks-and-partition.  */
 
 enum unwind_info_type
 {
   UI_NONE,
   UI_SJLJ,
   UI_DWARF2,
-  UI_TARGET,
-  UI_SEH
+  UI_SEH,
+  UI_TARGET
 };
 
 /* Callgraph node profile representation.  */
@@ -442,8 +444,10 @@ enum optimize_size_level
 };
 
 /* Support for user-provided GGC and PCH markers.  The first parameter
-   is a pointer to a pointer, the second a cookie.  */
-typedef void (*gt_pointer_operator) (void *, void *);
+   is a pointer to a pointer, the second either NULL if the pointer to
+   pointer points into a GC object or the actual pointer address if
+   the first argument points to a temporary and the third a cookie.  */
+typedef void (*gt_pointer_operator) (void *, void *, void *);
 
 #if !defined (HAVE_UCHAR)
 typedef unsigned char uchar;

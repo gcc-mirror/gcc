@@ -1,5 +1,5 @@
 // GNU D Compiler exception personality routines.
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -32,8 +32,9 @@ import gcc.attributes;
 
 extern(C)
 {
-    int _d_isbaseof(ClassInfo, ClassInfo);
-    void _d_createTrace(Object, void*);
+    int _d_isbaseof(ClassInfo, ClassInfo) @nogc nothrow pure @safe;
+    void _d_createTrace(Throwable, void*);
+    void _d_print_throwable(Throwable t);
 }
 
 /**
@@ -206,7 +207,7 @@ struct ExceptionHeader
      */
     static void free(ExceptionHeader* eh) @nogc
     {
-        *eh = ExceptionHeader.init;
+        __builtin_memset(eh, 0, ExceptionHeader.sizeof);
         if (eh != &ehstorage)
             __builtin_free(eh);
     }
@@ -276,26 +277,6 @@ struct ExceptionHeader
             lsda = eh.languageSpecificData;
             landingPad = cast(_Unwind_Ptr)eh.landingPad;
         }
-    }
-
-    /**
-     * Look at the chain of inflight exceptions and pick the class type that'll
-     * be looked for in catch clauses.
-     */
-    static ClassInfo getClassInfo(_Unwind_Exception* unwindHeader) @nogc
-    {
-        ExceptionHeader* eh = toExceptionHeader(unwindHeader);
-        // The first thrown Exception at the top of the stack takes precedence
-        // over others that are inflight, unless an Error was thrown, in which
-        // case, we search for error handlers instead.
-        Throwable ehobject = eh.object;
-        for (ExceptionHeader* ehn = eh.next; ehn; ehn = ehn.next)
-        {
-            Error e = cast(Error)ehobject;
-            if (e is null || (cast(Error)ehn.object) !is null)
-                ehobject = ehn.object;
-        }
-        return ehobject.classinfo;
     }
 
     /**
@@ -451,6 +432,9 @@ extern(C) void* __gdc_begin_catch(_Unwind_Exception* unwindHeader)
     ExceptionHeader* header = ExceptionHeader.toExceptionHeader(unwindHeader);
 
     void* objectp = cast(void*)header.object;
+    // Remove our reference to the exception. We should not decrease its refcount,
+    // because we pass the object on to the caller.
+    header.object = null;
 
     // Something went wrong when stacking up chained headers...
     if (header != ExceptionHeader.pop())
@@ -473,6 +457,11 @@ extern(C) void _d_throw(Throwable object)
 
     // Add to thrown exception stack.
     eh.push();
+
+    // Increment reference count if object is a refcounted Throwable.
+    auto refcount = object.refcount();
+    if (refcount)
+        object.refcount() = refcount + 1;
 
     // Called by unwinder when exception object needs destruction by other than our code.
     extern(C) void exception_cleanup(_Unwind_Reason_Code code, _Unwind_Exception* exc)
@@ -510,7 +499,11 @@ extern(C) void _d_throw(Throwable object)
     // things, almost certainly we will have crashed before now, rather than
     // actually being able to diagnose the problem.
     if (r == _URC_END_OF_STACK)
+    {
+        __gdc_begin_catch(&eh.unwindHeader);
+        _d_print_throwable(object);
         terminate("uncaught exception", __LINE__);
+    }
 
     terminate("unwind error", __LINE__);
 }
@@ -661,7 +654,7 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
     {
         // Otherwise we have a catch handler or exception specification.
         handler = actionTableLookup(actions, unwindHeader, actionRecord,
-                                    exceptionClass, TTypeBase,
+                                    lsda, exceptionClass, TTypeBase,
                                     TType, TTypeEncoding,
                                     saw_handler, saw_cleanup);
     }
@@ -689,7 +682,8 @@ _Unwind_Reason_Code scanLSDA(const(ubyte)* lsda, _Unwind_Exception_Class excepti
  * Look up and return the handler index of the classType in Action Table.
  */
 int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
-                      const(ubyte)* actionRecord, _Unwind_Exception_Class exceptionClass,
+                      const(ubyte)* actionRecord, const(ubyte)* lsda,
+                      _Unwind_Exception_Class exceptionClass,
                       _Unwind_Ptr TTypeBase, const(ubyte)* TType,
                       ubyte TTypeEncoding,
                       out bool saw_handler, out bool saw_cleanup)
@@ -697,7 +691,7 @@ int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
     ClassInfo thrownType;
     if (isGdcExceptionClass(exceptionClass))
     {
-        thrownType = ExceptionHeader.getClassInfo(unwindHeader);
+        thrownType = getClassInfo(unwindHeader, lsda);
     }
 
     while (1)
@@ -771,6 +765,41 @@ int actionTableLookup(_Unwind_Action actions, _Unwind_Exception* unwindHeader,
     }
 
     return 0;
+}
+
+/**
+ * Look at the chain of inflight exceptions and pick the class type that'll
+ * be looked for in catch clauses.
+ */
+ClassInfo getClassInfo(_Unwind_Exception* unwindHeader,
+                       const(ubyte)* currentLsd) @nogc
+{
+    ExceptionHeader* eh = ExceptionHeader.toExceptionHeader(unwindHeader);
+    // The first thrown Exception at the top of the stack takes precedence
+    // over others that are inflight, unless an Error was thrown, in which
+    // case, we search for error handlers instead.
+    Throwable ehobject = eh.object;
+    for (ExceptionHeader* ehn = eh.next; ehn; ehn = ehn.next)
+    {
+        const(ubyte)* nextLsd = void;
+        _Unwind_Ptr nextLandingPad = void;
+        _Unwind_Word nextCfa = void;
+        int nextHandler = void;
+
+        ExceptionHeader.restore(&ehn.unwindHeader, nextHandler, nextLsd, nextLandingPad, nextCfa);
+
+        // Don't combine when the exceptions are from different functions.
+        if (currentLsd != nextLsd)
+            break;
+
+        Error e = cast(Error)ehobject;
+        if (e is null || (cast(Error)ehn.object) !is null)
+        {
+            currentLsd = nextLsd;
+            ehobject = ehn.object;
+        }
+    }
+    return ehobject.classinfo;
 }
 
 /**
@@ -929,16 +958,15 @@ private _Unwind_Reason_Code __gdc_personality(_Unwind_Action actions,
         // current object onto the end of the prevous object.
         ExceptionHeader* eh = ExceptionHeader.toExceptionHeader(unwindHeader);
         auto currentLsd = lsda;
-        auto currentCfa = cfa;
         bool bypassed = false;
 
         while (eh.next)
         {
             ExceptionHeader* ehn = eh.next;
-            const(ubyte)* nextLsd;
-            _Unwind_Ptr nextLandingPad;
-            _Unwind_Word nextCfa;
-            int nextHandler;
+            const(ubyte)* nextLsd = void;
+            _Unwind_Ptr nextLandingPad = void;
+            _Unwind_Word nextCfa = void;
+            int nextHandler = void;
 
             ExceptionHeader.restore(&ehn.unwindHeader, nextHandler, nextLsd, nextLandingPad, nextCfa);
 
@@ -947,24 +975,19 @@ private _Unwind_Reason_Code __gdc_personality(_Unwind_Action actions,
             {
                 // We found an Error, bypass the exception chain.
                 currentLsd = nextLsd;
-                currentCfa = nextCfa;
                 eh = ehn;
                 bypassed = true;
                 continue;
             }
 
             // Don't combine when the exceptions are from different functions.
-            if (currentLsd != nextLsd && currentCfa != nextCfa)
+            if (currentLsd != nextLsd)
                 break;
 
-            // Add our object onto the end of the existing chain.
-            Throwable n = ehn.object;
-            while (n.next)
-                n = n.next;
-            n.next = eh.object;
+            // Add our object onto the end of the existing chain and replace
+            // our exception object with in-flight one.
+            eh.object = Throwable.chainTogether(ehn.object, eh.object);
 
-            // Replace our exception object with in-flight one
-            eh.object = ehn.object;
             if (nextHandler != handler && !bypassed)
             {
                 handler = nextHandler;

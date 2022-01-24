@@ -1,4 +1,5 @@
 // PERMUTE_ARGS:
+// EXTRA_FILES: imports/bug8922.d
 void test()
 {
     static import imports.bug8922;

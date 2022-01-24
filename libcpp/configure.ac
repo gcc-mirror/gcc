@@ -22,6 +22,11 @@ AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
 AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
 AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
 
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+
 # Figure out what compiler warnings we can enable.
 # See config/warnings.m4 for details.
 
@@ -97,6 +102,9 @@ if test $ac_cv_type_uchar = yes; then
   AC_DEFINE(HAVE_UCHAR, 1,
   [Define if <sys/types.h> defines \`uchar'.])
 fi
+
+AC_CHECK_SIZEOF(ino_t)
+AC_CHECK_SIZEOF(dev_t)
 
 # g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which exposes a different
 # iconv() prototype.

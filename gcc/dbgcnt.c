@@ -1,5 +1,5 @@
 /* Debug counter for debugging support
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,6 +96,14 @@ dbg_cnt (enum debug_counter index)
     }
   else
     return false;
+}
+
+/* Return the counter for INDEX.  */
+
+unsigned
+dbg_cnt_counter (enum debug_counter index)
+{
+  return count[index];
 }
 
 /* Compare limit_tuple intervals by first item in descending order.  */
@@ -200,7 +208,6 @@ void
 dbg_cnt_process_opt (const char *arg)
 {
   char *str = xstrdup (arg);
-  unsigned int start = 0;
 
   auto_vec<char *> tokens;
   for (char *next = strtok (str, ","); next != NULL; next = strtok (NULL, ","))
@@ -219,7 +226,6 @@ dbg_cnt_process_opt (const char *arg)
 	  if (!dbg_cnt_process_single_pair (name, ranges[j]))
 	    break;
 	}
-      start += strlen (tokens[i]) + 1;
     }
 }
 

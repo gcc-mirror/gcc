@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,7 +145,7 @@ package body Exp_Ch9 is
 
    function Build_Corresponding_Record
      (N    : Node_Id;
-      Ctyp : Node_Id;
+      Ctyp : Entity_Id;
       Loc  : Source_Ptr) return Node_Id;
    --  Common to tasks and protected types. Copy discriminant specifications,
    --  build record declaration. N is the type declaration, Ctyp is the
@@ -1583,9 +1583,9 @@ package body Exp_Ch9 is
    --------------------------------
 
    function Build_Corresponding_Record
-    (N    : Node_Id;
-     Ctyp : Entity_Id;
-     Loc  : Source_Ptr) return Node_Id
+     (N    : Node_Id;
+      Ctyp : Entity_Id;
+      Loc  : Source_Ptr) return Node_Id
    is
       Rec_Ent  : constant Entity_Id :=
                    Make_Defining_Identifier
@@ -2937,7 +2937,7 @@ package body Exp_Ch9 is
    --             Desired_Comp : Comp_Type := Expected_Comp;
    --             Comp         : Comp_Type renames Desired_Comp;
    --
-   --             <original delarations after the object renaming declaration
+   --             <original declarations after the object renaming declaration
    --              of Comp>
    --
    --          begin
@@ -2977,7 +2977,7 @@ package body Exp_Ch9 is
    --                              (_Object.Comp'Address));
    --       Comp          : Comp_Type renames Expected_Comp;
    --
-   --       <original delarations after the object renaming declaration of
+   --       <original declarations after the object renaming declaration of
    --        Comp>
    --
    --    begin
@@ -4394,7 +4394,7 @@ package body Exp_Ch9 is
       --  It would be better to encapsulate this as a routine in Exp_Dbug ???
 
       if Append_Char /= ' ' then
-         if Append_Char = 'P' or Append_Char = 'N' then
+         if Append_Char in 'P' | 'N' then
             Add_Char_To_Name_Buffer (Append_Char);
             return Name_Find;
          else
@@ -12516,13 +12516,7 @@ package body Exp_Ch9 is
          --  procedure for this corresponding record type and we won't get it
          --  in time if we don't freeze now.
 
-         declare
-            L : constant List_Id := Freeze_Entity (Rec_Ent, N);
-         begin
-            if Is_Non_Empty_List (L) then
-               Insert_List_After (Body_Decl, L);
-            end if;
-         end;
+         Insert_List_After (Body_Decl, List => Freeze_Entity (Rec_Ent, N));
       end if;
 
       --  Complete the expansion of access types to the current task type, if
@@ -13796,14 +13790,15 @@ package body Exp_Ch9 is
                Comp    : Node_Id;
                Comp_Id : Entity_Id;
                Decl_Id : Entity_Id;
+               Nam     : Name_Id;
 
             begin
                Comp := First (Private_Declarations (Def));
                while Present (Comp) loop
                   if Nkind (Comp) = N_Component_Declaration then
                      Comp_Id := Defining_Identifier (Comp);
-                     Decl_Id :=
-                       Make_Defining_Identifier (Loc, Chars (Comp_Id));
+                     Nam     := Chars (Comp_Id);
+                     Decl_Id := Make_Defining_Identifier (Sloc (Comp_Id), Nam);
 
                      --  Minimal decoration
 
@@ -13818,6 +13813,14 @@ package body Exp_Ch9 is
                      Set_Is_Aliased     (Decl_Id, Is_Aliased     (Comp_Id));
                      Set_Is_Independent (Decl_Id, Is_Independent (Comp_Id));
 
+                     --  Copy the Comes_From_Source flag of the component, as
+                     --  the renaming may be the only entity directly seen by
+                     --  the user in the context, but do not warn for it.
+
+                     Set_Comes_From_Source
+                       (Decl_Id, Comes_From_Source (Comp_Id));
+                     Set_Warnings_Off (Decl_Id);
+
                      --  Generate:
                      --    comp_name : comp_typ renames _object.comp_name;
 
@@ -13828,10 +13831,8 @@ package body Exp_Ch9 is
                            New_Occurrence_Of (Etype (Comp_Id), Loc),
                          Name =>
                            Make_Selected_Component (Loc,
-                             Prefix =>
-                               New_Occurrence_Of (Obj_Ent, Loc),
-                             Selector_Name =>
-                               Make_Identifier (Loc, Chars (Comp_Id))));
+                             Prefix => New_Occurrence_Of (Obj_Ent, Loc),
+                             Selector_Name => Make_Identifier (Loc, Nam)));
                      Add (Decl);
                   end if;
 
@@ -14867,7 +14868,7 @@ package body Exp_Ch9 is
       Actuals : List_Id;
       Formals : List_Id;
       Decls   : List_Id;
-      Stmts   : List_Id) return Node_Id
+      Stmts   : List_Id) return Entity_Id
    is
       Actual    : Entity_Id;
       Expr      : Node_Id := Empty;

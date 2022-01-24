@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -313,6 +313,13 @@ cxx_block_may_fallthru (const_tree stmt)
       return false;
 
     case IF_STMT:
+      if (IF_STMT_CONSTEXPR_P (stmt))
+	{
+	  if (integer_nonzerop (IF_COND (stmt)))
+	    return block_may_fallthru (THEN_CLAUSE (stmt));
+	  if (integer_zerop (IF_COND (stmt)))
+	    return block_may_fallthru (ELSE_CLAUSE (stmt));
+	}
       if (block_may_fallthru (THEN_CLAUSE (stmt)))
 	return true;
       return block_may_fallthru (ELSE_CLAUSE (stmt));
@@ -404,6 +411,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_SHUFFLE:
     case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
+    case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
     case RID_HAS_NOTHROW_ASSIGN:
@@ -483,6 +491,7 @@ cp_common_init_ts (void)
   /* New Types.  */
   MARK_TS_TYPE_COMMON (UNBOUND_CLASS_TEMPLATE);
   MARK_TS_TYPE_COMMON (TYPE_ARGUMENT_PACK);
+  MARK_TS_TYPE_COMMON (DEPENDENT_OPERATOR_TYPE);
 
   MARK_TS_TYPE_NON_COMMON (DECLTYPE_TYPE);
   MARK_TS_TYPE_NON_COMMON (TYPENAME_TYPE);

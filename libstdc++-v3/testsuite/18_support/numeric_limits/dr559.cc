@@ -2,7 +2,7 @@
 
 // 2010-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,7 +98,7 @@ int main()
   do_test<long long>();
   do_test<unsigned long long>();
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   do_test<__int128>();
   do_test<unsigned __int128>();
 #endif

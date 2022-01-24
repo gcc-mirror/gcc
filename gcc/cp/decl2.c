@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2021 Free Software Foundation, Inc.
+   Copyright (C) 1988-2022 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -363,16 +363,20 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags)
 }
 
 /* Create an ARRAY_REF, checking for the user doing things backwards
-   along the way.  DECLTYPE_P is for N3276, as in the parser.  */
+   along the way.
+   If INDEX_EXP is non-NULL, then that is the index expression,
+   otherwise INDEX_EXP_LIST is the list of index expressions.  */
 
 tree
 grok_array_decl (location_t loc, tree array_expr, tree index_exp,
-		 bool decltype_p)
+		 vec<tree, va_gc> **index_exp_list, tsubst_flags_t complain)
 {
   tree type;
   tree expr;
   tree orig_array_expr = array_expr;
   tree orig_index_exp = index_exp;
+  vec<tree, va_gc> *orig_index_exp_list
+    = index_exp_list ? *index_exp_list : NULL;
   tree overload = NULL_TREE;
 
   if (error_operand_p (array_expr) || error_operand_p (index_exp))
@@ -381,11 +385,23 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   if (processing_template_decl)
     {
       if (type_dependent_expression_p (array_expr)
-	  || type_dependent_expression_p (index_exp))
-	return build_min_nt_loc (loc, ARRAY_REF, array_expr, index_exp,
-				 NULL_TREE, NULL_TREE);
+	  || (index_exp ? type_dependent_expression_p (index_exp)
+			: any_type_dependent_arguments_p (*index_exp_list)))
+	{
+	  if (index_exp == NULL)
+	    index_exp = build_min_nt_call_vec (ovl_op_identifier (ARRAY_REF),
+					       *index_exp_list);
+	  return build_min_nt_loc (loc, ARRAY_REF, array_expr, index_exp,
+				   NULL_TREE, NULL_TREE);
+	}
       array_expr = build_non_dependent_expr (array_expr);
-      index_exp = build_non_dependent_expr (index_exp);
+      if (index_exp)
+	index_exp = build_non_dependent_expr (index_exp);
+      else
+	{
+	  orig_index_exp_list = make_tree_vector_copy (*index_exp_list);
+	  make_args_non_dependent (*index_exp_list);
+	}
     }
 
   type = TREE_TYPE (array_expr);
@@ -393,13 +409,45 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   type = non_reference (type);
 
   /* If they have an `operator[]', use that.  */
-  if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
+  if (MAYBE_CLASS_TYPE_P (type)
+      || (index_exp && MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
+      || (index_exp == NULL_TREE
+	  && !(*index_exp_list)->is_empty ()
+	  && MAYBE_CLASS_TYPE_P (TREE_TYPE ((*index_exp_list)->last ()))))
     {
-      tsubst_flags_t complain = tf_warning_or_error;
-      if (decltype_p)
-	complain |= tf_decltype;
-      expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
-			   index_exp, NULL_TREE, &overload, complain);
+      if (index_exp)
+	expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
+			     index_exp, NULL_TREE, NULL_TREE,
+			     &overload, complain);
+      else if ((*index_exp_list)->is_empty ())
+	expr = build_op_subscript (loc, array_expr, index_exp_list, &overload,
+				   complain);
+      else
+	{
+	  expr = build_op_subscript (loc, array_expr, index_exp_list,
+				     &overload, complain & tf_decltype);
+	  if (expr == error_mark_node)
+	    {
+	      tree idx = build_x_compound_expr_from_vec (*index_exp_list, NULL,
+							 tf_none);
+	      if (idx != error_mark_node)
+		expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
+				     idx, NULL_TREE, NULL_TREE, &overload,
+				     complain & tf_decltype);
+	      if (expr == error_mark_node)
+		{
+		  overload = NULL_TREE;
+		  expr = build_op_subscript (loc, array_expr, index_exp_list,
+					     &overload, complain);
+		}
+	      else
+		/* If it would be valid albeit deprecated expression in C++20,
+		   just pedwarn on it and treat it as if wrapped in ().  */
+		pedwarn (loc, OPT_Wcomma_subscript,
+			 "top-level comma expression in array subscript "
+			 "changed meaning in C++23");
+	    }
+	}
     }
   else
     {
@@ -414,6 +462,31 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
 	p1 = array_expr;
       else
 	p1 = build_expr_type_conversion (WANT_POINTER, array_expr, false);
+
+      if (index_exp == NULL_TREE)
+	{
+	  if ((*index_exp_list)->is_empty ())
+	    {
+	      error_at (loc, "built-in subscript operator without expression "
+			     "list");
+	      return error_mark_node;
+	    }
+	  tree idx = build_x_compound_expr_from_vec (*index_exp_list, NULL,
+						     tf_none);
+	  if (idx != error_mark_node)
+	    /* If it would be valid albeit deprecated expression in C++20,
+	       just pedwarn on it and treat it as if wrapped in ().  */
+	    pedwarn (loc, OPT_Wcomma_subscript,
+		     "top-level comma expression in array subscript "
+		     "changed meaning in C++23");
+	  else
+	    {
+	      error_at (loc, "built-in subscript operator with more than one "
+			     "expression in expression list");
+	      return error_mark_node;
+	    }
+	  index_exp = idx;
+	}
 
       if (TREE_CODE (TREE_TYPE (index_exp)) == ARRAY_TYPE)
 	p2 = index_exp;
@@ -457,11 +530,30 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp,
   if (processing_template_decl && expr != error_mark_node)
     {
       if (overload != NULL_TREE)
-	return (build_min_non_dep_op_overload
-		(ARRAY_REF, expr, overload, orig_array_expr, orig_index_exp));
+	{
+	  if (orig_index_exp == NULL_TREE)
+	    {
+	      expr = build_min_non_dep_op_overload (expr, overload,
+						    orig_array_expr,
+						    orig_index_exp_list);
+	      release_tree_vector (orig_index_exp_list);
+	      return expr;
+	    }
+	  return build_min_non_dep_op_overload (ARRAY_REF, expr, overload,
+						orig_array_expr,
+						orig_index_exp);
+	}
 
-      return build_min_non_dep (ARRAY_REF, expr, orig_array_expr, orig_index_exp,
-				NULL_TREE, NULL_TREE);
+      if (orig_index_exp == NULL_TREE)
+	{
+	  orig_index_exp
+	    = build_min_nt_call_vec (ovl_op_identifier (ARRAY_REF),
+				     orig_index_exp_list);
+	  release_tree_vector (orig_index_exp_list);
+	}
+
+      return build_min_non_dep (ARRAY_REF, expr, orig_array_expr,
+				orig_index_exp, NULL_TREE, NULL_TREE);
     }
   return expr;
 }
@@ -1913,18 +2005,14 @@ coerce_delete_type (tree decl, location_t loc)
 static void
 mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 {
-  tree fnaddr;
-  unsigned HOST_WIDE_INT idx;
-
   /* It's OK for the vtable to refer to deprecated virtual functions.  */
   warning_sentinel w(warn_deprecated_decl);
 
   bool consteval_seen = false;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
-			      idx, fnaddr)
+  for (auto &e: CONSTRUCTOR_ELTS (DECL_INITIAL (decl)))
     {
-      tree fn;
+      tree fnaddr = e.value;
 
       STRIP_NOPS (fnaddr);
 
@@ -1934,7 +2022,7 @@ mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 	   virtual call offset, an RTTI offset, etc.  */
 	continue;
 
-      fn = TREE_OPERAND (fnaddr, 0);
+      tree fn = TREE_OPERAND (fnaddr, 0);
       if (TREE_CODE (fn) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (fn))
 	{
 	  if (!consteval_seen)
@@ -5184,6 +5272,7 @@ c_parse_final_cleanups (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
+	      && !DECL_IMMEDIATE_FUNCTION_P (decl)
 	      && !node->definition)
 	    {
 	      /* We will output the function; no longer consider it in this

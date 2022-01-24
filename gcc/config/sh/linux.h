@@ -1,5 +1,5 @@
 /* Definitions for SH running Linux-based GNU systems using ELF
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Kazumoto Kojima <kkojima@rr.iij4u.or.jp>
 
 This file is part of GCC.
@@ -131,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
   do									\
     {									\
       /* Set default atomic model if it hasn't been specified.  */	\
-      if (global_options_set.x_sh_atomic_model_str == 0)		\
+      if (OPTION_SET_P (sh_atomic_model_str) == 0)		\
 	{								\
 	  if (TARGET_SH3)						\
 	    sh_atomic_model_str = "soft-gusa";				\
@@ -139,7 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 	    sh_atomic_model_str = "soft-imask";				\
 	}								\
       /* Set -musermode if it hasn't been specified.  */		\
-      if (global_options_set.x_TARGET_USERMODE == 0)			\
+      if (OPTION_SET_P (TARGET_USERMODE) == 0)			\
 	TARGET_USERMODE = true;						\
     }									\
   while (0)

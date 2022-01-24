@@ -1,8 +1,9 @@
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 // 2007-09-20 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +32,6 @@ namespace std
   typedef value_type* 		iterator_type;
   typedef std::pointer_to_unary_function<value_type, bool> predicate_type;
 
-  template iterator_type remove_copy_if(iterator_type, iterator_type, 
+  template iterator_type remove_copy_if(iterator_type, iterator_type,
 					iterator_type, predicate_type);
-} 
+}

@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -2051,7 +2051,7 @@ stores.",
 
 /* Target function to initialize the cost model for a loop or block.  */
 DEFHOOK
-(init_cost,
+(create_costs,
  "This hook should initialize target-specific data structures in preparation\n\
 for modeling the costs of vectorizing a loop or basic block.  The default\n\
 allocates three unsigned integers for accumulating costs for the prologue,\n\
@@ -2060,50 +2060,9 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block\n\
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the\n\
 current cost model is for the scalar version of a loop or block; otherwise\n\
 it is for the vector version.",
- void *,
- (class loop *loop_info, bool costing_for_scalar),
- default_init_cost)
-
-/* Target function to record N statements of the given kind using the
-   given vector type within the cost model data for the current loop or
-    block.  */
-DEFHOOK
-(add_stmt_cost,
- "This hook should update the target-specific @var{data} in response to\n\
-adding @var{count} copies of the given @var{kind} of statement to a\n\
-loop or basic block.  The default adds the builtin vectorizer cost for\n\
-the copies of the statement to the accumulator specified by @var{where},\n\
-(the prologue, body, or epilogue) and returns the amount added.  The\n\
-return value should be viewed as a tentative cost that may later be\n\
-revised.",
- unsigned,
- (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
-  enum vect_cost_model_location where),
- default_add_stmt_cost)
-
-/* Target function to calculate the total cost of the current vectorized
-   loop or block.  */
-DEFHOOK
-(finish_cost,
- "This hook should complete calculations of the cost of vectorizing a loop\n\
-or basic block based on @var{data}, and return the prologue, body, and\n\
-epilogue costs as unsigned integers.  The default returns the value of\n\
-the three accumulators.",
- void,
- (void *data, unsigned *prologue_cost, unsigned *body_cost,
-  unsigned *epilogue_cost),
- default_finish_cost)
-
-/* Function to delete target-specific cost modeling data.  */
-DEFHOOK
-(destroy_cost_data,
- "This hook should release @var{data} and any related data structures\n\
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the\n\
-accumulator.",
- void,
- (void *data),
- default_destroy_cost_data)
+ class vector_costs *,
+ (vec_info *vinfo, bool costing_for_scalar),
+ default_vectorize_create_costs)
 
 HOOK_VECTOR_END (vectorize)
 
@@ -3019,6 +2978,14 @@ The support includes the assembler, linker and dynamic linker.\n\
 The default value of this hook is based on target's libc.",
  bool, (void),
  default_has_ifunc_p)
+
+/* True if it is OK to reference indirect function resolvers locally.  */
+DEFHOOK
+(ifunc_ref_local_ok,
+ "Return true if it is OK to reference indirect function resolvers\n\
+locally.  The default is to return false.",
+ bool, (void),
+ hook_bool_void_false)
 
 /* True if it is OK to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if
@@ -4731,45 +4698,6 @@ not generate any instructions in this case.",
  default_setup_incoming_varargs)
 
 DEFHOOK
-(load_bounds_for_arg,
- "This hook is used by expand pass to emit insn to load bounds of\n\
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case\n\
-bounds of @var{arg} are not passed in register.  If @var{slot} is a\n\
-memory, then bounds are loaded as for regular pointer loaded from\n\
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer\n\
-constant holding number of the target dependent special slot which\n\
-should be used to obtain bounds.  Hook returns RTX holding loaded bounds.",
- rtx, (rtx slot, rtx arg, rtx slot_no),
- default_load_bounds_for_arg)
-
-DEFHOOK
-(store_bounds_for_arg,
- "This hook is used by expand pass to emit insns to store @var{bounds} of\n\
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case\n\
-@var{bounds} of @var{arg} are not passed in register.  If @var{slot} is a\n\
-memory, then @var{bounds} are stored as for regular pointer stored in\n\
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer\n\
-constant holding number of the target dependent special slot which\n\
-should be used to store @var{bounds}.",
- void, (rtx arg, rtx slot, rtx bounds, rtx slot_no),
- default_store_bounds_for_arg)
-
-DEFHOOK
-(load_returned_bounds,
- "This hook is used by expand pass to emit insn to load bounds\n\
-returned by function call in @var{slot}.  Hook returns RTX holding\n\
-loaded bounds.",
- rtx, (rtx slot),
- default_load_returned_bounds)
-
-DEFHOOK
-(store_returned_bounds,
- "This hook is used by expand pass to emit insn to store @var{bounds}\n\
-returned by function call into @var{slot}.",
- void, (rtx slot, rtx bounds),
- default_store_returned_bounds)
-
-DEFHOOK
 (call_args,
  "While generating RTL for a function call, this target hook is invoked once\n\
 for each argument passed to the function, either a register returned by\n\
@@ -4971,12 +4899,6 @@ the previous arguments.\n\
 The return value is usually either a @code{reg} RTX for the hard\n\
 register in which to pass the argument, or zero to pass the argument\n\
 on the stack.\n\
-\n\
-The return value can be a @code{const_int} which means argument is\n\
-passed in a target specific slot with specified number.  Target hooks\n\
-should be used to store or load argument in such case.  See\n\
-@code{TARGET_STORE_BOUNDS_FOR_ARG} and @code{TARGET_LOAD_BOUNDS_FOR_ARG}\n\
-for more information.\n\
 \n\
 The value of the expression can also be a @code{parallel} RTX@.  This is\n\
 used when an argument is passed in multiple locations.  The mode of the\n\
@@ -6614,6 +6536,41 @@ specific target options and the caller does not use the same options.",
  default_target_can_inline_p)
 
 DEFHOOK
+(update_ipa_fn_target_info,
+ "Allow target to analyze all gimple statements for the given function to\n\
+record and update some target specific information for inlining.  A typical\n\
+example is that a caller with one isa feature disabled is normally not\n\
+allowed to inline a callee with that same isa feature enabled even which is\n\
+attributed by always_inline, but with the conservative analysis on all\n\
+statements of the callee if we are able to guarantee the callee does not\n\
+exploit any instructions from the mismatch isa feature, it would be safe to\n\
+allow the caller to inline the callee.\n\
+@var{info} is one @code{unsigned int} value to record information in which\n\
+one set bit indicates one corresponding feature is detected in the analysis,\n\
+@var{stmt} is the statement being analyzed.  Return true if target still\n\
+need to analyze the subsequent statements, otherwise return false to stop\n\
+subsequent analysis.\n\
+The default version of this hook returns false.",
+ bool, (unsigned int& info, const gimple* stmt),
+ default_update_ipa_fn_target_info)
+
+DEFHOOK
+(need_ipa_fn_target_info,
+ "Allow target to check early whether it is necessary to analyze all gimple\n\
+statements in the given function to update target specific information for\n\
+inlining.  See hook @code{update_ipa_fn_target_info} for usage example of\n\
+target specific information.  This hook is expected to be invoked ahead of\n\
+the iterating with hook @code{update_ipa_fn_target_info}.\n\
+@var{decl} is the function being analyzed, @var{info} is the same as what\n\
+in hook @code{update_ipa_fn_target_info}, target can do one time update\n\
+into @var{info} without iterating for some case.  Return true if target\n\
+decides to analyze all gimple statements to collect information, otherwise\n\
+return false.\n\
+The default version of this hook returns false.",
+ bool, (const_tree decl, unsigned int& info),
+ default_need_ipa_fn_target_info)
+
+DEFHOOK
 (relayout_function,
 "This target hook fixes function @var{fndecl} after attributes are processed.\n\
 Default does nothing. On ARM, the default function's alignment is updated\n\
@@ -6862,6 +6819,16 @@ DEFHOOKPOD
  "This value is true if the target supports some ``native'' method of\n\
 collecting constructors and destructors to be run at startup and exit.\n\
 It is false if we must use @command{collect2}.",
+ bool, false)
+
+/* True if the target wants DTORs to be run from cxa_atexit.  */
+DEFHOOKPOD
+(dtors_from_cxa_atexit,
+ "This value is true if the target wants destructors to be queued to be\n\
+run from __cxa_atexit.  If this is the case then, for each priority level,\n\
+a new constructor will be entered that registers the destructors for that\n\
+level with __cxa_atexit (and there will be no destructors emitted).\n\
+It is false the method implied by @code{have_ctors_dtors} is used.",
  bool, false)
 
 /* True if thread-local storage is supported.  */

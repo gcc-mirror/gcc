@@ -45,4 +45,4 @@ program main
   c = matmul(a, bfunc())
   if (any(c-d /= 0)) STOP 6
 end program main
-! { dg-final { scan-tree-dump-times "matmul_r4" 2 "optimized" } }
+! { dg-final { scan-tree-dump-not "matmul_r4" "optimized" } }

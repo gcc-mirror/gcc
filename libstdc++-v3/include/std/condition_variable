@@ -1,6 +1,6 @@
 // <condition_variable> -*- C++ -*-
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,8 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <chrono>
-
+#include <bits/chrono.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #include <bits/alloc_traits.h>
@@ -93,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     notify_all() noexcept;
 
     void
-    wait(unique_lock<mutex>& __lock) noexcept;
+    wait(unique_lock<mutex>& __lock);
 
     template<typename _Predicate>
       void

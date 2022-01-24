@@ -1,6 +1,6 @@
 // Debugging string implementation -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -160,8 +160,8 @@ namespace __gnu_debug
       basic_string(basic_string&& __s, const _Allocator& __a)
       noexcept(
 	std::is_nothrow_constructible<_Base, _Base, const _Allocator&>::value )
-      : _Safe(std::move(__s._M_safe()), __a),
-	_Base(std::move(__s._M_base()), __a)
+      : _Safe(std::move(__s), __a),
+	_Base(std::move(__s), __a)
       { }
 
       ~basic_string() = default;
@@ -201,15 +201,7 @@ namespace __gnu_debug
 		  __glibcxx_check_valid_constructor_range(__begin, __end)),
 		__gnu_debug::__base(__end), __a) { }
 
-#if __cplusplus < 201103L
-      basic_string&
-      operator=(const basic_string& __str)
-      {
-	this->_M_safe() = __str;
-	_M_base() = __str;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       basic_string&
       operator=(const basic_string&) = default;
 
@@ -221,7 +213,7 @@ namespace __gnu_debug
       operator=(const _CharT* __s)
       {
 	__glibcxx_check_string(__s);
-	_M_base() = __s;
+	_Base::operator=(__s);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -229,7 +221,7 @@ namespace __gnu_debug
       basic_string&
       operator=(_CharT __c)
       {
-	_M_base() = __c;
+	_Base::operator=(__c);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -238,7 +230,7 @@ namespace __gnu_debug
       basic_string&
       operator=(std::initializer_list<_CharT> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -349,7 +341,7 @@ namespace __gnu_debug
 			      ._M_sequence(*this, "this")
 			      ._M_integer(__pos, "__pos")
 			      ._M_integer(this->size(), "size"));
-	return _M_base()[__pos];
+	return _Base::operator[](__pos);
       }
 
       reference
@@ -365,7 +357,7 @@ namespace __gnu_debug
 			      ._M_integer(__pos, "__pos")
 			      ._M_integer(this->size(), "size"));
 #endif
-	return _M_base()[__pos];
+	return _Base::operator[](__pos);
       }
 
       using _Base::at;
@@ -379,7 +371,7 @@ namespace __gnu_debug
       basic_string&
       operator+=(const basic_string& __str)
       {
-	_M_base() += __str;
+	_Base::operator+=(__str);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -388,7 +380,7 @@ namespace __gnu_debug
       operator+=(const _CharT* __s)
       {
 	__glibcxx_check_string(__s);
-	_M_base() += __s;
+	_Base::operator+=(__s);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -396,7 +388,7 @@ namespace __gnu_debug
       basic_string&
       operator+=(_CharT __c)
       {
-	_M_base() += __c;
+	_Base::operator+=(__c);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -405,7 +397,7 @@ namespace __gnu_debug
       basic_string&
       operator+=(std::initializer_list<_CharT> __l)
       {
-	_M_base() += __l;
+	_Base::operator+=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -1298,9 +1290,7 @@ namespace __gnu_debug
 
   typedef basic_string<char>    string;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef basic_string<wchar_t> wstring;
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// A string of @c char8_t

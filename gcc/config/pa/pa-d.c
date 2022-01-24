@@ -1,5 +1,5 @@
 /* Subroutines for the D front end on the HPPA architecture.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ pa_d_handle_target_float_abi (void)
 {
   const char *abi;
 
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_SOFT_FLOAT)
     abi = "soft";
   else
     abi = "hard";

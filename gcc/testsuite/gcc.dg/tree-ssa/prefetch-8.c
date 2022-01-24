@@ -1,5 +1,5 @@
 /* { dg-do compile { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-options "-O2 -fno-tree-loop-distribute-patterns -fprefetch-loop-arrays -march=amdfam10 --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-tree-loop-distribute-patterns -fprefetch-loop-arrays -march=amdfam10 --param simultaneous-prefetches=100 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
 
 #define K 1000000
 int a[K];

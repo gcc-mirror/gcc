@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12749.d(19): Error: immutable field 'inum' initialization is not allowed in foreach loop
-fail_compilation/fail12749.d(20): Error: const field 'cnum' initialization is not allowed in foreach loop
-fail_compilation/fail12749.d(25): Error: immutable field 'inum' initialization is not allowed in nested function 'set'
-fail_compilation/fail12749.d(26): Error: const field 'cnum' initialization is not allowed in nested function 'set'
+fail_compilation/fail12749.d(19): Error: immutable field `inum` initialization is not allowed in foreach loop
+fail_compilation/fail12749.d(20): Error: const field `cnum` initialization is not allowed in foreach loop
+fail_compilation/fail12749.d(25): Error: immutable field `inum` initialization is not allowed in nested function `set`
+fail_compilation/fail12749.d(26): Error: const field `cnum` initialization is not allowed in nested function `set`
 ---
 */
 struct S
@@ -31,10 +31,10 @@ struct S
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12749.d(48): Error: immutable variable 'inum' initialization is not allowed in foreach loop
-fail_compilation/fail12749.d(49): Error: const variable 'cnum' initialization is not allowed in foreach loop
-fail_compilation/fail12749.d(54): Error: immutable variable 'inum' initialization is not allowed in nested function 'set'
-fail_compilation/fail12749.d(55): Error: const variable 'cnum' initialization is not allowed in nested function 'set'
+fail_compilation/fail12749.d(48): Error: immutable variable `inum` initialization is not allowed in foreach loop
+fail_compilation/fail12749.d(49): Error: const variable `cnum` initialization is not allowed in foreach loop
+fail_compilation/fail12749.d(54): Error: immutable variable `inum` initialization is not allowed in nested function `set`
+fail_compilation/fail12749.d(55): Error: const variable `cnum` initialization is not allowed in nested function `set`
 ---
 */
 immutable int inum;

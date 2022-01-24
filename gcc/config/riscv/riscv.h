@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -528,6 +528,14 @@ enum reg_class
 #define LUI_OPERAND(VALUE)						\
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
+
+/* If this is a single bit mask, then we can load it with bseti.  But this
+   is not useful for any of the low 31 bits because we can use addi or lui
+   to load them.  It is wrong for loading SImode 0x80000000 on rv64 because it
+   needs to be sign-extended.  So we restrict this to the upper 32-bits
+   only.  */
+#define SINGLE_BIT_MASK_OPERAND(VALUE) \
+  (pow2p_hwi (VALUE) && (ctz_hwi (VALUE) >= 32))
 
 /* Stack layout; function entry, exit and calling.  */
 

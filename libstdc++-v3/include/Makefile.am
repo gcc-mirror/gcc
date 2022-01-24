@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001-2021 Free Software Foundation, Inc.
+## Copyright (C) 2001-2022 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -76,9 +76,11 @@ std_headers = \
 	${std_srcdir}/shared_mutex \
 	${std_srcdir}/source_location \
 	${std_srcdir}/span \
+	${std_srcdir}/spanstream \
 	${std_srcdir}/sstream \
 	${std_srcdir}/syncstream \
 	${std_srcdir}/stack \
+	${std_srcdir}/stacktrace \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/stop_token \
 	${std_srcdir}/streambuf \
@@ -117,6 +119,7 @@ bits_headers = \
 	${bits_srcdir}/c++0x_warning.h \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/charconv.h \
+	${bits_srcdir}/chrono.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
 	${bits_srcdir}/cow_string.h \
@@ -154,7 +157,10 @@ bits_headers = \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memoryfwd.h \
+	${bits_srcdir}/mofunc_impl.h \
 	${bits_srcdir}/move.h \
+	${bits_srcdir}/move_only_function.h \
+	${bits_srcdir}/new_allocator.h \
 	${bits_srcdir}/node_handle.h \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
@@ -1315,6 +1321,12 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT[	 ][	 ]*1[	 ]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_alt128_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT 1,' ;\
+	verbose_assert='s,g,g,' ; \
+	grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_HOSTED[	 ][	 ]*1[	 ]*$$" \
+	${CONFIG_HEADER} > /dev/null 2>&1 \
+	&& grep "^[	 ]*#[	 ]*define[	 ][	 ]*_GLIBCXX_VERBOSE[	 ][	 ]*1[	 ]*$$" \
+	${CONFIG_HEADER} > /dev/null 2>&1 \
+	&& verbose_assert='s,^#undef _GLIBCXX_VERBOSE_ASSERT$$,#define _GLIBCXX_VERBOSE_ASSERT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_RELEASE,define _GLIBCXX_RELEASE $$release," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
@@ -1326,11 +1338,14 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	-e "s,define _GLIBCXX_USE_FLOAT128,$$float128," \
 	-e "$$ldbl_compat" \
 	-e "$$ldbl_alt128_compat" \
+	-e "$$verbose_assert" \
 	    < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
+	    -e 's/LT_OBJDIR/_GLIBCXX_LT_OBJDIR/g' \
+	    -e 's/STDC_HEADERS/_GLIBCXX_STDC_HEADERS/g' \
 	    -e 's/_DARWIN_USE_64_BIT_INODE/_GLIBCXX_DARWIN_USE_64_BIT_INODE/g' \
 	    -e 's/_FILE_OFFSET_BITS/_GLIBCXX_FILE_OFFSET_BITS/g' \
 	    -e 's/_LARGE_FILES/_GLIBCXX_LARGE_FILES/g' \
@@ -1413,8 +1428,8 @@ endif
 # This is a subset of the full install-headers rule.  We only need <ciso646>,
 # <cstddef>, <cfloat>, <limits>, <climits>, <version>, <cstdint>, <cstdlib>,
 # <new>, <typeinfo>, <exception>, <initializer_list>, <cstdalign>, <cstdarg>,
-# <concepts>, <cstdbool>, <type_traits>, <bit>, <atomic>,
-# and any files which they include (and which we provide).
+# <concepts>, <coroutine>, <cstdbool>, <type_traits>, <bit>, <atomic>,
+# <source_location> and any files which they include (and which we provide).
 # <new>, <typeinfo>, <exception>, <initializer_list> and <compare>
 # are installed by libsupc++, so only the others and the sub-includes
 # are copied here.
@@ -1428,7 +1443,8 @@ install-freestanding-headers:
 	  ${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
-	for file in limits type_traits atomic bit concepts version; do \
+	for file in limits type_traits atomic bit concepts coroutine \
+	  source_location version; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ciso646 cstddef cfloat climits cstdint cstdlib \

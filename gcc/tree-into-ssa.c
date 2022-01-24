@@ -1,5 +1,5 @@
 /* Rewrite a program in Normal form into SSA.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1284,11 +1284,10 @@ rewrite_debug_stmt_uses (gimple *stmt)
 	      if (def == NULL_TREE)
 		{
 		  gimple *def_temp;
-		  def = make_node (DEBUG_EXPR_DECL);
-		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
-		  DECL_ARTIFICIAL (def) = 1;
-		  TREE_TYPE (def) = TREE_TYPE (var);
+		  def = build_debug_expr_decl (TREE_TYPE (var));
+		  /* FIXME: Is setting the mode really necessary? */
 		  SET_DECL_MODE (def, DECL_MODE (var));
+		  def_temp = gimple_build_debug_source_bind (def, var, NULL);
 		  gsi =
 		 gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 		  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);

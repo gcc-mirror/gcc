@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2209,9 +2209,9 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
   return false;
 }
 
-/* If EXP is a reference to a bitfield, and the type of EXP does not
-   match the declared type of the bitfield, return the declared type
-   of the bitfield.  Otherwise, return NULL_TREE.  */
+/* If EXP is a reference to a bit-field, and the type of EXP does not
+   match the declared type of the bit-field, return the declared type
+   of the bit-field.  Otherwise, return NULL_TREE.  */
 
 tree
 is_bitfield_expr_with_lowered_type (const_tree exp)
@@ -2230,6 +2230,14 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 
     case MODIFY_EXPR:
     case SAVE_EXPR:
+    case UNARY_PLUS_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case BIT_NOT_EXPR:
       return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
 
     case COMPONENT_REF:
@@ -2594,6 +2602,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
 						   op1, TREE_CODE (op1),
+						   NULL_TREE,
 						   /*overload=*/NULL,
 						   complain),
                                 cp_build_unary_op (code, op0, false, complain),
@@ -3460,12 +3469,9 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 
   if (TREE_CODE (ptrmem) == CONSTRUCTOR)
     {
-      unsigned int ix;
-      tree index, value;
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ptrmem),
-				ix, index, value)
-	if (index && DECL_P (index) && DECL_NAME (index) == member_name)
-	  return value;
+      for (auto &e: CONSTRUCTOR_ELTS (ptrmem))
+	if (e.index && DECL_P (e.index) && DECL_NAME (e.index) == member_name)
+	  return e.value;
       gcc_unreachable ();
     }
 
@@ -3482,6 +3488,67 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
   return build_simple_component_ref (ptrmem, member);
 }
 
+/* Return a TREE_LIST of namespace-scope overloads for the given operator,
+   and for any other relevant operator.  */
+
+static tree
+op_unqualified_lookup (tree_code code, bool is_assign)
+{
+  tree lookups = NULL_TREE;
+
+  if (cxx_dialect >= cxx20 && !is_assign)
+    {
+      if (code == NE_EXPR)
+	{
+	  /* != can get rewritten in terms of ==.  */
+	  tree fnname = ovl_op_identifier (false, EQ_EXPR);
+	  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+	    lookups = tree_cons (fnname, fns, lookups);
+	}
+      else if (code == GT_EXPR || code == LE_EXPR
+	       || code == LT_EXPR || code == GE_EXPR)
+	{
+	  /* These can get rewritten in terms of <=>.  */
+	  tree fnname = ovl_op_identifier (false, SPACESHIP_EXPR);
+	  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+	    lookups = tree_cons (fnname, fns, lookups);
+	}
+    }
+
+  tree fnname = ovl_op_identifier (is_assign, code);
+  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+    lookups = tree_cons (fnname, fns, lookups);
+
+  if (lookups)
+    return lookups;
+  else
+    return build_tree_list (NULL_TREE, NULL_TREE);
+}
+
+/* Create a DEPENDENT_OPERATOR_TYPE for a dependent operator expression of
+   the given operator.  LOOKUPS, if non-NULL, is the result of phase 1
+   name lookup for the given operator.  */
+
+tree
+build_dependent_operator_type (tree lookups, tree_code code, bool is_assign)
+{
+  if (lookups)
+    /* We're partially instantiating a dependent operator expression, and
+       LOOKUPS is the result of phase 1 name lookup that we performed
+       earlier at template definition time, so just reuse the corresponding
+       DEPENDENT_OPERATOR_TYPE.  */
+    return TREE_TYPE (lookups);
+
+  /* Otherwise we're processing a dependent operator expression at template
+     definition time, so perform phase 1 name lookup now.  */
+  lookups = op_unqualified_lookup (code, is_assign);
+
+  tree type = cxx_make_type (DEPENDENT_OPERATOR_TYPE);
+  DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS (type) = lookups;
+  TREE_TYPE (lookups) = type;
+  return type;
+}
+
 /* Given an expression PTR for a pointer, return an expression
    for the value pointed to.
    ERRORSTRING is the name of the operator to appear in error messages.
@@ -3491,7 +3558,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 
 tree
 build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring, 
-                      tsubst_flags_t complain)
+		      tree lookups, tsubst_flags_t complain)
 {
   tree orig_expr = expr;
   tree rval;
@@ -3511,12 +3578,18 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
 	  return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
 	}
       if (type_dependent_expression_p (expr))
-	return build_min_nt_loc (loc, INDIRECT_REF, expr);
+	{
+	  expr = build_min_nt_loc (loc, INDIRECT_REF, expr);
+	  TREE_TYPE (expr)
+	    = build_dependent_operator_type (lookups, INDIRECT_REF, false);
+	  return expr;
+	}
       expr = build_non_dependent_expr (expr);
     }
 
   rval = build_new_op (loc, INDIRECT_REF, LOOKUP_NORMAL, expr,
-		       NULL_TREE, NULL_TREE, &overload, complain);
+		       NULL_TREE, NULL_TREE, lookups,
+		       &overload, complain);
   if (!rval)
     rval = cp_build_indirect_ref (loc, expr, errorstring, complain);
 
@@ -4453,8 +4526,8 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 tree
 build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 		   enum tree_code arg1_code, tree arg2,
-		   enum tree_code arg2_code, tree *overload_p,
-		   tsubst_flags_t complain)
+		   enum tree_code arg2_code, tree lookups,
+		   tree *overload_p, tsubst_flags_t complain)
 {
   tree orig_arg1;
   tree orig_arg2;
@@ -4470,7 +4543,8 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 	  || type_dependent_expression_p (arg2))
 	{
 	  expr = build_min_nt_loc (loc, code, arg1, arg2);
-	  maybe_save_operator_binding (expr);
+	  TREE_TYPE (expr)
+	    = build_dependent_operator_type (lookups, code, false);
 	  return expr;
 	}
       arg1 = build_non_dependent_expr (arg1);
@@ -4481,7 +4555,7 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
     expr = build_m_component_ref (arg1, arg2, complain);
   else
     expr = build_new_op (loc, code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE,
-			 &overload, complain);
+			 lookups, &overload, complain);
 
   if (overload_p != NULL)
     *overload_p = overload;
@@ -4533,7 +4607,7 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
     }
 
   expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, arg1, arg2,
-		       NULL_TREE, &overload, complain);
+		       NULL_TREE, NULL_TREE, &overload, complain);
 
   if (processing_template_decl && expr != error_mark_node)
     {
@@ -4597,31 +4671,104 @@ build_vec_cmp (tree_code code, tree type,
 static void
 warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
 {
+  /* Prevent warnings issued for macro expansion.  */
   if (!warn_address
       || (complain & tf_warning) == 0
       || c_inhibit_evaluation_warnings != 0
+      || from_macro_expansion_at (location)
       || warning_suppressed_p (op, OPT_Waddress))
     return;
 
+  if (TREE_CODE (op) == NON_DEPENDENT_EXPR)
+    op = TREE_OPERAND (op, 0);
+
   tree cop = fold_for_warn (op);
 
-  if (TREE_CODE (cop) == ADDR_EXPR
-      && decl_with_nonnull_addr_p (TREE_OPERAND (cop, 0))
-      && !warning_suppressed_p (cop, OPT_Waddress))
-    warning_at (location, OPT_Waddress, "the address of %qD will never "
-		"be NULL", TREE_OPERAND (cop, 0));
+  if (TREE_CODE (cop) == NON_LVALUE_EXPR)
+    /* Unwrap the expression for C++ 98.  */
+    cop = TREE_OPERAND (cop, 0);
 
-  if (CONVERT_EXPR_P (op)
-      && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (op, 0))))
+  if (TREE_CODE (cop) == PTRMEM_CST)
     {
-      tree inner_op = op;
-      STRIP_NOPS (inner_op);
-
-      if (DECL_P (inner_op))
-	warning_at (location, OPT_Waddress,
-		    "the compiler can assume that the address of "
-		    "%qD will never be NULL", inner_op);
+      /* The address of a nonstatic data member is never null.  */
+      warning_at (location, OPT_Waddress,
+		  "the address %qE will never be NULL",
+		  cop);
+      return;
     }
+
+  if (TREE_CODE (cop) == NOP_EXPR)
+    {
+      /* Allow casts to intptr_t to suppress the warning.  */
+      tree type = TREE_TYPE (cop);
+      if (TREE_CODE (type) == INTEGER_TYPE)
+	return;
+
+      STRIP_NOPS (cop);
+    }
+
+  bool warned = false;
+  if (TREE_CODE (cop) == ADDR_EXPR)
+    {
+      cop = TREE_OPERAND (cop, 0);
+
+      /* Set to true in the loop below if OP dereferences its operand.
+	 In such a case the ultimate target need not be a decl for
+	 the null [in]equality test to be necessarily constant.  */
+      bool deref = false;
+
+      /* Get the outermost array or object, or member.  */
+      while (handled_component_p (cop))
+	{
+	  if (TREE_CODE (cop) == COMPONENT_REF)
+	    {
+	      /* Get the member (its address is never null).  */
+	      cop = TREE_OPERAND (cop, 1);
+	      break;
+	    }
+
+	  /* Get the outer array/object to refer to in the warning.  */
+	  cop = TREE_OPERAND (cop, 0);
+	  deref = true;
+	}
+
+      if ((!deref && !decl_with_nonnull_addr_p (cop))
+	  || from_macro_expansion_at (location)
+	  || warning_suppressed_p (cop, OPT_Waddress))
+	return;
+
+      warned = warning_at (location, OPT_Waddress,
+			   "the address of %qD will never be NULL", cop);
+      op = cop;
+    }
+  else if (TREE_CODE (cop) == POINTER_PLUS_EXPR)
+    {
+      /* Adding zero to the null pointer is well-defined in C++.  When
+	 the offset is unknown (i.e., not a constant) warn anyway since
+	 it's less likely that the pointer operand is null than not.  */
+      tree off = TREE_OPERAND (cop, 1);
+      if (!integer_zerop (off)
+	  && !warning_suppressed_p (cop, OPT_Waddress))
+	warning_at (location, OPT_Waddress, "comparing the result of pointer "
+		    "addition %qE and NULL", cop);
+      return;
+    }
+  else if (CONVERT_EXPR_P (op)
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (op, 0))))
+    {
+      STRIP_NOPS (op);
+
+      if (TREE_CODE (op) == COMPONENT_REF)
+	op = TREE_OPERAND (op, 1);
+
+      if (DECL_P (op))
+	warned = warning_at (location, OPT_Waddress,
+			     "the compiler can assume that the address of "
+			     "%qD will never be NULL", op);
+    }
+
+  if (warned && DECL_P (op))
+    inform (DECL_SOURCE_LOCATION (op), "%qD declared here", op);
 }
 
 /* Warn about [expr.arith.conv]/2: If one operand is of enumeration type and
@@ -5289,6 +5436,11 @@ cp_build_binary_op (const op_location_t &location,
 	    warning_at (location, OPT_Waddress,
 			"comparison with string literal results in "
 			"unspecified behavior");
+	  else if (warn_array_compare
+		   && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+		   && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE)
+	    do_warn_array_compare (location, code, stripped_orig_op0,
+				   stripped_orig_op1);
 	}
 
       build_type = boolean_type_node;
@@ -5411,6 +5563,8 @@ cp_build_binary_op (const op_location_t &location,
 	      op1 = cp_convert (TREE_TYPE (op0), op1, complain);
 	    }
 	  result_type = TREE_TYPE (op0);
+
+	  warn_for_null_address (location, orig_op0, complain);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1) && null_ptr_cst_p (orig_op0))
 	return cp_build_binary_op (location, code, op1, op0, complain);
@@ -5559,6 +5713,14 @@ cp_build_binary_op (const op_location_t &location,
 			"comparison with string literal results "
 			"in unspecified behavior");
 	}
+      else if (warn_array_compare
+	       && TREE_CODE (TREE_TYPE (orig_op0)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (orig_op1)) == ARRAY_TYPE
+	       && code != SPACESHIP_EXPR
+	       && (complain & tf_warning))
+	do_warn_array_compare (location, code,
+			       tree_strip_any_location_wrapper (orig_op0),
+			       tree_strip_any_location_wrapper (orig_op1));
 
       if (gnu_vector_type_p (type0) && gnu_vector_type_p (type1))
 	{
@@ -6038,7 +6200,9 @@ cp_build_binary_op (const op_location_t &location,
     }
 
   if (sanitize_flags_p ((SANITIZE_SHIFT
-			 | SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+			 | SANITIZE_DIVIDE
+			 | SANITIZE_FLOAT_DIVIDE
+			 | SANITIZE_SI_OVERFLOW))
       && current_function_decl != NULL_TREE
       && !processing_template_decl
       && (doing_div_or_mod || doing_shift))
@@ -6050,7 +6214,9 @@ cp_build_binary_op (const op_location_t &location,
       op1 = fold_non_dependent_expr (op1, complain);
       tree instrument_expr1 = NULL_TREE;
       if (doing_div_or_mod
-	  && sanitize_flags_p (SANITIZE_DIVIDE | SANITIZE_FLOAT_DIVIDE))
+	  && sanitize_flags_p (SANITIZE_DIVIDE
+			       | SANITIZE_FLOAT_DIVIDE
+			       | SANITIZE_SI_OVERFLOW))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the
@@ -6305,7 +6471,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
 
 tree
 build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
-		  tsubst_flags_t complain)
+		  tree lookups, tsubst_flags_t complain)
 {
   tree orig_expr = xarg;
   tree exp;
@@ -6317,7 +6483,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
       if (type_dependent_expression_p (xarg))
 	{
 	  tree e = build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
-	  maybe_save_operator_binding (e);
+	  TREE_TYPE (e) = build_dependent_operator_type (lookups, code, false);
 	  return e;
 	}
 
@@ -6342,7 +6508,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
     /* Don't look for a function.  */;
   else
     exp = build_new_op (loc, code, LOOKUP_NORMAL, xarg, NULL_TREE,
-			NULL_TREE, &overload, complain);
+			NULL_TREE, lookups, &overload, complain);
 
   if (!exp && code == ADDR_EXPR)
     {
@@ -6406,6 +6572,11 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	}
 
       exp = cp_build_addr_expr_strict (xarg, complain);
+
+      if (TREE_CODE (exp) == PTRMEM_CST)
+	PTRMEM_CST_LOCATION (exp) = loc;
+      else
+	protected_set_expr_location (exp, loc);
     }
 
   if (processing_template_decl && exp != error_mark_node)
@@ -6688,7 +6859,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
-	t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
+	t = make_ptrmem_cst (type, t);
 	return t;
       }
 
@@ -6711,17 +6882,6 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
       tree stripped_arg = tree_strip_any_location_wrapper (arg);
-      if (TREE_CODE (stripped_arg) == FUNCTION_DECL
-	  && DECL_IMMEDIATE_FUNCTION_P (stripped_arg)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
-	{
-	  if (complain & tf_error)
-	    error_at (loc, "taking address of an immediate function %qD",
-		      stripped_arg);
-	  return error_mark_node;
-	}
       if (TREE_CODE (stripped_arg) == FUNCTION_DECL
 	  && !mark_used (stripped_arg, complain) && !(complain & tf_error))
 	return error_mark_node;
@@ -6762,6 +6922,13 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 			      /*c_cast_p=*/false,
 			      complain);
     }
+
+  /* For addresses of immediate functions ensure we have EXPR_LOCATION
+     set for possible later diagnostics.  */
+  if (TREE_CODE (val) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL
+      && DECL_IMMEDIATE_FUNCTION_P (TREE_OPERAND (val, 0)))
+    SET_EXPR_LOCATION (val, input_location);
 
   return val;
 }
@@ -7410,7 +7577,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (EXPR_LOCATION (TREE_VALUE (list)),
-				      expr, TREE_VALUE (list), complain);
+				      expr, TREE_VALUE (list), NULL_TREE,
+				      complain);
     }
 
   return expr;
@@ -7445,7 +7613,7 @@ build_x_compound_expr_from_vec (vec<tree, va_gc> *vec, const char *msg,
       expr = (*vec)[0];
       for (ix = 1; vec->iterate (ix, &t); ++ix)
 	expr = build_x_compound_expr (EXPR_LOCATION (t), expr,
-				      t, complain);
+				      t, NULL_TREE, complain);
 
       return expr;
     }
@@ -7455,7 +7623,7 @@ build_x_compound_expr_from_vec (vec<tree, va_gc> *vec, const char *msg,
 
 tree
 build_x_compound_expr (location_t loc, tree op1, tree op2,
-		       tsubst_flags_t complain)
+		       tree lookups, tsubst_flags_t complain)
 {
   tree result;
   tree orig_op1 = op1;
@@ -7468,7 +7636,8 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
 	  || type_dependent_expression_p (op2))
 	{
 	  result = build_min_nt_loc (loc, COMPOUND_EXPR, op1, op2);
-	  maybe_save_operator_binding (result);
+	  TREE_TYPE (result)
+	    = build_dependent_operator_type (lookups, COMPOUND_EXPR, false);
 	  return result;
 	}
       op1 = build_non_dependent_expr (op1);
@@ -7476,7 +7645,7 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
     }
 
   result = build_new_op (loc, COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2,
-			 NULL_TREE, &overload, complain);
+			 NULL_TREE, lookups, &overload, complain);
   if (!result)
     result = cp_build_compound_expr (op1, op2, complain);
 
@@ -8085,9 +8254,13 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
   if (!(complain & tf_warning_or_error))
     return error_mark_node;
 
+  location_t loc = cp_expr_loc_or_input_loc (expr);
+
   if (pedantic || warn_pmf2ptr)
-    pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
+    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
 	     "converting from %qH to %qI", intype, type);
+
+  STRIP_ANY_LOCATION_WRAPPER (expr);
 
   if (TREE_CODE (intype) == METHOD_TYPE)
     expr = build_addr_func (expr, complain);
@@ -8103,7 +8276,9 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
   if (expr == error_mark_node)
     return error_mark_node;
 
-  return build_nop (type, expr);
+  expr = build_nop (type, expr);
+  SET_EXPR_LOCATION (expr, loc);
+  return expr;
 }
 
 /* Build a NOP_EXPR to TYPE, but mark it as a reinterpret_cast so that
@@ -8913,8 +9088,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	    {
 	      result = build_new_op (input_location, MODIFY_EXPR,
 				     LOOKUP_NORMAL, lhs, rhs,
-				     make_node (NOP_EXPR), /*overload=*/NULL,
-				     complain);
+				     make_node (NOP_EXPR), NULL_TREE,
+				     /*overload=*/NULL, complain);
 	      if (result == NULL_TREE)
 		return error_mark_node;
 	      goto ret;
@@ -9129,7 +9304,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
 cp_expr
 build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
-		     tree rhs, tsubst_flags_t complain)
+		     tree rhs, tree lookups, tsubst_flags_t complain)
 {
   tree orig_lhs = lhs;
   tree orig_rhs = rhs;
@@ -9146,7 +9321,9 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	{
 	  tree op = build_min_nt_loc (loc, modifycode, NULL_TREE, NULL_TREE);
 	  tree rval = build_min_nt_loc (loc, MODOP_EXPR, lhs, op, rhs);
-	  maybe_save_operator_binding (rval);
+	  if (modifycode != NOP_EXPR)
+	    TREE_TYPE (rval)
+	      = build_dependent_operator_type (lookups, modifycode, true);
 	  return rval;
 	}
 
@@ -9158,7 +9335,7 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     {
       tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
       tree rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL,
-				lhs, rhs, op, &overload, complain);
+				lhs, rhs, op, lookups, &overload, complain);
       if (rval)
 	{
 	  if (rval == error_mark_node)
@@ -9463,8 +9640,12 @@ expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
 				 /*c_cast_p=*/0, tf_warning_or_error);
 
   if (!DECL_VIRTUAL_P (fn))
-    *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type),
-		    build_addr_func (fn, tf_warning_or_error));
+    {
+      tree t = build_addr_func (fn, tf_warning_or_error);
+      if (TREE_CODE (t) == ADDR_EXPR)
+	SET_EXPR_LOCATION (t, PTRMEM_CST_LOCATION (cst));
+      *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), t);
+    }
   else
     {
       /* If we're dealing with a virtual function, we have to adjust 'this'
@@ -9557,7 +9738,7 @@ convert_for_assignment (tree type, tree rhs,
   tree rhstype;
   enum tree_code coder;
 
-  location_t rhs_loc = EXPR_LOC_OR_LOC (rhs, input_location);
+  location_t rhs_loc = cp_expr_loc_or_input_loc (rhs);
   bool has_loc = EXPR_LOCATION (rhs) != UNKNOWN_LOCATION;
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue,
      but preserve location wrappers.  */
@@ -10451,19 +10632,20 @@ check_return_expr (tree retval, bool *no_warning)
      this restriction, anyway.  (jason 2000-11-19)
 
      See finish_function and finalize_nrv for the rest of this optimization.  */
+  tree bare_retval = NULL_TREE;
   if (retval)
     {
       retval = maybe_undo_parenthesized_ref (retval);
-      STRIP_ANY_LOCATION_WRAPPER (retval);
+      bare_retval = tree_strip_any_location_wrapper (retval);
     }
 
-  bool named_return_value_okay_p = can_do_nrvo_p (retval, functype);
+  bool named_return_value_okay_p = can_do_nrvo_p (bare_retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)
     {
       if (named_return_value_okay_p
           && (current_function_return_value == NULL_TREE
-              || current_function_return_value == retval))
-	current_function_return_value = retval;
+	      || current_function_return_value == bare_retval))
+	current_function_return_value = bare_retval;
       else
 	current_function_return_value = error_mark_node;
     }
@@ -10477,7 +10659,7 @@ check_return_expr (tree retval, bool *no_warning)
     maybe_warn_pessimizing_move (retval, functype);
 
   /* Do any required conversions.  */
-  if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
+  if (bare_retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
     /* No conversions are required.  */
     ;
   else

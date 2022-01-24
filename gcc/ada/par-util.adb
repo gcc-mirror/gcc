@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -816,7 +816,7 @@ package body Util is
             C : constant Entity_Id := Current_Entity (N);
          begin
             if Present (C) and then Sloc (C) = Standard_Location then
-               Error_Msg_N ("redefinition of entity& in Standard?K?", N);
+               Error_Msg_N ("redefinition of entity& in Standard?.k?", N);
             end if;
          end;
       end if;

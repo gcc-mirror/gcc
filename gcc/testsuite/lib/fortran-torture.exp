@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -138,8 +138,8 @@ proc fortran-torture-compile { src option } {
 	return
     }
 
-    if [string match "*internal compiler error*" $comp_output] then {
-	gfortran_fail $testcase "$option (internal compiler error)"
+    if [regexp -line -- "internal compiler error.*" $comp_output ice] then {
+	gfortran_fail $testcase "$option ($ice)"
 	catch { remote_file build delete $output }
 	return
     }
@@ -263,8 +263,8 @@ proc fortran-torture-execute { src } {
 	    continue
 	}
 
-	if [string match "*internal compiler error*" $comp_output] then {
-	    gfortran_fail $testcase "$option (internal compiler error)"
+	if [regexp -line -- "internal compiler error.*" $comp_output ice] then {
+	    gfortran_fail $testcase "$option ($ice)"
 	    catch { remote_file build delete $executable }
 	    continue
 	}

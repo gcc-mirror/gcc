@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -1630,7 +1630,14 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->independent)
     fputs (" INDEPENDENT", dumpfile);
   if (omp_clauses->order_concurrent)
-    fputs (" ORDER(CONCURRENT)", dumpfile);
+    {
+      fputs (" ORDER(", dumpfile);
+      if (omp_clauses->order_unconstrained)
+	fputs ("UNCONSTRAINED:", dumpfile);
+      else if (omp_clauses->order_reproducible)
+	fputs ("REPRODUCIBLE:", dumpfile);
+      fputs ("CONCURRENT)", dumpfile);
+    }
   if (omp_clauses->ordered)
     {
       if (omp_clauses->orderedc)
@@ -1678,6 +1685,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_ADDR: type = "USE_DEVICE_ADDR"; break;
 	  case OMP_LIST_NONTEMPORAL: type = "NONTEMPORAL"; break;
+	  case OMP_LIST_ALLOCATE: type = "ALLOCATE"; break;
 	  case OMP_LIST_SCAN_IN: type = "INCLUSIVE"; break;
 	  case OMP_LIST_SCAN_EX: type = "EXCLUSIVE"; break;
 	  default:
@@ -1734,15 +1742,22 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fprintf (dumpfile, " BIND(%s)", type);
     }
-  if (omp_clauses->num_teams)
+  if (omp_clauses->num_teams_upper)
     {
       fputs (" NUM_TEAMS(", dumpfile);
-      show_expr (omp_clauses->num_teams);
+      if (omp_clauses->num_teams_lower)
+	{
+	  show_expr (omp_clauses->num_teams_lower);
+	  fputc (':', dumpfile);
+	}
+      show_expr (omp_clauses->num_teams_upper);
       fputc (')', dumpfile);
     }
   if (omp_clauses->device)
     {
       fputs (" DEVICE(", dumpfile);
+      if (omp_clauses->ancestor)
+	fputs ("ANCESTOR:", dumpfile);
       show_expr (omp_clauses->device);
       fputc (')', dumpfile);
     }
@@ -1796,6 +1811,10 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (')', dumpfile);
     }
+  if (omp_clauses->weak)
+    fputs (" WEAK", dumpfile);
+  if (omp_clauses->compare)
+    fputs (" COMPARE", dumpfile);
   if (omp_clauses->nogroup)
     fputs (" NOGROUP", dumpfile);
   if (omp_clauses->simd)
@@ -1887,7 +1906,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
   if (omp_clauses->atomic_op != GFC_OMP_ATOMIC_UNSET)
     {
       const char *atomic_op;
-      switch (omp_clauses->atomic_op)
+      switch (omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
 	{
 	case GFC_OMP_ATOMIC_READ: atomic_op = "READ"; break;
 	case GFC_OMP_ATOMIC_WRITE: atomic_op = "WRITE"; break;
@@ -1911,6 +1930,20 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (' ', dumpfile);
       fputs (memorder, dumpfile);
+    }
+  if (omp_clauses->fail != OMP_MEMORDER_UNSET)
+    {
+      const char *memorder;
+      switch (omp_clauses->fail)
+	{
+	case OMP_MEMORDER_ACQUIRE: memorder = "AQUIRE"; break;
+	case OMP_MEMORDER_RELAXED: memorder = "RELAXED"; break;
+	case OMP_MEMORDER_SEQ_CST: memorder = "SEQ_CST"; break;
+	default: gcc_unreachable ();
+	}
+      fputs (" FAIL(", dumpfile);
+      fputs (memorder, dumpfile);
+      putc (')', dumpfile);
     }
   if (omp_clauses->at != OMP_AT_UNSET)
     {

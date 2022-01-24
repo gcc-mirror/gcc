@@ -1,7 +1,7 @@
 /* Pass to detect and issue warnings for invalid accesses, including
    invalid or mismatched allocation/deallocation calls.
 
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -44,8 +44,5 @@ extern bool maybe_warn_for_bound (opt_code, location_t, tree, tree,
 class access_data;
 extern bool check_access (tree, tree, tree, tree, tree, access_mode,
 			  const access_data * = NULL);
-
-extern bool check_read_access (gimple *, tree, tree = NULL_TREE, int ost = 1);
-extern bool check_read_access (tree, tree, tree = NULL_TREE, int = 1);
 
 #endif   // GCC_GIMPLE_SSA_WARN_ACCESS_H

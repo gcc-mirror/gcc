@@ -1,5 +1,5 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,7 +73,6 @@ extern rtx pa_return_addr_rtx (int, rtx);
 
 extern int pa_insn_refs_are_delayed (rtx_insn *);
 extern rtx pa_get_deferred_plabel (rtx);
-extern rtx pa_maybe_emit_compare_and_swap_exchange_loop (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 extern int pa_and_mask_p (unsigned HOST_WIDE_INT);

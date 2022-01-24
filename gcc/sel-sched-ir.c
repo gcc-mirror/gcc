@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4918,9 +4918,6 @@ in_same_ebb_p (insn_t insn, insn_t succ)
 
       ptr = bb_next_bb (ptr);
     }
-
-  gcc_unreachable ();
-  return false;
 }
 
 /* Recomputes the reverse topological order for the function and

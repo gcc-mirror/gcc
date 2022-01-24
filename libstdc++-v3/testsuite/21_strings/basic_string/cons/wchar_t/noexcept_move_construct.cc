@@ -2,7 +2,7 @@
 
 // 2011-06-01  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,7 +23,6 @@
 
 typedef std::wstring wstype;
 
-// True except for COW strings with _GLIBCXX_FULLY_DYNAMIC_STRING:
 static_assert(std::is_nothrow_move_constructible<wstype>::value, "Error");
 
 // True for std::allocator because is_always_equal, but not true in general:

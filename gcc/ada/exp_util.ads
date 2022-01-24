@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,18 +164,6 @@ package Exp_Util is
    --  generalize to expressions if there is a need but this is tricky to
    --  implement because of short-circuits (among other things).
 
-   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
-   --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
-   --  Insert_Action (N, Decl), but inserts Decl outside the expression in
-   --  which N appears. This is called Insert_Declaration because the intended
-   --  use is for declarations that have no associated code. We can't go
-   --  moving other kinds of things out of the current expression, since they
-   --  could be executed conditionally (e.g. right operand of short circuit,
-   --  or THEN/ELSE of if expression). This is currently used only in
-   --  Modify_Tree_For_C mode, where it is needed because in C we have no
-   --  way of having declarations within an expression (a really annoying
-   --  limitation).
-
    procedure Insert_Library_Level_Action (N : Node_Id);
    --  This procedure inserts and analyzes the node N as an action at the
    --  library level for the current unit (i.e. it is attached to the
@@ -270,28 +258,16 @@ package Exp_Util is
    --  not install a call to Abort_Defer.
 
    procedure Build_Class_Wide_Expression
-     (Prag          : Node_Id;
-      Subp          : Entity_Id;
-      Par_Subp      : Entity_Id;
-      Adjust_Sloc   : Boolean;
-      Needs_Wrapper : out Boolean);
-   --  Build the expression for an inherited class-wide condition. Prag is
-   --  the pragma constructed from the corresponding aspect of the parent
-   --  subprogram, and Subp is the overriding operation, and Par_Subp is
-   --  the overridden operation that has the condition. Adjust_Sloc is True
-   --  when the sloc of nodes traversed should be adjusted for the inherited
-   --  pragma. The routine is also called to check whether an inherited
-   --  operation that is not overridden but has inherited conditions needs
-   --  a wrapper, because the inherited condition includes calls to other
-   --  primitives that have been overridden. In that case the first argument
-   --  is the expression of the original class-wide aspect. In SPARK_Mode, such
-   --  operation which are just inherited but have modified pre/postconditions
-   --  are illegal.
-   --  If there are calls to overridden operations in the condition, and the
-   --  pragma applies to an inherited operation, a wrapper must be built for
-   --  it to capture the new inherited condition. The flag Needs_Wrapper is
-   --  set in that case so that the wrapper can be built, when the controlling
-   --  type is frozen.
+     (Pragma_Or_Expr : Node_Id;
+      Subp           : Entity_Id;
+      Par_Subp       : Entity_Id;
+      Adjust_Sloc    : Boolean);
+   --  Build the expression for an inherited class-wide condition. Pragma_Or_
+   --  _Expr is either the pragma constructed from the corresponding aspect of
+   --  the parent subprogram or the class-wide pre/postcondition built from the
+   --  parent, Subp is the overriding operation, and Par_Subp is the overridden
+   --  operation that has the condition. Adjust_Sloc is True when the sloc of
+   --  nodes traversed should be adjusted for the inherited pragma.
 
    function Build_DIC_Call
      (Loc      : Source_Ptr;
@@ -612,7 +588,7 @@ package Exp_Util is
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class wide type, then the reference is to an
+   --  directly visible. If T is a class-wide type, then the reference is to an
    --  operation of the corresponding root type. It is an error if no primitive
    --  operation with the given name is found.
 
@@ -639,6 +615,16 @@ package Exp_Util is
    function Find_Protection_Type (Conc_Typ : Entity_Id) return Entity_Id;
    --  Given a protected type or its corresponding record, find the type of
    --  field _object.
+
+   function Find_Storage_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Entity_Id;
+   --  Given type Typ that's either a descendant of Root_Storage_Pool or else
+   --  specifies aspect Storage_Model_Type, returns the Entity_Id of the
+   --  subprogram associated with Nam, which must either be a primitive op of
+   --  the type in the case of a storage pool, or the operation corresponding
+   --  to Nam as specified in the aspect Storage_Model_Type. It is an error if
+   --  no operation corresponding to the given name is found.
 
    function Find_Hook_Context (N : Node_Id) return Node_Id;
    --  Determine a suitable node on which to attach actions related to N that
@@ -668,6 +654,7 @@ package Exp_Util is
       Related_Id    : Entity_Id := Empty;
       Is_Low_Bound  : Boolean   := False;
       Is_High_Bound : Boolean   := False;
+      Discr_Number  : Int       := 0;
       Mode          : Force_Evaluation_Mode := Relaxed);
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
@@ -688,6 +675,12 @@ package Exp_Util is
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
+   --  Discr_Number is positive when the expression is a discriminant value
+   --  in an object or component declaration. In that case Discr_Number is
+   --  the position of the corresponding discriminant in the corresponding
+   --  type declaration, and the name for the evaluated expression is built
+   --  out of the Related_Id and the Discr_Number.
+
    function Fully_Qualified_Name_String
      (E          : Entity_Id;
       Append_NUL : Boolean := True) return String_Id;
@@ -698,7 +691,7 @@ package Exp_Util is
    procedure Get_Current_Value_Condition
      (Var : Node_Id;
       Op  : out Node_Kind;
-      Val : out Node_Id);
+      Val : out Node_Id) with Post => Val /= Var;
    --  This routine processes the Current_Value field of the variable Var. If
    --  the Current_Value field is null or if it represents a known value, then
    --  on return Cond is set to N_Empty, and Val is set to Empty.
@@ -731,6 +724,10 @@ package Exp_Util is
    function Get_Index_Subtype (N : Node_Id) return Entity_Id;
    --  Used for First, Last, and Length, when the prefix is an array type.
    --  Obtains the corresponding index subtype.
+
+   function Get_Mapped_Entity (E : Entity_Id) return Entity_Id;
+   --  Return the mapped entity of E; used to check inherited class-wide
+   --  pre/postconditions.
 
    function Get_Stream_Size (E : Entity_Id) return Uint;
    --  Return the stream size value of the subtype E
@@ -911,6 +908,15 @@ package Exp_Util is
    --  Subprogram_Variant. Generate a comparison between Curr_Val and Old_Val
    --  depending on the variant mode (Increases / Decreases).
 
+   procedure Map_Formals
+     (Parent_Subp  : Entity_Id;
+      Derived_Subp : Entity_Id;
+      Force_Update : Boolean := False);
+   --  Establish the mapping from the formals of Parent_Subp to the formals
+   --  of Derived_Subp; if Force_Update is True then mapping of Parent_Subp to
+   --  Derived_Subp is also updated; used to update mapping of late-overriding
+   --  primitives of a tagged type.
+
    procedure Map_Types (Parent_Type : Entity_Id; Derived_Type : Entity_Id);
    --  Establish the following mapping between the attributes of tagged parent
    --  type Parent_Type and tagged derived type Derived_Type.
@@ -1004,6 +1010,7 @@ package Exp_Util is
       Related_Id         : Entity_Id := Empty;
       Is_Low_Bound       : Boolean   := False;
       Is_High_Bound      : Boolean   := False;
+      Discr_Number       : Int       := 0;
       Check_Side_Effects : Boolean   := True);
    --  Given the node for a subexpression, this function replaces the node if
    --  necessary by an equivalent subexpression that is guaranteed to be side
@@ -1028,6 +1035,9 @@ package Exp_Util is
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
    --
+   --  If Discr_Number is positive, the expression denotes a discrimant value
+   --  in a constraint, the suffix DISCR is used to create the external name.
+
    --  The side effects are captured using one of the following methods:
    --
    --    1) a constant initialized with the value of the subexpression
@@ -1194,5 +1204,6 @@ package Exp_Util is
 private
    pragma Inline (Duplicate_Subexpr);
    pragma Inline (Force_Evaluation);
+   pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);
 end Exp_Util;

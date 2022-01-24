@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,7 +142,7 @@ package body Sem_Ch5 is
       --  If the right-hand side of an assignment statement is a build-in-place
       --  call we cannot build in place, so we insert a temp initialized with
       --  the call, and transform the assignment statement to copy the temp.
-      --  Transform_BIP_Assignment does the tranformation, and
+      --  Transform_BIP_Assignment does the transformation, and
       --  Should_Transform_BIP_Assignment determines whether we should.
       --  The same goes for qualified expressions and conversions whose
       --  operand is such a call.
@@ -682,6 +682,7 @@ package body Sem_Ch5 is
                Ent := Lhs;
                while Nkind (Ent) in N_Has_Entity
                  and then Present (Entity (Ent))
+                 and then Is_Object (Entity (Ent))
                  and then Present (Renamed_Object (Entity (Ent)))
                loop
                   Ent := Renamed_Object (Entity (Ent));
@@ -1680,6 +1681,13 @@ package body Sem_Ch5 is
       then
          Error_Msg_N
            ("(Ada 83) case expression cannot be of a generic type", Exp);
+         return;
+
+      elsif not Extensions_Allowed
+        and then not Is_Discrete_Type (Exp_Type)
+      then
+         Error_Msg_N
+           ("expression in case statement must be of a discrete_Type", Exp);
          return;
       end if;
 
@@ -2898,8 +2906,8 @@ package body Sem_Ch5 is
       procedure Check_Predicate_Use (T : Entity_Id);
       --  Diagnose Attempt to iterate through non-static predicate. Note that
       --  a type with inherited predicates may have both static and dynamic
-      --  forms. In this case it is not sufficent to check the static predicate
-      --  function only, look for a dynamic predicate aspect as well.
+      --  forms. In this case it is not sufficient to check the static
+      --  predicate function only, look for a dynamic predicate aspect as well.
 
       procedure Process_Bounds (R : Node_Id);
       --  If the iteration is given by a range, create temporaries and
@@ -3026,6 +3034,10 @@ package body Sem_Ch5 is
                     N_Integer_Literal | N_Character_Literal
               or else Is_Entity_Name (Analyzed_Bound)
             then
+               Analyze_And_Resolve (Original_Bound, Typ);
+               return Original_Bound;
+
+            elsif Inside_Class_Condition_Preanalysis then
                Analyze_And_Resolve (Original_Bound, Typ);
                return Original_Bound;
             end if;
@@ -3333,11 +3345,17 @@ package body Sem_Ch5 is
       --  or post-condition has been expanded. Update the type of the loop
       --  variable to reflect the proper itype at each stage of analysis.
 
+      --  Loop_Nod might not be present when we are preanalyzing a class-wide
+      --  pre/postcondition since preanalysis occurs in a place unrelated to
+      --  the actual code and the quantified expression may be the outermost
+      --  expression of the class-wide condition.
+
       if No (Etype (Id))
         or else Etype (Id) = Any_Type
         or else
           (Present (Etype (Id))
             and then Is_Itype (Etype (Id))
+            and then Present (Loop_Nod)
             and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
             and then Nkind (Original_Node (Parent (Loop_Nod))) =
                                                    N_Quantified_Expression)
@@ -3542,7 +3560,7 @@ package body Sem_Ch5 is
                      Set_Is_Null_Loop (Loop_Nod);
                      Null_Range := True;
 
-                     --  Suppress other warnigns about the body of the loop, as
+                     --  Suppress other warnings about the body of the loop, as
                      --  it will never execute.
                      Set_Suppress_Loop_Warnings (Loop_Nod);
                   end if;
