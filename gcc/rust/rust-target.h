@@ -1,5 +1,5 @@
 /* rust-target.h -- Data structure definitions for target-specific Rust
-   behavior. Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   behavior. Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
