@@ -28477,9 +28477,10 @@ make_args_non_dependent (vec<tree, va_gc> *args)
    by default.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
 
 static tree
-make_auto_1 (tree name, bool set_canonical,
-	     int level = current_template_depth + 1)
+make_auto_1 (tree name, bool set_canonical, int level = -1)
 {
+  if (level == -1)
+    level = current_template_depth + 1;
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (input_location, TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
