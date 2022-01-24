@@ -1538,10 +1538,12 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 	  test[k].target_bb = n->m_case_bb;
 	  test[k].label = n->m_case_label_expr;
 	  test[k].bits = 0;
+	  test[k].prob = profile_probability::never ();
 	  count++;
 	}
 
       test[k].bits += n->get_range (n->get_low (), n->get_high ());
+      test[k].prob += n->m_prob;
 
       lo = tree_to_uhwi (int_const_binop (MINUS_EXPR, n->get_low (), minval));
       if (n->get_high () == NULL_TREE)
@@ -1629,6 +1631,11 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
 
+  profile_probability subtree_prob = m_subtree_prob;
+  profile_probability default_prob = m_default_prob;
+  if (!default_prob.initialized_p ())
+    default_prob = m_subtree_prob.invert ();
+
   if (m_handles_entire_switch && entry_test_needed)
     {
       tree range = int_const_binop (MINUS_EXPR, maxval, minval);
@@ -1638,10 +1645,11 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				    fold_convert (unsigned_index_type, range),
 				    /*simple=*/true, NULL_TREE,
 				    /*before=*/true, GSI_SAME_STMT);
-      tmp = fold_build2_loc (loc, GT_EXPR, boolean_type_node, idx, range);
+      tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+      default_prob = default_prob / 2;
       basic_block new_bb
 	= hoist_edge_and_branch_if_true (&gsi, tmp, default_bb,
-					 profile_probability::unlikely (), loc);
+					 default_prob, loc);
       gsi = gsi_last_bb (new_bb);
     }
 
@@ -1662,14 +1670,12 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   else
     csui = tmp;
 
-  profile_probability prob = profile_probability::always ();
-
   /* for each unique set of cases:
        if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
-      prob = profile_probability::always ().apply_scale (test[k].bits,
-							 bt_range);
+      profile_probability prob = test[k].prob / (subtree_prob + default_prob);
+      subtree_prob -= test[k].prob;
       bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2_loc (loc, BIT_AND_EXPR, word_type_node, csui, tmp);
@@ -1912,9 +1918,13 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
       /* Emit cluster-specific switch handling.  */
       for (unsigned i = 0; i < clusters.length (); i++)
 	if (clusters[i]->get_type () != SIMPLE_CASE)
-	  clusters[i]->emit (index_expr, index_type,
-			     gimple_switch_default_label (m_switch),
-			     m_default_bb, gimple_location (m_switch));
+	  {
+	    edge e = single_pred_edge (clusters[i]->m_case_bb);
+	    e->dest->count = e->src->count.apply_probability (e->probability);
+	    clusters[i]->emit (index_expr, index_type,
+			       gimple_switch_default_label (m_switch),
+			       m_default_bb, gimple_location (m_switch));
+	  }
     }
 
   fix_phi_operands_for_edges ();
@@ -2162,6 +2172,7 @@ switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->dest->count = bb->count.apply_probability (prob.invert ());
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   true_edge->probability = prob;
@@ -2192,6 +2203,7 @@ switch_decision_tree::do_jump_if_equal (basic_block bb, tree op0, tree op1,
   edge false_edge = split_block (bb, cond);
   false_edge->flags = EDGE_FALSE_VALUE;
   false_edge->probability = prob.invert ();
+  false_edge->dest->count = bb->count.apply_probability (prob.invert ());
 
   edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
   true_edge->probability = prob;
@@ -2227,7 +2239,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 			     node->m_c->m_case_bb, p, loc);
       /* Since this case is taken at this point, reduce its weight from
 	 subtree_weight.  */
-      node->m_c->m_subtree_prob -= p;
+      node->m_c->m_subtree_prob -= node->m_c->m_prob;
 
       if (node->m_left != NULL && node->m_right != NULL)
 	{
@@ -2246,6 +2258,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
 				     node->m_right->m_c->m_case_bb, p, loc);
+	      node->m_c->m_subtree_prob -= node->m_right->m_c->m_prob;
 
 	      p = (node->m_left->m_c->m_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
@@ -2261,6 +2274,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 
 	      p = ((node->m_right->m_c->m_subtree_prob + default_prob / 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
+	      test_bb->count = bb->count.apply_probability (p);
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
 					    GT_EXPR, test_bb, p, loc);
 	      default_prob /= 2;
@@ -2347,21 +2361,28 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	 is the one to branch to.  */
       if (node->has_child () || node->m_c->get_type () != SIMPLE_CASE)
 	{
+	  bool is_bt = node->m_c->get_type () == BIT_TEST;
+	  int parts = is_bt ? 3 : 2;
+
 	  /* Branch to a label where we will handle it later.  */
 	  basic_block test_bb = split_edge (single_succ_edge (bb));
 	  redirect_edge_succ (single_pred_edge (test_bb),
 			      single_succ_edge (bb)->dest);
 
+	  profile_probability right_prob = profile_probability::never ();
+	  if (node->m_right)
+	    right_prob = node->m_right->m_c->m_subtree_prob;
+	  p = ((right_prob + default_prob / parts)
+	       / (node->m_c->m_subtree_prob + default_prob));
+	  test_bb->count = bb->count.apply_probability (p);
 
-	   profile_probability right_prob = profile_probability::never ();
-	   if (node->m_right)
-	     right_prob = node->m_right->m_c->m_subtree_prob;
-	   p = ((right_prob + default_prob / 2)
-		/ (node->m_c->m_subtree_prob + default_prob));
+	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					GT_EXPR, test_bb, p, loc);
 
-	   bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					 GT_EXPR, test_bb, p, loc);
-	   default_prob /= 2;
+	  default_prob /= parts;
+	  node->m_c->m_subtree_prob -= right_prob;
+	  if (is_bt)
+	    node->m_c->m_default_prob = default_prob;
 
 	   /* Value belongs to this node or to the left-hand subtree.  */
 	   p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
