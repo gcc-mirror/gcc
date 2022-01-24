@@ -27,6 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef OPTION_MUSL
 #define OPTION_MUSL 0
 #endif
+#ifndef OPTION_MUSL_P
+#define OPTION_MUSL_P(opts) 0
+#endif
 
 #define SIG_ATOMIC_TYPE "int"
 

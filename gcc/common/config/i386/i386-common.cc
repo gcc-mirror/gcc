@@ -1717,8 +1717,8 @@ static bool
 ix86_supports_split_stack (bool report,
 			   struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
-  if (opts->x_linux_libc != LIBC_GLIBC)
+#if defined(TARGET_THREAD_SPLIT_STACK_OFFSET) && defined(OPTION_GLIBC_P)
+  if (!OPTION_GLIBC_P (opts))
 #endif
     {
       if (report)
