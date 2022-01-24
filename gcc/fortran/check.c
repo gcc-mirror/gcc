@@ -4336,6 +4336,9 @@ gfc_check_norm2 (gfc_expr *array, gfc_expr *dim)
   if (!array_check (array, 0))
     return false;
 
+  if (!dim_check (dim, 1, false))
+    return false;
+
   if (!dim_rank_check (dim, array, false))
     return false;
 
@@ -4472,6 +4475,9 @@ gfc_check_parity (gfc_expr *mask, gfc_expr *dim)
     return false;
 
   if (!array_check (mask, 0))
+    return false;
+
+  if (!dim_check (dim, 1, false))
     return false;
 
   if (!dim_rank_check (dim, mask, false))
