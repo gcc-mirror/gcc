@@ -9789,7 +9789,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
 	   && trivial_fn_p (fn))
     {
-      tree to = cp_build_fold_indirect_ref (argarray[0]);
+      /* Don't use cp_build_fold_indirect_ref, op= returns an lvalue even if
+	 the object argument isn't one.  */
+      tree to = cp_build_indirect_ref (input_location, argarray[0],
+				       RO_ARROW, complain);
       tree type = TREE_TYPE (to);
       tree as_base = CLASSTYPE_AS_BASE (type);
       tree arg = argarray[1];
