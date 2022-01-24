@@ -718,9 +718,15 @@ class GitCommit:
                         self.changelog_entries.append(entry)
                     # strip prefix of the file
                     assert file.startswith(entry.folder)
-                    file = file[len(entry.folder):].lstrip('/')
-                    entry.lines.append('\t* %s: New file.' % file)
-                    entry.files.append(file)
+                    # do not allow auto-addition of New files
+                    # for the top-level folder
+                    if entry.folder:
+                        file = file[len(entry.folder):].lstrip('/')
+                        entry.lines.append('\t* %s: New file.' % file)
+                        entry.files.append(file)
+                    else:
+                        msg = 'new file in the top-level folder not mentioned in a ChangeLog'
+                        self.errors.append(Error(msg, file))
                 else:
                     used_pattern = [p for p in mentioned_patterns
                                     if file.startswith(p)]
