@@ -421,6 +421,14 @@ enumeration values with the same set bitwise ored together.
 Or option's argument can be a comma separated list of strings where
 each string is from a different @code{Set(@var{number})}.
 
+@item EnumBitSet
+Must be used together with the @code{Enum(@var{name})} property.
+Similar to @samp{EnumSet}, but corresponding @samp{Enum} record must
+not use @code{Set} properties, each @code{EnumValue} should have
+@code{Value} that is a power of 2, each value is treated as its own
+set and its value as the set's mask, so there are no mutually
+exclusive arguments.
+
 @item Defer
 The option should be stored in a vector, specified with @code{Var},
 for later processing.

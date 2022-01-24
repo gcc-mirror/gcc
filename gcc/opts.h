@@ -52,6 +52,18 @@ enum cl_var_type {
   CLVC_DEFER
 };
 
+/* Values for var_value member of CLVC_ENUM.  */
+enum cl_enum_var_value {
+  /* Enum without EnumSet or EnumBitSet.  */
+  CLEV_NORMAL,
+
+  /* EnumSet.  */
+  CLEV_SET,
+
+  /* EnumBitSet.  */
+  CLEV_BITSET
+};
+
 struct cl_option
 {
   /* Text of the option, including initial '-'.  */

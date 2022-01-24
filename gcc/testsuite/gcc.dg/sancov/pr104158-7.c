@@ -1,5 +1,11 @@
 /* PR sanitizer/104158 */
 /* { dg-do compile } */
 /* { dg-options "-fsanitize-coverage=trace-cmp,trace-cmp -fdump-tree-optimized" } */
-/* { dg-error "invalid argument in option '-fsanitize-coverage=trace-cmp,trace-cmp'" "" { target *-*-* } 0 } */
-/* { dg-message "'trace-cmp' specified multiple times in the same option" "" { target *-*-* } 0 } */
+/* { dg-final { scan-tree-dump "__sanitizer_cov_trace_cmp" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "__sanitizer_cov_trace_pc" "optimized" } } */
+
+int
+foo (int a, int b)
+{
+  return a == b;
+}

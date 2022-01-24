@@ -3705,13 +3705,14 @@ test_get_option_html_page ()
 #endif
 }
 
-/* Verify EnumSet requirements.  */
+/* Verify EnumSet and EnumBitSet requirements.  */
 
 static void
 test_enum_sets ()
 {
   for (unsigned i = 0; i < cl_options_count; ++i)
-    if (cl_options[i].var_type == CLVC_ENUM && cl_options[i].var_value)
+    if (cl_options[i].var_type == CLVC_ENUM
+	&& cl_options[i].var_value != CLEV_NORMAL)
       {
 	const struct cl_enum *e = &cl_enums[cl_options[i].var_enum];
 	unsigned HOST_WIDE_INT used_sets = 0;
@@ -3720,12 +3721,22 @@ test_enum_sets ()
 	for (unsigned j = 0; e->values[j].arg; ++j)
 	  {
 	    unsigned set = e->values[j].flags >> CL_ENUM_SET_SHIFT;
+	    if (cl_options[i].var_value == CLEV_BITSET)
+	      {
+		/* For EnumBitSet Set shouldn't be used and Value should
+		   be a power of two.  */
+		ASSERT_TRUE (set == 0);
+		ASSERT_TRUE (pow2p_hwi (e->values[j].value));
+		continue;
+	      }
 	    /* Test that enumerators referenced in EnumSet have all
 	       Set(n) on them within the valid range.  */
 	    ASSERT_TRUE (set >= 1 && set <= HOST_BITS_PER_WIDE_INT);
 	    highest_set = MAX (set, highest_set);
 	    used_sets |= HOST_WIDE_INT_1U << (set - 1);
 	  }
+	if (cl_options[i].var_value == CLEV_BITSET)
+	  continue;
 	/* If there is just one set, no point to using EnumSet.  */
 	ASSERT_TRUE (highest_set >= 2);
 	/* Test that there are no gaps in between the sets.  */

@@ -811,8 +811,8 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
     {
       const struct cl_enum *e = &cl_enums[option->var_enum];
 
-      gcc_assert (option->var_value || value == 1);
-      if (option->var_value)
+      gcc_assert (option->var_value != CLEV_NORMAL || value == 1);
+      if (option->var_value != CLEV_NORMAL)
 	{
 	  const char *p = arg;
 	  HOST_WIDE_INT sum_value = 0;
@@ -834,19 +834,30 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
 		  break;
 		}
 
-	      unsigned set = e->values[idx].flags >> CL_ENUM_SET_SHIFT;
-	      gcc_checking_assert (set >= 1 && set <= HOST_BITS_PER_WIDE_INT);
-	      if ((used_sets & (HOST_WIDE_INT_1U << (set - 1))) != 0)
-		{
-		  errors |= CL_ERR_ENUM_SET_ARG;
-		  break;
-		}
-	      used_sets |= HOST_WIDE_INT_1U << (set - 1);
-
 	      HOST_WIDE_INT this_mask = 0;
-	      for (int i = 0; e->values[i].arg != NULL; i++)
-		if (set == (e->values[i].flags >> CL_ENUM_SET_SHIFT))
-		  this_mask |= e->values[i].value;
+	      if (option->var_value == CLEV_SET)
+		{
+		  unsigned set = e->values[idx].flags >> CL_ENUM_SET_SHIFT;
+		  gcc_checking_assert (set >= 1
+				       && set <= HOST_BITS_PER_WIDE_INT);
+		  if ((used_sets & (HOST_WIDE_INT_1U << (set - 1))) != 0)
+		    {
+		      errors |= CL_ERR_ENUM_SET_ARG;
+		      break;
+		    }
+		  used_sets |= HOST_WIDE_INT_1U << (set - 1);
+
+		  for (int i = 0; e->values[i].arg != NULL; i++)
+		    if (set == (e->values[i].flags >> CL_ENUM_SET_SHIFT))
+		      this_mask |= e->values[i].value;
+		}
+	      else
+		{
+		  gcc_assert (option->var_value == CLEV_BITSET
+			      && ((e->values[idx].flags >> CL_ENUM_SET_SHIFT)
+				  == 0));
+		  this_mask = this_value;
+		}
 
 	      sum_value |= this_value;
 	      mask |= this_mask;
@@ -1428,6 +1439,14 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
 	      arg = narg;
 	      errors = CL_ERR_ENUM_ARG;
 	      break;
+	    }
+
+	  if (option->var_value == CLEV_BITSET)
+	    {
+	      if (q == NULL)
+		break;
+	      p = q + 1;
+	      continue;
 	    }
 
 	  unsigned set = e->values[idx].flags >> CL_ENUM_SET_SHIFT;

@@ -1072,17 +1072,17 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined Enum(sanitize_coverage) Var(flag_sanitize_coverage) EnumSet
+Common Joined Enum(sanitize_coverage) Var(flag_sanitize_coverage) EnumBitSet
 Select type of coverage sanitization.
 
 Enum
 Name(sanitize_coverage) Type(int)
 
 EnumValue
-Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC) Set(1)
+Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC)
 
 EnumValue
-Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP) Set(2)
+Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP)
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
