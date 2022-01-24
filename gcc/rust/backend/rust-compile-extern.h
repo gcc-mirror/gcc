@@ -37,10 +37,9 @@ class CompileExternItem : public HIRCompileBase
 
 public:
   static void compile (HIR::ExternalItem *item, Context *ctx,
-		       bool compile_fns = true,
 		       TyTy::BaseType *concrete = nullptr)
   {
-    CompileExternItem compiler (ctx, compile_fns, concrete);
+    CompileExternItem compiler (ctx, concrete);
     item->accept_vis (compiler);
   }
 
@@ -70,9 +69,6 @@ public:
 
   void visit (HIR::ExternalFunctionItem &function) override
   {
-    if (!compile_fns)
-      return;
-
     TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
@@ -146,11 +142,10 @@ public:
   }
 
 private:
-  CompileExternItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete)
-    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete)
+  CompileExternItem (Context *ctx, TyTy::BaseType *concrete)
+    : HIRCompileBase (ctx), concrete (concrete)
   {}
 
-  bool compile_fns;
   TyTy::BaseType *concrete;
 };
 
