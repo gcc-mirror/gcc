@@ -4524,6 +4524,8 @@ static const char *const omp_device_selectors[] = {
 static const char *const omp_implementation_selectors[] = {
   "vendor", "extension", "atomic_default_mem_order", "unified_address",
   "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
+static const char *const omp_target_device_selectors[] = {
+  "device_num", "kind", "isa", "arch", NULL };
 static const char *const omp_user_selectors[] = {
   "condition", NULL };
 
@@ -4581,6 +4583,13 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	  property_limit = 3;
 	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
+	case 't': /* target_device */
+	  selectors = omp_target_device_selectors;
+	  allow_score = false;
+	  allow_user = true;
+	  property_limit = 4;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
+	  break;
 	case 'u': /* user */
 	  selectors = omp_user_selectors;
 	  property_limit = 1;
@@ -4615,6 +4624,11 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
 	  && oss->trait_set_selector_name[0] == 'i'
 	  && strcmp (selector, "atomic_default_mem_order") == 0)
 	property_kind = CTX_PROPERTY_ID;
+
+      if (property_kind == CTX_PROPERTY_NAME_LIST
+	  && oss->trait_set_selector_name[0] == 't'
+	  && strcmp (selector, "device_num") == 0)
+	property_kind = CTX_PROPERTY_EXPR;
 
       if (gfc_match (" (") == MATCH_YES)
 	{
@@ -4804,13 +4818,14 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
      user  */
 
 match
-gfc_match_omp_context_selector_specification (gfc_omp_set_selector **oss_head)
+gfc_match_omp_context_selector_specification (gfc_omp_set_selector **oss_head,
+					      bool metadirective_p = false)
 {
   do
     {
       match m;
-      const char *selector_sets[] = { "construct", "device",
-				      "implementation", "user" };
+      const char *selector_sets[] = { "construct", "device", "implementation",
+				      "target_device", "user" };
       const int selector_set_count
 	= sizeof (selector_sets) / sizeof (*selector_sets);
       int i;
@@ -4822,10 +4837,15 @@ gfc_match_omp_context_selector_specification (gfc_omp_set_selector **oss_head)
 	  if (strcmp (buf, selector_sets[i]) == 0)
 	    break;
 
-      if (m != MATCH_YES || i == selector_set_count)
+      if (m != MATCH_YES || i == selector_set_count
+	  || (!metadirective_p && strcmp (buf, "target_device") == 0))
 	{
-	  gfc_error ("expected 'construct', 'device', 'implementation' or "
-		     "'user' at %C");
+	  if (metadirective_p)
+	    gfc_error ("expected 'construct', 'device', 'implementation', "
+		       "'target_device' or 'user' at %C");
+	  else
+	    gfc_error ("expected 'construct', 'device', 'implementation', "
+		       "or 'user' at %C");
 	  return MATCH_ERROR;
 	}
 
@@ -4999,7 +5019,7 @@ match_omp_metadirective (bool begin_p)
 
       if (!default_p)
 	{
-	  if (gfc_match_omp_context_selector_specification (&selectors)
+	  if (gfc_match_omp_context_selector_specification (&selectors, true)
 	      != MATCH_YES)
 	    return MATCH_ERROR;
 
