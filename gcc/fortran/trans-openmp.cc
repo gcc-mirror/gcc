@@ -7844,6 +7844,8 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
       return gfc_trans_omp_master_masked_taskloop (code, code->op);
+    case EXEC_OMP_METADIRECTIVE:
+      return gfc_trans_omp_metadirective (code);
     case EXEC_OMP_ORDERED:
       return gfc_trans_omp_ordered (code);
     case EXEC_OMP_PARALLEL:
@@ -7935,6 +7937,87 @@ gfc_trans_omp_declare_simd (gfc_namespace *ns)
     }
 }
 
+static tree
+gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
+{
+  tree set_selectors = NULL_TREE;
+  gfc_omp_set_selector *oss;
+
+  for (oss = gfc_selectors; oss; oss = oss->next)
+    {
+      tree selectors = NULL_TREE;
+      gfc_omp_selector *os;
+      for (os = oss->trait_selectors; os; os = os->next)
+	{
+	  tree properties = NULL_TREE;
+	  gfc_omp_trait_property *otp;
+
+	  for (otp = os->properties; otp; otp = otp->next)
+	    {
+	      switch (otp->property_kind)
+		{
+		case CTX_PROPERTY_USER:
+		case CTX_PROPERTY_EXPR:
+		  {
+		    gfc_se se;
+		    gfc_init_se (&se, NULL);
+		    gfc_conv_expr (&se, otp->expr);
+		    properties = tree_cons (NULL_TREE, se.expr,
+					    properties);
+		  }
+		  break;
+		case CTX_PROPERTY_ID:
+		  properties = tree_cons (get_identifier (otp->name),
+					  NULL_TREE, properties);
+		  break;
+		case CTX_PROPERTY_NAME_LIST:
+		  {
+		    tree prop = NULL_TREE, value = NULL_TREE;
+		    if (otp->is_name)
+		      prop = get_identifier (otp->name);
+		    else
+		      {
+			value = gfc_conv_constant_to_tree (otp->expr);
+
+			/* The string length is expected to include the null
+			   terminator in context selectors.  This is safe as
+			   build_string always null-terminates strings.  */
+			++TREE_STRING_LENGTH (value);
+		      }
+
+		    properties = tree_cons (prop, value, properties);
+		  }
+		  break;
+		case CTX_PROPERTY_SIMD:
+		  properties = gfc_trans_omp_clauses (NULL, otp->clauses,
+						      where, true);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+
+	  if (os->score)
+	    {
+	      gfc_se se;
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr (&se, os->score);
+	      properties = tree_cons (get_identifier (" score"),
+				      se.expr, properties);
+	    }
+
+	  selectors = tree_cons (get_identifier (os->trait_selector_name),
+				 properties, selectors);
+	}
+
+      set_selectors
+	= tree_cons (get_identifier (oss->trait_set_selector_name),
+		     selectors, set_selectors);
+    }
+
+  return set_selectors;
+}
+
 void
 gfc_trans_omp_declare_variant (gfc_namespace *ns)
 {
@@ -8010,73 +8093,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name)))
 	continue;
 
-      tree set_selectors = NULL_TREE;
-      gfc_omp_set_selector *oss;
-
-      for (oss = odv->set_selectors; oss; oss = oss->next)
-	{
-	  tree selectors = NULL_TREE;
-	  gfc_omp_selector *os;
-	  for (os = oss->trait_selectors; os; os = os->next)
-	    {
-	      tree properties = NULL_TREE;
-	      gfc_omp_trait_property *otp;
-
-	      for (otp = os->properties; otp; otp = otp->next)
-		{
-		  switch (otp->property_kind)
-		    {
-		    case CTX_PROPERTY_USER:
-		    case CTX_PROPERTY_EXPR:
-		      {
-			gfc_se se;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, otp->expr);
-			properties = tree_cons (NULL_TREE, se.expr,
-						properties);
-		      }
-		      break;
-		    case CTX_PROPERTY_ID:
-		      properties = tree_cons (get_identifier (otp->name),
-					      NULL_TREE, properties);
-		      break;
-		    case CTX_PROPERTY_NAME_LIST:
-		      {
-			tree prop = NULL_TREE, value = NULL_TREE;
-			if (otp->is_name)
-			  prop = get_identifier (otp->name);
-			else
-			  value = gfc_conv_constant_to_tree (otp->expr);
-
-			properties = tree_cons (prop, value, properties);
-		      }
-		      break;
-		    case CTX_PROPERTY_SIMD:
-		      properties = gfc_trans_omp_clauses (NULL, otp->clauses,
-							  odv->where, true);
-		      break;
-		    default:
-		      gcc_unreachable ();
-		    }
-		}
-
-	      if (os->score)
-		{
-		  gfc_se se;
-		  gfc_init_se (&se, NULL);
-		  gfc_conv_expr (&se, os->score);
-		  properties = tree_cons (get_identifier (" score"),
-					  se.expr, properties);
-		}
-
-	      selectors = tree_cons (get_identifier (os->trait_selector_name),
-				     properties, selectors);
-	    }
-
-	  set_selectors
-	    = tree_cons (get_identifier (oss->trait_set_selector_name),
-			 selectors, set_selectors);
-	}
+      tree set_selectors = gfc_trans_omp_set_selector (odv->set_selectors,
+						       odv->where);
 
       const char *variant_proc_name = odv->variant_proc_symtree->name;
       gfc_symbol *variant_proc_sym = odv->variant_proc_symtree->n.sym;
@@ -8137,4 +8155,42 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	    }
 	}
     }
+}
+
+tree
+gfc_trans_omp_metadirective (gfc_code *code)
+{
+  gfc_omp_metadirective_clause *clause = code->ext.omp_metadirective_clauses;
+
+  tree metadirective_tree = make_node (OMP_METADIRECTIVE);
+  SET_EXPR_LOCATION (metadirective_tree, gfc_get_location (&code->loc));
+  TREE_TYPE (metadirective_tree) = void_type_node;
+  OMP_METADIRECTIVE_CLAUSES (metadirective_tree) = NULL_TREE;
+
+  tree tree_body = NULL_TREE;
+
+  while (clause)
+    {
+      tree selectors = gfc_trans_omp_set_selector (clause->selectors,
+						   clause->where);
+      gfc_code *next_code = clause->code->next;
+      if (next_code && tree_body == NULL_TREE)
+	tree_body = gfc_trans_code (next_code);
+
+      if (next_code)
+	clause->code->next = NULL;
+      tree directive = gfc_trans_code (clause->code);
+      if (next_code)
+	clause->code->next = next_code;
+
+      tree body = next_code ? tree_body : NULL_TREE;
+      tree variant = build_tree_list (selectors, build_tree_list (directive, body));
+      OMP_METADIRECTIVE_CLAUSES (metadirective_tree)
+	= chainon (OMP_METADIRECTIVE_CLAUSES (metadirective_tree), variant);
+      clause = clause->next;
+    }
+
+  /* TODO: Resolve the metadirective here if possible.  */
+
+  return metadirective_tree;
 }

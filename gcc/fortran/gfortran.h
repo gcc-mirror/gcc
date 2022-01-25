@@ -317,6 +317,7 @@ enum gfc_statement
   ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD, ST_OMP_MASKED_TASKLOOP,
   ST_OMP_END_MASKED_TASKLOOP, ST_OMP_MASKED_TASKLOOP_SIMD,
   ST_OMP_END_MASKED_TASKLOOP_SIMD, ST_OMP_SCOPE, ST_OMP_END_SCOPE,
+  ST_OMP_METADIRECTIVE, ST_OMP_BEGIN_METADIRECTIVE, ST_OMP_END_METADIRECTIVE,
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE
@@ -1691,6 +1692,17 @@ typedef struct gfc_omp_declare_variant
 gfc_omp_declare_variant;
 #define gfc_get_omp_declare_variant() XCNEW (gfc_omp_declare_variant)
 
+typedef struct gfc_omp_metadirective_clause
+{
+  struct gfc_omp_metadirective_clause *next;
+  locus where; /* Where the metadirective clause occurred.  */
+
+  gfc_omp_set_selector *selectors;
+  enum gfc_statement stmt;
+  struct gfc_code *code;
+
+} gfc_omp_metadirective_clause;
+#define gfc_get_omp_metadirective_clause() XCNEW (gfc_omp_metadirective_clause)
 
 typedef struct gfc_omp_udr
 {
@@ -1739,6 +1751,7 @@ typedef struct gfc_st_label
   locus where;
 
   gfc_namespace *ns;
+  int omp_region;
 }
 gfc_st_label;
 
@@ -2976,6 +2989,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
+  EXEC_OMP_METADIRECTIVE,
   EXEC_OMP_ERROR
 };
 
@@ -3034,6 +3048,7 @@ typedef struct gfc_code
     gfc_omp_clauses *omp_clauses;
     const char *omp_name;
     gfc_omp_namelist *omp_namelist;
+    gfc_omp_metadirective_clause *omp_metadirective_clauses;
     bool omp_bool;
   }
   ext;		/* Points to additional structures required by statement */
@@ -3614,6 +3629,7 @@ void gfc_free_omp_declare_variant_list (gfc_omp_declare_variant *list);
 void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
 void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);
+void gfc_free_omp_metadirective_clauses (gfc_omp_metadirective_clause *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
 void gfc_resolve_omp_assumptions (gfc_omp_assumptions *);
 void gfc_resolve_omp_directive (gfc_code *, gfc_namespace *);
@@ -3891,6 +3907,8 @@ void debug (gfc_expr *);
 bool gfc_parse_file (void);
 void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
+gfc_statement match_omp_directive (void);
+bool is_omp_declarative_stmt (gfc_statement);
 
 /* dependency.cc */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);

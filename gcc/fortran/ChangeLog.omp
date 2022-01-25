@@ -1,3 +1,79 @@
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* decl.cc (gfc_match_end): Handle COMP_OMP_METADIRECTIVE and
+	COMP_OMP_BEGIN_METADIRECTIVE.
+	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_METADIRECTIVE.
+	(show_code_node): Handle EXEC_OMP_METADIRECTIVE.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_METADIRECTIVE,
+	ST_OMP_BEGIN_METADIRECTIVE and ST_OMP_END_METADIRECTIVE.
+	(struct gfc_omp_metadirective_clause): New structure.
+	(gfc_get_omp_metadirective_clause): New macro.
+	(struct gfc_st_label): Add omp_region field.
+	(enum gfc_exec_op): Add EXEC_OMP_METADIRECTIVE.
+	(struct gfc_code): Add omp_metadirective_clauses field.
+	(gfc_free_omp_metadirective_clauses): New prototype.
+	(match_omp_directive): New prototype.
+	(is_omp_declarative_stmt): New prototype.
+	* io.cc (format_asterisk): Initialize omp_region field.
+	* match.h (gfc_match_omp_begin_metadirective): New prototype.
+	(gfc_match_omp_metadirective): New prototype.
+	* openmp.cc (gfc_match_omp_eos): Match ')' in context selectors.
+	(gfc_free_omp_metadirective_clauses): New.
+	(gfc_match_omp_clauses): Remove context_selector argument.  Rely on
+	gfc_match_omp_eos to match end of clauses.
+	(match_omp): Remove extra argument to gfc_match_omp_clauses.
+	(gfc_match_omp_context_selector): Remove extra argument to
+	gfc_match_omp_clauses.  Set gfc_matching_omp_context_selector
+	before call to gfc_match_omp_clauses and reset after.
+	(gfc_match_omp_context_selector_specification): Modify to take a
+	gfc_omp_set_selector** argument.
+	(gfc_match_omp_declare_variant): Pass set_selectors to
+	gfc_match_omp_context_selector_specification.
+	(match_omp_metadirective): New.
+	(gfc_match_omp_begin_metadirective): New.
+	(gfc_match_omp_metadirective): New.
+	(resolve_omp_metadirective): New.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_METADIRECTIVE.
+	* parse.cc (gfc_matching_omp_context_selector): New variable.
+	(gfc_in_metadirective_body): New variable.
+	(gfc_omp_region_count): New variable.
+	(decode_omp_directive): Match 'begin metadirective',
+	'end metadirective' and 'metadirective'.
+	(match_omp_directive): New.
+	(case_omp_structured_block): New.
+	(case_omp_do): New.
+	(gfc_ascii_statement): Handle metadirective statements.
+	(gfc_omp_end_stmt): New.
+	(parse_omp_do): Delegate to gfc_omp_end_stmt.
+	(parse_omp_structured_block): Delegate to gfc_omp_end_stmt. Handle
+	ST_OMP_END_METADIRECTIVE.
+	(parse_omp_metadirective_body): New.
+	(parse_executable): Delegate to case_omp_structured_block and
+	case_omp_do.  Return after one statement if compiling regular
+	metadirective.  Handle metadirective statements.
+	(gfc_parse_file): Reset gfc_omp_region_count,
+	gfc_in_metadirective_body and gfc_matching_omp_context_selector.
+	(is_omp_declarative_stmt): New.
+	* parse.h (enum gfc_compile_state): Add COMP_OMP_METADIRECTIVE and
+	COMP_OMP_BEGIN_METADIRECTIVE.
+	(gfc_omp_end_stmt): New prototype.
+	(gfc_matching_omp_context_selector): New declaration.
+	(gfc_in_metadirective_body): New declaration.
+	(gfc_omp_region_count): New declaration.
+	* resolve.cc (gfc_resolve_code): Handle EXEC_OMP_METADIRECTIVE.
+	* st.cc (gfc_free_statement): Handle EXEC_OMP_METADIRECTIVE.
+	* symbol.cc (compare_st_labels): Take omp_region into account.
+	(gfc_get_st_labels): Incorporate omp_region into label.
+	* trans-decl.ccc (gfc_get_label_decl): Add omp_region into translated
+	label name.
+	* trans-openmp.ccc (gfc_trans_omp_directive): Handle
+	EXEC_OMP_METADIRECTIVE.
+	(gfc_trans_omp_set_selector): Hoist code from...
+	(gfc_trans_omp_declare_variant): ...here.
+	(gfc_trans_omp_metadirective): New.
+	* trans-stmt.h (gfc_trans_omp_metadirective): New prototype.
+	* trans.cc (trans_code): Handle EXEC_OMP_METADIRECTIVE.
+
 2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

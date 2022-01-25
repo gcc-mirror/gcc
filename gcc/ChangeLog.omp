@@ -1,5 +1,11 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* omp-general.cc (omp_check_context_selector): Revert string length
+	check.
+	(omp_context_name_list_prop): Likewise.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* Makefile.in (OBJS): Add omp-expand-metadirective.o.
 	* gimple-streamer-in.cc (input_gimple_stmt): Add case for
 	GIMPLE_OMP_METADIRECTIVE.  Handle metadirective labels.

@@ -326,7 +326,10 @@ gfc_get_label_decl (gfc_st_label * lp)
       gcc_assert (lp != NULL && lp->value <= MAX_LABEL_VALUE);
 
       /* Build a mangled name for the label.  */
-      sprintf (label_name, "__label_%.6d", lp->value);
+      if (lp->omp_region)
+	sprintf (label_name, "__label_%d_%.6d", lp->omp_region, lp->value);
+      else
+	sprintf (label_name, "__label_%.6d", lp->value);
 
       /* Build the LABEL_DECL node.  */
       label_decl = gfc_build_label_decl (get_identifier (label_name));
