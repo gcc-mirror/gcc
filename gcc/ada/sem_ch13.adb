@@ -6550,22 +6550,47 @@ package body Sem_Ch13 is
                     ("\?j?use interrupt procedure instead", N);
                end if;
 
-            --  Case of an address clause for a class-wide object, which is
-            --  considered erroneous.
-
-            elsif Is_Class_Wide_Type (Etype (U_Ent)) then
-               Error_Msg_NE
-                 ("??class-wide object & must not be overlaid", Nam, U_Ent);
-               Error_Msg_N
-                 ("\??Program_Error will be raised at run time", Nam);
-               Insert_Action (Declaration_Node (U_Ent),
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Overlaid_Controlled_Object));
-               return;
-
             --  Case of address clause for an object
 
             elsif Ekind (U_Ent) in E_Constant | E_Variable then
+
+               --  Disallow case of an address clause for an object of an
+               --  indefinite subtype which takes its bounds/discriminant/tag
+               --  from its initial value. Without this, we get a Gigi
+               --  assertion failure for things like
+               --    X : String := Some_Function (...) with Address => ...;
+               --  where the result subtype of the function is unconstrained.
+               --
+               --  We want to reject two cases: the class-wide case, and the
+               --  case where the FE conjures up a renaming declaration and
+               --  would then otherwise generate an address specification for
+               --  that renaming (which is a malformed tree, which is why Gigi
+               --  complains).
+
+               if Is_Class_Wide_Type (Etype (U_Ent)) then
+                  Error_Msg_N
+                    ("address specification not supported for class-wide " &
+                     "object declaration", Nam);
+                  return;
+               elsif Is_Constr_Subt_For_U_Nominal (Etype (U_Ent))
+                 and then
+                   Nkind (Parent (U_Ent)) = N_Object_Renaming_Declaration
+               then
+                  --  Confirm accuracy of " and dynamic size" message text
+                  --  before including it. We want to include that text when
+                  --  it is correct because it may be useful to the reader.
+                  --  The case where we omit that part of the message text
+                  --  might be dead code, but let's not rely on that.
+
+                  Error_Msg_N
+                    ("address specification not supported for object " &
+                     "declaration with indefinite nominal subtype" &
+                     (if Size_Known_At_Compile_Time (Etype (U_Ent))
+                      then ""
+                      else " and dynamic size"), Nam);
+                  return;
+               end if;
+
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;

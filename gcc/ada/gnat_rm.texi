@@ -20176,9 +20176,20 @@ check Alignment_Check is suppressed, or if
 @code{pragma Restrictions (No_Elaboration_Code)} is in effect. It is also
 suppressed by default on non-strict alignment machines (such as the x86).
 
-Finally, GNAT does not permit overlaying of objects of class-wide types. In
-most cases, the compiler can detect an attempt at such overlays and will
-generate a warning at compile time and a Program_Error exception at run time.
+In some cases, GNAT does not support an address specification (using either
+form of aspect specification syntax) for the declaration of an object that has
+an indefinite nominal subtype. An object declaration has an indefinite
+nominal subtype if it takes its bounds (for an array type), discriminant
+values (for a discriminated type whose discriminants lack defaults), or tag
+(for a class-wide type) from its initial value, as in
+
+@example
+X : String := Some_Function_Call;
+-- String has no constraint, so bounds for X come from function call
+@end example
+
+This restriction does not apply if the size of the object’s initial value is
+known at compile time and the type of the object is not class-wide.
 
 @geindex Export
 
