@@ -3880,9 +3880,17 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 				    bool maybe, bool equality /* = false */)
 {
   /* Avoid printing the unhelpful "<unknown>" in the diagnostics.  */
-  if (ref && TREE_CODE (ref) == SSA_NAME
-      && (!SSA_NAME_VAR (ref) || DECL_ARTIFICIAL (SSA_NAME_VAR (ref))))
-    ref = NULL_TREE;
+  if (ref && TREE_CODE (ref) == SSA_NAME)
+    {
+      tree var = SSA_NAME_VAR (ref);
+      if (!var)
+	ref = NULL_TREE;
+      /* Don't warn for cases like when a cdtor returns 'this' on ARM.  */
+      else if (warning_suppressed_p (var, OPT_Wuse_after_free))
+	return;
+      else if (DECL_ARTIFICIAL (var))
+	ref = NULL_TREE;
+    }
 
   location_t use_loc = gimple_location (use_stmt);
   if (use_loc == UNKNOWN_LOCATION)

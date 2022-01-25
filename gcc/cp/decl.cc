@@ -17315,6 +17315,7 @@ finish_constructor_body (void)
       add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
       val = DECL_ARGUMENTS (current_function_decl);
+      suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
@@ -17408,6 +17409,7 @@ finish_destructor_body (void)
       tree val;
 
       val = DECL_ARGUMENTS (current_function_decl);
+      suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
