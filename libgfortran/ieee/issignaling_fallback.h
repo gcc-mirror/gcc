@@ -137,7 +137,7 @@ __issignalingl (long double x)
   return ret || (((exi & 0x7fff) == 0x7fff) && (hxi > 0xc0000000));
 }
 
-#elif (__LDBL_DIG__ = 33) && __LDBL_IS_IEC_60559__
+#elif (__LDBL_DIG__ == 33) && __LDBL_IS_IEC_60559__
 
 /* Long double is 128-bit type.  */
 
