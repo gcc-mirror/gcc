@@ -137,6 +137,19 @@ __issignalingl (long double x)
   return ret || (((exi & 0x7fff) == 0x7fff) && (hxi > 0xc0000000));
 }
 
+#elif (__LDBL_DIG__ == 31)
+
+/* Long double is 128-bit IBM extended type.  */
+
+static inline int
+__issignalingl (long double x)
+{
+  union { long double value; double parts[2]; } u;
+
+  u.value = x;
+  return __issignaling (u.parts[0]);
+}
+
 #elif (__LDBL_DIG__ == 33) && __LDBL_IS_IEC_60559__
 
 /* Long double is 128-bit type.  */
