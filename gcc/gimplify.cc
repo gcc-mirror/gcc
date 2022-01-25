@@ -16453,10 +16453,76 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
    CANDIDATES.  */
 
 static enum gimplify_status
-expand_omp_metadirective (vec<struct omp_metadirective_variant> &,
-			  gimple_seq *)
+expand_omp_metadirective (vec<struct omp_metadirective_variant> &candidates,
+			  gimple_seq *pre_p)
 {
-  return GS_ERROR;
+  auto_vec<tree> selectors;
+  auto_vec<tree> directive_labels;
+  auto_vec<gimple_seq> directive_bodies;
+  tree body_label = NULL_TREE;
+  tree end_label = create_artificial_label (UNKNOWN_LOCATION);
+
+  /* Construct bodies for each candidate.  */
+  for (unsigned i = 0; i < candidates.length(); i++)
+    {
+      struct omp_metadirective_variant &candidate = candidates[i];
+      gimple_seq body = NULL;
+
+      selectors.safe_push (candidate.selector);
+      directive_labels.safe_push (create_artificial_label (UNKNOWN_LOCATION));
+
+      gimplify_seq_add_stmt (&body,
+			     gimple_build_label (directive_labels.last ()));
+      if (candidate.directive != NULL_TREE)
+	gimplify_stmt (&candidate.directive, &body);
+      if (candidate.body != NULL_TREE)
+	{
+	  if (body_label != NULL_TREE)
+	    gimplify_seq_add_stmt (&body, gimple_build_goto (body_label));
+	  else
+	    {
+	      body_label = create_artificial_label (UNKNOWN_LOCATION);
+	      gimplify_seq_add_stmt (&body, gimple_build_label (body_label));
+	      gimplify_stmt (&candidate.body, &body);
+	    }
+	}
+
+      directive_bodies.safe_push (body);
+    }
+
+  auto_vec<tree> cond_labels;
+
+  cond_labels.safe_push (NULL_TREE);
+  for (unsigned i = 1; i < candidates.length () - 1; i++)
+    cond_labels.safe_push (create_artificial_label (UNKNOWN_LOCATION));
+  if (candidates.length () > 1)
+    cond_labels.safe_push (directive_labels.last ());
+
+  /* Generate conditionals to test each dynamic selector in turn, executing
+     the directive candidate if successful.  */
+  for (unsigned i = 0; i < candidates.length () - 1; i++)
+    {
+      if (i != 0)
+	gimplify_seq_add_stmt (pre_p, gimple_build_label (cond_labels [i]));
+
+      enum gimplify_status ret = gimplify_expr (&selectors[i], pre_p, NULL,
+						is_gimple_val, fb_rvalue);
+      if (ret == GS_ERROR || ret == GS_UNHANDLED)
+	return ret;
+
+      gcond *cond_stmt
+	= gimple_build_cond_from_tree (selectors[i], directive_labels[i],
+				       cond_labels[i + 1]);
+
+      gimplify_seq_add_stmt (pre_p, cond_stmt);
+      gimplify_seq_add_seq (pre_p, directive_bodies[i]);
+      gimplify_seq_add_stmt (pre_p, gimple_build_goto (end_label));
+    }
+
+  gimplify_seq_add_seq (pre_p, directive_bodies.last ());
+  gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+
+  return GS_ALL_DONE;
 }
 
 /* Gimplify an OMP_METADIRECTIVE construct.   EXPR is the tree version.

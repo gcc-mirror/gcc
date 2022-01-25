@@ -1,5 +1,21 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* gimplify.cc (expand_omp_metadirective): New.
+	* omp-general.cc: Include tree-pretty-print.h.
+	(DELAY_METADIRECTIVES_AFTER_LTO): New macro.
+	(omp_context_selector_matches): Delay resolution of selectors.  Allow
+	non-constant expressions.
+	(omp_dynamic_cond): New.
+	(omp_dynamic_selector_p): New.
+	(sort_variant): New.
+	(omp_get_dynamic_candidates): New.
+	(omp_resolve_metadirective): New.
+	(omp_resolve_metadirective): New.
+	* omp-general.h (struct omp_metadirective_variant): New.
+	(omp_resolve_metadirective): New prototype.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* gimple-low.cc (lower_omp_metadirective): New.
 	(lower_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
 	* gimple-pretty-print.cc (dump_gimple_omp_metadirective): New.

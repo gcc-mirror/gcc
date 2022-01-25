@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "streamer-hooks.h"
 #include "opts.h"
+#include "tree-pretty-print.h"
 
 enum omp_requires omp_requires_mask;
 
@@ -1289,14 +1290,23 @@ omp_context_name_list_prop (tree prop)
     }
 }
 
+#define DELAY_METADIRECTIVES_AFTER_LTO { \
+  if (metadirective_p \
+      && !(cfun && cfun->curr_properties & PROP_gimple_lomp_dev)) \
+    return -1; \
+}
+
 /* Return 1 if context selector matches the current OpenMP context, 0
    if it does not and -1 if it is unknown and need to be determined later.
    Some properties can be checked right away during parsing (this routine),
    others need to wait until the whole TU is parsed, others need to wait until
-   IPA, others until vectorization.  */
+   IPA, others until vectorization.
+
+   Dynamic properties (which are evaluated at run-time) should always
+   return 1.  */
 
 int
-omp_context_selector_matches (tree ctx, bool)
+omp_context_selector_matches (tree ctx, bool metadirective_p)
 {
   int ret = 1;
   for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
@@ -1417,6 +1427,8 @@ omp_context_selector_matches (tree ctx, bool)
 		    const char *arch = omp_context_name_list_prop (t3);
 		    if (arch == NULL)
 		      return 0;
+		    DELAY_METADIRECTIVES_AFTER_LTO;
+
 		    int r = 0;
 		    if (targetm.omp.device_kind_arch_isa != NULL)
 		      r = targetm.omp.device_kind_arch_isa (omp_device_arch,
@@ -1541,6 +1553,8 @@ omp_context_selector_matches (tree ctx, bool)
 #endif
 			continue;
 		      }
+		    DELAY_METADIRECTIVES_AFTER_LTO;
+
 		    int r = 0;
 		    if (targetm.omp.device_kind_arch_isa != NULL)
 		      r = targetm.omp.device_kind_arch_isa (omp_device_kind,
@@ -1580,6 +1594,8 @@ omp_context_selector_matches (tree ctx, bool)
 		    const char *isa = omp_context_name_list_prop (t3);
 		    if (isa == NULL)
 		      return 0;
+		    DELAY_METADIRECTIVES_AFTER_LTO;
+
 		    int r = 0;
 		    if (targetm.omp.device_kind_arch_isa != NULL)
 		      r = targetm.omp.device_kind_arch_isa (omp_device_isa,
@@ -1631,6 +1647,12 @@ omp_context_selector_matches (tree ctx, bool)
 		for (tree t3 = TREE_VALUE (t2); t3; t3 = TREE_CHAIN (t3))
 		  if (TREE_PURPOSE (t3) == NULL_TREE)
 		    {
+		      /* OpenMP 5.1 allows non-constant conditions for
+			 metadirectives.  */
+		      if (metadirective_p
+			  && !tree_fits_shwi_p (TREE_VALUE (t3)))
+			break;
+
 		      if (integer_zerop (TREE_VALUE (t3)))
 			return 0;
 		      if (integer_nonzerop (TREE_VALUE (t3)))
@@ -1645,6 +1667,8 @@ omp_context_selector_matches (tree ctx, bool)
     }
   return ret;
 }
+
+#undef DELAY_METADIRECTIVES_AFTER_LTO
 
 /* Compare construct={simd} CLAUSES1 with CLAUSES2, return 0/-1/1/2 as
    in omp_context_selector_set_compare.  */
@@ -2001,6 +2025,36 @@ omp_get_context_selector (tree ctx, const char *set, const char *sel)
 	    return t2;
       }
   return NULL_TREE;
+}
+
+/* Return a tree expression representing the dynamic part of the context
+   selector CTX.  */
+
+static tree
+omp_dynamic_cond (tree ctx)
+{
+  tree user = omp_get_context_selector (ctx, "user", "condition");
+  if (user)
+    {
+      tree expr_list = TREE_VALUE (user);
+
+      gcc_assert (TREE_PURPOSE (expr_list) == NULL_TREE);
+
+      /* The user condition is not dynamic if it is constant.  */
+      if (!tree_fits_shwi_p (TREE_VALUE (expr_list)))
+	return TREE_VALUE (expr_list);
+    }
+
+  return NULL_TREE;
+}
+
+/* Return true iff the context selector CTX contains a dynamic element
+   that cannot be resolved at compile-time.  */
+
+static bool
+omp_dynamic_selector_p (tree ctx)
+{
+  return omp_dynamic_cond (ctx) != NULL_TREE;
 }
 
 /* Compute *SCORE for context selector CTX.  Return true if the score
@@ -2660,16 +2714,189 @@ omp_lto_input_declare_variant_alt (lto_input_block *ib, cgraph_node *node,
 						 INSERT) = entryp;
 }
 
+static int
+sort_variant (const void * a, const void *b, void *)
+{
+  widest_int score1 = ((const struct omp_metadirective_variant *) a)->score;
+  widest_int score2 = ((const struct omp_metadirective_variant *) b)->score;
+
+  if (score1 > score2)
+    return -1;
+  else if (score1 < score2)
+    return 1;
+  else
+    return 0;
+}
+
+/* Return a vector of dynamic replacement candidates for the directive
+   candidates in ALL_VARIANTS.  Return an empty vector if the metadirective
+   cannot be resolved.  */
+
+static vec<struct omp_metadirective_variant>
+omp_get_dynamic_candidates (vec <struct omp_metadirective_variant> &all_variants)
+{
+  auto_vec <struct omp_metadirective_variant> variants;
+  struct omp_metadirective_variant default_variant;
+  bool default_found = false;
+
+  for (unsigned int i = 0; i < all_variants.length (); i++)
+    {
+      struct omp_metadirective_variant variant = all_variants[i];
+
+      if (all_variants[i].selector == NULL_TREE)
+	{
+	  default_found = true;
+	  default_variant = all_variants[i];
+	  default_variant.score = 0;
+	  default_variant.resolvable_p = true;
+	  default_variant.dynamic_p = false;
+	  continue;
+	}
+
+      variant.resolvable_p = true;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Considering selector ");
+	  print_generic_expr (dump_file, variant.selector);
+	  fprintf (dump_file, " as candidate - ");
+	}
+
+      switch (omp_context_selector_matches (variant.selector, true))
+	{
+	case -1:
+	  variant.resolvable_p = false;
+	  if (dump_file)
+	    fprintf (dump_file, "unresolvable");
+	  /* FALLTHRU */
+	case 1:
+	  /* TODO: Handle SIMD score?.  */
+	  omp_context_compute_score (variant.selector, &variant.score, false);
+	  variant.dynamic_p = omp_dynamic_selector_p (variant.selector);
+	  variants.safe_push (variant);
+	  break;
+	case 0:
+	  if (dump_file)
+	    fprintf (dump_file, "no match");
+	  break;
+	}
+
+      if (dump_file)
+	fprintf (dump_file, "\n");
+    }
+
+  /* There must be one default variant.  */
+  gcc_assert (default_found);
+
+  /* A context selector that is a strict subset of another context selector
+     has a score of zero.  */
+  for (unsigned int i = 0; i < variants.length (); i++)
+    for (unsigned int j = i + 1; j < variants.length (); j++)
+      {
+	int r = omp_context_selector_compare (variants[i].selector,
+					      variants[j].selector);
+	if (r == -1)
+	  {
+	    /* variant1 is a strict subset of variant2.  */
+	    variants[i].score = 0;
+	    break;
+	  }
+	else if (r == 1)
+	  /* variant2 is a strict subset of variant1.  */
+	  variants[j].score = 0;
+      }
+
+  /* Sort the variants by decreasing score, preserving the original order
+     in case of a tie.  */
+  variants.stablesort (sort_variant, NULL);
+
+  /* Add the default as a final choice.  */
+  variants.safe_push (default_variant);
+
+  /* Build the dynamic candidate list.  */
+  for (unsigned i = 0; i < variants.length (); i++)
+    {
+      /* If one of the candidates is unresolvable, give up for now.  */
+      if (!variants[i].resolvable_p)
+	{
+	  variants.truncate (0);
+	  break;
+	}
+
+      /* Replace the original selector with just the dynamic part.  */
+      variants[i].selector = omp_dynamic_cond (variants[i].selector);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Adding directive variant with ");
+
+	  if (variants[i].selector)
+	    {
+	      fprintf (dump_file, "selector ");
+	      print_generic_expr (dump_file, variants[i].selector);
+	    }
+	  else
+	    fprintf (dump_file, "default selector");
+
+	  fprintf (dump_file, " as candidate.\n");
+	}
+
+      /* The last of the candidates is ended by a static selector.  */
+      if (!variants[i].dynamic_p)
+	{
+	  variants.truncate (i + 1);
+	  break;
+	}
+    }
+
+  return variants.copy ();
+}
+
 /* Return a vector of dynamic replacement candidates for the metadirective
    statement in METADIRECTIVE.  Return an empty vector if the metadirective
    cannot be resolved.  */
 
 vec<struct omp_metadirective_variant>
-omp_resolve_metadirective (tree)
+omp_resolve_metadirective (tree metadirective)
 {
-  vec<struct omp_metadirective_variant> variants = {};
+  auto_vec <struct omp_metadirective_variant> variants;
+  tree clause = OMP_METADIRECTIVE_CLAUSES (metadirective);
 
-  return variants;
+  while (clause)
+    {
+      struct omp_metadirective_variant variant;
+
+      variant.selector = TREE_PURPOSE (clause);
+      variant.directive = TREE_PURPOSE (TREE_VALUE (clause));
+      variant.body = TREE_VALUE (TREE_VALUE (clause));
+
+      variants.safe_push (variant);
+      clause = TREE_CHAIN (clause);
+    }
+
+  return omp_get_dynamic_candidates (variants);
+}
+
+/* Return a vector of dynamic replacement candidates for the metadirective
+   Gimple statement in GS.  Return an empty vector if the metadirective
+   cannot be resolved.  */
+
+vec<struct omp_metadirective_variant>
+omp_resolve_metadirective (gimple *gs)
+{
+  auto_vec <struct omp_metadirective_variant> variants;
+
+  for (unsigned i = 0; i < gimple_num_ops (gs); i++)
+    {
+      struct omp_metadirective_variant variant;
+
+      variant.selector = gimple_op (gs, i);
+      variant.directive	= gimple_omp_metadirective_label (gs, i);
+
+      variants.safe_push (variant);
+    }
+
+  return omp_get_dynamic_candidates (variants);
 }
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK

@@ -4045,8 +4045,49 @@ c_omp_categorize_directive (const char *first, const char *second,
   return NULL;
 }
 
-tree
-c_omp_expand_metadirective (vec<struct omp_metadirective_variant> &)
+static tree
+c_omp_expand_metadirective_r (vec<struct omp_metadirective_variant> &candidates,
+			      hash_map<tree, tree> &body_labels,
+			      unsigned index)
 {
-  return NULL_TREE;
+  struct omp_metadirective_variant &candidate = candidates[index];
+  tree if_block = push_stmt_list ();
+  if (candidate.directive != NULL_TREE)
+    add_stmt (candidate.directive);
+  if (candidate.body != NULL_TREE)
+    {
+      tree *label = body_labels.get (candidate.body);
+      if (label != NULL)
+	add_stmt (build1 (GOTO_EXPR, void_type_node, *label));
+      else
+	{
+	  tree body_label = create_artificial_label (UNKNOWN_LOCATION);
+	  add_stmt (build1 (LABEL_EXPR, void_type_node, body_label));
+	  add_stmt (candidate.body);
+	  body_labels.put (candidate.body, body_label);
+	}
+    }
+  if_block = pop_stmt_list (if_block);
+
+  if (index == candidates.length () - 1)
+    return if_block;
+
+  tree cond = candidate.selector;
+  gcc_assert (cond != NULL_TREE);
+
+  tree else_block = c_omp_expand_metadirective_r (candidates, body_labels,
+						  index + 1);
+  tree ret = push_stmt_list ();
+  tree stmt = build3 (COND_EXPR, void_type_node, cond, if_block, else_block);
+  add_stmt (stmt);
+  ret = pop_stmt_list (ret);
+
+  return ret;
+}
+
+tree
+c_omp_expand_metadirective (vec<struct omp_metadirective_variant> &candidates)
+{
+  hash_map<tree, tree> body_labels;
+  return c_omp_expand_metadirective_r (candidates, body_labels, 0);
 }
