@@ -103,12 +103,12 @@ typedef union
   long double value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     int sign_exponent:16;
     unsigned int empty:16;
     uint32_t msw;
     uint32_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint32_t lsw;
     uint32_t msw;
     int sign_exponent:16;
@@ -159,10 +159,10 @@ typedef union
   long double value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t msw;
     uint64_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint64_t lsw;
     uint64_t msw;
 #endif
@@ -204,10 +204,10 @@ typedef union
   __float128 value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t msw;
     uint64_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint64_t lsw;
     uint64_t msw;
 #endif
