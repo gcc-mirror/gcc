@@ -755,12 +755,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 			  && (TYPE_MAIN_VARIANT (return_type)
 			      == long_double_type_node))))
 		rs6000_passes_long_double = true;
-
-	      /* Note if we passed or return a IEEE 128-bit type.  We changed
-		 the mangling for these types, and we may need to make an alias
-		 with the old mangling.  */
-	      if (FLOAT128_IEEE_P (return_mode))
-		rs6000_passes_ieee128 = true;
 	    }
 	  if (ALTIVEC_OR_VSX_VECTOR_MODE (return_mode))
 	    rs6000_passes_vector = true;
@@ -1179,12 +1173,6 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 		  || (type != NULL
 		      && TYPE_MAIN_VARIANT (type) == long_double_type_node)))
 	    rs6000_passes_long_double = true;
-
-	  /* Note if we passed or return a IEEE 128-bit type.  We changed the
-	     mangling for these types, and we may need to make an alias with
-	     the old mangling.  */
-	  if (FLOAT128_IEEE_P (mode))
-	    rs6000_passes_ieee128 = true;
 	}
       if (named && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
 	rs6000_passes_vector = true;
