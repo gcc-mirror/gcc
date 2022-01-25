@@ -144,6 +144,17 @@ public:
     return segs.back ().first;
   }
 
+  const std::pair<NodeId, std::string> &get_seg_at (size_t index) const
+  {
+    rust_assert (index < size ());
+    return segs.at (index);
+  }
+
+  static bool segment_is_qualified_path (const std::string &seg)
+  {
+    return seg.find (" as ") != std::string::npos;
+  }
+
   bool is_equal (const CanonicalPath &b) const
   {
     return get ().compare (b.get ()) == 0;
