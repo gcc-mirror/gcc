@@ -3,4 +3,4 @@
 int foo()
 {
 }
-/* { dg-warning "version of `g` will be omitted, please specify version for individual extension." "" { target *-*-* } 0 } */
+/* { dg-warning "version of 'g' will be omitted, please specify version for individual extension" "" { target *-*-* } 0 } */

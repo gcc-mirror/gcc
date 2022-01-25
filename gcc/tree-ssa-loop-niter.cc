@@ -1579,8 +1579,21 @@ number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
      { IVbase - STEP, +, STEP } != bound
      Here, biasing IVbase by 1 step makes 'bound' be the value before wrap.
      */
-  niter->control.base = fold_build2 (MINUS_EXPR, niter_type,
-				     niter->control.base, niter->control.step);
+  tree base_type = TREE_TYPE (niter->control.base);
+  if (POINTER_TYPE_P (base_type))
+    {
+      tree utype = unsigned_type_for (base_type);
+      niter->control.base
+	= fold_build2 (MINUS_EXPR, utype,
+		       fold_convert (utype, niter->control.base),
+		       fold_convert (utype, niter->control.step));
+      niter->control.base = fold_convert (base_type, niter->control.base);
+    }
+  else
+    niter->control.base
+      = fold_build2 (MINUS_EXPR, base_type, niter->control.base,
+		     niter->control.step);
+
   span = fold_build2 (MULT_EXPR, niter_type, niter->niter,
 		      fold_convert (niter_type, niter->control.step));
   niter->bound = fold_build2 (PLUS_EXPR, niter_type, span,
@@ -1881,7 +1894,8 @@ number_of_iterations_cond (class loop *loop,
      provided that either below condition is satisfied:
 
        a) the test is NE_EXPR;
-       b) iv0.step - iv1.step is integer and iv0/iv1 don't overflow.
+       b) iv0 and iv1 do not overflow and iv0.step - iv1.step is of
+	  the same sign and of less or equal magnitude than iv0.step
 
      This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
@@ -1890,17 +1904,37 @@ number_of_iterations_cond (class loop *loop,
       tree step = fold_binary_to_constant (MINUS_EXPR, step_type,
 					   iv0->step, iv1->step);
 
-      /* No need to check sign of the new step since below code takes care
-	 of this well.  */
-      if (code != NE_EXPR
-	  && (TREE_CODE (step) != INTEGER_CST
-	      || !iv0->no_overflow || !iv1->no_overflow))
-	return false;
+      /* For code other than NE_EXPR we have to ensure moving the evolution
+	 of IV1 to that of IV0 does not introduce overflow.  */
+      if (TREE_CODE (step) != INTEGER_CST
+	  || !iv0->no_overflow || !iv1->no_overflow)
+	{
+	  if (code != NE_EXPR)
+	    return false;
+	  iv0->no_overflow = false;
+	}
+      /* If the new step of IV0 has changed sign or is of greater
+	 magnitude then we do not know whether IV0 does overflow
+	 and thus the transform is not valid for code other than NE_EXPR.  */
+      else if (tree_int_cst_sign_bit (step) != tree_int_cst_sign_bit (iv0->step)
+	       || wi::gtu_p (wi::abs (wi::to_widest (step)),
+			     wi::abs (wi::to_widest (iv0->step))))
+	{
+	  if (POINTER_TYPE_P (type) && code != NE_EXPR)
+	    /* For relational pointer compares we have further guarantees
+	       that the pointers always point to the same object (or one
+	       after it) and that objects do not cross the zero page.  So
+	       not only is the transform always valid for relational
+	       pointer compares, we also know the resulting IV does not
+	       overflow.  */
+	    ;
+	  else if (code != NE_EXPR)
+	    return false;
+	  else
+	    iv0->no_overflow = false;
+	}
 
       iv0->step = step;
-      if (!POINTER_TYPE_P (type))
-	iv0->no_overflow = false;
-
       iv1->step = build_int_cst (step_type, 0);
       iv1->no_overflow = true;
     }

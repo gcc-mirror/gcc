@@ -1,3 +1,9 @@
+2022-01-24  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Remove duplicate
+	LIBAT_CHECK_LINKER_FEATURES.
+	* configure: Regenerate.
+
 2021-07-21  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/101379

@@ -1,3 +1,353 @@
+2022-01-24  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (pointer_query::dump): Remove duplicate
+	block.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* doc/invoke.texi: Update documentation for -Wbidi-chars.
+
+2022-01-24  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_fegetround): New function.
+	(expand_builtin_feclear_feraise_except): New function.
+	(expand_builtin): Add cases for BUILT_IN_FEGETROUND,
+	BUILT_IN_FECLEAREXCEPT and BUILT_IN_FERAISEEXCEPT.
+	* config/rs6000/rs6000.md (fegetroundsi): New pattern.
+	(feclearexceptsi): New Pattern.
+	(feraiseexceptsi): New Pattern.
+	* doc/extend.texi: Add a new introductory paragraph about the
+	new builtins.
+	* doc/md.texi: (fegetround@var{m}): Document new optab.
+	(feclearexcept@var{m}): Document new optab.
+	(feraiseexcept@var{m}): Document new optab.
+	* optabs.def (fegetround_optab): New optab.
+	(feclearexcept_optab): New optab.
+	(feraiseexcept_optab): New optab.
+
+2022-01-24  Richard Biener  <rguenther@suse.de>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/100740
+	PR tree-optimization/101508
+	PR tree-optimization/101972
+	PR tree-optimization/102131
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Properly
+	constrain BASE0 + STEP0 cmp BASE1 + STEP1 to
+	BASE0 + STEP0 - STEP1 cmp BASE1 transform.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumBitSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumBitSet is
+	specified.
+	* opts.h (enum cl_enum_var_value): New type.
+	* opts-common.cc (decode_cmdline_option): Use CLEV_* values.
+	Handle CLEV_BITSET.
+	(cmdline_handle_error): Handle CLEV_BITSET.
+	* opts.cc (test_enum_sets): Also test EnumBitSet requirements.
+	* doc/options.texi (EnumBitSet): Document.
+	* common.opt (fsanitize-coverage=): Use EnumBitSet instead of
+	EnumSet.
+	(trace-pc, trace-cmp): Drop Set properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* common.opt (flag_sanitize_coverage): Remove Variable entry.
+	(fsanitize-coverage=): Remove RejectNegative property, add
+	Var(flag_sanitize_coverage) and EnumSet properties.
+	(trace-pc): Add Set(1) property.
+	(trace-cmp): Add Set(2) property.
+	* opts.cc (common_handle_option): Don't handle
+	OPT_fsanitize_coverage_.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumSet is
+	specified.
+	* opt-read.awk: Handle Set property.
+	* opts.h (CL_ENUM_SET_SHIFT, CL_ERR_ENUM_SET_ARG): Define.
+	(struct cl_decoded_option): Mention enum in value description.
+	Add mask member.
+	(set_option): Add mask argument defaulted to 0.
+	* opts.cc (test_enum_sets): New function.
+	(opts_cc_tests): Call it.
+	* opts-common.cc (enum_arg_to_value): Change return argument
+	from bool to int, on success return index into the cl_enum_arg
+	array, on failure -1.  Add len argument, if non-0, use strncmp
+	instead of strcmp.
+	(opt_enum_arg_to_value): Adjust caller.
+	(decode_cmdline_option): Handle EnumSet represented as
+	CLVC_ENUM with non-zero var_value.  Initialize decoded->mask.
+	(decode_cmdline_options_to_array): CLear opt_array[0].mask.
+	(handle_option): Pass decoded->mask to set_options last argument.
+	(generate_option): Clear decoded->mask.
+	(generate_option_input_file): Likewise.
+	(cmdline_handle_error): Handle CL_ERR_ENUM_SET_ARG.
+	(set_option): Add mask argument, use it for CLVC_ENUM.
+	(control_warning_option): Adjust enum_arg_to_value caller.
+	* doc/options.texi: Document Set and EnumSet properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/104170
+	* config/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/alpha/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux64.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/fuchsia.h (OPTION_MUSL_P): Redefine.
+	* config/glibc-stdint.h (OPTION_MUSL_P): Define if not defined.
+	* common/config/s390/s390-common.cc (s390_supports_split_stack): Re-add
+	ATTRIBUTE_UNUSED to opts parameter.  If OPTION_GLIBC_P is defined, use
+	OPTION_GLIBC_P (opts) as condition, otherwise assume if (false).
+	* common/config/i386/i386-common.cc (ix86_supports_split_stack): If
+	OPTION_GLIBC_P is defined use !OPTION_GLIBC_P (opts) as condition,
+	otherwise assume if (true).
+
+2022-01-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::to_string):
+	Skip zicsr and zifencei if I-ext is 2.0.
+
+2022-01-24  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config.gcc: Modify default isa_spec version.
+
+2022-01-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/102087
+	* tree-ssa-loop-niter.cc (number_of_iterations_until_wrap):
+	Correct PLUS result type.
+
+2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104188
+	* config/i386/predicates.md (bcst_mem_operand): Also check mode
+	of memory broadcast.
+
+2022-01-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/64821
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Handle
+	__builtin_aarch64_sqrt* and simplify into SQRT internal
+	function.
+
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104176
+	* opts-global.cc (handle_common_deferred_options): Quote
+	--enable-plugin in diagnostics to avoid -Werror=format-diag.
+
+2022-01-21  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104136
+	* config/rs6000/rs6000-protos.h (prefixed_xxsplti_p): Delete.
+	* config/rs6000/rs6000.cc (prefixed_xxsplti_p): Delete.
+	* config/rs6000/rs6000.md (prefixed attribute): Delete section
+	that sets the prefixed attribute for xxspltiw, xxspltidp, and
+	xxsplti32dx instructions.
+	(movsf_hardfloat): Explicitly set the prefixed attribute
+	when xxspltiw and xxspltidp instructions are generated.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Explicitly set the
+	prefixed attribute for xxspltiw and xxspltidp instructions.
+	(vsx_mov<mode>_32bit): Likewise.
+
+2022-01-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/104170
+	* common/config/i386/i386-common.cc (ix86_supports_split_stack):
+	Return true only on glibc.
+	* config/i386/gnu-user-common.h (STACK_CHECK_STATIC_BUILTIN):
+	Revert commit c163647ffbc.
+	* config/i386/gnu.h (TARGET_LIBC_PROVIDES_SSP): Likewise.
+
+2022-01-21  Sören Tempel  <soeren@soeren-tempel.net>
+
+	* common/config/s390/s390-common.cc (s390_supports_split_stack):
+	Only support split-stack on glibc targets.
+	* config/i386/gnu-user-common.h (STACK_CHECK_STATIC_BUILTIN): Ditto.
+	* config/i386/gnu.h (defined): Ditto.
+
+2022-01-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (VEC_SLDW): Add instances for
+	vector float and vector double.
+
+2022-01-21  Bill Seurer  <seurer@gcc.gnu.org>
+
+	* config/rs6000/rs6000.cc (rs6000_get_function_versions_dispatcher):
+	Fix mention of ifunc in string.
+
+2022-01-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/104140
+	* tree-ssa-math-opts.cc (convert_mult_to_highpart): Check that the
+	operands of the widening multiplication are either both signed or
+	both unsigned, and abort the conversion if mismatched.
+	* doc/generic.texi (WIDEN_MULT_EXPR): Describe expression node.
+	(MULT_HIGHPART_EXPR): Clarify that operands must have the same
+	signedness.
+	* tree.def (MULT_HIGHPART_EXPR): Document both operands must have
+	integer types with the same precision and signedness.
+	(WIDEN_MULT_EXPR): Document that operands must have integer types
+	with the same precision, but possibly differing signedness.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Defend against
+	riscv_current_subset_list returning a NULL pointer (empty list).
+
+2022-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/103676
+	* ira.h (struct target_ira): Add member
+	x_ira_exclude_class_mode_regs.
+	(ira_exclude_class_mode_regs): New macro.
+	* lra.h (lra_create_new_reg): Add arg exclude_start_hard_regs and
+	move from here ...
+	* lra-int.h: ... to here.
+	(lra_create_new_reg_with_unique_value): Add arg
+	exclude_start_hard_regs.
+	(class lra_reg): Add member exclude_start_hard_regs.
+	* lra-assigns.cc (find_hard_regno_for_1): Setup
+	impossible_start_hard_regs from exclude_start_hard_regs.
+	* lra-constraints.cc (get_reload_reg): Add arg exclude_start_hard_regs and pass
+	it lra_create_new_reg[_with_unique_value].
+	(match_reload): Ditto.
+	(check_and_process_move): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg_with_unique_value.
+	(goal_alt_exclude_start_hard_regs): New static variable.
+	(process_addr_reg, simplify_operand_subreg): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg_with_unique_value
+	and get_reload_reg.
+	(process_alt_operands): Setup goal_alt_exclude_start_hard_regs.
+	Use this_alternative_exclude_start_hard_regs additionally to find
+	winning operand alternative.
+	(base_to_reg, base_plus_disp_to_reg, index_part_to_reg): Pass NULL
+	exclude_start_hard_regs to lra_create_new_reg.
+	(process_address_1, emit_inc): Ditto.
+	(curr_insn_transform): Pass exclude_start_hard_regs value to
+	lra_create_new_reg, get_reload_reg, match_reload.
+	(inherit_reload_reg, split_reg): Pass NULL exclude_start_hard_regs
+	to lra_create_new_reg.
+	(process_invariant_for_inheritance): Ditto.
+	* lra-remat.cc (update_scratch_ops): Ditto.
+	* lra.cc (lra_create_new_reg_with_unique_value): Add arg
+	exclude_start_hard_regs.  Setup the corresponding member of
+	lra reg info.
+	(lra_create_new_reg): Add arg exclude_start_hard_regs and pass it
+	to lra_create_new_reg_with_unique_value.
+	(initialize_lra_reg_info_element): Initialize member
+	exclude_start_hard_regs.
+	(get_scratch_reg): Pass NULL to lra_create_new_reg.
+	* ira.cc (setup_prohibited_class_mode_regs): Rename to
+	setup_prohibited_and_exclude_class_mode_regs and calculate
+	ira_exclude_class_mode_regs.
+
+2022-01-21  Martin Liska  <mliska@suse.cz>
+
+	* configure.ac: Detect ld_is_mold and use it for
+	comdat_group=yes and gcc_cv_ld_hidden=yes.
+	* configure: Regenerate.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100089
+	* tree-vect-slp.cc (vect_slp_region): Reject BB vectorization
+	of if-converted loops with unvectorized COND_EXPRs for
+	all but the unlimited cost models.
+
+2022-01-21  Ard Biesheuvel  <ardb@kernel.org>
+
+	* config/arm/arm-opts.h (enum stack_protector_guard): New.
+	* config/arm/arm-protos.h (arm_stack_protect_tls_canary_mem):
+	New.
+	* config/arm/arm.cc (TARGET_STACK_PROTECT_GUARD): Define.
+	(arm_option_override_internal): Handle and put in error checks.
+	for stack protector guard options.
+	(arm_option_reconfigure_globals): Likewise.
+	(arm_stack_protect_tls_canary_mem): New.
+	(arm_stack_protect_guard): New.
+	* config/arm/arm.md (stack_protect_set): New.
+	(stack_protect_set_tls): Likewise.
+	(stack_protect_test): Likewise.
+	(stack_protect_test_tls): Likewise.
+	(reload_tp_hard): Likewise.
+	* config/arm/arm.opt (-mstack-protector-guard): New
+	(-mstack-protector-guard-offset): New.
+	* doc/invoke.texi: Document new options.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104156
+	* tree-ssa-loop-unswitch.cc (tree_unswitch_outer_loop):
+	Collect and reset debug stmts with out-of-loop uses when
+	hoisting guards.
+	(find_loop_guard): Adjust.
+	(empty_bb_without_guard_p): Likewise.  Ignore debug stmts.
+	(used_outside_loop_p): Push debug uses to a vector of
+	debug stmts to reset.
+	(hoist_guard): Adjust -fopt-info category.
+
+2022-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104152
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Add missing
+	can_duplicate_and_interleave_p check.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer):
+	Avoid passing var to warning_at when the format string doesn't
+	refer to it.
+
+2022-01-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103721
+	* gimple-range-path.cc
+	(path_range_query::relations_may_be_invalidated): New.
+	(path_range_query::compute_ranges_in_block): Reset relations if
+	they may be invalidated.
+	(path_range_query::maybe_register_phi_relation): Exit if relations
+	may be invalidated on incoming edge.
+	(path_range_query::compute_phi_relations): Pass incoming PHI edge
+	to maybe_register_phi_relation.
+	* gimple-range-path.h (relations_may_be_invalidated): New.
+	(maybe_register_phi_relation): Pass edge instead of tree.
+	* tree-ssa-threadbackward.cc (back_threader::back_threader):
+	Mark DFS edges.
+	* value-relation.cc (path_oracle::path_oracle): Call
+	mark_dfs_back_edges.
+	(path_oracle::register_relation): Add SSA names to m_registered
+	bitmap.
+	(path_oracle::reset_path): Clear m_registered bitmap.
+	* value-relation.h (path_oracle::set_root_oracle): New.
+
+2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* optabs.cc (prepare_cmp_insn): If !can_create_pseudo_p (), don't
+	force_reg constants and for -fnon-call-exceptions fail if copy_to_reg
+	would be needed.
+
 2022-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/100786

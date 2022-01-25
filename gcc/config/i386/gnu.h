@@ -35,10 +35,7 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 
-/* -fsplit-stack uses a field in the TCB at a fixed offset. This
-   field is only available for glibc.  Disable -fsplit-stack for
-   other libc implementations to avoid silent TCB corruptions.  */
-#if defined (TARGET_LIBC_PROVIDES_SSP) && OPTION_GLIBC
+#ifdef TARGET_LIBC_PROVIDES_SSP
 
 /* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
 #define TARGET_THREAD_SSP_OFFSET        0x14

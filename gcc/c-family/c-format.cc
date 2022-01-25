@@ -1531,7 +1531,7 @@ check_format_info (function_format_info *info, tree params,
   format_ctx.arglocs = arglocs;
 
   check_function_arguments_recurse (check_format_arg, &format_ctx,
-				    format_tree, arg_num);
+				    format_tree, arg_num, OPT_Wformat_);
 
   location_t loc = format_ctx.res->format_string_loc;
 

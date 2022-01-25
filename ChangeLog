@@ -1,3 +1,8 @@
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104181
+	* build.log: Remove.
+
 2022-01-20  Martin Liska  <mliska@suse.cz>
 
 	* MAINTAINERS: Adjust email address based on IRC request.

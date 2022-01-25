@@ -21151,15 +21151,6 @@ tsubst_copy_and_build (tree t,
 	RETURN (build_lambda_object (r));
       }
 
-    case TARGET_EXPR:
-      /* We can get here for a constant initializer of non-dependent type.
-         FIXME stop folding in cp_parser_initializer_clause.  */
-      {
-	tree r = get_target_expr_sfinae (RECUR (TARGET_EXPR_INITIAL (t)),
-					 complain);
-	RETURN (r);
-      }
-
     case TRANSACTION_EXPR:
       RETURN (tsubst_expr(t, args, complain, in_decl,
 	     integral_constant_expression_p));
@@ -28486,9 +28477,10 @@ make_args_non_dependent (vec<tree, va_gc> *args)
    by default.  If set_canonical is true, we set TYPE_CANONICAL on it.  */
 
 static tree
-make_auto_1 (tree name, bool set_canonical,
-	     int level = current_template_depth + 1)
+make_auto_1 (tree name, bool set_canonical, int level = -1)
 {
+  if (level == -1)
+    level = current_template_depth + 1;
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
   TYPE_NAME (au) = build_decl (input_location, TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);

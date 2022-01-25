@@ -527,6 +527,9 @@ gfc_init_kinds (void)
 	      }
 	  }
     }
+  else if ((flag_convert & (GFC_CONVERT_R16_IEEE | GFC_CONVERT_R16_IBM)) != 0)
+    gfc_fatal_error ("%<-fconvert=r16_ieee%> or %<-fconvert=r16_ibm%> not "
+		     "supported on this architecture");
 
   /* Choose the default integer kind.  We choose 4 unless the user directs us
      otherwise.  Even if the user specified that the default integer kind is 8,

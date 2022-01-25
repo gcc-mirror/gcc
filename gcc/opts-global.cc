@@ -417,7 +417,8 @@ handle_common_deferred_options (void)
 #ifdef ENABLE_PLUGIN
 	  add_new_plugin (opt->arg);
 #else
-	  error ("plugin support is disabled; configure with --enable-plugin");
+	  error ("plugin support is disabled; configure with "
+		 "%<--enable-plugin%>");
 #endif
 	  break;
 
@@ -425,7 +426,8 @@ handle_common_deferred_options (void)
 #ifdef ENABLE_PLUGIN
 	  parse_plugin_arg_opt (opt->arg);
 #else
-	  error ("plugin support is disabled; configure with --enable-plugin");
+	  error ("plugin support is disabled; configure with "
+		 "%<--enable-plugin%>");
 #endif
 	  break;
 

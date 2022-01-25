@@ -12638,6 +12638,25 @@ can_convert_arg_bad (tree to, tree from, tree arg, int flags,
   return t != NULL;
 }
 
+/* Return an IMPLICIT_CONV_EXPR from EXPR to TYPE with bits set from overload
+   resolution FLAGS.  */
+
+tree
+build_implicit_conv_flags (tree type, tree expr, int flags)
+{
+  /* In a template, we are only concerned about determining the
+     type of non-dependent expressions, so we do not have to
+     perform the actual conversion.  But for initializers, we
+     need to be able to perform it at instantiation
+     (or instantiate_non_dependent_expr) time.  */
+  expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
+  if (!(flags & LOOKUP_ONLYCONVERTING))
+    IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
+  if (flags & LOOKUP_NO_NARROWING)
+    IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
+  return expr;
+}
+
 /* Convert EXPR to TYPE.  Return the converted expression.
 
    Note that we allow bad conversions here because by the time we get to
@@ -12674,18 +12693,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
       expr = error_mark_node;
     }
   else if (processing_template_decl && conv->kind != ck_identity)
-    {
-      /* In a template, we are only concerned about determining the
-	 type of non-dependent expressions, so we do not have to
-	 perform the actual conversion.  But for initializers, we
-	 need to be able to perform it at instantiation
-	 (or instantiate_non_dependent_expr) time.  */
-      expr = build1 (IMPLICIT_CONV_EXPR, type, expr);
-      if (!(flags & LOOKUP_ONLYCONVERTING))
-	IMPLICIT_CONV_EXPR_DIRECT_INIT (expr) = true;
-      if (flags & LOOKUP_NO_NARROWING)
-	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
-    }
+    expr = build_implicit_conv_flags (type, expr, flags);
   else
     {
       /* Give a conversion call the same location as expr.  */

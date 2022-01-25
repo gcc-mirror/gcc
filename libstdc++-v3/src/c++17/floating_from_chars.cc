@@ -46,6 +46,13 @@
 # include <xlocale.h>
 #endif
 
+#if _GLIBCXX_HAVE_USELOCALE
+// FIXME: This should be reimplemented so it doesn't use strtod and newlocale.
+// That will avoid the need for any memory allocation, meaning that the
+// non-conforming errc::not_enough_memory result cannot happen.
+# define USE_STRTOD_FOR_FROM_CHARS 1
+#endif
+
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 #ifndef __LONG_DOUBLE_IBM128__
 #error "floating_from_chars.cc must be compiled with -mabi=ibmlongdouble"
@@ -56,6 +63,9 @@ extern "C" __ieee128 __strtoieee128(const char*, char**);
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
 # define USE_LIB_FAST_FLOAT 1
+# if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
+#  undef USE_STRTOD_FOR_FROM_CHARS
+# endif
 #endif
 
 #if USE_LIB_FAST_FLOAT
@@ -66,13 +76,13 @@ namespace
 } // anon namespace
 #endif
 
-#if _GLIBCXX_HAVE_USELOCALE
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace
 {
+#if USE_STRTOD_FOR_FROM_CHARS
   // A memory resource with a static buffer that can be used for small
   // allocations. At most one allocation using the freestore can be done
   // if the static buffer is insufficient. The callers below only require
@@ -409,6 +419,7 @@ namespace
     return true;
   }
 #endif
+#endif // USE_STRTOD_FOR_FROM_CHARS
 
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
   // If the given ASCII character represents a hexit, return that hexit.
@@ -771,13 +782,11 @@ namespace
 
     return {first, errc{}};
   }
-#endif
+#endif // _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
 
 } // namespace
 
-// FIXME: This should be reimplemented so it doesn't use strtod and newlocale.
-// That will avoid the need for any memory allocation, meaning that the
-// non-conforming errc::not_enough_memory result cannot happen.
+#if USE_LIB_FAST_FLOAT || USE_STRTOD_FOR_FROM_CHARS
 
 from_chars_result
 from_chars(const char* first, const char* last, float& value,
@@ -855,6 +864,21 @@ from_chars_result
 from_chars(const char* first, const char* last, long double& value,
 	   chars_format fmt) noexcept
 {
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
+  && ! USE_STRTOD_FOR_FROM_CHARS
+  double dbl_value;
+  from_chars_result result;
+  if (fmt == chars_format::hex)
+    result = __floating_from_chars_hex(first, last, dbl_value);
+  else
+    {
+      static_assert(USE_LIB_FAST_FLOAT);
+      result = fast_float::from_chars(first, last, dbl_value, fmt);
+    }
+  if (result.ec == errc{})
+    value = dbl_value;
+  return result;
+#else
   errc ec = errc::invalid_argument;
 #if _GLIBCXX_USE_CXX11_ABI
   buffer_resource mr;
@@ -875,6 +899,7 @@ from_chars(const char* first, const char* last, long double& value,
       fmt = chars_format{};
     }
   return make_result(first, len, fmt, ec);
+#endif
 }
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
@@ -909,6 +934,7 @@ from_chars(const char* first, const char* last, __ieee128& value,
 }
 #endif
 
+#endif // USE_LIB_FAST_FLOAT || USE_STRTOD_FOR_FROM_CHARS
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // _GLIBCXX_HAVE_USELOCALE

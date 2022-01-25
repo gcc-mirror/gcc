@@ -5592,7 +5592,7 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
       firstarg = 1;
       if (!closure)
 	check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[0],
-					  firstarg);
+					  firstarg, OPT_Wnonnull);
     }
 
   tree attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (ctx.fntype));
@@ -5611,7 +5611,7 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
   if (a != NULL_TREE)
     for (int i = firstarg; i < nargs; i++)
       check_function_arguments_recurse (check_nonnull_arg, &ctx, argarray[i],
-					i + 1);
+					i + 1, OPT_Wnonnull);
   else
     {
       /* Walk the argument list.  If we encounter an argument number we
@@ -5627,7 +5627,8 @@ check_function_nonnull (nonnull_arg_ctx &ctx, int nargs, tree *argarray)
 
 	  if (a != NULL_TREE)
 	    check_function_arguments_recurse (check_nonnull_arg, &ctx,
-					      argarray[i], i + 1);
+					      argarray[i], i + 1,
+					      OPT_Wnonnull);
 	}
     }
   return ctx.warned_p;
@@ -6095,14 +6096,16 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
 
 /* Generic argument checking recursion routine.  PARAM is the argument to
    be checked.  PARAM_NUM is the number of the argument.  CALLBACK is invoked
-   once the argument is resolved.  CTX is context for the callback.  */
+   once the argument is resolved.  CTX is context for the callback.
+   OPT is the warning for which this is done.  */
 void
 check_function_arguments_recurse (void (*callback)
 				  (void *, tree, unsigned HOST_WIDE_INT),
 				  void *ctx, tree param,
-				  unsigned HOST_WIDE_INT param_num)
+				  unsigned HOST_WIDE_INT param_num,
+				  opt_code opt)
 {
-  if (warning_suppressed_p (param))
+  if (opt != OPT_Wformat_ && warning_suppressed_p (param))
     return;
 
   if (CONVERT_EXPR_P (param)
@@ -6111,7 +6114,8 @@ check_function_arguments_recurse (void (*callback)
     {
       /* Strip coercion.  */
       check_function_arguments_recurse (callback, ctx,
-					TREE_OPERAND (param, 0), param_num);
+					TREE_OPERAND (param, 0), param_num,
+					opt);
       return;
     }
 
@@ -6148,7 +6152,8 @@ check_function_arguments_recurse (void (*callback)
 	      if (i == format_num)
 		{
 		  check_function_arguments_recurse (callback, ctx,
-						    inner_arg, param_num);
+						    inner_arg, param_num,
+						    opt);
 		  found_format_arg = true;
 		  break;
 		}
@@ -6170,10 +6175,10 @@ check_function_arguments_recurse (void (*callback)
 	  /* Check both halves of the conditional expression.  */
 	  check_function_arguments_recurse (callback, ctx,
 					    TREE_OPERAND (param, 1),
-					    param_num);
+					    param_num, opt);
 	  check_function_arguments_recurse (callback, ctx,
 					    TREE_OPERAND (param, 2),
-					    param_num);
+					    param_num, opt);
 	  return;
 	}
     }

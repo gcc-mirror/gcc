@@ -340,7 +340,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      // we are releasing the last strong reference. No other
 	      // threads can observe the effects of this _M_release()
 	      // call (e.g. calling use_count()) without a data race.
-	      *(long long*)(&_M_use_count) = 0;
+	      _M_weak_count = _M_use_count = 0;
 	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count);
 	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
 	      _M_dispose();

@@ -1627,36 +1627,6 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
     }
 
   fputc ('\n', dump_file);
-
-  {
-    fputs ("\npointer_query cache contents (again):\n", dump_file);
-
-    tree var;
-    unsigned i;
-    FOR_EACH_SSA_NAME (i, var, cfun)
-      {
-	if (TREE_CODE (TREE_TYPE (var)) != POINTER_TYPE)
-	  continue;
-
-	for (unsigned ost = 0; ost != 2; ++ost)
-	  {
-	    if (const access_ref *cache_ref = get_ref (var, ost))
-	      {
-		unsigned ver = SSA_NAME_VERSION (var);
-		fprintf (dump_file, "  %u.%u: ", ver, ost);
-		if (tree name = ssa_name (ver))
-		  {
-		    print_generic_expr (dump_file, name);
-		    fputs (" = ", dump_file);
-		  }
-		else
-		  fprintf (dump_file, "  _%u = ", ver);
-
-		cache_ref->dump (dump_file);
-	      }
-	  }
-      }
-  }
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
