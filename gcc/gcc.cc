@@ -366,6 +366,7 @@ static void set_spec (const char *, const char *, bool);
 static struct compiler *lookup_compiler (const char *, size_t, const char *);
 static char *build_search_list (const struct path_prefix *, const char *,
 				bool, bool);
+static void xputenv (const char *);
 static void putenv_from_prefixes (const struct path_prefix *, const char *,
 				  bool);
 static int access_check (const char *, int);
@@ -1152,7 +1153,6 @@ proper position among the other output files.  */
 /* We pass any -flto flags on to the linker, which is expected
    to understand them.  In practice, this means it had better be collect2.  */
 /* %{e*} includes -export-dynamic; see comment in common.opt.  */
-
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
@@ -1786,7 +1786,7 @@ static const struct spec_function static_spec_functions[] =
   { 0, 0 }
 };
 
-/* front end registered spec functions */
+/* Front end registered spec functions */
 static struct spec_function *lang_spec_functions = NULL;
 static unsigned int lang_spec_functions_length = 0;
 
@@ -2952,7 +2952,7 @@ add_to_obstack (char *path, void *data)
 
 /* Add or change the value of an environment variable, outputting the
    change to standard error if in verbose mode.  */
-void
+static void
 xputenv (const char *string)
 {
   env.xput (string);
@@ -2960,10 +2960,26 @@ xputenv (const char *string)
 
 /* Get the environment variable through the managed env.  */
 
-const char *
+static const char *
 xgetenv (const char *key)
 {
   return env.get (key);
+}
+
+/* Allow front end access to xputenv.  */
+
+void
+fe_putenv (const char *string)
+{
+  xputenv (string);
+}
+
+/* Allow front end access to xgetenv.  */
+
+const char *
+fe_getenv (const char *key)
+{
+  return xgetenv (key);
 }
 
 /* Build a list of search directories from PATHS.
@@ -3909,7 +3925,7 @@ alloc_switch (void)
 /* Save an option OPT with N_ARGS arguments in array ARGS, marking it
    as validated if VALIDATED and KNOWN if it is an internal switch.  */
 
-void
+static void
 save_switch (const char *opt, size_t n_args, const char *const *args,
 	     bool validated, bool known)
 {
@@ -3929,6 +3945,15 @@ save_switch (const char *opt, size_t n_args, const char *const *args,
   switches[n_switches].known = known;
   switches[n_switches].ordering = 0;
   n_switches++;
+}
+
+/* Allow front ends to save switches.  */
+
+void
+fe_save_switch (const char *opt, size_t n_args, const char *const *args,
+		bool validated, bool known)
+{
+  save_switch (opt, n_args, args, validated, known);
 }
 
 /* Set the SOURCE_DATE_EPOCH environment variable to the current time if it is
@@ -3954,6 +3979,8 @@ set_source_date_epoch_envvar ()
   setenv ("SOURCE_DATE_EPOCH", source_date_epoch, 0);
 }
 
+/* Wrapper providing front end access to link options.  */
+
 void
 fe_add_linker_option (const char *option)
 {
@@ -3963,8 +3990,8 @@ fe_add_linker_option (const char *option)
 /* Handle the -B option by adding the prefix to exec, startfile and
    include search paths.  */
 
-void
-handle_OPT_B (const char *arg)
+static void
+handle_opt_b (const char *arg)
 {
   size_t len = strlen (arg);
 
@@ -3991,6 +4018,14 @@ handle_OPT_B (const char *arg)
 	      PREFIX_PRIORITY_B_OPT, 0, 0);
   add_prefix (&include_prefixes, arg, NULL,
 	      PREFIX_PRIORITY_B_OPT, 0, 0);
+}
+
+/* Wrapper allowing the front end to create a -B option.  */
+
+void
+fe_handle_opt_b (const char *arg)
+{
+  handle_opt_b (arg);
 }
 
 /* Save the infile.  */
@@ -4593,7 +4628,7 @@ driver_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_B:
-      handle_OPT_B (arg);
+      handle_opt_b (arg);
       validated = true;
       break;
 
@@ -6956,7 +6991,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 /* Allow the front end to register a spec function.  */
 
-void fe_add_spec_function (const char *name, const char *(*func) (int, const char **))
+void fe_add_spec_function (const char *name,
+			   const char *(*func) (int, const char **))
 {
   const struct spec_function *f = lookup_spec_function (name);
   struct spec_function *fl;
@@ -6969,7 +7005,8 @@ void fe_add_spec_function (const char *name, const char *(*func) (int, const cha
     lang_spec_functions_length = 1;
 
   lang_spec_functions_length++;
-  fl = (struct spec_function *) xmalloc (sizeof (const struct spec_function)*lang_spec_functions_length);
+  fl = (struct spec_function *) xmalloc (sizeof (const struct spec_function)
+					 *lang_spec_functions_length);
   for (i=0; i<lang_spec_functions_length-2; i++)
     fl[i] = lang_spec_functions[i];
   free (lang_spec_functions);

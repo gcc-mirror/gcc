@@ -175,7 +175,7 @@ static const char *multilib_dir = NULL;
 #endif
 
 
-/* fe_generate_option, wrap up arg and pass it to save_switch.  */
+/* fe_generate_option, wrap up arg and pass it to fe_save_switch.  */
 
 static void
 fe_generate_option (size_t opt_index, const char *arg, bool joined)
@@ -194,7 +194,7 @@ fe_generate_option (size_t opt_index, const char *arg, bool joined)
     opt = xstrdup (option->opt_text);
 
   if (arg == NULL || joined)
-    save_switch (opt, 0, NULL, true, false);
+    fe_save_switch (opt, 0, NULL, true, false);
   else
     {
       const char **x = (const char **)XCNEWVEC (const char **, 2);
@@ -203,7 +203,7 @@ fe_generate_option (size_t opt_index, const char *arg, bool joined)
       x[1] = NULL;
 
       gcc_assert (opt_index != OPT_l);
-      save_switch (opt, 1, x, true, false);
+      fe_save_switch (opt, 1, x, true, false);
     }
 }
 
@@ -255,7 +255,7 @@ add_B_prefix (unsigned int *in_decoded_options_count ATTRIBUTE_UNUSED,
           for (i = 0; i < *in_decoded_options_count; i++)
             print_option ("before add -B", i, *in_decoded_options);
 #endif
-          handle_OPT_B (xstrdup (path));
+          fe_handle_opt_b (xstrdup (path));
           fe_generate_option (OPT_B, xstrdup (path), 1);
 
 #if defined(DEBUGGING)
@@ -784,7 +784,7 @@ build_path (const char *prefix)
       strcat (s, ":");
       strcat (s, path);
     }
-  xputenv (s);
+  fe_putenv (s);
 }
 
 /* gen_gm2_prefix, return the prefix string.  */
@@ -849,7 +849,7 @@ build_library_path (const char *prefix)
 
   strcpy (s, "LIBRARY_PATH=");
   strcat (s, path);
-  xputenv (s);
+  fe_putenv (s);
 }
 
 /* build_compiler_path, implements export
@@ -865,7 +865,7 @@ build_compiler_path (const char *path)
 
   strcpy (s, "COMPILER_PATH=");
   strcat (s, libexec);
-  xputenv (s);
+  fe_putenv (s);
 }
 
 /* check_gm2_root, checks to see whether GM2_PREFIX or GM2_LIBEXEC
@@ -881,10 +881,10 @@ check_gm2_root (void)
   const char *gm2_prefix;
   const char *gm2_libexec;
 
-  library_path = xgetenv (LIBRARY_PATH_ENV);
-  compiler_path = xgetenv ("COMPILER_PATH");
-  gm2_prefix = xgetenv (GM2_PREFIX_ENV);
-  gm2_libexec = xgetenv (GM2_LIBEXEC_ENV);
+  library_path = fe_getenv (LIBRARY_PATH_ENV);
+  compiler_path = fe_getenv ("COMPILER_PATH");
+  gm2_prefix = fe_getenv (GM2_PREFIX_ENV);
+  gm2_libexec = fe_getenv (GM2_LIBEXEC_ENV);
 
   if ((library_path == NULL || (strcmp (library_path, "") == 0))
       && (compiler_path == NULL || (strcmp (compiler_path, "") == 0)))
@@ -1191,12 +1191,12 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     fe_generate_option (OPT_fonlylink, NULL, false);
 
   check_gm2_root ();
-  libpath = xgetenv (LIBRARY_PATH_ENV);
+  libpath = fe_getenv (LIBRARY_PATH_ENV);
   if (libpath == NULL || (strcmp (libpath, "") == 0))
     libpath = LIBSUBDIR;
 
-  gm2ipath = xgetenv (GM2IPATH_ENV);
-  gm2opath = xgetenv (GM2OPATH_ENV);
+  gm2ipath = fe_getenv (GM2IPATH_ENV);
+  gm2opath = fe_getenv (GM2OPATH_ENV);
 
 #if defined(DEBUGGING)
   print_options ("at beginning", *in_decoded_options_count, *in_decoded_options);
