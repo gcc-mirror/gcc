@@ -3931,17 +3931,6 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
 	  ++nesting_depth;
 	  break;
 
-	case CPP_OPEN_PAREN:
-	  /* Track parentheses in case the statement is a standalone 'for'
-	     statement - we want to skip over the semicolons separating the
-	     operands.  */
-	  ++nesting_depth;
-	  break;
-
-	case CPP_CLOSE_PAREN:
-	  --nesting_depth;
-	  break;
-
 	case CPP_KEYWORD:
 	  if (token->keyword != RID__EXPORT
 	      && token->keyword != RID__MODULE
@@ -3991,6 +3980,7 @@ static void
 cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 {
   int nesting_depth = 0;
+  int bracket_depth = 0;
 
   /* Unwind generic function template scope if necessary.  */
   if (parser->fully_implicit_function_template_p)
@@ -4012,7 +4002,7 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 
 	case CPP_SEMICOLON:
 	  /* Stop if this is an unnested ';'. */
-	  if (!nesting_depth)
+	  if (!nesting_depth && bracket_depth <= 0)
 	    nesting_depth = -1;
 	  break;
 
@@ -4035,11 +4025,13 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  /* Track parentheses in case the statement is a standalone 'for'
 	     statement - we want to skip over the semicolons separating the
 	     operands.  */
-	  nesting_depth++;
+	  if (nesting_depth == 0)
+	    bracket_depth++;
 	  break;
 
 	case CPP_CLOSE_PAREN:
-	  nesting_depth--;
+	  if (nesting_depth == 0)
+	    bracket_depth--;
 	  break;
 
 	case CPP_KEYWORD:

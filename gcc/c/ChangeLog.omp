@@ -1,5 +1,10 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Track
+	bracket depth separately from nesting depth.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Handle
 	parentheses in statement.
 	(c_parser_omp_metadirective): New prototype.

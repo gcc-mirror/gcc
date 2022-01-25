@@ -1,5 +1,11 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* parser.cc (cp_parser_skip_to_end_of_statement): Revert.
+	(cp_parser_skip_to_end_of_block_or_statement): Track bracket depth
+	separately from nesting depth.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* parser.cc (cp_parser_skip_to_end_of_statement): Handle parentheses.
 	(cp_parser_skip_to_end_of_block_or_statement): Likewise.
 	(cp_parser_omp_context_selector): Add extra argument.  Allow

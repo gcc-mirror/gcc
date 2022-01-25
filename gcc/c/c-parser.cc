@@ -1344,6 +1344,7 @@ static void
 c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
 {
   unsigned nesting_depth = 0;
+  int bracket_depth = 0;
   bool save_error = parser->error;
 
   while (true)
@@ -1366,7 +1367,7 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
 	case CPP_SEMICOLON:
 	  /* If the next token is a ';', we have reached the
 	     end of the statement.  */
-	  if (!nesting_depth)
+	  if (!nesting_depth && bracket_depth <= 0)
 	    {
 	      /* Consume the ';'.  */
 	      c_parser_consume_token (parser);
@@ -1394,11 +1395,13 @@ c_parser_skip_to_end_of_block_or_statement (c_parser *parser)
 	  /* Track parentheses in case the statement is a standalone 'for'
 	     statement - we want to skip over the semicolons separating the
 	     operands.  */
-	  nesting_depth++;
+	  if (nesting_depth == 0)
+	    ++bracket_depth;
 	  break;
 
 	case CPP_CLOSE_PAREN:
-	  nesting_depth--;
+	  if (nesting_depth == 0)
+	    --bracket_depth;
 	  break;
 
 	case CPP_PRAGMA:

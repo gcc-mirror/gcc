@@ -2007,7 +2007,7 @@ omp_get_context_selector (tree ctx, const char *set, const char *sel)
 }
 
 /* Return a tree expression representing the dynamic part of the context
- * selector CTX.  */
+   selector CTX.  */
 
 static tree
 omp_dynamic_cond (tree ctx)
@@ -2018,8 +2018,12 @@ omp_dynamic_cond (tree ctx)
       tree expr_list = TREE_VALUE (user);
 
       gcc_assert (TREE_PURPOSE (expr_list) == NULL_TREE);
-      return TREE_VALUE (expr_list);
+
+      /* The user condition is not dynamic if it is constant.  */
+      if (!tree_fits_shwi_p (TREE_VALUE (expr_list)))
+	return TREE_VALUE (expr_list);
     }
+
   return NULL_TREE;
 }
 

@@ -1,5 +1,10 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* omp-general.cc (omp_dynamic_cond): Do not return user condition if
+	constant.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* omp-general.cc (omp_check_context_selector): Revert string length
 	check.
 	(omp_context_name_list_prop): Likewise.
