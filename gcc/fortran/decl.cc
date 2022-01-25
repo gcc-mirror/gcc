@@ -8325,6 +8325,8 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_CONTAINS:
     case COMP_DERIVED_CONTAINS:
+    case COMP_OMP_METADIRECTIVE:
+    case COMP_OMP_BEGIN_METADIRECTIVE:
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
 		 ? NULL : gfc_state_stack->previous->sym->name;
@@ -8475,6 +8477,12 @@ gfc_match_end (gfc_statement *st)
       last_initializer = NULL;
       set_enum_kind ();
       gfc_free_enum_history ();
+      break;
+
+    case COMP_OMP_BEGIN_METADIRECTIVE:
+      *st = ST_OMP_END_METADIRECTIVE;
+      target = " metadirective";
+      eos_ok = 0;
       break;
 
     default:

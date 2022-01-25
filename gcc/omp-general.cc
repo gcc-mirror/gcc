@@ -1215,7 +1215,7 @@ omp_check_context_selector (location_t loc, tree ctx)
 		      const char *str = TREE_STRING_POINTER (TREE_VALUE (t2));
 		      if (!strcmp (str, props[i].props[j])
 			  && ((size_t) TREE_STRING_LENGTH (TREE_VALUE (t2))
-			      == strlen (str) + (lang_GNU_Fortran () ? 0 : 1)))
+			      == strlen (str) + 1))
 			break;
 		    }
 		  else if (!strcmp (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
@@ -1264,8 +1264,7 @@ omp_context_name_list_prop (tree prop)
   else
     {
       const char *ret = TREE_STRING_POINTER (TREE_VALUE (prop));
-      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop))
-	  == strlen (ret) + (lang_GNU_Fortran () ? 0 : 1))
+      if ((size_t) TREE_STRING_LENGTH (TREE_VALUE (prop)) == strlen (ret) + 1)
 	return ret;
       return NULL;
     }

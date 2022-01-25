@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_st_label
 format_asterisk = {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
-		   0, {NULL, NULL}, NULL};
+		   0, {NULL, NULL}, NULL, 0};
 
 typedef struct
 {
