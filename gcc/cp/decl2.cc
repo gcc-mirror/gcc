@@ -5774,6 +5774,7 @@ mark_used (tree decl, tsubst_flags_t complain)
     used_types_insert (DECL_CONTEXT (decl));
 
   if (TREE_CODE (decl) == FUNCTION_DECL
+      && !DECL_DELETED_FN (decl)
       && !maybe_instantiate_noexcept (decl, complain))
     return false;
 
