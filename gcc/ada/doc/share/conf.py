@@ -43,7 +43,7 @@ def get_gnat_version():
                   r'constant String := "([^\(\)]+)\(.*\)?";',
                   gnatvsn_content)
     if m:
-        return m.group(1).strip().decode()
+        return m.group(1).strip()
     else:
         if texi_fsf and os.path.exists(basever):
             return ''
