@@ -973,6 +973,33 @@ operands_scanner::parse_ssa_operands ()
       append_vuse (gimple_vop (fn));
       goto do_default;
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      n = gimple_num_ops (stmt);
+      for (i = start; i < n; i++)
+	{
+	  for (tree selector = gimple_op (stmt, i);
+	       selector != NULL;
+	       selector = TREE_CHAIN (selector))
+	    {
+	      if (TREE_PURPOSE (selector) == get_identifier ("user"))
+		{
+		  for (tree property = TREE_VALUE (selector);
+		       property != NULL;
+		       property = TREE_CHAIN (property))
+		    if (TREE_PURPOSE (property)
+			== get_identifier ("condition"))
+		      {
+			for (tree condition = TREE_VALUE (property);
+			     condition != NULL;
+			     condition = TREE_CHAIN (condition))
+			  get_expr_operands (&TREE_VALUE (condition),
+					     opf_use);
+		      }
+		}
+	    }
+	}
+      break;
+
     case GIMPLE_CALL:
       /* Add call-clobbered operands, if needed.  */
       maybe_add_call_vops (as_a <gcall *> (stmt));

@@ -1,5 +1,58 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* gimple-low.cc (lower_omp_metadirective): New.
+	(lower_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
+	* gimple-pretty-print.cc (dump_gimple_omp_metadirective): New.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_METADIRECTIVE.
+	* gimple-walk.cc (walk_gimple_op): Handle GIMPLE_OMP_METADIRECTIVE.
+	(walk_gimple_stmt): Likewise.
+	* gimple.cc (gimple_alloc_omp_metadirective): New.
+	(gimple_build_omp_metadirective): New.
+	(gimple_build_omp_metadirective_variant): New.
+	* gimple.def (GIMPLE_OMP_METADIRECTIVE): New.
+	(GIMPLE_OMP_METADIRECTIVE_VARIANT): New.
+	* gimple.h (gomp_metadirective_variant): New.
+	(gomp_metadirective): New.
+	(is_a_helper <gomp_metadirective *>::test): New.
+	(is_a_helper <gomp_metadirective_variant *>::test): New.
+	(is_a_helper <const gomp_metadirective *>::test): New.
+	(is_a_helper <const gomp_metadirective_variant *>::test): New.
+	(gimple_alloc_omp_metadirective): New prototype.
+	(gimple_build_omp_metadirective): New prototype.
+	(gimple_build_omp_metadirective_variant): New prototype.
+	(gimple_has_substatements): Add GIMPLE_OMP_METADIRECTIVE case.
+	(gimple_has_ops): Add GIMPLE_OMP_METADIRECTIVE.
+	(gimple_omp_metadirective_label): New.
+	(gimple_omp_metadirective_set_label): New.
+	(gimple_omp_metadirective_variants): New.
+	(gimple_omp_metadirective_set_variants): New.
+	(CASE_GIMPLE_OMP): Add GIMPLE_OMP_METADIRECTIVE.
+	* gimplify.cc (is_gimple_stmt): Add OMP_METADIRECTIVE.
+	(expand_omp_metadirective): New.
+	(gimplify_omp_metadirective): New.
+	(gimplify_expr): Add case for OMP_METADIRECTIVE.
+	* gsstruct.def (GSS_OMP_METADIRECTIVE): New.
+	(GSS_OMP_METADIRECTIVE_VARIANT): New.
+	* omp-expand.cc (build_omp_regions_1): Handle GIMPLE_OMP_METADIRECTIVE.
+	(omp_make_gimple_edges): Likewise.
+	* omp-low.cc (struct omp_context): Add next_clone field.
+	(new_omp_context): Initialize next_clone field.
+	(clone_omp_context): New.
+	(delete_omp_context): Delete clone contexts.
+	(scan_omp_metadirective): New.
+	(scan_omp_1_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
+	(lower_omp_metadirective): New.
+	(lower_omp_1): Handle GIMPLE_OMP_METADIRECTIVE.
+	* tree-cfg.cc (cleanup_dead_labels): Handle GIMPLE_OMP_METADIRECTIVE.
+	(gimple_redirect_edge_and_branch): Likewise.
+	* tree-inline.cc (remap_gimple_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
+	(estimate_num_insns): Likewise.
+	* tree-pretty-print.cc (dump_generic_node): Handle OMP_METADIRECTIVE.
+	* tree-ssa-operands.cc (parse_ssa_operands): Handle
+	GIMPLE_OMP_METADIRECTIVE.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* omp-general.cc (omp_context_selector_matches): Add extra argument.
 	(omp_resolve_metadirective): New stub function.
 	* omp-general.h (struct omp_metadirective_variant): New.

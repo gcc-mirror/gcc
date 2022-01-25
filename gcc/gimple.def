@@ -393,6 +393,13 @@ DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_PARALLEL_LAYOUT)
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP_SINGLE_LAYOUT)
 
+/* GIMPLE_OMP_METADIRECTIVE represents #pragma omp metadirective.  */
+DEFGSCODE(GIMPLE_OMP_METADIRECTIVE, "gimple_omp_metadirective",
+	  GSS_OMP_METADIRECTIVE)
+
+DEFGSCODE(GIMPLE_OMP_METADIRECTIVE_VARIANT,
+	  "gimple_omp_metadirective_variant", GSS_OMP_METADIRECTIVE_VARIANT)
+
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.
 
    PREDICT is one of the predictors from predict.def.
