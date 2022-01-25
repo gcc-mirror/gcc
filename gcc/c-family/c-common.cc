@@ -9111,6 +9111,8 @@ c_family_tests (void)
   c_indentation_c_tests ();
   c_pretty_print_c_tests ();
   c_spellcheck_cc_tests ();
+  c_diagnostic_c_tests ();
+  c_opt_problem_cc_tests ();
 }
 
 } // namespace selftest
