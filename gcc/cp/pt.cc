@@ -13585,6 +13585,14 @@ tsubst_aggr_type (tree t,
   if (t == NULL_TREE)
     return NULL_TREE;
 
+  /* If T is an alias template specialization, we want to substitute that
+     rather than strip it, especially if it's dependent_alias_template_spec_p.
+     It should be OK not to handle entering_scope in this case, since
+     DECL_CONTEXT will never be an alias template specialization.  We only get
+     here with an alias when tsubst calls us for TYPENAME_TYPE.  */
+  if (alias_template_specialization_p (t, nt_transparent))
+    return tsubst (t, args, complain, in_decl);
+
   switch (TREE_CODE (t))
     {
     case RECORD_TYPE:
