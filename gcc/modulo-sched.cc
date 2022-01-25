@@ -1439,10 +1439,10 @@ sms_schedule (void)
 
       /* Perform SMS only on loops that their average count is above threshold.  */
 
-      if ( latch_edge->count () > profile_count::zero ()
-          && (latch_edge->count()
-	      < single_exit (loop)->count ().apply_scale
-				 (param_sms_loop_average_count_threshold, 1)))
+      if (latch_edge->count () > profile_count::zero ()
+	  && (latch_edge->count ()
+	      < (single_exit (loop)->count ()
+		 * param_sms_loop_average_count_threshold)))
 	{
 	  if (dump_file)
 	    {
@@ -1464,12 +1464,12 @@ sms_schedule (void)
         }
 
       /* Make sure this is a doloop.  */
-      if ( !(count_reg = doloop_register_get (head, tail)))
-      {
-        if (dump_file)
-          fprintf (dump_file, "SMS doloop_register_get failed\n");
-	continue;
-      }
+      if (!(count_reg = doloop_register_get (head, tail)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "SMS doloop_register_get failed\n");
+	  continue;
+	}
 
       /* Don't handle BBs with calls or barriers
 	 or !single_set with the exception of do-loop control part insns.

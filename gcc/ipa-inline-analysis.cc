@@ -254,7 +254,7 @@ do_estimate_edge_time (struct cgraph_edge *edge, sreal *ret_nonspec_time)
      probability that caller will call the callee is low however, since it
      may hurt optimization of the caller's hot path.  */
   if (edge->count.ipa ().initialized_p () && edge->maybe_hot_p ()
-      && (edge->count.ipa ().apply_scale (2, 1)
+      && (edge->count.ipa () * 2
 	  > (edge->caller->inlined_to
 	     ? edge->caller->inlined_to->count.ipa ()
 	     : edge->caller->count.ipa ())))

@@ -822,9 +822,8 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
          through the indirect jump or the direct conditional jump
          before that. Split the probability of reaching the
          default label among these two jumps.  */
-      new_default_prob
-	= conditional_probability (default_prob.apply_scale (1, 2), base);
-      default_prob = default_prob.apply_scale (1, 2);
+      new_default_prob = conditional_probability (default_prob / 2, base);
+      default_prob /= 2;
       base -= default_prob;
     }
   else

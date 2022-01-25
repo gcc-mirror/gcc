@@ -230,8 +230,7 @@ select_best_block (basic_block early_bb,
   if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
       /* If result of comparsion is unknown, prefer EARLY_BB.
 	 Thus use !(...>=..) rather than (...<...)  */
-      && !(best_bb->count.apply_scale (100, 1)
-	   >= early_bb->count.apply_scale (threshold, 1)))
+      && !(best_bb->count * 100 >= early_bb->count * threshold))
     return best_bb;
 
   /* No better block found, so return EARLY_BB, which happens to be the

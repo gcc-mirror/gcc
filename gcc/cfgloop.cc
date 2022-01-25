@@ -619,7 +619,7 @@ find_subloop_latch_edge_by_profile (vec<edge> latches)
     }
 
   if (!tcount.initialized_p () || !(tcount.ipa () > HEAVY_EDGE_MIN_SAMPLES)
-      || (tcount - mcount).apply_scale (HEAVY_EDGE_RATIO, 1) > tcount)
+      || (tcount - mcount) * HEAVY_EDGE_RATIO > tcount)
     return NULL;
 
   if (dump_file)

@@ -3120,8 +3120,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
       if (i < fd->collapse - 1)
 	{
 	  e = make_edge (last_bb, bb, EDGE_FALSE_VALUE);
-	  e->probability
-	    = profile_probability::guessed_always ().apply_scale (1, 8);
+	  e->probability = profile_probability::guessed_always () / 8;
 
 	  struct omp_for_data_loop *l = &fd->loops[i + 1];
 	  if (l->m1 == NULL_TREE || l->outer != 1)
@@ -3240,8 +3239,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 		if (update_bb == NULL)
 		  update_bb = this_bb;
 		e = make_edge (this_bb, bb, EDGE_FALSE_VALUE);
-		e->probability
-		  = profile_probability::guessed_always ().apply_scale (1, 8);
+		e->probability = profile_probability::guessed_always () / 8;
 		if (prev_bb == NULL)
 		  set_immediate_dominator (CDI_DOMINATORS, this_bb, bb);
 		prev_bb = this_bb;
@@ -3533,7 +3531,7 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 				   GSI_CONTINUE_LINKING);
   gsi_insert_after (gsi, gimple_build_cond_empty (cond), GSI_NEW_STMT);
   edge e3 = make_edge (e1->src, e2->dest, EDGE_FALSE_VALUE);
-  e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
+  e3->probability = profile_probability::guessed_always () / 8;
   e1->probability = e3->probability.invert ();
   e1->flags = EDGE_TRUE_VALUE;
   set_immediate_dominator (CDI_DOMINATORS, e2->dest, e1->src);
@@ -3687,7 +3685,7 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
       remove_edge (e1);
       make_edge (body_bb, new_header, EDGE_FALLTHRU);
       e3->flags = EDGE_FALSE_VALUE;
-      e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
+      e3->probability = profile_probability::guessed_always () / 8;
       e1 = make_edge (new_header, new_body, EDGE_TRUE_VALUE);
       e1->probability = e3->probability.invert ();
 
@@ -5484,16 +5482,14 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   ep->probability = profile_probability::guessed_always ().apply_scale (3, 4);
   ep = find_edge (entry_bb, second_bb);
   ep->flags = EDGE_TRUE_VALUE;
-  ep->probability = profile_probability::guessed_always ().apply_scale (1, 4);
+  ep->probability = profile_probability::guessed_always () / 4;
   if (fourth_bb)
     {
       ep = make_edge (third_bb, fifth_bb, EDGE_FALSE_VALUE);
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (third_bb, fourth_bb);
       ep->flags = EDGE_TRUE_VALUE;
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (fourth_bb, fifth_bb);
       redirect_edge_and_branch (ep, sixth_bb);
     }
@@ -5504,12 +5500,10 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   if (exit1_bb)
     {
       ep = make_edge (exit_bb, exit2_bb, EDGE_FALSE_VALUE);
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (exit_bb, exit1_bb);
       ep->flags = EDGE_TRUE_VALUE;
-      ep->probability
-	= profile_probability::guessed_always ().apply_scale (1, 2);
+      ep->probability = profile_probability::guessed_always () / 2;
       ep = find_edge (exit1_bb, exit2_bb);
       redirect_edge_and_branch (ep, exit3_bb);
     }

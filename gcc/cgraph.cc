@@ -2935,11 +2935,10 @@ cgraph_edge::maybe_hot_p (void)
     return false;
   if (caller->frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     {
-      if (count.apply_scale (2, 1) < where->count.apply_scale (3, 1))
+      if (count * 2 < where->count * 3)
 	return false;
     }
-  else if (count.apply_scale (param_hot_bb_frequency_fraction , 1)
-	   < where->count)
+  else if (count * param_hot_bb_frequency_fraction < where->count)
     return false;
   return true;
 }

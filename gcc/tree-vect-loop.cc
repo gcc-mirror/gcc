@@ -9343,13 +9343,12 @@ scale_profile_for_vect_loop (class loop *loop, unsigned vf)
 	 in loop's preheader.  */
       if (!(freq_e == profile_count::zero ()))
         freq_e = freq_e.force_nonzero ();
-      p = freq_e.apply_scale (new_est_niter + 1, 1).probability_in (freq_h);
+      p = (freq_e * (new_est_niter + 1)).probability_in (freq_h);
       scale_loop_frequencies (loop, p);
     }
 
   edge exit_e = single_exit (loop);
-  exit_e->probability = profile_probability::always ()
-				 .apply_scale (1, new_est_niter + 1);
+  exit_e->probability = profile_probability::always () / (new_est_niter + 1);
 
   edge exit_l = single_pred_edge (loop->latch);
   profile_probability prob = exit_l->probability;

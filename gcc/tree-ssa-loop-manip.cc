@@ -1421,8 +1421,8 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	}
 
       basic_block rest = new_exit->dest;
-      new_exit->probability = profile_probability::always ()
-	.apply_scale (1, new_est_niter + 1);
+      new_exit->probability
+	= (profile_probability::always () / (new_est_niter + 1));
 
       rest->count += new_exit->count ();
 
@@ -1463,8 +1463,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	  && TREE_CODE (desc->niter) == INTEGER_CST)
 	{
 	  /* The + 1 converts latch counts to iteration counts.  */
-	  profile_count new_header_count
-	    = (in_count.apply_scale (new_est_niter + 1, 1));
+	  profile_count new_header_count = in_count * (new_est_niter + 1);
 	  basic_block *body = get_loop_body (loop);
 	  scale_bbs_frequencies_profile_count (body, loop->num_nodes,
 					       new_header_count,
@@ -1502,8 +1501,8 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	    e->dest->count / e->src->count ~= new e->probability
 
 	 for every outgoing edge e of NEW_EXIT->src.  */
-      profile_probability new_exit_prob = profile_probability::always ()
-	.apply_scale (1, new_est_niter + 1);
+      profile_probability new_exit_prob
+	= profile_probability::always () / (new_est_niter + 1);
       change_edge_frequency (new_exit, new_exit_prob);
     }
 

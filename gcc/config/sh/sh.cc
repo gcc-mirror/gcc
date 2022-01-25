@@ -2178,7 +2178,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
 	  && prob.to_reg_br_prob_base () >= (int) (REG_BR_PROB_BASE * 3 / 8U)
 	  && prob.to_reg_br_prob_base () <= (int) (REG_BR_PROB_BASE * 5 / 8U))
 	{
-	  msw_taken_prob = prob.apply_scale (1, 2);
+	  msw_taken_prob = prob / 2;
 	  msw_skip_prob = rev_prob.apply_scale (REG_BR_PROB_BASE,
 						rev_prob.to_reg_br_prob_base ()
 						+ REG_BR_PROB_BASE);

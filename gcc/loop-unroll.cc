@@ -978,7 +978,7 @@ unroll_loop_runtime_iterations (class loop *loop)
   /* Compute count increments for each switch block and initialize
      innermost switch block.  Switch blocks and peeled loop copies are built
      from innermost outward.  */
-  iter_count = new_count = swtch->count.apply_scale (1, max_unroll + 1);
+  iter_count = new_count = swtch->count / (max_unroll + 1);
   swtch->count = new_count;
 
   for (i = 0; i < n_peel; i++)
@@ -995,7 +995,7 @@ unroll_loop_runtime_iterations (class loop *loop)
 
       /* Create item for switch.  */
       unsigned j = n_peel - i - (extra_zero_check ? 0 : 1);
-      p = profile_probability::always ().apply_scale (1, i + 2);
+      p = profile_probability::always () / (i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));
       /* Add in count of edge from switch block.  */
@@ -1021,12 +1021,12 @@ unroll_loop_runtime_iterations (class loop *loop)
   if (extra_zero_check)
     {
       /* Add branch for zero iterations.  */
-      p = profile_probability::always ().apply_scale (1, max_unroll + 1);
+      p = profile_probability::always () / (max_unroll + 1);
       swtch = ezc_swtch;
       preheader = split_edge (loop_preheader_edge (loop));
       /* Recompute count adjustments since initial peel copy may
 	 have exited and reduced those values that were computed above.  */
-      iter_count = swtch->count.apply_scale (1, max_unroll + 1);
+      iter_count = swtch->count / (max_unroll + 1);
       /* Add in count of edge from switch block.  */
       preheader->count += iter_count;
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
