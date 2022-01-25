@@ -1,3 +1,148 @@
+2022-01-24  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (pointer_query::dump): Remove duplicate
+	block.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* doc/invoke.texi: Update documentation for -Wbidi-chars.
+
+2022-01-24  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_fegetround): New function.
+	(expand_builtin_feclear_feraise_except): New function.
+	(expand_builtin): Add cases for BUILT_IN_FEGETROUND,
+	BUILT_IN_FECLEAREXCEPT and BUILT_IN_FERAISEEXCEPT.
+	* config/rs6000/rs6000.md (fegetroundsi): New pattern.
+	(feclearexceptsi): New Pattern.
+	(feraiseexceptsi): New Pattern.
+	* doc/extend.texi: Add a new introductory paragraph about the
+	new builtins.
+	* doc/md.texi: (fegetround@var{m}): Document new optab.
+	(feclearexcept@var{m}): Document new optab.
+	(feraiseexcept@var{m}): Document new optab.
+	* optabs.def (fegetround_optab): New optab.
+	(feclearexcept_optab): New optab.
+	(feraiseexcept_optab): New optab.
+
+2022-01-24  Richard Biener  <rguenther@suse.de>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/100740
+	PR tree-optimization/101508
+	PR tree-optimization/101972
+	PR tree-optimization/102131
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Properly
+	constrain BASE0 + STEP0 cmp BASE1 + STEP1 to
+	BASE0 + STEP0 - STEP1 cmp BASE1 transform.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumBitSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumBitSet is
+	specified.
+	* opts.h (enum cl_enum_var_value): New type.
+	* opts-common.cc (decode_cmdline_option): Use CLEV_* values.
+	Handle CLEV_BITSET.
+	(cmdline_handle_error): Handle CLEV_BITSET.
+	* opts.cc (test_enum_sets): Also test EnumBitSet requirements.
+	* doc/options.texi (EnumBitSet): Document.
+	* common.opt (fsanitize-coverage=): Use EnumBitSet instead of
+	EnumSet.
+	(trace-pc, trace-cmp): Drop Set properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* common.opt (flag_sanitize_coverage): Remove Variable entry.
+	(fsanitize-coverage=): Remove RejectNegative property, add
+	Var(flag_sanitize_coverage) and EnumSet properties.
+	(trace-pc): Add Set(1) property.
+	(trace-cmp): Add Set(2) property.
+	* opts.cc (common_handle_option): Don't handle
+	OPT_fsanitize_coverage_.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumSet is
+	specified.
+	* opt-read.awk: Handle Set property.
+	* opts.h (CL_ENUM_SET_SHIFT, CL_ERR_ENUM_SET_ARG): Define.
+	(struct cl_decoded_option): Mention enum in value description.
+	Add mask member.
+	(set_option): Add mask argument defaulted to 0.
+	* opts.cc (test_enum_sets): New function.
+	(opts_cc_tests): Call it.
+	* opts-common.cc (enum_arg_to_value): Change return argument
+	from bool to int, on success return index into the cl_enum_arg
+	array, on failure -1.  Add len argument, if non-0, use strncmp
+	instead of strcmp.
+	(opt_enum_arg_to_value): Adjust caller.
+	(decode_cmdline_option): Handle EnumSet represented as
+	CLVC_ENUM with non-zero var_value.  Initialize decoded->mask.
+	(decode_cmdline_options_to_array): CLear opt_array[0].mask.
+	(handle_option): Pass decoded->mask to set_options last argument.
+	(generate_option): Clear decoded->mask.
+	(generate_option_input_file): Likewise.
+	(cmdline_handle_error): Handle CL_ERR_ENUM_SET_ARG.
+	(set_option): Add mask argument, use it for CLVC_ENUM.
+	(control_warning_option): Adjust enum_arg_to_value caller.
+	* doc/options.texi: Document Set and EnumSet properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/104170
+	* config/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/alpha/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux64.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/fuchsia.h (OPTION_MUSL_P): Redefine.
+	* config/glibc-stdint.h (OPTION_MUSL_P): Define if not defined.
+	* common/config/s390/s390-common.cc (s390_supports_split_stack): Re-add
+	ATTRIBUTE_UNUSED to opts parameter.  If OPTION_GLIBC_P is defined, use
+	OPTION_GLIBC_P (opts) as condition, otherwise assume if (false).
+	* common/config/i386/i386-common.cc (ix86_supports_split_stack): If
+	OPTION_GLIBC_P is defined use !OPTION_GLIBC_P (opts) as condition,
+	otherwise assume if (true).
+
+2022-01-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::to_string):
+	Skip zicsr and zifencei if I-ext is 2.0.
+
+2022-01-24  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config.gcc: Modify default isa_spec version.
+
+2022-01-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/102087
+	* tree-ssa-loop-niter.cc (number_of_iterations_until_wrap):
+	Correct PLUS result type.
+
+2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104188
+	* config/i386/predicates.md (bcst_mem_operand): Also check mode
+	of memory broadcast.
+
 2022-01-23  Andrew Pinski  <apinski@marvell.com>
 
 	PR target/64821

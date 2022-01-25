@@ -1,3 +1,16 @@
+2022-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104197
+	* pt.cc (make_auto_1): Use -1 as a placeholder default argument
+	for level.
+
+2022-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104173
+	* typeck.cc (build_class_member_access_expr): Extend
+	unary_complex_lvalue result adjustment to preserve all
+	rvalues, not just xvalues.
+
 2022-01-23  Will Wray  <wjwray@gmail.com>
 
 	PR c++/55227

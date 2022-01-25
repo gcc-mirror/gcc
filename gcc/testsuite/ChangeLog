@@ -1,3 +1,100 @@
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* c-c++-common/Wbidi-chars-10.c: Turn on UCN checking.
+	* c-c++-common/Wbidi-chars-11.c: Likewise.
+	* c-c++-common/Wbidi-chars-14.c: Likewise.
+	* c-c++-common/Wbidi-chars-16.c: Likewise.
+	* c-c++-common/Wbidi-chars-17.c: Likewise.
+	* c-c++-common/Wbidi-chars-4.c: Likewise.
+	* c-c++-common/Wbidi-chars-5.c: Likewise.
+	* c-c++-common/Wbidi-chars-6.c: Likewise.
+	* c-c++-common/Wbidi-chars-7.c: Likewise.
+	* c-c++-common/Wbidi-chars-8.c: Likewise.
+	* c-c++-common/Wbidi-chars-9.c: Likewise.
+	* c-c++-common/Wbidi-chars-ranges.c: Likewise.
+	* c-c++-common/Wbidi-chars-18.c: New test.
+	* c-c++-common/Wbidi-chars-19.c: New test.
+	* c-c++-common/Wbidi-chars-20.c: New test.
+	* c-c++-common/Wbidi-chars-21.c: New test.
+	* c-c++-common/Wbidi-chars-22.c: New test.
+	* c-c++-common/Wbidi-chars-23.c: New test.
+
+2022-01-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/signaling_1.f90: Do not require issignaling.
+	* gfortran.dg/ieee/signaling_2.f90: Add comment.
+	* gfortran.dg/ieee/signaling_3.f90: New test.
+
+2022-01-24  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* gcc.target/powerpc/builtin-feclearexcept-feraiseexcept-1.c: New test.
+	* gcc.target/powerpc/builtin-feclearexcept-feraiseexcept-2.c: New test.
+	* gcc.target/powerpc/builtin-fegetround.c: New test.
+
+2022-01-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104173
+	* g++.dg/cpp0x/ref-qual21.C: New test.
+
+2022-01-24  Richard Biener  <rguenther@suse.de>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/100740
+	PR tree-optimization/101508
+	PR tree-optimization/101972
+	PR tree-optimization/102131
+	* gcc.dg/torture/pr100740.c: New testcase.
+	* gcc.dg/torture/pr101508.c: Likewise.
+	* gcc.dg/torture/pr101972.c: Likewise.
+	* gcc.dg/torture/pr102131-1.c: Likewise.
+	* gcc.dg/torture/pr102131-2.c: Likewise.
+	* gcc.dg/torture/pr102131-3.c: Likewise.
+	* gcc.dg/torture/pr102131-4.c: Likewise.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* gcc.dg/sancov/pr104158-7.c: Adjust for repeating of arguments
+	being allowed.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* gcc.dg/spellcheck-options-24.c: New test.
+	* gcc.dg/sancov/pr104158-1.c: New test.
+	* gcc.dg/sancov/pr104158-2.c: New test.
+	* gcc.dg/sancov/pr104158-3.c: New test.
+	* gcc.dg/sancov/pr104158-4.c: New test.
+	* gcc.dg/sancov/pr104158-5.c: New test.
+	* gcc.dg/sancov/pr104158-6.c: New test.
+	* gcc.dg/sancov/pr104158-7.c: New test.
+
+2022-01-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/attribute-19.c: Add -misa-spec=2.2
+
+2022-01-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/102087
+	* gcc.dg/pr102087_1.c: New test.
+
+2022-01-24  LiaoShihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-9.c: Update the check info.
+	* gcc.target/riscv/arch-10.c: Ditto.
+	* gcc.target/riscv/arch-12.c: Ditto.
+
+2022-01-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/analyzer/torture/pr104159.c: Ignore psabi warning.
+
+2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104188
+	* gcc.target/i386/pr104188.c: New test.
+
 2022-01-23  Will Wray  <wjwray@gmail.com>
 
 	PR c++/55227

@@ -1,3 +1,10 @@
+2022-01-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: New files in toplev must
+	be explicitly marked as "New file".
+	* gcc-changelog/test_email.py: Test.
+	* gcc-changelog/test_patches.txt: Add test.
+
 2022-01-23  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter out one another warning

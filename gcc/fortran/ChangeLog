@@ -1,3 +1,13 @@
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (fconvert=): Add EnumSet property and mention also
+	r16_ieee and r16_ibm arguments.
+	(big-endian, little-endian, native, swap): Add Set(1) property.
+	(r16_ieee, r16_ibm): New EnumValue entries with Set(2) property.
+	* trans-types.cc (gfc_init_kinds): Emit gfc_fatal_error for
+	-fconvert=r16_ieee or -fconvert=r16_ibm when R16_IEEE <=> R16_IBM
+	conversions aren't supported.
+
 2022-01-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104127
