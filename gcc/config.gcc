@@ -4643,12 +4643,14 @@ case "${target}" in
 		case "${with_isa_spec}" in
 		""|default|20191213|201912)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			with_isa_spec=20191213
 			;;
 		2.2)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
 			;;
 		20190608 | 201906)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"
+			with_isa_spec=20190608
 			;;
 		*)
 			echo "--with-isa-spec only accept 2.2, 20191213, 201912, 20190608 or 201906" 1>&2
@@ -5430,7 +5432,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`
