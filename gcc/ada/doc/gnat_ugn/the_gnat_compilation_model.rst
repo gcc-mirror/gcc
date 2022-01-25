@@ -4556,8 +4556,8 @@ can use instead the :switch:`-fdump-ada-spec-slim` switch.
 You can optionally specify a parent unit, of which all generated units will
 be children, using :switch:`-fada-spec-parent={unit}`.
 
-The simple ``gcc```-based command works only for C headers. For C++ headers
-you need to use either the ``g++`` command or the combination ``gcc -x c++```.
+The simple ``gcc``-based command works only for C headers. For C++ headers
+you need to use either the ``g++`` command or the combination ``gcc -x c++``.
 
 In some cases, the generated bindings will be more complete or more meaningful
 when defining some macros, which you can do via the :switch:`-D` switch. This

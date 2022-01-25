@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jan 03, 2022
+GNAT User's Guide for Native Platforms , Apr 22, 2022
 
 AdaCore
 
@@ -6462,8 +6462,8 @@ can use instead the @code{-fdump-ada-spec-slim} switch.
 You can optionally specify a parent unit, of which all generated units will
 be children, using @code{-fada-spec-parent=@emph{unit}}.
 
-The simple @code{gcc`}-based command works only for C headers. For C++ headers
-you need to use either the @code{g++} command or the combination @code{gcc -x c++`}.
+The simple @code{gcc}-based command works only for C headers. For C++ headers
+you need to use either the @code{g++} command or the combination @code{gcc -x c++}.
 
 In some cases, the generated bindings will be more complete or more meaningful
 when defining some macros, which you can do via the @code{-D} switch. This
@@ -17883,7 +17883,6 @@ instr.ads
 /home/comar/local/adainclude/unchconv.ads
 @end example
 @end quotation
-
 
 
 

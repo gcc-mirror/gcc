@@ -11458,7 +11458,7 @@ a size no greater than the largest machine scalar
 the enclosing machine scalar is defined as the smallest machine
 scalar starting at a position no greater than
 @code{position + first_bit / storage_element_size} and covering
-storage elements at least up to @code{position + (last_bit + storage_element_size - 1) / storage_element_size`}
+storage elements at least up to @code{position + (last_bit + storage_element_size - 1) / storage_element_size}
 
 @item 
 the position of the component is interpreted relative to that machine
