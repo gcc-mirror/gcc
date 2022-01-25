@@ -414,6 +414,7 @@ GOMP_5.1 {
 	GOMP_scope_start;
 	GOMP_warning;
 	GOMP_teams4;
+	GOMP_evaluate_target_device;
 } GOMP_5.0.1;
 
 GOMP_5.1.1 {

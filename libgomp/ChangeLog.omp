@@ -1,5 +1,33 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* Makefile.am (libgomp_la_SOURCES): Add selector.c.
+	* Makefile.am: Regenerate.
+	* config/gcn/selector.c: New.
+	* config/linux/selector.c: New.
+	* config/linux/x86/selector.c: New.
+	* config/nvptx/selector.c: New.
+	* libgomp-plugin.h (GOMP_OFFLOAD_evaluate_device): New.
+	* libgomp.h (struct gomp_device_descr): Add evaluate_device_func field.
+	* libgomp.map (GOMP_5.1): Add GOMP_evaluate_target_device.
+	* libgomp_g.h (GOMP_evaluate_current_device): New.
+	(GOMP_evaluate_target_device): New.
+	* oacc-host.c (host_evaluate_device): New.
+	(host_openacc_exec): Initialize evaluate_device_func field to
+	host_evaluate_device.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_evaluate_device): New.
+	* plugin/plugin-nvptx.c (struct ptx_device): Add compute_major and
+	compute_minor fields.
+	(nvptx_open_device): Read compute capability information from device.
+	(CHECK_ISA): New macro.
+	(GOMP_OFFLOAD_evaluate_device): New.
+	* selector.c: New.
+	* target.c (GOMP_evaluate_target_device): New.
+	(gomp_load_plugin_for_device): Load evaulate_device plugin function.
+	* testsuite/libgomp.c-c++-common/metadirective-5.c: New testcase.
+	* testsuite/libgomp.fortran/metadirective-5.f90: New testcase.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/metadirective-1.c: New.
 	* testsuite/libgomp.c-c++-common/metadirective-2.c: New.
 	* testsuite/libgomp.c-c++-common/metadirective-3.c: New.

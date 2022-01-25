@@ -337,6 +337,11 @@ extern void GOMP_single_copy_end (void *);
 
 extern void GOMP_scope_start (uintptr_t *);
 
+/* selector.c */
+
+extern bool GOMP_evaluate_current_device (const char *, const char *,
+					  const char *);
+
 /* target.c */
 
 extern void GOMP_target (int, void (*) (void *), const void *,
@@ -357,6 +362,9 @@ extern void GOMP_target_enter_exit_data (int, size_t, void **, size_t *,
 					 void **);
 extern void GOMP_teams (unsigned int, unsigned int);
 extern bool GOMP_teams4 (unsigned int, unsigned int, unsigned int, bool);
+
+extern bool GOMP_evaluate_target_device (int, const char *, const char *,
+					 const char *);
 
 /* teams.c */
 

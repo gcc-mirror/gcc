@@ -1359,6 +1359,12 @@ omp_context_selector_matches (tree ctx, bool metadirective_p)
 	    ret = -1;
 	  continue;
 	}
+      else if (set == 't')
+	{
+	  /* The target_device set is dynamic, so treat it as always
+	     resolvable.  */
+	  continue;
+	}
       for (tree t2 = TREE_VALUE (t1); t2; t2 = TREE_CHAIN (t2))
 	{
 	  const char *sel = IDENTIFIER_POINTER (TREE_PURPOSE (t2));
@@ -2032,6 +2038,8 @@ omp_get_context_selector (tree ctx, const char *set, const char *sel)
 static tree
 omp_dynamic_cond (tree ctx)
 {
+  tree expr = NULL_TREE;
+
   tree user = omp_get_context_selector (ctx, "user", "condition");
   if (user)
     {
@@ -2041,10 +2049,60 @@ omp_dynamic_cond (tree ctx)
 
       /* The user condition is not dynamic if it is constant.  */
       if (!tree_fits_shwi_p (TREE_VALUE (expr_list)))
-	return TREE_VALUE (expr_list);
+	expr = TREE_VALUE (expr_list);
     }
 
-  return NULL_TREE;
+  tree target_device = omp_get_context_selector (ctx, "target_device", NULL);
+  if (target_device)
+    {
+      tree device_num = null_pointer_node;
+      tree kind = null_pointer_node;
+      tree arch = null_pointer_node;
+      tree isa = null_pointer_node;
+
+      tree device_num_sel = omp_get_context_selector (ctx, "target_device",
+						      "device_num");
+      if (device_num_sel)
+	device_num = TREE_VALUE (TREE_VALUE (device_num_sel));
+      else
+	device_num = build_int_cst (integer_type_node, -1);
+
+      tree kind_sel = omp_get_context_selector (ctx, "target_device", "kind");
+      if (kind_sel)
+	{
+	  const char *str
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (kind_sel)));
+	  kind =  build_string_literal (strlen (str) + 1, str);
+	}
+
+      tree arch_sel = omp_get_context_selector (ctx, "target_device", "arch");
+      if (arch_sel)
+	{
+	  const char *str
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (arch_sel)));
+	  arch = build_string_literal (strlen (str) + 1, str);
+	}
+
+      tree isa_sel = omp_get_context_selector (ctx, "target_device", "isa");
+      if (isa_sel)
+	{
+	  const char *str
+	    = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (isa_sel)));
+	  isa =  build_string_literal (strlen (str) + 1, str);
+	}
+
+      /* Generate a call to GOMP_evaluate_target_device.  */
+      tree builtin_fn
+	= builtin_decl_explicit (BUILT_IN_GOMP_EVALUATE_TARGET_DEVICE);
+      tree call = build_call_expr (builtin_fn, 4, device_num, kind, arch, isa);
+
+      if (expr == NULL_TREE)
+	expr = call;
+      else
+	expr = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node, expr, call);
+    }
+
+  return expr;
 }
 
 /* Return true iff the context selector CTX contains a dynamic element
@@ -2065,9 +2123,12 @@ static bool
 omp_context_compute_score (tree ctx, widest_int *score, bool declare_simd)
 {
   tree construct = omp_get_context_selector (ctx, "construct", NULL);
-  bool has_kind = omp_get_context_selector (ctx, "device", "kind");
-  bool has_arch = omp_get_context_selector (ctx, "device", "arch");
-  bool has_isa = omp_get_context_selector (ctx, "device", "isa");
+  bool has_kind = omp_get_context_selector (ctx, "device", "kind")
+		  || omp_get_context_selector (ctx, "target_device", "kind");
+  bool has_arch = omp_get_context_selector (ctx, "device", "arch")
+		  || omp_get_context_selector (ctx, "target_device", "arch");
+  bool has_isa = omp_get_context_selector (ctx, "device", "isa")
+		 || omp_get_context_selector (ctx, "target_device", "isa");
   bool ret = false;
   *score = 1;
   for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))

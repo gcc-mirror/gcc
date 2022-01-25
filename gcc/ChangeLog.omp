@@ -1,5 +1,16 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* builtin-types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR): New
+	type.
+	* omp-builtins.def (BUILT_IN_GOMP_EVALUATE_TARGET_DEVICE): New builtin.
+	* omp-general.cc (omp_context_selector_matches): Handle 'target_device'
+	selector set.
+	(omp_dynamic_cond): Generate expression tree for 'target_device'
+	selector set.
+	(omp_context_compute_score): Handle selectors in 'target_device' set.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* omp-general.cc (omp_check_context_selector): Revert string length
 	check.
 	(omp_context_name_list_prop): Likewise.

@@ -314,6 +314,7 @@ struct ptx_device
   int max_threads_per_block;
   int max_threads_per_multiprocessor;
   int default_dims[GOMP_DIM_MAX];
+  int compute_major, compute_minor;
 
   /* Length as used by the CUDA Runtime API ('struct cudaDeviceProp').  */
   char name[256];
@@ -537,6 +538,14 @@ nvptx_open_device (int n)
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     ptx_dev->default_dims[i] = 0;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, dev);
+  ptx_dev->compute_major = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, dev);
+  ptx_dev->compute_minor = pi;
 
   CUDA_CALL_ERET (NULL, cuDeviceGetName, ptx_dev->name, sizeof ptx_dev->name,
 		  dev);
@@ -2053,3 +2062,40 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 }
 
 /* TODO: Implement GOMP_OFFLOAD_async_run. */
+
+#define CHECK_ISA(major, minor) \
+  if (((device->compute_major == major && device->compute_minor >= minor) \
+       || device->compute_major > major) \
+      && strcmp (isa, "sm_"#major#minor) == 0) \
+    return true
+
+bool
+GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
+			      const char *arch, const char *isa)
+{
+  if (kind && strcmp (kind, "gpu") != 0)
+    return false;
+  if (arch && strcmp (arch, "nvptx") != 0)
+    return false;
+  if (!isa)
+    return true;
+
+  struct ptx_device *device = ptx_devices[device_num];
+
+  CHECK_ISA (3, 0);
+  CHECK_ISA (3, 5);
+  CHECK_ISA (3, 7);
+  CHECK_ISA (5, 0);
+  CHECK_ISA (5, 2);
+  CHECK_ISA (5, 3);
+  CHECK_ISA (6, 0);
+  CHECK_ISA (6, 1);
+  CHECK_ISA (6, 2);
+  CHECK_ISA (7, 0);
+  CHECK_ISA (7, 2);
+  CHECK_ISA (7, 5);
+  CHECK_ISA (8, 0);
+  CHECK_ISA (8, 6);
+
+  return false;
+}

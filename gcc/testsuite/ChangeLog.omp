@@ -1,5 +1,10 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* c-c++-common/gomp/metadirective-7.c: New.
+	* gfortran.dg/gomp/metadirective-7.f90: New.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-c++-common/gomp/metadirective-1.c: New.
 	* c-c++-common/gomp/metadirective-2.c: New.
 	* c-c++-common/gomp/metadirective-3.c: New.

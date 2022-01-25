@@ -3846,6 +3846,20 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 		       GOMP_PLUGIN_target_task_completion, async_data);
 }
 
+bool
+GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
+			      const char *arch, const char *isa)
+{
+  struct agent_info *agent = get_agent_info (device_num);
+
+  if (kind && strcmp (kind, "gpu") != 0)
+    return false;
+  if (arch && strcmp (arch, "gcn") != 0)
+    return false;
+
+  return !isa || isa_code (isa) == agent->device_isa;
+}
+
 /* }}} */
 /* {{{ OpenACC Plugin API  */
 

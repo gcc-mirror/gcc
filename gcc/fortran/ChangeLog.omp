@@ -1,5 +1,14 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* openmp.cc (omp_target_device_selectors): New.
+	(gfc_match_omp_context_selector): Accept 'target_device' selector set.
+	Treat 'device_num' selector as expression.
+	(gfc_match_omp_context_selector_specification): Handle 'target_device'
+	selector set.
+	* types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR): New type.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* decl.cc (gfc_match_end): Handle COMP_OMP_METADIRECTIVE and
 	COMP_OMP_BEGIN_METADIRECTIVE.
 	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_METADIRECTIVE.

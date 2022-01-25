@@ -1,5 +1,13 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* c-parser.cc (omp_target_device_selectors): New.
+	(c_parser_omp_context_selector): Accept 'target_device' selector set.
+	Treat 'device_num' selector as expression.
+	(c_parser_omp_context_selector_specification): Handle 'target_device'
+	selector set.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Handle
 	parentheses in statement.
 	(c_parser_omp_metadirective): New prototype.
