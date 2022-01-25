@@ -1,5 +1,15 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* Makefile.in (OBJS): Add omp-expand-metadirective.o.
+	* gimple-streamer-in.cc (input_gimple_stmt): Add case for
+	GIMPLE_OMP_METADIRECTIVE.  Handle metadirective labels.
+	* gimple-streamer-out.cc (output_gimple_stmt): Likewise.
+	* omp-expand-metadirective.cc: New.
+	* passes.def: Add pass_omp_expand_metadirective.
+	* tree-pass.h (make_pass_omp_expand_metadirective): New prototype.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* gimplify.cc (expand_omp_metadirective): New.
 	* omp-general.cc: Include tree-pretty-print.h.
 	(DELAY_METADIRECTIVES_AFTER_LTO): New macro.
