@@ -69,7 +69,7 @@ const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
-const std::string kDefaultCrateName = "TestCrate";
+const std::string kDefaultCrateName = "example";
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
