@@ -45142,6 +45142,8 @@ static const char *const omp_device_selectors[] = {
 static const char *const omp_implementation_selectors[] = {
   "vendor", "extension", "atomic_default_mem_order", "unified_address",
   "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
+static const char *const omp_target_device_selectors[] = {
+  "device_num", "kind", "isa", "arch", NULL };
 static const char *const omp_user_selectors[] = {
   "condition", NULL };
 
@@ -45199,6 +45201,13 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p,
 	  property_limit = 3;
 	  property_kind = CTX_PROPERTY_NAME_LIST;
 	  break;
+	case 't': /* target_device */
+	  selectors = omp_target_device_selectors;
+	  allow_score = false;
+	  allow_user = true;
+	  property_limit = 4;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
+	  break;
 	case 'u': /* user */
 	  selectors = omp_user_selectors;
 	  property_limit = 1;
@@ -45235,6 +45244,12 @@ cp_parser_omp_context_selector (cp_parser *parser, tree set, bool has_parms_p,
 	  && strcmp (IDENTIFIER_POINTER (selector),
 		     "atomic_default_mem_order") == 0)
 	property_kind = CTX_PROPERTY_ID;
+
+      if (property_kind == CTX_PROPERTY_NAME_LIST
+	  && IDENTIFIER_POINTER (set)[0] == 't'
+	  && strcmp (IDENTIFIER_POINTER (selector),
+		     "device_num") == 0)
+	property_kind = CTX_PROPERTY_EXPR;
 
       cp_lexer_consume_token (parser->lexer);
 
@@ -45473,6 +45488,10 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 	  if (strcmp (setp, "implementation") == 0)
 	    setp = NULL;
 	  break;
+	case 't':
+	  if (metadirective_p && strcmp (setp, "target_device") == 0)
+	    setp = NULL;
+	  break;
 	case 'u':
 	  if (strcmp (setp, "user") == 0)
 	    setp = NULL;
@@ -45482,8 +45501,13 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 	}
       if (setp)
 	{
-	  cp_parser_error (parser, "expected %<construct%>, %<device%>, "
-				   "%<implementation%> or %<user%>");
+	  if (metadirective_p)
+	    cp_parser_error (parser, "expected %<construct%>, %<device%>, "
+				     "%<implementation%>, %<target_device%> "
+				     "or %<user%>");
+	  else
+	    cp_parser_error (parser, "expected %<construct%>, %<device%>, "
+				     "%<implementation%> or %<user%>");
 	  return error_mark_node;
 	}
 
