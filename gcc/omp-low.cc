@@ -189,6 +189,10 @@ struct omp_context
 
   /* Candidates for adjusting OpenACC privatization level.  */
   vec<tree> oacc_privatization_candidates;
+
+  /* Only used for omp metadirectives.  Links to the next shallow
+     clone of this context.  */
+  struct omp_context *next_clone;
 };
 
 static splay_tree all_contexts;
@@ -1143,6 +1147,7 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
   splay_tree_insert (all_contexts, (splay_tree_key) stmt,
 		     (splay_tree_value) ctx);
   ctx->stmt = stmt;
+  ctx->next_clone = NULL;
 
   if (outer_ctx)
     {
@@ -1173,6 +1178,18 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
   ctx->oacc_private_scalars = new hash_set<tree> ();
 
   return ctx;
+}
+
+static omp_context *
+clone_omp_context (omp_context *ctx)
+{
+  omp_context *clone_ctx = XCNEW (omp_context);
+
+  memcpy (clone_ctx, ctx, sizeof (omp_context));
+  ctx->next_clone = clone_ctx;
+  clone_ctx->next_clone = NULL;
+
+  return clone_ctx;
 }
 
 static gimple_seq maybe_catch_exception (gimple_seq);
@@ -1220,6 +1237,15 @@ static void
 delete_omp_context (splay_tree_value value)
 {
   omp_context *ctx = (omp_context *) value;
+
+  /* Delete clones.  */
+  omp_context *clone = ctx->next_clone;
+  while (clone)
+    {
+      omp_context *next_clone = clone->next_clone;
+      XDELETE (clone);
+      clone = next_clone;
+    }
 
   delete ctx->cb.decl_map;
 
@@ -3566,6 +3592,24 @@ scan_omp_teams (gomp_teams *stmt, omp_context *outer_ctx)
     ctx->record_type = ctx->receiver_decl = NULL;
 }
 
+/* Scan an OpenMP metadirective.  */
+
+static void
+scan_omp_metadirective (gomp_metadirective *stmt, omp_context *outer_ctx)
+{
+  gomp_metadirective_variant *variant
+    = gimple_omp_metadirective_variants (stmt);
+
+  while (variant)
+    {
+      gimple_seq *directive_p = gimple_omp_body_ptr (variant);
+      omp_context *ctx = outer_ctx ? clone_omp_context (outer_ctx) : NULL;
+
+      scan_omp (directive_p, ctx);
+      variant = (gomp_metadirective_variant *) variant->next;
+    }
+}
+
 /* Check nesting restrictions.  */
 static bool
 check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
@@ -4738,6 +4782,10 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	}
       else
 	scan_omp_teams (as_a <gomp_teams *> (stmt), ctx);
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      scan_omp_metadirective (as_a <gomp_metadirective *> (stmt), ctx);
       break;
 
     case GIMPLE_BIND:
@@ -11269,6 +11317,21 @@ oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
     }
 }
 
+static void
+lower_omp_metadirective (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  gimple *stmt = gsi_stmt (*gsi_p);
+  gomp_metadirective_variant *variant
+    = gimple_omp_metadirective_variants (stmt);
+  while (variant)
+    {
+      gimple_seq *directive_p = gimple_omp_body_ptr (variant);
+      lower_omp (directive_p, ctx);
+
+      variant = (gomp_metadirective_variant *) (variant->next);
+    }
+}
+
 /* Callback for walk_gimple_seq.  Find #pragma omp scan statement.  */
 
 static tree
@@ -15295,6 +15358,9 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	lower_omp_taskreg (gsi_p, ctx);
       else
 	lower_omp_teams (gsi_p, ctx);
+      break;
+    case GIMPLE_OMP_METADIRECTIVE:
+      lower_omp_metadirective (gsi_p, ctx);
       break;
     case GIMPLE_CALL:
       tree fndecl;

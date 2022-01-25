@@ -10812,6 +10812,10 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  /* GIMPLE_OMP_SECTIONS_SWITCH is part of
 	     GIMPLE_OMP_SECTIONS, and we do nothing for it.  */
 	}
+      else if (code == GIMPLE_OMP_METADIRECTIVE)
+	{
+	  /* Do nothing for metadirectives.  */
+	}
       else
 	{
 	  region = new_omp_region (bb, code, parent);
@@ -11200,6 +11204,30 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	default:
 	  gcc_unreachable ();
 	}
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      /* Create an edge to the beginning of the body of each candidate
+	 directive.  */
+      {
+	gimple *stmt = last_stmt (bb);
+	unsigned i;
+	bool seen_default = false;
+
+	for (i = 0; i < gimple_num_ops (stmt); i++)
+	  {
+	    tree dest = gimple_omp_metadirective_label (stmt, i);
+	    basic_block dest_bb = label_to_block (cfun, dest);
+	    make_edge (bb, dest_bb, 0);
+
+	    if (gimple_op (stmt, i) == NULL_TREE)
+	      seen_default = true;
+	  }
+
+	gcc_assert (seen_default);
+
+	fallthru = false;
+      }
       break;
 
     default:

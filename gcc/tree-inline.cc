@@ -1672,6 +1672,35 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		   (s1, gimple_omp_masked_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_METADIRECTIVE:
+	  copy = gimple_build_omp_metadirective (gimple_num_ops (stmt));
+	  {
+	    gimple *first_variant = NULL;
+	    gimple **prev_next = &first_variant;
+	    for (gimple *variant = gimple_omp_metadirective_variants (stmt);
+		 variant; variant = variant->next)
+	      {
+		s1 = remap_gimple_seq (gimple_omp_body (variant), id);
+		gimple *new_variant
+		  = gimple_build_omp_metadirective_variant (s1);
+
+		*prev_next = new_variant;
+		prev_next = &new_variant->next;
+	      }
+	    gimple_omp_metadirective_set_variants (copy, first_variant);
+	  }
+
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = id;
+	  for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
+	    {
+	      tree label = gimple_omp_metadirective_label (stmt, i);
+	      walk_tree (&label, remap_gimple_op_r, &wi, NULL);
+	      gimple_omp_metadirective_set_label (copy, i, label);
+	      gimple_set_op (copy, i, gimple_op (stmt, i));
+	    }
+	  break;
+
 	case GIMPLE_OMP_SCOPE:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_scope
@@ -4572,6 +4601,13 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_TEAMS:
       return (weights->omp_cost
               + estimate_num_insns_seq (gimple_omp_body (stmt), weights));
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      /* The actual instruction will disappear eventually, so metadirective
+	 statements have zero additional cost (if only static selectors
+	 are used).  */
+      /* TODO: Estimate the cost of evaluating dynamic selectors  */
+      return 0;
 
     case GIMPLE_TRANSACTION:
       return (weights->tm_cost

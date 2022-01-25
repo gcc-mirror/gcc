@@ -629,6 +629,34 @@ lower_assumption (gimple_stmt_iterator *gsi, struct lower_data *data)
   gimple_set_location (call, loc);
   gsi_replace (gsi, call, true);
 }
+/* Lower the OpenMP metadirective statement pointed by GSI.  */
+
+static void
+lower_omp_metadirective (gimple_stmt_iterator *gsi, struct lower_data *data)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  gimple *variant = gimple_omp_metadirective_variants (stmt);
+  unsigned i;
+
+  /* The variants are not used after lowering.  */
+  gimple_omp_metadirective_set_variants (stmt, NULL);
+
+  for (i = 0; i < gimple_num_ops (stmt); i++)
+    {
+      tree label = create_artificial_label (UNKNOWN_LOCATION);
+      gimple_omp_metadirective_set_label (stmt, i, label);
+      gsi_insert_after (gsi, gimple_build_label (label), GSI_CONTINUE_LINKING);
+
+      gimple_seq *directive_ptr = gimple_omp_body_ptr (variant);
+      lower_sequence (directive_ptr, data);
+      gsi_insert_seq_after (gsi, *directive_ptr, GSI_CONTINUE_LINKING);
+
+      variant = variant->next;
+    }
+
+  gsi_next (gsi);
+}
+
 
 /* Lower statement GSI.  DATA is passed through the recursion.  We try to
    track the fallthruness of statements and get rid of unreachable return
@@ -800,6 +828,12 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_OMP_TEAMS:
       data->cannot_fallthru = false;
       lower_omp_directive (gsi, data);
+      data->cannot_fallthru = false;
+      return;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      data->cannot_fallthru = false;
+      lower_omp_metadirective (gsi, data);
       data->cannot_fallthru = false;
       return;
 

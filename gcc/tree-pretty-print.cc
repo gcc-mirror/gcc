@@ -3859,6 +3859,40 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       is_expr = false;
       break;
 
+    case OMP_METADIRECTIVE:
+      {
+	pp_string (pp, "#pragma omp metadirective");
+	newline_and_indent (pp, spc + 2);
+	pp_left_brace (pp);
+
+	tree clause = OMP_METADIRECTIVE_CLAUSES (node);
+	while (clause != NULL_TREE)
+	  {
+	    newline_and_indent (pp, spc + 4);
+	    if (TREE_PURPOSE (clause) == NULL_TREE)
+	      pp_string (pp, "default:");
+	    else
+	      {
+		pp_string (pp, "when (");
+		dump_generic_node (pp, TREE_PURPOSE (clause), spc + 4, flags,
+				   false);
+		pp_string (pp, "):");
+	      }
+	    newline_and_indent (pp, spc + 6);
+
+	    tree variant = TREE_VALUE (clause);
+	    dump_generic_node (pp, TREE_PURPOSE (variant), spc + 6, flags,
+			       false);
+	    newline_and_indent (pp, spc + 6);
+	    dump_generic_node (pp, TREE_VALUE (variant), spc + 6, flags,
+			       false);
+	    clause = TREE_CHAIN (clause);
+	  }
+	newline_and_indent (pp, spc + 2);
+	pp_right_brace (pp);
+      }
+      break;
+
     case TRANSACTION_EXPR:
       if (TRANSACTION_EXPR_OUTER (node))
 	pp_string (pp, "__transaction_atomic [[outer]]");

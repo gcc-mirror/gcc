@@ -5987,6 +5987,7 @@ is_gimple_stmt (tree t)
     case OMP_TASKGROUP:
     case OMP_ORDERED:
     case OMP_CRITICAL:
+    case OMP_METADIRECTIVE:
     case OMP_TASK:
     case OMP_TARGET:
     case OMP_TARGET_DATA:
@@ -16448,6 +16449,94 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   return gimple_build_omp_ordered (body, OMP_ORDERED_CLAUSES (expr));
 }
 
+/* Replace a metadirective with the candidate directive variants in
+   CANDIDATES.  */
+
+static enum gimplify_status
+expand_omp_metadirective (vec<struct omp_metadirective_variant> &,
+			  gimple_seq *)
+{
+  return GS_ERROR;
+}
+
+/* Gimplify an OMP_METADIRECTIVE construct.   EXPR is the tree version.
+   The metadirective will be resolved at this point if possible.  */
+
+static enum gimplify_status
+gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
+			    bool (*) (tree), fallback_t)
+{
+  auto_vec<tree> selectors;
+
+  /* Try to resolve the metadirective.  */
+  vec<struct omp_metadirective_variant> candidates
+    = omp_resolve_metadirective (*expr_p);
+  if (!candidates.is_empty ())
+    return expand_omp_metadirective (candidates, pre_p);
+
+  /* The metadirective cannot be resolved yet.  */
+
+  gomp_metadirective_variant *first_variant = NULL;
+  gomp_metadirective_variant *prev_variant = NULL;
+  gimple_seq standalone_body = NULL;
+  tree body_label = NULL;
+  tree end_label = create_artificial_label (UNKNOWN_LOCATION);
+
+  for (tree clause = OMP_METADIRECTIVE_CLAUSES (*expr_p); clause != NULL_TREE;
+       clause = TREE_CHAIN (clause))
+    {
+      tree selector = TREE_PURPOSE (clause);
+      tree directive = TREE_PURPOSE (TREE_VALUE (clause));
+      tree body = TREE_VALUE (TREE_VALUE (clause));
+
+      selectors.safe_push (selector);
+      gomp_metadirective_variant *variant
+	= gimple_build_omp_metadirective_variant (NULL);
+      gimple_seq *directive_p = gimple_omp_body_ptr (variant);
+
+      gimplify_stmt (&directive, directive_p);
+      if (body != NULL_TREE)
+	{
+	  if (standalone_body == NULL)
+	    {
+	      gimplify_stmt (&body, &standalone_body);
+	      body_label = create_artificial_label (UNKNOWN_LOCATION);
+	    }
+	  gimplify_seq_add_stmt (directive_p, gimple_build_goto (body_label));
+	}
+      else
+	gimplify_seq_add_stmt (directive_p, gimple_build_goto (end_label));
+
+      if (!first_variant)
+	first_variant = variant;
+      if (prev_variant)
+	{
+	  prev_variant->next = variant;
+	  variant->prev = prev_variant;
+	}
+      prev_variant = variant;
+    }
+
+  gomp_metadirective *stmt
+    = gimple_build_omp_metadirective (selectors.length ());
+  gimple_omp_metadirective_set_variants (stmt, first_variant);
+
+  tree selector;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (selectors, i, selector)
+    gimple_set_op (stmt, i, selector);
+
+  gimplify_seq_add_stmt (pre_p, stmt);
+  if (standalone_body)
+    {
+      gimplify_seq_add_stmt (pre_p, gimple_build_label (body_label));
+      gimplify_seq_add_stmt (pre_p, standalone_body);
+    }
+  gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+
+  return GS_ALL_DONE;
+}
+
 /* Convert the GENERIC expression tree *EXPR_P to GIMPLE.  If the
    expression produces a value to be used as an operand inside a GIMPLE
    statement, the value will be stored back in *EXPR_P.  This value will
@@ -17365,6 +17454,11 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_ATOMIC_CAPTURE_OLD:
 	case OMP_ATOMIC_CAPTURE_NEW:
 	  ret = gimplify_omp_atomic (expr_p, pre_p);
+	  break;
+
+	case OMP_METADIRECTIVE:
+	  ret = gimplify_omp_metadirective (expr_p, pre_p, post_p,
+					    gimple_test_f, fallback);
 	  break;
 
 	case TRANSACTION_EXPR:

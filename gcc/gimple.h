@@ -828,6 +828,30 @@ struct GTY((tag("GSS_OMP_ATOMIC_STORE_LAYOUT")))
          stmt->code == GIMPLE_OMP_RETURN.  */
 };
 
+struct GTY((tag("GSS_OMP_METADIRECTIVE_VARIANT")))
+  gomp_metadirective_variant : public gimple_statement_omp
+{
+  /* The body in the base class contains the directive for this variant.  */
+
+  /* No extra fields; adds invariant:
+       stmt->code == GIMPLE_OMP_METADIRECTIVE_VARIANT.  */};
+
+struct GTY((tag("GSS_OMP_METADIRECTIVE")))
+  gomp_metadirective : public gimple_statement_with_ops_base
+{
+  /* [ WORD 1-7 ] : base class */
+
+  /* [ WORD 8 ] : a list of bodies associated with the directive variants.  */
+  gomp_metadirective_variant *variants;
+
+  /* [ WORD 9 ] : label vector.  */
+  tree * GTY((length ("%h.num_ops"))) labels;
+
+  /* [ WORD 10 ] : operand vector.  Used to hold the selectors for the
+     directive variants.  */
+  tree GTY((length ("%h.num_ops"))) op[1];
+};
+
 /* Assumptions.  */
 
 struct GTY((tag("GSS_ASSUME")))
@@ -1256,6 +1280,22 @@ is_a_helper <gomp_task *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gomp_metadirective *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_METADIRECTIVE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gomp_metadirective_variant *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_METADIRECTIVE_VARIANT;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gphi *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_PHI;
@@ -1506,6 +1546,22 @@ is_a_helper <const gomp_task *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gomp_metadirective *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_METADIRECTIVE;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <const gomp_metadirective_variant *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_METADIRECTIVE_VARIANT;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gphi *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_PHI;
@@ -1610,6 +1666,9 @@ gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
 						enum omp_memory_order);
 gomp_atomic_store *gimple_build_omp_atomic_store (tree, enum omp_memory_order);
+void gimple_alloc_omp_metadirective (gimple *g);
+gomp_metadirective *gimple_build_omp_metadirective (int num_variants);
+gomp_metadirective_variant *gimple_build_omp_metadirective_variant (gimple_seq body);
 gimple *gimple_build_assume (tree, gimple_seq);
 gtransaction *gimple_build_transaction (gimple_seq);
 extern void gimple_seq_add_stmt (gimple_seq *, gimple *);
@@ -1889,6 +1948,7 @@ gimple_has_substatements (gimple *g)
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_CRITICAL:
+    case GIMPLE_OMP_METADIRECTIVE:
     case GIMPLE_WITH_CLEANUP_EXPR:
     case GIMPLE_TRANSACTION:
       return true;
@@ -2147,7 +2207,8 @@ gimple_init_singleton (gimple *g)
 inline bool
 gimple_has_ops (const gimple *g)
 {
-  return gimple_code (g) >= GIMPLE_COND && gimple_code (g) <= GIMPLE_RETURN;
+  return (gimple_code (g) >= GIMPLE_COND && gimple_code (g) <= GIMPLE_RETURN)
+      || gimple_code (g) == GIMPLE_OMP_METADIRECTIVE;
 }
 
 template <>
@@ -6555,6 +6616,40 @@ gimple_omp_continue_set_control_use (gomp_continue *cont_stmt, tree use)
   cont_stmt->control_use = use;
 }
 
+static inline tree
+gimple_omp_metadirective_label (const gimple *g, unsigned i)
+{
+  const gomp_metadirective *omp_metadirective
+    = as_a <const gomp_metadirective *> (g);
+  return omp_metadirective->labels[i];
+}
+
+
+static inline void
+gimple_omp_metadirective_set_label (gimple *g, unsigned i, tree label)
+{
+  gomp_metadirective *omp_metadirective = as_a <gomp_metadirective *> (g);
+  omp_metadirective->labels[i] = label;
+}
+
+
+static inline gomp_metadirective_variant *
+gimple_omp_metadirective_variants (const gimple *g)
+{
+  const gomp_metadirective *omp_metadirective
+    = as_a <const gomp_metadirective *> (g);
+  return omp_metadirective->variants;
+}
+
+
+static inline void
+gimple_omp_metadirective_set_variants (gimple *g, gimple *variants)
+{
+  gomp_metadirective *omp_metadirective = as_a <gomp_metadirective *> (g);
+  omp_metadirective->variants
+    = variants ? as_a <gomp_metadirective_variant *> (variants) : NULL;
+}
+
 /* Return the guard associated with the GIMPLE_ASSUME statement GS.  */
 
 inline tree
@@ -6751,6 +6846,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_RETURN:			\
     case GIMPLE_OMP_ATOMIC_LOAD:		\
     case GIMPLE_OMP_ATOMIC_STORE:		\
+    case GIMPLE_OMP_METADIRECTIVE:		\
     case GIMPLE_OMP_CONTINUE
 
 inline bool

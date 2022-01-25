@@ -1738,6 +1738,18 @@ cleanup_dead_labels (void)
 	  }
 	  break;
 
+	case GIMPLE_OMP_METADIRECTIVE:
+	  {
+	    for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
+	      {
+		label = gimple_omp_metadirective_label (stmt, i);
+		new_label = main_block_label (label, label_for_bb);
+		if (new_label != label)
+		  gimple_omp_metadirective_set_label (stmt, i, new_label);
+	      }
+	  }
+	  break;
+
 	default:
 	  break;
       }
@@ -6250,6 +6262,18 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
       else
 	gimple_transaction_set_label_norm (as_a <gtransaction *> (stmt),
 				           gimple_block_label (dest));
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
+	  {
+	    tree label = gimple_omp_metadirective_label (stmt, i);
+	    if (label_to_block (cfun, label) == e->dest)
+	      gimple_omp_metadirective_set_label (stmt, i,
+						  gimple_block_label (dest));
+	  }
+      }
       break;
 
     default:
