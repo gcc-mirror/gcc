@@ -35,20 +35,33 @@ class ResolveTraitItems : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::TraitItem *item)
+  static void go (AST::TraitItem *item, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix)
   {
-    ResolveTraitItems resolver;
+    ResolveTraitItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
 
   void visit (AST::TraitItemType &type) override
   {
+    auto decl = ResolveTraitItemTypeToCanonicalPath::resolve (type);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     type.get_node_id (), cpath);
+
     for (auto &bound : type.get_type_param_bounds ())
       ResolveTypeBound::go (bound.get (), type.get_node_id ());
   }
 
   void visit (AST::TraitItemFunc &func) override
   {
+    auto decl = ResolveTraitItemFunctionToCanonicalPath::resolve (func);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     func.get_node_id (), cpath);
+
     NodeId scope_node_id = func.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
@@ -86,7 +99,8 @@ public:
 
     // trait items have an optional body
     if (func.has_definition ())
-      ResolveExpr::go (func.get_definition ().get (), func.get_node_id ());
+      ResolveExpr::go (func.get_definition ().get (), func.get_node_id (), path,
+		       cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -95,6 +109,12 @@ public:
 
   void visit (AST::TraitItemMethod &func) override
   {
+    auto decl = ResolveTraitItemMethodToCanonicalPath::resolve (func);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     func.get_node_id (), cpath);
+
     NodeId scope_node_id = func.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
@@ -152,7 +172,8 @@ public:
 
     // trait items have an optional body
     if (func.has_definition ())
-      ResolveExpr::go (func.get_definition ().get (), func.get_node_id ());
+      ResolveExpr::go (func.get_definition ().get (), func.get_node_id (), path,
+		       cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -161,10 +182,17 @@ public:
 
   void visit (AST::TraitItemConst &constant) override
   {
+    auto decl = ResolveTraitItemConstToCanonicalPath::resolve (constant);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     constant.get_node_id (), cpath);
+
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
 
     if (constant.has_expr ())
-      ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+      ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (),
+		       path, cpath);
 
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
@@ -174,7 +202,14 @@ public:
   }
 
 private:
-  ResolveTraitItems () : ResolverBase (UNKNOWN_NODEID) {}
+  ResolveTraitItems (const CanonicalPath &prefix,
+		     const CanonicalPath &canonical_prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
+      canonical_prefix (canonical_prefix)
+  {}
+
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 };
 
 class ResolveItem : public ResolverBase
@@ -182,14 +217,22 @@ class ResolveItem : public ResolverBase
 public:
   using Rust::Resolver::ResolverBase::visit;
 
-  static void go (AST::Item *item)
+  static void go (AST::Item *item, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix)
   {
-    ResolveItem resolver;
+    ResolveItem resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
 
   void visit (AST::TypeAlias &alias) override
   {
+    auto talias = CanonicalPath::new_seg (alias.get_node_id (),
+					  alias.get_new_type_name ());
+    auto path = prefix.append (talias);
+    auto cpath = canonical_prefix.append (talias);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     alias.get_node_id (), cpath);
+
     NodeId scope_node_id = alias.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
@@ -209,6 +252,13 @@ public:
 
   void visit (AST::Module &module) override
   {
+    auto mod
+      = CanonicalPath::new_seg (module.get_node_id (), module.get_name ());
+    auto path = prefix.append (mod);
+    auto cpath = canonical_prefix.append (mod);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     module.get_node_id (), cpath);
+
     NodeId scope_node_id = module.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
@@ -218,10 +268,10 @@ public:
     resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
     for (auto &item : module.get_items ())
-      ResolveTopLevel::go (item.get ());
+      ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath);
 
     for (auto &item : module.get_items ())
-      ResolveItem::go (item.get ());
+      ResolveItem::go (item.get (), path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -230,6 +280,13 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
+    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
+					struct_decl.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     struct_decl.get_node_id (), cpath);
+
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
@@ -254,6 +311,13 @@ public:
 
   void visit (AST::Enum &enum_decl) override
   {
+    auto decl = CanonicalPath::new_seg (enum_decl.get_node_id (),
+					enum_decl.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     enum_decl.get_node_id (), cpath);
+
     NodeId scope_node_id = enum_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
@@ -270,7 +334,7 @@ public:
 
     /* The actual fields are inside the variants.  */
     for (auto &variant : enum_decl.get_variants ())
-      ResolveItem::go (variant.get ());
+      ResolveItem::go (variant.get (), path, cpath);
 
     resolver->get_type_scope ().pop ();
   }
@@ -279,20 +343,50 @@ public:
 
   void visit (AST::EnumItemTuple &item) override
   {
+    auto decl
+      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     for (auto &field : item.get_tuple_fields ())
       ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
   }
 
   void visit (AST::EnumItemStruct &item) override
   {
+    auto decl
+      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     for (auto &field : item.get_struct_fields ())
       ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
   }
 
-  /* EnumItemDiscriminant doesn't need to be handled, no fields.  */
+  void visit (AST::EnumItemDiscriminant &item) override
+  {
+    auto decl
+      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+  }
 
   void visit (AST::StructStruct &struct_decl) override
   {
+    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
+					struct_decl.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     struct_decl.get_node_id (), cpath);
+
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
@@ -317,6 +411,13 @@ public:
 
   void visit (AST::Union &union_decl) override
   {
+    auto decl = CanonicalPath::new_seg (union_decl.get_node_id (),
+					union_decl.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     union_decl.get_node_id (), cpath);
+
     NodeId scope_node_id = union_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
 
@@ -340,8 +441,15 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
+    auto decl
+      = CanonicalPath::new_seg (var.get_node_id (), var.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     var.get_node_id (), cpath);
+
     ResolveType::go (var.get_type ().get (), var.get_node_id ());
-    ResolveExpr::go (var.get_expr ().get (), var.get_node_id ());
+    ResolveExpr::go (var.get_expr ().get (), var.get_node_id (), path, cpath);
 
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
@@ -350,8 +458,15 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
+    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     constant.get_node_id (), cpath);
+
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
-    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (), path,
+		     cpath);
 
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
@@ -364,6 +479,12 @@ public:
   {
     if (function.is_marked_for_strip ())
       return;
+
+    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     function.get_node_id (), cpath);
 
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
@@ -402,8 +523,8 @@ public:
       }
 
     // resolve the function body
-    ResolveExpr::go (function.get_definition ().get (),
-		     function.get_node_id ());
+    ResolveExpr::go (function.get_definition ().get (), function.get_node_id (),
+		     path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -430,16 +551,46 @@ public:
     if (impl_block.has_where_clause ())
       ResolveWhereClause::Resolve (impl_block.get_where_clause ());
 
+    // FIXME this needs to be protected behind nominal type-checks see:
+    // rustc --explain E0118
+
+    CanonicalPath self_cpath = CanonicalPath::create_empty ();
     bool canonicalize_type_with_generics = false;
-    NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
-					    impl_block.get_node_id (),
-					    canonicalize_type_with_generics);
+    NodeId resolved_node
+      = ResolveType::go (impl_block.get_type ().get (),
+			 impl_block.get_node_id (),
+			 canonicalize_type_with_generics, &self_cpath);
     if (resolved_node == UNKNOWN_NODEID)
       {
 	resolver->get_type_scope ().pop ();
 	resolver->get_name_scope ().pop ();
 	return;
       }
+
+    // Setup paths
+    bool canonicalize_type_args = !impl_block.has_generics ();
+    bool type_resolve_generic_args = false;
+
+    CanonicalPath impl_type
+      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+    CanonicalPath impl_prefix = prefix.append (impl_type);
+
+    // see https://godbolt.org/z/a3vMbsT6W
+    CanonicalPath cpath = CanonicalPath::create_empty ();
+    if (canonical_prefix.size () > 1)
+      {
+	std::string seg_buf = "<impl " + self_cpath.get () + ">";
+	CanonicalPath seg
+	  = CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
+	cpath = canonical_prefix.append (seg);
+      }
+    else
+      {
+	cpath = canonical_prefix.append (self_cpath);
+      }
+    // done setup paths
 
     auto Self
       = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
@@ -450,7 +601,7 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	resolve_impl_item (impl_item.get ());
+	resolve_impl_item (impl_item.get (), impl_prefix, cpath);
       }
 
     resolver->get_type_scope ().peek ()->clear_name (
@@ -462,6 +613,12 @@ public:
 
   void visit (AST::Method &method) override
   {
+    auto decl = ResolveMethodItemToCanonicalPath::resolve (method);
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     method.get_node_id (), cpath);
+
     NodeId scope_node_id = method.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
@@ -522,7 +679,8 @@ public:
       ResolveWhereClause::Resolve (method.get_where_clause ());
 
     // resolve the function body
-    ResolveExpr::go (method.get_definition ().get (), method.get_node_id ());
+    ResolveExpr::go (method.get_definition ().get (), method.get_node_id (),
+		     path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -549,11 +707,13 @@ public:
     if (impl_block.has_where_clause ())
       ResolveWhereClause::Resolve (impl_block.get_where_clause ());
 
+    CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
     bool canonicalize_type_with_generics = false;
     NodeId trait_resolved_node
       = ResolveType::go (&impl_block.get_trait_path (),
 			 impl_block.get_node_id (),
-			 canonicalize_type_with_generics);
+			 canonicalize_type_with_generics,
+			 &canonical_trait_type);
     if (trait_resolved_node == UNKNOWN_NODEID)
       {
 	resolver->get_type_scope ().pop ();
@@ -561,16 +721,57 @@ public:
 	return;
       }
 
+    CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
     NodeId type_resolved_node
       = ResolveType::go (impl_block.get_type ().get (),
 			 impl_block.get_node_id (),
-			 canonicalize_type_with_generics);
+			 canonicalize_type_with_generics, &canonical_impl_type);
     if (type_resolved_node == UNKNOWN_NODEID)
       {
 	resolver->get_type_scope ().pop ();
 	resolver->get_name_scope ().pop ();
 	return;
       }
+
+    // setup paths
+    bool canonicalize_type_args = !impl_block.has_generics ();
+    bool type_resolve_generic_args = false;
+
+    CanonicalPath impl_type_seg
+      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+    CanonicalPath trait_type_seg
+      = ResolveTypeToCanonicalPath::resolve (impl_block.get_trait_path (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+
+    CanonicalPath projection
+      = TraitImplProjection::resolve (impl_block.get_node_id (), trait_type_seg,
+				      impl_type_seg);
+    CanonicalPath impl_prefix = prefix.append (projection);
+
+    // setup canonical-path
+    CanonicalPath canonical_projection
+      = TraitImplProjection::resolve (impl_block.get_node_id (),
+				      canonical_trait_type,
+				      canonical_impl_type);
+    CanonicalPath cpath = CanonicalPath::create_empty ();
+    if (canonical_prefix.size () > 1)
+      {
+	std::string projection_str = canonical_projection.get ();
+	std::string seg_buf
+	  = "<impl " + projection_str.substr (1, projection_str.size () - 2)
+	    + ">";
+	CanonicalPath seg
+	  = CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
+	cpath = canonical_prefix.append (seg);
+      }
+    else
+      {
+	cpath = canonical_prefix.append (canonical_projection);
+      }
+    // DONE setup canonical-path
 
     auto Self
       = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
@@ -581,7 +782,7 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	resolve_impl_item (impl_item.get ());
+	resolve_impl_item (impl_item.get (), impl_prefix, cpath);
       }
 
     resolver->get_type_scope ().peek ()->clear_name (
@@ -625,9 +826,14 @@ public:
     if (trait.has_where_clause ())
       ResolveWhereClause::Resolve (trait.get_where_clause ());
 
+    // resolve the paths
+    CanonicalPath path = CanonicalPath::create_empty ();
+    CanonicalPath cpath = CanonicalPath::create_empty ();
+    //
+
     for (auto &item : trait.get_trait_items ())
       {
-	ResolveTraitItems::go (item.get ());
+	ResolveTraitItems::go (item.get (), path, cpath);
       }
 
     resolver->get_type_scope ().pop ();
@@ -643,11 +849,21 @@ public:
   }
 
 protected:
-  void resolve_impl_item (AST::TraitImplItem *item);
-  void resolve_impl_item (AST::InherentImplItem *item);
+  void resolve_impl_item (AST::TraitImplItem *item, const CanonicalPath &prefix,
+			  const CanonicalPath &canonical_prefix);
+  void resolve_impl_item (AST::InherentImplItem *item,
+			  const CanonicalPath &prefix,
+			  const CanonicalPath &canonical_prefix);
   void resolve_extern_item (AST::ExternalItem *item);
 
-  ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}
+  ResolveItem (const CanonicalPath &prefix,
+	       const CanonicalPath &canonical_prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix),
+      canonical_prefix (canonical_prefix)
+  {}
+
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 };
 
 class ResolveImplItems : public ResolveItem
@@ -655,15 +871,17 @@ class ResolveImplItems : public ResolveItem
   using Rust::Resolver::ResolveItem::visit;
 
 public:
-  static void go (AST::InherentImplItem *item)
+  static void go (AST::InherentImplItem *item, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix)
   {
-    ResolveImplItems resolver;
+    ResolveImplItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
 
-  static void go (AST::TraitImplItem *item)
+  static void go (AST::TraitImplItem *item, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix)
   {
-    ResolveImplItems resolver;
+    ResolveImplItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
 
@@ -677,7 +895,10 @@ public:
   }
 
 private:
-  ResolveImplItems () : ResolveItem () {}
+  ResolveImplItems (const CanonicalPath &prefix,
+		    const CanonicalPath &canonical_prefix)
+    : ResolveItem (prefix, canonical_prefix)
+  {}
 };
 
 class ResolveExternItem : public ResolverBase

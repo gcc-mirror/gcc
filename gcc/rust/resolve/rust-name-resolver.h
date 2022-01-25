@@ -39,6 +39,7 @@ public:
 
   ~Rib () {}
 
+  // this takes the relative paths of items within a compilation unit for lookup
   void insert_name (
     const CanonicalPath &path, NodeId id, Location locus, bool shadow,
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
@@ -60,7 +61,6 @@ public:
     reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
-    mappings->insert_canonical_path (mappings->get_current_crate (), id, path);
   }
 
   bool lookup_name (const CanonicalPath &ident, NodeId *id)
