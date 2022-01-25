@@ -46,10 +46,7 @@ void
 CompileCrate::go ()
 {
   for (auto &item : crate.items)
-    CompileItem::compile (item.get (), ctx, false);
-
-  for (auto &item : crate.items)
-    CompileItem::compile (item.get (), ctx, true);
+    CompileItem::compile (item.get (), ctx);
 }
 
 // rust-compile-block.h
@@ -274,7 +271,7 @@ HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
     if (is_item)
       {
 	HIR::Item *item = static_cast<HIR::Item *> (decl);
-	CompileItem::compile (item, ctx, true);
+	CompileItem::compile (item, ctx);
 	return true;
       }
 
@@ -528,7 +525,7 @@ HIRCompileBase::compute_address_for_trait_item (
 	  lookup_fntype = lookup_fntype->handle_substitions (mappings);
 	}
 
-      return CompileInherentImplItem::Compile (associated_function, ctx, true,
+      return CompileInherentImplItem::Compile (associated_function, ctx,
 					       lookup_fntype, true, locus);
     }
 

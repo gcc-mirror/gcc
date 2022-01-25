@@ -166,10 +166,10 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
   if (is_hir_item)
     {
       if (!lookup->has_subsititions_defined ())
-	return CompileItem::compile (resolved_item, ctx, true, nullptr, true,
+	return CompileItem::compile (resolved_item, ctx, nullptr, true,
 				     expr_locus);
       else
-	return CompileItem::compile (resolved_item, ctx, true, lookup, true,
+	return CompileItem::compile (resolved_item, ctx, lookup, true,
 				     expr_locus);
     }
   else
@@ -194,11 +194,11 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  rust_assert (ok);
 
 	  if (!lookup->has_subsititions_defined ())
-	    return CompileInherentImplItem::Compile (resolved_item, ctx, true,
+	    return CompileInherentImplItem::Compile (resolved_item, ctx,
 						     nullptr, true, expr_locus);
 	  else
-	    return CompileInherentImplItem::Compile (resolved_item, ctx, true,
-						     lookup, true, expr_locus);
+	    return CompileInherentImplItem::Compile (resolved_item, ctx, lookup,
+						     true, expr_locus);
 	}
       else
 	{
@@ -276,13 +276,12 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      rust_assert (ok);
 
 	      if (!lookup->has_subsititions_defined ())
-		return CompileInherentImplItem::Compile (impl_item, ctx, true,
+		return CompileInherentImplItem::Compile (impl_item, ctx,
 							 nullptr, true,
 							 expr_locus);
 	      else
-		return CompileInherentImplItem::Compile (impl_item, ctx, true,
-							 lookup, true,
-							 expr_locus);
+		return CompileInherentImplItem::Compile (impl_item, ctx, lookup,
+							 true, expr_locus);
 
 	      lookup->set_ty_ref (impl_item->get_impl_mappings ().get_hirid ());
 	    }

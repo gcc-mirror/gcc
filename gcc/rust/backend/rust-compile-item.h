@@ -38,12 +38,12 @@ protected:
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static tree compile (HIR::Item *item, Context *ctx, bool compile_fns = true,
+  static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
 		       Location ref_locus = Location ())
   {
-    CompileItem compiler (ctx, compile_fns, concrete, ref_locus);
+    CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
     if (is_query_mode
@@ -56,6 +56,16 @@ public:
 
   void visit (HIR::StaticItem &var) override
   {
+    // have we already compiled this?
+    Bvariable *static_decl_ref = nullptr;
+    if (ctx->lookup_var_decl (var.get_mappings ().get_hirid (),
+			      &static_decl_ref))
+      {
+	reference
+	  = ctx->get_backend ()->var_expression (static_decl_ref, ref_locus);
+	return;
+      }
+
     TyTy::BaseType *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
 					      &resolved_type);
@@ -191,9 +201,6 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    if (!compile_fns)
-      return;
-
     TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
@@ -395,32 +402,29 @@ public:
       }
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      CompileInherentImplItem::Compile (impl_item.get (), ctx, compile_fns);
+      CompileInherentImplItem::Compile (impl_item.get (), ctx);
   }
 
   void visit (HIR::ExternBlock &extern_block) override
   {
     for (auto &item : extern_block.get_extern_items ())
       {
-	CompileExternItem::compile (item.get (), ctx, compile_fns, concrete);
+	CompileExternItem::compile (item.get (), ctx, concrete);
       }
   }
 
   void visit (HIR::Module &module) override
   {
     for (auto &item : module.get_items ())
-      CompileItem::compile (item.get (), ctx, compile_fns);
+      CompileItem::compile (item.get (), ctx);
   }
 
 protected:
-  CompileItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete,
-	       Location ref_locus)
-    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete),
-      reference (ctx->get_backend ()->error_expression ()),
+  CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+    : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
       ref_locus (ref_locus)
   {}
 
-  bool compile_fns;
   TyTy::BaseType *concrete;
   tree reference;
   Location ref_locus;

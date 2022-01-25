@@ -34,12 +34,12 @@ class CompileInherentImplItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static tree Compile (HIR::ImplItem *item, Context *ctx, bool compile_fns,
+  static tree Compile (HIR::ImplItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
 		       Location ref_locus = Location ())
   {
-    CompileInherentImplItem compiler (ctx, compile_fns, concrete, ref_locus);
+    CompileInherentImplItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
     if (is_query_mode
@@ -79,9 +79,6 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    if (!compile_fns)
-      return;
-
     TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
@@ -305,14 +302,13 @@ public:
   }
 
 private:
-  CompileInherentImplItem (Context *ctx, bool compile_fns,
-			   TyTy::BaseType *concrete, Location ref_locus)
-    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete),
+  CompileInherentImplItem (Context *ctx, TyTy::BaseType *concrete,
+			   Location ref_locus)
+    : HIRCompileBase (ctx), concrete (concrete),
       reference (ctx->get_backend ()->error_expression ()),
       ref_locus (ref_locus)
   {}
 
-  bool compile_fns;
   TyTy::BaseType *concrete;
   tree reference;
   Location ref_locus;
