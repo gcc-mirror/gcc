@@ -1,5 +1,15 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* omp-general.c (omp_context_selector_matches): Add extra argument.
+	(omp_resolve_metadirective): New stub function.
+	* omp-general.h (struct omp_metadirective_variant): New.
+	(omp_context_selector_matches): Add extra argument.
+	(omp_resolve_metadirective): New prototype.
+	* tree.def (OMP_METADIRECTIVE): New.
+	* tree.h (OMP_METADIRECTIVE_CLAUSES): New macro.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	Backport from master:
 	2021-06-10  Richard Biener  <rguenther@suse.de>
 
