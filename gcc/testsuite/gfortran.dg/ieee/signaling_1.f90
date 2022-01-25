@@ -39,7 +39,7 @@ program test
     if (.not. ieee_unordered(x, x)) stop 105
     if (.not. ieee_unordered(x, 1._c_float)) stop 106
 
-    x = ieee_value(y, ieee_quiet_nan)
+    x = ieee_value(x, ieee_quiet_nan)
     if (ieee_class(x) /= ieee_quiet_nan) stop 107
     if (.not. ieee_is_nan(x)) stop 108
     if (ieee_is_negative(x)) stop 109
@@ -79,7 +79,7 @@ program test
     if (.not. ieee_unordered(z, z)) stop 305
     if (.not. ieee_unordered(z, 1._c_long_double)) stop 306
 
-    z = ieee_value(y, ieee_quiet_nan)
+    z = ieee_value(z, ieee_quiet_nan)
     if (ieee_class(z) /= ieee_quiet_nan) stop 307
     if (.not. ieee_is_nan(z)) stop 308
     if (ieee_is_negative(z)) stop 309
