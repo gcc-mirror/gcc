@@ -188,6 +188,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_omp_device_lower);
   NEXT_PASS (pass_omp_target_link);
+  NEXT_PASS (pass_omp_expand_metadirective);
   NEXT_PASS (pass_adjust_alignment);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)

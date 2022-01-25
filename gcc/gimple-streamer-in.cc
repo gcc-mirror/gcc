@@ -151,6 +151,7 @@ input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_DEBUG:
+    case GIMPLE_OMP_METADIRECTIVE:
       for (i = 0; i < num_ops; i++)
 	{
 	  tree *opp, op = stream_read_tree (ib, data_in);
@@ -187,6 +188,15 @@ input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
 	      (call_stmt, streamer_read_enum (ib, internal_fn, IFN_LAST));
 	  else
 	    gimple_call_set_fntype (call_stmt, stream_read_tree (ib, data_in));
+	}
+      if (gomp_metadirective *metadirective_stmt
+	    = dyn_cast <gomp_metadirective*> (stmt))
+	{
+	  gimple_alloc_omp_metadirective (metadirective_stmt);
+	  for (i = 0; i < num_ops; i++)
+	    gimple_omp_metadirective_set_label (metadirective_stmt, i,
+						stream_read_tree (ib,
+								  data_in));
 	}
       break;
 
