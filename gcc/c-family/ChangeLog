@@ -1,3 +1,23 @@
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101537
+	PR c/103881
+	* c-warn.c (conversion_warning): Handle BIT_AND_EXPR, BIT_IOR_EXPR
+	and BIT_XOR_EXPR.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	* c-cppbuiltin.c (c_cpp_builtins_optimize_pragma): Perform
+	cpp_define_unused/cpp_undef calls with forced token locations
+	BUILTINS_LOCATION.
+
 2022-01-17  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

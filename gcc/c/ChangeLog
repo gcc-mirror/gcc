@@ -1,3 +1,21 @@
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc/103639
+	* c-typeck.c (c_finish_bc_stmt): For break inside of switch inside of
+	ObjC foreach, emit normal BREAK_STMT rather than goto to label.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* c-parser.c (c_parser_balanced_token_sequence): For CPP_PRAGMA,
+	consume the pragma and silently skip to the pragma eol.
+
 2021-12-16  Martin Sebor  <msebor@redhat.com>
 
 	PR c/101289

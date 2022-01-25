@@ -1,3 +1,111 @@
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102478
+	* optabs.c (prepare_cmp_insn): If !can_create_pseudo_p (), don't
+	force_reg constants and for -fnon-call-exceptions fail if copy_to_reg
+	would be needed.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103874
+	* dwarf2out.c (index_rnglists): For !HAVE_AS_LEB128 and
+	block_num > 0, index entry even if !have_multiple_function_sections.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102860
+	* match.pd (x %[fl] y -> x % y): New simplification for
+	unsigned integral types.
+	* optabs-tree.c (optab_for_tree_code): Return unknown_optab
+	for {CEIL,FLOOR,ROUND}_{DIV,MOD}_EXPR with VECTOR_TYPE.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (*aes<aeswideklvariant>u*): Use %0 instead of
+	{%0}.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103908
+	* ifcvt.c (bb_valid_for_noce_process_p): Punt on bbs ending with
+	asm goto.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103012
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Perform
+	cpp_define/cpp_undef calls with forced token locations
+	BUILTINS_LOCATION.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+	* config/aarch64/aarch64-c.c (aarch64_pragma_target_parse): Likewise.
+	* config/s390/s390-c.c (s390_pragma_target_parse): Likewise.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103860
+	* shrink-wrap.c (try_shrink_wrapping): Make sure can_get_prologue is
+	called on pro even if nothing further is pushed into vec.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103813
+	* fold-const.c (fold_truth_andor_1): Punt of const_binop LSHIFT_EXPR
+	or RSHIFT_EXPR returns NULL.  Formatting fix.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/103837
+	* loop-invariant.c (can_move_invariant_reg): Ignore DEBUG_INSNs in
+	the decisions whether to return false or continue and right before
+	returning true reset those debug insns that previously caused
+	returning false.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103838
+	* optabs.c (expand_doubleword_mod, expand_doubleword_divmod): Only
+	check newly added insns for CALL_P, not the last insn of previous
+	code.
+
+2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104188
+	* config/i386/predicates.md (bcst_mem_operand): Also check mode
+	of memory broadcast.
+
 2022-01-18  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
