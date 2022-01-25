@@ -63,6 +63,7 @@ package body System.Value_I is
       Non_Blank : constant Positive :=
         First_Non_Space_Ghost (Str, Ptr.all, Max)
       with Ghost;
+
       Fst_Num   : constant Positive :=
         (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
          else Non_Blank)
@@ -127,10 +128,11 @@ package body System.Value_I is
             Non_Blank : constant Positive := First_Non_Space_Ghost
               (Str, Str'First, Str'Last)
             with Ghost;
+
             Fst_Num   : constant Positive :=
               (if Str (Non_Blank) in '+' | '-' then Non_Blank + 1
                else Non_Blank)
-              with Ghost;
+            with Ghost;
          begin
             pragma Assert
               (Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Str'Last)));
