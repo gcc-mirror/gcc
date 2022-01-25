@@ -1507,6 +1507,7 @@ OBJS = \
 	omp-low.o \
 	omp-oacc-kernels-decompose.o \
 	omp-simd-clone.o \
+	omp-expand-metadirective.o \
 	omp-data-optimize.o \
 	opt-problem.o \
 	optabs.o \
