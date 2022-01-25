@@ -318,35 +318,42 @@ range::add_bound (bound b, enum bound_kind bound_kind)
       if (m_lower_bound.m_constant)
 	{
 	  m_lower_bound.ensure_closed (BK_LOWER);
-	  if (!tree_int_cst_lt (b.m_constant,
-				m_lower_bound.m_constant))
+	  if (tree_int_cst_le (b.m_constant,
+			       m_lower_bound.m_constant))
 	    return true;
+	}
+      if (m_upper_bound.m_constant)
+	{
+	  m_upper_bound.ensure_closed (BK_UPPER);
+	  /* Reject B <= V <= UPPER when B > UPPER.  */
+	  if (!tree_int_cst_le (b.m_constant,
+				m_upper_bound.m_constant))
+	    return false;
 	}
       m_lower_bound = b;
       break;
+
     case BK_UPPER:
       /* Discard redundant bounds.  */
       if (m_upper_bound.m_constant)
 	{
 	  m_upper_bound.ensure_closed (BK_UPPER);
-	  if (tree_int_cst_le (b.m_constant,
-			       m_upper_bound.m_constant))
+	  if (!tree_int_cst_lt (b.m_constant,
+				m_upper_bound.m_constant))
 	    return true;
+	}
+      if (m_lower_bound.m_constant)
+	{
+	  m_lower_bound.ensure_closed (BK_LOWER);
+	  /* Reject LOWER <= V <= B when LOWER > B.  */
+	  if (!tree_int_cst_le (m_lower_bound.m_constant,
+				b.m_constant))
+	    return false;
 	}
       m_upper_bound = b;
       break;
     }
-  if (m_lower_bound.m_constant
-      && m_upper_bound.m_constant)
-    {
-      m_lower_bound.ensure_closed (BK_LOWER);
-      m_upper_bound.ensure_closed (BK_UPPER);
 
-      /* Reject LOWER <= V <= UPPER when LOWER > UPPER.  */
-      if (!tree_int_cst_le (m_lower_bound.m_constant,
-			    m_upper_bound.m_constant))
-	return false;
-    }
   return true;
 }
 
@@ -3093,6 +3100,49 @@ namespace selftest {
    These have to be written in terms of a region_model, since
    the latter is responsible for managing svalue instances.  */
 
+/* Verify that range::add_bound works as expected.  */
+
+static void
+test_range ()
+{
+  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree int_1 = build_int_cst (integer_type_node, 1);
+  tree int_2 = build_int_cst (integer_type_node, 2);
+  tree int_5 = build_int_cst (integer_type_node, 5);
+
+  {
+    range r;
+    ASSERT_FALSE (r.constrained_to_single_element ());
+
+    /* (r >= 1).  */
+    ASSERT_TRUE (r.add_bound (GE_EXPR, int_1));
+
+    /* Redundant.  */
+    ASSERT_TRUE (r.add_bound (GE_EXPR, int_0));
+    ASSERT_TRUE (r.add_bound (GT_EXPR, int_0));
+
+    ASSERT_FALSE (r.constrained_to_single_element ());
+
+    /* Contradiction.  */
+    ASSERT_FALSE (r.add_bound (LT_EXPR, int_1));
+
+    /* (r < 5).  */
+    ASSERT_TRUE (r.add_bound (LT_EXPR, int_5));
+    ASSERT_FALSE (r.constrained_to_single_element ());
+
+    /* Contradiction.  */
+    ASSERT_FALSE (r.add_bound (GE_EXPR, int_5));
+
+    /* (r < 2).  */
+    ASSERT_TRUE (r.add_bound (LT_EXPR, int_2));
+    ASSERT_TRUE (r.constrained_to_single_element ());
+
+    /* Redundant.  */
+    ASSERT_TRUE (r.add_bound (LE_EXPR, int_1));
+    ASSERT_TRUE (r.constrained_to_single_element ());
+  }
+}
+
 /* Verify that setting and getting simple conditions within a region_model
    work (thus exercising the underlying constraint_manager).  */
 
@@ -3697,6 +3747,20 @@ test_constant_comparisons ()
     region_model_manager mgr;
     {
       region_model model (&mgr);
+      ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
+      ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
+    }
+    {
+      region_model model (&mgr);
+      ADD_SAT_CONSTRAINT (model, int_1, LT_EXPR, a);
+      ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
+      ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
+      ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
+    }
+    {
+      region_model model (&mgr);
+      ADD_SAT_CONSTRAINT (model, int_1, LT_EXPR, a);
+      ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
       ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
     }
@@ -4323,6 +4387,7 @@ run_constraint_manager_tests (bool transitivity)
   int saved_flag_analyzer_transitivity = flag_analyzer_transitivity;
   flag_analyzer_transitivity = transitivity;
 
+  test_range ();
   test_constraint_conditions ();
   if (flag_analyzer_transitivity)
     {
