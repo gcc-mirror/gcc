@@ -1,4 +1,5 @@
-! { dg-do run }
+! { dg-do run { xfail { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! x87 / x86-32 ABI is unsuitable for signaling NaNs
 !
 program test
   use, intrinsic :: iso_c_binding
