@@ -1,3 +1,9 @@
+2022-01-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Sync from master.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2022-01-19  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: Sync from master.
