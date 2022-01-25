@@ -1,3 +1,19 @@
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/metadirective-1.c: New.
+	* c-c++-common/gomp/metadirective-2.c: New.
+	* c-c++-common/gomp/metadirective-3.c: New.
+	* c-c++-common/gomp/metadirective-4.c: New.
+	* c-c++-common/gomp/metadirective-5.c: New.
+	* c-c++-common/gomp/metadirective-6.c: New.
+	* gcc.dg/gomp/metadirective-1.c: New.
+	* gfortran.dg/gomp/metadirective-1.f90: New.
+	* gfortran.dg/gomp/metadirective-2.f90: New.
+	* gfortran.dg/gomp/metadirective-3.f90: New.
+	* gfortran.dg/gomp/metadirective-4.f90: New.
+	* gfortran.dg/gomp/metadirective-5.f90: New.
+	* gfortran.dg/gomp/metadirective-6.f90: New.
+
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
 	* c-c++-common/goacc/acc-icf.c: Adjust.
