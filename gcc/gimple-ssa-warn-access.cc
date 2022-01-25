@@ -2053,7 +2053,7 @@ const pass_data pass_data_waccess = {
   GIMPLE_PASS,
   "waccess",
   OPTGROUP_NONE,
-  TV_NONE,
+  TV_WARN_ACCESS, /* timer variable */
   PROP_cfg, /* properties_required  */
   0,	    /* properties_provided  */
   0,	    /* properties_destroyed  */

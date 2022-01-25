@@ -67,7 +67,7 @@ struct access_ref
   gphi *phi () const;
 
   /* Merge the result for a pointer with *THIS.  */
-  bool merge_ref (vec<access_ref> *all_refs, tree, gimple *, int, bool,
+  void merge_ref (vec<access_ref> *all_refs, tree, gimple *, int, bool,
 		  ssa_name_limit_t &, pointer_query &);
 
   /* Return the object to which REF refers.  */
