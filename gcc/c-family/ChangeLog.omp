@@ -1,5 +1,10 @@
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* c-omp.cc (c_omp_expand_metadirective_r): New.
+	(c_omp_expand_metadirective): New.
+
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
 	(c_omp_expand_metadirective): New prototype.
 	* c-gimplify.cc (genericize_omp_metadirective_stmt): New.
