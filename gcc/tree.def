@@ -1319,6 +1319,11 @@ DEFTREECODE (OMP_TARGET_ENTER_DATA, "omp_target_enter_data", tcc_statement, 1)
    Operand 0: OMP_TARGET_EXIT_DATA_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_TARGET_EXIT_DATA, "omp_target_exit_data", tcc_statement, 1)
 
+/* OpenMP - #pragma omp metadirective [clause1 ... clauseN]
+   Operand 0: OMP_METADIRECTIVE_CLAUSES: List of selectors and directive
+	variants.  */
+DEFTREECODE (OMP_METADIRECTIVE, "omp_metadirective", tcc_statement, 1)
+
 /* OMP_ATOMIC through OMP_ATOMIC_CAPTURE_NEW must be consecutive,
    or OMP_ATOMIC_SEQ_CST needs adjusting.  */
 

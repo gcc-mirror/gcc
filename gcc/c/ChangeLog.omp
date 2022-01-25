@@ -1,3 +1,16 @@
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-parser.cc (c_parser_skip_to_end_of_block_or_statement): Handle
+	parentheses in statement.
+	(c_parser_omp_metadirective): New prototype.
+	(c_parser_omp_context_selector): Add extra argument.  Allow
+	non-constant expressions.
+	(c_parser_omp_context_selector_specification): Add extra argument and
+	propagate it to c_parser_omp_context_selector.
+	(analyze_metadirective_body): New.
+	(c_parser_omp_metadirective): New.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_METADIRECTIVE.
+
 2021-08-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-typeck.cc (handle_omp_array_sections_1): Robustify non-contiguous

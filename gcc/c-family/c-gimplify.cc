@@ -462,6 +462,26 @@ genericize_omp_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
   finish_bc_block (&OMP_FOR_BODY (stmt), bc_continue, clab);
 }
 
+/* Genericize a OMP_METADIRECTIVE node *STMT_P.  */
+
+static void
+genericize_omp_metadirective_stmt (tree *stmt_p, int *walk_subtrees,
+				   void *data, walk_tree_fn func,
+				   walk_tree_lh lh)
+{
+  tree stmt = *stmt_p;
+
+  for (tree clause = OMP_METADIRECTIVE_CLAUSES (stmt);
+       clause != NULL_TREE;
+       clause = TREE_CHAIN (clause))
+    {
+      tree variant = TREE_VALUE (clause);
+      walk_tree_1 (&TREE_PURPOSE (variant), func, data, NULL, lh);
+      walk_tree_1 (&TREE_VALUE (variant), func, data, NULL, lh);
+    }
+
+  *walk_subtrees = 0;
+}
 
 /* Lower structured control flow tree nodes, such as loops.  The
    STMT_P, WALK_SUBTREES, and DATA arguments are as for the walk_tree_fn
@@ -508,6 +528,11 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
     case OMP_TASKLOOP:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
+      break;
+
+    case OMP_METADIRECTIVE:
+      genericize_omp_metadirective_stmt (stmt_p, walk_subtrees, data, func,
+					 lh);
       break;
 
     case STATEMENT_LIST:

@@ -1296,7 +1296,7 @@ omp_context_name_list_prop (tree prop)
    IPA, others until vectorization.  */
 
 int
-omp_context_selector_matches (tree ctx)
+omp_context_selector_matches (tree ctx, bool)
 {
   int ret = 1;
   for (tree t1 = ctx; t1; t1 = TREE_CHAIN (t1))
@@ -2658,6 +2658,18 @@ omp_lto_input_declare_variant_alt (lto_input_block *ib, cgraph_node *node,
       = hash_table<omp_declare_variant_alt_hasher>::create_ggc (64);
   *omp_declare_variant_alt->find_slot_with_hash (entryp, DECL_UID (node->decl),
 						 INSERT) = entryp;
+}
+
+/* Return a vector of dynamic replacement candidates for the metadirective
+   statement in METADIRECTIVE.  Return an empty vector if the metadirective
+   cannot be resolved.  */
+
+vec<struct omp_metadirective_variant>
+omp_resolve_metadirective (tree)
+{
+  vec<struct omp_metadirective_variant> variants = {};
+
+  return variants;
 }
 
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK

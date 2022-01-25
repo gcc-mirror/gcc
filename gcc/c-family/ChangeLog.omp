@@ -1,3 +1,14 @@
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
+	(c_omp_expand_metadirective): New prototype.
+	* c-gimplify.cc (genericize_omp_metadirective_stmt): New.
+	(c_genericize_control_stmt): Handle OMP_METADIRECTIVE tree nodes.
+	* c-omp.cc (omp_directives): Classify metadirectives as C_OMP_DIR_META.
+	(c_omp_expand_metadirective): New stub function.
+	* c-pragma.cc (omp_pragmas): Add entry for metadirective.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_METADIRECTIVE.
+
 2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-omp.cc (end_test_ok_for_annotation_r): New.

@@ -1313,7 +1313,8 @@ enum c_omp_directive_kind {
   C_OMP_DIR_CONSTRUCT,
   C_OMP_DIR_DECLARATIVE,
   C_OMP_DIR_UTILITY,
-  C_OMP_DIR_INFORMATIONAL
+  C_OMP_DIR_INFORMATIONAL,
+  C_OMP_DIR_META
 };
 
 struct c_omp_directive {
@@ -1327,6 +1328,7 @@ extern const struct c_omp_directive c_omp_directives[];
 extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *,
 								 const char *);
+extern tree c_omp_expand_metadirective (vec<struct omp_metadirective_variant> &);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
 inline tree

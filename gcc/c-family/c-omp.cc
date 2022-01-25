@@ -3914,7 +3914,7 @@ const struct c_omp_directive c_omp_directives[] = {
   /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "begin", "metadirective", nullptr, PRAGMA_OMP_BEGIN,
-    C_OMP_DIR_???, ??? },  */
+    C_OMP_DIR_META, false },  */
   { "cancel", nullptr, nullptr, PRAGMA_OMP_CANCEL,
     C_OMP_DIR_STANDALONE, false },
   { "cancellation", "point", nullptr, PRAGMA_OMP_CANCELLATION_POINT,
@@ -3944,7 +3944,7 @@ const struct c_omp_directive c_omp_directives[] = {
   /* { "end", "declare", "variant", PRAGMA_OMP_END,
     C_OMP_DIR_DECLARATIVE, false }, */
   /* { "end", "metadirective", nullptr, PRAGMA_OMP_END,
-    C_OMP_DIR_???, ??? },  */
+    C_OMP_DIR_META, false },  */
   /* error with at(execution) is C_OMP_DIR_STANDALONE.  */
   { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
     C_OMP_DIR_UTILITY, false },
@@ -3960,8 +3960,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   { "master", nullptr, nullptr, PRAGMA_OMP_MASTER,
     C_OMP_DIR_CONSTRUCT, true },
-  /* { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
-    C_OMP_DIR_???, ??? },  */
+  { "metadirective", nullptr, nullptr, PRAGMA_OMP_METADIRECTIVE,
+    C_OMP_DIR_META, false },
   { "nothing", nullptr, nullptr, PRAGMA_OMP_NOTHING,
     C_OMP_DIR_UTILITY, false },
   /* ordered with depend clause is C_OMP_DIR_STANDALONE.  */
@@ -4043,4 +4043,10 @@ c_omp_categorize_directive (const char *first, const char *second,
       return &c_omp_directives[i];
     }
   return NULL;
+}
+
+tree
+c_omp_expand_metadirective (vec<struct omp_metadirective_variant> &)
+{
+  return NULL_TREE;
 }

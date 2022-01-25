@@ -89,6 +89,12 @@ struct omp_for_data
   tree adjn1;
 };
 
+/* A structure describing a variant in a metadirective.  */
+
+struct omp_metadirective_variant
+{
+};
+
 #define OACC_FN_ATTRIB "oacc function"
 
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
@@ -109,10 +115,11 @@ extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
-extern int omp_context_selector_matches (tree);
+extern int omp_context_selector_matches (tree, bool = false);
 extern int omp_context_selector_set_compare (const char *, tree, tree);
 extern tree omp_get_context_selector (tree, const char *, const char *);
 extern tree omp_resolve_declare_variant (tree);
+extern vec<struct omp_metadirective_variant> omp_resolve_metadirective (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);
