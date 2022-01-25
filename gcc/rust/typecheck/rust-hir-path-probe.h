@@ -280,8 +280,8 @@ protected:
     current_impl = impl;
     HirId impl_ty_id = impl->get_type ()->get_mappings ().get_hirid ();
     TyTy::BaseType *impl_block_ty = nullptr;
-    bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
-    rust_assert (ok);
+    if (!context->lookup_type (impl_ty_id, &impl_block_ty))
+      return;
 
     if (!receiver->can_eq (impl_block_ty, false))
       return;
