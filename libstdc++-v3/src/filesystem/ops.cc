@@ -27,6 +27,10 @@
 # define NEED_DO_COPY_FILE
 # define NEED_DO_SPACE
 #endif
+#ifndef _GNU_SOURCE
+// Cygwin needs this for secure_getenv
+# define _GNU_SOURCE 1
+#endif
 
 #include <bits/largefile-config.h>
 #include <experimental/filesystem>
