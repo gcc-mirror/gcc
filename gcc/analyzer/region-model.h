@@ -832,6 +832,8 @@ class region_model
   void check_region_for_read (const region *src_reg,
 			      region_model_context *ctxt) const;
 
+  void check_call_args (const call_details &cd) const;
+
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
 

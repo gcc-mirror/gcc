@@ -1044,6 +1044,16 @@ region_model::on_stmt_pre (const gimple *stmt,
     }
 }
 
+/* Ensure that all arguments at the call described by CD are checked
+   for poisoned values, by calling get_rvalue on each argument.  */
+
+void
+region_model::check_call_args (const call_details &cd) const
+{
+  for (unsigned arg_idx = 0; arg_idx < cd.num_args (); arg_idx++)
+    cd.get_arg_svalue (arg_idx);
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1173,6 +1183,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    /* These stdio builtins have external effects that are out
 	       of scope for the analyzer: we only want to model the effects
 	       on the return value.  */
+	    check_call_args (cd);
 	    break;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
