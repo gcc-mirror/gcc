@@ -483,7 +483,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       *__i++ = __val();                 // require postincrement and assignment
     }
     _Tp __i;
-    _ValueT __val() const;
+    // Use a function pointer here so no definition of the function needed.
+    // Just need something that returns a _ValueT (which might be a reference).
+    _ValueT (*__val)();
   };
 
   template<typename _Tp>
