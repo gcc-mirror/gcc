@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* Skip XPASS cases.  */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O2 -flto" } { "" } } */
 /* { dg-additional-options "-Wstringop-overread" } */
 
 struct B {
@@ -22,6 +24,6 @@ void g (struct C *pc, struct D *pd, int i)
   pd->i = pb->i;
 
   const short *psa = pb->a[i].sa;
-  if (f (psa))
+  if (f (psa)) /* { dg-bogus "from a region of size" "pr99673" { xfail *-*-* } } */
     return;
 }
