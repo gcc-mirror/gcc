@@ -1,3 +1,17 @@
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104227
+	* check.cc (gfc_calculate_transfer_sizes): Fix checking of arrays
+	passed as MOLD argument to the TRANSFER intrinsic for having
+	storage size zero.
+
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104212
+	* check.cc (gfc_check_norm2): Check that optional argument DIM is
+	scalar.
+	(gfc_check_parity): Likewise.
+
 2022-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (fconvert=): Add EnumSet property and mention also

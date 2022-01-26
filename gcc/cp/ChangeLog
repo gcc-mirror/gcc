@@ -1,3 +1,15 @@
+2022-01-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101532
+	PR c++/104225
+	* decl2.cc (mark_used): Don't consider maybe_instantiate_noexcept
+	on a deleted function.
+
+2022-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59950
+	* call.cc (build_over_call): Use cp_build_indirect_ref.
+
 2022-01-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104197

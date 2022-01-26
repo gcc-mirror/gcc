@@ -1,3 +1,18 @@
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: Fix GCC-specific preprocessor
+	macros.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* ieee/issignaling_fallback.h (__issignalingl): Define for
+	IBM extended long double are returning __issignaling on the
+	first double.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: fix preprocessor condition.
+
 2022-01-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* ieee/issignaling_fallback.h: New file.

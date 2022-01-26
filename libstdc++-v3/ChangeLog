@@ -1,3 +1,41 @@
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104019
+	* include/bits/istream.tcc (basic_istream::sentry): Add braces
+	around try-block.
+	* include/bits/shared_ptr_base.h (_Sp_counted_array_base::_M_init):
+	Add pragmas to disable bogus warnings from PR 61596.
+
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104217
+	* src/c++17/fs_ops.cc (_GNU_SOURCE): Define.
+	* src/filesystem/dir.cc (_GNU_SOURCE): Define.
+	* src/filesystem/ops.cc (_GNU_SOURCE): Define.
+
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for
+	fdopendir.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++17/fs_dir.cc (_Dir): Add nofollow flag to constructor
+	and pass it to base class constructor.
+	(directory_iterator): Pass nofollow flag to _Dir constructor.
+	(fs::recursive_directory_iterator::increment): Likewise.
+	* src/c++17/fs_ops.cc (do_remove_all): Use nofollow option for
+	directory_iterator constructor. Move error check outside loop.
+	* src/filesystem/dir-common.h (_Dir_base): Add nofollow flag to
+	constructor and when it's set use ::open with O_NOFOLLOW and
+	O_DIRECTORY.
+	* src/filesystem/dir.cc (_Dir): Add nofollow flag to constructor
+	and pass it to base class constructor.
+	(directory_iterator): Pass nofollow flag to _Dir constructor.
+	(fs::recursive_directory_iterator::increment): Likewise.
+	* src/filesystem/ops.cc (remove_all): Use nofollow option for
+	directory_iterator constructor. Move error check outside loop.
+
 2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104032

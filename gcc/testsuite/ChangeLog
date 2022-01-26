@@ -1,3 +1,39 @@
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104227
+	* gfortran.dg/transfer_check_6.f90: New test.
+
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104212
+	* gfortran.dg/argument_checking_26.f90: New test.
+
+2022-01-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101532
+	PR c++/104225
+	* g++.dg/cpp0x/nsdmi-template21.C: New test.
+	* g++.dg/cpp0x/nsdmi-template21a.C: New test.
+
+2022-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/59950
+	* g++.dg/init/assign2.C: New test.
+
+2022-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104214
+	* gcc.dg/vect/pr81196-2.c: New variant testcase only
+	requiring vect_int.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_3.f90: Skip test on 32-bit x86/x86_64.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90: Fix test.
+
 2022-01-24  Marek Polacek  <polacek@redhat.com>
 
 	PR preprocessor/104030

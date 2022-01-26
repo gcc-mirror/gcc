@@ -1,3 +1,41 @@
+2022-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/104203
+	* gimple-ssa-warn-access.cc (pass_data pass_data_waccess): Use
+	TV_WARN_ACCESS.
+	* pointer-query.cc (access_ref::merge_ref): Change return type.
+	Convert failure to a conservative success.
+	(access_ref::get_ref): Adjust to the change above.  Short-circuit
+	PHI evaluation after first failure turned into conservative success.
+	* pointer-query.h (access_ref::merge_ref): Change return type.
+	* timevar.def (TV_WARN_ACCESS): New timer variable.
+
+2022-01-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (OPTION_GLIBC): Define as 0.
+
+2022-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104214
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Use
+	stronger guarantees for relational pointer compares when
+	rewriting BASE0 + STEP0 cmp BASE1 + STEP1 as
+	BASE0 + STEP0 - STEP1 cmp BASE1.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104172
+	* config/rs6000/rs6000-internal.h (rs6000_passes_ieee128): Don't
+	declare.
+	* config/rs6000/rs6000.cc (rs6000_passes_ieee128,
+	ieee128_mangling_gcc_8_1): Remove.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Don't redefine.
+	(rs6000_mangle_type): Return "u9__ieee128" instead of
+	ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128".
+	(rs6000_globalize_decl_name): Remove.
+	* config/rs6000/rs6000-call.cc (init_cumulative_args,
+	rs6000_function_arg_advance_1): Don't set rs6000_passes_ieee128.
+
 2022-01-24  Martin Sebor  <msebor@redhat.com>
 
 	* pointer-query.cc (pointer_query::dump): Remove duplicate
