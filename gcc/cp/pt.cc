@@ -13676,7 +13676,28 @@ tsubst_aggr_type (tree t,
     }
 }
 
-static GTY((cache)) decl_tree_cache_map *defarg_inst;
+/* Map from a FUNCTION_DECL to a vec of default argument instantiations,
+   indexed in reverse order of the parameters.  */
+
+static GTY((cache)) hash_table<tree_vec_map_cache_hasher> *defarg_inst;
+
+/* Return a reference to the vec* of defarg insts for FN.  */
+
+static vec<tree,va_gc> *&
+defarg_insts_for (tree fn)
+{
+  if (!defarg_inst)
+    defarg_inst = hash_table<tree_vec_map_cache_hasher>::create_ggc (13);
+  tree_vec_map in = { fn, nullptr };
+  tree_vec_map **slot
+    = defarg_inst->find_slot_with_hash (&in, DECL_UID (fn), INSERT);
+  if (!*slot)
+    {
+      *slot = ggc_alloc<tree_vec_map> ();
+      **slot = in;
+    }
+  return (*slot)->to;
+}
 
 /* Substitute into the default argument ARG (a default argument for
    FN), which has the indicated TYPE.  */
@@ -13706,9 +13727,16 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 
   gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, parmtype));
 
-  tree *slot;
-  if (defarg_inst && (slot = defarg_inst->get (parm)))
-    return *slot;
+  /* Remember the location of the pointer to the vec rather than the location
+     of the particular element, in case the vec grows in tsubst_expr.  */
+  vec<tree,va_gc> *&defs = defarg_insts_for (fn);
+  /* Index in reverse order to avoid allocating space for initial parameters
+     that don't have default arguments.  */
+  unsigned ridx = list_length (parm);
+  if (vec_safe_length (defs) < ridx)
+    vec_safe_grow_cleared (defs, ridx);
+  else if (tree inst = (*defs)[ridx - 1])
+    return inst;
 
   /* This default argument came from a template.  Instantiate the
      default argument here, not in tsubst.  In the case of
@@ -13753,11 +13781,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   pop_from_top_level ();
 
   if (arg != error_mark_node && !cp_unevaluated_operand)
-    {
-      if (!defarg_inst)
-	defarg_inst = decl_tree_cache_map::create_ggc (37);
-      defarg_inst->put (parm, arg);
-    }
+    (*defs)[ridx - 1] = arg;
 
   return arg;
 }
