@@ -118,7 +118,8 @@ _pext_u64 (unsigned long long __X, unsigned long long __M)
       /* Also if the pext mask is constant, then the popcount is
        constant, we can evaluate the following loop at compile
        time and use a constant bit permute vector.  */
-      for (long i = 0; i < __builtin_popcountl (__M); i++)
+      long i;
+      for (i = 0; i < __builtin_popcountl (__M); i++)
 	{
 	  c = __builtin_clzl (m);
 	  p = (p << 8) | c;

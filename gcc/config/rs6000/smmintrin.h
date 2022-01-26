@@ -687,7 +687,8 @@ _mm_minpos_epu16 (__m128i __A)
   union __u __u = { .__m = __A }, __r = { .__m = {0} };
   unsigned short __ridx = 0;
   unsigned short __rmin = __u.__uh[__ridx];
-  for (unsigned long __i = 1; __i < 8; __i++)
+  unsigned long __i;
+  for (__i = 1; __i < 8; __i++)
     {
       if (__u.__uh[__i] < __rmin)
 	{
