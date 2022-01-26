@@ -3272,8 +3272,9 @@ finish_compound_literal (tree type, tree compound_literal,
 
   /* Represent other compound literals with TARGET_EXPR so we produce
      a prvalue, and can elide copies.  */
-  if (TREE_CODE (compound_literal) == CONSTRUCTOR
-      || TREE_CODE (compound_literal) == VEC_INIT_EXPR)
+  if (!VECTOR_TYPE_P (type)
+      && (TREE_CODE (compound_literal) == CONSTRUCTOR
+	  || TREE_CODE (compound_literal) == VEC_INIT_EXPR))
     {
       /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
       if (TREE_CODE (compound_literal) == CONSTRUCTOR)
