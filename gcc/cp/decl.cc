@@ -11087,6 +11087,18 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
 
+  /* [dcl.type.class.deduct] prohibits forming an array of placeholder
+     for a deduced class type.  */
+  if (is_auto (type) && CLASS_PLACEHOLDER_TEMPLATE (type))
+    {
+      if (name)
+	error_at (loc, "%qD declared as array of template placeholder "
+		  "type %qT", name, type);
+      else
+	error ("creating array of template placeholder type %qT", type);
+      return error_mark_node;
+    }
+
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
   switch (TREE_CODE (type))
