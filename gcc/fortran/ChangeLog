@@ -1,3 +1,23 @@
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101762
+	* expr.c (gfc_check_pointer_assign): For pointer initialization
+	targets, check that subscripts and substring indices in
+	specifications are constant expressions.
+
+2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/67804
+	* primary.c (gfc_match_structure_constructor): Recover from errors
+	that occurred while checking for a valid structure constructor in
+	a DATA statement.
+
 2022-01-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
