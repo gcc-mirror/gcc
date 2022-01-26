@@ -1968,9 +1968,13 @@
   ""
   {
     if (INTVAL (operands[1]) == 0)
-      return "\\tbar.sync\\t%0;";
+      return (TARGET_PTX_6_0
+	      ? "\\tbarrier.sync.aligned\\t%0;"
+	      : "\\tbar.sync\\t%0;");
     else
-      return "\\tbar.sync\\t%0, %1;";
+      return (TARGET_PTX_6_0
+	      ? "\\tbarrier.sync\\t%0, %1;"
+	      : "\\tbar.sync\\t%0, %1;");
   }
   [(set_attr "predicable" "false")])
 
