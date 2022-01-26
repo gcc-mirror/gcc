@@ -1,3 +1,20 @@
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104172
+	* config/rs6000/rs6000-internal.h (rs6000_passes_ieee128): Don't
+	declare.
+	* config/rs6000/rs6000.c (rs6000_passes_ieee128,
+	ieee128_mangling_gcc_8_1): Remove.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Don't redefine.
+	(rs6000_mangle_type): Return "u9__ieee128" instead of
+	ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128".
+	(rs6000_globalize_decl_name): Remove.
+	* config/rs6000/rs6000-call.c (init_cumulative_args,
+	rs6000_function_arg_advance_1): Don't set rs6000_passes_ieee128.
+
 2022-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
