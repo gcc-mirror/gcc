@@ -13568,6 +13568,47 @@ qualified_die_p (dw_die_ref die, int *mask, unsigned int depth)
   return type;
 }
 
+/* If TYPE is long double or complex long double that
+   should be emitted as artificial typedef to _Float128 or
+   complex _Float128, return the type it should be emitted as.
+   This is done in case the target already supports 16-byte
+   composite floating point type (ibm_extended_format).  */
+
+static tree
+long_double_as_float128 (tree type)
+{
+  if (type != long_double_type_node
+      && type != complex_long_double_type_node)
+    return NULL_TREE;
+
+  machine_mode mode, fmode;
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    mode = TYPE_MODE (TREE_TYPE (type));
+  else
+    mode = TYPE_MODE (type);
+  if (known_eq (GET_MODE_SIZE (mode), 16) && !MODE_COMPOSITE_P (mode))
+    FOR_EACH_MODE_IN_CLASS (fmode, MODE_FLOAT)
+      if (known_eq (GET_MODE_SIZE (fmode), 16)
+          && MODE_COMPOSITE_P (fmode))
+	{
+	  if (type == long_double_type_node)
+	    {
+	      if (float128_type_node
+		  && (TYPE_MODE (float128_type_node)
+		      == TYPE_MODE (type)))
+		return float128_type_node;
+	      return NULL_TREE;
+	    }
+	  for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	    if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+		&& (TYPE_MODE (COMPLEX_FLOATN_NX_TYPE_NODE (i))
+		    == TYPE_MODE (type)))
+	      return COMPLEX_FLOATN_NX_TYPE_NODE (i);
+	}
+
+  return NULL_TREE;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
    entry that chains the modifiers specified by CV_QUALS in front of the
    given type.  REVERSE is true if the type is to be interpreted in the
@@ -13848,7 +13889,32 @@ modified_type_die (tree type, int cv_quals, bool reverse,
     }
   else if (is_base_type (type))
     {
-      mod_type_die = base_type_die (type, reverse);
+      /* If a target supports long double as different floating point
+	 modes with the same 16-byte size, use normal DW_TAG_base_type
+	 only for the composite (ibm_extended_real_format) type and
+	 for the other for the time being emit instead a "_Float128"
+	 or "complex _Float128" DW_TAG_base_type and a "long double"
+	 or "complex long double" typedef to it.  */
+      if (tree other_type = long_double_as_float128 (type))
+	{
+	  dw_die_ref other_die;
+	  if (TYPE_NAME (other_type))
+	    other_die
+	      = modified_type_die (other_type, TYPE_UNQUALIFIED, reverse,
+				   context_die);
+	  else
+	    {
+	      other_die = base_type_die (type, reverse);
+	      add_child_die (comp_unit_die (), other_die);
+	      add_name_attribute (other_die,
+				  TREE_CODE (type) == COMPLEX_TYPE
+				  ? "complex _Float128" : "_Float128");
+	    }
+	  mod_type_die = new_die_raw (DW_TAG_typedef);
+	  add_AT_die_ref (mod_type_die, DW_AT_type, other_die);
+	}
+      else
+	mod_type_die = base_type_die (type, reverse);
 
       /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
       if (reverse_base_type)
