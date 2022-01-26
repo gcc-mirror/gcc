@@ -1042,17 +1042,21 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	    new_base = base - step > FINAL ; step < 0
 					     && base - step doesn't overflow
 
-       2') |FINAL - new_base| is an exact multiple of step.
-
-     Please refer to PR34114 as an example of loop-ch's impact, also refer
-     to PR72817 as an example why condition 2') is necessary.
+     Please refer to PR34114 as an example of loop-ch's impact.
 
      Note, for NE_EXPR, base equals to FINAL is a special case, in
-     which the loop exits immediately, and the iv does not overflow.  */
+     which the loop exits immediately, and the iv does not overflow.
+
+     Also note, we prove condition 2) by checking base and final seperately
+     along with condition 1) or 1').  */
   if (!niter->control.no_overflow
-      && (integer_onep (s) || multiple_of_p (type, c, s)))
+      && (integer_onep (s)
+	  || (multiple_of_p (type, fold_convert (niter_type, iv->base), s,
+			     false)
+	      && multiple_of_p (type, fold_convert (niter_type, final), s,
+				false))))
     {
-      tree t, cond, new_c, relaxed_cond = boolean_false_node;
+      tree t, cond, relaxed_cond = boolean_false_node;
 
       if (tree_int_cst_sign_bit (iv->step))
 	{
@@ -1066,12 +1070,8 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  new_c = fold_build2 (MINUS_EXPR, niter_type,
-				       fold_convert (niter_type, t),
-				       fold_convert (niter_type, final));
-		  if (multiple_of_p (type, new_c, s))
-		    relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node,
-						t, final);
+		  relaxed_cond = fold_build2 (GT_EXPR, boolean_type_node, t,
+					      final);
 		}
 	    }
 	}
@@ -1087,12 +1087,8 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	      if (integer_nonzerop (t))
 		{
 		  t = fold_build2 (MINUS_EXPR, type, iv->base, iv->step);
-		  new_c = fold_build2 (MINUS_EXPR, niter_type,
-				       fold_convert (niter_type, final),
-				       fold_convert (niter_type, t));
-		  if (multiple_of_p (type, new_c, s))
-		    relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node,
-						t, final);
+		  relaxed_cond = fold_build2 (LT_EXPR, boolean_type_node, t,
+					      final);
 		}
 	    }
 	}
@@ -1102,19 +1098,11 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 	t = simplify_using_initial_conditions (loop, relaxed_cond);
 
       if (t && integer_onep (t))
-	niter->control.no_overflow = true;
-    }
-
-  /* First the trivial cases -- when the step is 1.  */
-  if (integer_onep (s))
-    {
-      niter->niter = c;
-      return true;
-    }
-  if (niter->control.no_overflow && multiple_of_p (type, c, s))
-    {
-      niter->niter = fold_build2 (FLOOR_DIV_EXPR, niter_type, c, s);
-      return true;
+	{
+	  niter->control.no_overflow = true;
+	  niter->niter = fold_build2 (EXACT_DIV_EXPR, niter_type, c, s);
+	  return true;
+	}
     }
 
   /* Let nsd (step, size of mode) = d.  If d does not divide c, the loop
