@@ -76,18 +76,18 @@ cgetopt_getopt_long_only (int argc, char *argv[], char *optstring,
   return r;
 }
 
-typedef struct getopt_Options_s
+typedef struct cgetopt_Options_s
 {
   struct option *cinfo;
   unsigned int high;
-} getopt_Options;
+} cgetopt_Options;
 
 /* InitOptions a constructor for Options.  */
 
-getopt_Options *
-getopt_InitOptions (void)
+cgetopt_Options *
+cgetopt_InitOptions (void)
 {
-  getopt_Options *o = (getopt_Options *)malloc (sizeof (getopt_Options));
+  cgetopt_Options *o = (cgetopt_Options *)malloc (sizeof (cgetopt_Options));
   o->cinfo = (struct option *)malloc (sizeof (struct option));
   o->high = 0;
   return o;
@@ -96,8 +96,8 @@ getopt_InitOptions (void)
 /* KillOptions a deconstructor for Options.  Returns NULL after freeing
    up all allocated memory associated with o.  */
 
-getopt_Options *
-getopt_KillOptions (getopt_Options *o)
+cgetopt_Options *
+cgetopt_KillOptions (cgetopt_Options *o)
 {
   free (o->cinfo);
   free (o);
@@ -107,8 +107,8 @@ getopt_KillOptions (getopt_Options *o)
 /* SetOption set option[index] with {name, has_arg, flag, val}.  */
 
 void
-getopt_SetOption (getopt_Options *o, unsigned int index, char *name,
-                  unsigned int has_arg, int *flag, int val)
+cgetopt_SetOption (cgetopt_Options *o, unsigned int index, char *name,
+ 		   unsigned int has_arg, int *flag, int val)
 {
   if (index > o->high)
     {
@@ -126,7 +126,7 @@ getopt_SetOption (getopt_Options *o, unsigned int index, char *name,
    long options.  */
 
 struct option *
-getopt_GetLongOptionArray (getopt_Options *o)
+cgetopt_GetLongOptionArray (cgetopt_Options *o)
 {
   return o->cinfo;
 }
@@ -134,11 +134,11 @@ getopt_GetLongOptionArray (getopt_Options *o)
 /* GNU Modula-2 linking fodder.  */
 
 void
-_M2_getopt_init (void)
+_M2_cgetopt_init (void)
 {
 }
 
 void
-_M2_getopt_finish (void)
+_M2_cgetopt_finish (void)
 {
 }
