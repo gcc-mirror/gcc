@@ -195,9 +195,9 @@ __issignalingl (long double x)
 #endif
 
 
-#if __FLT128_IS_IEC_60559__
+#if defined(GFC_REAL_16_IS_FLOAT128)
 
-/* We have a _Float128 type.  */
+/* We have a __float128 type.  */
 
 typedef union
 {
@@ -234,7 +234,7 @@ __issignalingf128 (__float128 x)
 
 /* Define the type-generic macro based on the functions above.  */
 
-#if __FLT128_IS_IEC_60559__
+#if defined(GFC_REAL_16_IS_FLOAT128)
 # define issignaling(X) \
   _Generic ((X), \
 	    __float128: __issignalingf128, \
