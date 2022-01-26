@@ -1170,7 +1170,8 @@ public:
     : rvalue (ctxt, loc, type_),
     m_link_section (NULL),
     m_reg_name (NULL),
-    m_tls_model (GCC_JIT_TLS_MODEL_NONE)
+    m_tls_model (GCC_JIT_TLS_MODEL_NONE),
+    m_alignment (0)
     {}
 
   playback::lvalue *
@@ -1195,11 +1196,14 @@ public:
   void set_tls_model (enum gcc_jit_tls_model model);
   void set_link_section (const char *name);
   void set_register_name (const char *reg_name);
+  void set_alignment (int alignment);
+  int get_alignment () { return m_alignment; }
 
 protected:
   string *m_link_section;
   string *m_reg_name;
   enum gcc_jit_tls_model m_tls_model;
+  int m_alignment;
 };
 
 class param : public lvalue

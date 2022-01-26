@@ -1342,6 +1342,25 @@ void
 gcc_jit_lvalue_set_register_name (gcc_jit_lvalue *lvalue,
 				  const char *reg_name);
 
+#define LIBGCCJIT_HAVE_gcc_jit_lvalue_set_alignment
+
+/* Set the alignment of a variable.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_24; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_ALIGNMENT  */
+extern void
+gcc_jit_lvalue_set_alignment (gcc_jit_lvalue *lvalue,
+			      int alignment);
+
+/* Get the alignment of a variable.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_24; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_ALIGNMENT  */
+extern int
+gcc_jit_lvalue_get_alignment (gcc_jit_lvalue *lvalue);
+
 extern gcc_jit_lvalue *
 gcc_jit_function_new_local (gcc_jit_function *func,
 			    gcc_jit_location *loc,
