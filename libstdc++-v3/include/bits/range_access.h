@@ -1011,25 +1011,27 @@ namespace ranges
 	  {
 	    const auto __diff = __bound - __it;
 
-#ifdef __cpp_lib_is_constant_evaluated
-	    if (std::is_constant_evaluated()
-		&& !(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0)))
-	      throw "inconsistent directions for distance and bound";
-#endif
-	    // n and bound must not lead in opposite directions:
-	    __glibcxx_assert(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0));
-	    const auto __absdiff = __diff < 0 ? -__diff : __diff;
-	    const auto __absn = __n < 0 ? -__n : __n;;
-	    if (__absn >= __absdiff)
+	    if (__diff == 0)
+	      return __n;
+	    else if (__diff > 0 ? __n >= __diff : __n <= __diff)
 	      {
 		(*this)(__it, __bound);
 		return __n - __diff;
 	      }
-	    else
+	    else if (__n != 0) [[likely]]
 	      {
+#ifdef __cpp_lib_is_constant_evaluated
+		if (std::is_constant_evaluated() && !(__n < 0 == __diff < 0))
+		  throw "inconsistent directions for distance and bound";
+#endif
+		// n and bound must not lead in opposite directions:
+		__glibcxx_assert(__n < 0 == __diff < 0);
+
 		(*this)(__it, __n);
 		return 0;
 	      }
+	    else
+	      return 0;
 	  }
 	else if (__it == __bound || __n == 0)
 	  return __n;
