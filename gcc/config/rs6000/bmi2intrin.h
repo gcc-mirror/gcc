@@ -29,8 +29,8 @@
    standard C or GNU C extensions, which are more portable and better
    optimized across multiple targets.  */
 
-#if !defined _X86INTRIN_H_INCLUDED
-# error "Never use <bmi2intrin.h> directly; include <x86intrin.h> instead."
+#if !defined _X86GPRINTRIN_H_INCLUDED
+# error "Never use <bmi2intrin.h> directly; include <x86gprintrin.h> instead."
 #endif
 
 #ifndef _BMI2INTRIN_H_INCLUDED
