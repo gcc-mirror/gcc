@@ -73,11 +73,11 @@ enum {RED, AMBER, GREEN, BLACK};
 
 int main(void)
 {
-        struct test t;
-        int num;
+        struct test t;  /* { dg-message "region created on stack here" } */
+        int num;  /* { dg-message "region created on stack here" } */
         int arry[10];
-        int arry_2[10];
-        int go;
+        int arry_2[10];  /* { dg-message "region created on stack here" } */
+        int go;  /* { dg-message "region created on stack here" } */
         int color = BLACK;
 
         func1(&t);

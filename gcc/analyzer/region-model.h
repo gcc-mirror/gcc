@@ -813,6 +813,7 @@ class region_model
   const svalue *check_for_poison (const svalue *sval,
 				  tree expr,
 				  region_model_context *ctxt) const;
+  const region * get_region_for_poisoned_expr (tree expr) const;
 
   void check_dynamic_size_for_taint (enum memory_space mem_space,
 				     const svalue *size_in_bytes,

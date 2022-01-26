@@ -454,8 +454,10 @@ class poisoned_value_diagnostic
 : public pending_diagnostic_subclass<poisoned_value_diagnostic>
 {
 public:
-  poisoned_value_diagnostic (tree expr, enum poison_kind pkind)
-  : m_expr (expr), m_pkind (pkind)
+  poisoned_value_diagnostic (tree expr, enum poison_kind pkind,
+			     const region *src_region)
+  : m_expr (expr), m_pkind (pkind),
+    m_src_region (src_region)
   {}
 
   const char *get_kind () const FINAL OVERRIDE { return "poisoned_value_diagnostic"; }
@@ -467,7 +469,9 @@ public:
 
   bool operator== (const poisoned_value_diagnostic &other) const
   {
-    return m_expr == other.m_expr;
+    return (m_expr == other.m_expr
+	    && m_pkind == other.m_pkind
+	    && m_src_region == other.m_src_region);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
@@ -528,9 +532,16 @@ public:
       }
   }
 
+  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
+  {
+    if (m_src_region)
+      interest->add_region_creation (m_src_region);
+  }
+
 private:
   tree m_expr;
   enum poison_kind m_pkind;
+  const region *m_src_region;
 };
 
 /* A subclass of pending_diagnostic for complaining about shifts
@@ -839,7 +850,11 @@ region_model::check_for_poison (const svalue *sval,
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
       enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind)))
+      const region *src_region = NULL;
+      if (pkind == POISON_KIND_UNINIT)
+	src_region = get_region_for_poisoned_expr (expr);
+      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind,
+						     src_region)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -851,6 +866,24 @@ region_model::check_for_poison (const svalue *sval,
     }
 
   return sval;
+}
+
+/* Attempt to get a region for describing EXPR, the source of region of
+   a poisoned_svalue for use in a poisoned_value_diagnostic.
+   Return NULL if there is no good region to use.  */
+
+const region *
+region_model::get_region_for_poisoned_expr (tree expr) const
+{
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      tree decl = SSA_NAME_VAR (expr);
+      if (decl && DECL_P (decl))
+	expr = decl;
+      else
+	return NULL;
+    }
+  return get_lvalue (expr, NULL);
 }
 
 /* Update this model for the ASSIGN stmt, using CTXT to report any
@@ -2134,7 +2167,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind));
+		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind, NULL));
 	      }
 	  }
       }

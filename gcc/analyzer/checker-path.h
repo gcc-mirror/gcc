@@ -31,6 +31,7 @@ enum event_kind
   EK_DEBUG,
   EK_CUSTOM,
   EK_STMT,
+  EK_REGION_CREATION,
   EK_FUNCTION_ENTRY,
   EK_STATE_CHANGE,
   EK_START_CFG_EDGE,
@@ -58,6 +59,7 @@ extern const char *event_kind_to_string (enum event_kind ek);
        custom_event (EK_CUSTOM)
 	 precanned_custom_event
        statement_event (EK_STMT)
+       region_creation_event (EK_REGION_CREATION)
        function_entry_event (EK_FUNCTION_ENTRY)
        state_change_event (EK_STATE_CHANGE)
        superedge_event
@@ -192,6 +194,21 @@ public:
 
   const gimple * const m_stmt;
   const program_state m_dst_state;
+};
+
+/* A concrete event subclass describing the creation of a region that
+   is significant for a diagnostic  e.g. "region created on stack here".  */
+
+class region_creation_event : public checker_event
+{
+public:
+  region_creation_event (const region *reg,
+			 location_t loc, tree fndecl, int depth);
+
+  label_text get_desc (bool) const FINAL OVERRIDE;
+
+private:
+  const region *m_reg;
 };
 
 /* An event subclass describing the entry to a function.  */
@@ -560,6 +577,10 @@ public:
     delete m_events[idx];
     m_events[idx] = new_event;
   }
+
+  void add_region_creation_event (const region *reg,
+				  location_t loc,
+				  tree fndecl, int depth);
 
   void add_final_event (const state_machine *sm,
 			const exploded_node *enode, const gimple *stmt,
