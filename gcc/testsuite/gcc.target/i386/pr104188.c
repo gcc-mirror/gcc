@@ -1,5 +1,6 @@
 /* { dg-do run { target avx512f } } */
-/* { dg-options "-O2 -mfpmath=sse" } */
+/* { dg-require-effective-target sse2_runtime } */
+/* { dg-options "-O2 -msse2 -mfpmath=sse" } */
 
 #include <x86intrin.h>
 
