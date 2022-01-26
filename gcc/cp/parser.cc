@@ -18680,7 +18680,8 @@ cp_parser_template_name (cp_parser* parser,
 	  cp_parser_error (parser, "expected template-name");
 	  return error_mark_node;
 	}
-      else if (!DECL_P (decl) && !is_overloaded_fn (decl))
+      else if ((!DECL_P (decl) && !is_overloaded_fn (decl))
+	       || TREE_CODE (decl) == USING_DECL)
 	/* Repeat the lookup at instantiation time.  */
 	decl = identifier;
     }
