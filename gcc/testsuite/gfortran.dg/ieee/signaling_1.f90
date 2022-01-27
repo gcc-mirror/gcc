@@ -1,4 +1,4 @@
-! { dg-do run { xfail { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! { dg-do run { target { ! ia32 } } }
 ! x87 / x86-32 ABI is unsuitable for signaling NaNs
 !
 ! { dg-additional-sources signaling_1_c.c }
