@@ -1031,7 +1031,7 @@ void
 bounded_ranges_manager::log_stats (logger *logger, bool show_objs) const
 {
   LOG_SCOPE (logger);
-  logger->log ("  # %s: %li", "ranges", m_map.elements ());
+  logger->log ("  # %s: %li", "ranges", (long)m_map.elements ());
   if (!show_objs)
     return;
 
