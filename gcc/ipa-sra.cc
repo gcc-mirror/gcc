@@ -2493,10 +2493,10 @@ verify_splitting_accesses (cgraph_node *node, bool certain_must_exist)
 
       bool certain_access_present = !certain_must_exist;
       if (overlapping_certain_accesses_p (desc, &certain_access_present))
-	internal_error ("Function %qs, parameter %u, has IPA-SRA accesses "
+	internal_error ("function %qs, parameter %u, has IPA-SRA accesses "
 			"which overlap", node->dump_name (), pidx);
       if (!certain_access_present)
-	internal_error ("Function %s, parameter %u, is used but does not "
+	internal_error ("function %qs, parameter %u, is used but does not "
 			"have any certain IPA-SRA access",
 			node->dump_name (), pidx);
     }

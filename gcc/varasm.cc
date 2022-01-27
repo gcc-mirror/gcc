@@ -312,7 +312,7 @@ get_section (const char *name, unsigned int flags, tree decl,
   else
     {
       if (not_existing)
-	internal_error ("Section already exists: %qs", name);
+	internal_error ("section already exists: %qs", name);
 
       sect = *slot;
       /* It is fine if one of the sections has SECTION_NOTYPE as long as
