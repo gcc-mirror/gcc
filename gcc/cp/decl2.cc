@@ -1352,18 +1352,14 @@ splice_template_attributes (tree *attr_p, tree decl)
   return late_attrs;
 }
 
-/* Remove any late attributes from the list in ATTR_P and attach them to
-   DECL_P.  */
+/* Attach any LATE_ATTRS to DECL_P, after the non-dependent attributes have
+   been applied by a previous call to decl_attributes.  */
 
 static void
-save_template_attributes (tree *attr_p, tree *decl_p, int flags)
+save_template_attributes (tree late_attrs, tree *decl_p, int flags)
 {
   tree *q;
 
-  if (attr_p && *attr_p == error_mark_node)
-    return;
-
-  tree late_attrs = splice_template_attributes (attr_p, *decl_p);
   if (!late_attrs)
     return;
 
@@ -1666,12 +1662,12 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	}
     }
 
+  tree late_attrs = NULL_TREE;
   if (processing_template_decl)
     {
       if (check_for_bare_parameter_packs (attributes))
 	return;
-
-      save_template_attributes (&attributes, decl, flags);
+      late_attrs = splice_template_attributes (&attributes, *decl);
     }
 
   cp_check_const_attributes (attributes);
@@ -1716,6 +1712,9 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       tree last_decl = find_last_decl (*decl);
       decl_attributes (decl, attributes, flags, last_decl);
     }
+
+  if (late_attrs)
+    save_template_attributes (late_attrs, decl, flags);
 
   /* Propagate deprecation out to the template.  */
   if (TREE_DEPRECATED (*decl))
