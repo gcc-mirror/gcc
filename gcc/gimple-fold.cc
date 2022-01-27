@@ -8539,11 +8539,12 @@ arith_code_with_undefined_signed_overflow (tree_code code)
    its operand, carrying out the operation in the corresponding unsigned
    type and converting the result back to the original type.
 
-   Returns a sequence of statements that replace STMT and also contain
-   a modified form of STMT itself.  */
+   If IN_PLACE is true, adjust the stmt in place and return NULL.
+   Otherwise returns a sequence of statements that replace STMT and also
+   contain a modified form of STMT itself.  */
 
 gimple_seq
-rewrite_to_defined_overflow (gimple *stmt)
+rewrite_to_defined_overflow (gimple *stmt, bool in_place /* = false */)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -8568,9 +8569,24 @@ rewrite_to_defined_overflow (gimple *stmt)
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);
   gimple_set_modified (stmt, true);
-  gimple_seq_add_stmt (&stmts, stmt);
+  if (in_place)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      if (stmts)
+	gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+      stmts = NULL;
+    }
+  else
+    gimple_seq_add_stmt (&stmts, stmt);
   gimple *cvt = gimple_build_assign (lhs, NOP_EXPR, gimple_assign_lhs (stmt));
-  gimple_seq_add_stmt (&stmts, cvt);
+  if (in_place)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_insert_after (&gsi, cvt, GSI_SAME_STMT);
+      update_stmt (stmt);
+    }
+  else
+    gimple_seq_add_stmt (&stmts, cvt);
 
   return stmts;
 }

@@ -2768,7 +2768,49 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 		   vec<operand_entry *> *ops, tree exp, gimple_seq seq,
 		   bool in_p, tree low, tree high, bool strict_overflow_p)
 {
-  operand_entry *oe = (*ops)[range->idx];
+  unsigned int idx = range->idx;
+  struct range_entry *swap_with = NULL;
+  basic_block rewrite_bb_first = NULL, rewrite_bb_last = NULL;
+  if (opcode == ERROR_MARK)
+    {
+      /* For inter-bb range test optimization, pick from the range tests
+	 the one which is tested in the earliest condition (one dominating
+	 the others), because otherwise there could be some UB (e.g. signed
+	 overflow) in following bbs that we'd expose which wasn't there in
+	 the original program.  See PR104196.  */
+      basic_block orig_range_bb = BASIC_BLOCK_FOR_FN (cfun, (*ops)[idx]->id);
+      basic_block range_bb = orig_range_bb;
+      for (unsigned int i = 0; i < count; i++)
+	{
+	  struct range_entry *this_range;
+	  if (otherrange)
+	    this_range = otherrange + i;
+	  else
+	    this_range = otherrangep[i];
+	  operand_entry *oe = (*ops)[this_range->idx];
+	  basic_block this_bb = BASIC_BLOCK_FOR_FN (cfun, oe->id);
+	  if (range_bb != this_bb
+	      && dominated_by_p (CDI_DOMINATORS, range_bb, this_bb))
+	    {
+	      swap_with = this_range;
+	      range_bb = this_bb;
+	      idx = this_range->idx;
+	    }
+	}
+      /* If seq is non-NULL, it can contain statements that use SSA_NAMEs
+	 only defined in later blocks.  In this case we can't move the
+	 merged comparison earlier, so instead check if there are any stmts
+	 that might trigger signed integer overflow in between and rewrite
+	 them.  But only after we check if the optimization is possible.  */
+      if (seq && swap_with)
+	{
+	  rewrite_bb_first = range_bb;
+	  rewrite_bb_last = orig_range_bb;
+	  idx = range->idx;
+	  swap_with = NULL;
+	}
+    }
+  operand_entry *oe = (*ops)[idx];
   tree op = oe->op;
   gimple *stmt = op ? SSA_NAME_DEF_STMT (op)
 		    : last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
@@ -2805,6 +2847,9 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	return false;
     }
 
+  if (swap_with)
+    std::swap (range->idx, swap_with->idx);
+
   if (strict_overflow_p && issue_strict_overflow_warning (wc))
     warning_at (loc, OPT_Wstrict_overflow,
 		"assuming signed overflow does not occur "
@@ -2838,6 +2883,42 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
       print_generic_expr (dump_file, tem);
       fprintf (dump_file, "\n");
     }
+
+  /* In inter-bb range optimization mode, if we have a seq, we can't
+     move the merged comparison to the earliest bb from the comparisons
+     being replaced, so instead rewrite stmts that could trigger signed
+     integer overflow.  */
+  for (basic_block bb = rewrite_bb_last;
+       bb != rewrite_bb_first; bb = single_pred (bb))
+    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (is_gimple_assign (stmt))
+	  if (tree lhs = gimple_assign_lhs (stmt))
+	    if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		 || POINTER_TYPE_P (TREE_TYPE (lhs)))
+		&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs)))
+	      {
+		enum tree_code code = gimple_assign_rhs_code (stmt);
+		if (arith_code_with_undefined_signed_overflow (code))
+		  {
+		    gimple_stmt_iterator gsip = gsi;
+		    gimple_stmt_iterator gsin = gsi;
+		    gsi_prev (&gsip);
+		    gsi_next (&gsin);
+		    rewrite_to_defined_overflow (stmt, true);
+		    unsigned uid = gimple_uid (stmt);
+		    if (gsi_end_p (gsip))
+		      gsip = gsi_after_labels (bb);
+		    else
+		      gsi_next (&gsip);
+		    for (; gsi_stmt (gsip) != gsi_stmt (gsin);
+			 gsi_next (&gsip))
+		      gimple_set_uid (gsi_stmt (gsip), uid);
+		  }
+	      }
+      }
 
   if (opcode == BIT_IOR_EXPR
       || (opcode == ERROR_MARK && oe->rank == BIT_IOR_EXPR))
@@ -4755,7 +4836,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	      && (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
 		  != tcc_comparison)
 	      && !get_ops (rhs, code, &ops,
-			loop_containing_stmt (stmt))
+			   loop_containing_stmt (stmt))
 	      && has_single_use (rhs))
 	    {
 	      /* Otherwise, push the _234 range test itself.  */
@@ -4792,6 +4873,8 @@ maybe_optimize_range_tests (gimple *stmt)
 	      bb_ent.op = rhs;
 	    }
 	  bbinfo.safe_push (bb_ent);
+	  for (unsigned int i = bb_ent.first_idx; i < bb_ent.last_idx; ++i)
+	    ops[i]->id = bb->index;
 	  continue;
 	}
       else if (bb == last_bb)
@@ -4855,6 +4938,8 @@ maybe_optimize_range_tests (gimple *stmt)
 	  bb_ent.last_idx = ops.length ();
 	}
       bbinfo.safe_push (bb_ent);
+      for (unsigned int i = bb_ent.first_idx; i < bb_ent.last_idx; ++i)
+	ops[i]->id = bb->index;
       if (bb == first_bb)
 	break;
     }
