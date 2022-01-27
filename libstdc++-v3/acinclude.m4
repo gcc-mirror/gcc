@@ -4834,7 +4834,7 @@ dnl
       [glibcxx_cv_fdopendir=yes],
       [glibcxx_cv_fdopendir=no])
   ])
-  if test $glibcxx_cv_truncate = yes; then
+  if test $glibcxx_cv_fdopendir = yes; then
     AC_DEFINE(HAVE_FDOPENDIR, 1, [Define if fdopendir is available in <dirent.h>.])
   fi
 dnl
