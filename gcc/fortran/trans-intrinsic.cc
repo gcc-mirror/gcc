@@ -2620,7 +2620,7 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 static void
@@ -2662,7 +2662,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 
@@ -7255,12 +7255,13 @@ gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
 
       /* Combine the results.  */
       if (parity)
-	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR,
+				    integer_type_node, call1, call2);
       else
-	se->expr = fold_build2_loc (input_location, PLUS_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, PLUS_EXPR,
+				    integer_type_node, call1, call2);
 
+      se->expr = convert (result_type, se->expr);
       return;
     }
 
