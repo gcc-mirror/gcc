@@ -243,7 +243,7 @@ class operand_compare
 {
 public:
   /* Return true if two operands are equal.  The flags fields can be used
-     to specify OEP flags described above.  */
+     to specify OEP flags described in tree-core.h.  */
   virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
 
   /* Generate a hash value for an expression.  This can be used iteratively
