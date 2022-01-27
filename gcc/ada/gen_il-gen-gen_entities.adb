@@ -217,7 +217,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (No_Return, Flag),
         Sm (Overlays_Constant, Flag),
         Sm (Prev_Entity, Node_Id),
-        Sm (Reachable, Flag),
         Sm (Referenced, Flag),
         Sm (Referenced_As_LHS, Flag),
         Sm (Referenced_As_Out_Parameter, Flag),
@@ -1241,6 +1240,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  implicit label declaration, not the occurrence of the label itself,
        --  which is simply a direct name referring to the label.
        (Sm (Enclosing_Scope, Node_Id),
+        Sm (Reachable, Flag),
         Sm (Renamed_Or_Alias, Node_Id)));
 
    Cc (E_Loop, Entity_Kind,
