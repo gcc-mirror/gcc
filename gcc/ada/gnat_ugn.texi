@@ -2807,6 +2807,7 @@ Ada_05
 Ada_2005
 Ada_12
 Ada_2012
+Ada_2022
 Allow_Integer_Address
 Annotate
 Assertion_Policy
@@ -29243,8 +29244,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye

@@ -233,6 +233,36 @@ Syntax:
 This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
 
+Pragma Ada_2022
+===============
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Ada_2022;
+  pragma Ada_2022 (local_NAME);
+
+
+A configuration pragma that establishes Ada 2022 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+This mode is set automatically for the ``Ada`` and ``System``
+packages and their children, so you need not specify it in these
+contexts.  This pragma is useful when writing a reusable component that
+itself uses Ada 2022 features, but which is intended to be usable from
+Ada 83, Ada 95, Ada 2005 or Ada 2012 programs.
+
+The one argument form, which is not a configuration pragma,
+is used for managing the transition from Ada
+2012 to Ada 2022 in the run-time library. If an entity is marked
+as Ada_2022 only, then referencing the entity in any pre-Ada_2022
+mode will generate a warning. In addition, in any pre-Ada_2012
+mode, a preference rule is established which does not choose
+such an entity unless it is unambiguously specified. This avoids
+extra subprograms marked this way from generating ambiguities in
+otherwise legal pre-Ada_2022 programs. The one argument form is
+intended for exclusive use in the GNAT run-time library.
+
 Pragma Aggregate_Individually_Assign
 ====================================
 
