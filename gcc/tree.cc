@@ -242,23 +242,6 @@ static GTY ((cache))
 static GTY ((cache))
      hash_table<tree_decl_map_cache_hasher> *value_expr_for_decl;
 
-struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
-{
-  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
-
-  static bool
-  equal (tree_vec_map *a, tree_vec_map *b)
-  {
-    return a->base.from == b->base.from;
-  }
-
-  static int
-  keep_cache_entry (tree_vec_map *&m)
-  {
-    return ggc_marked_p (m->base.from);
-  }
-};
-
 static GTY ((cache))
      hash_table<tree_vec_map_cache_hasher> *debug_args_for_decl;
 

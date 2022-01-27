@@ -5559,6 +5559,23 @@ struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
 
+struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
+{
+  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
+
+  static bool
+  equal (tree_vec_map *a, tree_vec_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static int
+  keep_cache_entry (tree_vec_map *&m)
+  {
+    return ggc_marked_p (m->base.from);
+  }
+};
+
 /* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
    is a better hash than the pointer value and gives a predictable traversal
    order.  Additionally it can be used across PCH save/restore.  */
