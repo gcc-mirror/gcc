@@ -77080,7 +77080,7 @@ fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_fdopendir" >&5
 $as_echo "$glibcxx_cv_fdopendir" >&6; }
-  if test $glibcxx_cv_truncate = yes; then
+  if test $glibcxx_cv_fdopendir = yes; then
 
 $as_echo "#define HAVE_FDOPENDIR 1" >>confdefs.h
 
