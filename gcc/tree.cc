@@ -10492,7 +10492,7 @@ build_call_array_loc (location_t loc, tree return_type, tree fn,
 /* Like build_call_array, but takes a vec.  */
 
 tree
-build_call_vec (tree return_type, tree fn, vec<tree, va_gc> *args)
+build_call_vec (tree return_type, tree fn, const vec<tree, va_gc> *args)
 {
   tree ret, t;
   unsigned int ix;

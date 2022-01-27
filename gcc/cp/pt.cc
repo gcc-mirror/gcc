@@ -28410,8 +28410,10 @@ build_non_dependent_expr (tree expr)
   if (is_overloaded_fn (inner_expr)
       || TREE_CODE (inner_expr) == OFFSET_REF)
     return orig_expr;
-  /* There is no need to return a proxy for a variable or enumerator.  */
-  if (VAR_P (expr) || TREE_CODE (expr) == CONST_DECL)
+  /* There is no need to return a proxy for a variable, parameter
+     or enumerator.  */
+  if (VAR_P (expr) || TREE_CODE (expr) == PARM_DECL
+      || TREE_CODE (expr) == CONST_DECL)
     return orig_expr;
   /* Preserve string constants; conversions from string constants to
      "char *" are allowed, even though normally a "const char *"
