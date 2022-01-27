@@ -11099,7 +11099,7 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 
   /* [dcl.type.class.deduct] prohibits forming an array of placeholder
      for a deduced class type.  */
-  if (is_auto (type) && CLASS_PLACEHOLDER_TEMPLATE (type))
+  if (template_placeholder_p (type))
     {
       if (name)
 	error_at (loc, "%qD declared as array of template placeholder "
@@ -11169,8 +11169,16 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 
   /* Figure out the index type for the array.  */
   if (size)
-    itype = compute_array_index_type_loc (loc, name, size,
-					  tf_warning_or_error);
+    {
+      itype = compute_array_index_type_loc (loc, name, size,
+					    tf_warning_or_error);
+      if (type_uses_auto (type)
+	  && variably_modified_type_p (itype, /*fn=*/NULL_TREE))
+	{
+	  sorry_at (loc, "variable-length array of %<auto%>");
+	  return error_mark_node;
+	}
+    }
 
   return build_cplus_array_type (type, itype);
 }
