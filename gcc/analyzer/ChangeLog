@@ -1,3 +1,23 @@
+2022-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104224
+	* region-model.cc (region_model::check_call_args): New.
+	(region_model::on_call_pre): Call it when ignoring stdio builtins.
+	* region-model.h (region_model::check_call_args): New decl
+
+2022-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94362
+	* constraint-manager.cc (range::add_bound): Fix tests for
+	discarding redundant constraints.  Perform test for rejecting
+	unsatisfiable constraints earlier so that they don't update
+	the object on failure.
+	(selftest::test_range): New.
+	(selftest::test_constant_comparisons): Add test coverage for
+	existing constraints becoming narrower until they are
+	unsatisfiable.
+	(selftest::run_constraint_manager_tests): Call test_range.
+
 2022-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104159

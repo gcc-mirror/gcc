@@ -1,3 +1,51 @@
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* gcc.target/powerpc/pr104239-3.c: New test.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* gcc.target/powerpc/pr104239-1.c: New test.
+	* gcc.target/powerpc/pr104239-2.c: New test.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104226
+	* g++.dg/cpp0x/constexpr-104226.C: New test.
+
+2022-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR target/104213
+	* g++.dg/warn/Wuse-after-free2.C: New test.
+	* g++.dg/warn/Wuse-after-free3.C: New test.
+
+2022-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104235
+	* g++.dg/parse/template-keyword2.C: New test.
+
+2022-01-26  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/modref-7.c: Update scanned patterns.
+	* gcc.dg/tree-ssa/modref-8.c: Likewise.
+
+2022-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104224
+	* gcc.dg/analyzer/pr104224.c: New test.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104188
+	* gcc.target/i386/pr104188.c: Add dg-require-effective-target
+	sse2_runtime.  Add -msse2 to dg-options.
+
+2022-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103057
+	* g++.dg/cpp0x/alias-decl-void1.C: New test.
+
 2022-01-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104227

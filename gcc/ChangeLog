@@ -1,3 +1,49 @@
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/emmintrin.h (_mm_sad_epu8): Use __asm__ instead of
+	asm.
+	* config/rs6000/smmintrin.h (_mm_minpos_epu16): Declare iterator
+	before for loop instead of for init clause.
+	* config/rs6000/bmi2intrin.h (_pext_u64): Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/bmiintrin.h: Test _X86GPRINTRIN_H_INCLUDED instead of
+	_X86INTRIN_H_INCLUDED and adjust #error wording.
+	* config/rs6000/bmi2intrin.h: Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104194
+	* dwarf2out.cc (long_double_as_float128): New function.
+	(modified_type_die): For powerpc64le IEEE 754 quad long double
+	and complex long double emit those as DW_TAG_typedef to
+	_Float128 or complex _Float128 base type.
+
+2022-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR target/104213
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer): Don't
+	warn when the SSA_NAME_VAR of REF has supressed -Wuse-after-free.
+
+2022-01-26  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref-tree.cc (modref_access_node::update):
+	Remove "--param param=foo" with "--param foo".
+	(modref_access_node::insert): Likewise.
+	(modref_access_node::insert_kill): Likewise.
+	* ipa-modref-tree.h (struct modref_ref_node): Likewise.
+	(struct modref_base_node): Likewise.
+	(struct modref_tree): Likewise.
+
+2022-01-26  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_feclear_feraise_except): Add op0
+	predicate check.
+
 2022-01-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/104203

@@ -1,3 +1,9 @@
+2022-01-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/104233
+	* ieee/issignaling_fallback.h: Check GFC_REAL_16_IS_FLOAT128
+	instead of __FLT128_IS_IEC_60559__.
+
 2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* ieee/issignaling_fallback.h: Fix GCC-specific preprocessor
