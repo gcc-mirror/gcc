@@ -4598,6 +4598,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   rtx_insn *neuter_start = NULL;
   rtx_insn *worker_label = NULL, *vector_label = NULL;
   rtx_insn *worker_jump = NULL, *vector_jump = NULL;
+  rtx_insn *warp_sync = NULL;
   for (mode = GOMP_DIM_WORKER; mode <= GOMP_DIM_VECTOR; mode++)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
@@ -4630,11 +4631,15 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	if (tail_branch)
 	  {
 	    label_insn = emit_label_before (label, before);
+	    if (TARGET_PTX_6_0 && mode == GOMP_DIM_VECTOR)
+	      warp_sync = emit_insn_after (gen_nvptx_warpsync (), label_insn);
 	    before = label_insn;
 	  }
 	else
 	  {
 	    label_insn = emit_label_after (label, tail);
+	    if (TARGET_PTX_6_0 && mode == GOMP_DIM_VECTOR)
+	      warp_sync = emit_insn_after (gen_nvptx_warpsync (), label_insn);
 	    if ((mode == GOMP_DIM_VECTOR || mode == GOMP_DIM_WORKER)
 		&& CALL_P (tail) && find_reg_note (tail, REG_NORETURN, NULL))
 	      emit_insn_after (gen_exit (), label_insn);
@@ -4702,6 +4707,8 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 		 setp.ne.u32 %rcond,%rcondu32,0;
 	  */
 	  rtx_insn *label = PREV_INSN (tail);
+	  if (label == warp_sync)
+	    label = PREV_INSN (label);
 	  gcc_assert (label && LABEL_P (label));
 	  rtx tmp = gen_reg_rtx (BImode);
 	  emit_insn_before (gen_movbi (tmp, const0_rtx),
