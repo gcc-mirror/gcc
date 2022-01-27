@@ -4273,10 +4273,27 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
 
+  if (!parameter_packs)
+    return false;
+
+  if (loc == UNKNOWN_LOCATION)
+    loc = cp_expr_loc_or_input_loc (t);
+
   /* It's OK for a lambda to have an unexpanded parameter pack from the
      containing context, but do complain about unexpanded capture packs.  */
-  if (current_class_type && LAMBDA_TYPE_P (current_class_type)
-      && CLASSTYPE_TEMPLATE_INFO (current_class_type))
+  tree lam = current_lambda_expr ();
+  if (lam)
+    lam = TREE_TYPE (lam);
+
+  if (lam && lam != current_class_type)
+    {
+      /* We're in a lambda, but it isn't the innermost class.
+	 This should work, but currently doesn't.  */
+      sorry_at (loc, "unexpanded parameter pack in local class in lambda");
+      return true;
+    }
+
+  if (lam && CLASSTYPE_TEMPLATE_INFO (lam))
     for (; parameter_packs;
 	 parameter_packs = TREE_CHAIN (parameter_packs))
       {
@@ -4287,8 +4304,6 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
 
   if (parameter_packs)
     {
-      if (loc == UNKNOWN_LOCATION)
-	loc = cp_expr_loc_or_input_loc (t);
       error_at (loc, "parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {

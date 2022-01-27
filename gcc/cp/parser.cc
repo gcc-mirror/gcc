@@ -21146,7 +21146,16 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
 
   /* If we are processing a template, make sure the initializer of the
      enumerator doesn't contain any bare template parameter pack.  */
-  if (check_for_bare_parameter_packs (value))
+  if (current_lambda_expr ())
+    {
+      /* In a lambda it should work, but doesn't currently.  */
+      if (uses_parameter_packs (value))
+	{
+	  sorry ("unexpanded parameter pack in enumerator in lambda");
+	  value = error_mark_node;
+	}
+    }
+  else if (check_for_bare_parameter_packs (value))
     value = error_mark_node;
 
   /* Create the enumerator.  */
@@ -26624,6 +26633,14 @@ cp_parser_class_head (cp_parser* parser,
 
   if (type)
     {
+      if (current_lambda_expr ()
+	  && uses_parameter_packs (attributes))
+	{
+	  /* In a lambda this should work, but doesn't currently.  */
+	  sorry ("unexpanded parameter pack in local class in lambda");
+	  attributes = NULL_TREE;
+	}
+
       /* Apply attributes now, before any use of the class as a template
 	 argument in its base list.  */
       cplus_decl_attributes (&type, attributes, (int)ATTR_FLAG_TYPE_IN_PLACE);
