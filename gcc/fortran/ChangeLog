@@ -1,3 +1,34 @@
+2022-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104127
+	* simplify.c (gfc_simplify_transfer): Ensure that the result
+	typespec is set up for TRANSFER with MOLD of type CHARACTER
+	including character length even if the result is a zero-sized
+	array.
+
+2022-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104212
+	* check.c (gfc_check_norm2): Check that optional argument DIM is
+	scalar.
+	(gfc_check_parity): Likewise.
+
+2022-01-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104227
+	* check.c (gfc_calculate_transfer_sizes): Fix checking of arrays
+	passed as MOLD argument to the TRANSFER intrinsic for having
+	storage size zero.
+
 2022-01-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

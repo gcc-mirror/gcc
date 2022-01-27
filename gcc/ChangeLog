@@ -1,3 +1,12 @@
+2022-01-26  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2021-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101529
+	* config/aarch64/aarch64.c (aarch64_evpc_ins): Don't use target
+	as an input, use original one.
+
 2022-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
