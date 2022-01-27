@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3905,11 +3905,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   else if (!Sloc_to_locus (Sloc (gnat_node), &locus, false, gnu_subprog_decl))
     locus = input_location;
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
-
-  /* If the body comes from an expression function, arrange it to be inlined
-     in almost all cases.  */
-  if (Was_Expression_Function (gnat_node) && !Debug_Flag_Dot_8)
-    DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
   /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
   if (Is_Thunk (gnat_subprog_id)

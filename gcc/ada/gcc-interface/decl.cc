@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -5035,6 +5035,13 @@ inline_status_for_subprog (Entity_Id subprog)
 	  && !TYPE_IS_BY_REFERENCE_P (gnu_type)
 	  && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	  && compare_tree_int (TYPE_SIZE (gnu_type), MAX_FIXED_MODE_SIZE) <= 0)
+	return is_prescribed;
+
+      /* If this is an expression function and we're not optimizing for size,
+	 override the heuristics, unless -gnatd.8 is specified.  */
+      if (Is_Expression_Function (subprog)
+	  && !optimize_size
+	  && !Debug_Flag_Dot_8)
 	return is_prescribed;
 
       return is_requested;
