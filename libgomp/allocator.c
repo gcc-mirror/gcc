@@ -56,6 +56,10 @@
 #define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
   free (((void)(MEMSPACE), (void)(SIZE), (ADDR)))
 #endif
+#ifndef MEMSPACE_VALIDATE
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
+  (((void)(MEMSPACE), (void)(ACCESS), 1))
+#endif
 
 /* Map the predefined allocators to the correct memory space.
    The index to this table is the omp_allocator_handle_t enum value.
@@ -439,6 +443,10 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
   if (data.pinned)
     return omp_null_allocator;
 
+  /* Reject unsupported memory spaces.  */
+  if (!MEMSPACE_VALIDATE (data.memspace, data.access))
+    return omp_null_allocator;
+
   ret = gomp_malloc (sizeof (struct omp_allocator_data));
   *ret = data;
 #ifndef HAVE_SYNC_BUILTINS
@@ -522,6 +530,10 @@ retry:
     new_size += new_alignment - sizeof (void *);
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
@@ -820,6 +832,10 @@ retry:
     goto fail;
   if (__builtin_add_overflow (size_temp, new_size, &new_size))
     goto fail;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))
@@ -1054,6 +1070,10 @@ retry:
   if (__builtin_add_overflow (size, new_size, &new_size))
     goto fail;
   old_size = data->size;
+#ifdef OMP_LOW_LAT_MEM_ALLOC_INVALID
+  if (allocator == omp_low_lat_mem_alloc)
+    goto fail;
+#endif
 
   if (__builtin_expect (allocator_data
 			&& allocator_data->pool_size < ~(uintptr_t) 0, 0))

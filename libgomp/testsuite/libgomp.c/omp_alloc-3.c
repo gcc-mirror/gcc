@@ -28,12 +28,19 @@ test (omp_allocator_handle_t allocator)
 int
 main ()
 {
+  /* omp_low_lat_mem_alloc doesn't actually get low-latency memory on GPU.  */
+  omp_alloctrait_t traits[1] = { { omp_atk_access, omp_atv_cgroup } };
+  omp_allocator_handle_t gpu_lowlat;
+  #pragma omp target map(from:gpu_lowlat)
+  gpu_lowlat = omp_init_allocator (omp_low_lat_mem_space, 1, traits);
+
   // Smaller than low-latency memory limit
   test (omp_default_mem_alloc);
   test (omp_large_cap_mem_alloc);
   test (omp_const_mem_alloc);
   test (omp_high_bw_mem_alloc);
   test (omp_low_lat_mem_alloc);
+  test (gpu_lowlat);
   test (omp_cgroup_mem_alloc);
   test (omp_pteam_mem_alloc);
   test (omp_thread_mem_alloc);

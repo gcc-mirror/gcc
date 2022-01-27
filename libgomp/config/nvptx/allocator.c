@@ -108,6 +108,21 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
     return realloc (addr, size);
 }
 
+static inline int
+nvptx_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
+{
+#if __PTX_ISA_VERSION_MAJOR__ > 4 \
+    || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
+  /* Disallow use of low-latency memory when it must be accessible by
+     all threads.  */
+  return (memspace != omp_low_lat_mem_space
+	  || access != omp_atv_all);
+#else
+  /* Low-latency memory is not available before PTX 4.1.  */
+  return (memspace != omp_low_lat_mem_space);
+#endif
+}
+
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE) \
   nvptx_memspace_alloc (MEMSPACE, SIZE)
 #define MEMSPACE_CALLOC(MEMSPACE, SIZE) \
@@ -116,5 +131,11 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
   nvptx_memspace_realloc (MEMSPACE, ADDR, OLDSIZE, SIZE)
 #define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE) \
   nvptx_memspace_free (MEMSPACE, ADDR, SIZE)
+#define MEMSPACE_VALIDATE(MEMSPACE, ACCESS) \
+  nvptx_memspace_validate (MEMSPACE, ACCESS)
+
+/* The default low-latency memspace implies omp_atv_all, which is incompatible
+   with the .shared memory space.  */
+#define OMP_LOW_LAT_MEM_ALLOC_INVALID 1
 
 #include "../../allocator.c"
