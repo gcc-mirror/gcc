@@ -55,6 +55,7 @@
    UNSPECV_CAS
    UNSPECV_XCHG
    UNSPECV_BARSYNC
+   UNSPECV_WARPSYNC
    UNSPECV_MEMBAR
    UNSPECV_MEMBAR_CTA
    UNSPECV_DIM_POS
@@ -1716,6 +1717,12 @@
     else
       return "\\tbar.sync\\t%0, %1;";
   }
+  [(set_attr "predicable" "false")])
+
+(define_insn "nvptx_warpsync"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WARPSYNC)]
+  "TARGET_PTX_6_0"
+  "\\tbar.warp.sync\\t0xffffffff;"
   [(set_attr "predicable" "false")])
 
 (define_expand "memory_barrier"
