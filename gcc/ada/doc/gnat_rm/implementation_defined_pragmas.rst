@@ -2847,12 +2847,12 @@ Syntax:
 ::
 
   pragma Import_Function (
-       [Internal                 =>] LOCAL_NAME,
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Result_Type              =>] SUBTYPE_MARK]
-    [, [Mechanism                =>] MECHANISM]
-    [, [Result_Mechanism         =>] MECHANISM_NAME]);
+       [Internal         =>] LOCAL_NAME,
+    [, [External         =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types  =>] PARAMETER_TYPES]
+    [, [Result_Type      =>] SUBTYPE_MARK]
+    [, [Mechanism        =>] MECHANISM]
+    [, [Result_Mechanism =>] MECHANISM_NAME]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2938,10 +2938,10 @@ Syntax:
 ::
 
   pragma Import_Procedure (
-       [Internal                 =>] LOCAL_NAME
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Mechanism                =>] MECHANISM]);
+       [Internal        =>] LOCAL_NAME
+    [, [External        =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types =>] PARAMETER_TYPES]
+    [, [Mechanism       =>] MECHANISM]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2978,10 +2978,10 @@ Syntax:
 ::
 
   pragma Import_Valued_Procedure (
-       [Internal                 =>] LOCAL_NAME
-    [, [External                 =>] EXTERNAL_SYMBOL]
-    [, [Parameter_Types          =>] PARAMETER_TYPES]
-    [, [Mechanism                =>] MECHANISM]);
+       [Internal        =>] LOCAL_NAME
+    [, [External        =>] EXTERNAL_SYMBOL]
+    [, [Parameter_Types =>] PARAMETER_TYPES]
+    [, [Mechanism       =>] MECHANISM]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -6121,12 +6121,12 @@ Syntax:
 ::
 
   pragma Source_File_Name (
-    [Unit_Name   =>] unit_NAME,
+    [Unit_Name     =>] unit_NAME,
     Spec_File_Name =>  STRING_LITERAL,
     [Index => INTEGER_LITERAL]);
 
   pragma Source_File_Name (
-    [Unit_Name   =>] unit_NAME,
+    [Unit_Name     =>] unit_NAME,
     Body_File_Name =>  STRING_LITERAL,
     [Index => INTEGER_LITERAL]);
 
