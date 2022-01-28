@@ -11212,24 +11212,31 @@ conv_co_collective (gfc_code *code)
       return gfc_finish_block (&block);
     }
 
+  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
+    ? code->ext.actual->expr->ts.u.derived : NULL;
+
   /* Handle the array.  */
   gfc_init_se (&argse, NULL);
-  if (code->ext.actual->expr->rank == 0)
+  if (!derived || !derived->attr.alloc_comp
+      || code->resolved_isym->id != GFC_ISYM_CO_BROADCAST)
     {
-      symbol_attribute attr;
-      gfc_clear_attr (&attr);
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->expr);
-      gfc_add_block_to_block (&block, &argse.pre);
-      gfc_add_block_to_block (&post_block, &argse.post);
-      array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
-      array = gfc_build_addr_expr (NULL_TREE, array);
-    }
-  else
-    {
-      argse.want_pointer = 1;
-      gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
-      array = argse.expr;
+      if (code->ext.actual->expr->rank == 0)
+	{
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  gfc_init_se (&argse, NULL);
+	  gfc_conv_expr (&argse, code->ext.actual->expr);
+	  gfc_add_block_to_block (&block, &argse.pre);
+	  gfc_add_block_to_block (&post_block, &argse.post);
+	  array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
+	  array = gfc_build_addr_expr (NULL_TREE, array);
+	}
+      else
+	{
+	  argse.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
+	  array = argse.expr;
+	}
     }
 
   gfc_add_block_to_block (&block, &argse.pre);
@@ -11289,9 +11296,6 @@ conv_co_collective (gfc_code *code)
     default:
       gcc_unreachable ();
     }
-
-  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
-    ? code->ext.actual->expr->ts.u.derived : NULL;
 
   if (derived && derived->attr.alloc_comp
       && code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)
