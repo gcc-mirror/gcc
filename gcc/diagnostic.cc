@@ -668,10 +668,10 @@ diagnostic_action_after_output (diagnostic_context *context,
 	  real_abort ();
 
 	if (context->report_bug)
-	  fnotice (stderr, "\nPlease submit a full bug report, "
+	  fnotice (stderr, "Please submit a full bug report, "
 		   "with preprocessed source.\n");
 	else
-	  fnotice (stderr, "\nPlease submit a full bug report, "
+	  fnotice (stderr, "Please submit a full bug report, "
 		   "with preprocessed source (by using -freport-bug).\n");
 
 	if (count > 0)
