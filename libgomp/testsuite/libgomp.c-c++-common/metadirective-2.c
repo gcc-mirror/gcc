@@ -31,7 +31,7 @@ void f(double a[], double x) {
 
   /* TODO: This does not execute a version of f with the default clause
      active as might be expected.  */
-  f (a, M_E);
+  f (a, M_E); /* { dg-warning "direct calls to an offloadable function containing metadirectives with a 'construct={target}' selector may produce unexpected results" } */
 
   for (i = 0; i < N; i++)
     if (fabs (a[i] - (M_E * i)) > EPSILON)

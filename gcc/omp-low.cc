@@ -15367,6 +15367,24 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       call_stmt = as_a <gcall *> (stmt);
       fndecl = gimple_call_fndecl (call_stmt);
       if (fndecl
+	  && lookup_attribute ("omp metadirective construct target",
+			       DECL_ATTRIBUTES (fndecl)))
+	{
+	  bool in_target_ctx = false;
+
+	  for (omp_context *up = ctx; up; up = up->outer)
+	    if (gimple_code (up->stmt) == GIMPLE_OMP_TARGET)
+	      {
+		in_target_ctx = true;
+		break;
+	      }
+	  if (!ctx || !in_target_ctx)
+	    warning_at (gimple_location (stmt), 0,
+			"direct calls to an offloadable function containing "
+			"metadirectives with a %<construct={target}%> "
+			"selector may produce unexpected results");
+	}
+      if (fndecl
 	  && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (fndecl))
 	  {

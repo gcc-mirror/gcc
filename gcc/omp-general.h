@@ -127,6 +127,7 @@ extern tree omp_get_context_selector (tree, const char *, const char *);
 extern tree omp_resolve_declare_variant (tree);
 extern vec<struct omp_metadirective_variant> omp_resolve_metadirective (tree);
 extern vec<struct omp_metadirective_variant> omp_resolve_metadirective (gimple *);
+extern bool omp_has_target_constructor_p (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);

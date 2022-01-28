@@ -25,7 +25,7 @@ void f(double a[], double x) {
 
   /* TODO: This does not execute a version of f with the default clause
      active as might be expected.  */
-  f (a, 2.71828);
+  f (a, 2.71828); /* { dg-warning "direct calls to an offloadable function containing metadirectives with a 'construct={target}' selector may produce unexpected results" } */
 
   return 0;
  }

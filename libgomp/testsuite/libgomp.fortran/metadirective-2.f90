@@ -19,7 +19,7 @@ program test
 
   ! TODO: This does not execute a version of f with the default clause
   ! active as might be expected.
-  call f (a, E_CONST)
+  call f (a, E_CONST) ! { dg-warning "direct calls to an offloadable function containing metadirectives with a 'construct={target}' selector may produce unexpected results" }
 
   do i = 1, N
     if (abs (a(i) - (E_CONST * i)) .gt. EPSILON) stop 2

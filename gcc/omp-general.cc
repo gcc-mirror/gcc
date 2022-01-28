@@ -2959,6 +2959,27 @@ omp_resolve_metadirective (gimple *gs)
   return omp_get_dynamic_candidates (variants);
 }
 
+bool
+omp_has_target_constructor_p (tree selector)
+{
+  if (selector == NULL_TREE)
+    return false;
+
+  tree selector_set = TREE_PURPOSE (selector);
+  if (strcmp (IDENTIFIER_POINTER (selector_set), "construct") != 0)
+    return false;
+
+  enum tree_code constructs[5];
+  int nconstructs
+    = omp_constructor_traits_to_codes (TREE_VALUE (selector), constructs);
+
+  for (int i = 0; i < nconstructs; i++)
+    if (constructs[i] == OMP_TARGET)
+      return true;
+
+  return false;
+}
+
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */
 

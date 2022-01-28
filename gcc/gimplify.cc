@@ -16534,6 +16534,27 @@ gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
 {
   auto_vec<tree> selectors;
 
+  /* Mark offloadable functions containing metadirectives that specify
+     a 'construct' selector with a 'target' constructor.  */
+  if (offloading_function_p (current_function_decl))
+    {
+      for (tree clause = OMP_METADIRECTIVE_CLAUSES (*expr_p);
+	   clause != NULL_TREE; clause = TREE_CHAIN (clause))
+	{
+	  tree selector = TREE_PURPOSE (clause);
+
+	  if (omp_has_target_constructor_p (selector))
+	    {
+	      tree id = get_identifier ("omp metadirective construct target");
+
+	      DECL_ATTRIBUTES (current_function_decl)
+		= tree_cons (id, NULL_TREE,
+			     DECL_ATTRIBUTES (current_function_decl));
+	      break;
+	    }
+	}
+    }
+
   /* Try to resolve the metadirective.  */
   vec<struct omp_metadirective_variant> candidates
     = omp_resolve_metadirective (*expr_p);
