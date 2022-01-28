@@ -4631,15 +4631,29 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	if (tail_branch)
 	  {
 	    label_insn = emit_label_before (label, before);
-	    if (TARGET_PTX_6_0 && mode == GOMP_DIM_VECTOR)
-	      warp_sync = emit_insn_after (gen_nvptx_warpsync (), label_insn);
+	    if (mode == GOMP_DIM_VECTOR)
+	      {
+		if (TARGET_PTX_6_0)
+		  warp_sync = emit_insn_after (gen_nvptx_warpsync (),
+					       label_insn);
+		else
+		  warp_sync = emit_insn_after (gen_nvptx_uniform_warp_check (),
+					       label_insn);
+	      }
 	    before = label_insn;
 	  }
 	else
 	  {
 	    label_insn = emit_label_after (label, tail);
-	    if (TARGET_PTX_6_0 && mode == GOMP_DIM_VECTOR)
-	      warp_sync = emit_insn_after (gen_nvptx_warpsync (), label_insn);
+	    if (mode == GOMP_DIM_VECTOR)
+	      {
+		if (TARGET_PTX_6_0)
+		  warp_sync = emit_insn_after (gen_nvptx_warpsync (),
+					       label_insn);
+		else
+		  warp_sync = emit_insn_after (gen_nvptx_uniform_warp_check (),
+					       label_insn);
+	      }
 	    if ((mode == GOMP_DIM_VECTOR || mode == GOMP_DIM_WORKER)
 		&& CALL_P (tail) && find_reg_note (tail, REG_NORETURN, NULL))
 	      emit_insn_after (gen_exit (), label_insn);

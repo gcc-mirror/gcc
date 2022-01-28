@@ -57,6 +57,7 @@
    UNSPECV_XCHG
    UNSPECV_BARSYNC
    UNSPECV_WARPSYNC
+   UNSPECV_UNIFORM_WARP_CHECK
    UNSPECV_MEMBAR
    UNSPECV_MEMBAR_CTA
    UNSPECV_MEMBAR_GL
@@ -1983,6 +1984,23 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_WARPSYNC)]
   "TARGET_PTX_6_0"
   "\\tbar.warp.sync\\t0xffffffff;"
+  [(set_attr "predicable" "false")])
+
+(define_insn "nvptx_uniform_warp_check"
+  [(unspec_volatile [(const_int 0)] UNSPECV_UNIFORM_WARP_CHECK)]
+  ""
+  {
+    output_asm_insn ("{", NULL);
+    output_asm_insn ("\\t"	 ".reg.b32"	   "\\t" "act;", NULL);
+    output_asm_insn ("\\t"	 "vote.ballot.b32" "\\t" "act,1;", NULL);
+    output_asm_insn ("\\t"	 ".reg.pred"	   "\\t" "uni;", NULL);
+    output_asm_insn ("\\t"	 "setp.eq.b32"	   "\\t" "uni,act,0xffffffff;",
+		     NULL);
+    output_asm_insn ("@ !uni\\t" "trap;", NULL);
+    output_asm_insn ("@ !uni\\t" "exit;", NULL);
+    output_asm_insn ("}", NULL);
+    return "";
+  }
   [(set_attr "predicable" "false")])
 
 (define_expand "memory_barrier"
