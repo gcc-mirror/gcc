@@ -67,6 +67,7 @@ class region;
   class cast_region;
   class field_region;
   class string_region;
+  class bit_range_region;
 class region_model_manager;
 struct model_merger;
 class store_manager;

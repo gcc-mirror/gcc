@@ -1707,6 +1707,20 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
       }
       break;
 
+    case BIT_FIELD_REF:
+      {
+	tree inner_expr = TREE_OPERAND (expr, 0);
+	const region *inner_reg = get_lvalue (inner_expr, ctxt);
+	tree num_bits = TREE_OPERAND (expr, 1);
+	tree first_bit_offset = TREE_OPERAND (expr, 2);
+	gcc_assert (TREE_CODE (num_bits) == INTEGER_CST);
+	gcc_assert (TREE_CODE (first_bit_offset) == INTEGER_CST);
+	bit_range bits (TREE_INT_CST_LOW (first_bit_offset),
+			TREE_INT_CST_LOW (num_bits));
+	return m_mgr->get_bit_range (inner_reg, TREE_TYPE (expr), bits);
+      }
+      break;
+
     case MEM_REF:
       {
 	tree ptr = TREE_OPERAND (expr, 0);

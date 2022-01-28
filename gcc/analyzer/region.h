@@ -60,6 +60,7 @@ enum region_kind
   RK_HEAP_ALLOCATED,
   RK_ALLOCA,
   RK_STRING,
+  RK_BIT_RANGE,
   RK_UNKNOWN
 };
 
@@ -88,6 +89,7 @@ enum region_kind
      heap_allocated_region (RK_HEAP_ALLOCATED)
      alloca_region (RK_ALLOCA)
      string_region (RK_STRING)
+     bit_range_region (RK_BIT_RANGE)
      unknown_region (RK_UNKNOWN).  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
@@ -127,6 +129,8 @@ public:
   dyn_cast_cast_region () const { return NULL; }
   virtual const string_region *
   dyn_cast_string_region () const { return NULL; }
+  virtual const bit_range_region *
+  dyn_cast_bit_range_region () const { return NULL; }
 
   virtual void accept (visitor *v) const;
 
@@ -1130,6 +1134,91 @@ is_a_helper <const string_region *>::test (const region *reg)
 {
   return reg->get_kind () == RK_STRING;
 }
+
+namespace ana {
+
+/* A region for a specific range of bits within another region.  */
+
+class bit_range_region : public region
+{
+public:
+  /* A support class for uniquifying instances of bit_range_region.  */
+  struct key_t
+  {
+    key_t (const region *parent, tree type, const bit_range &bits)
+    : m_parent (parent), m_type (type), m_bits (bits)
+    {
+      gcc_assert (parent);
+    }
+
+    hashval_t hash () const
+    {
+      inchash::hash hstate;
+      hstate.add_ptr (m_parent);
+      hstate.add_ptr (m_type);
+      hstate.add (&m_bits, sizeof (m_bits));
+      return hstate.end ();
+    }
+
+    bool operator== (const key_t &other) const
+    {
+      return (m_parent == other.m_parent
+	      && m_type == other.m_type
+	      && m_bits == other.m_bits);
+    }
+
+    void mark_deleted () { m_parent = reinterpret_cast<const region *> (1); }
+    void mark_empty () { m_parent = NULL; }
+    bool is_deleted () const
+    {
+      return m_parent == reinterpret_cast<const region *> (1);
+    }
+    bool is_empty () const { return m_parent == NULL; }
+
+    const region *m_parent;
+    tree m_type;
+    bit_range m_bits;
+  };
+
+  bit_range_region (unsigned id, const region *parent, tree type,
+		    const bit_range &bits)
+  : region (complexity (parent), id, parent, type),
+    m_bits (bits)
+  {}
+
+  const bit_range_region *
+  dyn_cast_bit_range_region () const FINAL OVERRIDE { return this; }
+
+  enum region_kind get_kind () const FINAL OVERRIDE { return RK_BIT_RANGE; }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const FINAL OVERRIDE;
+
+  const bit_range &get_bits () const { return m_bits; }
+
+  bool get_byte_size (byte_size_t *out) const FINAL OVERRIDE;
+  bool get_bit_size (bit_size_t *out) const FINAL OVERRIDE;
+  const svalue *get_byte_size_sval (region_model_manager *mgr) const FINAL OVERRIDE;
+  bool get_relative_concrete_offset (bit_offset_t *out) const FINAL OVERRIDE;
+
+private:
+  bit_range m_bits;
+};
+
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const bit_range_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_BIT_RANGE;
+}
+
+template <> struct default_hash_traits<bit_range_region::key_t>
+: public member_function_hash_traits<bit_range_region::key_t>
+{
+  static const bool empty_zero_p = true;
+};
 
 namespace ana {
 
