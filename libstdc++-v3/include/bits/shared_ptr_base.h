@@ -762,6 +762,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    std::__uninitialized_fill_n_a(__p, _M_n, *__init, _M_alloc);
 	  else
 	    {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 	      struct _Iter
 	      {
 		using value_type = _Up;
@@ -783,6 +785,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		bool operator==(const _Iter& __i) const
 		{ return _M_pos == __i._M_pos; }
 	      };
+#pragma GCC diagnostic pop
 
 	      _Iter __first{_S_first_elem(__init), sizeof(_Tp) / sizeof(_Up)};
 	      _Iter __last = __first;

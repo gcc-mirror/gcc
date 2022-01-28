@@ -379,8 +379,8 @@ C ObjC C++ ObjC++ Warning Alias(Wbidi-chars=,any,none)
 ;
 
 Wbidi-chars=
-C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level)
--Wbidi-chars=[none|unpaired|any] Warn about UTF-8 bidirectional control characters.
+C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level) EnumSet
+-Wbidi-chars=[none|unpaired|any|ucn] Warn about UTF-8 bidirectional control characters.
 
 ; Required for these enum values.
 SourceInclude
@@ -390,13 +390,16 @@ Enum
 Name(cpp_bidirectional_level) Type(int) UnknownError(argument %qs to %<-Wbidi-chars%> not recognized)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none)
+Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none) Set(1)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired)
+Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired) Set(1)
 
 EnumValue
-Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any)
+Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any) Set(1)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(ucn) Value(bidirectional_ucn) Set(2)
 
 Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)

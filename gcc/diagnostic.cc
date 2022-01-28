@@ -219,6 +219,8 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->show_line_numbers_p = false;
   context->min_margin_width = 0;
   context->show_ruler_p = false;
+  context->report_bug = false;
+
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))
     {
       if (!strcmp (var, "fixits-v1"))
@@ -665,12 +667,16 @@ diagnostic_action_after_output (diagnostic_context *context,
 	if (context->abort_on_error)
 	  real_abort ();
 
-	fnotice (stderr, "Please submit a full bug report,\n"
-		 "with preprocessed source if appropriate.\n");
+	if (context->report_bug)
+	  fnotice (stderr, "\nPlease submit a full bug report, "
+		   "with preprocessed source.\n");
+	else
+	  fnotice (stderr, "\nPlease submit a full bug report, "
+		   "with preprocessed source (by using -freport-bug).\n");
+
 	if (count > 0)
-	  fnotice (stderr,
-		   ("Please include the complete backtrace "
-		    "with any bug report.\n"));
+	  fnotice (stderr, "Please include the complete backtrace "
+		   "with any bug report.\n");
 	fnotice (stderr, "See %s for instructions.\n", bug_report_url);
 
 	exit (ICE_EXIT_CODE);
@@ -1437,8 +1443,8 @@ num_digits (int value)
 
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
-   is used by fancy_abort() to print `Internal compiler error in expr.cc'
-   instead of `Internal compiler error in ../../GCC/gcc/expr.cc'.  */
+   is used by fancy_abort() to print `internal compiler error in expr.cc'
+   instead of `internal compiler error in ../../GCC/gcc/expr.cc'.  */
 
 const char *
 trim_filename (const char *name)
@@ -1988,7 +1994,7 @@ error_recursion (diagnostic_context *context)
     pp_newline_and_flush (context->printer);
 
   fnotice (stderr,
-	   "Internal compiler error: Error reporting routines re-entered.\n");
+	   "internal compiler error: error reporting routines re-entered.\n");
 
   /* Call diagnostic_action_after_output to get the "please submit a bug
      report" message.  */

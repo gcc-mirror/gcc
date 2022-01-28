@@ -29,8 +29,8 @@
    standard C or GNU C extensions, which are more portable and better
    optimized across multiple targets.  */
 
-#if !defined _X86INTRIN_H_INCLUDED
-# error "Never use <bmi2intrin.h> directly; include <x86intrin.h> instead."
+#if !defined _X86GPRINTRIN_H_INCLUDED
+# error "Never use <bmi2intrin.h> directly; include <x86gprintrin.h> instead."
 #endif
 
 #ifndef _BMI2INTRIN_H_INCLUDED
@@ -118,7 +118,8 @@ _pext_u64 (unsigned long long __X, unsigned long long __M)
       /* Also if the pext mask is constant, then the popcount is
        constant, we can evaluate the following loop at compile
        time and use a constant bit permute vector.  */
-      for (long i = 0; i < __builtin_popcountl (__M); i++)
+      long i;
+      for (i = 0; i < __builtin_popcountl (__M); i++)
 	{
 	  c = __builtin_clzl (m);
 	  p = (p << 8) | c;

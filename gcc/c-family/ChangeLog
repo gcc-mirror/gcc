@@ -1,3 +1,8 @@
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* c.opt (Wbidi-chars): Mark as EnumSet.  Also accept =ucn.
+
 2022-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104148

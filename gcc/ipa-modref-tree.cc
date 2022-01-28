@@ -130,8 +130,7 @@ modref_access_node::update (poly_int64 parm_offset1,
   else
     {
       if (dump_file)
-	fprintf (dump_file,
-		 "--param param=modref-max-adjustments limit reached:");
+	fprintf (dump_file, "--param modref-max-adjustments limit reached:");
       if (!known_eq (parm_offset, parm_offset1))
 	{
 	  if (dump_file)
@@ -594,11 +593,11 @@ modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
 	return -1;
       if (dump_file && best2 >= 0)
 	fprintf (dump_file,
-		 "--param param=modref-max-accesses limit reached;"
+		 "--param modref-max-accesses limit reached;"
 		 " merging %i and %i\n", best1, best2);
       else if (dump_file)
 	fprintf (dump_file,
-		 "--param param=modref-max-accesses limit reached;"
+		 "--param modref-max-accesses limit reached;"
 		 " merging with %i\n", best1);
       modref_access_node::try_merge_with (accesses, best1);
       if (best2 >= 0)
@@ -825,8 +824,7 @@ modref_access_node::insert_kill (vec<modref_access_node> &kills,
       if ((int)kills.length () >= param_modref_max_accesses)
 	{
 	  if (dump_file)
-	    fprintf (dump_file,
-		     "--param param=modref-max-accesses limit reached:");
+	    fprintf (dump_file, "--param modref-max-accesses limit reached:");
 	  return false;
 	}
       a.adjustments = 0;

@@ -1915,14 +1915,23 @@ number_of_iterations_cond (class loop *loop,
 	}
       /* If the new step of IV0 has changed sign or is of greater
 	 magnitude then we do not know whether IV0 does overflow
-	 and thus the transform is not valid for code other than NE_EXPR  */
+	 and thus the transform is not valid for code other than NE_EXPR.  */
       else if (tree_int_cst_sign_bit (step) != tree_int_cst_sign_bit (iv0->step)
 	       || wi::gtu_p (wi::abs (wi::to_widest (step)),
 			     wi::abs (wi::to_widest (iv0->step))))
 	{
-	  if (code != NE_EXPR)
+	  if (POINTER_TYPE_P (type) && code != NE_EXPR)
+	    /* For relational pointer compares we have further guarantees
+	       that the pointers always point to the same object (or one
+	       after it) and that objects do not cross the zero page.  So
+	       not only is the transform always valid for relational
+	       pointer compares, we also know the resulting IV does not
+	       overflow.  */
+	    ;
+	  else if (code != NE_EXPR)
 	    return false;
-	  iv0->no_overflow = false;
+	  else
+	    iv0->no_overflow = false;
 	}
 
       iv0->step = step;

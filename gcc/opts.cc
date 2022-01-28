@@ -3158,6 +3158,10 @@ common_handle_option (struct gcc_options *opts,
 	dc->tabstop = value;
       break;
 
+    case OPT_freport_bug:
+      dc->report_bug = value;
+      break;
+
     default:
       /* If the flag was handled in a standard way, assume the lack of
 	 processing here is intentional.  */

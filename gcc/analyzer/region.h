@@ -298,6 +298,7 @@ public:
   /* Accessors.  */
   const frame_region *get_calling_frame () const { return m_calling_frame; }
   function *get_function () const { return m_fun; }
+  tree get_fndecl () const { return get_function ()->decl; }
   int get_index () const { return m_index; }
   int get_stack_depth () const { return m_index + 1; }
 

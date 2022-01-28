@@ -9552,7 +9552,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  == REFERENCE_TYPE))
 		    decl = TREE_OPERAND (decl, 0);
 		}
-	      if (decl != orig_decl && DECL_P (decl) && indir_p)
+	      if (decl != orig_decl && DECL_P (decl) && indir_p
+		  && (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+		      || (decl_ref
+			  && TREE_CODE (TREE_TYPE (decl_ref)) == POINTER_TYPE)))
 		{
 		  gomp_map_kind k
 		    = ((code == OACC_EXIT_DATA || code == OMP_TARGET_EXIT_DATA)

@@ -2215,7 +2215,7 @@ _mm_sad_epu8 (__m128i __A, __m128i __B)
   vsum = (__vector signed int) vec_sum4s (vabsdiff, zero);
 #ifdef __LITTLE_ENDIAN__
   /* Sum across four integers with two integer results.  */
-  asm ("vsum2sws %0,%1,%2" : "=v" (result) : "v" (vsum), "v" (zero));
+  __asm__ ("vsum2sws %0,%1,%2" : "=v" (result) : "v" (vsum), "v" (zero));
   /* Note: vec_sum2s could be used here, but on little-endian, vector
      shifts are added that are not needed for this use-case.
      A vector shift to correctly position the 32-bit integer results

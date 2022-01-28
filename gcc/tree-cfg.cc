@@ -8915,10 +8915,6 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
   edge_iterator ei;
   gimple *stmt = last_stmt (bb);
 
-  if (!cfun->has_nonlocal_label
-      && !cfun->calls_setjmp)
-    return false;
-
   if (stmt && stmt_can_make_abnormal_goto (stmt))
     return false;
 

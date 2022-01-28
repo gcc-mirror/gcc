@@ -1,3 +1,279 @@
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99895
+	* tree.cc (build_call_vec): Add const to second parameter.
+	* tree.h (build_call_vec): Likewise.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR web/104254
+	* diagnostic.cc (diagnostic_initialize):
+	Initialize report_bug flag.
+	(diagnostic_action_after_output):
+	Explain that -freport-bug option can be used for pre-processed
+	file creation.  Make the message shorter.
+	(error_recursion): Rename Internal to internal.
+	* diagnostic.h (struct diagnostic_context): New field.
+	* opts.cc (common_handle_option): Init the field here.
+
+2022-01-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103702
+	* config/rs6000/rs6000.cc
+	(rs6000_cost_data::update_target_cost_per_stmt): Fix one wrong
+	assertion with early return.
+
+2022-01-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103642
+	* gimplify.cc (gimplify_scan_omp_clauses): Do not do indir_p handling
+	for non-pointer or non-reference-to-pointer cases.
+
+2022-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104196
+	* gimple-fold.h (rewrite_to_defined_overflow): Add IN_PLACE argument.
+	* gimple-fold.cc (rewrite_to_defined_overflow): Likewise.  If true,
+	return NULL and emit needed stmts before and after stmt.
+	* tree-ssa-reassoc.cc (update_range_test): For inter-bb range opt
+	pick as operand_entry that will hold the merged test the one feeding
+	earliest condition, ensure that by swapping range->idx with some
+	other range's idx if needed.  If seq is non-NULL, don't actually swap
+	it but instead rewrite stmts with undefined overflow in between
+	the two locations.
+	(maybe_optimize_range_tests): Set ops[]->id to bb->index with the
+	corresponding condition even if they have non-NULL ops[]->op.
+	Formatting fix.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/emmintrin.h (_mm_sad_epu8): Use __asm__ instead of
+	asm.
+	* config/rs6000/smmintrin.h (_mm_minpos_epu16): Declare iterator
+	before for loop instead of for init clause.
+	* config/rs6000/bmi2intrin.h (_pext_u64): Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/bmiintrin.h: Test _X86GPRINTRIN_H_INCLUDED instead of
+	_X86INTRIN_H_INCLUDED and adjust #error wording.
+	* config/rs6000/bmi2intrin.h: Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104194
+	* dwarf2out.cc (long_double_as_float128): New function.
+	(modified_type_die): For powerpc64le IEEE 754 quad long double
+	and complex long double emit those as DW_TAG_typedef to
+	_Float128 or complex _Float128 base type.
+
+2022-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR target/104213
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer): Don't
+	warn when the SSA_NAME_VAR of REF has supressed -Wuse-after-free.
+
+2022-01-26  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref-tree.cc (modref_access_node::update):
+	Remove "--param param=foo" with "--param foo".
+	(modref_access_node::insert): Likewise.
+	(modref_access_node::insert_kill): Likewise.
+	* ipa-modref-tree.h (struct modref_ref_node): Likewise.
+	(struct modref_base_node): Likewise.
+	(struct modref_tree): Likewise.
+
+2022-01-26  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_feclear_feraise_except): Add op0
+	predicate check.
+
+2022-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/104203
+	* gimple-ssa-warn-access.cc (pass_data pass_data_waccess): Use
+	TV_WARN_ACCESS.
+	* pointer-query.cc (access_ref::merge_ref): Change return type.
+	Convert failure to a conservative success.
+	(access_ref::get_ref): Adjust to the change above.  Short-circuit
+	PHI evaluation after first failure turned into conservative success.
+	* pointer-query.h (access_ref::merge_ref): Change return type.
+	* timevar.def (TV_WARN_ACCESS): New timer variable.
+
+2022-01-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (OPTION_GLIBC): Define as 0.
+
+2022-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104214
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Use
+	stronger guarantees for relational pointer compares when
+	rewriting BASE0 + STEP0 cmp BASE1 + STEP1 as
+	BASE0 + STEP0 - STEP1 cmp BASE1.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104172
+	* config/rs6000/rs6000-internal.h (rs6000_passes_ieee128): Don't
+	declare.
+	* config/rs6000/rs6000.cc (rs6000_passes_ieee128,
+	ieee128_mangling_gcc_8_1): Remove.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Don't redefine.
+	(rs6000_mangle_type): Return "u9__ieee128" instead of
+	ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128".
+	(rs6000_globalize_decl_name): Remove.
+	* config/rs6000/rs6000-call.cc (init_cumulative_args,
+	rs6000_function_arg_advance_1): Don't set rs6000_passes_ieee128.
+
+2022-01-24  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (pointer_query::dump): Remove duplicate
+	block.
+
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* doc/invoke.texi: Update documentation for -Wbidi-chars.
+
+2022-01-24  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_fegetround): New function.
+	(expand_builtin_feclear_feraise_except): New function.
+	(expand_builtin): Add cases for BUILT_IN_FEGETROUND,
+	BUILT_IN_FECLEAREXCEPT and BUILT_IN_FERAISEEXCEPT.
+	* config/rs6000/rs6000.md (fegetroundsi): New pattern.
+	(feclearexceptsi): New Pattern.
+	(feraiseexceptsi): New Pattern.
+	* doc/extend.texi: Add a new introductory paragraph about the
+	new builtins.
+	* doc/md.texi: (fegetround@var{m}): Document new optab.
+	(feclearexcept@var{m}): Document new optab.
+	(feraiseexcept@var{m}): Document new optab.
+	* optabs.def (fegetround_optab): New optab.
+	(feclearexcept_optab): New optab.
+	(feraiseexcept_optab): New optab.
+
+2022-01-24  Richard Biener  <rguenther@suse.de>
+	    Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/100740
+	PR tree-optimization/101508
+	PR tree-optimization/101972
+	PR tree-optimization/102131
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Properly
+	constrain BASE0 + STEP0 cmp BASE1 + STEP1 to
+	BASE0 + STEP0 - STEP1 cmp BASE1 transform.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumBitSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumBitSet is
+	specified.
+	* opts.h (enum cl_enum_var_value): New type.
+	* opts-common.cc (decode_cmdline_option): Use CLEV_* values.
+	Handle CLEV_BITSET.
+	(cmdline_handle_error): Handle CLEV_BITSET.
+	* opts.cc (test_enum_sets): Also test EnumBitSet requirements.
+	* doc/options.texi (EnumBitSet): Document.
+	* common.opt (fsanitize-coverage=): Use EnumBitSet instead of
+	EnumSet.
+	(trace-pc, trace-cmp): Drop Set properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* common.opt (flag_sanitize_coverage): Remove Variable entry.
+	(fsanitize-coverage=): Remove RejectNegative property, add
+	Var(flag_sanitize_coverage) and EnumSet properties.
+	(trace-pc): Add Set(1) property.
+	(trace-cmp): Add Set(2) property.
+	* opts.cc (common_handle_option): Don't handle
+	OPT_fsanitize_coverage_.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104158
+	* opt-functions.awk (var_set): Handle EnumSet property.
+	* optc-gen.awk: Don't disallow RejectNegative if EnumSet is
+	specified.
+	* opt-read.awk: Handle Set property.
+	* opts.h (CL_ENUM_SET_SHIFT, CL_ERR_ENUM_SET_ARG): Define.
+	(struct cl_decoded_option): Mention enum in value description.
+	Add mask member.
+	(set_option): Add mask argument defaulted to 0.
+	* opts.cc (test_enum_sets): New function.
+	(opts_cc_tests): Call it.
+	* opts-common.cc (enum_arg_to_value): Change return argument
+	from bool to int, on success return index into the cl_enum_arg
+	array, on failure -1.  Add len argument, if non-0, use strncmp
+	instead of strcmp.
+	(opt_enum_arg_to_value): Adjust caller.
+	(decode_cmdline_option): Handle EnumSet represented as
+	CLVC_ENUM with non-zero var_value.  Initialize decoded->mask.
+	(decode_cmdline_options_to_array): CLear opt_array[0].mask.
+	(handle_option): Pass decoded->mask to set_options last argument.
+	(generate_option): Clear decoded->mask.
+	(generate_option_input_file): Likewise.
+	(cmdline_handle_error): Handle CL_ERR_ENUM_SET_ARG.
+	(set_option): Add mask argument, use it for CLVC_ENUM.
+	(control_warning_option): Adjust enum_arg_to_value caller.
+	* doc/options.texi: Document Set and EnumSet properties.
+
+2022-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/104170
+	* config/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/alpha/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/rs6000/linux64.h (OPTION_GLIBC_P, OPTION_UCLIBC_P,
+	OPTION_BIONIC_P, OPTION_MUSL_P): Define.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC, OPTION_MUSL): Redefine
+	using OPTION_*_P macros.
+	* config/fuchsia.h (OPTION_MUSL_P): Redefine.
+	* config/glibc-stdint.h (OPTION_MUSL_P): Define if not defined.
+	* common/config/s390/s390-common.cc (s390_supports_split_stack): Re-add
+	ATTRIBUTE_UNUSED to opts parameter.  If OPTION_GLIBC_P is defined, use
+	OPTION_GLIBC_P (opts) as condition, otherwise assume if (false).
+	* common/config/i386/i386-common.cc (ix86_supports_split_stack): If
+	OPTION_GLIBC_P is defined use !OPTION_GLIBC_P (opts) as condition,
+	otherwise assume if (true).
+
+2022-01-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::to_string):
+	Skip zicsr and zifencei if I-ext is 2.0.
+
+2022-01-24  Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config.gcc: Modify default isa_spec version.
+
+2022-01-24  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR tree-optimization/102087
+	* tree-ssa-loop-niter.cc (number_of_iterations_until_wrap):
+	Correct PLUS result type.
+
+2022-01-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104188
+	* config/i386/predicates.md (bcst_mem_operand): Also check mode
+	of memory broadcast.
+
 2022-01-23  Andrew Pinski  <apinski@marvell.com>
 
 	PR target/64821

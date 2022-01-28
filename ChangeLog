@@ -1,3 +1,13 @@
+2022-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/67102
+	* Makefile.def: Have configure-target-libffi depend on
+	all-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
 2022-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/104181

@@ -1,3 +1,13 @@
+2022-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/104030
+	* include/cpplib.h (enum cpp_bidirectional_level): Add
+	bidirectional_ucn.  Set values explicitly.
+	* internal.h (cpp_reader): Adjust warn_bidi_p.
+	* lex.cc (maybe_warn_bidi_on_close): Don't warn about UCNs
+	unless UCN checking is on.
+	(maybe_warn_bidi_on_char): Likewise.
+
 2022-01-18  Richard Biener  <rguenther@suse.de>
 
 	* include/line-map.h (class line_maps): Re-arrange fields

@@ -1,6 +1,6 @@
 /* PR preprocessor/103026 */
 /* { dg-do compile } */
-/* { dg-options "-Wbidi-chars=unpaired" } */
+/* { dg-options "-Wbidi-chars=unpaired,ucn" } */
 /* More nesting testing.  */
 
 /* RLE‫ LRI⁦ PDF‬ PDI⁩*/

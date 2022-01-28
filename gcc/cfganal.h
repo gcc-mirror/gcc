@@ -49,6 +49,7 @@ private:
   bitmap_obstack m_bitmaps;
 };
 
+extern bool mark_dfs_back_edges (struct function *);
 extern bool mark_dfs_back_edges (void);
 extern void find_unreachable_blocks (void);
 extern void verify_no_unreachable_blocks (void);
