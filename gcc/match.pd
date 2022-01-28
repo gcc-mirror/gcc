@@ -435,6 +435,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_UNSIGNED (type))
    (trunc_divmod @0 @1))))
 
+ /* 1 / X -> X == 1 for unsigned integer X.
+    1 / X -> X >= -1 && X <= 1 ? X : 0 for signed integer X.
+    But not for 1 / 0 so that we can get proper warnings and errors,
+    and not for 1-bit integers as they are edge cases better handled elsewhere. */
+(simplify
+  (trunc_div integer_onep@0 @1)
+  (if (INTEGRAL_TYPE_P (type) && !integer_zerop (@1) && TYPE_PRECISION (type) > 1)
+    (if (TYPE_UNSIGNED (type))
+      (eq @1 { build_one_cst (type); })
+      (with { tree utype = unsigned_type_for (type); }
+        (cond (le (plus (convert:utype @1) { build_one_cst (utype); }) { build_int_cst (utype, 2); })
+          @1 { build_zero_cst (type); })))))
+
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */
 (for div (trunc_div exact_div)
