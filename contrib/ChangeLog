@@ -1,3 +1,9 @@
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-git-customization.sh: Sync from master.
+	* git-descr.sh: New file.
+	* git-undescr.sh: New file.
+
 2022-01-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Sync from master.
