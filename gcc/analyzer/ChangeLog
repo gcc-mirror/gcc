@@ -1,3 +1,57 @@
+2022-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (event_kind_to_string): Handle
+	EK_REGION_CREATION.
+	(region_creation_event::region_creation_event): New.
+	(region_creation_event::get_desc): New.
+	(checker_path::add_region_creation_event): New.
+	* checker-path.h (enum event_kind): Add EK_REGION_CREATION.
+	(class region_creation_event): New subclass.
+	(checker_path::add_region_creation_event): New decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Pass NULL for new
+	param to add_events_for_eedge when handling trailing eedge.
+	(diagnostic_manager::build_emission_path): Create an interesting_t
+	instance, allow the pending diagnostic to populate it, and pass it
+	to the calls to add_events_for_eedge.
+	(diagnostic_manager::add_events_for_eedge): Add "interest" param.
+	Use it to add region_creation_events for on-stack regions created
+	within at function entry, and when pertinent dynamically-sized
+	regions are created.
+	(diagnostic_manager::prune_for_sm_diagnostic): Add case for
+	EK_REGION_CREATION.
+	* diagnostic-manager.h (diagnostic_manager::add_events_for_eedge):
+	Add "interest" param.
+	* pending-diagnostic.cc: Include "selftest.h", "tristate.h",
+	"analyzer/call-string.h", "analyzer/program-point.h",
+	"analyzer/store.h", and "analyzer/region-model.h".
+	(interesting_t::add_region_creation): New.
+	(interesting_t::dump_to_pp): New.
+	* pending-diagnostic.h (struct interesting_t): New.
+	(pending_diagnostic::mark_interesting_stuff): New vfunc.
+	* region-model.cc
+	(poisoned_value_diagnostic::poisoned_value_diagnostic): Add
+	(poisoned_value_diagnostic::operator==): Compare m_pkind and
+	m_src_region fields.
+	(poisoned_value_diagnostic::mark_interesting_stuff): New.
+	(poisoned_value_diagnostic::m_src_region): New.
+	(region_model::check_for_poison): Call
+	get_region_for_poisoned_expr for uninit values and pass the resul
+	to the diagnostic.
+	(region_model::get_region_for_poisoned_expr): New.
+	(region_model::deref_rvalue): Pass NULL for
+	poisoned_value_diagnostic's src_region.
+	* region-model.h (region_model::get_region_for_poisoned_expr): New
+	decl.
+	* region.h (frame_region::get_fndecl): New.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR analyzer/104247
+	* constraint-manager.cc (bounded_ranges_manager::log_stats):
+	Cast to long for format purpose.
+	* region-model-manager.cc (log_uniq_map): Likewise.
+
 2022-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104224

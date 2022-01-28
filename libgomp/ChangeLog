@@ -1,3 +1,7 @@
+2022-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Update implementation status.
+
 2022-01-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Strengthen.

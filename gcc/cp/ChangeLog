@@ -1,3 +1,37 @@
+2022-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104245
+	PR c++/51344
+	* decl2.cc (save_template_attributes): Take late attrs as parm.
+	(cplus_decl_attributes): Call it after decl_attributes,
+	splice_template_attributes before.
+
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99895
+	* call.cc (build_over_call): For a non-dependent member call,
+	build up a CALL_EXPR using a COMPONENT_REF callee, as in
+	build_new_method_call.
+	* pt.cc (build_non_dependent_expr): Don't wrap PARM_DECL either.
+	* tree.cc (build_min_non_dep_op_overload): Adjust accordingly
+	after the build_over_call change.
+
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92944
+	PR c++/103678
+	* parser.cc (cp_parser_class_head): Update 'type' with the result
+	of maybe_process_partial_specialization in the
+	nested_name_specifier branch.  Refactor nearby code to accomodate
+	that maybe_process_partial_specialization returns a _TYPE, not a
+	TYPE_DECL, and eliminate local variable 'class_type' in passing.
+
+2022-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101988
+	* decl.cc (create_array_type_for_decl): Reject forming an array of
+	placeholder for a deduced class type.
+
 2022-01-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104206

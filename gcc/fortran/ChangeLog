@@ -1,3 +1,20 @@
+2022-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104128
+	* expr.cc (gfc_copy_expr): Convert internal representation of
+	string to wide char in value only for default character kind.
+	* target-memory.cc (interpret_array): Pass flag for conversion of
+	wide chars.
+	(gfc_target_interpret_expr): Likewise.
+
+2022-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84784
+	* trans-intrinsic.cc (conv_intrinsic_image_status): Convert result
+	to resulting (default) integer type.
+	(conv_intrinsic_team_number): Likewise.
+	(gfc_conv_intrinsic_popcnt_poppar): Likewise.
+
 2022-01-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104227

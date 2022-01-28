@@ -1,3 +1,23 @@
+2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100516
+	* include/bits/deque.tcc (_M_range_initialize<ForwardIterator>):
+	Add __builtin_unreachable to loop.
+	* testsuite/23_containers/deque/100516.cc: New test.
+
+2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::advance): Avoid signed
+	overflow. Do nothing if already equal to desired result.
+	* testsuite/24_iterators/range_operations/advance_overflow.cc:
+	New test.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR libstdc++/104259
+	* acinclude.m4: Fix typo.
+	* configure: Regenerate.
+
 2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104019

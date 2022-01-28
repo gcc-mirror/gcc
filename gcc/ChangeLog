@@ -1,3 +1,50 @@
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99895
+	* tree.cc (build_call_vec): Add const to second parameter.
+	* tree.h (build_call_vec): Likewise.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR web/104254
+	* diagnostic.cc (diagnostic_initialize):
+	Initialize report_bug flag.
+	(diagnostic_action_after_output):
+	Explain that -freport-bug option can be used for pre-processed
+	file creation.  Make the message shorter.
+	(error_recursion): Rename Internal to internal.
+	* diagnostic.h (struct diagnostic_context): New field.
+	* opts.cc (common_handle_option): Init the field here.
+
+2022-01-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103702
+	* config/rs6000/rs6000.cc
+	(rs6000_cost_data::update_target_cost_per_stmt): Fix one wrong
+	assertion with early return.
+
+2022-01-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103642
+	* gimplify.cc (gimplify_scan_omp_clauses): Do not do indir_p handling
+	for non-pointer or non-reference-to-pointer cases.
+
+2022-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104196
+	* gimple-fold.h (rewrite_to_defined_overflow): Add IN_PLACE argument.
+	* gimple-fold.cc (rewrite_to_defined_overflow): Likewise.  If true,
+	return NULL and emit needed stmts before and after stmt.
+	* tree-ssa-reassoc.cc (update_range_test): For inter-bb range opt
+	pick as operand_entry that will hold the merged test the one feeding
+	earliest condition, ensure that by swapping range->idx with some
+	other range's idx if needed.  If seq is non-NULL, don't actually swap
+	it but instead rewrite stmts with undefined overflow in between
+	the two locations.
+	(maybe_optimize_range_tests): Set ops[]->id to bb->index with the
+	corresponding condition even if they have non-NULL ops[]->op.
+	Formatting fix.
+
 2022-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/104239

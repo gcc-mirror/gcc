@@ -1,3 +1,93 @@
+2022-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/data-model-1.c: Add dg-message directives for
+	expected region creation events.
+	* gcc.dg/analyzer/malloc-1.c: Likewise.
+	* gcc.dg/analyzer/memset-CVE-2017-18549-1.c: Likewise.
+	* gcc.dg/analyzer/pr101547.c: Likewise.
+	* gcc.dg/analyzer/pr101875.c: Likewise.
+	* gcc.dg/analyzer/pr101962.c: Likewise.
+	* gcc.dg/analyzer/pr104224.c: Likewise.
+	* gcc.dg/analyzer/pr94047.c: Likewise.
+	* gcc.dg/analyzer/symbolic-1.c: Likewise.
+	* gcc.dg/analyzer/uninit-1.c: Likewise.
+	* gcc.dg/analyzer/uninit-4.c: Likewise.
+	* gcc.dg/analyzer/uninit-alloca.c: New test.
+	* gcc.dg/analyzer/uninit-pr94713.c: Add dg-message directive for
+	expected region creation event.
+	* gcc.dg/analyzer/uninit-pr94714.c: Likewise.
+	* gcc.dg/analyzer/zlib-3.c: Likewise.
+
+2022-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104245
+	PR c++/51344
+	* g++.dg/lto/alignas1_0.C: New test.
+
+2022-01-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/ieee/signaling_1.f90 (dg-do):
+	Run only on non-ia32 targets.
+	* gfortran.dg/ieee/signaling_2.f90 (dg-do): Ditto.
+	* gfortran.dg/ieee/signaling_3.f90 (dg-do): Ditto.
+
+2022-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104128
+	* gfortran.dg/transfer_simplify_14.f90: New test.
+
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/82632
+	* g++.dg/cpp1z/class-deduction104.C: New test.
+	* g++.dg/cpp1z/class-deduction105.C: New test.
+
+2022-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84784
+	* gfortran.dg/pr84784.f90: New test.
+
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99895
+	* g++.dg/cpp2a/consteval-memfn1.C: New test.
+	* g++.dg/cpp2a/consteval-memfn2.C: New test.
+	* g++.dg/cpp2a/consteval28.C: New test.
+
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/92944
+	PR c++/103678
+	* g++.dg/cpp2a/concepts-partial-spec10.C: New test.
+	* g++.dg/cpp2a/concepts-partial-spec11.C: New test.
+
+2022-01-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101988
+	* g++.dg/cpp1z/class-deduction-new1.C: New test.
+	* g++.dg/cpp23/auto-array2.C: New test.
+
+2022-01-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103702
+	* gcc.target/powerpc/pr103702.c: New test.
+
+2022-01-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103642
+	* c-c++-common/gomp/pr103642.c: New test.
+
+2022-01-27  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104201
+	* gcc.target/aarch64/branch-protection-attr.c: Fix quoting for
+	the expected error message on line 5 of leaf.
+
+2022-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104196
+	* gcc.c-torture/execute/pr104196.c: New test.
+
 2022-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/104239
