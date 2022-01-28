@@ -412,6 +412,7 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE. */
+#undef offsetof		/* in case a system header has defined it. */
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) \
