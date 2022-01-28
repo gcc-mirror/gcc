@@ -1,3 +1,9 @@
+2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/metadirective-2.c (main): Add
+	expected warning.
+	* testsuite/libgomp.fortran/metadirective-2.f90 (test): Likewise.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* Makefile.am (libgomp_la_SOURCES): Add selector.c.

@@ -1,3 +1,12 @@
+2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gimplify.cc (gimplify_omp_metadirective): Mark offloadable functions
+	containing metadirectives with 'construct={target}' in the selector.
+	* omp-general.cc (omp_has_target_constructor_p): New.
+	* omp-general.h (omp_has_target_constructor_p): New prototype.
+	* omp-low.cc (lower_omp_1): Emit warning if marked functions called
+	outside of a target context.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* builtin-types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR): New
