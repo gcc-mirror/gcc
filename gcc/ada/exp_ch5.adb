@@ -2246,9 +2246,15 @@ package body Exp_Ch5 is
              Expression => New_RHS));
 
       --  The left-hand side is not a direct name, but is side-effect free.
-      --  Capture its value in a temporary to avoid multiple evaluations.
+      --  Capture its value in a temporary to avoid generating a procedure.
+      --  We don't do this optimization if the target object's type may need
+      --  finalization actions, because we don't want extra finalizations to
+      --  be done for the temp object, and instead we use the more general
+      --  procedure-based approach below.
 
-      elsif Side_Effect_Free (LHS) then
+      elsif Side_Effect_Free (LHS)
+        and then not Needs_Finalization (Etype (LHS))
+      then
          Ent := Make_Temporary (Loc, 'T');
          Replace_Target_Name (New_RHS);
 
