@@ -100,6 +100,8 @@ The Static_Predicate case is handled analogously.
   "The predefined integer types declared in
   ``Standard``.  See 3.5.4(25)."
 
+.. tabularcolumns:: |l|L|
+
 ========================= =======================================
 Type                       Representation
 ========================= =======================================
@@ -836,6 +838,8 @@ Containers.Count_Type'Last is 2**31 - 1.
   "Implementation-defined convention names.  See B.1(11)."
 
 The following convention names are supported
+
+.. tabularcolumns:: |l|L|
 
 ======================= ==============================================================================
 Convention Name         Interpretation
