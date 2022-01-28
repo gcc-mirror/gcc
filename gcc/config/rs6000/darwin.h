@@ -34,6 +34,8 @@
 #endif
 #endif
 
+#define OPTION_GLIBC 0
+
 /* The object file format is Mach-O.  */
 
 #define TARGET_OBJECT_FORMAT OBJECT_MACHO
