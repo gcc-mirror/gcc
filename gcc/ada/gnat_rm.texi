@@ -15845,13 +15845,8 @@ See separate section on source representation.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The semantics of an Ada program whose text is not in
-
+“The semantics of an Ada program whose text is not in
 Normalization Form C.  See 2.1(4).”
-@end table
 @end itemize
 
 See separate section on source representation.
@@ -16185,13 +16180,8 @@ Round to even is used in all such cases.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The maximum number of chunks for a parallel generalized iterator without
-
+“The maximum number of chunks for a parallel generalized iterator without
 a chunk_specification.  See 5.5.2(10).”
-@end table
 @end itemize
 
 Feature unimplemented.
@@ -16289,13 +16279,8 @@ There are no such limits.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The result of Calendar.Formatting.Image if its argument represents more
-
+“The result of Calendar.Formatting.Image if its argument represents more
 than 100 hours.  See 9.6.1(86).”
-@end table
 @end itemize
 
 Calendar.Time_Error is raised.
@@ -16600,13 +16585,8 @@ Unsuppress match those for the second argument of pragma Suppress.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The cases that cause conflicts between the representation of the
-
+“The cases that cause conflicts between the representation of the
 ancestors of a type_declaration.  See 13.1(13.1).”
-@end table
 @end itemize
 
 No such cases exist.
@@ -17056,13 +17036,8 @@ Directories.File_Size’Last is equal to Long_Long_Integer’Last .
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The result for Directories.Size for a directory or special file.
-
+“The result for Directories.Size for a directory or special file.
 See A.16(93).”
-@end table
 @end itemize
 
 Name_Error is raised.
@@ -17071,13 +17046,8 @@ Name_Error is raised.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The result for Directories.Modification_Time for a directory or special file.
-
+“The result for Directories.Modification_Time for a directory or special file.
 See A.16(93).”
-@end table
 @end itemize
 
 Name_Error is raised.
@@ -17086,13 +17056,8 @@ Name_Error is raised.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The interpretation of a nonnull search pattern in Directories.
-
+“The interpretation of a nonnull search pattern in Directories.
 See A.16(104).”
-@end table
 @end itemize
 
 When the @code{Pattern} parameter is not the null string, it is interpreted
@@ -17105,13 +17070,8 @@ See @ref{25c,,GNAT.Regexp (g-regexp.ads)}.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The results of a Directories search if the contents of the directory are
-
+“The results of a Directories search if the contents of the directory are
 altered while a search is in progress.  See A.16(110).”
-@end table
 @end itemize
 
 The effect of a call to Get_Next_Entry is determined by the current
@@ -17526,13 +17486,8 @@ There are no such forms.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The semantics of some attributes and functions of an entity for which
-
+“The semantics of some attributes and functions of an entity for which
 aspect Discard_Names is True.  See C.5(7).”
-@end table
 @end itemize
 
 If Discard_Names is True for an enumeration type, the Image attribute
@@ -17761,13 +17716,8 @@ Unknown.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “When restriction No_Task_Termination applies to a partition, what happens
-
+“When restriction No_Task_Termination applies to a partition, what happens
 when a task terminates.  See D.7(15.1).”
-@end table
 @end itemize
 
 Execution is erroneous in that case.
@@ -17776,13 +17726,8 @@ Execution is erroneous in that case.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The behavior when restriction Max_Storage_At_Blocking is violated.
-
+“The behavior when restriction Max_Storage_At_Blocking is violated.
 See D.7(17).”
-@end table
 @end itemize
 
 Execution is erroneous in that case.
@@ -17810,16 +17755,11 @@ Execution is erroneous in that case.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “Whether the use of pragma Restrictions results in a reduction in program
-
+“Whether the use of pragma Restrictions results in a reduction in program
 code or data size or execution time.  See D.7(20).”
 
 Yes it can, but the precise circumstances and properties of such reductions
 are difficult to characterize.
-@end table
 
 @item 
 “The value of Barrier_Limit’Last in Synchronous_Barriers.  See D.10.1(4).”
@@ -17841,13 +17781,8 @@ Difficult to characterize.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The value of Min_Handler_Ceiling in Execution_Time.Group_Budgets.
-
+“The value of Min_Handler_Ceiling in Execution_Time.Group_Budgets.
 See D.14.2(7).”
-@end table
 @end itemize
 
 See source file @code{a-etgrbu.ads}.
@@ -18000,22 +17935,14 @@ Value
 @item 
 “The value of @code{Max_Picture_Length} in the package
 @code{Text_IO.Editing}.  See F.3.3(16).”
-@end itemize
 
 64
-
-
-@itemize *
 
 @item 
 “The value of @code{Max_Picture_Length} in the package
 @code{Wide_Text_IO.Editing}.  See F.3.4(5).”
-@end itemize
 
 64
-
-
-@itemize *
 
 @item 
 “The accuracy actually achieved by the complex elementary
@@ -18199,14 +18126,9 @@ Information on those subjects is not yet available.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The accuracy requirements for the subprograms Solve, Inverse,
-
+“The accuracy requirements for the subprograms Solve, Inverse,
 Determinant, Eigenvalues and Eigensystem for type Real_Matrix.
 See G.3.1(81).”
-@end table
 @end itemize
 
 Information on those subjects is not yet available.
@@ -18215,14 +18137,9 @@ Information on those subjects is not yet available.
 @itemize *
 
 @item 
-
-@table @asis
-
-@item “The accuracy requirements for the subprograms Solve, Inverse,
-
+“The accuracy requirements for the subprograms Solve, Inverse,
 Determinant, Eigenvalues and Eigensystem for type Complex_Matrix.
 See G.3.2(149).”
-@end table
 @end itemize
 
 Information on those subjects is not yet available.
