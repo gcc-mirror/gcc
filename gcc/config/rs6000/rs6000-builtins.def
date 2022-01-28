@@ -215,7 +215,7 @@
 ; processors, this builtin automatically falls back to mffs on older
 ; platforms.  Thus it appears here in the [always] stanza.
   double __builtin_mffsl ();
-    MFFSL rs6000_mffsl {}
+    MFFSL rs6000_mffsl {nosoft}
 
 ; This is redundant with __builtin_pack_ibm128, as it requires long
 ; double to be __ibm128.  Should probably be deprecated.
@@ -226,10 +226,10 @@
     MFTB rs6000_mftb_di {32bit}
 
   void __builtin_mtfsb0 (const int<5>);
-    MTFSB0 rs6000_mtfsb0 {}
+    MTFSB0 rs6000_mtfsb0 {nosoft}
 
   void __builtin_mtfsb1 (const int<5>);
-    MTFSB1 rs6000_mtfsb1 {}
+    MTFSB1 rs6000_mtfsb1 {nosoft}
 
   void __builtin_mtfsf (const int<8>, double);
     MTFSF rs6000_mtfsf {}
@@ -238,7 +238,7 @@
     PACK_IF packif {ibm128}
 
   void __builtin_set_fpscr_rn (const int[0,3]);
-    SET_FPSCR_RN rs6000_set_fpscr_rn {}
+    SET_FPSCR_RN rs6000_set_fpscr_rn {nosoft}
 
   const double __builtin_unpack_ibm128 (__ibm128, const int<1>);
     UNPACK_IF unpackif {ibm128}
@@ -2969,7 +2969,7 @@
     PACK_TD packtd {}
 
   void __builtin_set_fpscr_drn (const int[0,7]);
-    SET_FPSCR_DRN rs6000_set_fpscr_drn {}
+    SET_FPSCR_DRN rs6000_set_fpscr_drn {nosoft,no32bit}
 
   const unsigned long long __builtin_unpack_dec128 (_Decimal128, const int<1>);
     UNPACK_TD unpacktd {}
