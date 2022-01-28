@@ -1765,27 +1765,23 @@ The pragma has the following semantics, where ``U`` is the unit specified by
 the ``Unit_Name`` argument and ``E`` is the entity specified by the ``Entity``
 argument:
 
-*  ``E`` must be a subprogram that is explicitly declared either:
+* ``E`` must be a subprogram that is explicitly declared either:
 
-   o  Within ``U``, or
+  * Within ``U``, or
+  * Within a generic package that is instantiated in ``U``, or
+  * As an instance of generic subprogram instantiated in ``U``.
 
-   o  Within a generic package that is instantiated in ``U``, or
+  Otherwise the pragma is ignored.
 
-   o  As an instance of generic subprogram instantiated in ``U``.
-
-   Otherwise the pragma is ignored.
-
-*  If ``E`` is overloaded within ``U`` then, in the absence of a
-   ``Source_Location`` argument, all overloadings are eliminated.
-
-*  If ``E`` is overloaded within ``U`` and only some overloadings
-   are to be eliminated, then each overloading to be eliminated
-   must be specified in a corresponding pragma ``Eliminate``
-   with a ``Source_Location`` argument identifying the line where the
-   declaration appears, as described below.
-
-*  If ``E`` is declared as the result of a generic instantiation, then
-   a ``Source_Location`` argument is needed, as described below
+* If ``E`` is overloaded within ``U`` then, in the absence of a
+  ``Source_Location`` argument, all overloadings are eliminated.
+* If ``E`` is overloaded within ``U`` and only some overloadings
+  are to be eliminated, then each overloading to be eliminated
+  must be specified in a corresponding pragma ``Eliminate``
+  with a ``Source_Location`` argument identifying the line where the
+  declaration appears, as described below.
+* If ``E`` is declared as the result of a generic instantiation, then
+  a ``Source_Location`` argument is needed, as described below.
 
 Pragma ``Eliminate`` allows a program to be compiled in a system-independent
 manner, so that unused entities are eliminated but without

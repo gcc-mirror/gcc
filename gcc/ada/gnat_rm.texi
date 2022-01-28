@@ -3185,11 +3185,18 @@ argument:
 @item 
 @code{E} must be a subprogram that is explicitly declared either:
 
-o  Within @code{U}, or
 
-o  Within a generic package that is instantiated in @code{U}, or
+@itemize *
 
-o  As an instance of generic subprogram instantiated in @code{U}.
+@item 
+Within @code{U}, or
+
+@item 
+Within a generic package that is instantiated in @code{U}, or
+
+@item 
+As an instance of generic subprogram instantiated in @code{U}.
+@end itemize
 
 Otherwise the pragma is ignored.
 
@@ -3206,7 +3213,7 @@ declaration appears, as described below.
 
 @item 
 If @code{E} is declared as the result of a generic instantiation, then
-a @code{Source_Location} argument is needed, as described below
+a @code{Source_Location} argument is needed, as described below.
 @end itemize
 
 Pragma @code{Eliminate} allows a program to be compiled in a system-independent
