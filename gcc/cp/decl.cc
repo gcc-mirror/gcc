@@ -7958,9 +7958,19 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       enum auto_deduction_context adc = adc_variable_type;
       if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
 	adc = adc_decomp_type;
+      tree outer_targs = NULL_TREE;
+      if (PLACEHOLDER_TYPE_CONSTRAINTS_INFO (auto_node)
+	  && VAR_P (decl)
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_TEMPLATE_INFO (decl)
+	  && !DECL_FUNCTION_SCOPE_P (decl))
+	/* The outer template arguments might be needed for satisfaction.
+	   (For function scope variables, do_auto_deduction will obtain the
+	   outer template arguments from current_function_decl.)  */
+	outer_targs = DECL_TI_ARGS (decl);
       type = TREE_TYPE (decl) = do_auto_deduction (type, d_init, auto_node,
 						   tf_warning_or_error, adc,
-						   NULL_TREE, flags);
+						   outer_targs, flags);
       if (type == error_mark_node)
 	return;
       if (TREE_CODE (type) == FUNCTION_TYPE)
