@@ -1145,12 +1145,13 @@ package body Csets is
          Identifier_Char (J) := (Fold_Upper (J) /= ' ');
       end loop;
 
-      --  Always add [ as an identifier character to deal with the brackets
-      --  notation for wide characters used in identifiers. Note that if
-      --  we are not allowing wide characters in identifiers, then any use
-      --  of this notation will be flagged as an error in Scan_Identifier.
+      --  Add [ as an identifier character to deal with the brackets notation
+      --  for wide characters used in identifiers for versions up to Ada 2012.
+      --  Note that if we are not allowing wide characters in identifiers, then
+      --  any use of this notation will be flagged as an error in
+      --  Scan_Identifier.
 
-      Identifier_Char ('[') := True;
+      Identifier_Char ('[') := Ada_Version < Ada_2022;
 
       --  Add entry for ESC if wide characters in use with a wide character
       --  encoding method active that uses the ESC code for encoding.

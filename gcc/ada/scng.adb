@@ -1421,7 +1421,7 @@ package body Scng is
             Token := Tok_Left_Paren;
 
             if Style_Check then
-               Style.Check_Left_Paren;
+               Style.Check_Left_Paren_Square_Bracket;
             end if;
 
             return;
@@ -1437,6 +1437,11 @@ package body Scng is
             if Ada_Version >= Ada_2022 then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
+
+               if Style_Check then
+                  Style.Check_Left_Paren_Square_Bracket;
+               end if;
+
                return;
 
             elsif Source (Scan_Ptr + 1) = '"' then
