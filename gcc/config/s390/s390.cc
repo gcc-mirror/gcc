@@ -16809,7 +16809,6 @@ s390_code_end (void)
 	      assemble_name_raw (asm_out_file, label_start);
 	      fputs ("-.\n", asm_out_file);
 	    }
-	  switch_to_section (current_function_section ());
 	}
     }
 }
