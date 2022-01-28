@@ -7822,7 +7822,9 @@ characters.
 
 By default, this warning does not warn about UCNs.  It is, however, possible
 to turn on such checking by using @option{-Wbidi-chars=unpaired,ucn} or
-@option{-Wbidi-chars=any,ucn}.
+@option{-Wbidi-chars=any,ucn}.  Using @option{-Wbidi-chars=ucn} is valid,
+and is equivalent to @option{-Wbidi-chars=unpaired,ucn}, if no previous
+@option{-Wbidi-chars=any} was specified.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
