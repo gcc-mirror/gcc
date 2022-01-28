@@ -539,21 +539,6 @@ region::get_relative_concrete_offset (bit_offset_t *) const
   return false;
 }
 
-/* Copy from SRC_REG to DST_REG, using CTXT for any issues that occur.  */
-
-void
-region_model::copy_region (const region *dst_reg, const region *src_reg,
-			   region_model_context *ctxt)
-{
-  gcc_assert (dst_reg);
-  gcc_assert (src_reg);
-  if (dst_reg == src_reg)
-    return;
-
-  const svalue *sval = get_store_value (src_reg, ctxt);
-  set_value (dst_reg, sval, ctxt);
-}
-
 /* Dump a description of this region to stderr.  */
 
 DEBUG_FUNCTION void

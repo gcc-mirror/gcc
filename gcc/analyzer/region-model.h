@@ -676,8 +676,6 @@ class region_model
   void zero_fill_region (const region *reg);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
-  void copy_region (const region *dst_reg, const region *src_reg,
-		    region_model_context *ctxt);
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;

@@ -1559,7 +1559,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
   tree rhs = gimple_return_retval (return_stmt);
 
   if (lhs && rhs)
-    copy_region (get_lvalue (lhs, ctxt), get_lvalue (rhs, ctxt), ctxt);
+    {
+      const svalue *sval = get_rvalue (rhs, ctxt);
+      const region *ret_reg = get_lvalue (lhs, ctxt);
+      set_value (ret_reg, sval, ctxt);
+    }
 }
 
 /* Update this model for a call and return of setjmp/sigsetjmp at CALL within
@@ -3618,15 +3622,11 @@ region_model::pop_frame (const region *result_dst_reg,
   tree result = DECL_RESULT (fndecl);
   if (result && TREE_TYPE (result) != void_type_node)
     {
+      const svalue *retval = get_rvalue (result, ctxt);
       if (result_dst_reg)
-	{
-	  /* Copy the result to RESULT_DST_REG.  */
-	  copy_region (result_dst_reg,
-		       get_lvalue (result, ctxt),
-		       ctxt);
-	}
+	set_value (result_dst_reg, retval, ctxt);
       if (out_result)
-	*out_result = get_rvalue (result, ctxt);
+	*out_result = retval;
     }
 
   /* Pop the frame.  */
@@ -4758,8 +4758,9 @@ test_compound_assignment ()
   model.set_value (c_y, int_m3, NULL);
 
   /* Copy c to d.  */
-  model.copy_region (model.get_lvalue (d, NULL), model.get_lvalue (c, NULL),
-		     NULL);
+  const svalue *sval = model.get_rvalue (c, NULL);
+  model.set_value (model.get_lvalue (d, NULL), sval, NULL);
+
   /* Check that the fields have the same svalues.  */
   ASSERT_EQ (model.get_rvalue (c_x, NULL), model.get_rvalue (d_x, NULL));
   ASSERT_EQ (model.get_rvalue (c_y, NULL), model.get_rvalue (d_y, NULL));
