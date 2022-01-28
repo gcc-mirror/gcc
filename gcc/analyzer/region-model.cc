@@ -1109,6 +1109,16 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 
   bool unknown_side_effects = false;
 
+  /* Special-case for IFN_DEFERRED_INIT.
+     We want to report uninitialized variables with -fanalyzer (treating
+     -ftrivial-auto-var-init= as purely a mitigation feature).
+     Handle IFN_DEFERRED_INIT by treating it as no-op: don't touch the
+     lhs of the call, so that it is still uninitialized from the point of
+     view of the analyzer.  */
+  if (gimple_call_internal_p (call)
+      && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
+    return false;
+
   /* Some of the cases below update the lhs of the call based on the
      return value, but not all.  Provide a default value, which may
      get overwritten below.  */
