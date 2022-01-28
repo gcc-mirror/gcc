@@ -4383,7 +4383,9 @@ package body Sem_Ch5 is
 
       S := First (L);
       while Present (S) loop
-         if Nkind (S) = N_Label then
+         if Nkind (S) = N_Label
+           and then Ekind (Entity (Identifier (S))) = E_Label
+         then
             Set_Reachable (Entity (Identifier (S)), False);
          end if;
 
