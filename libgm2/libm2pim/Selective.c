@@ -298,6 +298,7 @@ void
 _M2_Selective_init ()
 {
 }
+
 void
 _M2_Selective_finish ()
 {
