@@ -13963,7 +13963,7 @@ package body Sem_Ch3 is
               or else D = CR_Discriminant (Discr_Id)
               or else Corresponding_Discriminant (D) = Discr_Id
             then
-               return Node (E);
+               return New_Copy_Tree (Node (E));
             end if;
 
             Next_Discriminant (D);
@@ -13987,7 +13987,7 @@ package body Sem_Ch3 is
             E := First_Elmt (Constraints);
             while Present (D) loop
                if D = Discr_Id then
-                  return Node (E);
+                  return New_Copy_Tree (Node (E));
                end if;
 
                Next_Discriminant (D);
