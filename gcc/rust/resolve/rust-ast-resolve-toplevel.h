@@ -220,6 +220,9 @@ public:
 
   void visit (AST::Function &function) override
   {
+    if (function.is_marked_for_strip ())
+      return;
+
     auto path
       = prefix.append (ResolveFunctionItemToCanonicalPath::resolve (function));
     resolver->get_name_scope ().insert (

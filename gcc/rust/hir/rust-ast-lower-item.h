@@ -44,15 +44,6 @@ public:
   {
     ASTLoweringItem resolver;
     item->accept_vis (resolver);
-
-    // this is useful for debugging
-    // if (resolver.translated == nullptr)
-    //   {
-    //     rust_fatal_error (item->get_locus (), "failed to lower: %s",
-    //     		  item->as_string ().c_str ());
-    //     return nullptr;
-    //   }
-
     return resolver.translated;
   }
 
@@ -419,6 +410,9 @@ public:
 
   void visit (AST::Function &function) override
   {
+    if (function.is_marked_for_strip ())
+      return;
+
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     for (auto &item : function.get_where_clause ().get_items ())
       {

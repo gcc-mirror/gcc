@@ -362,6 +362,9 @@ public:
 
   void visit (AST::Function &function) override
   {
+    if (function.is_marked_for_strip ())
+      return;
+
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
