@@ -59,6 +59,10 @@ Enum(frust_mangling) String(legacy) Value(0)
 EnumValue
 Enum(frust_mangling) String(v0) Value(1)
 
+frust-cfg=
+Rust Joined RejectNegative
+-frust-cfg=<name>             Set a config expansion option
+
 o
 Rust Joined Separate
 ; Documented in common.opt

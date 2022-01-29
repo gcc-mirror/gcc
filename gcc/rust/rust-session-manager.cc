@@ -353,9 +353,11 @@ Session::handle_option (
     case OPT_I:
       // TODO: add search path
       break;
+
     case OPT_L:
       // TODO: add library link path or something
       break;
+
     case OPT_frust_crate_:
       // set the crate name
       if (arg != nullptr)
@@ -363,6 +365,7 @@ Session::handle_option (
       else
 	ret = false;
       break;
+
     case OPT_frust_dump_:
       // enable dump and return whether this was successful
       if (arg != nullptr)
@@ -374,15 +377,29 @@ Session::handle_option (
 	  ret = false;
 	}
       break;
+
     case OPT_frust_mangling_:
       Compile::Mangler::set_mangling (flag_rust_mangling);
-    // no option handling for -o
+      break;
+
+    case OPT_frust_cfg_:
+      ret = handle_cfg_option (std::string (arg));
+      break;
+
     default:
-      // return 1 to indicate option is valid
       break;
     }
 
   return ret;
+}
+
+bool
+Session::handle_cfg_option (const std::string &value)
+{
+  // rustc doesn't seem to error on any duplicate key
+  // TODO handle feature=bla and relevant error handling in parsing
+  options.target_data.insert_key (value);
+  return true;
 }
 
 /* Enables a certain dump depending on the name passed in. Returns true if name
