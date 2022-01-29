@@ -1,3 +1,33 @@
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103596
+	* gcc.dg/torture/pr103596.c: New testcase.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103489
+	* gcc.dg/torture/pr103489.c: New testcase.
+
+2022-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_comp.adb: New test.
+
+2022-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61611
+	* g++.dg/eh/ctor-fntry1.C: New test.
+
+2022-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103711
+	* g++.dg/eh/delegating1.C: New test.
+
 2022-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

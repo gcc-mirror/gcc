@@ -1,3 +1,33 @@
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103596
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Note we are not propagating into a PHI argument to may_propagate_copy.
+	* tree-ssa-propagate.h (may_propagate_copy): Add
+	argument specifying whether we propagate into a PHI arg.
+	* tree-ssa-propagate.c (may_propagate_copy): Likewise.
+	When not doing so we can replace an abnormal with
+	something else.
+	(may_propagate_into_stmt): Update may_propagate_copy calls.
+	(replace_exp_1): Move propagation checking code to
+	propagate_value and rename to ...
+	(replace_exp): ... this and elide previous wrapper.
+	(propagate_value): Perform checking with adjusted
+	may_propagate_copy call and dispatch to replace_exp.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103489
+	* tree-vect-loop.c (vectorizable_phi): Verify argument
+	vector type compatibility to mitigate bool pattern recog
+	bug.
+
 2022-01-26  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
