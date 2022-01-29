@@ -314,9 +314,9 @@ void
 NameResolution::go (AST::Crate &crate)
 {
   // lookup current crate name
+  CrateNum cnum = mappings->get_current_crate ();
   std::string crate_name;
-  bool ok
-    = mappings->get_crate_name (mappings->get_current_crate (), crate_name);
+  bool ok = mappings->get_crate_name (cnum, crate_name);
   rust_assert (ok);
 
   // setup the ribs
@@ -331,10 +331,11 @@ NameResolution::go (AST::Crate &crate)
   // get the root segment
   CanonicalPath crate_prefix
     = CanonicalPath::new_seg (scope_node_id, crate_name);
+  crate_prefix.set_crate_num (cnum);
 
   // first gather the top-level namespace names then we drill down so this
-  // allows for resolving forward declarations since an impl block might have a
-  // Self type Foo which is defined after the impl block for example.
+  // allows for resolving forward declarations since an impl block might have
+  // a Self type Foo which is defined after the impl block for example.
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
 			 crate_prefix);

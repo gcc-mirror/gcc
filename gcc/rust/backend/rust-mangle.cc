@@ -252,12 +252,16 @@ legacy_mangle_item (const TyTy::BaseType *ty,
 static std::string
 v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path)
 {
-  std::string mangled;
+  // we can get this from the canonical_path
+  auto mappings = Analysis::Mappings::get ();
+  std::string crate_name;
+  bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
+  rust_assert (ok);
 
+  std::string mangled;
   // FIXME: Add real algorithm once all pieces are implemented
   auto ty_prefix = v0_type_prefix (ty);
-  // crate name must be assumed to be part of the canonical path
-  // v0_add_identifier (mangled, crate_name);
+  v0_add_identifier (mangled, crate_name);
   v0_add_disambiguator (mangled, 62);
 
   gcc_unreachable ();
