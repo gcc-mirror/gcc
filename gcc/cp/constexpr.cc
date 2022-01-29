@@ -4658,6 +4658,13 @@ init_subob_ctx (const constexpr_ctx *ctx, constexpr_ctx &new_ctx,
   if (!AGGREGATE_TYPE_P (type) && !VECTOR_TYPE_P (type))
     /* A non-aggregate member doesn't get its own CONSTRUCTOR.  */
     return;
+  if (VECTOR_TYPE_P (type)
+      && VECTOR_TYPE_P (TREE_TYPE (ctx->ctor))
+      && index == NULL_TREE)
+    /* A vector inside of a vector CONSTRUCTOR, e.g. when a larger
+       vector is constructed from smaller vectors, doesn't get its own
+       CONSTRUCTOR either.  */
+    return;
 
   /* The sub-aggregate initializer might contain a placeholder;
      update object to refer to the subobject and ctor to refer to

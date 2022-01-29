@@ -1,3 +1,16 @@
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	* git-undescr.sh: Support full output of git-descr.sh.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* git-descr.sh: New file.
+	* git-undescr.sh: New file.
+	Support optional arguments --long, --short and default
+	to 14 characters of git hash.
+	* gcc-git-customization.sh: Use the created files.
+
 2022-01-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: New files in toplev must

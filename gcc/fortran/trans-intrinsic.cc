@@ -2620,7 +2620,7 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 static void
@@ -2662,7 +2662,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   else
     gcc_unreachable ();
 
-  se->expr = tmp;
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
 
@@ -7255,12 +7255,13 @@ gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
 
       /* Combine the results.  */
       if (parity)
-	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, BIT_XOR_EXPR,
+				    integer_type_node, call1, call2);
       else
-	se->expr = fold_build2_loc (input_location, PLUS_EXPR, result_type,
-				    call1, call2);
+	se->expr = fold_build2_loc (input_location, PLUS_EXPR,
+				    integer_type_node, call1, call2);
 
+      se->expr = convert (result_type, se->expr);
       return;
     }
 
@@ -11211,24 +11212,31 @@ conv_co_collective (gfc_code *code)
       return gfc_finish_block (&block);
     }
 
+  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
+    ? code->ext.actual->expr->ts.u.derived : NULL;
+
   /* Handle the array.  */
   gfc_init_se (&argse, NULL);
-  if (code->ext.actual->expr->rank == 0)
+  if (!derived || !derived->attr.alloc_comp
+      || code->resolved_isym->id != GFC_ISYM_CO_BROADCAST)
     {
-      symbol_attribute attr;
-      gfc_clear_attr (&attr);
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, code->ext.actual->expr);
-      gfc_add_block_to_block (&block, &argse.pre);
-      gfc_add_block_to_block (&post_block, &argse.post);
-      array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
-      array = gfc_build_addr_expr (NULL_TREE, array);
-    }
-  else
-    {
-      argse.want_pointer = 1;
-      gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
-      array = argse.expr;
+      if (code->ext.actual->expr->rank == 0)
+	{
+	  symbol_attribute attr;
+	  gfc_clear_attr (&attr);
+	  gfc_init_se (&argse, NULL);
+	  gfc_conv_expr (&argse, code->ext.actual->expr);
+	  gfc_add_block_to_block (&block, &argse.pre);
+	  gfc_add_block_to_block (&post_block, &argse.post);
+	  array = gfc_conv_scalar_to_descriptor (&argse, argse.expr, attr);
+	  array = gfc_build_addr_expr (NULL_TREE, array);
+	}
+      else
+	{
+	  argse.want_pointer = 1;
+	  gfc_conv_expr_descriptor (&argse, code->ext.actual->expr);
+	  array = argse.expr;
+	}
     }
 
   gfc_add_block_to_block (&block, &argse.pre);
@@ -11288,9 +11296,6 @@ conv_co_collective (gfc_code *code)
     default:
       gcc_unreachable ();
     }
-
-  gfc_symbol *derived = code->ext.actual->expr->ts.type == BT_DERIVED
-    ? code->ext.actual->expr->ts.u.derived : NULL;
 
   if (derived && derived->attr.alloc_comp
       && code->resolved_isym->id == GFC_ISYM_CO_BROADCAST)

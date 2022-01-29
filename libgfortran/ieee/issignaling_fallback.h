@@ -103,12 +103,12 @@ typedef union
   long double value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     int sign_exponent:16;
     unsigned int empty:16;
     uint32_t msw;
     uint32_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint32_t lsw;
     uint32_t msw;
     int sign_exponent:16;
@@ -159,10 +159,10 @@ typedef union
   long double value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t msw;
     uint64_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint64_t lsw;
     uint64_t msw;
 #endif
@@ -195,19 +195,19 @@ __issignalingl (long double x)
 #endif
 
 
-#if __FLT128_IS_IEC_60559__
+#if defined(GFC_REAL_16_IS_FLOAT128)
 
-/* We have a _Float128 type.  */
+/* We have a __float128 type.  */
 
 typedef union
 {
   __float128 value;
   struct
   {
-#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t msw;
     uint64_t lsw;
-#elif __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
+#elif __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
     uint64_t lsw;
     uint64_t msw;
 #endif
@@ -234,7 +234,7 @@ __issignalingf128 (__float128 x)
 
 /* Define the type-generic macro based on the functions above.  */
 
-#if __FLT128_IS_IEC_60559__
+#if defined(GFC_REAL_16_IS_FLOAT128)
 # define issignaling(X) \
   _Generic ((X), \
 	    __float128: __issignalingf128, \

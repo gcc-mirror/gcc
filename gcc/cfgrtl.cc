@@ -778,6 +778,29 @@ rtl_split_block (basic_block bb, void *insnp)
   return new_bb;
 }
 
+/* Return true if LOC1 and LOC2 are equivalent for
+   unique_locus_on_edge_between_p purposes.  */
+
+static bool
+loc_equal (location_t loc1, location_t loc2)
+{
+  if (loc1 == loc2)
+    return true;
+
+  expanded_location loce1 = expand_location (loc1);
+  expanded_location loce2 = expand_location (loc2);
+
+  if (loce1.line != loce2.line
+      || loce1.column != loce2.column
+      || loce1.data != loce2.data)
+    return false;
+  if (loce1.file == loce2.file)
+    return true;
+  return (loce1.file != NULL
+	  && loce2.file != NULL
+	  && filename_cmp (loce1.file, loce2.file) == 0);
+}
+
 /* Return true if the single edge between blocks A and B is the only place
    in RTL which holds some unique locus.  */
 
@@ -796,7 +819,7 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
   while (insn != end && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
     insn = PREV_INSN (insn);
 
-  if (insn != end && INSN_LOCATION (insn) == goto_locus)
+  if (insn != end && loc_equal (INSN_LOCATION (insn), goto_locus))
     return false;
 
   /* Then scan block B forward.  */
@@ -808,7 +831,7 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
 	insn = NEXT_INSN (insn);
 
       if (insn != end && INSN_HAS_LOCATION (insn)
-	  && INSN_LOCATION (insn) == goto_locus)
+	  && loc_equal (INSN_LOCATION (insn), goto_locus))
 	return false;
     }
 

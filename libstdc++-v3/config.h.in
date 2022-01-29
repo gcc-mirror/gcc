@@ -100,6 +100,9 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
+/* Define if fdopendir is available in <dirent.h>. */
+#undef HAVE_FDOPENDIR
+
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
 

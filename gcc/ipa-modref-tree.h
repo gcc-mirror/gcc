@@ -197,8 +197,7 @@ struct GTY((user)) modref_ref_node
       {
 	if (dump_file)
 	  fprintf (dump_file,
-		   "--param param=modref-max-accesses limit reached;"
-		   " collapsing\n");
+		   "--param modref-max-accesses limit reached; collapsing\n");
 	collapse ();
       }
     return ret != 0;
@@ -252,7 +251,7 @@ struct GTY((user)) modref_base_node
     if (ref && refs && refs->length () >= max_refs)
       {
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-refs limit reached;"
+	  fprintf (dump_file, "--param modref-max-refs limit reached;"
 		   " using 0\n");
 	ref = 0;
 	ref_node = search (ref);
@@ -344,12 +343,12 @@ struct GTY((user)) modref_tree
 	if (base_node)
 	  {
 	    if (dump_file)
-	      fprintf (dump_file, "--param param=modref-max-bases"
+	      fprintf (dump_file, "--param modref-max-bases"
 		       " limit reached; using ref\n");
 	    return base_node;
 	  }
 	if (dump_file)
-	  fprintf (dump_file, "--param param=modref-max-bases"
+	  fprintf (dump_file, "--param modref-max-bases"
 		   " limit reached; using 0\n");
 	base = 0;
 	base_node = search (base);

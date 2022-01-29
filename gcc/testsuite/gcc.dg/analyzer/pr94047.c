@@ -12,7 +12,7 @@ bar (struct list *l)
 void
 foo (void)
 {
-  struct list l;
+  struct list l; /* { dg-message "region created on stack here" } */
   tlist t = l; /* { dg-warning "use of uninitialized value 'l'" } */
   for (;;)
     bar (&t);

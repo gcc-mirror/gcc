@@ -2598,6 +2598,9 @@ expand_builtin_feclear_feraise_except (tree exp, rtx target,
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
+  if (!(*insn_data[icode].operand[1].predicate) (op0, GET_MODE (op0)))
+    return NULL_RTX;
+
   if (target == 0
       || GET_MODE (target) != target_mode
       || !(*insn_data[icode].operand[0].predicate) (target, target_mode))

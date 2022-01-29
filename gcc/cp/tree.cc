@@ -3661,6 +3661,8 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
+  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+    expected_nargs -= 1;
   if ((op == POSTINCREMENT_EXPR
        || op == POSTDECREMENT_EXPR)
       /* With -fpermissive non_dep could be operator++().  */
@@ -3687,7 +3689,7 @@ build_min_non_dep_op_overload (enum tree_code op,
       tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
       fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		      object, method, NULL_TREE);
-      for (int i = 1; i < nargs; i++)
+      for (int i = 0; i < nargs; i++)
 	{
 	  tree arg = va_arg (p, tree);
 	  vec_safe_push (args, arg);
@@ -3723,7 +3725,6 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
   tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
   tree fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
 		       object, method, NULL_TREE);
-  nargs--;
   gcc_assert (vec_safe_length (args) == nargs);
 
   tree call = build_min_non_dep_call_vec (non_dep, fn, args);

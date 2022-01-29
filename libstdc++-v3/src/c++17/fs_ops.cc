@@ -27,6 +27,10 @@
 # define NEED_DO_COPY_FILE
 # define NEED_DO_SPACE
 #endif
+#ifndef _GNU_SOURCE
+// Cygwin needs this for secure_getenv
+# define _GNU_SOURCE 1
+#endif
 
 #include <bits/largefile-config.h>
 #include <filesystem>
@@ -1332,7 +1336,7 @@ namespace
     uintmax_t count = 0;
     if (s.type() == file_type::directory)
       {
-	directory_iterator d(p, ec), end;
+	directory_iterator d(p, directory_options{99}, ec), end;
 	while (d != end)
 	  {
 	    const auto removed = fs::do_remove_all(d->path(), err);
@@ -1341,11 +1345,11 @@ namespace
 	    count += removed;
 
 	    d.increment(ec);
-	    if (ec)
-	      {
-		err.report(ec, p);
-		return -1;
-	      }
+	  }
+	if (ec)
+	  {
+	    err.report(ec, p);
+	    return -1;
 	  }
       }
 

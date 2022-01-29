@@ -2,13 +2,13 @@
 
 int test_1 (void)
 {
-  int i;
+  int i; /* { dg-message "region created on stack here" } */
   return i; /* { dg-warning "use of uninitialized value 'i'" } */
 }
 
 int test_2 (void)
 {
-  int i;
+  int i; /* { dg-message "region created on stack here" } */
   return i * 2; /* { dg-warning "use of uninitialized value 'i'" } */
 }
 
@@ -20,13 +20,13 @@ int test_3 (void)
 
 int test_4 (void)
 {
-  int *p;
+  int *p; /* { dg-message "region created on stack here" } */
   return *p; /* { dg-warning "use of uninitialized value 'p'" } */
 }
 
 int test_5 (int flag, int *q)
 {
-  int *p;
+  int *p; /* { dg-message "region created on stack here" } */
   if (flag) /* { dg-message "following 'false' branch" } */
     p = q;
 
@@ -39,6 +39,6 @@ int test_5 (int flag, int *q)
 
 int test_6 (int i)
 {
-  int arr[10];
+  int arr[10]; /* { dg-message "region created on stack here" } */
   return arr[i]; /* { dg-warning "use of uninitialized value 'arr\\\[i\\\]'" } */
 }

@@ -7958,9 +7958,19 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       enum auto_deduction_context adc = adc_variable_type;
       if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
 	adc = adc_decomp_type;
+      tree outer_targs = NULL_TREE;
+      if (PLACEHOLDER_TYPE_CONSTRAINTS_INFO (auto_node)
+	  && VAR_P (decl)
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_TEMPLATE_INFO (decl)
+	  && !DECL_FUNCTION_SCOPE_P (decl))
+	/* The outer template arguments might be needed for satisfaction.
+	   (For function scope variables, do_auto_deduction will obtain the
+	   outer template arguments from current_function_decl.)  */
+	outer_targs = DECL_TI_ARGS (decl);
       type = TREE_TYPE (decl) = do_auto_deduction (type, d_init, auto_node,
 						   tf_warning_or_error, adc,
-						   NULL_TREE, flags);
+						   outer_targs, flags);
       if (type == error_mark_node)
 	return;
       if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -11086,6 +11096,18 @@ create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
   /* If things have already gone awry, bail now.  */
   if (type == error_mark_node || size == error_mark_node)
     return error_mark_node;
+
+  /* [dcl.type.class.deduct] prohibits forming an array of placeholder
+     for a deduced class type.  */
+  if (is_auto (type) && CLASS_PLACEHOLDER_TEMPLATE (type))
+    {
+      if (name)
+	error_at (loc, "%qD declared as array of template placeholder "
+		  "type %qT", name, type);
+      else
+	error ("creating array of template placeholder type %qT", type);
+      return error_mark_node;
+    }
 
   /* If there are some types which cannot be array elements,
      issue an error-message and return.  */
@@ -17315,6 +17337,7 @@ finish_constructor_body (void)
       add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
       val = DECL_ARGUMENTS (current_function_decl);
+      suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
@@ -17408,6 +17431,7 @@ finish_destructor_body (void)
       tree val;
 
       val = DECL_ARGUMENTS (current_function_decl);
+      suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
 		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */

@@ -3444,7 +3444,9 @@ vectorizable_call (vec_info *vinfo,
     {
       if (slp_node)
 	for (i = 0; i < nargs; ++i)
-	  if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_in))
+	  if (!vect_maybe_update_slp_op_vectype (slp_op[i],
+						 vectypes[i]
+						 ? vectypes[i] : vectype_in))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

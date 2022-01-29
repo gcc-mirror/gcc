@@ -1,3 +1,134 @@
+2022-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99895
+	* tree.cc (build_call_vec): Add const to second parameter.
+	* tree.h (build_call_vec): Likewise.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR web/104254
+	* diagnostic.cc (diagnostic_initialize):
+	Initialize report_bug flag.
+	(diagnostic_action_after_output):
+	Explain that -freport-bug option can be used for pre-processed
+	file creation.  Make the message shorter.
+	(error_recursion): Rename Internal to internal.
+	* diagnostic.h (struct diagnostic_context): New field.
+	* opts.cc (common_handle_option): Init the field here.
+
+2022-01-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103702
+	* config/rs6000/rs6000.cc
+	(rs6000_cost_data::update_target_cost_per_stmt): Fix one wrong
+	assertion with early return.
+
+2022-01-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/103642
+	* gimplify.cc (gimplify_scan_omp_clauses): Do not do indir_p handling
+	for non-pointer or non-reference-to-pointer cases.
+
+2022-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104196
+	* gimple-fold.h (rewrite_to_defined_overflow): Add IN_PLACE argument.
+	* gimple-fold.cc (rewrite_to_defined_overflow): Likewise.  If true,
+	return NULL and emit needed stmts before and after stmt.
+	* tree-ssa-reassoc.cc (update_range_test): For inter-bb range opt
+	pick as operand_entry that will hold the merged test the one feeding
+	earliest condition, ensure that by swapping range->idx with some
+	other range's idx if needed.  If seq is non-NULL, don't actually swap
+	it but instead rewrite stmts with undefined overflow in between
+	the two locations.
+	(maybe_optimize_range_tests): Set ops[]->id to bb->index with the
+	corresponding condition even if they have non-NULL ops[]->op.
+	Formatting fix.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/emmintrin.h (_mm_sad_epu8): Use __asm__ instead of
+	asm.
+	* config/rs6000/smmintrin.h (_mm_minpos_epu16): Declare iterator
+	before for loop instead of for init clause.
+	* config/rs6000/bmi2intrin.h (_pext_u64): Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104239
+	* config/rs6000/bmiintrin.h: Test _X86GPRINTRIN_H_INCLUDED instead of
+	_X86INTRIN_H_INCLUDED and adjust #error wording.
+	* config/rs6000/bmi2intrin.h: Likewise.
+
+2022-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104194
+	* dwarf2out.cc (long_double_as_float128): New function.
+	(modified_type_die): For powerpc64le IEEE 754 quad long double
+	and complex long double emit those as DW_TAG_typedef to
+	_Float128 or complex _Float128 base type.
+
+2022-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR target/104213
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer): Don't
+	warn when the SSA_NAME_VAR of REF has supressed -Wuse-after-free.
+
+2022-01-26  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref-tree.cc (modref_access_node::update):
+	Remove "--param param=foo" with "--param foo".
+	(modref_access_node::insert): Likewise.
+	(modref_access_node::insert_kill): Likewise.
+	* ipa-modref-tree.h (struct modref_ref_node): Likewise.
+	(struct modref_base_node): Likewise.
+	(struct modref_tree): Likewise.
+
+2022-01-26  Raoni Fassina Firmino  <raoni@linux.ibm.com>
+
+	PR target/94193
+	* builtins.cc (expand_builtin_feclear_feraise_except): Add op0
+	predicate check.
+
+2022-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/104203
+	* gimple-ssa-warn-access.cc (pass_data pass_data_waccess): Use
+	TV_WARN_ACCESS.
+	* pointer-query.cc (access_ref::merge_ref): Change return type.
+	Convert failure to a conservative success.
+	(access_ref::get_ref): Adjust to the change above.  Short-circuit
+	PHI evaluation after first failure turned into conservative success.
+	* pointer-query.h (access_ref::merge_ref): Change return type.
+	* timevar.def (TV_WARN_ACCESS): New timer variable.
+
+2022-01-25  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (OPTION_GLIBC): Define as 0.
+
+2022-01-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104214
+	* tree-ssa-loop-niter.cc (number_of_iterations_cond): Use
+	stronger guarantees for relational pointer compares when
+	rewriting BASE0 + STEP0 cmp BASE1 + STEP1 as
+	BASE0 + STEP0 - STEP1 cmp BASE1.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104172
+	* config/rs6000/rs6000-internal.h (rs6000_passes_ieee128): Don't
+	declare.
+	* config/rs6000/rs6000.cc (rs6000_passes_ieee128,
+	ieee128_mangling_gcc_8_1): Remove.
+	(TARGET_ASM_GLOBALIZE_DECL_NAME): Don't redefine.
+	(rs6000_mangle_type): Return "u9__ieee128" instead of
+	ieee128_mangling_gcc_8_1 ? "U10__float128" : "u9__ieee128".
+	(rs6000_globalize_decl_name): Remove.
+	* config/rs6000/rs6000-call.cc (init_cumulative_args,
+	rs6000_function_arg_advance_1): Don't set rs6000_passes_ieee128.
+
 2022-01-24  Martin Sebor  <msebor@redhat.com>
 
 	* pointer-query.cc (pointer_query::dump): Remove duplicate

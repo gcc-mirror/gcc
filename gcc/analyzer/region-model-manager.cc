@@ -1573,7 +1573,7 @@ static void
 log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const hash_map<K, T*> &uniq_map)
 {
-  logger->log ("  # %s: %li", title, uniq_map.elements ());
+  logger->log ("  # %s: %li", title, (long)uniq_map.elements ());
   if (!show_objs)
     return;
   auto_vec<const T *> vec_objs (uniq_map.elements ());
@@ -1597,7 +1597,7 @@ static void
 log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const consolidation_map<T> &map)
 {
-  logger->log ("  # %s: %li", title, map.elements ());
+  logger->log ("  # %s: %li", title, (long)map.elements ());
   if (!show_objs)
     return;
 

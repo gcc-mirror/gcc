@@ -629,7 +629,7 @@ access_ref::phi () const
    ARG refers to the null pointer.  Return true on success and false
    on failure.  */
 
-bool
+void
 access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
 		       int ostype, bool skip_null,
 		       ssa_name_limit_t &snlim, pointer_query &qry)
@@ -637,8 +637,16 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
   access_ref aref;
   if (!compute_objsize_r (arg, stmt, false, ostype, &aref, snlim, &qry)
       || aref.sizrng[0] < 0)
-    /* This may be a PHI with all null pointer arguments.  */
-    return false;
+    {
+      /* This may be a PHI with all null pointer arguments.  Handle it
+	 conservatively by setting all properties to the most permissive
+	 values. */
+      base0 = false;
+      offrng[0] = offrng[1] = 0;
+      add_max_offset ();
+      set_max_size_range ();
+      return;
+    }
 
   if (all_refs)
     {
@@ -675,13 +683,13 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
       if (arg_known_size)
 	sizrng[0] = aref.sizrng[0];
 
-      return true;
+      return;
     }
 
   /* Disregard null pointers in PHIs with two or more arguments.
      TODO: Handle this better!  */
   if (nullp)
-    return true;
+    return;
 
   const bool known_size = (sizrng[0] != 0 || sizrng[1] != maxobjsize);
 
@@ -717,7 +725,7 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
   sizrng[0] = minsize;
   parmarray = merged_parmarray;
 
-  return true;
+  return;
 }
 
 /* Determine and return the largest object to which *THIS refers.  If
@@ -755,14 +763,12 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 
 	  access_ref aref;
 	  tree arg1 = gimple_assign_rhs1 (def_stmt);
-	  if (!aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
-			       *psnlim, *qry))
-	    return NULL_TREE;
+	  aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
+			  *psnlim, *qry);
 
 	  tree arg2 = gimple_assign_rhs2 (def_stmt);
-	  if (!aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
-			       *psnlim, *qry))
-	    return NULL_TREE;
+	  aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
+			  *psnlim, *qry);
 
 	  if (pref && pref != this)
 	    {
@@ -801,15 +807,23 @@ access_ref::get_ref (vec<access_ref> *all_refs,
       phi_ref = *pref;
     }
 
+  const offset_int maxobjsize = wi::to_offset (max_object_size ());
   const unsigned nargs = gimple_phi_num_args (phi_stmt);
   for (unsigned i = 0; i < nargs; ++i)
     {
       access_ref phi_arg_ref;
       bool skip_null = i || i + 1 < nargs;
       tree arg = gimple_phi_arg_def (phi_stmt, i);
-      if (!phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
-			      *psnlim, *qry))
-	return NULL_TREE;
+      phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
+			 *psnlim, *qry);
+
+      if (!phi_ref.base0
+	  && phi_ref.sizrng[0] == 0
+	  && phi_ref.sizrng[1] >= maxobjsize)
+	/* When an argument results in the most permissive result,
+	   the remaining arguments cannot constrain it.  Short-circuit
+	   the evaluation.  */
+	break;
     }
 
   if (phi_ref.sizrng[0] < 0)

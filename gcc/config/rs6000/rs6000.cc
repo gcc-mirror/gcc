@@ -5439,8 +5439,11 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 	  unsigned int nunits = vect_nunits_for_cost (vectype);
-	  /* We don't expect strided/elementwise loads for just 1 nunit.  */
-	  gcc_assert (nunits > 1);
+	  /* As PR103702 shows, it's possible that vectorizer wants to do
+	     costings for only one unit here, it's no need to do any
+	     penalization for it, so simply early return here.  */
+	  if (nunits == 1)
+	    return;
 	  /* i386 port adopts nunits * stmt_cost as the penalized cost
 	     for this kind of penalization, we used to follow it but
 	     found it could result in an unreliable body cost especially
