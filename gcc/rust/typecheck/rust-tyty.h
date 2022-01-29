@@ -24,7 +24,6 @@
 #include "rust-diagnostics.h"
 #include "rust-abi.h"
 #include "rust-common.h"
-#include "tree.h"
 
 namespace Rust {
 

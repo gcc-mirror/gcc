@@ -62,6 +62,7 @@ public:
     SHR_ASSIGN,
 
     DEREF,
+    DEREF_MUT,
 
     UNKNOWN,
   };
@@ -160,6 +161,10 @@ public:
       {
 	return ItemType::DEREF;
       }
+    else if (item.compare ("deref_mut") == 0)
+      {
+	return ItemType::DEREF_MUT;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -214,6 +219,8 @@ public:
 	return "shr_assign";
       case DEREF:
 	return "deref";
+      case DEREF_MUT:
+	return "deref_mut";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
