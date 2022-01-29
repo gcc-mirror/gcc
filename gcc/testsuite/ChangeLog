@@ -1,3 +1,91 @@
+2022-01-28  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	* gcc.dg/tree-ssa/pr103514.c: Testcase for this optimization.
+
+2022-01-28  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/92752
+	* g++.dg/warn/Wignored-qualifiers2.C: New test.
+
+2022-01-28  Zhao Wei Liew  <zhaoweiliew@gmail.com>
+
+	PR tree-optimization/95424
+	* gcc.dg/tree-ssa/divide-6.c: New file.
+	* gcc.dg/tree-ssa/divide-7.c: New file.
+
+2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104263
+	* gcc.dg/pr104263.c: New test.
+
+2022-01-28  Allan McRae  <allan@archlinux.org>
+
+	PR testsuite/70230
+	* gcc.dg/asan/use-after-scope-4.c (dg-options): Add
+	-fno-stack-protector.
+	* gcc.dg/stack-usage-1.c: Likewise
+	* gcc.dg/superblock.c: Likewise
+	* gcc.target/i386/avx-vzeroupper-17.c: Likewise
+	* gcc.target/i386/cleanup-1.c: Likewise
+	* gcc.target/i386/cleanup-2.c: Likewise
+	* gcc.target/i386/interrupt-redzone-1.c: Likewise
+	* gcc.target/i386/interrupt-redzone-2.c: Likewise
+	* gcc.target/i386/pr79793-1.c: Likewise
+	* gcc.target/i386/pr79793-2.c: Likewise
+	* gcc.target/i386/shrink_wrap_1.c: Likewise
+	* gcc.target/i386/stack-check-11.c: Likewise
+	* gcc.target/i386/stack-check-18.c: Likewise
+	* gcc.target/i386/stack-check-19.c: Likewise
+	* gcc.target/i386/stackalign/pr88483-1.c: Likewise
+	* gcc.target/i386/stackalign/pr88483-2.c: Likewise
+	* gcc.target/i386/sw-1.c: Likewise
+
+2022-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103341
+	* g++.dg/cpp2a/concepts-class4.C: New test.
+	* g++.dg/cpp2a/concepts-var-templ2.C: New test.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104263
+	* gcc.dg/tree-ssa/inline-13.c: New testcase.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* gfortran.dg/coarray_collectives_18.f90: New test.
+
+2022-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_comp.adb: New test.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Revert:
+	2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* gfortran.dg/coarray_collectives_18.f90: New test.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* gfortran.dg/coarray_collectives_18.f90: New test.
+
+2022-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100198
+	PR c++/100030
+	PR c++/100282
+	* g++.dg/cpp0x/lambda/lambda-variadic13.C: Accept the sorry
+	as well as the correct error.
+	* g++.dg/cpp0x/lambda/lambda-variadic14.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-variadic14a.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-variadic15.C: New test.
+	* g++.dg/cpp0x/lambda/lambda-variadic16.C: New test.
+
 2022-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/data-model-1.c: Add dg-message directives for

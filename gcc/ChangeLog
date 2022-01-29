@@ -1,3 +1,84 @@
+2022-01-28  Yoshinori Sato  <yo-satoh@sios.com>
+
+	* config/sh/t-linux (MULTILIB_EXCEPTIONS): Add m1, mb/m1 and m2a.
+
+2022-01-28  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	PR tree-optimization/103514
+	* match.pd (a & b) ^ (a == b) -> !(a | b): New optimization.
+	(a & b) == (a ^ b) -> !(a | b): New optimization.
+
+2022-01-28  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Update -Wbidi-chars documentation.
+
+2022-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (OPTION_GLIBC): Define to 0.
+
+2022-01-28  Zhao Wei Liew  <zhaoweiliew@gmail.com>
+
+	PR tree-optimization/95424
+	* match.pd: Simplify 1 / X where X is an integer.
+
+2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104263
+	* gimple-ssa-store-merging.cc (get_status_for_store_merging): For
+	cfun->can_throw_non_call_exceptions && cfun->eh test whether
+	last non-debug stmt in the bb is store_valid_for_store_merging_p
+	rather than last stmt.
+
+2022-01-28  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic.cc (diagnostic_action_after_output): Remove extra
+	newline.
+
+2022-01-28  Martin Liska  <mliska@suse.cz>
+
+	* config/rs6000/host-darwin.cc (segv_crash_handler):
+	Do not use leading capital letter.
+	(segv_handler): Likewise.
+	* ipa-sra.cc (verify_splitting_accesses): Likewise.
+	* varasm.cc (get_section): Likewise.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104267
+	* tree-vect-stmts.cc (vectorizable_call): Properly use the
+	per-argument determined vector type for externals and
+	invariants.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104263
+	* tree-cfg.cc (gimple_purge_dead_abnormal_call_edges):
+	Purge edges also when !cfun->has_nonlocal_label
+	and !cfun->calls_setjmp.
+
+2022-01-28  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.md: Document `auipc' and `bitmanip' `type'
+	attributes.
+
+2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/104237
+	* cfgrtl.cc (loc_equal): New function.
+	(unique_locus_on_edge_between_p): Use it.
+
+2022-01-28  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.h (mark_dfs_back_edges): Provide API with struct
+	function argument.
+	* cfganal.cc (mark_dfs_back_edges): Take a struct function
+	to work on, add a wrapper passing cfun.
+	* graph.cc (draw_cfg_nodes_no_loops): Replace stray cfun
+	uses with fun which is already passed.
+	(draw_cfg_edges): Likewise.
+	(draw_cfg_nodes_for_loop): Do not use draw_cfg_nodes_for_loop
+	for fun != cfun.
+
 2022-01-27  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99895

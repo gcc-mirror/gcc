@@ -1,3 +1,9 @@
+2022-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/104258
+	* exp_ch4.adb (Narrow_Large_Operation): Also copy the entity, if
+	any, when rewriting the operator node.
+
 2022-01-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR ada/103538

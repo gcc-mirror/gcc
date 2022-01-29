@@ -1,3 +1,30 @@
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Revert:
+	2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
+2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	* trans-array.cc (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.cc (conv_co_collective): Prevent generation
+	of unused descriptor.
+
 2022-01-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104128
