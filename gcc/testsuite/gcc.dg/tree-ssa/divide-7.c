@@ -5,5 +5,5 @@ int f(int x) {
   return 1 / x;
 }
 
-/* { dg-final { scan-tree-dump-not "1 / x_..D.;" "optimized" } } */
-/* { dg-final { scan-tree-dump ".. <= 2 ? x_..D. : 0;" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "1 / x_\[0-9]\+\\\(D\\\);" "optimized" } } */
+/* { dg-final { scan-tree-dump " <= 2 \\? x_\[0-9]\+\\\(D\\\) : 0;" "optimized" } } */
