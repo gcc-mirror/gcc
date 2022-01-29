@@ -7766,6 +7766,8 @@ finish_struct (tree t, tree attributes)
 		ok = true;
 	    }
 	}
+      /* It also cannot be a union.  */
+      ok &= NON_UNION_CLASS_TYPE_P (t);
       if (!ok)
 	fatal_error (input_location, "definition of %qD does not match "
 		     "%<#include <initializer_list>%>", TYPE_NAME (t));
