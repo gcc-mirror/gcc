@@ -313,6 +313,13 @@ NameResolution::Resolve (AST::Crate &crate)
 void
 NameResolution::go (AST::Crate &crate)
 {
+  // lookup current crate name
+  CrateNum cnum = mappings->get_current_crate ();
+  std::string crate_name;
+  bool ok = mappings->get_crate_name (cnum, crate_name);
+  rust_assert (ok);
+
+  // setup the ribs
   NodeId scope_node_id = crate.get_node_id ();
   resolver->get_name_scope ().push (scope_node_id);
   resolver->get_type_scope ().push (scope_node_id);
@@ -321,16 +328,25 @@ NameResolution::go (AST::Crate &crate)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
-  // first gather the top-level namespace names then we drill down
-  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    ResolveTopLevel::go (it->get ());
+  // get the root segment
+  CanonicalPath crate_prefix
+    = CanonicalPath::new_seg (scope_node_id, crate_name);
+  crate_prefix.set_crate_num (cnum);
 
+  // first gather the top-level namespace names then we drill down so this
+  // allows for resolving forward declarations since an impl block might have
+  // a Self type Foo which is defined after the impl block for example.
+  for (auto it = crate.items.begin (); it != crate.items.end (); it++)
+    ResolveTopLevel::go (it->get (), CanonicalPath::create_empty (),
+			 crate_prefix);
+
+  // FIXME remove this
   if (saw_errors ())
     return;
 
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
-    ResolveItem::go (it->get ());
+    ResolveItem::go (it->get (), CanonicalPath::create_empty (), crate_prefix);
 }
 
 // rust-ast-resolve-expr.h
@@ -349,17 +365,19 @@ ResolveExpr::visit (AST::BlockExpr &expr)
   for (auto &s : expr.get_statements ())
     {
       if (s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id ());
+	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
+			 CanonicalPath::create_empty ());
     }
 
   for (auto &s : expr.get_statements ())
     {
       if (!s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id ());
+	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
+			 CanonicalPath::create_empty ());
     }
 
   if (expr.has_tail_expr ())
-    ResolveExpr::go (expr.get_tail_expr ().get (), expr.get_node_id ());
+    resolve_expr (expr.get_tail_expr ().get (), expr.get_node_id ());
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -371,13 +389,15 @@ ResolveExpr::visit (AST::BlockExpr &expr)
 void
 ResolveStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
-  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id (), prefix,
+		   canonical_prefix);
 }
 
 void
 ResolveStructExprField::visit (AST::StructExprFieldIndexValue &field)
 {
-  ResolveExpr::go (field.get_value ().get (), field.get_node_id ());
+  ResolveExpr::go (field.get_value ().get (), field.get_node_id (), prefix,
+		   canonical_prefix);
 }
 
 void
@@ -386,7 +406,7 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
   AST::IdentifierExpr expr (field.get_field_name (), {}, field.get_locus ());
   expr.set_node_id (field.get_node_id ());
 
-  ResolveExpr::go (&expr, field.get_node_id ());
+  ResolveExpr::go (&expr, field.get_node_id (), prefix, canonical_prefix);
 }
 
 // rust-ast-resolve-type.h
@@ -746,7 +766,12 @@ void
 ResolveType::visit (AST::ArrayType &type)
 {
   type.get_elem_type ()->accept_vis (*this);
-  ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id ());
+  // FIXME
+  // the capacity expr can contain block-expr with functions but these should be
+  // folded via constexpr code
+  ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id (),
+		   CanonicalPath::create_empty (),
+		   CanonicalPath::create_empty ());
 }
 
 void
@@ -771,15 +796,19 @@ ResolveType::visit (AST::TraitObjectType &type)
 // rust-ast-resolve-item.h
 
 void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item)
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
+				const CanonicalPath &prefix,
+				const CanonicalPath &canonical_prefix)
 {
-  ResolveImplItems::go (item);
+  ResolveImplItems::go (item, prefix, canonical_prefix);
 }
 
 void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item)
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
+				const CanonicalPath &prefix,
+				const CanonicalPath &canonical_prefix)
 {
-  ResolveImplItems::go (item);
+  ResolveImplItems::go (item, prefix, canonical_prefix);
 }
 
 void

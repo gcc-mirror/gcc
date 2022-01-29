@@ -9,6 +9,9 @@ static const std::string kMangledSymbolDelim = "E";
 static const std::string kMangledGenericDelim = "$C$";
 static const std::string kMangledSubstBegin = "$LT$";
 static const std::string kMangledSubstEnd = "$GT$";
+static const std::string kMangledSpace = "$u20$";
+static const std::string kMangledRef = "$RF$";
+static const std::string kQualPathBegin = "_" + kMangledSubstBegin;
 
 namespace Rust {
 namespace Compile {
@@ -22,17 +25,35 @@ legacy_mangle_name (const std::string &name)
   //  <&T as core::fmt::Debug>::fmt:
   //  _ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h6dac924c0051eef7E
   // replace all white space with $ and & with RF
-
+  //
+  // <example::Bar as example::A>::fooA:
+  // _ZN43_$LT$example..Bar$u20$as$u20$example..A$GT$4fooA17hfc615fa76c7db7a0E:
+  //
+  // example::Foo<T>::new:
+  // _ZN7example12Foo$LT$T$GT$3new17h9a2aacb7fd783515E:
   std::string buffer;
-  for (const auto &c : name)
+  for (size_t i = 0; i < name.size (); i++)
     {
       std::string m;
+      char c = name.at (i);
+
       if (c == ' ')
-	m = "$";
+	m = kMangledSpace;
       else if (c == '&')
-	m = "RF";
-      else if (c == '<' || c == '>')
-	m = "..";
+	m = kMangledRef;
+      else if (i == 0 && c == '<')
+	m = kQualPathBegin;
+      else if (c == '<')
+	m = kMangledSubstBegin;
+      else if (c == '>')
+	m = kMangledSubstEnd;
+      else if (c == ':')
+	{
+	  rust_assert (i + 1 < name.size ());
+	  rust_assert (name.at (i + 1) == ':');
+	  i++;
+	  m = "..";
+	}
       else
 	m.push_back (c);
 
@@ -46,10 +67,11 @@ static std::string
 legacy_mangle_canonical_path (const Resolver::CanonicalPath &path)
 {
   std::string buffer;
-  path.iterate_segs ([&] (const Resolver::CanonicalPath &p) -> bool {
-    buffer += legacy_mangle_name (p.get ());
-    return true;
-  });
+  for (size_t i = 0; i < path.size (); i++)
+    {
+      auto &seg = path.get_seg_at (i);
+      buffer += legacy_mangle_name (seg.second);
+    }
   return buffer;
 }
 
@@ -150,7 +172,8 @@ v0_simple_type_prefix (const TyTy::BaseType *ty)
 // Add an underscore-terminated base62 integer to the mangling string.
 // This corresponds to the `<base-62-number>` grammar in the v0 mangling RFC:
 //  - 0 is encoded as "_"
-//  - any other value is encoded as itself minus one in base 62, followed by "_"
+//  - any other value is encoded as itself minus one in base 62, followed by
+//  "_"
 static void
 v0_add_integer_62 (std::string &mangled, uint64_t x)
 {
@@ -188,11 +211,11 @@ v0_add_identifier (std::string &mangled, const std::string &identifier)
 {
   // FIXME: gccrs cannot handle unicode identifiers yet, so we never have to
   // create mangling for unicode values for now. However, this is handled
-  // by the v0 mangling scheme. The grammar for unicode identifier is contained
-  // in <undisambiguated-identifier>, right under the <identifier> one. If the
-  // identifier contains unicode values, then an extra "u" needs to be added
-  // to the mangling string and `punycode` must be used to encode the
-  // characters.
+  // by the v0 mangling scheme. The grammar for unicode identifier is
+  // contained in <undisambiguated-identifier>, right under the <identifier>
+  // one. If the identifier contains unicode values, then an extra "u" needs
+  // to be added to the mangling string and `punycode` must be used to encode
+  // the characters.
 
   mangled += std::to_string (identifier.size ());
 
@@ -217,22 +240,25 @@ v0_type_prefix (const TyTy::BaseType *ty)
 
 static std::string
 legacy_mangle_item (const TyTy::BaseType *ty,
-		    const Resolver::CanonicalPath &path,
-		    const std::string &crate_name)
+		    const Resolver::CanonicalPath &path)
 {
   const std::string hash = legacy_hash (ty->as_string ());
   const std::string hash_sig = legacy_mangle_name (hash);
 
-  return kMangledSymbolPrefix + legacy_mangle_name (crate_name)
-	 + legacy_mangle_canonical_path (path) + hash_sig + kMangledSymbolDelim;
+  return kMangledSymbolPrefix + legacy_mangle_canonical_path (path) + hash_sig
+	 + kMangledSymbolDelim;
 }
 
 static std::string
-v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
-		const std::string &crate_name)
+v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path)
 {
-  std::string mangled;
+  // we can get this from the canonical_path
+  auto mappings = Analysis::Mappings::get ();
+  std::string crate_name;
+  bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
+  rust_assert (ok);
 
+  std::string mangled;
   // FIXME: Add real algorithm once all pieces are implemented
   auto ty_prefix = v0_type_prefix (ty);
   v0_add_identifier (mangled, crate_name);
@@ -243,15 +269,14 @@ v0_mangle_item (const TyTy::BaseType *ty, const Resolver::CanonicalPath &path,
 
 std::string
 Mangler::mangle_item (const TyTy::BaseType *ty,
-		      const Resolver::CanonicalPath &path,
-		      const std::string &crate_name) const
+		      const Resolver::CanonicalPath &path) const
 {
   switch (version)
     {
     case Mangler::MangleVersion::LEGACY:
-      return legacy_mangle_item (ty, path, crate_name);
+      return legacy_mangle_item (ty, path);
     case Mangler::MangleVersion::V0:
-      return v0_mangle_item (ty, path, crate_name);
+      return v0_mangle_item (ty, path);
     default:
       gcc_unreachable ();
     }

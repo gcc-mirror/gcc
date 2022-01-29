@@ -33,27 +33,34 @@ class ResolveStmt : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Stmt *stmt, NodeId parent,
-		  const CanonicalPath &enum_prefix
-		  = CanonicalPath::create_empty ())
+  static void go (AST::Stmt *stmt, NodeId parent, const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix,
+		  const CanonicalPath &enum_prefix)
   {
-    ResolveStmt resolver (parent, enum_prefix);
+    ResolveStmt resolver (parent, prefix, canonical_prefix, enum_prefix);
     stmt->accept_vis (resolver);
   };
 
   void visit (AST::ExprStmtWithBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
+    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
+		     canonical_prefix);
   }
 
   void visit (AST::ExprStmtWithoutBlock &stmt) override
   {
-    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
+    ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id (), prefix,
+		     canonical_prefix);
   }
 
   void visit (AST::ConstantItem &constant) override
   {
-    auto path = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto decl = ResolveConstantItemToCanonicalPath::resolve (constant);
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     constant.get_node_id (), cpath);
+
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -66,7 +73,8 @@ public:
 						constant.get_node_id ()});
 
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
-    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id (),
+		     prefix, canonical_prefix);
 
     // the mutability checker needs to verify for immutable decls the number
     // of assignments are <1. This marks an implicit assignment
@@ -79,7 +87,8 @@ public:
   {
     if (stmt.has_init_expr ())
       {
-	ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id ());
+	ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id (),
+			 prefix, canonical_prefix);
 
 	// mark the assignment
 	resolver->mark_assignment_to_decl (
@@ -93,8 +102,13 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
-    auto path = CanonicalPath::new_seg (struct_decl.get_node_id (),
+    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
 					struct_decl.get_identifier ());
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     struct_decl.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -124,10 +138,15 @@ public:
 
   void visit (AST::Enum &enum_decl) override
   {
-    auto enum_path = CanonicalPath::new_seg (enum_decl.get_node_id (),
-					     enum_decl.get_identifier ());
+    auto decl = CanonicalPath::new_seg (enum_decl.get_node_id (),
+					enum_decl.get_identifier ());
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     enum_decl.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
-      enum_path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
+      path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (enum_decl.get_locus ());
 	r.add_range (locus);
@@ -146,15 +165,20 @@ public:
       }
 
     for (auto &variant : enum_decl.get_variants ())
-      ResolveStmt::go (variant.get (), parent, enum_path);
+      ResolveStmt::go (variant.get (), parent, path, canonical_prefix, path);
 
     resolver->get_type_scope ().pop ();
   }
 
   void visit (AST::EnumItem &item) override
   {
-    auto path = enum_prefix.append (
+    auto decl = enum_prefix.append (
       CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -168,8 +192,13 @@ public:
 
   void visit (AST::EnumItemTuple &item) override
   {
-    auto path = enum_prefix.append (
+    auto decl = enum_prefix.append (
       CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -184,8 +213,13 @@ public:
 
   void visit (AST::EnumItemStruct &item) override
   {
-    auto path = enum_prefix.append (
+    auto decl = enum_prefix.append (
       CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -200,8 +234,13 @@ public:
 
   void visit (AST::EnumItemDiscriminant &item) override
   {
-    auto path = enum_prefix.append (
+    auto decl = enum_prefix.append (
       CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ()));
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -215,8 +254,13 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
-    auto path = CanonicalPath::new_seg (struct_decl.get_node_id (),
+    auto decl = CanonicalPath::new_seg (struct_decl.get_node_id (),
 					struct_decl.get_identifier ());
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     struct_decl.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -246,8 +290,13 @@ public:
 
   void visit (AST::Union &union_decl) override
   {
-    auto path = CanonicalPath::new_seg (union_decl.get_node_id (),
+    auto decl = CanonicalPath::new_seg (union_decl.get_node_id (),
 					union_decl.get_identifier ());
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     union_decl.get_node_id (), cpath);
+
     resolver->get_type_scope ().insert (
       path, union_decl.get_node_id (), union_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -276,7 +325,12 @@ public:
 
   void visit (AST::Function &function) override
   {
-    auto path = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
+    auto path = decl; // this ensures we have the correct relative resolution
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     function.get_node_id (), cpath);
+
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
@@ -321,8 +375,8 @@ public:
       }
 
     // resolve the function body
-    ResolveExpr::go (function.get_definition ().get (),
-		     function.get_node_id ());
+    ResolveExpr::go (function.get_definition ().get (), function.get_node_id (),
+		     path, cpath);
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
@@ -330,9 +384,15 @@ public:
   }
 
 private:
-  ResolveStmt (NodeId parent, const CanonicalPath &enum_prefix)
-    : ResolverBase (parent), enum_prefix (enum_prefix)
+  ResolveStmt (NodeId parent, const CanonicalPath &prefix,
+	       const CanonicalPath &canonical_prefix,
+	       const CanonicalPath &enum_prefix)
+    : ResolverBase (parent), prefix (prefix),
+      canonical_prefix (canonical_prefix), enum_prefix (enum_prefix)
   {}
+
+  const CanonicalPath &prefix;
+  const CanonicalPath &canonical_prefix;
 
   /* item declaration statements are not given a canonical path, but enum items
    * (variants) do inherit the enum path/identifier name.  */

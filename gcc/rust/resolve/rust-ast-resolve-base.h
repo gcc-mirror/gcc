@@ -201,13 +201,14 @@ public:
 
 protected:
   ResolverBase (NodeId parent)
-    : resolver (Resolver::get ()), resolved_node (UNKNOWN_NODEID),
-      parent (parent), locus (Location ())
+    : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ()),
+      resolved_node (UNKNOWN_NODEID), parent (parent), locus (Location ())
   {}
 
   bool resolved () const { return resolved_node != UNKNOWN_NODEID; }
 
   Resolver *resolver;
+  Analysis::Mappings *mappings;
   NodeId resolved_node;
   NodeId parent;
   Location locus;

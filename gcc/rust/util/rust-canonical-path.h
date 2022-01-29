@@ -57,7 +57,8 @@ public:
   static CanonicalPath new_seg (NodeId id, const std::string &path)
   {
     rust_assert (!path.empty ());
-    return CanonicalPath ({std::pair<NodeId, std::string> (id, path)});
+    return CanonicalPath ({std::pair<NodeId, std::string> (id, path)},
+			  UNKNOWN_CREATENUM);
   }
 
   std::string get () const
@@ -77,7 +78,10 @@ public:
     return CanonicalPath::new_seg (id, "Self");
   }
 
-  static CanonicalPath create_empty () { return CanonicalPath ({}); }
+  static CanonicalPath create_empty ()
+  {
+    return CanonicalPath ({}, UNKNOWN_CREATENUM);
+  }
 
   bool is_empty () const { return segs.size () == 0; }
 
@@ -85,13 +89,13 @@ public:
   {
     rust_assert (!other.is_empty ());
     if (is_empty ())
-      return CanonicalPath (other.segs);
+      return CanonicalPath (other.segs, crate_num);
 
     std::vector<std::pair<NodeId, std::string>> copy (segs);
     for (auto &s : other.segs)
       copy.push_back (s);
 
-    return CanonicalPath (copy);
+    return CanonicalPath (copy, crate_num);
   }
 
   // if we have the path A::B::C this will give a callback for each segment
@@ -110,7 +114,7 @@ public:
     for (auto &seg : segs)
       {
 	buf.push_back (seg);
-	if (!cb (CanonicalPath (buf)))
+	if (!cb (CanonicalPath (buf, crate_num)))
 	  return;
       }
   }
@@ -131,7 +135,7 @@ public:
       {
 	std::vector<std::pair<NodeId, std::string>> buf;
 	buf.push_back ({seg.first, seg.second});
-	if (!cb (CanonicalPath (buf)))
+	if (!cb (CanonicalPath (buf, crate_num)))
 	  return;
       }
   }
@@ -144,9 +148,23 @@ public:
     return segs.back ().first;
   }
 
+  const std::pair<NodeId, std::string> &get_seg_at (size_t index) const
+  {
+    rust_assert (index < size ());
+    return segs.at (index);
+  }
+
   bool is_equal (const CanonicalPath &b) const
   {
     return get ().compare (b.get ()) == 0;
+  }
+
+  void set_crate_num (CrateNum n) { crate_num = n; }
+
+  CrateNum get_crate_num () const
+  {
+    rust_assert (crate_num != UNKNOWN_CREATENUM);
+    return crate_num;
   }
 
   bool operator== (const CanonicalPath &b) const { return is_equal (b); }
@@ -154,11 +172,13 @@ public:
   bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
 
 private:
-  explicit CanonicalPath (std::vector<std::pair<NodeId, std::string>> path)
-    : segs (path)
+  explicit CanonicalPath (std::vector<std::pair<NodeId, std::string>> path,
+			  CrateNum crate_num)
+    : segs (path), crate_num (crate_num)
   {}
 
   std::vector<std::pair<NodeId, std::string>> segs;
+  CrateNum crate_num;
 };
 
 } // namespace Resolver

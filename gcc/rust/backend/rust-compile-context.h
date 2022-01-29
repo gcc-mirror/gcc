@@ -304,7 +304,7 @@ public:
   std::string mangle_item (const TyTy::BaseType *ty,
 			   const Resolver::CanonicalPath &path) const
   {
-    return mangler.mangle_item (ty, path, mappings->get_current_crate_name ());
+    return mangler.mangle_item (ty, path);
   }
 
 private:
