@@ -579,16 +579,16 @@ public:
 
     // see https://godbolt.org/z/a3vMbsT6W
     CanonicalPath cpath = CanonicalPath::create_empty ();
-    if (canonical_prefix.size () > 1)
+    if (canonical_prefix.size () <= 1)
+      {
+	cpath = self_cpath;
+      }
+    else
       {
 	std::string seg_buf = "<impl " + self_cpath.get () + ">";
 	CanonicalPath seg
 	  = CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
 	cpath = canonical_prefix.append (seg);
-      }
-    else
-      {
-	cpath = canonical_prefix.append (self_cpath);
       }
     // done setup paths
 
@@ -757,7 +757,11 @@ public:
 				      canonical_trait_type,
 				      canonical_impl_type);
     CanonicalPath cpath = CanonicalPath::create_empty ();
-    if (canonical_prefix.size () > 1)
+    if (canonical_prefix.size () <= 1)
+      {
+	cpath = canonical_projection;
+      }
+    else
       {
 	std::string projection_str = canonical_projection.get ();
 	std::string seg_buf
@@ -767,10 +771,7 @@ public:
 	  = CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
 	cpath = canonical_prefix.append (seg);
       }
-    else
-      {
-	cpath = canonical_prefix.append (canonical_projection);
-      }
+
     // DONE setup canonical-path
 
     auto Self
