@@ -433,7 +433,7 @@ Ada Tasks
 
 .. index:: Breakpoints and tasks
 
-* ``break``*linespec* ``task`` *taskid*, ``break`` *linespec* ``task`` *taskid* ``if`` ...
+* ``break`` *linespec* ``task`` *taskid*, ``break`` *linespec* ``task`` *taskid* ``if`` ...
 
     These commands are like the ``break ... thread ...``.
     *linespec* specifies source lines.
@@ -1306,7 +1306,7 @@ or simply:
 
   ::
 
-    $  gprof my_prog
+    $ gprof my_prog
 
 The complete form of the gprof command line is the following:
 

@@ -18498,7 +18498,7 @@ to refer to tasks in the following commands.
 @itemize *
 
 @item 
-@code{break`@w{`}*linespec* `@w{`}task} @emph{taskid}, @code{break} @emph{linespec} @code{task} @emph{taskid} @code{if} …
+@code{break} @emph{linespec} @code{task} @emph{taskid}, @code{break} @emph{linespec} @code{task} @emph{taskid} @code{if} …
 
 @quotation
 
@@ -19517,7 +19517,7 @@ or simply:
 @quotation
 
 @example
-$  gprof my_prog
+$ gprof my_prog
 @end example
 @end quotation
 
@@ -28015,7 +28015,7 @@ To see this output, invoke the compiler as follows:
 @quotation
 
 @example
-$  gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
+$ gcc -c -S -fomit-frame-pointer -gnatp nothing.adb
 @end example
 @end quotation
 
