@@ -1,3 +1,18 @@
+2022-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95424
+	* gcc.dg/tree-ssa/divide-7.c: Fix up regexps in scan-tree-dump{,-not}.
+
+2022-01-29  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/104279
+	PR tree-optimization/104280
+	PR tree-optimization/104281
+	* gcc.dg/torture/pr104279.c: New test.
+	* gcc.dg/torture/pr104280.c: New test.
+	* gcc.dg/torture/pr104281.c: New test.
+
 2022-01-28  Navid Rahimi  <navidrahimi@microsoft.com>
 
 	* gcc.dg/tree-ssa/pr103514.c: Testcase for this optimization.

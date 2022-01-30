@@ -1,3 +1,12 @@
+2022-01-29  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/104279
+	PR tree-optimization/104280
+	PR tree-optimization/104281
+	* match.pd (1 / X -> X == 1 for unsigned X): Build eq with
+	boolean_type_node and convert to type.  Formatting fixes.
+
 2022-01-28  Yoshinori Sato  <yo-satoh@sios.com>
 
 	* config/sh/t-linux (MULTILIB_EXCEPTIONS): Add m1, mb/m1 and m2a.
