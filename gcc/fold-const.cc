@@ -1306,6 +1306,17 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       real_convert (&result, mode, &value);
 
       /* Don't constant fold this floating point operation if
+	 both operands are not NaN but the result is NaN, and
+	 flag_trapping_math.  Such operations should raise an
+	 invalid operation exception.  */
+      if (flag_trapping_math
+	  && MODE_HAS_NANS (mode)
+	  && REAL_VALUE_ISNAN (result)
+	  && !REAL_VALUE_ISNAN (d1)
+	  && !REAL_VALUE_ISNAN (d2))
+	return NULL_TREE;
+
+      /* Don't constant fold this floating point operation if
 	 the result has overflowed and flag_trapping_math.  */
       if (flag_trapping_math
 	  && MODE_HAS_INFINITIES (mode)
