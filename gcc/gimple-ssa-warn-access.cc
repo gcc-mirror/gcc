@@ -4080,7 +4080,8 @@ maybe_warn_mismatched_realloc (tree ptr, gimple *realloc_stmt, gimple *stmt)
    either don't or their relationship cannot be determined.  */
 
 static bool
-pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
+pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry,
+		    auto_bitmap &visited)
 {
   if (!ptr_derefs_may_alias_p (p, q))
     return false;
@@ -4093,7 +4094,47 @@ pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
        it involves a self-referential PHI.  Return a conservative result.  */
     return false;
 
-  return pref.ref == qref.ref;
+  if (pref.ref == qref.ref)
+    return true;
+
+  /* If either pointer is a PHI, iterate over all its operands and
+     return true if they're all related to the other pointer.  */
+  tree ptr = q;
+  unsigned version;
+  gphi *phi = pref.phi ();
+  if (phi)
+    version = SSA_NAME_VERSION (pref.ref);
+  else
+    {
+      phi = qref.phi ();
+      if (!phi)
+	return false;
+
+      ptr = p;
+      version = SSA_NAME_VERSION (qref.ref);
+    }
+
+  if (!bitmap_set_bit (visited, version))
+    return true;
+
+  unsigned nargs = gimple_phi_num_args (phi);
+  for (unsigned i = 0; i != nargs; ++i)
+    {
+      tree arg = gimple_phi_arg_def (phi, i);
+      if (!pointers_related_p (stmt, arg, ptr, qry, visited))
+	return false;
+    }
+
+  return true;
+}
+
+/* Convenience wrapper for the above.  */
+
+static bool
+pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
+{
+  auto_bitmap visited;
+  return pointers_related_p (stmt, p, q, qry, visited);
 }
 
 /* For a STMT either a call to a deallocation function or a clobber, warn
@@ -4192,7 +4233,12 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	    {
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
+		  /* Only add a PHI result to POINTERS if all its
+		     operands are related to PTR, otherwise continue.  */
 		  tree lhs = gimple_phi_result (use_stmt);
+		  if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
+		    continue;
+
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    {
 		      pointers.safe_push (lhs);
