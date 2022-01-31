@@ -10525,12 +10525,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       *walk_subtrees = 0;
       break;
 
-    case CONSTRUCTOR:
-      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))
-	  && pfd->include_nondeduced_p)
-	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
-      break;
-
     case INDIRECT_REF:
     case COMPONENT_REF:
       /* If there's no type, then this thing must be some expression
@@ -10539,6 +10533,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
+    case CONSTRUCTOR:
     case TRAIT_EXPR:
     case PLUS_EXPR:
     case MULT_EXPR:
