@@ -2830,11 +2830,13 @@ AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
-      AC_MSG_RESULT(stdio)
 
       if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_MSG_RESULT([stdio (without POSIX read/write)])
 	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
 		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      else
+	AC_MSG_RESULT([stdio (with POSIX read/write)])
       fi
       ;;
   esac

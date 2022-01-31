@@ -16408,13 +16408,16 @@ fi
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: stdio" >&5
-$as_echo "stdio" >&6; }
 
       if test "x$enable_cstdio" = "xstdio_pure" ; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: stdio (without POSIX read/write)" >&5
+$as_echo "stdio (without POSIX read/write)" >&6; }
 
 $as_echo "#define _GLIBCXX_USE_STDIO_PURE 1" >>confdefs.h
 
+      else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: stdio (with POSIX read/write)" >&5
+$as_echo "stdio (with POSIX read/write)" >&6; }
       fi
       ;;
   esac
