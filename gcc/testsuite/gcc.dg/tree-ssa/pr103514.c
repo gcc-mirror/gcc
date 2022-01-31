@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-options "-O --param logical-op-non-short-circuit=1 -fdump-tree-optimized" } */
 #include <stdbool.h>
 
 bool
