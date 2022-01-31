@@ -22654,7 +22654,7 @@ have sufficient priviledge for running the container image.
 
 
 This section describes topics that are specific to GNU/Linux platforms.
-@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1bd}
+
 @menu
 * Required Packages on GNU/Linux:: 
 * A GNU/Linux Debug Quirk:: 
@@ -22662,7 +22662,7 @@ This section describes topics that are specific to GNU/Linux platforms.
 @end menu
 
 @node Required Packages on GNU/Linux,A GNU/Linux Debug Quirk,,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information a-gnu-linux-debug-quirk}@anchor{1be}@anchor{gnat_ugn/platform_specific_information id7}@anchor{1bf}
+@anchor{gnat_ugn/platform_specific_information id7}@anchor{1bd}@anchor{gnat_ugn/platform_specific_information required-packages-on-gnu-linux}@anchor{1be}
 @subsection Required Packages on GNU/Linux
 
 
@@ -22689,6 +22689,9 @@ you’ll need the 32-bit version of the following packages:
 RedHat, SUSE: @code{glibc.i686}, @code{glibc-devel.i686}, @code{ncurses-libs.i686}
 
 @item 
+SUSE: @code{glibc-locale-base-32bit}
+
+@item 
 Debian, Ubuntu: @code{libc6:i386}, @code{libc6-dev:i386}, @code{lib32ncursesw5}
 @end itemize
 
@@ -22696,7 +22699,7 @@ Other GNU/Linux distributions might be choosing a different name
 for those packages.
 
 @node A GNU/Linux Debug Quirk,,Required Packages on GNU/Linux,GNU/Linux Topics
-@anchor{gnat_ugn/platform_specific_information id8}@anchor{1c0}
+@anchor{gnat_ugn/platform_specific_information a-gnu-linux-debug-quirk}@anchor{1bf}@anchor{gnat_ugn/platform_specific_information id8}@anchor{1c0}
 @subsection A GNU/Linux Debug Quirk
 
 
