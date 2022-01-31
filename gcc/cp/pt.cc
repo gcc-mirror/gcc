@@ -29563,7 +29563,9 @@ ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
   if (DECL_CLASS_SCOPE_P (tmpl)
       && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
     {
-      outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
+      outer_args = copy_node (CLASSTYPE_TI_ARGS (type));
+      gcc_assert (TMPL_ARGS_DEPTH (outer_args) > 1);
+      --TREE_VEC_LENGTH (outer_args);
       type = TREE_TYPE (most_general_template (tmpl));
     }
 
