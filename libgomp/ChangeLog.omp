@@ -1,5 +1,12 @@
 2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
 
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove pool_size
+	trait.  Test last index in w and v array.  Remove redundant
+	assignment to V(1).  Move alignment checks at the end of
+	parallel region.
+
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
 	Backported from master:
 	2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
 
