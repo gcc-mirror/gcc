@@ -160,7 +160,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   };
 
   /// @{
-  /// @relates perm_options
+  /// @relates perms
   constexpr perms
   operator&(perms __x, perms __y) noexcept
   {
