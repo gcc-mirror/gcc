@@ -128,9 +128,9 @@ package body System.Stack_Usage is
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
         [others =>
-           [Task_Name   => [others => ASCII.NUL],
+           (Task_Name   => [others => ASCII.NUL],
             Value       => 0,
-            Stack_Size  => 0]];
+            Stack_Size  => 0)];
 
       --  Set the Is_Enabled flag to true, so that the task wrapper knows that
       --  it has to handle dynamic stack analysis
