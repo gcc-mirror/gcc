@@ -4844,7 +4844,7 @@ gfc_match_omp_context_selector_specification (gfc_omp_set_selector **oss_head,
 	    gfc_error ("expected 'construct', 'device', 'implementation', "
 		       "'target_device' or 'user' at %C");
 	  else
-	    gfc_error ("expected 'construct', 'device', 'implementation', "
+	    gfc_error ("expected 'construct', 'device', 'implementation' "
 		       "or 'user' at %C");
 	  return MATCH_ERROR;
 	}
