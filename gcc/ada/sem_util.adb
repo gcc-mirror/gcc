@@ -30374,6 +30374,9 @@ package body Sem_Util is
       Found_Type : constant Entity_Id := First_Subtype (Etype (Expr));
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
+      Err_Msg_Exp_Typ : Entity_Id := Expected_Type;
+      --  Type entity used when printing errors concerning the expected type
+
       Matching_Field : Entity_Id;
       --  Entity to give a more precise suggestion on how to write a one-
       --  element positional aggregate.
@@ -30531,6 +30534,15 @@ package body Sem_Util is
          end if;
       end if;
 
+      --  Avoid printing internally generated subtypes in error messages and
+      --  instead use the corresponding first subtype in such cases.
+
+      if not Comes_From_Source (Err_Msg_Exp_Typ)
+        or else not Comes_From_Source (Declaration_Node (Err_Msg_Exp_Typ))
+      then
+         Err_Msg_Exp_Typ := First_Subtype (Err_Msg_Exp_Typ);
+      end if;
+
       --  An interesting special check. If the expression is parenthesized
       --  and its type corresponds to the type of the sole component of the
       --  expected record type, or to the component type of the expected one
@@ -30568,7 +30580,7 @@ package body Sem_Util is
          Error_Msg_N
            ("result must be general access type!", Expr);
          Error_Msg_NE -- CODEFIX
-           ("\add ALL to }!", Expr, Expec_Type);
+           ("\add ALL to }!", Expr, Err_Msg_Exp_Typ);
 
       --  Another special check, if the expected type is an integer type,
       --  but the expression is of type System.Address, and the parent is
@@ -30660,7 +30672,7 @@ package body Sem_Util is
             Error_Msg_NE ("expected}!", Expr,
                           Corresponding_Remote_Type (Expec_Type));
          else
-            Error_Msg_NE ("expected}!", Expr, Expec_Type);
+            Error_Msg_NE ("expected}!", Expr, Err_Msg_Exp_Typ);
          end if;
 
          if Is_Entity_Name (Expr)
