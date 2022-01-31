@@ -1546,28 +1546,13 @@
 (define_insn "*btrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
-		       [(match_operand:SI 0 "register_operand" "r,r")
-			(match_operand:SI 1 "branch_operand" "K,r")])
+			[(match_operand:SI 0 "register_operand" "r,r")
+			 (match_operand:SI 1 "branch_operand" "K,r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
-  return xtensa_emit_branch (false, which_alternative == 0, operands);
-}
-  [(set_attr "type"	"jump,jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
-
-(define_insn "*bfalse"
-  [(set (pc)
-	(if_then_else (match_operator 3 "branch_operator"
-		       [(match_operand:SI 0 "register_operand" "r,r")
-			(match_operand:SI 1 "branch_operand" "K,r")])
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))]
-  ""
-{
-  return xtensa_emit_branch (true, which_alternative == 0, operands);
+  return xtensa_emit_branch (which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1576,28 +1561,13 @@
 (define_insn "*ubtrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "ubranch_operator"
-		       [(match_operand:SI 0 "register_operand" "r,r")
-			(match_operand:SI 1 "ubranch_operand" "L,r")])
+			[(match_operand:SI 0 "register_operand" "r,r")
+			 (match_operand:SI 1 "ubranch_operand" "L,r")])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
-  return xtensa_emit_branch (false, which_alternative == 0, operands);
-}
-  [(set_attr "type"	"jump,jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
-
-(define_insn "*ubfalse"
-  [(set (pc)
-	(if_then_else (match_operator 3 "ubranch_operator"
-			 [(match_operand:SI 0 "register_operand" "r,r")
-			  (match_operand:SI 1 "ubranch_operand" "L,r")])
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))]
-  ""
-{
-  return xtensa_emit_branch (true, which_alternative == 0, operands);
+  return xtensa_emit_branch (which_alternative == 0, operands);
 }
   [(set_attr "type"	"jump,jump")
    (set_attr "mode"	"none")
@@ -1608,34 +1578,30 @@
 (define_insn "*bittrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
-			[(zero_extract:SI
-			    (match_operand:SI 0 "register_operand" "r,r")
-			    (const_int 1)
-			    (match_operand:SI 1 "arith_operand" "J,r"))
+			[(zero_extract:SI (match_operand:SI 0 "register_operand" "r,r")
+					  (const_int 1)
+					  (match_operand:SI 1 "arith_operand" "J,r"))
 			 (const_int 0)])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
-  return xtensa_emit_bit_branch (false, which_alternative == 0, operands);
-}
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"3")])
-
-(define_insn "*bitfalse"
-  [(set (pc)
-	(if_then_else (match_operator 3 "boolean_operator"
-			[(zero_extract:SI
-			    (match_operand:SI 0 "register_operand" "r,r")
-			    (const_int 1)
-			    (match_operand:SI 1 "arith_operand" "J,r"))
-			 (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))]
-  ""
-{
-  return xtensa_emit_bit_branch (true, which_alternative == 0, operands);
+  static char result[64];
+  char op;
+  switch (GET_CODE (operands[3]))
+    {
+    case EQ:	op = 'c'; break;
+    case NE:	op = 's'; break;
+    default:	gcc_unreachable ();
+    }
+  if (which_alternative == 0)
+    {
+      operands[1] = GEN_INT (INTVAL (operands[1]) & 0x1f);
+      sprintf (result, "bb%ci\t%%0, %%d1, %%2", op);
+    }
+  else
+    sprintf (result, "bb%c\t%%0, %%1, %%2", op);
+  return result;
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1644,39 +1610,18 @@
 (define_insn "*masktrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "boolean_operator"
-		 [(and:SI (match_operand:SI 0 "register_operand" "r")
-			  (match_operand:SI 1 "register_operand" "r"))
-		  (const_int 0)])
+			[(and:SI (match_operand:SI 0 "register_operand" "r")
+				 (match_operand:SI 1 "register_operand" "r"))
+			 (const_int 0)])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
 {
   switch (GET_CODE (operands[3]))
     {
-    case EQ:		return "bnone\t%0, %1, %2";
-    case NE:		return "bany\t%0, %1, %2";
-    default:		gcc_unreachable ();
-    }
-}
-  [(set_attr "type"	"jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"3")])
-
-(define_insn "*maskfalse"
-  [(set (pc)
-	(if_then_else (match_operator 3 "boolean_operator"
-		 [(and:SI (match_operand:SI 0 "register_operand" "r")
-			  (match_operand:SI 1 "register_operand" "r"))
-		  (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))]
-  ""
-{
-  switch (GET_CODE (operands[3]))
-    {
-    case EQ:		return "bany\t%0, %1, %2";
-    case NE:		return "bnone\t%0, %1, %2";
-    default:		gcc_unreachable ();
+    case EQ:	return "bnone\t%0, %1, %2";
+    case NE:	return "bany\t%0, %1, %2";
+    default:	gcc_unreachable ();
     }
 }
   [(set_attr "type"	"jump")

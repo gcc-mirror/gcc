@@ -118,7 +118,7 @@ const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
 
 static void xtensa_option_override (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
-static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
+static rtx gen_int_relational (enum rtx_code, rtx, rtx);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
 static rtx gen_conditional_move (enum rtx_code, machine_mode, rtx, rtx);
 static rtx fixup_subreg_mem (rtx);
@@ -680,8 +680,7 @@ map_test_to_internal_test (enum rtx_code test_code)
 static rtx
 gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
 		    rtx cmp0, /* first operand to compare */
-		    rtx cmp1, /* second operand to compare */
-		    int *p_invert /* whether branch needs to reverse test */)
+		    rtx cmp1 /* second operand to compare */)
 {
   struct cmp_info
   {
@@ -713,6 +712,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
   enum internal_test test;
   machine_mode mode;
   struct cmp_info *p_info;
+  int invert;
 
   test = map_test_to_internal_test (test_code);
   gcc_assert (test != ITEST_MAX);
@@ -749,9 +749,9 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     }
 
   /* See if we need to invert the result.  */
-  *p_invert = ((GET_CODE (cmp1) == CONST_INT)
-	       ? p_info->invert_const
-	       : p_info->invert_reg);
+  invert = ((GET_CODE (cmp1) == CONST_INT)
+	    ? p_info->invert_const
+	    : p_info->invert_reg);
 
   /* Comparison to constants, may involve adding 1 to change a LT into LE.
      Comparison between two registers, may involve switching operands.  */
@@ -768,7 +768,9 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
       cmp1 = temp;
     }
 
-  return gen_rtx_fmt_ee (p_info->test_code, VOIDmode, cmp0, cmp1);
+  return gen_rtx_fmt_ee (invert ? reverse_condition (p_info->test_code)
+				: p_info->test_code,
+			 VOIDmode, cmp0, cmp1);
 }
 
 
@@ -827,45 +829,33 @@ xtensa_expand_conditional_branch (rtx *operands, machine_mode mode)
   enum rtx_code test_code = GET_CODE (operands[0]);
   rtx cmp0 = operands[1];
   rtx cmp1 = operands[2];
-  rtx cmp;
-  int invert;
-  rtx label1, label2;
+  rtx cmp, label;
 
   switch (mode)
     {
+    case E_SFmode:
+      if (TARGET_HARD_FLOAT)
+	{
+	  cmp = gen_float_relational (test_code, cmp0, cmp1);
+	  break;
+	}
+      /* FALLTHRU */
+
     case E_DFmode:
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
 
     case E_SImode:
-      invert = FALSE;
-      cmp = gen_int_relational (test_code, cmp0, cmp1, &invert);
-      break;
-
-    case E_SFmode:
-      if (!TARGET_HARD_FLOAT)
-	fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode,
-						cmp0, cmp1));
-      invert = FALSE;
-      cmp = gen_float_relational (test_code, cmp0, cmp1);
+      cmp = gen_int_relational (test_code, cmp0, cmp1);
       break;
     }
 
   /* Generate the branch.  */
-
-  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-  label2 = pc_rtx;
-
-  if (invert)
-    {
-      label2 = label1;
-      label1 = pc_rtx;
-    }
-
+  label = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   emit_jump_insn (gen_rtx_SET (pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode, cmp,
-						     label1,
-						     label2)));
+						     label,
+						     pc_rtx)));
 }
 
 
@@ -2068,21 +2058,20 @@ xtensa_emit_loop_end (rtx_insn *insn, rtx *operands)
 
 
 char *
-xtensa_emit_branch (bool inverted, bool immed, rtx *operands)
+xtensa_emit_branch (bool immed, rtx *operands)
 {
   static char result[64];
-  enum rtx_code code;
+  enum rtx_code code = GET_CODE (operands[3]);
   const char *op;
 
-  code = GET_CODE (operands[3]);
   switch (code)
     {
-    case EQ:	op = inverted ? "ne" : "eq"; break;
-    case NE:	op = inverted ? "eq" : "ne"; break;
-    case LT:	op = inverted ? "ge" : "lt"; break;
-    case GE:	op = inverted ? "lt" : "ge"; break;
-    case LTU:	op = inverted ? "geu" : "ltu"; break;
-    case GEU:	op = inverted ? "ltu" : "geu"; break;
+    case EQ:	op = "eq"; break;
+    case NE:	op = "ne"; break;
+    case LT:	op = "lt"; break;
+    case GE:	op = "ge"; break;
+    case LTU:	op = "ltu"; break;
+    case GEU:	op = "geu"; break;
     default:	gcc_unreachable ();
     }
 
@@ -2102,32 +2091,6 @@ xtensa_emit_branch (bool inverted, bool immed, rtx *operands)
 
 
 char *
-xtensa_emit_bit_branch (bool inverted, bool immed, rtx *operands)
-{
-  static char result[64];
-  const char *op;
-
-  switch (GET_CODE (operands[3]))
-    {
-    case EQ:	op = inverted ? "bs" : "bc"; break;
-    case NE:	op = inverted ? "bc" : "bs"; break;
-    default:	gcc_unreachable ();
-    }
-
-  if (immed)
-    {
-      unsigned bitnum = INTVAL (operands[1]) & 0x1f; 
-      operands[1] = GEN_INT (bitnum); 
-      sprintf (result, "b%si\t%%0, %%d1, %%2", op);
-    }
-  else
-    sprintf (result, "b%s\t%%0, %%1, %%2", op);
-
-  return result;
-}
-
-
-char *
 xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 {
   static char result[64];
@@ -2135,12 +2098,14 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
   const char *op;
 
   code = GET_CODE (operands[4]);
+  if (inverted)
+    code = reverse_condition (code);
   if (isbool)
     {
       switch (code)
 	{
-	case EQ:	op = inverted ? "t" : "f"; break;
-	case NE:	op = inverted ? "f" : "t"; break;
+	case EQ:	op = "f"; break;
+	case NE:	op = "t"; break;
 	default:	gcc_unreachable ();
 	}
     }
@@ -2148,10 +2113,10 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
     {
       switch (code)
 	{
-	case EQ:	op = inverted ? "nez" : "eqz"; break;
-	case NE:	op = inverted ? "eqz" : "nez"; break;
-	case LT:	op = inverted ? "gez" : "ltz"; break;
-	case GE:	op = inverted ? "ltz" : "gez"; break;
+	case EQ:	op = "eqz"; break;
+	case NE:	op = "nez"; break;
+	case LT:	op = "ltz"; break;
+	case GE:	op = "gez"; break;
 	default:	gcc_unreachable ();
 	}
     }
