@@ -306,6 +306,10 @@ fs::recursive_directory_iterator::increment(error_code& ec)
 	  return *this;
 	}
     }
+
+  if (ec)
+    _M_dirs.reset();
+
   return *this;
 }
 
@@ -329,16 +333,20 @@ fs::recursive_directory_iterator::pop(error_code& ec)
 	ec.clear();
 	return;
       }
-  } while (!_M_dirs->top().advance(skip_permission_denied, ec));
+  } while (!_M_dirs->top().advance(skip_permission_denied, ec) && !ec);
+
+  if (ec)
+    _M_dirs.reset();
 }
 
 void
 fs::recursive_directory_iterator::pop()
 {
+  [[maybe_unused]] const bool dereferenceable = _M_dirs != nullptr;
   error_code ec;
   pop(ec);
   if (ec)
-    _GLIBCXX_THROW_OR_ABORT(filesystem_error(_M_dirs
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error(dereferenceable
 	  ? "recursive directory iterator cannot pop"
 	  : "non-dereferenceable recursive directory iterator cannot pop",
 	  ec));
