@@ -979,10 +979,14 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
 
   // If name is defined in this block, try to get an range from S.
   if (def_stmt && gimple_bb (def_stmt) == bb)
-    range_of_stmt (r, def_stmt, expr);
-  else
-    // Otherwise OP comes from outside this block, use range on entry.
-    range_on_entry (r, bb, expr);
+    return range_of_stmt (r, def_stmt, expr);
+
+  // Otherwise OP comes from outside this block, use range on entry.
+  range_on_entry (r, bb, expr);
+  // Check for non-null in the predecessor if dominators are available.
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return true;
+  basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
 
   // No range yet, see if there is a dereference in the block.
   // We don't care if it's between the def and a use within a block
@@ -992,8 +996,8 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   // in which case we may need to walk from S back to the def/top of block
   // to make sure the deref happens between S and there before claiming
   // there is a deref.   Punt for now.
-  if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-      m_cache.m_non_null.non_null_deref_p (expr, bb))
+  if (dom_bb && !cfun->can_throw_non_call_exceptions && r.varying_p ()
+      && m_cache.m_non_null.non_null_deref_p (expr, dom_bb))
     r = range_nonzero (TREE_TYPE (expr));
 
   return true;

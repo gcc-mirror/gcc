@@ -905,14 +905,19 @@ ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
       // Try to pick up any known global value as a best guess for now.
       if (!m_globals.get_global_range (r, name))
 	r = gimple_range_global (name);
+      // Check for non-null on entry if dominators are available by
+      // resetting def_bb to the block we want to search.
+      if (dom_info_available_p (CDI_DOMINATORS))
+	{
+	  basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	  // Check if pointers have any non-null dereferences.  Non-call
+	  // exceptions mean we could throw in the middle of the block, so just
+	  // punt for now on those.
+	  if (dom_bb && r.varying_p () && !cfun->can_throw_non_call_exceptions
+	      && m_non_null.non_null_deref_p (name, dom_bb))
+	    r = range_nonzero (TREE_TYPE (name));
+	}
     }
-
-  // Check if pointers have any non-null dereferences.  Non-call
-  // exceptions mean we could throw in the middle of the block, so just
-  // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb) &&
-      !cfun->can_throw_non_call_exceptions)
-    r = range_nonzero (TREE_TYPE (name));
 }
 
 // Return a static range for NAME on entry to basic block BB in R.  If
