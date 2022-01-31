@@ -3290,6 +3290,8 @@ generate_reduction_builtin_1 (loop_p loop, gimple_seq &seq,
 			      tree reduction_var_old, tree reduction_var_new,
 			      const char *info, machine_mode load_mode)
 {
+  gcc_assert (flag_tree_loop_distribute_patterns);
+
   /* Place new statements before LOOP.  */
   gimple_stmt_iterator gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
   gsi_insert_seq_after (&gsi, seq, GSI_CONTINUE_LINKING);
@@ -3773,7 +3775,8 @@ loop_distribution::execute (function *fun)
       if (niters == NULL_TREE || niters == chrec_dont_know)
 	{
 	  datarefs_vec.create (20);
-	  if (transform_reduction_loop (loop))
+	  if (flag_tree_loop_distribute_patterns
+	      && transform_reduction_loop (loop))
 	    {
 	      changed = true;
 	      loops_to_be_destroyed.safe_push (loop);
