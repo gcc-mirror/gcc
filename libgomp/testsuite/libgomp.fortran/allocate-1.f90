@@ -74,31 +74,30 @@ subroutine foo (x, p, q, h, fl)
   if (x /= 42) then
     stop 1
   end if
-  v(1) = 7
-  if ( (and(fl, 2) /= 0) .and.          &
-       ((is_64bit_aligned(x) == 0) .or. &
-        (is_64bit_aligned(y) == 0) .or. &
-        (is_64bit_aligned(v(1)) == 0))) then
-      stop 2
-  end if
 
   !$omp barrier
   y = 1;
   x = x + 1
   v(1) = 7
-  v(41) = 8
+  v(42) = 8
   !$omp barrier
   if (x /= 43 .or. y /= 1) then
     stop 3
   end if
-  if (v(1) /= 7 .or. v(41) /= 8) then
+  if (v(1) /= 7 .or. v(42) /= 8) then
     stop 4
+  end if
+  if ( (and(fl, 2) /= 0) .and.        &
+     ((is_64bit_aligned(x) == 0) .or. &
+      (is_64bit_aligned(y) == 0) .or. &
+      (is_64bit_aligned(v(1)) == 0))) then
+    stop 2
   end if
   !$omp end parallel
   !$omp teams
   !$omp parallel private (y) firstprivate (x, w) allocate (h: x, y, w)
 
-  if (x /= 42 .or. w(17) /= 17 .or. w(41) /= 41) then
+  if (x /= 42 .or. w(17) /= 17 .or. w(42) /= 42) then
     stop 5
   end if
   !$omp barrier
@@ -314,13 +313,12 @@ program main
   integer, dimension(4) :: p
   integer, dimension(4) :: q
 
-  type (omp_alloctrait) :: traits(3)
+  type (omp_alloctrait) :: traits(2)
   integer (omp_allocator_handle_kind) :: a
 
   traits = [omp_alloctrait (omp_atk_alignment, 64), &
-            omp_alloctrait (omp_atk_fallback, omp_atv_null_fb), &
-            omp_alloctrait (omp_atk_pool_size, 8192)]
-  a = omp_init_allocator (omp_default_mem_space, 3, traits)
+            omp_alloctrait (omp_atk_fallback, omp_atv_null_fb)]
+  a = omp_init_allocator (omp_default_mem_space, 2, traits)
   if (a == omp_null_allocator) stop 1
 
   call omp_set_default_allocator (omp_default_mem_alloc);
