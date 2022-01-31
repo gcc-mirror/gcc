@@ -209,18 +209,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       _M_enter_wait() noexcept
-      { __atomic_fetch_add(&_M_wait, 1, __ATOMIC_ACQ_REL); }
+      { __atomic_fetch_add(&_M_wait, 1, __ATOMIC_SEQ_CST); }
 
       void
       _M_leave_wait() noexcept
-      { __atomic_fetch_sub(&_M_wait, 1, __ATOMIC_ACQ_REL); }
+      { __atomic_fetch_sub(&_M_wait, 1, __ATOMIC_RELEASE); }
 
       bool
       _M_waiting() const noexcept
       {
 	__platform_wait_t __res;
-	__atomic_load(&_M_wait, &__res, __ATOMIC_ACQUIRE);
-	return __res > 0;
+	__atomic_load(&_M_wait, &__res, __ATOMIC_SEQ_CST);
+	return __res != 0;
       }
 
       void
@@ -258,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__platform_wait(__addr, __old);
 #else
 	__platform_wait_t __val;
-	__atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	__atomic_load(__addr, &__val, __ATOMIC_SEQ_CST);
 	if (__val == __old)
 	  {
 	    lock_guard<mutex> __l(_M_mtx);
@@ -309,7 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (_M_laundered())
 	    {
-	      __atomic_fetch_add(_M_addr, 1, __ATOMIC_ACQ_REL);
+	      __atomic_fetch_add(_M_addr, 1, __ATOMIC_SEQ_CST);
 	      __all = true;
 	    }
 	  _M_w._M_notify(_M_addr, __all, __bare);
