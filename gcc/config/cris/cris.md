@@ -153,9 +153,20 @@
 	(not (match_test "dead_or_set_regno_p (insn, CRIS_SRP_REGNUM)")))
    (nil) (nil)])
 
+;; Enable choosing particular instructions.  The discriminator choice
+;; "v0" stands for "pre-v10", for brevity.
+(define_attr "cpu_variant" "default,v0,v10" (const_string "default"))
+
 (define_attr "enabled" "no,yes"
   (if_then_else
-   (eq_attr "cc_enabled" "normal")
+   (and
+    (eq_attr "cc_enabled" "normal")
+    (ior
+     (eq_attr "cpu_variant" "default")
+     (and (eq_attr "cpu_variant" "v10")
+	  (match_test "TARGET_HAS_MUL_INSNS"))
+     (and (eq_attr "cpu_variant" "v0")
+	  (not (match_test "TARGET_HAS_MUL_INSNS")))))
    (const_string "yes")
    (const_string "no")))
 
@@ -578,9 +589,9 @@
 (define_insn "*movsi_internal<setcc><setnz><setnzvc>"
   [(set
     (match_operand:SI 0 "nonimmediate_operand"
-		      "=r,r, r,Q>,r,Q>,g,r,r,g,rQ>,x,  m,x")
+		      "=r,r, r,Q>,r,Q>,g,r,r,g,rQ>,x,  m,x, Q>,r,g")
     (match_operand:SI 1 "general_operand"
-		       "r,Q>,M,M, I,r, M,n,g,r,x,  rQ>,x,gi"))
+		       "r,Q>,M,M, I,r, M,n,g,r,x,  rQ>,x,gi,r, g,r"))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   ;; Avoid matching insns we know must be reloaded.  Without one
   ;; operand being a (pseudo-)register, reload chooses
@@ -597,6 +608,9 @@
     case 5:
     case 8:
     case 9:
+    case 14:
+    case 15:
+    case 16:
       return "move.d %1,%0";
 
     case 10:
@@ -634,9 +648,10 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,no,no,yes,yes,no,no")
+  [(set_attr "cpu_variant" "*,*,*,*,*,v0,*,*,v0,v0,*,*,*,*,v10,v10,v10")
+   (set_attr "slottable" "yes,yes,yes,yes,yes,yes,no,no,no,no,yes,yes,no,no,yes,no,no")
    (set_attr "cc<cccc><ccnz><ccnzvc>"
-	     "*,*,none,none,*,none,none,*,*,none,none,none,none,none")])
+	     "*,*,none,none,*,none,none,*,*,none,none,none,none,none,none,*,none")])
 
 ;; FIXME: See movsi.
 

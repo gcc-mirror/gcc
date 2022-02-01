@@ -1661,7 +1661,7 @@ cris_reload_address_legitimized (rtx x,
    a bug.  */
 
 static reg_class_t
-cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
+cris_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   if (rclass != MOF_REGS
       && rclass != MOF_SRP_REGS
@@ -1669,6 +1669,17 @@ cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
       && rclass != CC0_REGS
       && rclass != SPECIAL_REGS)
     return GENERAL_REGS;
+
+  /* We can't make use of something that's not a general register when
+     reloading an "eliminated" register (i.e. something that has turned into
+     e.g. sp + const_int).  */
+  if (GET_CODE (x) == PLUS && !reg_class_subset_p (rclass, GENERAL_REGS))
+    return NO_REGS;
+
+  /* Avoid putting constants into a special register, where the instruction is
+     shorter if loaded into a general register.  */
+  if (satisfies_constraint_P (x) && !reg_class_subset_p (rclass, GENERAL_REGS))
+    return NO_REGS;
 
   return rclass;
 }
