@@ -4,7 +4,7 @@
 --                                                                          --
 --                      G N A T . E X P E C T . T T Y                       --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --                    Copyright (C) 2000-2022, AdaCore                      --
 --                                                                          --

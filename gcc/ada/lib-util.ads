@@ -4,7 +4,7 @@
 --                                                                          --
 --                             L I B . U T I L                              --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
