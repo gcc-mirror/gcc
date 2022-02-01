@@ -96,18 +96,16 @@ extern void update_modified_stmts (gimple_seq);
 /* Return a new iterator pointing to GIMPLE_SEQ's first statement.  */
 
 static inline gimple_stmt_iterator
-gsi_start_1 (gimple_seq *seq)
+gsi_start (gimple_seq &seq)
 {
   gimple_stmt_iterator i;
 
-  i.ptr = gimple_seq_first (*seq);
-  i.seq = seq;
+  i.ptr = gimple_seq_first (seq);
+  i.seq = &seq;
   i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
 
   return i;
 }
-
-#define gsi_start(x) gsi_start_1 (&(x))
 
 static inline gimple_stmt_iterator
 gsi_none (void)
@@ -140,18 +138,16 @@ gimple_stmt_iterator gsi_start_edge (edge e);
 /* Return a new iterator initially pointing to GIMPLE_SEQ's last statement.  */
 
 static inline gimple_stmt_iterator
-gsi_last_1 (gimple_seq *seq)
+gsi_last (gimple_seq &seq)
 {
   gimple_stmt_iterator i;
 
-  i.ptr = gimple_seq_last (*seq);
-  i.seq = seq;
+  i.ptr = gimple_seq_last (seq);
+  i.seq = &seq;
   i.bb = i.ptr ? gimple_bb (i.ptr) : NULL;
 
   return i;
 }
-
-#define gsi_last(x) gsi_last_1 (&(x))
 
 /* Return a new iterator pointing to the last statement in basic block BB.  */
 
@@ -220,6 +216,25 @@ static inline gimple_stmt_iterator
 gsi_after_labels (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_start_bb (bb);
+
+  for (; !gsi_end_p (gsi); )
+    {
+      if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+	gsi_next (&gsi);
+      else
+	break;
+    }
+
+  return gsi;
+}
+
+/* Return a statement iterator that points to the first
+   non-label statement in sequence SEQ.  */
+
+static inline gimple_stmt_iterator
+gsi_after_labels (gimple_seq &seq)
+{
+  gimple_stmt_iterator gsi = gsi_start (seq);
 
   for (; !gsi_end_p (gsi); )
     {
