@@ -1,3 +1,45 @@
+2022-01-31  Andrew Pinski  <apinski@marvell.com>
+
+	* fold-const.h (operand_compare::operand_equal_p):
+	Fix comment about OEP_* flags.
+
+2022-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104298
+	* config/rs6000/aix.h (OPTION_GLIBC): Remove.
+	* config/rs6000/darwin.h (OPTION_GLIBC): Likewise.
+	* config/rs6000/option-defaults.h (OPTION_GLIBC): Define to 0
+	if not already defined.
+
+2022-01-31  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104232
+	* gimple-ssa-warn-access.cc (pointers_related_p): Add argument.
+	Handle PHIs.  Add a synonymous overload.
+	(pass_waccess::check_pointer_uses): Call pointers_related_p.
+
+2022-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100499
+	* fold-const.cc (multiple_of_p): Pass the correct type of
+	the expression to the recursive invocation of multiple_of_p
+	for conversions and use CASE_CONVERT.
+
+2022-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/104189
+	* config/sparc/linux64.h (TARGET_DEFAULT): Add MASK_V8PLUS.
+
+2022-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100499
+	* tree-cfg.cc (verify_gimple_assign_ternary): Use multiple_p
+	on poly-ints instead of multiple_of_p.
+	* tree-ssa.cc (maybe_rewrite_mem_ref_base): Likewise.
+	(non_rewritable_mem_ref_base): Likewise.
+	(non_rewritable_lvalue_p): Likewise.
+	(execute_update_addresses_taken): Likewise.
+
 2022-01-29  Jakub Jelinek  <jakub@redhat.com>
 	    Andrew Pinski  <apinski@marvell.com>
 

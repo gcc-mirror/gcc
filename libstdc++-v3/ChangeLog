@@ -1,3 +1,8 @@
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
 2022-01-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/27_io/basic_istream/get/char/lwg3464.cc: Don't run on

@@ -1,3 +1,42 @@
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102414
+	PR c++/101874
+	* g++.dg/cpp23/auto-array3.C: New test.
+	* g++.dg/cpp23/auto-array4.C: New test.
+
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102434
+	* g++.dg/cpp0x/initlist128.C: New test.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104294
+	* g++.dg/cpp1z/class-deduction106.C: New test.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104291
+	* g++.dg/template/partial20.C: New test.
+
+2022-01-31  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104232
+	* g++.dg/warn/Wuse-after-free4.C: New test.
+	* gcc.dg/Wuse-after-free-2.c: New test.
+	* gcc.dg/Wuse-after-free-3.c: New test.
+
+2022-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103514
+	* gcc.dg/tree-ssa/pr103514.c: Add
+	--param logical-op-non-short-circuit=1 to dg-options.
+
+2022-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/div_zero.adb: New test.
+
 2022-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/95424

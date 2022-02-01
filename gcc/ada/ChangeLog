@@ -1,3 +1,13 @@
+2022-01-31  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* doc/share/conf.py: Remove spurious call to ".decode()".
+
+2022-01-31  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/104027
+	* gnat1drv.adb (Gnat1drv): Only call Exit_Program when not
+	generating code, otherwise instead go to End_Of_Program.
+
 2022-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/104258

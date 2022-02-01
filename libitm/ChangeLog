@@ -1,3 +1,8 @@
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
 2022-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* libitm.texi: Bump @copying's copyright year.

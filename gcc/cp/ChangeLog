@@ -1,3 +1,28 @@
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102414
+	PR c++/101874
+	* decl.cc (create_array_type_for_decl): Use template_placeholder_p.
+	Sorry on a variable-length array of auto.
+
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102434
+	* class.cc (finish_struct): Don't allow union initializer_list.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104294
+	* pt.cc (ctor_deduction_guides_for): Correct computation of
+	outer_args.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104291
+	* pt.cc (for_each_template_parm_r) <case CONSTRUCTOR>: Clear
+	walk_subtrees if !include_nondeduced_p.  Simplify given that
+	cp_walk_subtrees already walks TYPE_PTRMEMFUNC_FN_TYPE_RAW.
+
 2022-01-28  Patrick Palka  <ppalka@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
