@@ -6150,7 +6150,7 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
    * representation is not shorter than that of SOURCE.
    * If SIZE is present, the result is an array of rank one and size SIZE.
    */
-  if (result_elt_size == 0 && *source_size > 0 && !size
+  if (result_elt_size == 0 && *source_size > 0
       && (mold->expr_type == EXPR_ARRAY || mold->rank))
     {
       gfc_error ("%<MOLD%> argument of %<TRANSFER%> intrinsic at %L is an "
