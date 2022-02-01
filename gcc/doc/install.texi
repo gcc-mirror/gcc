@@ -239,11 +239,6 @@ To build all languages in a cross-compiler or other configuration where
 GCC binary (version 4.8 or later) because source code for language
 frontends other than C might use GCC extensions.
 
-Note that to bootstrap GCC with versions of GCC earlier than 4.8, you
-may need to use @option{--disable-stage1-checking}, though
-bootstrapping the compiler with such earlier compilers is strongly
-discouraged.
-
 @item C standard library and headers
 
 In order to build GCC, the C standard library and headers must be present
