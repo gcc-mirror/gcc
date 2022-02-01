@@ -131,6 +131,7 @@ package Restrict is
       No_Implicit_Protected_Object_Allocations => True,
       No_Implicit_Task_Allocations             => True,
       No_Initialize_Scalars                    => True,
+      No_Local_Tagged_Types                    => True,
       No_Long_Long_Integers                    => True,
       No_Multiple_Elaboration                  => True,
       No_Secondary_Stack                       => True,

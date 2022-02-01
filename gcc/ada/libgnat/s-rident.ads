@@ -81,7 +81,8 @@ package System.Rident is
 
    --  To add a new restriction identifier, add an entry with the name to be
    --  used in the pragma, and add calls to the Restrict.Check_Restriction
-   --  routine as appropriate.
+   --  routine as appropriate. If the new restriction is GNAT specific, also
+   --  add an entry in Restrict.Implementation_Restriction (restrict.ads).
 
    type Restriction_Id is
 
@@ -126,6 +127,7 @@ package System.Rident is
       No_Implicit_Task_Allocations,              -- GNAT
       No_Implicit_Protected_Object_Allocations,  -- GNAT
       No_Initialize_Scalars,                     -- GNAT
+      No_Local_Tagged_Types,                     -- GNAT
       No_Local_Allocators,                       -- (RM H.4(8))
       No_Local_Timing_Events,                    -- (RM D.7(10.2/2))
       No_Local_Protected_Objects,                -- Ada 2012 (D.7(10/1.3))

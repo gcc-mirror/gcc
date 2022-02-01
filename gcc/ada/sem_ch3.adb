@@ -3479,6 +3479,14 @@ package body Sem_Ch3 is
       then
          Check_Nonoverridable_Aspects;
       end if;
+
+      --  Check for tagged type declaration at library level
+
+      if Is_Tagged_Type (T)
+        and then not Is_Library_Level_Entity (T)
+      then
+         Check_Restriction (No_Local_Tagged_Types, T);
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------
