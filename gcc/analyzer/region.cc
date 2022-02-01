@@ -499,41 +499,16 @@ region::calc_offset () const
       switch (iter_region->get_kind ())
 	{
 	case RK_FIELD:
-	  {
-	    const field_region *field_reg
-	      = (const field_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
-	    bit_offset_t rel_bit_offset;
-	    if (!field_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
-	    accum_bit_offset += rel_bit_offset;
-	  }
-	  continue;
-
 	case RK_ELEMENT:
-	  {
-	    const element_region *element_reg
-	      = (const element_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
-	    bit_offset_t rel_bit_offset;
-	    if (!element_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
-	    accum_bit_offset += rel_bit_offset;
-	  }
-	  continue;
-
 	case RK_OFFSET:
+	case RK_BIT_RANGE:
 	  {
-	    const offset_region *offset_reg
-	      = (const offset_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
 	    bit_offset_t rel_bit_offset;
-	    if (!offset_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
+	    if (!iter_region->get_relative_concrete_offset (&rel_bit_offset))
+	      return region_offset::make_symbolic
+		(iter_region->get_parent_region ());
 	    accum_bit_offset += rel_bit_offset;
+	    iter_region = iter_region->get_parent_region ();
 	  }
 	  continue;
 
@@ -546,19 +521,6 @@ region::calc_offset () const
 	    const cast_region *cast_reg
 	      = as_a <const cast_region *> (iter_region);
 	    iter_region = cast_reg->get_original_region ();
-	  }
-	  continue;
-
-	case RK_BIT_RANGE:
-	  {
-	    const bit_range_region *bit_range_reg
-	      = (const bit_range_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
-	    bit_offset_t rel_bit_offset;
-	    if (!bit_range_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
-	    accum_bit_offset += rel_bit_offset;
 	  }
 	  continue;
 
