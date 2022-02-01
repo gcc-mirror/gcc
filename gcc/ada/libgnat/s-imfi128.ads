@@ -37,7 +37,6 @@ with System.Arith_128;
 with System.Image_F;
 
 package System.Img_Fixed_128 is
-   pragma Pure;
 
    subtype Int128 is Interfaces.Integer_128;
 

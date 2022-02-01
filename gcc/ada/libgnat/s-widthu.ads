@@ -29,16 +29,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre                => Ignore,
+                         Post               => Ignore,
+                         Contract_Cases     => Ignore,
+                         Ghost              => Ignore,
+                         Subprogram_Variant => Ignore);
+
 --  Compute Width attribute for non-static type derived from a modular integer
 --  type. The arguments Lo, Hi are the bounds of the type.
+
+with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+use Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
 generic
 
    type Uns is mod <>;
 
-function System.Width_U (Lo, Hi : Uns) return Natural
-with
-  Post => (if Lo > Hi then
-             System.Width_U'Result = 0
-           else
-             System.Width_U'Result > 0);
+package System.Width_U
+  with Pure
+is
+   package Unsigned_Conversion is new Unsigned_Conversions (Int => Uns);
+
+   function Big (Arg : Uns) return Big_Integer renames
+     Unsigned_Conversion.To_Big_Integer;
+
+   Big_10 : constant Big_Integer := Big (10) with Ghost;
+
+   --  Maximum value of exponent for 10 that fits in Uns'Base
+   function Max_Log10 return Natural is
+     (case Uns'Base'Size is
+        when 8   => 2,
+        when 16  => 4,
+        when 32  => 9,
+        when 64  => 19,
+        when 128 => 38,
+        when others => raise Program_Error)
+   with Ghost;
+
+   function Width (Lo, Hi : Uns) return Natural
+   with
+     Post =>
+       (declare
+          W : constant Natural := System.Width_U.Width'Result;
+        begin
+          (if Lo > Hi then W = 0
+           else W > 0
+             and then W <= Max_Log10 + 2
+             and then Big (Lo) < Big_10 ** (W - 1)
+             and then Big (Hi) < Big_10 ** (W - 1)));
+
+end System.Width_U;

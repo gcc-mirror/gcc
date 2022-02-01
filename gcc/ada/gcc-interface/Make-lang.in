@@ -486,6 +486,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/a-except.o	\
  ada/libgnat/a-exctra.o \
  ada/libgnat/a-ioexce.o	\
+ ada/libgnat/a-nubinu.o	\
+ ada/libgnat/a-numeri.o	\
  ada/libgnat/ada.o	\
  ada/libgnat/g-byorma.o	\
  ada/libgnat/g-heasor.o	\
@@ -542,7 +544,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-wchcnv.o	\
  ada/libgnat/s-wchcon.o	\
  ada/libgnat/s-wchjis.o	\
- ada/libgnat/s-wchstw.o
+ ada/libgnat/s-wchstw.o	\
+ ada/libgnat/s-widuns.o
 endif
 
 # Object files for gnat executables
@@ -649,6 +652,8 @@ GNATBIND_OBJS +=  \
  ada/libgnat/a-assert.o   \
  ada/libgnat/a-elchha.o   \
  ada/libgnat/a-except.o   \
+ ada/libgnat/a-nubinu.o   \
+ ada/libgnat/a-numeri.o   \
  ada/libgnat/ada.o        \
  ada/libgnat/g-byorma.o   \
  ada/libgnat/g-hesora.o   \
@@ -693,6 +698,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-wchcon.o   \
  ada/libgnat/s-wchjis.o   \
  ada/libgnat/s-wchstw.o   \
+ ada/libgnat/s-widuns.o   \
  ada/adaint.o     \
  ada/argv.o       \
  ada/cio.o        \
