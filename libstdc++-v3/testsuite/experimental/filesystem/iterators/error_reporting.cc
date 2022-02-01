@@ -37,14 +37,18 @@ extern "C" struct dirent* readdir(DIR*)
   {
   case 1:
     global_dirent.d_ino = 999;
+#if defined _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE && defined DT_REG
     global_dirent.d_type = DT_REG;
+#endif
     global_dirent.d_reclen = 0;
     std::char_traits<char>::copy(global_dirent.d_name, "file", 5);
     choice = 0;
     return &global_dirent;
   case 2:
     global_dirent.d_ino = 111;
+#if defined _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE && defined DT_DIR
     global_dirent.d_type = DT_DIR;
+#endif
     global_dirent.d_reclen = 60;
     std::char_traits<char>::copy(global_dirent.d_name, "subdir", 7);
     choice = 1;
