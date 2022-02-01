@@ -436,19 +436,15 @@ extern int cris_cpu_version;
 
 /* Node: Register Classes */
 
-/* We need a separate register class to handle register allocation for
-   ACR, since it can't be used for post-increment.
-
-   It's not obvious, but having subunions of all movable-between
+/* It's not obvious, but having subunions of all movable-between
    register classes does really help register allocation (pre-IRA
    comment).  */
 enum reg_class
   {
     NO_REGS,
-    ACR_REGS, MOF_REGS, SRP_REGS, CC0_REGS,
+    MOF_REGS, SRP_REGS, CC0_REGS,
     MOF_SRP_REGS, SPECIAL_REGS,
-    SPEC_ACR_REGS, GENNONACR_REGS,
-    SPEC_GENNONACR_REGS, GENERAL_REGS,
+    GENERAL_REGS,
     ALL_REGS,
     LIM_REG_CLASSES
   };
@@ -457,9 +453,8 @@ enum reg_class
 
 #define REG_CLASS_NAMES						\
   {"NO_REGS",							\
-   "ACR_REGS", "MOF_REGS", "SRP_REGS", "CC0_REGS",		\
+   "MOF_REGS", "SRP_REGS", "CC0_REGS",				\
    "MOF_SRP_REGS", "SPECIAL_REGS",				\
-   "SPEC_ACR_REGS", "GENNONACR_REGS", "SPEC_GENNONACR_REGS",	\
    "GENERAL_REGS", "ALL_REGS"}
 
 #define CRIS_SPECIAL_REGS_CONTENTS					\
@@ -472,36 +467,24 @@ enum reg_class
 #define REG_CLASS_CONTENTS			\
   {						\
    {0},						\
-   {1 << CRIS_ACR_REGNUM},			\
    {1 << CRIS_MOF_REGNUM},			\
    {1 << CRIS_SRP_REGNUM},			\
    {1 << CRIS_CC0_REGNUM},			\
    {(1 << CRIS_MOF_REGNUM)			\
     | (1 << CRIS_SRP_REGNUM)},			\
    {CRIS_SPECIAL_REGS_CONTENTS},		\
-   {CRIS_SPECIAL_REGS_CONTENTS			\
-    | (1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | CRIS_FAKED_REGS_CONTENTS)		\
-    & ~(1 << CRIS_ACR_REGNUM)},			\
-   {(0xffff | CRIS_FAKED_REGS_CONTENTS		\
-    | CRIS_SPECIAL_REGS_CONTENTS)		\
-    & ~(1 << CRIS_ACR_REGNUM)},			\
    {0xffff | CRIS_FAKED_REGS_CONTENTS},		\
    {0xffff | CRIS_FAKED_REGS_CONTENTS		\
     | CRIS_SPECIAL_REGS_CONTENTS}		\
   }
 
 #define REGNO_REG_CLASS(REGNO)			\
-  ((REGNO) == CRIS_ACR_REGNUM ? ACR_REGS :	\
-   (REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
+  ((REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
    (REGNO) == CRIS_SRP_REGNUM ? SRP_REGS :	\
    (REGNO) == CRIS_CC0_REGNUM ? CC0_REGS :	\
    GENERAL_REGS)
 
 #define BASE_REG_CLASS GENERAL_REGS
-
-#define MODE_CODE_BASE_REG_CLASS(MODE, AS, OCODE, ICODE)	\
-  ((OCODE) != POST_INC ? BASE_REG_CLASS : GENNONACR_REGS)
 
 #define INDEX_REG_CLASS GENERAL_REGS
 

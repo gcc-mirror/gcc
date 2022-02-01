@@ -1663,13 +1663,12 @@ cris_reload_address_legitimized (rtx x,
 static reg_class_t
 cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 {
-  if (rclass != ACR_REGS
-      && rclass != MOF_REGS
+  if (rclass != MOF_REGS
       && rclass != MOF_SRP_REGS
       && rclass != SRP_REGS
       && rclass != CC0_REGS
       && rclass != SPECIAL_REGS)
-    return GENNONACR_REGS;
+    return GENERAL_REGS;
 
   return rclass;
 }
