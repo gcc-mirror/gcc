@@ -141,6 +141,15 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     this->add_named_type(error_type);
   }
 
+  // "any" is an alias for the empty interface type.
+  {
+    Type* empty = Type::make_empty_interface_type(loc);
+    Named_object* no = Named_object::make_type("any", NULL, empty, loc);
+    Named_type* nt = no->type_value();
+    nt->set_is_alias();
+    this->add_named_type(nt);
+  }
+
   this->globals_->add_constant(Typed_identifier("true",
 						Type::make_boolean_type(),
 						loc),
