@@ -1683,20 +1683,10 @@ cris_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
      their move cost within that class is higher.  How about 7?  That's 3
      for a move to a GENERAL_REGS register, 3 for the move from the
      GENERAL_REGS register, and 1 for the increased register pressure.
-     Also, it's higher than the memory move cost, as it should.
-     We also do this for ALL_REGS, since we don't want that class to be
-     preferred (even to memory) at all where GENERAL_REGS doesn't fit.
-     Whenever it's about to be used, it's for SPECIAL_REGS.  If we don't
-     present a higher cost for ALL_REGS than memory, a SPECIAL_REGS may be
-     used when a GENERAL_REGS should be used, even if there are call-saved
-     GENERAL_REGS left to allocate.  This is because the fall-back when
-     the most preferred register class isn't available, isn't the next
-     (or next good) wider register class, but the *most widest* register
-     class.  FIXME: pre-IRA comment, perhaps obsolete now.  */
+     Also, it's higher than the memory move cost, as it should be.  */
 
-  if ((reg_classes_intersect_p (from, SPECIAL_REGS)
-       && reg_classes_intersect_p (to, SPECIAL_REGS))
-      || from == ALL_REGS || to == ALL_REGS)
+  if (reg_classes_intersect_p (from, SPECIAL_REGS)
+      && reg_classes_intersect_p (to, SPECIAL_REGS))
     return 7;
 
   /* Make moves to/from SPECIAL_REGS slightly more expensive, as we
