@@ -21,7 +21,7 @@
 TM_H += $(srcdir)/config/rs6000/rs6000-cpus.def
 TM_H += $(srcdir)/config/rs6000/rs6000-modes.h
 PASSES_EXTRA += $(srcdir)/config/rs6000/rs6000-passes.def
-EXTRA_GTYPE_DEPS += $(srcdir)/config/rs6000/rs6000-builtins.def
+EXTRA_GTYPE_DEPS += rs6000-builtins.h
 
 rs6000-pcrel-opt.o: $(srcdir)/config/rs6000/rs6000-pcrel-opt.cc
 	$(COMPILE) $<
