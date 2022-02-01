@@ -90,7 +90,7 @@ package System.Rident is
       --  does not violate the restriction.
 
      (Simple_Barriers,                           -- Ada 2012 (D.7 (10.9/3))
-      Pure_Barriers,                             -- GNAT
+      Pure_Barriers,                             -- Ada 2022 (D.7(10.11/5))
       No_Abort_Statements,                       -- (RM D.7(5), H.4(3))
       No_Access_Parameter_Allocators,            -- Ada 2012 (RM H.4 (8.3/3))
       No_Access_Subprograms,                     -- (RM H.4(17))
@@ -150,7 +150,7 @@ package System.Rident is
       No_Task_Attributes_Package,                -- GNAT
       No_Task_At_Interrupt_Priority,             -- GNAT
       No_Task_Hierarchy,                         -- (RM D.7(3), H.4(3))
-      No_Task_Termination,                       -- GNAT (Ravenscar)
+      No_Task_Termination,                       -- Ada 2005 (D.7(15.1/2))
       No_Tasks_Unassigned_To_CPU,                -- Ada 202x (D.7(10.10/4))
       No_Tasking,                                -- GNAT
       No_Terminate_Alternatives,                 -- (RM D.7(6))
