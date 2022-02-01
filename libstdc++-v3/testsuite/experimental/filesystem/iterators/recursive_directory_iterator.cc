@@ -174,7 +174,7 @@ test05()
 {
   auto p = __gnu_test::nonexistent_path();
   create_directory(p);
-  create_directory_symlink(p, p / "l");
+  create_directory(p / "x");
   fs::recursive_directory_iterator it(p), endit;
   VERIFY( begin(it) == it );
   static_assert( noexcept(begin(it)), "begin is noexcept" );
@@ -185,6 +185,24 @@ test05()
   remove_all(p, ec);
 }
 
+void
+test06()
+{
+#if !(defined __MINGW32__ || defined __MINGW64__)
+  auto p = __gnu_test::nonexistent_path();
+  create_directories(p/"d1/d2");
+  create_directory_symlink("d1", p/"link");
+  fs::recursive_directory_iterator it(p), endit;
+  VERIFY( std::distance(it, endit) == 3 ); // d1 and d2 and link
+
+  it = fs::recursive_directory_iterator(p, fs::directory_options::follow_directory_symlink);
+  VERIFY( std::distance(it, endit) == 4 ); // d1 and d1/d2 and link and link/d2
+
+  std::error_code ec;
+  remove_all(p, ec);
+#endif
+}
+
 int
 main()
 {
@@ -193,4 +211,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }
