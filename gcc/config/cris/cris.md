@@ -583,9 +583,10 @@
     (match_operand:SI 1 "general_operand"
 		       "r,Q>,M,M, I,r, M,n,g,r,x,  rQ>,x,gi"))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
-    ;; Note that we prefer not to use the S alternative (if for some reason
-    ;; it competes with others) above, but g matches S.
-  ""
+  ;; Avoid matching insns we know must be reloaded.  Without one
+  ;; operand being a (pseudo-)register, reload chooses
+  ;; reload-registers suboptimally.
+  "REG_S_P (operands[0]) || REG_S_P (operands[1]) || operands[1] == const0_rtx"
 {
   /* Better to have c-switch here; it is worth it to optimize the size of
      move insns.  The alternative would be to try to find more constraint
