@@ -34,11 +34,11 @@
 # ifdef _GLIBCXX_HAVE_SYS_TYPES_H
 #  include <sys/types.h>
 # endif
-# include <dirent.h>
-#endif
-#ifdef _GLIBCXX_HAVE_FCNTL_H
-# include <fcntl.h> // O_NOFOLLOW, O_DIRECTORY
-# include <unistd.h> // close
+# include <dirent.h> // opendir, readdir, fdopendir, dirfd
+# ifdef _GLIBCXX_HAVE_FCNTL_H
+#  include <fcntl.h>  // open, openat, fcntl, AT_FDCWD, O_NOFOLLOW etc.
+#  include <unistd.h> // close, unlinkat
+# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -75,42 +75,32 @@ inline int closedir(DIR*) { return -1; }
 
 namespace posix = __gnu_posix;
 
+inline bool
+is_permission_denied_error(int e)
+{
+  if (e == EACCES)
+    return true;
+#ifdef __APPLE__
+  if (e == EPERM) // See PR 99533
+    return true;
+#endif
+  return false;
+}
+
 struct _Dir_base
 {
   _Dir_base(posix::DIR* dirp = nullptr) : dirp(dirp) { }
 
   // If no error occurs then dirp is non-null,
-  // otherwise null (even if an EACCES error is ignored).
-  _Dir_base(const posix::char_type* pathname, bool skip_permission_denied,
-	    [[maybe_unused]] bool nofollow, error_code& ec) noexcept
-  : dirp(nullptr)
+  // otherwise null (even if a permission denied error is ignored).
+  _Dir_base(int fd, const posix::char_type* pathname,
+	    bool skip_permission_denied, bool nofollow,
+	    error_code& ec) noexcept
+  : dirp(_Dir_base::openat(fd, pathname, nofollow))
   {
-#if defined O_RDONLY && O_NOFOLLOW && defined O_DIRECTORY && defined O_CLOEXEC \
-    && defined _GLIBCXX_HAVE_FDOPENDIR && !_GLIBCXX_FILESYSTEM_IS_WINDOWS
-    if (nofollow)
-      {
-	// Do not allow opening a symlink (used by filesystem::remove_all)
-	const int flags = O_RDONLY | O_NOFOLLOW | O_DIRECTORY | O_CLOEXEC;
-	int fd = ::open(pathname, flags);
-	if (fd != -1)
-	  {
-	    if ((dirp = ::fdopendir(fd)))
-	      {
-		ec.clear();
-		return;
-	      }
-	  }
-	if (errno == EACCES && skip_permission_denied)
-	  ec.clear();
-	else
-	  ec.assign(errno, std::generic_category());
-	return;
-      }
-#endif
-
-    if ((dirp = posix::opendir(pathname)))
+    if (dirp)
       ec.clear();
-    else if (errno == EACCES && skip_permission_denied)
+    else if (is_permission_denied_error(errno) && skip_permission_denied)
       ec.clear();
     else
       ec.assign(errno, std::generic_category());
@@ -153,6 +143,16 @@ struct _Dir_base
       }
   }
 
+  static constexpr int
+  fdcwd() noexcept
+  {
+#ifdef AT_FDCWD
+    return AT_FDCWD;
+#else
+    return -1; // Use invalid fd if AT_FDCWD isn't supported.
+#endif
+  }
+
   static bool is_dot_or_dotdot(const char* s) noexcept
   { return !strcmp(s, ".") || !strcmp(s, ".."); }
 
@@ -161,20 +161,71 @@ struct _Dir_base
   { return !wcscmp(s, L".") || !wcscmp(s, L".."); }
 #endif
 
+  // Set the close-on-exec flag if not already done via O_CLOEXEC.
+  static bool
+  set_close_on_exec([[maybe_unused]] int fd)
+  {
+#if ! defined O_CLOEXEC && defined FD_CLOEXEC
+    int flags = ::fcntl(fd, F_GETFD);
+    if (flags == -1 || ::fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1)
+      return false;
+#endif
+    return true;
+  }
+
+  static ::DIR*
+  openat(int fd, const posix::char_type* pathname, bool nofollow)
+  {
+#if _GLIBCXX_HAVE_FDOPENDIR && defined O_RDONLY && defined O_DIRECTORY \
+    && ! _GLIBCXX_FILESYSTEM_IS_WINDOWS
+
+    // Any file descriptor we open here should be closed on exec.
+#ifdef O_CLOEXEC
+    constexpr int close_on_exec = O_CLOEXEC;
+#else
+    constexpr int close_on_exec = 0;
+#endif
+
+    int flags = O_RDONLY | O_DIRECTORY | close_on_exec;
+
+    // Directory iterators are vulnerable to race conditions unless O_NOFOLLOW
+    // is supported, because a directory could be replaced with a symlink after
+    // checking is_directory(symlink_status(f)). O_NOFOLLOW avoids the race.
+#ifdef O_NOFOLLOW
+    if (nofollow)
+      flags |= O_NOFOLLOW;
+#else
+    nofollow = false;
+#endif
+
+
+#ifdef AT_FDCWD
+    fd = ::openat(fd, pathname, flags);
+#else
+    // If we cannot use openat, there's no benefit to using posix::open unless
+    // we will use O_NOFOLLOW, so just use the simpler posix::opendir.
+    if (!nofollow)
+      return posix::opendir(pathname);
+
+    fd = ::open(pathname, flags);
+#endif
+
+    if (fd == -1)
+      return nullptr;
+    if (set_close_on_exec(fd))
+      if (::DIR* dirp = ::fdopendir(fd))
+	return dirp;
+    int err = errno;
+    ::close(fd);
+    errno = err;
+    return nullptr;
+#else
+    return posix::opendir(pathname);
+#endif
+  }
+
   posix::DIR*	dirp;
 };
-
-inline bool
-is_permission_denied_error(int e)
-{
-  if (e == EACCES)
-    return true;
-#ifdef __APPLE__
-  if (e == EPERM) // See PR 99533
-    return true;
-#endif
-  return false;
-}
 
 } // namespace filesystem
 
@@ -210,8 +261,6 @@ get_file_type(const std::filesystem::__gnu_posix::dirent& d [[gnu::unused]])
   return file_type::none;
 #endif
 }
-
-constexpr directory_options __directory_iterator_nofollow{99};
 
 _GLIBCXX_END_NAMESPACE_FILESYSTEM
 
