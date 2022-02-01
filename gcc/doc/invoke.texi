@@ -22268,7 +22268,7 @@ The options @option{-metrax4} and @option{-metrax100} are synonyms for
 @opindex mmul-bug-workaround
 @opindex mno-mul-bug-workaround
 Work around a bug in the @code{muls} and @code{mulu} instructions for CPU
-models where it applies.  This option is active by default.
+models where it applies.  This option is disabled by default.
 
 @item -mpdebug
 @opindex mpdebug

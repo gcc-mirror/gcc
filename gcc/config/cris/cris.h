@@ -153,7 +153,9 @@ extern int cris_cpu_version;
 
 #ifdef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
 #define MAYBE_AS_NO_MUL_BUG_ABORT \
- "%{mno-mul-bug-workaround:-no-mul-bug-abort} "
+ "%{mno-mul-bug-workaround:-no-mul-bug-abort} " \
+ "%{mmul-bug-workaround:-mul-bug-abort} " \
+ "%{!mmul-bug-workaround:%{!mno-mul-bug-workaround:" MUL_BUG_ASM_DEFAULT "}} "
 #else
 #define MAYBE_AS_NO_MUL_BUG_ABORT
 #endif
@@ -255,13 +257,24 @@ extern int cris_cpu_version;
  (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
   + MASK_ALIGN_BY_32 \
-  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+  + MASK_PROLOGUE_EPILOGUE)
 # else  /* 0 */
 #  define TARGET_DEFAULT \
  (MASK_SIDE_EFFECT_PREFIXES + MASK_STACK_ALIGN \
   + MASK_CONST_ALIGN + MASK_DATA_ALIGN \
-  + MASK_PROLOGUE_EPILOGUE + MASK_MUL_BUG)
+  + MASK_PROLOGUE_EPILOGUE)
 # endif
+#endif
+
+/* Don't depend on the assembler default setting for the errata machinery;
+   always pass the option to turn it on or off explicitly.  But, we have to
+   decide on which is the *GCC* default, and for that we should only need to
+   consider what's in TARGET_DEFAULT; no other changes should be necessary.  */
+
+#if (TARGET_DEFAULT & MASK_MUL_BUG)
+#define MUL_BUG_ASM_DEFAULT "-mul-bug-abort"
+#else
+#define MUL_BUG_ASM_DEFAULT "-no-mul-bug-abort"
 #endif
 
 /* Local, providing a default for cris_cpu_version.  */
