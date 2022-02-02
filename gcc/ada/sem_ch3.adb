@@ -13345,11 +13345,12 @@ package body Sem_Ch3 is
    is
       T             : constant Entity_Id := Entity (Subtype_Mark (S));
       Desig_Type    : constant Entity_Id := Designated_Type (T);
-      Desig_Subtype : Entity_Id := Create_Itype (E_Void, Related_Nod);
+      Desig_Subtype : Entity_Id;
       Constraint_OK : Boolean := True;
 
    begin
       if Is_Array_Type (Desig_Type) then
+         Desig_Subtype := Create_Itype (E_Void, Related_Nod);
          Constrain_Array (Desig_Subtype, S, Related_Nod, Def_Id, 'P');
 
       elsif (Is_Record_Type (Desig_Type)
@@ -13445,12 +13446,14 @@ package body Sem_Ch3 is
             end;
          end if;
 
+         Desig_Subtype := Create_Itype (E_Void, Related_Nod);
          Constrain_Discriminated_Type (Desig_Subtype, S, Related_Nod,
            For_Access => True);
 
       elsif Is_Concurrent_Type (Desig_Type)
         and then not Is_Constrained (Desig_Type)
       then
+         Desig_Subtype := Create_Itype (E_Void, Related_Nod);
          Constrain_Concurrent (Desig_Subtype, S, Related_Nod, Desig_Type, ' ');
 
       else
