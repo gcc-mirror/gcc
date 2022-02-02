@@ -2230,6 +2230,22 @@ Enum(offload_abi) String(ilp32) Value(OFFLOAD_ABI_ILP32)
 EnumValue
 Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 
+foffload-memory=
+Common Joined RejectNegative Enum(offload_memory) Var(flag_offload_memory) Init(OFFLOAD_MEMORY_NONE)
+-foffload-memory=[none|unified|pinned]	Use an offload memory optimization.
+
+Enum
+Name(offload_memory) Type(enum offload_memory) UnknownError(Unknown offload memory option %qs)
+
+EnumValue
+Enum(offload_memory) String(none) Value(OFFLOAD_MEMORY_NONE)
+
+EnumValue
+Enum(offload_memory) String(unified) Value(OFFLOAD_MEMORY_UNIFIED)
+
+EnumValue
+Enum(offload_memory) String(pinned) Value(OFFLOAD_MEMORY_PINNED)
+
 fomit-frame-pointer
 Common Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames.

@@ -1,3 +1,9 @@
+2022-02-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* common.opt: Add -foffload-memory and its enum values.
+	* coretypes.h (enum offload_memory): New.
+	* doc/invoke.texi: Document -foffload-memory.
+
 2022-03-09  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_ALLOCATOR.

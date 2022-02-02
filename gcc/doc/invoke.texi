@@ -202,7 +202,7 @@ in the following sections.
 -fno-builtin  -fno-builtin-@var{function}  -fcond-mismatch
 -ffreestanding  -fgimple  -fgnu-tm  -fgnu89-inline  -fhosted
 -flax-vector-conversions  -fms-extensions
--foffload=@var{arg}  -foffload-options=@var{arg}
+-foffload=@var{arg}  -foffload-options=@var{arg}  -foffload-memory=@var{arg}
 -fopenacc  -fopenacc-dim=@var{geom}
 -fopenmp  -fopenmp-simd  -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}
 -fpermitted-flt-eval-methods=@var{standard}
@@ -2719,6 +2719,20 @@ Typical command lines are
 -foffload-options="-lgfortran -lm" -foffload-options=nvptx-none=-latomic
 -foffload-options=amdgcn-amdhsa=-march=gfx906 -foffload-options=-lm
 @end smallexample
+
+@item -foffload-memory=none
+@itemx -foffload-memory=unified
+@itemx -foffload-memory=pinned
+@opindex foffload-memory
+@cindex OpenMP offloading memory modes
+Enable a memory optimization mode to use with OpenMP.  The default behavior,
+@option{-foffload-memory=none}, is to do nothing special (unless enabled via
+a requires directive in the code).  @option{-foffload-memory=unified} is
+equivalent to @code{#pragma omp requires unified_shared_memory}.
+@option{-foffload-memory=pinned} forces all host memory to be pinned (this
+mode may require the user to increase the ulimit setting for locked memory).
+All translation units must select the same setting to avoid undefined
+behavior.
 
 @opindex fopenacc
 @cindex OpenACC accelerator programming
