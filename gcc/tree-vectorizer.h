@@ -2301,6 +2301,7 @@ extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
+extern bool compatible_calls_p (gcall *, gcall *);
 
 /* In tree-vect-patterns.cc.  */
 extern void
@@ -2339,6 +2340,12 @@ typedef enum _complex_perm_kinds {
 typedef hash_map <slp_tree, complex_perm_kinds_t>
   slp_tree_to_load_perm_map_t;
 
+/* Cache from nodes pair to being compatible or not.  */
+typedef pair_hash <nofree_ptr_hash <_slp_tree>,
+		   nofree_ptr_hash <_slp_tree>> slp_node_hash;
+typedef hash_map <slp_node_hash, bool> slp_compat_nodes_map_t;
+
+
 /* Vector pattern matcher base class.  All SLP pattern matchers must inherit
    from this type.  */
 
@@ -2371,7 +2378,8 @@ class vect_pattern
   public:
 
     /* Create a new instance of the pattern matcher class of the given type.  */
-    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *,
+				    slp_compat_nodes_map_t *, slp_tree *);
 
     /* Build the pattern from the data collected so far.  */
     virtual void build (vec_info *) = 0;
@@ -2385,6 +2393,7 @@ class vect_pattern
 
 /* Function pointer to create a new pattern matcher from a generic type.  */
 typedef vect_pattern* (*vect_pattern_decl_t) (slp_tree_to_load_perm_map_t *,
+					      slp_compat_nodes_map_t *,
 					      slp_tree *);
 
 /* List of supported pattern matchers.  */
