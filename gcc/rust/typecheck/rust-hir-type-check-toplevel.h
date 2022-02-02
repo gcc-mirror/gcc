@@ -106,7 +106,7 @@ public:
     std::vector<TyTy::VariantDef *> variants;
     variants.push_back (new TyTy::VariantDef (
       struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
-      TyTy::VariantDef::VariantType::TUPLE, std::move (fields)));
+      TyTy::VariantDef::VariantType::TUPLE, nullptr, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
@@ -175,7 +175,7 @@ public:
     std::vector<TyTy::VariantDef *> variants;
     variants.push_back (new TyTy::VariantDef (
       struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
-      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
+      TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
@@ -222,10 +222,8 @@ public:
 	TyTy::VariantDef *field_type
 	  = TypeCheckEnumItem::Resolve (variant.get (), discriminant_value);
 
+	discriminant_value++;
 	variants.push_back (field_type);
-	if (field_type->get_variant_type ()
-	    == TyTy::VariantDef::VariantType::NUM)
-	  discriminant_value = field_type->get_discriminant ();
       }
 
     TyTy::BaseType *type
@@ -288,7 +286,7 @@ public:
     std::vector<TyTy::VariantDef *> variants;
     variants.push_back (new TyTy::VariantDef (
       union_decl.get_mappings ().get_hirid (), union_decl.get_identifier (),
-      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
+      TyTy::VariantDef::VariantType::STRUCT, nullptr, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),

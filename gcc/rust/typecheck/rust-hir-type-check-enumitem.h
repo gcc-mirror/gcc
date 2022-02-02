@@ -48,9 +48,30 @@ public:
     if (last_discriminant == INT64_MAX)
       rust_error_at (item.get_locus (), "discriminant too big");
 
-    variant
-      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-			      item.get_identifier (), last_discriminant + 1);
+    Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
+				   item.get_mappings ().get_nodeid (),
+				   mappings->get_next_hir_id (
+				     item.get_mappings ().get_crate_num ()),
+				   item.get_mappings ().get_local_defid ());
+    HIR::LiteralExpr *discim_expr
+      = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
+			      HIR::Literal::LitType::INT,
+			      PrimitiveCoreType::CORETYPE_I64,
+			      item.get_locus ());
+
+    TyTy::BaseType *isize = nullptr;
+    bool ok = context->lookup_builtin ("isize", &isize);
+    rust_assert (ok);
+    context->insert_type (mapping, isize);
+
+    const CanonicalPath *canonical_path = nullptr;
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
+					  item.get_mappings ().get_nodeid (),
+					  &canonical_path);
+    rust_assert (ok);
+
+    variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				    item.get_identifier (), discim_expr);
   }
 
   void visit (HIR::EnumItemDiscriminant &item) override
@@ -71,8 +92,16 @@ public:
     if (unified->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
+    const CanonicalPath *canonical_path = nullptr;
+    bool ok
+      = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
+					 item.get_mappings ().get_nodeid (),
+					 &canonical_path);
+    rust_assert (ok);
+
     variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				    item.get_identifier (), &item);
+				    item.get_identifier (),
+				    item.get_discriminant_expression ().get ());
   }
 
   void visit (HIR::EnumItemTuple &item) override
@@ -95,10 +124,32 @@ public:
 	idx++;
       }
 
-    variant
-      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-			      item.get_identifier (),
-			      TyTy::VariantDef::VariantType::TUPLE, fields);
+    Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
+				   item.get_mappings ().get_nodeid (),
+				   mappings->get_next_hir_id (
+				     item.get_mappings ().get_crate_num ()),
+				   item.get_mappings ().get_local_defid ());
+    HIR::LiteralExpr *discim_expr
+      = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
+			      HIR::Literal::LitType::INT,
+			      PrimitiveCoreType::CORETYPE_I64,
+			      item.get_locus ());
+
+    TyTy::BaseType *isize = nullptr;
+    bool ok = context->lookup_builtin ("isize", &isize);
+    rust_assert (ok);
+    context->insert_type (mapping, isize);
+
+    const CanonicalPath *canonical_path = nullptr;
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
+					  item.get_mappings ().get_nodeid (),
+					  &canonical_path);
+    rust_assert (ok);
+
+    variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				    item.get_identifier (),
+				    TyTy::VariantDef::VariantType::TUPLE,
+				    discim_expr, fields);
   }
 
   void visit (HIR::EnumItemStruct &item) override
@@ -119,10 +170,32 @@ public:
 			      ty_field->get_field_type ());
       }
 
-    variant
-      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-			      item.get_identifier (),
-			      TyTy::VariantDef::VariantType::STRUCT, fields);
+    Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
+				   item.get_mappings ().get_nodeid (),
+				   mappings->get_next_hir_id (
+				     item.get_mappings ().get_crate_num ()),
+				   item.get_mappings ().get_local_defid ());
+    HIR::LiteralExpr *discrim_expr
+      = new HIR::LiteralExpr (mapping, std::to_string (last_discriminant),
+			      HIR::Literal::LitType::INT,
+			      PrimitiveCoreType::CORETYPE_I64,
+			      item.get_locus ());
+
+    TyTy::BaseType *isize = nullptr;
+    bool ok = context->lookup_builtin ("isize", &isize);
+    rust_assert (ok);
+    context->insert_type (mapping, isize);
+
+    const CanonicalPath *canonical_path = nullptr;
+    ok = mappings->lookup_canonical_path (item.get_mappings ().get_crate_num (),
+					  item.get_mappings ().get_nodeid (),
+					  &canonical_path);
+    rust_assert (ok);
+
+    variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+				    item.get_identifier (),
+				    TyTy::VariantDef::VariantType::STRUCT,
+				    discrim_expr, fields);
   }
 
 private:

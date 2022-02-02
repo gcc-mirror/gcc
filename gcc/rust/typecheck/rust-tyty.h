@@ -1027,44 +1027,26 @@ public:
     return "";
   }
 
-  VariantDef (HirId id, std::string identifier, int discriminant)
-    : id (id), identifier (identifier), discriminant (discriminant),
-      discriminant_node (nullptr)
-  {
-    type = VariantType::NUM;
-    fields = {};
-  }
-
-  VariantDef (HirId id, std::string identifier,
-	      HIR::EnumItemDiscriminant *discriminant)
-    : id (id), identifier (identifier), discriminant_node (discriminant)
+  VariantDef (HirId id, std::string identifier, HIR::Expr *discriminant)
+    : id (id), identifier (identifier), discriminant (discriminant)
   {
     type = VariantType::NUM;
     fields = {};
   }
 
   VariantDef (HirId id, std::string identifier, VariantType type,
-	      std::vector<StructFieldType *> fields)
-    : id (id), identifier (identifier), type (type), fields (fields),
-      discriminant_node (nullptr)
-  {
-    discriminant = 0;
-    rust_assert (type == VariantType::TUPLE || type == VariantType::STRUCT);
-  }
-
-  VariantDef (HirId id, std::string identifier, VariantType type,
-	      int discriminant, std::vector<StructFieldType *> fields)
+	      HIR::Expr *discriminant, std::vector<StructFieldType *> fields)
     : id (id), identifier (identifier), type (type),
       discriminant (discriminant), fields (fields)
   {
-    rust_assert ((type == VariantType::NUM && fields.empty ())
-		 || (type == VariantType::TUPLE && discriminant == 0)
-		 || (type == VariantType::STRUCT && discriminant == 0));
+    rust_assert (
+      (type == VariantType::NUM && fields.empty ())
+      || (type == VariantType::TUPLE || type == VariantType::STRUCT));
   }
 
   static VariantDef &get_error_node ()
   {
-    static VariantDef node = VariantDef (UNKNOWN_HIRID, "", -1);
+    static VariantDef node = VariantDef (UNKNOWN_HIRID, "", nullptr);
     return node;
   }
 
@@ -1077,12 +1059,6 @@ public:
   bool is_dataless_variant () const { return type == VariantType::NUM; }
 
   std::string get_identifier () const { return identifier; }
-
-  int get_discriminant () const
-  {
-    rust_assert (!is_specified_discriminant_node ());
-    return discriminant;
-  }
 
   size_t num_fields () const { return fields.size (); }
   StructFieldType *get_field_at_index (size_t index)
@@ -1118,21 +1094,16 @@ public:
     return false;
   }
 
-  bool is_specified_discriminant_node () const
+  HIR::Expr *get_discriminant () const
   {
-    return discriminant_node != nullptr;
-  }
-
-  HIR::EnumItemDiscriminant *get_discriminant_node () const
-  {
-    rust_assert (is_specified_discriminant_node ());
-    return discriminant_node;
+    rust_assert (discriminant != nullptr);
+    return discriminant;
   }
 
   std::string as_string () const
   {
     if (type == VariantType::NUM)
-      return identifier + " = " + std::to_string (discriminant);
+      return identifier + " = " + discriminant->as_string ();
 
     std::string buffer;
     for (size_t i = 0; i < fields.size (); ++i)
@@ -1184,9 +1155,9 @@ private:
   HirId id;
   std::string identifier;
   VariantType type;
-  int discriminant; /* Either discriminant or fields are valid.  */
+  // can either be a structure or a discriminant value
+  HIR::Expr *discriminant;
   std::vector<StructFieldType *> fields;
-  HIR::EnumItemDiscriminant *discriminant_node;
 };
 
 class ADTType : public BaseType, public SubstitutionRef

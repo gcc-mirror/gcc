@@ -24,6 +24,7 @@
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
 #include "rust-compile-struct-field-expr.h"
+#include "rust-constexpr.h"
 
 namespace Rust {
 namespace Compile {
@@ -488,13 +489,10 @@ public:
     std::vector<tree> ctor_arguments;
     if (adt->is_enum ())
       {
-	HirId variant_id = variant->get_id ();
-	mpz_t val;
-	mpz_init_set_ui (val, variant_id);
-
-	tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
-	tree qualifier
-	  = double_int_to_tree (t, mpz_get_double_int (t, val, true));
+	HIR::Expr *discrim_expr = variant->get_discriminant ();
+	tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+	tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+	tree qualifier = folded_discrim_expr;
 
 	ctor_arguments.push_back (qualifier);
       }

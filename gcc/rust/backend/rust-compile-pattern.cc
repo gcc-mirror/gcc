@@ -48,33 +48,10 @@ CompilePatternCaseLabelExpr::visit (HIR::PathInExpression &pattern)
   ok = adt->lookup_variant_by_id (variant_id, &variant);
   rust_assert (ok);
 
-  tree case_low = error_mark_node;
-  if (variant->is_specified_discriminant_node ())
-    {
-      auto discrim_node = variant->get_discriminant_node ();
-      auto &discrim_expr = discrim_node->get_discriminant_expression ();
-
-      tree discrim_expr_node = CompileExpr::Compile (discrim_expr.get (), ctx);
-      tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
-      case_low = folded_discrim_expr;
-    }
-  else
-    {
-      mpz_t disciminantl;
-      if (variant->get_variant_type () == TyTy::VariantDef::VariantType::NUM)
-	{
-	  mpz_init_set_ui (disciminantl, variant->get_discriminant ());
-	}
-      else
-	{
-	  HirId variant_id = variant->get_id ();
-	  mpz_init_set_ui (disciminantl, variant_id);
-	}
-
-      tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
-      case_low
-	= double_int_to_tree (t, mpz_get_double_int (t, disciminantl, true));
-    }
+  HIR::Expr *discrim_expr = variant->get_discriminant ();
+  tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+  tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+  tree case_low = folded_discrim_expr;
 
   case_label_expr
     = build_case_label (case_low, NULL_TREE, associated_case_label);
