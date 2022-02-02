@@ -1475,7 +1475,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      && !is_gimple_reg (t)
 	      && flag_stack_reuse != SR_NONE)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (t));
+	      tree clobber = build_clobber (TREE_TYPE (t), CLOBBER_EOL);
 	      gimple *clobber_stmt;
 	      clobber_stmt = gimple_build_assign (t, clobber);
 	      gimple_set_location (clobber_stmt, end_locus);
@@ -6981,7 +6981,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  if (flag_stack_reuse == SR_ALL)
 	    {
-	      tree clobber = build_clobber (TREE_TYPE (temp));
+	      tree clobber = build_clobber (TREE_TYPE (temp), CLOBBER_EOL);
 	      clobber = build2 (MODIFY_EXPR, TREE_TYPE (temp), temp, clobber);
 	      gimple_push_cleanup (temp, clobber, false, pre_p, true);
 	    }

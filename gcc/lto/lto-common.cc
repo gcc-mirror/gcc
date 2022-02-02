@@ -1309,7 +1309,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       return false;
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    compare_values (CONSTRUCTOR_NELTS);
+    {
+      compare_values (CLOBBER_KIND);
+      compare_values (CONSTRUCTOR_NELTS);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
     if (IDENTIFIER_LENGTH (t1) != IDENTIFIER_LENGTH (t2)

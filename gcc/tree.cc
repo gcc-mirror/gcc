@@ -2311,10 +2311,11 @@ build_constructor_va (tree type, int nelts, ...)
 /* Return a node of type TYPE for which TREE_CLOBBER_P is true.  */
 
 tree
-build_clobber (tree type)
+build_clobber (tree type, enum clobber_kind kind)
 {
   tree clobber = build_constructor (type, NULL);
   TREE_THIS_VOLATILE (clobber) = true;
+  CLOBBER_KIND (clobber) = kind;
   return clobber;
 }
 

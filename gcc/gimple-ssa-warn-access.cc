@@ -4328,7 +4328,8 @@ is_auto_decl (tree x)
 void
 pass_waccess::check_stmt (gimple *stmt)
 {
-  if (m_check_dangling_p && gimple_clobber_p (stmt))
+  if (m_check_dangling_p
+      && gimple_clobber_p (stmt, CLOBBER_EOL))
     {
       /* Ignore clobber statemts in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);
