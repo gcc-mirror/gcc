@@ -651,7 +651,18 @@ region_model::impl_call_realloc (const call_details &cd)
       const call_details cd (get_call_details (model, ctxt));
       const svalue *ptr_sval = cd.get_arg_svalue (0);
       const svalue *size_sval = cd.get_arg_svalue (1);
-      if (const region *buffer_reg = ptr_sval->maybe_get_region ())
+
+      /* We can only grow in place with a non-NULL pointer.  */
+      {
+	const svalue *null_ptr
+	  = model->m_mgr->get_or_create_int_cst (ptr_sval->get_type (), 0);
+	if (!model->add_constraint (ptr_sval, NE_EXPR, null_ptr,
+				    cd.get_ctxt ()))
+	  return false;
+      }
+
+      if (const region *buffer_reg = model->deref_rvalue (ptr_sval, NULL_TREE,
+							  ctxt))
 	if (compat_types_p (size_sval->get_type (), size_type_node))
 	  model->set_dynamic_extents (buffer_reg, size_sval, ctxt);
       if (cd.get_lhs_region ())
@@ -696,10 +707,15 @@ region_model::impl_call_realloc (const call_details &cd)
 	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
 	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+      if (!model->add_constraint (new_ptr_sval, NE_EXPR, old_ptr_sval,
+				  cd.get_ctxt ()))
+	return false;
+
       if (cd.get_lhs_type ())
 	cd.maybe_set_lhs (new_ptr_sval);
 
-      if (const region *freed_reg = old_ptr_sval->maybe_get_region ())
+      if (const region *freed_reg = model->deref_rvalue (old_ptr_sval,
+							 NULL_TREE, ctxt))
 	{
 	  /* Copy the data.  */
 	  const svalue *old_size_sval = model->get_dynamic_extents (freed_reg);
@@ -710,7 +726,18 @@ region_model::impl_call_realloc (const call_details &cd)
 						  old_size_sval);
 	      const svalue *buffer_content_sval
 		= model->get_store_value (sized_old_reg, cd.get_ctxt ());
-	      model->set_value (new_reg, buffer_content_sval, cd.get_ctxt ());
+	      const region *sized_new_reg
+		= model->m_mgr->get_sized_region (new_reg, NULL,
+						  old_size_sval);
+	      model->set_value (sized_new_reg, buffer_content_sval,
+				cd.get_ctxt ());
+	    }
+	  else
+	    {
+	      /* We don't know how big the old region was;
+		 mark the new region as having been touched to avoid uninit
+		 issues.  */
+	      model->mark_region_as_unknown (new_reg, cd.get_uncertainty ());
 	    }
 
 	  /* Free the old region, so that pointers to the old buffer become
