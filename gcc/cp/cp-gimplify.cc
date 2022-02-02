@@ -249,8 +249,7 @@ cp_gimplify_init_expr (tree *expr_p)
   if (TREE_CODE (from) == TARGET_EXPR)
     if (tree init = TARGET_EXPR_INITIAL (from))
       {
-	if (VOID_TYPE_P (TREE_TYPE (init))
-	    && TREE_CODE (init) != AGGR_INIT_EXPR)
+	if (target_expr_needs_replace (from))
 	  {
 	    /* If this was changed by cp_genericize_target_expr, we need to
 	       walk into it to replace uses of the slot.  */
@@ -950,14 +949,23 @@ struct cp_genericize_data
 
 /* Perform any pre-gimplification folding of C++ front end trees to
    GENERIC.
-   Note:  The folding of none-omp cases is something to move into
+   Note:  The folding of non-omp cases is something to move into
      the middle-end.  As for now we have most foldings only on GENERIC
      in fold-const, we need to perform this before transformation to
      GIMPLE-form.  */
 
-static tree
-cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
+struct cp_fold_data
 {
+  hash_set<tree> pset;
+  bool genericize; // called from cp_fold_function?
+
+  cp_fold_data (bool g): genericize (g) {}
+};
+
+static tree
+cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
+{
+  cp_fold_data *data = (cp_fold_data*)data_;
   tree stmt = *stmt_p;
   enum tree_code code = TREE_CODE (stmt);
 
@@ -967,7 +975,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (TREE_CODE (PTRMEM_CST_MEMBER (stmt)) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (stmt)))
 	{
-	  if (!((hash_set<tree> *) data)->add (stmt))
+	  if (!data->pset.add (stmt))
 	    error_at (PTRMEM_CST_LOCATION (stmt),
 		      "taking address of an immediate function %qD",
 		      PTRMEM_CST_MEMBER (stmt));
@@ -1001,7 +1009,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   *stmt_p = stmt = cp_fold (*stmt_p);
 
-  if (((hash_set<tree> *) data)->add (stmt))
+  if (data->pset.add (stmt))
     {
       /* Don't walk subtrees of stmts we've already walked once, otherwise
 	 we can have exponential complexity with e.g. lots of nested
@@ -1075,12 +1083,17 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
       break;
 
+      /* These are only for genericize time; they're here rather than in
+	 cp_genericize to avoid problems with the invisible reference
+	 transition.  */
     case INIT_EXPR:
-      cp_genericize_init_expr (stmt_p);
+      if (data->genericize)
+	cp_genericize_init_expr (stmt_p);
       break;
 
     case TARGET_EXPR:
-      cp_genericize_target_expr (stmt_p);
+      if (data->genericize)
+	cp_genericize_target_expr (stmt_p);
       break;
 
     default:
@@ -1096,8 +1109,8 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 void
 cp_fold_function (tree fndecl)
 {
-  hash_set<tree> pset;
-  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &pset, NULL);
+  cp_fold_data data (/*genericize*/true);
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_fold_r, &data, NULL);
 }
 
 /* Turn SPACESHIP_EXPR EXPR into GENERIC.  */
@@ -2358,8 +2371,8 @@ cp_fully_fold_init (tree x)
   if (processing_template_decl)
     return x;
   x = cp_fully_fold (x);
-  hash_set<tree> pset;
-  cp_walk_tree (&x, cp_fold_r, &pset, NULL);
+  cp_fold_data data (/*genericize*/false);
+  cp_walk_tree (&x, cp_fold_r, &data, NULL);
   return x;
 }
 

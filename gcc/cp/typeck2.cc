@@ -548,6 +548,10 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 
 	  bool elt_last = last && idx == CONSTRUCTOR_NELTS (init) - 1;
 
+	  /* We need to see sub-array TARGET_EXPR before cp_fold_r so we can
+	     handle cleanup flags properly.  */
+	  gcc_checking_assert (!target_expr_needs_replace (value));
+
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
 	      if (!split_nonconstant_init_1 (sub, value, elt_last, flags)
@@ -574,9 +578,9 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		  num_split_elts++;
 		}
 	    }
-	  else if (TREE_CODE (value) == VEC_INIT_EXPR)
+	  else if (tree vi = get_vec_init_expr (value))
 	    {
-	      add_stmt (expand_vec_init_expr (sub, value, tf_warning_or_error,
+	      add_stmt (expand_vec_init_expr (sub, vi, tf_warning_or_error,
 					      flags));
 
 	      /* Mark element for removal.  */
@@ -1925,6 +1929,7 @@ process_init_constructor (tree type, tree init, int nested, int flags,
 	 initializer-clause until later so we can use a loop.  */
       TREE_TYPE (init) = init_list_type_node;
       init = build_vec_init_expr (type, init, complain);
+      init = get_target_expr (init);
     }
   return init;
 }

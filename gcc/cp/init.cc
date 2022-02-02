@@ -4368,8 +4368,8 @@ build_vec_init (tree base, tree maxindex, tree init,
       && from_array != 2)
     init = TARGET_EXPR_INITIAL (init);
 
-  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    init = VEC_INIT_EXPR_INIT (init);
+  if (tree vi = get_vec_init_expr (init))
+    init = VEC_INIT_EXPR_INIT (vi);
 
   bool direct_init = false;
   if (from_array && init && BRACE_ENCLOSED_INITIALIZER_P (init)
@@ -4581,10 +4581,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 
 	  num_initialized_elts++;
 
+	  /* We need to see sub-array TARGET_EXPR before cp_fold_r so we can
+	     handle cleanup flags properly.  */
+	  gcc_checking_assert (!target_expr_needs_replace (elt));
+
 	  if (digested)
 	    one_init = build2 (INIT_EXPR, type, baseref, elt);
-	  else if (TREE_CODE (elt) == VEC_INIT_EXPR)
-	    one_init = expand_vec_init_expr (baseref, elt, complain, flags);
+	  else if (tree vi = get_vec_init_expr (elt))
+	    one_init = expand_vec_init_expr (baseref, vi, complain, flags);
 	  else if (MAYBE_CLASS_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	    one_init = build_aggr_init (baseref, elt, 0, complain);
 	  else

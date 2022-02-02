@@ -785,8 +785,8 @@ build_vec_init_elt (tree type, tree init, tsubst_flags_t complain)
 tree
 build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
 {
-  if (init && TREE_CODE (init) == VEC_INIT_EXPR)
-    return init;
+  if (tree vi = get_vec_init_expr (init))
+    return vi;
 
   tree elt_init;
   if (init && TREE_CODE (init) == CONSTRUCTOR
