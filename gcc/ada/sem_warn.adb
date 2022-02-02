@@ -284,15 +284,15 @@ package body Sem_Warn is
 
       procedure Find_Var (N : Node_Id) is
       begin
-         --  Condition is a direct variable reference
+         --  Expression is a direct variable reference
 
          if Is_Entity_Name (N) then
             Ref := N;
             Var := Entity (Ref);
 
-         --  Case of condition is a comparison with compile time known value
+         --  If expression is an operator, check its operands
 
-         elsif Nkind (N) in N_Op_Compare then
+         elsif Nkind (N) in N_Binary_Op then
             if Compile_Time_Known_Value (Right_Opnd (N)) then
                Find_Var (Left_Opnd (N));
 
@@ -305,9 +305,9 @@ package body Sem_Warn is
                return;
             end if;
 
-         --  If condition is a negation, check its operand
+         --  If expression is a unary operator, check its operand
 
-         elsif Nkind (N) = N_Op_Not then
+         elsif Nkind (N) in N_Unary_Op then
             Find_Var (Right_Opnd (N));
 
          --  Case of condition is function call
@@ -445,8 +445,6 @@ package body Sem_Warn is
       ---------------------------------
 
       function Is_Suspicious_Function_Name (E : Entity_Id) return Boolean is
-         S : Entity_Id;
-
          function Substring_Present (S : String) return Boolean;
          --  Returns True if name buffer has given string delimited by non-
          --  alphabetic characters or by end of string. S is lower case.
@@ -472,6 +470,10 @@ package body Sem_Warn is
 
             return False;
          end Substring_Present;
+
+         --  Local variables
+
+         S : Entity_Id;
 
       --  Start of processing for Is_Suspicious_Function_Name
 
