@@ -1,3 +1,12 @@
+2022-03-10  Andrew Stubbs <ams@codesourcery.com>
+
+	Backport of the patch posted at
+	https://gcc.gnu.org/pipermail/gcc-patches/2022-March/591350.html
+
+	* common.opt: Add -foffload-memory and its enum values.
+	* coretypes.h (enum offload_memory): New.
+	* doc/invoke.texi: Document -foffload-memory.
+
 2022-03-09  Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport of a patch posted at

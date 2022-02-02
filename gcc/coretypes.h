@@ -206,6 +206,13 @@ enum offload_abi {
   OFFLOAD_ABI_ILP32
 };
 
+/* Types of memory optimization for an offload device.  */
+enum offload_memory {
+  OFFLOAD_MEMORY_NONE,
+  OFFLOAD_MEMORY_UNIFIED,
+  OFFLOAD_MEMORY_PINNED
+};
+
 /* Types of profile update methods.  */
 enum profile_update {
   PROFILE_UPDATE_SINGLE,
