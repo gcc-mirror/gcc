@@ -347,7 +347,7 @@ fs::recursive_directory_iterator::pop(error_code& ec)
 void
 fs::recursive_directory_iterator::pop()
 {
-  const bool dereferenceable = _M_dirs != nullptr;
+  [[maybe_unused]] const bool dereferenceable = _M_dirs != nullptr;
   error_code ec;
   pop(ec);
   if (ec)
