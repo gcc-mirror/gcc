@@ -86,8 +86,8 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 				      &union_disriminator))
 	return ctx->get_backend ()->error_expression ();
 
-      // FIXME should really return error_mark_node and or rust_internal_error
-      // error_mark_node
+      // this can only be for discriminant variants the others are built up
+      // using call-expr or struct-init
       rust_assert (variant->get_variant_type ()
 		   == TyTy::VariantDef::VariantType::NUM);
 
@@ -95,24 +95,10 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
 
       // make the ctor for the union
-      tree qualifier = error_mark_node;
-      if (variant->is_specified_discriminant_node ())
-	{
-	  auto discrim_node = variant->get_discriminant_node ();
-	  auto &discrim_expr = discrim_node->get_discriminant_expression ();
-
-	  tree discrim_expr_node
-	    = CompileExpr::Compile (discrim_expr.get (), ctx);
-	  tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
-	  qualifier = folded_discrim_expr;
-	}
-      else
-	{
-	  mpz_t val;
-	  mpz_init_set_ui (val, variant->get_discriminant ());
-	  tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
-	  qualifier = double_int_to_tree (t, mpz_get_double_int (t, val, true));
-	}
+      HIR::Expr *discrim_expr = variant->get_discriminant ();
+      tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+      tree folded_discrim_expr = ConstCtx::fold (discrim_expr_node);
+      tree qualifier = folded_discrim_expr;
 
       return ctx->get_backend ()->constructor_expression (compiled_adt_type,
 							  true, {qualifier},

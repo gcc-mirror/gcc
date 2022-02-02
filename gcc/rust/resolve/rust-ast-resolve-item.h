@@ -340,6 +340,15 @@ public:
   }
 
   /* EnumItem doesn't need to be handled, no fields.  */
+  void visit (AST::EnumItem &item) override
+  {
+    auto decl
+      = CanonicalPath::new_seg (item.get_node_id (), item.get_identifier ());
+    auto path = prefix.append (decl);
+    auto cpath = canonical_prefix.append (decl);
+    mappings->insert_canonical_path (mappings->get_current_crate (),
+				     item.get_node_id (), cpath);
+  }
 
   void visit (AST::EnumItemTuple &item) override
   {
