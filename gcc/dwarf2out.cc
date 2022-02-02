@@ -4186,11 +4186,6 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #define DEBUG_LTO_LINE_STR_SECTION  ".gnu.debuglto_.debug_line_str"
 #endif
 
-/* Standard ELF section names for compiled code and data.  */
-#ifndef TEXT_SECTION_NAME
-#define TEXT_SECTION_NAME	".text"
-#endif
-
 /* Section flags for .debug_str section.  */
 #define DEBUG_STR_SECTION_FLAGS                                 \
   (HAVE_GAS_SHF_MERGE && flag_merge_debug_strings               \
