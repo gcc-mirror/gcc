@@ -806,9 +806,10 @@ public:
 	return;
       }
 
-    resolved = new ArrayType (type.get_ref (), type.get_ty_ref (),
-			      type.get_capacity_expr (),
-			      TyVar (base_resolved->get_ref ()));
+    resolved
+      = new ArrayType (type.get_ref (), type.get_ty_ref (),
+		       type.get_ident ().locus, type.get_capacity_expr (),
+		       TyVar (base_resolved->get_ref ()));
   }
 
 private:
@@ -1063,8 +1064,8 @@ public:
 	fields.push_back (TyVar (unified_ty->get_ref ()));
       }
 
-    resolved
-      = new TyTy::TupleType (type.get_ref (), type.get_ty_ref (), fields);
+    resolved = new TyTy::TupleType (type.get_ref (), type.get_ty_ref (),
+				    type.get_ident ().locus, fields);
   }
 
 private:

@@ -119,7 +119,8 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
       if (s->is_unit_check_needed () && !resolved->is_unit ())
 	{
-	  auto unit = new TyTy::TupleType (s->get_mappings ().get_hirid ());
+	  auto unit
+	    = TyTy::TupleType::get_unit_type (s->get_mappings ().get_hirid ());
 	  resolved = unit->unify (resolved);
 	}
     }
@@ -129,7 +130,8 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
       = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), inside_loop)
 	  ->clone ();
   else if (expr.is_tail_reachable ())
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
   else
     infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
@@ -234,7 +236,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())
-    ret_type = new TyTy::TupleType (fn.get_mappings ().get_hirid ());
+    ret_type = TyTy::TupleType::get_unit_type (fn.get_mappings ().get_hirid ());
   else
     {
       auto resolved
@@ -320,10 +322,19 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       context->insert_type (param.get_mappings (), param_tyty);
     }
 
+  auto mappings = Analysis::Mappings::get ();
+  const CanonicalPath *canonical_path = nullptr;
+  bool ok
+    = mappings->lookup_canonical_path (fn.get_mappings ().get_crate_num (),
+				       fn.get_mappings ().get_nodeid (),
+				       &canonical_path);
+  rust_assert (ok);
+
+  RustIdent ident{*canonical_path, fn.get_locus ()};
   auto resolved
     = new TyTy::FnType (fn.get_mappings ().get_hirid (),
 			fn.get_mappings ().get_defid (),
-			function.get_function_name (),
+			function.get_function_name (), ident,
 			function.is_method ()
 			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,

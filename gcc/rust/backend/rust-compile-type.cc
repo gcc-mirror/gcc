@@ -132,13 +132,14 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
     }
 
   if (!type.is_varadic ())
-    translated = ctx->get_backend ()->function_type (
-      receiver, parameters, results, NULL,
-      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+    translated
+      = ctx->get_backend ()->function_type (receiver, parameters, results, NULL,
+					    type.get_ident ().locus);
   else
-    translated = ctx->get_backend ()->function_type_varadic (
-      receiver, parameters, results, NULL,
-      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+    translated
+      = ctx->get_backend ()->function_type_varadic (receiver, parameters,
+						    results, NULL,
+						    type.get_ident ().locus);
 }
 
 void
@@ -153,9 +154,8 @@ TyTyResolveCompile::visit (const TyTy::FnPtr &type)
     return true;
   });
 
-  translated = ctx->get_backend ()->function_ptr_type (
-    result_type, parameters,
-    ctx->get_mappings ()->lookup_location (type.get_ref ()));
+  translated = ctx->get_backend ()->function_ptr_type (result_type, parameters,
+						       type.get_ident ().locus);
 }
 
 void
@@ -248,8 +248,8 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 
 	  tree variant_record = ctx->get_backend ()->struct_type (fields);
 	  tree named_variant_record = ctx->get_backend ()->named_type (
-	    variant->get_identifier (), variant_record,
-	    ctx->get_mappings ()->lookup_location (variant->get_id ()));
+	    variant->get_ident ().path.get (), variant_record,
+	    variant->get_ident ().locus);
 
 	  // set the qualifier to be a builtin
 	  DECL_ARTIFICIAL (TYPE_FIELDS (variant_record)) = 1;
@@ -278,10 +278,11 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
       type_record = ctx->get_backend ()->union_type (enum_fields);
     }
 
+  std::string named_struct_str
+    = type.get_ident ().path.get () + type.subst_as_string ();
   tree named_struct
-    = ctx->get_backend ()->named_type (type.get_name (), type_record,
-				       ctx->get_mappings ()->lookup_location (
-					 type.get_ref ()));
+    = ctx->get_backend ()->named_type (named_struct_str, type_record,
+				       type.get_ident ().locus);
 
   ctx->push_type (named_struct);
   translated = named_struct;
@@ -324,8 +325,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
   tree struct_type_record = ctx->get_backend ()->struct_type (fields);
   tree named_struct
     = ctx->get_backend ()->named_type (type.as_string (), struct_type_record,
-				       ctx->get_mappings ()->lookup_location (
-					 type.get_ty_ref ()));
+				       type.get_ident ().locus);
 
   ctx->push_type (named_struct);
   ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
@@ -496,8 +496,7 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
   tree type_record = ctx->get_backend ()->struct_type (fields);
   tree named_struct
     = ctx->get_backend ()->named_type (type.get_name (), type_record,
-				       ctx->get_mappings ()->lookup_location (
-					 type.get_ty_ref ()));
+				       type.get_ident ().locus);
 
   ctx->push_type (named_struct);
   translated = named_struct;

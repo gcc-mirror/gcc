@@ -159,7 +159,7 @@ TyVar::get_implicit_infer_var (Location locus)
   auto context = Resolver::TypeCheckContext::get ();
 
   InferType *infer = new InferType (mappings->get_next_hir_id (),
-				    InferType::InferTypeKind::GENERAL);
+				    InferType::InferTypeKind::GENERAL, locus);
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
 					       infer->get_ref (),
@@ -229,7 +229,7 @@ BaseType *
 InferType::clone () const
 {
   return new InferType (get_ref (), get_ty_ref (), get_infer_kind (),
-			get_combined_refs ());
+			get_ident ().locus, get_combined_refs ());
 }
 
 bool
@@ -316,14 +316,14 @@ StructFieldType::is_equal (const StructFieldType &other) const
 {
   bool names_eq = get_name ().compare (other.get_name ()) == 0;
 
-  TyTy::BaseType &o = *other.get_field_type ();
-  if (o.get_kind () == TypeKind::PARAM)
+  TyTy::BaseType *o = other.get_field_type ();
+  if (o->get_kind () == TypeKind::PARAM)
     {
-      ParamType &op = static_cast<ParamType &> (o);
-      o = *op.resolve ();
+      ParamType *op = static_cast<ParamType *> (o);
+      o = op->resolve ();
     }
 
-  bool types_eq = get_field_type ()->is_equal (o);
+  bool types_eq = get_field_type ()->is_equal (*o);
 
   return names_eq && types_eq;
 }
@@ -749,9 +749,9 @@ ADTType::clone () const
   for (auto &variant : variants)
     cloned_variants.push_back (variant->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), identifier, get_adt_kind (),
-		      cloned_variants, clone_substs (), used_arguments,
-		      get_combined_refs ());
+  return new ADTType (get_ref (), get_ty_ref (), identifier, ident,
+		      get_adt_kind (), cloned_variants, clone_substs (),
+		      used_arguments, get_combined_refs ());
 }
 
 static bool
@@ -916,7 +916,7 @@ TupleType::is_equal (const BaseType &other) const
 BaseType *
 TupleType::clone () const
 {
-  return new TupleType (get_ref (), get_ty_ref (), fields,
+  return new TupleType (get_ref (), get_ty_ref (), get_ident ().locus, fields,
 			get_combined_refs ());
 }
 
@@ -1043,7 +1043,7 @@ FnType::clone () const
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
-		     flags, abi, std::move (cloned_params),
+		     ident, flags, abi, std::move (cloned_params),
 		     get_return_type ()->clone (), clone_substs (),
 		     get_combined_refs ());
 }
@@ -1246,8 +1246,9 @@ FnPtr::clone () const
   for (auto &p : params)
     cloned_params.push_back (TyVar (p.get_ref ()));
 
-  return new FnPtr (get_ref (), get_ty_ref (), std::move (cloned_params),
-		    result_type, get_combined_refs ());
+  return new FnPtr (get_ref (), get_ty_ref (), ident.locus,
+		    std::move (cloned_params), result_type,
+		    get_combined_refs ());
 }
 
 void
@@ -1306,7 +1307,7 @@ ClosureType::is_equal (const BaseType &other) const
 BaseType *
 ClosureType::clone () const
 {
-  return new ClosureType (get_ref (), get_ty_ref (), id, parameter_types,
+  return new ClosureType (get_ref (), get_ty_ref (), ident, id, parameter_types,
 			  result_type, clone_substs (), get_combined_refs ());
 }
 
@@ -1386,8 +1387,8 @@ ArrayType::get_element_type () const
 BaseType *
 ArrayType::clone () const
 {
-  return new ArrayType (get_ref (), get_ty_ref (), capacity_expr, element_type,
-			get_combined_refs ());
+  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
+			element_type, get_combined_refs ());
 }
 
 void
@@ -2068,8 +2069,8 @@ ParamType::can_eq (const BaseType *other, bool emit_errors) const
 BaseType *
 ParamType::clone () const
 {
-  return new ParamType (get_symbol (), get_ref (), get_ty_ref (), param,
-			get_specified_bounds (), get_combined_refs ());
+  return new ParamType (get_symbol (), ident.locus, get_ref (), get_ty_ref (),
+			param, get_specified_bounds (), get_combined_refs ());
 }
 
 std::string
@@ -2516,8 +2517,8 @@ DynamicObjectType::cast (BaseType *other)
 BaseType *
 DynamicObjectType::clone () const
 {
-  return new DynamicObjectType (get_ref (), get_ty_ref (), specified_bounds,
-				get_combined_refs ());
+  return new DynamicObjectType (get_ref (), get_ty_ref (), ident,
+				specified_bounds, get_combined_refs ());
 }
 
 std::string

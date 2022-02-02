@@ -572,8 +572,10 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 	specified_bounds.push_back (std::move (predicate));
     }
 
-  translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
-					    std::move (specified_bounds));
+  RustIdent ident{CanonicalPath::create_empty (), type.get_locus ()};
+  translated
+    = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (), ident,
+				   std::move (specified_bounds));
 }
 
 void
@@ -594,7 +596,7 @@ TypeCheckType::visit (HIR::ArrayType &type)
 
   TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
   translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				    *type.get_size_expr (),
+				    type.get_locus (), *type.get_size_expr (),
 				    TyTy::TyVar (base->get_ref ()));
 }
 

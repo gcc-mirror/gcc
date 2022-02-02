@@ -158,7 +158,8 @@ public:
 	auto field_ty = TypeCheckExpr::Resolve (elem.get (), false);
 	fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
       }
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (), fields);
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (),
+				   expr.get_locus (), fields);
   }
 
   void visit (HIR::ReturnExpr &expr) override
@@ -166,18 +167,10 @@ public:
     auto fn_return_tyty = context->peek_return_type ();
     rust_assert (fn_return_tyty != nullptr);
 
-    TyTy::BaseType *expr_ty;
-    if (expr.has_return_expr ())
-      expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
-    else
-      expr_ty = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
-
-    if (expr_ty == nullptr)
-      {
-	rust_error_at (expr.get_locus (),
-		       "failed to resolve type for ReturnExpr");
-	return;
-      }
+    TyTy::BaseType *expr_ty
+      = expr.has_return_expr ()
+	  ? TypeCheckExpr::Resolve (expr.get_expr (), false)
+	  : TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
     infered = fn_return_tyty->unify (expr_ty);
     fn_return_tyty->append_reference (expr_ty->get_ref ());
@@ -405,7 +398,8 @@ public:
 
   void visit (HIR::AssignmentExpr &expr) override
   {
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
@@ -454,7 +448,8 @@ public:
 
   void visit (HIR::CompoundAssignmentExpr &expr) override
   {
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
     auto lhs = TypeCheckExpr::Resolve (expr.get_left_expr ().get (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_right_expr ().get (), false);
@@ -603,9 +598,10 @@ public:
 
 	    default:
 	      ok = true;
-	      infered = new TyTy::InferType (
-		expr.get_mappings ().get_hirid (),
-		TyTy::InferType::InferTypeKind::INTEGRAL);
+	      infered
+		= new TyTy::InferType (expr.get_mappings ().get_hirid (),
+				       TyTy::InferType::InferTypeKind::INTEGRAL,
+				       expr.get_locus ());
 	      break;
 	    }
 	  rust_assert (ok);
@@ -628,7 +624,8 @@ public:
 	      ok = true;
 	      infered
 		= new TyTy::InferType (expr.get_mappings ().get_hirid (),
-				       TyTy::InferType::InferTypeKind::FLOAT);
+				       TyTy::InferType::InferTypeKind::FLOAT,
+				       expr.get_locus ());
 	      break;
 	    }
 	  rust_assert (ok);
@@ -701,7 +698,7 @@ public:
 
 	  TyTy::ArrayType *array
 	    = new TyTy::ArrayType (array_mapping.get_hirid (),
-				   *literal_capacity,
+				   expr.get_locus (), *literal_capacity,
 				   TyTy::TyVar (u8->get_ref ()));
 	  context->insert_type (array_mapping, array);
 
@@ -842,7 +839,8 @@ public:
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
     TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
 
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqElse &expr) override
@@ -1000,9 +998,9 @@ public:
 	break;
       }
 
-    infered
-      = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), *capacity_expr,
-			     TyTy::TyVar (element_type->get_ref ()));
+    infered = new TyTy::ArrayType (expr.get_mappings ().get_hirid (),
+				   expr.get_locus (), *capacity_expr,
+				   TyTy::TyVar (element_type->get_ref ()));
   }
 
   // empty struct
@@ -1078,7 +1076,8 @@ public:
 
   void visit (HIR::LoopExpr &expr) override
   {
-    context->push_new_loop_context (expr.get_mappings ().get_hirid ());
+    context->push_new_loop_context (expr.get_mappings ().get_hirid (),
+				    expr.get_locus ());
     TyTy::BaseType *block_expr
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
     if (!block_expr->is_unit ())
@@ -1097,9 +1096,10 @@ public:
 	    && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
 		!= TyTy::InferType::GENERAL));
 
-    infered = loop_context_type_infered
-		? loop_context_type
-		: new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = loop_context_type_infered
+	  ? loop_context_type
+	  : TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::WhileLoopExpr &expr) override
@@ -1119,7 +1119,8 @@ public:
       }
 
     context->pop_loop_context ();
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered
+      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BreakExpr &expr) override
@@ -1262,7 +1263,8 @@ public:
 
     if (kase_block_tys.size () == 0)
       {
-	infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+	infered
+	  = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 	return;
       }
 

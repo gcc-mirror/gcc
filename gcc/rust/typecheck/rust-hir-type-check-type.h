@@ -74,7 +74,8 @@ public:
     TyTy::BaseType *return_type
       = fntype.has_return_type ()
 	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
-	  : new TyTy::TupleType (fntype.get_mappings ().get_hirid ());
+	  : TyTy::TupleType::get_unit_type (
+	    fntype.get_mappings ().get_hirid ());
 
     std::vector<TyTy::TyVar> params;
     for (auto &param : fntype.get_function_params ())
@@ -85,7 +86,7 @@ public:
       }
 
     translated = new TyTy::FnPtr (fntype.get_mappings ().get_hirid (),
-				  std::move (params),
+				  fntype.get_locus (), std::move (params),
 				  TyTy::TyVar (return_type->get_ref ()));
   }
 
@@ -109,8 +110,8 @@ public:
 	fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
       }
 
-    translated
-      = new TyTy::TupleType (tuple.get_mappings ().get_hirid (), fields);
+    translated = new TyTy::TupleType (tuple.get_mappings ().get_hirid (),
+				      tuple.get_locus (), fields);
   }
 
   void visit (HIR::TypePath &path) override;
@@ -140,7 +141,8 @@ public:
   void visit (HIR::InferredType &type) override
   {
     translated = new TyTy::InferType (type.get_mappings ().get_hirid (),
-				      TyTy::InferType::InferTypeKind::GENERAL);
+				      TyTy::InferType::InferTypeKind::GENERAL,
+				      type.get_locus ());
   }
 
   void visit (HIR::TraitObjectType &type) override;
@@ -265,6 +267,7 @@ public:
       }
 
     resolved = new TyTy::ParamType (param.get_type_representation (),
+				    param.get_locus (),
 				    param.get_mappings ().get_hirid (), param,
 				    specified_bounds);
   }

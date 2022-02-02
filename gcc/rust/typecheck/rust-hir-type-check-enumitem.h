@@ -70,8 +70,9 @@ public:
 					  &canonical_path);
     rust_assert (ok);
 
+    RustIdent ident{*canonical_path, item.get_locus ()};
     variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				    item.get_identifier (), discim_expr);
+				    item.get_identifier (), ident, discim_expr);
   }
 
   void visit (HIR::EnumItemDiscriminant &item) override
@@ -99,8 +100,9 @@ public:
 					 &canonical_path);
     rust_assert (ok);
 
+    RustIdent ident{*canonical_path, item.get_locus ()};
     variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				    item.get_identifier (),
+				    item.get_identifier (), ident,
 				    item.get_discriminant_expression ().get ());
   }
 
@@ -146,8 +148,9 @@ public:
 					  &canonical_path);
     rust_assert (ok);
 
+    RustIdent ident{*canonical_path, item.get_locus ()};
     variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				    item.get_identifier (),
+				    item.get_identifier (), ident,
 				    TyTy::VariantDef::VariantType::TUPLE,
 				    discim_expr, fields);
   }
@@ -192,8 +195,9 @@ public:
 					  &canonical_path);
     rust_assert (ok);
 
+    RustIdent ident{*canonical_path, item.get_locus ()};
     variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
-				    item.get_identifier (),
+				    item.get_identifier (), ident,
 				    TyTy::VariantDef::VariantType::STRUCT,
 				    discrim_expr, fields);
   }
