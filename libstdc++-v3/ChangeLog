@@ -1,3 +1,12 @@
+2022-02-01  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backported from master:
+	2022-02-01  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h: Change memory order from
+	Acquire/Release with relaxed loads to SeqCst+Release for
+	accesses to the waiter's count.
+
 2022-01-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
