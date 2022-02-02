@@ -1,3 +1,47 @@
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
+	autoconf macro to check whether d_type is present.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Likewise.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/97731.cc: New test.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Check follow_directory_symlink option.
+	* testsuite/experimental/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (recursive_directory_iterator::increment):
+	Reset state to past-the-end iterator on error.
+	(fs::recursive_directory_iterator::pop(error_code&)): Likewise.
+	(fs::recursive_directory_iterator::pop()): Check _M_dirs before
+	it might get reset.
+	* src/filesystem/dir.cc (recursive_directory_iterator): Likewise,
+	for the TS implementation.
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: New test.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc: New test.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (filesystem::perms): Fix comment.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104301
+	* acinclude.m4 (GLIBCXX_ENABLE_CSTDIO): Print different messages
+	for stdio_pure and stdio_posix options.
+	* configure: Regenerate.
+
+2022-02-01  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h: Change memory order from
+	Acquire/Release with relaxed loads to SeqCst+Release for
+	accesses to the waiter's count.
+
 2022-01-31  Martin Liska  <mliska@suse.cz>
 
 	* acinclude.m4: Detect *_ld_is_mold and use it.

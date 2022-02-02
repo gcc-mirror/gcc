@@ -1,3 +1,44 @@
+2022-02-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/nobp-section-type-conflict.c: New test.
+
+2022-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104331
+	* gfortran.dg/eoshift_9.f90: New test.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/104147
+	* c-c++-common/cpp/pr104147.c: New test.
+
+2022-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103186
+	* g++.dg/cpp0x/lambda/lambda-defarg10.C: New test.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/stack-atomics-run.c: New test.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104307
+	* gcc.target/i386/pr104307.c: New test.
+
+2022-02-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR rtl-optimization/101260
+	* gcc.target/s390/pr101260.c: New testcase.
+
+2022-02-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.dg/pr95115.c: New test.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-strlen-4.c: New test.
+
 2022-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102414

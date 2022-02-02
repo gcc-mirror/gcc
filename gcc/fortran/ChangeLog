@@ -1,3 +1,9 @@
+2022-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104331
+	* simplify.cc (gfc_simplify_eoshift): Avoid NULL pointer
+	dereference when shape is not set.
+
 2022-01-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/103790

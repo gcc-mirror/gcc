@@ -1,3 +1,25 @@
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/private-atomic-1.c: Remove
+	PR83812 workaround.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-vector.f90: Same.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-worker.f90: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: Reduce
+	num_workers for nvidia accelerator to fix libgomp error 'insufficient
+	resources'.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
 2022-01-31  Martin Liska  <mliska@suse.cz>
 
 	* acinclude.m4: Detect *_ld_is_mold and use it.

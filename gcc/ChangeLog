@@ -1,3 +1,304 @@
+2022-02-01  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* opts.cc (common_handle_option): Don't set param_early_inliner_max_iterations
+	to 10 for AutoFDO.
+
+2022-02-01  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (auto_profile): Hard-code the number of iterations (10).
+
+2022-02-01  Andrew Pinski  <apinski@marvell.com>
+
+	* doc/install.texi:
+
+2022-02-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_code_end): Do not switch back to
+	code section.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104323
+	* config/rs6000/t-rs6000 (EXTRA_GTYPE_DEPS): Append rs6000-builtins.h
+	rather than $(srcdir)/config/rs6000/rs6000-builtins.def.
+	* config/rs6000/rs6000-gen-builtins.cc (write_decls): Don't use
+	GTY((user)) for struct bifdata and struct ovlddata.  Instead add
+	GTY((skip(""))) to members with pointer and enum types that don't need
+	to be tracked.  Add GTY(()) to rs6000_builtin_info and rs6000_instance_info
+	declarations.  Don't emit gt_ggc_mx and gt_pch_nx declarations.
+	(write_extern_fntype, write_fntype): Remove.
+	(write_fntype_init): Emit the fntype vars as automatic vars instead
+	of file scope ones.
+	(write_header_file): Don't iterate with write_extern_fntype.
+	(write_init_file): Don't iterate with write_fntype.  Don't emit
+	gt_ggc_mx and gt_pch_nx definitions.
+
+2022-02-01  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (struct tree_vec_map_cache_hasher): Move from...
+	* tree.cc (struct tree_vec_map_cache_hasher): ...here.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_single): Use nvptx_uniform_warp_check.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_UNIFORM_WARP_CHECK.
+	(define_insn "nvptx_uniform_warp_check"): New define_insn.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_single): Use nvptx_warpsync.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_WARPSYNC.
+	(define_insn "nvptx_warpsync"): New define_insn.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (mptx): Set to PTX_VERSION_6_3 by default.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add PTX_VERSION_6_0.
+	* config/nvptx/nvptx.h (TARGET_PTX_6_0): New macro.
+	* config/nvptx/nvptx.md (define_insn "nvptx_barsync"): Use barrier
+	insn for TARGET_PTX_6_0.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100428
+	* config/nvptx/nvptx.cc (prevent_branch_around_nothing): Handle nop
+	insn.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "atomic_compare_and_swap<mode>_1")
+	(define_insn "atomic_exchange<mode>")
+	(define_insn "atomic_fetch_add<mode>")
+	(define_insn "atomic_fetch_addsf")
+	(define_insn "atomic_fetch_<logic><mode>"): Output non-atomic version
+	if memory operands is frame-relative.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (enum nvptx_builtins): Add
+	NVPTX_BUILTIN_MEMBAR_GL and NVPTX_BUILTIN_MEMBAR_CTA.
+	(VOID): New macro.
+	(nvptx_init_builtins): Add MEMBAR_GL and MEMBAR_CTA.
+	(nvptx_expand_builtin): Handle NVPTX_BUILTIN_MEMBAR_GL and
+	NVPTX_BUILTIN_MEMBAR_CTA.
+	(nvptx_lockfull_update): Add level parameter.  Emit barriers.
+	(nvptx_reduction_update, nvptx_goacc_reduction_fini): Update call to
+	nvptx_lockfull_update.
+	* config/nvptx/nvptx.md (define_c_enum "unspecv"): Add
+	UNSPECV_MEMBAR_GL.
+	(define_expand "nvptx_membar_gl"): New expand.
+	(define_insn "*nvptx_membar_gl"): New insn.
+
+2022-02-01  Martin Liska  <mliska@suse.cz>
+
+	* doc/install.texi: Remove option for GCC < 4.8.
+
+2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104307
+	* tree-vect-generic.cc (expand_vector_comparison): Don't push debug
+	stmts to uses vector, just set vec_cond_expr_only to false for
+	non-VEC_COND_EXPRs instead of pushing them into uses.  Treat
+	VEC_COND_EXPRs that use lhs not just in rhs1, but rhs2 or rhs3 too
+	like non-VEC_COND_EXPRs.
+
+2022-02-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (VEC_ABSD): Remove #ifdef token.
+	(VEC_BLENDV): Likewise.
+	(VEC_BPERM): Likewise.
+	(VEC_CFUGE): Likewise.
+	(VEC_CIPHER_BE): Likewise.
+	(VEC_CIPHERLAST_BE): Likewise.
+	(VEC_CLRL): Likewise.
+	(VEC_CLRR): Likewise.
+	(VEC_CMPNEZ): Likewise.
+	(VEC_CNTLZ): Likewise.
+	(VEC_CNTLZM): Likewise.
+	(VEC_CNTTZM): Likewise.
+	(VEC_CNTLZ_LSBB): Likewise.
+	(VEC_CNTM): Likewise.
+	(VEC_CNTTZ): Likewise.
+	(VEC_CNTTZ_LSBB): Likewise.
+	(VEC_CONVERT_4F32_8F16): Likewise.
+	(VEC_DIV): Likewise.
+	(VEC_DIVE): Likewise.
+	(VEC_EQV): Likewise.
+	(VEC_EXPANDM): Likewise.
+	(VEC_EXTRACT_FP_FROM_SHORTH): Likewise.
+	(VEC_EXTRACT_FP_FROM_SHORTL): Likewise.
+	(VEC_EXTRACTH): Likewise.
+	(VEC_EXTRACTL): Likewise.
+	(VEC_EXTRACTM): Likewise.
+	(VEC_EXTRACT4B): Likewise.
+	(VEC_EXTULX): Likewise.
+	(VEC_EXTURX): Likewise.
+	(VEC_FIRSTMATCHINDEX): Likewise.
+	(VEC_FIRSTMACHOREOSINDEX): Likewise.
+	(VEC_FIRSTMISMATCHINDEX): Likewise.
+	(VEC_FIRSTMISMATCHOREOSINDEX): Likewise.
+	(VEC_GB): Likewise.
+	(VEC_GENBM): Likewise.
+	(VEC_GENHM): Likewise.
+	(VEC_GENWM): Likewise.
+	(VEC_GENDM): Likewise.
+	(VEC_GENQM): Likewise.
+	(VEC_GENPCVM): Likewise.
+	(VEC_GNB): Likewise.
+	(VEC_INSERTH): Likewise.
+	(VEC_INSERTL): Likewise.
+	(VEC_INSERT4B): Likewise.
+	(VEC_LXVL): Likewise.
+	(VEC_MERGEE): Likewise.
+	(VEC_MERGEO): Likewise.
+	(VEC_MOD): Likewise.
+	(VEC_MSUB): Likewise.
+	(VEC_MULH): Likewise.
+	(VEC_NAND): Likewise.
+	(VEC_NCIPHER_BE): Likewise.
+	(VEC_NCIPHERLAST_BE): Likewise.
+	(VEC_NEARBYINT): Likewise.
+	(VEC_NMADD): Likewise.
+	(VEC_ORC): Likewise.
+	(VEC_PDEP): Likewise.
+	(VEC_PERMX): Likewise.
+	(VEC_PEXT): Likewise.
+	(VEC_POPCNT): Likewise.
+	(VEC_PARITY_LSBB): Likewise.
+	(VEC_REPLACE_ELT): Likewise.
+	(VEC_REPLACE_UN): Likewise.
+	(VEC_REVB): Likewise.
+	(VEC_RINT): Likewise.
+	(VEC_RLMI): Likewise.
+	(VEC_RLNM): Likewise.
+	(VEC_SBOX_BE): Likewise.
+	(VEC_SIGNEXTI): Likewise.
+	(VEC_SIGNEXTLL): Likewise.
+	(VEC_SIGNEXTQ): Likewise.
+	(VEC_SLDB): Likewise.
+	(VEC_SLV): Likewise.
+	(VEC_SPLATI): Likewise.
+	(VEC_SPLATID): Likewise.
+	(VEC_SPLATI_INS): Likewise.
+	(VEC_SQRT): Likewise.
+	(VEC_SRDB): Likewise.
+	(VEC_SRV): Likewise.
+	(VEC_STRIL): Likewise.
+	(VEC_STRIL_P): Likewise.
+	(VEC_STRIR): Likewise.
+	(VEC_STRIR_P): Likewise.
+	(VEC_STXVL): Likewise.
+	(VEC_TERNARYLOGIC): Likewise.
+	(VEC_TEST_LSBB_ALL_ONES): Likewise.
+	(VEC_TEST_LSBB_ALL_ZEROS): Likewise.
+	(VEC_VEE): Likewise.
+	(VEC_VES): Likewise.
+	(VEC_VIE): Likewise.
+	(VEC_VPRTYB): Likewise.
+	(VEC_VSCEEQ): Likewise.
+	(VEC_VSCEGT): Likewise.
+	(VEC_VSCELT): Likewise.
+	(VEC_VSCEUO): Likewise.
+	(VEC_VSEE): Likewise.
+	(VEC_VSES): Likewise.
+	(VEC_VSIE): Likewise.
+	(VEC_VSTDC): Likewise.
+	(VEC_VSTDCN): Likewise.
+	(VEC_VTDC): Likewise.
+	(VEC_XL): Likewise.
+	(VEC_XL_BE): Likewise.
+	(VEC_XL_LEN_R): Likewise.
+	(VEC_XL_SEXT): Likewise.
+	(VEC_XL_ZEXT): Likewise.
+	(VEC_XST): Likewise.
+	(VEC_XST_BE): Likewise.
+	(VEC_XST_LEN_R): Likewise.
+	(VEC_XST_TRUNC): Likewise.
+	(VEC_XXPERMDI): Likewise.
+	(VEC_XXSLDWI): Likewise.
+	(VEC_TSTSFI_EQ_DD): Likewise.
+	(VEC_TSTSFI_EQ_TD): Likewise.
+	(VEC_TSTSFI_GT_DD): Likewise.
+	(VEC_TSTSFI_GT_TD): Likewise.
+	(VEC_TSTSFI_LT_DD): Likewise.
+	(VEC_TSTSFI_LT_TD): Likewise.
+	(VEC_TSTSFI_OV_DD): Likewise.
+	(VEC_TSTSFI_OV_TD): Likewise.
+	(VEC_VADDCUQ): Likewise.
+	(VEC_VADDECUQ): Likewise.
+	(VEC_VADDEUQM): Likewise.
+	(VEC_VADDUDM): Likewise.
+	(VEC_VADDUQM): Likewise.
+	(VEC_VBPERMQ): Likewise.
+	(VEC_VCLZB): Likewise.
+	(VEC_VCLZD): Likewise.
+	(VEC_VCLZH): Likewise.
+	(VEC_VCLZW): Likewise.
+	(VEC_VCTZB): Likewise.
+	(VEC_VCTZD): Likewise.
+	(VEC_VCTZH): Likewise.
+	(VEC_VCTZW): Likewise.
+	(VEC_VEEDP): Likewise.
+	(VEC_VEESP): Likewise.
+	(VEC_VESDP): Likewise.
+	(VEC_VESSP): Likewise.
+	(VEC_VIEDP): Likewise.
+	(VEC_VIESP): Likewise.
+	(VEC_VPKSDSS): Likewise.
+	(VEC_VPKSDUS): Likewise.
+	(VEC_VPKUDUM): Likewise.
+	(VEC_VPKUDUS): Likewise.
+	(VEC_VPOPCNT): Likewise.
+	(VEC_VPOPCNTB): Likewise.
+	(VEC_VPOPCNTD): Likewise.
+	(VEC_VPOPCNTH): Likewise.
+	(VEC_VPOPCNTW): Likewise.
+	(VEC_VPRTYBD): Likewise.
+	(VEC_VPRTYBQ): Likewise.
+	(VEC_VPRTYBW): Likewise.
+	(VEC_VRLD): Likewise.
+	(VEC_VSLD): Likewise.
+	(VEC_VSRAD): Likewise.
+	(VEC_VSRD): Likewise.
+	(VEC_VSTDCDP): Likewise.
+	(VEC_VSTDCNDP): Likewise.
+	(VEC_VSTDCNQP): Likewise.
+	(VEC_VSTDCNSP): Likewise.
+	(VEC_VSTDCQP): Likewise.
+	(VEC_VSTDCSP): Likewise.
+	(VEC_VSUBECUQ): Likewise.
+	(VEC_VSUBEUQM): Likewise.
+	(VEC_VSUBUDM): Likewise.
+	(VEC_VSUBUQM): Likewise.
+	(VEC_VTDCDP): Likewise.
+	(VEC_VTDCSP): Likewise.
+	(VEC_VUPKHSW): Likewise.
+	(VEC_VUPKLSW): Likewise.
+
+2022-02-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR rtl-optimization/101260
+	* regcprop.cc (maybe_mode_change): Invoke mode_change_ok also for
+	copy_regno.
+
+2022-02-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR middle-end/95115
+	* fold-const.cc (const_binop): Do not fold NaN result from
+	  non-NaN operands.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* tree-loop-distribution.cc (generate_reduction_builtin_1): Check for
+	-ftree-loop-distribute-patterns.
+	(loop_distribution::execute): Don't call transform_reduction_loop for
+	-fno-tree-loop-distribute-patterns.
+
 2022-01-31  Andrew Pinski  <apinski@marvell.com>
 
 	* fold-const.h (operand_compare::operand_equal_p):
