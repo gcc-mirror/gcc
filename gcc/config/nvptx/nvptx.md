@@ -57,6 +57,7 @@
    UNSPECV_CAS
    UNSPECV_CAS_LOCAL
    UNSPECV_XCHG
+   UNSPECV_ST
    UNSPECV_BARSYNC
    UNSPECV_WARPSYNC
    UNSPECV_UNIFORM_WARP_CHECK
@@ -2067,8 +2068,11 @@
     }
 
   if (TARGET_SM70)
-    /* Fall back to expand_atomic_store.  */
-    FAIL;
+    {
+       emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
+						operands[2]));
+       DONE;
+    }
 
   bool maybe_shared_p = nvptx_mem_maybe_shared_p (operands[0]);
   if (!maybe_shared_p)
@@ -2080,6 +2084,20 @@
 					operands[2]));
   DONE;
 })
+
+(define_insn "nvptx_atomic_store<mode>"
+  [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
+       (unspec_volatile:SDIM
+	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
+	  (match_operand:SI 2 "const_int_operand")]		;; model
+	       UNSPECV_ST))]
+  "TARGET_SM70"
+  {
+    const char *t
+      = "%.\tst%A0.b%T0\t%0, %1;";
+    return nvptx_output_atomic_insn (t, operands, 0, 2);
+  }
+  [(set_attr "atomic" "true")])
 
 (define_insn "atomic_fetch_add<mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")
