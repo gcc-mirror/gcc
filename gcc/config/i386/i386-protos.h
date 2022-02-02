@@ -276,7 +276,7 @@ extern void ix86_d_target_versions (void);
 extern void ix86_d_register_target_info (void);
 extern bool ix86_d_has_stdcall_convention (unsigned int *, unsigned int *);
 
-/* In i386-rust.c  */
+/* In i386-rust.cc  */
 extern void ix86_rust_target_cpu_info (void);
 
 /* In winnt.c  */

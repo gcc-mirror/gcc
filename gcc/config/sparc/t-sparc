@@ -28,7 +28,7 @@ sparc-d.o: $(srcdir)/config/sparc/sparc-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-sparc-rust.o: $(srcdir)/config/sparc/sparc-rust.c \
+sparc-rust.o: $(srcdir)/config/sparc/sparc-rust.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 

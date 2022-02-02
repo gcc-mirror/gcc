@@ -26,7 +26,7 @@ extern struct rtx_def *gen_compare_reg (machine_mode, enum rtx_code,
 					machine_mode, rtx, rtx);
 #endif
 
-/* Defined in epiphany-rust.c  */
+/* Defined in epiphany-rust.cc  */
 extern void epiphany_rust_target_cpu_info (void);
 
 /* Declarations for various fns used in the .md file.  */

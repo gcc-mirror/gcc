@@ -29,6 +29,6 @@ mips-d.o: $(srcdir)/config/mips/mips-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-mips-rust.o: $(srcdir)/config/mips/mips-rust.c \
+mips-rust.o: $(srcdir)/config/mips/mips-rust.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -172,7 +172,7 @@ arm-d.o: $(srcdir)/config/arm/arm-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-arm-rust.o: $(srcdir)/config/arm/arm-rust.c
+arm-rust.o: $(srcdir)/config/arm/arm-rust.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

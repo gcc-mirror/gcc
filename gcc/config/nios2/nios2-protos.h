@@ -30,7 +30,7 @@ extern bool nios2_expand_return (void);
 extern void nios2_function_profiler (FILE *, int);
 extern bool nios2_fpu_insn_enabled (enum n2fpu_code);
 
-/* Routines implemented in nios2-rust.c  */
+/* Routines implemented in nios2-rust.cc  */
 extern void nios2_rust_target_cpu_info (void);
 
 #ifdef RTX_CODE
