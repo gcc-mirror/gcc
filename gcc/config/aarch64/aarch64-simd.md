@@ -556,17 +556,17 @@
 ;; remainder.  Because of this, expand early.
 (define_expand "cml<fcmac1><conj_op><mode>4"
   [(set (match_operand:VHSDF 0 "register_operand")
-	(plus:VHSDF (match_operand:VHSDF 1 "register_operand")
-		    (unspec:VHSDF [(match_operand:VHSDF 2 "register_operand")
-				   (match_operand:VHSDF 3 "register_operand")]
-				   FCMLA_OP)))]
+	(plus:VHSDF (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")
+				   (match_operand:VHSDF 2 "register_operand")]
+				   FCMLA_OP)
+		    (match_operand:VHSDF 3 "register_operand")))]
   "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_aarch64_fcmla<rotsplit1><mode> (tmp, operands[1],
-						 operands[3], operands[2]));
+  emit_insn (gen_aarch64_fcmla<rotsplit1><mode> (tmp, operands[3],
+						 operands[2], operands[1]));
   emit_insn (gen_aarch64_fcmla<rotsplit2><mode> (operands[0], tmp,
-						 operands[3], operands[2]));
+						 operands[2], operands[1]));
   DONE;
 })
 
