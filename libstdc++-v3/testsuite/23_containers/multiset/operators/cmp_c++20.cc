@@ -49,9 +49,13 @@ test01()
   {
     bool operator==(E) { return true; }
   };
-  static_assert( ! std::totally_ordered<std::multiset<E>> );
+  struct Cmp
+  {
+    bool operator()(E, E) const { return false; }
+  };
+  static_assert( ! std::totally_ordered<std::multiset<E, Cmp>> );
   static_assert( ! std::three_way_comparable<E> );
-  static_assert( ! std::three_way_comparable<std::multiset<E>> );
+  static_assert( ! std::three_way_comparable<std::multiset<E, Cmp>> );
 }
 
 void
