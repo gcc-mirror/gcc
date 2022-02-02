@@ -6017,6 +6017,11 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 		return;
 	      if (!check_array_designated_initializer (ce, i))
 		failure = 1;
+	      /* If an un-designated initializer is type-dependent, we can't
+		 check brace elision yet.  */
+	      if (ce->index == NULL_TREE
+		  && type_dependent_expression_p (ce->value))
+		return;
 	    }
 	}
 
@@ -8113,7 +8118,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       else
 	{
 	  gcc_assert (!DECL_PRETTY_FUNCTION_P (decl));
-	  /* Deduce array size even if the initializer is dependent.  */
+	  /* Try to deduce array size.  */
 	  maybe_deduce_size_from_array_init (decl, init);
 	  /* And complain about multiple initializers.  */
 	  if (init && TREE_CODE (init) == TREE_LIST && TREE_CHAIN (init)
@@ -9570,7 +9575,8 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant so call reshape_init to
 	 remove the optional braces from a braced string literal.  */
-      if (BRACE_ENCLOSED_INITIALIZER_P (initial_value))
+      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
+	  && BRACE_ENCLOSED_INITIALIZER_P (initial_value))
 	initial_value = reshape_init (*ptype, initial_value,
 				      tf_warning_or_error);
 
