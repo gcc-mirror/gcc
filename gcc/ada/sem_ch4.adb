@@ -5934,7 +5934,7 @@ package body Sem_Ch4 is
            and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
                       or else Etype (F2) = Any_Type)
          then
-            Add_One_Interp (N, Op_Id, Etype (Op_Id));
+            Add_One_Interp (N, Op_Id, Base_Type (Etype (Op_Id)));
 
             --  If the operands are overloaded, indicate that the current
             --  type is a viable candidate. This is redundant in most cases,
