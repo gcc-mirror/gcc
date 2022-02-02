@@ -924,6 +924,8 @@ is
             else
                Q := 0;
 
+               pragma Assert (Double_Uns'(Yhi * Zhi) >= Double_Uns (Yhi));
+               pragma Assert (Double_Uns'(Yhi * Zhi) >= Double_Uns (Zhi));
                pragma Assert (Big (Double_Uns'(Yhi * Zhi)) >= 1);
                if Yhi > 1 or else Zhi > 1 then
                   pragma Assert (Big (Double_Uns'(Yhi * Zhi)) > 1);
@@ -938,10 +940,12 @@ is
             return;
          else
             T2 := Yhi * Zlo;
+            pragma Assert (Big (T2) = Big (Double_Uns'(Yhi * Zlo)));
          end if;
 
       else
          T2 := Ylo * Zhi;
+         pragma Assert (Big (T2) = Big (Double_Uns'(Ylo * Zhi)));
       end if;
 
       T1 := Ylo * Zlo;
@@ -1527,10 +1531,14 @@ is
             Raise_Error;
          else
             T2 := Xhi * Ylo;
+            pragma Assert (Big (T2) = Big (Double_Uns'(Xhi * Ylo))
+                                    + Big (Double_Uns'(Xlo * Yhi)));
          end if;
 
       elsif Yhi /= 0 then
          T2 := Xlo * Yhi;
+         pragma Assert (Big (T2) = Big (Double_Uns'(Xhi * Ylo))
+                                 + Big (Double_Uns'(Xlo * Yhi)));
 
       else -- Yhi = Xhi = 0
          T2 := 0;
@@ -1544,7 +1552,7 @@ is
       pragma Assert (Big (T2) = Big (Double_Uns'(Xhi * Ylo))
                               + Big (Double_Uns'(Xlo * Yhi)));
       Lemma_Mult_Distribution (Big_2xxSingle, Big (Double_Uns'(Xhi * Ylo)),
-                                          Big (Double_Uns'(Xlo * Yhi)));
+                                              Big (Double_Uns'(Xlo * Yhi)));
       pragma Assert (Mult = Big_2xxSingle * Big (T2) + Big (T1));
       Lemma_Add_Commutation (T2, Hi (T1));
       pragma Assert
@@ -2575,7 +2583,13 @@ is
                                       Big (Double_Uns (Qd (J))) - 1,
                                       Big (Double_Uns (Qd (J) - 1)), 0);
 
-                  Qd (J) := Qd (J) - 1;
+                  declare
+                     Prev : constant Single_Uns := Qd (J) - 1 with Ghost;
+                  begin
+                     Qd (J) := Qd (J) - 1;
+
+                     pragma Assert (Qd (J) = Prev);
+                  end;
 
                   pragma Assert
                     (Big3 (S1, S2, S3) = Big (Double_Uns (Qd (J))) * Big (Zu));
