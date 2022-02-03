@@ -430,6 +430,14 @@ struct s390_address
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
+static int
+s390_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED);
+
+static unsigned int
+s390_hard_regno_nregs (unsigned int regno, machine_mode mode);
+
 /* Masks per jump target register indicating which thunk need to be
    generated.  */
 static GTY(()) int indirect_branch_prez10thunk_mask = 0;
@@ -3639,49 +3647,97 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MEM:
       *total = 0;
       return true;
+      case SET: {
+	rtx dest = SET_DEST (x);
+	rtx src = SET_SRC (x);
 
-    case SET:
-      {
-	/* Without this a conditional move instruction would be
-	   accounted as 3 * COSTS_N_INSNS (set, if_then_else,
-	   comparison operator).  That's a bit pessimistic.  */
+	switch (GET_CODE (src))
+	  {
+	    case IF_THEN_ELSE: {
+	      /* Without this a conditional move instruction would be
+		 accounted as 3 * COSTS_N_INSNS (set, if_then_else,
+		 comparison operator).  That's a bit pessimistic.  */
 
-	if (!TARGET_Z196 || GET_CODE (SET_SRC (x)) != IF_THEN_ELSE)
-	  return false;
+	      if (!TARGET_Z196)
+		return false;
 
-	rtx cond = XEXP (SET_SRC (x), 0);
+	      rtx cond = XEXP (src, 0);
+	      if (!CC_REG_P (XEXP (cond, 0)) || !CONST_INT_P (XEXP (cond, 1)))
+		return false;
 
-	if (!CC_REG_P (XEXP (cond, 0)) || !CONST_INT_P (XEXP (cond, 1)))
-	  return false;
+	      /* It is going to be a load/store on condition.  Make it
+		 slightly more expensive than a normal load.  */
+	      *total = COSTS_N_INSNS (1) + 2;
 
-	/* It is going to be a load/store on condition.  Make it
-	   slightly more expensive than a normal load.  */
-	*total = COSTS_N_INSNS (1) + 2;
+	      rtx dst = SET_DEST (src);
+	      rtx then = XEXP (src, 1);
+	      rtx els = XEXP (src, 2);
 
-	rtx dst = SET_DEST (x);
-	rtx then = XEXP (SET_SRC (x), 1);
-	rtx els = XEXP (SET_SRC (x), 2);
+	      /* It is a real IF-THEN-ELSE.  An additional move will be
+		 needed to implement that.  */
+	      if (!TARGET_Z15 && reload_completed && !rtx_equal_p (dst, then)
+		  && !rtx_equal_p (dst, els))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* It is a real IF-THEN-ELSE.  An additional move will be
-	   needed to implement that.  */
-	if (!TARGET_Z15
-	    && reload_completed
-	    && !rtx_equal_p (dst, then)
-	    && !rtx_equal_p (dst, els))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      /* A minor penalty for constants we cannot directly handle.  */
+	      if ((CONST_INT_P (then) || CONST_INT_P (els))
+		  && (!TARGET_Z13 || MEM_P (dst)
+		      || (CONST_INT_P (then) && !satisfies_constraint_K (then))
+		      || (CONST_INT_P (els) && !satisfies_constraint_K (els))))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* A minor penalty for constants we cannot directly handle.  */
-	if ((CONST_INT_P (then) || CONST_INT_P (els))
-	    && (!TARGET_Z13 || MEM_P (dst)
-		|| (CONST_INT_P (then) && !satisfies_constraint_K (then))
-		|| (CONST_INT_P (els) && !satisfies_constraint_K (els))))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      /* A store on condition can only handle register src operands.  */
+	      if (MEM_P (dst) && (!REG_P (then) || !REG_P (els)))
+		*total += COSTS_N_INSNS (1) / 2;
 
-	/* A store on condition can only handle register src operands.  */
-	if (MEM_P (dst) && (!REG_P (then) || !REG_P (els)))
-	  *total += COSTS_N_INSNS (1) / 2;
+	      return true;
+	    }
+	  default:
+	    break;
+	  }
 
-	return true;
+	switch (GET_CODE (dest))
+	  {
+	  case SUBREG:
+	    if (!REG_P (SUBREG_REG (dest)))
+	      *total += rtx_cost (SUBREG_REG (src), VOIDmode, SET, 0, speed);
+	    /* fallthrough */
+	  case REG:
+	    /* If this is a VR -> VR copy, count the number of
+	       registers.  */
+	    if (VECTOR_MODE_P (GET_MODE (dest)) && REG_P (src))
+	      {
+		int nregs = s390_hard_regno_nregs (VR0_REGNUM, GET_MODE (dest));
+		*total = COSTS_N_INSNS (nregs);
+	      }
+	    /* Same for GPRs.  */
+	    else if (REG_P (src))
+	      {
+		int nregs
+		  = s390_hard_regno_nregs (GPR0_REGNUM, GET_MODE (dest));
+		*total = COSTS_N_INSNS (nregs);
+	      }
+	    else
+	      /* Otherwise just cost the src.  */
+	      *total += rtx_cost (src, mode, SET, 1, speed);
+	    return true;
+	    case MEM: {
+	      rtx address = XEXP (dest, 0);
+	      rtx tmp;
+	      long tmp2;
+	      if (s390_loadrelative_operand_p (address, &tmp, &tmp2))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = s390_address_cost (address, mode, 0, speed);
+	      return true;
+	    }
+	  default:
+	    /* Not handled for now, assume default costs.  */
+	    *total = COSTS_N_INSNS (1);
+	    return false;
+	  }
+
+	return false;
       }
     case IOR:
 
