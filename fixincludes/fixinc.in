@@ -258,12 +258,10 @@ then echo "All directories (including links to directories):"
      echo $all_dirs
 fi
 
-for file in $all_dirs; do
-  rm -rf $LIB/$file
-  if [ ! -d $LIB/$file ]
-  then mkdir $LIB/$file
-  fi
-done
+cd $LIB
+echo "$all_dirs" | xargs mkdir -p
+cd ..
+
 mkdir $LIB/root
 
 # # # # # # # # # # # # # # # # # # # # #
