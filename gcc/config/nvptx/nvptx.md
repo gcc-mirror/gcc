@@ -767,7 +767,7 @@
 
 ;; Comparisons and branches
 
-(define_insn "*cmp<mode>"
+(define_insn "cmp<mode>"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
 	(match_operator:BI 1 "nvptx_comparison_operator"
 	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
@@ -879,22 +879,22 @@
 ;; Conditional stores
 
 (define_insn "setcc<mode>_from_bi"
-  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(ne:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(ne:QHSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
 		   (const_int 0)))]
   ""
   "%.\\tselp%t0\\t%0, 1, 0, %1;")
 
 (define_insn "extendbi<mode>2"
-  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(sign_extend:HSDIM
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:QHSDIM
 	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tselp%t0\\t%0, -1, 0, %1;")
 
 (define_insn "zero_extendbi<mode>2"
-  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(zero_extend:HSDIM
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(zero_extend:QHSDIM
 	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tselp%t0\\t%0, 1, 0, %1;")
@@ -2117,3 +2117,103 @@
     return nvptx_output_red_partition (operands[0], operands[1]);
   }
   [(set_attr "predicable" "false")])
+
+;; Expand QI mode operations using SI mode instructions.
+(define_code_iterator any_sbinary [plus minus smin smax])
+(define_code_attr sbinary [(plus "add") (minus "sub") (smin "smin") (smax "smax")])
+
+(define_code_iterator any_ubinary [and ior xor umin umax])
+(define_code_attr ubinary [(and "and") (ior "ior") (xor "xor") (umin "umin")
+			   (umax "umax")])
+
+(define_code_iterator any_sunary [neg abs])
+(define_code_attr sunary [(neg "neg") (abs "abs")])
+
+(define_code_iterator any_uunary [not])
+(define_code_attr uunary [(not "one_cmpl")])
+
+(define_expand "<sbinary>qi3"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_sbinary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")
+			(match_operand:QI 2 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 0);
+  rtx op1 = convert_modes (SImode, QImode, operands[2], 0);
+  if (<CODE> == MINUS)
+    op0 = force_reg (SImode, op0);
+  emit_insn (gen_<sbinary>si3 (reg, op0, op1));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<ubinary>qi3"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_ubinary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")
+			(match_operand:QI 2 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 1);
+  rtx op1 = convert_modes (SImode, QImode, operands[2], 1);
+  emit_insn (gen_<ubinary>si3 (reg, op0, op1));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<sunary>qi2"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_sunary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 0);
+  emit_insn (gen_<sunary>si2 (reg, op0));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<uunary>qi2"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_uunary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 1);
+  emit_insn (gen_<uunary>si2 (reg, op0));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "cstoreqi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand")
+	(match_operator:SI 1 "nvptx_comparison_operator"
+	  [(match_operand:QI 2 "nvptx_nonmemory_operand")
+	   (match_operand:QI 3 "nvptx_nonmemory_operand")]))]
+  ""
+{
+  rtx reg = gen_reg_rtx (BImode);
+  enum rtx_code code = GET_CODE (operands[1]);
+  int unsignedp = unsigned_condition_p (code);
+  rtx op2 = convert_modes (SImode, QImode, operands[2], unsignedp);
+  rtx op3 = convert_modes (SImode, QImode, operands[3], unsignedp);
+  rtx cmp = gen_rtx_fmt_ee (code, SImode, op2, op3);
+  emit_insn (gen_cmpsi (reg, cmp, op2, op3));
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
+
+(define_insn "*ext_truncsi2_qi"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(sign_extend:SI
+	 (truncate:QI (match_operand:SI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s32.s8\\t%0, %1;")
+
+(define_insn "*zext_truncsi2_qi"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(zero_extend:SI
+	 (truncate:QI (match_operand:SI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.u32.u8\\t%0, %1;")
