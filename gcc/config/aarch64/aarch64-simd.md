@@ -19,8 +19,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VALL_F16MOV 0 "nonimmediate_operand")
-	(match_operand:VALL_F16MOV 1 "general_operand"))]
+  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
+	(match_operand:VALL_F16 1 "general_operand"))]
   "TARGET_SIMD"
   "
   /* Force the operand into a register if it is not an
