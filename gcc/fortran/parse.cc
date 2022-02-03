@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "tree-core.h"
+#include "tree.h"
+#include "fold-const.h"
+#include "tree-hash-traits.h"
 #include "omp-general.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st

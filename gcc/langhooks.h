@@ -328,6 +328,22 @@ struct lang_hooks_for_decls
 			    tree data, tree sizes, tree kinds,
 			    tree offset_data, tree offset, gimple_seq *seq);
 
+  /* Finish language-specific processing on mapping nodes after expanding
+     user-defined mappers.  */
+  tree (*omp_finish_mapper_clauses) (tree clauses);
+
+  /* Find a mapper in the current parsing context, given a NAME (or
+     NULL_TREE) and TYPE.  */
+  tree (*omp_mapper_lookup) (tree name, tree type);
+
+  /* Return the statement for the mapper directive definition, from the
+     representation used to contain it (e.g. an inline function
+     declaration).  */
+  tree (*omp_extract_mapper_directive) (tree fndecl);
+
+  /* Return a simplified form for OMP_ARRAY_SECTION argument.  */
+  tree (*omp_map_array_section) (location_t, tree t);
+
   /* Return true if DECL is an allocatable variable (for the purpose of
      implicit mapping).  */
   bool (*omp_allocatable_p) (tree decl);

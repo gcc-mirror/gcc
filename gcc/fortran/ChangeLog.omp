@@ -1,3 +1,8 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* parse.cc (tree.h, fold-const.h, tree-hash-traits.h): Add includes
+	(for additions to omp-general.h).
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_omp_finish_clause): Treat implicitly-mapped
