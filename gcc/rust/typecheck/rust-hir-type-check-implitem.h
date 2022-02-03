@@ -77,7 +77,8 @@ public:
 
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_return_type ())
-      ret_type = new TyTy::TupleType (function.get_mappings ().get_hirid ());
+      ret_type = TyTy::TupleType::get_unit_type (
+	function.get_mappings ().get_hirid ());
     else
       {
 	auto resolved
@@ -121,11 +122,19 @@ public:
     if (function.is_variadic ())
       flags |= TyTy::FnType::FNTYPE_IS_VARADIC_FLAG;
 
-    auto fnType = new TyTy::FnType (
-      function.get_mappings ().get_hirid (),
-      function.get_mappings ().get_defid (), function.get_item_name (), flags,
-      ::Backend::get_abi_from_string (parent.get_abi (), parent.get_locus ()),
-      std::move (params), ret_type, std::move (substitutions));
+    RustIdent ident{
+      CanonicalPath::new_seg (function.get_mappings ().get_nodeid (),
+			      function.get_item_name ()),
+      function.get_locus ()};
+    auto fnType
+      = new TyTy::FnType (function.get_mappings ().get_hirid (),
+			  function.get_mappings ().get_defid (),
+			  function.get_item_name (), ident, flags,
+			  ::Backend::get_abi_from_string (parent.get_abi (),
+							  parent.get_locus ()),
+			  std::move (params), ret_type,
+			  std::move (substitutions));
+
     context->insert_type (function.get_mappings (), fnType);
   }
 
@@ -206,7 +215,8 @@ public:
 
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
-      ret_type = new TyTy::TupleType (function.get_mappings ().get_hirid ());
+      ret_type = TyTy::TupleType::get_unit_type (
+	function.get_mappings ().get_hirid ());
     else
       {
 	auto resolved
@@ -291,9 +301,16 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
+    const CanonicalPath *canonical_path = nullptr;
+    bool ok = mappings->lookup_canonical_path (
+      function.get_mappings ().get_crate_num (),
+      function.get_mappings ().get_nodeid (), &canonical_path);
+    rust_assert (ok);
+
+    RustIdent ident{*canonical_path, function.get_locus ()};
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				    function.get_mappings ().get_defid (),
-				    function.get_function_name (),
+				    function.get_function_name (), ident,
 				    function.is_method ()
 				      ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
 				      : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,

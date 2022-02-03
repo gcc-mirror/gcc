@@ -24,6 +24,7 @@
 #include "rust-diagnostics.h"
 #include "rust-abi.h"
 #include "rust-common.h"
+#include "rust-identifier.h"
 
 namespace Rust {
 
@@ -393,24 +394,30 @@ public:
 
   const BaseType *get_root () const;
 
+  const RustIdent &get_ident () const { return ident; }
+
+  Location get_locus () const { return ident.locus; }
+
 protected:
-  BaseType (HirId ref, HirId ty_ref, TypeKind kind,
+  BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ())
     : TypeBoundsMappings ({}), kind (kind), ref (ref), ty_ref (ty_ref),
-      combined (refs), mappings (Analysis::Mappings::get ())
+      combined (refs), ident (ident), mappings (Analysis::Mappings::get ())
   {}
 
-  BaseType (HirId ref, HirId ty_ref, TypeKind kind,
+  BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::vector<TypeBoundPredicate> specified_bounds,
 	    std::set<HirId> refs = std::set<HirId> ())
     : TypeBoundsMappings (specified_bounds), kind (kind), ref (ref),
-      ty_ref (ty_ref), combined (refs), mappings (Analysis::Mappings::get ())
+      ty_ref (ty_ref), combined (refs), ident (ident),
+      mappings (Analysis::Mappings::get ())
   {}
 
   TypeKind kind;
   HirId ref;
   HirId ty_ref;
   std::set<HirId> combined;
+  RustIdent ident;
 
   Analysis::Mappings *mappings;
 };
@@ -441,14 +448,18 @@ public:
     FLOAT
   };
 
-  InferType (HirId ref, InferTypeKind infer_kind,
+  InferType (HirId ref, InferTypeKind infer_kind, Location locus,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::INFER, refs), infer_kind (infer_kind)
+    : BaseType (ref, ref, TypeKind::INFER,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      infer_kind (infer_kind)
   {}
 
-  InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
+  InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind, Location locus,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::INFER, refs), infer_kind (infer_kind)
+    : BaseType (ref, ty_ref, TypeKind::INFER,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      infer_kind (infer_kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -481,11 +492,13 @@ class ErrorType : public BaseType
 {
 public:
   ErrorType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ERROR, refs)
+    : BaseType (ref, ref, TypeKind::ERROR,
+		{Resolver::CanonicalPath::create_empty (), Location ()}, refs)
   {}
 
   ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ERROR, refs)
+    : BaseType (ref, ty_ref, TypeKind::ERROR,
+		{Resolver::CanonicalPath::create_empty (), Location ()}, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -511,18 +524,25 @@ class SubstitutionArgumentMappings;
 class ParamType : public BaseType
 {
 public:
-  ParamType (std::string symbol, HirId ref, HIR::GenericParam &param,
-	     std::vector<TypeBoundPredicate> specified_bounds,
-	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PARAM, specified_bounds, refs),
-      symbol (symbol), param (param)
-  {}
-
-  ParamType (std::string symbol, HirId ref, HirId ty_ref,
+  ParamType (std::string symbol, Location locus, HirId ref,
 	     HIR::GenericParam &param,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PARAM, specified_bounds, refs),
+    : BaseType (ref, ref, TypeKind::PARAM,
+		{Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		 locus},
+		specified_bounds, refs),
+      symbol (symbol), param (param)
+  {}
+
+  ParamType (std::string symbol, Location locus, HirId ref, HirId ty_ref,
+	     HIR::GenericParam &param,
+	     std::vector<TypeBoundPredicate> specified_bounds,
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::PARAM,
+		{Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
+		 locus},
+		specified_bounds, refs),
       symbol (symbol), param (param)
   {}
 
@@ -600,18 +620,26 @@ private:
 class TupleType : public BaseType
 {
 public:
-  TupleType (HirId ref, std::vector<TyVar> fields = std::vector<TyVar> (),
-	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
-  {}
-
-  TupleType (HirId ref, HirId ty_ref,
+  TupleType (HirId ref, Location locus,
 	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
+    : BaseType (ref, ref, TypeKind::TUPLE,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      fields (fields)
   {}
 
-  static TupleType *get_unit_type (HirId ref) { return new TupleType (ref); }
+  TupleType (HirId ref, HirId ty_ref, Location locus,
+	     std::vector<TyVar> fields = std::vector<TyVar> (),
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::TUPLE,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      fields (fields)
+  {}
+
+  static TupleType *get_unit_type (HirId ref)
+  {
+    return new TupleType (ref, Linemap::predeclared_location ());
+  }
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1027,16 +1055,20 @@ public:
     return "";
   }
 
-  VariantDef (HirId id, std::string identifier, HIR::Expr *discriminant)
-    : id (id), identifier (identifier), discriminant (discriminant)
+  VariantDef (HirId id, std::string identifier, RustIdent ident,
+	      HIR::Expr *discriminant)
+    : id (id), identifier (identifier), ident (ident),
+      discriminant (discriminant)
+
   {
     type = VariantType::NUM;
     fields = {};
   }
 
-  VariantDef (HirId id, std::string identifier, VariantType type,
-	      HIR::Expr *discriminant, std::vector<StructFieldType *> fields)
-    : id (id), identifier (identifier), type (type),
+  VariantDef (HirId id, std::string identifier, RustIdent ident,
+	      VariantType type, HIR::Expr *discriminant,
+	      std::vector<StructFieldType *> fields)
+    : id (id), identifier (identifier), ident (ident), type (type),
       discriminant (discriminant), fields (fields)
   {
     rust_assert (
@@ -1044,9 +1076,32 @@ public:
       || (type == VariantType::TUPLE || type == VariantType::STRUCT));
   }
 
+  VariantDef (const VariantDef &other)
+    : id (other.id), identifier (other.identifier), ident (other.ident),
+      type (other.type), discriminant (other.discriminant),
+      fields (other.fields)
+  {}
+
+  VariantDef &operator= (const VariantDef &other)
+  {
+    id = other.id;
+    identifier = other.identifier;
+    type = other.type;
+    discriminant = other.discriminant;
+    fields = other.fields;
+    ident = other.ident;
+
+    return *this;
+  }
+
   static VariantDef &get_error_node ()
   {
-    static VariantDef node = VariantDef (UNKNOWN_HIRID, "", nullptr);
+    static VariantDef node
+      = VariantDef (UNKNOWN_HIRID, "",
+		    {Resolver::CanonicalPath::create_empty (),
+		     Linemap::unknown_location ()},
+		    nullptr);
+
     return node;
   }
 
@@ -1063,7 +1118,7 @@ public:
   size_t num_fields () const { return fields.size (); }
   StructFieldType *get_field_at_index (size_t index)
   {
-    // FIXME this is not safe
+    rust_assert (index < fields.size ());
     return fields.at (index);
   }
 
@@ -1148,12 +1203,16 @@ public:
     for (auto &f : fields)
       cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-    return new VariantDef (id, identifier, type, discriminant, cloned_fields);
+    return new VariantDef (id, identifier, ident, type, discriminant,
+			   cloned_fields);
   }
+
+  const RustIdent &get_ident () const { return ident; }
 
 private:
   HirId id;
   std::string identifier;
+  RustIdent ident;
   VariantType type;
   // can either be a structure or a discriminant value
   HIR::Expr *discriminant;
@@ -1171,24 +1230,24 @@ public:
     ENUM
   };
 
-  ADTType (HirId ref, std::string identifier, ADTKind adt_kind,
+  ADTType (HirId ref, std::string identifier, RustIdent ident, ADTKind adt_kind,
 	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ADT, refs),
+    : BaseType (ref, ref, TypeKind::ADT, ident, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
       identifier (identifier), variants (variants), adt_kind (adt_kind)
   {}
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, ADTKind adt_kind,
-	   std::vector<VariantDef *> variants,
+  ADTType (HirId ref, HirId ty_ref, std::string identifier, RustIdent ident,
+	   ADTKind adt_kind, std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, refs),
+    : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
       identifier (identifier), variants (variants), adt_kind (adt_kind)
   {}
@@ -1312,11 +1371,12 @@ public:
   static const uint8_t FNTYPE_IS_EXTERN_FLAG = 0x02;
   static const uint8_t FNTYPE_IS_VARADIC_FLAG = 0X04;
 
-  FnType (HirId ref, DefId id, std::string identifier, uint8_t flags, ABI abi,
+  FnType (HirId ref, DefId id, std::string identifier, RustIdent ident,
+	  uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::FNDEF, refs),
+    : BaseType (ref, ref, TypeKind::FNDEF, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (std::move (params)), type (type), flags (flags),
@@ -1327,11 +1387,11 @@ public:
   }
 
   FnType (HirId ref, HirId ty_ref, DefId id, std::string identifier,
-	  uint8_t flags, ABI abi,
+	  RustIdent ident, uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
+    : BaseType (ref, ty_ref, TypeKind::FNDEF, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       params (params), type (type), flags (flags), identifier (identifier),
@@ -1444,16 +1504,18 @@ private:
 class FnPtr : public BaseType
 {
 public:
-  FnPtr (HirId ref, std::vector<TyVar> params, TyVar result_type,
-	 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::FNPTR, refs), params (std::move (params)),
-      result_type (result_type)
+  FnPtr (HirId ref, Location locus, std::vector<TyVar> params,
+	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::FNPTR,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      params (std::move (params)), result_type (result_type)
   {}
 
-  FnPtr (HirId ref, HirId ty_ref, std::vector<TyVar> params, TyVar result_type,
-	 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::FNPTR, refs), params (params),
-      result_type (result_type)
+  FnPtr (HirId ref, HirId ty_ref, Location locus, std::vector<TyVar> params,
+	 TyVar result_type, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::FNPTR,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      params (params), result_type (result_type)
   {}
 
   std::string get_name () const override final { return as_string (); }
@@ -1505,11 +1567,11 @@ private:
 class ClosureType : public BaseType, public SubstitutionRef
 {
 public:
-  ClosureType (HirId ref, DefId id, std::vector<TyVar> parameter_types,
-	       TyVar result_type,
+  ClosureType (HirId ref, DefId id, RustIdent ident,
+	       std::vector<TyVar> parameter_types, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::CLOSURE, refs),
+    : BaseType (ref, ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       parameter_types (std::move (parameter_types)),
@@ -1519,11 +1581,11 @@ public:
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
-  ClosureType (HirId ref, HirId ty_ref, DefId id,
+  ClosureType (HirId ref, HirId ty_ref, RustIdent ident, DefId id,
 	       std::vector<TyVar> parameter_types, TyVar result_type,
 	       std::vector<SubstitutionParamMapping> subst_refs,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::CLOSURE, refs),
+    : BaseType (ref, ty_ref, TypeKind::CLOSURE, ident, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
       parameter_types (std::move (parameter_types)),
@@ -1583,16 +1645,18 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, HIR::Expr &capacity_expr, TyVar base,
+  ArrayType (HirId ref, Location locus, HIR::Expr &capacity_expr, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ARRAY, refs), element_type (base),
-      capacity_expr (capacity_expr)
+    : BaseType (ref, ref, TypeKind::ARRAY,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      element_type (base), capacity_expr (capacity_expr)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, HIR::Expr &capacity_expr, TyVar base,
-	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), element_type (base),
-      capacity_expr (capacity_expr)
+  ArrayType (HirId ref, HirId ty_ref, Location locus, HIR::Expr &capacity_expr,
+	     TyVar base, std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::ARRAY,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      element_type (base), capacity_expr (capacity_expr)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1629,11 +1693,17 @@ class BoolType : public BaseType
 {
 public:
   BoolType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::BOOL, refs)
+    : BaseType (ref, ref, TypeKind::BOOL,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   BoolType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::BOOL, refs)
+    : BaseType (ref, ty_ref, TypeKind::BOOL,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1665,12 +1735,20 @@ public:
   };
 
   IntType (HirId ref, IntKind kind, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::INT, refs), int_kind (kind)
+    : BaseType (ref, ref, TypeKind::INT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      int_kind (kind)
   {}
 
   IntType (HirId ref, HirId ty_ref, IntKind kind,
 	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::INT, refs), int_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::INT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      int_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1709,12 +1787,20 @@ public:
   };
 
   UintType (HirId ref, UintKind kind, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::UINT, refs), uint_kind (kind)
+    : BaseType (ref, ref, TypeKind::UINT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      uint_kind (kind)
   {}
 
   UintType (HirId ref, HirId ty_ref, UintKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::UINT, refs), uint_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::UINT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      uint_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1751,12 +1837,20 @@ public:
 
   FloatType (HirId ref, FloatKind kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::FLOAT, refs), float_kind (kind)
+    : BaseType (ref, ref, TypeKind::FLOAT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      float_kind (kind)
   {}
 
   FloatType (HirId ref, HirId ty_ref, FloatKind kind,
 	     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::FLOAT, refs), float_kind (kind)
+    : BaseType (ref, ty_ref, TypeKind::FLOAT,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      float_kind (kind)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1786,11 +1880,17 @@ class USizeType : public BaseType
 {
 public:
   USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::USIZE, refs)
+    : BaseType (ref, ref, TypeKind::USIZE,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::USIZE, refs)
+    : BaseType (ref, ty_ref, TypeKind::USIZE,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1813,11 +1913,17 @@ class ISizeType : public BaseType
 {
 public:
   ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ISIZE, refs)
+    : BaseType (ref, ref, TypeKind::ISIZE,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ISIZE, refs)
+    : BaseType (ref, ty_ref, TypeKind::ISIZE,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1840,11 +1946,17 @@ class CharType : public BaseType
 {
 public:
   CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::CHAR, refs)
+    : BaseType (ref, ref, TypeKind::CHAR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::CHAR, refs)
+    : BaseType (ref, ty_ref, TypeKind::CHAR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -1868,12 +1980,20 @@ class ReferenceType : public BaseType
 public:
   ReferenceType (HirId ref, TyVar base, Mutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::REF, refs), base (base), mut (mut)
+    : BaseType (ref, ref, TypeKind::REF,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      base (base), mut (mut)
   {}
 
   ReferenceType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 		 std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::REF, refs), base (base), mut (mut)
+    : BaseType (ref, ty_ref, TypeKind::REF,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      base (base), mut (mut)
   {}
 
   BaseType *get_base () const;
@@ -1918,12 +2038,20 @@ class PointerType : public BaseType
 public:
   PointerType (HirId ref, TyVar base, Mutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::POINTER, refs), base (base), mut (mut)
+    : BaseType (ref, ref, TypeKind::POINTER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      base (base), mut (mut)
   {}
 
   PointerType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::POINTER, refs), base (base), mut (mut)
+    : BaseType (ref, ty_ref, TypeKind::POINTER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      base (base), mut (mut)
   {}
 
   BaseType *get_base () const;
@@ -1969,11 +2097,17 @@ class StrType : public BaseType
 {
 public:
   StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::STR, refs)
+    : BaseType (ref, ref, TypeKind::STR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::STR, refs)
+    : BaseType (ref, ty_ref, TypeKind::STR,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   std::string get_name () const override final { return as_string (); }
@@ -2008,11 +2142,17 @@ class NeverType : public BaseType
 {
 public:
   NeverType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::NEVER, refs)
+    : BaseType (ref, ref, TypeKind::NEVER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   NeverType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::NEVER, refs)
+    : BaseType (ref, ty_ref, TypeKind::NEVER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -2040,13 +2180,20 @@ class PlaceholderType : public BaseType
 public:
   PlaceholderType (std::string symbol, HirId ref,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
-
+    : BaseType (ref, ref, TypeKind::PLACEHOLDER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      symbol (symbol)
   {}
 
   PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
 		   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER, refs), symbol (symbol)
+    : BaseType (ref, ty_ref, TypeKind::PLACEHOLDER,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
+      symbol (symbol)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -2101,7 +2248,10 @@ public:
 		  SubstitutionArgumentMappings generic_arguments
 		  = SubstitutionArgumentMappings::error (),
 		  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::PROJECTION, refs),
+    : BaseType (ref, ref, TypeKind::PROJECTION,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
       base (base), trait (trait), item (item)
   {}
@@ -2112,7 +2262,10 @@ public:
 		  SubstitutionArgumentMappings generic_arguments
 		  = SubstitutionArgumentMappings::error (),
 		  std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::PROJECTION, refs),
+    : BaseType (ref, ty_ref, TypeKind::PROJECTION,
+		{Resolver::CanonicalPath::create_empty (),
+		 Linemap::predeclared_location ()},
+		refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
       base (base), trait (trait), item (item)
   {}
@@ -2162,16 +2315,16 @@ private:
 class DynamicObjectType : public BaseType
 {
 public:
-  DynamicObjectType (HirId ref,
+  DynamicObjectType (HirId ref, RustIdent ident,
 		     std::vector<TypeBoundPredicate> specified_bounds,
 		     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::DYNAMIC, specified_bounds, refs)
+    : BaseType (ref, ref, TypeKind::DYNAMIC, ident, specified_bounds, refs)
   {}
 
-  DynamicObjectType (HirId ref, HirId ty_ref,
+  DynamicObjectType (HirId ref, HirId ty_ref, RustIdent ident,
 		     std::vector<TypeBoundPredicate> specified_bounds,
 		     std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::DYNAMIC, specified_bounds, refs)
+    : BaseType (ref, ty_ref, TypeKind::DYNAMIC, ident, specified_bounds, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
