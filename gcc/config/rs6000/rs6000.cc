@@ -3833,10 +3833,6 @@ rs6000_option_override_internal (bool global_init_p)
 	   & OPTION_MASK_DIRECT_MOVE))
     rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
 
-  if (!rs6000_fold_gimple)
-     fprintf (stderr,
-	      "gimple folding of rs6000 builtins has been disabled.\n");
-
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {

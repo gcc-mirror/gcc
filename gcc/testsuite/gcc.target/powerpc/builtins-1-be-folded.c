@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc-*-* } } } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2 -mfold-gimple" } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 /* Based on builtins-1-le.c ; ensure that the power8 builtins are accepted by
    the compiler, at O2 with gimple folding enabled.  */

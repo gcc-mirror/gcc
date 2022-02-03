@@ -1299,9 +1299,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       fprintf (stderr, "rs6000_gimple_fold_builtin %d %s %s\n",
 	       fn_code, fn_name1, fn_name2);
 
-  if (!rs6000_fold_gimple)
-    return false;
-
   /* Prevent gimple folding for code that does not have a LHS, unless it is
      allowed per the rs6000_builtin_valid_without_lhs helper function.  */
   if (!gimple_call_lhs (stmt)
