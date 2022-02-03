@@ -1867,7 +1867,7 @@ wi::eq_p (const T1 &x, const T2 &y)
       while (++i != xi.len);
       return true;
     }
-  if (__builtin_expect (yi.len == 1, true))
+  if (LIKELY (yi.len == 1))
     {
       /* XI is only equal to YI if it too has a single HWI.  */
       if (xi.len != 1)
@@ -1943,7 +1943,7 @@ wi::ltu_p (const T1 &x, const T2 &y)
   /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
      for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
      values does not change the result.  */
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
@@ -2114,7 +2114,7 @@ wi::cmpu (const T1 &x, const T2 &y)
   /* Optimize the case of two HWIs.  The HWIs are implicitly sign-extended
      for precisions greater than HOST_BITS_WIDE_INT, but sign-extending both
      values does not change the result.  */
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.to_uhwi ();
       unsigned HOST_WIDE_INT yl = yi.to_uhwi ();
@@ -2321,7 +2321,7 @@ wi::bit_and (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () & yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2342,7 +2342,7 @@ wi::bit_and_not (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () & ~yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2363,7 +2363,7 @@ wi::bit_or (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () | yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2384,7 +2384,7 @@ wi::bit_or_not (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () | ~yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2405,7 +2405,7 @@ wi::bit_xor (const T1 &x, const T2 &y)
   WIDE_INT_REF_FOR (T1) xi (x, precision);
   WIDE_INT_REF_FOR (T2) yi (y, precision);
   bool is_sign_extended = xi.is_sign_extended && yi.is_sign_extended;
-  if (__builtin_expect (xi.len + yi.len == 2, true))
+  if (LIKELY (xi.len + yi.len == 2))
     {
       val[0] = xi.ulow () ^ yi.ulow ();
       result.set_len (1, is_sign_extended);
@@ -2441,7 +2441,7 @@ wi::add (const T1 &x, const T2 &y)
      HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
      point handling them inline.  */
   else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
-	   && __builtin_expect (xi.len + yi.len == 2, true))
+	   && LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();
@@ -2527,7 +2527,7 @@ wi::sub (const T1 &x, const T2 &y)
      HOST_BITS_PER_WIDE_INT are relatively rare and there's not much
      point handling them inline.  */
   else if (STATIC_CONSTANT_P (precision > HOST_BITS_PER_WIDE_INT)
-	   && __builtin_expect (xi.len + yi.len == 2, true))
+	   && LIKELY (xi.len + yi.len == 2))
     {
       unsigned HOST_WIDE_INT xl = xi.ulow ();
       unsigned HOST_WIDE_INT yl = yi.ulow ();

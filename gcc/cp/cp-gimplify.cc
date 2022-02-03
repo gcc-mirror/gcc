@@ -1178,7 +1178,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
   hash_set<tree> *p_set = wtd->p_set;
 
   /* If in an OpenMP context, note var uses.  */
-  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+  if (UNLIKELY (wtd->omp_ctx != NULL)
       && (VAR_P (stmt)
 	  || TREE_CODE (stmt) == PARM_DECL
 	  || TREE_CODE (stmt) == RESULT_DECL)
@@ -1242,7 +1242,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       if (is_invisiref_parm (TREE_OPERAND (stmt, 0)))
 	{
 	  /* If in an OpenMP context, note var uses.  */
-	  if (__builtin_expect (wtd->omp_ctx != NULL, 0)
+	  if (UNLIKELY (wtd->omp_ctx != NULL)
 	      && omp_var_to_track (TREE_OPERAND (stmt, 0)))
 	    omp_cxx_notice_variable (wtd->omp_ctx, TREE_OPERAND (stmt, 0));
 	  *stmt_p = fold_convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
@@ -1369,7 +1369,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       break;
 
     case BIND_EXPR:
-      if (__builtin_expect (wtd->omp_ctx != NULL, 0))
+      if (UNLIKELY (wtd->omp_ctx != NULL))
 	{
 	  tree decl;
 	  for (decl = BIND_EXPR_VARS (stmt); decl; decl = DECL_CHAIN (decl))

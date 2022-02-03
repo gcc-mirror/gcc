@@ -736,6 +736,9 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+#define LIKELY(x) (__builtin_expect ((x), 1))
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
 /* Some of the headers included by <memory> can use "abort" within a
    namespace, e.g. "_VSTD::abort();", which fails after we use the
    preprocessor to redefine "abort" as "fancy_abort" below.  */
@@ -783,7 +786,7 @@ extern void fancy_abort (const char *, int, const char *)
    ((void)(!(EXPR) ? fancy_abort (__FILE__, __LINE__, __FUNCTION__), 0 : 0))
 #elif (GCC_VERSION >= 4005)
 #define gcc_assert(EXPR) 						\
-  ((void)(__builtin_expect (!(EXPR), 0) ? __builtin_unreachable (), 0 : 0))
+  ((void)(UNLIKELY (!(EXPR)) ? __builtin_unreachable (), 0 : 0))
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define gcc_assert(EXPR) ((void)(0 && (EXPR)))
