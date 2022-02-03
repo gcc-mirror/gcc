@@ -736,6 +736,9 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
+#define LIKELY(x) (__builtin_expect ((x), 1))
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
 /* Some of the headers included by <memory> can use "abort" within a
    namespace, e.g. "_VSTD::abort();", which fails after we use the
    preprocessor to redefine "abort" as "fancy_abort" below.  */
