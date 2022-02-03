@@ -15903,7 +15903,7 @@ s390_valid_target_attribute_inner_p (tree args,
       /* Process the option.  */
       if (!found)
 	{
-	  error ("attribute %qs argument %<target%> is unknown", orig_p);
+	  error ("attribute %<target%> argument %qs is unknown", orig_p);
 	  return false;
 	}
       else if (attrs[i].only_as_pragma && !force_pragma)
@@ -15953,7 +15953,7 @@ s390_valid_target_attribute_inner_p (tree args,
 	    }
 	  else
 	    {
-	      error ("attribute %qs argument %<target%> is unknown", orig_p);
+	      error ("attribute %<target%> argument %qs is unknown", orig_p);
 	      ret = false;
 	    }
 	}
@@ -15970,7 +15970,7 @@ s390_valid_target_attribute_inner_p (tree args,
 			global_dc);
 	  else
 	    {
-	      error ("attribute %qs argument %<target%> is unknown", orig_p);
+	      error ("attribute %<target%> argument %qs is unknown", orig_p);
 	      ret = false;
 	    }
 	}

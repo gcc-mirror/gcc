@@ -1201,7 +1201,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
       if (opt == N_OPTS)
 	{
 	  error_at (loc, "attribute %qs argument %qs is unknown",
-		    orig_p, attr_name);
+		    attr_name, orig_p);
 	  ret = false;
 	}
 
