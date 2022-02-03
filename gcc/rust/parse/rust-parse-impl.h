@@ -8560,8 +8560,9 @@ Parser<ManagedTokenSource>::parse_match_arm ()
   // DEBUG
   rust_debug ("successfully parsed match arm");
 
-  return AST::MatchArm (std::move (match_arm_patterns), std::move (guard_expr),
-			std::move (outer_attrs));
+  return AST::MatchArm (std::move (match_arm_patterns),
+			lexer.peek_token ()->get_locus (),
+			std::move (guard_expr), std::move (outer_attrs));
 }
 
 /* Parses the patterns used in a match arm. End token id is the id of the token

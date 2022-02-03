@@ -3721,9 +3721,8 @@ public:
 
   // Constructor for match arm with a guard expression
   MatchArm (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-	    std::unique_ptr<Expr> guard_expr = nullptr,
-	    AST::AttrVec outer_attrs = AST::AttrVec (),
-	    Location locus = Location ())
+	    Location locus, std::unique_ptr<Expr> guard_expr = nullptr,
+	    AST::AttrVec outer_attrs = AST::AttrVec ())
     : outer_attrs (std::move (outer_attrs)),
       match_arm_patterns (std::move (match_arm_patterns)),
       guard_expr (std::move (guard_expr)), locus (locus)
@@ -3770,7 +3769,8 @@ public:
   // Creates a match arm in an error state.
   static MatchArm create_error ()
   {
-    return MatchArm (std::vector<std::unique_ptr<Pattern> > ());
+    Location locus = Location ();
+    return MatchArm (std::vector<std::unique_ptr<Pattern> > (), locus);
   }
 
   std::string as_string () const;
