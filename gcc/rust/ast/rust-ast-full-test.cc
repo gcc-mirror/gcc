@@ -3886,6 +3886,7 @@ MetaItemInner::~MetaItemInner () = default;
 std::unique_ptr<MetaNameValueStr>
 MetaItemInner::to_meta_name_value_str () const
 {
+  // TODO parse foo = bar
   return nullptr;
 }
 
@@ -4103,8 +4104,8 @@ Attribute::parse_attr_to_meta_item ()
   if (!has_attr_input () || is_parsed_to_meta_item ())
     return;
 
-  std::unique_ptr<AttrInput> converted_input (
-    attr_input->parse_to_meta_item ());
+  auto res = attr_input->parse_to_meta_item ();
+  std::unique_ptr<AttrInput> converted_input (res);
 
   if (converted_input != nullptr)
     attr_input = std::move (converted_input);
@@ -4121,7 +4122,7 @@ DelimTokenTree::parse_to_meta_item () const
    * to token stream */
   std::vector<std::unique_ptr<Token> > token_stream = to_token_stream ();
 
-  MacroParser parser (std::move (token_stream));
+  AttributeParser parser (std::move (token_stream));
   std::vector<std::unique_ptr<MetaItemInner> > meta_items (
     parser.parse_meta_item_seq ());
 
@@ -4129,7 +4130,7 @@ DelimTokenTree::parse_to_meta_item () const
 }
 
 std::unique_ptr<MetaItemInner>
-MacroParser::parse_meta_item_inner ()
+AttributeParser::parse_meta_item_inner ()
 {
   // if first tok not identifier, not a "special" case one
   if (peek_token ()->get_id () != IDENTIFIER)
@@ -4144,15 +4145,15 @@ MacroParser::parse_meta_item_inner ()
 	case FLOAT_LITERAL:
 	case TRUE_LITERAL:
 	case FALSE_LITERAL:
-	  // stream_pos++;
 	  return parse_meta_item_lit ();
+
 	case SUPER:
 	case SELF:
 	case CRATE:
 	case DOLLAR_SIGN:
-	  case SCOPE_RESOLUTION: {
-	    return parse_path_meta_item ();
-	  }
+	case SCOPE_RESOLUTION:
+	  return parse_path_meta_item ();
+
 	default:
 	  rust_error_at (peek_token ()->get_locus (),
 			 "unrecognised token '%s' in meta item",
@@ -4208,10 +4209,13 @@ MacroParser::parse_meta_item_inner ()
       return nullptr;
     }
 
-  /* HACK: parse parenthesised sequence, and then try conversions to other
-   * stuff */
-  std::vector<std::unique_ptr<MetaItemInner> > meta_items
-    = parse_meta_item_seq ();
+  // is it one of those special cases like not?
+  if (peek_token ()->get_id () == IDENTIFIER)
+    {
+      return parse_path_meta_item ();
+    }
+
+  auto meta_items = parse_meta_item_seq ();
 
   // pass for meta name value str
   std::vector<MetaNameValueStr> meta_name_value_str_items;
@@ -4234,23 +4238,25 @@ MacroParser::parse_meta_item_inner ()
 				  std::move (meta_name_value_str_items)));
     }
 
-  // pass for meta list idents
-  /*std::vector<Identifier> ident_items;
-  for (const auto& item : meta_items) {
-      std::unique_ptr<Identifier> converted_ident(item->to_ident_item());
-      if (converted_ident == nullptr) {
-	  ident_items.clear();
-	  break;
-      }
-      ident_items.push_back(std::move(*converted_ident));
-  }
-  // if valid return this
-  if (!ident_items.empty()) {
-      return std::unique_ptr<MetaListIdents>(new
-  MetaListIdents(std::move(ident),
-  std::move(ident_items)));
-  }*/
-  // as currently no meta list ident, currently no path. may change in future
+  // // pass for meta list idents
+  // std::vector<Identifier> ident_items;
+  // for (const auto &item : meta_items)
+  //   {
+  //     std::unique_ptr<Identifier> converted_ident (item->to_ident_item ());
+  //     if (converted_ident == nullptr)
+  //       {
+  //         ident_items.clear ();
+  //         break;
+  //       }
+  //     ident_items.push_back (std::move (*converted_ident));
+  //   }
+  // // if valid return this
+  // if (!ident_items.empty ())
+  //   {
+  //     return std::unique_ptr<MetaListIdents> (
+  //       new MetaListIdents (std::move (ident), std::move (ident_items)));
+  //   }
+  // // as currently no meta list ident, currently no path. may change in future
 
   // pass for meta list paths
   std::vector<SimplePath> path_items;
@@ -4276,13 +4282,13 @@ MacroParser::parse_meta_item_inner ()
 }
 
 bool
-MacroParser::is_end_meta_item_tok (TokenId id) const
+AttributeParser::is_end_meta_item_tok (TokenId id) const
 {
   return id == COMMA || id == RIGHT_PAREN;
 }
 
 std::unique_ptr<MetaItem>
-MacroParser::parse_path_meta_item ()
+AttributeParser::parse_path_meta_item ()
 {
   SimplePath path = parse_simple_path ();
   if (path.is_empty ())
@@ -4334,15 +4340,8 @@ MacroParser::parse_path_meta_item ()
 /* Parses a parenthesised sequence of meta item inners. Parentheses are
  * required here. */
 std::vector<std::unique_ptr<MetaItemInner> >
-MacroParser::parse_meta_item_seq ()
+AttributeParser::parse_meta_item_seq ()
 {
-  if (stream_pos != 0)
-    {
-      // warning?
-      rust_debug ("WARNING: stream pos for parse_meta_item_seq is not 0!");
-    }
-
-  // int i = 0;
   int vec_length = token_stream.size ();
   std::vector<std::unique_ptr<MetaItemInner> > meta_items;
 
@@ -4414,7 +4413,7 @@ DelimTokenTree::to_token_stream () const
 }
 
 Literal
-MacroParser::parse_literal ()
+AttributeParser::parse_literal ()
 {
   const std::unique_ptr<Token> &tok = peek_token ();
   switch (tok->get_id ())
@@ -4453,7 +4452,7 @@ MacroParser::parse_literal ()
 }
 
 SimplePath
-MacroParser::parse_simple_path ()
+AttributeParser::parse_simple_path ()
 {
   bool has_opening_scope_res = false;
   if (peek_token ()->get_id () == SCOPE_RESOLUTION)
@@ -4494,7 +4493,7 @@ MacroParser::parse_simple_path ()
 }
 
 SimplePathSegment
-MacroParser::parse_simple_path_segment ()
+AttributeParser::parse_simple_path_segment ()
 {
   const std::unique_ptr<Token> &tok = peek_token ();
   switch (tok->get_id ())
@@ -4527,7 +4526,7 @@ MacroParser::parse_simple_path_segment ()
 }
 
 std::unique_ptr<MetaItemLitExpr>
-MacroParser::parse_meta_item_lit ()
+AttributeParser::parse_meta_item_lit ()
 {
   Location locus = peek_token ()->get_locus ();
   LiteralExpr lit_expr (parse_literal (), {}, locus);
@@ -4538,27 +4537,16 @@ MacroParser::parse_meta_item_lit ()
 bool
 AttrInputMetaItemContainer::check_cfg_predicate (const Session &session) const
 {
-  /* NOTE: assuming that only first item must be true - cfg should only have one
-   * item, and cfg_attr only has first item as predicate. TODO ensure that this
-   * is correct. */
   if (items.empty ())
     return false;
 
-  // DEBUG
-  rust_debug (
-    "asked to check cfg of attrinputmetaitemcontainer - delegating to "
-    "first item. container: '%s'",
-    as_string ().c_str ());
-
-  return items[0]->check_cfg_predicate (session);
-
-  /*for (const auto &inner_item : items)
+  for (const auto &inner_item : items)
     {
       if (!inner_item->check_cfg_predicate (session))
 	return false;
     }
 
-  return true;*/
+  return true;
 }
 
 bool

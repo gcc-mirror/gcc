@@ -816,7 +816,7 @@ class MetaWord;
 class MetaListPaths;
 
 // Forward decl - defined in rust-macro.h
-struct MetaListNameValueStr;
+class MetaListNameValueStr;
 
 /* Base statement abstract class. Note that most "statements" are not allowed in
  * top-level module scope - only a subclass of statements called "items" are. */
