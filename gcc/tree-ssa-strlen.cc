@@ -236,8 +236,7 @@ class strlen_pass : public dom_walker
 public:
   strlen_pass (cdi_direction direction)
     : dom_walker (direction),
-      ptr_qry (&m_ranger, &var_cache),
-      var_cache (),
+      ptr_qry (&m_ranger),
       m_cleanup_cfg (false)
   {
   }
@@ -301,10 +300,9 @@ public:
 
   gimple_ranger m_ranger;
 
-  /* A pointer_query object and its cache to store information about
-     pointers and their targets in.  */
+  /* A pointer_query object to store information about pointers and
+     their targets in.  */
   pointer_query ptr_qry;
-  pointer_query::cache_type var_cache;
 
   gimple_stmt_iterator m_gsi;
 

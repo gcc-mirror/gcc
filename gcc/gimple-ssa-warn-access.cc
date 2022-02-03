@@ -2137,10 +2137,9 @@ private:
   /* Return true if use follows an invalidating statement.  */
   bool use_after_inval_p (gimple *, gimple *, bool = false);
 
-  /* A pointer_query object and its cache to store information about
-     pointers and their targets in.  */
+  /* A pointer_query object to store information about pointers and
+     their targets in.  */
   pointer_query m_ptr_qry;
-  pointer_query::cache_type m_var_cache;
   /* Mapping from DECLs and their clobber statements in the function.  */
   hash_map<tree, gimple *> m_clobbers;
   /* A bit is set for each basic block whose statements have been assigned
@@ -2158,8 +2157,7 @@ private:
 
 pass_waccess::pass_waccess (gcc::context *ctxt)
   : gimple_opt_pass (pass_data_waccess, ctxt),
-    m_ptr_qry (NULL, &m_var_cache),
-    m_var_cache (),
+    m_ptr_qry (NULL),
     m_clobbers (),
     m_bb_uids_set (),
     m_func (),
