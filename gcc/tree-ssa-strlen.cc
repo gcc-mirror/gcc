@@ -193,8 +193,8 @@ struct laststmt_struct
 } laststmt;
 
 static int get_stridx_plus_constant (strinfo *, unsigned HOST_WIDE_INT, tree);
-static bool get_range_strlen_dynamic (tree, gimple *s, c_strlen_data *,
-				      bitmap, range_query *, unsigned *);
+static bool get_range_strlen_dynamic (tree, gimple *, c_strlen_data *,
+				      bitmap, pointer_query *, unsigned *);
 
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
@@ -1094,7 +1094,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 static bool
 get_range_strlen_phi (tree src, gphi *phi,
 		      c_strlen_data *pdata, bitmap visited,
-		      range_query *rvals, unsigned *pssa_def_max)
+		      pointer_query *ptr_qry, unsigned *pssa_def_max)
 {
   if (!bitmap_set_bit (visited, SSA_NAME_VERSION (src)))
     return true;
@@ -1113,7 +1113,7 @@ get_range_strlen_phi (tree src, gphi *phi,
 	continue;
 
       c_strlen_data argdata = { };
-      if (!get_range_strlen_dynamic (arg, phi, &argdata, visited, rvals,
+      if (!get_range_strlen_dynamic (arg, phi, &argdata, visited, ptr_qry,
 				     pssa_def_max))
 	{
 	  pdata->maxlen = build_all_ones_cst (size_type_node);
@@ -1159,6 +1159,48 @@ get_range_strlen_phi (tree src, gphi *phi,
   return true;
 }
 
+/* Return the maximum possible length of the string PTR that's less
+   than MAXLEN given the size of the object of subobject it points
+   to at the given STMT.  MAXLEN is the maximum length of the string
+   determined so far.  Return null when no such maximum can be
+   determined.  */
+
+static tree
+get_maxbound (tree ptr, gimple *stmt, offset_int maxlen,
+	      pointer_query *ptr_qry)
+{
+  access_ref aref;
+  if (!ptr_qry->get_ref (ptr, stmt, &aref))
+    return NULL_TREE;
+
+  offset_int sizrem = aref.size_remaining ();
+  if (sizrem <= 0)
+    return NULL_TREE;
+
+  if (sizrem < maxlen)
+    maxlen = sizrem - 1;
+
+  /* Try to determine the maximum from the subobject at the offset.
+     This handles MEM [&some-struct, member-offset] that's often
+     the result of folding COMPONENT_REF [some-struct, member].  */
+  tree reftype = TREE_TYPE (aref.ref);
+  if (!RECORD_OR_UNION_TYPE_P (reftype)
+      || aref.offrng[0] != aref.offrng[1]
+      || !wi::fits_shwi_p (aref.offrng[0]))
+    return wide_int_to_tree (size_type_node, maxlen);
+
+  HOST_WIDE_INT off = aref.offrng[0].to_shwi ();
+  tree fld = field_at_offset (reftype, NULL_TREE, off);
+  if (!fld || !DECL_SIZE_UNIT (fld))
+    return wide_int_to_tree (size_type_node, maxlen);
+
+  offset_int size = wi::to_offset (DECL_SIZE_UNIT (fld));
+  if (maxlen < size)
+    return wide_int_to_tree (size_type_node, maxlen);
+
+  return wide_int_to_tree (size_type_node, size - 1);
+}
+
 /* Attempt to determine the length of the string SRC.  On success, store
    the length in *PDATA and return true.  Otherwise, return false.
    VISITED is a bitmap of visited PHI nodes.  RVALS points to the valuation
@@ -1168,7 +1210,7 @@ get_range_strlen_phi (tree src, gphi *phi,
 static bool
 get_range_strlen_dynamic (tree src, gimple *stmt,
 			  c_strlen_data *pdata, bitmap visited,
-			  range_query *rvals, unsigned *pssa_def_max)
+			  pointer_query *ptr_qry, unsigned *pssa_def_max)
 {
   int idx = get_stridx (src, stmt);
   if (!idx)
@@ -1177,7 +1219,7 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (src);
 	  if (gphi *phi = dyn_cast<gphi *>(def_stmt))
-	    return get_range_strlen_phi (src, phi, pdata, visited, rvals,
+	    return get_range_strlen_phi (src, phi, pdata, visited, ptr_qry,
 					 pssa_def_max);
 	}
 
@@ -1206,7 +1248,7 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 	  else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	    {
 	      value_range vr;
-	      rvals->range_of_expr (vr, si->nonzero_chars, si->stmt);
+	      ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, si->stmt);
 	      if (range_int_cst_p (&vr))
 		{
 		  pdata->minlen = vr.min ();
@@ -1250,12 +1292,16 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
       else if (pdata->minlen && TREE_CODE (pdata->minlen) == SSA_NAME)
 	{
 	  value_range vr;
-	  rvals->range_of_expr (vr, si->nonzero_chars, stmt);
+	  ptr_qry->rvals->range_of_expr (vr, si->nonzero_chars, stmt);
 	  if (range_int_cst_p (&vr))
 	    {
 	      pdata->minlen = vr.min ();
 	      pdata->maxlen = vr.max ();
-	      pdata->maxbound = pdata->maxlen;
+	      offset_int max = offset_int::from (vr.upper_bound (0), SIGNED);
+	      if (tree maxbound = get_maxbound (si->ptr, stmt, max, ptr_qry))
+		pdata->maxbound = maxbound;
+	      else
+		pdata->maxbound = pdata->maxlen;
 	    }
 	  else
 	    {
@@ -1293,13 +1339,13 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 
 void
 get_range_strlen_dynamic (tree src, gimple *stmt, c_strlen_data *pdata,
-			  range_query *rvals)
+			  pointer_query &ptr_qry)
 {
   auto_bitmap visited;
   tree maxbound = pdata->maxbound;
 
   unsigned limit = param_ssa_name_def_chain_limit;
-  if (!get_range_strlen_dynamic (src, stmt, pdata, visited, rvals, &limit))
+  if (!get_range_strlen_dynamic (src, stmt, pdata, visited, &ptr_qry, &limit))
     {
       /* On failure extend the length range to an impossible maximum
 	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other
@@ -4030,7 +4076,7 @@ strlen_pass::get_len_or_size (gimple *stmt, tree arg, int idx,
   /* Set MAXBOUND to an arbitrary non-null non-integer node as a request
      to have it set to the length of the longest string in a PHI.  */
   lendata.maxbound = arg;
-  get_range_strlen_dynamic (arg, stmt, &lendata, ptr_qry.rvals);
+  get_range_strlen_dynamic (arg, stmt, &lendata, ptr_qry);
 
   unsigned HOST_WIDE_INT maxbound = HOST_WIDE_INT_M1U;
   if (tree_fits_uhwi_p (lendata.maxbound)
