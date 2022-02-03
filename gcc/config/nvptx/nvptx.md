@@ -783,6 +783,14 @@
   ""
   "%.\\tsetp%c1\\t%0, %2, %3;")
 
+(define_insn "*cmphf"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(match_operator:BI 1 "nvptx_float_comparison_operator"
+	   [(match_operand:HF 2 "nvptx_register_operand" "R")
+	    (match_operand:HF 3 "nvptx_nonmemory_operand" "RF")]))]
+  "TARGET_SM53"
+  "%.\\tsetp%c1\\t%0, %2, %3;")
+
 (define_insn "jump"
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
@@ -964,6 +972,21 @@
 	  [(match_operand:SDFM 2 "nvptx_register_operand")
 	   (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
   ""
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
+
+(define_expand "cstorehf4"
+  [(set (match_operand:SI 0 "nvptx_register_operand")
+	(match_operator:SI 1 "nvptx_float_comparison_operator"
+	  [(match_operand:HF 2 "nvptx_register_operand")
+	   (match_operand:HF 3 "nvptx_nonmemory_operand")]))]
+  "TARGET_SM53"
 {
   rtx reg = gen_reg_rtx (BImode);
   rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
@@ -1159,6 +1182,26 @@
 		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
   "TARGET_SM53"
   "%.\\tmul.f16\\t%0, %1, %2;")
+
+(define_insn "fmahf4"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(fma:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		(match_operand:HF 2 "nvptx_nonmemory_operand" "RF")
+		(match_operand:HF 3 "nvptx_nonmemory_operand" "RF")))]
+  "TARGET_SM53"
+  "%.\\tfma%#.f16\\t%0, %1, %2, %3;")
+
+(define_insn "neghf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(neg:HF (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\txor.b16\\t%0, %1, -32768;")
+
+(define_insn "abshf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(abs:HF (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tand.b16\\t%0, %1, 32767;")
 
 (define_insn "exp2hf2"
   [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
