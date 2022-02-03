@@ -6,9 +6,9 @@
 #define TEST_LOOP(NAME, OUTTYPE, INTYPE, MASKTYPE)		\
   void __attribute__ ((noinline, noclone))			\
   NAME##_3 (OUTTYPE *__restrict dest, INTYPE *__restrict src,	\
-	    MASKTYPE *__restrict cond, int n)			\
+	    MASKTYPE *__restrict cond, intptr_t n)		\
   {								\
-    for (int i = 0; i < n; ++i)					\
+    for (intptr_t i = 0; i < n; ++i)				\
       if (cond[i])						\
 	dest[i] = src[i * 3] + src[i * 3 + 2];			\
   }
