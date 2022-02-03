@@ -805,6 +805,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
 enable_symvers
+enable_werror
 enable_cet
 with_gcc_major_version_only
 '
@@ -1456,6 +1457,7 @@ Optional Features:
                           sometimes confusing) to the casual installer
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
+  --disable-werror        disable building with -Werror
   --enable-cet            enable Intel CET in target libraries [default=auto]
 
 Optional Packages:
@@ -11380,7 +11382,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11383 "configure"
+#line 11385 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11486,7 +11488,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11489 "configure"
+#line 11491 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15565,9 +15567,17 @@ $as_echo "$as_me: not updating unwritable cache $cache_file" >&6;}
 fi
 rm -f confcache
 
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror;
+fi
+
 # Add -Wall -Werror if we are using GCC.
-if test "x$GCC" = "xyes"; then
-  XCFLAGS="$XCFLAGS -Wall -Werror"
+if test "x$GCC" = "xyes"; then :
+  XCFLAGS="$XCFLAGS -Wall"
+fi
+if test "x$enable_werror" != "xno" && test "x$GCC" = "xyes"; then :
+  XCFLAGS="$XCFLAGS -Werror"
 fi
 
 # Add CET specific flags if CET is enabled

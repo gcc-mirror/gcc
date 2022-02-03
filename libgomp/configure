@@ -825,6 +825,7 @@ enable_silent_rules
 enable_multilib
 with_toolexeclibdir
 enable_dependency_tracking
+enable_werror
 enable_shared
 enable_static
 with_pic
@@ -1486,6 +1487,7 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+  --disable-werror        disable building with -Werror
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
   --enable-fast-install[=PKGS]
@@ -4611,9 +4613,17 @@ fi
 # in both places for now and restore CFLAGS at the end of config.
 save_CFLAGS="$CFLAGS"
 
+# Check whether --enable-werror was given.
+if test "${enable_werror+set}" = set; then :
+  enableval=$enable_werror;
+fi
+
 # Add -Wall -Werror if we are using GCC.
-if test "x$GCC" = "xyes"; then
-  XCFLAGS="$XCFLAGS -Wall -Werror"
+if test "x$GCC" = "xyes"; then :
+  XCFLAGS="$XCFLAGS -Wall"
+fi
+if test "x$enable_werror" != "xno" && test "x$GCC" = "xyes"; then :
+  XCFLAGS="$XCFLAGS -Werror"
 fi
 
 # Find other programs we need.
@@ -11421,7 +11431,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11424 "configure"
+#line 11434 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11527,7 +11537,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11530 "configure"
+#line 11540 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
