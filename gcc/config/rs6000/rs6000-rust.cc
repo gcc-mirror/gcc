@@ -35,7 +35,7 @@ rs6000_rust_target_cpu_info (void)
 
   // TODO: define properly instead of macros
 #ifdef flags
-# error "multiple flags already defined in rs6000-rust.c"
+# error "multiple flags already defined in rs6000-rust.cc"
 #endif
 #define flags rs6000_isa_flags
 

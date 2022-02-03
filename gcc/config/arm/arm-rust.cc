@@ -40,7 +40,7 @@ void arm_rust_target_cpu_info(void) {
             rust_add_target_info("target_feature", "mclass");
             break;
         default:
-            fprintf(stderr, "Screwed up profile selection in arm-rust.c - unknown profile '%c'",
+            fprintf(stderr, "Screwed up profile selection in arm-rust.cc - unknown profile '%c'",
               TARGET_ARM_ARCH_PROFILE);
             break;
     }

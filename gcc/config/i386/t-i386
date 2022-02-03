@@ -46,7 +46,7 @@ i386-d.o: $(srcdir)/config/i386/i386-d.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-i386-rust.o: $(srcdir)/config/i386/i386-rust.c
+i386-rust.o: $(srcdir)/config/i386/i386-rust.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

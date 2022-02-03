@@ -28,6 +28,6 @@ $(srcdir)/config/csky/csky_tables.opt: $(srcdir)/config/csky/csky_genopt.sh \
 	$(SHELL) $(srcdir)/config/csky/csky_genopt.sh $(srcdir)/config/csky > \
 		$(srcdir)/config/csky/csky_tables.opt
 
-csky-rust.o: $(srcdir)/config/csky/csky-rust.c \
+csky-rust.o: $(srcdir)/config/csky/csky-rust.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -29,7 +29,7 @@ extern void or1k_expand_move (machine_mode, rtx, rtx);
 extern void or1k_expand_compare (rtx *);
 extern void or1k_expand_call (rtx, rtx, rtx, bool);
 
-/* Routines implemented in or1k-rust.c  */
+/* Routines implemented in or1k-rust.cc  */
 extern void or1k_rust_target_cpu_info (void);
 
 #ifdef RTX_CODE

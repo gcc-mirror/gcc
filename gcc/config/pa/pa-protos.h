@@ -116,5 +116,5 @@ extern const int pa_magic_milli[];
 extern void pa_d_target_versions (void);
 extern void pa_d_register_target_info (void);
 
-/* Routines implemented in pa-rust.c  */
+/* Routines implemented in pa-rust.cc  */
 extern void pa_rust_target_cpu_info (void);

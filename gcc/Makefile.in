@@ -2307,7 +2307,7 @@ default-d.o: config/default-d.c
 
 # Files used by the Rust language front end.
 
-default-rust.o: config/default-rust.c
+default-rust.o: config/default-rust.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

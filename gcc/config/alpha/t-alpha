@@ -18,6 +18,6 @@
 
 PASSES_EXTRA += $(srcdir)/config/alpha/alpha-passes.def
 
-alpha-rust.o: $(srcdir)/config/alpha/alpha-rust.c
+alpha-rust.o: $(srcdir)/config/alpha/alpha-rust.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

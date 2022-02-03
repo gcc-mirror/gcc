@@ -108,7 +108,7 @@ extern bool arc_is_jli_call_p (rtx);
 extern void arc_file_end (void);
 extern bool arc_is_secure_call_p (rtx);
 
-/* Declare functions in arc-rust.c  */
+/* Declare functions in arc-rust.cc  */
 extern void arc_rust_target_cpu_info (void);
 
 rtl_opt_pass * make_pass_arc_ifcvt (gcc::context *ctxt);
