@@ -3150,7 +3150,8 @@ nvptx_reorg_uniform_simt ()
       rtx pred = nvptx_get_unisimt_predicate ();
       pred = gen_rtx_NE (BImode, pred, const0_rtx);
       pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
-      validate_change (insn, &PATTERN (insn), pat, false);
+      bool changed_p = validate_change (insn, &PATTERN (insn), pat, false);
+      gcc_assert (changed_p);
     }
 }
 
@@ -6892,6 +6893,28 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
     }
 
   return default_libc_has_function (fn_class, type);
+}
+
+bool
+nvptx_mem_local_p (rtx mem)
+{
+  gcc_assert (GET_CODE (mem) == MEM);
+
+  struct address_info info;
+  decompose_mem_address (&info, mem);
+
+  if (info.base != NULL && REG_P (*info.base)
+      && REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    {
+      if (TARGET_SOFT_STACK)
+	{
+	  /* Frame-related doesn't mean local.  */
+	}
+      else
+	return true;
+    }
+
+  return false;
 }
 
 #undef TARGET_OPTION_OVERRIDE

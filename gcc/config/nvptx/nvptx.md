@@ -54,6 +54,7 @@
 (define_c_enum "unspecv" [
    UNSPECV_LOCK
    UNSPECV_CAS
+   UNSPECV_CAS_LOCAL
    UNSPECV_XCHG
    UNSPECV_BARSYNC
    UNSPECV_WARPSYNC
@@ -1771,14 +1772,45 @@
    (match_operand:SI 7 "const_int_operand")]		;; failure model
   ""
 {
-  emit_insn (gen_atomic_compare_and_swap<mode>_1
-    (operands[1], operands[2], operands[3], operands[4], operands[6]));
+  if (nvptx_mem_local_p (operands[2]))
+    emit_insn (gen_atomic_compare_and_swap<mode>_1_local
+		(operands[1], operands[2], operands[3], operands[4],
+		 operands[6]));
+  else
+    emit_insn (gen_atomic_compare_and_swap<mode>_1
+		(operands[1], operands[2], operands[3], operands[4],
+		 operands[6]));
 
   rtx cond = gen_reg_rtx (BImode);
   emit_move_insn (cond, gen_rtx_EQ (BImode, operands[1], operands[3]));
   emit_insn (gen_sel_truesi (operands[0], cond, GEN_INT (1), GEN_INT (0)));
   DONE;
 })
+
+(define_insn "atomic_compare_and_swap<mode>_1_local"
+  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:SDIM
+	  [(match_operand:SDIM 1 "memory_operand" "+m")
+	   (match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri")
+	   (match_operand:SDIM 3 "nvptx_nonmemory_operand" "Ri")
+	   (match_operand:SI 4 "const_int_operand")]
+	  UNSPECV_CAS_LOCAL))
+   (set (match_dup 1)
+	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS_LOCAL))]
+  ""
+  {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
+	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
+	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
+			 operands);
+	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
+	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+  }
+  [(set_attr "predicable" "false")])
 
 (define_insn "atomic_compare_and_swap<mode>_1"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
@@ -1792,28 +1824,11 @@
 	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
-      {
-	output_asm_insn ("{", NULL);
-	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
-	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
-	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
-	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
-			 operands);
-	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
-	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
-	output_asm_insn ("}", NULL);
-	return "";
-      }
     const char *t
-      = "\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
-  [(set_attr "atomic" "true")
-   (set_attr "predicable" "false")])
+  [(set_attr "atomic" "true")])
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")	;; output
@@ -1825,10 +1840,7 @@
 	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1855,10 +1867,7 @@
 	(match_dup 1))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1888,10 +1897,7 @@
 	(match_dup 1))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1924,10 +1930,7 @@
 	(match_dup 1))]
   "<MODE>mode == SImode || TARGET_SM35"
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%val;", operands);
