@@ -3485,6 +3485,18 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	icode = CODE_FOR_vsx_store_v8hi;
       else if (fcode == RS6000_BIF_ST_ELEMREV_V16QI)
 	icode = CODE_FOR_vsx_store_v16qi;
+      else if (fcode == RS6000_BIF_VCLZLSBB_V16QI)
+	icode = CODE_FOR_vclzlsbb_v16qi;
+      else if (fcode == RS6000_BIF_VCLZLSBB_V4SI)
+	icode = CODE_FOR_vclzlsbb_v4si;
+      else if (fcode == RS6000_BIF_VCLZLSBB_V8HI)
+	icode = CODE_FOR_vclzlsbb_v8hi;
+      else if (fcode == RS6000_BIF_VCTZLSBB_V16QI)
+	icode = CODE_FOR_vctzlsbb_v16qi;
+      else if (fcode == RS6000_BIF_VCTZLSBB_V4SI)
+	icode = CODE_FOR_vctzlsbb_v4si;
+      else if (fcode == RS6000_BIF_VCTZLSBB_V8HI)
+	icode = CODE_FOR_vctzlsbb_v8hi;
       else
 	gcc_unreachable ();
     }
