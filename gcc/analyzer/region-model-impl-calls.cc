@@ -373,7 +373,9 @@ region_model::impl_call_calloc (const call_details &cd)
 				  nmemb_sval, size_sval);
   const region *new_reg
     = create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
-  zero_fill_region (new_reg);
+  const region *sized_reg
+    = m_mgr->get_sized_region (new_reg, NULL_TREE, prod_sval);
+  zero_fill_region (sized_reg);
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
