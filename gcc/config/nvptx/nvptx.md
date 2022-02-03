@@ -27,6 +27,7 @@
    UNSPEC_SIN
    UNSPEC_COS
    UNSPEC_TANH
+   UNSPEC_ISINF
 
    UNSPEC_FPINT_FLOOR
    UNSPEC_FPINT_BTRUNC
@@ -596,6 +597,12 @@
   ""
   "%.\\tnot.b%T0\\t%0, %1;")
 
+(define_insn "one_cmplbi2"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(not:BI (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tnot.pred\\t%0, %1;")
+
 (define_insn "*cnot<mode>2"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
 	(eq:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
@@ -671,7 +678,57 @@
   ""
   "%.\\tmul.wide.u32\\t%0, %1, %2;")
 
-(define_insn "smulhi3_highpart"
+(define_expand "mulditi3"
+  [(set (match_operand:TI 0 "nvptx_register_operand")
+	(mult:TI (sign_extend:TI
+		  (match_operand:DI 1 "nvptx_register_operand"))
+		 (sign_extend:DI
+		  (match_operand:DI 2 "nvptx_nonmemory_operand"))))]
+  ""
+{
+  rtx hi = gen_reg_rtx (DImode);
+  rtx lo = gen_reg_rtx (DImode);
+  emit_insn (gen_smuldi3_highpart (hi, operands[1], operands[2]));
+  emit_insn (gen_muldi3 (lo, operands[1], operands[2]));
+  emit_move_insn (gen_highpart (DImode, operands[0]), hi);
+  emit_move_insn (gen_lowpart (DImode, operands[0]), lo);
+  DONE;
+})
+
+(define_expand "umulditi3"
+  [(set (match_operand:TI 0 "nvptx_register_operand")
+	(mult:TI (zero_extend:TI
+		  (match_operand:DI 1 "nvptx_register_operand"))
+		 (zero_extend:DI
+		  (match_operand:DI 2 "nvptx_nonmemory_operand"))))]
+  ""
+{
+  rtx hi = gen_reg_rtx (DImode);
+  rtx lo = gen_reg_rtx (DImode);
+  emit_insn (gen_umuldi3_highpart (hi, operands[1], operands[2]));
+  emit_insn (gen_muldi3 (lo, operands[1], operands[2]));
+  emit_move_insn (gen_highpart (DImode, operands[0]), hi);
+  emit_move_insn (gen_lowpart (DImode, operands[0]), lo);
+  DONE;
+})
+
+(define_insn "smul<mode>3_highpart"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(smul_highpart:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tmul.hi.s%T0\\t%0, %1, %2;")
+
+(define_insn "umul<mode>3_highpart"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(umul_highpart:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tmul.hi.u%T0\\t%0, %1, %2;")
+
+(define_insn "*smulhi3_highpart_2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
 	(truncate:HI
 	 (lshiftrt:SI
@@ -683,7 +740,7 @@
   ""
   "%.\\tmul.hi.s16\\t%0, %1, %2;")
 
-(define_insn "smulsi3_highpart"
+(define_insn "*smulsi3_highpart_2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -695,7 +752,7 @@
   ""
   "%.\\tmul.hi.s32\\t%0, %1, %2;")
 
-(define_insn "umulhi3_highpart"
+(define_insn "*umulhi3_highpart_2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
 	(truncate:HI
 	 (lshiftrt:SI
@@ -707,7 +764,7 @@
   ""
   "%.\\tmul.hi.u16\\t%0, %1, %2;")
 
-(define_insn "umulsi3_highpart"
+(define_insn "*umulsi3_highpart_2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -884,6 +941,13 @@
 		   (const_int 0)))]
   ""
   "%.\\tselp%t0\\t%0, 1, 0, %1;")
+
+(define_insn "*setcc<mode>_from_not_bi"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(eq:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+		   (const_int 0)))]
+  ""
+  "%.\\tselp%t0\\t%0, 0, 1, %1;")
 
 (define_insn "extendbi<mode>2"
   [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
@@ -1159,6 +1223,25 @@
 		   UNSPEC_EXP2))]
   "flag_unsafe_math_optimizations"
   "%.\\tex2.approx%t0\\t%0, %1;")
+
+(define_insn "setcc_isinf<mode>"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(unspec:BI [(match_operand:SDFM 1 "nvptx_register_operand" "R")]
+		   UNSPEC_ISINF))]
+  ""
+  "%.\\ttestp.infinite%t1\\t%0, %1;")
+
+(define_expand "isinf<mode>2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(unspec:SI [(match_operand:SDFM 1 "nvptx_register_operand" "R")]
+		   UNSPEC_ISINF))]
+  ""
+{
+  rtx pred = gen_reg_rtx (BImode);
+  emit_insn (gen_setcc_isinf<mode> (pred, operands[1]));
+  emit_insn (gen_setccsi_from_bi (operands[0], pred));
+  DONE;
+})
 
 ;; HFmode floating point arithmetic.
 
