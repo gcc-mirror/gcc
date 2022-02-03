@@ -43,6 +43,10 @@ rs6000-logue.o: $(srcdir)/config/rs6000/rs6000-logue.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+rs6000-builtin.o: $(srcdir)/config/rs6000/rs6000-builtin.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 build/rs6000-gen-builtins.o: $(srcdir)/config/rs6000/rs6000-gen-builtins.cc
 build/rbtree.o: $(srcdir)/config/rs6000/rbtree.cc
 

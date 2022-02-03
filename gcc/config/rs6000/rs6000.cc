@@ -86,6 +86,10 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
+extern tree rs6000_builtin_mask_for_load (void);
+extern tree rs6000_builtin_md_vectorized_function (tree, tree, tree);
+extern tree rs6000_builtin_reciprocal (tree);
+
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
@@ -104,9 +108,6 @@
 #ifndef PCREL_SUPPORTED_BY_OS
 #define PCREL_SUPPORTED_BY_OS	0
 #endif
-
-/* Support targetm.vectorize.builtin_mask_for_load.  */
-tree altivec_builtin_mask_for_load;
 
 #ifdef USING_ELFOS_H
 /* Counter for labels which are to be placed in .fixup.  */
@@ -159,9 +160,6 @@ enum reg_class rs6000_regno_regclass[FIRST_PSEUDO_REGISTER];
 
 static int dbg_cost_ctrl;
 
-/* Built in types.  */
-tree rs6000_builtin_types[RS6000_BTI_MAX];
-
 /* Flag to say the TOC is initialized */
 int toc_initialized, need_toc_init;
 char toc_label_name[10];
@@ -189,9 +187,6 @@ enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 /* Describe the alignment of a vector.  */
 int rs6000_vector_align[NUM_MACHINE_MODES];
-
-/* Map selected modes to types for builtins.  */
-tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
 
 /* What modes to automatically generate reciprocal divide estimate (fre) and
    reciprocal sqrt (frsqrte) for.  */
@@ -4969,18 +4964,6 @@ rs6000_option_override (void)
 }
 
 
-/* Implement targetm.vectorize.builtin_mask_for_load.  */
-static tree
-rs6000_builtin_mask_for_load (void)
-{
-  /* Don't use lvsl/vperm for P8 and similarly efficient machines.  */
-  if ((TARGET_ALTIVEC && !TARGET_VSX)
-      || (TARGET_VSX && !TARGET_EFFICIENT_UNALIGNED_VSX))
-    return altivec_builtin_mask_for_load;
-  else
-    return 0;
-}
-
 /* Implement LOOP_ALIGN. */
 align_flags
 rs6000_loop_align (rtx label)
@@ -5685,119 +5668,6 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
   /* Generate calls to libmass if appropriate.  */
   if (rs6000_veclib_handler)
     return rs6000_veclib_handler (combined_fn (fn), type_out, type_in);
-
-  return NULL_TREE;
-}
-
-/* Implement targetm.vectorize.builtin_md_vectorized_function.  */
-
-static tree
-rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
-				       tree type_in)
-{
-  machine_mode in_mode, out_mode;
-  int in_n, out_n;
-
-  if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr,
-	     "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
-	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
-	     GET_MODE_NAME (TYPE_MODE (type_out)),
-	     GET_MODE_NAME (TYPE_MODE (type_in)));
-
-  /* TODO: Should this be gcc_assert?  */
-  if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE)
-    return NULL_TREE;
-
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
-
-  enum rs6000_gen_builtins fn
-    = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
-  switch (fn)
-    {
-    case RS6000_BIF_RSQRTF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[RS6000_BIF_VRSQRTFP];
-      break;
-    case RS6000_BIF_RSQRT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
-      break;
-    case RS6000_BIF_RECIPF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[RS6000_BIF_VRECIPFP];
-      break;
-    case RS6000_BIF_RECIP:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[RS6000_BIF_RECIP_V2DF];
-      break;
-    default:
-      break;
-    }
-
-  machine_mode in_vmode = TYPE_MODE (type_in);
-  machine_mode out_vmode = TYPE_MODE (type_out);
-
-  /* Power10 supported vectorized built-in functions.  */
-  if (TARGET_POWER10
-      && in_vmode == out_vmode
-      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
-    {
-      machine_mode exp_mode = DImode;
-      machine_mode exp_vmode = V2DImode;
-      enum rs6000_gen_builtins bif;
-      switch (fn)
-	{
-	case RS6000_BIF_DIVWE:
-	case RS6000_BIF_DIVWEU:
-	  exp_mode = SImode;
-	  exp_vmode = V4SImode;
-	  if (fn == RS6000_BIF_DIVWE)
-	    bif = RS6000_BIF_VDIVESW;
-	  else
-	    bif = RS6000_BIF_VDIVEUW;
-	  break;
-	case RS6000_BIF_DIVDE:
-	case RS6000_BIF_DIVDEU:
-	  if (fn == RS6000_BIF_DIVDE)
-	    bif = RS6000_BIF_VDIVESD;
-	  else
-	    bif = RS6000_BIF_VDIVEUD;
-	  break;
-	case RS6000_BIF_CFUGED:
-	  bif = RS6000_BIF_VCFUGED;
-	  break;
-	case RS6000_BIF_CNTLZDM:
-	  bif = RS6000_BIF_VCLZDM;
-	  break;
-	case RS6000_BIF_CNTTZDM:
-	  bif = RS6000_BIF_VCTZDM;
-	  break;
-	case RS6000_BIF_PDEPD:
-	  bif = RS6000_BIF_VPDEPD;
-	  break;
-	case RS6000_BIF_PEXTD:
-	  bif = RS6000_BIF_VPEXTD;
-	  break;
-	default:
-	  return NULL_TREE;
-	}
-
-      if (in_mode == exp_mode && in_vmode == exp_vmode)
-	return rs6000_builtin_decls[bif];
-    }
 
   return NULL_TREE;
 }
@@ -22541,31 +22411,6 @@ rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
     }
 
   return allocno_class;
-}
-
-/* Returns a code for a target-specific builtin that implements
-   reciprocal of the function, or NULL_TREE if not available.  */
-
-static tree
-rs6000_builtin_reciprocal (tree fndecl)
-{
-  switch (DECL_MD_FUNCTION_CODE (fndecl))
-    {
-    case RS6000_BIF_XVSQRTDP:
-      if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
-	return NULL_TREE;
-
-      return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
-
-    case RS6000_BIF_XVSQRTSP:
-      if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
-	return NULL_TREE;
-
-      return rs6000_builtin_decls[RS6000_BIF_RSQRT_4SF];
-
-    default:
-      return NULL_TREE;
-    }
 }
 
 /* Load up a constant.  If the mode is a vector mode, splat the value across

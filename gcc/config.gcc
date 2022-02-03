@@ -485,7 +485,7 @@ powerpc*-*-*)
 	cpu_type=rs6000
 	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
 	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
-	extra_objs="${extra_objs} rs6000-builtins.o"
+	extra_objs="${extra_objs} rs6000-builtins.o rs6000-builtin.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
