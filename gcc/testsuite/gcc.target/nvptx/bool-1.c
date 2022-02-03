@@ -12,5 +12,5 @@ foo (int x, int y)
 /* { dg-final { scan-assembler-not "cvt.u32.u8" } } */
 
 /* { dg-final { scan-assembler-times "setp.eq.u32" 2 } } */
-/* { dg-final { scan-assembler-times "selp.u32" 2 } } */
-/* { dg-final { scan-assembler-times "and.b32" 1 } } */
+/* { dg-final { scan-assembler-times "selp.u32" 1 } } */
+/* { dg-final { scan-assembler-times "and.pred" 1 } } */

@@ -801,26 +801,38 @@
 
 ;; Logical operations
 
-(define_insn "and<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(and:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
-  ""
-  "%.\\tand.b%T0\\t%0, %1, %2;")
+(define_code_iterator any_logic [and ior xor])
+(define_code_attr logic [(and "and") (ior "or") (xor "xor")])
+(define_code_attr ilogic [(and "and") (ior "ior") (xor "xor")])
 
-(define_insn "ior<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(ior:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+(define_insn "<ilogic><mode>3"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(any_logic:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
-  "%.\\tor.b%T0\\t%0, %1, %2;")
+  "%.\\t<logic>.b%T0\\t%0, %1, %2;")
 
-(define_insn "xor<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(xor:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+(define_insn "<ilogic>bi3"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(any_logic:BI (match_operand:BI 1 "nvptx_register_operand" "R")
+		      (match_operand:BI 2 "nvptx_register_operand" "R")))]
   ""
-  "%.\\txor.b%T0\\t%0, %1, %2;")
+  "%.\\t<logic>.pred\\t%0, %1, %2;")
+
+(define_split
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand")
+	(any_logic:HSDIM
+	  (ne:HSDIM (match_operand:BI 1 "nvptx_register_operand")
+		    (const_int 0))
+	  (ne:HSDIM (match_operand:BI 2 "nvptx_register_operand")
+		    (const_int 0))))]
+  "can_create_pseudo_p ()"
+  [(set (match_dup 3) (any_logic:BI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ne:HSDIM (match_dup 3) (const_int 0)))]
+{
+  operands[3] = gen_reg_rtx (BImode);
+})
 
 ;; Comparisons and branches
 
@@ -2041,9 +2053,6 @@
     return nvptx_output_atomic_insn (t, operands, 1, 3);
   }
   [(set_attr "atomic" "true")])
-
-(define_code_iterator any_logic [and ior xor])
-(define_code_attr logic [(and "and") (ior "or") (xor "xor")])
 
 (define_insn "atomic_fetch_<logic><mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")
