@@ -28763,6 +28763,7 @@ package body Sem_Util is
    -------------------------------
    -- Statically_Denotes_Entity --
    -------------------------------
+
    function Statically_Denotes_Entity (N : Node_Id) return Boolean is
       E : Entity_Id;
    begin

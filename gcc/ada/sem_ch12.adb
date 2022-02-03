@@ -1178,9 +1178,9 @@ package body Sem_Ch12 is
       --  anonymous types, the presence a formal equality will introduce an
       --  implicit declaration for the corresponding inequality.
 
-      -----------------------------------------
-      -- procedure Build_Subprogram_Wrappers --
-      -----------------------------------------
+      -------------------------------
+      -- Build_Subprogram_Wrappers --
+      -------------------------------
 
       procedure Build_Subprogram_Wrappers is
          Formal : constant Entity_Id :=
