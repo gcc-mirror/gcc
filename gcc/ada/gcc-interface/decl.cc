@@ -363,10 +363,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  if (Is_Type (gnat_temp))
 	    gnat_temp = Underlying_Type (gnat_temp);
 
-	  if (Ekind (gnat_temp) == E_Subprogram_Body)
-	    gnat_temp
-	      = Corresponding_Spec (Parent (Declaration_Node (gnat_temp)));
-
 	  if (Is_Subprogram (gnat_temp)
 	      && Present (Protected_Body_Subprogram (gnat_temp)))
 	    gnat_temp = Protected_Body_Subprogram (gnat_temp);
