@@ -33,12 +33,18 @@ class ResolveToplevelImplItem : public ResolverBase
 public:
   static void go (AST::InherentImplItem *item, const CanonicalPath &prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveToplevelImplItem resolver (prefix);
     item->accept_vis (resolver);
   }
 
   static void go (AST::TraitImplItem *item, const CanonicalPath &prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveToplevelImplItem resolver (prefix);
     item->accept_vis (resolver);
   }

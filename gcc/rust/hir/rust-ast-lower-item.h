@@ -147,6 +147,9 @@ public:
     std::vector<HIR::TupleField> fields;
     for (AST::TupleField &field : struct_decl.get_fields ())
       {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
 	HIR::Visibility vis = HIR::Visibility::create_public ();
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
@@ -208,6 +211,9 @@ public:
     std::vector<HIR::StructField> fields;
     for (AST::StructField &field : struct_decl.get_fields ())
       {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
 	HIR::Visibility vis = HIR::Visibility::create_public ();
 	HIR::Type *type
 	  = ASTLoweringType::translate (field.get_field_type ().get ());
@@ -272,6 +278,9 @@ public:
     std::vector<std::unique_ptr<HIR::EnumItem>> items;
     for (auto &variant : enum_decl.get_variants ())
       {
+	if (variant->is_marked_for_strip ())
+	  continue;
+
 	HIR::EnumItem *hir_item
 	  = ASTLoweringEnumItem::translate (variant.get ());
 	items.push_back (std::unique_ptr<HIR::EnumItem> (hir_item));
@@ -318,6 +327,9 @@ public:
     std::vector<HIR::StructField> variants;
     for (AST::StructField &variant : union_decl.get_variants ())
       {
+	if (variant.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
 	HIR::Visibility vis = HIR::Visibility::create_public ();
 	HIR::Type *type
 	  = ASTLoweringType::translate (variant.get_field_type ().get ());
@@ -558,6 +570,9 @@ public:
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
+	if (impl_item->is_marked_for_strip ())
+	  continue;
+
 	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
@@ -623,6 +638,9 @@ public:
     std::vector<HirId> trait_item_ids;
     for (auto &item : trait.get_trait_items ())
       {
+	if (item->is_marked_for_strip ())
+	  continue;
+
 	HIR::TraitItem *lowered = ASTLowerTraitItem::translate (item.get ());
 	trait_items.push_back (std::unique_ptr<HIR::TraitItem> (lowered));
 	trait_item_ids.push_back (lowered->get_mappings ().get_hirid ());
@@ -716,6 +734,9 @@ public:
     std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
+	if (impl_item->is_marked_for_strip ())
+	  continue;
+
 	HIR::ImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
@@ -754,6 +775,9 @@ public:
     std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
     for (auto &item : extern_block.get_extern_items ())
       {
+	if (item->is_marked_for_strip ())
+	  continue;
+
 	HIR::ExternalItem *lowered
 	  = ASTLoweringExternItem::translate (item.get ());
 	extern_items.push_back (std::unique_ptr<HIR::ExternalItem> (lowered));

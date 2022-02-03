@@ -38,6 +38,9 @@ public:
   static void go (AST::TraitItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveTraitItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
@@ -303,8 +306,13 @@ public:
       ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
 
     for (AST::TupleField &field : struct_decl.get_fields ())
-      ResolveType::go (field.get_field_type ().get (),
-		       struct_decl.get_node_id ());
+      {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
+	ResolveType::go (field.get_field_type ().get (),
+			 struct_decl.get_node_id ());
+      }
 
     resolver->get_type_scope ().pop ();
   }
@@ -360,7 +368,12 @@ public:
 				     item.get_node_id (), cpath);
 
     for (auto &field : item.get_tuple_fields ())
-      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+      {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
+	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+      }
   }
 
   void visit (AST::EnumItemStruct &item) override
@@ -373,7 +386,12 @@ public:
 				     item.get_node_id (), cpath);
 
     for (auto &field : item.get_struct_fields ())
-      ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+      {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
+	ResolveType::go (field.get_field_type ().get (), item.get_node_id ());
+      }
   }
 
   void visit (AST::EnumItemDiscriminant &item) override
@@ -412,8 +430,13 @@ public:
       ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
 
     for (AST::StructField &field : struct_decl.get_fields ())
-      ResolveType::go (field.get_field_type ().get (),
-		       struct_decl.get_node_id ());
+      {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
+	ResolveType::go (field.get_field_type ().get (),
+			 struct_decl.get_node_id ());
+      }
 
     resolver->get_type_scope ().pop ();
   }
@@ -442,8 +465,13 @@ public:
       ResolveWhereClause::Resolve (union_decl.get_where_clause ());
 
     for (AST::StructField &field : union_decl.get_variants ())
-      ResolveType::go (field.get_field_type ().get (),
-		       union_decl.get_node_id ());
+      {
+	if (field.get_field_type ()->is_marked_for_strip ())
+	  continue;
+
+	ResolveType::go (field.get_field_type ().get (),
+			 union_decl.get_node_id ());
+      }
 
     resolver->get_type_scope ().pop ();
   }
@@ -486,9 +514,6 @@ public:
 
   void visit (AST::Function &function) override
   {
-    if (function.is_marked_for_strip ())
-      return;
-
     auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
@@ -884,6 +909,9 @@ public:
   static void go (AST::InherentImplItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveImplItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
@@ -891,6 +919,9 @@ public:
   static void go (AST::TraitImplItem *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveImplItems resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };

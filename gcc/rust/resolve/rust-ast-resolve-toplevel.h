@@ -36,6 +36,9 @@ public:
   static void go (AST::Item *item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix)
   {
+    if (item->is_marked_for_strip ())
+      return;
+
     ResolveTopLevel resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
@@ -286,9 +289,6 @@ public:
 
   void visit (AST::Function &function) override
   {
-    if (function.is_marked_for_strip ())
-      return;
-
     auto decl = ResolveFunctionItemToCanonicalPath::resolve (function);
     auto path = prefix.append (decl);
     auto cpath = canonical_prefix.append (decl);
