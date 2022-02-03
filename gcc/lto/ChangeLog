@@ -1,3 +1,14 @@
+2022-02-02  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2022-02-02  Martin Liska  <mliska@suse.cz>
+
+	PR lto/104333
+	* lto-common.c (read_cgraph_and_symbols): Move resolution
+	checking for number of files later and report a reasonable
+	error message.
+	* lto-object.c (lto_obj_file_open): Make error fatal.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

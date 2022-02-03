@@ -1,3 +1,26 @@
+2022-02-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/104090
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Use also
+	rs6000_cpu.
+
+2022-02-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backported from master:
+	2022-02-01  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_code_end): Do not switch back to
+	code section.
+
+2022-02-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Backported from master:
+	2022-02-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR middle-end/95115
+	* fold-const.c (const_binop): Do not fold NaN result from
+	  non-NaN operands.
+
 2022-01-28  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

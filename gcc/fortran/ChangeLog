@@ -1,3 +1,12 @@
+2022-02-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104331
+	* simplify.c (gfc_simplify_eoshift): Avoid NULL pointer
+	dereference when shape is not set.
+
 2022-01-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
