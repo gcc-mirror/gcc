@@ -5,17 +5,17 @@ MULTILIB_OSDIRNAMES = ../lib ../lib32
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-tilegx-c.o: $(srcdir)/config/tilegx/tilegx-c.c \
+tilegx-c.o: $(srcdir)/config/tilegx/tilegx-c.cc \
     $(CONFIG_H) $(SYSTEM_H) coretypes.h $(MACHMODE_H) \
     $(TM_H) $(TM_P_H) $(CPPLIB_H) $(TREE_H) $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-$(srcdir)/config/tilegx/mul-tables.c: \
+$(srcdir)/config/tilegx/mul-tables.cc: \
     $(srcdir)/config/tilepro/gen-mul-tables.cc
 	$(CXX_FOR_BUILD) $(BUILD_CPPFLAGS) -O2 -o gen-mul-tables $<;
 	./gen-mul-tables > $@
 
-mul-tables.o: $(srcdir)/config/tilegx/mul-tables.c \
+mul-tables.o: $(srcdir)/config/tilegx/mul-tables.cc \
     $(CONFIG_H) $(SYSTEM_H) coretypes.h $(EXPR_H) $(OPTABS_H) \
     $(srcdir)/config/tilegx/tilegx-multiply.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

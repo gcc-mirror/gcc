@@ -1,3 +1,74 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.cc: Rename .c names to .cc.
+	* c-ada-spec.h: Likewise.
+	* c-common.cc (c_build_vec_convert): Likewise.
+	(warning_candidate_p): Likewise.
+	* c-common.h (enum rid): Likewise.
+	(build_real_imag_expr): Likewise.
+	(finish_label_address_expr): Likewise.
+	(c_get_substring_location): Likewise.
+	(c_build_bind_expr): Likewise.
+	(conflict_marker_get_final_tok_kind): Likewise.
+	(c_parse_error): Likewise.
+	(check_missing_format_attribute): Likewise.
+	(invalid_array_size_error): Likewise.
+	(warn_for_multistatement_macros): Likewise.
+	(build_attr_access_from_parms): Likewise.
+	* c-cppbuiltin.cc (c_cpp_builtins): Likewise.
+	* c-format.cc: Likewise.
+	* c-gimplify.cc (c_gimplify_expr): Likewise.
+	* c-indentation.h: Likewise.
+	* c-objc.h (objc_prop_attr_kind_for_rid): Likewise.
+	* c-omp.cc (c_omp_predetermined_mapping): Likewise.
+	* c-opts.cc (c_common_post_options): Likewise.
+	(set_std_cxx23): Likewise.
+	* c-pragma.cc (handle_pragma_redefine_extname): Likewise.
+	* c-pretty-print.h: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c: Moved to...
+	* c-ada-spec.cc: ...here.
+	* c-attribs.c: Moved to...
+	* c-attribs.cc: ...here.
+	* c-common.c: Moved to...
+	* c-common.cc: ...here.
+	* c-cppbuiltin.c: Moved to...
+	* c-cppbuiltin.cc: ...here.
+	* c-dump.c: Moved to...
+	* c-dump.cc: ...here.
+	* c-format.c: Moved to...
+	* c-format.cc: ...here.
+	* c-gimplify.c: Moved to...
+	* c-gimplify.cc: ...here.
+	* c-indentation.c: Moved to...
+	* c-indentation.cc: ...here.
+	* c-lex.c: Moved to...
+	* c-lex.cc: ...here.
+	* c-omp.c: Moved to...
+	* c-omp.cc: ...here.
+	* c-opts.c: Moved to...
+	* c-opts.cc: ...here.
+	* c-pch.c: Moved to...
+	* c-pch.cc: ...here.
+	* c-ppoutput.c: Moved to...
+	* c-ppoutput.cc: ...here.
+	* c-pragma.c: Moved to...
+	* c-pragma.cc: ...here.
+	* c-pretty-print.c: Moved to...
+	* c-pretty-print.cc: ...here.
+	* c-semantics.c: Moved to...
+	* c-semantics.cc: ...here.
+	* c-ubsan.c: Moved to...
+	* c-ubsan.cc: ...here.
+	* c-warn.c: Moved to...
+	* c-warn.cc: ...here.
+	* cppspec.c: Moved to...
+	* cppspec.cc: ...here.
+	* stub-objc.c: Moved to...
+	* stub-objc.cc: ...here.
+
 2022-01-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/63272

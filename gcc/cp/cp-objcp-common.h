@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CP_OBJCP_COMMON
 #define GCC_CP_OBJCP_COMMON
 
-/* In cp/objcp-common.c, cp/cp-lang.c and objcp/objcp-lang.c.  */
+/* In cp/objcp-common.c, cp/cp-lang.cc and objcp/objcp-lang.cc.  */
 
 extern tree cp_get_debug_type (const_tree);
 extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
@@ -43,7 +43,7 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 				      array_slice<const tree>);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
-   specific to C++ or ObjC++ go in cp/cp-lang.c and objcp/objcp-lang.c,
+   specific to C++ or ObjC++ go in cp/cp-lang.cc and objcp/objcp-lang.cc,
    respectively.  */
 
 #undef LANG_HOOKS_FREE_LANG_DATA

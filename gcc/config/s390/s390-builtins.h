@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* This files contains data structure definitions which can be used by
-   s390-builtins.c as well as s390-c.c.  Since the latter is
+   s390-builtins.cc as well as s390-c.cc.  Since the latter is
    considered to be part of the front-end we have to be careful not
    to use any of tree and rtx like data structures.  */
 

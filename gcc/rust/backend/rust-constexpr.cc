@@ -339,7 +339,7 @@ ConstCtx::constexpr_fn_retval (tree body)
   return error_mark_node;
 }
 
-// Taken from cp/constexpr.c
+// Taken from cp/constexpr.cc
 //
 // If DECL is a scalar enumeration constant or variable with a
 // constant initializer, return the initializer (or, its initializers,
@@ -397,7 +397,7 @@ non_const_var_error (location_t loc, tree r)
   if (DECL_INITIAL (r) == error_mark_node)
     return;
 
-  // more in cp/constexpr.c
+  // more in cp/constexpr.cc
 }
 
 static tree

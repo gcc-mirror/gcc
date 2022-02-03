@@ -49,7 +49,7 @@
 })
 
 ;; Like comparison_operator, but only true if this comparison operator is
-;; applied to a valid mode.  Needed to avoid jump.c generating invalid
+;; applied to a valid mode.  Needed to avoid jump.cc generating invalid
 ;; code with -ffast-math (gcc.dg/20001228-1.c).
 
 (define_predicate "mmix_comparison_operator"

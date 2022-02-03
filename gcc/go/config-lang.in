@@ -31,7 +31,7 @@ compilers="go1\$(exeext)"
 target_libs="target-libgo target-libffi target-libbacktrace"
 lang_dirs="gotools"
 
-gtfiles="\$(srcdir)/go/go-lang.c \$(srcdir)/go/go-c.h"
+gtfiles="\$(srcdir)/go/go-lang.cc \$(srcdir)/go/go-c.h"
 
 # Do not build by default.
 build_by_default="no"

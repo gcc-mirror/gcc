@@ -1,4 +1,4 @@
-/* Provide prototypes for functions exported from prefix.c.
+/* Provide prototypes for functions exported from prefix.cc.
    Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

@@ -6553,7 +6553,7 @@
 ;; This pattern will be split into one of the pic_load_addr_* patterns
 ;; and a move after GCSE optimizations.
 ;;
-;; Note: Update arm.c: legitimize_pic_address() when changing this pattern.
+;; Note: Update arm.cc: legitimize_pic_address() when changing this pattern.
 (define_expand "calculate_pic_address"
   [(set (match_operand:SI 0 "register_operand")
 	(mem:SI (plus:SI (match_operand:SI 1 "register_operand")

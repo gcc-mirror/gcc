@@ -277,7 +277,7 @@ struct GTY(()) function {
      flags for the actions that they have taken.  */
   unsigned int pending_TODOs;
 
-  /* For function.c.  */
+  /* For function.cc.  */
 
   /* Points to the FUNCTION_DECL of this function.  */
   tree decl;

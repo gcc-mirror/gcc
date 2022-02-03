@@ -1989,7 +1989,7 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
 	 FIXME: Vectorized assignments should only be present after
 	 vectorization so this hack is only necessary after it has
 	 run and could be avoided in calls from prior passes (e.g.,
-	 tree-ssa-strlen.c).
+	 tree-ssa-strlen.cc).
 	 FIXME: Deal with this more generally, e.g., by marking up
 	 such MEM_REFs at the time they're created.  */
       ostype = 0;

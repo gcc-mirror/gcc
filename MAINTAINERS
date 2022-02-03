@@ -192,7 +192,7 @@ scheduler (+ haifa)	Jeff Law		<jeffreyalaw@gmail.com>
 scheduler (+ haifa)	Vladimir Makarov	<vmakarov@redhat.com>
 modulo-scheduler	Roman Zhuykov		<zhroma@ispras.ru>
 reorg			Jeff Law		<jeffreyalaw@gmail.com>
-caller-save.c		Jeff Law		<jeffreyalaw@gmail.com>
+caller-save.cc		Jeff Law		<jeffreyalaw@gmail.com>
 callgraph		Jan Hubicka		<hubicka@ucw.cz>
 debugging code		Jim Wilson		<wilson@tuliptree.org>
 dwarf debugging code	Jason Merrill		<jason@redhat.com>
@@ -206,9 +206,9 @@ fixincludes		Bruce Korb		<bkorb@gnu.org>
 *gimpl*			Jakub Jelinek		<jakub@redhat.com>
 *gimpl*			Aldy Hernandez		<aldyh@redhat.com>
 *gimpl*			Jason Merrill		<jason@redhat.com>
-gcse.c			Jeff Law		<jeffreyalaw@gmail.com>
+gcse.cc			Jeff Law		<jeffreyalaw@gmail.com>
 global opt framework	Jeff Law		<jeffreyalaw@gmail.com>
-jump.c			David S. Miller		<davem@redhat.com>
+jump.cc			David S. Miller		<davem@redhat.com>
 web pages		Gerald Pfeifer		<gerald@pfeifer.com>
 config.sub/config.guess	Ben Elliston		<config-patches@gnu.org>
 i18n			Philipp Thomas		<pth@suse.de>
@@ -288,10 +288,10 @@ Fortran			Janus Weil		<janus@gcc.gnu.org>
 Graphite		Tobias Grosser		<grosser@fim.uni-passau.de>
 Graphite		Sebastian Pop		<sebpop@gmail.com>
 libcpp			Tom Tromey		<tromey@redhat.com>
-libsanitizer, asan.c	Jakub Jelinek		<jakub@redhat.com>
-libsanitizer, asan.c	Dodji Seketeli		<dodji@redhat.com>
-libsanitizer, asan.c	Kostya Serebryany	<kcc@google.com>
-libsanitizer, asan.c	Dmitry Vyukov		<dvyukov@google.com>
+libsanitizer, asan.cc	Jakub Jelinek		<jakub@redhat.com>
+libsanitizer, asan.cc	Dodji Seketeli		<dodji@redhat.com>
+libsanitizer, asan.cc	Kostya Serebryany	<kcc@google.com>
+libsanitizer, asan.cc	Dmitry Vyukov		<dvyukov@google.com>
 loop optimizer		Zdenek Dvorak		<ook@ucw.cz>
 LTO			Richard Biener		<rguenther@suse.de>
 LTO plugin		Cary Coutant		<ccoutant@gmail.com>

@@ -60,7 +60,7 @@
 
 struct function;
 
-/* In statistics.c */
+/* In statistics.cc */
 extern void statistics_early_init (void);
 extern void statistics_init (void);
 extern void statistics_fini (void);

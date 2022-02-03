@@ -1,4 +1,4 @@
-omp-device-properties-gcn: $(srcdir)/config/gcn/gcn.c
+omp-device-properties-gcn: $(srcdir)/config/gcn/gcn.cc
 	echo kind: gpu > $@
 	echo arch: gcn >> $@
 	echo isa: fiji gfx900 gfx906 gfx908 >> $@

@@ -1,3 +1,164 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* config-lang.in: Likewise.
+	* constexpr.cc (cxx_eval_constant_expression): Likewise.
+	* coroutines.cc (morph_fn_to_coro): Likewise.
+	* cp-gimplify.cc (cp_gimplify_expr): Likewise.
+	* cp-lang.cc (struct lang_hooks): Likewise.
+	(get_template_argument_pack_elems_folded): Likewise.
+	* cp-objcp-common.cc (cp_tree_size): Likewise.
+	(cp_unit_size_without_reusable_padding): Likewise.
+	(pop_file_scope): Likewise.
+	(cp_pushdecl): Likewise.
+	* cp-objcp-common.h (GCC_CP_OBJCP_COMMON): Likewise.
+	(cxx_simulate_record_decl): Likewise.
+	* cp-tree.h (struct named_label_entry): Likewise.
+	(current_function_return_value): Likewise.
+	(more_aggr_init_expr_args_p): Likewise.
+	(get_function_version_dispatcher): Likewise.
+	(common_enclosing_class): Likewise.
+	(strip_fnptr_conv): Likewise.
+	(current_decl_namespace): Likewise.
+	(do_aggregate_paren_init): Likewise.
+	(cp_check_const_attributes): Likewise.
+	(qualified_name_lookup_error): Likewise.
+	(generic_targs_for): Likewise.
+	(mark_exp_read): Likewise.
+	(is_global_friend): Likewise.
+	(maybe_reject_flexarray_init): Likewise.
+	(module_token_lang): Likewise.
+	(handle_module_option): Likewise.
+	(literal_integer_zerop): Likewise.
+	(build_extra_args): Likewise.
+	(build_if_nonnull): Likewise.
+	(maybe_check_overriding_exception_spec): Likewise.
+	(finish_omp_target_clauses): Likewise.
+	(maybe_warn_zero_as_null_pointer_constant): Likewise.
+	(cxx_print_error_function): Likewise.
+	(decl_in_std_namespace_p): Likewise.
+	(merge_exception_specifiers): Likewise.
+	(mangle_module_global_init): Likewise.
+	(cxx_block_may_fallthru): Likewise.
+	(fold_builtin_source_location): Likewise.
+	(enum cp_oracle_request): Likewise.
+	(subsumes): Likewise.
+	(cp_finish_injected_record_type): Likewise.
+	(vtv_build_vtable_verify_fndecl): Likewise.
+	(cp_tree_c_finish_parsing): Likewise.
+	* cvt.cc (diagnose_ref_binding): Likewise.
+	(convert_to_void): Likewise.
+	(convert_force): Likewise.
+	(type_promotes_to): Likewise.
+	* decl.cc (make_unbound_class_template_raw): Likewise.
+	(cxx_init_decl_processing): Likewise.
+	(check_class_member_definition_namespace): Likewise.
+	(cxx_maybe_build_cleanup): Likewise.
+	* decl2.cc (maybe_emit_vtables): Likewise.
+	* error.cc (dump_function_name): Likewise.
+	* init.cc (is_class_type): Likewise.
+	(build_new_1): Likewise.
+	* lang-specs.h: Likewise.
+	* method.cc (make_alias_for_thunk): Likewise.
+	* module.cc (specialization_add): Likewise.
+	(module_state::read_cluster): Likewise.
+	* name-lookup.cc (check_extern_c_conflict): Likewise.
+	* name-lookup.h (struct cxx_binding): Likewise.
+	* parser.cc (cp_parser_identifier): Likewise.
+	* parser.h (struct cp_parser): Likewise.
+	* pt.cc (has_value_dependent_address): Likewise.
+	(push_tinst_level_loc): Likewise.
+	* semantics.cc (finish_omp_clauses): Likewise.
+	(finish_omp_atomic): Likewise.
+	* tree.cc (cp_save_expr): Likewise.
+	(cp_free_lang_data): Likewise.
+	* typeck.cc (cp_common_type): Likewise.
+	(strip_array_domain): Likewise.
+	(rationalize_conditional_expr): Likewise.
+	(check_return_expr): Likewise.
+	* vtable-class-hierarchy.cc: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* call.c: Moved to...
+	* call.cc: ...here.
+	* class.c: Moved to...
+	* class.cc: ...here.
+	* constexpr.c: Moved to...
+	* constexpr.cc: ...here.
+	* cp-gimplify.c: Moved to...
+	* cp-gimplify.cc: ...here.
+	* cp-lang.c: Moved to...
+	* cp-lang.cc: ...here.
+	* cp-objcp-common.c: Moved to...
+	* cp-objcp-common.cc: ...here.
+	* cp-ubsan.c: Moved to...
+	* cp-ubsan.cc: ...here.
+	* cvt.c: Moved to...
+	* cvt.cc: ...here.
+	* cxx-pretty-print.c: Moved to...
+	* cxx-pretty-print.cc: ...here.
+	* decl.c: Moved to...
+	* decl.cc: ...here.
+	* decl2.c: Moved to...
+	* decl2.cc: ...here.
+	* dump.c: Moved to...
+	* dump.cc: ...here.
+	* error.c: Moved to...
+	* error.cc: ...here.
+	* except.c: Moved to...
+	* except.cc: ...here.
+	* expr.c: Moved to...
+	* expr.cc: ...here.
+	* friend.c: Moved to...
+	* friend.cc: ...here.
+	* g++spec.c: Moved to...
+	* g++spec.cc: ...here.
+	* init.c: Moved to...
+	* init.cc: ...here.
+	* lambda.c: Moved to...
+	* lambda.cc: ...here.
+	* lex.c: Moved to...
+	* lex.cc: ...here.
+	* mangle.c: Moved to...
+	* mangle.cc: ...here.
+	* method.c: Moved to...
+	* method.cc: ...here.
+	* name-lookup.c: Moved to...
+	* name-lookup.cc: ...here.
+	* optimize.c: Moved to...
+	* optimize.cc: ...here.
+	* parser.c: Moved to...
+	* parser.cc: ...here.
+	* pt.c: Moved to...
+	* pt.cc: ...here.
+	* ptree.c: Moved to...
+	* ptree.cc: ...here.
+	* rtti.c: Moved to...
+	* rtti.cc: ...here.
+	* search.c: Moved to...
+	* search.cc: ...here.
+	* semantics.c: Moved to...
+	* semantics.cc: ...here.
+	* tree.c: Moved to...
+	* tree.cc: ...here.
+	* typeck.c: Moved to...
+	* typeck.cc: ...here.
+	* typeck2.c: Moved to...
+	* typeck2.cc: ...here.
+	* vtable-class-hierarchy.c: Moved to...
+	* vtable-class-hierarchy.cc: ...here.
+
+2022-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104031
+	* cp-gimplify.c (cp_genericize_target_expr): Set DECL_CONTEXT of
+	TARGET_EXPR_SLOT to current_function_decl if it was NULL.
+
+2022-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* parser.c (cp_parser_omp_requires): Don't "sorry" dynamic_allocators.
+
 2022-01-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c++/103705

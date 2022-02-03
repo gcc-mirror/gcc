@@ -1,4 +1,4 @@
-/* Prototypes for exported functions defined in nvptx.c.
+/* Prototypes for exported functions defined in nvptx.cc.
    Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 

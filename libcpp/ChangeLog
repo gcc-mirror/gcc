@@ -1,3 +1,78 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename .c names to .cc.
+	* charset.cc (convert_escape): Likewise.
+	* directives.cc (directive_diagnostics): Likewise.
+	(_cpp_handle_directive): Likewise.
+	(lex_macro_node): Likewise.
+	* include/cpplib.h (struct _cpp_file): Likewise.
+	(PURE_ZERO): Likewise.
+	(cpp_defined): Likewise.
+	(cpp_error_at): Likewise.
+	(cpp_forall_identifiers): Likewise.
+	(cpp_compare_macros): Likewise.
+	(cpp_get_converted_source): Likewise.
+	(cpp_read_state): Likewise.
+	(cpp_directive_only_process): Likewise.
+	(struct cpp_decoded_char): Likewise.
+	* include/line-map.h (enum lc_reason): Likewise.
+	(enum location_aspect): Likewise.
+	* include/mkdeps.h: Likewise.
+	* init.cc (cpp_destroy): Likewise.
+	(cpp_finish): Likewise.
+	* internal.h (struct cpp_reader): Likewise.
+	(_cpp_defined_macro_p): Likewise.
+	(_cpp_backup_tokens_direct): Likewise.
+	(_cpp_destroy_hashtable): Likewise.
+	(_cpp_has_header): Likewise.
+	(_cpp_expand_op_stack): Likewise.
+	(_cpp_commit_buff): Likewise.
+	(_cpp_restore_special_builtin): Likewise.
+	(_cpp_bracket_include): Likewise.
+	(_cpp_replacement_text_len): Likewise.
+	(ufputs): Likewise.
+	* line-map.cc (linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_check_files_exited): Likewise.
+	(line_map_new_raw): Likewise.
+	* traditional.cc (enum ls): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* charset.c: Moved to...
+	* charset.cc: ...here.
+	* directives.c: Moved to...
+	* directives.cc: ...here.
+	* errors.c: Moved to...
+	* errors.cc: ...here.
+	* expr.c: Moved to...
+	* expr.cc: ...here.
+	* files.c: Moved to...
+	* files.cc: ...here.
+	* identifiers.c: Moved to...
+	* identifiers.cc: ...here.
+	* init.c: Moved to...
+	* init.cc: ...here.
+	* lex.c: Moved to...
+	* lex.cc: ...here.
+	* line-map.c: Moved to...
+	* line-map.cc: ...here.
+	* macro.c: Moved to...
+	* macro.cc: ...here.
+	* makeucnid.c: Moved to...
+	* makeucnid.cc: ...here.
+	* mkdeps.c: Moved to...
+	* mkdeps.cc: ...here.
+	* pch.c: Moved to...
+	* pch.cc: ...here.
+	* symtab.c: Moved to...
+	* symtab.cc: ...here.
+	* traditional.c: Moved to...
+	* traditional.cc: ...here.
+
 2022-01-15  Martin Sebor  <msebor@redhat.com>
 
 	* files.c (_cpp_find_file): Substitute a valid pointer for

@@ -1,3 +1,13 @@
+2022-01-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/issignaling_fallback.h: Remove file.
+
+2022-01-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/environ.c: Allow for multiple default values so that
+	separate default specifications for IBM long double format and
+	endianness are possible.
+
 2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* ieee/issignaling_fallback.h: New file.

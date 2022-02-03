@@ -686,7 +686,7 @@ enum tree_index {
 
   /* Put the complex types after their component types, so that in (sequential)
      tree streaming we can assert that their component types have already been
-     handled (see tree-streamer.c:record_common_node).  */
+     handled (see tree-streamer.cc:record_common_node).  */
   TI_COMPLEX_INTEGER_TYPE,
   TI_COMPLEX_FLOAT_TYPE,
   TI_COMPLEX_DOUBLE_TYPE,
@@ -821,7 +821,7 @@ enum tree_index {
 /* An enumeration of the standard C integer types.  These must be
    ordered so that shorter types appear before longer ones, and so
    that signed types appear before unsigned ones, for the correct
-   functioning of interpret_integer() in c-lex.c.  */
+   functioning of interpret_integer() in c-lex.cc.  */
 enum integer_type_kind {
   itk_char,
   itk_signed_char,
@@ -933,7 +933,7 @@ enum operand_equal_flag {
 };
 
 /* Enum and arrays used for tree allocation stats.
-   Keep in sync with tree.c:tree_node_kind_names.  */
+   Keep in sync with tree.cc:tree_node_kind_names.  */
 enum tree_node_kind {
   d_kind,
   t_kind,

@@ -60,7 +60,7 @@ objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
-cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+cc1obj-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
         $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final \

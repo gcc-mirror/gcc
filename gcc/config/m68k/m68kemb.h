@@ -49,7 +49,7 @@
     builtin_rust_info ("target_env", "");	\
   } while (0)
 
-/* Override the default LIB_SPEC from gcc.c.  We don't currently support
+/* Override the default LIB_SPEC from gcc.cc.  We don't currently support
    profiling, or libg.a.  */
 
 #undef  LIB_SPEC

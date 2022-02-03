@@ -28,7 +28,7 @@ namespace Compile {
 
 static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
 
-// see: gcc/c/c-decl.c:8230-8241
+// see: gcc/c/c-decl.cc:8230-8241
 // https://github.com/Rust-GCC/gccrs/blob/0024bc2f028369b871a65ceb11b2fddfb0f9c3aa/gcc/c/c-decl.c#L8229-L8241
 tree
 TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)

@@ -1138,7 +1138,7 @@
   (set_attr "mode"	"QI")
   (set_attr "length"	"4,4,8,4,8,4,8")])
 
-;; Block moves, see microblaze.c for more details.
+;; Block moves, see microblaze.cc for more details.
 ;; Argument 0 is the destination
 ;; Argument 1 is the source
 ;; Argument 2 is the length
@@ -2147,7 +2147,7 @@
   (set_attr "mode"	"none")
   (set_attr "length"	"4")])
 
-;; calls.c now passes a fourth argument, make saber happy
+;; calls.cc now passes a fourth argument, make saber happy
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "register_operand" "=d")

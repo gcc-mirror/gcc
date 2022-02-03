@@ -3261,7 +3261,7 @@
 ;; If the count is run-time determined, the register with the byte count
 ;; is clobbered by the copying code, and therefore it is forced to operand 2.
 ;;
-;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; We used to clobber operands 0 and 1.  However, a change to regrename.cc
 ;; broke this semantic for pseudo registers.  We can't use match_scratch
 ;; as this requires two registers in the class R1_REGS when the MEMs for
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
@@ -3449,7 +3449,7 @@
 ;; If the count is run-time determined, the register with the byte count
 ;; is clobbered by the copying code, and therefore it is forced to operand 2.
 ;;
-;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; We used to clobber operands 0 and 1.  However, a change to regrename.cc
 ;; broke this semantic for pseudo registers.  We can't use match_scratch
 ;; as this requires two registers in the class R1_REGS when the MEMs for
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
@@ -6663,7 +6663,7 @@
 	      DONE;
 	    }
 	}
-      /* Fallback to using optabs.c's expand_doubleword_shift.  */
+      /* Fallback to using optabs.cc's expand_doubleword_shift.  */
       FAIL;
     }
   if (GET_CODE (operands[2]) != CONST_INT)
@@ -6713,7 +6713,7 @@
 	  DONE;
 	}
     }
-  /* Fallback to using optabs.c's expand_doubleword_shift.  */
+  /* Fallback to using optabs.cc's expand_doubleword_shift.  */
   FAIL;
 })
 

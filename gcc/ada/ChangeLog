@@ -1,3 +1,120 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.rtl: Rename .c names to .cc.
+	* gcc-interface/Make-lang.in: Likewise.
+	* gcc-interface/Makefile.in: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-generated.in: Rename .c names to .cc.
+	* adaint.c: Likewise.
+	* ctrl_c.c (dummy_handler): Likewise.
+	* gcc-interface/Makefile.in: Likewise.
+	* gcc-interface/config-lang.in: Likewise.
+	* gcc-interface/decl.cc (concat_name): Likewise.
+	(init_gnat_decl): Likewise.
+	* gcc-interface/gigi.h (concat_name): Likewise.
+	(init_gnat_utils): Likewise.
+	(build_call_raise_range): Likewise.
+	(gnat_mark_addressable): Likewise.
+	(gnat_protect_expr): Likewise.
+	(gnat_rewrite_reference): Likewise.
+	* gcc-interface/lang-specs.h (ADA_DUMPS_OPTIONS): Likewise.
+	* gcc-interface/utils.cc (GTY): Likewise.
+	(add_deferred_type_context): Likewise.
+	(init_gnat_utils): Likewise.
+	* gcc-interface/utils2.cc (gnat_stable_expr_p): Likewise.
+	(gnat_protect_expr): Likewise.
+	(gnat_stabilize_reference_1): Likewise.
+	(gnat_rewrite_reference): Likewise.
+	* gsocket.h: Likewise.
+	* init.cc (__gnat_error_handler): Likewise.
+	* libgnarl/s-intman.ads: Likewise.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-taskin.ads: Likewise.
+	* rtfinal.cc: Likewise.
+	* s-oscons-tmplt.c (CND): Likewise.
+	* set_targ.ads: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* adadecode.c: Moved to...
+	* adadecode.cc: ...here.
+	* affinity.c: Moved to...
+	* affinity.cc: ...here.
+	* argv-lynxos178-raven-cert.c: Moved to...
+	* argv-lynxos178-raven-cert.cc: ...here.
+	* argv.c: Moved to...
+	* argv.cc: ...here.
+	* aux-io.c: Moved to...
+	* aux-io.cc: ...here.
+	* cio.c: Moved to...
+	* cio.cc: ...here.
+	* cstreams.c: Moved to...
+	* cstreams.cc: ...here.
+	* env.c: Moved to...
+	* env.cc: ...here.
+	* exit.c: Moved to...
+	* exit.cc: ...here.
+	* expect.c: Moved to...
+	* expect.cc: ...here.
+	* final.c: Moved to...
+	* final.cc: ...here.
+	* gcc-interface/cuintp.c: Moved to...
+	* gcc-interface/cuintp.cc: ...here.
+	* gcc-interface/decl.c: Moved to...
+	* gcc-interface/decl.cc: ...here.
+	* gcc-interface/misc.c: Moved to...
+	* gcc-interface/misc.cc: ...here.
+	* gcc-interface/targtyps.c: Moved to...
+	* gcc-interface/targtyps.cc: ...here.
+	* gcc-interface/trans.c: Moved to...
+	* gcc-interface/trans.cc: ...here.
+	* gcc-interface/utils.c: Moved to...
+	* gcc-interface/utils.cc: ...here.
+	* gcc-interface/utils2.c: Moved to...
+	* gcc-interface/utils2.cc: ...here.
+	* init.c: Moved to...
+	* init.cc: ...here.
+	* initialize.c: Moved to...
+	* initialize.cc: ...here.
+	* libgnarl/thread.c: Moved to...
+	* libgnarl/thread.cc: ...here.
+	* link.c: Moved to...
+	* link.cc: ...here.
+	* locales.c: Moved to...
+	* locales.cc: ...here.
+	* mkdir.c: Moved to...
+	* mkdir.cc: ...here.
+	* raise.c: Moved to...
+	* raise.cc: ...here.
+	* rtfinal.c: Moved to...
+	* rtfinal.cc: ...here.
+	* rtinit.c: Moved to...
+	* rtinit.cc: ...here.
+	* seh_init.c: Moved to...
+	* seh_init.cc: ...here.
+	* sigtramp-armdroid.c: Moved to...
+	* sigtramp-armdroid.cc: ...here.
+	* sigtramp-ios.c: Moved to...
+	* sigtramp-ios.cc: ...here.
+	* sigtramp-qnx.c: Moved to...
+	* sigtramp-qnx.cc: ...here.
+	* sigtramp-vxworks.c: Moved to...
+	* sigtramp-vxworks.cc: ...here.
+	* socket.c: Moved to...
+	* socket.cc: ...here.
+	* tracebak.c: Moved to...
+	* tracebak.cc: ...here.
+	* version.c: Moved to...
+	* version.cc: ...here.
+	* vx_stack_info.c: Moved to...
+	* vx_stack_info.cc: ...here.
+
 2022-01-14  Andrew Pinski  <apinski@marvell.com>
 
 	PR ada/104027

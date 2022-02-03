@@ -7965,7 +7965,7 @@ If the location does not fit the address range of @code{LDS}
 and @code{STS}, there is currently (Binutils 2.26) just an unspecific
 warning like
 @quotation
-@code{module.c:(.text+0x1c): warning: internal error: out of range error}
+@code{module.cc:(.text+0x1c): warning: internal error: out of range error}
 @end quotation
 
 @end itemize

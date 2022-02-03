@@ -97,7 +97,7 @@ extern bool arc_text_label (rtx_insn *insn);
 extern bool arc_short_comparison_p (rtx, int);
 extern bool arc_epilogue_uses (int regno);
 extern bool arc_eh_uses (int regno);
-/* insn-attrtab.c doesn't include reload.h, which declares regno_clobbered_p. */
+/* insn-attrtab.cc doesn't include reload.h, which declares regno_clobbered_p. */
 extern int regno_clobbered_p (unsigned int, rtx_insn *, machine_mode, int);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);

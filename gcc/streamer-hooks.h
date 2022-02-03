@@ -86,7 +86,7 @@ struct streamer_hooks {
 /* Streamer hooks.  */
 extern struct streamer_hooks streamer_hooks;
 
-/* In streamer-hooks.c.  */
+/* In streamer-hooks.cc.  */
 void streamer_hooks_init (void);
 
 #endif  /* GCC_STREAMER_HOOKS_H  */

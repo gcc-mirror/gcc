@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Look for directories that start with the standard prefix.
    "Translate" them, i.e: replace /usr/local/lib/gcc with
-   IPREFIX and search them first.  Based on incpath.c.  */
+   IPREFIX and search them first.  Based on incpath.cc.  */
 
 static char *
 prefixed_path (const char *path, const char *iprefix)

@@ -1,3 +1,3 @@
-driver-rs6000.o : $(srcdir)/config/rs6000/driver-rs6000.c \
+driver-rs6000.o : $(srcdir)/config/rs6000/driver-rs6000.cc \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

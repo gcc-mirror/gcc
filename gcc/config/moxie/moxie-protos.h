@@ -1,4 +1,4 @@
-/* Prototypes for moxie.c functions used in the md file & elsewhere.
+/* Prototypes for moxie.cc functions used in the md file & elsewhere.
    Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.

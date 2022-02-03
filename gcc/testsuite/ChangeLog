@@ -1,3 +1,116 @@
+2022-01-17  qing zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/auto-init-uninit-16.c (testfunc): Delete xfail to reflect
+	the fact that address taken variable can be warned.
+	* gcc.dg/auto-init-uninit-34.c (warn_scalar_1): Likewise.
+	(warn_scalar_2): Likewise.
+	* gcc.dg/auto-init-uninit-37.c (T1): Likewise.
+	(T2): Likewise.
+	* gcc.dg/auto-init-uninit-B.c (baz): Likewise.
+
+2022-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104031
+	* g++.dg/cpp1y/pr104031.C: New test.
+
+2022-01-17  Jason Merrill  <jason@redhat.com>
+
+	* c-c++-common/cpp/line-2.c: Only expect includes once.
+	* c-c++-common/cpp/line-3.c: Likewise.
+
+2022-01-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-8.f90: Reinstate dynamic allocators
+	requirement.
+
+2022-01-17  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-2.f90: Change 0 to 0_1.
+
+2022-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103973
+	* gcc.target/i386/pr103973-1.c: New test.
+	* gcc.target/i386/pr103973-2.c: New test.
+	* gcc.target/i386/pr103973-3.c: New test.
+	* gcc.target/i386/pr103973-4.c: New test.
+	* gcc.target/i386/pr103973-5.c: New test.
+	* gcc.target/i386/pr103973-6.c: New test.
+	* gcc.target/i386/pr103973-7.c: New test.
+	* gcc.target/i386/pr103973-8.c: New test.
+	* gcc.target/i386/pr103973-9.c: New test.
+	* gcc.target/i386/pr103973-10.c: New test.
+	* gcc.target/i386/pr103973-11.c: New test.
+	* gcc.target/i386/pr103973-12.c: New test.
+	* gcc.target/i386/pr103973-13.c: New test.
+	* gcc.target/i386/pr103973-14.c: New test.
+	* gcc.target/i386/pr103973-15.c: New test.
+	* gcc.target/i386/pr103973-16.c: New test.
+	* gcc.target/i386/pr103973-17.c: New test.
+	* gcc.target/i386/pr103973-18.c: New test.
+	* gcc.target/i386/pr103973-19.c: New test.
+	* gcc.target/i386/pr103973-20.c: New test.
+	* g++.target/i386/pr103973-1.C: New test.
+	* g++.target/i386/pr103973-2.C: New test.
+	* g++.target/i386/pr103973-3.C: New test.
+	* g++.target/i386/pr103973-4.C: New test.
+	* g++.target/i386/pr103973-5.C: New test.
+	* g++.target/i386/pr103973-6.C: New test.
+	* g++.target/i386/pr103973-7.C: New test.
+	* g++.target/i386/pr103973-8.C: New test.
+	* g++.target/i386/pr103973-9.C: New test.
+	* g++.target/i386/pr103973-10.C: New test.
+	* g++.target/i386/pr103973-11.C: New test.
+	* g++.target/i386/pr103973-12.C: New test.
+	* g++.target/i386/pr103973-13.C: New test.
+	* g++.target/i386/pr103973-14.C: New test.
+	* g++.target/i386/pr103973-15.C: New test.
+	* g++.target/i386/pr103973-16.C: New test.
+	* g++.target/i386/pr103973-17.C: New test.
+	* g++.target/i386/pr103973-18.C: New test.
+	* g++.target/i386/pr103973-19.C: New test.
+	* g++.target/i386/pr103973-20.C: New test.
+
+2022-01-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ieee/signaling_3.f90: Remove file.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/uninit-pred-loop-1_b.C: Fix invalid warnings.
+	* g++.dg/uninit-pred-loop-1_c.C: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/uninit-pred-loop-1_a.cc: Moved to...
+	* g++.dg/uninit-pred-loop-1_a.C: ...here.
+	* g++.dg/uninit-pred-loop-1_b.cc: Moved to...
+	* g++.dg/uninit-pred-loop-1_b.C: ...here.
+	* g++.dg/uninit-pred-loop-1_c.cc: Moved to...
+	* g++.dg/uninit-pred-loop-1_c.C: ...here.
+	* g++.dg/uninit-pred-loop_1.cc: Moved to...
+	* g++.dg/uninit-pred-loop_1.C: ...here.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* lib/gcov.exp: Use check_effective_target_pytest3.
+	* lib/target-supports.exp: Add check_effective_target_pytest3.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc.src/maintainers.exp: Start using check-MAINTAINERS.py.
+	* lib/target-supports.exp: Add check_effective_target_python3.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/104035
+	* g++.dg/torture/pr57993-2.C: Fix warnings.
+
+2022-01-17  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/103124
+	* gcc.target/powerpc/pr103124.c: New testcase.
+
 2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* gfortran.dg/ieee/signaling_1.f90: xfail on x87.

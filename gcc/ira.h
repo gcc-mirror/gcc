@@ -215,10 +215,10 @@ extern bool ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_fi
 extern void ira_restore_scratches (FILE *dump_file);
 extern void ira_nullify_asm_goto (rtx_insn *insn);
 
-/* ira-costs.c */
+/* ira-costs.cc */
 extern void ira_costs_c_finalize (void);
 
-/* ira-lives.c */
+/* ira-lives.cc */
 extern rtx non_conflicting_reg_copy_p (rtx_insn *);
 
 /* Spilling static chain pseudo may result in generation of wrong
