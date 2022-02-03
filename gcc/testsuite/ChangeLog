@@ -1,3 +1,18 @@
+2022-02-02  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-02-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104331
+	* gfortran.dg/eoshift_9.f90: New test.
+
+2022-02-02  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	Backported from master:
+	2022-02-01  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* gcc.dg/pr95115.c: New test.
+
 2022-01-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
