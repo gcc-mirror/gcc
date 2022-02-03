@@ -92,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using propagate_on_container_move_assignment = true_type;
 
       using is_always_equal
-	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
 
 #if __cplusplus >= 202002L
@@ -146,7 +146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using propagate_on_container_move_assignment = true_type;
 
       using is_always_equal
-	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	_GLIBCXX20_DEPRECATED_SUGGEST("std::allocator_traits::is_always_equal")
 	= true_type;
 #endif
 
