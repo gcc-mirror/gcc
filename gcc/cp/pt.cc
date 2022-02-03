@@ -1797,6 +1797,10 @@ iterative_hash_template_arg (tree arg, hashval_t val)
   switch (code)
     {
     case ARGUMENT_PACK_SELECT:
+      /* Getting here with an ARGUMENT_PACK_SELECT means we're probably
+	 preserving it in a hash table, which is bad because it will change
+	 meaning when gen_elem_of_pack_expansion_instantiation changes the
+	 ARGUMENT_PACK_SELECT_INDEX.  */
       gcc_unreachable ();
 
     case ERROR_MARK:
