@@ -414,8 +414,6 @@ package Snames is
    Name_Check_Float_Overflow           : constant Name_Id := N + $; -- GNAT
    Name_Check_Name                     : constant Name_Id := N + $; -- GNAT
    Name_Check_Policy                   : constant Name_Id := N + $; -- GNAT
-   Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
-   Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
@@ -508,6 +506,8 @@ package Snames is
    Name_Check                          : constant Name_Id := N + $; -- GNAT
    Name_Comment                        : constant Name_Id := N + $; -- GNAT
    Name_Common_Object                  : constant Name_Id := N + $; -- GNAT
+   Name_Compile_Time_Error             : constant Name_Id := N + $; -- GNAT
+   Name_Compile_Time_Warning           : constant Name_Id := N + $; -- GNAT
    Name_Complete_Representation        : constant Name_Id := N + $; -- GNAT
    Name_Complex_Representation         : constant Name_Id := N + $; -- GNAT
    Name_Constant_After_Elaboration     : constant Name_Id := N + $; -- GNAT
@@ -1738,8 +1738,6 @@ package Snames is
       Pragma_Check_Float_Overflow,
       Pragma_Check_Name,
       Pragma_Check_Policy,
-      Pragma_Compile_Time_Error,
-      Pragma_Compile_Time_Warning,
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
@@ -1819,6 +1817,8 @@ package Snames is
       Pragma_Check,
       Pragma_Comment,
       Pragma_Common_Object,
+      Pragma_Compile_Time_Error,
+      Pragma_Compile_Time_Warning,
       Pragma_Complete_Representation,
       Pragma_Complex_Representation,
       Pragma_Constant_After_Elaboration,
