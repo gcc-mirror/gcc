@@ -5717,8 +5717,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	    if (!(TREE_CODE (restr_arg) == INTEGER_CST
 		  && (TREE_INT_CST_LOW (restr_arg) & ~mask) == 0))
 	      {
-		error ("argument %d must be a %d-bit unsigned literal",
-		       bifaddr->restr_opnd[i], bifaddr->restr_val1[i]);
+		unsigned p = (1U << bifaddr->restr_val1[i]) - 1;
+		error ("argument %d must be a literal between 0 and %d,"
+		       " inclusive",
+		       bifaddr->restr_opnd[i], p);
 		return CONST0_RTX (mode[0]);
 	      }
 	    break;
