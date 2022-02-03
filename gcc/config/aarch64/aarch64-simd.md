@@ -50,8 +50,8 @@
 )
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VALL 0 "nonimmediate_operand")
-        (match_operand:VALL 1 "general_operand"))]
+  [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
+        (match_operand:VALL_F16 1 "general_operand"))]
   "TARGET_SIMD && !STRICT_ALIGNMENT"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
