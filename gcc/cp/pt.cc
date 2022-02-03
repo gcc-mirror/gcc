@@ -27003,6 +27003,24 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
   return true;
 }
 
+/* Returns true iff the noexcept-specifier for TYPE is value-dependent.  */
+
+static bool
+value_dependent_noexcept_spec_p (tree type)
+{
+  if (tree spec = TYPE_RAISES_EXCEPTIONS (type))
+    if (tree noex = TREE_PURPOSE (spec))
+      /* Treat DEFERRED_NOEXCEPT as non-dependent, since it doesn't
+	 affect overload resolution and treating it as dependent breaks
+	 things.  Same for an unparsed noexcept expression.  */
+      if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
+	  && TREE_CODE (noex) != DEFERRED_PARSE
+	  && value_dependent_expression_p (noex))
+	return true;
+
+  return false;
+}
+
 /* Returns TRUE if TYPE is dependent, in the sense of [temp.dep.type].
    Assumes that TYPE really is a type, and not the ERROR_MARK_NODE.*/
 
@@ -27055,17 +27073,10 @@ dependent_type_p_r (tree type)
 	   arg_type = TREE_CHAIN (arg_type))
 	if (dependent_type_p (TREE_VALUE (arg_type)))
 	  return true;
-      if (cxx_dialect >= cxx17)
+      if (cxx_dialect >= cxx17
+	  && value_dependent_noexcept_spec_p (type))
 	/* A value-dependent noexcept-specifier makes the type dependent.  */
-	if (tree spec = TYPE_RAISES_EXCEPTIONS (type))
-	  if (tree noex = TREE_PURPOSE (spec))
-	    /* Treat DEFERRED_NOEXCEPT as non-dependent, since it doesn't
-	       affect overload resolution and treating it as dependent breaks
-	       things.  Same for an unparsed noexcept expression.  */
-	    if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
-		&& TREE_CODE (noex) != DEFERRED_PARSE
-		&& value_dependent_expression_p (noex))
-	      return true;
+	return true;
       return false;
     }
   /* -- an array type constructed from any dependent type or whose
@@ -27871,6 +27882,17 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
+	return *tp;
+      break;
+
+    case TEMPLATE_DECL:
+    case FUNCTION_DECL:
+      /* Before C++17, a noexcept-specifier isn't part of the function type
+	 so it doesn't affect type dependence, but we still want to consider it
+	 for instantiation dependence.  */
+      if (cxx_dialect < cxx17
+	  && DECL_DECLARES_FUNCTION_P (*tp)
+	  && value_dependent_noexcept_spec_p (TREE_TYPE (*tp)))
 	return *tp;
       break;
 
