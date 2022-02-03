@@ -1,3 +1,47 @@
+2022-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_return): Replace usage of
+	copy_region with get_rvalue/set_value pair.
+	(region_model::pop_frame): Likewise.
+	(selftest::test_compound_assignment): Likewise.
+	* region-model.h (region_model::copy_region): Delete decl.
+	* region.cc (region_model::copy_region): Delete.
+
+2022-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.cc (region::calc_offset): Consolidate effectively
+	identical cases.
+
+2022-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (class bit_range_region): New forward decl.
+	* region-model-manager.cc (region_model_manager::get_bit_range):
+	New.
+	(region_model_manager::log_stats): Handle m_bit_range_regions.
+	* region-model.cc (region_model::get_lvalue_1): Handle
+	BIT_FIELD_REF.
+	* region-model.h (region_model_manager::get_bit_range): New decl.
+	(region_model_manager::m_bit_range_regions): New field.
+	* region.cc (region::get_base_region): Handle RK_BIT_RANGE.
+	(region::base_region_p): Likewise.
+	(region::calc_offset): Likewise.
+	(bit_range_region::dump_to_pp): New.
+	(bit_range_region::get_byte_size): New.
+	(bit_range_region::get_bit_size): New.
+	(bit_range_region::get_byte_size_sval): New.
+	(bit_range_region::get_relative_concrete_offset): New.
+	* region.h (enum region_kind): Add RK_BIT_RANGE.
+	(region::dyn_cast_bit_range_region): New vfunc.
+	(class bit_range_region): New.
+	(is_a_helper <const bit_range_region *>::test): New.
+	(default_hash_traits<bit_range_region::key_t>): New.
+
+2022-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104270
+	* region-model.cc (region_model::on_call_pre): Handle
+	IFN_DEFERRED_INIT.
+
 2022-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-path.cc (event_kind_to_string): Handle

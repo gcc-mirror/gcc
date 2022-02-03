@@ -1,3 +1,11 @@
+2022-02-02  Martin Liska  <mliska@suse.cz>
+
+	PR lto/104333
+	* lto-common.cc (read_cgraph_and_symbols): Move resolution
+	checking for number of files later and report a reasonable
+	error message.
+	* lto-object.cc (lto_obj_file_open): Make error fatal.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* config-lang.in: Rename .c names to .cc.

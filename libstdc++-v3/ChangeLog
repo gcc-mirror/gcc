@@ -1,5 +1,35 @@
 2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::pop):
+	Add [[maybe_unused]] attribute.
+	* src/filesystem/dir.cc (fs::recursive_directory_iterator::pop):
+	Likewise.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/multiset/operators/cmp_c++20.cc: Use
+	custom comparison function for multiset.
+	* testsuite/23_containers/set/operators/cmp_c++20.cc: Use custom
+	comparison function for set.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (_OutputIteratorConcept):
+	Change member function to data member of function pointer type.
+
+2022-02-02  Martin Sebor  <msebor@redhat.com>
+
+	PR libstdc++/101831
+	* include/std/array (begin): Declare const member function attribute
+	const.
+	(end, rbegin, rend, size, max_size, empty, data): Same.
+	* testsuite/23_containers/array/capacity/empty.cc: Add test cases.
+	* testsuite/23_containers/array/capacity/max_size.cc: Same.
+	* testsuite/23_containers/array/capacity/size.cc: Same.
+	* testsuite/23_containers/array/iterators/begin_end.cc: New test.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
 	autoconf macro to check whether d_type is present.
 	* testsuite/experimental/filesystem/iterators/error_reporting.cc:

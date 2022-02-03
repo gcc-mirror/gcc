@@ -1,3 +1,103 @@
+2022-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104270
+	* doc/invoke.texi (-ftrivial-auto-var-init=): Add reference to
+	-Wanalyzer-use-of-uninitialized-value to paragraph documenting that
+	-ftrivial-auto-var-init= doesn't suppress warnings.
+
+2022-02-02  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.cc (TEXT_SECTION_NAME): Remove unused macro.
+
+2022-02-02  Bernd Kuhls  <bernd.kuhls@t-online.de>
+
+	PR target/94372
+	* config/or1k/linux.h (CPP_SPEC): Define.
+
+2022-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* config/arm/vec-common.md (cml<fcmac1><conj_op><mode>4): Use
+	canonical order.
+
+2022-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* config/aarch64/aarch64-simd.md (cml<fcmac1><conj_op><mode>4): Use
+	canonical order.
+	* config/aarch64/aarch64-sve.md (cml<fcmac1><conj_op><mode>4): Likewise.
+
+2022-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* doc/md.texi: Update docs for cfms, cfma.
+	* tree-data-ref.h (same_data_refs): Accept optional offset.
+	* tree-vect-slp-patterns.cc (is_linear_load_p): Fix issue with repeating
+	patterns.
+	(vect_normalize_conj_loc): Remove.
+	(is_eq_or_top): Change to take two nodes.
+	(enum _conj_status, compatible_complex_nodes_p,
+	vect_validate_multiplication): New.
+	(class complex_add_pattern, complex_add_pattern::matches,
+	complex_add_pattern::recognize, class complex_mul_pattern,
+	complex_mul_pattern::recognize, class complex_fms_pattern,
+	complex_fms_pattern::recognize, class complex_operations_pattern,
+	complex_operations_pattern::recognize, addsub_pattern::recognize): Pass
+	new cache.
+	(complex_fms_pattern::matches, complex_mul_pattern::matches): Pass new
+	cache and use new validation code.
+	* tree-vect-slp.cc (vect_match_slp_patterns_2, vect_match_slp_patterns,
+	vect_analyze_slp): Pass along cache.
+	(compatible_calls_p): Expose.
+	* tree-vectorizer.h (compatible_calls_p, slp_node_hash,
+	slp_compat_nodes_map_t): New.
+	(class vect_pattern): Update signatures include new cache.
+
+2022-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_preferred_reload_class): Reject
+	"eliminated" registers and small-enough constants unless
+	reloaded into a class that is a subset of GENERAL_REGS.
+	* config/cris/cris.md (attribute "cpu_variant"): New.
+	(attribute "enabled"): Conditionalize on a matching attribute
+	cpu_variant, if specified.
+	("*movsi_internal<setcc><setnz><setnzvc>"): For moves to and from
+	memory, add cpu-variant-enabled variants for "r" alternatives on
+	the far side of the "x" alternatives, preferring the "x" ones
+	only for variants where MOF is present (in addition to SRP).
+
+2022-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_register_move_cost): Remove special pre-ira
+	extra cost for ALL_REGS.
+
+2022-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/constraints.md (define_register_constraint "b"): Now
+	GENERAL_REGS.
+	* config/cris/cris.md (CRIS_ACR_REGNUM): Remove.
+	* config/cris/cris.h: (reg_class, REG_CLASS_NAMES)
+	(REG_CLASS_CONTENTS): Remove ACR_REGS, SPEC_ACR_REGS, GENNONACR_REGS,
+	and SPEC_GENNONACR_REGS.
+	* config/cris/cris.cc (cris_preferred_reload_class): Don't mention
+	ACR_REGS and return GENERAL_REGS instead of GENNONACR_REGS.
+
+2022-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*movsi_internal<setcc><setnz><setnzvc>"):
+	Conditionalize on (sub-)register operands or operand 1 being 0.
+
+2022-02-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (TARGET_DEFAULT): Don't include MASK_MUL_BUG.
+	(MUL_BUG_ASM_DEFAULT): New macro.
+	(MAYBE_AS_NO_MUL_BUG_ABORT): Define in terms of MUL_BUG_ASM_DEFAULT.
+	* doc/invoke.texi (CRIS Options, -mmul-bug-workaround): Adjust
+	accordingly.
+
 2022-02-01  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* opts.cc (common_handle_option): Don't set param_early_inliner_max_iterations
