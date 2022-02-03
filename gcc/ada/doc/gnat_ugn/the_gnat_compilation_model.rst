@@ -1402,6 +1402,7 @@ recognized by GNAT::
      Ada_12
      Ada_2012
      Ada_2022
+     Aggregate_Individually_Assign
      Allow_Integer_Address
      Annotate
      Assertion_Policy
