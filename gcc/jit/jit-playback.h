@@ -812,4 +812,6 @@ extern playback::context *active_playback_ctxt;
 
 } // namespace gcc
 
+extern hash_map<nofree_string_hash, tree> target_builtins;
+
 #endif /* JIT_PLAYBACK_H */

@@ -732,6 +732,7 @@ add_builtin_function (const char *name,
 		      const char *library_name,
 		      tree attrs)
 {
+  /*printf("Add builtin: %s\n", name);*/
   tree decl = build_builtin_function (BUILTINS_LOCATION, name, type,
 				      function_code, cl, library_name, attrs);
   return lang_hooks.builtin_function (decl);

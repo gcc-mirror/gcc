@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "target.h"
 #include "jit-playback.h"
 #include "stor-layout.h"
 #include "debug.h"
@@ -85,6 +86,8 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
   ATTR_EXCL ("pure", true, true, true),
   ATTR_EXCL (NULL, false, false, false)
 };
+
+hash_map<nofree_string_hash, tree> target_builtins = hash_map<nofree_string_hash, tree>();
 
 /* Table of machine-independent attributes supported in libgccjit.  */
 const struct attribute_spec jit_attribute_table[] =
@@ -608,6 +611,8 @@ jit_langhook_init (void)
      eventually be controllable by a command line option.  */
   mpfr_set_default_prec (256);
 
+  targetm.init_builtins ();
+
   return true;
 }
 
@@ -680,6 +685,12 @@ jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 static tree
 jit_langhook_builtin_function (tree decl)
 {
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+  {
+    /*printf("Added %s\n", IDENTIFIER_POINTER (DECL_NAME (decl)));*/
+    const char* name = IDENTIFIER_POINTER (DECL_NAME (decl));
+    target_builtins.put(name, decl);
+  }
   return decl;
 }
 

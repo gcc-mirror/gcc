@@ -1013,6 +1013,12 @@ extern gcc_jit_lvalue *
 gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
 				       gcc_jit_rvalue *init_value);
 
+/* Create a reference to a machine-specific builtin function (sometimes called
+   intrinsic functions).  */
+extern gcc_jit_function *
+gcc_jit_context_get_target_builtin_function (gcc_jit_context *ctxt,
+                         const char *name);
+
 #define LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
 
 /* Set an initial value for a global, which must be an array of

@@ -1008,7 +1008,7 @@ recording::context::new_function (recording::location *loc,
 			     loc, kind, return_type,
 			     new_string (name),
 			     num_params, params, is_variadic,
-			     builtin_id);
+			     builtin_id, false);
   record (result);
   m_functions.safe_push (result);
 
@@ -1045,6 +1045,43 @@ recording::context::get_builtin_function (const char *name)
 {
   builtins_manager *bm = get_builtins_manager ();
   return bm->get_builtin_function (name);
+}
+
+/* Create a recording::function instance for a target-specific builtin.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_get_target_builtin_function.  */
+
+recording::function *
+recording::context::get_target_builtin_function (const char *name)
+{
+  const char *asm_name = name; // FIXME: might require adding a suffix. See get_asm_name in jit-builtins.
+  tree *decl = target_builtins.get(name);
+  type *return_type;
+  /*if (decl != NULL)
+  {
+      printf("Found decl for %s\n", name);
+      return_type = new type(TREE_TYPE (*decl));
+      // *TYPE_ARG_TYPES (decl);* /
+  }
+  else {
+      // TODO: remove this.
+      return_type = get_type (GCC_JIT_TYPE_VOID);
+  }*/
+  return_type = get_type (GCC_JIT_TYPE_VOID);
+  recording::function *result =
+    new recording::function (this,
+                 NULL,
+                 GCC_JIT_FUNCTION_IMPORTED, // FIXME
+                 return_type,
+                 new_string (asm_name),
+                 0, // FIXME: fetch params.
+                 NULL,
+                 false,
+                 BUILT_IN_NONE,
+                 true);
+
+  return result;
 }
 
 /* Create a recording::global instance and add it to this context's list
@@ -4048,7 +4085,8 @@ recording::function::function (context *ctxt,
 			       int num_params,
 			       recording::param **params,
 			       int is_variadic,
-			       enum built_in_function builtin_id)
+			       enum built_in_function builtin_id,
+			       int is_target_builtin)
 : memento (ctxt),
   m_loc (loc),
   m_kind (kind),
@@ -4059,8 +4097,13 @@ recording::function::function (context *ctxt,
   m_builtin_id (builtin_id),
   m_locals (),
   m_blocks (),
-  m_fn_ptr_type (NULL)
+  m_fn_ptr_type (NULL),
+  m_is_target_builtin (is_target_builtin)
 {
+  if (m_is_target_builtin)
+  {
+    printf("%s is target\n", name->c_str ());
+  }
   for (int i = 0; i< num_params; i++)
     {
       param *param = params[i];
@@ -4111,6 +4154,17 @@ recording::function::replay_into (replayer *r)
   params.create (m_params.length ());
   FOR_EACH_VEC_ELT (m_params, i, param)
     params.safe_push (param->playback_param ());
+
+  if (strstr(m_name->c_str (), "__builtin_ia32") != NULL)
+      printf("Name: %s\n", m_name->c_str ());
+  /*if (strcmp(m_name->c_str (), "__builtin_ia32_pmovmskb128") == 0) {
+      printf("*** builtin ia32: %d\n", m_is_target_builtin);
+  }*/
+
+  if (m_is_target_builtin)
+  {
+      puts("Is target");
+  }
 
   set_playback_obj (r->new_function (playback_location (r, m_loc),
 				     m_kind,

@@ -143,6 +143,9 @@ public:
   function *
   get_builtin_function (const char *name);
 
+  function *
+  get_target_builtin_function (const char *name);
+
   lvalue *
   new_global (location *loc,
 	      enum gcc_jit_global_kind kind,
@@ -1257,7 +1260,8 @@ public:
 	    int num_params,
 	    param **params,
 	    int is_variadic,
-	    enum built_in_function builtin_id);
+	    enum built_in_function builtin_id,
+	    int is_target_builtin);
 
   void replay_into (replayer *r) FINAL OVERRIDE;
 
@@ -1312,6 +1316,7 @@ private:
   auto_vec<local *> m_locals;
   auto_vec<block *> m_blocks;
   type *m_fn_ptr_type;
+  int m_is_target_builtin;
 };
 
 class block : public memento
