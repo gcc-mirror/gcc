@@ -666,6 +666,41 @@ lhd_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT, tree, tree,
 {
 }
 
+/* Finalize clause list C after expanding custom mappers for implicitly-mapped
+   variables.  */
+
+tree
+lhd_omp_finish_mapper_clauses (tree c)
+{
+  return c;
+}
+
+/* Look up an OpenMP "declare mapper" mapper.  */
+
+tree
+lhd_omp_mapper_lookup (tree, tree)
+{
+  return NULL_TREE;
+}
+
+/* Given the representation used by the front-end to contain a mapper
+   directive, return the statement for the directive itself.  */
+
+tree
+lhd_omp_extract_mapper_directive (tree)
+{
+  return error_mark_node;
+}
+
+/* Return a simplified form for OMP_ARRAY_SECTION argument, or
+   error_mark_node if impossible.  */
+
+tree
+lhd_omp_map_array_section (location_t, tree)
+{
+  return error_mark_node;
+}
+
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization & mapping). Only if alloc_ptr_ok
    are allocatables and pointers accepted. */

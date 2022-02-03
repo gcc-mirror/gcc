@@ -184,6 +184,15 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
 #define LANG_HOOKS_OMP_CLAUSE_DTOR cxx_omp_clause_dtor
 #undef LANG_HOOKS_OMP_FINISH_CLAUSE
 #define LANG_HOOKS_OMP_FINISH_CLAUSE cxx_omp_finish_clause
+#undef LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES
+#define LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES cxx_omp_finish_mapper_clauses
+#undef LANG_HOOKS_OMP_MAPPER_LOOKUP
+#define LANG_HOOKS_OMP_MAPPER_LOOKUP cxx_omp_mapper_lookup
+#undef LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE
+#define LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE \
+  cxx_omp_extract_mapper_directive
+#undef LANG_HOOKS_OMP_MAP_ARRAY_SECTION
+#define LANG_HOOKS_OMP_MAP_ARRAY_SECTION cxx_omp_map_array_section
 #undef LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE cxx_omp_privatize_by_reference
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR

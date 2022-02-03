@@ -1,5 +1,14 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* c-common.h (omp_mapper_list): Add forward declaration.
+	(c_omp_find_nested_mappers, c_omp_instantiate_mappers): Add prototypes.
+	* c-omp.cc (c_omp_find_nested_mappers): New function.
+	(remap_mapper_decl_info): New struct.
+	(remap_mapper_decl_1, omp_instantiate_mapper,
+	c_omp_instantiate_mappers): New functions.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* c-common.h (c_omp_address_inspector): Remove static from get_origin
 	and maybe_unconvert_ref methods.
 	* c-omp.cc (c_omp_split_clauses): Support OMP_ARRAY_SECTION.

@@ -1,5 +1,55 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* constexpr.cc (reduced_constant_expression_p): Add OMP_DECLARE_MAPPER
+	case.
+	(cxx_eval_constant_expression, potential_constant_expression_1):
+	Likewise.
+	* cp-gimplify.cc (cxx_omp_finish_mapper_clauses): New function.
+	* cp-objcp-common.h (LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define langhooks.
+	* cp-tree.h (lang_decl_base): Add omp_declare_mapper_p field.  Recount
+	spare bits comment.
+	(DECL_OMP_DECLARE_MAPPER_P): New macro.
+	(omp_mapper_id, cp_check_omp_declare_mapper, omp_instantiate_mappers,
+	cxx_omp_finish_mapper_clauses, cxx_omp_mapper_lookup,
+	cxx_omp_extract_mapper_directive, cxx_omp_map_array_section: Add
+	prototypes.
+	* decl.cc (check_initializer): Add OpenMP declare mapper support.
+	(cp_finish_decl): Set DECL_INITIAL for OpenMP declare mapper var decls
+	as appropriate.
+	* decl2.cc (mark_used): Instantiate OpenMP "declare mapper" magic var
+	decls.
+	* error.cc (dump_omp_declare_mapper): New function.
+	(dump_simple_decl): Use above.
+	* parser.cc (cp_parser_omp_clause_map): Add KIND parameter.  Support
+	"mapper" modifier.
+	(cp_parser_omp_all_clauses): Add KIND argument to
+	cp_parser_omp_clause_map call.
+	(cp_parser_omp_target): Call omp_instantiate_mappers before
+	finish_omp_clauses.
+	(cp_parser_omp_declare_mapper): New function.
+	(cp_parser_omp_declare): Add "declare mapper" support.
+	* pt.cc (tsubst_decl): Adjust name of "declare mapper" magic var decls
+	once we know their type.
+	(tsubst_omp_clauses): Call omp_instantiate_mappers before
+	finish_omp_clauses, for target regions.
+	(tsubst_expr): Support OMP_DECLARE_MAPPER nodes.
+	(instantiate_decl): Instantiate initialiser (i.e definition) for OpenMP
+	declare mappers.
+	* semantics.cc (gimplify.h): Include.
+	(omp_mapper_id, omp_mapper_lookup, omp_extract_mapper_directive,
+	cxx_omp_map_array_section, cp_check_omp_declare_mapper): New functions.
+	(finish_omp_clauses): Delete GOMP_MAP_PUSH_MAPPER_NAME and
+	GOMP_MAP_POP_MAPPER_NAME artificial clauses.
+	(omp_target_walk_data): Add MAPPERS field.
+	(finish_omp_target_clauses_r): Scan for uses of struct/union/class type
+	variables.
+	(finish_omp_target_clauses): Create artificial mapper binding clauses
+	for used structs/unions/classes in offload region.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* constexpr.cc (potential_consant_expression_1): Handle
 	OMP_ARRAY_SECTION.
 	* cp-tree.h (grok_omp_array_section, build_omp_array_section): Add

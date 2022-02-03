@@ -1,5 +1,23 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c++/declare-mapper-1.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-2.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-3.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-4.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-5.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-6.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-7.C: New test.
+	* testsuite/libgomp.c++/declare-mapper-8.C: New test.
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: New test (only
+	enabled for C++ for now).
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.c++/baseptrs-4.C: Remove commented-out cases that
 	now work.
 	* testsuite/libgomp.c++/baseptrs-6.C: New test.

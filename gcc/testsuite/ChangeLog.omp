@@ -1,5 +1,20 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* c-c++-common/gomp/map-6.c: Update error scan output.
+	* c-c++-common/gomp/declare-mapper-3.c: New test (only enabled for C++
+	for now).
+	* c-c++-common/gomp/declare-mapper-4.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Likewise.
+	* g++.dg/gomp/declare-mapper-1.C: New test.
+	* g++.dg/gomp/declare-mapper-2.C: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/gomp/map-6.c: Update expected output.
 	* g++.dg/gomp/array-section-1.C: New test.
 	* g++.dg/gomp/array-section-2.C: New test.

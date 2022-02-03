@@ -264,6 +264,7 @@ struct gimplify_omp_ctx
 {
   struct gimplify_omp_ctx *outer_context;
   splay_tree variables;
+  hash_map<omp_name_type<tree>, tree> *implicit_mappers;
   hash_set<tree> *privatized_types;
   tree clauses;
   /* Iteration variables in an OMP_FOR.  */
@@ -504,6 +505,7 @@ new_omp_context (enum omp_region_type region_type)
   c = XCNEW (struct gimplify_omp_ctx);
   c->outer_context = gimplify_omp_ctxp;
   c->variables = splay_tree_new (splay_tree_compare_decl_uid, 0, 0);
+  c->implicit_mappers = new hash_map<omp_name_type<tree>, tree>;
   c->privatized_types = new hash_set<tree>;
   c->location = input_location;
   c->region_type = region_type;
@@ -528,6 +530,7 @@ delete_omp_context (struct gimplify_omp_ctx *c)
 {
   splay_tree_delete (c->variables);
   delete c->privatized_types;
+  delete c->implicit_mappers;
   c->loop_iter_var.release ();
   delete c->decl_data_clause;
   XDELETE (c);
@@ -11658,6 +11661,218 @@ error_out:
   return success;
 }
 
+struct instantiate_mapper_info
+{
+  tree *mapper_clauses_p;
+  struct gimplify_omp_ctx *omp_ctx;
+  gimple_seq *pre_p;
+};
+
+/* Helper function for omp_instantiate_mapper.  */
+
+static tree
+remap_mapper_decl_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  copy_body_data *id = (copy_body_data *) data;
+
+  if (DECL_P (*tp))
+    {
+      tree replacement = remap_decl (*tp, id);
+      if (*tp != replacement)
+	{
+	  *tp = unshare_expr (replacement);
+	  *walk_subtrees = 0;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* A copy_decl implementation (for use with tree-inline.cc functions) that
+   only transform decls or SSA names that are part of a map we already
+   prepared.  */
+
+static tree
+omp_mapper_copy_decl (tree var, copy_body_data *cb)
+{
+  tree *repl = cb->decl_map->get (var);
+
+  if (repl)
+    return *repl;
+
+  return var;
+}
+
+static tree *
+omp_instantiate_mapper (gimple_seq *pre_p,
+			hash_map<omp_name_type<tree>, tree> *implicit_mappers,
+			tree mapperfn, tree expr, enum gomp_map_kind outer_kind,
+			tree *mapper_clauses_p)
+{
+  tree mapper_name = NULL_TREE;
+  tree mapper = lang_hooks.decls.omp_extract_mapper_directive (mapperfn);
+  gcc_assert (TREE_CODE (mapper) == OMP_DECLARE_MAPPER);
+
+  tree clause = OMP_DECLARE_MAPPER_CLAUSES (mapper);
+  tree dummy_var = OMP_DECLARE_MAPPER_DECL (mapper);
+
+  /* The "extraction map" is used to map the mapper variable in the "declare
+     mapper" directive, and also any temporary variables that have been created
+     as part of expanding the mapper function's body (which are expanded as a
+     "bind" expression in the pre_p sequence).  */
+  hash_map<tree, tree> extraction_map;
+
+  extraction_map.put (dummy_var, expr);
+  extraction_map.put (expr, expr);
+
+  /* This copy_body_data is only used to remap the decls in the
+     OMP_DECLARE_MAPPER tree node expansion itself.  All relevant decls should
+     already be in the current function.  */
+  copy_body_data id;
+  memset (&id, 0, sizeof (id));
+  id.src_fn = current_function_decl;
+  id.dst_fn = current_function_decl;
+  id.src_cfun = cfun;
+  id.decl_map = &extraction_map;
+  id.copy_decl = omp_mapper_copy_decl;
+  id.transform_call_graph_edges = CB_CGE_DUPLICATE; // ???
+  id.transform_new_cfg = true; // ???
+
+  for (; clause; clause = OMP_CLAUSE_CHAIN (clause))
+    {
+      enum gomp_map_kind map_kind = OMP_CLAUSE_MAP_KIND (clause);
+      tree *nested_mapper_p = NULL;
+
+      if (map_kind == GOMP_MAP_PUSH_MAPPER_NAME)
+	{
+	  mapper_name = OMP_CLAUSE_DECL (clause);
+	  continue;
+	}
+      else if (map_kind == GOMP_MAP_POP_MAPPER_NAME)
+	{
+	  mapper_name = NULL_TREE;
+	  continue;
+	}
+
+      tree decl = OMP_CLAUSE_DECL (clause);
+      tree unshared, type;
+      bool nonunit_array_with_mapper = false;
+
+      if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+	{
+	  location_t loc = OMP_CLAUSE_LOCATION (clause);
+	  tree tmp = lang_hooks.decls.omp_map_array_section (loc, decl);
+	  if (tmp == decl)
+	    {
+	      unshared = unshare_expr (clause);
+	      nonunit_array_with_mapper = true;
+	      type = TREE_TYPE (TREE_TYPE (decl));
+	    }
+	  else
+	    {
+	      unshared = build_omp_clause (OMP_CLAUSE_LOCATION (clause),
+					   OMP_CLAUSE_CODE (clause));
+	      OMP_CLAUSE_DECL (unshared) = tmp;
+	      OMP_CLAUSE_SIZE (unshared)
+		= DECL_P (tmp) ? DECL_SIZE_UNIT (tmp)
+			       : TYPE_SIZE_UNIT (TREE_TYPE (tmp));
+	      type = TREE_TYPE (tmp);
+	    }
+	}
+      else
+	{
+	  unshared = unshare_expr (clause);
+	  type = TREE_TYPE (decl);
+	}
+
+      walk_tree (&unshared, remap_mapper_decl_1, &id, NULL);
+
+      if (OMP_CLAUSE_MAP_KIND (unshared) == GOMP_MAP_UNSET)
+	OMP_CLAUSE_SET_MAP_KIND (unshared, outer_kind);
+
+      decl = OMP_CLAUSE_DECL (unshared);
+      type = TYPE_MAIN_VARIANT (type);
+
+      nested_mapper_p = implicit_mappers->get ({ mapper_name, type });
+
+      if (nested_mapper_p && *nested_mapper_p != mapperfn)
+	{
+	  if (nonunit_array_with_mapper)
+	    {
+	      sorry ("user-defined mapper with non-unit length array section");
+	      continue;
+	    }
+
+	  if (map_kind == GOMP_MAP_UNSET)
+	    map_kind = outer_kind;
+
+	  mapper_clauses_p
+	    = omp_instantiate_mapper (pre_p, implicit_mappers,
+				      *nested_mapper_p, decl, map_kind,
+				      mapper_clauses_p);
+	  continue;
+	}
+
+      *mapper_clauses_p = unshared;
+      mapper_clauses_p = &OMP_CLAUSE_CHAIN (unshared);
+    }
+
+  return mapper_clauses_p;
+}
+
+static int
+omp_instantiate_implicit_mappers (splay_tree_node n, void *data)
+{
+  tree decl = (tree) n->key;
+  instantiate_mapper_info *im_info = (instantiate_mapper_info *) data;
+  gimplify_omp_ctx *ctx = im_info->omp_ctx;
+  tree *mapper_p = NULL;
+  tree type = TREE_TYPE (decl);
+  bool ref_p = false;
+  unsigned flags = n->value;
+
+  if (flags & (GOVD_EXPLICIT | GOVD_LOCAL))
+    return 0;
+  if ((flags & GOVD_SEEN) == 0)
+    return 0;
+  /* If we already have clauses pertaining to a struct variable, then we don't
+     want to implicitly invoke a user-defined mapper.  */
+  if ((flags & GOVD_EXPLICIT) != 0 && AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+    return 0;
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      ref_p = true;
+      type = TREE_TYPE (type);
+    }
+
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (DECL_P (decl) && type && AGGREGATE_TYPE_P (type))
+    {
+      gcc_assert (ctx);
+      mapper_p = ctx->implicit_mappers->get ({ NULL_TREE, type });
+    }
+
+  if (mapper_p)
+    {
+      /* If we have a reference, map the pointed-to object rather than the
+	 reference itself.  */
+      if (ref_p)
+	decl = build_fold_indirect_ref (decl);
+
+      im_info->mapper_clauses_p
+	= omp_instantiate_mapper (im_info->pre_p, ctx->implicit_mappers,
+				  *mapper_p, decl, GOMP_MAP_TOFROM,
+				  im_info->mapper_clauses_p);
+      /* Make sure we don't map the same variable implicitly in
+	 gimplify_adjust_omp_clauses_1 also.  */
+      n->value |= GOVD_EXPLICIT;
+    }
+
+  return 0;
+}
+
 /* Scan the OMP clauses in *LIST_P, installing mappings into a new
    and previous omp contexts.  */
 
@@ -12382,6 +12597,17 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      break;
 	    }
 	  goto do_notice;
+
+	case OMP_CLAUSE__MAPPER_BINDING_:
+	  {
+	    tree name = OMP_CLAUSE__MAPPER_BINDING__ID (c);
+	    tree var = OMP_CLAUSE__MAPPER_BINDING__DECL (c);
+	    tree type = TYPE_MAIN_VARIANT (TREE_TYPE (var));
+	    tree fndecl = OMP_CLAUSE__MAPPER_BINDING__MAPPER (c);
+	    ctx->implicit_mappers->put ({ name, type }, fndecl);
+	    remove = true;
+	    break;
+	  }
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
@@ -13570,6 +13796,30 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
       || code == OMP_TARGET_ENTER_DATA
       || code == OMP_TARGET_EXIT_DATA)
     {
+      tree mapper_clauses = NULL_TREE;
+      instantiate_mapper_info im_info;
+
+      im_info.mapper_clauses_p = &mapper_clauses;
+      im_info.omp_ctx = ctx;
+      im_info.pre_p = pre_p;
+
+      splay_tree_foreach (ctx->variables,
+			  omp_instantiate_implicit_mappers,
+			  (void *) &im_info);
+
+      if (mapper_clauses)
+	{
+	  mapper_clauses
+	    = lang_hooks.decls.omp_finish_mapper_clauses (mapper_clauses);
+
+	  /* Stick the implicitly-expanded mapper clauses at the end of the
+	     clause list.  */
+	  tree *tail = list_p;
+	  while (*tail)
+	    tail = &OMP_CLAUSE_CHAIN (*tail);
+	  *tail = mapper_clauses;
+	}
+
       vec<omp_mapping_group> *groups;
       groups = omp_gather_mapping_groups (list_p);
       hash_map<tree_operand_hash_no_se, omp_mapping_group *> *grpmap = NULL;
@@ -17807,7 +18057,15 @@ gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
       gimplify_seq_add_stmt (pre_p, standalone_body);
     }
   gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+  return GS_ALL_DONE;
+}
 
+/* Gimplify an OMP_DECLARE_MAPPER node (by just removing it).  */
+
+static enum gimplify_status
+gimplify_omp_declare_mapper (tree *expr_p)
+{
+  *expr_p = NULL_TREE;
   return GS_ALL_DONE;
 }
 
@@ -18741,6 +18999,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_METADIRECTIVE:
 	  ret = gimplify_omp_metadirective (expr_p, pre_p, post_p,
 					    gimple_test_f, fallback);
+	  break;
+
+	case OMP_DECLARE_MAPPER:
+	  ret = gimplify_omp_declare_mapper (expr_p);
 	  break;
 
 	case TRANSACTION_EXPR:

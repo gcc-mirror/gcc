@@ -1292,6 +1292,13 @@ DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)
    Operand 0: OMP_MASTER_BODY: Master section body.  */
 DEFTREECODE (OMP_MASTER, "omp_master", tcc_statement, 1)
 
+/* OpenMP - #pragma omp declare mapper ([id:] type var) [clause1 ... clauseN]
+   Operand 0: Identifier.
+   Operand 1: Variable decl.
+   Operand 2: List of clauses.
+   The type of the construct is used for the type to be mapped.  */
+DEFTREECODE (OMP_DECLARE_MAPPER, "omp_declare_mapper", tcc_statement, 3)
+
 /* OpenACC - #pragma acc cache (variable1 ... variableN)
    Operand 0: OACC_CACHE_CLAUSES: List of variables (transformed into
 	OMP_CLAUSE__CACHE_ clauses).  */

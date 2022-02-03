@@ -1,5 +1,45 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_omp_ctx): Add IMPLICIT_MAPPERS field.
+	(new_omp_context): Initialise IMPLICIT_MAPPERS hash map.
+	(delete_omp_context): Delete IMPLICIT_MAPPERS hash map.
+	(instantiate_mapper_info): New structs.
+	(remap_mapper_decl_1, omp_mapper_copy_decl, omp_instantiate_mapper,
+	omp_instantiate_implicit_mappers): New functions.
+	(gimplify_scan_omp_clauses): Handle MAPPER_BINDING clauses.
+	(gimplify_adjust_omp_clauses): Instantiate implicit declared mappers.
+	(gimplify_omp_declare_mapper): New function.
+	(gimplify_expr): Call above function.
+	* langhooks-def.h (lhd_omp_finish_mapper_clauses,
+	lhd_omp_mapper_lookup, lhd_omp_extract_mapper_directive,
+	lhd_omp_map_array_section): Add prototypes.
+	(LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define macros.
+	(LANG_HOOK_DECLS): Add above macros.
+	* langhooks.cc (lhd_omp_finish_mapper_clauses,
+	lhd_omp_mapper_lookup, lhd_omp_extract_mapper_directive,
+	lhd_omp_map_array_section): New dummy functions.
+	* langhooks.h (lang_hooks_for_decls): Add OMP_FINISH_MAPPER_CLAUSES,
+	OMP_MAPPER_LOOKUP, OMP_EXTRACT_MAPPER_DIRECTIVE, OMP_MAP_ARRAY_SECTION
+	hooks.
+	* omp-general.h (omp_name_type<T>): Add templatized struct, hash type
+	traits (for omp_name_type<tree> specialization).
+	(omp_mapper_list<T>): Add struct.
+	* tree-core.h (omp_clause_code): Add OMP_CLAUSE__MAPPER_BINDING_.
+	* tree-pretty-print.cc (dump_omp_clause): Support GOMP_MAP_UNSET,
+	GOMP_MAP_PUSH_MAPPER_NAME, GOMP_MAP_POP_MAPPER_NAME artificial mapping
+	clauses.  Support OMP_CLAUSE__MAPPER_BINDING_ and OMP_DECLARE_MAPPER.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE__MAPPER_BINDING_.
+	* tree.def (OMP_DECLARE_MAPPER): New tree code.
+	* tree.h (OMP_DECLARE_MAPPER_ID, OMP_DECLARE_MAPPER_DECL,
+	OMP_DECLARE_MAPPER_CLAUSES): New defines.
+	(OMP_CLAUSE__MAPPER_BINDING__ID, OMP_CLAUSE__MAPPER_BINDING__DECL,
+	OMP_CLAUSE__MAPPER_BINDING__MAPPER): New defines.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_expr): Ensure OMP_ARRAY_SECTION has been
 	processed out before gimplification.
 	* tree-pretty-print.cc (dump_generic_node): Support OMP_ARRAY_SECTION.

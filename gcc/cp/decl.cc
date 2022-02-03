@@ -7455,6 +7455,12 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     }
   else if (!init && DECL_REALLY_EXTERN (decl))
     ;
+  else if (flag_openmp
+	   && VAR_P (decl)
+	   && DECL_LANG_SPECIFIC (decl)
+	   && DECL_OMP_DECLARE_MAPPER_P (decl)
+	   && TREE_CODE (init) == OMP_DECLARE_MAPPER)
+    return NULL_TREE;
   else if (init || type_build_ctor_call (type)
 	   || TYPE_REF_P (type))
     {
@@ -8611,14 +8617,23 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  varpool_node::get_create (decl);
 	}
 
+      if (flag_openmp
+	  && VAR_P (decl)
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_OMP_DECLARE_MAPPER_P (decl)
+	  && init)
+	{
+	  gcc_assert (TREE_CODE (init) == OMP_DECLARE_MAPPER);
+	  DECL_INITIAL (decl) = init;
+	}
       /* Convert the initializer to the type of DECL, if we have not
 	 already initialized DECL.  */
-      if (!DECL_INITIALIZED_P (decl)
-	  /* If !DECL_EXTERNAL then DECL is being defined.  In the
-	     case of a static data member initialized inside the
-	     class-specifier, there can be an initializer even if DECL
-	     is *not* defined.  */
-	  && (!DECL_EXTERNAL (decl) || init))
+      else if (!DECL_INITIALIZED_P (decl)
+	       /* If !DECL_EXTERNAL then DECL is being defined.  In the
+		  case of a static data member initialized inside the
+		  class-specifier, there can be an initializer even if DECL
+		  is *not* defined.  */
+	       && (!DECL_EXTERNAL (decl) || init))
 	{
 	  cleanups = make_tree_vector ();
 	  init = check_initializer (decl, init, flags, &cleanups);

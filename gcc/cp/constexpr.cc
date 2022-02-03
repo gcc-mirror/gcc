@@ -3262,6 +3262,9 @@ reduced_constant_expression_p (tree t)
       /* Even if we can't lower this yet, it's constant.  */
       return true;
 
+    case OMP_DECLARE_MAPPER:
+      return true;
+
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree field;
@@ -7073,6 +7076,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case LABEL_EXPR:
     case CASE_LABEL_EXPR:
     case PREDICT_EXPR:
+    case OMP_DECLARE_MAPPER:
       return t;
 
     case PARM_DECL:
@@ -9603,6 +9607,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	 constexpr_error (loc, fundef_p, "expression %qE is not a constant "
 			  "expression", t);
       return false;
+
+    case OMP_DECLARE_MAPPER:
+      /* This can be used to initialize VAR_DECLs: it's treated as a magic
+	 constant.  */
+      return true;
 
     case ASM_EXPR:
       if (flags & tf_error)

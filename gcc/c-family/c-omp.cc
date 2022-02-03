@@ -4740,6 +4740,306 @@ c_omp_address_inspector::expand_map_clause (tree c, tree expr,
   return error_mark_node;
 }
 
+/* Given a mapper function MAPPER_FN, recursively scan through the map clauses
+   for that mapper, and if any of those should use a (named or unnamed) mapper
+   themselves, add it to MLIST.  */
+
+void
+c_omp_find_nested_mappers (omp_mapper_list<tree> *mlist, tree mapper_fn)
+{
+  tree mapper = lang_hooks.decls.omp_extract_mapper_directive (mapper_fn);
+  tree mapper_name = NULL_TREE;
+
+  if (mapper == error_mark_node)
+    return;
+
+  gcc_assert (TREE_CODE (mapper) == OMP_DECLARE_MAPPER);
+
+  for (tree clause = OMP_DECLARE_MAPPER_CLAUSES (mapper);
+       clause;
+       clause = OMP_CLAUSE_CHAIN (clause))
+    {
+      tree expr = OMP_CLAUSE_DECL (clause);
+      enum gomp_map_kind clause_kind = OMP_CLAUSE_MAP_KIND (clause);
+      tree elem_type;
+
+      if (clause_kind == GOMP_MAP_PUSH_MAPPER_NAME)
+	{
+	  mapper_name = expr;
+	  continue;
+	}
+      else if (clause_kind == GOMP_MAP_POP_MAPPER_NAME)
+	{
+	  mapper_name = NULL_TREE;
+	  continue;
+	}
+
+      gcc_assert (TREE_CODE (expr) != TREE_LIST);
+      if (TREE_CODE (expr) == OMP_ARRAY_SECTION)
+	{
+	  while (TREE_CODE (expr) == OMP_ARRAY_SECTION)
+	    expr = TREE_OPERAND (expr, 0);
+
+	  elem_type = TREE_TYPE (expr);
+	}
+      else
+	elem_type = TREE_TYPE (expr);
+
+      /* This might be too much... or not enough?  */
+      while (TREE_CODE (elem_type) == ARRAY_TYPE
+	     || TREE_CODE (elem_type) == POINTER_TYPE
+	     || TREE_CODE (elem_type) == REFERENCE_TYPE)
+	elem_type = TREE_TYPE (elem_type);
+
+      elem_type = TYPE_MAIN_VARIANT (elem_type);
+
+      if (AGGREGATE_TYPE_P (elem_type)
+	  && !mlist->contains (mapper_name, elem_type))
+	{
+	  tree nested_mapper_fn
+	    = lang_hooks.decls.omp_mapper_lookup (mapper_name, elem_type);
+
+	  if (nested_mapper_fn)
+	    {
+	      mlist->add_mapper (mapper_name, elem_type, nested_mapper_fn);
+	      c_omp_find_nested_mappers (mlist, nested_mapper_fn);
+	    }
+	  else if (mapper_name)
+	    {
+	      error ("mapper %qE not found for type %qT", mapper_name,
+		     elem_type);
+	      continue;
+	    }
+	}
+    }
+}
+
+struct remap_mapper_decl_info
+{
+  tree dummy_var;
+  tree expr;
+};
+
+/* Helper for rewriting DUMMY_VAR into EXPR in a map clause decl.  */
+
+static tree
+remap_mapper_decl_1 (tree *tp, int *walk_subtrees, void *data)
+{
+  remap_mapper_decl_info *map_info = (remap_mapper_decl_info *) data;
+
+  if (operand_equal_p (*tp, map_info->dummy_var))
+    {
+      *tp = map_info->expr;
+      *walk_subtrees = 0;
+    }
+
+  return NULL_TREE;
+}
+
+/* Instantiate a mapper MAPPER for expression EXPR, adding new clauses to
+   OUTLIST.  OUTER_KIND is the mapping kind to use if not already specified in
+   the mapper declaration.  */
+
+static tree *
+omp_instantiate_mapper (tree *outlist, tree mapper, tree expr,
+			enum gomp_map_kind outer_kind)
+{
+  tree clauses = OMP_DECLARE_MAPPER_CLAUSES (mapper);
+  tree dummy_var = OMP_DECLARE_MAPPER_DECL (mapper);
+  tree mapper_name = NULL_TREE;
+
+  remap_mapper_decl_info map_info;
+  map_info.dummy_var = dummy_var;
+  map_info.expr = expr;
+
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      tree unshared = unshare_expr (c);
+      enum gomp_map_kind clause_kind = OMP_CLAUSE_MAP_KIND (c);
+      tree t = OMP_CLAUSE_DECL (unshared);
+      tree type = NULL_TREE;
+      bool nonunit_array_with_mapper = false;
+
+      if (clause_kind == GOMP_MAP_PUSH_MAPPER_NAME)
+	{
+	  mapper_name = t;
+	  continue;
+	}
+      else if (clause_kind == GOMP_MAP_POP_MAPPER_NAME)
+	{
+	  mapper_name = NULL_TREE;
+	  continue;
+	}
+
+      if (TREE_CODE (t) == OMP_ARRAY_SECTION)
+	{
+	  location_t loc = OMP_CLAUSE_LOCATION (c);
+	  tree t2 = lang_hooks.decls.omp_map_array_section (loc, t);
+
+	  if (t2 == t)
+	    {
+	      nonunit_array_with_mapper = true;
+	      /* We'd want use the mapper for the element type if this worked:
+		 look that one up.  */
+	      type = TREE_TYPE (TREE_TYPE (t));
+	    }
+	  else
+	    {
+	      t = t2;
+	      type = TREE_TYPE (t);
+	    }
+	}
+      else
+	type = TREE_TYPE (t);
+
+      gcc_assert (type);
+
+      if (type == error_mark_node)
+	continue;
+
+      walk_tree (&unshared, remap_mapper_decl_1, &map_info, NULL);
+
+      if (OMP_CLAUSE_MAP_KIND (unshared) == GOMP_MAP_UNSET)
+	OMP_CLAUSE_SET_MAP_KIND (unshared, outer_kind);
+
+      type = TYPE_MAIN_VARIANT (type);
+
+      tree mapper_fn = lang_hooks.decls.omp_mapper_lookup (mapper_name, type);
+
+      if (mapper_fn && nonunit_array_with_mapper)
+	{
+	  sorry ("user-defined mapper with non-unit length array section");
+	  continue;
+	}
+      else if (mapper_fn)
+	{
+	  tree nested_mapper
+	    = lang_hooks.decls.omp_extract_mapper_directive (mapper_fn);
+	  if (nested_mapper != mapper)
+	    {
+	      if (clause_kind == GOMP_MAP_UNSET)
+		clause_kind = outer_kind;
+
+	      outlist = omp_instantiate_mapper (outlist, nested_mapper,
+						t, clause_kind);
+	      continue;
+	    }
+	}
+      else if (mapper_name)
+	{
+	  error ("mapper %qE not found for type %qT", mapper_name, type);
+	  continue;
+	}
+
+      *outlist = unshared;
+      outlist = &OMP_CLAUSE_CHAIN (unshared);
+    }
+
+  return outlist;
+}
+
+/* Given a list of CLAUSES, scan each clause and invoke a user-defined mapper
+   appropriate to the type of the data in that clause, if such a mapper is
+   visible in the current parsing context.  */
+
+tree
+c_omp_instantiate_mappers (tree clauses)
+{
+  tree c, *pc, mapper_name = NULL_TREE;
+
+  for (pc = &clauses, c = clauses; c; c = *pc)
+    {
+      bool using_mapper = false;
+
+      switch (OMP_CLAUSE_CODE (c))
+	{
+	case OMP_CLAUSE_MAP:
+	  {
+	    tree t = OMP_CLAUSE_DECL (c);
+	    tree type = NULL_TREE;
+	    bool nonunit_array_with_mapper = false;
+
+	    if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_PUSH_MAPPER_NAME
+		|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POP_MAPPER_NAME)
+	      {
+		if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_PUSH_MAPPER_NAME)
+		  mapper_name = OMP_CLAUSE_DECL (c);
+		else
+		  mapper_name = NULL_TREE;
+		pc = &OMP_CLAUSE_CHAIN (c);
+		continue;
+	      }
+
+	    if (TREE_CODE (t) == OMP_ARRAY_SECTION)
+	      {
+		location_t loc = OMP_CLAUSE_LOCATION (c);
+		tree t2 = lang_hooks.decls.omp_map_array_section (loc, t);
+
+		if (t2 == t)
+		  {
+		    /* !!! Array sections of size >1 with mappers for elements
+		       are hard to support.  Do something here.  */
+		    nonunit_array_with_mapper = true;
+		    type = TREE_TYPE (TREE_TYPE (t));
+		  }
+		else
+		  {
+		    t = t2;
+		    type = TREE_TYPE (t);
+		  }
+	      }
+	    else
+	      type = TREE_TYPE (t);
+
+	    if (type == NULL_TREE || type == error_mark_node)
+	      {
+		pc = &OMP_CLAUSE_CHAIN (c);
+		continue;
+	      }
+
+	    enum gomp_map_kind kind = OMP_CLAUSE_MAP_KIND (c);
+	    if (kind == GOMP_MAP_UNSET)
+	      kind = GOMP_MAP_TOFROM;
+
+	    type = TYPE_MAIN_VARIANT (type);
+
+	    tree mapper_fn
+	      = lang_hooks.decls.omp_mapper_lookup (mapper_name, type);
+
+	    if (mapper_fn && nonunit_array_with_mapper)
+	      {
+		sorry ("user-defined mapper with non-unit length "
+		       "array section");
+		using_mapper = true;
+	      }
+	    else if (mapper_fn)
+	      {
+		tree mapper
+		  = lang_hooks.decls.omp_extract_mapper_directive (mapper_fn);
+		pc = omp_instantiate_mapper (pc, mapper, t, kind);
+		using_mapper = true;
+	      }
+	    else if (mapper_name)
+	      {
+		error ("mapper %qE not found for type %qT", mapper_name, type);
+		using_mapper = true;
+	      }
+	  }
+	  break;
+
+	default:
+	  ;
+	}
+
+      if (using_mapper)
+	*pc = OMP_CLAUSE_CHAIN (c);
+      else
+	pc = &OMP_CLAUSE_CHAIN (c);
+    }
+
+  return clauses;
+}
+
 const struct c_omp_directive c_omp_directives[] = {
   /* Keep this alphabetically sorted by the first word.  Non-null second/third
      if any should precede null ones.  */

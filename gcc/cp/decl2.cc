@@ -5990,10 +5990,15 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 
   /* If DECL has a deduced return type, we need to instantiate it now to
      find out its type.  For OpenMP user defined reductions, we need them
-     instantiated for reduction clauses which inline them by hand directly.  */
+     instantiated for reduction clauses which inline them by hand directly.
+     OpenMP declared mappers are used implicitly so must be instantiated
+     before they can be detected.  */
   if (undeduced_auto_decl (decl)
       || (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
+	  && DECL_OMP_DECLARE_REDUCTION_P (decl))
+      || (TREE_CODE (decl) == VAR_DECL
+	  && DECL_LANG_SPECIFIC (decl)
+	  && DECL_OMP_DECLARE_MAPPER_P (decl)))
     maybe_instantiate_decl (decl);
 
   if (processing_template_decl || in_template_function ())

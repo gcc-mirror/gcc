@@ -2390,6 +2390,12 @@ cxx_omp_finish_clause (tree c, gimple_seq *, bool /* openacc */)
     }
 }
 
+tree
+cxx_omp_finish_mapper_clauses (tree clauses)
+{
+  return finish_omp_clauses (clauses, C_ORT_OMP);
+}
+
 /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
    disregarded in OpenMP construct, because it is going to be
    remapped during OpenMP lowering.  SHARED is true if DECL
