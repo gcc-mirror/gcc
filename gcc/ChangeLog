@@ -1,3 +1,9 @@
+2022-02-03  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/104090
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Use also
+	rs6000_cpu.
+
 2022-02-02  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	Backported from master:
