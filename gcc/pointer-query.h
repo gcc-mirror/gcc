@@ -164,9 +164,9 @@ class pointer_query
   struct cache_type
   {
     /* 1-based indices into cache.  */
-    vec<unsigned> indices;
+    auto_vec<unsigned> indices;
     /* The cache itself.  */
-    vec<access_ref> access_refs;
+    auto_vec<access_ref> access_refs;
   };
 
 public:
