@@ -525,7 +525,7 @@ The default rules for the value of ``Value_Size`` are as follows:
 
 *
   If a subtype statically matches the first subtype of a given type, then it has
-  by default the same ``Value_Size`` as the first subtype.  This is a
+  by default the same ``Value_Size`` as the first subtype.  (This is a
   consequence of RM 13.1(14): "if two subtypes statically match,
   then their subtype-specific aspects are the same".)
 
@@ -873,7 +873,7 @@ Suppose that we have an external device which presents two bytes, the first
 byte presented, which is the first (low addressed byte) of the two byte
 record is called Master, and the second byte is called Slave.
 
-The left most (most significant bit is called Control for each byte, and
+The left most (most significant) bit is called Control for each byte, and
 the remaining 7 bits are called V1, V2, ... V7, where V7 is the rightmost
 (least significant) bit.
 

@@ -508,7 +508,7 @@ applies to both the ``Precondition`` pragma
 and the aspect ``Precondition``. Note that the identifiers for
 pragmas Pre_Class and Post_Class are Pre'Class and Post'Class (not
 Pre_Class and Post_Class), since these pragmas are intended to be
-identical to the corresponding aspects).
+identical to the corresponding aspects.
 
 If the policy is ``CHECK``, then assertions are enabled, i.e.
 the corresponding pragma or aspect is activated.
@@ -1177,7 +1177,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Contract_Cases ((CONTRACT_CASE {, CONTRACT_CASE));
+  pragma Contract_Cases (CONTRACT_CASE {, CONTRACT_CASE});
 
   CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 
@@ -3261,7 +3261,7 @@ with some extended implementations of this pragma in certain Ada 83
 implementations.  The only difference between pragma ``Interface``
 and pragma ``Import`` is that there is special circuitry to allow
 both pragmas to appear for the same subprogram entity (normally it
-is illegal to have multiple ``Import`` pragmas. This is useful in
+is illegal to have multiple ``Import`` pragmas). This is useful in
 maintaining Ada 83/Ada 95 compatibility and is compatible with other
 Ada 83 compilers.
 
@@ -4275,12 +4275,12 @@ Syntax:
 
   pragma Obsolescent (
     [Message =>] static_string_EXPRESSION
-  [,[Version =>] Ada_05]]);
+  [,[Version =>] Ada_05]);
 
   pragma Obsolescent (
     [Entity  =>] NAME
   [,[Message =>] static_string_EXPRESSION
-  [,[Version =>] Ada_05]] );
+  [,[Version =>] Ada_05]]);
 
 
 This pragma can occur immediately following a declaration of an entity,
@@ -6134,7 +6134,7 @@ Syntax:
 Use this to override the normal naming convention.  It is a configuration
 pragma, and so has the usual applicability of configuration pragmas
 (i.e., it applies to either an entire partition, or to all units in a
-compilation, or to a single unit, depending on how it is used.
+compilation, or to a single unit, depending on how it is used).
 ``unit_name`` is mapped to ``file_name_literal``.  The identifier for
 the second argument is required, and indicates whether this is the file
 name for the spec or for the body.
@@ -7176,7 +7176,7 @@ for this purpose, see :ref:`Pragma_Obsolescent`.
 The second form of pragma ``Unreferenced`` is used within a context
 clause. In this case the arguments must be unit names of units previously
 mentioned in ``with`` clauses (similar to the usage of pragma
-``Elaborate_All``. The effect is to suppress warnings about unreferenced
+``Elaborate_All``). The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
 
 For the variable case, warnings are never given for unreferenced variables

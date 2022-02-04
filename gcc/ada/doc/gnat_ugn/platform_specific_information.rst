@@ -1719,7 +1719,7 @@ is
 :switch:`-k`
   Kill :samp:`@{nn}` from exported names
   (:ref:`Windows_Calling_Conventions`
-  for a discussion about ``Stdcall``-style symbols.
+  for a discussion about ``Stdcall``-style symbols).
 
 
 .. index:: --help (dlltool)

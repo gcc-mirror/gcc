@@ -1895,7 +1895,7 @@ applies to both the @code{Precondition} pragma
 and the aspect @code{Precondition}. Note that the identifiers for
 pragmas Pre_Class and Post_Class are Pre’Class and Post’Class (not
 Pre_Class and Post_Class), since these pragmas are intended to be
-identical to the corresponding aspects).
+identical to the corresponding aspects.
 
 If the policy is @code{CHECK}, then assertions are enabled, i.e.
 the corresponding pragma or aspect is activated.
@@ -2583,7 +2583,7 @@ For the semantics of this pragma, see the entry for aspect
 Syntax:
 
 @example
-pragma Contract_Cases ((CONTRACT_CASE @{, CONTRACT_CASE));
+pragma Contract_Cases (CONTRACT_CASE @{, CONTRACT_CASE@});
 
 CONTRACT_CASE ::= CASE_GUARD => CONSEQUENCE
 
@@ -4749,7 +4749,7 @@ with some extended implementations of this pragma in certain Ada 83
 implementations.  The only difference between pragma @code{Interface}
 and pragma @code{Import} is that there is special circuitry to allow
 both pragmas to appear for the same subprogram entity (normally it
-is illegal to have multiple @code{Import} pragmas. This is useful in
+is illegal to have multiple @code{Import} pragmas). This is useful in
 maintaining Ada 83/Ada 95 compatibility and is compatible with other
 Ada 83 compilers.
 
@@ -5802,12 +5802,12 @@ pragma Obsolescent;
 
 pragma Obsolescent (
   [Message =>] static_string_EXPRESSION
-[,[Version =>] Ada_05]]);
+[,[Version =>] Ada_05]);
 
 pragma Obsolescent (
   [Entity  =>] NAME
 [,[Message =>] static_string_EXPRESSION
-[,[Version =>] Ada_05]] );
+[,[Version =>] Ada_05]]);
 @end example
 
 This pragma can occur immediately following a declaration of an entity,
@@ -7693,7 +7693,7 @@ pragma Source_File_Name (
 Use this to override the normal naming convention.  It is a configuration
 pragma, and so has the usual applicability of configuration pragmas
 (i.e., it applies to either an entire partition, or to all units in a
-compilation, or to a single unit, depending on how it is used.
+compilation, or to a single unit, depending on how it is used).
 @code{unit_name} is mapped to @code{file_name_literal}.  The identifier for
 the second argument is required, and indicates whether this is the file
 name for the spec or for the body.
@@ -8716,7 +8716,7 @@ for this purpose, see @ref{ac,,Pragma Obsolescent}.
 The second form of pragma @code{Unreferenced} is used within a context
 clause. In this case the arguments must be unit names of units previously
 mentioned in @code{with} clauses (similar to the usage of pragma
-@code{Elaborate_All}. The effect is to suppress warnings about unreferenced
+@code{Elaborate_All}). The effect is to suppress warnings about unreferenced
 units and unreferenced entities within these units.
 
 For the variable case, warnings are never given for unreferenced variables
@@ -18987,7 +18987,7 @@ only if negative values are possible).
 
 @item 
 If a subtype statically matches the first subtype of a given type, then it has
-by default the same @code{Value_Size} as the first subtype.  This is a
+by default the same @code{Value_Size} as the first subtype.  (This is a
 consequence of RM 13.1(14): “if two subtypes statically match,
 then their subtype-specific aspects are the same”.)
 
@@ -19421,7 +19421,7 @@ Suppose that we have an external device which presents two bytes, the first
 byte presented, which is the first (low addressed byte) of the two byte
 record is called Master, and the second byte is called Slave.
 
-The left most (most significant bit is called Control for each byte, and
+The left most (most significant) bit is called Control for each byte, and
 the remaining 7 bits are called V1, V2, … V7, where V7 is the rightmost
 (least significant) bit.
 
@@ -22298,7 +22298,7 @@ of stream pointer positioning (@ref{2ad,,Text_IO}).  There is one additional
 case:
 
 If @code{Ada.Wide_Text_IO.Look_Ahead} reads a character outside the
-normal lower ASCII set (i.e., a character in the range:
+normal lower ASCII set, i.e. a character in the range:
 
 @example
 Wide_Character'Val (16#0080#) .. Wide_Character'Val (16#FFFF#)
@@ -22502,7 +22502,7 @@ of stream pointer positioning (@ref{2ad,,Text_IO}).  There is one additional
 case:
 
 If @code{Ada.Wide_Wide_Text_IO.Look_Ahead} reads a character outside the
-normal lower ASCII set (i.e., a character in the range:
+normal lower ASCII set, i.e. a character in the range:
 
 @example
 Wide_Wide_Character'Val (16#0080#) .. Wide_Wide_Character'Val (16#10FFFF#)
@@ -25445,7 +25445,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct
@@ -26364,7 +26364,7 @@ routines, since these are architecture independent.
 If active synchronization is required for access to the variables in the
 shared passive package, then as described in the Ada Reference Manual, the
 package may contain protected objects used for this purpose. In this case
-a lock file (whose name is @code{___lock} (three underscores)
+a lock file (whose name is @code{___lock}, with three underscores)
 is created in the shared memory directory.
 
 @geindex ___lock file (for shared passive packages)

@@ -1494,7 +1494,7 @@ Use of Restrictions
 The use of pragma Restrictions allows you to control which features are
 permitted in your program. Apart from the obvious point that if you avoid
 relatively expensive features like finalization (enforceable by the use
-of pragma Restrictions (No_Finalization), the use of this pragma does not
+of pragma Restrictions (No_Finalization)), the use of this pragma does not
 affect the generated code in most cases.
 
 One notable exception to this rule is that the possibility of task abort
@@ -2452,7 +2452,7 @@ If ``Text_IO`` must be used, note that by default output to the standard
 output and standard error files is unbuffered (this provides better
 behavior when output statements are used for debugging, or if the
 progress of a program is observed by tracking the output, e.g. by
-using the Unix *tail -f* command to watch redirected output.
+using the Unix *tail -f* command to watch redirected output).
 
 If you are generating large volumes of output with ``Text_IO`` and
 performance is an important factor, use a designated file instead

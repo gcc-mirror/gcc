@@ -2177,7 +2177,7 @@ x86, and x86_64 platforms.
 
 This package provides the interface to the low level routines used
 by the generated code for allocation and freeing storage for the
-default storage pool (analogous to the C routines malloc and free.
+default storage pool (analogous to the C routines malloc and free).
 It also provides a reallocation interface analogous to the C routine
 realloc. The body of this unit may be modified to provide alternative
 allocation mechanisms for the default pool, and in addition, direct

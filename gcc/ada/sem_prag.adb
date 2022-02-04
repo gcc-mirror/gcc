@@ -20381,12 +20381,12 @@ package body Sem_Prag is
 
          --  pragma Obsolescent (
          --    [Message =>] static_string_EXPRESSION
-         --  [,[Version =>] Ada_05]]);
+         --  [,[Version =>] Ada_05]);
 
          --  pragma Obsolescent (
          --    [Entity  =>] NAME
          --  [,[Message =>] static_string_EXPRESSION
-         --  [,[Version =>] Ada_05]] );
+         --  [,[Version =>] Ada_05]]);
 
          when Pragma_Obsolescent => Obsolescent : declare
             Decl  : Node_Id;
