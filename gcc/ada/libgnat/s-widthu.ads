@@ -59,7 +59,7 @@ is
    function Big (Arg : Uns) return Big_Integer renames
      Unsigned_Conversion.To_Big_Integer;
 
-   Big_10 : constant Big_Integer := Big (10) with Ghost;
+   Big_10 : constant Big_Integer := Big (Uns'(10)) with Ghost;
 
    --  Maximum value of exponent for 10 that fits in Uns'Base
    function Max_Log10 return Natural is

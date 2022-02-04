@@ -56,19 +56,31 @@ generic
 
    --  Additional parameters for ghost subprograms used inside contracts
 
+   type Uns_Option is private;
+   with function Wrap_Option (Value : Uns) return Uns_Option;
    with function Is_Raw_Unsigned_Format_Ghost (Str : String) return Boolean;
    with function Raw_Unsigned_Overflows_Ghost
-          (Str      : String;
-           From, To : Integer)
-           return Boolean;
+     (Str      : String;
+      From, To : Integer)
+      return Boolean;
    with function Scan_Raw_Unsigned_Ghost
-          (Str      : String;
-           From, To : Integer)
-           return Uns;
+     (Str      : String;
+      From, To : Integer)
+      return Uns;
    with function Raw_Unsigned_Last_Ghost
-          (Str      : String;
-           From, To : Integer)
-           return Positive;
+     (Str      : String;
+      From, To : Integer)
+      return Positive;
+   with function Only_Decimal_Ghost
+     (Str      : String;
+      From, To : Integer)
+      return Boolean;
+   with function Scan_Based_Number_Ghost
+     (Str      : String;
+      From, To : Integer;
+      Base     : Uns := 10;
+      Acc      : Uns := 0)
+      return Uns_Option;
 
 package System.Value_I is
    pragma Preelaborate;
@@ -95,6 +107,13 @@ package System.Value_I is
      Pre  => Uns_Is_Valid_Int (Minus, Uval),
      Post => True;
    --  Return True if Uval (or -Uval when Minus is True) is equal to Val
+
+   function Abs_Uns_Of_Int (Val : Int) return Uns is
+     (if Val = Int'First then Uns (Int'Last) + 1
+      elsif Val < 0 then Uns (-Val)
+      else Uns (Val))
+   with Ghost;
+   --  Return the unsigned absolute value of Val
 
    procedure Scan_Integer
      (Str : String;
@@ -237,6 +256,22 @@ package System.Value_I is
    --  base range does not exceed the base range of Integer. Str is the string
    --  argument of the attribute. Constraint_Error is raised if the string is
    --  malformed, or if the value is out of range.
+
+   procedure Prove_Scan_Only_Decimal_Ghost (Str : String; Val : Int)
+   with
+     Ghost,
+     Pre  => Str'Last /= Positive'Last
+       and then Str'Length >= 2
+       and then Str (Str'First) in ' ' | '-'
+       and then (Str (Str'First) = '-') = (Val < 0)
+       and then Only_Decimal_Ghost (Str, Str'First + 1, Str'Last)
+       and then Scan_Based_Number_Ghost (Str, Str'First + 1, Str'Last)
+         = Wrap_Option (Abs_Uns_Of_Int (Val)),
+     Post => Is_Integer_Ghost (Slide_If_Necessary (Str))
+       and then Value_Integer (Str) = Val;
+   --  Ghost lemma used in the proof of 'Image implementation, to prove that
+   --  the result of Value_Integer on a decimal string is the same as the
+   --  signing the result of Scan_Based_Number_Ghost.
 
 private
 
