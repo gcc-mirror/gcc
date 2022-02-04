@@ -18276,74 +18276,89 @@ The following built-in functions are available on Linux 64-bit systems
 that use a future architecture instruction set (@option{-mcpu=power10}):
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cfuged (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cfuged (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit centrifuge operation, as if implemented by the
 @code{cfuged} instruction.
 @findex __builtin_cfuged
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cntlzdm (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cntlzdm (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit count leading zeros operation under mask, as if
 implemented by the @code{cntlzdm} instruction.
 @findex __builtin_cntlzdm
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_cnttzdm (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_cnttzdm (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit count trailing zeros operation under mask, as if
 implemented by the @code{cnttzdm} instruction.
 @findex __builtin_cnttzdm
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_pdepd (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_pdepd (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit parallel bits deposit operation, as if implemented by the
 @code{pdepd} instruction.
 @findex __builtin_pdepd
 
 @smallexample
-@exdent unsigned long long int
-@exdent __builtin_pextd (unsigned long long int, unsigned long long int)
+@exdent unsigned long long
+@exdent __builtin_pextd (unsigned long long, unsigned long long)
 @end smallexample
 Perform a 64-bit parallel bits extract operation, as if implemented by the
 @code{pextd} instruction.
 @findex __builtin_pextd
 
 @smallexample
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *);
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *);
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *);
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *)
+
+@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *)
+
+@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *)
 @end smallexample
 
 Load (and sign extend) to an __int128 vector, as if implemented by the ISA 3.1
-@code{lxvrbx} @code{lxvrhx} @code{lxvrwx} @code{lxvrdx} instructions.
+@code{lxvrbx}, @code{lxvrhx}, @code{lxvrwx}, and  @code{lxvrdx} instructions.
 @findex vsx_xl_sext
 @findex vsx_xl_zext
 
 @smallexample
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *);
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *);
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *);
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *)
+
+@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *)
+
+@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *)
 @end smallexample
 
 Truncate and store the rightmost element of a vector, as if implemented by the
-ISA 3.1 @code{stxvrbx} @code{stxvrhx} @code{stxvrwx} @code{stxvrdx} instructions.
+ISA 3.1 @code{stxvrbx}, @code{stxvrhx}, @code{stxvrwx}, and @code{stxvrdx}
+instructions.
 @findex vec_xst_trunc
 
 @node PowerPC AltiVec/VSX Built-in Functions
