@@ -328,6 +328,72 @@ package body Exp_Util is
    ----------------------
 
    procedure Adjust_Condition (N : Node_Id) is
+
+      function Is_Hardbool_Type (T : Entity_Id) return Boolean;
+      --  Return True iff T is a type annotated with the
+      --  Machine_Attribute pragma "hardbool".
+
+      ----------------------
+      -- Is_Hardbool_Type --
+      ----------------------
+
+      function Is_Hardbool_Type (T : Entity_Id) return Boolean is
+
+         function Find_Hardbool_Pragma
+           (Id : Entity_Id) return Node_Id;
+         --  Return a Rep_Item associated with entity Id that
+         --  corresponds to the Hardbool Machine_Attribute pragma, if
+         --  any, or Empty otherwise.
+
+         function Pragma_Arg_To_String (Item : Node_Id) return String is
+            (To_String (Strval (Expr_Value_S (Item))));
+         --  Return the pragma argument Item as a String
+
+         function Hardbool_Pragma_P (Item : Node_Id) return Boolean is
+            (Nkind (Item) = N_Pragma
+               and then
+             Pragma_Name (Item) = Name_Machine_Attribute
+               and then
+             Pragma_Arg_To_String
+               (Get_Pragma_Arg
+                  (Next (First (Pragma_Argument_Associations (Item)))))
+               = "hardbool");
+         --  Return True iff representation Item is a "hardbool"
+         --  Machine_Attribute pragma.
+
+         --------------------------
+         -- Find_Hardbool_Pragma --
+         --------------------------
+
+         function Find_Hardbool_Pragma
+           (Id : Entity_Id) return Node_Id
+         is
+            Item : Node_Id;
+
+         begin
+            if not Has_Gigi_Rep_Item (Id) then
+               return Empty;
+            end if;
+
+            Item := First_Rep_Item (Id);
+            while Present (Item) loop
+               if Hardbool_Pragma_P (Item) then
+                  return Item;
+               end if;
+               Item := Next_Rep_Item (Item);
+            end loop;
+
+            return Empty;
+         end Find_Hardbool_Pragma;
+
+      --  Start of processing for Is_Hardbool_Type
+
+      begin
+         return Present (Find_Hardbool_Pragma (T));
+      end Is_Hardbool_Type;
+
+   --  Start of processing for Adjust_Condition
+
    begin
       if No (N) then
          return;
@@ -347,7 +413,10 @@ package body Exp_Util is
 
          --  Apply validity checking if needed
 
-         if Validity_Checks_On and Validity_Check_Tests then
+         if Validity_Checks_On
+           and then
+             (Validity_Check_Tests or else Is_Hardbool_Type (T))
+         then
             Ensure_Valid (N);
          end if;
 

@@ -208,6 +208,10 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "format_arg",   1, 1,  false, true,  true,  false,
     fake_attribute_handler, NULL },
 
+  /* This is handled entirely in the front end.  */
+  { "hardbool",     0, 0,  false, true, false, true,
+    fake_attribute_handler, NULL },
+
   { NULL,           0, 0,  false, false, false, false,
     NULL, NULL }
 };

@@ -160,3 +160,39 @@ files of the corresponding passes, through command line options
 
 They are separate options, however, because of the significantly
 different performance impact of the hardening transformations.
+
+
+.. Hardened Booleans:
+
+Hardened Booleans
+=================
+
+Ada has built-in support for introducing boolean types with
+alternative representations, using representation clauses:
+
+.. code-block:: ada
+
+   type HBool is new Boolean;
+   for HBool use (16#5a#, 16#a5#);
+   for HBool'Size use 8;
+
+When validity checking is enabled, the compiler will check that
+variables of such types hold values corresponding to the selected
+representations.
+
+There are multiple strategies for where to introduce validity checking
+(see *-gnatV* options).  Their goal is to guard against various kinds
+of programming errors, and GNAT strives to omit checks when program
+logic rules out an invalid value, and optimizers may further remove
+checks found to be redundant.
+
+For additional hardening, the ``hardbool`` :samp:`Machine_Attribute`
+pragma can be used to annotate boolean types with representation
+clauses, so that expressions of such types used as conditions are
+checked even when compiling with *-gnatVT*.
+
+.. code-block:: ada
+
+   pragma Machine_Attribute (HBool, "hardbool");
+
+Note that *-gnatVn* will disable even ``hardbool`` testing.
