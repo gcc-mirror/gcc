@@ -977,7 +977,7 @@
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-        (if_then_else:HSDIM
+	(if_then_else:HSDIM
 	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
 	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
@@ -986,7 +986,7 @@
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-        (if_then_else:SDFM
+	(if_then_else:SDFM
 	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
@@ -995,7 +995,7 @@
 
 (define_insn "sel_false<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-        (if_then_else:HSDIM
+	(if_then_else:HSDIM
 	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
 	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
@@ -1004,12 +1004,62 @@
 
 (define_insn "sel_false<mode>"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-        (if_then_else:SDFM
+	(if_then_else:SDFM
 	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
   ""
   "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
+(define_code_iterator eqne [eq ne])
+
+;; Split negation of a predicate into a conditional move.
+(define_insn_and_split "*selp<mode>_neg_<code>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(neg:HSDIM (eqne:HSDIM
+		     (match_operand:BI 1 "nvptx_register_operand" "R")
+		     (const_int 0))))]
+  ""
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:HSDIM
+	  (eqne (match_dup 1) (const_int 0))
+	  (const_int -1)
+	  (const_int 0)))])
+
+;; Split bitwise not of a predicate into a conditional move.
+(define_insn_and_split "*selp<mode>_not_<code>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(not:HSDIM (eqne:HSDIM
+		     (match_operand:BI 1 "nvptx_register_operand" "R")
+		     (const_int 0))))]
+  ""
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:HSDIM
+	  (eqne (match_dup 1) (const_int 0))
+	  (const_int -2)
+	  (const_int -1)))])
+
+(define_insn "*setcc_int<mode>"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(neg:SI
+	  (match_operator:SI 1 "nvptx_comparison_operator"
+	    [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	     (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")])))]
+  ""
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
+
+(define_insn "*setcc_int<mode>"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(neg:SI
+	  (match_operator:SI 1 "nvptx_float_comparison_operator"
+	    [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	     (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")])))]
+  ""
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
