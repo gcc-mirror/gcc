@@ -4197,27 +4197,22 @@
  }
 [(set_attr "type" "vecsimple")])
 
-(define_expand "vreplace_un_<mode>"
- [(set (match_operand:REPLACE_ELT 0 "register_operand")
- (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand")
-		      (match_operand:<VS_scalar> 2 "register_operand")
-		      (match_operand:QI 3 "const_0_to_12_operand")]
-		     UNSPEC_REPLACE_UN))]
- "TARGET_POWER10"
-{
-   /* Immediate value is the byte index Big Endian numbering.  */
-   emit_insn (gen_vreplace_elt_<mode>_inst (operands[0], operands[1],
-					    operands[2], operands[3]));
-   DONE;
- }
-[(set_attr "type" "vecsimple")])
-
 (define_insn "vreplace_elt_<mode>_inst"
  [(set (match_operand:REPLACE_ELT 0 "register_operand" "=v")
   (unspec:REPLACE_ELT [(match_operand:REPLACE_ELT 1 "register_operand" "0")
 		       (match_operand:<VS_scalar> 2 "register_operand" "r")
 		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
 		      UNSPEC_REPLACE_ELT))]
+ "TARGET_POWER10"
+ "vins<REPLACE_ELT_char> %0,%2,%3"
+ [(set_attr "type" "vecsimple")])
+
+(define_insn "vreplace_un_<mode>"
+ [(set (match_operand:V16QI 0 "register_operand" "=v")
+  (unspec:V16QI [(match_operand:REPLACE_ELT 1 "register_operand" "0")
+                 (match_operand:<VS_scalar> 2 "register_operand" "r")
+		 (match_operand:QI 3 "const_0_to_12_operand" "n")]
+		UNSPEC_REPLACE_UN))]
  "TARGET_POWER10"
  "vins<REPLACE_ELT_char> %0,%2,%3"
  [(set_attr "type" "vecsimple")])

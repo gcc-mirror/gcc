@@ -3387,25 +3387,25 @@
   const vull __builtin_altivec_vpextd (vull, vull);
     VPEXTD vpextd {}
 
-  const vull __builtin_altivec_vreplace_un_uv2di (vull, unsigned long long, \
-                                                  const int<4>);
+  const vuc __builtin_altivec_vreplace_un_uv2di (vull, unsigned long long, \
+                                                 const int<4>);
     VREPLACE_UN_UV2DI vreplace_un_v2di {}
 
-  const vui __builtin_altivec_vreplace_un_uv4si (vui, unsigned int, \
+  const vuc __builtin_altivec_vreplace_un_uv4si (vui, unsigned int, \
                                                  const int<4>);
     VREPLACE_UN_UV4SI vreplace_un_v4si {}
 
-  const vd __builtin_altivec_vreplace_un_v2df (vd, double, const int<4>);
+  const vuc __builtin_altivec_vreplace_un_v2df (vd, double, const int<4>);
     VREPLACE_UN_V2DF vreplace_un_v2df {}
 
-  const vsll __builtin_altivec_vreplace_un_v2di (vsll, signed long long, \
-                                                 const int<4>);
+  const vuc __builtin_altivec_vreplace_un_v2di (vsll, signed long long, \
+                                                const int<4>);
     VREPLACE_UN_V2DI vreplace_un_v2di {}
 
-  const vf __builtin_altivec_vreplace_un_v4sf (vf, float, const int<4>);
+  const vuc __builtin_altivec_vreplace_un_v4sf (vf, float, const int<4>);
     VREPLACE_UN_V4SF vreplace_un_v4sf {}
 
-  const vsi __builtin_altivec_vreplace_un_v4si (vsi, signed int, const int<4>);
+  const vuc __builtin_altivec_vreplace_un_v4si (vsi, signed int, const int<4>);
     VREPLACE_UN_V4SI vreplace_un_v4si {}
 
   const vull __builtin_altivec_vreplace_uv2di (vull, unsigned long long, \

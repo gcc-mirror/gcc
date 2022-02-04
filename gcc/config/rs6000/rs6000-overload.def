@@ -3059,17 +3059,17 @@
     VREPLACE_ELT_V2DF
 
 [VEC_REPLACE_UN, vec_replace_unaligned, __builtin_vec_replace_un]
-  vui __builtin_vec_replace_un (vui, unsigned int, const int);
+  vuc __builtin_vec_replace_un (vui, unsigned int, const int);
     VREPLACE_UN_UV4SI
-  vsi __builtin_vec_replace_un (vsi, signed int, const int);
+  vuc __builtin_vec_replace_un (vsi, signed int, const int);
     VREPLACE_UN_V4SI
-  vull __builtin_vec_replace_un (vull, unsigned long long, const int);
+  vuc __builtin_vec_replace_un (vull, unsigned long long, const int);
     VREPLACE_UN_UV2DI
-  vsll __builtin_vec_replace_un (vsll, signed long long, const int);
+  vuc __builtin_vec_replace_un (vsll, signed long long, const int);
     VREPLACE_UN_V2DI
-  vf __builtin_vec_replace_un (vf, float, const int);
+  vuc __builtin_vec_replace_un (vf, float, const int);
     VREPLACE_UN_V4SF
-  vd __builtin_vec_replace_un (vd, double, const int);
+  vuc __builtin_vec_replace_un (vd, double, const int);
     VREPLACE_UN_V2DF
 
 [VEC_REVB, vec_revb, __builtin_vec_revb]
