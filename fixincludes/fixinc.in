@@ -258,9 +258,10 @@ then echo "All directories (including links to directories):"
      echo $all_dirs
 fi
 
+OLDDIR=`${PWDCMD}`
 cd $LIB
 echo "$all_dirs" | xargs mkdir -p
-cd ..
+cd ${OLDDIR}
 
 mkdir $LIB/root
 
