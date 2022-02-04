@@ -1,3 +1,29 @@
+2022-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104369
+	* engine.cc (exploded_graph::process_node): Use the node for any
+	diagnostics, avoiding ICE if a bifurcation update adds a
+	saved_diagnostic, such as for a tainted realloc size.
+	* region-model-impl-calls.cc
+	(region_model::impl_call_realloc::success_no_move::update_model):
+	Require the old pointer to be non-NULL to be able successfully
+	grow in place.  Use model->deref_rvalue rather than maybe_get_region
+	to support the old pointer being symbolic.
+	(region_model::impl_call_realloc::success_with_move::update_model):
+	Likewise.  Add a constraint that the new pointer != the old pointer.
+	Use a sized_region when setting the value of the new region.
+	Handle the case where we don't know the dynamic size of the old
+	region by marking the new region as unknown.
+	* sm-taint.cc (tainted_allocation_size::tainted_allocation_size):
+	Update assertion to also allow for MEMSPACE_UNKNOWN.
+	(tainted_allocation_size::emit): Likewise.
+	(region_model::check_dynamic_size_for_taint): Likewise.
+
+2022-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-impl-calls.cc (region_model::impl_call_calloc): Use
+	a sized_region when calling zero_fill_region.
+
 2022-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc (region_model::on_return): Replace usage of

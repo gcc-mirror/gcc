@@ -1,3 +1,220 @@
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104260
+	* passes.def (pass_warn_access): Adjust pass placement.
+
+2022-02-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104362
+	* config/i386/i386.cc (find_drap_reg): For 32bit targets
+	return DI_REG if function uses __builtin_eh_return.
+
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-restrict.cc (class pass_wrestrict): Outline ctor.
+	(pass_wrestrict::m_ptr_qry): New member.
+	(wrestrict_walk): Rename...
+	(pass_wrestrict::check_block): ...to this.
+	(pass_wrestrict::execute): Set up and tear down pointer_query and
+	ranger.
+	(builtin_memref::builtin_memref): Change ctor argument.  Simplify.
+	(builtin_access::builtin_access): Same.
+	(builtin_access::m_ptr_qry): New member.
+	(check_call): Rename...
+	(pass_wrestrict::check_call): ...to this.
+	(check_bounds_or_overlap): Change argument.
+	* gimple-ssa-warn-restrict.h (check_bounds_or_overlap): Same.
+
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-array-bounds.cc (array_bounds_checker::array_bounds_checker):
+	Define ctor.
+	(array_bounds_checker::get_value_range): Use new member.
+	(array_bounds_checker::check_mem_ref): Same.
+	* gimple-array-bounds.h (array_bounds_checker::array_bounds_checker):
+	Outline ctor.
+	(array_bounds_checker::m_ptr_query): New member.
+
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::pass_waccess): Remove
+	pointer_query cache.
+	* pointer-query.cc (pointer_query::pointer_query): Remove cache
+	argument.  Zero-initialize new cache member.
+	(pointer_query::get_ref): Replace cache pointer with direct access.
+	(pointer_query::put_ref): Same.
+	(pointer_query::flush_cache): Same.
+	(pointer_query::dump): Same.
+	* pointer-query.h (class pointer_query): Remove cache argument from
+	ctor.  Change cache pointer to cache subobject member.
+	* tree-ssa-strlen.cc: Remove pointer_query cache.
+
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/104119
+	* gimple-ssa-sprintf.cc (struct directive): Change argument type.
+	(format_none): Same.
+	(format_percent): Same.
+	(format_integer): Same.
+	(format_floating): Same.
+	(get_string_length): Same.
+	(format_character): Same.
+	(format_string): Same.
+	(format_plain): Same.
+	(format_directive): Same.
+	(compute_format_length): Same.
+	(handle_printf_call): Same.
+	* tree-ssa-strlen.cc (get_range_strlen_dynamic): Same.   Call
+	get_maxbound.
+	(get_range_strlen_phi): Same.
+	(get_maxbound): New function.
+	(strlen_pass::get_len_or_size): Adjust to parameter change.
+	* tree-ssa-strlen.h (get_range_strlen_dynamic): Change argument type.
+
+2022-02-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/103686
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin):	Remove
+	test for !rs6000_fold_gimple.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Likewise.
+	* config/rs6000/rs6000.opt (mfold-gimple): Remove.
+
+2022-02-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/95082
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Handle
+	endianness for vclzlsbb and vctzlsbb.
+	* config/rs6000/rs6000-builtins.def (VCLZLSBB_V16QI): Change
+	default pattern and indicate a different pattern will be used for
+	big endian.
+	(VCLZLSBB_V4SI): Likewise.
+	(VCLZLSBB_V8HI): Likewise.
+	(VCTZLSBB_V16QI): Likewise.
+	(VCTZLSBB_V4SI): Likewise.
+	(VCTZLSBB_V8HI): Likewise.
+
+2022-02-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add rs6000-builtin.o to extra_objs.
+	* config/rs6000/rs6000-builtin.cc: New file, containing code moved
+	from other files.
+	* config/rs6000/rs6000-call.cc (cpu_is_info): Move to
+	rs6000-builtin.cc.
+	(cpu_supports_info): Likewise.
+	(rs6000_type_string): Likewise.
+	(altivec_expand_predicate_builtin): Likewise.
+	(rs6000_htm_spr_icode): Likewise.
+	(altivec_expand_vec_init_builtin): Likewise.
+	(get_element_number): Likewise.
+	(altivec_expand_vec_set_builtin): Likewise.
+	(altivec_expand_vec_ext_builtin): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_fold_builtin): Likewise.
+	(fold_build_vec_cmp): Likewise.
+	(fold_compare_helper): Likewise.
+	(map_to_integral_tree_type): Likewise.
+	(fold_mergehl_helper): Likewise.
+	(fold_mergeeo_helper): Likewise.
+	(rs6000_builtin_valid_without_lhs): Likewise.
+	(rs6000_builtin_is_supported): Likewise.
+	(rs6000_gimple_fold_mma_builtin): Likewise.
+	(rs6000_gimple_fold_builtin): Likewise.
+	(rs6000_expand_ldst_mask): Likewise.
+	(cpu_expand_builtin): Likewise.
+	(elemrev_icode): Likewise.
+	(ldv_expand_builtin): Likewise.
+	(lxvrse_expand_builtin): Likewise.
+	(lxvrze_expand_builtin): Likewise.
+	(stv_expand_builtin): Likewise.
+	(mma_expand_builtin): Likewise.
+	(htm_spr_num): Likewise.
+	(htm_expand_builtin): Likewise.
+	(rs6000_expand_builtin): Likewise.
+	(rs6000_vector_type): Likewise.
+	(rs6000_init_builtins): Likewise.  Remove initialization of
+	builtin_mode_to_type entries.
+	(rs6000_builtin_decl): Move to rs6000-builtin.cc.
+	* config/rs6000/rs6000.cc (rs6000_builtin_mask_for_load): New
+	external declaration.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_builtin_reciprocal): Likewise.
+	(altivec_builtin_mask_for_load): Move to rs6000-builtin.cc.
+	(rs6000_builtin_types): Likewise.
+	(builtin_mode_to_type): Remove.
+	(rs6000_builtin_mask_for_load): Move to rs6000-builtin.cc.  Remove
+	static qualifier.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_builtin_reciprocal): Likewise.
+	* config/rs6000/rs6000.h (builtin_mode_to_type): Remove.
+	* config/rs6000/t-rs6000 (rs6000-builtin.o): New target.
+
+2022-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/104337
+	* tree-nrv.cc (pass_nrv::execute): Remove tieing result and found
+	together via DECL_ABSTRACT_ORIGIN.
+
+2022-02-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.cc (rs6000_expand_builtin): Revise error
+	message for RES_BITS case.
+
+2022-02-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fur_list::fur_list): Set m_local[1] correctly.
+
+2022-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arm/arm.opt (mfix-cortex-a57-aes-1742098,
+	mfix-cortex-a72-aes-1655431): Ensure description ends with full stop.
+
+2022-02-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cfganal.cc (verify_marked_backedges): New.
+	* cfganal.h (verify_marked_backedges): New.
+	* gimple-range-path.cc (path_range_query::path_range_query):
+	Verify freshness of back edges.
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Call
+	mark_dfs_back_edges.
+	* tree-ssa-threadbackward.cc (back_threader::back_threader): Move
+	path_range_query construction after backedges have been
+	updated.
+
+2022-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (movmisalign<mode>): Extend from
+	VALL to VALL_F16.
+
+2022-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (VALL_F16MOV): Delete.
+	* config/aarch64/aarch64-simd.md (mov<mode>): Use VALL_F16 instead
+	of VALL_F16MOV.
+
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Change subject and object in the error message.
+	* config/s390/s390.cc (s390_valid_target_attribute_inner_p):
+	Likewise.
+
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* config/s390/s390.cc (s390_valid_target_attribute_inner_p):
+	Use the error message for i386 target.
+
+2022-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104334
+	* range-op.cc (range_operator::wi_fold_in_parts): Change lh_range
+	and rh_range type to widest_int and subtract in widest_int.  Remove
+	ov_rh, ov_lh and sign vars, always perform comparisons as signed
+	and use >, < and == operators for it.
+
+2022-02-03  Martin Sebor  <msebor@redhat.com>
+
+	* common.opt (-Wuse-after-free): Correct typos.
+
 2022-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104270

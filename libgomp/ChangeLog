@@ -1,3 +1,9 @@
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
 2022-02-01  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.oacc-c-c++-common/private-atomic-1.c: Remove

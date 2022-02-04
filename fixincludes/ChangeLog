@@ -1,3 +1,7 @@
+2022-02-03  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use mkdir -p rather that a loop.
+
 2022-01-16  Olivier Hainque  <hainque@adacore.com>
 
 	* inclhack.def (vxworks_posix_open): New hack.
