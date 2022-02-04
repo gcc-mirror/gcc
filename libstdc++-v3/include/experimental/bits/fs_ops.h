@@ -74,19 +74,19 @@ inline namespace v1
   { return copy_file(__from, __to, copy_options::none); }
 
   inline bool
-  copy_file(const path& __from, const path& __to, error_code& __ec) noexcept
+  copy_file(const path& __from, const path& __to, error_code& __ec)
   { return copy_file(__from, __to, copy_options::none, __ec); }
 
   bool copy_file(const path& __from, const path& __to, copy_options __option);
   bool copy_file(const path& __from, const path& __to, copy_options __option,
-		 error_code& __ec) noexcept;
+		 error_code& __ec);
 
   void copy_symlink(const path& __existing_symlink, const path& __new_symlink);
   void copy_symlink(const path& __existing_symlink, const path& __new_symlink,
 		    error_code& __ec) noexcept;
 
   bool create_directories(const path& __p);
-  bool create_directories(const path& __p, error_code& __ec) noexcept;
+  bool create_directories(const path& __p, error_code& __ec);
 
   bool create_directory(const path& __p);
   bool create_directory(const path& __p, error_code& __ec) noexcept;
@@ -262,7 +262,7 @@ inline namespace v1
   bool remove(const path& __p, error_code& __ec) noexcept;
 
   uintmax_t remove_all(const path& __p);
-  uintmax_t remove_all(const path& __p, error_code& __ec) noexcept;
+  uintmax_t remove_all(const path& __p, error_code& __ec);
 
   void rename(const path& __from, const path& __to);
   void rename(const path& __from, const path& __to, error_code& __ec) noexcept;

@@ -366,7 +366,7 @@ fs::copy_file(const path& from, const path& to, copy_options option)
 
 bool
 fs::copy_file(const path& from, const path& to, copy_options options,
-	      error_code& ec) noexcept
+	      error_code& ec)
 {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
   return do_copy_file(from.c_str(), to.c_str(), copy_file_options(options),
@@ -418,7 +418,7 @@ fs::create_directories(const path& p)
 }
 
 bool
-fs::create_directories(const path& p, error_code& ec) noexcept
+fs::create_directories(const path& p, error_code& ec)
 {
   if (p.empty())
     {
@@ -1092,7 +1092,7 @@ fs::remove_all(const path& p)
 }
 
 std::uintmax_t
-fs::remove_all(const path& p, error_code& ec) noexcept
+fs::remove_all(const path& p, error_code& ec)
 {
   const auto s = symlink_status(p, ec);
   if (!status_known(s))
