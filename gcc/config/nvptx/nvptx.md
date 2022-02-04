@@ -1603,7 +1603,7 @@
 		  UNSPEC_SHUFFLE))]
   ""
   {
-    if (TARGET_PTX_6_3)
+    if (TARGET_PTX_6_0)
       return "%.\\tshfl.sync%S3.b32\\t%0, %1, %2, 31, 0xffffffff;";
     else
       return "%.\\tshfl%S3.b32\\t%0, %1, %2, 31;";
@@ -1615,7 +1615,7 @@
 		   UNSPEC_VOTE_BALLOT))]
   ""
   {
-    if (TARGET_PTX_6_3)
+    if (TARGET_PTX_6_0)
       return "%.\\tvote.sync.ballot.b32\\t%0, %1, 0xffffffff;";
     else
       return "%.\\tvote.ballot.b32\\t%0, %1;";

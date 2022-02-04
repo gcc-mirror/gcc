@@ -205,12 +205,117 @@ diagnose_openacc_conflict (bool optval, const char *optname)
     error ("option %s is not supported together with %<-fopenacc%>", optname);
 }
 
+static enum ptx_version
+first_ptx_version_supporting_sm (enum ptx_isa sm)
+{
+  switch (sm)
+    {
+    case PTX_ISA_SM30:
+      return PTX_VERSION_3_0;
+    case PTX_ISA_SM35:
+      return PTX_VERSION_3_1;
+    case PTX_ISA_SM53:
+      return PTX_VERSION_4_2;
+    case PTX_ISA_SM75:
+      return PTX_VERSION_6_3;
+    case PTX_ISA_SM80:
+      return PTX_VERSION_7_0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static enum ptx_version
+default_ptx_version_option (void)
+{
+  enum ptx_version first
+    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+
+  /* Pick a version that supports the sm.  */
+  enum ptx_version res = first;
+
+  /* Pick at least 3.1.  This has been the smallest version historically.  */
+  res = MAX (res, PTX_VERSION_3_1);
+
+  /* Pick at least 6.0, to enable using bar.warp.sync to have a way to force
+     warp convergence.  */
+  res = MAX (res, PTX_VERSION_6_0);
+
+  /* Verify that we pick a version that supports the sm.  */
+  gcc_assert (first <= res);
+  return res;
+}
+
+static const char *
+ptx_version_to_string (enum ptx_version v)
+{
+  switch (v)
+    {
+    case PTX_VERSION_3_0:
+      return "3.0";
+    case PTX_VERSION_3_1:
+      return "3.1";
+    case PTX_VERSION_4_2:
+      return "4.2";
+    case PTX_VERSION_6_0:
+      return "6.0";
+    case PTX_VERSION_6_3:
+      return "6.3";
+    case PTX_VERSION_7_0:
+      return "7.0";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static const char *
+sm_version_to_string (enum ptx_isa sm)
+{
+  switch (sm)
+    {
+    case PTX_ISA_SM30:
+      return "30";
+    case PTX_ISA_SM35:
+      return "35";
+    case PTX_ISA_SM53:
+      return "53";
+    case PTX_ISA_SM70:
+      return "70";
+    case PTX_ISA_SM75:
+      return "75";
+    case PTX_ISA_SM80:
+      return "80";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+handle_ptx_version_option (void)
+{
+  if (!OPTION_SET_P (ptx_version_option))
+    {
+      ptx_version_option = default_ptx_version_option ();
+      return;
+    }
+
+  enum ptx_version first
+    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+
+  if (ptx_version_option < first)
+    error ("PTX version (-mptx) needs to be at least %s to support selected"
+	   " -misa (sm_%s)", ptx_version_to_string (first),
+	   sm_version_to_string ((enum ptx_isa)ptx_isa_option));
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
 nvptx_option_override (void)
 {
   init_machine_status = nvptx_init_machine_status;
+
+  handle_ptx_version_option ();
 
   /* Set toplevel_reorder, unless explicitly disabled.  We need
      reordering so that we emit necessary assembler decls of
@@ -5430,23 +5535,19 @@ static void
 nvptx_file_start (void)
 {
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
-  if (TARGET_PTX_7_0)
-    fputs ("\t.version\t7.0\n", asm_out_file);
-  else if (TARGET_PTX_6_3)
-    fputs ("\t.version\t6.3\n", asm_out_file);
-  else
-    fputs ("\t.version\t3.1\n", asm_out_file);
-  if (TARGET_SM80)
-    fputs ("\t.target\tsm_80\n", asm_out_file);
-  else if (TARGET_SM75)
-    fputs ("\t.target\tsm_75\n", asm_out_file);
-  else if (TARGET_SM53)
-    fputs ("\t.target\tsm_53\n", asm_out_file);
-  else if (TARGET_SM35)
-    fputs ("\t.target\tsm_35\n", asm_out_file);
-  else
-    fputs ("\t.target\tsm_30\n", asm_out_file);
+
+  fputs ("\t.version\t", asm_out_file);
+  fputs (ptx_version_to_string ((enum ptx_version)ptx_version_option),
+	 asm_out_file);
+  fputs ("\n", asm_out_file);
+
+  fputs ("\t.target\tsm_", asm_out_file);
+  fputs (sm_version_to_string ((enum ptx_isa)ptx_isa_option),
+	 asm_out_file);
+  fputs ("\n", asm_out_file);
+
   fprintf (asm_out_file, "\t.address_size %d\n", GET_MODE_BITSIZE (Pmode));
+
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
 
