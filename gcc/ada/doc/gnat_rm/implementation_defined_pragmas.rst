@@ -1985,10 +1985,10 @@ Syntax:
 
 ::
 
-  pragma Export_Object
+  pragma Export_Object (
         [Internal =>] LOCAL_NAME
      [, [External =>] EXTERNAL_SYMBOL]
-     [, [Size     =>] EXTERNAL_SYMBOL]
+     [, [Size     =>] EXTERNAL_SYMBOL]);
 
   EXTERNAL_SYMBOL ::=
     IDENTIFIER
@@ -2911,7 +2911,7 @@ Syntax:
 
 ::
 
-  pragma Import_Object
+  pragma Import_Object (
        [Internal =>] LOCAL_NAME
     [, [External =>] EXTERNAL_SYMBOL]
     [, [Size     =>] EXTERNAL_SYMBOL]);
@@ -6031,7 +6031,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Short_Descriptors
+  pragma Short_Descriptors;
 
 
 This pragma is provided for compatibility with other Ada implementations. It

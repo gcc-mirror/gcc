@@ -3426,10 +3426,10 @@ still allows the specification of parameter mechanisms.
 Syntax:
 
 @example
-pragma Export_Object
+pragma Export_Object (
       [Internal =>] LOCAL_NAME
    [, [External =>] EXTERNAL_SYMBOL]
-   [, [Size     =>] EXTERNAL_SYMBOL]
+   [, [Size     =>] EXTERNAL_SYMBOL]);
 
 EXTERNAL_SYMBOL ::=
   IDENTIFIER
@@ -4385,7 +4385,7 @@ is used.
 Syntax:
 
 @example
-pragma Import_Object
+pragma Import_Object (
      [Internal =>] LOCAL_NAME
   [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL]);
@@ -7597,7 +7597,7 @@ There is no requirement that all units in a partition use this option.
 Syntax:
 
 @example
-pragma Short_Descriptors
+pragma Short_Descriptors;
 @end example
 
 This pragma is provided for compatibility with other Ada implementations. It
