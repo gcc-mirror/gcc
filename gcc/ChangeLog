@@ -1,3 +1,9 @@
+2022-02-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104362
+	* config/i386/i386.c (find_drap_reg): For 32bit targets
+	return DI_REG if function uses __builtin_eh_return.
+
 2022-02-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR target/104090
