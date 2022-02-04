@@ -6450,11 +6450,6 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index1 : Interp_Index;
-      Index2 : Interp_Index;
-      It1    : Interp;
-      It2    : Interp;
-
       procedure Check_Right_Argument (T : Entity_Id);
       --  Check right operand of operator
 
@@ -6463,18 +6458,26 @@ package body Sem_Ch4 is
       --------------------------
 
       procedure Check_Right_Argument (T : Entity_Id) is
+         I  : Interp_Index;
+         It : Interp;
+
       begin
          if not Is_Overloaded (R) then
             Check_Arithmetic_Pair (T, Etype (R), Op_Id, N);
 
          else
-            Get_First_Interp (R, Index2, It2);
-            while Present (It2.Typ) loop
-               Check_Arithmetic_Pair (T, It2.Typ, Op_Id, N);
-               Get_Next_Interp (Index2, It2);
+            Get_First_Interp (R, I, It);
+            while Present (It.Typ) loop
+               Check_Arithmetic_Pair (T, It.Typ, Op_Id, N);
+               Get_Next_Interp (I, It);
             end loop;
          end if;
       end Check_Right_Argument;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
 
    --  Start of processing for Find_Arithmetic_Types
 
@@ -6483,10 +6486,10 @@ package body Sem_Ch4 is
          Check_Right_Argument (Etype (L));
 
       else
-         Get_First_Interp (L, Index1, It1);
-         while Present (It1.Typ) loop
-            Check_Right_Argument (It1.Typ);
-            Get_Next_Interp (Index1, It1);
+         Get_First_Interp (L, I, It);
+         while Present (It.Typ) loop
+            Check_Right_Argument (It.Typ);
+            Get_Next_Interp (I, It);
          end loop;
       end if;
    end Find_Arithmetic_Types;
@@ -6500,86 +6503,77 @@ package body Sem_Ch4 is
       Op_Id : Entity_Id;
       N     : Node_Id)
    is
-      Index : Interp_Index;
-      It    : Interp;
+      procedure Check_Boolean_Pair (T1, T2 : Entity_Id);
+      --  Check operand pair of operator
 
-      procedure Check_Numeric_Argument (T : Entity_Id);
-      --  Special case for logical operations one of whose operands is an
-      --  integer literal. If both are literal the result is any modular type.
+      procedure Check_Right_Argument (T : Entity_Id);
+      --  Check right operand of operator
 
-      ----------------------------
-      -- Check_Numeric_Argument --
-      ----------------------------
+      ------------------------
+      -- Check_Boolean_Pair --
+      ------------------------
 
-      procedure Check_Numeric_Argument (T : Entity_Id) is
+      procedure Check_Boolean_Pair (T1, T2 : Entity_Id) is
+         T : Entity_Id;
+
       begin
-         if T = Universal_Integer then
-            Add_One_Interp (N, Op_Id, Any_Modular);
+         if Valid_Boolean_Arg (T1)
+           and then Valid_Boolean_Arg (T2)
+           and then (Covers (T1 => T1, T2 => T2)
+                      or else Covers (T1 => T2, T2 => T1))
+         then
+            T := Specific_Type (T1, T2);
 
-         elsif Is_Modular_Integer_Type (T) then
+            if T = Universal_Integer then
+               T := Any_Modular;
+            end if;
+
             Add_One_Interp (N, Op_Id, T);
          end if;
-      end Check_Numeric_Argument;
+      end Check_Boolean_Pair;
+
+      --------------------------
+      -- Check_Right_Argument --
+      --------------------------
+
+      procedure Check_Right_Argument (T : Entity_Id) is
+         I  : Interp_Index;
+         It : Interp;
+
+      begin
+         --  Defend against previous error
+
+         if Nkind (R) = N_Error then
+            null;
+
+         elsif not Is_Overloaded (R) then
+            Check_Boolean_Pair (T, Etype (R));
+
+         else
+            Get_First_Interp (R, I, It);
+            while Present (It.Typ) loop
+               Check_Boolean_Pair (T, It.Typ);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Right_Argument;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
 
    --  Start of processing for Find_Boolean_Types
 
    begin
       if not Is_Overloaded (L) then
-         if Etype (L) = Universal_Integer
-           or else Etype (L) = Any_Modular
-         then
-            if not Is_Overloaded (R) then
-               Check_Numeric_Argument (Etype (R));
-
-            else
-               Get_First_Interp (R, Index, It);
-               while Present (It.Typ) loop
-                  Check_Numeric_Argument (It.Typ);
-                  Get_Next_Interp (Index, It);
-               end loop;
-            end if;
-
-         --  If operands are aggregates, we must assume that they may be
-         --  boolean arrays, and leave disambiguation for the second pass.
-         --  If only one is an aggregate, verify that the other one has an
-         --  interpretation as a boolean array
-
-         elsif Nkind (L) = N_Aggregate then
-            if Nkind (R) = N_Aggregate then
-               Add_One_Interp (N, Op_Id, Etype (L));
-
-            elsif not Is_Overloaded (R) then
-               if Valid_Boolean_Arg (Etype (R)) then
-                  Add_One_Interp (N, Op_Id, Etype (R));
-               end if;
-
-            else
-               Get_First_Interp (R, Index, It);
-               while Present (It.Typ) loop
-                  if Valid_Boolean_Arg (It.Typ) then
-                     Add_One_Interp (N, Op_Id, It.Typ);
-                  end if;
-
-                  Get_Next_Interp (Index, It);
-               end loop;
-            end if;
-
-         elsif Valid_Boolean_Arg (Etype (L))
-           and then Has_Compatible_Type (R, Etype (L))
-         then
-            Add_One_Interp (N, Op_Id, Etype (L));
-         end if;
+         Check_Right_Argument (Etype (L));
 
       else
-         Get_First_Interp (L, Index, It);
+         Get_First_Interp (L, I, It);
          while Present (It.Typ) loop
-            if Valid_Boolean_Arg (It.Typ)
-              and then Has_Compatible_Type (R, It.Typ)
-            then
-               Add_One_Interp (N, Op_Id, It.Typ);
-            end if;
-
-            Get_Next_Interp (Index, It);
+            Check_Right_Argument (It.Typ);
+            Get_Next_Interp (I, It);
          end loop;
       end if;
    end Find_Boolean_Types;
