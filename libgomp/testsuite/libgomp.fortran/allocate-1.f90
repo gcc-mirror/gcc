@@ -74,8 +74,6 @@ subroutine foo (x, p, q, h, fl)
   if (x /= 42) then
     stop 1
   end if
-
-  !!$omp barrier
   v(1) = 7
   if ( (and(fl, 2) /= 0) .and.          &
        ((is_64bit_aligned(x) == 0) .or. &
@@ -97,7 +95,6 @@ subroutine foo (x, p, q, h, fl)
     stop 4
   end if
   !$omp end parallel
-stop
   !$omp teams
   !$omp parallel private (y) firstprivate (x, w) allocate (h: x, y, w)
 
