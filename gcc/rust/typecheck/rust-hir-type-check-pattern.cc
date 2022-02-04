@@ -58,7 +58,7 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
       rust_error_at (
 	pattern.get_locus (),
-	"expected tuple struct or tuple variant, found %s variant %s::%s",
+	"expected tuple struct or tuple variant, found %s variant %<%s::%s%>",
 	variant_type.c_str (), adt->get_name ().c_str (),
 	variant->get_identifier ().c_str ());
       return;
