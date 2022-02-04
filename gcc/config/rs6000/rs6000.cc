@@ -28069,6 +28069,7 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
 	{
 	  size_t printf_len = strlen ("printf");
 	  size_t scanf_len = strlen ("scanf");
+	  size_t printf_chk_len = strlen ("printf_chk");
 
 	  if (len >= printf_len
 	      && strcmp (name + len - printf_len, "printf") == 0)
@@ -28077,6 +28078,10 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
 	  else if (len >= scanf_len
 		   && strcmp (name + len - scanf_len, "scanf") == 0)
 	    newname = xasprintf ("__isoc99_%sieee128", name);
+
+	  else if (len >= printf_chk_len
+		   && strcmp (name + len - printf_chk_len, "printf_chk") == 0)
+	    newname = xasprintf ("%sieee128", name);
 
 	  else if (name[len - 1] == 'l')
 	    {
