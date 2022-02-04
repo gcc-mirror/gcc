@@ -173,7 +173,7 @@ struct _Dir_base
     return true;
   }
 
-  static ::DIR*
+  static posix::DIR*
   openat(int fd, const posix::char_type* pathname, bool nofollow)
   {
 #if _GLIBCXX_HAVE_FDOPENDIR && defined O_RDONLY && defined O_DIRECTORY \
