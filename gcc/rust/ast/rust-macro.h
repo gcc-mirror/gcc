@@ -610,6 +610,8 @@ class MetaListNameValueStr : public MetaItem
   Identifier ident;
   std::vector<MetaNameValueStr> strs;
 
+  // FIXME add location info
+
 public:
   MetaListNameValueStr (Identifier ident, std::vector<MetaNameValueStr> strs)
     : ident (std::move (ident)), strs (std::move (strs))
@@ -690,7 +692,7 @@ public:
 // Object that parses macros from a token stream.
 /* TODO: would "AttributeParser" be a better name? MetaItems are only for
  * attributes, I believe */
-struct MacroParser
+struct AttributeParser
 {
 private:
   // TODO: might as well rewrite to use lexer tokens
@@ -698,12 +700,12 @@ private:
   int stream_pos;
 
 public:
-  MacroParser (std::vector<std::unique_ptr<Token> > token_stream,
-	       int stream_start_pos = 0)
+  AttributeParser (std::vector<std::unique_ptr<Token> > token_stream,
+		   int stream_start_pos = 0)
     : token_stream (std::move (token_stream)), stream_pos (stream_start_pos)
   {}
 
-  ~MacroParser () = default;
+  ~AttributeParser () = default;
 
   std::vector<std::unique_ptr<MetaItemInner> > parse_meta_item_seq ();
 
