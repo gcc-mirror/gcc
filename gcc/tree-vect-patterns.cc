@@ -3041,6 +3041,9 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
   bool cast_to_unsigned_p = !TYPE_OVERFLOW_WRAPS (itype);
 
   tree multtype = cast_to_unsigned_p ? unsigned_type_for (itype) : itype;
+  tree vectype = get_vectype_for_scalar_type (vinfo, multtype);
+  if (!vectype)
+    return NULL;
 
   /* Targets that don't support vector shifts but support vector additions
      can synthesize shifts that way.  */
@@ -3050,16 +3053,13 @@ vect_synth_mult_by_constant (vec_info *vinfo, tree op, tree val,
   /* Use MAX_COST here as we don't want to limit the sequence on rtx costs.
      The vectorizer's benefit analysis will decide whether it's beneficial
      to do this.  */
-  bool possible = choose_mult_variant (mode, hwval, &alg,
-					&variant, MAX_COST);
+  bool possible = choose_mult_variant (VECTOR_MODE_P (TYPE_MODE (vectype))
+				       ? TYPE_MODE (vectype) : mode,
+				       hwval, &alg, &variant, MAX_COST);
   if (!possible)
     return NULL;
 
-  tree vectype = get_vectype_for_scalar_type (vinfo, multtype);
-
-  if (!vectype
-      || !target_supports_mult_synth_alg (&alg, variant,
-					   vectype, synth_shift_p))
+  if (!target_supports_mult_synth_alg (&alg, variant, vectype, synth_shift_p))
     return NULL;
 
   tree accumulator;
