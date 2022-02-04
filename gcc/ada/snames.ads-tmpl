@@ -417,7 +417,6 @@ package Snames is
    Name_Component_Alignment            : constant Name_Id := N + $; -- GNAT
    Name_Convention_Identifier          : constant Name_Id := N + $; -- GNAT
    Name_Debug_Policy                   : constant Name_Id := N + $; -- GNAT
-   Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
 
    --  Note: Default_Scalar_Storage_Order is not in this list because its name
    --  matches the name of the corresponding attribute. However, it is included
@@ -425,6 +424,7 @@ package Snames is
    --  and Is_Pragma_Name correctly recognize Default_Scalar_Storage_Order.
 
    Name_Default_Storage_Pool           : constant Name_Id := N + $; -- Ada 12
+   Name_Detect_Blocking                : constant Name_Id := N + $; -- Ada 05
    Name_Disable_Atomic_Synchronization : constant Name_Id := N + $; -- GNAT
    Name_Discard_Names                  : constant Name_Id := N + $;
    Name_Elaboration_Checks             : constant Name_Id := N + $; -- GNAT
@@ -1741,8 +1741,8 @@ package Snames is
       Pragma_Component_Alignment,
       Pragma_Convention_Identifier,
       Pragma_Debug_Policy,
-      Pragma_Detect_Blocking,
       Pragma_Default_Storage_Pool,
+      Pragma_Detect_Blocking,
       Pragma_Disable_Atomic_Synchronization,
       Pragma_Discard_Names,
       Pragma_Elaboration_Checks,
