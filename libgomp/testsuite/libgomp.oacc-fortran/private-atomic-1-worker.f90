@@ -25,13 +25,6 @@ program main
       do i = 0, 31
         !$acc atomic update
         w = w + 1
-        ! nvptx offloading: PR83812 "operation not supported on global/shared address space".
-        ! { dg-output "(\n|\r\n|\r)libgomp: cuStreamSynchronize error: operation not supported on global/shared address space(\n|\r\n|\r)$" { target openacc_nvidia_accel_selected } }
-        !   Scan for what we expect in the "XFAILed" case (without actually XFAILing).
-        ! { dg-shouldfail "XFAILed" { openacc_nvidia_accel_selected } }
-        !   ... instead of 'dg-xfail-run-if' so that 'dg-output' is evaluated at all.
-        ! { dg-final { if { [dg-process-target { xfail openacc_nvidia_accel_selected }] == "F" } { xfail "[testname-for-summary] really is XFAILed" } } }
-        !   ... so that we still get an XFAIL visible in the log.
         !$acc end atomic
       end do
       arr(j) = w

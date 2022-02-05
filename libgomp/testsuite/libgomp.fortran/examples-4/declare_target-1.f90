@@ -29,5 +29,7 @@ program e_53_1
   if (fib (15) /= fib_wrapper (15)) stop 1
   ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
   ! Nvidia Titan V.
-  if (fib (23) /= fib_wrapper (23)) stop 2
+  ! Reduced from 23 to 22, otherwise execution runs out of thread stack on
+  ! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
+  if (fib (22) /= fib_wrapper (22)) stop 2
 end program

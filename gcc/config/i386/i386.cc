@@ -7400,7 +7400,8 @@ find_drap_reg (void)
 	 register in such case.  */
       if (DECL_STATIC_CHAIN (decl)
 	  || cfun->machine->no_caller_saved_registers
-	  || crtl->tail_call_emit)
+	  || crtl->tail_call_emit
+	  || crtl->calls_eh_return)
 	return DI_REG;
 
       /* Reuse static chain register if it isn't used for parameter

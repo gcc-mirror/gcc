@@ -7278,11 +7278,11 @@
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot1><mode> (tmp, operands[4],
-					     operands[3], operands[2],
-					     operands[1], operands[5]));
+					     operands[2], operands[1],
+					     operands[3], operands[5]));
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot2><mode> (operands[0], operands[4],
-					     operands[3], operands[2],
+					     operands[2], operands[1],
 					     tmp, operands[5]));
   DONE;
 })

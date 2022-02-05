@@ -24,4 +24,4 @@ public:
 } n;
 main() { n.j(); }
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_MUL" 1 "slp2" } } */
+/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_MUL" 1 "slp2" { xfail { vect_float } } } } */

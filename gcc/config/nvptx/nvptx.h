@@ -91,6 +91,7 @@
 #define TARGET_SM75 (ptx_isa_option >= PTX_ISA_SM75)
 #define TARGET_SM80 (ptx_isa_option >= PTX_ISA_SM80)
 
+#define TARGET_PTX_6_0 (ptx_version_option >= PTX_VERSION_6_0)
 #define TARGET_PTX_6_3 (ptx_version_option >= PTX_VERSION_6_3)
 #define TARGET_PTX_7_0 (ptx_version_option >= PTX_VERSION_7_0)
 

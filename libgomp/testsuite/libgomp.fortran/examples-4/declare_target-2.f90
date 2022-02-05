@@ -6,9 +6,11 @@ program e_53_2
   !$omp target map(from: x)
     ! Reduced from 25 to 23, otherwise execution runs out of thread stack on
     ! Nvidia Titan V.
-    x = fib (23)
+    ! Reduced from 23 to 22, otherwise execution runs out of thread stack on
+    ! Nvidia T400 (2GB variant), when run with GOMP_NVPTX_JIT=-O0.
+    x = fib (22)
   !$omp end target
-  if (x /= fib (23)) stop 1
+  if (x /= fib (22)) stop 1
 end program
 
 integer recursive function fib (n) result (f)

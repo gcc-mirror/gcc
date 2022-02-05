@@ -4186,11 +4186,6 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 #define DEBUG_LTO_LINE_STR_SECTION  ".gnu.debuglto_.debug_line_str"
 #endif
 
-/* Standard ELF section names for compiled code and data.  */
-#ifndef TEXT_SECTION_NAME
-#define TEXT_SECTION_NAME	".text"
-#endif
-
 /* Section flags for .debug_str section.  */
 #define DEBUG_STR_SECTION_FLAGS                                 \
   (HAVE_GAS_SHF_MERGE && flag_merge_debug_strings               \
@@ -32160,6 +32155,7 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
@@ -33004,6 +33000,7 @@ dwarf2out_early_finish (const char *filename)
      location related output removed and some LTO specific changes.
      Some refactoring might make both smaller and easier to match up.  */
 
+  base_types.truncate (0);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
     mark_base_types (ctnode->root_die);
   mark_base_types (comp_unit_die ());

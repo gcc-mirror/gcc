@@ -804,7 +804,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 /* Return true if call statements CALL1 and CALL2 are similar enough
    to be combined into the same SLP group.  */
 
-static bool
+bool
 compatible_calls_p (gcall *call1, gcall *call2)
 {
   unsigned int nargs = gimple_call_num_args (call1);
@@ -2916,6 +2916,7 @@ optimize_load_redistribution (scalar_stmts_to_slp_tree_map_t *bst_map,
 static bool
 vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
 			   slp_tree_to_load_perm_map_t *perm_cache,
+			   slp_compat_nodes_map_t *compat_cache,
 			   hash_set<slp_tree> *visited)
 {
   unsigned i;
@@ -2927,11 +2928,13 @@ vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     found_p |= vect_match_slp_patterns_2 (&SLP_TREE_CHILDREN (node)[i],
-					  vinfo, perm_cache, visited);
+					  vinfo, perm_cache, compat_cache,
+					  visited);
 
   for (unsigned x = 0; x < num__slp_patterns; x++)
     {
-      vect_pattern *pattern = slp_patterns[x] (perm_cache, ref_node);
+      vect_pattern *pattern
+	= slp_patterns[x] (perm_cache, compat_cache, ref_node);
       if (pattern)
 	{
 	  pattern->build (vinfo);
@@ -2952,7 +2955,8 @@ vect_match_slp_patterns_2 (slp_tree *ref_node, vec_info *vinfo,
 static bool
 vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
 			 hash_set<slp_tree> *visited,
-			 slp_tree_to_load_perm_map_t *perm_cache)
+			 slp_tree_to_load_perm_map_t *perm_cache,
+			 slp_compat_nodes_map_t *compat_cache)
 {
   DUMP_VECT_SCOPE ("vect_match_slp_patterns");
   slp_tree *ref_node = &SLP_INSTANCE_TREE (instance);
@@ -2962,7 +2966,8 @@ vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
 		     "Analyzing SLP tree %p for patterns\n",
 		     SLP_INSTANCE_TREE (instance));
 
-  return vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, visited);
+  return vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, compat_cache,
+				    visited);
 }
 
 /* STMT_INFO is a store group of size GROUP_SIZE that we are considering
@@ -3446,12 +3451,14 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 
   hash_set<slp_tree> visited_patterns;
   slp_tree_to_load_perm_map_t perm_cache;
+  slp_compat_nodes_map_t compat_cache;
 
   /* See if any patterns can be found in the SLP tree.  */
   bool pattern_found = false;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (vinfo), i, instance)
     pattern_found |= vect_match_slp_patterns (instance, vinfo,
-					      &visited_patterns, &perm_cache);
+					      &visited_patterns, &perm_cache,
+					      &compat_cache);
 
   /* If any were found optimize permutations of loads.  */
   if (pattern_found)

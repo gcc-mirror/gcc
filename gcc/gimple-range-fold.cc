@@ -243,7 +243,7 @@ fur_list::fur_list (irange &r1, irange &r2) : fur_source (NULL)
   m_index = 0;
   m_limit = 2;
   m_local[0] = r1;
-  m_local[0] = r2;
+  m_local[1] = r2;
 }
 
 // Arbitrary number of ranges in a vector.

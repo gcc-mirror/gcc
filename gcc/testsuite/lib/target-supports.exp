@@ -6181,21 +6181,21 @@ proc check_effective_target_powerpc_sqrt { } {
 # Return 1 if this is a PowerPC target supporting -maltivec.
 
 proc check_effective_target_powerpc_altivec_ok { } {
-    if { ([istarget powerpc*-*-*]
-         && ![istarget powerpc-*-linux*paired*])
-	 || [istarget rs6000-*-*] } {
-	# AltiVec is not supported on AIX before 5.3.
-	if { [istarget powerpc*-*-aix4*]
-	     || [istarget powerpc*-*-aix5.1*] 
-	     || [istarget powerpc*-*-aix5.2*] } {
-	    return 0
-	}
-	return [check_no_compiler_messages powerpc_altivec_ok object {
-	    int dummy;
-	} "-maltivec"]
-    } else {
-	return 0
-    }
+    # Not PowerPC, then not ok
+    if { !([istarget powerpc*-*-*] || [istarget rs6000-*-*]) } { return 0 }
+
+    # Paired Single, then not ok
+    if { [istarget powerpc-*-linux*paired*] } { return 0 }
+
+    # AltiVec is not supported on AIX before 5.3.
+    if { [istarget powerpc*-*-aix4*]
+	 || [istarget powerpc*-*-aix5.1*]
+	 || [istarget powerpc*-*-aix5.2*] } { return 0 }
+
+    # Return true iff compiling with -maltivec does not error.
+    return [check_no_compiler_messages powerpc_altivec_ok object {
+	int dummy;
+    } "-maltivec"]
 }
 
 # Return 1 if this is a PowerPC target supporting -mpower8-vector

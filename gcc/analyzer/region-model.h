@@ -318,6 +318,8 @@ public:
 					function *fun);
   const region *get_symbolic_region (const svalue *sval);
   const string_region *get_region_for_string (tree string_cst);
+  const region *get_bit_range (const region *parent, tree type,
+			       const bit_range &bits);
 
   const region *
   get_region_for_unexpected_tree_code (region_model_context *ctxt,
@@ -470,6 +472,8 @@ private:
 
   typedef hash_map<tree, string_region *> string_map_t;
   string_map_t m_string_map;
+
+  consolidation_map<bit_range_region> m_bit_range_regions;
 
   store_manager m_store_mgr;
 
@@ -672,8 +676,6 @@ class region_model
   void zero_fill_region (const region *reg);
   void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
-  void copy_region (const region *dst_reg, const region *src_reg,
-		    region_model_context *ctxt);
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;

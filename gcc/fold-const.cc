@@ -1306,6 +1306,17 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       real_convert (&result, mode, &value);
 
       /* Don't constant fold this floating point operation if
+	 both operands are not NaN but the result is NaN, and
+	 flag_trapping_math.  Such operations should raise an
+	 invalid operation exception.  */
+      if (flag_trapping_math
+	  && MODE_HAS_NANS (mode)
+	  && REAL_VALUE_ISNAN (result)
+	  && !REAL_VALUE_ISNAN (d1)
+	  && !REAL_VALUE_ISNAN (d2))
+	return NULL_TREE;
+
+      /* Don't constant fold this floating point operation if
 	 the result has overflowed and flag_trapping_math.  */
       if (flag_trapping_math
 	  && MODE_HAS_INFINITIES (mode)
@@ -14062,13 +14073,19 @@ fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
      SAVE_EXPR (I) * SAVE_EXPR (J)
 
    (where the same SAVE_EXPR (J) is used in the original and the
-   transformed version).  */
+   transformed version).
+
+   NOWRAP specifies whether all outer operations in TYPE should
+   be considered not wrapping.  Any type conversion within TOP acts
+   as a barrier and we will fall back to NOWRAP being false.
+   NOWRAP is mostly used to treat expressions in TYPE_SIZE and friends
+   as not wrapping even though they are generally using unsigned arithmetic.  */
 
 int
-multiple_of_p (tree type, const_tree top, const_tree bottom)
+multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 {
   gimple *stmt;
-  tree t1, op1, op2;
+  tree op1, op2;
 
   if (operand_equal_p (top, bottom, 0))
     return 1;
@@ -14083,10 +14100,17 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	 a multiple of BOTTOM then TOP is a multiple of BOTTOM.  */
       if (!integer_pow2p (bottom))
 	return 0;
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
     case MULT_EXPR:
+      /* If the multiplication can wrap we cannot recurse further unless
+	 the bottom is a power of two which is where wrapping does not
+	 matter.  */
+      if (!nowrap
+	  && !TYPE_OVERFLOW_UNDEFINED (type)
+	  && !integer_pow2p (bottom))
+	return 0;
       if (TREE_CODE (bottom) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 0);
@@ -14095,75 +14119,85 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	    std::swap (op1, op2);
 	  if (TREE_CODE (op2) == INTEGER_CST)
 	    {
-	      if (multiple_of_p (type, op2, bottom))
+	      if (multiple_of_p (type, op2, bottom, nowrap))
 		return 1;
 	      /* Handle multiple_of_p ((x * 2 + 2) * 4, 8).  */
-	      if (multiple_of_p (type, bottom, op2))
+	      if (multiple_of_p (type, bottom, op2, nowrap))
 		{
 		  widest_int w = wi::sdiv_trunc (wi::to_widest (bottom),
 						 wi::to_widest (op2));
 		  if (wi::fits_to_tree_p (w, TREE_TYPE (bottom)))
 		    {
 		      op2 = wide_int_to_tree (TREE_TYPE (bottom), w);
-		      return multiple_of_p (type, op1, op2);
+		      return multiple_of_p (type, op1, op2, nowrap);
 		    }
 		}
-	      return multiple_of_p (type, op1, bottom);
+	      return multiple_of_p (type, op1, bottom, nowrap);
 	    }
 	}
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
-
-    case MINUS_EXPR:
-      /* It is impossible to prove if op0 - op1 is multiple of bottom
-	 precisely, so be conservative here checking if both op0 and op1
-	 are multiple of bottom.  Note we check the second operand first
-	 since it's usually simpler.  */
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
-
-    case PLUS_EXPR:
-      /* The same as MINUS_EXPR, but handle cases like op0 + 0xfffffffd
-	 as op0 - 3 if the expression has unsigned type.  For example,
-	 (X / 3) + 0xfffffffd is multiple of 3, but 0xfffffffd is not.  */
-      op1 = TREE_OPERAND (top, 1);
-      if (TYPE_UNSIGNED (type)
-	  && TREE_CODE (op1) == INTEGER_CST && tree_int_cst_sign_bit (op1))
-	op1 = fold_build1 (NEGATE_EXPR, type, op1);
-      return (multiple_of_p (type, op1, bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
 
     case LSHIFT_EXPR:
+      /* Handle X << CST as X * (1 << CST) and only process the constant.  */
       if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
 	{
 	  op1 = TREE_OPERAND (top, 1);
-	  /* const_binop may not detect overflow correctly,
-	     so check for it explicitly here.  */
-	  if (wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
-			 wi::to_wide (op1))
-	      && (t1 = fold_convert (type,
-				     const_binop (LSHIFT_EXPR, size_one_node,
-						  op1))) != 0
-	      && !TREE_OVERFLOW (t1))
-	    return multiple_of_p (type, t1, bottom);
+	  if (wi::to_widest (op1) < TYPE_PRECISION (type))
+	    {
+	      wide_int mul_op
+		= wi::one (TYPE_PRECISION (type)) << wi::to_wide (op1);
+	      return multiple_of_p (type,
+				    wide_int_to_tree (type, mul_op), bottom,
+				    nowrap);
+	    }
 	}
       return 0;
 
-    case NOP_EXPR:
+    case MINUS_EXPR:
+    case PLUS_EXPR:
+      /* If the addition or subtraction can wrap we cannot recurse further
+	 unless bottom is a power of two which is where wrapping does not
+	 matter.  */
+      if (!nowrap
+	  && !TYPE_OVERFLOW_UNDEFINED (type)
+	  && !integer_pow2p (bottom))
+	return 0;
+
+      /* Handle cases like op0 + 0xfffffffd as op0 - 3 if the expression has
+	 unsigned type.  For example, (X / 3) + 0xfffffffd is multiple of 3,
+	 but 0xfffffffd is not.  */
+      op1 = TREE_OPERAND (top, 1);
+      if (TREE_CODE (top) == PLUS_EXPR
+	  && nowrap
+	  && TYPE_UNSIGNED (type)
+	  && TREE_CODE (op1) == INTEGER_CST && tree_int_cst_sign_bit (op1))
+	op1 = fold_build1 (NEGATE_EXPR, type, op1);
+
+      /* It is impossible to prove if op0 +- op1 is multiple of bottom
+	 precisely, so be conservative here checking if both op0 and op1
+	 are multiple of bottom.  Note we check the second operand first
+	 since it's usually simpler.  */
+      return (multiple_of_p (type, op1, bottom, nowrap)
+	      && multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap));
+
+    CASE_CONVERT:
       /* Can't handle conversions from non-integral or wider integral type.  */
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
 	return 0;
-
-      /* fall through */
+      /* NOWRAP only extends to operations in the outermost type so
+	 make sure to strip it off here.  */
+      return multiple_of_p (TREE_TYPE (TREE_OPERAND (top, 0)),
+			    TREE_OPERAND (top, 0), bottom, false);
 
     case SAVE_EXPR:
-      return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
+      return multiple_of_p (type, TREE_OPERAND (top, 0), bottom, nowrap);
 
     case COND_EXPR:
-      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
-	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom));
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom, nowrap)
+	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom, nowrap));
 
     case INTEGER_CST:
       if (TREE_CODE (bottom) != INTEGER_CST

@@ -159,19 +159,19 @@ class pointer_query
 {
   DISABLE_COPY_AND_ASSIGN (pointer_query);
 
-public:
   /* Type of the two-level cache object defined by clients of the class
      to have pointer SSA_NAMEs cached for speedy access.  */
   struct cache_type
   {
     /* 1-based indices into cache.  */
-    vec<unsigned> indices;
+    auto_vec<unsigned> indices;
     /* The cache itself.  */
-    vec<access_ref> access_refs;
+    auto_vec<access_ref> access_refs;
   };
 
-  /* Construct an object with the given Ranger instance and cache.  */
-  explicit pointer_query (range_query * = nullptr, cache_type * = nullptr);
+public:
+  /* Construct an object with the given Ranger instance.  */
+  explicit pointer_query (range_query * = nullptr);
 
   /* Retrieve the access_ref for a variable from cache if it's there.  */
   const access_ref* get_ref (tree, int = 1) const;
@@ -190,8 +190,6 @@ public:
 
   /* A Ranger instance.  May be null to use global ranges.  */
   range_query *rvals;
-  /* Cache of SSA_NAMEs.  May be null to disable caching.  */
-  cache_type *var_cache;
 
   /* Cache performance counters.  */
   mutable unsigned hits;
@@ -199,6 +197,10 @@ public:
   mutable unsigned failures;
   mutable unsigned depth;
   mutable unsigned max_depth;
+
+private:
+  /* Cache of SSA_NAMEs.  May be null to disable caching.  */
+  cache_type var_cache;
 };
 
 /* Describes a pair of references used in an access by built-in

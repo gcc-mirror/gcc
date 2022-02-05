@@ -149,12 +149,13 @@ is_linear_load_p (load_permutation_t loads)
   int valid_patterns = 4;
   FOR_EACH_VEC_ELT (loads, i, load)
     {
-      if (candidates[0] != PERM_UNKNOWN && load != 1)
+      unsigned adj_load = load % 2;
+      if (candidates[0] != PERM_UNKNOWN && adj_load != 1)
 	{
 	  candidates[0] = PERM_UNKNOWN;
 	  valid_patterns--;
 	}
-      if (candidates[1] != PERM_UNKNOWN && load != 0)
+      if (candidates[1] != PERM_UNKNOWN && adj_load != 0)
 	{
 	  candidates[1] = PERM_UNKNOWN;
 	  valid_patterns--;
@@ -596,11 +597,12 @@ class complex_add_pattern : public complex_pattern
   public:
     void build (vec_info *);
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
-	     vec<slp_tree> *);
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+	     slp_compat_nodes_map_t *, slp_tree *, vec<slp_tree> *);
 
     static vect_pattern*
-    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    recognize (slp_tree_to_load_perm_map_t *, slp_compat_nodes_map_t *,
+	       slp_tree *);
 
     static vect_pattern*
     mkInstance (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
@@ -647,6 +649,7 @@ complex_add_pattern::build (vec_info *vinfo)
 internal_fn
 complex_add_pattern::matches (complex_operation_t op,
 			      slp_tree_to_load_perm_map_t *perm_cache,
+			      slp_compat_nodes_map_t * /* compat_cache */,
 			      slp_tree *node, vec<slp_tree> *ops)
 {
   internal_fn ifn = IFN_LAST;
@@ -692,13 +695,14 @@ complex_add_pattern::matches (complex_operation_t op,
 
 vect_pattern*
 complex_add_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
+				slp_compat_nodes_map_t *compat_cache,
 				slp_tree *node)
 {
   auto_vec<slp_tree> ops;
   complex_operation_t op
     = vect_detect_pair_op (*node, true, &ops);
   internal_fn ifn
-    = complex_add_pattern::matches (op, perm_cache, node, &ops);
+    = complex_add_pattern::matches (op, perm_cache, compat_cache, node, &ops);
   if (ifn == IFN_LAST)
     return NULL;
 
@@ -709,147 +713,214 @@ complex_add_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
  * complex_mul_pattern
  ******************************************************************************/
 
-/* Check to see if either of the trees in ARGS are a NEGATE_EXPR.  If the first
-   child (args[0]) is a NEGATE_EXPR then NEG_FIRST_P is set to TRUE.
-
-   If a negate is found then the values in ARGS are reordered such that the
-   negate node is always the second one and the entry is replaced by the child
-   of the negate node.  */
-
-static inline bool
-vect_normalize_conj_loc (vec<slp_tree> &args, bool *neg_first_p = NULL)
-{
-  gcc_assert (args.length () == 2);
-  bool neg_found = false;
-
-  if (vect_match_expression_p (args[0], NEGATE_EXPR))
-    {
-      std::swap (args[0], args[1]);
-      neg_found = true;
-      if (neg_first_p)
-	*neg_first_p = true;
-    }
-  else if (vect_match_expression_p (args[1], NEGATE_EXPR))
-    {
-      neg_found = true;
-      if (neg_first_p)
-	*neg_first_p = false;
-    }
-
-  if (neg_found)
-    args[1] = SLP_TREE_CHILDREN (args[1])[0];
-
-  return neg_found;
-}
-
 /* Helper function to check if PERM is KIND or PERM_TOP.  */
 
 static inline bool
-is_eq_or_top (complex_perm_kinds_t perm, complex_perm_kinds_t kind)
+is_eq_or_top (slp_tree_to_load_perm_map_t *perm_cache,
+	      slp_tree op1, complex_perm_kinds_t kind1,
+	      slp_tree op2, complex_perm_kinds_t kind2)
 {
-  return perm == kind || perm == PERM_TOP;
+  complex_perm_kinds_t perm1 = linear_loads_p (perm_cache, op1);
+  if (perm1 != kind1 && perm1 != PERM_TOP)
+    return false;
+
+  complex_perm_kinds_t perm2 = linear_loads_p (perm_cache, op2);
+  if (perm2 != kind2 && perm2 != PERM_TOP)
+    return false;
+
+  return true;
 }
 
-/* Helper function that checks to see if LEFT_OP and RIGHT_OP are both MULT_EXPR
-   nodes but also that they represent an operation that is either a complex
-   multiplication or a complex multiplication by conjugated value.
-
-   Of the negation is expected to be in the first half of the tree (As required
-   by an FMS pattern) then NEG_FIRST is true.  If the operation is a conjugate
-   operation then CONJ_FIRST_OPERAND is set to indicate whether the first or
-   second operand contains the conjugate operation.  */
+enum _conj_status { CONJ_NONE, CONJ_FST, CONJ_SND };
 
 static inline bool
-vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
-			      const vec<slp_tree> &left_op,
-			      const vec<slp_tree> &right_op,
-			     bool neg_first, bool *conj_first_operand,
-			     bool fms)
+compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
+			    slp_tree a, int *pa, slp_tree b, int *pb)
 {
-  /* The presence of a negation indicates that we have either a conjugate or a
-     rotation.  We need to distinguish which one.  */
-  *conj_first_operand = false;
-  complex_perm_kinds_t kind;
+  bool *tmp;
+  std::pair<slp_tree, slp_tree> key = std::make_pair(a, b);
+  if ((tmp = compat_cache->get (key)) != NULL)
+    return *tmp;
 
-  /* Complex conjugates have the negation on the imaginary part of the
-     number where rotations affect the real component.  So check if the
-     negation is on a dup of lane 1.  */
-  if (fms)
+   compat_cache->put (key, false);
+
+  if (SLP_TREE_CHILDREN (a).length () != SLP_TREE_CHILDREN (b).length ())
+    return false;
+
+  if (SLP_TREE_DEF_TYPE (a) != SLP_TREE_DEF_TYPE (b))
+    return false;
+
+  /* Only internal nodes can be loads, as such we can't check further if they
+     are externals.  */
+  if (SLP_TREE_DEF_TYPE (a) != vect_internal_def)
     {
-      /* Canonicalization for fms is not consistent. So have to test both
-	 variants to be sure.  This needs to be fixed in the mid-end so
-	 this part can be simpler.  */
-      kind = linear_loads_p (perm_cache, right_op[0]);
-      if (!((is_eq_or_top (linear_loads_p (perm_cache, right_op[0]), PERM_ODDODD)
-	   && is_eq_or_top (linear_loads_p (perm_cache, right_op[1]),
-			     PERM_ODDEVEN))
-	  || (kind == PERM_ODDEVEN
-	      && is_eq_or_top (linear_loads_p (perm_cache, right_op[1]),
-			     PERM_ODDODD))))
-	return false;
+      for (unsigned i = 0; i < SLP_TREE_SCALAR_OPS (a).length (); i++)
+	{
+	  tree op1 = SLP_TREE_SCALAR_OPS (a)[pa[i % 2]];
+	  tree op2 = SLP_TREE_SCALAR_OPS (b)[pb[i % 2]];
+	  if (!operand_equal_p (op1, op2, 0))
+	    return false;
+	}
+
+      compat_cache->put (key, true);
+      return true;
     }
+
+  auto a_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (a));
+  auto b_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (b));
+
+  if (gimple_code (a_stmt) != gimple_code (b_stmt))
+    return false;
+
+  /* code, children, type, externals, loads, constants  */
+  if (gimple_num_args (a_stmt) != gimple_num_args (b_stmt))
+    return false;
+
+  /* At this point, a and b are known to be the same gimple operations.  */
+  if (is_gimple_call (a_stmt))
+    {
+	if (!compatible_calls_p (dyn_cast <gcall *> (a_stmt),
+				 dyn_cast <gcall *> (b_stmt)))
+	  return false;
+    }
+  else if (!is_gimple_assign (a_stmt))
+    return false;
   else
     {
-      if (linear_loads_p (perm_cache, right_op[1]) != PERM_ODDODD
-	  && !is_eq_or_top (linear_loads_p (perm_cache, right_op[0]),
-			    PERM_ODDEVEN))
-	return false;
-    }
-
-  /* Deal with differences in indexes.  */
-  int index1 = fms ? 1 : 0;
-  int index2 = fms ? 0 : 1;
-
-  /* Check if the conjugate is on the second first or second operand.  The
-     order of the node with the conjugate value determines this, and the dup
-     node must be one of lane 0 of the same DR as the neg node.  */
-  kind = linear_loads_p (perm_cache, left_op[index1]);
-  if (kind == PERM_TOP)
-    {
-      if (linear_loads_p (perm_cache, left_op[index2]) == PERM_EVENODD)
+      tree_code acode = gimple_assign_rhs_code (a_stmt);
+      tree_code bcode = gimple_assign_rhs_code (b_stmt);
+      if ((acode == REALPART_EXPR || acode == IMAGPART_EXPR)
+	  && (bcode == REALPART_EXPR || bcode == IMAGPART_EXPR))
 	return true;
-    }
-  else if (kind == PERM_EVENODD && !neg_first)
-    {
-      if ((kind = linear_loads_p (perm_cache, left_op[index2])) != PERM_EVENEVEN)
-	return false;
-      return true;
-    }
-  else if (kind == PERM_EVENEVEN && neg_first)
-    {
-      if ((kind = linear_loads_p (perm_cache, left_op[index2])) != PERM_EVENODD)
-	return false;
 
-      *conj_first_operand = true;
-      return true;
+      if (acode != bcode)
+	return false;
+    }
+
+  if (!SLP_TREE_LOAD_PERMUTATION (a).exists ()
+      || !SLP_TREE_LOAD_PERMUTATION (b).exists ())
+    {
+      for (unsigned i = 0; i < gimple_num_args (a_stmt); i++)
+	{
+	  tree t1 = gimple_arg (a_stmt, i);
+	  tree t2 = gimple_arg (b_stmt, i);
+	  if (TREE_CODE (t1) != TREE_CODE (t2))
+	    return false;
+
+	  /* If SSA name then we will need to inspect the children
+	     so we can punt here.  */
+	  if (TREE_CODE (t1) == SSA_NAME)
+	    continue;
+
+	  if (!operand_equal_p (t1, t2, 0))
+	    return false;
+	}
     }
   else
-    return false;
+    {
+      auto dr1 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a));
+      auto dr2 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b));
+      /* Don't check the last dimension as that's checked by the lineary
+	 checks.  This check is also much stricter than what we need
+	 because it doesn't consider loading from adjacent elements
+	 in the same struct as loading from the same base object.
+	 But for now, I'll play it safe.  */
+      if (!same_data_refs (dr1, dr2, 1))
+	return false;
+    }
 
-  if (kind != PERM_EVENEVEN)
-    return false;
+  for (unsigned i = 0; i < SLP_TREE_CHILDREN (a).length (); i++)
+    {
+      if (!compatible_complex_nodes_p (compat_cache,
+				       SLP_TREE_CHILDREN (a)[i], pa,
+				       SLP_TREE_CHILDREN (b)[i], pb))
+	return false;
+    }
 
+  compat_cache->put (key, true);
   return true;
 }
 
-/* Helper function to help distinguish between a conjugate and a rotation in a
-   complex multiplication.  The operations have similar shapes but the order of
-   the load permutes are different.  This function returns TRUE when the order
-   is consistent with a multiplication or multiplication by conjugated
-   operand but returns FALSE if it's a multiplication by rotated operand.  */
-
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
-			      const vec<slp_tree> &op,
-			      complex_perm_kinds_t permKind)
+			      slp_compat_nodes_map_t *compat_cache,
+			      vec<slp_tree> &left_op,
+			      vec<slp_tree> &right_op,
+			      bool subtract,
+			      enum _conj_status *_status)
 {
-  /* The left node is the more common case, test it first.  */
-  if (!is_eq_or_top (linear_loads_p (perm_cache, op[0]), permKind))
+  auto_vec<slp_tree> ops;
+  enum _conj_status stats = CONJ_NONE;
+
+  /* The complex operations can occur in two layouts and two permute sequences
+     so declare them and re-use them.  */
+  int styles[][4] = { { 0, 2, 1, 3} /* {L1, R1} + {L2, R2}.  */
+		    , { 0, 3, 1, 2} /* {L1, R2} + {L2, R1}.  */
+		    };
+
+  /* Now for the corresponding permutes that go with these values.  */
+  complex_perm_kinds_t perms[][4]
+    = { { PERM_EVENEVEN, PERM_ODDODD, PERM_EVENODD, PERM_ODDEVEN }
+      , { PERM_EVENODD, PERM_ODDEVEN, PERM_EVENEVEN, PERM_ODDODD }
+      };
+
+  /* These permutes are used during comparisons of externals on which
+     we require strict equality.  */
+  int cq[][4][2]
+    = { { { 0, 0 }, { 1, 1 }, { 0, 1 }, { 1, 0 } }
+      , { { 0, 1 }, { 1, 0 }, { 0, 0 }, { 1, 1 } }
+      };
+
+  /* Default to style and perm 0, most operations use this one.  */
+  int style = 0;
+  int perm = subtract ? 1 : 0;
+
+  /* Check if we have a negate operation, if so absorb the node and continue
+     looking.  */
+  bool neg0 = vect_match_expression_p (right_op[0], NEGATE_EXPR);
+  bool neg1 = vect_match_expression_p (right_op[1], NEGATE_EXPR);
+
+  /* Determine which style we're looking at.  We only have different ones
+     whenever a conjugate is involved.  */
+  if (neg0 && neg1)
+    ;
+  else if (neg0)
     {
-      if (!is_eq_or_top (linear_loads_p (perm_cache, op[1]), permKind))
-	return false;
+      right_op[0] = SLP_TREE_CHILDREN (right_op[0])[0];
+      stats = CONJ_FST;
+      if (subtract)
+	perm = 0;
     }
-  return true;
+  else if (neg1)
+    {
+      right_op[1] = SLP_TREE_CHILDREN (right_op[1])[0];
+      stats = CONJ_SND;
+      perm = 1;
+    }
+
+  *_status = stats;
+
+  /* Flatten the inputs after we've remapped them.  */
+  ops.create (4);
+  ops.safe_splice (left_op);
+  ops.safe_splice (right_op);
+
+  /* Extract out the elements to check.  */
+  slp_tree op0 = ops[styles[style][0]];
+  slp_tree op1 = ops[styles[style][1]];
+  slp_tree op2 = ops[styles[style][2]];
+  slp_tree op3 = ops[styles[style][3]];
+
+  /* Do cheapest test first.  If failed no need to analyze further.  */
+  if (linear_loads_p (perm_cache, op0) != perms[perm][0]
+      || linear_loads_p (perm_cache, op1) != perms[perm][1]
+      || !is_eq_or_top (perm_cache, op2, perms[perm][2], op3, perms[perm][3]))
+    return false;
+
+  return compatible_complex_nodes_p (compat_cache, op0, cq[perm][0], op1,
+				     cq[perm][1])
+	 && compatible_complex_nodes_p (compat_cache, op2, cq[perm][2], op3,
+					cq[perm][3]);
 }
 
 /* This function combines two nodes containing only even and only odd lanes
@@ -908,11 +979,12 @@ class complex_mul_pattern : public complex_pattern
   public:
     void build (vec_info *);
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
-	     vec<slp_tree> *);
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+	     slp_compat_nodes_map_t *, slp_tree *, vec<slp_tree> *);
 
     static vect_pattern*
-    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    recognize (slp_tree_to_load_perm_map_t *, slp_compat_nodes_map_t *,
+	       slp_tree *);
 
     static vect_pattern*
     mkInstance (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
@@ -943,6 +1015,7 @@ class complex_mul_pattern : public complex_pattern
 internal_fn
 complex_mul_pattern::matches (complex_operation_t op,
 			      slp_tree_to_load_perm_map_t *perm_cache,
+			      slp_compat_nodes_map_t *compat_cache,
 			      slp_tree *node, vec<slp_tree> *ops)
 {
   internal_fn ifn = IFN_LAST;
@@ -990,17 +1063,13 @@ complex_mul_pattern::matches (complex_operation_t op,
       || linear_loads_p (perm_cache, left_op[1]) == PERM_ODDEVEN)
     return IFN_LAST;
 
-  bool neg_first = false;
-  bool conj_first_operand = false;
-  bool is_neg = vect_normalize_conj_loc (right_op, &neg_first);
+  enum _conj_status status;
+  if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
+				     right_op, false, &status))
+    return IFN_LAST;
 
-  if (!is_neg)
+  if (status == CONJ_NONE)
     {
-      /* A multiplication needs to multiply agains the real pair, otherwise
-	 the pattern matches that of FMS.   */
-      if (!vect_validate_multiplication (perm_cache, left_op, PERM_EVENEVEN)
-	  || vect_normalize_conj_loc (left_op))
-	return IFN_LAST;
       if (add0)
 	ifn = IFN_COMPLEX_FMA;
       else
@@ -1008,11 +1077,6 @@ complex_mul_pattern::matches (complex_operation_t op,
     }
   else
     {
-      if (!vect_validate_multiplication (perm_cache, left_op, right_op,
-					 neg_first, &conj_first_operand,
-					 false))
-	return IFN_LAST;
-
       if(add0)
 	ifn = IFN_COMPLEX_FMA_CONJ;
       else
@@ -1029,19 +1093,13 @@ complex_mul_pattern::matches (complex_operation_t op,
     ops->quick_push (add0);
 
   complex_perm_kinds_t kind = linear_loads_p (perm_cache, left_op[0]);
-  if (kind == PERM_EVENODD)
+  if (kind == PERM_EVENODD || kind == PERM_TOP)
     {
       ops->quick_push (left_op[1]);
       ops->quick_push (right_op[1]);
       ops->quick_push (left_op[0]);
     }
-  else if (kind == PERM_TOP)
-    {
-      ops->quick_push (left_op[1]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (left_op[0]);
-    }
-  else if (kind == PERM_EVENEVEN && !conj_first_operand)
+  else if (kind == PERM_EVENEVEN && status != CONJ_SND)
     {
       ops->quick_push (left_op[0]);
       ops->quick_push (right_op[0]);
@@ -1061,13 +1119,14 @@ complex_mul_pattern::matches (complex_operation_t op,
 
 vect_pattern*
 complex_mul_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
+				slp_compat_nodes_map_t *compat_cache,
 				slp_tree *node)
 {
   auto_vec<slp_tree> ops;
   complex_operation_t op
     = vect_detect_pair_op (*node, true, &ops);
   internal_fn ifn
-    = complex_mul_pattern::matches (op, perm_cache, node, &ops);
+    = complex_mul_pattern::matches (op, perm_cache, compat_cache, node, &ops);
   if (ifn == IFN_LAST)
     return NULL;
 
@@ -1115,9 +1174,9 @@ complex_mul_pattern::build (vec_info *vinfo)
 
 	/* First re-arrange the children.  */
 	SLP_TREE_CHILDREN (*this->m_node).safe_grow (3);
-	SLP_TREE_CHILDREN (*this->m_node)[0] = this->m_ops[0];
-	SLP_TREE_CHILDREN (*this->m_node)[1] = this->m_ops[3];
-	SLP_TREE_CHILDREN (*this->m_node)[2] = newnode;
+	SLP_TREE_CHILDREN (*this->m_node)[0] = this->m_ops[3];
+	SLP_TREE_CHILDREN (*this->m_node)[1] = newnode;
+	SLP_TREE_CHILDREN (*this->m_node)[2] = this->m_ops[0];
 
 	/* Tell the builder to expect an extra argument.  */
 	this->m_num_args++;
@@ -1147,11 +1206,12 @@ class complex_fms_pattern : public complex_pattern
   public:
     void build (vec_info *);
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
-	     vec<slp_tree> *);
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+	     slp_compat_nodes_map_t *, slp_tree *, vec<slp_tree> *);
 
     static vect_pattern*
-    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    recognize (slp_tree_to_load_perm_map_t *, slp_compat_nodes_map_t *,
+	       slp_tree *);
 
     static vect_pattern*
     mkInstance (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
@@ -1182,6 +1242,7 @@ class complex_fms_pattern : public complex_pattern
 internal_fn
 complex_fms_pattern::matches (complex_operation_t op,
 			      slp_tree_to_load_perm_map_t *perm_cache,
+			      slp_compat_nodes_map_t *compat_cache,
 			      slp_tree * ref_node, vec<slp_tree> *ops)
 {
   internal_fn ifn = IFN_LAST;
@@ -1197,6 +1258,8 @@ complex_fms_pattern::matches (complex_operation_t op,
   if (!vect_match_expression_p (root, MINUS_EXPR))
     return IFN_LAST;
 
+  /* TODO: Support invariants here, with the new layout CADD now
+	   can match before we get a chance to try CFMS.  */
   auto nodes = SLP_TREE_CHILDREN (root);
   if (!vect_match_expression_p (nodes[1], MULT_EXPR)
       || vect_detect_pair_op (nodes[0]) != PLUS_MINUS)
@@ -1217,16 +1280,14 @@ complex_fms_pattern::matches (complex_operation_t op,
       || !vect_match_expression_p (l0node[1], MULT_EXPR))
     return IFN_LAST;
 
-  bool is_neg = vect_normalize_conj_loc (left_op);
-
-  bool conj_first_operand = false;
-  if (!vect_validate_multiplication (perm_cache, right_op, left_op, false,
-				     &conj_first_operand, true))
+  enum _conj_status status;
+  if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
+				     left_op, true, &status))
     return IFN_LAST;
 
-  if (!is_neg)
+  if (status == CONJ_NONE)
     ifn = IFN_COMPLEX_FMS;
-  else if (is_neg)
+  else
     ifn = IFN_COMPLEX_FMS_CONJ;
 
   if (!vect_pattern_validate_optab (ifn, *ref_node))
@@ -1243,26 +1304,12 @@ complex_fms_pattern::matches (complex_operation_t op,
       ops->quick_push (right_op[1]);
       ops->quick_push (left_op[1]);
     }
-  else if (kind == PERM_TOP)
-    {
-      ops->quick_push (l0node[0]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[0]);
-    }
-  else if (kind == PERM_EVENEVEN && !is_neg)
-    {
-      ops->quick_push (l0node[0]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[0]);
-    }
   else
     {
       ops->quick_push (l0node[0]);
       ops->quick_push (right_op[1]);
       ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[1]);
+      ops->quick_push (left_op[0]);
     }
 
   return ifn;
@@ -1272,13 +1319,14 @@ complex_fms_pattern::matches (complex_operation_t op,
 
 vect_pattern*
 complex_fms_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
+				slp_compat_nodes_map_t *compat_cache,
 				slp_tree *node)
 {
   auto_vec<slp_tree> ops;
   complex_operation_t op
     = vect_detect_pair_op (*node, true, &ops);
   internal_fn ifn
-    = complex_fms_pattern::matches (op, perm_cache, node, &ops);
+    = complex_fms_pattern::matches (op, perm_cache, compat_cache, node, &ops);
   if (ifn == IFN_LAST)
     return NULL;
 
@@ -1305,9 +1353,9 @@ complex_fms_pattern::build (vec_info *vinfo)
   SLP_TREE_CHILDREN (*this->m_node).create (3);
 
   /* First re-arrange the children.  */
-  SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[0]);
   SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[1]);
   SLP_TREE_CHILDREN (*this->m_node).quick_push (newnode);
+  SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[0]);
 
   /* And then rewrite the node itself.  */
   complex_pattern::build (vinfo);
@@ -1334,11 +1382,12 @@ class complex_operations_pattern : public complex_pattern
   public:
     void build (vec_info *);
     static internal_fn
-    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
-	     vec<slp_tree> *);
+    matches (complex_operation_t op, slp_tree_to_load_perm_map_t *,
+	     slp_compat_nodes_map_t *, slp_tree *, vec<slp_tree> *);
 
     static vect_pattern*
-    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    recognize (slp_tree_to_load_perm_map_t *, slp_compat_nodes_map_t *,
+	       slp_tree *);
 };
 
 /* Dummy matches implementation for proxy object.  */
@@ -1347,6 +1396,7 @@ internal_fn
 complex_operations_pattern::
 matches (complex_operation_t /* op */,
 	 slp_tree_to_load_perm_map_t * /* perm_cache */,
+	 slp_compat_nodes_map_t * /* compat_cache */,
 	 slp_tree * /* ref_node */, vec<slp_tree> * /* ops */)
 {
   return IFN_LAST;
@@ -1356,6 +1406,7 @@ matches (complex_operation_t /* op */,
 
 vect_pattern*
 complex_operations_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
+				       slp_compat_nodes_map_t *ccache,
 				       slp_tree *node)
 {
   auto_vec<slp_tree> ops;
@@ -1363,15 +1414,15 @@ complex_operations_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
     = vect_detect_pair_op (*node, true, &ops);
   internal_fn ifn = IFN_LAST;
 
-  ifn  = complex_fms_pattern::matches (op, perm_cache, node, &ops);
+  ifn  = complex_fms_pattern::matches (op, perm_cache, ccache, node, &ops);
   if (ifn != IFN_LAST)
     return complex_fms_pattern::mkInstance (node, &ops, ifn);
 
-  ifn  = complex_mul_pattern::matches (op, perm_cache, node, &ops);
+  ifn  = complex_mul_pattern::matches (op, perm_cache, ccache, node, &ops);
   if (ifn != IFN_LAST)
     return complex_mul_pattern::mkInstance (node, &ops, ifn);
 
-  ifn  = complex_add_pattern::matches (op, perm_cache, node, &ops);
+  ifn  = complex_add_pattern::matches (op, perm_cache, ccache, node, &ops);
   if (ifn != IFN_LAST)
     return complex_add_pattern::mkInstance (node, &ops, ifn);
 
@@ -1398,11 +1449,13 @@ class addsub_pattern : public vect_pattern
     void build (vec_info *);
 
     static vect_pattern*
-    recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    recognize (slp_tree_to_load_perm_map_t *, slp_compat_nodes_map_t *,
+	       slp_tree *);
 };
 
 vect_pattern *
-addsub_pattern::recognize (slp_tree_to_load_perm_map_t *, slp_tree *node_)
+addsub_pattern::recognize (slp_tree_to_load_perm_map_t *,
+			   slp_compat_nodes_map_t *, slp_tree *node_)
 {
   slp_tree node = *node_;
   if (SLP_TREE_CODE (node) != VEC_PERM_EXPR

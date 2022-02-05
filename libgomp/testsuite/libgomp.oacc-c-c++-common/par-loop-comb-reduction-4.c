@@ -1,5 +1,12 @@
 #include <assert.h>
 
+#if ACC_DEVICE_TYPE_nvidia
+/* To avoid 'libgomp: The Nvidia accelerator has insufficient resources'.  */
+#define NUM_WORKERS 24
+#else
+#define NUM_WORKERS 32
+#endif
+
 /* Test of reduction on both parallel and loop directives (workers and vectors
    together in gang-partitioned mode, float type, multiple reductions).  */
 
@@ -13,7 +20,8 @@ main (int argc, char *argv[])
   for (i = 0; i < 32768; i++)
     arr[i] = i % (32768 / 64);
 
-  #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
+  #pragma acc parallel \
+    num_gangs(32) num_workers(NUM_WORKERS) vector_length(32) \
     reduction(+:res) reduction(max:mres) copy(res, mres)
   {
     #pragma acc loop gang /* { dg-warning "nested loop in reduction needs reduction clause for 'm\?res'" "TODO" } */

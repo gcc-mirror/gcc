@@ -2895,8 +2895,6 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fauto_profile:
       enable_fdo_optimizations (opts, opts_set, value);
       SET_OPTION_IF_UNSET (opts, opts_set, flag_profile_correction, value);
-      SET_OPTION_IF_UNSET (opts, opts_set,
-			   param_early_inliner_max_iterations, 10);
       break;
 
     case OPT_fprofile_generate_:

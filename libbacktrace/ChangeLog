@@ -1,3 +1,9 @@
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
 2021-12-28  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	PR libbacktrace/103822

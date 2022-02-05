@@ -13,15 +13,14 @@
 /* { dg-final { scan-assembler-times {\tmovi\tv[0-9]+\.4s, 0x6\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #7\n} 1 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #8\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tfmov\tv[0-9]+\.8h, 1\.0e\+0\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tfmov\tv[0-9]+\.8h, 1\.0e\+0\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tv[0-9]+\.4s, 2\.0e\+0\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tv[0-9]+\.2d, 3\.0e\+0\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tstr\tq[0-9]+,} 11 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tstr\tq[0-9]+,} 10 } } */
+/* { dg-final { scan-assembler-times {\tstr\tq[0-9]+,} 11 } } */
 
 /* { dg-final { scan-assembler-not {\twhile} } } */
 /* { dg-final { scan-assembler-not {\tb} } } */
 /* { dg-final { scan-assembler-not {\tcmp} } } */
 /* { dg-final { scan-assembler-not {\tindex} } } */
-/* { dg-final { scan-assembler-not {\tptrue\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tptrue\t} } } */

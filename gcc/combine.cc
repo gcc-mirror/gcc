@@ -4017,6 +4017,24 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
+	  /* Likewise, recog_for_combine might have added clobbers to NEWPAT.
+	     Checking that the SET0's SET_DEST and SET1's SET_DEST aren't
+	     mentioned/clobbered, ensures NEWI2PAT's SET_DEST is live.  */
+	  if (insn_code_number >= 0 && GET_CODE (newpat) == PARALLEL)
+	    {
+	      for (i = XVECLEN (newpat, 0) - 1; i >= 0; i--)
+		if (GET_CODE (XVECEXP (newpat, 0, i)) == CLOBBER)
+		  {
+		    rtx reg = XEXP (XVECEXP (newpat, 0, i), 0);
+		    if (reg_overlap_mentioned_p (reg, SET_DEST (set0))
+			|| reg_overlap_mentioned_p (reg, SET_DEST (set1)))
+		      {
+			undo_all ();
+			return 0;
+		      }
+		  }
+	    }
+
 	  if (insn_code_number >= 0)
 	    split_i2i3 = 1;
 	}

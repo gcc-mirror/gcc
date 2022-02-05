@@ -2550,13 +2550,13 @@
     VBPERMD altivec_vbpermd {}
 
   const signed int __builtin_altivec_vclzlsbb_v16qi (vsc);
-    VCLZLSBB_V16QI vclzlsbb_v16qi {}
+    VCLZLSBB_V16QI vctzlsbb_v16qi {endian}
 
   const signed int __builtin_altivec_vclzlsbb_v4si (vsi);
-    VCLZLSBB_V4SI vclzlsbb_v4si {}
+    VCLZLSBB_V4SI vctzlsbb_v4si {endian}
 
   const signed int __builtin_altivec_vclzlsbb_v8hi (vss);
-    VCLZLSBB_V8HI vclzlsbb_v8hi {}
+    VCLZLSBB_V8HI vctzlsbb_v8hi {endian}
 
   const vsc __builtin_altivec_vctzb (vsc);
     VCTZB ctzv16qi2 {}
@@ -2571,13 +2571,13 @@
     VCTZW ctzv4si2 {}
 
   const signed int __builtin_altivec_vctzlsbb_v16qi (vsc);
-    VCTZLSBB_V16QI vctzlsbb_v16qi {}
+    VCTZLSBB_V16QI vclzlsbb_v16qi {endian}
 
   const signed int __builtin_altivec_vctzlsbb_v4si (vsi);
-    VCTZLSBB_V4SI vctzlsbb_v4si {}
+    VCTZLSBB_V4SI vclzlsbb_v4si {endian}
 
   const signed int __builtin_altivec_vctzlsbb_v8hi (vss);
-    VCTZLSBB_V8HI vctzlsbb_v8hi {}
+    VCTZLSBB_V8HI vclzlsbb_v8hi {endian}
 
   const signed int __builtin_altivec_vcmpaeb_p (vsc, vsc);
     VCMPAEB_P vector_ae_v16qi_p {}

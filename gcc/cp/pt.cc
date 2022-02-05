@@ -1797,6 +1797,10 @@ iterative_hash_template_arg (tree arg, hashval_t val)
   switch (code)
     {
     case ARGUMENT_PACK_SELECT:
+      /* Getting here with an ARGUMENT_PACK_SELECT means we're probably
+	 preserving it in a hash table, which is bad because it will change
+	 meaning when gen_elem_of_pack_expansion_instantiation changes the
+	 ARGUMENT_PACK_SELECT_INDEX.  */
       gcc_unreachable ();
 
     case ERROR_MARK:
@@ -10525,12 +10529,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
       *walk_subtrees = 0;
       break;
 
-    case CONSTRUCTOR:
-      if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))
-	  && pfd->include_nondeduced_p)
-	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
-      break;
-
     case INDIRECT_REF:
     case COMPONENT_REF:
       /* If there's no type, then this thing must be some expression
@@ -10539,6 +10537,7 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
+    case CONSTRUCTOR:
     case TRAIT_EXPR:
     case PLUS_EXPR:
     case MULT_EXPR:
@@ -13681,7 +13680,28 @@ tsubst_aggr_type (tree t,
     }
 }
 
-static GTY((cache)) decl_tree_cache_map *defarg_inst;
+/* Map from a FUNCTION_DECL to a vec of default argument instantiations,
+   indexed in reverse order of the parameters.  */
+
+static GTY((cache)) hash_table<tree_vec_map_cache_hasher> *defarg_inst;
+
+/* Return a reference to the vec* of defarg insts for FN.  */
+
+static vec<tree,va_gc> *&
+defarg_insts_for (tree fn)
+{
+  if (!defarg_inst)
+    defarg_inst = hash_table<tree_vec_map_cache_hasher>::create_ggc (13);
+  tree_vec_map in = { fn, nullptr };
+  tree_vec_map **slot
+    = defarg_inst->find_slot_with_hash (&in, DECL_UID (fn), INSERT);
+  if (!*slot)
+    {
+      *slot = ggc_alloc<tree_vec_map> ();
+      **slot = in;
+    }
+  return (*slot)->to;
+}
 
 /* Substitute into the default argument ARG (a default argument for
    FN), which has the indicated TYPE.  */
@@ -13711,9 +13731,16 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
 
   gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, parmtype));
 
-  tree *slot;
-  if (defarg_inst && (slot = defarg_inst->get (parm)))
-    return *slot;
+  /* Remember the location of the pointer to the vec rather than the location
+     of the particular element, in case the vec grows in tsubst_expr.  */
+  vec<tree,va_gc> *&defs = defarg_insts_for (fn);
+  /* Index in reverse order to avoid allocating space for initial parameters
+     that don't have default arguments.  */
+  unsigned ridx = list_length (parm);
+  if (vec_safe_length (defs) < ridx)
+    vec_safe_grow_cleared (defs, ridx);
+  else if (tree inst = (*defs)[ridx - 1])
+    return inst;
 
   /* This default argument came from a template.  Instantiate the
      default argument here, not in tsubst.  In the case of
@@ -13758,11 +13785,7 @@ tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
   pop_from_top_level ();
 
   if (arg != error_mark_node && !cp_unevaluated_operand)
-    {
-      if (!defarg_inst)
-	defarg_inst = decl_tree_cache_map::create_ggc (37);
-      defarg_inst->put (parm, arg);
-    }
+    (*defs)[ridx - 1] = arg;
 
   return arg;
 }
@@ -26984,6 +27007,24 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
   return true;
 }
 
+/* Returns true iff the noexcept-specifier for TYPE is value-dependent.  */
+
+static bool
+value_dependent_noexcept_spec_p (tree type)
+{
+  if (tree spec = TYPE_RAISES_EXCEPTIONS (type))
+    if (tree noex = TREE_PURPOSE (spec))
+      /* Treat DEFERRED_NOEXCEPT as non-dependent, since it doesn't
+	 affect overload resolution and treating it as dependent breaks
+	 things.  Same for an unparsed noexcept expression.  */
+      if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
+	  && TREE_CODE (noex) != DEFERRED_PARSE
+	  && value_dependent_expression_p (noex))
+	return true;
+
+  return false;
+}
+
 /* Returns TRUE if TYPE is dependent, in the sense of [temp.dep.type].
    Assumes that TYPE really is a type, and not the ERROR_MARK_NODE.*/
 
@@ -27036,17 +27077,10 @@ dependent_type_p_r (tree type)
 	   arg_type = TREE_CHAIN (arg_type))
 	if (dependent_type_p (TREE_VALUE (arg_type)))
 	  return true;
-      if (cxx_dialect >= cxx17)
+      if (cxx_dialect >= cxx17
+	  && value_dependent_noexcept_spec_p (type))
 	/* A value-dependent noexcept-specifier makes the type dependent.  */
-	if (tree spec = TYPE_RAISES_EXCEPTIONS (type))
-	  if (tree noex = TREE_PURPOSE (spec))
-	    /* Treat DEFERRED_NOEXCEPT as non-dependent, since it doesn't
-	       affect overload resolution and treating it as dependent breaks
-	       things.  Same for an unparsed noexcept expression.  */
-	    if (TREE_CODE (noex) != DEFERRED_NOEXCEPT
-		&& TREE_CODE (noex) != DEFERRED_PARSE
-		&& value_dependent_expression_p (noex))
-	      return true;
+	return true;
       return false;
     }
   /* -- an array type constructed from any dependent type or whose
@@ -27852,6 +27886,17 @@ instantiation_dependent_r (tree *tp, int *walk_subtrees,
 
     case CONSTRUCTOR:
       if (CONSTRUCTOR_IS_DEPENDENT (*tp))
+	return *tp;
+      break;
+
+    case TEMPLATE_DECL:
+    case FUNCTION_DECL:
+      /* Before C++17, a noexcept-specifier isn't part of the function type
+	 so it doesn't affect type dependence, but we still want to consider it
+	 for instantiation dependence.  */
+      if (cxx_dialect < cxx17
+	  && DECL_DECLARES_FUNCTION_P (*tp)
+	  && value_dependent_noexcept_spec_p (TREE_TYPE (*tp)))
 	return *tp;
       break;
 
@@ -29568,7 +29613,9 @@ ctor_deduction_guides_for (tree tmpl, tsubst_flags_t complain)
   if (DECL_CLASS_SCOPE_P (tmpl)
       && CLASSTYPE_TEMPLATE_INSTANTIATION (DECL_CONTEXT (tmpl)))
     {
-      outer_args = CLASSTYPE_TI_ARGS (DECL_CONTEXT (tmpl));
+      outer_args = copy_node (CLASSTYPE_TI_ARGS (type));
+      gcc_assert (TMPL_ARGS_DEPTH (outer_args) > 1);
+      --TREE_VEC_LENGTH (outer_args);
       type = TREE_TYPE (most_general_template (tmpl));
     }
 

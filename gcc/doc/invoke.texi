@@ -7822,7 +7822,9 @@ characters.
 
 By default, this warning does not warn about UCNs.  It is, however, possible
 to turn on such checking by using @option{-Wbidi-chars=unpaired,ucn} or
-@option{-Wbidi-chars=any,ucn}.
+@option{-Wbidi-chars=any,ucn}.  Using @option{-Wbidi-chars=ucn} is valid,
+and is equivalent to @option{-Wbidi-chars=unpaired,ucn}, if no previous
+@option{-Wbidi-chars=any} was specified.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -12302,7 +12304,8 @@ Initialize automatic variables with either a pattern or with zeroes to increase
 the security and predictability of a program by preventing uninitialized memory
 disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
-initializer as uninitialized, @option{-Wuninitialized} will still report
+initializer as uninitialized, @option{-Wuninitialized} and
+@option{-Wanalyzer-use-of-uninitialized-value} will still report
 warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
@@ -22266,7 +22269,7 @@ The options @option{-metrax4} and @option{-metrax100} are synonyms for
 @opindex mmul-bug-workaround
 @opindex mno-mul-bug-workaround
 Work around a bug in the @code{muls} and @code{mulu} instructions for CPU
-models where it applies.  This option is active by default.
+models where it applies.  This option is disabled by default.
 
 @item -mpdebug
 @opindex mpdebug

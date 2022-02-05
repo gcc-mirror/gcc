@@ -48,6 +48,9 @@ path_range_query::path_range_query (bool resolve, gimple_ranger *ranger)
     m_ranger = ranger;
 
   m_oracle = new path_oracle (m_ranger->oracle ());
+
+  if (m_resolve && flag_checking)
+    verify_marked_backedges (cfun);
 }
 
 path_range_query::~path_range_query ()

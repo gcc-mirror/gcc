@@ -1,3 +1,79 @@
+2022-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104079
+	* pt.cc (value_dependent_noexcept_spec_p): New predicate split
+	out from ...
+	(dependent_type_p_r): ... here.
+	(instantiation_dependent_r): Use value_dependent_noexcept_spec_p
+	to consider dependence of a noexcept-spec before C++17.
+	* tree.cc (fixup_deferred_exception_variants): Clear
+	TYPE_DEPENDENT_P_VALID.
+
+2022-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104302
+	* decl.cc (maybe_deduce_size_from_array_init): Give up
+	on type-dependent init.
+	(cp_complete_array_type): Only call reshape_init for character
+	array.
+
+2022-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103186
+	* pt.cc (defarg_inst): Use tree_vec_map_cache_hasher.
+	(defarg_insts_for): New.
+	(tsubst_default_argument): Adjust.
+
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102414
+	PR c++/101874
+	* decl.cc (create_array_type_for_decl): Use template_placeholder_p.
+	Sorry on a variable-length array of auto.
+
+2022-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102434
+	* class.cc (finish_struct): Don't allow union initializer_list.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104294
+	* pt.cc (ctor_deduction_guides_for): Correct computation of
+	outer_args.
+
+2022-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104291
+	* pt.cc (for_each_template_parm_r) <case CONSTRUCTOR>: Clear
+	walk_subtrees if !include_nondeduced_p.  Simplify given that
+	cp_walk_subtrees already walks TYPE_PTRMEMFUNC_FN_TYPE_RAW.
+
+2022-01-28  Patrick Palka  <ppalka@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/92752
+	* typeck.cc (build_ptrmemfunc): Cast a nullptr constant to the
+	unqualified pointer type not the qualified one.
+
+2022-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103341
+	* decl.cc (cp_finish_decl): Pass the template arguments of a
+	variable template specialization or a templated static data
+	member to do_auto_deduction when the auto is constrained.
+
+2022-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100198
+	PR c++/100030
+	PR c++/100282
+	* parser.cc (cp_parser_enumerator_definition): Sorry on parameter
+	pack in lambda.
+	(cp_parser_class_head): And in class attributes.
+	* pt.cc (check_for_bare_parameter_packs): Sorry instead of error
+	in lambda.
+
 2022-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104245

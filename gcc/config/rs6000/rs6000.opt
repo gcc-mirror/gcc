@@ -155,10 +155,6 @@ maltivec
 Target Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions.
 
-mfold-gimple
-Target Var(rs6000_fold_gimple) Init(1)
-Enable early gimple folding of builtins.
-
 mhard-dfp
 Target Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions.

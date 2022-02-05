@@ -7660,9 +7660,16 @@ static bool
 is_scalar_intrinsic_expr (gfc_expr *expr, bool must_be_var, bool conv_ok)
 {
   if (must_be_var
-      && (expr->expr_type != EXPR_VARIABLE || !expr->symtree)
-      && (!conv_ok || !is_conversion (expr, true, true)))
-    return false;
+      && (expr->expr_type != EXPR_VARIABLE || !expr->symtree))
+    {
+      if (!conv_ok)
+	return false;
+      gfc_expr *conv = is_conversion (expr, true, true);
+      if (!conv)
+	return false;
+      if (conv->expr_type != EXPR_VARIABLE || !conv->symtree)
+	return false;
+    }
   return (expr->rank == 0
 	  && !gfc_is_coindexed (expr)
 	  && (expr->ts.type == BT_INTEGER
@@ -7705,6 +7712,7 @@ resolve_omp_atomic (gfc_code *code)
       if (next->op == EXEC_IF
 	  && next->block
 	  && next->block->op == EXEC_IF
+	  && next->block->next
 	  && next->block->next->op == EXEC_ASSIGN)
 	{
 	  comp_cond = next->block->expr1;
@@ -7757,6 +7765,7 @@ resolve_omp_atomic (gfc_code *code)
       if (code->op == EXEC_IF
 	  && code->block
 	  && code->block->op == EXEC_IF
+	  && code->block->next
 	  && code->block->next->op == EXEC_ASSIGN)
 	{
 	  comp_cond = code->block->expr1;

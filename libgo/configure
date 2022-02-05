@@ -1496,7 +1496,7 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-werror         turns on -Werror [default=yes]
+  --disable-werror        disable building with -Werror
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -13834,7 +13834,7 @@ if test "${enable_werror+set}" = set; then :
   enableval=$enable_werror;
 fi
 
-if test "x$enable_werror" != "xno"; then
+if test "x$enable_werror" != "xno" && test "x$GCC" = "xyes"; then :
   WERROR="-Werror"
 fi
 

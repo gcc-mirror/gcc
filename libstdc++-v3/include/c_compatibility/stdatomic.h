@@ -120,5 +120,7 @@ using std::atomic_flag_clear_explicit;
 using std::atomic_thread_fence;
 using std::atomic_signal_fence;
 
+#elif defined __clang__
+# include_next <stdatomic.h>
 #endif // C++23
 #endif // _GLIBCXX_STDATOMIC_H

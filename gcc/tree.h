@@ -1155,6 +1155,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_CLOBBER_P(NODE) \
   (TREE_CODE (NODE) == CONSTRUCTOR && TREE_THIS_VOLATILE (NODE))
 
+/* Return the clobber_kind of a CLOBBER CONSTRUCTOR.  */
+#define CLOBBER_KIND(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.u.bits.address_space)
+
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* Nonzero if NODE is an empty statement (NOP_EXPR <0>).  */
@@ -4559,7 +4563,7 @@ extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
-extern tree build_clobber (tree);
+extern tree build_clobber (tree, enum clobber_kind = CLOBBER_UNDEF);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_real_from_wide (tree, const wide_int_ref &, signop);
 extern tree build_complex (tree, tree, tree);
@@ -5558,6 +5562,23 @@ struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 #define tree_vec_map_eq tree_map_base_eq
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
+
+struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
+{
+  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
+
+  static bool
+  equal (tree_vec_map *a, tree_vec_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static int
+  keep_cache_entry (tree_vec_map *&m)
+  {
+    return ggc_marked_p (m->base.from);
+  }
+};
 
 /* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
    is a better hash than the pointer value and gives a predictable traversal
