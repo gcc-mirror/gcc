@@ -1,3 +1,9 @@
+2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90348
+	PR middle-end/104092
+	* lto-common.cc (compare_tree_sccs_1): Compare CLOBBER_KIND.
+
 2022-02-02  Martin Liska  <mliska@suse.cz>
 
 	PR lto/104333

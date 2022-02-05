@@ -1,3 +1,81 @@
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/dir-common.h (_Dir_base::openat): Change return
+	type to use portable posix::DIR alias.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdatomic.h [__clang__]: Use
+	#include_next <stdatomic.h>.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_ops.h (fs::copy_file): Remove
+	noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+	* src/filesystem/ops.cc (fs::copy_file): Remove noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for dirfd
+	and unlinkat.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/fs_dir.h (recursive_directory_iterator): Declare
+	remove_all overloads as friends.
+	(recursive_directory_iterator::__erase): Declare new member
+	function.
+	* include/bits/fs_fwd.h (remove, remove_all): Declare.
+	* src/c++17/fs_dir.cc (_Dir): Add filename_only parameter to
+	constructor. Pass file descriptor argument to base constructor.
+	(_Dir::dir_and_pathname, _Dir::open_subdir, _Dir::do_unlink)
+	(_Dir::unlink, _Dir::rmdir): Define new member functions.
+	(directory_iterator): Pass filename_only argument to _Dir
+	constructor.
+	(recursive_directory_iterator::_Dir_stack): Adjust constructor
+	parameters to take a _Dir rvalue instead of creating one.
+	(_Dir_stack::orig): Add data member for storing original path.
+	(_Dir_stack::report_error): Define new member function.
+	(__directory_iterator_nofollow): Move here from dir-common.h and
+	fix value to be a power of two.
+	(__directory_iterator_filename_only): Define new constant.
+	(recursive_directory_iterator): Construct _Dir object and move
+	into _M_dirs stack. Pass skip_permission_denied argument to first
+	advance call.
+	(recursive_directory_iterator::increment): Use _Dir::open_subdir.
+	(recursive_directory_iterator::__erase): Define new member
+	function.
+	* src/c++17/fs_ops.cc (ErrorReporter, do_remove_all): Remove.
+	(fs::remove_all): Use new recursive_directory_iterator::__erase
+	member function.
+	* src/filesystem/dir-common.h (_Dir_base): Add int parameter to
+	constructor and use openat to implement nofollow semantics.
+	(_Dir_base::fdcwd, _Dir_base::set_close_on_exec, _Dir_base::openat):
+	Define new member functions.
+	(__directory_iterator_nofollow): Move to fs_dir.cc.
+	* src/filesystem/dir.cc (_Dir): Pass file descriptor argument to
+	base constructor.
+	(_Dir::dir_and_pathname, _Dir::open_subdir): Define new member
+	functions.
+	(recursive_directory_iterator::_Dir_stack): Adjust constructor
+	parameters to take a _Dir rvalue instead of creating one.
+	(recursive_directory_iterator): Check for new nofollow option.
+	Construct _Dir object and move into _M_dirs stack. Pass
+	skip_permission_denied argument to first advance call.
+	(recursive_directory_iterator::increment): Use _Dir::open_subdir.
+	* src/filesystem/ops.cc (fs::remove_all): Use C++17 remove_all.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h: Qualify std::allocator_traits in
+	deprecated warnings.
+	* libsupc++/exception (uncaught_exception): Add suggestion to
+	deprecated warning.
+
 2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::pop):

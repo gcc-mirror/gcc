@@ -1,3 +1,7 @@
+2022-02-04  Martin Liska  <mliska@suse.cz>
+
+	* fixinc.in: Use cd OLDDIR instead of cd .. .
+
 2022-02-03  Martin Liska  <mliska@suse.cz>
 
 	* fixinc.in: Use mkdir -p rather that a loop.

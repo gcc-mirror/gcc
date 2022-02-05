@@ -1,3 +1,51 @@
+2022-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104380
+	* gcc.dg/pr104380.c: New test.
+
+2022-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/104356
+	* gnat.dg/opt97.adb: New test.
+
+2022-02-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/builtins-1.c: Limit -mbig.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-0.c: Limit -mbig.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-1.c: Limit -mbig.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c: Remove target selector.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-3.c: Only powerpc*-linux.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-4.c: Only powerpc*-linux*.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-0.c: Limit -mbig.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-1.c: Limit -mbig.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-2.c: Remove target selector.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-3.c: Only powerpc*-linux*.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-4.c: Only powerpc*-linux*.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+	    Bin Cheng   <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/100499
+	* gcc.dg/torture/pr100499-1.c: New testcase.
+	* gcc.dg/torture/pr100499-2.c: Likewise.
+	* gcc.dg/torture/pr100499-3.c: Likewise.
+
+2022-02-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101885
+	* gcc.dg/pr101885.c: New test case.
+
+2022-02-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/104092
+	* gcc.target/aarch64/sve/acle/general/pr104092.c: New test.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90348
+	PR middle-end/104092
+	* gcc.dg/pr87052.c: Adjust.
+
 2022-02-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104079

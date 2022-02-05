@@ -1,3 +1,110 @@
+2022-02-04  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.cc (resolve_vec_mul): Accept args and types
+	parameters instead of arglist and nargs.  Simplify accordingly.  Remove
+	unnecessary test for argument count mismatch.
+	(resolve_vec_cmpne): Likewise.
+	(resolve_vec_adde_sube): Likewise.
+	(resolve_vec_addec_subec): Likewise.
+	(altivec_resolve_overloaded_builtin): Move overload special handling
+	after the gathering of arguments into args[] and types[] and the test
+	for correct number of arguments.  Don't perform the test for correct
+	number of arguments for certain special cases.  Call the other special
+	cases with args and types instead of arglist and nargs.
+
+2022-02-04  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/100808
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available on ISA
+	3.1): Provide consistent type names.  Remove unnecessary semicolons.
+	Fix bad line breaks.
+
+2022-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104380
+	* config/rs6000/rs6000.cc (rs6000_mangle_decl_assembler_name): Also
+	adjust mangling of __builtin*printf_chk.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Variadic Macros): Replace C++2a with C++20.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+	    Bin Cheng   <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/100499
+	* fold-const.h (multiple_of_p): Add nowrap parameter, defaulted
+	to true.
+	* fold-const.cc (multiple_of_p): Likewise.  Honor it for
+	MULT_EXPR, PLUS_EXPR and MINUS_EXPR and pass it along,
+	switching to false for conversions.
+	* tree-ssa-loop-niter.cc (number_of_iterations_ne): Do not
+	claim the outermost expression does not wrap when calling
+	multiple_of_p.  Refactor the check done to check the
+	original IV, avoiding a bias that might wrap.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (multiple_of_p): Re-write and move LSHIFT_EXPR
+	handling.
+
+2022-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/104366
+	* dwarf2out.cc (dwarf2out_finish): Empty base_types.
+	(dwarf2out_early_finish): Likewise.
+
+2022-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/104356
+	* match.pd (X / bool_range_Y is X): Add guard.
+	(X / X is one): Likewise.
+	(X / abs (X) is X < 0 ? -1 : 1): Likewise.
+	(X / -X is -1): Likewise.
+	(1 / X -> X == 1): Likewise.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103641
+	* tree-vect-patterns.cc (vect_synth_mult_by_constant):
+	Pass the vector mode to choose_mult_variant.
+
+2022-02-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/101885
+	* combine.cc (try_combine): When splitting a parallel into two
+	sequential sets, check not only that the first doesn't clobber
+	the second but also that the second doesn't clobber the first.
+
+2022-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90348
+	PR middle-end/104092
+	* tree-core.h (clobber_kind): New enum.
+	(tree_base::u::bits::address_space): Document use in CONSTRUCTORs.
+	* tree.h (CLOBBER_KIND): Add.
+	(build_clobber): Add clobber kind argument, defaulted to
+	CLOBBER_UNDEF.
+	* tree.cc (build_clobber): Likewise.
+	* gimple.h (gimple_clobber_p): New overload with specified kind.
+	* tree-streamer-in.cc (streamer_read_tree_bitfields): Stream
+	CLOBBER_KIND.
+	* tree-streamer-out.cc (streamer_write_tree_bitfields):
+	Likewise.
+	* tree-pretty-print.cc (dump_generic_node): Mark EOL CLOBBERs.
+	* gimplify.cc (gimplify_bind_expr): Build storage end-of-life clobbers
+	with CLOBBER_EOL.
+	(gimplify_target_expr): Likewise.
+	* tree-inline.cc (expand_call_inline): Likewise.
+	* tree-ssa-ccp.cc (insert_clobber_before_stack_restore): Likewise.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_stmt): Only treat
+	CLOBBER_EOL clobbers as ending lifetime of storage.
+
+2022-02-04  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.h (pointer_query::cache_type): Use auto_vec for auto
+	cleanup.
+
 2022-02-03  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/104260

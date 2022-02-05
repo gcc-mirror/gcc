@@ -1,3 +1,15 @@
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove spurious
+	STOP of previous commit.
+
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c (is_64bit_aligned): Renamed
+	from is_64bit_aligned_.
+	* testsuite/libgomp.fortran/allocate-1.f90: Fix interface decl
+	and use it, more implicit none, remove unused argument.
+
 2022-02-03  David Seifert  <soap@gentoo.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
