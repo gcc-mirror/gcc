@@ -238,7 +238,6 @@ extern void hash_map_tests_c_tests ();
 extern void hash_set_tests_c_tests ();
 extern void input_c_tests ();
 extern void json_cc_tests ();
-extern void opt_problem_cc_tests ();
 extern void optinfo_emit_json_cc_tests ();
 extern void opts_c_tests ();
 extern void ordered_hash_map_tests_cc_tests ();

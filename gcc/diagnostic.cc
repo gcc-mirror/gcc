@@ -2466,7 +2466,7 @@ test_num_digits ()
 /* Run all of the selftests within this file.  */
 
 void
-diagnostic_c_tests ()
+c_diagnostic_c_tests ()
 {
   test_print_escaped_string ();
   test_print_parseable_fixits_none ();
