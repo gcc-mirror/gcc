@@ -113,6 +113,7 @@ image/internal/imageutil
 image/jpeg
 image/png
 index/suffixarray
+internal/abi
 internal/buildcfg
 internal/bytealg
 internal/cfg

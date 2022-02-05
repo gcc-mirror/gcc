@@ -12177,6 +12177,50 @@ Call_expression::intrinsify(Gogo* gogo,
           return Runtime::make_call(code, loc, 3, a1, a2, a3);
         }
     }
+  else if (package == "internal/abi")
+    {
+      if ((name == "FuncPCABI0" || name == "FuncPCABIInternal")
+	  && this->args_ != NULL
+	  && this->args_->size() == 1)
+	{
+	  // We expect to see a conversion from the expression to "any".
+	  Expression* expr = this->args_->front();
+	  Type_conversion_expression* tce = expr->conversion_expression();
+	  if (tce != NULL)
+	    expr = tce->expr();
+	  Func_expression* fe = expr->func_expression();
+	  Interface_field_reference_expression* interface_method =
+	    expr->interface_field_reference_expression();
+	  if (fe != NULL)
+	    {
+	      Named_object* no = fe->named_object();
+	      Expression* ref = Expression::make_func_code_reference(no, loc);
+	      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+	      return Expression::make_cast(uintptr_type, ref, loc);
+	    }
+	  else if (interface_method != NULL)
+	    return interface_method->get_function();
+	  else
+	    {
+	      expr = this->args_->front();
+	      go_assert(expr->type()->interface_type() != NULL
+			&& expr->type()->interface_type()->is_empty());
+	      expr = Expression::make_interface_info(expr,
+						     INTERFACE_INFO_OBJECT,
+						     loc);
+	      // Trust that this is a function type, which means that
+	      // it is a direct iface type and we can use EXPR
+	      // directly.  The backend representation of this
+	      // function is a pointer to a struct whose first field
+	      // is the actual function to call.
+	      Type* pvoid = Type::make_pointer_type(Type::make_void_type());
+	      Type* pfntype = Type::make_pointer_type(pvoid);
+	      Expression* ref = make_unsafe_cast(pfntype, expr, loc);
+	      return Expression::make_dereference(ref, NIL_CHECK_NOT_NEEDED,
+						  loc);
+	    }
+	}
+    }
 
   return NULL;
 }

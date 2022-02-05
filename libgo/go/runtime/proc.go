@@ -5,6 +5,7 @@
 package runtime
 
 import (
+	"internal/abi"
 	"internal/cpu"
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
@@ -4243,11 +4244,11 @@ func _GC()                        { _GC() }
 func _LostSIGPROFDuringAtomic64() { _LostSIGPROFDuringAtomic64() }
 func _VDSO()                      { _VDSO() }
 
-var _SystemPC = funcPC(_System)
-var _ExternalCodePC = funcPC(_ExternalCode)
-var _LostExternalCodePC = funcPC(_LostExternalCode)
-var _GCPC = funcPC(_GC)
-var _LostSIGPROFDuringAtomic64PC = funcPC(_LostSIGPROFDuringAtomic64)
+var _SystemPC = abi.FuncPCABIInternal(_System)
+var _ExternalCodePC = abi.FuncPCABIInternal(_ExternalCode)
+var _LostExternalCodePC = abi.FuncPCABIInternal(_LostExternalCode)
+var _GCPC = abi.FuncPCABIInternal(_GC)
+var _LostSIGPROFDuringAtomic64PC = abi.FuncPCABIInternal(_LostSIGPROFDuringAtomic64)
 
 // Called if we receive a SIGPROF signal.
 // Called by the signal handler, may run during STW.
