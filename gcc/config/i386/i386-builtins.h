@@ -310,6 +310,9 @@ static const struct builtin_description bdesc_##kind[] =		    \
 };
 
 #include "i386-builtin.def"
+#undef BDESC_FIRST
+#undef BDESC
+#undef BDESC_END
 
 extern builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
 
