@@ -4705,7 +4705,6 @@ c_common_nodes_and_builtins (void)
       va_list_ref_type_node = build_reference_type (va_list_type_node);
     }
 
-  puts("define builtins");
   c_define_builtins (va_list_ref_type_node, va_list_arg_type_node);
 
   main_identifier_node = get_identifier ("main");

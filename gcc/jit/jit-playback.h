@@ -175,7 +175,8 @@ public:
   new_call_through_ptr (location *loc,
 			rvalue *fn_ptr,
 			const auto_vec<rvalue *> *args,
-			bool require_tail_call);
+			bool require_tail_call,
+			bool delay_type_checking);
 
   rvalue *
   new_cast (location *loc,
@@ -650,7 +651,8 @@ class rvalue : public wrapper
 public:
   rvalue (context *ctxt, tree inner)
     : m_ctxt (ctxt),
-      m_inner (inner)
+      m_inner (inner),
+      m_is_target_builtin (false)
   {
     /* Pre-mark tree nodes with TREE_VISITED so that they can be
        deeply unshared during gimplification (including across
@@ -668,6 +670,8 @@ public:
   type *
   get_type () { return new type (TREE_TYPE (m_inner)); }
 
+  bool is_target_builtin () const { return m_is_target_builtin; }
+
   rvalue *
   access_field (location *loc,
 		field *field);
@@ -682,6 +686,7 @@ public:
 private:
   context *m_ctxt;
   tree m_inner;
+  int m_is_target_builtin;
 };
 
 class lvalue : public rvalue

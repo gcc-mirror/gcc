@@ -2226,6 +2226,7 @@ gcc_jit_context_new_call (gcc_jit_context *ctxt,
   int min_num_params = func->get_params ().length ();
   bool is_variadic = func->is_variadic ();
 
+  // The argument and return types will be checked at playback for target builtins.
   if (!func->is_target_builtin ()) {
     RETURN_NULL_IF_FAIL_PRINTF3 (
       numargs >= min_num_params,

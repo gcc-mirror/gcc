@@ -19,7 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#include "libgccjit.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -1056,8 +1055,6 @@ recording::context::get_builtin_function (const char *name)
    Implements the post-error-checking part of
    gcc_jit_context_get_target_builtin_function.  */
 
-#include "print-tree.h"
-
 recording::function *
 recording::context::get_target_builtin_function (const char *name)
 {
@@ -1325,6 +1322,7 @@ recording::context::new_call_through_ptr (recording::location *loc,
 					  recording::rvalue **args)
   {
   recording::rvalue *result = new call_through_ptr (this, loc, fn_ptr, numargs, args);
+  result->set_delay_type_checking (fn_ptr->delay_type_checking());
   record (result);
   return result;
 }
@@ -4098,10 +4096,6 @@ recording::function::function (context *ctxt,
   m_fn_ptr_type (NULL),
   m_is_target_builtin (is_target_builtin)
 {
-  if (m_is_target_builtin)
-  {
-    printf("%s is target\n", name->c_str ());
-  }
   for (int i = 0; i< num_params; i++)
     {
       param *param = params[i];
@@ -4400,6 +4394,8 @@ recording::function::get_address (recording::location *loc)
   gcc_assert (m_fn_ptr_type);
 
   rvalue *result = new function_pointer (get_context (), loc, this, m_fn_ptr_type);
+  if (m_is_target_builtin)
+    result->set_delay_type_checking (true);
   m_ctxt->record (result);
   return result;
 }
@@ -6164,7 +6160,8 @@ recording::call_through_ptr::replay_into (replayer *r)
   set_playback_obj (r->new_call_through_ptr (playback_location (r, m_loc),
 					     m_fn_ptr->playback_rvalue (),
 					     &playback_args,
-					     m_require_tail_call));
+					     m_require_tail_call,
+					     delay_type_checking ()));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children

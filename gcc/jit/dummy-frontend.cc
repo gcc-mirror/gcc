@@ -682,8 +682,6 @@ jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 
 /* Record a builtin function.  We just ignore builtin functions.  */
 
-#include "print-tree.h"
-
 static tree
 jit_langhook_builtin_function (tree decl)
 {

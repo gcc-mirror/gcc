@@ -510,7 +510,6 @@ new_function (location *loc,
 	      enum built_in_function builtin_id,
 	      int is_target_builtin)
 {
-  fprintf(stderr, "Playback function %s\n", name);
   int i;
   param *param;
 
@@ -548,7 +547,8 @@ new_function (location *loc,
     tree *decl = target_builtins.get(name);
     if (decl != NULL)
       fndecl = *decl;
-    // TODO: error on else.
+    else
+      add_error (loc, "cannot find target builtin %s", name);
   }
   if (builtin_id)
     {
@@ -1324,7 +1324,6 @@ build_call (location *loc,
       for (size_t i = 0 ; i < param_count; current_arg = TREE_CHAIN (current_arg), i++)
       {
         tree arg_type = TREE_VALUE (current_arg);
-        fprintf(stderr, "index %lu\n", i);
         tree current_arg = (*tree_args)[i];
         if (TREE_TYPE(current_arg) != arg_type)
         {
@@ -1385,12 +1384,13 @@ playback::context::
 new_call_through_ptr (location *loc,
 		      rvalue *fn_ptr,
 		      const auto_vec<rvalue *> *args,
-		      bool require_tail_call)
+		      bool require_tail_call,
+		      bool delay_type_checking)
 {
   gcc_assert (fn_ptr);
   tree t_fn_ptr = fn_ptr->as_tree ();
 
-  return build_call (loc, t_fn_ptr, args, require_tail_call, false); // TODO: check if is target builtin.
+  return build_call (loc, t_fn_ptr, args, require_tail_call, delay_type_checking);
 }
 
 /* Construct a tree for a cast.  */

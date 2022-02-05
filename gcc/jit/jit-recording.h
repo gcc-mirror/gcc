@@ -588,6 +588,7 @@ public:
 
   virtual const char *access_as_type (reproducer &r);
 
+  bool delay_type_checking () { return m_delay_type_checking; }
   void set_delay_type_checking (bool delay) { m_delay_type_checking = delay; }
 
 protected:
@@ -599,6 +600,7 @@ protected:
 
 private:
   type *m_pointer_to_this_type;
+  // TODO: actually do the delayed type checking in the playback.
   bool m_delay_type_checking;
 };
 
@@ -1160,6 +1162,7 @@ public:
   virtual bool is_constant () const { return false; }
   virtual bool get_wide_int (wide_int *) const { return false; }
 
+  bool delay_type_checking () { return m_type->delay_type_checking (); }
   void set_delay_type_checking (bool delay) { m_type->set_delay_type_checking (delay); }
 
 private:
