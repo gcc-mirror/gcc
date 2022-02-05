@@ -1,3 +1,11 @@
+2022-02-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104311
+	* gfortran.dg/transfer_simplify_15.f90: New test.
+
 2022-01-29  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
