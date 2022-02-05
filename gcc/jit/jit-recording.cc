@@ -1062,29 +1062,7 @@ recording::function *
 recording::context::get_target_builtin_function (const char *name)
 {
   const char *asm_name = name; // FIXME: might require adding a suffix. See get_asm_name in jit-builtins.
-  tree *decl = target_builtins.get(name);
-  printf("***** Get target builtin: %p\n", decl);
   type *return_type = get_type (GCC_JIT_TYPE_VOID);
-  if (decl != NULL)
-  {
-      fprintf(stderr, "Found decl for %s (%p)\n", name, *decl);
-      tree function_type = TREE_TYPE (*decl);
-      tree function_return_type = TREE_TYPE (function_type);
-      if (function_return_type == void_type_node)
-        return_type = get_type (GCC_JIT_TYPE_VOID);
-      else if (function_return_type == integer_type_node)
-      {
-          puts("*** Int return type");
-        return_type = get_type (GCC_JIT_TYPE_INT);
-      }
-      else
-      {
-        fprintf (stderr, "Unknown return type for target builtin: int type: (int: %p) (return type: %p)\n", integer_type_node, function_return_type);
-        //debug_tree(function_return_type);
-        add_error (NULL, "Unknown return type for target builtin:\n");
-        //abort();
-      }
-  }
   recording::function *result =
     new recording::function (this,
                  NULL,
@@ -1329,6 +1307,7 @@ recording::context::new_call (recording::location *loc,
 			      int numargs , recording::rvalue **args)
 {
   recording::rvalue *result = new call (this, loc, func, numargs, args);
+  result->set_delay_type_checking (func->is_target_builtin());
   record (result);
   return result;
 }

@@ -547,7 +547,7 @@ public:
   virtual bool accepts_writes_from (type *rtype)
   {
     gcc_assert (rtype);
-    return this->unqualified ()->is_same_type_as (rtype->unqualified ());
+    return this->m_delay_type_checking || rtype->m_delay_type_checking || this->unqualified ()->is_same_type_as (rtype->unqualified ());
   }
 
   virtual bool is_same_type_as (type *other)
@@ -588,14 +588,18 @@ public:
 
   virtual const char *access_as_type (reproducer &r);
 
+  void set_delay_type_checking (bool delay) { m_delay_type_checking = delay; }
+
 protected:
   type (context *ctxt)
     : memento (ctxt),
-    m_pointer_to_this_type (NULL)
+    m_pointer_to_this_type (NULL),
+    m_delay_type_checking (false)
   {}
 
 private:
   type *m_pointer_to_this_type;
+  bool m_delay_type_checking;
 };
 
 /* Result of "gcc_jit_context_get_type".  */
@@ -1155,6 +1159,8 @@ public:
 
   virtual bool is_constant () const { return false; }
   virtual bool get_wide_int (wide_int *) const { return false; }
+
+  void set_delay_type_checking (bool delay) { m_type->set_delay_type_checking (delay); }
 
 private:
   virtual enum precedence get_precedence () const = 0;
