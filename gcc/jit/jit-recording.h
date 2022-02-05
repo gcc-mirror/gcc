@@ -116,7 +116,8 @@ public:
   new_function_type (type *return_type,
 		     int num_params,
 		     type **param_types,
-		     int is_variadic);
+		     int is_variadic,
+		     int is_target_builtin);
 
   type *
   new_function_ptr_type (location *loc,
@@ -853,7 +854,8 @@ public:
 		 type *return_type,
 		 int num_params,
 		 type **param_types,
-		 int is_variadic);
+		 int is_variadic,
+		 int is_target_builtin);
 
   type *dereference () FINAL OVERRIDE;
   function_type *dyn_cast_function_type () FINAL OVERRIDE { return this; }
@@ -873,6 +875,7 @@ public:
   type * get_return_type () const { return m_return_type; }
   const vec<type *> &get_param_types () const { return m_param_types; }
   int is_variadic () const { return m_is_variadic; }
+  int is_target_builtin () const { return m_is_target_builtin; }
 
   string * make_debug_string_with_ptr ();
 
@@ -889,6 +892,7 @@ private:
   type *m_return_type;
   auto_vec<type *> m_param_types;
   int m_is_variadic;
+  int m_is_target_builtin;
 };
 
 class field : public memento
@@ -1292,6 +1296,8 @@ public:
   param *get_param (int i) const { return m_params[i]; }
 
   bool is_variadic () const { return m_is_variadic; }
+
+  bool is_target_builtin () const { return m_is_target_builtin; }
 
   void write_to_dump (dump &d) FINAL OVERRIDE;
 

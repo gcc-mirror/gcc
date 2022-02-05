@@ -585,7 +585,8 @@ builtins_manager::make_fn_type (enum jit_builtin_type,
   result = m_ctxt->new_function_type (return_type,
 				      num_args,
 				      param_types,
-				      is_variadic);
+				      is_variadic,
+				      false);
 
  error:
   delete[] param_types;

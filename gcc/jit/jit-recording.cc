@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include "libgccjit.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -936,14 +937,16 @@ recording::function_type *
 recording::context::new_function_type (recording::type *return_type,
 				       int num_params,
 				       recording::type **param_types,
-				       int is_variadic)
+				       int is_variadic,
+				       int is_target_builtin)
 {
   recording::function_type *fn_type
     = new function_type (this,
 			 return_type,
 			 num_params,
 			 param_types,
-			 is_variadic);
+			 is_variadic,
+			 is_target_builtin);
   record (fn_type);
   return fn_type;
 }
@@ -965,7 +968,8 @@ recording::context::new_function_ptr_type (recording::location *, /* unused loc 
     = new_function_type (return_type,
 			 num_params,
 			 param_types,
-			 is_variadic);
+			 is_variadic,
+			 false);
 
   /* Return a pointer-type to the function type.  */
   return fn_type->get_pointer ();
@@ -1052,23 +1056,35 @@ recording::context::get_builtin_function (const char *name)
    Implements the post-error-checking part of
    gcc_jit_context_get_target_builtin_function.  */
 
+#include "print-tree.h"
+
 recording::function *
 recording::context::get_target_builtin_function (const char *name)
 {
   const char *asm_name = name; // FIXME: might require adding a suffix. See get_asm_name in jit-builtins.
   tree *decl = target_builtins.get(name);
-  type *return_type;
-  /*if (decl != NULL)
+  printf("***** Get target builtin: %p\n", decl);
+  type *return_type = get_type (GCC_JIT_TYPE_VOID);
+  if (decl != NULL)
   {
-      printf("Found decl for %s\n", name);
-      return_type = new type(TREE_TYPE (*decl));
-      // *TYPE_ARG_TYPES (decl);* /
+      fprintf(stderr, "Found decl for %s (%p)\n", name, *decl);
+      tree function_type = TREE_TYPE (*decl);
+      tree function_return_type = TREE_TYPE (function_type);
+      if (function_return_type == void_type_node)
+        return_type = get_type (GCC_JIT_TYPE_VOID);
+      else if (function_return_type == integer_type_node)
+      {
+          puts("*** Int return type");
+        return_type = get_type (GCC_JIT_TYPE_INT);
+      }
+      else
+      {
+        fprintf (stderr, "Unknown return type for target builtin: int type: (int: %p) (return type: %p)\n", integer_type_node, function_return_type);
+        //debug_tree(function_return_type);
+        add_error (NULL, "Unknown return type for target builtin:\n");
+        //abort();
+      }
   }
-  else {
-      // TODO: remove this.
-      return_type = get_type (GCC_JIT_TYPE_VOID);
-  }*/
-  return_type = get_type (GCC_JIT_TYPE_VOID);
   recording::function *result =
     new recording::function (this,
                  NULL,
@@ -1080,6 +1096,7 @@ recording::context::get_target_builtin_function (const char *name)
                  false,
                  BUILT_IN_NONE,
                  true);
+  record (result);
 
   return result;
 }
@@ -3139,11 +3156,13 @@ recording::function_type::function_type (context *ctxt,
 					 type *return_type,
 					 int num_params,
 					 type **param_types,
-					 int is_variadic)
+					 int is_variadic,
+					 int is_target_builtin)
 : type (ctxt),
   m_return_type (return_type),
   m_param_types (),
-  m_is_variadic (is_variadic)
+  m_is_variadic (is_variadic),
+  m_is_target_builtin (is_target_builtin)
 {
   for (int i = 0; i< num_params; i++)
     m_param_types.safe_push (param_types[i]);
@@ -4155,24 +4174,14 @@ recording::function::replay_into (replayer *r)
   FOR_EACH_VEC_ELT (m_params, i, param)
     params.safe_push (param->playback_param ());
 
-  if (strstr(m_name->c_str (), "__builtin_ia32") != NULL)
-      printf("Name: %s\n", m_name->c_str ());
-  /*if (strcmp(m_name->c_str (), "__builtin_ia32_pmovmskb128") == 0) {
-      printf("*** builtin ia32: %d\n", m_is_target_builtin);
-  }*/
-
-  if (m_is_target_builtin)
-  {
-      puts("Is target");
-  }
-
   set_playback_obj (r->new_function (playback_location (r, m_loc),
 				     m_kind,
 				     m_return_type->playback_type (),
 				     m_name->c_str (),
 				     &params,
 				     m_is_variadic,
-				     m_builtin_id));
+				     m_builtin_id,
+				     m_is_target_builtin));
 }
 
 /* Create a recording::local instance and add it to
@@ -4405,7 +4414,8 @@ recording::function::get_address (recording::location *loc)
 	= m_ctxt->new_function_type (m_return_type,
 				     m_params.length (),
 				     param_types.address (),
-				     m_is_variadic);
+				     m_is_variadic,
+				     m_is_target_builtin);
       m_fn_ptr_type = fn_type->get_pointer ();
     }
   gcc_assert (m_fn_ptr_type);

@@ -104,7 +104,8 @@ public:
 		const char *name,
 		const auto_vec<param *> *params,
 		int is_variadic,
-		enum built_in_function builtin_id);
+		enum built_in_function builtin_id,
+		int is_target_builtin);
 
   lvalue *
   new_global (location *loc,
@@ -280,7 +281,8 @@ private:
   build_call (location *loc,
 	      tree fn_ptr,
 	      const auto_vec<rvalue *> *args,
-	      bool require_tail_call);
+	      bool require_tail_call,
+	      bool is_target_builtin);
 
   tree
   build_cast (location *loc,
@@ -480,7 +482,7 @@ class bitfield : public field {};
 class function : public wrapper
 {
 public:
-  function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind);
+  function(context *ctxt, tree fndecl, enum gcc_jit_function_kind kind, int is_target_builtin);
 
   void gt_ggc_mx ();
   void finalizer () FINAL OVERRIDE;
@@ -508,6 +510,9 @@ public:
   void
   postprocess ();
 
+  int
+  is_target_builtin () const { return m_is_target_builtin; }
+
 public:
   context *m_ctxt;
 
@@ -526,6 +531,7 @@ private:
   tree m_stmt_list;
   tree_stmt_iterator m_stmt_iter;
   vec<block *> m_blocks;
+  int m_is_target_builtin;
 };
 
 struct case_

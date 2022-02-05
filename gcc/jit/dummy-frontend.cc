@@ -682,14 +682,15 @@ jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 
 /* Record a builtin function.  We just ignore builtin functions.  */
 
+#include "print-tree.h"
+
 static tree
 jit_langhook_builtin_function (tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
   {
-    /*printf("Added %s\n", IDENTIFIER_POINTER (DECL_NAME (decl)));*/
     const char* name = IDENTIFIER_POINTER (DECL_NAME (decl));
-    target_builtins.put(name, decl);
+    int result = target_builtins.put(name, decl);
   }
   return decl;
 }

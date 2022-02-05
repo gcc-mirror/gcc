@@ -507,8 +507,10 @@ new_function (location *loc,
 	      const char *name,
 	      const auto_vec<param *> *params,
 	      int is_variadic,
-	      enum built_in_function builtin_id)
+	      enum built_in_function builtin_id,
+	      int is_target_builtin)
 {
+  fprintf(stderr, "Playback function %s\n", name);
   int i;
   param *param;
 
@@ -541,6 +543,13 @@ new_function (location *loc,
   DECL_RESULT (fndecl) = resdecl;
   DECL_CONTEXT (resdecl) = fndecl;
 
+  if (is_target_builtin)
+  {
+    tree *decl = target_builtins.get(name);
+    if (decl != NULL)
+      fndecl = *decl;
+    // TODO: error on else.
+  }
   if (builtin_id)
     {
       gcc_assert (loc == NULL);
@@ -592,7 +601,7 @@ new_function (location *loc,
 		   DECL_ATTRIBUTES (fndecl));
     }
 
-  function *func = new function (this, fndecl, kind);
+  function *func = new function (this, fndecl, kind, is_target_builtin);
   m_functions.safe_push (func);
   return func;
 }
@@ -1270,7 +1279,8 @@ playback::context::
 build_call (location *loc,
 	    tree fn_ptr,
 	    const auto_vec<rvalue *> *args,
-	    bool require_tail_call)
+	    bool require_tail_call,
+	    bool is_target_builtin)
 {
   vec<tree, va_gc> *tree_args;
   vec_alloc (tree_args, args->length ());
@@ -1286,6 +1296,47 @@ build_call (location *loc,
 
   tree call = build_call_vec (return_type,
 			      fn_ptr, tree_args);
+
+  if (is_target_builtin)
+  {
+    tree args = TYPE_ARG_TYPES (fn_type);
+    size_t param_count = 0;
+    for (tree current_arg = args ; current_arg; current_arg = TREE_CHAIN (current_arg))
+    {
+      tree arg_type = TREE_VALUE (current_arg);
+      if (arg_type != void_type_node)
+        param_count++;
+    }
+
+    size_t actual_arg_count = 0;
+    if (tree_args)
+      actual_arg_count = tree_args->length ();
+    if (param_count != actual_arg_count)
+    {
+      add_error (loc, "wrong number of arguments, actual: %lu, expected: %lu", actual_arg_count, param_count);
+      fprintf (stderr, "function:\n");
+      debug_tree (fn_ptr);
+      fprintf (stderr, "arguments:\n");
+      debug (tree_args);
+    }
+    else {
+      tree current_arg = args;
+      for (size_t i = 0 ; i < param_count; current_arg = TREE_CHAIN (current_arg), i++)
+      {
+        tree arg_type = TREE_VALUE (current_arg);
+        fprintf(stderr, "index %lu\n", i);
+        tree current_arg = (*tree_args)[i];
+        if (TREE_TYPE(current_arg) != arg_type)
+        {
+          add_error (loc, "Wrong type of arguments");
+          fprintf (stderr, "actual:\n");
+          debug_tree (TREE_TYPE (current_arg));
+          fprintf (stderr, "expected:\n");
+          debug_tree (arg_type);
+        }
+      }
+    }
+  }
 
   if (require_tail_call)
     CALL_EXPR_MUST_TAIL_CALL (call) = 1;
@@ -1323,7 +1374,7 @@ new_call (location *loc,
 
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
-  return build_call (loc, fn, args, require_tail_call);
+  return build_call (loc, fn, args, require_tail_call, func->is_target_builtin ());
 }
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
@@ -1339,7 +1390,7 @@ new_call_through_ptr (location *loc,
   gcc_assert (fn_ptr);
   tree t_fn_ptr = fn_ptr->as_tree ();
 
-  return build_call (loc, t_fn_ptr, args, require_tail_call);
+  return build_call (loc, t_fn_ptr, args, require_tail_call, false); // TODO: check if is target builtin.
 }
 
 /* Construct a tree for a cast.  */
@@ -1716,12 +1767,14 @@ operator new (size_t sz)
 playback::function::
 function (context *ctxt,
 	  tree fndecl,
-	  enum gcc_jit_function_kind kind)
+	  enum gcc_jit_function_kind kind,
+	  int is_target_builtin)
 : m_ctxt(ctxt),
   m_inner_fndecl (fndecl),
   m_inner_bind_expr (NULL),
   m_kind (kind),
-  m_blocks ()
+  m_blocks (),
+  m_is_target_builtin (is_target_builtin)
 {
   if (m_kind != GCC_JIT_FUNCTION_IMPORTED)
     {

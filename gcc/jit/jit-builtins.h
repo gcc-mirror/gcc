@@ -22,6 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-common.h"
 
+/* The following file contains several enumerations and data structures
+   built from the definitions in i386-builtin-types.def.  */
+
+#include "i386-builtin-types.inc"
+
 namespace gcc {
 
 namespace jit {
@@ -86,6 +91,18 @@ enum jit_builtin_type
 #undef DEF_POINTER_TYPE
   BT_LAST
 }; /* enum jit_builtin_type */
+
+
+/* Create an enum of the builtin types.  */
+
+enum jit_target_builtin
+{
+#define BDESC_FIRST(arg1, arg2, mask, arg4, arg5, name, code, arg8, func_type)
+#define BDESC(mask, arg2, arg3, name, code, arg6, func_type)
+#define BDESC_END(PCMPESTR, PCMPISTR)
+#include "config/i386/i386-builtin.def"
+  TBT_LAST
+}; /* enum jit_target_builtin */
 
 /* Create an enum of the attributes that can be present on builtins.  */
 

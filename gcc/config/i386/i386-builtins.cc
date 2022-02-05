@@ -129,6 +129,8 @@ tree ix86_float16_type_node = NULL_TREE;
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
 
+#include "print-tree.h"
+
 static tree
 ix86_get_builtin_type (enum ix86_builtin_type tcode)
 {
@@ -224,6 +226,19 @@ static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 
 struct builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
 
+static void
+clear_builtin_types (void)
+{
+  for (int i = 0 ; i < IX86_BT_LAST_CPTR + 1 ; i++)
+    ix86_builtin_type_tab[i] = NULL;
+
+  for (int i = 0 ; i < IX86_BUILTIN_MAX ; i++)
+  {
+    ix86_builtins[i] = NULL;
+    ix86_builtins_isa[i].set_and_not_built_p = true;
+  }
+}
+
 tree get_ix86_builtin (enum ix86_builtins c)
 {
   return ix86_builtins[c];
@@ -288,6 +303,8 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
 	  decl = add_builtin_function (name, type, code, BUILT_IN_MD,
 				       NULL, NULL_TREE);
 	  ix86_builtins[(int) code] = decl;
+          if (code == 1)
+              puts("**** 2 Creating builtin");
 	  ix86_builtins_isa[(int) code].set_and_not_built_p = false;
 	}
       else
@@ -1398,6 +1415,9 @@ ix86_init_builtin_types (void)
     = build_pointer_type (build_qualified_type
 			  (char_type_node, TYPE_QUAL_CONST));
 
+  fprintf(stderr, "i386-builtins int");
+  debug_tree (integer_type_node);
+
   /* This macro is built by i386-builtin-types.awk.  */
   DEFINE_BUILTIN_PRIMITIVE_TYPES;
 }
@@ -1406,6 +1426,8 @@ void
 ix86_init_builtins (void)
 {
   tree ftype, decl;
+
+  clear_builtin_types ();
 
   ix86_init_builtin_types ();
 
