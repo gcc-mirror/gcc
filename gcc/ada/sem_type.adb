@@ -3354,13 +3354,8 @@ package body Sem_Type is
       elsif T2 = Raise_Type then
          return B1;
 
-      --  ----------------------------------------------------------
-      --  Special cases for equality operators (all other predefined
-      --  operators can never apply to tagged types)
-      --  ----------------------------------------------------------
-
       --  Ada 2005 (AI-251): T1 and T2 are class-wide types, and T2 is an
-      --  interface
+      --  interface, return T1, and vice versa.
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Class_Wide_Type (T2)
@@ -3368,8 +3363,14 @@ package body Sem_Type is
       then
          return T1;
 
+      elsif Is_Class_Wide_Type (T2)
+        and then Is_Class_Wide_Type (T1)
+        and then Is_Interface (Etype (T1))
+      then
+         return T2;
+
       --  Ada 2005 (AI-251): T1 is a concrete type that implements the
-      --  class-wide interface T2
+      --  class-wide interface T2, return T1, and vice versa.
 
       elsif Is_Tagged_Type (T1)
         and then Is_Class_Wide_Type (T2)
@@ -3378,6 +3379,14 @@ package body Sem_Type is
                                                 Iface => Etype (T2))
       then
          return T1;
+
+      elsif Is_Tagged_Type (T2)
+        and then Is_Class_Wide_Type (T1)
+        and then Is_Interface (Etype (T1))
+        and then Interface_Present_In_Ancestor (Typ   => T2,
+                                                Iface => Etype (T1))
+      then
+         return T2;
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
