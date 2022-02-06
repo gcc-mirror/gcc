@@ -19,6 +19,10 @@ You should have received a copy of the GNU General Public License
 along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/* C libraries used on GNU/Hurd.  */
+#define OPTION_GLIBC_P(opts)	(DEFAULT_LIBC == LIBC_GLIBC)
+#define OPTION_GLIBC		OPTION_GLIBC_P (&global_options)
+
 #undef GNU_USER_TARGET_OS_CPP_BUILTINS
 #define GNU_USER_TARGET_OS_CPP_BUILTINS()		\
     do {					\
