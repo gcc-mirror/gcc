@@ -394,11 +394,92 @@ Session::handle_option (
 }
 
 bool
-Session::handle_cfg_option (const std::string &value)
+Session::handle_cfg_option (const std::string &input)
 {
-  // rustc doesn't seem to error on any duplicate key
-  // TODO handle feature=bla and relevant error handling in parsing
-  options.target_data.insert_key (value);
+  std::string key;
+  std::string value;
+
+  enum pstate
+  {
+    KEY,
+    EQ,
+    VAL,
+    DONE,
+    ERROR
+  };
+
+  // FIXME
+  // we need to use the GCC self_test framework to unit-test this its
+  // likely got a bunch of bugs. This simple parser could be extracted to a
+  // helper function to be more easily unit-tested or it could be tested via
+  // checking what the target_options contain
+  bool expect_quote = false;
+  pstate s = KEY;
+  for (const auto &ch : input)
+    {
+      if (ch == ' ')
+	{
+	  if (!key.empty ())
+	    s = EQ;
+	  else if (!value.empty ())
+	    s = DONE;
+	  else
+	    {
+	      s = ERROR;
+	      break;
+	    }
+	}
+      else if (ch == '"')
+	{
+	  expect_quote = !expect_quote;
+	}
+      else if (ch == '=')
+	{
+	  if (key.empty ())
+	    {
+	      s = ERROR;
+	      break;
+	    }
+
+	  s = VAL;
+	}
+      else
+	{
+	  if (s == KEY)
+	    key.push_back (ch);
+	  else if (s == VAL)
+	    value.push_back (ch);
+	  else
+	    {
+	      s = ERROR;
+	      break;
+	    }
+	}
+    }
+
+  if (key.empty () && value.empty ())
+    s = ERROR;
+
+  if (expect_quote)
+    s = ERROR;
+
+  if (s == ERROR)
+    {
+      rust_error_at (Location (),
+		     "invalid --frust-cfg= option expected %<key%> or "
+		     "key=%<value%> got %<%s%>",
+		     input.c_str ());
+      return false;
+    }
+
+  if (value.empty ())
+    {
+      // rustc does not seem to error on dup key
+      options.target_data.insert_key (key);
+      return true;
+    }
+
+  options.target_data.insert_key_value_pair (key, value);
   return true;
 }
 
