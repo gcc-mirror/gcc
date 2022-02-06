@@ -1,3 +1,21 @@
+2022-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104389
+	* match.pd (x * 0 -> 0): Punt if x maybe infinite and NaNs are
+	honored.
+
+2022-02-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* configure.ac: Fix detection for zifencei support.
+	* configure: Regenerate.
+
+2022-02-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/104219
+	* config.gcc (riscv*-*-*): Normalize the with_isa_spec value.
+	(all_defaults): Add isa_spec.
+	* config/riscv/riscv.h (OPTION_DEFAULT_SPECS): Add isa_spec.
+
 2022-02-04  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-c.cc (resolve_vec_mul): Accept args and types

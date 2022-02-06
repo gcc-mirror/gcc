@@ -1,3 +1,19 @@
+2022-02-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/s390/20150826-1.c: Update expected output.
+	* gcc.target/s390/zvector/imm-range-error-1.c: Likewise.
+
+2022-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104389
+	* gcc.dg/pr104389.c: New test.
+
+2022-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104300
+	PR c++/92385
+	* g++.dg/cpp0x/initlist-array14.C: New test.
+
 2022-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/104380

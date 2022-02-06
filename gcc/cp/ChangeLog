@@ -1,3 +1,24 @@
+2022-02-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104300
+	PR c++/92385
+	* cp-tree.h (get_vec_init_expr): New.
+	(target_expr_needs_replace): New.
+	* cp-gimplify.cc (cp_gimplify_init_expr): Use it.
+	(struct cp_fold_data): New.
+	(cp_fold_r): Only genericize inits at end of fn.
+	(cp_fold_function): Here.
+	(cp_fully_fold_init): Not here.
+	* init.cc (build_vec_init): Use get_vec_init_expr.
+	* tree.cc (build_vec_init_expr): Likewise.
+	* typeck2.cc (split_nonconstant_init_1): Likewise.
+	(process_init_constructor): Wrap VEC_INIT_EXPR in
+	TARGET_EXPR.
+
+2022-02-05  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (iterative_hash_template_arg): Add comment.
+
 2022-02-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104079
