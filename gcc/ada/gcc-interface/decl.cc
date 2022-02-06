@@ -1597,14 +1597,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (TREE_CODE (gnu_decl) == CONST_DECL)
 	  DECL_CONST_ADDRESS_P (gnu_decl) = constructor_address_p (gnu_expr);
 
-	/* If this object is declared in a block that contains a block with an
-	   exception handler, and we aren't using the GCC exception mechanism,
-	   we must force this variable in memory in order to avoid an invalid
-	   optimization.  */
-	if (Front_End_Exceptions ()
-	    && Has_Nested_Block_With_Handler (Scope (gnat_entity)))
-	  TREE_ADDRESSABLE (gnu_decl) = 1;
-
 	/* If this is a local variable with non-BLKmode and aggregate type,
 	   and optimization isn't enabled, then force it in memory so that
 	   a register won't be allocated to it with possible subparts left
@@ -1617,24 +1609,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 && !TYPE_IS_FAT_POINTER_P (TREE_TYPE (gnu_decl))
 		 && !optimize)
 	  TREE_ADDRESSABLE (gnu_decl) = 1;
-
-	/* If we are defining an object with variable size or an object with
-	   fixed size that will be dynamically allocated, and we are using the
-	   front-end setjmp/longjmp exception mechanism, update the setjmp
-	   buffer.  */
-	if (definition
-	    && Exception_Mechanism == Front_End_SJLJ
-	    && get_block_jmpbuf_decl ()
-	    && DECL_SIZE_UNIT (gnu_decl)
-	    && (TREE_CODE (DECL_SIZE_UNIT (gnu_decl)) != INTEGER_CST
-		|| (flag_stack_check == GENERIC_STACK_CHECK
-		    && compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
-					 STACK_CHECK_MAX_VAR_SIZE) > 0)))
-	  add_stmt_with_node (build_call_n_expr
-			      (update_setjmp_buf_decl, 1,
-			       build_unary_op (ADDR_EXPR, NULL_TREE,
-					       get_block_jmpbuf_decl ())),
-			      gnat_entity);
 
 	/* Back-annotate Esize and Alignment of the object if not already
 	   known.  Note that we pick the values of the type, not those of
@@ -5801,7 +5775,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
      circuitry from it, we need to declare that calls to pure Ada subprograms
      that can throw have side effects, since they can trigger an "abnormal"
      transfer of control; therefore they cannot be "pure" in the GCC sense.  */
-  bool pure_flag = Is_Pure (gnat_subprog) && Back_End_Exceptions ();
+  bool pure_flag = Is_Pure (gnat_subprog);
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool return_unconstrained_p = false;

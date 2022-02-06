@@ -670,7 +670,6 @@ package body ALI is
       SSO_Default_Specified                  := False;
       Task_Dispatching_Policy_Specified      := ' ';
       Unreserve_All_Interrupts_Specified     := False;
-      Frontend_Exceptions_Specified          := False;
       Zero_Cost_Exceptions_Specified         := False;
    end Initialize_ALI;
 
@@ -1774,7 +1773,6 @@ package body ALI is
         Unit_Exception_Table         => False,
         Ver                          => (others => ' '),
         Ver_Len                      => 0,
-        Frontend_Exceptions          => False,
         Zero_Cost_Exceptions         => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
@@ -1971,9 +1969,10 @@ package body ALI is
             elsif C = 'F' then
                C := Getc;
 
+               --  Old front-end exceptions marker, ignore
+
                if C = 'X' then
-                  ALIs.Table (Id).Frontend_Exceptions := True;
-                  Frontend_Exceptions_Specified := True;
+                  null;
                else
                   Fatal_Error_Ignore;
                end if;
