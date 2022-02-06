@@ -3413,7 +3413,10 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
       if (ctx->manifestly_const_eval
 	  && (flag_constexpr_fp_except
 	      || TREE_CODE (type) != REAL_TYPE))
-	r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+	{
+	  auto ofcc = make_temp_override (folding_cxx_constexpr, true);
+	  r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+	}
       else
 	r = fold_binary_loc (loc, code, type, lhs, rhs);
     }
