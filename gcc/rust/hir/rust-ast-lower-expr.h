@@ -693,7 +693,7 @@ public:
 	    match_arm_patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
 	  }
 
-	HIR::MatchArm arm (std::move (match_arm_patterns),
+	HIR::MatchArm arm (std::move (match_arm_patterns), expr.get_locus (),
 			   std::unique_ptr<HIR::Expr> (kase_guard_expr),
 			   match_case.get_arm ().get_outer_attrs ());
 
