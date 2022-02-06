@@ -1258,10 +1258,23 @@ new_comparison (location *loc,
   tree node_b = b->as_tree ();
   node_b = fold_const_var (node_b);
 
-  tree inner_expr = build2 (inner_op,
-			    boolean_type_node,
-			    node_a,
-			    node_b);
+  tree inner_expr;
+  tree a_type = TREE_TYPE (node_a);
+  if (VECTOR_TYPE_P (a_type))
+  {
+    tree zero_vec = build_zero_cst (a_type);
+    tree minus_one_vec = build_minus_one_cst (a_type);
+    tree cmp_type = truth_type_for (a_type);
+    tree cmp = build2 (inner_op, cmp_type, node_a, node_b);
+    inner_expr = build3 (VEC_COND_EXPR, a_type, cmp, minus_one_vec, zero_vec);
+  }
+  else
+  {
+    inner_expr = build2 (inner_op,
+			 boolean_type_node,
+			 node_a,
+			 node_b);
+  }
 
   /* Try to fold.  */
   inner_expr = fold (inner_expr);
@@ -1297,8 +1310,15 @@ build_call (location *loc,
   tree call = build_call_vec (return_type,
 			      fn_ptr, tree_args);
 
+  if (require_tail_call)
+    CALL_EXPR_MUST_TAIL_CALL (call) = 1;
+
+  playback::rvalue *result = new rvalue (this, call);
+
   if (is_target_builtin)
   {
+    result->set_is_target_builtin (true);
+
     tree args = TYPE_ARG_TYPES (fn_type);
     size_t param_count = 0;
     for (tree current_arg = args ; current_arg; current_arg = TREE_CHAIN (current_arg))
@@ -1337,10 +1357,7 @@ build_call (location *loc,
     }
   }
 
-  if (require_tail_call)
-    CALL_EXPR_MUST_TAIL_CALL (call) = 1;
-
-  return new rvalue (this, call);
+  return result;
 
   /* see c-typeck.cc: build_function_call
      which calls build_function_call_vec
@@ -2004,6 +2021,15 @@ add_assignment (location *loc,
   tree t_rvalue = rvalue->as_tree ();
   if (TREE_TYPE (t_rvalue) != TREE_TYPE (t_lvalue))
     {
+      if (rvalue->is_target_builtin ())
+      {
+        m_func->m_ctxt->add_error (loc, "mismatched types in assignment");
+        fprintf (stderr, "actual:\n");
+        debug_tree (TREE_TYPE (t_rvalue));
+        fprintf (stderr, "expected:\n");
+        debug_tree (TREE_TYPE (t_lvalue));
+      }
+
       t_rvalue = build1 (CONVERT_EXPR,
 			 TREE_TYPE (t_lvalue),
 			 t_rvalue);

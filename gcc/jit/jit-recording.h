@@ -1695,7 +1695,16 @@ public:
     m_op (op),
     m_a (a),
     m_b (b)
-  {}
+  {
+    type *a_type = a->get_type ();
+    // FIXME: dyn_cast_vector_type should work.
+    if (strstr (a_type->get_debug_string (), "vector") != NULL)
+    //if (a_type->dyn_cast_vector_type () != NULL)
+    {
+        fprintf(stderr, "Set type to vector type %p\n", a_type->dyn_cast_vector_type ());
+      m_type = a_type;
+    }
+  }
 
   void replay_into (replayer *r) FINAL OVERRIDE;
 

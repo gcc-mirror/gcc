@@ -611,6 +611,7 @@ jit_langhook_init (void)
      eventually be controllable by a command line option.  */
   mpfr_set_default_prec (256);
 
+  target_builtins.empty ();
   targetm.init_builtins ();
 
   return true;

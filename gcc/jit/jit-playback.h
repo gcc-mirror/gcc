@@ -671,6 +671,7 @@ public:
   get_type () { return new type (TREE_TYPE (m_inner)); }
 
   bool is_target_builtin () const { return m_is_target_builtin; }
+  void set_is_target_builtin (bool is_target_builtin) { m_is_target_builtin = is_target_builtin; }
 
   rvalue *
   access_field (location *loc,
