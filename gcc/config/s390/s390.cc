@@ -16091,6 +16091,23 @@ s390_valid_target_attribute_p (tree fndecl,
 static bool
 s390_can_inline_p (tree caller, tree callee)
 {
+  /* Flags which if present in the callee are required in the caller as well.  */
+  const unsigned HOST_WIDE_INT caller_required_masks = MASK_OPT_HTM;
+
+  /* Flags which affect the ABI and in general prevent inlining.  */
+  unsigned HOST_WIDE_INT must_match_masks
+    = (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP | MASK_SOFT_FLOAT
+       | MASK_LONG_DOUBLE_128 | MASK_OPT_VX);
+
+  /* Flags which we in general want to prevent inlining but accept for
+     always_inline.  */
+  const unsigned HOST_WIDE_INT always_inline_safe_masks
+    = MASK_MVCLE | MASK_BACKCHAIN | MASK_SMALL_EXEC;
+
+  const HOST_WIDE_INT all_masks
+     = (caller_required_masks | must_match_masks | always_inline_safe_masks
+	| MASK_DEBUG_ARG | MASK_PACKED_STACK | MASK_ZVECTOR);
+
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
 
@@ -16103,16 +16120,18 @@ s390_can_inline_p (tree caller, tree callee)
 
   struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
   struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
-  bool ret = true;
 
-  if ((caller_opts->x_target_flags & ~(MASK_SOFT_FLOAT | MASK_HARD_DFP))
-      != (callee_opts->x_target_flags & ~(MASK_SOFT_FLOAT | MASK_HARD_DFP)))
-    ret = false;
+  /* If one of these triggers make sure to add proper handling of your
+     new flag to this hook.  */
+  gcc_assert (!(caller_opts->x_target_flags & ~all_masks));
+  gcc_assert (!(callee_opts->x_target_flags & ~all_masks));
 
-  /* Don't inline functions to be compiled for a more recent arch into a
-     function for an older arch.  */
-  else if (caller_opts->x_s390_arch < callee_opts->x_s390_arch)
-    ret = false;
+  bool always_inline
+    = (DECL_DISREGARD_INLINE_LIMITS (callee)
+       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)));
+
+  if (!always_inline)
+    must_match_masks |= always_inline_safe_masks;
 
   /* Inlining a hard float function into a soft float function is only
      allowed if the hard float function doesn't actually make use of
@@ -16120,16 +16139,27 @@ s390_can_inline_p (tree caller, tree callee)
 
      We are called from FEs for multi-versioning call optimization, so
      beware of ipa_fn_summaries not available.  */
-  else if (((TARGET_SOFT_FLOAT_P (caller_opts->x_target_flags)
-	     && !TARGET_SOFT_FLOAT_P (callee_opts->x_target_flags))
-	    || (!TARGET_HARD_DFP_P (caller_opts->x_target_flags)
-		&& TARGET_HARD_DFP_P (callee_opts->x_target_flags)))
-	   && (! ipa_fn_summaries
-	       || ipa_fn_summaries->get
-	       (cgraph_node::get (callee))->fp_expressions))
-    ret = false;
+  if (always_inline && ipa_fn_summaries
+      && !ipa_fn_summaries->get(cgraph_node::get (callee))->fp_expressions)
+    must_match_masks &= ~(MASK_HARD_DFP | MASK_SOFT_FLOAT);
 
-  return ret;
+  if ((caller_opts->x_target_flags & must_match_masks)
+      != (callee_opts->x_target_flags & must_match_masks))
+    return false;
+
+  if (~(caller_opts->x_target_flags & caller_required_masks)
+      & (callee_opts->x_target_flags & caller_required_masks))
+    return false;
+
+  /* Don't inline functions to be compiled for a more recent arch into a
+     function for an older arch.  */
+  if (caller_opts->x_s390_arch < callee_opts->x_s390_arch)
+    return false;
+
+  if (!always_inline && caller_opts->x_s390_tune != callee_opts->x_s390_tune)
+    return false;
+
+  return true;
 }
 #endif
 
