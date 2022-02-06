@@ -25981,7 +25981,11 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       && (!flag_noexcept_type || type_dependent_expression_p (fn)))
     return true;
 
-  if (DECL_MAYBE_DELETED (fn))
+  tree fntype = TREE_TYPE (fn);
+  tree spec = TYPE_RAISES_EXCEPTIONS (fntype);
+
+  if ((!spec || UNEVALUATED_NOEXCEPT_SPEC_P (spec))
+      && DECL_MAYBE_DELETED (fn))
     {
       if (fn == current_function_decl)
 	/* We're in start_preparsed_function, keep going.  */
@@ -25990,11 +25994,8 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       ++function_depth;
       maybe_synthesize_method (fn);
       --function_depth;
-      return !DECL_MAYBE_DELETED (fn);
+      return !DECL_DELETED_FN (fn);
     }
-
-  tree fntype = TREE_TYPE (fn);
-  tree spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
   if (!spec || !TREE_PURPOSE (spec))
     return true;
