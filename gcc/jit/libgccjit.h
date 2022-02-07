@@ -1271,6 +1271,12 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_rvalue *ptr,
 				  gcc_jit_rvalue *index);
 
+extern gcc_jit_lvalue *
+gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   gcc_jit_rvalue *vector,
+				   gcc_jit_rvalue *index);
+
 /* Field access is provided separately for both lvalues and rvalues.  */
 
 /* Accessing a field of an lvalue of struct type, analogous to:

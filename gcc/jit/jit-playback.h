@@ -193,6 +193,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  lvalue *
+  new_vector_access (location *loc,
+		     rvalue *vector,
+		     rvalue *index);
+
   void
   set_str_option (enum gcc_jit_str_option opt,
 		  const char *value);

@@ -219,6 +219,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  lvalue *
+  new_vector_access (location *loc,
+		     rvalue *vector,
+		     rvalue *index);
+
   case_ *
   new_case (rvalue *min_value,
 	    rvalue *max_value,
@@ -1872,6 +1877,35 @@ private:
 
 private:
   rvalue *m_ptr;
+  rvalue *m_index;
+};
+
+class vector_access : public lvalue
+{
+public:
+  vector_access (context *ctxt,
+		 location *loc,
+		 rvalue *vector,
+		 rvalue *index)
+  : lvalue (ctxt, loc, ptr->get_type ()->dyn_cast_vector_type ()->get_element_type ()),
+    m_vector (vector),
+    m_index (index)
+  {}
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *v) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_POSTFIX;
+  }
+
+private:
+  rvalue *m_vector;
   rvalue *m_index;
 };
 

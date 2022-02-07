@@ -1558,6 +1558,34 @@ new_array_access (location *loc,
     }
 }
 
+/* Construct a playback::lvalue instance (wrapping a tree) for a
+   vector access.  */
+
+playback::lvalue *
+playback::context::
+new_vector_access (location *loc,
+		   rvalue *vector,
+		   rvalue *index)
+{
+  gcc_assert (vector);
+  gcc_assert (index);
+
+  /* For comparison, see:
+       c/c-common.cc: c_build_shufflevector
+  */
+  tree t_vector = vector->as_tree ();
+  tree t_type_vector = TREE_TYPE (t_vector);
+  t_vector = fold_const_var (t_vector);
+  tree t_index = index->as_tree ();
+  t_index = fold_const_var (t_index);
+  tree t_result = build3_loc (loc, BIT_FIELD_REF,
+		    t_type_vector, t_vector, TYPE_SIZE (t_type_vector), bitsize_zero_node);
+
+  if (loc)
+    set_tree_location (t_result, loc);
+  return new lvalue (this, t_result);
+}
+
 /* Construct a tree for a field access.  */
 
 tree

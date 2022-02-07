@@ -2505,6 +2505,39 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_vector_access method in
+   jit-recording.cc.  */
+
+extern gcc_jit_lvalue *
+gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
+				   gcc_jit_location *loc,
+				   gcc_jit_rvalue *vector,
+				   gcc_jit_rvalue *index)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (ptr, ctxt, loc, "NULL ptr");
+  RETURN_NULL_IF_FAIL (index, ctxt, loc, "NULL index");
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    ptr->get_type ()->dyn_cast_vector_type (),
+    ctxt, loc,
+    "vector: %s (type: %s) is not a vector",
+    ptr->get_debug_string (),
+    ptr->get_type ()->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    index->get_type ()->is_numeric (),
+    ctxt, loc,
+    "index: %s (type: %s) is not of numeric type",
+    index->get_debug_string (),
+    index->get_type ()->get_debug_string ());
+
+  return (gcc_jit_lvalue *)ctxt->new_vector_access (loc, ptr, index);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::memento::get_context method in
    jit-recording.h.  */
 
