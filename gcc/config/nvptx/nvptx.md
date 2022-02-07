@@ -506,7 +506,14 @@
 	(minus:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
 		     (match_operand:HSDIM 2 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tsub%t0\\t%0, %1, %2;")
+  {
+    if (GET_MODE (operands[0]) == HImode)
+      /* Workaround https://developer.nvidia.com/nvidia_bug/3527713.
+	 See PR97005.  */
+      return "%.\\tsub.s16\\t%0, %1, %2;";
+
+    return "%.\\tsub%t0\\t%0, %1, %2;";
+  })
 
 (define_insn "mul<mode>3"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
