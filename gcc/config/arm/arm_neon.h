@@ -18243,6 +18243,35 @@ vdotq_lane_s32 (int32x4_t __r, int8x16_t __a, int8x8_t __b, const int __index)
   return __builtin_neon_sdot_lanev16qi (__r, __a, __b, __index);
 }
 
+__extension__ extern __inline uint32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdot_laneq_u32 (uint32x2_t __r, uint8x8_t __a, uint8x16_t __b, const int __index)
+{
+  return __builtin_neon_udot_laneqv8qi_uuuus (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline uint32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdotq_laneq_u32 (uint32x4_t __r, uint8x16_t __a, uint8x16_t __b,
+		const int __index)
+{
+  return __builtin_neon_udot_laneqv16qi_uuuus (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdot_laneq_s32 (int32x2_t __r, int8x8_t __a, int8x16_t __b, const int __index)
+{
+  return __builtin_neon_sdot_laneqv8qi (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline int32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdotq_laneq_s32 (int32x4_t __r, int8x16_t __a, int8x16_t __b, const int __index)
+{
+  return __builtin_neon_sdot_laneqv16qi (__r, __a, __b, __index);
+}
+
 #pragma GCC pop_options
 #endif
 
