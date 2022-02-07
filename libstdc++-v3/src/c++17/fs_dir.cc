@@ -476,6 +476,16 @@ fs::recursive_directory_iterator::__erase(error_code* ecptr)
     {
       auto& top = _M_dirs->top();
 
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      // _Dir::unlink uses fs::remove which uses std::system_category() for
+      // Windows errror codes, so we can't just check for EPERM and EISDIR.
+      // Use directory_entry::refresh() here to check if we have a directory.
+      // This can be a TOCTTOU race, but we don't have openat or unlinkat to
+      // solve that on Windows, and generally don't support symlinks anyway.
+      if (top.entry._M_type == file_type::none)
+	top.entry.refresh();
+#endif
+
       if (top.entry._M_type == file_type::directory)
 	{
 	  _Dir dir = top.open_subdir(skip_permission_denied, nofollow, ec);
@@ -498,12 +508,13 @@ fs::recursive_directory_iterator::__erase(error_code* ecptr)
 	}
       else if (top.unlink(ec))
 	break; // Success
+#if ! _GLIBCXX_FILESYSTEM_IS_WINDOWS
       else if (top.entry._M_type == file_type::none)
 	{
 	  // We did not have a cached type, so it's possible that top.entry
 	  // is actually a directory, and that's why the unlink above failed.
 #ifdef EPERM
-	  // POSIX.1-2017 says unlinking a directory returns EPERM,
+	  // POSIX.1-2017 says unlink on a directory returns EPERM,
 	  // but LSB allows EISDIR too. Some targets don't even define EPERM.
 	  if (ec.value() == EPERM || ec.value() == EISDIR)
 #else
@@ -516,6 +527,7 @@ fs::recursive_directory_iterator::__erase(error_code* ecptr)
 	      continue;
 	    }
 	}
+#endif
     }
 
   if (!ec)
