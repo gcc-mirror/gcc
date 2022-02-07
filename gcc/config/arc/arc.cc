@@ -2256,6 +2256,12 @@ gen_compare_reg (rtx comparison, machine_mode omode)
   cmode = GET_MODE (x);
   if (cmode == VOIDmode)
     cmode = GET_MODE (y);
+
+  /* If ifcvt passed us a MODE_CC comparison we can
+     just return it.  It should be in the proper form already.   */
+  if (GET_MODE_CLASS (cmode) == MODE_CC)
+    return comparison;
+
   if (cmode != SImode && cmode != SFmode && cmode != DFmode)
     return NULL_RTX;
   if (cmode == SImode)
