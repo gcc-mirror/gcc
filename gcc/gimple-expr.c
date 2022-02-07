@@ -612,12 +612,16 @@ is_gimple_lvalue (tree t)
 /* Helper for is_gimple_condexpr and is_gimple_condexpr_for_cond.  */
 
 static bool
-is_gimple_condexpr_1 (tree t, bool allow_traps)
+is_gimple_condexpr_1 (tree t, bool allow_traps, bool allow_cplx)
 {
-  return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
-				&& (allow_traps || !tree_could_throw_p (t))
-				&& is_gimple_val (TREE_OPERAND (t, 0))
-				&& is_gimple_val (TREE_OPERAND (t, 1))));
+  tree op0;
+  return (is_gimple_val (t)
+	  || (COMPARISON_CLASS_P (t)
+	      && (allow_traps || !tree_could_throw_p (t))
+	      && ((op0 = TREE_OPERAND (t, 0)), true)
+	      && (allow_cplx || TREE_CODE (TREE_TYPE (op0)) != COMPLEX_TYPE)
+	      && is_gimple_val (op0)
+	      && is_gimple_val (TREE_OPERAND (t, 1))));
 }
 
 /* Return true if T is a GIMPLE condition.  */
@@ -625,7 +629,9 @@ is_gimple_condexpr_1 (tree t, bool allow_traps)
 bool
 is_gimple_condexpr (tree t)
 {
-  return is_gimple_condexpr_1 (t, true);
+  /* Always split out _Complex type compares since complex lowering
+     doesn't handle this case.  */
+  return is_gimple_condexpr_1 (t, true, false);
 }
 
 /* Like is_gimple_condexpr, but does not allow T to trap.  */
@@ -633,7 +639,7 @@ is_gimple_condexpr (tree t)
 bool
 is_gimple_condexpr_for_cond (tree t)
 {
-  return is_gimple_condexpr_1 (t, false);
+  return is_gimple_condexpr_1 (t, false, true);
 }
 
 /* Return true if T is a gimple address.  */
