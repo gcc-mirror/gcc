@@ -18278,7 +18278,7 @@ package body Sem_Ch3 is
          --  If In_Spec_Expression, for example within a pre/postcondition,
          --  provide enough information for use of the subtype without
          --  depending on full analysis and freezing, which will happen when
-         --  building the correspondiing subprogram.
+         --  building the corresponding subprogram.
 
          if In_Spec_Expression then
             Analyze (Subtype_Mark (Obj_Def));
