@@ -18,7 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* This is the contribution to the `default_compilers' array in gcc.c
+/* This is the contribution to the `default_compilers' array in gcc.cc
    for objc.  */
 
   {".m", "@objective-c", 0, 0, 0},

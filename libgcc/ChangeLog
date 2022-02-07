@@ -1,3 +1,12 @@
+2022-01-25  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/104207
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Add NULL check.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Rename .c names to .cc.
+
 2022-01-15  David  <gccbugzilla@limegreensocks.com>
 
 	* config/i386/gthr-win32.c (__gthr_i486_lock_cmp_xchg):

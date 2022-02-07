@@ -390,7 +390,7 @@ they are saved and restored correctly to PCH files.
 
 The @code{special} option is used to mark types that have to be dealt
 with by special case machinery.  The parameter is the name of the
-special case.  See @file{gengtype.c} for further details.  Avoid
+special case.  See @file{gengtype.cc} for further details.  Avoid
 adding new special cases unless there is no other alternative.
 
 @findex user
@@ -637,15 +637,15 @@ in the right place to be visible to the generated files.  For a back-end
 header file, this should be done automatically.  For a front-end header
 file, it needs to be included by the same file that includes
 @file{gtype-@var{lang}.h}.  For other header files, it needs to be
-included in @file{gtype-desc.c}, which is a generated file, so add it to
-@code{ifiles} in @code{open_base_file} in @file{gengtype.c}.
+included in @file{gtype-desc.cc}, which is a generated file, so add it to
+@code{ifiles} in @code{open_base_file} in @file{gengtype.cc}.
 
 For source files that aren't header files, the machinery will generate a
 header file that should be included in the source file you just changed.
 The file will be called @file{gt-@var{path}.h} where @var{path} is the
 pathname relative to the @file{gcc} directory with slashes replaced by
 @verb{|-|}, so for example the header file to be included in
-@file{cp/parser.c} is called @file{gt-cp-parser.h}.  The
+@file{cp/parser.cc} is called @file{gt-cp-parser.h}.  The
 generated header file should be included after everything else in the
 source file.
 

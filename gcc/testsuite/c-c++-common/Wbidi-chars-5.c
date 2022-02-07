@@ -1,6 +1,6 @@
 /* PR preprocessor/103026 */
 /* { dg-do compile } */
-/* { dg-options "-Wbidi-chars=unpaired -Wno-multichar -Wno-overflow" } */
+/* { dg-options "-Wbidi-chars=unpaired,ucn -Wno-multichar -Wno-overflow" } */
 /* Test all bidi chars in various contexts (identifiers, comments,
    string literals, character constants), both UCN and UTF-8.  The bidi
    chars here are properly terminated, except for the character constants.  */

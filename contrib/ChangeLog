@@ -1,3 +1,57 @@
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support more formatted predict.def file.
+	* analyze_brprob_spec.py: Improve output and documentation.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	* git-undescr.sh: Support full output of git-descr.sh.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* git-descr.sh: New file.
+	* git-undescr.sh: New file.
+	Support optional arguments --long, --short and default
+	to 14 characters of git hash.
+	* gcc-git-customization.sh: Use the created files.
+
+2022-01-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: New files in toplev must
+	be explicitly marked as "New file".
+	* gcc-changelog/test_email.py: Test.
+	* gcc-changelog/test_patches.txt: Add test.
+
+2022-01-23  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out one another warning
+	for sse.md.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style_lib.py: Skip Python files.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Use it.
+	* git-fix-changelog.py: New file.
+	* gcc-git-customization.sh: Add new alias git gcc-fix-changelog.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* git-backport.py: Support renaming of .cc files.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Rename .c names to .cc.
+	* gcc_update: Likewise.
+	* paranoia.cc: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* maintainers-verify.sh: Removed.
+
 2022-01-13  Martin Liska  <mliska@suse.cz>
 
 	* git-backport.py: Simplify the script as pre-auto-ChangeLog era

@@ -74,7 +74,7 @@ extern void del_node_map (void);
 extern void get_working_sets (void);
 
 /* Counter summary from the last set of coverage counts read by
-   profile.c.  */
+   profile.cc.  */
 extern struct gcov_summary *profile_info;
 
 #endif /* PROFILE_H */

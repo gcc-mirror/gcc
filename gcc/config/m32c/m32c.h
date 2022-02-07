@@ -522,7 +522,7 @@ typedef struct m32c_cumulative_args
 #define MAX_REGS_PER_ADDRESS 1
 
 /* This is passed to the macros below, so that they can be implemented
-   in m32c.c.  */
+   in m32c.cc.  */
 #ifdef REG_OK_STRICT
 #define REG_OK_STRICT_V 1
 #else

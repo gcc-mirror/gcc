@@ -240,7 +240,7 @@ between the two is that @code{LIB_SPEC} is used at the end of the
 command given to the linker.
 
 If this macro is not defined, a default is provided that
-loads the standard C library from the usual place.  See @file{gcc.c}.
+loads the standard C library from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac LIBGCC_SPEC
@@ -287,7 +287,7 @@ difference between the two is that @code{STARTFILE_SPEC} is used at
 the very beginning of the command given to the linker.
 
 If this macro is not defined, a default is provided that loads the
-standard C startup file from the usual place.  See @file{gcc.c}.
+standard C startup file from the usual place.  See @file{gcc.cc}.
 @end defmac
 
 @defmac ENDFILE_SPEC
@@ -392,7 +392,7 @@ The default value of this macro is empty string.
 @defmac LINK_COMMAND_SPEC
 A C string constant giving the complete command line need to execute the
 linker.  When you do this, you will need to update your port each time a
-change is made to the link command line within @file{gcc.c}.  Therefore,
+change is made to the link command line within @file{gcc.cc}.  Therefore,
 define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
 the effect you need.  Overriding this macro may be avoidable by overriding
@@ -1494,7 +1494,7 @@ ordinary types as @samp{@w{U @var{n} @var{name} @var{code}}}, where
 @var{name} is the name used for the type qualifier in source code,
 @var{n} is the length of @var{name} as above, and @var{code} is the
 code used to represent the unqualified version of this type.  (See
-@code{write_builtin_type} in @file{cp/mangle.c} for the list of
+@code{write_builtin_type} in @file{cp/mangle.cc} for the list of
 codes.)  In both cases the spaces are for clarity; do not include any
 spaces in your string.
 
@@ -1667,7 +1667,7 @@ The string can contain more than one keyword.  If so, separate them with
 spaces, and write first any length keyword, then @code{unsigned} if
 appropriate, and finally @code{int}.  The string must exactly match one
 of the data type names defined in the function
-@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.c}.
+@code{c_common_nodes_and_builtins} in the file @file{c-family/c-common.cc}.
 You may not omit @code{int} or change the order---that would cause the
 compiler to crash on startup.
 
@@ -2347,7 +2347,7 @@ they must be consecutively numbered.  Furthermore, the existing
 support for stack-like registers is specific to the 80387 floating
 point coprocessor.  If you have a new architecture that uses
 stack-like registers, you will need to do substantial work on
-@file{reg-stack.c} and write your machine description to cooperate
+@file{reg-stack.cc} and write your machine description to cooperate
 with it, as well as defining these macros.
 
 @defmac STACK_REGS
@@ -2877,7 +2877,7 @@ However, this default behavior is not correct on some machines, such as
 the DEC Alpha, that store short integers in floating-point registers
 differently than in integer registers.  On those machines, the default
 widening will not work correctly and you must define this hook to
-suppress that widening in some cases.  See the file @file{alpha.c} for
+suppress that widening in some cases.  See the file @file{alpha.cc} for
 details.
 
 With LRA, the default is to use @var{mode} unmodified.
@@ -3178,7 +3178,7 @@ on the stack, e.g., by @code{alloca}.
 
 The default value for this macro is @code{STACK_POINTER_OFFSET} plus the
 length of the outgoing arguments.  The default is correct for most
-machines.  See @file{function.c} for details.
+machines.  See @file{function.cc} for details.
 @end defmac
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
@@ -4386,7 +4386,7 @@ type of @var{type}. If @var{type} is not a valid va_list type, it returns
 This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
 arguments to @code{va_arg}; the latter two are as in
-@code{gimplify.c:gimplify_expr}.
+@code{gimplify.cc:gimplify_expr}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (scalar_int_mode @var{mode})
@@ -4420,7 +4420,7 @@ must work.
 The default version of this hook returns true for any mode
 required to handle the basic C types (as defined by the port).
 Included here are the double-word arithmetic supported by the
-code in @file{optabs.c}.
+code in @file{optabs.cc}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (machine_mode @var{mode})
@@ -5642,7 +5642,7 @@ are ABI-mandated names that the compiler should provide.
 @deftypefn {Target Hook} void TARGET_INIT_LIBFUNCS (void)
 This hook should declare additional library routines or rename
 existing ones, using the functions @code{set_optab_libfunc} and
-@code{init_one_libfunc} defined in @file{optabs.c}.
+@code{init_one_libfunc} defined in @file{optabs.cc}.
 @code{init_optabs} calls this macro after initializing all the normal
 library routines.
 
@@ -5868,9 +5868,9 @@ preserve functionality of inline assembly constructs using the
 
 @defmac FIND_BASE_TERM (@var{x})
 A C expression to determine the base term of address @var{x},
-or to provide a simplified version of @var{x} from which @file{alias.c}
+or to provide a simplified version of @var{x} from which @file{alias.cc}
 can easily find the base term.  This macro is used in only two places:
-@code{find_base_value} and @code{find_base_term} in @file{alias.c}.
+@code{find_base_value} and @code{find_base_term} in @file{alias.cc}.
 
 It is always safe for this macro to not be defined.  It exists so
 that alias analysis can understand machine-dependent addresses.
@@ -7569,11 +7569,11 @@ section}, which holds initialized writable data; and the @dfn{bss
 section}, which holds uninitialized data.  Some systems have other kinds
 of sections.
 
-@file{varasm.c} provides several well-known sections, such as
+@file{varasm.cc} provides several well-known sections, such as
 @code{text_section}, @code{data_section} and @code{bss_section}.
 The normal way of controlling a @code{@var{foo}_section} variable
 is to define the associated @code{@var{FOO}_SECTION_ASM_OP} macro,
-as described below.  The macros are only read once, when @file{varasm.c}
+as described below.  The macros are only read once, when @file{varasm.cc}
 initializes itself, so their values must be run-time constants.
 They may however depend on command-line flags.
 
@@ -7593,7 +7593,7 @@ in @code{TARGET_ASM_INIT_SECTIONS}.  The same is true of
 create a distinct @code{readonly_data_section}, the default is to
 reuse @code{text_section}.
 
-All the other @file{varasm.c} sections are optional, and are null
+All the other @file{varasm.cc} sections are optional, and are null
 if the target does not provide them.
 
 @defmac TEXT_SECTION_ASM_OP
@@ -7740,7 +7740,7 @@ This macro is irrelevant if there is no separate readonly data section.
 
 @deftypefn {Target Hook} void TARGET_ASM_INIT_SECTIONS (void)
 Define this hook if you need to do something special to set up the
-@file{varasm.c} sections, or if your target has some special sections
+@file{varasm.cc} sections, or if your target has some special sections
 of its own that you need to create.
 
 GCC calls this hook after processing the command line, but before writing
@@ -7879,7 +7879,7 @@ encode more than one bit of information, but this practice is now
 discouraged; use @code{SYMBOL_REF_FLAGS}.
 
 The default definition of this hook, @code{default_encode_section_info}
-in @file{varasm.c}, sets a number of commonly-useful bits in
+in @file{varasm.cc}, sets a number of commonly-useful bits in
 @code{SYMBOL_REF_FLAGS}.  Check whether the default does what you need
 before overriding it.
 @end deftypefn
@@ -8428,7 +8428,7 @@ A C statement (sans semicolon) to output to the stdio stream
 is the alignment specified as the number of bits.
 
 Try to use function @code{asm_output_aligned_bss} defined in file
-@file{varasm.c} when defining this macro.  If unable, use the expression
+@file{varasm.cc} when defining this macro.  If unable, use the expression
 @code{assemble_name (@var{stream}, @var{name})} to output the name itself;
 before and after that, output the additional assembler syntax for defining
 the name, and a newline.
@@ -8789,7 +8789,7 @@ requires changes to @var{decl}, such as putting it in a separate section.
 A C expression which evaluates to true if the target supports one-only
 semantics.
 
-If you don't define this macro, @file{varasm.c} provides a default
+If you don't define this macro, @file{varasm.cc} provides a default
 definition.  If @code{MAKE_DECL_ONE_ONLY} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
 you want to control one-only symbol support with a compiler flag, or if
@@ -8854,7 +8854,7 @@ systems.  This macro is used in @code{assemble_name}.
 @end defmac
 
 @deftypefn {Target Hook} tree TARGET_MANGLE_ASSEMBLER_NAME (const char *@var{name})
-Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s
+Given a symbol @var{name}, perform same mangling as @code{varasm.cc}'s
 @code{assemble_name}, but in memory rather than to a file stream, returning
 result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The
 default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and
@@ -9469,7 +9469,7 @@ being output.
 @defmacx IMMEDIATE_PREFIX
 If defined, C string expressions to be used for the @samp{%R}, @samp{%L},
 @samp{%U}, and @samp{%I} options of @code{asm_fprintf} (see
-@file{final.c}).  These are useful when a single @file{md} file must
+@file{final.cc}).  These are useful when a single @file{md} file must
 support multiple assembler formats.  In that case, the various @file{tm.h}
 files can define these macros differently.
 @end defmac
@@ -10593,7 +10593,7 @@ the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  You can also
 add @code{handle_dll_attribute} in the attribute table for your port
 to perform initial processing of the @samp{dllimport} and
 @samp{dllexport} attributes.  This is done in @file{i386/cygwin.h} and
-@file{i386/i386.c}, for example.
+@file{i386/i386.cc}, for example.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_VALID_DLLIMPORT_ATTRIBUTE_P (const_tree @var{decl})

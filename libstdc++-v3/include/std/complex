@@ -1955,7 +1955,7 @@ inline namespace literals {
 inline namespace complex_literals {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wliteral-suffix"
-#define __cpp_lib_complex_udls 201309
+#define __cpp_lib_complex_udls 201309L
 
   constexpr std::complex<float>
   operator""if(long double __num)

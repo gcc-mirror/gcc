@@ -24,7 +24,7 @@
 # --------------------------------
 
 AC_INIT
-AC_CONFIG_SRCDIR(tree.c)
+AC_CONFIG_SRCDIR(tree.cc)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 gcc_version=`cat $srcdir/BASE-VER`
@@ -573,11 +573,11 @@ AS_IF([test $enable_build_format_warnings = no],
       [wf_opt=-Wno-format],[wf_opt=])
 ACX_PROG_CXX_WARNING_OPTS(
 	m4_quote(m4_do([-W -Wall -Wno-narrowing -Wwrite-strings ],
-		       [-Wcast-qual -Wno-error=format-diag $wf_opt])),
+		       [-Wcast-qual $wf_opt])),
 		       [loose_warn])
 ACX_PROG_CC_WARNING_OPTS(
 	m4_quote(m4_do([-Wstrict-prototypes -Wmissing-prototypes ],
-	 	       [-Wno-error=format-diag])), [c_loose_warn])
+		       [])), [c_loose_warn])
 ACX_PROG_CXX_WARNING_OPTS(
 	m4_quote(m4_do([-Wmissing-format-attribute ],
 		       [-Woverloaded-virtual])), [strict_warn])
@@ -1204,7 +1204,7 @@ AC_PROG_MAKE_SET
 
 # Find some useful tools
 AC_PROG_AWK
-# We need awk to create options.c and options.h.
+# We need awk to create options.cc and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") AC_MSG_ERROR([can't build without awk, bailing out]) ;;
@@ -1619,7 +1619,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 
 # On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
 # FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname
-# in collect2.c, <fcntl.h> isn't visible, but the configure test below needs
+# in collect2.cc, <fcntl.h> isn't visible, but the configure test below needs
 # to undef these macros to get the correct value for HAVE_DECL_LDGETNAME.
 gcc_AC_CHECK_DECLS(ldgetname, , ,[
 #include "ansidecl.h"
@@ -1840,7 +1840,7 @@ if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
 if test x$out_file = x
-then out_file=$cpu_type/$cpu_type.c; fi
+then out_file=$cpu_type/$cpu_type.cc; fi
 
 if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
@@ -2310,8 +2310,8 @@ do
 done
 tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
-out_object_file=`basename $out_file .c`.o
-common_out_object_file=`basename $common_out_file .c`.o
+out_object_file=`basename $out_file .cc`.o
+common_out_object_file=`basename $common_out_file .cc`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -2672,6 +2672,18 @@ if test x$gcc_cv_ld != x; then
   fi
 fi
 AC_MSG_RESULT($ld_is_gold)
+
+# Check to see if we are using mold instead of ld
+AC_MSG_CHECKING(whether we are using mold)
+ld_is_mold=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "mold" > /dev/null; then
+    ld_is_mold=yes
+  fi
+fi
+AC_MSG_RESULT($ld_is_mold)
+
 
 AC_MSG_CHECKING(gold linker with split stack support as non default)
 # Check to see if default ld is not gold, but gold is
@@ -3070,6 +3082,8 @@ AC_CACHE_CHECK(linker for .hidden support, gcc_cv_ld_hidden,
 else
   gcc_cv_ld_hidden=yes
   if test x"$ld_is_gold" = xyes; then
+    :
+  elif test x"$ld_is_mold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
@@ -3539,6 +3553,8 @@ else
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
+  comdat_group=yes
+elif test x"$ld_is_mold" = xyes; then
   comdat_group=yes
 elif test $in_tree_ld = yes ; then
   comdat_group=no
@@ -5272,7 +5288,7 @@ configured with --enable-newlib-nano-formatted-io.])
 		 [Define if the assembler understands -misa-spec=.])])
     gcc_GAS_CHECK_FEATURE([-march=rv32i_zifencei support],
       gcc_cv_as_riscv_march_zifencei,
-      [-march=rv32i_zifencei],,,
+      [-march=rv32i_zifencei2p0],,,
       [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
 		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;
@@ -7572,7 +7588,7 @@ AC_DEFINE_UNQUOTED(DIAGNOSTICS_URLS_DEFAULT, $DIAGNOSTICS_URLS_DEFAULT,
 		   [The default for -fdiagnostics-urls option])
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
-# of jit/jit-playback.c.
+# of jit/jit-playback.cc.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
 echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF

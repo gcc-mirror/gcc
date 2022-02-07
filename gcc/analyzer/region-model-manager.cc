@@ -209,6 +209,7 @@ const svalue *
 region_model_manager::get_or_create_constant_svalue (tree cst_expr)
 {
   gcc_assert (cst_expr);
+  gcc_assert (CONSTANT_CLASS_P (cst_expr));
 
   constant_svalue **slot = m_constants_map.get (cst_expr);
   if (slot)
@@ -426,7 +427,23 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
   /* Constants.  */
   if (tree cst = arg->maybe_get_constant ())
     if (tree result = fold_unary (op, type, cst))
-      return get_or_create_constant_svalue (result);
+      {
+	if (CONSTANT_CLASS_P (result))
+	  return get_or_create_constant_svalue (result);
+
+	/* fold_unary can return casts of constants; try to handle them.  */
+	if (op != NOP_EXPR
+		 && type
+		 && TREE_CODE (result) == NOP_EXPR
+		 && CONSTANT_CLASS_P (TREE_OPERAND (result, 0)))
+	  {
+	    const svalue *inner_cst
+	      = get_or_create_constant_svalue (TREE_OPERAND (result, 0));
+	    return get_or_create_cast (type,
+				       get_or_create_cast (TREE_TYPE (result),
+							   inner_cst));
+	  }
+      }
 
   return NULL;
 }
@@ -480,6 +497,17 @@ const svalue *
 region_model_manager::get_or_create_cast (tree type, const svalue *arg)
 {
   gcc_assert (type);
+
+  /* No-op if the types are the same.  */
+  if (type == arg->get_type ())
+    return arg;
+
+  /* Don't attempt to handle casts involving vector types for now.  */
+  if (TREE_CODE (type) == VECTOR_TYPE
+      || (arg->get_type ()
+	  && TREE_CODE (arg->get_type ()) == VECTOR_TYPE))
+    return get_or_create_unknown_svalue (type);
+
   enum tree_code op = get_code_for_cast (type, arg->get_type ());
   return get_or_create_unaryop (type, op, arg);
 }
@@ -794,7 +822,8 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 
   if (const repeated_svalue *repeated_sval
 	= parent_svalue->dyn_cast_repeated_svalue ())
-    return get_or_create_cast (type, repeated_sval->get_inner_svalue ());
+    if (type)
+      return get_or_create_cast (type, repeated_sval->get_inner_svalue ());
 
   return NULL;
 }
@@ -1465,6 +1494,25 @@ region_model_manager::get_region_for_string (tree string_cst)
   return reg;
 }
 
+/* Return the region that describes accessing BITS within PARENT as TYPE,
+   creating it if necessary.  */
+
+const region *
+region_model_manager::get_bit_range (const region *parent, tree type,
+				     const bit_range &bits)
+{
+  gcc_assert (parent);
+
+  bit_range_region::key_t key (parent, type, bits);
+  if (bit_range_region *reg = m_bit_range_regions.get (key))
+    return reg;
+
+  bit_range_region *bit_range_reg
+    = new bit_range_region (alloc_region_id (), parent, type, bits);
+  m_bit_range_regions.put (key, bit_range_reg);
+  return bit_range_reg;
+}
+
 /* If we see a tree code we don't know how to handle, rather than
    ICE or generate bogus results, create a dummy region, and notify
    CTXT so that it can mark the new state as being not properly
@@ -1544,7 +1592,7 @@ static void
 log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const hash_map<K, T*> &uniq_map)
 {
-  logger->log ("  # %s: %li", title, uniq_map.elements ());
+  logger->log ("  # %s: %li", title, (long)uniq_map.elements ());
   if (!show_objs)
     return;
   auto_vec<const T *> vec_objs (uniq_map.elements ());
@@ -1568,7 +1616,7 @@ static void
 log_uniq_map (logger *logger, bool show_objs, const char *title,
 	      const consolidation_map<T> &map)
 {
-  logger->log ("  # %s: %li", title, map.elements ());
+  logger->log ("  # %s: %li", title, (long)map.elements ());
   if (!show_objs)
     return;
 
@@ -1634,6 +1682,7 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "frame_region", m_frame_regions);
   log_uniq_map (logger, show_objs, "symbolic_region", m_symbolic_regions);
   log_uniq_map (logger, show_objs, "string_region", m_string_map);
+  log_uniq_map (logger, show_objs, "bit_range_region", m_bit_range_regions);
   logger->log ("  # managed dynamic regions: %i",
 	       m_managed_dynamic_regions.length ());
   m_store_mgr.log_stats (logger, show_objs);

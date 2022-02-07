@@ -34,7 +34,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_node_extract 201606
+# define __cpp_lib_node_extract 201606L
 
 #include <new>
 #include <bits/alloc_traits.h>

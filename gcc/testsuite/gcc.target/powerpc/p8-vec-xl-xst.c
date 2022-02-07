@@ -1,8 +1,7 @@
 /* { dg-do compile { target { le } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2 -mno-fold-gimple" } */
-/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
+/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
 
 /* Verify fix for problem where vec_xl and vec_xst are not recognized
    for the vector char and vector short cases on P8 only.  */

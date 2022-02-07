@@ -62,11 +62,10 @@ AC_PROG_AWK
 WARN_FLAGS='-Wall -Wextra -Wwrite-strings -Wcast-qual'
 AC_SUBST(WARN_FLAGS)
 
-AC_ARG_ENABLE(werror, [AS_HELP_STRING([--enable-werror],
-                                      [turns on -Werror @<:@default=yes@:>@])])
-if test "x$enable_werror" != "xno"; then
-  WERROR="-Werror"
-fi
+AC_ARG_ENABLE([werror],
+  [AS_HELP_STRING([--disable-werror], [disable building with -Werror])])
+AS_IF([test "x$enable_werror" != "xno" && test "x$GCC" = "xyes"],
+  [WERROR="-Werror"])
 AC_SUBST(WERROR)
 
 glibgo_toolexecdir=no

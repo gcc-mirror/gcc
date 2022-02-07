@@ -210,6 +210,7 @@ dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
 dnl  libitm_ld_is_gold (possibly)
+dnl  libitm_ld_is_mold (possibly)
 dnl  libitm_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -242,8 +243,11 @@ AC_DEFUN([LIBITM_CHECK_LINKER_FEATURES], [
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
   libitm_ld_is_gold=no
+  libitm_ld_is_mold=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libitm_ld_is_gold=yes
+  elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
+    libitm_ld_is_mold=yes
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
@@ -398,6 +402,8 @@ if test $enable_symvers != no && test $libitm_shared_libgcc = yes; then
     if test $libitm_gnu_ld_version -ge $libitm_min_gnu_ld_version ; then
       enable_symvers=gnu
     elif test $libitm_ld_is_gold = yes ; then
+      enable_symvers=gnu
+    elif test $libitm_ld_is_mold = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?

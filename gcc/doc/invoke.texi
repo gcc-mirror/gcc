@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
 -Wno-attribute-warning  @gol
--Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]} @gol
+-Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]} @gol
 -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
@@ -812,6 +812,8 @@ Objective-C and Objective-C++ Dialects}.
 -mtp=@var{name}  -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd @gol
+-mfix-cortex-a57-aes-1742098 @gol
+-mfix-cortex-a72-aes-1655431 @gol
 -munaligned-access @gol
 -mneon-for-64bits @gol
 -mslow-flash-data @gol
@@ -821,6 +823,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpure-code @gol
 -mcmse @gol
 -mfix-cmse-cve-2021-35465 @gol
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset} @gol
 -mfdpic}
 
 @emph{AVR Options}
@@ -7800,7 +7803,7 @@ Attributes considered include @code{alloc_align}, @code{alloc_size},
 This is the default.  You can disable these warnings with either
 @option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
 
-@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]}
+@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
 @opindex Wbidi-chars=
 @opindex Wbidi-chars
 @opindex Wno-bidi-chars
@@ -7816,6 +7819,12 @@ There are three levels of warning supported by GCC@.  The default is
 bidi contexts.  @option{-Wbidi-chars=none} turns the warning off.
 @option{-Wbidi-chars=any} warns about any use of bidirectional control
 characters.
+
+By default, this warning does not warn about UCNs.  It is, however, possible
+to turn on such checking by using @option{-Wbidi-chars=unpaired,ucn} or
+@option{-Wbidi-chars=any,ucn}.  Using @option{-Wbidi-chars=ucn} is valid,
+and is equivalent to @option{-Wbidi-chars=unpaired,ucn}, if no previous
+@option{-Wbidi-chars=any} was specified.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -10711,7 +10720,7 @@ With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
 compilation time.
 
-@c Note that in addition to the default_options_table list in opts.c,
+@c Note that in addition to the default_options_table list in opts.cc,
 @c several optimization flags default to true but control optimization
 @c passes that are explicitly disabled at -O0.
 
@@ -12295,7 +12304,8 @@ Initialize automatic variables with either a pattern or with zeroes to increase
 the security and predictability of a program by preventing uninitialized memory
 disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
-initializer as uninitialized, @option{-Wuninitialized} will still report
+initializer as uninitialized, @option{-Wuninitialized} and
+@option{-Wanalyzer-use-of-uninitialized-value} will still report
 warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
@@ -13448,7 +13458,7 @@ and the same optimization options for both compilations.
 With @option{-fbranch-probabilities}, GCC puts a
 @samp{REG_BR_PROB} note on each @samp{JUMP_INSN} and @samp{CALL_INSN}.
 These can be used to improve optimization.  Currently, they are only
-used in one place: in @file{reorg.c}, instead of guessing which path a
+used in one place: in @file{reorg.cc}, instead of guessing which path a
 branch is most likely to take, the @samp{REG_BR_PROB} values are used to
 exactly determine which path is taken more often.
 
@@ -14741,7 +14751,7 @@ Algorithm 2 was designed to be a compromise between the relatively
 conservative approach taken by algorithm 1 and the rather aggressive
 approach taken by the default scheduler.  It relies more heavily on
 having a regular register file and accurate register pressure classes.
-See @file{haifa-sched.c} in the GCC sources for more details.
+See @file{haifa-sched.cc} in the GCC sources for more details.
 
 The default choice depends on the target.
 
@@ -15087,6 +15097,9 @@ per supernode, before terminating analysis.
 @item ranger-logical-depth
 Maximum depth of logical expression evaluation ranger will look through
 when evaluating outgoing edge ranges.
+
+@item relation-block-limit
+Maximum number of relations the oracle will register in a basic block.
 
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
@@ -21278,6 +21291,15 @@ with overlapping destination and base registers are used.  This option avoids
 generating these instructions.  This option is enabled by default when
 @option{-mcpu=cortex-m3} is specified.
 
+@item -mfix-cortex-a57-aes-1742098
+@itemx -mno-fix-cortex-a57-aes-1742098
+@itemx -mfix-cortex-a72-aes-1655431
+@itemx -mno-fix-cortex-a72-aes-1655431
+Enable (disable) mitigation for an erratum on Cortex-A57 and
+Cortex-A72 that affects the AES cryptographic instructions.  This
+option is enabled by default when either @option{-mcpu=cortex-a57} or
+@option{-mcpu=cortex-a72} is specified.
+
 @item -munaligned-access
 @itemx -mno-unaligned-access
 @opindex munaligned-access
@@ -21351,6 +21373,16 @@ in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
 enabled by default when the option @option{-mcpu=} is used with
 @code{cortex-m33}, @code{cortex-m35p} or @code{cortex-m55}.  The option
 @option{-mno-fix-cmse-cve-2021-35465} can be used to disable the mitigation.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-offset
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for a global canary or @samp{tls} for a
+canary accessible via the TLS register. The option
+@option{-mstack-protector-guard-offset=} is for use with
+@option{-fstack-protector-guard=tls} and not for use in user-land code.
 
 @item -mfdpic
 @itemx -mno-fdpic
@@ -22237,7 +22269,7 @@ The options @option{-metrax4} and @option{-metrax100} are synonyms for
 @opindex mmul-bug-workaround
 @opindex mno-mul-bug-workaround
 Work around a bug in the @code{muls} and @code{mulu} instructions for CPU
-models where it applies.  This option is active by default.
+models where it applies.  This option is disabled by default.
 
 @item -mpdebug
 @opindex mpdebug

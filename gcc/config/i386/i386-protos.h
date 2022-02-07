@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* In i386-common.c.  */
+/* In i386-common.cc.  */
 extern bool ix86_handle_option (struct gcc_options *opts,
 				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 				const struct cl_decoded_option *decoded,
 				location_t loc);
 
-/* Functions in i386.c */
+/* Functions in i386.cc */
 extern bool ix86_target_stack_probe (void);
 extern bool ix86_can_use_return_insn_p (void);
 extern bool ix86_function_ms_hook_prologue (const_tree fn);
@@ -267,16 +267,16 @@ extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
 					       rtx);
 extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 
-/* In i386-c.c  */
+/* In i386-c.cc  */
 extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
 
-/* In i386-d.c  */
+/* In i386-d.cc  */
 extern void ix86_d_target_versions (void);
 extern void ix86_d_register_target_info (void);
 extern bool ix86_d_has_stdcall_convention (unsigned int *, unsigned int *);
 
-/* In winnt.c  */
+/* In winnt.cc  */
 extern void i386_pe_unique_section (tree, int);
 extern void i386_pe_declare_function_type (FILE *, const char *, int);
 extern void i386_pe_record_external_function (tree, const char *);
@@ -309,7 +309,7 @@ extern void i386_pe_seh_unwind_emit (FILE *, rtx_insn *);
 extern void i386_pe_seh_emit_except_personality (rtx);
 extern void i386_pe_seh_init_sections (void);
 
-/* In winnt-cxx.c and winnt-stubs.c  */
+/* In winnt-cxx.cc and winnt-stubs.cc  */
 extern void i386_pe_adjust_class_at_definition (tree);
 extern bool i386_pe_type_dllimport_p (tree);
 extern bool i386_pe_type_dllexport_p (tree);

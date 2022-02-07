@@ -1155,6 +1155,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_CLOBBER_P(NODE) \
   (TREE_CODE (NODE) == CONSTRUCTOR && TREE_THIS_VOLATILE (NODE))
 
+/* Return the clobber_kind of a CLOBBER CONSTRUCTOR.  */
+#define CLOBBER_KIND(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.u.bits.address_space)
+
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* Nonzero if NODE is an empty statement (NOP_EXPR <0>).  */
@@ -2328,13 +2332,13 @@ extern tree vector_element_bits_tree (const_tree);
    hooks are responsible for consistently using only a specific
    macro.  */
 
-/* Symtab field as an integer.  Used by stabs generator in dbxout.c to
+/* Symtab field as an integer.  Used by stabs generator in dbxout.cc to
    hold the type's number in the generated stabs.  */
 #define TYPE_SYMTAB_ADDRESS(NODE) \
   (TYPE_CHECK (NODE)->type_common.symtab.address)
 
 /* Symtab field as a pointer to a DWARF DIE.  Used by DWARF generator
-   in dwarf2out.c to point to the DIE generated for the type.  */
+   in dwarf2out.cc to point to the DIE generated for the type.  */
 #define TYPE_SYMTAB_DIE(NODE) \
   (TYPE_CHECK (NODE)->type_common.symtab.die)
 
@@ -4559,7 +4563,7 @@ extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_from_vec (tree, const vec<tree, va_gc> *);
 extern tree build_constructor_va (tree, int, ...);
-extern tree build_clobber (tree);
+extern tree build_clobber (tree, enum clobber_kind = CLOBBER_UNDEF);
 extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_real_from_wide (tree, const wide_int_ref &, signop);
 extern tree build_complex (tree, tree, tree);
@@ -4589,7 +4593,7 @@ extern tree build_call_valist (tree, tree, int, va_list);
 #define build_call_array(T1,T2,N,T3)\
    build_call_array_loc (UNKNOWN_LOCATION, T1, T2, N, T3)
 extern tree build_call_array_loc (location_t, tree, tree, int, const tree *);
-extern tree build_call_vec (tree, tree, vec<tree, va_gc> *);
+extern tree build_call_vec (tree, tree, const vec<tree, va_gc> *);
 extern tree build_call_expr_loc_array (location_t, tree, int, tree *);
 extern tree build_call_expr_loc_vec (location_t, tree, vec<tree, va_gc> *);
 extern tree build_call_expr_loc (location_t, tree, int, ...);
@@ -4740,7 +4744,7 @@ poly_int_tree_p (const_tree t, poly_uint64_pod *value)
   return false;
 }
 
-/* From expmed.c.  Since rtl.h is included after tree.h, we can't
+/* From expmed.cc.  Since rtl.h is included after tree.h, we can't
    put the prototype here.  Rtl.h does declare the prototype if
    tree.h had been included.  */
 
@@ -5218,7 +5222,7 @@ inlined_function_outer_scope_p (const_tree block)
        (TREE = function_args_iter_cond (&(ITER))) != NULL_TREE;		\
        function_args_iter_next (&(ITER)))
 
-/* In tree.c */
+/* In tree.cc */
 extern unsigned crc32_unsigned_n (unsigned, unsigned, unsigned);
 extern unsigned crc32_string (unsigned, const char *);
 inline unsigned
@@ -5503,7 +5507,7 @@ tree_code_for_canonical_type_merging (enum tree_code code)
 /* Return ture if get_alias_set care about TYPE_CANONICAL of given type.
    We don't define the types for pointers, arrays and vectors.  The reason is
    that pointers are handled specially: ptr_type_node accesses conflict with
-   accesses to all other pointers.  This is done by alias.c.
+   accesses to all other pointers.  This is done by alias.cc.
    Because alias sets of arrays and vectors are the same as types of their
    elements, we can't compute canonical type either.  Otherwise we could go
    form void *[10] to int *[10] (because they are equivalent for canonical type
@@ -5558,6 +5562,23 @@ struct tree_decl_map_cache_hasher : ggc_cache_ptr_hash<tree_decl_map>
 #define tree_vec_map_eq tree_map_base_eq
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
+
+struct tree_vec_map_cache_hasher : ggc_cache_ptr_hash<tree_vec_map>
+{
+  static hashval_t hash (tree_vec_map *m) { return DECL_UID (m->base.from); }
+
+  static bool
+  equal (tree_vec_map *a, tree_vec_map *b)
+  {
+    return a->base.from == b->base.from;
+  }
+
+  static int
+  keep_cache_entry (tree_vec_map *&m)
+  {
+    return ggc_marked_p (m->base.from);
+  }
+};
 
 /* Hasher for tree decls.  Pointer equality is enough here, but the DECL_UID
    is a better hash than the pointer value and gives a predictable traversal

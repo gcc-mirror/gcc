@@ -25,7 +25,7 @@
 # opt-read.awk.
 #
 # Usage: awk -f opt-functions.awk -f opt-read.awk -f optc-gen.awk \
-#            [-v header_name=header.h] < inputfile > options.c
+#            [-v header_name=header.h] < inputfile > options.cc
 
 # Dump that array of options into a C file.
 END {
@@ -348,6 +348,8 @@ for (i = 0; i < n_opts; i++) {
 			alias_data = "NULL, NULL, N_OPTS"
 		if (flag_set_p("Enum.*", flags[i])) {
 			if (!flag_set_p("RejectNegative", flags[i]) \
+			    && !flag_set_p("EnumSet", flags[i]) \
+			    && !flag_set_p("EnumBitSet", flags[i]) \
 			    && opts[i] ~ "^[Wfgm]")
 				print "#error Enum allowing negative form"
 		}

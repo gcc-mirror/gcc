@@ -1,8 +1,8 @@
 /* PR target/103973 */
 /* { dg-do run } */
 /* { dg-options "-O2 -ffast-math -save-temps" } */
-/* { dg-final { scan-assembler-not "'\tucomisd" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "\tcomisd" 4 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-not "'\t\[v\]?ucomisd" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "\t\[v\]?comisd" 4 { target { ! ia32 } } } } */
 
 __attribute__((noipa)) int m1 (void) { return -1; }
 __attribute__((noipa)) int p0 (void) { return 0; }

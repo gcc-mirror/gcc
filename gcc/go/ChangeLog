@@ -1,3 +1,20 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* config-lang.in: Rename .c names to .cc.
+	* go-backend.cc: Likewise.
+	* go-lang.cc: Likewise.
+	* gospec.cc: Likewise.
+	* lang-specs.h: Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* go-backend.c: Moved to...
+	* go-backend.cc: ...here.
+	* go-lang.c: Moved to...
+	* go-lang.cc: ...here.
+	* gospec.c: Moved to...
+	* gospec.cc: ...here.
+
 2022-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gccgo.texi: Bump @copyrights-go year.

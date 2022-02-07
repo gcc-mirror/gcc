@@ -509,7 +509,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 #ifdef DLFO_STRUCT_HAS_EH_DBASE
   {
     struct dl_find_object dlfo;
-    if (_dl_find_object (pc, &dlfo) == 0)
+    if (_dl_find_object (pc, &dlfo) == 0 && dlfo.dlfo_eh_frame != NULL)
       return find_fde_tail ((_Unwind_Ptr) pc, dlfo.dlfo_eh_frame,
 # if DLFO_STRUCT_HAS_EH_DBASE
 			    (_Unwind_Ptr) dlfo.dlfo_eh_dbase,

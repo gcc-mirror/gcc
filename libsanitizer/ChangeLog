@@ -1,3 +1,20 @@
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* aclocal.m4: Include also ../config/warnings.m4.
+	* libbacktrace/Makefile.am (WARN_FLAGS): Remove.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* hwasan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	* LOCAL_PATCHES: Add commit 70b043845d7.

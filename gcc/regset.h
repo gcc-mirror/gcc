@@ -117,7 +117,7 @@ typedef bitmap_iterator reg_set_iterator;
 /* An obstack for regsets.  */
 extern bitmap_obstack reg_obstack;
 
-/* In df-core.c (which should use regset consistently instead of bitmap...)  */
+/* In df-core.cc (which should use regset consistently instead of bitmap...)  */
 extern void dump_regset (regset, FILE *);
 
 #endif /* GCC_REGSET_H */

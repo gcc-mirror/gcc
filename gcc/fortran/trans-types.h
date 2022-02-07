@@ -65,7 +65,7 @@ enum gfc_packed {
   PACKED_STATIC
 };
 
-/* trans-types.c */
+/* trans-types.cc */
 void gfc_init_kinds (void);
 void gfc_init_types (void);
 void gfc_init_c_interop_kinds (void);

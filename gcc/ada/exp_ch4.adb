@@ -14314,9 +14314,13 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Finally, rewrite the operation in the narrower type
+      --  Finally, rewrite the operation in the narrower type, but make sure
+      --  not to perform name resolution for the operator again.
 
       Nop := New_Op_Node (Kind, Sloc (N));
+      if Nkind (N) in N_Has_Entity then
+         Set_Entity (Nop, Entity (N));
+      end if;
 
       if Binary then
          Set_Left_Opnd (Nop, Convert_To (Ntyp, L));

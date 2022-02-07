@@ -2053,7 +2053,7 @@ const pass_data pass_data_waccess = {
   GIMPLE_PASS,
   "waccess",
   OPTGROUP_NONE,
-  TV_NONE,
+  TV_WARN_ACCESS, /* timer variable */
   PROP_cfg, /* properties_required  */
   0,	    /* properties_provided  */
   0,	    /* properties_destroyed  */
@@ -2137,10 +2137,9 @@ private:
   /* Return true if use follows an invalidating statement.  */
   bool use_after_inval_p (gimple *, gimple *, bool = false);
 
-  /* A pointer_query object and its cache to store information about
-     pointers and their targets in.  */
+  /* A pointer_query object to store information about pointers and
+     their targets in.  */
   pointer_query m_ptr_qry;
-  pointer_query::cache_type m_var_cache;
   /* Mapping from DECLs and their clobber statements in the function.  */
   hash_map<tree, gimple *> m_clobbers;
   /* A bit is set for each basic block whose statements have been assigned
@@ -2158,8 +2157,7 @@ private:
 
 pass_waccess::pass_waccess (gcc::context *ctxt)
   : gimple_opt_pass (pass_data_waccess, ctxt),
-    m_ptr_qry (NULL, &m_var_cache),
-    m_var_cache (),
+    m_ptr_qry (NULL),
     m_clobbers (),
     m_bb_uids_set (),
     m_func (),
@@ -3880,9 +3878,17 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 				    bool maybe, bool equality /* = false */)
 {
   /* Avoid printing the unhelpful "<unknown>" in the diagnostics.  */
-  if (ref && TREE_CODE (ref) == SSA_NAME
-      && (!SSA_NAME_VAR (ref) || DECL_ARTIFICIAL (SSA_NAME_VAR (ref))))
-    ref = NULL_TREE;
+  if (ref && TREE_CODE (ref) == SSA_NAME)
+    {
+      tree var = SSA_NAME_VAR (ref);
+      if (!var)
+	ref = NULL_TREE;
+      /* Don't warn for cases like when a cdtor returns 'this' on ARM.  */
+      else if (warning_suppressed_p (var, OPT_Wuse_after_free))
+	return;
+      else if (DECL_ARTIFICIAL (var))
+	ref = NULL_TREE;
+    }
 
   location_t use_loc = gimple_location (use_stmt);
   if (use_loc == UNKNOWN_LOCATION)
@@ -3953,15 +3959,14 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 			    "may be used")
 		       : G_("using dangling pointer %qE to an unnamed "
 			    "temporary")),
-		      ref, var))
+		      ref))
       || (!ref
 	  && warning_at (use_loc, OPT_Wdangling_pointer_,
 			 (maybe
 			  ? G_("dangling pointer to an unnamed temporary "
 			       "may be used")
 			  : G_("using a dangling pointer to an unnamed "
-			       "temporary")),
-			 var)))
+			       "temporary")))))
     {
       inform (DECL_SOURCE_LOCATION (var),
 	      "unnamed temporary defined here");
@@ -4073,7 +4078,8 @@ maybe_warn_mismatched_realloc (tree ptr, gimple *realloc_stmt, gimple *stmt)
    either don't or their relationship cannot be determined.  */
 
 static bool
-pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
+pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry,
+		    auto_bitmap &visited)
 {
   if (!ptr_derefs_may_alias_p (p, q))
     return false;
@@ -4082,9 +4088,51 @@ pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
   access_ref pref, qref;
   if (!qry.get_ref (p, stmt, &pref, 0)
       || !qry.get_ref (q, stmt, &qref, 0))
+    /* GET_REF() only rarely fails.  When it does, it's likely because
+       it involves a self-referential PHI.  Return a conservative result.  */
+    return false;
+
+  if (pref.ref == qref.ref)
     return true;
 
-  return pref.ref == qref.ref;
+  /* If either pointer is a PHI, iterate over all its operands and
+     return true if they're all related to the other pointer.  */
+  tree ptr = q;
+  unsigned version;
+  gphi *phi = pref.phi ();
+  if (phi)
+    version = SSA_NAME_VERSION (pref.ref);
+  else
+    {
+      phi = qref.phi ();
+      if (!phi)
+	return false;
+
+      ptr = p;
+      version = SSA_NAME_VERSION (qref.ref);
+    }
+
+  if (!bitmap_set_bit (visited, version))
+    return true;
+
+  unsigned nargs = gimple_phi_num_args (phi);
+  for (unsigned i = 0; i != nargs; ++i)
+    {
+      tree arg = gimple_phi_arg_def (phi, i);
+      if (!pointers_related_p (stmt, arg, ptr, qry, visited))
+	return false;
+    }
+
+  return true;
+}
+
+/* Convenience wrapper for the above.  */
+
+static bool
+pointers_related_p (gimple *stmt, tree p, tree q, pointer_query &qry)
+{
+  auto_bitmap visited;
+  return pointers_related_p (stmt, p, q, qry, visited);
 }
 
 /* For a STMT either a call to a deallocation function or a clobber, warn
@@ -4183,7 +4231,12 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	    {
 	      if (gimple_code (use_stmt) == GIMPLE_PHI)
 		{
+		  /* Only add a PHI result to POINTERS if all its
+		     operands are related to PTR, otherwise continue.  */
 		  tree lhs = gimple_phi_result (use_stmt);
+		  if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
+		    continue;
+
 		  if (TREE_CODE (lhs) == SSA_NAME)
 		    {
 		      pointers.safe_push (lhs);
@@ -4232,6 +4285,11 @@ pass_waccess::check_call (gcall *stmt)
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     check_builtin (stmt);
 
+  /* .ASAN_MARK doesn't access any vars, only modifies shadow memory.  */
+  if (gimple_call_internal_p (stmt)
+      && gimple_call_internal_fn (stmt) == IFN_ASAN_MARK)
+    return;
+
   if (!m_early_checks_p)
     if (tree callee = gimple_call_fndecl (stmt))
       {
@@ -4270,7 +4328,8 @@ is_auto_decl (tree x)
 void
 pass_waccess::check_stmt (gimple *stmt)
 {
-  if (m_check_dangling_p && gimple_clobber_p (stmt))
+  if (m_check_dangling_p
+      && gimple_clobber_p (stmt, CLOBBER_EOL))
     {
       /* Ignore clobber statemts in blocks with exceptional edges.  */
       basic_block bb = gimple_bb (stmt);

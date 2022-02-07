@@ -188,6 +188,23 @@ relation_transitive (relation_kind r1, relation_kind r2)
   return rr_transitive_table[r1 - VREL_FIRST][r2 - VREL_FIRST];
 }
 
+// Given an equivalence set EQUIV, set all the bits in B that are still valid
+// members of EQUIV in basic block BB.
+
+void
+relation_oracle::valid_equivs (bitmap b, const_bitmap equivs, basic_block bb)
+{
+  unsigned i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (equivs, 0, i, bi)
+    {
+      tree ssa = ssa_name (i);
+      const_bitmap ssa_equiv = equiv_set (ssa, bb);
+      if (ssa_equiv == equivs)
+	bitmap_set_bit (b, i);
+    }
+}
+
 // -------------------------------------------------------------------------
 
 // The very first element in the m_equiv chain is actually just a summary
@@ -364,7 +381,7 @@ equiv_oracle::register_equiv (basic_block bb, unsigned v, equiv_chain *equiv)
   // Otherwise create an equivalence for this block which is a copy
   // of equiv, the add V to the set.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
-  bitmap_copy (b, equiv->m_names);
+  valid_equivs (b, equiv->m_names, bb);
   bitmap_set_bit (b, v);
   return b;
 }
@@ -378,32 +395,32 @@ bitmap
 equiv_oracle::register_equiv (basic_block bb, equiv_chain *equiv_1,
 			      equiv_chain *equiv_2)
 {
-  // If equiv_1 is alreayd in BB, use it as the combined set.
+  // If equiv_1 is already in BB, use it as the combined set.
   if (equiv_1->m_bb == bb)
     {
-      bitmap_ior_into  (equiv_1->m_names, equiv_2->m_names);
+      valid_equivs (equiv_1->m_names, equiv_2->m_names, bb);
       // Its hard to delete from a single linked list, so
       // just clear the second one.
       if (equiv_2->m_bb == bb)
 	bitmap_clear (equiv_2->m_names);
       else
-	// Ensure equiv_2s names are in the summary for BB.
-	bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_2->m_names);
+	// Ensure the new names are in the summary for BB.
+	bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_1->m_names);
       return NULL;
     }
   // If equiv_2 is in BB, use it for the combined set.
   if (equiv_2->m_bb == bb)
     {
-      bitmap_ior_into (equiv_2->m_names, equiv_1->m_names);
-      // Add equiv_1 names into the summary.
-      bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_1->m_names);
+      valid_equivs (equiv_2->m_names, equiv_1->m_names, bb);
+      // Ensure the new names are in the summary.
+      bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_2->m_names);
       return NULL;
     }
 
   // At this point, neither equivalence is from this block.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
-  bitmap_copy (b, equiv_1->m_names);
-  bitmap_ior_into (b, equiv_2->m_names);
+  valid_equivs (b, equiv_1->m_names, bb);
+  valid_equivs (b, equiv_2->m_names, bb);
   return b;
 }
 
@@ -889,13 +906,14 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
   else
     {
       relation_chain *ptr = set_one_relation (bb, k, op1, op2);
-      register_transitives (bb, *ptr);
+      if (ptr)
+	register_transitives (bb, *ptr);
     }
 }
 
 // Register relation K between OP! and OP2 in block BB.
 // This creates the record and searches for existing records in the dominator
-// tree to merge with.
+// tree to merge with.  Return the record, or NULL if no record was created.
 
 relation_chain *
 dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
@@ -940,6 +958,13 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
     }
   else
     {
+      if (m_relations[bbi].m_num_relations >= param_relation_block_limit)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Not registered due to bb being full\n");
+	  return NULL;
+	}
+      m_relations[bbi].m_num_relations++;
       // Check for an existing relation further up the DOM chain.
       // By including dominating relations, The first one found in any search
       // will be the aggregate of all the previous ones.
@@ -1040,7 +1065,8 @@ dom_oracle::register_transitives (basic_block root_bb,
 	  value_relation nr (relation.kind (), r1, r2);
 	  if (nr.apply_transitive (*ptr))
 	    {
-	      set_one_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 ());
+	      if (!set_one_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 ()))
+		return;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "   Registering transitive relation ");
@@ -1225,7 +1251,7 @@ relation_oracle::debug () const
 
 path_oracle::path_oracle (relation_oracle *oracle)
 {
-  m_root = oracle;
+  set_root_oracle (oracle);
   bitmap_obstack_initialize (&m_bitmaps);
   obstack_init (&m_chain_obstack);
 
@@ -1280,8 +1306,8 @@ path_oracle::register_equiv (basic_block bb, tree ssa1, tree ssa2)
 
   // Don't mess around, simply create a new record and insert it first.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
-  bitmap_copy (b, equiv_1);
-  bitmap_ior_into (b, equiv_2);
+  valid_equivs (b, equiv_1, bb);
+  valid_equivs (b, equiv_2, bb);
 
   equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
 						    sizeof (equiv_chain));
@@ -1359,7 +1385,7 @@ path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
       value_relation vr (k, ssa1, ssa2);
       fprintf (dump_file, " Registering value_relation (path_oracle) ");
       vr.dump (dump_file);
-      fprintf (dump_file, " (bb%d)\n", bb->index);
+      fprintf (dump_file, " (root: bb%d)\n", bb->index);
     }
 
   if (k == EQ_EXPR)

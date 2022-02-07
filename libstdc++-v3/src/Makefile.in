@@ -482,6 +482,8 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 @ENABLE_FILESYSTEM_TS_TRUE@filesystem_dir = filesystem
 @ENABLE_BACKTRACE_FALSE@backtrace_dir = 
 @ENABLE_BACKTRACE_TRUE@backtrace_dir = libbacktrace
+@ENABLE_BACKTRACE_FALSE@backtrace_supported_h = 
+@ENABLE_BACKTRACE_TRUE@backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
 SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir)
 @VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
 
@@ -668,6 +670,8 @@ CXXLINK = \
 # Build a debug variant.
 # Take care to fix all possibly-relative paths.
 debugdir = ${glibcxx_builddir}/src/debug
+@ENABLE_BACKTRACE_FALSE@debug_backtrace_supported_h = 
+@ENABLE_BACKTRACE_TRUE@debug_backtrace_supported_h = ${debugdir}/$(backtrace_supported_h)
 all: all-recursive
 
 .SUFFIXES:
@@ -1125,7 +1129,10 @@ stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
 	fi; \
 	echo `date` > stamp-debug;
 
-build-debug: stamp-debug
+@ENABLE_BACKTRACE_TRUE@${debugdir}/$(backtrace_supported_h): $(backtrace_supported_h) stamp-debug
+@ENABLE_BACKTRACE_TRUE@	cp $< $@
+
+build-debug: stamp-debug $(debug_backtrace_supported_h)
 	  (cd ${debugdir}; \
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \

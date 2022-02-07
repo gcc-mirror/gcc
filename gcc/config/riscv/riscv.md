@@ -150,6 +150,7 @@
 ;; mfc		transfer from coprocessor
 ;; const	load constant
 ;; arith	integer arithmetic instructions
+;; auipc	integer addition to PC
 ;; logical      integer logical instructions
 ;; shift	integer shift instructions
 ;; slt		set less than instructions
@@ -167,6 +168,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
+;; bitmanip	bit manipulation instructions
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,

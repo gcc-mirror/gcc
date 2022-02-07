@@ -1,3 +1,576 @@
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/dir-common.h (_Dir_base::openat): Change return
+	type to use portable posix::DIR alias.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdatomic.h [__clang__]: Use
+	#include_next <stdatomic.h>.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_ops.h (fs::copy_file): Remove
+	noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+	* src/filesystem/ops.cc (fs::copy_file): Remove noexcept.
+	(fs::create_directories): Likewise.
+	(fs::remove_all): Likewise.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for dirfd
+	and unlinkat.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/fs_dir.h (recursive_directory_iterator): Declare
+	remove_all overloads as friends.
+	(recursive_directory_iterator::__erase): Declare new member
+	function.
+	* include/bits/fs_fwd.h (remove, remove_all): Declare.
+	* src/c++17/fs_dir.cc (_Dir): Add filename_only parameter to
+	constructor. Pass file descriptor argument to base constructor.
+	(_Dir::dir_and_pathname, _Dir::open_subdir, _Dir::do_unlink)
+	(_Dir::unlink, _Dir::rmdir): Define new member functions.
+	(directory_iterator): Pass filename_only argument to _Dir
+	constructor.
+	(recursive_directory_iterator::_Dir_stack): Adjust constructor
+	parameters to take a _Dir rvalue instead of creating one.
+	(_Dir_stack::orig): Add data member for storing original path.
+	(_Dir_stack::report_error): Define new member function.
+	(__directory_iterator_nofollow): Move here from dir-common.h and
+	fix value to be a power of two.
+	(__directory_iterator_filename_only): Define new constant.
+	(recursive_directory_iterator): Construct _Dir object and move
+	into _M_dirs stack. Pass skip_permission_denied argument to first
+	advance call.
+	(recursive_directory_iterator::increment): Use _Dir::open_subdir.
+	(recursive_directory_iterator::__erase): Define new member
+	function.
+	* src/c++17/fs_ops.cc (ErrorReporter, do_remove_all): Remove.
+	(fs::remove_all): Use new recursive_directory_iterator::__erase
+	member function.
+	* src/filesystem/dir-common.h (_Dir_base): Add int parameter to
+	constructor and use openat to implement nofollow semantics.
+	(_Dir_base::fdcwd, _Dir_base::set_close_on_exec, _Dir_base::openat):
+	Define new member functions.
+	(__directory_iterator_nofollow): Move to fs_dir.cc.
+	* src/filesystem/dir.cc (_Dir): Pass file descriptor argument to
+	base constructor.
+	(_Dir::dir_and_pathname, _Dir::open_subdir): Define new member
+	functions.
+	(recursive_directory_iterator::_Dir_stack): Adjust constructor
+	parameters to take a _Dir rvalue instead of creating one.
+	(recursive_directory_iterator): Check for new nofollow option.
+	Construct _Dir object and move into _M_dirs stack. Pass
+	skip_permission_denied argument to first advance call.
+	(recursive_directory_iterator::increment): Use _Dir::open_subdir.
+	* src/filesystem/ops.cc (fs::remove_all): Use C++17 remove_all.
+
+2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h: Qualify std::allocator_traits in
+	deprecated warnings.
+	* libsupc++/exception (uncaught_exception): Add suggestion to
+	deprecated warning.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::pop):
+	Add [[maybe_unused]] attribute.
+	* src/filesystem/dir.cc (fs::recursive_directory_iterator::pop):
+	Likewise.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/multiset/operators/cmp_c++20.cc: Use
+	custom comparison function for multiset.
+	* testsuite/23_containers/set/operators/cmp_c++20.cc: Use custom
+	comparison function for set.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/boost_concept_check.h (_OutputIteratorConcept):
+	Change member function to data member of function pointer type.
+
+2022-02-02  Martin Sebor  <msebor@redhat.com>
+
+	PR libstdc++/101831
+	* include/std/array (begin): Declare const member function attribute
+	const.
+	(end, rbegin, rend, size, max_size, empty, data): Same.
+	* testsuite/23_containers/array/capacity/empty.cc: Add test cases.
+	* testsuite/23_containers/array/capacity/max_size.cc: Same.
+	* testsuite/23_containers/array/capacity/size.cc: Same.
+	* testsuite/23_containers/array/iterators/begin_end.cc: New test.
+
+2022-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: Use
+	autoconf macro to check whether d_type is present.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Likewise.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/iterators/97731.cc: New test.
+	* testsuite/27_io/filesystem/iterators/recursive_directory_iterator.cc:
+	Check follow_directory_symlink option.
+	* testsuite/experimental/filesystem/iterators/recursive_directory_iterator.cc:
+	Likewise.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (recursive_directory_iterator::increment):
+	Reset state to past-the-end iterator on error.
+	(fs::recursive_directory_iterator::pop(error_code&)): Likewise.
+	(fs::recursive_directory_iterator::pop()): Check _M_dirs before
+	it might get reset.
+	* src/filesystem/dir.cc (recursive_directory_iterator): Likewise,
+	for the TS implementation.
+	* testsuite/27_io/filesystem/iterators/error_reporting.cc: New test.
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc: New test.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (filesystem::perms): Fix comment.
+
+2022-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104301
+	* acinclude.m4 (GLIBCXX_ENABLE_CSTDIO): Print different messages
+	for stdio_pure and stdio_posix options.
+	* configure: Regenerate.
+
+2022-02-01  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h: Change memory order from
+	Acquire/Release with relaxed loads to SeqCst+Release for
+	accesses to the waiter's count.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
+2022-01-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/27_io/basic_istream/get/char/lwg3464.cc: Don't run on
+	simulator targets.
+	* testsuite/27_io/basic_istream/get/wchar_t/lwg3464.cc: Likewise.
+
+2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100516
+	* include/bits/deque.tcc (_M_range_initialize<ForwardIterator>):
+	Add __builtin_unreachable to loop.
+	* testsuite/23_containers/deque/100516.cc: New test.
+
+2022-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::advance): Avoid signed
+	overflow. Do nothing if already equal to desired result.
+	* testsuite/24_iterators/range_operations/advance_overflow.cc:
+	New test.
+
+2022-01-27  Martin Liska  <mliska@suse.cz>
+
+	PR libstdc++/104259
+	* acinclude.m4: Fix typo.
+	* configure: Regenerate.
+
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104019
+	* include/bits/istream.tcc (basic_istream::sentry): Add braces
+	around try-block.
+	* include/bits/shared_ptr_base.h (_Sp_counted_array_base::_M_init):
+	Add pragmas to disable bogus warnings from PR 61596.
+
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104217
+	* src/c++17/fs_ops.cc (_GNU_SOURCE): Define.
+	* src/filesystem/dir.cc (_GNU_SOURCE): Define.
+	* src/filesystem/ops.cc (_GNU_SOURCE): Define.
+
+2022-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for
+	fdopendir.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++17/fs_dir.cc (_Dir): Add nofollow flag to constructor
+	and pass it to base class constructor.
+	(directory_iterator): Pass nofollow flag to _Dir constructor.
+	(fs::recursive_directory_iterator::increment): Likewise.
+	* src/c++17/fs_ops.cc (do_remove_all): Use nofollow option for
+	directory_iterator constructor. Move error check outside loop.
+	* src/filesystem/dir-common.h (_Dir_base): Add nofollow flag to
+	constructor and when it's set use ::open with O_NOFOLLOW and
+	O_DIRECTORY.
+	* src/filesystem/dir.cc (_Dir): Add nofollow flag to constructor
+	and pass it to base class constructor.
+	(directory_iterator): Pass nofollow flag to _Dir constructor.
+	(fs::recursive_directory_iterator::increment): Likewise.
+	* src/filesystem/ops.cc (remove_all): Use nofollow option for
+	directory_iterator constructor. Move error check outside loop.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104032
+	* include/std/spanstream (basic_spanbuf(basic_spanbuf&&)): Use
+	mem-initializer for _M_buf.
+	(basic_spanbuf::Operator=(basic_spanbuf&&)): Fix ill-formed
+	member access.
+	* testsuite/27_io/spanstream/2.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc (USE_STRTOD_FOR_FROM_CHARS):
+	Define macro for case where std::from_chars is implemented in
+	terms of strtod, strtof or strtold.
+	(buffer_resource, valid_fmt, find_end_of_float, pattern)
+	(from_chars_impl, make_result, reserve_string): Do not define
+	unless USE_STRTOD_FOR_FROM_CHARS is defined.
+	(from_chars): Define when at least one of USE_LIB_FAST_FLOAT and
+	USE_STRTOD_FOR_FROM_CHARS is defined, instead of
+	_GLIBCXX_HAVE_USELOCALE. Use fast_float for long double when it
+	is binary64.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104174
+	* include/bits/hashtable_policy.h (_Map_base): Add partial
+	specialization for maps with const key types.
+	* testsuite/23_containers/unordered_map/104174.cc: New test.
+
+2022-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104019
+	* include/bits/shared_ptr_base.h (_Sp_counted_base<>::_M_release):
+	Set members to zero without type punning.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/array.cc: Fix comment.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87193
+	PR libstdc++/104019
+	* include/bits/alloc_traits.h (__cpp_lib_allocator_traits_is_always_equal):
+	Define as type long.
+	* include/bits/allocator.h (__cpp_lib_incomplete_container_elements):
+	Likewise.
+	* include/bits/basic_string.h (__cpp_lib_string_udls): Likewise.
+	* include/bits/chrono.h (__cpp_lib_chrono): Likewise.
+	(__cpp_lib_chrono_udls): Likewise.
+	* include/bits/move.h (__cpp_lib_addressof_constexpr): Likewise.
+	* include/bits/node_handle.h (__cpp_lib_node_extract): Likewise.
+	* include/bits/range_access.h (__cpp_lib_nonmember_container_access):
+	Likewise.
+	* include/bits/shared_ptr.h (__cpp_lib_enable_shared_from_this):
+	Likewise.
+	* include/bits/stl_algo.h (__cpp_lib_clamp): Likewise.
+	(__cpp_lib_sample): Likewise.
+	* include/bits/stl_algobase.h (__cpp_lib_robust_nonmodifying_seq_ops):
+	Likewise.
+	* include/bits/stl_function.h (__cpp_lib_transparent_operators):
+	Likewise.
+	* include/bits/stl_iterator.h (__cpp_lib_make_reverse_iterator):
+	Likewise.
+	* include/bits/stl_map.h (__cpp_lib_map_try_emplace):
+	Likewise.
+	* include/bits/stl_tree.h (__cpp_lib_generic_associative_lookup):
+	Likewise.
+	* include/bits/unique_ptr.h (__cpp_lib_make_unique):
+	Likewise.
+	* include/bits/unordered_map.h (__cpp_lib_unordered_map_try_emplace):
+	Likewise.
+	* include/c_global/cmath (__cpp_lib_hypot): Likewise.
+	* include/c_global/cstddef (__cpp_lib_byte): Likewise.
+	* include/std/atomic (__cpp_lib_atomic_is_always_lock_free):
+	Likewise.
+	* include/std/complex (__cpp_lib_complex_udls): Likewise.
+	* include/std/filesystem (__cpp_lib_filesystem): Likewise.
+	* include/std/functional (__cpp_lib_not_fn): Likewise.
+	(__cpp_lib_boyer_moore_searcher): Likewise.
+	* include/std/iomanip (__cpp_lib_quoted_string_io): Likewise.
+	* include/std/mutex (__cpp_lib_scoped_lock): Likewise.
+	* include/std/numeric (__cpp_lib_gcd_lcm): Likewise.
+	(__cpp_lib_gcd, __cpp_lib_lcm): Likewise.
+	* include/std/tuple (__cpp_lib_apply): Likewise.
+	(__cpp_lib_make_from_tuple): Likewise.
+	* include/std/type_traits (__cpp_lib_integral_constant_callable)
+	(__cpp_lib_bool_constant, __cpp_lib_logical_traits)
+	(__cpp_lib_is_null_pointer, __cpp_lib_transformation_trait_aliases)
+	(__cpp_lib_result_of_sfinae, __cpp_lib_void_t)
+	(__cpp_lib_is_swappable, __cpp_lib_is_invocable)
+	(__cpp_lib_has_unique_object_representations)
+	(__cpp_lib_is_aggregate): Likewise.
+	* include/std/version: Likewise.
+	* libsupc++/new (__cpp_lib_launder): Likewise.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_shared_ptr_arrays): Fix
+	condition for C++17 definition.
+
+2022-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count):
+	Add constexpr.
+	(_Sp_atomic::_M_ptr): Add default member-initializer.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check constant initialization.
+	* testsuite/20_util/weak_ptr/atomic_weak_ptr.cc: Likewise.
+
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cxx11-ios_failure.cc (__constinit): Define as
+	equivalent attribute for Clang.
+	* src/c++11/future.cc (__constinit): Likewise.
+	* src/c++11/system_error.cc (__constinit): Likewise.
+	* src/c++17/memory_resource.cc (__constinit): Likewise.
+
+2022-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/testsuite_flags.in: Only add src/filesystem/.libs and
+	src/libbacktrace/.libs to LDFLAGS if those directories exist.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac (GLIBCXX_ENABLE_DEBUG_FLAGS): Remove -gdwarf-4
+	from default flags.
+	* configure: Regenerate.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104123
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: Include
+	<stddef.h>.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/testsuite_flags.in: Add src/libbacktrace/.libs to
+	linker search paths.
+	* src/Makefile.am: Fix src/debug/libbacktrace build.
+	* src/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: Use per-library CPPFLAGS
+	variable. Use symlinks for the source files.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2022-01-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__floating_point_flags): Do
+	not rely on math_errhandling to expand to a constant expression.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecations.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/*: Regenerate.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (get_temporary_buffer): Change
+	_GLIBCXX14_DEPRECATED to _GLIBCXX17_DEPRECATED.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (_PCC::_DeprConsPair): Remove unused
+	function.
+
+2022-01-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104101
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count::lock):
+	Only use __thread_relax if __cpp_lib_atomic_wait is defined.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104099
+	* include/bits/basic_string.h (basic_string(nullptr_t)): Only
+	define for C++23.
+	(operator=(nullptr_t)): Likewise.
+	* include/bits/cow_string.h: Likewise.
+	* include/std/string_view (basic_string_view(nullptr_t)):
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/nullptr.cc: Adjust
+	expected error. Add examples that become ill-formed in C++23.
+	* testsuite/21_strings/basic_string_view/cons/char/nonnull.cc:
+	Adjust expected errors.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/nonnull.cc:
+	Likewise.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104098
+	* include/bits/stl_iterator.h (reverse_iterator): Check
+	__cpp_lib_concepts instead of __cplusplus.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101124
+	* include/bits/stl_pair.h (pair): Adjust constraints on
+	deprecated constructors accepting literal zero as null pointer
+	constant. Improve wording of deprecated attribute.
+	* testsuite/20_util/pair/cons/99957.cc: Check that deprecated
+	constructors do not cause ambiguities for copyable types.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_function.h (ptr_fun): Fix suggestion for
+	non-deprecated alternative.
+
+2022-01-18  Tom Honermann  <tom@honermann.net>
+
+	* acinclude.m4: Define config macros if uchar.h provides
+	c8rtomb() and mbrtoc8().
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_compatibility/uchar.h (c8rtomb, mbrtoc8): Define.
+	* include/c_global/cuchar (c8rtomb, mbrtoc8): Likewise.
+	* include/c_std/cuchar (c8rtomb, mbrtoc8): Likewise.
+	* testsuite/21_strings/headers/cuchar/functions_std_cxx20.cc:
+	New test.
+	* testsuite/21_strings/headers/cuchar/functions_std_fchar8_t.cc:
+	New test.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Install new header.
+	* include/Makefile.in: Regenerate.
+	* include/c_compatibility/stdatomic.h: New file.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: New test.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104080
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h (FASTFLOAT_IS_BIG_ENDIAN):
+	Define in terms of __BYTE_ORDER__.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104080
+	* src/c++17/fast_float/LOCAL_PATCHES: UPDATE.
+	* src/c++17/fast_float/fast_float.h (round): Use explicit
+	template argument list for std::min.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update C++17 status.
+	* doc/xml/manual/status_cxx2020.xml: Use 12.1 instead of 12 for
+	upcoming release.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING): Improve
+	comments.
+	* configure: Regenerate.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc: (USE_LIB_FAST_FLOAT):
+	Conditionally define, and use it to conditionally include
+	fast_float.
+	(from_chars): Use fast_float for float and double when
+	USE_LIB_FAST_FLOAT.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h (from_chars_advanced): In
+	case of over/underflow, return errc::result_out_of_range and don't
+	modify 'value'.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+	* src/c++17/fast_float/fast_float.h: Apply local modifications.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: New file.
+	* src/c++17/fast_float/MERGE: New file.
+	* src/c++17/fast_float/README.md: New file, copied from the
+	fast_float repository.
+	* src/c++17/fast_float/fast_float.h: New file, an amalgamation
+	of the fast_float library.
+
+2022-01-17  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc: Include <bit>.
+	(ascii_to_hexit, starts_with_ci): Conditionally define.
+	(__floating_from_chars_hex):  Conditionally define.
+	(from_chars): Use __floating_from_chars_hex for
+	chars_format::hex parsing of binary32/64 float/double.
+	(testsuite/20_util/from_chars/7.cc): New test.
+	* testsuite/20_util/from_chars/7.cc: New file.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): New macro.
+	* configure.ac: Use GLIBCXX_ENABLE_BACKTRACE.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/stacktrace: New header.
+	* include/std/version (__cpp_lib_stacktrace): Define.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.am: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: New file.
+	* src/libbacktrace/Makefile.in: New file.
+	* src/libbacktrace/backtrace-rename.h: New file.
+	* src/libbacktrace/backtrace-supported.h.in: New file.
+	* src/libbacktrace/config.h.in: New file.
+	* testsuite/lib/libstdc++.exp (check_effective_target_stacktrace):
+	New proc.
+	* testsuite/20_util/stacktrace/entry.cc: New test.
+	* testsuite/20_util/stacktrace/synopsis.cc: New test.
+	* testsuite/20_util/stacktrace/version.cc: New test.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Use final C++20 option
+	names.
+	* doc/html/manual/status.html: Regenerate.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103650
+	* include/Makefile.am: Rename LT_OBJDIR and STDC_HEADERS.
+	* include/Makefile.in: Regenerate.
+	* testsuite/17_intro/headers/c++1998/103650.cc: New test.
+
+2022-01-17  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (__floating_point_flags): Do
+	not rely on the presence of the math_errhandling macro.
+
+2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic): Add typename
+	to qualified-id for dependent type.
+
 2022-01-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2020.xml: Update.

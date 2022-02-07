@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_PARSER_H
 #define GCC_C_PARSER_H
 
-/* The C lexer intermediates between the lexer in cpplib and c-lex.c
+/* The C lexer intermediates between the lexer in cpplib and c-lex.cc
    and the C parser.  Unlike the C++ lexer, the parser structure
    stores the lexer information instead of using a separate structure.
    Identifiers are separated into ordinary identifiers, type names,

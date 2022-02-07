@@ -172,6 +172,7 @@ dnl  LD (as a side effect of testing)
 dnl Sets:
 dnl  with_gnu_ld
 dnl  glibcxx_ld_is_gold (set to "no" or "yes")
+dnl  glibcxx_ld_is_mold (set to "no" or "yes")
 dnl  glibcxx_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -204,11 +205,14 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   # Start by getting the version number.  I think the libtool test already
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
+  glibcxx_ld_is_mold=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld version])
     changequote(,)
     if $LD --version 2>/dev/null | grep 'GNU gold' >/dev/null 2>&1; then
       glibcxx_ld_is_gold=yes
+    elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
+      glibcxx_ld_is_mold=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -220,7 +224,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes"; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -499,19 +503,24 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
 
 
 dnl
-dnl Check for whether a fully dynamic basic_string implementation should
-dnl be turned on, that does not put empty objects in per-process static
-dnl memory (mostly useful together with shared memory allocators, see PR
-dnl libstdc++/16612 for details).
+dnl Check whether the old Copy-On-Write basic_string should allocate a new
+dnl empty representation for every default-constructed basic_string. Without
+dnl this option, COW strings share a single empty rep in static storage,
+dnl but this only works if the linker can guarantee the static storage has
+dnl a unique definition in the process. It also doesn't work if basic_string
+dnl objects are stored in shared memory (see PR libstdc++/16612).
+dnl When fully dynamic strings are enabled, the static storage is not used
+dnl and a new empty string with reference-count == 1 is allocated each time.
+dnl Enabling this changes the libstdc++.so ABI.
 dnl
 dnl --enable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 1
 dnl --disable-fully-dynamic-string defines _GLIBCXX_FULLY_DYNAMIC_STRING to 0
-dnl otherwise undefined
+dnl otherwise the macro is not defined.
 dnl  +  Usage:  GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING], [
-  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory])
+  GLIBCXX_ENABLE(fully-dynamic-string,$1,,[do not put empty strings in per-process static memory], [permit yes|no])
   if test $enable_fully_dynamic_string = yes; then
     enable_fully_dynamic_string_def=1
   else
@@ -2039,6 +2048,50 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 	      namespace std in <cuchar>.])
   fi
 
+  CXXFLAGS="$CXXFLAGS -fchar8_t"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -fchar8_t])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_fchar8_t=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_fchar8_t)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_fchar8_t" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_FCHAR8_T, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for -fchar8_t.])
+  fi
+
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+  if test x"$ac_has_uchar_h" = x"yes"; then
+    AC_MSG_CHECKING([for c8rtomb and mbrtoc8 in <uchar.h> with -std=c++20])
+    AC_TRY_COMPILE([#include <uchar.h>
+		    namespace test
+		    {
+		      using ::c8rtomb;
+		      using ::mbrtoc8;
+		    }
+		   ],
+		   [], [ac_uchar_c8rtomb_mbrtoc8_cxx20=yes],
+		       [ac_uchar_c8rtomb_mbrtoc8_cxx20=no])
+  else
+    ac_uchar_c8rtomb_mbrtoc8_cxx20=no
+  fi
+  AC_MSG_RESULT($ac_uchar_c8rtomb_mbrtoc8_cxx20)
+  if test x"$ac_uchar_c8rtomb_mbrtoc8_cxx20" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_UCHAR_C8RTOMB_MBRTOC8_CXX20, 1,
+	      [Define if c8rtomb and mbrtoc8 functions in <uchar.h> should be
+	      imported into namespace std in <cuchar> for C++20.])
+  fi
+
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -2777,11 +2830,13 @@ AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
-      AC_MSG_RESULT(stdio)
 
       if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_MSG_RESULT([stdio (without POSIX read/write)])
 	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
 		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      else
+	AC_MSG_RESULT([stdio (with POSIX read/write)])
       fi
       ;;
   esac
@@ -3747,6 +3802,8 @@ changequote([,])dnl
     enable_symvers=no
   elif test $glibcxx_ld_is_gold = yes ; then
     : All versions of gold support symbol versioning.
+  elif test $glibcxx_ld_is_mold = yes ; then
+    : All versions of mold support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)
@@ -4685,6 +4742,43 @@ dnl
   ])
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for fdopendir],
+    glibcxx_cv_fdopendir, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [::DIR* dir = ::fdopendir(1);],
+      [glibcxx_cv_fdopendir=yes],
+      [glibcxx_cv_fdopendir=no])
+  ])
+  if test $glibcxx_cv_fdopendir = yes; then
+    AC_DEFINE(HAVE_FDOPENDIR, 1, [Define if fdopendir is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for dirfd],
+    glibcxx_cv_dirfd, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [int fd = ::dirfd((::DIR*)0);],
+      [glibcxx_cv_dirfd=yes],
+      [glibcxx_cv_dirfd=no])
+  ])
+  if test $glibcxx_cv_dirfd = yes; then
+    AC_DEFINE(HAVE_DIRFD, 1, [Define if dirfd is available in <dirent.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for unlinkat],
+    glibcxx_cv_unlinkat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <fcntl.h>
+       #include <unistd.h>],
+      [::unlinkat(AT_FDCWD, "", AT_REMOVEDIR);],
+      [glibcxx_cv_unlinkat=yes],
+      [glibcxx_cv_unlinkat=no])
+  ])
+  if test $glibcxx_cv_unlinkat = yes; then
+    AC_DEFINE(HAVE_UNLINKAT, 1, [Define if unlinkat is available in <fcntl.h>.])
   fi
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"

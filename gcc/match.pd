@@ -1,6 +1,6 @@
 /* Match-and-simplify patterns for shared GENERIC and GIMPLE folding.
-   This file is consumed by genmatch which produces gimple-match.c
-   and generic-match.c from it.
+   This file is consumed by genmatch which produces gimple-match.cc
+   and generic-match.cc from it.
 
    Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
@@ -256,10 +256,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Maybe fold x * 0 to 0.  The expressions aren't the same
    when x is NaN, since x * 0 is also NaN.  Nor are they the
    same in modes with signed zeros, since multiplying a
-   negative value by 0 gives -0, not +0.  */
+   negative value by 0 gives -0, not +0.  Nor when x is +-Inf,
+   since x * 0 is NaN.  */
 (simplify
  (mult @0 real_zerop@1)
  (if (!tree_expr_maybe_nan_p (@0)
+      && (!HONOR_NANS (type) || !tree_expr_maybe_infinite_p (@0))
       && !tree_expr_maybe_real_minus_zero_p (@0)
       && !tree_expr_maybe_real_minus_zero_p (@1))
   @1))
@@ -401,36 +403,65 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* X / bool_range_Y is X.  */ 
  (simplify
   (div @0 SSA_NAME@1)
-  (if (INTEGRAL_TYPE_P (type) && ssa_name_has_boolean_range (@1))
+  (if (INTEGRAL_TYPE_P (type)
+       && ssa_name_has_boolean_range (@1)
+       && !flag_non_call_exceptions)
    @0))
  /* X / X is one.  */
  (simplify
   (div @0 @0)
   /* But not for 0 / 0 so that we can get the proper warnings and errors.
      And not for _Fract types where we can't build 1.  */
-  (if (!integer_zerop (@0) && !ALL_FRACT_MODE_P (TYPE_MODE (type)))
+  (if (!ALL_FRACT_MODE_P (TYPE_MODE (type))
+       && !integer_zerop (@0)
+       && (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
    { build_one_cst (type); }))
  /* X / abs (X) is X < 0 ? -1 : 1.  */
  (simplify
    (div:C @0 (abs @0))
    (if (INTEGRAL_TYPE_P (type)
-	&& TYPE_OVERFLOW_UNDEFINED (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type)
+	&& !integer_zerop (@0)
+	&& (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
     (cond (lt @0 { build_zero_cst (type); })
           { build_minus_one_cst (type); } { build_one_cst (type); })))
  /* X / -X is -1.  */
  (simplify
    (div:C @0 (negate @0))
    (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-	&& TYPE_OVERFLOW_UNDEFINED (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type)
+	&& !integer_zerop (@0)
+	&& (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
     { build_minus_one_cst (type); })))
 
 /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
-   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
+   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  Similarly
+   for MOD instead of DIV.  */
+(for floor_divmod (floor_div floor_mod)
+     trunc_divmod (trunc_div trunc_mod)
+ (simplify
+  (floor_divmod @0 @1)
+  (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+       && TYPE_UNSIGNED (type))
+   (trunc_divmod @0 @1))))
+
+/* 1 / X -> X == 1 for unsigned integer X.
+   1 / X -> X >= -1 && X <= 1 ? X : 0 for signed integer X.
+   But not for 1 / 0 so that we can get proper warnings and errors,
+   and not for 1-bit integers as they are edge cases better handled
+   elsewhere.  */
 (simplify
- (floor_div @0 @1)
- (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-      && TYPE_UNSIGNED (type))
-  (trunc_div @0 @1)))
+ (trunc_div integer_onep@0 @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) > 1
+      && !integer_zerop (@1)
+      && (!flag_non_call_exceptions || tree_expr_nonzero_p (@1)))
+  (if (TYPE_UNSIGNED (type))
+   (convert (eq:boolean_type_node @1 { build_one_cst (type); }))
+   (with { tree utype = unsigned_type_for (type); }
+    (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
+	      { build_int_cst (utype, 2); })
+     @1 { build_zero_cst (type); })))))
 
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */
@@ -1523,7 +1554,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
-/* A few cases of fold-const.c negate_expr_p predicate.  */
+/* A few cases of fold-const.cc negate_expr_p predicate.  */
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
@@ -1629,7 +1660,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && (int_fits_type_p (@1, TREE_TYPE (@0))
 	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
-       /* ???  This transform conflicts with fold-const.c doing
+       /* ???  This transform conflicts with fold-const.cc doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
 	  in c).  This folds extension into the BIT_AND_EXPR.
@@ -1767,6 +1798,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (negate (nop_convert? (bit_not @0)))
  (plus (view_convert @0) { build_each_one_cst (type); }))
+
+/* (a & b) ^ (a == b) -> !(a | b) */
+/* (a & b) == (a ^ b) -> !(a | b) */
+(for first_op (bit_xor eq)
+     second_op (eq bit_xor)
+ (simplify
+  (first_op:c (bit_and:c truth_valued_p@0 truth_valued_p@1) (second_op:c @0 @1))
+    (bit_not (bit_ior @0 @1))))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
@@ -4008,9 +4047,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Only optimize constant conditions when the selected branch
    has the same type as the COND_EXPR.  This avoids optimizing
    away "c ? x : throw", where the throw has a void type.
-   Note that we cannot throw away the fold-const.c variant nor
+   Note that we cannot throw away the fold-const.cc variant nor
    this one as we depend on doing this transform before possibly
-   A ? B : B -> B triggers and the fold-const.c one can optimize
+   A ? B : B -> B triggers and the fold-const.cc one can optimize
    0 ? A : B to B even if A has side-effects.  Something
    genmatch cannot handle.  */
 (simplify
@@ -5744,7 +5783,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
-   ADD_OVERFLOW detection in tree-ssa-math-opts.c.
+   ADD_OVERFLOW detection in tree-ssa-math-opts.cc.
    CONVERT?(CONVERT?(A) + CST) CMP A  ->  A CMP' CST' */
 (for cmp (lt le ge gt)
      out (gt gt le le)
@@ -5764,7 +5803,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				- wi::to_wide (@1)); })))))
 
 /* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
-   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.c
+   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.cc
    expects the long form, so we restrict the transformation for now.  */
 (for cmp (gt le)
  (simplify

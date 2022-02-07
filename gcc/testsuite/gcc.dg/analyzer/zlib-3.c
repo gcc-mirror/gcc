@@ -46,7 +46,7 @@ static int huft_build(uInt *b, uInt n, uInt s, const uInt *d, const uInt *e,
   uInt mask;
   register uInt *p;
   inflate_huft *q;
-  struct inflate_huft_s r;
+  struct inflate_huft_s r; /* { dg-message "region created on stack here" } */
   inflate_huft *u[15];
   register int w;
   uInt x[15 + 1];

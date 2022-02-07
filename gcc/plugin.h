@@ -194,7 +194,7 @@ invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
   return PLUGEVT_NO_CALLBACK;
 }
 
-/* In attribs.c.  */
+/* In attribs.cc.  */
 
 extern void register_attribute (const struct attribute_spec *attr);
 /* The default argument for the third parameter is given in attribs.h.  */

@@ -6,9 +6,9 @@
 #define TEST_LOOP(NAME, OUTTYPE, INTYPE, MASKTYPE)		\
   void __attribute__ ((noinline, noclone))			\
   NAME##_4 (OUTTYPE *__restrict dest, INTYPE *__restrict src,	\
-	    MASKTYPE *__restrict cond, INTYPE bias, int n)	\
+	    MASKTYPE *__restrict cond, INTYPE bias, intptr_t n)	\
   {								\
-    for (int i = 0; i < n; ++i)					\
+    for (intptr_t i = 0; i < n; ++i)				\
       {								\
 	INTYPE value = src[i] + bias;				\
 	if (cond[i])						\

@@ -1,5 +1,5 @@
 /* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
-/* { dg-options "-O2 -mgeneral-regs-only -mtune=generic" } */
+/* { dg-options "-O2 -mgeneral-regs-only -mtune=generic -fno-stack-protector" } */
 
 typedef unsigned int uword_t __attribute__ ((mode (__word__)));
 

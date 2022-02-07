@@ -1597,8 +1597,8 @@ d_finish_decl (tree decl)
 	{
 	  tree name = DECL_ASSEMBLER_NAME (decl);
 
-	  internal_error ("Mismatch between declaration %qE size (%wd) and "
-			  "its initializer size (%wd).",
+	  internal_error ("mismatch between declaration %qE size (%wd) and "
+			  "its initializer size (%wd)",
 			  IDENTIFIER_PRETTY_NAME (name)
 			  ? IDENTIFIER_PRETTY_NAME (name) : name,
 			  tsize, dtsize);

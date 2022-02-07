@@ -4387,7 +4387,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
      If we encounter a fatal error we might return a now-empty body.
 
      Note, the returned ramp body is not 'popped', to be compatible with
-     the way that decl.c handles regular functions, the scope pop is done
+     the way that decl.cc handles regular functions, the scope pop is done
      in the caller.  */
 
   tree newbody = push_stmt_list ();

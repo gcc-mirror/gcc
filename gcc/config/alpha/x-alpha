@@ -1,3 +1,3 @@
-driver-alpha.o: $(srcdir)/config/alpha/driver-alpha.c
+driver-alpha.o: $(srcdir)/config/alpha/driver-alpha.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

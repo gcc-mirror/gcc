@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 extern int target_flags_explicit;
 #endif
 
-/* MIPS external variables defined in mips.c.  */
+/* MIPS external variables defined in mips.cc.  */
 
 /* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
    ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended

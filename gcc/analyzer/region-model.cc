@@ -454,8 +454,10 @@ class poisoned_value_diagnostic
 : public pending_diagnostic_subclass<poisoned_value_diagnostic>
 {
 public:
-  poisoned_value_diagnostic (tree expr, enum poison_kind pkind)
-  : m_expr (expr), m_pkind (pkind)
+  poisoned_value_diagnostic (tree expr, enum poison_kind pkind,
+			     const region *src_region)
+  : m_expr (expr), m_pkind (pkind),
+    m_src_region (src_region)
   {}
 
   const char *get_kind () const FINAL OVERRIDE { return "poisoned_value_diagnostic"; }
@@ -467,7 +469,9 @@ public:
 
   bool operator== (const poisoned_value_diagnostic &other) const
   {
-    return m_expr == other.m_expr;
+    return (m_expr == other.m_expr
+	    && m_pkind == other.m_pkind
+	    && m_src_region == other.m_src_region);
   }
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
@@ -528,9 +532,16 @@ public:
       }
   }
 
+  void mark_interesting_stuff (interesting_t *interest) FINAL OVERRIDE
+  {
+    if (m_src_region)
+      interest->add_region_creation (m_src_region);
+  }
+
 private:
   tree m_expr;
   enum poison_kind m_pkind;
+  const region *m_src_region;
 };
 
 /* A subclass of pending_diagnostic for complaining about shifts
@@ -839,7 +850,11 @@ region_model::check_for_poison (const svalue *sval,
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
       enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind)))
+      const region *src_region = NULL;
+      if (pkind == POISON_KIND_UNINIT)
+	src_region = get_region_for_poisoned_expr (expr);
+      if (ctxt->warn (new poisoned_value_diagnostic (diag_arg, pkind,
+						     src_region)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -851,6 +866,24 @@ region_model::check_for_poison (const svalue *sval,
     }
 
   return sval;
+}
+
+/* Attempt to get a region for describing EXPR, the source of region of
+   a poisoned_svalue for use in a poisoned_value_diagnostic.
+   Return NULL if there is no good region to use.  */
+
+const region *
+region_model::get_region_for_poisoned_expr (tree expr) const
+{
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      tree decl = SSA_NAME_VAR (expr);
+      if (decl && DECL_P (decl))
+	expr = decl;
+      else
+	return NULL;
+    }
+  return get_lvalue (expr, NULL);
 }
 
 /* Update this model for the ASSIGN stmt, using CTXT to report any
@@ -1044,6 +1077,16 @@ region_model::on_stmt_pre (const gimple *stmt,
     }
 }
 
+/* Ensure that all arguments at the call described by CD are checked
+   for poisoned values, by calling get_rvalue on each argument.  */
+
+void
+region_model::check_call_args (const call_details &cd) const
+{
+  for (unsigned arg_idx = 0; arg_idx < cd.num_args (); arg_idx++)
+    cd.get_arg_svalue (arg_idx);
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1065,6 +1108,16 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
   call_details cd (call, this, ctxt);
 
   bool unknown_side_effects = false;
+
+  /* Special-case for IFN_DEFERRED_INIT.
+     We want to report uninitialized variables with -fanalyzer (treating
+     -ftrivial-auto-var-init= as purely a mitigation feature).
+     Handle IFN_DEFERRED_INIT by treating it as no-op: don't touch the
+     lhs of the call, so that it is still uninitialized from the point of
+     view of the analyzer.  */
+  if (gimple_call_internal_p (call)
+      && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
+    return false;
 
   /* Some of the cases below update the lhs of the call based on the
      return value, but not all.  Provide a default value, which may
@@ -1173,6 +1226,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    /* These stdio builtins have external effects that are out
 	       of scope for the analyzer: we only want to model the effects
 	       on the return value.  */
+	    check_call_args (cd);
 	    break;
 	  }
       else if (is_named_call_p (callee_fndecl, "malloc", call, 1))
@@ -1505,7 +1559,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
   tree rhs = gimple_return_retval (return_stmt);
 
   if (lhs && rhs)
-    copy_region (get_lvalue (lhs, ctxt), get_lvalue (rhs, ctxt), ctxt);
+    {
+      const svalue *sval = get_rvalue (rhs, ctxt);
+      const region *ret_reg = get_lvalue (lhs, ctxt);
+      set_value (ret_reg, sval, ctxt);
+    }
 }
 
 /* Update this model for a call and return of setjmp/sigsetjmp at CALL within
@@ -1650,6 +1708,20 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
 	return m_mgr->get_element_region (array_reg,
 					  TREE_TYPE (TREE_TYPE (array)),
 					  index_sval);
+      }
+      break;
+
+    case BIT_FIELD_REF:
+      {
+	tree inner_expr = TREE_OPERAND (expr, 0);
+	const region *inner_reg = get_lvalue (inner_expr, ctxt);
+	tree num_bits = TREE_OPERAND (expr, 1);
+	tree first_bit_offset = TREE_OPERAND (expr, 2);
+	gcc_assert (TREE_CODE (num_bits) == INTEGER_CST);
+	gcc_assert (TREE_CODE (first_bit_offset) == INTEGER_CST);
+	bit_range bits (TREE_INT_CST_LOW (first_bit_offset),
+			TREE_INT_CST_LOW (num_bits));
+	return m_mgr->get_bit_range (inner_reg, TREE_TYPE (expr), bits);
       }
       break;
 
@@ -2123,7 +2195,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind));
+		ctxt->warn (new poisoned_value_diagnostic (ptr, pkind, NULL));
 	      }
 	  }
       }
@@ -2801,8 +2873,9 @@ region_model::add_constraint (const svalue *lhs,
   if (add_constraints_from_binop (lhs, op, rhs, &out, ctxt))
     return out;
 
-  /* Store the constraint.  */
-  m_constraints->add_constraint (lhs, op, rhs);
+  /* Attempt to store the constraint.  */
+  if (!m_constraints->add_constraint (lhs, op, rhs))
+    return false;
 
   /* Notify the context, if any.  This exists so that the state machines
      in a program_state can be notified about the condition, and so can
@@ -3549,15 +3622,11 @@ region_model::pop_frame (const region *result_dst_reg,
   tree result = DECL_RESULT (fndecl);
   if (result && TREE_TYPE (result) != void_type_node)
     {
+      const svalue *retval = get_rvalue (result, ctxt);
       if (result_dst_reg)
-	{
-	  /* Copy the result to RESULT_DST_REG.  */
-	  copy_region (result_dst_reg,
-		       get_lvalue (result, ctxt),
-		       ctxt);
-	}
+	set_value (result_dst_reg, retval, ctxt);
       if (out_result)
-	*out_result = get_rvalue (result, ctxt);
+	*out_result = retval;
     }
 
   /* Pop the frame.  */
@@ -4689,8 +4758,9 @@ test_compound_assignment ()
   model.set_value (c_y, int_m3, NULL);
 
   /* Copy c to d.  */
-  model.copy_region (model.get_lvalue (d, NULL), model.get_lvalue (c, NULL),
-		     NULL);
+  const svalue *sval = model.get_rvalue (c, NULL);
+  model.set_value (model.get_lvalue (d, NULL), sval, NULL);
+
   /* Check that the fields have the same svalues.  */
   ASSERT_EQ (model.get_rvalue (c_x, NULL), model.get_rvalue (d_x, NULL));
   ASSERT_EQ (model.get_rvalue (c_y, NULL), model.get_rvalue (d_y, NULL));

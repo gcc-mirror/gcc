@@ -56,8 +56,11 @@
    UNSPECV_CAS
    UNSPECV_XCHG
    UNSPECV_BARSYNC
+   UNSPECV_WARPSYNC
+   UNSPECV_UNIFORM_WARP_CHECK
    UNSPECV_MEMBAR
    UNSPECV_MEMBAR_CTA
+   UNSPECV_MEMBAR_GL
    UNSPECV_DIM_POS
 
    UNSPECV_FORK
@@ -1410,7 +1413,7 @@
    (match_operand 3 "" "")]
   ""
 {
-  sorry ("target cannot support nonlocal goto.");
+  sorry ("target cannot support nonlocal goto");
   emit_insn (gen_nop ());
   DONE;
 })
@@ -1419,7 +1422,7 @@
   [(const_int 0)]
   ""
 {
-  sorry ("target cannot support nonlocal goto.");
+  sorry ("target cannot support nonlocal goto");
 })
 
 (define_expand "allocate_stack"
@@ -1438,7 +1441,7 @@
   /* The ptx documentation specifies an alloca intrinsic (for 32 bit
      only)  but notes it is not implemented.  The assembler emits a
      confused error message.  Issue a blunt one now instead.  */
-  sorry ("target cannot support alloca.");
+  sorry ("target cannot support alloca");
   emit_insn (gen_nop ());
   DONE;
 })
@@ -1789,11 +1792,28 @@
 	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
+	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
+	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
+			 operands);
+	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
+	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
-      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
-  [(set_attr "atomic" "true")])
+  [(set_attr "atomic" "true")
+   (set_attr "predicable" "false")])
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")	;; output
@@ -1805,6 +1825,19 @@
 	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%2;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\tatom%A1.exch.b%T0\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1822,6 +1855,22 @@
 	(match_dup 1))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "add%t0"   "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1839,6 +1888,22 @@
 	(match_dup 1))]
   ""
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0" "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "add%t0"   "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0" "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1859,6 +1924,22 @@
 	(match_dup 1))]
   "<MODE>mode == SImode || TARGET_SM35"
   {
+    struct address_info info;
+    decompose_mem_address (&info, operands[1]);
+    if (info.base != NULL && REG_P (*info.base)
+	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+      {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%update;", operands);
+	output_asm_insn ("%.\\t" "ld%A1%t0"     "\\t" "%%val,%1;", operands);
+	output_asm_insn ("%.\\t" "<logic>.b%T0" "\\t" "%%update,%%val,%2;",
+			 operands);
+	output_asm_insn ("%.\\t" "st%A1%t0"     "\\t" "%1,%%update;", operands);
+	output_asm_insn ("%.\\t" "mov%t0"       "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+      }
     const char *t
       = "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;";
     return nvptx_output_atomic_insn (t, operands, 1, 3);
@@ -1889,9 +1970,36 @@
   ""
   {
     if (INTVAL (operands[1]) == 0)
-      return "\\tbar.sync\\t%0;";
+      return (TARGET_PTX_6_0
+	      ? "\\tbarrier.sync.aligned\\t%0;"
+	      : "\\tbar.sync\\t%0;");
     else
-      return "\\tbar.sync\\t%0, %1;";
+      return (TARGET_PTX_6_0
+	      ? "\\tbarrier.sync\\t%0, %1;"
+	      : "\\tbar.sync\\t%0, %1;");
+  }
+  [(set_attr "predicable" "false")])
+
+(define_insn "nvptx_warpsync"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WARPSYNC)]
+  "TARGET_PTX_6_0"
+  "\\tbar.warp.sync\\t0xffffffff;"
+  [(set_attr "predicable" "false")])
+
+(define_insn "nvptx_uniform_warp_check"
+  [(unspec_volatile [(const_int 0)] UNSPECV_UNIFORM_WARP_CHECK)]
+  ""
+  {
+    output_asm_insn ("{", NULL);
+    output_asm_insn ("\\t"	 ".reg.b32"	   "\\t" "act;", NULL);
+    output_asm_insn ("\\t"	 "vote.ballot.b32" "\\t" "act,1;", NULL);
+    output_asm_insn ("\\t"	 ".reg.pred"	   "\\t" "uni;", NULL);
+    output_asm_insn ("\\t"	 "setp.eq.b32"	   "\\t" "uni,act,0xffffffff;",
+		     NULL);
+    output_asm_insn ("@ !uni\\t" "trap;", NULL);
+    output_asm_insn ("@ !uni\\t" "exit;", NULL);
+    output_asm_insn ("}", NULL);
+    return "";
   }
   [(set_attr "predicable" "false")])
 
@@ -1930,6 +2038,22 @@
 	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_CTA))]
   ""
   "\\tmembar.cta;"
+  [(set_attr "predicable" "false")])
+
+(define_expand "nvptx_membar_gl"
+  [(set (match_dup 0)
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_GL))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*nvptx_membar_gl"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_dup 0)] UNSPECV_MEMBAR_GL))]
+  ""
+  "\\tmembar.gl;"
   [(set_attr "predicable" "false")])
 
 (define_insn "nvptx_nounroll"

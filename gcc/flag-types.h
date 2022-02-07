@@ -36,26 +36,26 @@ enum debug_info_type
 };
 
 #define NO_DEBUG      (0U)
-/* Write DBX debug info (using dbxout.c).  */
+/* Write DBX debug info (using dbxout.cc).  */
 #define DBX_DEBUG     (1U << DINFO_TYPE_DBX)
-/* Write DWARF2 debug info (using dwarf2out.c).  */
+/* Write DWARF2 debug info (using dwarf2out.cc).  */
 #define DWARF2_DEBUG  (1U << DINFO_TYPE_DWARF2)
-/* Write IBM/XCOFF debug info (using dbxout.c).  */
+/* Write IBM/XCOFF debug info (using dbxout.cc).  */
 #define XCOFF_DEBUG   (1U << DINFO_TYPE_XCOFF)
-/* Write VMS debug info (using vmsdbgout.c).  */
+/* Write VMS debug info (using vmsdbgout.cc).  */
 #define VMS_DEBUG     (1U << DINFO_TYPE_VMS)
-/* Write CTF debug info (using ctfout.c).  */
+/* Write CTF debug info (using ctfout.cc).  */
 #define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
-/* Write BTF debug info (using btfout.c).  */
+/* Write BTF debug info (using btfout.cc).  */
 #define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
-/* Write BTF debug info for BPF CO-RE usecase (using btfout.c).  */
+/* Write BTF debug info for BPF CO-RE usecase (using btfout.cc).  */
 #define BTF_WITH_CORE_DEBUG     (1U << DINFO_TYPE_BTF_WITH_CORE)
 
 /* Note: Adding new definitions to handle -combination- of debug formats,
    like VMS_AND_DWARF2_DEBUG is not recommended.  This definition remains
    here for historical reasons.  */
-/* Write VMS debug info (using vmsdbgout.c) and DWARF v2 debug info (using
-   dwarf2out.c).  */
+/* Write VMS debug info (using vmsdbgout.cc) and DWARF v2 debug info (using
+   dwarf2out.cc).  */
 #define VMS_AND_DWARF2_DEBUG  ((VMS_DEBUG | DWARF2_DEBUG))
 
 enum debug_info_levels
@@ -85,7 +85,7 @@ enum ctf_debug_info_levels
    The following function determines whether or not debug information
    should be generated for a given struct.  The indirect parameter
    indicates that the struct is being handled indirectly, via
-   a pointer.  See opts.c for the implementation. */
+   a pointer.  See opts.cc for the implementation. */
 
 enum debug_info_usage
 {

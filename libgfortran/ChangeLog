@@ -1,3 +1,40 @@
+2022-01-26  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	PR libfortran/104233
+	* ieee/issignaling_fallback.h: Check GFC_REAL_16_IS_FLOAT128
+	instead of __FLT128_IS_IEC_60559__.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: Fix GCC-specific preprocessor
+	macros.
+
+2022-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* ieee/issignaling_fallback.h (__issignalingl): Define for
+	IBM extended long double are returning __issignaling on the
+	first double.
+
+2022-01-25  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* ieee/issignaling_fallback.h: fix preprocessor condition.
+
+2022-01-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/issignaling_fallback.h: New file.
+	* ieee/ieee_helper.c: Include issignaling_fallback.h when target
+	does not define issignaling macro.
+
+2022-01-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* ieee/issignaling_fallback.h: Remove file.
+
+2022-01-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* runtime/environ.c: Allow for multiple default values so that
+	separate default specifications for IBM long double format and
+	endianness are possible.
+
 2022-01-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* ieee/issignaling_fallback.h: New file.

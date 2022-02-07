@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * Provides the nothrow exception guarantee.
    */
   template<typename _Tp>
-    _GLIBCXX14_DEPRECATED
+    _GLIBCXX17_DEPRECATED
     pair<_Tp*, ptrdiff_t>
     get_temporary_buffer(ptrdiff_t __len) _GLIBCXX_NOEXCEPT
     {

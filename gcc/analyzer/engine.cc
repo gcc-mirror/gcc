@@ -3799,7 +3799,7 @@ exploded_graph::process_node (exploded_node *node)
 	    /* Apply edge_info to state.  */
 	    impl_region_model_context
 	      bifurcation_ctxt (*this,
-				NULL, // enode_for_diag
+				node, // enode_for_diag
 				&path_ctxt.get_state_at_bifurcation (),
 				&bifurcated_new_state,
 				NULL, // uncertainty_t *uncertainty

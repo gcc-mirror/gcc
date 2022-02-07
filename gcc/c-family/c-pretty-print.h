@@ -46,7 +46,7 @@ typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
    language using C syntax can derive from this datatype and reuse
    facilities provided here.  A derived pretty-printer can override
    any function listed in the vtable below.  See cp/cxx-pretty-print.h
-   and cp/cxx-pretty-print.c for an example of derivation.  */
+   and cp/cxx-pretty-print.cc for an example of derivation.  */
 class c_pretty_printer : public pretty_printer
 {
 public:

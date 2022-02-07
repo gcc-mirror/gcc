@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    to be used in port-specific vxworks.h.  */
 
 /* REAL_LIBGCC_SPEC needs to be used since the non-static option is not
-   handled in gcc.c.  */
+   handled in gcc.cc.  */
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC VXWORKS_LIBGCC_SPEC
 #undef STARTFILE_SPEC

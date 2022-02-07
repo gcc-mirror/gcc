@@ -592,7 +592,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
-ac_unique_file="tree.c"
+ac_unique_file="tree.cc"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -7089,7 +7089,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual -Wno-error=format-diag $wf_opt; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -7147,7 +7147,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -Wstrict-prototypes -Wmissing-prototypes -Wno-error=format-diag; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes ; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -8397,7 +8397,7 @@ fi
   test -n "$AWK" && break
 done
 
-# We need awk to create options.c and options.h.
+# We need awk to create options.cc and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") as_fn_error $? "can't build without awk, bailing out" "$LINENO" 5 ;;
@@ -12125,7 +12125,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 # On AIX 5.2, <ldfcn.h> conflicts with <fcntl.h>, as both define incompatible
 # FREAD and FWRITE macros.  Fortunately, for GCC's single usage of ldgetname
-# in collect2.c, <fcntl.h> isn't visible, but the configure test below needs
+# in collect2.cc, <fcntl.h> isn't visible, but the configure test below needs
 # to undef these macros to get the correct value for HAVE_DECL_LDGETNAME.
 for ac_func in ldgetname
 do
@@ -12701,7 +12701,7 @@ if test x$md_file = x
 then md_file=$cpu_type/$cpu_type.md; fi
 
 if test x$out_file = x
-then out_file=$cpu_type/$cpu_type.c; fi
+then out_file=$cpu_type/$cpu_type.cc; fi
 
 if test x"$tmake_file" = x
 then tmake_file=$cpu_type/t-$cpu_type
@@ -13353,8 +13353,8 @@ do
 done
 tmake_file="${tmake_file_}${omp_device_property_tmake_file}"
 
-out_object_file=`basename $out_file .c`.o
-common_out_object_file=`basename $common_out_file .c`.o
+out_object_file=`basename $out_file .cc`.o
+common_out_object_file=`basename $common_out_file .cc`.o
 
 tm_file_list="options.h"
 tm_include_list="options.h insn-constants.h"
@@ -23238,6 +23238,20 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_gold" >&5
 $as_echo "$ld_is_gold" >&6; }
 
+# Check to see if we are using mold instead of ld
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we are using mold" >&5
+$as_echo_n "checking whether we are using mold... " >&6; }
+ld_is_mold=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "mold" > /dev/null; then
+    ld_is_mold=yes
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ld_is_mold" >&5
+$as_echo "$ld_is_mold" >&6; }
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking gold linker with split stack support as non default" >&5
 $as_echo_n "checking gold linker with split stack support as non default... " >&6; }
 # Check to see if default ld is not gold, but gold is
@@ -24119,6 +24133,8 @@ else
 else
   gcc_cv_ld_hidden=yes
   if test x"$ld_is_gold" = xyes; then
+    :
+  elif test x"$ld_is_mold" = xyes; then
     :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
@@ -25198,6 +25214,8 @@ $as_echo "$gcc_cv_as_comdat_group_group" >&6; }
  fi
 fi
 if test x"$ld_is_gold" = xyes; then
+  comdat_group=yes
+elif test x"$ld_is_mold" = xyes; then
   comdat_group=yes
 elif test $in_tree_ld = yes ; then
   comdat_group=no
@@ -28730,7 +28748,7 @@ else
   gcc_cv_as_riscv_march_zifencei=no
   if test x$gcc_cv_as != x; then
     $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zifencei -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zifencei2p0 -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -32321,7 +32339,7 @@ _ACEOF
 
 
 # Generate gcc-driver-name.h containing GCC_DRIVER_NAME for the benefit
-# of jit/jit-playback.c.
+# of jit/jit-playback.cc.
 gcc_driver_version=`eval "${get_gcc_base_ver} $srcdir/BASE-VER"`
 echo "gcc_driver_version: ${gcc_driver_version}"
 cat > gcc-driver-name.h <<EOF

@@ -1,3 +1,15 @@
+2022-01-31  Nick Clifton  <nickc@redhat.com>
+
+	PR demangler/98886
+	PR demangler/99935
+	* rust-demangle.c (struct rust_demangler): Add a recursion
+	counter.
+	(demangle_path): Increment/decrement the recursion counter upon
+	entry and exit.  Fail if the counter exceeds a fixed limit.
+	(demangle_type): Likewise.
+	(rust_demangle_callback): Initialise the recursion counter,
+	disabling if requested by the option flags.
+
 2022-01-15  Martin Sebor  <msebor@redhat.com>
 
 	* regex.c: Suppress -Wuse-after-free.

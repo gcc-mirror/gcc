@@ -642,6 +642,13 @@ public:
      about the reductions that generated them.  */
   hash_map<tree, vect_reusable_accumulator> reusable_accumulators;
 
+  /* The number of times that the target suggested we unroll the vector loop
+     in order to promote more ILP.  This value will be used to re-analyze the
+     loop for vectorization and if successful the value will be folded into
+     vectorization_factor (and therefore exactly divides
+     vectorization_factor).  */
+  unsigned int suggested_unroll_factor;
+
   /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
      if there is no particular limit.  */
   unsigned HOST_WIDE_INT max_vectorization_factor;
@@ -1465,6 +1472,7 @@ public:
   unsigned int epilogue_cost () const;
   unsigned int outside_cost () const;
   unsigned int total_cost () const;
+  unsigned int suggested_unroll_factor () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1484,6 +1492,9 @@ protected:
   /* The costs of the three regions, indexed by vect_cost_model_location.  */
   unsigned int m_costs[3];
 
+  /* The suggested unrolling factor determined at finish_cost.  */
+  unsigned int m_suggested_unroll_factor;
+
   /* True if finish_cost has been called.  */
   bool m_finished;
 };
@@ -1496,6 +1507,7 @@ vector_costs::vector_costs (vec_info *vinfo, bool costing_for_scalar)
   : m_vinfo (vinfo),
     m_costing_for_scalar (costing_for_scalar),
     m_costs (),
+    m_suggested_unroll_factor(1),
     m_finished (false)
 {
 }
@@ -1542,6 +1554,15 @@ inline unsigned int
 vector_costs::total_cost () const
 {
   return body_cost () + outside_cost ();
+}
+
+/* Return the suggested unroll factor.  */
+
+inline unsigned int
+vector_costs::suggested_unroll_factor () const
+{
+  gcc_checking_assert (m_finished);
+  return m_suggested_unroll_factor;
 }
 
 #define VECT_MAX_COST 1000
@@ -1720,12 +1741,14 @@ add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 static inline void
 finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
 	     unsigned *prologue_cost, unsigned *body_cost,
-	     unsigned *epilogue_cost)
+	     unsigned *epilogue_cost, unsigned *suggested_unroll_factor = NULL)
 {
   costs->finish_cost (scalar_costs);
   *prologue_cost = costs->prologue_cost ();
   *body_cost = costs->body_cost ();
   *epilogue_cost = costs->epilogue_cost ();
+  if (suggested_unroll_factor)
+    *suggested_unroll_factor = costs->suggested_unroll_factor ();
 }
 
 inline void
@@ -2015,7 +2038,7 @@ class auto_purge_vect_location
 /*-----------------------------------------------------------------*/
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
-   in tree-vect-loop-manip.c.  */
+   in tree-vect-loop-manip.cc.  */
 extern void vect_set_loop_condition (class loop *, loop_vec_info,
 				     tree, tree, tree, bool);
 extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
@@ -2031,7 +2054,7 @@ extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
 
-/* In tree-vect-stmts.c.  */
+/* In tree-vect-stmts.cc.  */
 extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
 						 poly_uint64 = 0);
 extern tree get_vectype_for_scalar_type (vec_info *, tree, unsigned int = 0);
@@ -2122,7 +2145,7 @@ extern opt_result vect_get_vector_types_for_stmt (vec_info *,
 						  tree *, unsigned int = 0);
 extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, unsigned int = 0);
 
-/* In tree-vect-data-refs.c.  */
+/* In tree-vect-data-refs.cc.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
 				   (vec_info *, dr_vec_info *, tree, int);
@@ -2174,14 +2197,14 @@ extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 						  stmt_vec_info, gimple_seq *,
 						  tree);
 
-/* In tree-vect-loop.c.  */
+/* In tree-vect-loop.cc.  */
 extern tree neutral_op_for_reduction (tree, code_helper, tree);
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 bool vect_rgroup_iv_might_wrap_p (loop_vec_info, rgroup_controls *);
-/* Used in tree-vect-loop-manip.c */
+/* Used in tree-vect-loop-manip.cc */
 extern opt_result vect_determine_partial_vectors_and_peeling (loop_vec_info,
 							      bool);
-/* Used in gimple-loop-interchange.c and tree-parloops.c.  */
+/* Used in gimple-loop-interchange.c and tree-parloops.cc.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 extern bool needs_fold_left_reduction_p (tree, code_helper);
@@ -2247,7 +2270,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *);
 extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
-/* In tree-vect-slp.c.  */
+/* In tree-vect-slp.cc.  */
 extern void vect_slp_init (void);
 extern void vect_slp_fini (void);
 extern void vect_free_slp_instance (slp_instance);
@@ -2278,8 +2301,9 @@ extern void duplicate_and_interleave (vec_info *, gimple_seq *, tree,
 extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
+extern bool compatible_calls_p (gcall *, gcall *);
 
-/* In tree-vect-patterns.c.  */
+/* In tree-vect-patterns.cc.  */
 extern void
 vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
 
@@ -2288,13 +2312,13 @@ vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
    in the future.  */
 void vect_pattern_recog (vec_info *);
 
-/* In tree-vectorizer.c.  */
+/* In tree-vectorizer.cc.  */
 unsigned vectorize_loops (void);
 void vect_free_loop_info_assumptions (class loop *);
 gimple *vect_loop_vectorized_call (class loop *, gcond **cond = NULL);
 bool vect_stmt_dominates_stmt_p (gimple *, gimple *);
 
-/* SLP Pattern matcher types, tree-vect-slp-patterns.c.  */
+/* SLP Pattern matcher types, tree-vect-slp-patterns.cc.  */
 
 /* Forward declaration of possible two operands operation that can be matched
    by the complex numbers pattern matchers.  */
@@ -2315,6 +2339,12 @@ typedef enum _complex_perm_kinds {
 /* Cache from nodes to the load permutation they represent.  */
 typedef hash_map <slp_tree, complex_perm_kinds_t>
   slp_tree_to_load_perm_map_t;
+
+/* Cache from nodes pair to being compatible or not.  */
+typedef pair_hash <nofree_ptr_hash <_slp_tree>,
+		   nofree_ptr_hash <_slp_tree>> slp_node_hash;
+typedef hash_map <slp_node_hash, bool> slp_compat_nodes_map_t;
+
 
 /* Vector pattern matcher base class.  All SLP pattern matchers must inherit
    from this type.  */
@@ -2348,7 +2378,8 @@ class vect_pattern
   public:
 
     /* Create a new instance of the pattern matcher class of the given type.  */
-    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *, slp_tree *);
+    static vect_pattern* recognize (slp_tree_to_load_perm_map_t *,
+				    slp_compat_nodes_map_t *, slp_tree *);
 
     /* Build the pattern from the data collected so far.  */
     virtual void build (vec_info *) = 0;
@@ -2362,6 +2393,7 @@ class vect_pattern
 
 /* Function pointer to create a new pattern matcher from a generic type.  */
 typedef vect_pattern* (*vect_pattern_decl_t) (slp_tree_to_load_perm_map_t *,
+					      slp_compat_nodes_map_t *,
 					      slp_tree *);
 
 /* List of supported pattern matchers.  */

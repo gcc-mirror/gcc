@@ -1678,7 +1678,7 @@ This formulation looks more descriptive, but historically it was less
 flexible: you had to supply at least one argument after the format
 string.  In standard C, you could not omit the comma separating the
 named argument from the variable arguments.  (Note that this
-restriction has been lifted in C++2a, and never existed in GNU C; see
+restriction has been lifted in C++20, and never existed in GNU C; see
 below.)
 
 Furthermore, if you left the variable argument empty, you would have
@@ -1690,10 +1690,10 @@ eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end smallexample
 
-This has been fixed in C++2a, and GNU CPP also has a pair of
+This has been fixed in C++20, and GNU CPP also has a pair of
 extensions which deal with this problem.
 
-First, in GNU CPP, and in C++ beginning in C++2a, you are allowed to
+First, in GNU CPP, and in C++ beginning in C++20, you are allowed to
 leave the variable argument out entirely:
 
 @smallexample
@@ -1702,7 +1702,7 @@ eprintf ("success!\n")
 @end smallexample
 
 @noindent
-Second, C++2a introduces the @code{@w{__VA_OPT__}} function macro.
+Second, C++20 introduces the @code{@w{__VA_OPT__}} function macro.
 This macro may only appear in the definition of a variadic macro.  If
 the variable argument has any tokens, then a @code{@w{__VA_OPT__}}
 invocation expands to its argument; but if the variable argument does

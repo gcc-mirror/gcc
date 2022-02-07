@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Get Xtensa configuration settings */
 #include "xtensa-config.h"
 
-/* External variables defined in xtensa.c.  */
+/* External variables defined in xtensa.cc.  */
 
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */

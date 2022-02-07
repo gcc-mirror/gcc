@@ -20,7 +20,11 @@
 # Boston, MA 02110-1301, USA.
 
 import argparse
+import os
 import subprocess
+
+script_folder = os.path.dirname(os.path.abspath(__file__))
+fixup_script = os.path.join(script_folder, 'git-fix-changelog.py')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Backport a git revision.')
@@ -28,3 +32,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     subprocess.run('git cherry-pick -x %s' % args.revision, shell=True)
+    subprocess.run(fixup_script, shell=True)

@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_ASM_GLOBALIZE_LABEL
 
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
-   labels in a function declaration (since pa.c seems determined to do
+   labels in a function declaration (since pa.cc seems determined to do
    it differently)  */
 
 #undef ASM_DECLARE_FUNCTION_NAME

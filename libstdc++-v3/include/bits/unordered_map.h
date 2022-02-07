@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(const_iterator, node_type&& __nh)
       { return _M_h._M_reinsert_node(std::move(__nh)).position; }
 
-#define __cpp_lib_unordered_map_try_emplace 201411
+#define __cpp_lib_unordered_map_try_emplace 201411L
       /**
        *  @brief Attempts to build and insert a std::pair into the
        *  %unordered_map.

@@ -20,9 +20,16 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FOLD_CONST_H
 #define GCC_FOLD_CONST_H
 
-/* Non-zero if we are folding constants inside an initializer; zero
-   otherwise.  */
+/* Nonzero if we are folding constants inside an initializer or a C++
+   manifestly-constant-evaluated context; zero otherwise.
+   Should be used when folding in initializer enables additional
+   optimizations.  */
 extern int folding_initializer;
+/* Nonzero if we are folding C++ manifestly-constant-evaluated context; zero
+   otherwise.
+   Should be used when certain constructs shouldn't be optimized
+   during folding in that context.  */
+extern bool folding_cxx_constexpr;
 
 /* Convert between trees and native memory representation.  */
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
@@ -96,7 +103,7 @@ extern void fold_overflow_warning (const char*, enum warn_strict_overflow_code);
 extern enum tree_code fold_div_compare (enum tree_code, tree, tree,
 					tree *, tree *, bool *);
 extern bool operand_equal_p (const_tree, const_tree, unsigned int flags = 0);
-extern int multiple_of_p (tree, const_tree, const_tree);
+extern int multiple_of_p (tree, const_tree, const_tree, bool = true);
 #define omit_one_operand(T1,T2,T3)\
    omit_one_operand_loc (UNKNOWN_LOCATION, T1, T2, T3)
 extern tree omit_one_operand_loc (location_t, tree, tree, tree);
@@ -243,7 +250,7 @@ class operand_compare
 {
 public:
   /* Return true if two operands are equal.  The flags fields can be used
-     to specify OEP flags described above.  */
+     to specify OEP flags described in tree-core.h.  */
   virtual bool operand_equal_p (const_tree, const_tree, unsigned int flags);
 
   /* Generate a hash value for an expression.  This can be used iteratively
