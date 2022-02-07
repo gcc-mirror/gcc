@@ -496,9 +496,6 @@ public:
   : taint_diagnostic (sm, arg, has_bounds),
     m_mem_space (mem_space)
   {
-    gcc_assert (mem_space == MEMSPACE_STACK
-		|| mem_space == MEMSPACE_HEAP
-		|| mem_space == MEMSPACE_UNKNOWN);
   }
 
   const char *get_kind () const FINAL OVERRIDE
@@ -511,9 +508,6 @@ public:
     diagnostic_metadata m;
     /* "CWE-789: Memory Allocation with Excessive Size Value".  */
     m.add_cwe (789);
-    gcc_assert (m_mem_space == MEMSPACE_STACK
-		|| m_mem_space == MEMSPACE_HEAP
-		|| m_mem_space == MEMSPACE_UNKNOWN);
     // TODO: make use of m_mem_space
     if (m_arg)
       switch (m_has_bounds)
@@ -1055,9 +1049,6 @@ region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
 					    const svalue *size_in_bytes,
 					    region_model_context *ctxt) const
 {
-  gcc_assert (mem_space == MEMSPACE_STACK
-	      || mem_space == MEMSPACE_HEAP
-	      || mem_space == MEMSPACE_UNKNOWN);
   gcc_assert (size_in_bytes);
   gcc_assert (ctxt);
 
