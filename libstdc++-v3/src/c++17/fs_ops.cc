@@ -1284,21 +1284,38 @@ fs::remove(const path& p, error_code& ec) noexcept
 std::uintmax_t
 fs::remove_all(const path& p)
 {
+  error_code ec;
   uintmax_t count = 0;
-  auto st = filesystem::status(p);
-  if (!exists(st))
-    return 0;
-  if (is_directory(st))
+  recursive_directory_iterator dir(p, directory_options{64|128}, ec);
+  switch (ec.value()) // N.B. assumes ec.category() == std::generic_category()
+  {
+  case 0:
+    // Iterate over the directory removing everything.
     {
-      recursive_directory_iterator dir(p, directory_options{64|128}), end;
-      path failed;
+      const recursive_directory_iterator end;
       while (dir != end)
 	{
-	  failed = dir->path();
-	  dir.__erase();
+	  dir.__erase(); // throws on error
 	  ++count;
 	}
     }
+    // Directory is empty now, will remove it below.
+    break;
+#ifndef __AVR__
+  case ENOENT:
+    // Our work here is done.
+    return 0;
+  case ENOTDIR:
+  case ELOOP:
+    // Not a directory, will remove below.
+    break;
+#endif
+  default:
+    // An error occurred.
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
+  }
+
+  // Remove p itself, which is either a non-directory or is now empty.
   return count + fs::remove(p);
 }
 
@@ -1307,11 +1324,12 @@ fs::remove_all(const path& p, error_code& ec)
 {
   uintmax_t count = 0;
   recursive_directory_iterator dir(p, directory_options{64|128}, ec);
-  switch (ec.value())
+  switch (ec.value()) // N.B. assumes ec.category() == std::generic_category()
   {
   case 0:
+    // Iterate over the directory removing everything.
     {
-      recursive_directory_iterator end;
+      const recursive_directory_iterator end;
       while (dir != end)
 	{
 	  dir.__erase(&ec);
@@ -1320,6 +1338,7 @@ fs::remove_all(const path& p, error_code& ec)
 	  ++count;
 	}
     }
+    // Directory is empty now, will remove it below.
     break;
 #ifndef __AVR__
   case ENOENT:
@@ -1335,6 +1354,7 @@ fs::remove_all(const path& p, error_code& ec)
     // An error occurred.
     return -1;
   }
+
   // Remove p itself, which is either a non-directory or is now empty.
   if (int last = fs::remove(p, ec); !ec)
     return count + last;
