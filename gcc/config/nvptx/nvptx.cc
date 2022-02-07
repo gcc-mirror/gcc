@@ -938,10 +938,13 @@ write_fn_proto_1 (std::stringstream &s, bool is_defn,
   if (DECL_STATIC_CHAIN (decl))
     argno = write_arg_type (s, -1, argno, ptr_type_node, true);
 
-  if (!argno && strcmp (name, "main") == 0)
+  if (argno < 2 && strcmp (name, "main") == 0)
     {
-      argno = write_arg_type (s, -1, argno, integer_type_node, true);
-      argno = write_arg_type (s, -1, argno, ptr_type_node, true);
+      if (argno == 0)
+	argno = write_arg_type (s, -1, argno, integer_type_node, true);
+
+      if (argno == 1)
+	argno = write_arg_type (s, -1, argno, ptr_type_node, true);
     }
 
   if (argno)
