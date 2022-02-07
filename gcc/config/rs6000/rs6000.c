@@ -7582,8 +7582,14 @@ darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
 
+  /* If we are building PIC code, then any symbol must be wrapped in an
+     UNSPEC_MACHOPIC_OFFSET so that it will get the picbase subtracted.  */
+  bool machopic_offs_p = false;
   if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
-    x =  XVECEXP (x, 0, 0);
+    {
+      x =  XVECEXP (x, 0, 0);
+      machopic_offs_p = true;
+    }
 
   rtx sym = NULL_RTX;
   unsigned HOST_WIDE_INT offset = 0;
@@ -7614,6 +7620,9 @@ darwin_rs6000_legitimate_lo_sum_const_p (rtx x, machine_mode mode)
   if (sym)
     {
       tree decl = SYMBOL_REF_DECL (sym);
+      /* As noted above, PIC code cannot use a bare SYMBOL_REF.  */
+      if (TARGET_MACHO && flag_pic && !machopic_offs_p)
+	return false;
 #if TARGET_MACHO
       if (MACHO_SYMBOL_INDIRECTION_P (sym))
       /* The decl in an indirection symbol is the original one, which might
@@ -8201,7 +8210,7 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
     return false;
   x = XEXP (x, 1);
 
-  if (TARGET_ELF || TARGET_MACHO)
+  if (TARGET_ELF)
     {
       bool large_toc_ok;
 
@@ -8227,7 +8236,32 @@ legitimate_lo_sum_address_p (machine_mode mode, rtx x, int strict)
 
       return CONSTANT_P (x) || large_toc_ok;
     }
+  else if (TARGET_MACHO)
+    {
+      if (GET_MODE_NUNITS (mode) != 1)
+	return false;
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	  && !(/* see above  */
+	       TARGET_HARD_FLOAT && (mode == DFmode || mode == DDmode)))
+	return false;
+#if TARGET_MACHO
+      if (MACHO_DYNAMIC_NO_PIC_P || !flag_pic)
+	return CONSTANT_P (x);
+#endif
+      /* Macho-O PIC code from here.  */
+      if (GET_CODE (x) == CONST)
+	x = XEXP (x, 0);
 
+      /* SYMBOL_REFs need to be wrapped in an UNSPEC_MACHOPIC_OFFSET.  */
+      if (SYMBOL_REF_P (x))
+	return false;
+
+      /* So this is OK if the wrapped object is const.  */
+      if (GET_CODE (x) == UNSPEC
+	  && XINT (x, 1) == UNSPEC_MACHOPIC_OFFSET)
+	return CONSTANT_P (XVECEXP (x, 0, 0));
+      return CONSTANT_P (x);
+    }
   return false;
 }
 
@@ -8281,7 +8315,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       else
 	return force_reg (Pmode, x);
     }
-  if (SYMBOL_REF_P (x))
+  if (SYMBOL_REF_P (x) && !TARGET_MACHO)
     {
       enum tls_model model = SYMBOL_REF_TLS_MODEL (x);
       if (model != 0)
