@@ -3361,13 +3361,13 @@ package body Sem_Type is
         and then Is_Class_Wide_Type (T2)
         and then Is_Interface (Etype (T2))
       then
-         return T1;
+         return B1;
 
       elsif Is_Class_Wide_Type (T2)
         and then Is_Class_Wide_Type (T1)
         and then Is_Interface (Etype (T1))
       then
-         return T2;
+         return B2;
 
       --  Ada 2005 (AI-251): T1 is a concrete type that implements the
       --  class-wide interface T2, return T1, and vice versa.
@@ -3378,7 +3378,7 @@ package body Sem_Type is
         and then Interface_Present_In_Ancestor (Typ   => T1,
                                                 Iface => Etype (T2))
       then
-         return T1;
+         return B1;
 
       elsif Is_Tagged_Type (T2)
         and then Is_Class_Wide_Type (T1)
@@ -3386,17 +3386,17 @@ package body Sem_Type is
         and then Interface_Present_In_Ancestor (Typ   => T2,
                                                 Iface => Etype (T1))
       then
-         return T2;
+         return B2;
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
       then
-         return T1;
+         return B1;
 
       elsif Is_Class_Wide_Type (T2)
         and then Is_Ancestor (Root_Type (T2), T1)
       then
-         return T2;
+         return B2;
 
       elsif Is_Access_Type (T1)
         and then Is_Access_Type (T2)

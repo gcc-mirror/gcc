@@ -265,6 +265,22 @@ package body Sem_Ch4 is
    --  these aspects can be achieved without larger modifications to the
    --  two-pass resolution algorithm.
 
+   function Possible_Type_For_Conditional_Expression
+     (T1, T2 : Entity_Id) return Entity_Id;
+   --  Given two types T1 and T2 that are _not_ compatible, return a type that
+   --  may still be used as the possible type of a conditional expression whose
+   --  dependent expressions, or part thereof, have type T1 and T2 respectively
+   --  during the first phase of type resolution, or Empty if such a type does
+   --  not exist.
+
+   --  The typical example is an if_expression whose then_expression is of a
+   --  tagged type and whose else_expresssion is of an extension of this type:
+   --  the types are not compatible but such an if_expression can be legal if
+   --  its expected type is the 'Class of the tagged type, so the function will
+   --  return the tagged type in this case. If the expected type turns out to
+   --  be something else, including the tagged type itself, then an error will
+   --  be given during the second phase of type resolution.
+
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
    --  operation is not a candidate interpretation.
@@ -1559,9 +1575,29 @@ package body Sem_Ch4 is
    -----------------------------
 
    procedure Analyze_Case_Expression (N : Node_Id) is
+      Expr      : constant Node_Id := Expression (N);
+      First_Alt : constant Node_Id := First (Alternatives (N));
+
+      First_Expr : Node_Id := Empty;
+      --  First expression in the case where there is some type information
+      --  available, i.e. there is not Any_Type everywhere, which can happen
+      --  because of some error.
+
+      Second_Expr : Node_Id := Empty;
+      --  Second expression as above
+
+      Wrong_Alt : Node_Id := Empty;
+      --  For error reporting
+
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
       --  the case expression has a non static choice.
+
+      procedure Check_Next_Expression (T : Entity_Id; Alt : Node_Id);
+      --  Check one interpretation of the next expression with type T
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id; Alt : Node_Id);
+      --  Check first expression with type T1 and next expression with type T2
 
       package Case_Choices_Analysis is new
         Generic_Analyze_Choices
@@ -1585,23 +1621,81 @@ package body Sem_Ch4 is
            ("choice given in case expression is not static!", Choice);
       end Non_Static_Choice_Error;
 
+      ---------------------------
+      -- Check_Next_Expression --
+      ---------------------------
+
+      procedure Check_Next_Expression (T : Entity_Id; Alt : Node_Id) is
+         Next_Expr : constant Node_Id := Expression (Alt);
+
+         I     : Interp_Index;
+         It    : Interp;
+
+      begin
+         if Next_Expr = First_Expr then
+            Check_Next_Expression (T, Next (Alt));
+            return;
+         end if;
+
+         --  Loop through the interpretations of the next expression
+
+         if not Is_Overloaded (Next_Expr) then
+            Check_Expression_Pair (T, Etype (Next_Expr), Alt);
+
+         else
+            Get_First_Interp (Next_Expr, I, It);
+            while Present (It.Typ) loop
+               Check_Expression_Pair (T, It.Typ, Alt);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Next_Expression;
+
+      ---------------------------
+      -- Check_Expression_Pair --
+      ---------------------------
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id; Alt : Node_Id) is
+         Next_Expr : constant Node_Id := Expression (Alt);
+
+         T : Entity_Id;
+
+      begin
+         if Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+         then
+            T := Specific_Type (T1, T2);
+
+         elsif Is_User_Defined_Literal (First_Expr, T2) then
+            T := T2;
+
+         elsif Is_User_Defined_Literal (Next_Expr, T1) then
+            T := T1;
+
+         else
+            T := Possible_Type_For_Conditional_Expression (T1, T2);
+
+            if No (T) then
+               Wrong_Alt := Alt;
+               return;
+            end if;
+         end if;
+
+         if Present (Next (Alt)) then
+            Check_Next_Expression (T, Next (Alt));
+         else
+            Add_One_Interp (N, T, T);
+         end if;
+      end Check_Expression_Pair;
+
       --  Local variables
 
-      Expr      : constant Node_Id := Expression (N);
-      Alt       : Node_Id;
-      Exp_Type  : Entity_Id;
-      Exp_Btype : Entity_Id;
-
-      FirstX : Node_Id := Empty;
-      --  First expression in the case for which there is some type information
-      --  available, i.e. it is not Any_Type, which can happen because of some
-      --  error, or from the use of e.g. raise Constraint_Error.
-
+      Alt            : Node_Id;
+      Exp_Type       : Entity_Id;
+      Exp_Btype      : Entity_Id;
+      I              : Interp_Index;
+      It             : Interp;
       Others_Present : Boolean;
-      --  Indicates if Others was present
-
-      Wrong_Alt : Node_Id := Empty;
-      --  For error reporting
 
    --  Start of processing for Analyze_Case_Expression
 
@@ -1611,16 +1705,23 @@ package body Sem_Ch4 is
       Exp_Type := Etype (Expr);
       Exp_Btype := Base_Type (Exp_Type);
 
-      Alt := First (Alternatives (N));
+      Set_Etype (N, Any_Type);
+
+      Alt := First_Alt;
       while Present (Alt) loop
          if Error_Posted (Expression (Alt)) then
             return;
          end if;
 
-         Analyze (Expression (Alt));
+         Analyze_Expression (Expression (Alt));
 
-         if No (FirstX) and then Etype (Expression (Alt)) /= Any_Type then
-            FirstX := Expression (Alt);
+         if Etype (Expression (Alt)) /= Any_Type then
+            if No (First_Expr) then
+               First_Expr := Expression (Alt);
+
+            elsif No (Second_Expr) then
+               Second_Expr := Expression (Alt);
+            end if;
          end if;
 
          Next (Alt);
@@ -1629,46 +1730,32 @@ package body Sem_Ch4 is
       --  Get our initial type from the first expression for which we got some
       --  useful type information from the expression.
 
-      if No (FirstX) then
+      if No (First_Expr) then
          return;
       end if;
 
-      if not Is_Overloaded (FirstX) then
-         Set_Etype (N, Etype (FirstX));
+      --  Loop through the interpretations of the first expression and check
+      --  the other expressions if present.
+
+      if not Is_Overloaded (First_Expr) then
+         if Present (Second_Expr) then
+            Check_Next_Expression (Etype (First_Expr), First_Alt);
+         else
+            Set_Etype (N, Etype (First_Expr));
+         end if;
 
       else
-         declare
-            I  : Interp_Index;
-            It : Interp;
+         Get_First_Interp (First_Expr, I, It);
+         while Present (It.Typ) loop
+            if Present (Second_Expr) then
+               Check_Next_Expression (It.Typ, First_Alt);
+            else
+               Add_One_Interp (N, It.Typ, It.Typ);
+            end if;
 
-         begin
-            Set_Etype (N, Any_Type);
-
-            Get_First_Interp (FirstX, I, It);
-            while Present (It.Nam) loop
-
-               --  For each interpretation of the first expression, we only
-               --  add the interpretation if every other expression in the
-               --  case expression alternatives has a compatible type.
-
-               Alt := Next (First (Alternatives (N)));
-               while Present (Alt) loop
-                  exit when not Has_Compatible_Type (Expression (Alt), It.Typ);
-                  Next (Alt);
-               end loop;
-
-               if No (Alt) then
-                  Add_One_Interp (N, It.Typ, It.Typ);
-               else
-                  Wrong_Alt := Alt;
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-         end;
+            Get_Next_Interp (I, It);
+         end loop;
       end if;
-
-      Exp_Btype := Base_Type (Exp_Type);
 
       --  The expression must be of a discrete type which must be determinable
       --  independently of the context in which the expression occurs, but
@@ -1689,10 +1776,54 @@ package body Sem_Ch4 is
          return;
       end if;
 
+      --  If no possible interpretation has been found, the type of the wrong
+      --  alternative doesn't match any interpretation of the FIRST expression.
+
       if Etype (N) = Any_Type and then Present (Wrong_Alt) then
-         Error_Msg_N
-           ("type incompatible with that of previous alternatives",
-            Expression (Wrong_Alt));
+         Second_Expr := Expression (Wrong_Alt);
+
+         if Is_Overloaded (First_Expr) then
+            if Is_Overloaded (Second_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with those of previous "
+                  & "alternative",
+                  Second_Expr);
+            else
+               Error_Msg_N
+                 ("type incompatible with interpretations of previous "
+                  & "alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\this alternative has}!",
+                  Second_Expr,
+                  Etype (Second_Expr));
+            end if;
+
+         else
+            if Is_Overloaded (Second_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with type of previous "
+                  & "alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\previous alternative has}!",
+                  Second_Expr,
+                  Etype (First_Expr));
+            else
+               Error_Msg_N
+                 ("type incompatible with that of previous alternative",
+                  Second_Expr);
+               Error_Msg_NE
+                 ("\previous alternative has}!",
+                  Second_Expr,
+                  Etype (First_Expr));
+               Error_Msg_NE
+                 ("\this alternative has}!",
+                  Second_Expr,
+                  Etype (Second_Expr));
+            end if;
+         end if;
+
          return;
       end if;
 
@@ -2311,8 +2442,75 @@ package body Sem_Ch4 is
 
    procedure Analyze_If_Expression (N : Node_Id) is
       Condition : constant Node_Id := First (Expressions (N));
+
       Then_Expr : Node_Id;
       Else_Expr : Node_Id;
+
+      procedure Check_Else_Expression (T : Entity_Id);
+      --  Check one interpretation of the THEN expression with type T
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id);
+      --  Check THEN expression with type T1 and ELSE expression with type T2
+
+      ---------------------------
+      -- Check_Else_Expression --
+      ---------------------------
+
+      procedure Check_Else_Expression (T : Entity_Id) is
+         I    : Interp_Index;
+         It   : Interp;
+
+      begin
+         --  Loop through the interpretations of the ELSE expression
+
+         if not Is_Overloaded (Else_Expr) then
+            Check_Expression_Pair (T, Etype (Else_Expr));
+
+         else
+            Get_First_Interp (Else_Expr, I, It);
+            while Present (It.Typ) loop
+               Check_Expression_Pair (T, It.Typ);
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Check_Else_Expression;
+
+      ---------------------------
+      -- Check_Expression_Pair --
+      ---------------------------
+
+      procedure Check_Expression_Pair (T1, T2 : Entity_Id) is
+         T : Entity_Id;
+
+      begin
+         if Covers (T1 => T1, T2 => T2)
+           or else Covers (T1 => T2, T2 => T1)
+         then
+            T := Specific_Type (T1, T2);
+
+         elsif Is_User_Defined_Literal (Then_Expr, T2) then
+            T := T2;
+
+         elsif Is_User_Defined_Literal (Else_Expr, T1) then
+            T := T1;
+
+         else
+            T := Possible_Type_For_Conditional_Expression (T1, T2);
+
+            if No (T) then
+               return;
+            end if;
+         end if;
+
+         Add_One_Interp (N, T, T);
+      end Check_Expression_Pair;
+
+      --  Local variables
+
+      I  : Interp_Index;
+      It : Interp;
+
+      --  Start of processing for Analyze_If_Expression
 
    begin
       --  Defend against error of missing expressions from previous error
@@ -2321,6 +2519,8 @@ package body Sem_Ch4 is
          Check_Error_Detected;
          return;
       end if;
+
+      Set_Etype (N, Any_Type);
 
       Then_Expr := Next (Condition);
 
@@ -2340,8 +2540,8 @@ package body Sem_Ch4 is
       Analyze_Expression (Condition);
       Resolve (Condition, Any_Boolean);
 
-      --  Analyze THEN expression and (if present) ELSE expression. For those
-      --  we delay resolution in the normal manner, because of overloading etc.
+      --  Analyze the THEN expression and (if present) the ELSE expression. For
+      --  them we delay resolution in the normal manner because of overloading.
 
       Analyze_Expression (Then_Expr);
 
@@ -2349,49 +2549,65 @@ package body Sem_Ch4 is
          Analyze_Expression (Else_Expr);
       end if;
 
-      --  If then expression not overloaded, then that decides the type
+      --  Loop through the interpretations of the THEN expression and check the
+      --  ELSE expression if present.
 
       if not Is_Overloaded (Then_Expr) then
-         Set_Etype (N, Etype (Then_Expr));
-
-      --  Case where then expression is overloaded
+         if Present (Else_Expr) then
+            Check_Else_Expression (Etype (Then_Expr));
+         else
+            Set_Etype (N, Etype (Then_Expr));
+         end if;
 
       else
-         declare
-            I  : Interp_Index;
-            It : Interp;
-
-         begin
-            Set_Etype (N, Any_Type);
-
-            --  Loop through interpretations of Then_Expr
-
-            Get_First_Interp (Then_Expr, I, It);
-            while Present (It.Nam) loop
-
-               --  Add possible interpretation of Then_Expr if no Else_Expr, or
-               --  Else_Expr is present and has a compatible type.
-
-               if No (Else_Expr)
-                 or else Has_Compatible_Type (Else_Expr, It.Typ)
-               then
-                  Add_One_Interp (N, It.Typ, It.Typ);
-               end if;
-
-               Get_Next_Interp (I, It);
-            end loop;
-
-            --  If no valid interpretation has been found, then the type of the
-            --  ELSE expression does not match any interpretation of the THEN
-            --  expression.
-
-            if Etype (N) = Any_Type then
-               Error_Msg_N
-                 ("type incompatible with that of THEN expression",
-                  Else_Expr);
-               return;
+         Get_First_Interp (Then_Expr, I, It);
+         while Present (It.Typ) loop
+            if Present (Else_Expr) then
+               Check_Else_Expression (It.Typ);
+            else
+               Add_One_Interp (N, It.Typ, It.Typ);
             end if;
-         end;
+
+            Get_Next_Interp (I, It);
+         end loop;
+      end if;
+
+      --  If no possible interpretation has been found, the type of the
+      --  ELSE expression does not match any interpretation of the THEN
+      --  expression.
+
+      if Etype (N) = Any_Type then
+         if Is_Overloaded (Then_Expr) then
+            if Is_Overloaded (Else_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with those of THEN expression",
+                  Else_Expr);
+            else
+               Error_Msg_N
+                 ("type of ELSE incompatible with interpretations of THEN "
+                  & "expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
+            end if;
+
+         else
+            if Is_Overloaded (Else_Expr) then
+               Error_Msg_N
+                 ("no interpretation compatible with type of THEN expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\THEN expression has}!", Else_Expr, Etype (Then_Expr));
+            else
+               Error_Msg_N
+                 ("type of ELSE incompatible with that of THEN expression",
+                  Else_Expr);
+               Error_Msg_NE
+                 ("\THEN expression has}!", Else_Expr, Etype (Then_Expr));
+               Error_Msg_NE
+                 ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
+            end if;
+         end if;
       end if;
    end Analyze_If_Expression;
 
@@ -7637,6 +7853,93 @@ package body Sem_Ch4 is
 
       return Etype (N) /= Any_Type;
    end Has_Possible_Literal_Aspects;
+
+   ----------------------------------------------
+   -- Possible_Type_For_Conditional_Expression --
+   ----------------------------------------------
+
+   function Possible_Type_For_Conditional_Expression
+     (T1, T2 : Entity_Id) return Entity_Id
+   is
+      function Is_Access_Protected_Subprogram_Attribute
+        (T : Entity_Id) return Boolean;
+      --  Return true if T is the type of an access-to-protected-subprogram
+      --  attribute.
+
+      function Is_Access_Subprogram_Attribute (T : Entity_Id) return Boolean;
+      --  Return true if T is the type of an access-to-subprogram attribute
+
+      ----------------------------------------------
+      -- Is_Access_Protected_Subprogram_Attribute --
+      ----------------------------------------------
+
+      function Is_Access_Protected_Subprogram_Attribute
+        (T : Entity_Id) return Boolean
+      is
+      begin
+         return Ekind (T) = E_Access_Protected_Subprogram_Type
+           and then Ekind (Designated_Type (T)) /= E_Subprogram_Type;
+      end Is_Access_Protected_Subprogram_Attribute;
+
+      ------------------------------------
+      -- Is_Access_Subprogram_Attribute --
+      ------------------------------------
+
+      function Is_Access_Subprogram_Attribute (T : Entity_Id) return Boolean is
+      begin
+         return Ekind (T) = E_Access_Subprogram_Type
+           and then Ekind (Designated_Type (T)) /= E_Subprogram_Type;
+      end Is_Access_Subprogram_Attribute;
+
+   --  Start of processing for Possible_Type_For_Conditional_Expression
+
+   begin
+      --  If both types are those of similar access attributes or allocators,
+      --  pick one of them, for example the first.
+
+      if Ekind (T1) in E_Access_Attribute_Type | E_Allocator_Type
+        and then Ekind (T2) in E_Access_Attribute_Type | E_Allocator_Type
+      then
+         return T1;
+
+      elsif Is_Access_Subprogram_Attribute (T1)
+        and then Is_Access_Subprogram_Attribute (T2)
+      then
+         return T1;
+
+      elsif Is_Access_Protected_Subprogram_Attribute (T1)
+        and then Is_Access_Protected_Subprogram_Attribute (T2)
+      then
+         return T1;
+
+      --  The other case to be considered is a pair of tagged types
+
+      elsif Is_Tagged_Type (T1) and then Is_Tagged_Type (T2) then
+         --  Covers performs the same checks when T1 or T2 are a CW type, so
+         --  we don't need to do them again here.
+
+         if not Is_Class_Wide_Type (T1) and then Is_Ancestor (T1, T2) then
+            return T1;
+
+         elsif not Is_Class_Wide_Type (T2) and then Is_Ancestor (T2, T1) then
+            return T2;
+
+         --  Neither type is an ancestor of the other, but they may have one in
+         --  common, so we pick the first type as above. We could perform here
+         --  the computation of the nearest common ancestors of T1 and T2, but
+         --  this would require a significant amount of work and the practical
+         --  benefit would very likely be negligible.
+
+         else
+            return T1;
+         end if;
+
+      --  Otherwise no type is possible
+
+      else
+         return Empty;
+      end if;
+   end Possible_Type_For_Conditional_Expression;
 
    --------------------------------
    -- Remove_Abstract_Operations --
