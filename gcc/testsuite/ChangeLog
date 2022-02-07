@@ -1,3 +1,14 @@
+2022-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96242
+	* g++.dg/cpp2a/spaceship-synth15.C: New test.
+
+2022-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	PR c++/104033
+	* g++.dg/cpp1y/constexpr-89074-3.C: New test.
+
 2022-02-05  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* gcc.target/s390/20150826-1.c: Update expected output.

@@ -1,3 +1,22 @@
+2022-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	PR c++/104033
+	* fold-const.h (folding_initializer): Adjust comment.
+	(folding_cxx_constexpr): Declare.
+	* fold-const.cc (folding_initializer): Adjust comment.
+	(folding_cxx_constexpr): New variable.
+	(address_compare): Restrict the decl vs. STRING_CST
+	or vice versa or STRING_CST vs. STRING_CST or
+	is_global_var != is_global_var optimizations to !folding_cxx_constexpr.
+	Punt for FUNCTION_DECLs with non-zero offsets.  If folding_initializer,
+	assume non-aliased functions have non-zero size and have different
+	addresses.  For folding_cxx_constexpr, punt on comparisons of start
+	of some object and end of another one, regardless whether it is a decl
+	or string literal.  Also punt for folding_cxx_constexpr on
+	STRING_CST vs. STRING_CST comparisons if the two literals could be
+	overlapping.
+
 2022-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/104389

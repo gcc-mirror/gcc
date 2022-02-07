@@ -1,3 +1,21 @@
+2022-02-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96242
+	* decl2.cc (mark_used): Directly synthesize a DECL_MAYBE_DELETED
+	fn by calling maybe_synthesize_method instead of relying on
+	maybe_instantiate_noexcept.  Move call to m_i_n after the
+	DECL_DELETED_FN handling.
+	* pt.cc (maybe_instantiate_noexcept): Restrict DECL_MAYBE_DELETED
+	fn synthesis to only those with an implicit noexcept-spec, and
+	return !DECL_DELETED_FN instead of !DECL_MAYBE_DELETED afterwards.
+
+2022-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89074
+	PR c++/104033
+	* constexpr.cc (cxx_eval_binary_expression): Temporarily set
+	folding_cxx_constexpr.
+
 2022-02-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104300
