@@ -70,6 +70,8 @@ struct DIR { };
 inline DIR* opendir(const char*) { return nullptr; }
 inline dirent* readdir(DIR*) { return nullptr; }
 inline int closedir(DIR*) { return -1; }
+#undef _GLIBCXX_HAVE_DIRFD
+#undef _GLIBCXX_HAVE_UNLINKAT
 #endif
 } // namespace __gnu_posix
 
