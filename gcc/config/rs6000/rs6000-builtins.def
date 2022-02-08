@@ -3497,6 +3497,9 @@
   const signed int __builtin_altivec_vstrihr_p (vss);
     VSTRIHR_P vstrir_p_v8hi {}
 
+  const vuq __builtin_vsx_vmsumcud (vull, vull, vuq);
+    VMSUMCUD vmsumcud {}
+
   const signed int __builtin_vsx_xvtlsbb_all_ones (vsc);
     XVTLSBB_ONES xvtlsbbo {}
 

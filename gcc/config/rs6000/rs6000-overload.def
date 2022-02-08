@@ -2456,6 +2456,10 @@
   vuq __builtin_vec_msum (vull, vull, vuq);
     VMSUMUDM  VMSUMUDM_U
 
+[VEC_MSUMC, vec_msumc, __builtin_vec_msumc]
+  vuq __builtin_vec_msumc (vull, vull, vuq);
+    VMSUMCUD
+
 [VEC_MSUMS, vec_msums, __builtin_vec_msums]
   vui __builtin_vec_msums (vus, vus, vui);
     VMSUMUHS

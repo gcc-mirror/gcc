@@ -372,6 +372,7 @@
    UNSPEC_REPLACE_UN
    UNSPEC_VDIVES
    UNSPEC_VDIVEU
+   UNSPEC_VMSUMCUD
    UNSPEC_XXEVAL
    UNSPEC_XXSPLTIW
    UNSPEC_XXSPLTIDP
@@ -6620,3 +6621,15 @@
   emit_move_insn (operands[0], tmp4);
   DONE;
 })
+
+;; vmsumcud
+(define_insn "vmsumcud"
+[(set (match_operand:V1TI 0 "register_operand" "+v")
+      (unspec:V1TI [(match_operand:V2DI 1 "register_operand" "v")
+                    (match_operand:V2DI 2 "register_operand" "v")
+		    (match_operand:V1TI 3 "register_operand" "v")]
+		   UNSPEC_VMSUMCUD))]
+  "TARGET_POWER10"
+  "vmsumcud %0,%1,%2,%3"
+  [(set_attr "type" "veccomplex")]
+)
