@@ -433,6 +433,8 @@ package body System.Image_F is
          Digs (1 .. 2) := " 0";
          Ndigs := 2;
       end if;
+      pragma Annotate (CodePeer, False_Positive, "test always true",
+                       "no digits were output for zero");
 
       Set_Decimal_Digits (Digs, Ndigs, S, P, Scale, Fore, Aft, Exp);
    end Set_Image_Fixed;
