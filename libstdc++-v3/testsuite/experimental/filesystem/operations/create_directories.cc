@@ -108,8 +108,15 @@ test02()
     VERIFY( !result );
     VERIFY( ec == std::errc::not_a_directory );
     result = create_directories(file.path/"../bar", ec);
+#if defined(__MINGW32__) || defined(__MINGW64__)
+    VERIFY( result );
+    VERIFY( !ec );
+    VERIFY( is_directory(dir.path/"bar") );
+    remove(dir.path/"bar");
+#else
     VERIFY( !result );
     VERIFY( ec );
+#endif
   }
 }
 
@@ -120,11 +127,19 @@ test03()
   const auto p = __gnu_test::nonexistent_path() / "/";
   bool result = create_directories(p);
   VERIFY( result );
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( exists(p/".") ); // needed due to PR libstdc++/88881
+#else
   VERIFY( exists(p) );
+#endif
   remove(p);
   result = create_directories(p/"foo/");
   VERIFY( result );
+#if defined(__MINGW32__) || defined(__MINGW64__)
+  VERIFY( exists(p/".") ); // needed due to PR libstdc++/88881
+#else
   VERIFY( exists(p) );
+#endif
   VERIFY( exists(p/"foo") );
   remove_all(p);
 }
