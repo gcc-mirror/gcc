@@ -3636,7 +3636,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 	/* It is going to be a load/store on condition.  Make it
 	   slightly more expensive than a normal load.  */
-	*total = COSTS_N_INSNS (1) + 1;
+	*total = COSTS_N_INSNS (1) + 2;
 
 	rtx dst = SET_DEST (x);
 	rtx then = XEXP (SET_SRC (x), 1);
