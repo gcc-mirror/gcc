@@ -6257,8 +6257,11 @@ vspltis_shifted (rtx op)
     return false;
 
   /* We need to create pseudo registers to do the shift, so don't recognize
-     shift vector constants after reload.  */
-  if (!can_create_pseudo_p ())
+     shift vector constants after reload.  Don't match it even before RA
+     after split1 is done, because there won't be further splitting pass
+     before RA to do the splitting.  */
+  if (!can_create_pseudo_p ()
+      || (cfun->curr_properties & PROP_rtl_split_insns))
     return false;
 
   nunits = GET_MODE_NUNITS (mode);
