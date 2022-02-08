@@ -1188,6 +1188,8 @@ gomp_task_run_post_handle_dependers (struct gomp_task *child_task,
 		}
 	    }
 	}
+      else
+	task->parent = NULL;
       if (taskgroup)
 	{
 	  priority_queue_insert (PQ_TASKGROUP, &taskgroup->taskgroup_queue,
