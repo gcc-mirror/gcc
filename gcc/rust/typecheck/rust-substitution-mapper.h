@@ -156,6 +156,9 @@ public:
   static TyTy::BaseType *Resolve (TyTy::BaseType *base,
 				  TyTy::SubstitutionArgumentMappings &mappings);
 
+  static bool mappings_are_bound (TyTy::BaseType *ty,
+				  TyTy::SubstitutionArgumentMappings &mappings);
+
   void visit (TyTy::FnType &type) override
   {
     TyTy::SubstitutionArgumentMappings adjusted

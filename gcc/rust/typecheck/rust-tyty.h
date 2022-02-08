@@ -980,6 +980,57 @@ public:
   SubstitutionArgumentMappings
   adjust_mappings_for_this (SubstitutionArgumentMappings &mappings);
 
+  // Are the mappings here actually bound to this type. For example imagine the
+  // case:
+  //
+  // struct Foo<T>(T);
+  // impl<T> Foo<T> {
+  //   fn test(self) { ... }
+  // }
+  //
+  // In this case we have a generic ADT of Foo and an impl block of a generic T
+  // on Foo for the Self type. When we it comes to path resolution we can have:
+  //
+  // Foo::<i32>::test()
+  //
+  // This means the first segment of Foo::<i32> returns the ADT Foo<i32> not the
+  // Self ADT bound to the T from the impl block. This means when it comes to
+  // the next segment of test which resolves to the function we need to check
+  // wether the arguments in the struct definition of foo can be bound here
+  // before substituting the previous segments type here. This functions acts as
+  // a guard for the solve_mappings_from_receiver_for_self to handle the case
+  // where arguments are not bound. This is important for this next case:
+  //
+  // struct Baz<A, B>(A, B);
+  // impl Baz<i32, f32> {
+  //   fn test<X>(a: X) -> X {
+  //       a
+  //   }
+  // }
+  //
+  // In this case Baz has been already substituted for the impl's Self to become
+  // ADT<i32, f32> so that the function test only has 1 generic argument of X.
+  // The path for this will be:
+  //
+  // Baz::test::<_>(123)
+  //
+  // So the first segment here will be Baz<_, _> to try and infer the arguments
+  // which will be taken from the impl's Self type in this case since it is
+  // already substituted and like the previous case the check to see if we need
+  // to inherit the previous segments generic arguments takes place but the
+  // generic arguments are not bound to this type as they have already been
+  // substituted.
+  //
+  // Its important to remember from the first example the FnType actually looks
+  // like:
+  //
+  // fn <T>test(self :Foo<T>(T))
+  //
+  // As the generic parameters are "bound" to each of the items in the impl
+  // block. So this check is about wether the arguments we have here can
+  // actually be bound to this type.
+  bool are_mappings_bound (SubstitutionArgumentMappings &mappings);
+
   // struct Foo<A, B>(A, B);
   //
   // impl<T> Foo<T, f32>;
