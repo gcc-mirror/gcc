@@ -89,8 +89,6 @@ is_permission_denied_error(int e)
 
 struct _Dir_base
 {
-  _Dir_base(posix::DIR* dirp = nullptr) : dirp(dirp) { }
-
   // If no error occurs then dirp is non-null,
   // otherwise null (even if a permission denied error is ignored).
   _Dir_base(int fd, const posix::char_type* pathname,

@@ -57,7 +57,7 @@ struct fs::_Dir : _Dir_base
       path = p;
   }
 
-  _Dir(posix::DIR* dirp, const path& p) : _Dir_base(dirp), path(p) { }
+  _Dir(_Dir_base&& d, const path& p) : _Dir_base(std::move(d)), path(p) { }
 
   _Dir(_Dir&&) = default;
 
@@ -140,7 +140,7 @@ struct fs::_Dir : _Dir_base
     _Dir_base d(dirfd, pathname, skip_permission_denied, nofollow, ec);
     // If this->path is empty, the new _Dir should have an empty path too.
     const fs::path& p = this->path.empty() ? this->path : this->entry.path();
-    return _Dir(std::exchange(d.dirp, nullptr), p);
+    return _Dir(std::move(d), p);
   }
 
   bool
