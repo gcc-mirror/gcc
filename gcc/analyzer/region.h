@@ -1156,7 +1156,8 @@ public:
       inchash::hash hstate;
       hstate.add_ptr (m_parent);
       hstate.add_ptr (m_type);
-      hstate.add (&m_bits, sizeof (m_bits));
+      hstate.add_wide_int (m_bits.m_start_bit_offset);
+      hstate.add_wide_int (m_bits.m_size_in_bits);
       return hstate.end ();
     }
 

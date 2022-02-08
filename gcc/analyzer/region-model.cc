@@ -4710,6 +4710,23 @@ test_descendent_of_p ()
   ASSERT_TRUE (cast_reg->descendent_of_p (x_reg));
 }
 
+/* Verify that bit_range_region works as expected.  */
+
+static void
+test_bit_range_regions ()
+{
+  tree x = build_global_decl ("x", integer_type_node);
+  region_model_manager mgr;
+  const region *x_reg = mgr.get_region_for_global (x);
+  const region *byte0
+    = mgr.get_bit_range (x_reg, char_type_node, bit_range (0, 8));
+  const region *byte1
+    = mgr.get_bit_range (x_reg, char_type_node, bit_range (8, 8));
+  ASSERT_TRUE (byte0->descendent_of_p (x_reg));
+  ASSERT_TRUE (byte1->descendent_of_p (x_reg));
+  ASSERT_NE (byte0, byte1);
+}
+
 /* Verify that simple assignments work as expected.  */
 
 static void
@@ -6009,6 +6026,7 @@ analyzer_region_model_cc_tests ()
   test_binop_svalue_folding ();
   test_sub_svalue_folding ();
   test_descendent_of_p ();
+  test_bit_range_regions ();
   test_assignment ();
   test_compound_assignment ();
   test_stack_frames ();
