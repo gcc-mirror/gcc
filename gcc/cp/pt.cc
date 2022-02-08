@@ -22449,6 +22449,11 @@ uses_deducible_template_parms (tree type)
       for (; parm; parm = TREE_CHAIN (parm))
 	if (uses_deducible_template_parms (TREE_VALUE (parm)))
 	  return true;
+      if (flag_noexcept_type
+	  && TYPE_RAISES_EXCEPTIONS (type)
+	  && TREE_PURPOSE (TYPE_RAISES_EXCEPTIONS (type))
+	  && deducible_expression (TREE_PURPOSE (TYPE_RAISES_EXCEPTIONS (type))))
+	return true;
     }
 
   return false;
