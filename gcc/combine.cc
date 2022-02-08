@@ -2411,6 +2411,7 @@ reg_subword_p (rtx x, rtx reg)
     x = XEXP (x, 0);
 
   return GET_CODE (x) == SUBREG
+	 && !paradoxical_subreg_p (x)
 	 && SUBREG_REG (x) == reg
 	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
 }
