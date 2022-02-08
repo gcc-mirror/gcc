@@ -1,3 +1,17 @@
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104417
+	* sm-taint.cc (tainted_allocation_size::tainted_allocation_size):
+	Remove overzealous assertion.
+	(tainted_allocation_size::emit): Likewise.
+	(region_model::check_dynamic_size_for_taint): Likewise.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103872
+	* region-model-impl-calls.cc (region_model::impl_call_memcpy):
+	Reimplement in terms of a get_store_value followed by a set_value.
+
 2022-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104369

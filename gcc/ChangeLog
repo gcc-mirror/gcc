@@ -1,3 +1,49 @@
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vusdotq_s32, vusdot_laneq_s32,
+	vusdotq_laneq_s32, vsudot_laneq_s32, vsudotq_laneq_s32): New
+	* config/arm/arm_neon_builtins.def (usdot): Add V16QI.
+	(usdot_laneq, sudot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot_laneq<vsi2qi>): New.
+	(neon_<sup>dot_lane<vsi2qi>): Remote unneeded code.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vdot_laneq_u32, vdotq_laneq_u32,
+	vdot_laneq_s32, vdotq_laneq_s32): New.
+	* config/arm/arm_neon_builtins.def (sdot_laneq, udot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.
+	(<sup>dot_prod<vsi2qi>): Re-order rtl.
+	(neon_<sup>dot_lane<vsi2qi>): Fix rtl order and endiannes.
+	(neon_<sup>dot_laneq<vsi2qi>): New.
+
+2022-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/104327
+	* config/s390/s390.cc (s390_can_inline_p): Accept a few more flags
+	if always_inline is set. Don't inline when tune differs without
+	always_inline.
+
+2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gimple-expr.cc (is_gimple_condexpr): _Complex typed
+	compares are not valid.
+	* tree-cfg.cc (verify_gimple_assign_ternary): For COND_EXPR
+	check is_gimple_condexpr.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Move the
+	hunk affecting VSX and ALTIVEC to appropriate place.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Disable
+	MMA if !TARGET_VSX.
+
 2022-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89074

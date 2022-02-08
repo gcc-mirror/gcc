@@ -1,3 +1,78 @@
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104417
+	* gcc.dg/analyzer/pr104417.c: New test.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103872
+	* gcc.dg/analyzer/memcpy-1.c: Add alternate versions of test cases
+	in which the calls to memcpy are hidden from the optimizer.  Add
+	further test cases.
+	* gcc.dg/analyzer/taint-size-1.c: Add test coverage for memcpy
+	with tainted size.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/asm-x86-1.c: Use dg-do "compile" rather than
+	"assemble".
+	* gcc.dg/analyzer/asm-x86-lp64-1.c: Likewise.
+	* gcc.dg/analyzer/asm-x86-lp64-2.c: Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-array_index_mask_nospec.c:
+	Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-1.c:
+	Likewise, and restrict to x86_64-pc-linux-gnu.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-2.c: Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid.c: Use dg-do
+	"compile" rather than "assemble".
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr-paravirt.c:
+	Likewise, and restrict to x86_64-pc-linux-gnu.
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr.c: Use dg-do
+	"compile" rather than "assemble".
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-full.c:
+	Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-reduced.c:
+	Likewise.
+
+2022-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104380
+	* gcc.c-torture/execute/builtins/lib/chk.c (__sprintf_chkieee128,
+	__vsprintf_chkieee128, __snprintf_chkieee128,
+	__vsnprintf_chkieee128): New aliases to non-ieee128 suffixed functions
+	for powerpc -mabi=ieeelongdouble.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: Add new tests.
+	* gcc.target/arm/simd/vdot-2-2.c: Likewise and fix output.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-compile.c: Add new cases.
+	* gcc.target/arm/simd/vdot-exec.c: Likewise.
+
+2022-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/104327
+	* gcc.c-torture/compile/pr104327.c: New test.
+
+2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gcc.dg/torture/pr104402.c: New testcase.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-3.c: New test.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-1.c: New test.
+	* gcc.target/powerpc/pr103627-2.c: New test.
+
 2022-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96242
