@@ -2818,7 +2818,8 @@ satisfaction_value (tree t)
     return t;
 
   gcc_assert (TREE_CODE (t) == INTEGER_CST
-	      && same_type_p (TREE_TYPE (t), boolean_type_node));
+	      && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (t),
+							    boolean_type_node));
   if (integer_zerop (t))
     return boolean_false_node;
   else
