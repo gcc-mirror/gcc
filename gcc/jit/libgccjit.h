@@ -1810,6 +1810,21 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
 					size_t num_elements,
 					gcc_jit_rvalue **elements);
 
+/* Build a permutation vector rvalue from an 3 arrays of elements.
+
+   "vec_type" should be a vector type, created using gcc_jit_type_get_vector.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_25; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_TARGET_BUILTIN
+*/
+extern gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_rvalue *elements1,
+					gcc_jit_rvalue *elements2,
+					gcc_jit_rvalue *mask);
+
 #define LIBGCCJIT_HAVE_gcc_jit_version
 
 /* Functions to retrieve libgccjit version.

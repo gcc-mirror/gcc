@@ -2517,14 +2517,14 @@ gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
-  RETURN_NULL_IF_FAIL (ptr, ctxt, loc, "NULL ptr");
+  RETURN_NULL_IF_FAIL (vector, ctxt, loc, "NULL vector");
   RETURN_NULL_IF_FAIL (index, ctxt, loc, "NULL index");
   RETURN_NULL_IF_FAIL_PRINTF2 (
-    ptr->get_type ()->dyn_cast_vector_type (),
+    vector->get_type ()->dyn_cast_vector_type (),
     ctxt, loc,
     "vector: %s (type: %s) is not a vector",
-    ptr->get_debug_string (),
-    ptr->get_type ()->get_debug_string ());
+    vector->get_debug_string (),
+    vector->get_type ()->get_debug_string ());
   RETURN_NULL_IF_FAIL_PRINTF2 (
     index->get_type ()->is_numeric (),
     ctxt, loc,
@@ -2532,7 +2532,7 @@ gcc_jit_context_new_vector_access (gcc_jit_context *ctxt,
     index->get_debug_string (),
     index->get_type ()->get_debug_string ());
 
-  return (gcc_jit_lvalue *)ctxt->new_vector_access (loc, ptr, index);
+  return (gcc_jit_lvalue *)ctxt->new_vector_access (loc, vector, index);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -4097,6 +4097,30 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
     (loc,
      as_vec_type,
      (gcc::jit::recording::rvalue **)elements);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_rvalue_vector_perm method, in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_rvalue *elements1,
+					gcc_jit_rvalue *elements2,
+					gcc_jit_rvalue *mask)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL ctxt");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  /* LOC can be NULL.  */
+
+  // TODO: check that the type of elements1 and elements2 is the same.
+  // TODO: check that mask is a **constant** vector.
+
+  return (gcc_jit_rvalue *)ctxt->new_rvalue_vector_perm(loc, elements1, elements2, mask);
 }
 
 /* A mutex around the cached state in parse_basever.

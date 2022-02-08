@@ -1018,6 +1018,24 @@ playback::context::new_rvalue_from_vector (location *,
   return new rvalue (this, t_ctor);
 }
 
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector perm.  */
+
+playback::rvalue *
+playback::context::new_rvalue_vector_perm (location *loc,
+					   rvalue* elements1,
+					   rvalue* elements2,
+					   rvalue* mask)
+{
+  tree t_elements1 = elements1->as_tree ();
+  tree t_elements2 = elements2->as_tree ();
+  tree t_mask = mask->as_tree ();
+  tree t_vector_perm = build3 (VEC_PERM_EXPR, TREE_TYPE (t_elements1), t_elements1, t_elements2, t_mask);
+  if (loc)
+    set_tree_location (t_vector_perm, loc);
+  return new rvalue (this, t_vector_perm);
+}
+
 /* Coerce a tree expression into a boolean tree expression.  */
 
 tree
@@ -1578,7 +1596,7 @@ new_vector_access (location *loc,
   t_vector = fold_const_var (t_vector);
   tree t_index = index->as_tree ();
   t_index = fold_const_var (t_index);
-  tree t_result = build3_loc (loc, BIT_FIELD_REF,
+  tree t_result = build3 (BIT_FIELD_REF,
 		    t_type_vector, t_vector, TYPE_SIZE (t_type_vector), bitsize_zero_node);
 
   if (loc)

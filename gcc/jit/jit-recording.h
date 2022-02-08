@@ -178,6 +178,12 @@ public:
 			  rvalue **elements);
 
   rvalue *
+  new_rvalue_vector_perm (location *loc,
+			  rvalue *elements1,
+			  rvalue *elements2,
+			  rvalue *mask);
+
+  rvalue *
   new_unary_op (location *loc,
 		enum gcc_jit_unary_op op,
 		type *result_type,
@@ -1605,6 +1611,33 @@ private:
   auto_vec<rvalue *> m_elements;
 };
 
+class memento_of_new_rvalue_vector_perm : public rvalue
+{
+public:
+  memento_of_new_rvalue_vector_perm (context *ctxt,
+				     location *loc,
+				     rvalue *elements1,
+				     rvalue *elements2,
+				     rvalue *mask);
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_PRIMARY;
+  }
+
+private:
+  rvalue *m_elements1;
+  rvalue *m_elements2;
+  rvalue *m_mask;
+};
+
 class ctor : public rvalue
 {
 public:
@@ -1887,7 +1920,7 @@ public:
 		 location *loc,
 		 rvalue *vector,
 		 rvalue *index)
-  : lvalue (ctxt, loc, ptr->get_type ()->dyn_cast_vector_type ()->get_element_type ()),
+  : lvalue (ctxt, loc, vector->get_type ()->dyn_cast_vector_type ()->get_element_type ()),
     m_vector (vector),
     m_index (index)
   {}
