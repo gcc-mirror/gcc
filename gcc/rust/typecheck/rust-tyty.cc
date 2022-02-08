@@ -636,6 +636,45 @@ SubstitutionRef::adjust_mappings_for_this (
 				       mappings.get_locus ());
 }
 
+bool
+SubstitutionRef::are_mappings_bound (SubstitutionArgumentMappings &mappings)
+{
+  std::vector<SubstitutionArg> resolved_mappings;
+  for (size_t i = 0; i < substitutions.size (); i++)
+    {
+      auto &subst = substitutions.at (i);
+
+      SubstitutionArg arg = SubstitutionArg::error ();
+      if (mappings.size () == substitutions.size ())
+	{
+	  mappings.get_argument_at (i, &arg);
+	}
+      else
+	{
+	  if (subst.needs_substitution ())
+	    {
+	      // get from passed in mappings
+	      mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
+	    }
+	  else
+	    {
+	      // we should already have this somewhere
+	      used_arguments.get_argument_for_symbol (subst.get_param_ty (),
+						      &arg);
+	    }
+	}
+
+      bool ok = !arg.is_error ();
+      if (ok)
+	{
+	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
+	  resolved_mappings.push_back (std::move (adjusted));
+	}
+    }
+
+  return !resolved_mappings.empty ();
+}
+
 // this function assumes that the mappings being passed are for the same type as
 // this new substitution reference so ordering matters here
 SubstitutionArgumentMappings

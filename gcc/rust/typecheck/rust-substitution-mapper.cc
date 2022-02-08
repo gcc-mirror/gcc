@@ -43,5 +43,23 @@ SubstMapperInternal::Resolve (TyTy::BaseType *base,
   return mapper.resolved;
 }
 
+bool
+SubstMapperInternal::mappings_are_bound (
+  TyTy::BaseType *tyseg, TyTy::SubstitutionArgumentMappings &mappings)
+{
+  if (tyseg->get_kind () == TyTy::TypeKind::ADT)
+    {
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyseg);
+      return adt->are_mappings_bound (mappings);
+    }
+  else if (tyseg->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      TyTy::FnType *fn = static_cast<TyTy::FnType *> (tyseg);
+      return fn->are_mappings_bound (mappings);
+    }
+
+  return false;
+}
+
 } // namespace Resolver
 } // namespace Rust
