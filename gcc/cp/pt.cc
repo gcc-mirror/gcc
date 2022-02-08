@@ -3743,6 +3743,41 @@ argument_pack_select_arg (tree t)
   return arg;
 }
 
+/* Return a modification of ARGS that's suitable for preserving inside a hash
+   table.  In particular, this replaces each ARGUMENT_PACK_SELECT with its
+   underlying argument.  ARGS is copied (upon modification) iff COW_P.  */
+
+static tree
+preserve_args (tree args, bool cow_p = true)
+{
+  if (!args)
+    return NULL_TREE;
+
+  for (int i = 0, len = TREE_VEC_LENGTH (args); i < len; ++i)
+    {
+      tree t = TREE_VEC_ELT (args, i);
+      tree r;
+      if (!t)
+	r = NULL_TREE;
+      else if (TREE_CODE (t) == ARGUMENT_PACK_SELECT)
+	r = argument_pack_select_arg (t);
+      else if (TREE_CODE (t) == TREE_VEC)
+	r = preserve_args (t, cow_p);
+      else
+	r = t;
+      if (r != t)
+	{
+	  if (cow_p)
+	    {
+	      args = copy_template_args (args);
+	      cow_p = false;
+	    }
+	  TREE_VEC_ELT (args, i) = r;
+	}
+    }
+
+  return args;
+}
 
 /* True iff FN is a function representing a built-in variadic parameter
    pack.  */
@@ -19511,10 +19546,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
     LAMBDA_EXPR_REGEN_INFO (r)
-      = build_template_info (t, add_to_template_args (TI_ARGS (ti), args));
+      = build_template_info (t, add_to_template_args (TI_ARGS (ti),
+						      preserve_args (args)));
   else
     LAMBDA_EXPR_REGEN_INFO (r)
-      = build_template_info (t, args);
+      = build_template_info (t, preserve_args (args));
 
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
