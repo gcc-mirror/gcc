@@ -1209,8 +1209,8 @@
 
 (define_insn "copysign<mode>3"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-	(unspec:SDFM [(match_operand:SDFM 1 "nvptx_register_operand" "R")
-		      (match_operand:SDFM 2 "nvptx_register_operand" "R")]
+	(unspec:SDFM [(match_operand:SDFM 1 "nvptx_nonmemory_operand" "RF")
+		      (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")]
 		      UNSPEC_COPYSIGN))]
   ""
   "%.\\tcopysign%t0\\t%0, %2, %1;")
