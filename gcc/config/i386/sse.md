@@ -20177,6 +20177,24 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "SI")])
 
+;; Optimize pxor/pcmpeqb/pmovmskb/cmp 0xffff to ptest.
+(define_mode_attr vi1avx2const
+  [(V32QI "0xffffffff") (V16QI "0xffff")])
+
+(define_split
+  [(set (reg:CCZ FLAGS_REG)
+	(compare:CCZ (unspec:SI
+			[(eq:VI1_AVX2
+			    (match_operand:VI1_AVX2 0 "vector_operand")
+			    (match_operand:VI1_AVX2 1 "const0_operand"))]
+		    UNSPEC_MOVMSK)
+		 (match_operand 2 "const_int_operand")))]
+  "TARGET_SSE4_1 && (INTVAL (operands[2]) == (int) (<vi1avx2const>))"
+  [(set (reg:CC FLAGS_REG)
+	(unspec:CC [(match_dup 0)
+		    (match_dup 0)]
+		   UNSPEC_PTEST))])
+
 (define_expand "sse2_maskmovdqu"
   [(set (match_operand:V16QI 0 "memory_operand")
 	(unspec:V16QI [(match_operand:V16QI 1 "register_operand")
