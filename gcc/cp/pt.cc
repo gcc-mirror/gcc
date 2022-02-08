@@ -14446,6 +14446,21 @@ most_general_lambda (tree t)
   return t;
 }
 
+/* Return the set of template arguments used to regenerate the lambda T
+   from its most general lambda.  */
+
+tree
+lambda_regenerating_args (tree t)
+{
+  if (LAMBDA_FUNCTION_P (t))
+    t = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
+  gcc_assert (TREE_CODE (t) == LAMBDA_EXPR);
+  if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    return TI_ARGS (ti);
+  else
+    return NULL_TREE;
+}
+
 /* We're instantiating a variable from template function TCTX.  Return the
    corresponding current enclosing scope.  We can match them up using
    DECL_SOURCE_LOCATION because lambdas only ever have one source location, and
@@ -30127,12 +30142,24 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	    return type;
 	}
 
-      if ((context == adc_return_type
-	   || context == adc_variable_type
-	   || context == adc_decomp_type)
-	  && current_function_decl
-	  && DECL_TEMPLATE_INFO (current_function_decl))
-	outer_targs = DECL_TI_ARGS (current_function_decl);
+      if (context == adc_return_type
+	  || context == adc_variable_type
+	  || context == adc_decomp_type)
+	if (tree fn = current_function_decl)
+	  if (DECL_TEMPLATE_INFO (fn) || LAMBDA_FUNCTION_P (fn))
+	    {
+	      outer_targs = DECL_TEMPLATE_INFO (fn)
+		? DECL_TI_ARGS (fn) : NULL_TREE;
+	      if (LAMBDA_FUNCTION_P (fn))
+		{
+		  /* As in satisfy_declaration_constraints.  */
+		  tree regen_args = lambda_regenerating_args (fn);
+		  if (outer_targs)
+		    outer_targs = add_to_template_args (regen_args, outer_targs);
+		  else
+		    outer_targs = regen_args;
+		}
+	    }
 
       tree full_targs = add_to_template_args (outer_targs, targs);
 
