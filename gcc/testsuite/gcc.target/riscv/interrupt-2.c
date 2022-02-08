@@ -1,6 +1,6 @@
 /* Verify that arg regs used as temporaries get saved.  */
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "" } */
 void __attribute__ ((interrupt))
 foo2 (void)
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32im -mabi=ilp32" } */
+/* { dg-options "-march=rv32im -mabi=ilp32" } */
 int x;
 unsigned u, v;
 void f (void)

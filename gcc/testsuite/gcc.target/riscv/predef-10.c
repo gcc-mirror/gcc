@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32i2p0 -mabi=ilp32 -mcmodel=medlow -misa-spec=2.2" } */
+/* { dg-options "-march=rv32i2p0 -mabi=ilp32 -mcmodel=medlow -misa-spec=2.2" } */
 
 int main () {
 
