@@ -7590,6 +7590,7 @@ extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
+extern tree lambda_regenerating_args		(tree);
 extern tree most_general_lambda			(tree);
 
 /* in tree.c */
