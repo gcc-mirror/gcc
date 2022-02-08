@@ -1184,6 +1184,7 @@ See RS/6000 and PowerPC Options.
 -mabi=@var{ABI-string} @gol
 -mfdiv  -mno-fdiv @gol
 -mdiv  -mno-div @gol
+-misa-spec=@var{ISA-spec-string} @gol
 -march=@var{ISA-string} @gol
 -mtune=@var{processor-string} @gol
 -mpreferred-stack-boundary=@var{num} @gol
@@ -27632,6 +27633,22 @@ is to use them if the specified architecture has these instructions.
 Do or don't use hardware instructions for integer division.  This requires the
 M extension.  The default is to use them if the specified architecture has
 these instructions.
+
+@item -misa-spec=@var{ISA-spec-string}
+@opindex misa-spec
+Specify the version of the RISC-V Unprivileged (formerly User-Level)
+ISA specification to produce code conforming to.  The possibilities
+for @var{ISA-spec-string} are:
+@table @code
+@item 2.2
+Produce code conforming to version 2.2.
+@item 20190608
+Produce code conforming to version 20190608.
+@item 20191213
+Produce code conforming to version 20191213.
+@end table
+The default is @option{-misa-spec=20191213} unless GCC has been configured
+with @option{--with-isa-spec=} specifying a different default version.
 
 @item -march=@var{ISA-string}
 @opindex march

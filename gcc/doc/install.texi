@@ -1594,6 +1594,20 @@ On certain targets this option sets the default stack clash protection guard
 size as a power of two in bytes.  On AArch64 @var{size} is required to be either
 12 (4KB) or 16 (64KB).
 
+@item --with-isa-spec=@var{ISA-spec-string}
+On RISC-V targets specify the default version of the RISC-V Unprivileged
+(formerly User-Level) ISA specification to produce code conforming to.
+The possibilities for @var{ISA-spec-string} are:
+@table @code
+@item 2.2
+Produce code conforming to version 2.2.
+@item 20190608
+Produce code conforming to version 20190608.
+@item 20191213
+Produce code conforming to version 20191213.
+@end table
+In the absence of this configuration option the default version is 20191213.
+
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.
