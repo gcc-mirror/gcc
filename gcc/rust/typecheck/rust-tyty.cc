@@ -30,11 +30,85 @@
 #include "rust-hir-trait-ref.h"
 #include "rust-hir-type-bounds.h"
 
-extern ::Backend *
-rust_get_backend ();
-
 namespace Rust {
 namespace TyTy {
+
+std::string
+TypeKindFormat::to_string (TypeKind kind)
+{
+  switch (kind)
+    {
+    case TypeKind::INFER:
+      return "Infer";
+
+    case TypeKind::ADT:
+      return "ADT";
+
+    case TypeKind::STR:
+      return "STR";
+
+    case TypeKind::REF:
+      return "REF";
+
+    case TypeKind::POINTER:
+      return "POINTER";
+
+    case TypeKind::PARAM:
+      return "PARAM";
+
+    case TypeKind::ARRAY:
+      return "ARRAY";
+
+    case TypeKind::FNDEF:
+      return "FnDef";
+
+    case TypeKind::FNPTR:
+      return "FnPtr";
+
+    case TypeKind::TUPLE:
+      return "Tuple";
+
+    case TypeKind::BOOL:
+      return "Bool";
+
+    case TypeKind::CHAR:
+      return "Char";
+
+    case TypeKind::INT:
+      return "Int";
+
+    case TypeKind::UINT:
+      return "Uint";
+
+    case TypeKind::FLOAT:
+      return "Float";
+
+    case TypeKind::USIZE:
+      return "Usize";
+
+    case TypeKind::ISIZE:
+      return "Isize";
+
+    case TypeKind::NEVER:
+      return "Never";
+
+    case TypeKind::PLACEHOLDER:
+      return "Placeholder";
+
+    case TypeKind::PROJECTION:
+      return "Projection";
+
+    case TypeKind::DYNAMIC:
+      return "Dynamic";
+
+    case TypeKind::CLOSURE:
+      return "Closure";
+
+    case TypeKind::ERROR:
+      return "ERROR";
+    }
+  gcc_unreachable ();
+}
 
 bool
 BaseType::satisfies_bound (const TypeBoundPredicate &predicate) const
