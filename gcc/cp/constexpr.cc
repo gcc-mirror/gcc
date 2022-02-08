@@ -6652,7 +6652,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    /* Allow __FUNCTION__ etc.  */
 	    && !DECL_ARTIFICIAL (r))
 	  {
-	    gcc_assert (cxx_dialect >= cxx23);
 	    if (!ctx->quiet)
 	      {
 		if (CP_DECL_THREAD_LOCAL_P (r))
