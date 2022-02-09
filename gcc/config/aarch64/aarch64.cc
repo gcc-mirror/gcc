@@ -9922,9 +9922,15 @@ aarch64_classify_address (struct aarch64_address_info *info,
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
-  if (type == ADDR_QUERY_LDP_STP_N
-      && known_eq (GET_MODE_SIZE (mode), 16))
-    mode = DFmode;
+  if (type == ADDR_QUERY_LDP_STP_N)
+    {
+      if (known_eq (GET_MODE_SIZE (mode), 16))
+	mode = DFmode;
+      else if (known_eq (GET_MODE_SIZE (mode), 8))
+	mode = SFmode;
+      else
+	return false;
+    }
 
   bool allow_reg_index_p = (!load_store_pair_p
 			    && ((vec_flags == 0
@@ -11404,7 +11410,9 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	machine_mode mode = GET_MODE (x);
 
 	if (!MEM_P (x)
-	    || (code == 'y' && maybe_ne (GET_MODE_SIZE (mode), 16)))
+	    || (code == 'y'
+		&& maybe_ne (GET_MODE_SIZE (mode), 8)
+		&& maybe_ne (GET_MODE_SIZE (mode), 16)))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;

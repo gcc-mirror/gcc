@@ -4243,12 +4243,12 @@
 (define_insn "load_pair_lanes<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w")
 	(vec_concat:<VDBL>
-	   (match_operand:VDC 1 "memory_operand" "Utq")
-	   (match_operand:VDC 2 "memory_operand" "m")))]
+	   (match_operand:VDCSIF 1 "memory_operand" "Utq")
+	   (match_operand:VDCSIF 2 "memory_operand" "m")))]
   "TARGET_SIMD
    && aarch64_mergeable_load_pair_p (<VDBL>mode, operands[1], operands[2])"
-  "ldr\\t%q0, %1"
-  [(set_attr "type" "neon_load1_1reg_q")]
+  "ldr\\t%<single_dtype>0, %1"
+  [(set_attr "type" "neon_load1_1reg<dblq>")]
 )
 
 ;; This STP pattern is a partial duplicate of the general vec_concat patterns
@@ -4273,12 +4273,12 @@
 (define_insn "store_pair_lanes<mode>"
   [(set (match_operand:<VDBL> 0 "aarch64_mem_pair_lanes_operand" "=Umn, Umn")
 	(vec_concat:<VDBL>
-	   (match_operand:VDC 1 "register_operand" "w, r")
-	   (match_operand:VDC 2 "register_operand" "w, r")))]
+	   (match_operand:VDCSIF 1 "register_operand" "w, r")
+	   (match_operand:VDCSIF 2 "register_operand" "w, r")))]
   "TARGET_SIMD"
   "@
-   stp\\t%d1, %d2, %y0
-   stp\\t%x1, %x2, %y0"
+   stp\t%<single_type>1, %<single_type>2, %y0
+   stp\t%<single_wx>1, %<single_wx>2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
 )
 
@@ -4292,37 +4292,37 @@
 (define_insn "*aarch64_combine_internal<mode>"
   [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 1 "register_operand" "0, 0, 0, ?w, ?r")
-	  (match_operand:VDC 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, w, ?r")))]
+	  (match_operand:VDCSIF 1 "register_operand" "0, 0, 0, ?w, ?r")
+	  (match_operand:VDCSIF 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, w, ?r")))]
   "TARGET_SIMD
    && !BYTES_BIG_ENDIAN
    && (register_operand (operands[0], <VDBL>mode)
        || register_operand (operands[2], <MODE>mode))"
   "@
-   ins\t%0.d[1], %2.d[0]
-   ins\t%0.d[1], %2
-   ld1\t{%0.d}[1], %2
-   stp\t%d1, %d2, %y0
-   stp\t%x1, %x2, %y0"
-  [(set_attr "type" "neon_ins_q, neon_from_gp_q, neon_load1_one_lane_q, neon_stp, store_16")]
+   ins\t%0.<single_type>[1], %2.<single_type>[0]
+   ins\t%0.<single_type>[1], %<single_wx>2
+   ld1\t{%0.<single_type>}[1], %2
+   stp\t%<single_type>1, %<single_type>2, %y0
+   stp\t%<single_wx>1, %<single_wx>2, %y0"
+  [(set_attr "type" "neon_ins<dblq>, neon_from_gp<dblq>, neon_load1_one_lane<dblq>, neon_stp, store_16")]
 )
 
 (define_insn "*aarch64_combine_internal_be<mode>"
   [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, ?w, ?r")
-	  (match_operand:VDC 1 "register_operand" "0, 0, 0, ?w, ?r")))]
+	  (match_operand:VDCSIF 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, ?w, ?r")
+	  (match_operand:VDCSIF 1 "register_operand" "0, 0, 0, ?w, ?r")))]
   "TARGET_SIMD
    && BYTES_BIG_ENDIAN
    && (register_operand (operands[0], <VDBL>mode)
        || register_operand (operands[2], <MODE>mode))"
   "@
-   ins\t%0.d[1], %2.d[0]
-   ins\t%0.d[1], %2
-   ld1\t{%0.d}[1], %2
-   stp\t%d2, %d1, %y0
-   stp\t%x2, %x1, %y0"
-  [(set_attr "type" "neon_ins_q, neon_from_gp_q, neon_load1_one_lane_q, neon_stp, store_16")]
+   ins\t%0.<single_type>[1], %2.<single_type>[0]
+   ins\t%0.<single_type>[1], %<single_wx>2
+   ld1\t{%0.<single_type>}[1], %2
+   stp\t%<single_type>2, %<single_type>1, %y0
+   stp\t%<single_wx>2, %<single_wx>1, %y0"
+  [(set_attr "type" "neon_ins<dblq>, neon_from_gp<dblq>, neon_load1_one_lane<dblq>, neon_stp, store_16")]
 )
 
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
@@ -4331,13 +4331,13 @@
 (define_insn "*aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 1 "nonimmediate_operand" "w,?r,m")
-	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")))]
+	  (match_operand:VDCSIF 1 "nonimmediate_operand" "w,?r,m")
+	  (match_operand:VDCSIF 2 "aarch64_simd_or_scalar_imm_zero")))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "@
-   mov\\t%0.8b, %1.8b
-   fmov\t%d0, %1
-   ldr\\t%d0, %1"
+   fmov\\t%<single_type>0, %<single_type>1
+   fmov\t%<single_type>0, %<single_wx>1
+   ldr\\t%<single_type>0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
    (set_attr "arch" "simd,fp,simd")]
 )
@@ -4345,13 +4345,13 @@
 (define_insn "*aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
-	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
-	  (match_operand:VDC 1 "nonimmediate_operand" "w,?r,m")))]
+	  (match_operand:VDCSIF 2 "aarch64_simd_or_scalar_imm_zero")
+	  (match_operand:VDCSIF 1 "nonimmediate_operand" "w,?r,m")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "@
-   mov\\t%0.8b, %1.8b
-   fmov\t%d0, %1
-   ldr\\t%d0, %1"
+   fmov\\t%<single_type>0, %<single_type>1
+   fmov\t%<single_type>0, %<single_wx>1
+   ldr\\t%<single_type>0, %1"
   [(set_attr "type" "neon_move<q>, neon_from_gp, neon_load1_1reg")
    (set_attr "arch" "simd,fp,simd")]
 )
@@ -4362,8 +4362,8 @@
 (define_expand "@aarch64_vec_concat<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 1 "general_operand")
-	  (match_operand:VDC 2 "general_operand")))]
+	  (match_operand:VDCSIF 1 "general_operand")
+	  (match_operand:VDCSIF 2 "general_operand")))]
   "TARGET_SIMD"
 {
   int lo = BYTES_BIG_ENDIAN ? 2 : 1;
