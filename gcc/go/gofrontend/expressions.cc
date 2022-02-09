@@ -10332,16 +10332,7 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PRINTLN:
       {
 	const Expression_list* args = this->args();
-	if (args == NULL)
-	  {
-	    if (this->code_ == BUILTIN_PRINT)
-	      go_warning_at(this->location(), 0,
-			 "no arguments for built-in function %<%s%>",
-			 (this->code_ == BUILTIN_PRINT
-			  ? "print"
-			  : "println"));
-	  }
-	else
+	if (args != NULL)
 	  {
 	    for (Expression_list::const_iterator p = args->begin();
 		 p != args->end();
