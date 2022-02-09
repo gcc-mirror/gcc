@@ -10128,8 +10128,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    mark_exp_read (e1.value);
 	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
 	    parens.skip_until_found_close (parser);
-	    expr.value = build1_loc (loc, PAREN_EXPR, TREE_TYPE (e1.value),
-				     e1.value);
+	    expr = parser_build_unary_op (loc, PAREN_EXPR, e1);
 	    set_c_expr_source_range (&expr, start_loc, end_loc);
 	  }
 	  break;

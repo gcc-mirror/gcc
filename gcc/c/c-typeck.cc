@@ -4921,6 +4921,10 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       ret = val;
       goto return_build_unary_op;
 
+    case PAREN_EXPR:
+      ret = build1 (code, TREE_TYPE (arg), arg);
+      goto return_build_unary_op;
+
     default:
       gcc_unreachable ();
     }
