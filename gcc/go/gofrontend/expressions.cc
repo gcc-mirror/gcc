@@ -2123,9 +2123,15 @@ String_expression::do_get_backend(Translate_context* context)
 
   Location loc = this->location();
   std::vector<Bexpression*> init(2);
-  Bexpression* str_cst =
-      gogo->backend()->string_constant_expression(this->val_);
-  init[0] = gogo->backend()->address_expression(str_cst, loc);
+
+  if (this->val_.size() == 0)
+    init[0] = gogo->backend()->nil_pointer_expression();
+  else
+    {
+      Bexpression* str_cst =
+	gogo->backend()->string_constant_expression(this->val_);
+      init[0] = gogo->backend()->address_expression(str_cst, loc);
+    }
 
   Btype* int_btype = Type::lookup_integer_type("int")->get_backend(gogo);
   mpz_t lenval;
