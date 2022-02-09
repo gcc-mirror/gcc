@@ -4326,6 +4326,25 @@
   [(set_attr "type" "neon_load1_1reg_q")]
 )
 
+;; This STP pattern is a partial duplicate of the general vec_concat patterns
+;; below.  The reason for having both of them is that the alternatives of
+;; the later patterns do not have consistent register preferences: the STP
+;; alternatives have no preference between GPRs and FPRs (and if anything,
+;; the GPR form is more natural for scalar integers) whereas the other
+;; alternatives *require* an FPR for operand 1 and prefer one for operand 2.
+;;
+;; Using "*" to hide the STP alternatives from the RA penalizes cases in
+;; which the destination was always memory.  On the other hand, expressing
+;; the true preferences makes GPRs seem more palatable than they really are
+;; for register destinations.
+;;
+;; Despite that, we do still want the general form to have STP alternatives,
+;; in order to handle cases where a register destination is spilled.
+;;
+;; The best compromise therefore seemed to be to have a dedicated STP
+;; pattern to catch cases in which the destination was always memory.
+;; This dedicated pattern must come first.
+
 (define_insn "store_pair_lanes<mode>"
   [(set (match_operand:<VDBL> 0 "aarch64_mem_pair_lanes_operand" "=Umn, Umn")
 	(vec_concat:<VDBL>
@@ -4336,6 +4355,49 @@
    stp\\t%d1, %d2, %y0
    stp\\t%x1, %x2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
+)
+
+;; Form a vector whose least significant half comes from operand 1 and whose
+;; most significant half comes from operand 2.  The register alternatives
+;; tie the least significant half to the same register as the destination,
+;; so that only the other half needs to be handled explicitly.  For the
+;; reasons given above, the STP alternatives use ? for constraints that
+;; the register alternatives either don't accept or themselves disparage.
+
+(define_insn "*aarch64_combine_internal<mode>"
+  [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
+	(vec_concat:<VDBL>
+	  (match_operand:VDC 1 "register_operand" "0, 0, 0, ?w, ?r")
+	  (match_operand:VDC 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, w, ?r")))]
+  "TARGET_SIMD
+   && !BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <VDBL>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "@
+   ins\t%0.d[1], %2.d[0]
+   ins\t%0.d[1], %2
+   ld1\t{%0.d}[1], %2
+   stp\t%d1, %d2, %y0
+   stp\t%x1, %x2, %y0"
+  [(set_attr "type" "neon_ins_q, neon_from_gp_q, neon_load1_one_lane_q, neon_stp, store_16")]
+)
+
+(define_insn "*aarch64_combine_internal_be<mode>"
+  [(set (match_operand:<VDBL> 0 "aarch64_reg_or_mem_pair_operand" "=w, w, w, Umn, Umn")
+	(vec_concat:<VDBL>
+	  (match_operand:VDC 2 "aarch64_simd_nonimmediate_operand" "w, ?r, Utv, ?w, ?r")
+	  (match_operand:VDC 1 "register_operand" "0, 0, 0, ?w, ?r")))]
+  "TARGET_SIMD
+   && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <VDBL>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "@
+   ins\t%0.d[1], %2.d[0]
+   ins\t%0.d[1], %2
+   ld1\t{%0.d}[1], %2
+   stp\t%d2, %d1, %y0
+   stp\t%x2, %x1, %y0"
+  [(set_attr "type" "neon_ins_q, neon_from_gp_q, neon_load1_one_lane_q, neon_stp, store_16")]
 )
 
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
