@@ -7904,11 +7904,15 @@ package body Sem_Ch4 is
 
       elsif Is_Access_Subprogram_Attribute (T1)
         and then Is_Access_Subprogram_Attribute (T2)
+        and then
+          Subtype_Conformant (Designated_Type (T1), Designated_Type (T2))
       then
          return T1;
 
       elsif Is_Access_Protected_Subprogram_Attribute (T1)
         and then Is_Access_Protected_Subprogram_Attribute (T2)
+        and then
+          Subtype_Conformant (Designated_Type (T1), Designated_Type (T2))
       then
          return T1;
 
