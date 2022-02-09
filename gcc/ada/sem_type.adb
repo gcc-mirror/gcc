@@ -3512,7 +3512,6 @@ package body Sem_Type is
          return True;
 
       elsif Is_Array_Type (T)
-        and then T /= Any_String
         and then Number_Dimensions (T) = 1
         and then Is_Boolean_Type (Component_Type (T))
         and then
