@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -g -w" } */
+/* { dg-require-effective-target alloca } */
 
 static int foo ();
 

@@ -1,7 +1,8 @@
 /* PR middle-end/101300 - -fsanitize=undefined suppresses -Wuninitialized
    for a VLA read at -O0
    { dg-do compile }
-   { dg-options "-O0 -Wall -fsanitize=undefined" } */
+   { dg-options "-O0 -Wall -fsanitize=undefined" }
+   { dg-require-effective-target alloca } */
 
 int warn_vla_rd0 (int n)
 {

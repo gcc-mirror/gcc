@@ -1,6 +1,7 @@
 /* Exercise basic C-only cases of -Wdangling-pointer.
    { dg-do compile }
-   { dg-options "-O0 -Wall" } */
+   { dg-options "-O0 -Wall" }
+   { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;
 
