@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mtune=skylake -Wno-attributes" } */
+/* { dg-options "-O3 -march=x86-64 -mtune=skylake -Wno-attributes" } */
 
 #include <x86intrin.h>
 #include <stdint.h>

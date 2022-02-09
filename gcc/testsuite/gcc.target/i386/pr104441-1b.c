@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -mvzeroupper -Wno-attributes" } */
+/* { dg-options "-O3 -march=x86-64 -mvzeroupper -Wno-attributes" } */
 
 #include "pr104441-1a.c"
 
