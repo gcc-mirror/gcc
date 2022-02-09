@@ -528,8 +528,8 @@
 
 #ifndef __cpp_concepts
 #  error "__cpp_concepts"
-#elif __cpp_concepts != 201907
-#  error "__cpp_concepts != 201907"
+#elif __cpp_concepts != 202002
+#  error "__cpp_concepts != 202002"
 #endif
 
 #ifndef __cpp_using_enum
