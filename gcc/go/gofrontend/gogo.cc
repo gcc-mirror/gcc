@@ -8869,10 +8869,13 @@ Named_object::get_backend(Gogo* gogo, std::vector<Bexpression*>& const_decls,
           {
             named_type->
                 type_descriptor_pointer(gogo, Linemap::predeclared_location());
-	    named_type->gc_symbol_pointer(gogo);
             Type* pn = Type::make_pointer_type(named_type);
             pn->type_descriptor_pointer(gogo, Linemap::predeclared_location());
-	    pn->gc_symbol_pointer(gogo);
+	    if (named_type->in_heap())
+	      {
+		named_type->gc_symbol_pointer(gogo);
+		pn->gc_symbol_pointer(gogo);
+	      }
           }
       }
       break;
