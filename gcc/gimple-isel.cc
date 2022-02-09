@@ -178,11 +178,7 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 	}
 
       gassign *def_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (op0));
-      if (def_stmt
-	  /* When the compare has EH we do not want to forward it when
-	     it has multiple uses and in general because of the complication
-	     with EH redirection.  */
-	  && !stmt_can_throw_internal (fun, def_stmt))
+      if (def_stmt)
 	{
 	  tcode = gimple_assign_rhs_code (def_stmt);
 	  op0a = gimple_assign_rhs1 (def_stmt);
@@ -195,7 +191,6 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 						     tcode);
 
 	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
-
 	  if (can_compute_op0
 	      && integer_minus_onep (op1)
 	      && integer_zerop (op2)
@@ -207,14 +202,19 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 	      return new_stmt;
 	    }
 
-	  if (can_compute_op0
-	      && used_vec_cond_exprs >= 2
-	      && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
-		  != CODE_FOR_nothing))
-	    {
-	      /* Keep the SSA name and use vcond_mask.  */
-	      tcode = TREE_CODE (op0);
-	    }
+	  /* When the compare has EH we do not want to forward it when
+	     it has multiple uses and in general because of the complication
+	     with EH redirection.  */
+	  if (stmt_can_throw_internal (fun, def_stmt))
+	    tcode = TREE_CODE (op0);
+
+	  /* If we can compute op0 and have multiple uses, keep the SSA
+	     name and use vcond_mask.  */
+	  else if (can_compute_op0
+		   && used_vec_cond_exprs >= 2
+		   && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
+		       != CODE_FOR_nothing))
+	    tcode = TREE_CODE (op0);
 	}
       else
 	tcode = TREE_CODE (op0);
