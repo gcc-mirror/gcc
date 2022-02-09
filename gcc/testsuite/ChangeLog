@@ -1,3 +1,16 @@
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104410
+	* g++.dg/cpp2a/concepts-pr104410.C: New test.
+
+2022-02-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gcc.dg/pr104288.c: New.
+
 2022-02-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

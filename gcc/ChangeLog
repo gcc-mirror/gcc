@@ -1,3 +1,10 @@
+2022-02-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gimple-range-cache.cc (ssa_range_in_bb): Only use non-null from the
+	dominator entry ranges.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Ditto.
+
 2022-02-03  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/104362
