@@ -586,6 +586,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+RT_LIBS
 NET_LIBS
 NATIVE_FALSE
 NATIVE_TRUE
@@ -4209,6 +4210,12 @@ if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
 fi
+
+
+RT_LIBS=
+case ${target} in
+  *-*-linux*) RT_LIBS=-lrt ;;
+esac
 
 
 ac_config_files="$ac_config_files Makefile"

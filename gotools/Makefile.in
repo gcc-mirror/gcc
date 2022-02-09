@@ -269,6 +269,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+RT_LIBS = @RT_LIBS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -917,12 +918,14 @@ mostlyclean-local:
 @NATIVE_TRUE@	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 @NATIVE_TRUE@	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 @NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
-@NATIVE_TRUE@	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
+@NATIVE_TRUE@	echo "$(ECHO_ENV) GC='$(abs_builddir)/check-gccgo -fgo-compiling-runtime' GOARCH=$${GOARCH} GOOS=$${GOOS} GOLIBS='$(RT_LIBS)' $(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles='$${files}' $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > runtime-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GC="$${GCCGO} -fgo-compiling-runtime"; \
 @NATIVE_TRUE@	export GC; \
 @NATIVE_TRUE@	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 @NATIVE_TRUE@	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
+@NATIVE_TRUE@	GOLIBS="$(RT_LIBS)"; \
+@NATIVE_TRUE@	export GOLIBS; \
 @NATIVE_TRUE@	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_linknames.go $(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go $(libgodir)/goroot.go" --tag=libffi`; \
 @NATIVE_TRUE@	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" $(GOTESTFLAGS) -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v >> runtime-testlog 2>&1 || echo "--- $${fl}: go test runtime (0.00s)" >> runtime-testlog
 @NATIVE_TRUE@	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
