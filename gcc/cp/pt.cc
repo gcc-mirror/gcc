@@ -13870,7 +13870,7 @@ store_explicit_specifier (tree v, tree t)
 
 /* Lookup an element in EXPLICIT_SPECIFIER_MAP.  */
 
-static tree
+tree
 lookup_explicit_specifier (tree v)
 {
   return *explicit_specifier_map->get (v);
@@ -14103,7 +14103,13 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 				    /*function_p=*/false,
 				    /*i_c_e_p=*/true);
       spec = build_explicit_specifier (spec, complain);
-      DECL_NONCONVERTING_P (r) = (spec == boolean_true_node);
+      if (instantiation_dependent_expression_p (spec))
+	store_explicit_specifier (r, spec);
+      else
+	{
+	  DECL_NONCONVERTING_P (r) = (spec == boolean_true_node);
+	  DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (r) = false;
+	}
     }
 
   /* OpenMP UDRs have the only argument a reference to the declared

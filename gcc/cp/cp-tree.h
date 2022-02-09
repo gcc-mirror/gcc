@@ -7420,6 +7420,7 @@ extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
+extern tree lookup_explicit_specifier		(tree);
 extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
