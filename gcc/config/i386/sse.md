@@ -24153,8 +24153,9 @@
 	    negate = true;
 	}
       par = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+      tmp = lowpart_subreg (QImode, operands[2], SImode);
       for (i = 0; i < 16; i++)
-        XVECEXP (par, 0, i) = operands[2];
+	XVECEXP (par, 0, i) = tmp;
 
       tmp = gen_reg_rtx (V16QImode);
       emit_insn (gen_vec_initv16qiqi (tmp, par));
