@@ -1039,7 +1039,7 @@
   [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
 	(vec_merge:VALL_F16
 	    (vec_duplicate:VALL_F16
-		(match_operand:<VEL> 1 "aarch64_simd_general_operand" "w,?r,Utv"))
+		(match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand" "w,?r,Utv"))
 	    (match_operand:VALL_F16 3 "register_operand" "0,0,0")
 	    (match_operand:SI 2 "immediate_operand" "i,i,i")))]
   "TARGET_SIMD"
@@ -4380,7 +4380,7 @@
 (define_insn "@aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
 	(vec_concat:<VDBL>
-	  (match_operand:VDC 1 "general_operand" "w,?r,m")
+	  (match_operand:VDC 1 "nonimmediate_operand" "w,?r,m")
 	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "@
@@ -4395,7 +4395,7 @@
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
 	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
-	  (match_operand:VDC 1 "general_operand" "w,?r,m")))]
+	  (match_operand:VDC 1 "nonimmediate_operand" "w,?r,m")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "@
    mov\\t%0.8b, %1.8b
