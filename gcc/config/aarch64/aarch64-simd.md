@@ -1378,7 +1378,7 @@
 
 (define_expand "vec_set<mode>"
   [(match_operand:VALL_F16 0 "register_operand")
-   (match_operand:<VEL> 1 "register_operand")
+   (match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand")
    (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
   {
