@@ -125,19 +125,16 @@ public:
       }
 
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-    compiled_fn_type
-      = ctx->get_backend ()->specify_abi_attribute (compiled_fn_type,
-						    fntype->get_abi ());
-
-    const unsigned int flags
-      = Backend::function_is_declaration | Backend::function_is_visible;
-
     std::string ir_symbol_name = function.get_item_name ();
     std::string asm_name = function.get_item_name ();
 
+    const unsigned int flags = Backend::function_is_declaration;
     tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
+    TREE_PUBLIC (fndecl) = 1;
+    setup_abi_options (fndecl, fntype->get_abi ());
+
     ctx->insert_function_decl (fntype, fndecl);
   }
 

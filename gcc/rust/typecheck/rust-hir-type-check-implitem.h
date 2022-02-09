@@ -126,14 +126,18 @@ public:
       CanonicalPath::new_seg (function.get_mappings ().get_nodeid (),
 			      function.get_item_name ()),
       function.get_locus ()};
-    auto fnType
-      = new TyTy::FnType (function.get_mappings ().get_hirid (),
-			  function.get_mappings ().get_defid (),
-			  function.get_item_name (), ident, flags,
-			  ::Backend::get_abi_from_string (parent.get_abi (),
-							  parent.get_locus ()),
-			  std::move (params), ret_type,
-			  std::move (substitutions));
+
+    auto abi = get_abi_from_string (parent.get_abi ());
+    if (abi == ABI::UNKNOWN)
+      {
+	rust_error_at (parent.get_locus (), "unknown abi");
+      }
+
+    auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
+				    function.get_mappings ().get_defid (),
+				    function.get_item_name (), ident, flags,
+				    abi, std::move (params), ret_type,
+				    std::move (substitutions));
 
     context->insert_type (function.get_mappings (), fnType);
   }

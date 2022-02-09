@@ -75,6 +75,7 @@ GRS_OBJS = \
     rust/rust-macro-expand.o \
     rust/rust-hir-full-test.o \
     rust/rust-hir-map.o \
+    rust/rust-abi.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-lower-pattern.o \
     rust/rust-ast-resolve.o \
@@ -99,6 +100,7 @@ GRS_OBJS = \
     rust/rust-compile-expr.o \
     rust/rust-compile-type.o \
     rust/rust-constexpr.o \
+    rust/rust-compile-base.o \
     $(END)
 # removed object files from here
 

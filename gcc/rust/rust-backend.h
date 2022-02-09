@@ -27,8 +27,6 @@
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
 #include "operator.h"
-#include "rust-abi.h"
-
 #include "tree.h"
 
 extern bool
@@ -73,49 +71,6 @@ public:
   // debug
   virtual void debug (tree) = 0;
   virtual void debug (Bvariable *) = 0;
-
-  static Rust::ABI get_abi_from_string (const std::string &abi, Location locus)
-  {
-    if (abi.compare ("rust") == 0)
-      return Rust::ABI::C;
-    else if (abi.compare ("rust-intrinsic") == 0)
-      return Rust::ABI::INTRINSIC;
-    else if (abi.compare ("C") == 0)
-      return Rust::ABI::C;
-    else if (abi.compare ("cdecl") == 0)
-      return Rust::ABI::CDECL;
-    else if (abi.compare ("stdcall") == 0)
-      return Rust::ABI::STDCALL;
-    else if (abi.compare ("fastcall") == 0)
-      return Rust::ABI::FASTCALL;
-
-    rust_error_at (locus, "unknown abi specified");
-
-    return Rust::ABI::UNKNOWN;
-  }
-
-  static std::string get_string_from_abi (Rust::ABI abi)
-  {
-    switch (abi)
-      {
-      case Rust::ABI::RUST:
-	return "rust";
-      case Rust::ABI::INTRINSIC:
-	return "rust-intrinsic";
-      case Rust::ABI::C:
-	return "C";
-      case Rust::ABI::CDECL:
-	return "cdecl";
-      case Rust::ABI::STDCALL:
-	return "stdcall";
-      case Rust::ABI::FASTCALL:
-	return "fastcall";
-
-      case Rust::ABI::UNKNOWN:
-	return "unknown";
-      }
-    return "unknown";
-  }
 
   virtual tree get_identifier_node (const std::string &str) = 0;
 
@@ -681,35 +636,21 @@ public:
 
   // Bit flags to pass to the function method.
 
-  // Set if the function should be visible outside of the current
-  // compilation unit.
-  static const unsigned int function_is_visible = 1 << 0;
-
   // Set if this is a function declaration rather than a definition;
   // the definition will be in another compilation unit.
-  static const unsigned int function_is_declaration = 1 << 1;
+  static const unsigned int function_is_declaration = 1 << 0;
 
   // Set if the function should never be inlined because they call
   // recover and must be visible for correct panic recovery.
-  static const unsigned int function_is_uninlinable = 1 << 2;
+  static const unsigned int function_is_uninlinable = 1 << 1;
 
   // Set if the function does not return.  This is set for the
   // implementation of panic.
-  static const unsigned int function_does_not_return = 1 << 3;
+  static const unsigned int function_does_not_return = 1 << 2;
 
   // Set if the function should be put in a unique section if
   // possible.  This is used for field tracking.
-  static const unsigned int function_in_unique_section = 1 << 4;
-
-  // Set if the function should be available for inlining in the
-  // backend, but should not be emitted as a standalone function.  Any
-  // call to the function that is not inlined should be treated as a
-  // call to a function defined in a different compilation unit.  This
-  // is like a C99 function marked inline but not extern.
-  static const unsigned int function_only_inline = 1 << 5;
-
-  // const function
-  static const unsigned int function_read_only = 1 << 6;
+  static const unsigned int function_in_unique_section = 1 << 3;
 
   // Declare or define a function of FNTYPE.
   // NAME is the Go name of the function.  ASM_NAME, if not the empty
@@ -720,8 +661,6 @@ public:
 			 const std::string &asm_name, unsigned int flags,
 			 Location)
     = 0;
-
-  virtual tree specify_abi_attribute (tree type, Rust::ABI abi) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
