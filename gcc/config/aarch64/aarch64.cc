@@ -21063,11 +21063,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 		 for store_pair_lanes<mode>.  */
 	      if (memory_operand (x0, inner_mode)
 		  && memory_operand (x1, inner_mode)
-		  && !STRICT_ALIGNMENT
-		  && rtx_equal_p (XEXP (x1, 0),
-				  plus_constant (Pmode,
-						 XEXP (x0, 0),
-						 GET_MODE_SIZE (inner_mode))))
+		  && aarch64_mergeable_load_pair_p (mode, x0, x1))
 		{
 		  rtx t;
 		  if (inner_mode == DFmode)
@@ -24687,14 +24683,20 @@ aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
   return priority;
 }
 
-/* Check if *MEM1 and *MEM2 are consecutive memory references and,
+/* If REVERSED is null, return true if memory reference *MEM2 comes
+   immediately after memory reference *MEM1.  Do not change the references
+   in this case.
+
+   Otherwise, check if *MEM1 and *MEM2 are consecutive memory references and,
    if they are, try to make them use constant offsets from the same base
    register.  Return true on success.  When returning true, set *REVERSED
    to true if *MEM1 comes after *MEM2, false if *MEM1 comes before *MEM2.  */
 static bool
 aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
 {
-  *reversed = false;
+  if (reversed)
+    *reversed = false;
+
   if (GET_RTX_CLASS (GET_CODE (XEXP (*mem1, 0))) == RTX_AUTOINC
       || GET_RTX_CLASS (GET_CODE (XEXP (*mem2, 0))) == RTX_AUTOINC)
     return false;
@@ -24723,7 +24725,7 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
       if (known_eq (UINTVAL (offset1) + size1, UINTVAL (offset2)))
 	return true;
 
-      if (known_eq (UINTVAL (offset2) + size2, UINTVAL (offset1)))
+      if (known_eq (UINTVAL (offset2) + size2, UINTVAL (offset1)) && reversed)
 	{
 	  *reversed = true;
 	  return true;
@@ -24756,27 +24758,41 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
 
       if (known_eq (expr_offset1 + size1, expr_offset2))
 	;
-      else if (known_eq (expr_offset2 + size2, expr_offset1))
+      else if (known_eq (expr_offset2 + size2, expr_offset1) && reversed)
 	*reversed = true;
       else
 	return false;
 
-      if (base2)
+      if (reversed)
 	{
-	  rtx addr1 = plus_constant (Pmode, XEXP (*mem2, 0),
-				     expr_offset1 - expr_offset2);
-	  *mem1 = replace_equiv_address_nv (*mem1, addr1);
-	}
-      else
-	{
-	  rtx addr2 = plus_constant (Pmode, XEXP (*mem1, 0),
-				     expr_offset2 - expr_offset1);
-	  *mem2 = replace_equiv_address_nv (*mem2, addr2);
+	  if (base2)
+	    {
+	      rtx addr1 = plus_constant (Pmode, XEXP (*mem2, 0),
+					 expr_offset1 - expr_offset2);
+	      *mem1 = replace_equiv_address_nv (*mem1, addr1);
+	    }
+	  else
+	    {
+	      rtx addr2 = plus_constant (Pmode, XEXP (*mem1, 0),
+					 expr_offset2 - expr_offset1);
+	      *mem2 = replace_equiv_address_nv (*mem2, addr2);
+	    }
 	}
       return true;
     }
 
   return false;
+}
+
+/* Return true if MEM1 and MEM2 can be combined into a single access
+   of mode MODE, with the combined access having the same address as MEM1.  */
+
+bool
+aarch64_mergeable_load_pair_p (machine_mode mode, rtx mem1, rtx mem2)
+{
+  if (STRICT_ALIGNMENT && MEM_ALIGN (mem1) < GET_MODE_ALIGNMENT (mode))
+    return false;
+  return aarch64_check_consecutive_mems (&mem1, &mem2, nullptr);
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge

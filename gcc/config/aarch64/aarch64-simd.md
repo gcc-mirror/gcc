@@ -4353,11 +4353,8 @@
 	(vec_concat:<VDBL>
 	   (match_operand:VDC 1 "memory_operand" "Utq")
 	   (match_operand:VDC 2 "memory_operand" "m")))]
-  "TARGET_SIMD && !STRICT_ALIGNMENT
-   && rtx_equal_p (XEXP (operands[2], 0),
-		   plus_constant (Pmode,
-				  XEXP (operands[1], 0),
-				  GET_MODE_SIZE (<MODE>mode)))"
+  "TARGET_SIMD
+   && aarch64_mergeable_load_pair_p (<VDBL>mode, operands[1], operands[2])"
   "ldr\\t%q0, %1"
   [(set_attr "type" "neon_load1_1reg_q")]
 )
