@@ -16317,12 +16317,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 }
 
 /* OLDFNS is a lookup set of member functions from some class template, and
-   NEWFNS is a lookup set of member functions from a specialization of that
-   class template.  Return the subset of NEWFNS which are specializations of
-   a function from OLDFNS.  */
+   NEWFNS is a lookup set of member functions from NEWTYPE, a specialization
+   of that class template.  Return the subset of NEWFNS which are
+   specializations of a function from OLDFNS.  */
 
 static tree
-filter_memfn_lookup (tree oldfns, tree newfns)
+filter_memfn_lookup (tree oldfns, tree newfns, tree newtype)
 {
   /* Record all member functions from the old lookup set OLDFNS into
      VISIBLE_SET.  */
@@ -16332,38 +16332,34 @@ filter_memfn_lookup (tree oldfns, tree newfns)
       if (TREE_CODE (fn) == USING_DECL)
 	{
 	  /* FIXME: Punt on (dependent) USING_DECL for now; mapping
-	     a dependent USING_DECL to its instantiation seems
-	     tricky.  */
+	     a dependent USING_DECL to the member functions it introduces
+	     seems tricky.  */
 	  gcc_checking_assert (DECL_DEPENDENT_P (fn));
 	  return newfns;
 	}
-      else if (TREE_CODE (fn) == TEMPLATE_DECL)
-	/* A member function template.  */
-	visible_set.add (fn);
-      else if (TREE_CODE (fn) == FUNCTION_DECL)
-	{
-	  if (DECL_TEMPLATE_INFO (fn))
-	    /* A non-template member function.  */
-	    visible_set.add (DECL_TI_TEMPLATE (fn));
-	  else
-	    /* A non-template member function from a non-template base,
-	       injected via a using-decl.  */
-	    visible_set.add (fn);
-	}
       else
-	gcc_unreachable ();
+	visible_set.add (fn);
     }
 
   /* Returns true iff (a less specialized version of) FN appeared in
      the old lookup set OLDFNS.  */
-  auto visible_p = [&visible_set] (tree fn) {
-    if (TREE_CODE (fn) == FUNCTION_DECL
-	&& !DECL_TEMPLATE_INFO (fn))
+  auto visible_p = [newtype, &visible_set] (tree fn) {
+    if (DECL_CONTEXT (fn) != newtype)
+      /* FN is a member function from a base class, introduced via a
+	 non-dependent using-decl; look in the old lookup set for
+	 FN exactly.  */
       return visible_set.contains (fn);
-    else if (DECL_TEMPLATE_INFO (fn))
+    else if (TREE_CODE (fn) == TEMPLATE_DECL)
+      /* FN is a member function template from the current class;
+	 look in the old lookup set for the TEMPLATE_DECL from which
+	 it was specialized.  */
       return visible_set.contains (DECL_TI_TEMPLATE (fn));
     else
-      gcc_unreachable ();
+      /* FN is a non-template member function from the current class;
+	 look in the old lookup set for the FUNCTION_DECL from which
+	 it was specialized.  */
+      return visible_set.contains (DECL_TEMPLATE_RESULT
+				   (DECL_TI_TEMPLATE (fn)));
   };
 
   bool lookup_changed_p = false;
@@ -16455,7 +16451,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	     performed in an incomplete-class context, within which
 	     later-declared members ought to remain invisible.  */
 	  BASELINK_FUNCTIONS (baselink)
-	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink));
+	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
+				   binfo_type);
 	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
 	}
 
