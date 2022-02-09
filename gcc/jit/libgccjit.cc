@@ -1731,6 +1731,32 @@ gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,
     reinterpret_cast<gcc::jit::recording::rvalue**>(values));
 }
 
+gcc_jit_rvalue *
+gcc_jit_context_new_vector_constructor (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *type,
+					size_t num_values,
+					gcc_jit_rvalue **values)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  /* "vec_type" must be a vector type.  */
+  gcc::jit::recording::vector_type *as_vec_type
+    = type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (as_vec_type, ctxt, loc,
+			       "%s is not a vector type",
+			       type->get_debug_string ());
+
+  // TODO: check that the values are constant.
+
+  return (gcc_jit_rvalue *)ctxt->new_vector_constructor (
+    loc,
+    as_vec_type,
+    reinterpret_cast<gcc::jit::recording::rvalue**>(values));
+}
+
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the

@@ -160,6 +160,11 @@ public:
 	    field **fields,
 	    rvalue **values);
 
+  rvalue *
+  new_vector_constructor (location *loc,
+			  vector_type *type,
+			  rvalue **values);
+
   void
   new_global_init_rvalue (lvalue *variable,
 			  rvalue *init);
@@ -1592,7 +1597,8 @@ public:
   memento_of_new_rvalue_from_vector (context *ctxt,
 				     location *loc,
 				     vector_type *type,
-				     rvalue **elements);
+				     rvalue **elements,
+				     bool constructor);
 
   void replay_into (replayer *r) FINAL OVERRIDE;
 
@@ -1609,6 +1615,7 @@ private:
 private:
   vector_type *m_vector_type;
   auto_vec<rvalue *> m_elements;
+  bool m_constructor;
 };
 
 class memento_of_new_rvalue_vector_perm : public rvalue
@@ -1739,7 +1746,6 @@ public:
     if (strstr (a_type->get_debug_string (), "vector") != NULL)
     //if (a_type->dyn_cast_vector_type () != NULL)
     {
-        fprintf(stderr, "Set type to vector type %p\n", a_type->dyn_cast_vector_type ());
       m_type = a_type;
     }
   }

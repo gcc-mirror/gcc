@@ -1135,7 +1135,7 @@ recording::context::new_rvalue_from_vector (location *loc,
 					    rvalue **elements)
 {
   recording::rvalue *result
-    = new memento_of_new_rvalue_from_vector (this, loc, type, elements);
+    = new memento_of_new_rvalue_from_vector (this, loc, type, elements, false);
   record (result);
   return result;
 }
@@ -1214,6 +1214,17 @@ recording::context::new_ctor (recording::location *loc,
   else
     gcc_unreachable ();
 
+  record (result);
+  return result;
+}
+
+recording::rvalue *
+recording::context::new_vector_constructor (location *loc,
+				   vector_type *type,
+				   rvalue **values)
+{
+  recording::rvalue *result
+    = new memento_of_new_rvalue_from_vector (this, loc, type, values, true);
   record (result);
   return result;
 }
@@ -5381,10 +5392,12 @@ recording::memento_of_new_rvalue_from_vector::
 memento_of_new_rvalue_from_vector (context *ctxt,
 				   location *loc,
 				   vector_type *type,
-				   rvalue **elements)
+				   rvalue **elements,
+				   bool constructor)
 : rvalue (ctxt, loc, type),
   m_vector_type (type),
-  m_elements ()
+  m_elements (),
+  m_constructor (constructor)
 {
   for (unsigned i = 0; i < type->get_num_units (); i++)
     m_elements.safe_push (elements[i]);
@@ -5403,7 +5416,8 @@ recording::memento_of_new_rvalue_from_vector::replay_into (replayer *r)
 
   set_playback_obj (r->new_rvalue_from_vector (playback_location (r, m_loc),
 					       m_type->playback_type (),
-					       playback_elements));
+					       playback_elements,
+					       m_constructor));
 }
 
 /* Implementation of pure virtual hook recording::rvalue::visit_children
@@ -5444,16 +5458,20 @@ recording::memento_of_new_rvalue_from_vector::write_reproducer (reproducer &r)
   r.write ("  gcc_jit_rvalue *%s[%i] = {\n",
 	   elements_id,
 	   m_elements.length ());
+  const char *func_name = "gcc_jit_context_new_rvalue_from_vector";
+  if (m_constructor)
+    func_name = "gcc_jit_context_new_vector_constructor";
   for (unsigned i = 0; i< m_elements.length (); i++)
     r.write ("    %s,\n", r.get_identifier_as_rvalue (m_elements[i]));
   r.write ("  };\n");
   r.write ("  gcc_jit_rvalue *%s =\n"
-	   "    gcc_jit_context_new_rvalue_from_vector (%s, /* gcc_jit_context *ctxt */\n"
+	   "    %s (%s, /* gcc_jit_context *ctxt */\n"
 	   "                                            %s, /* gcc_jit_location *loc */\n"
 	   "                                            %s, /* gcc_jit_type *vec_type */\n"
 	   "                                            %i, /* size_t num_elements  */ \n"
 	   "                                            %s); /* gcc_jit_rvalue **elements*/\n",
 	   id,
+	   func_name,
 	   r.get_identifier (get_context ()),
 	   r.get_identifier (m_loc),
 	   r.get_identifier (m_vector_type),

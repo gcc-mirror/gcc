@@ -991,6 +991,16 @@ gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,
 				       size_t num_values,
 				       gcc_jit_rvalue **values);
 
+/* Create a constructor for a vector as an rvalue.
+*/
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_vector_constructor (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *type,
+					size_t num_values,
+					gcc_jit_rvalue **values);
+
 /* Set the initial value of a global of any type with an rvalue.
 
    The rvalue needs to be a constant expression, e.g. no function calls.

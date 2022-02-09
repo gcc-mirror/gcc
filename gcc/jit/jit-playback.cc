@@ -1008,13 +1008,18 @@ new_string_literal (const char *value)
 playback::rvalue *
 playback::context::new_rvalue_from_vector (location *,
 					   type *type,
-					   const auto_vec<rvalue *> &elements)
+					   const auto_vec<rvalue *> &elements,
+					   bool constructor)
 {
   vec<constructor_elt, va_gc> *v;
   vec_alloc (v, elements.length ());
   for (unsigned i = 0; i < elements.length (); ++i)
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elements[i]->as_tree ());
-  tree t_ctor = build_constructor (type->as_tree (), v);
+  tree t_ctor;
+  if (constructor)
+    t_ctor = build_vector_from_ctor (type->as_tree (), v);
+  else
+    t_ctor = build_constructor (type->as_tree (), v);
   return new rvalue (this, t_ctor);
 }
 

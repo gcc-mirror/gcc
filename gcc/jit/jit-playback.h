@@ -146,7 +146,8 @@ public:
   rvalue *
   new_rvalue_from_vector (location *loc,
 			  type *type,
-			  const auto_vec<rvalue *> &elements);
+			  const auto_vec<rvalue *> &elements,
+			  bool constructor);
 
   rvalue *
   new_rvalue_vector_perm (location *loc,
