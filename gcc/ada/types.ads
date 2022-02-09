@@ -39,9 +39,9 @@
 --  2s-complement. If there are any machines for which this is not a correct
 --  assumption, a significant number of changes will be required.
 
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
-with Unchecked_Conversion;
 
 package Types is
    pragma Preelaborate;
@@ -127,7 +127,7 @@ package Types is
    --  size of zero, since there are legitimate deallocations going on.
 
    function To_Big_String_Ptr is
-     new Unchecked_Conversion (System.Address, Big_String_Ptr);
+     new Ada.Unchecked_Conversion (System.Address, Big_String_Ptr);
    --  Used to obtain Big_String_Ptr values from external addresses
 
    subtype Word_Hex_String is String (1 .. 8);

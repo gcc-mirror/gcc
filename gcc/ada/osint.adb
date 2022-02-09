@@ -34,7 +34,7 @@ with Sdefault; use Sdefault;
 with Table;
 with Targparm; use Targparm;
 
-with Unchecked_Conversion;
+with Ada.Unchecked_Conversion;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
@@ -2216,9 +2216,9 @@ package body Osint is
       --  GNAT releases are available with these functions.
 
       function To_Int is
-        new Unchecked_Conversion (OS_Time, Underlying_OS_Time);
+        new Ada.Unchecked_Conversion (OS_Time, Underlying_OS_Time);
       function From_Int is
-        new Unchecked_Conversion (Underlying_OS_Time, OS_Time);
+        new Ada.Unchecked_Conversion (Underlying_OS_Time, OS_Time);
 
       TI : Underlying_OS_Time := To_Int (T);
       Y  : Year_Type;
@@ -3085,8 +3085,8 @@ package body Osint is
       type Path_String_Access is access Path_String;
 
       function Address_To_Access is new
-        Unchecked_Conversion (Source => Address,
-                              Target => Path_String_Access);
+        Ada.Unchecked_Conversion (Source => Address,
+                                  Target => Path_String_Access);
 
       Path_Access : constant Path_String_Access :=
                       Address_To_Access (Path_Addr);

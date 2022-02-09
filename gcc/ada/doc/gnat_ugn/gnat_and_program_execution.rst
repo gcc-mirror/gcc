@@ -2101,11 +2101,11 @@ the typing system. Consider the following complete program example:
          function to_a2 (Input : a1) return a2;
       end p2;
 
-      with Unchecked_Conversion;
+      with Ada.Unchecked_Conversion;
       package body p2 is
          function to_a2 (Input : a1) return a2 is
             function to_a2u is
-              new Unchecked_Conversion (a1, a2);
+              new Ada.Unchecked_Conversion (a1, a2);
          begin
             return to_a2u (Input);
          end to_a2;
@@ -2198,7 +2198,7 @@ the warning off:
 
      pragma Warnings (Off);
      function to_a2u is
-       new Unchecked_Conversion (a1, a2);
+       new Ada.Unchecked_Conversion (a1, a2);
      pragma Warnings (On);
 
 Of course that approach is not appropriate for this particular

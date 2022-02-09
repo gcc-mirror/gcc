@@ -41,8 +41,8 @@ with System.Storage_Elements;
 with System.Memory;
 with System.WCh_Con; use System.WCh_Con;
 
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Unchecked_Conversion;
 
 package body Sinput is
 
@@ -56,16 +56,16 @@ package body Sinput is
    --  used to construct improperly aliased pointer values.
 
    function To_Address is
-     new Unchecked_Conversion (Lines_Table_Ptr, Address);
+     new Ada.Unchecked_Conversion (Lines_Table_Ptr, Address);
 
    function To_Address is
-     new Unchecked_Conversion (Logical_Lines_Table_Ptr, Address);
+     new Ada.Unchecked_Conversion (Logical_Lines_Table_Ptr, Address);
 
    function To_Pointer is
-     new Unchecked_Conversion (Address, Lines_Table_Ptr);
+     new Ada.Unchecked_Conversion (Address, Lines_Table_Ptr);
 
    function To_Pointer is
-     new Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
+     new Ada.Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
 
    pragma Warnings (On);
 
@@ -378,7 +378,7 @@ package body Sinput is
       --  to first Unchecked_Convert to access-to-variable.
 
       function To_Source_Buffer_Ptr_Var is new
-        Unchecked_Conversion (Source_Buffer_Ptr, Source_Buffer_Ptr_Var);
+        Ada.Unchecked_Conversion (Source_Buffer_Ptr, Source_Buffer_Ptr_Var);
 
       Temp : Source_Buffer_Ptr_Var := To_Source_Buffer_Ptr_Var (Src);
 
