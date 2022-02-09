@@ -33801,6 +33801,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     do_shift:
       gcc_assert (n_args >= 2);
+      if (!gimple_call_lhs (stmt))
+	break;
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       if (n_args > 2)
