@@ -4403,7 +4403,7 @@
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 
-(define_insn "@aarch64_combinez<mode>"
+(define_insn "*aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
 	(vec_concat:<VDBL>
 	  (match_operand:VDC 1 "nonimmediate_operand" "w,?r,m")
@@ -4417,7 +4417,7 @@
    (set_attr "arch" "simd,fp,simd")]
 )
 
-(define_insn "@aarch64_combinez_be<mode>"
+(define_insn "*aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
 	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
@@ -4431,38 +4431,62 @@
    (set_attr "arch" "simd,fp,simd")]
 )
 
-(define_expand "aarch64_combine<mode>"
-  [(match_operand:<VDBL> 0 "register_operand")
-   (match_operand:VDC 1 "register_operand")
-   (match_operand:VDC 2 "aarch64_simd_reg_or_zero")]
+;; Form a vector whose first half (in array order) comes from operand 1
+;; and whose second half (in array order) comes from operand 2.
+;; This operand order follows the RTL vec_concat operation.
+(define_expand "@aarch64_vec_concat<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand")
+	(vec_concat:<VDBL>
+	  (match_operand:VDC 1 "general_operand")
+	  (match_operand:VDC 2 "general_operand")))]
   "TARGET_SIMD"
 {
-  if (operands[2] == CONST0_RTX (<MODE>mode))
+  int lo = BYTES_BIG_ENDIAN ? 2 : 1;
+  int hi = BYTES_BIG_ENDIAN ? 1 : 2;
+
+  if (MEM_P (operands[1])
+      && MEM_P (operands[2])
+      && aarch64_mergeable_load_pair_p (<VDBL>mode, operands[1], operands[2]))
+    /* Use load_pair_lanes<mode>.  */
+    ;
+  else if (operands[hi] == CONST0_RTX (<MODE>mode))
     {
-      if (BYTES_BIG_ENDIAN)
-	emit_insn (gen_aarch64_combinez_be<mode> (operands[0], operands[1],
-						  operands[2]));
-      else
-	emit_insn (gen_aarch64_combinez<mode> (operands[0], operands[1],
-					       operands[2]));
+      /* Use *aarch64_combinez<mode>.  */
+      if (!nonimmediate_operand (operands[lo], <MODE>mode))
+	operands[lo] = force_reg (<MODE>mode, operands[lo]);
     }
   else
-    aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
+    {
+      /* Use *aarch64_combine_general<mode>.  */
+      operands[lo] = force_reg (<MODE>mode, operands[lo]);
+      if (!aarch64_simd_nonimmediate_operand (operands[hi], <MODE>mode))
+	{
+	  if (MEM_P (operands[hi]))
+	    {
+	      rtx addr = force_reg (Pmode, XEXP (operands[hi], 0));
+	      operands[hi] = replace_equiv_address (operands[hi], addr);
+	    }
+	  else
+	    operands[hi] = force_reg (<MODE>mode, operands[hi]);
+	}
+    }
+})
+
+;; Form a vector whose least significant half comes from operand 1 and whose
+;; most significant half comes from operand 2.  This operand order follows
+;; arm_neon.h vcombine* intrinsics.
+(define_expand "aarch64_combine<mode>"
+  [(match_operand:<VDBL> 0 "register_operand")
+   (match_operand:VDC 1 "general_operand")
+   (match_operand:VDC 2 "general_operand")]
+  "TARGET_SIMD"
+{
+  if (BYTES_BIG_ENDIAN)
+    std::swap (operands[1], operands[2]);
+  emit_insn (gen_aarch64_vec_concat<mode> (operands[0], operands[1],
+					   operands[2]));
   DONE;
 }
-)
-
-(define_expand "@aarch64_simd_combine<mode>"
-  [(match_operand:<VDBL> 0 "register_operand")
-   (match_operand:VDC 1 "register_operand")
-   (match_operand:VDC 2 "register_operand")]
-  "TARGET_SIMD"
-  {
-    emit_insn (gen_move_lo_quad_<Vdbl> (operands[0], operands[1]));
-    emit_insn (gen_move_hi_quad_<Vdbl> (operands[0], operands[2]));
-    DONE;
-  }
-[(set_attr "type" "multiple")]
 )
 
 ;; <su><addsub>l<q>.

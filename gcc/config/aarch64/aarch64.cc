@@ -4239,23 +4239,6 @@ aarch64_split_128bit_move_p (rtx dst, rtx src)
   return true;
 }
 
-/* Split a complex SIMD combine.  */
-
-void
-aarch64_split_simd_combine (rtx dst, rtx src1, rtx src2)
-{
-  machine_mode src_mode = GET_MODE (src1);
-  machine_mode dst_mode = GET_MODE (dst);
-
-  gcc_assert (VECTOR_MODE_P (dst_mode));
-  gcc_assert (register_operand (dst, dst_mode)
-	      && register_operand (src1, src_mode)
-	      && register_operand (src2, src_mode));
-
-  emit_insn (gen_aarch64_simd_combine (src_mode, dst, src1, src2));
-  return;
-}
-
 /* Split a complex SIMD move.  */
 
 void
@@ -20941,37 +20924,13 @@ aarch64_expand_vector_init (rtx target, rtx vals)
      of mode N in VALS and we must put their concatentation into TARGET.  */
   if (XVECLEN (vals, 0) == 2 && VECTOR_MODE_P (GET_MODE (XVECEXP (vals, 0, 0))))
     {
-      gcc_assert (known_eq (GET_MODE_SIZE (mode),
-		  2 * GET_MODE_SIZE (GET_MODE (XVECEXP (vals, 0, 0)))));
-      rtx lo = XVECEXP (vals, 0, 0);
-      rtx hi = XVECEXP (vals, 0, 1);
-      machine_mode narrow_mode = GET_MODE (lo);
-      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode);
-      gcc_assert (narrow_mode == GET_MODE (hi));
-
-      /* When we want to concatenate a half-width vector with zeroes we can
-	 use the aarch64_combinez[_be] patterns.  Just make sure that the
-	 zeroes are in the right half.  */
-      if (BYTES_BIG_ENDIAN
-	  && aarch64_simd_imm_zero (lo, narrow_mode)
-	  && general_operand (hi, narrow_mode))
-	emit_insn (gen_aarch64_combinez_be (narrow_mode, target, hi, lo));
-      else if (!BYTES_BIG_ENDIAN
-	       && aarch64_simd_imm_zero (hi, narrow_mode)
-	       && general_operand (lo, narrow_mode))
-	emit_insn (gen_aarch64_combinez (narrow_mode, target, lo, hi));
-      else
-	{
-	  /* Else create the two half-width registers and combine them.  */
-	  if (!REG_P (lo))
-	    lo = force_reg (GET_MODE (lo), lo);
-	  if (!REG_P (hi))
-	    hi = force_reg (GET_MODE (hi), hi);
-
-	  if (BYTES_BIG_ENDIAN)
-	    std::swap (lo, hi);
-	  emit_insn (gen_aarch64_simd_combine (narrow_mode, target, lo, hi));
-	}
+      machine_mode narrow_mode = GET_MODE (XVECEXP (vals, 0, 0));
+      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode
+		  && known_eq (GET_MODE_SIZE (mode),
+			       2 * GET_MODE_SIZE (narrow_mode)));
+      emit_insn (gen_aarch64_vec_concat (narrow_mode, target,
+					 XVECEXP (vals, 0, 0),
+					 XVECEXP (vals, 0, 1)));
      return;
    }
 
