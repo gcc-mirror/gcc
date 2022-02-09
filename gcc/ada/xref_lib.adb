@@ -29,10 +29,9 @@ with Osint;
 with Output; use Output;
 with Types;  use Types;
 
-with Unchecked_Deallocation;
-
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;
+with Ada.Unchecked_Deallocation;
 
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.IO_Aux;       use GNAT.IO_Aux;
@@ -1718,7 +1717,7 @@ package body Xref_Lib is
       Type_Tree     : Boolean)
    is
       type String_Access is access String;
-      procedure Free is new Unchecked_Deallocation (String, String_Access);
+      procedure Free is new Ada.Unchecked_Deallocation (String, String_Access);
 
       ALIfile   : ALI_File;
       File_Ref  : File_Reference;

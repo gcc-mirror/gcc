@@ -22221,9 +22221,9 @@ properly allocated memory location. Here is a complete example of use of
 @quotation
 
 @example
-with Gnat.Io; use Gnat.Io;
-with Unchecked_Deallocation;
-with Unchecked_Conversion;
+with GNAT.IO; use GNAT.IO;
+with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Conversion;
 with GNAT.Debug_Pools;
 with System.Storage_Elements;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -22235,8 +22235,8 @@ procedure Debug_Pool_Test is
    P : GNAT.Debug_Pools.Debug_Pool;
    for T'Storage_Pool use P;
 
-   procedure Free is new Unchecked_Deallocation (Integer, T);
-   function UC is new Unchecked_Conversion (U, T);
+   procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+   function UC is new Ada.Unchecked_Conversion (U, T);
    A, B : aliased T;
 
    procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
@@ -29248,8 +29248,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{cf}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

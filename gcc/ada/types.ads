@@ -39,9 +39,9 @@
 --  2s-complement. If there are any machines for which this is not a correct
 --  assumption, a significant number of changes will be required.
 
+with Ada.Unchecked_Deallocation;
 with System;
 with Unchecked_Conversion;
-with Unchecked_Deallocation;
 
 package Types is
    pragma Preelaborate;
@@ -117,7 +117,7 @@ package Types is
    type String_Ptr_Const is access constant String;
    --  Standard character and string pointers
 
-   procedure Free is new Unchecked_Deallocation (String, String_Ptr);
+   procedure Free is new Ada.Unchecked_Deallocation (String, String_Ptr);
    --  Procedure for freeing dynamically allocated String values
 
    subtype Big_String is String (Positive);
@@ -155,7 +155,8 @@ package Types is
    --  Text buffers for input files are allocated dynamically and this type
    --  is used to reference these text buffers.
 
-   procedure Free is new Unchecked_Deallocation (Text_Buffer, Text_Buffer_Ptr);
+   procedure Free is
+     new Ada.Unchecked_Deallocation (Text_Buffer, Text_Buffer_Ptr);
    --  Procedure for freeing dynamically allocated text buffers
 
    ------------------------------------------

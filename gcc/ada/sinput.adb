@@ -41,8 +41,8 @@ with System.Storage_Elements;
 with System.Memory;
 with System.WCh_Con; use System.WCh_Con;
 
+with Ada.Unchecked_Deallocation;
 with Unchecked_Conversion;
-with Unchecked_Deallocation;
 
 package body Sinput is
 
@@ -319,10 +319,10 @@ package body Sinput is
    -- Clear_Source_File_Table --
    -----------------------------
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Lines_Table_Type, Lines_Table_Ptr);
 
-   procedure Free is new Unchecked_Deallocation
+   procedure Free is new Ada.Unchecked_Deallocation
      (Logical_Lines_Table_Type, Logical_Lines_Table_Ptr);
 
    procedure Clear_Source_File_Table is
@@ -383,7 +383,7 @@ package body Sinput is
       Temp : Source_Buffer_Ptr_Var := To_Source_Buffer_Ptr_Var (Src);
 
       procedure Free_Ptr is new
-        Unchecked_Deallocation (Source_Buffer, Source_Buffer_Ptr_Var);
+        Ada.Unchecked_Deallocation (Source_Buffer, Source_Buffer_Ptr_Var);
    begin
       Free_Ptr (Temp);
       Src := null;
@@ -922,7 +922,7 @@ package body Sinput is
       pragma Import (Ada, Dope);
       use System.Storage_Elements;
       for Dope'Address use Src + System.Address'Size / 8;
-      procedure Free is new Unchecked_Deallocation (Dope_Rec, Dope_Ptr);
+      procedure Free is new Ada.Unchecked_Deallocation (Dope_Rec, Dope_Ptr);
    begin
       Free (Dope);
    end Free_Dope;

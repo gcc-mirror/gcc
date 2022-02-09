@@ -61,7 +61,7 @@ with Stylesw;        use Stylesw;
 with Uintp;          use Uintp;
 with Uname;          use Uname;
 
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
 
 pragma Warnings (Off, Sem_Util);
 --  Suppress warnings of unused with for Sem_Util (used only in asserts)
@@ -1062,7 +1062,7 @@ package body Sem is
    procedure Initialize is
       Next : Suppress_Stack_Entry_Ptr;
 
-      procedure Free is new Unchecked_Deallocation
+      procedure Free is new Ada.Unchecked_Deallocation
         (Suppress_Stack_Entry, Suppress_Stack_Entry_Ptr);
 
    begin

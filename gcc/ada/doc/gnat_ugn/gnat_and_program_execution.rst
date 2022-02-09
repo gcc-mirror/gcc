@@ -3590,9 +3590,9 @@ properly allocated memory location. Here is a complete example of use of
 
   .. code-block:: ada
 
-      with Gnat.Io; use Gnat.Io;
-      with Unchecked_Deallocation;
-      with Unchecked_Conversion;
+      with GNAT.IO; use GNAT.IO;
+      with Ada.Unchecked_Deallocation;
+      with Ada.Unchecked_Conversion;
       with GNAT.Debug_Pools;
       with System.Storage_Elements;
       with Ada.Exceptions; use Ada.Exceptions;
@@ -3604,8 +3604,8 @@ properly allocated memory location. Here is a complete example of use of
          P : GNAT.Debug_Pools.Debug_Pool;
          for T'Storage_Pool use P;
 
-         procedure Free is new Unchecked_Deallocation (Integer, T);
-         function UC is new Unchecked_Conversion (U, T);
+         procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+         function UC is new Ada.Unchecked_Conversion (U, T);
          A, B : aliased T;
 
          procedure Info is new GNAT.Debug_Pools.Print_Info(Put_Line);
@@ -3864,12 +3864,12 @@ execution of this erroneous program:
 
     .. code-block:: ada
 
-       with Unchecked_Deallocation;
+       with Ada.Unchecked_Deallocation;
        procedure Test_Gm is
 
           type T is array (1..1000) of Integer;
           type Ptr is access T;
-          procedure Free is new Unchecked_Deallocation (T, Ptr);
+          procedure Free is new Ada.Unchecked_Deallocation (T, Ptr);
           A : Ptr;
 
           procedure My_Alloc is
