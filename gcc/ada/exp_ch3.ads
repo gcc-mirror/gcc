@@ -62,14 +62,15 @@ package Exp_Ch3 is
    --  and the discriminant checking functions are inserted after this node.
 
    function Build_Initialization_Call
-     (Loc               : Source_Ptr;
-      Id_Ref            : Node_Id;
-      Typ               : Entity_Id;
-      In_Init_Proc      : Boolean := False;
-      Enclos_Type       : Entity_Id := Empty;
-      Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False;
-      Constructor_Ref   : Node_Id := Empty) return List_Id;
+     (Loc                 : Source_Ptr;
+      Id_Ref              : Node_Id;
+      Typ                 : Entity_Id;
+      In_Init_Proc        : Boolean := False;
+      Enclos_Type         : Entity_Id := Empty;
+      Discr_Map           : Elist_Id := New_Elmt_List;
+      With_Default_Init   : Boolean := False;
+      Constructor_Ref     : Node_Id := Empty;
+      Init_Control_Actual : Entity_Id := Empty) return List_Id;
    --  Builds a call to the initialization procedure for the base type of Typ,
    --  passing it the object denoted by Id_Ref, plus additional parameters as
    --  appropriate for the type (the _Master, for task types, for example).
@@ -93,6 +94,12 @@ package Exp_Ch3 is
    --
    --  Constructor_Ref is a call to a constructor subprogram. It is currently
    --  used only to support C++ constructors.
+   --
+   --  Init_Control_Actual is Empty except in the case where the init proc
+   --  for a tagged type calls the init proc for its parent type in order
+   --  to initialize its _Parent component. In that case, it is the
+   --  actual parameter value corresponding to the Init_Control formal
+   --  parameter to be used in the call of the parent type's init proc.
 
    function Build_Variant_Record_Equality
      (Typ         : Entity_Id;

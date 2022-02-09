@@ -4377,6 +4377,12 @@ package body Exp_Util is
                    and then
                  Nkind (Expression (Parent (Id_Ref))) = N_Allocator;
 
+      Component_Suffix_Index : constant Int :=
+        (if In_Init_Proc then -1 else 0);
+      --  If an init proc calls Build_Task_Image_Decls twice for its
+      --  _Parent component (to split early/late initialization), we don't
+      --  want two decls with the same name. Hence, the -1 suffix.
+
    begin
       --  If Discard_Names or No_Implicit_Heap_Allocations are in effect,
       --  generate a dummy declaration only.
@@ -4418,7 +4424,8 @@ package body Exp_Util is
          elsif Nkind (Id_Ref) = N_Selected_Component then
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T'));
+                New_External_Name (Chars (Selector_Name (Id_Ref)), 'T',
+                  Suffix_Index => Component_Suffix_Index));
             Fun := Build_Task_Record_Image (Loc, Id_Ref, Is_Dyn);
 
          elsif Nkind (Id_Ref) = N_Indexed_Component then
