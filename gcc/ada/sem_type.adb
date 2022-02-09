@@ -3507,6 +3507,7 @@ package body Sem_Type is
         or else Is_Modular_Integer_Type (T)
         or else T = Universal_Integer
         or else T = Any_Composite
+        or else T = Raise_Type
       then
          return True;
 
