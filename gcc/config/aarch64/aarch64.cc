@@ -21164,7 +21164,7 @@ aarch64_sve_expand_vector_init_handle_trailing_constants
 	{
 	  rtx x = builder.elt (i + nelts_reqd - n_trailing_constants);
 	  if (!valid_for_const_vector_p (elem_mode, x))
-	    x = const0_rtx;
+	    x = CONST0_RTX (elem_mode);
 	  v.quick_push (x);
 	}
       rtx const_vec = v.build ();
