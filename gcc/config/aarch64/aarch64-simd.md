@@ -272,7 +272,7 @@
 
 (define_expand "@aarch64_split_simd_mov<mode>"
   [(set (match_operand:VQMOV 0)
-        (match_operand:VQMOV 1))]
+	(match_operand:VQMOV 1))]
   "TARGET_SIMD"
   {
     rtx dst = operands[0];
@@ -280,23 +280,22 @@
 
     if (GP_REGNUM_P (REGNO (src)))
       {
-        rtx src_low_part = gen_lowpart (<VHALF>mode, src);
-        rtx src_high_part = gen_highpart (<VHALF>mode, src);
+	rtx src_low_part = gen_lowpart (<VHALF>mode, src);
+	rtx src_high_part = gen_highpart (<VHALF>mode, src);
+	rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
 
-        emit_insn
-          (gen_move_lo_quad_<mode> (dst, src_low_part));
-        emit_insn
-          (gen_move_hi_quad_<mode> (dst, src_high_part));
+	emit_move_insn (dst_low_part, src_low_part);
+	emit_insn (gen_aarch64_combine<Vhalf> (dst, dst_low_part,
+					       src_high_part));
       }
-
     else
       {
-        rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
-        rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
+	rtx dst_low_part = gen_lowpart (<VHALF>mode, dst);
+	rtx dst_high_part = gen_highpart (<VHALF>mode, dst);
 	rtx lo = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
 	rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-        emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
-        emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
+	emit_insn (gen_aarch64_get_half<mode> (dst_low_part, src, lo));
+	emit_insn (gen_aarch64_get_half<mode> (dst_high_part, src, hi));
       }
     DONE;
   }
@@ -1580,69 +1579,6 @@
 ;; What that means, is that the RTL descriptions of the below patterns
 ;; need to change depending on endianness.
 
-;; Move to the low architectural bits of the register.
-;; On little-endian this is { operand, zeroes }
-;; On big-endian this is { zeroes, operand }
-
-(define_expand "move_lo_quad_<mode>"
-  [(match_operand:VQMOV 0 "register_operand")
-   (match_operand:<VHALF> 1 "register_operand")]
-  "TARGET_SIMD"
-{
-  emit_insn (gen_aarch64_combine<Vhalf> (operands[0], operands[1],
-					 CONST0_RTX (<VHALF>mode)));
-  DONE;
-}
-)
-
-;; Move operand1 to the high architectural bits of the register, keeping
-;; the low architectural bits of operand2.
-;; For little-endian this is { operand2, operand1 }
-;; For big-endian this is { operand1, operand2 }
-
-(define_insn "aarch64_simd_move_hi_quad_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "+w,w")
-        (vec_concat:VQMOV
-          (vec_select:<VHALF>
-                (match_dup 0)
-                (match_operand:VQMOV 2 "vect_par_cnst_lo_half" ""))
-	  (match_operand:<VHALF> 1 "register_operand" "w,r")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "@
-   ins\\t%0.d[1], %1.d[0]
-   ins\\t%0.d[1], %1"
-  [(set_attr "type" "neon_ins")]
-)
-
-(define_insn "aarch64_simd_move_hi_quad_be_<mode>"
-  [(set (match_operand:VQMOV 0 "register_operand" "+w,w")
-        (vec_concat:VQMOV
-	  (match_operand:<VHALF> 1 "register_operand" "w,r")
-          (vec_select:<VHALF>
-                (match_dup 0)
-                (match_operand:VQMOV 2 "vect_par_cnst_lo_half" ""))))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "@
-   ins\\t%0.d[1], %1.d[0]
-   ins\\t%0.d[1], %1"
-  [(set_attr "type" "neon_ins")]
-)
-
-(define_expand "move_hi_quad_<mode>"
- [(match_operand:VQMOV 0 "register_operand")
-  (match_operand:<VHALF> 1 "register_operand")]
- "TARGET_SIMD"
-{
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_aarch64_simd_move_hi_quad_be_<mode> (operands[0],
-		    operands[1], p));
-  else
-    emit_insn (gen_aarch64_simd_move_hi_quad_<mode> (operands[0],
-		    operands[1], p));
-  DONE;
-})
-
 ;; Narrowing operations.
 
 (define_insn "aarch64_xtn<mode>_insn_le"
@@ -1743,16 +1679,12 @@
 
 (define_expand "vec_pack_trunc_<mode>"
  [(match_operand:<VNARROWD> 0 "register_operand")
-  (match_operand:VDN 1 "register_operand")
-  (match_operand:VDN 2 "register_operand")]
+  (match_operand:VDN 1 "general_operand")
+  (match_operand:VDN 2 "general_operand")]
  "TARGET_SIMD"
 {
   rtx tempreg = gen_reg_rtx (<VDBL>mode);
-  int lo = BYTES_BIG_ENDIAN ? 2 : 1;
-  int hi = BYTES_BIG_ENDIAN ? 1 : 2;
-
-  emit_insn (gen_move_lo_quad_<Vdbl> (tempreg, operands[lo]));
-  emit_insn (gen_move_hi_quad_<Vdbl> (tempreg, operands[hi]));
+  emit_insn (gen_aarch64_vec_concat<mode> (tempreg, operands[1], operands[2]));
   emit_insn (gen_trunc<Vdbl><Vnarrowd>2 (operands[0], tempreg));
   DONE;
 })
@@ -3402,20 +3334,13 @@
 
 (define_expand "vec_pack_trunc_df"
   [(set (match_operand:V2SF 0 "register_operand")
-      (vec_concat:V2SF
-	(float_truncate:SF
-	    (match_operand:DF 1 "register_operand"))
-	(float_truncate:SF
-	    (match_operand:DF 2 "register_operand"))
-	  ))]
+	(vec_concat:V2SF
+	  (float_truncate:SF (match_operand:DF 1 "general_operand"))
+	  (float_truncate:SF (match_operand:DF 2 "general_operand"))))]
   "TARGET_SIMD"
   {
     rtx tmp = gen_reg_rtx (V2SFmode);
-    int lo = BYTES_BIG_ENDIAN ? 2 : 1;
-    int hi = BYTES_BIG_ENDIAN ? 1 : 2;
-
-    emit_insn (gen_move_lo_quad_v2df (tmp, operands[lo]));
-    emit_insn (gen_move_hi_quad_v2df (tmp, operands[hi]));
+    emit_insn (gen_aarch64_vec_concatdf (tmp, operands[1], operands[2]));
     emit_insn (gen_aarch64_float_truncate_lo_v2sf (operands[0], tmp));
     DONE;
   }
