@@ -1,3 +1,10 @@
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/104385
+	* task.c (gomp_task_run_post_handle_dependers): If parent is NULL,
+	clear task->parent.
+	* testsuite/libgomp.c/pr104385.c: New test.
+
 2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-1.f90: Remove spurious

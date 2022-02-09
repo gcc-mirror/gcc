@@ -1,3 +1,7 @@
+2022-02-08  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	* MAINTAINERS: Remove Hartmut Penner as s390 maintainer.
+
 2022-01-31  Ed Smith-Rowland  <esmithrowland@gmail.com>
 
 	* MAINTAINERS: Update my email and add myself to the DCO list.

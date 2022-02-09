@@ -1,3 +1,32 @@
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (_Dir(DIR*, const path&)): Change first
+	parameter to _Dir_base&&.
+	* src/filesystem/dir-common.h (_Dir_base(DIR*)): Remove.
+	* src/filesystem/dir.cc (_Dir(DIR*, const path&)): Change first
+	parameter to _Dir_base&&.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Add comment about
+	checking for CAS on correct word size.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Adjust expected results for Windows.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::__erase):
+	[i_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Refresh entry._M_type member,
+	instead of checking for errno values indicating a directory.
+	* src/c++17/fs_ops.cc (fs::remove_all(const path&)): Use similar
+	logic to non-throwing overload.
+	(fs::remove_all(const path&, error_code&)): Add comments.
+	* src/filesystem/ops-common.h: Likewise.
+
 2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/dir-common.h (_Dir_base::openat): Change return

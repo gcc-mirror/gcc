@@ -1,3 +1,46 @@
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104379
+	* name-lookup.cc (check_local_shadow): When diagnosing shadowing
+	of a member or global declaration, add warning suppression for
+	the decl and don't warn again on it.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104403
+	* constexpr.cc (cxx_eval_constant_expression): Don't assert DECL_EXPRs
+	of TREE_STATIC vars may only appear in -std=c++23.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80951
+	* pt.cc (uses_deducible_template_parms): Consider the
+	noexcept-spec of a function type.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104410
+	* constraint.cc (satisfaction_value): Relax assert to accept
+	cv-qualified bool.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* pt.cc (preserve_args): New function.
+	(tsubst_lambda_expr): Use it when setting LAMBDA_EXPR_REGEN_INFO.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* constraint.cc (satisfy_declaration_constraints): Use
+	lambda_regenerating_args instead.
+	* cp-tree.h (lambda_regenerating_args): Declare.
+	* pt.cc (lambda_regenerating_args): Define, split out from
+	satisfy_declaration_constraints.
+	(do_auto_deduction): Use lambda_regenerating_args to obtain the
+	full set of outer template arguments for satisfaction when
+	inside a lambda.
+
 2022-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96242

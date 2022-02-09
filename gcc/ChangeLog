@@ -1,3 +1,91 @@
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104198
+	PR rtl-optimization/104153
+	* ifcvt.cc (noce_convert_multiple_sets_1): Copy rtx instead of
+	using it directly.  Rework comparison handling and always
+	perform a second pass.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* config/rs6000/rs6000.cc (vspltis_shifted): Return false also if
+	split1 pass has finished already.
+
+2022-02-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (VMSUMCUD): New.
+	* config/rs6000/rs6000-overload.def (VEC_MSUMC): New.
+	* config/rs6000/vsx.md (UNSPEC_VMSUMCUD): New constant.
+	(vmsumcud): New define_insn.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Add PTX_ISA_SM70.
+	* config/nvptx/nvptx.h (TARGET_SM70): Define.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_rtx_costs): Increase costs for load
+	on condition.
+	* config/s390/s390.md: Use paradoxical subreg.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* combine.cc (reg_subword_p): Check for paradoxical subreg.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104283
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add PTX_VERSION_3_0
+	and PTX_VERSION_4_2.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm)
+	(default_ptx_version_option, ptx_version_to_string)
+	(sm_version_to_string, handle_ptx_version_option): New function.
+	(nvptx_option_override): Call handle_ptx_version_option.
+	(nvptx_file_start): Use ptx_version_to_string and sm_version_to_string.
+	* config/nvptx/nvptx.md (define_insn "nvptx_shuffle<mode>")
+	(define_insn "nvptx_vote_ballot"): Use TARGET_PTX_6_0.
+	* config/nvptx/nvptx.opt (mptx): Remove 'Init'.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/install.texi (Configuration): Document `--with-isa-spec='
+	RISC-V option.
+	* doc/invoke.texi (Option Summary): List `-misa-spec=' RISC-V
+	option.
+	(RISC-V Options): Document it.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/t-riscv (riscv-sr.o): Add $(TM_H) dependency.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (write_fn_proto_1): Handle 'main (int)'.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104364
+	* config/nvptx/nvptx-protos.h (nvptx_mem_local_p): Declare.
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Assert that
+	change is validated.
+	(nvptx_mem_local_p): New function.
+	* config/nvptx/nvptx.md: Use nvptx_mem_local_p.
+	(define_c_enum "unspecv"): Add UNSPECV_CAS_LOCAL.
+	(define_insn "atomic_compare_and_swap<mode>_1_local"): New
+	non-atomic, non-predicable define_insn, factored out of ...
+	(define_insn "atomic_compare_and_swap<mode>_1"): ... here.
+	Make predicable again.
+	(define_expand "atomic_compare_and_swap<mode>"): Use
+	atomic_compare_and_swap<mode>_1_local.
+
+2022-02-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/104059
+	* regcprop.cc (copyprop_hardreg_forward_1): Don't propagate
+	for a more expensive reg-reg move.
+
 2022-02-07  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/arm/arm_neon.h (vusdotq_s32, vusdot_laneq_s32,

@@ -1,3 +1,196 @@
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104198
+	PR rtl-optimization/104153
+	* gcc.dg/pr104198.c: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104379
+	* g++.dg/warn/Wshadow-18.C: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104403
+	* g++.dg/cpp0x/lambda/lambda-104403.C: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* gcc.dg/pr102140.c: New test.
+
+2022-02-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-msumc.c: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104425
+	* g++.dg/template/partial-specialization10.C: New test.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-two-insns-int.c: Fix array size.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Dito.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80951
+	* g++.dg/cpp1z/noexcept-type25.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104410
+	* g++.dg/cpp2a/concepts-pr104410.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda19.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda18.C: New test.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/riscv.exp: Use `gcc-dg-runtest' rather than
+	`dg-runtest'.  Add `-Og -g' and `-Oz' variants via
+	ADDITIONAL_TORTURE_OPTIONS.
+	* gcc.target/riscv/arch-1.c: Adjust test options accordingly.
+	* gcc.target/riscv/arch-10.c: Likewise.
+	* gcc.target/riscv/arch-11.c: Likewise.
+	* gcc.target/riscv/arch-12.c: Likewise.
+	* gcc.target/riscv/arch-2.c: Likewise.
+	* gcc.target/riscv/arch-3.c: Likewise.
+	* gcc.target/riscv/arch-4.c: Likewise.
+	* gcc.target/riscv/arch-5.c: Likewise.
+	* gcc.target/riscv/arch-6.c: Likewise.
+	* gcc.target/riscv/arch-7.c: Likewise.
+	* gcc.target/riscv/arch-8.c: Likewise.
+	* gcc.target/riscv/arch-9.c: Likewise.
+	* gcc.target/riscv/attribute-1.c: Likewise.
+	* gcc.target/riscv/attribute-10.c: Likewise.
+	* gcc.target/riscv/attribute-11.c: Likewise.
+	* gcc.target/riscv/attribute-12.c: Likewise.
+	* gcc.target/riscv/attribute-13.c: Likewise.
+	* gcc.target/riscv/attribute-14.c: Likewise.
+	* gcc.target/riscv/attribute-15.c: Likewise.
+	* gcc.target/riscv/attribute-16.c: Likewise.
+	* gcc.target/riscv/attribute-17.c: Likewise.
+	* gcc.target/riscv/attribute-2.c: Likewise.
+	* gcc.target/riscv/attribute-3.c: Likewise.
+	* gcc.target/riscv/attribute-4.c: Likewise.
+	* gcc.target/riscv/attribute-5.c: Likewise.
+	* gcc.target/riscv/attribute-7.c: Likewise.
+	* gcc.target/riscv/attribute-8.c: Likewise.
+	* gcc.target/riscv/attribute-9.c: Likewise.
+	* gcc.target/riscv/interrupt-1.c: Likewise.
+	* gcc.target/riscv/interrupt-2.c: Likewise.
+	* gcc.target/riscv/interrupt-3.c: Likewise.
+	* gcc.target/riscv/interrupt-4.c: Likewise.
+	* gcc.target/riscv/interrupt-conflict-mode.c: Likewise.
+	* gcc.target/riscv/interrupt-debug.c: Likewise.
+	* gcc.target/riscv/interrupt-mmode.c: Likewise.
+	* gcc.target/riscv/interrupt-smode.c: Likewise.
+	* gcc.target/riscv/interrupt-umode.c: Likewise.
+	* gcc.target/riscv/li.c: Likewise.
+	* gcc.target/riscv/load-immediate.c: Likewise.
+	* gcc.target/riscv/losum-overflow.c: Likewise.
+	* gcc.target/riscv/mcpu-6.c: Likewise.
+	* gcc.target/riscv/mcpu-7.c: Likewise.
+	* gcc.target/riscv/pr102957.c: Likewise.
+	* gcc.target/riscv/pr103302.c: Likewise.
+	* gcc.target/riscv/pr104140.c: Likewise.
+	* gcc.target/riscv/pr84660.c: Likewise.
+	* gcc.target/riscv/pr93202.c: Likewise.
+	* gcc.target/riscv/pr93304.c: Likewise.
+	* gcc.target/riscv/pr95252.c: Likewise.
+	* gcc.target/riscv/pr95683.c: Likewise.
+	* gcc.target/riscv/pr98777.c: Likewise.
+	* gcc.target/riscv/pr99702.c: Likewise.
+	* gcc.target/riscv/predef-1.c: Likewise.
+	* gcc.target/riscv/predef-10.c: Likewise.
+	* gcc.target/riscv/predef-11.c: Likewise.
+	* gcc.target/riscv/predef-12.c: Likewise.
+	* gcc.target/riscv/predef-13.c: Likewise.
+	* gcc.target/riscv/predef-14.c: Likewise.
+	* gcc.target/riscv/predef-15.c: Likewise.
+	* gcc.target/riscv/predef-16.c: Likewise.
+	* gcc.target/riscv/predef-2.c: Likewise.
+	* gcc.target/riscv/predef-3.c: Likewise.
+	* gcc.target/riscv/predef-4.c: Likewise.
+	* gcc.target/riscv/predef-5.c: Likewise.
+	* gcc.target/riscv/predef-6.c: Likewise.
+	* gcc.target/riscv/predef-7.c: Likewise.
+	* gcc.target/riscv/predef-8.c: Likewise.
+	* gcc.target/riscv/promote-type-for-libcall.c: Likewise.
+	* gcc.target/riscv/save-restore-1.c: Likewise.
+	* gcc.target/riscv/save-restore-2.c: Likewise.
+	* gcc.target/riscv/save-restore-3.c: Likewise.
+	* gcc.target/riscv/save-restore-4.c: Likewise.
+	* gcc.target/riscv/save-restore-6.c: Likewise.
+	* gcc.target/riscv/save-restore-7.c: Likewise.
+	* gcc.target/riscv/save-restore-8.c: Likewise.
+	* gcc.target/riscv/save-restore-9.c: Likewise.
+	* gcc.target/riscv/shift-and-1.c: Likewise.
+	* gcc.target/riscv/shift-and-2.c: Likewise.
+	* gcc.target/riscv/shift-shift-1.c: Likewise.
+	* gcc.target/riscv/shift-shift-2.c: Likewise.
+	* gcc.target/riscv/shift-shift-3.c: Likewise.
+	* gcc.target/riscv/shift-shift-4.c: Likewise.
+	* gcc.target/riscv/shift-shift-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-1.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-2.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-3.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-4.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-6.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-7.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-8.c: Likewise.
+	* gcc.target/riscv/switch-qi.c: Likewise.
+	* gcc.target/riscv/switch-si.c: Likewise.
+	* gcc.target/riscv/weak-1.c: Likewise.
+	* gcc.target/riscv/zba-adduw.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-01.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-02.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-03.c: Likewise.
+	* gcc.target/riscv/zba-slliuw.c: Likewise.
+	* gcc.target/riscv/zba-zextw.c: Likewise.
+	* gcc.target/riscv/zbb-andn-orn-xnor-01.c: Likewise.
+	* gcc.target/riscv/zbb-andn-orn-xnor-02.c: Likewise.
+	* gcc.target/riscv/zbb-li-rotr.c: Likewise.
+	* gcc.target/riscv/zbb-min-max.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-01.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-02.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-03.c: Likewise.
+	* gcc.target/riscv/zbbw.c: Likewise.
+	* gcc.target/riscv/zbs-bclr.c: Likewise.
+	* gcc.target/riscv/zbs-bext.c: Likewise.
+	* gcc.target/riscv/zbs-binv.c: Likewise.
+	* gcc.target/riscv/zbs-bset.c: Likewise.
+	* gcc.target/riscv/zero-extend-1.c: Likewise.
+	* gcc.target/riscv/zero-extend-2.c: Likewise.
+	* gcc.target/riscv/zero-extend-3.c: Likewise.
+	* gcc.target/riscv/zero-extend-4.c: Likewise.
+	* gcc.target/riscv/zero-extend-5.c: Likewise.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Require c99_runtime for
+	dg-do run.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104364
+	* gcc.target/nvptx/softstack-2.c: New test.
+	* gcc.target/nvptx/uniform-simt-1.c: New test.
+
+2022-02-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104059.c: New test.
+
 2022-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104417
