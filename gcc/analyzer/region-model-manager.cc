@@ -782,15 +782,22 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
   /* Handle getting individual chars from a STRING_CST.  */
   if (tree cst = parent_svalue->maybe_get_constant ())
     if (TREE_CODE (cst) == STRING_CST)
-      if (const element_region *element_reg
-	    = subregion->dyn_cast_element_region ())
-	{
-	  const svalue *idx_sval = element_reg->get_index ();
-	  if (tree cst_idx = idx_sval->maybe_get_constant ())
+      {
+	/* If we have a concrete 1-byte access within the parent region... */
+	byte_range subregion_bytes (0, 0);
+	if (subregion->get_relative_concrete_byte_range (&subregion_bytes)
+	    && subregion_bytes.m_size_in_bytes == 1)
+	  {
+	    /* ...then attempt to get that char from the STRING_CST.  */
+	    HOST_WIDE_INT hwi_start_byte
+	      = subregion_bytes.m_start_byte_offset.to_shwi ();
+	    tree cst_idx
+	      = build_int_cst_type (size_type_node, hwi_start_byte);
 	    if (const svalue *char_sval
 		= maybe_get_char_from_string_cst (cst, cst_idx))
 	      return get_or_create_cast (type, char_sval);
-	}
+	  }
+      }
 
   if (const initial_svalue *init_sval
 	= parent_svalue->dyn_cast_initial_svalue ())
