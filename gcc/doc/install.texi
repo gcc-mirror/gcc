@@ -4189,7 +4189,7 @@ See @uref{https://gcc.gnu.org/PR10877,,bug 10877} for more information.
 
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
-found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
+found on @uref{https://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 
 @html
 <hr />
