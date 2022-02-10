@@ -7695,7 +7695,7 @@ resolve_omp_atomic (gfc_code *code)
   gfc_omp_atomic_op aop
     = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			   & GFC_OMP_ATOMIC_MASK);
-  gfc_code *stmt = NULL, *capture_stmt = NULL;
+  gfc_code *stmt = NULL, *capture_stmt = NULL, *tailing_stmt = NULL;
   gfc_expr *comp_cond = NULL;
   locus *loc = NULL;
 
@@ -7833,7 +7833,8 @@ resolve_omp_atomic (gfc_code *code)
 	  stmt = code;
 	  capture_stmt = code->next;
 	}
-      gcc_assert (!code->next->next);
+      /* Shall be NULL but can happen for invalid code. */
+      tailing_stmt = code->next->next;
     }
   else
     {
@@ -7841,7 +7842,8 @@ resolve_omp_atomic (gfc_code *code)
       stmt = code;
       if (!atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_ASSIGN)
 	goto unexpected;
-      gcc_assert (!code->next);
+      /* Shall be NULL but can happen for invalid code. */
+      tailing_stmt = code->next;
     }
 
   if (comp_cond)
@@ -7893,6 +7895,9 @@ resolve_omp_atomic (gfc_code *code)
 		 &stmt->expr1->where);
       return;
     }
+
+  /* Should be diagnosed above already. */
+  gcc_assert (tailing_stmt == NULL);
 
   var = stmt->expr1->symtree->n.sym;
   stmt_expr2 = is_conversion (stmt->expr2, true, true);
