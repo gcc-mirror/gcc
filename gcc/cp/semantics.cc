@@ -5648,6 +5648,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      return false;
 	    }
 	  OMP_CLAUSE_DECL (c) = first;
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+	    return false;
 	  OMP_CLAUSE_SIZE (c) = size;
 	  if (TREE_CODE (t) == FIELD_DECL)
 	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
@@ -6677,7 +6679,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
   bitmap_head aligned_head, map_head, map_field_head, map_firstprivate_head;
-  bitmap_head oacc_reduction_head;
+  bitmap_head oacc_reduction_head, is_on_device_head;
   tree c, t, *pc;
   tree safelen = NULL_TREE;
   bool branch_seen = false;
@@ -6710,6 +6712,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* If ort == C_ORT_OMP used as nontemporal_head or use_device_xxx_head
      instead and for ort == C_ORT_OMP_TARGET used as in_reduction_head.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
+  bitmap_initialize (&is_on_device_head, &bitmap_default_obstack);
 
   if (ort & C_ORT_ACC)
     for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
@@ -7008,7 +7011,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
-	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+	  else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+		    || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR
+		    || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
 		   && bitmap_bit_p (&map_head, DECL_UID (t)))
 	    {
 	      if (ort == C_ORT_ACC)
@@ -8232,7 +8237,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%qD appears more than once in data clauses", t);
 	      remove = true;
 	    }
-	  else if (bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
+	  else if (bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		   || bitmap_bit_p (&is_on_device_head, DECL_UID (t)))
 	    {
 	      if (ort == C_ORT_ACC)
 		error_at (OMP_CLAUSE_LOCATION (c),
@@ -8491,6 +8497,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	  field_ok = (ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP;
 	  t = OMP_CLAUSE_DECL (c);
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
+	    bitmap_set_bit (&is_on_device_head, DECL_UID (t));
 	  if (!type_dependent_expression_p (t))
 	    {
 	      tree type = TREE_TYPE (t);
@@ -8519,6 +8527,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	    }
 	  goto check_dup_generic;
+
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (TREE_CODE (t) == TREE_LIST)
+	    {
+	      if (handle_omp_array_sections (c, ort))
+		remove = true;
+	      else
+		{
+		  t = OMP_CLAUSE_DECL (c);
+		  while (TREE_CODE (t) == INDIRECT_REF
+			 || TREE_CODE (t) == ARRAY_REF)
+		    t = TREE_OPERAND (t, 0);
+		}
+	    }
+	  bitmap_set_bit (&is_on_device_head, DECL_UID (t));
+	  if (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+	    cxx_mark_addressable (t);
+	  goto check_dup_generic_t;
 
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  field_ok = true;

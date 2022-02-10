@@ -289,6 +289,7 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_FROM  */
   2, /* OMP_CLAUSE_TO  */
   2, /* OMP_CLAUSE_MAP  */
+  1, /* OMP_CLAUSE_HAS_DEVICE_ADDR  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -378,6 +379,7 @@ const char * const omp_clause_code_name[] =
   "from",
   "to",
   "map",
+  "has_device_addr",
   "_cache_",
   "gang",
   "async",

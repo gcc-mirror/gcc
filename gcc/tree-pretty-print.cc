@@ -493,6 +493,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_USE_DEVICE_ADDR:
       name = "use_device_addr";
       goto print_remap;
+    case OMP_CLAUSE_HAS_DEVICE_ADDR:
+      name = "has_device_addr";
+      goto print_remap;
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
       goto print_remap;

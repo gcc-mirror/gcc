@@ -12771,7 +12771,9 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_GRAINSIZE;
 	  break;
 	case 'h':
-	  if (!strcmp ("hint", p))
+	  if (!strcmp ("has_device_addr", p))
+	    result = PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR;
+	  else if (!strcmp ("hint", p))
 	    result = PRAGMA_OMP_CLAUSE_HINT;
 	  else if (!strcmp ("host", p))
 	    result = PRAGMA_OACC_CLAUSE_HOST;
@@ -13164,6 +13166,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_REDUCTION:
 	    case OMP_CLAUSE_IN_REDUCTION:
 	    case OMP_CLAUSE_TASK_REDUCTION:
+	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
 	      while (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
@@ -14321,6 +14324,16 @@ static tree
 c_parser_omp_clause_use_device_addr (c_parser *parser, tree list)
 {
   return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_USE_DEVICE_ADDR,
+				       list);
+}
+
+/* OpenMP 5.1:
+   has_device_addr ( variable-list ) */
+
+static tree
+c_parser_omp_clause_has_device_addr (c_parser *parser, tree list)
+{
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_HAS_DEVICE_ADDR,
 				       list);
 }
 
@@ -17051,6 +17064,10 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR:
 	  clauses = c_parser_omp_clause_use_device_addr (parser, clauses);
 	  c_name = "use_device_addr";
+	  break;
+	case PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  clauses = c_parser_omp_clause_has_device_addr (parser, clauses);
+	  c_name = "has_device_addr";
 	  break;
 	case PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR:
 	  clauses = c_parser_omp_clause_is_device_ptr (parser, clauses);
@@ -21034,7 +21051,8 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR))
 
 static bool
 c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)

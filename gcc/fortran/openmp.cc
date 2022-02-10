@@ -926,7 +926,7 @@ enum omp_mask1
   OMP_MASK1_LAST
 };
 
-/* OpenACC 2.0+ specific clauses. */
+/* More OpenMP clauses and OpenACC 2.0+ specific clauses. */
 enum omp_mask2
 {
   OMP_CLAUSE_ASYNC,
@@ -955,6 +955,7 @@ enum omp_mask2
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
   OMP_CLAUSE_NOHOST,
+  OMP_CLAUSE_HAS_DEVICE_ADDR,  /* OpenMP 5.1  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2151,6 +2152,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'h':
+	  if ((mask & OMP_CLAUSE_HAS_DEVICE_ADDR)
+	      && gfc_match_omp_variable_list
+		   ("has_device_addr (", &c->lists[OMP_LIST_HAS_DEVICE_ADDR],
+		    false, NULL, NULL, true) == MATCH_YES)
+	    continue;
 	  if ((mask & OMP_CLAUSE_HINT)
 	      && (m = gfc_match_dupl_check (!c->hint, "hint", true, &c->hint))
 		 != MATCH_NO)
@@ -2923,8 +2929,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    continue;
 	  if ((mask & OMP_CLAUSE_USE_DEVICE_ADDR)
 	      && gfc_match_omp_variable_list
-		   ("use_device_addr (",
-		    &c->lists[OMP_LIST_USE_DEVICE_ADDR], false) == MATCH_YES)
+		   ("use_device_addr (", &c->lists[OMP_LIST_USE_DEVICE_ADDR],
+		    false, NULL, NULL, true) == MATCH_YES)
 	    continue;
 	  break;
 	case 'v':
@@ -3651,7 +3657,8 @@ cleanup:
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_PRIVATE		\
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
-   | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
+   | OMP_CLAUSE_HAS_DEVICE_ADDR)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -6283,7 +6290,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"IN_REDUCTION", "TASK_REDUCTION",
 	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
-	"NONTEMPORAL", "ALLOCATE" };
+	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR" };
   STATIC_ASSERT (ARRAY_SIZE (clause_names) == OMP_LIST_NUM);
 
   if (omp_clauses == NULL)
@@ -7132,6 +7139,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			     n->sym->name, name, &n->where);
 	      }
 	    break;
+	  case OMP_LIST_HAS_DEVICE_ADDR:
 	  case OMP_LIST_USE_DEVICE_PTR:
 	  case OMP_LIST_USE_DEVICE_ADDR:
 	    /* FIXME: Handle OMP_LIST_USE_DEVICE_PTR.  */

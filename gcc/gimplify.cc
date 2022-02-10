@@ -10278,6 +10278,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  flags = GOVD_EXPLICIT;
 	  goto do_add;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  flags = GOVD_EXPLICIT;
+	  goto do_add_decl;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  goto do_add;
@@ -11428,6 +11436,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    }
 	  break;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = n == NULL || !(n->value & GOVD_SEEN);
+	  break;
+
+	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_NONTEMPORAL:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
@@ -11729,7 +11747,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
-	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:
