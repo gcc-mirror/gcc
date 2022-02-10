@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-base.h"
+#include "fold-const.h"
 #include "stringpool.h"
 
 namespace Rust {
@@ -86,6 +87,86 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
     default:
       break;
     }
+}
+
+// ported from gcc/c/c-typecheck.c
+//
+// Mark EXP saying that we need to be able to take the
+// address of it; it should not be allocated in a register.
+// Returns true if successful.  ARRAY_REF_P is true if this
+// is for ARRAY_REF construction - in that case we don't want
+// to look through VIEW_CONVERT_EXPR from VECTOR_TYPE to ARRAY_TYPE,
+// it is fine to use ARRAY_REFs for vector subscripts on vector
+// register variables.
+bool
+HIRCompileBase::mark_addressable (tree exp, Location locus)
+{
+  tree x = exp;
+
+  while (1)
+    switch (TREE_CODE (x))
+      {
+      case VIEW_CONVERT_EXPR:
+	if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (x, 0))))
+	  return true;
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPONENT_REF:
+	// TODO
+	// if (DECL_C_BIT_FIELD (TREE_OPERAND (x, 1)))
+	//   {
+	//     error ("cannot take address of bit-field %qD", TREE_OPERAND (x,
+	//     1)); return false;
+	//   }
+
+	/* FALLTHRU */
+      case ADDR_EXPR:
+      case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+
+      case COMPOUND_LITERAL_EXPR:
+	TREE_ADDRESSABLE (x) = 1;
+	TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (x)) = 1;
+	return true;
+
+      case CONSTRUCTOR:
+	TREE_ADDRESSABLE (x) = 1;
+	return true;
+
+      case VAR_DECL:
+      case CONST_DECL:
+      case PARM_DECL:
+      case RESULT_DECL:
+	// (we don't have a concept of a "register" declaration)
+	// fallthrough */
+
+	/* FALLTHRU */
+      case FUNCTION_DECL:
+	TREE_ADDRESSABLE (x) = 1;
+
+	/* FALLTHRU */
+      default:
+	return true;
+      }
+
+  return false;
+}
+
+tree
+HIRCompileBase::address_expression (tree expr, Location location)
+{
+  if (expr == error_mark_node)
+    return error_mark_node;
+
+  if (!mark_addressable (expr, location))
+    return error_mark_node;
+
+  return build_fold_addr_expr_loc (location.gcc_location (), expr);
 }
 
 } // namespace Compile

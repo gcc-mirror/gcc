@@ -20,7 +20,6 @@
 #define RUST_COMPILE_VAR_DECL
 
 #include "rust-compile-base.h"
-#include "rust-hir-address-taken.h"
 
 namespace Rust {
 namespace Compile {
@@ -47,9 +46,6 @@ public:
 					      &resolved_type);
     rust_assert (ok);
 
-    address_taken_context->lookup_addess_taken (
-      stmt.get_mappings ().get_hirid (), &address_taken);
-
     translated_type = TyTyResolveCompile::compile (ctx, resolved_type);
     stmt.get_pattern ()->accept_vis (*this);
   }
@@ -62,33 +58,29 @@ public:
     compiled_variable
       = ctx->get_backend ()->local_variable (fndecl, pattern.get_identifier (),
 					     translated_type, NULL /*decl_var*/,
-					     address_taken, locus);
+					     locus);
   }
 
   void visit (HIR::WildcardPattern &pattern) override
   {
     translated_type = ctx->get_backend ()->immutable_type (translated_type);
+
     compiled_variable
       = ctx->get_backend ()->local_variable (fndecl, "_", translated_type,
-					     NULL /*decl_var*/, address_taken,
-					     locus);
+					     NULL /*decl_var*/, locus);
   }
 
 private:
   CompileVarDecl (Context *ctx, tree fndecl)
     : HIRCompileBase (ctx), fndecl (fndecl),
       translated_type (ctx->get_backend ()->error_type ()),
-      compiled_variable (ctx->get_backend ()->error_variable ()),
-      address_taken (false),
-      address_taken_context (Resolver::AddressTakenContext::get ())
+      compiled_variable (ctx->get_backend ()->error_variable ())
   {}
 
   tree fndecl;
   tree translated_type;
   Location locus;
   Bvariable *compiled_variable;
-  bool address_taken;
-  const Resolver::AddressTakenContext *address_taken_context;
 };
 
 } // namespace Compile

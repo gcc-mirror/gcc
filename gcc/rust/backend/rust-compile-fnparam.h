@@ -20,7 +20,6 @@
 #define RUST_COMPILE_FNPARAM
 
 #include "rust-compile-base.h"
-#include "rust-hir-address-taken.h"
 
 namespace Rust {
 namespace Compile {
@@ -34,7 +33,7 @@ public:
 			     HIR::FunctionParam *param, tree decl_type,
 			     Location locus)
   {
-    CompileFnParam compiler (ctx, fndecl, decl_type, locus, *param);
+    CompileFnParam compiler (ctx, fndecl, decl_type, locus);
     param->get_param_name ()->accept_vis (compiler);
     return compiler.compiled_param;
   }
@@ -44,39 +43,30 @@ public:
     if (!pattern.is_mut ())
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    bool address_taken = false;
-    address_taken_context->lookup_addess_taken (
-      param.get_mappings ().get_hirid (), &address_taken);
-
-    compiled_param = ctx->get_backend ()->parameter_variable (
-      fndecl, pattern.get_identifier (), decl_type, address_taken, locus);
+    compiled_param
+      = ctx->get_backend ()->parameter_variable (fndecl,
+						 pattern.get_identifier (),
+						 decl_type, locus);
   }
 
   void visit (HIR::WildcardPattern &pattern) override
   {
     decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    bool address_taken = false;
     compiled_param
-      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type,
-						 address_taken, locus);
+      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
   }
 
 private:
-  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus,
-		  const HIR::FunctionParam &param)
+  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus)
     : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
-      locus (locus), param (param),
-      compiled_param (ctx->get_backend ()->error_variable ()),
-      address_taken_context (Resolver::AddressTakenContext::get ())
+      locus (locus), compiled_param (ctx->get_backend ()->error_variable ())
   {}
 
   tree fndecl;
   tree decl_type;
   Location locus;
-  const HIR::FunctionParam &param;
   Bvariable *compiled_param;
-  const Resolver::AddressTakenContext *address_taken_context;
 };
 
 class CompileSelfParam : public HIRCompileBase
@@ -91,13 +81,8 @@ public:
     if (is_immutable)
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    const auto &address_taken_context = Resolver::AddressTakenContext::get ();
-    bool address_taken = false;
-    address_taken_context->lookup_addess_taken (
-      self.get_mappings ().get_hirid (), &address_taken);
-
     return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						    address_taken, locus);
+						    locus);
   }
 };
 

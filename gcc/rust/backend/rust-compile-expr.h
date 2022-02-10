@@ -797,13 +797,7 @@ public:
     ctx->add_statement (goto_label);
   }
 
-  void visit (HIR::BorrowExpr &expr) override
-  {
-    tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-
-    translated
-      = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
-  }
+  void visit (HIR::BorrowExpr &expr) override;
 
   void visit (HIR::DereferenceExpr &expr) override;
 
