@@ -693,14 +693,11 @@ package Sinput is
    --  names in some situations.
 
    procedure Write_Location (P : Source_Ptr);
-   --  Writes out a string of the form fff:nn:cc, where fff, nn, cc are the
-   --  file name, line number and column corresponding to the given source
-   --  location. No_Location and Standard_Location appear as the strings
-   --  <no location> and <standard location>. If the location is within an
-   --  instantiation, then the instance location is appended, enclosed in
-   --  square brackets (which can nest if necessary). Note that this routine
-   --  is used only for internal compiler debugging output purposes (which
-   --  is why the somewhat cryptic use of brackets is acceptable).
+   --  Writes P, in the form fff:nn:cc, where fff, nn, cc are the file name,
+   --  line number and column corresponding to the given source location. If
+   --  the location is within an instantiation, then the instance location is
+   --  appended, enclosed in square brackets, which can nest if necessary. This
+   --  is used only for debugging output.
 
    procedure wl (P : Source_Ptr);
    pragma Export (Ada, wl);

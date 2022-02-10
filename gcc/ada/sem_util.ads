@@ -1258,9 +1258,8 @@ package Sem_Util is
    --  Retrieve one of the primitives First, Last, Next, Previous, Has_Element,
    --  Element from the value of the Iterable aspect of a type.
 
-   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
-   --  Retrieve the fully expanded name of the library unit declared by
-   --  Decl_Node into the name buffer.
+   function Get_Library_Unit_Name (Decl_Node : Node_Id) return String_Id;
+   --  Return the full expanded name of the library unit declared by Decl_Node
 
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint;
    --  Return the argument of pragma Max_Queue_Length or zero if the annotation

@@ -174,7 +174,7 @@ package body System.Image_F is
    --  operation are omitted here.
 
    --  A 64-bit value can represent all integers with 18 decimal digits, but
-   --  not all with 19 decimal digits. If the total number of requested ouput
+   --  not all with 19 decimal digits. If the total number of requested output
    --  digits (Fore - 1) + Aft is greater than 18 then, for purposes of the
    --  conversion, Aft is adjusted to 18 - (Fore - 1). In that case, trailing
    --  zeros can complete the output after writing the first 18 significant

@@ -6699,7 +6699,7 @@ package body Exp_Util is
          --  Generates the entity name in upper case
 
          Get_Decoded_Name_String (Chars (Ent));
-         Set_All_Upper_Case;
+         Set_Casing (All_Upper_Case);
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
          return;
       end Internal_Full_Qualified_Name;

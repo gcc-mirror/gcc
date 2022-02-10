@@ -11390,21 +11390,23 @@ package body Sem_Util is
       end if;
    end Get_Iterable_Type_Primitive;
 
-   ----------------------------------
-   -- Get_Library_Unit_Name_String --
-   ----------------------------------
+   ---------------------------
+   -- Get_Library_Unit_Name --
+   ---------------------------
 
-   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id) is
+   function Get_Library_Unit_Name (Decl_Node : Node_Id) return String_Id is
       Unit_Name_Id : constant Unit_Name_Type := Get_Unit_Name (Decl_Node);
-
+      Buf : Bounded_String;
    begin
-      Get_Unit_Name_String (Unit_Name_Id);
+      Get_Unit_Name_String (Buf, Unit_Name_Id);
 
-      --  Remove seven last character (" (spec)" or " (body)")
+      --  Remove the last seven characters (" (spec)" or " (body)")
 
-      Name_Len := Name_Len - 7;
-      pragma Assert (Name_Buffer (Name_Len + 1) = ' ');
-   end Get_Library_Unit_Name_String;
+      Buf.Length := Buf.Length - 7;
+      pragma Assert (Buf.Chars (Buf.Length + 1) = ' ');
+
+      return String_From_Name_Buffer (Buf);
+   end Get_Library_Unit_Name;
 
    --------------------------
    -- Get_Max_Queue_Length --

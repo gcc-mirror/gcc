@@ -1023,7 +1023,7 @@ package body Sinput is
             SI : constant Source_File_Index := Get_Source_File_Index (P);
 
          begin
-            Write_Name (Debug_Source_Name (SI));
+            Write_Name_For_Debug (Debug_Source_Name (SI));
             Write_Char (':');
             Write_Int (Int (Get_Logical_Line_Number (P)));
             Write_Char (':');

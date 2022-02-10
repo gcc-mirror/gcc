@@ -1468,6 +1468,7 @@ package body Erroutc is
    procedure Set_Msg_Name_Buffer is
    begin
       Set_Msg_Str (Name_Buffer (1 .. Name_Len));
+      Destroy_Global_Name_Buffer;
    end Set_Msg_Name_Buffer;
 
    -------------------
