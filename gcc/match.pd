@@ -6943,7 +6943,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 					  TREE_TYPE (TREE_TYPE (ctor)))
 			     ? type
 			     : build_vector_type (TREE_TYPE (TREE_TYPE (ctor)),
-						  count));
+						  count * k));
 	      res = (constant_p ? build_vector_from_ctor (evtype, vals)
 		     : build_constructor (evtype, vals));
 	    }
