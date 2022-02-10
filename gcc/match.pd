@@ -7384,13 +7384,15 @@ and,
   (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
     (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
 /* Same for ternary operations.  */
@@ -7400,13 +7402,15 @@ and,
   (vec_cond @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4)
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
     (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@5 @2 @3 @4)))
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
 #endif
