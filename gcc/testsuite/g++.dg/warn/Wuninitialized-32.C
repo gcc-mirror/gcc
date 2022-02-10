@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-additional-options "-Wall" }
 
-void* operator new[](unsigned long, void* __p);
+void* operator new[](__SIZE_TYPE__, void* __p);
 
 struct allocator
 {
