@@ -2134,6 +2134,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   suppress expanding incomplete types.  */
 	gnu_type = make_node (UNCONSTRAINED_ARRAY_TYPE);
 
+	/* The component may refer to this type, so defer completion of any
+	   incomplete types.  */
 	if (!definition)
 	  {
 	    defer_incomplete_level++;
@@ -3066,7 +3068,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	process_attributes (&gnu_type, &attr_list, true, gnat_entity);
 
-	/* If we are not defining it, suppress expanding incomplete types.  */
+	/* Some component may refer to this type, so defer completion of any
+	   incomplete types.  */
 	if (!definition)
 	  {
 	    defer_incomplete_level++;
@@ -3439,7 +3442,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	{
 	  Entity_Id gnat_base_type = Implementation_Base_Type (gnat_entity);
 
-	  if (!definition)
+	  /* Some component may refer to this type, so defer completion of any
+	     incomplete types.  We also need to do it for the special subtypes
+	     designated by access subtypes in case they are recursive, see the
+	     E_Access_Subtype case below.  */
+	  if (!definition
+	      || (Is_Itype (gnat_entity)
+		  && Is_Frozen (gnat_entity)
+		  && No (Freeze_Node (gnat_entity))))
 	    {
 	      defer_incomplete_level++;
 	      this_deferred = true;
