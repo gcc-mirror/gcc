@@ -210,6 +210,15 @@ package body System.Image_U is
       --  Ghost lemma to prove the value of a character corresponding to the
       --  next figure.
 
+      procedure Prove_Euclidian (Val, Quot, Rest : Uns)
+      with
+        Ghost,
+        Pre  => Quot = Val / 10
+          and then Rest = Val rem 10,
+        Post => Val = 10 * Quot + Rest;
+      --  Ghost lemma to prove the relation between the quotient/remainder of
+      --  division by 10 and the initial value.
+
       procedure Prove_Hexa_To_Unsigned_Ghost (R : Uns)
       with
         Ghost,
@@ -256,6 +265,7 @@ package body System.Image_U is
       -----------------------------
 
       procedure Prove_Character_Val (R : Uns) is null;
+      procedure Prove_Euclidian (Val, Quot, Rest : Uns) is null;
       procedure Prove_Hexa_To_Unsigned_Ghost (R : Uns) is null;
       procedure Prove_Unchanged is null;
 
@@ -347,6 +357,9 @@ package body System.Image_U is
             Acc  => Value);
 
          if J /= Nb_Digits then
+            Prove_Euclidian (Val  => Prev_Value,
+                             Quot => Value,
+                             Rest => Hexa_To_Unsigned_Ghost (S (P + J)));
             pragma Assert
               (Prev_Value = 10 * Value + Hexa_To_Unsigned_Ghost (S (P + J)));
             Prove_Iter_Scan
