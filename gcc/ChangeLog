@@ -1,3 +1,9 @@
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* config/i386/sse.md (<insn><mode>3): lowpart_subreg
+	operands[2] from SImode to QImode.
+
 2022-01-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

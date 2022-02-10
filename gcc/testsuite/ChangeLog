@@ -1,3 +1,8 @@
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* gcc.target/i386/pr104451.c: New test.
+
 2022-02-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
