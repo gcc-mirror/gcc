@@ -1357,6 +1357,7 @@ build_call (location *loc,
     if (param_count != actual_arg_count)
     {
       add_error (loc, "wrong number of arguments, actual: %lu, expected: %lu", actual_arg_count, param_count);
+      debug_tree (fn_ptr);
       fprintf (stderr, "function:\n");
       debug_tree (fn_ptr);
       fprintf (stderr, "arguments:\n");
@@ -1371,6 +1372,7 @@ build_call (location *loc,
         if (TREE_TYPE(current_arg) != arg_type)
         {
           add_error (loc, "Wrong type of arguments");
+          debug_tree (fn_ptr);
           fprintf (stderr, "actual:\n");
           debug_tree (TREE_TYPE (current_arg));
           fprintf (stderr, "expected:\n");
