@@ -1,3 +1,13 @@
+2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backported from master:
+	2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/104442
+	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): Move spin
+	 loop inside do loop so that threads failing the wait, reload
+	 _M_ver.
+
 2022-02-01  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:
