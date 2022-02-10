@@ -27,7 +27,7 @@ struct junk { char j[12]; };
 int main(void)
 {
   typedef std::pair<junk*, std::ptrdiff_t> pair_type;
-  pair_type results = std::get_temporary_buffer<junk>(5); // { dg-warning "deprecated" "" { target c++14 } }
+  pair_type results = std::get_temporary_buffer<junk>(5); // { dg-warning "deprecated" "" { target c++17 } }
 
   if (results.second != 0)
   {
