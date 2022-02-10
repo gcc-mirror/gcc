@@ -338,6 +338,13 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
   h->field = field;
 }
 
+#if !defined (NO_DOT_IN_LABEL)
+#define GFC_EQUIV_FMT "equiv.%d"
+#elif !defined (NO_DOLLAR_IN_LABEL)
+#define GFC_EQUIV_FMT "_Equiv$%d"
+#else
+#define GFC_EQUIV_FMT "_Equiv_%d"
+#endif
 
 /* Get storage for local equivalence.  */
 
@@ -356,7 +363,7 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved, bool is_auto)
       return decl;
     }
 
-  snprintf (name, sizeof (name), "equiv.%d", serial++);
+  snprintf (name, sizeof (name), GFC_EQUIV_FMT, serial++);
   decl = build_decl (input_location,
 		     VAR_DECL, get_identifier (name), union_type);
   DECL_ARTIFICIAL (decl) = 1;
