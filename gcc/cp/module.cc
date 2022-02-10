@@ -12976,7 +12976,7 @@ depset::hash::add_specializations (bool decl_p)
 	/* Implicit instantiations only walked if we reach them.  */
 	needs_reaching = true;
       else if (!DECL_LANG_SPECIFIC (spec)
-	       || !DECL_MODULE_PURVIEW_P (spec))
+	       || !DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (spec)))
 	/* Likewise, GMF explicit or partial specializations.  */
 	needs_reaching = true;
 
