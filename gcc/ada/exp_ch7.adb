@@ -4247,14 +4247,33 @@ package body Exp_Ch7 is
          --
          --    Postcond_Enable := False;
 
-         Append_To (Top_Decls,
-           Make_Assignment_Statement (Loc,
-             Name       =>
-               New_Occurrence_Of
-                 (Get_Postcond_Enabled (Def_Ent), Loc),
-             Expression =>
-               New_Occurrence_Of
-                 (Standard_False, Loc)));
+         --  Note that we do not disable early evaluation of postconditions
+         --  for return types that are unconstrained or have unconstrained
+         --  elements since the temporary result object could get allocated on
+         --  the stack and be out of scope at the point where we perform late
+         --  evaluation of postconditions - leading to uninitialized memory
+         --  reads.
+
+         --  This disabling of early evaluation can lead to incorrect run-time
+         --  semantics where functions with unconstrained elements will
+         --  have their corresponding postconditions evaluated before
+         --  finalization. The proper solution here is to generate a wrapper
+         --  to capture the result instead of using multiple flags and playing
+         --  with flags which does not even work in all cases ???
+
+         if not Has_Unconstrained_Elements (Etype (Def_Ent))
+           or else (Is_Array_Type (Etype (Def_Ent))
+                     and then not Is_Constrained (Etype (Def_Ent)))
+         then
+            Append_To (Top_Decls,
+              Make_Assignment_Statement (Loc,
+                Name       =>
+                  New_Occurrence_Of
+                    (Get_Postcond_Enabled (Def_Ent), Loc),
+                Expression =>
+                  New_Occurrence_Of
+                    (Standard_False, Loc)));
+         end if;
 
          --  Add the subprogram to the list of declarations an analyze it
 
