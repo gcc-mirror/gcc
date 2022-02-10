@@ -1175,6 +1175,7 @@ public:
   const char *
   get_debug_string_parens (enum precedence outer_prec);
 
+  virtual bool is_ctor () const { return false; }
   virtual bool is_constant () const { return false; }
   virtual bool get_wide_int (wide_int *) const { return false; }
 
@@ -1657,6 +1658,8 @@ public:
   void replay_into (replayer *r) FINAL OVERRIDE;
 
   void visit_children (rvalue_visitor *) FINAL OVERRIDE;
+
+  virtual bool is_ctor () const { return true; }
 
 private:
   string * make_debug_string () FINAL OVERRIDE;

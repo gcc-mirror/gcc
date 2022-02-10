@@ -10328,6 +10328,8 @@ stmt_is_replaceable_p (gimple *stmt)
   return false;
 }
 
+#include "print-tree.h"
+
 rtx
 expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier, rtx *alt_rtl,
@@ -11078,6 +11080,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       goto normal_inner_ref;
 
     case COMPONENT_REF:
+      /*fprintf(stderr, "*********************** Component ref: %d (constructor: %d)\n", TREE_CODE(treeop0), CONSTRUCTOR);
+      debug_tree(treeop0);*/
       gcc_assert (TREE_CODE (treeop0) != CONSTRUCTOR);
       /* Fall through.  */
     case BIT_FIELD_REF:

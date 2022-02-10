@@ -23,12 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "tree.h"
+#include "gimple-expr.h"
 #include "stringpool.h"
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "toplev.h"
 #include "tree-cfg.h"
 #include "convert.h"
+#include "vec-perm-indices.h"
 #include "stor-layout.h"
 #include "print-tree.h"
 #include "gimplify.h"
@@ -1017,7 +1019,18 @@ playback::context::new_rvalue_from_vector (location *,
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elements[i]->as_tree ());
   tree t_ctor;
   if (constructor)
+  {
+    /*size_t maskl = elements.length ();
+    vec_perm_builder sel (maskl, maskl, 1);
+    sel.quick_push (0);
+    fprintf(stderr, "indices 32\n");
+    vec_perm_indices indices (sel, 2, 32);
+    tree mask_type = build_vector_type (build_nonstandard_integer_type
+		(TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (type->as_tree ()))), 1),
+		maskl);
+    t_ctor = vec_perm_indices_to_tree (mask_type, indices);*/
     t_ctor = build_vector_from_ctor (type->as_tree (), v);
+  }
   else
     t_ctor = build_constructor (type->as_tree (), v);
   return new rvalue (this, t_ctor);
@@ -1035,6 +1048,7 @@ playback::context::new_rvalue_vector_perm (location *loc,
   tree t_elements1 = elements1->as_tree ();
   tree t_elements2 = elements2->as_tree ();
   tree t_mask = mask->as_tree ();
+  debug_tree (t_mask);
   tree t_vector_perm = build3 (VEC_PERM_EXPR, TREE_TYPE (t_elements1), t_elements1, t_elements2, t_mask);
   if (loc)
     set_tree_location (t_vector_perm, loc);
@@ -1369,9 +1383,11 @@ build_call (location *loc,
       {
         tree arg_type = TREE_VALUE (current_arg);
         tree current_arg = (*tree_args)[i];
-        if (TREE_TYPE(current_arg) != arg_type)
+        // To be able to create a vector type different from a target builtin argument's type, we compare the types
+        // using useless_type_conversion_p, since we cannot access the types of target builtin arguments.
+        if (!useless_type_conversion_p(TREE_TYPE(current_arg), arg_type))
         {
-          add_error (loc, "Wrong type of arguments");
+          add_error (loc, "Wrong type of argument");
           debug_tree (fn_ptr);
           fprintf (stderr, "actual:\n");
           debug_tree (TREE_TYPE (current_arg));
