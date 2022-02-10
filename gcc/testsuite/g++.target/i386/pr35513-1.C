@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target property_1_needed } }
 // { dg-options "-O2 -mno-direct-extern-access" }
 
 #include <iostream>
