@@ -17,6 +17,8 @@
 #ifndef RUST_ABI_OPTIONS_H
 #define RUST_ABI_OPTIONS_H
 
+#include <string>
+
 namespace Rust {
 
 enum ABI
@@ -29,6 +31,12 @@ enum ABI
   STDCALL,
   FASTCALL,
 };
+
+extern Rust::ABI
+get_abi_from_string (const std::string &abi);
+
+extern std::string
+get_string_from_abi (Rust::ABI abi);
 
 } // namespace Rust
 

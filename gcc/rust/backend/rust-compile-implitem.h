@@ -133,13 +133,6 @@ public:
     // convert to the actual function type
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
-    unsigned int flags = 0;
-
-    // if its the main fn or pub visibility mark its as DECL_PUBLIC
-    // please see https://github.com/Rust-GCC/gccrs/pull/137
-    if (function.has_visibility ())
-      flags |= Backend::function_is_visible;
-
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (
       function.get_mappings ().get_crate_num (),
@@ -150,9 +143,13 @@ public:
       = canonical_path->get () + fntype->subst_as_string ();
     std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
 
+    unsigned int flags = 0;
     tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
+    setup_attributes_on_fndecl (fndecl, false, function.has_visibility (),
+				function.get_qualifiers (),
+				function.get_outer_attrs ());
     ctx->insert_function_decl (fntype, fndecl);
 
     // setup the params
@@ -395,9 +392,7 @@ public:
 
     // convert to the actual function type
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-
     HIR::TraitFunctionDecl &function = func.get_decl ();
-    unsigned int flags = 0;
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -408,9 +403,13 @@ public:
     std::string fn_identifier = canonical_path->get ();
     std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
 
+    unsigned int flags = 0;
     tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, func.get_locus ());
+    setup_attributes_on_fndecl (fndecl, false, false,
+				func.get_decl ().get_qualifiers (),
+				func.get_outer_attrs ());
     ctx->insert_function_decl (fntype, fndecl);
 
     // setup the params

@@ -160,10 +160,6 @@ public:
 
   tree immutable_type (tree);
 
-  tree specify_abi_attribute (tree, Rust::ABI);
-
-  tree insert_type_attribute (tree, const std::string &);
-
   tree function_type (const typed_identifier &,
 		      const std::vector<typed_identifier> &,
 		      const std::vector<typed_identifier> &, tree,
@@ -767,52 +763,6 @@ Gcc_backend::immutable_type (tree base)
     return this->error_type ();
   tree constified = build_qualified_type (base, TYPE_QUAL_CONST);
   return constified;
-}
-
-// ABI
-
-tree
-Gcc_backend::specify_abi_attribute (tree type, Rust::ABI abi)
-{
-  std::string abi_string;
-  switch (abi)
-    {
-    case Rust::ABI::UNKNOWN:
-      return error_type ();
-
-    case Rust::ABI::RUST:
-    case Rust::ABI::INTRINSIC:
-    case Rust::ABI::C:
-    case Rust::ABI::CDECL:
-      abi_string = "cdecl";
-      break;
-
-    case Rust::ABI::STDCALL:
-      abi_string = "stdcall";
-      break;
-    case Rust::ABI::FASTCALL:
-      abi_string = "fastcall";
-      break;
-    }
-
-  return insert_type_attribute (type, abi_string);
-}
-
-tree
-Gcc_backend::insert_type_attribute (tree type, const std::string &attrname)
-{
-  tree ident = get_identifier (attrname.c_str ());
-
-  tree attribs = NULL_TREE;
-  tree old_attrs = TYPE_ATTRIBUTES (type);
-  if (old_attrs)
-    attribs = merge_type_attributes (old_attrs,
-				     tree_cons (ident, NULL_TREE, NULL_TREE));
-  else
-    attribs = tree_cons (ident, NULL_TREE, NULL_TREE);
-
-  tree res = build_type_attribute_variant (type, attribs);
-  return res;
 }
 
 // Make a function type.
@@ -2965,8 +2915,7 @@ Gcc_backend::function (tree functype, const std::string &name,
     = build_decl (location.gcc_location (), FUNCTION_DECL, id, functype);
   if (!asm_name.empty ())
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier_from_string (asm_name));
-  if ((flags & function_is_visible) != 0)
-    TREE_PUBLIC (decl) = 1;
+
   if ((flags & function_is_declaration) != 0)
     DECL_EXTERNAL (decl) = 1;
   else
@@ -2985,14 +2934,6 @@ Gcc_backend::function (tree functype, const std::string &name,
     TREE_THIS_VOLATILE (decl) = 1;
   if ((flags & function_in_unique_section) != 0)
     resolve_unique_section (decl, 0, 1);
-  if ((flags & function_only_inline) != 0)
-    {
-      TREE_PUBLIC (decl) = 1;
-      DECL_EXTERNAL (decl) = 1;
-      DECL_DECLARED_INLINE_P (decl) = 1;
-    }
-  if ((flags & function_read_only) != 0)
-    TREE_READONLY (decl) = 1;
 
   rust_preserve_from_gc (decl);
   return decl;

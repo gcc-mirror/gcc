@@ -144,9 +144,9 @@ public:
 	  NULL, constant.get_locus ());
 
 	tree fndecl
-	  = ctx->get_backend ()->function (compiled_fn_type, ident, "",
-					   Backend::function_read_only,
+	  = ctx->get_backend ()->function (compiled_fn_type, ident, "", 0,
 					   constant.get_locus ());
+	TREE_READONLY (fndecl) = 1;
 
 	tree enclosing_scope = NULL_TREE;
 	HIR::BlockExpr *function_body
@@ -255,18 +255,6 @@ public:
 
     tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
-    unsigned int flags = 0;
-    bool is_main_fn = function.get_function_name ().compare ("main") == 0;
-
-    // if its the main fn or pub visibility mark its as DECL_PUBLIC
-    // please see https://github.com/Rust-GCC/gccrs/pull/137
-    if (is_main_fn || function.has_visibility ())
-      flags |= Backend::function_is_visible;
-
-    // is it a const function?
-    if (function.get_qualifiers ().is_const ())
-      flags |= Backend::function_read_only;
-
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (
       function.get_mappings ().get_crate_num (),
@@ -275,19 +263,25 @@ public:
 
     std::string ir_symbol_name
       = canonical_path->get () + fntype->subst_as_string ();
-
     std::string asm_name = function.get_function_name ();
 
     // we don't mangle the main fn since we haven't implemented the main shim
     // yet
+    bool is_main_fn = function.get_function_name ().compare ("main") == 0;
     if (!is_main_fn)
       {
 	asm_name = ctx->mangle_item (fntype, *canonical_path);
       }
 
+    unsigned int flags = 0;
     tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
+    setup_attributes_on_fndecl (fndecl, is_main_fn, function.has_visibility (),
+				function.get_qualifiers (),
+				function.get_outer_attrs ());
+
+    // insert into the context
     ctx->insert_function_decl (fntype, fndecl);
 
     // setup the params

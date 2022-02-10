@@ -2262,6 +2262,8 @@ public:
   }
 
   std::vector<FunctionParam> &get_function_params () { return function_params; }
+
+  const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 };
 
 // Actual trait item function declaration within traits
@@ -2338,6 +2340,8 @@ public:
   {
     return TraitItemKind::FUNC;
   }
+
+  AST::AttrVec get_outer_attrs () const { return outer_attrs; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
