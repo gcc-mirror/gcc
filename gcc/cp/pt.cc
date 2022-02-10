@@ -7731,8 +7731,8 @@ coerce_template_template_parm (tree parm,
 	 template <template <template <class> class> class TT>
 	 class C;  */
       {
-	tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
-	tree argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+	tree parmparm = DECL_TEMPLATE_PARMS (parm);
+	tree argparm = DECL_TEMPLATE_PARMS (arg);
 
 	if (!coerce_template_template_parms
 	    (parmparm, argparm, complain, in_decl, outer_args))
@@ -8001,8 +8001,8 @@ unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree& arg,
    the parameters to A, and OUTER_ARGS contains A.  */
 
 static int
-coerce_template_template_parms (tree parm_parms,
-				tree arg_parms,
+coerce_template_template_parms (tree parm_parms_full,
+				tree arg_parms_full,
 				tsubst_flags_t complain,
 				tree in_decl,
 				tree outer_args)
@@ -8010,6 +8010,9 @@ coerce_template_template_parms (tree parm_parms,
   int nparms, nargs, i;
   tree parm, arg;
   int variadic_p = 0;
+
+  tree parm_parms = INNERMOST_TEMPLATE_PARMS (parm_parms_full);
+  tree arg_parms = INNERMOST_TEMPLATE_PARMS (arg_parms_full);
 
   gcc_assert (TREE_CODE (parm_parms) == TREE_VEC);
   gcc_assert (TREE_CODE (arg_parms) == TREE_VEC);
@@ -8046,8 +8049,26 @@ coerce_template_template_parms (tree parm_parms,
 	 specialized as P, so they match.*/
       processing_template_decl_sentinel ptds (/*reset*/false);
       ++processing_template_decl;
+
       tree pargs = template_parms_level_to_args (parm_parms);
-      pargs = add_outermost_template_args (outer_args, pargs);
+
+      /* PARM, and thus the context in which we are passing ARG to it, may be
+	 at a deeper level than ARG; when trying to coerce to ARG_PARMS, we
+	 want to provide the right number of levels, so we reduce the number of
+	 levels in OUTER_ARGS before prepending them.  This is most important
+	 when ARG is a namespace-scope template, as in alias-decl-ttp2.C.
+
+	 ARG might also be deeper than PARM (ttp23).  In that case, we include
+	 all of OUTER_ARGS.  The missing levels seem potentially problematic,
+	 but I can't come up with a testcase that breaks.  */
+      if (int arg_outer_levs = TMPL_PARMS_DEPTH (arg_parms_full) - 1)
+	{
+	  auto x = make_temp_override (TREE_VEC_LENGTH (outer_args));
+	  if (TMPL_ARGS_DEPTH (outer_args) > arg_outer_levs)
+	    TREE_VEC_LENGTH (outer_args) = arg_outer_levs;
+	  pargs = add_to_template_args (outer_args, pargs);
+	}
+
       pargs = coerce_template_parms (arg_parms, pargs, NULL_TREE, tf_none,
 				     /*require_all*/true, /*use_default*/true);
       if (pargs != error_mark_node)
@@ -8186,16 +8207,16 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
 	      /* Extract the template parameters from the template
 		 argument.  */
 	      if (TREE_CODE (targ) == TEMPLATE_DECL)
-		targ_parms = DECL_INNERMOST_TEMPLATE_PARMS (targ);
+		targ_parms = DECL_TEMPLATE_PARMS (targ);
 	      else if (TREE_CODE (targ) == TEMPLATE_TEMPLATE_PARM)
-		targ_parms = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_NAME (targ));
+		targ_parms = DECL_TEMPLATE_PARMS (TYPE_NAME (targ));
 
 	      /* Verify that we can coerce the template template
 		 parameters from the template argument to the template
 		 parameter.  This requires an exact match.  */
 	      if (targ_parms
 		  && !coerce_template_template_parms
-		       (DECL_INNERMOST_TEMPLATE_PARMS (tparm),
+		       (DECL_TEMPLATE_PARMS (tparm),
 			targ_parms,
 			tf_none,
 			tparm,
@@ -8489,13 +8510,13 @@ convert_template_argument (tree parm,
 	    val = orig_arg;
 	  else
 	    {
-	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
+	      tree parmparm = DECL_TEMPLATE_PARMS (parm);
 	      tree argparm;
 
 	      /* Strip alias templates that are equivalent to another
 		 template.  */
 	      arg = get_underlying_template (arg);
-              argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
+	      argparm = DECL_TEMPLATE_PARMS (arg);
 
 	      if (coerce_template_template_parms (parmparm, argparm,
 						  complain, in_decl,
