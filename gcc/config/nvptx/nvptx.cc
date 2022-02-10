@@ -5257,6 +5257,14 @@ prevent_branch_around_nothing (void)
 	    case CODE_FOR_nvptx_join:
 	    case CODE_FOR_nop:
 	      continue;
+	    case -1:
+	      /* Handle asm ("") and similar.  */
+	      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		  || GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+		  || (GET_CODE (PATTERN (insn)) == PARALLEL
+		      && asm_noperands (PATTERN (insn)) >= 0))
+		continue;
+	      /* FALLTHROUGH.  */
 	    default:
 	      seen_label = NULL;
 	      continue;
