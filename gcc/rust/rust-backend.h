@@ -255,9 +255,6 @@ public:
   // get the address of the code for a function.
   virtual tree function_code_expression (tree, Location) = 0;
 
-  // Create an expression that takes the address of an expression.
-  virtual tree address_expression (tree, Location) = 0;
-
   // Return an expression for the field at INDEX in BSTRUCT.
   virtual tree struct_field_expression (tree bstruct, size_t index, Location)
     = 0;

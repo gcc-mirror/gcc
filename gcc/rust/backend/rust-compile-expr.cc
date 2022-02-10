@@ -124,6 +124,13 @@ CompileExpr::visit (HIR::NegationExpr &expr)
 }
 
 void
+CompileExpr::visit (HIR::BorrowExpr &expr)
+{
+  tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+  translated = address_expression (main_expr, expr.get_locus ());
+}
+
+void
 CompileExpr::visit (HIR::DereferenceExpr &expr)
 {
   TyTy::BaseType *tyty = nullptr;
@@ -973,7 +980,7 @@ CompileExpr::compile_string_literal (const HIR::LiteralExpr &expr,
 
   auto base = ctx->get_backend ()->string_constant_expression (
     literal_value.as_string ());
-  return ctx->get_backend ()->address_expression (base, expr.get_locus ());
+  return address_expression (base, expr.get_locus ());
 }
 
 tree
@@ -1006,8 +1013,7 @@ CompileExpr::compile_byte_string_literal (const HIR::LiteralExpr &expr,
 							 vals,
 							 expr.get_locus ());
 
-  return ctx->get_backend ()->address_expression (constructed,
-						  expr.get_locus ());
+  return address_expression (constructed, expr.get_locus ());
 }
 
 tree
@@ -1190,7 +1196,7 @@ HIRCompileBase::resolve_adjustements (
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
 	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  e = ctx->get_backend ()->address_expression (e, locus);
+	  e = address_expression (e, locus);
 	  break;
 
 	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
@@ -1235,8 +1241,7 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 		      != Resolver::Adjustment::AdjustmentType::ERROR;
   if (needs_borrow)
     {
-      adjusted_argument
-	= ctx->get_backend ()->address_expression (expression, locus);
+      adjusted_argument = address_expression (expression, locus);
     }
 
   // make the call

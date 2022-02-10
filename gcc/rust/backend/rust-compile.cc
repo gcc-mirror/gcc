@@ -387,8 +387,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
       rust_assert (ok);
 
       resulting_dyn_object_ref
-	= ctx->get_backend ()->address_expression (resulting_dyn_object_ref,
-						   locus);
+	= address_expression (resulting_dyn_object_ref, locus);
     }
   return resulting_dyn_object_ref;
 }

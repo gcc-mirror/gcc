@@ -30,7 +30,6 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
-#include "rust-hir-address-taken.h"
 #include "rust-hir-type-check-pattern.h"
 
 namespace Rust {
@@ -259,10 +258,6 @@ public:
     // Get the adjusted self
     Adjuster adj (receiver_tyty);
     TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
-
-    // mark the required tree addressable
-    if (Adjuster::needs_address (candidate.adjustments))
-      AddressTakenResolver::SetAddressTaken (*expr.get_receiver ().get ());
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
@@ -1177,9 +1172,6 @@ public:
     infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				       TyTy::TyVar (resolved_base->get_ref ()),
 				       expr.get_mut ());
-
-    // mark the borrowed as address_taken
-    AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
   }
 
   void visit (HIR::DereferenceExpr &expr) override
@@ -1349,10 +1341,6 @@ protected:
 	      }
 	  }
       }
-
-    // mark the required tree addressable
-    if (Adjuster::needs_address (candidate.adjustments))
-      AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),

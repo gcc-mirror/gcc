@@ -231,8 +231,6 @@ public:
 
   tree function_code_expression (tree, Location);
 
-  tree address_expression (tree, Location);
-
   tree struct_field_expression (tree, size_t, Location);
 
   tree compound_expression (tree, tree, Location);
@@ -1336,17 +1334,6 @@ Gcc_backend::function_code_expression (tree func, Location location)
 
   tree ret = build_fold_addr_expr_loc (location.gcc_location (), func);
   return ret;
-}
-
-// Get the address of an expression.
-
-tree
-Gcc_backend::address_expression (tree expr, Location location)
-{
-  if (expr == error_mark_node)
-    return this->error_expression ();
-
-  return build_fold_addr_expr_loc (location.gcc_location (), expr);
 }
 
 // Return an expression for the field at INDEX in BSTRUCT.

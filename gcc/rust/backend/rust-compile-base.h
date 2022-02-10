@@ -77,6 +77,10 @@ protected:
     const HIR::FunctionQualifiers &qualifiers, const AST::AttrVec &attrs);
 
   static void setup_abi_options (tree fndecl, ABI abi);
+
+  static tree address_expression (tree, Location);
+
+  static bool mark_addressable (tree, Location);
 };
 
 } // namespace Compile
