@@ -1,3 +1,32 @@
+2022-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104432
+	* call.cc (build_new_method_call): When a non-dependent call
+	resolves to a specialization of a member template, always build
+	the pruned overload set using the member template, not the
+	specialization.
+	* pt.cc (filter_memfn_lookup): New parameter newtype.  Simplify
+	and correct how members from the new lookup set are matched to
+	those from the old one.
+	(tsubst_baselink): Pass binfo_type as newtype to
+	filter_memfn_lookup.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103752
+	* module.cc (trees_out::core_vals): Stream explicit specifier.
+	(trees_in::core_vals): Likewise.
+	* pt.cc (store_explicit_specifier): No longer static.
+	(tsubst_function_decl): Clear DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P.
+	* cp-tree.h (lookup_explicit_specifier): Declare.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96876
+	* typeck2.cc (split_nonconstant_init_1): Push cleanups for
+	preceding members with constant initialization.
+	(maybe_push_temp_cleanup): Do nothing if -fno-exceptions.
+
 2022-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104379

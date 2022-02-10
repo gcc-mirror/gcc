@@ -1,3 +1,238 @@
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104462
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_XSAVE_UNSET):
+	Also include OPTION_MASK_ISA2_AVX2_UNSET.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104458
+	* config/i386/i386-expand.cc (ix86_split_idivmod):
+	Force operands[2] and operands[3] into a register..
+
+2022-02-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/97040
+	* config/v850/v850.md (*v850_fnmasf4): Renamed from fnmasf4.
+	(*v850_fnmssf4): Renamed from fnmssf4
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* godump.cc (go_force_record_alignment): Really name the alignment
+	field "_" (complete 2021-12-29 change).
+
+2022-02-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (VREPLACE_UN_UV2DI): Change
+	function prototype.
+	(VREPLACE_UN_UV4SI): Likewise.
+	(VREPLACE_UN_V2DF): Likewise.
+	(VREPLACE_UN_V2DI): Likewise.
+	(VREPLACE_UN_V4SF): Likewise.
+	(VREPLACE_UN_V4SI): Likewise.
+	* config/rs6000/rs6000-overload.def (VEC_REPLACE_UN): Change all
+	function prototypes.
+	* config/rs6000/vsx.md (vreplace_un_<mode>): Remove define_expand.
+	(vreplace_un_<mode>): New define_insn.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (VDCSIF): New mode iterator.
+	(VDBL): Handle SF.
+	(single_wx, single_type, single_dtype, dblq): New mode attributes.
+	* config/aarch64/aarch64-simd.md (load_pair_lanes<mode>): Extend
+	from VDC to VDCSIF.
+	(store_pair_lanes<mode>): Likewise.
+	(*aarch64_combine_internal<mode>): Likewise.
+	(*aarch64_combine_internal_be<mode>): Likewise.
+	(*aarch64_combinez<mode>): Likewise.
+	(*aarch64_combinez_be<mode>): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_classify_address): Handle
+	8-byte modes for ADDR_QUERY_LDP_STP_N.
+	(aarch64_print_operand): Likewise for %y.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (@aarch64_split_simd_mov<mode>):
+	Use aarch64_combine instead of move_lo/hi_quad.  Tabify.
+	(move_lo_quad_<mode>, aarch64_simd_move_hi_quad_<mode>): Delete.
+	(aarch64_simd_move_hi_quad_be_<mode>, move_hi_quad_<mode>): Delete.
+	(vec_pack_trunc_<mode>): Take general_operand elements and use
+	aarch64_combine rather than move_lo/hi_quad to combine them.
+	(vec_pack_trunc_df): Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_combine):
+	Delete.
+	* config/aarch64/aarch64-simd.md (@aarch64_combinez<mode>): Rename
+	to...
+	(*aarch64_combinez<mode>): ...this.
+	(@aarch64_combinez_be<mode>): Rename to...
+	(*aarch64_combinez_be<mode>): ...this.
+	(@aarch64_vec_concat<mode>): New expander.
+	(aarch64_combine<mode>): Use it.
+	(@aarch64_simd_combine<mode>): Delete.
+	* config/aarch64/aarch64.cc (aarch64_split_simd_combine): Delete.
+	(aarch64_expand_vector_init): Use aarch64_vec_concat.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/predicates.md (aarch64_reg_or_mem_pair_operand):
+	New predicate.
+	* config/aarch64/aarch64-simd.md (*aarch64_combine_internal<mode>)
+	(*aarch64_combine_internal_be<mode>): New patterns.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>)
+	(move_lo_quad_internal_be_<mode>): Delete.
+	(move_lo_quad_<mode>): Use aarch64_combine<Vhalf> instead of the above.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_mergeable_load_pair_p):
+	Declare.
+	* config/aarch64/aarch64-simd.md (load_pair_lanes<mode>): Use
+	aarch64_mergeable_load_pair_p instead of inline check.
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Likewise.
+	(aarch64_check_consecutive_mems): Allow the reversed parameter
+	to be null.
+	(aarch64_mergeable_load_pair_p): New function.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_set<mode>): Allow the
+	element to be an aarch64_simd_nonimmediate_operand.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Use
+	aarch64_simd_nonimmediate_operand instead of
+	aarch64_simd_general_operand.
+	(@aarch64_combinez<mode>): Use nonimmediate_operand instead of
+	general_operand.
+	(@aarch64_combinez_be<mode>): Likewise.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104464
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Postpone
+	throwing check to after unproblematic replacement.
+
+2022-02-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/104420
+	* match.pd (mult @0 real_zerop): Tweak conditions for constant
+	folding X*0.0 (or X*-0.0) to HONOR_SIGNED_ZEROS when appropriate.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104407
+	* dwarf2out.cc (mangle_referenced_decls): New function.
+	(tree_add_const_value_attribute): Don't call rtl_for_decl_init if
+	early_dwarf.  Instead walk the initializer and try to mangle vars or
+	functions referenced from it.
+
+2022-02-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gimple-range-cache.cc (non_null_ref::set_nonnull): New.
+	(non_null_ref::adjust_range): Move to header.
+	(ranger_cache::range_of_def): Don't check non-null.
+	(ranger_cache::entry_range): Don't check non-null.
+	(ranger_cache::range_on_edge): Check for nonnull on normal edges.
+	(ranger_cache::update_to_nonnull): New.
+	(non_null_loadstore): New.
+	(ranger_cache::block_apply_nonnull): New.
+	* gimple-range-cache.h (class non_null_ref): Update prototypes.
+	(non_null_ref::adjust_range): Move to here and inline.
+	(class ranger_cache): Update prototypes.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block): Do
+	not search dominators.
+	(path_range_query::adjust_for_non_null_uses): Ditto.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Check on-entry for
+	def overrides.  Do not check nonnull.
+	(gimple_ranger::range_on_entry): Check dominators for nonnull.
+	(gimple_ranger::range_on_edge): Check for nonnull on normal edges..
+	(gimple_ranger::register_side_effects): New.
+	* gimple-range.h (gimple_ranger::register_side_effects): New.
+	* tree-vrp.cc (rvrp_folder::fold_stmt): Call register_side_effects.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104445
+	PR tree-optimization/102832
+	* optabs-query.h (can_vec_extract): New.
+	* optabs-query.cc (can_vec_extract): Likewise.
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Check
+	we can extract a hi/lo part from the larger vector, rework
+	check iteration from larger to smaller sizes.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/35513
+	PR target/100593
+	* config/i386/gnu-property.cc: Include "i386-protos.h".
+	(file_end_indicate_exec_stack_and_gnu_property): Generate
+	a GNU_PROPERTY_1_NEEDED note for -mno-direct-extern-access or
+	nodirect_extern_access attribute.
+	* config/i386/i386-options.cc
+	(handle_nodirect_extern_access_attribute): New function.
+	(ix86_attribute_table): Add nodirect_extern_access attribute.
+	* config/i386/i386-protos.h (ix86_force_load_from_GOT_p): Add a
+	bool argument.
+	(ix86_has_no_direct_extern_access): New.
+	* config/i386/i386.cc (ix86_has_no_direct_extern_access): New.
+	(ix86_force_load_from_GOT_p): Add a bool argument to indicate
+	call operand.  Force non-call load from GOT for
+	-mno-direct-extern-access or nodirect_extern_access attribute.
+	(legitimate_pic_address_disp_p): Avoid copy relocation in PIE
+	for -mno-direct-extern-access or nodirect_extern_access attribute.
+	(ix86_print_operand): Pass true to ix86_force_load_from_GOT_p
+	for call operand.
+	(asm_preferred_eh_data_format): Use PC-relative format for
+	-mno-direct-extern-access to avoid copy relocation.  Check
+	ptr_mode instead of TARGET_64BIT when selecting DW_EH_PE_sdata4.
+	(ix86_binds_local_p): Set ix86_has_no_direct_extern_access to
+	true for -mno-direct-extern-access or nodirect_extern_access
+	attribute.  Don't treat protected data as extern and avoid copy
+	relocation on common symbol with -mno-direct-extern-access or
+	nodirect_extern_access attribute.
+	(ix86_reloc_rw_mask): New to avoid copy relocation for
+	-mno-direct-extern-access.
+	(TARGET_ASM_RELOC_RW_MASK): New.
+	* config/i386/i386.opt: Add -mdirect-extern-access.
+	* doc/extend.texi: Document nodirect_extern_access attribute.
+	* doc/invoke.texi: Document -m[no-]direct-extern-access.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* config/i386/i386.cc (ix86_avx_u128_mode_source): New function.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_ANY for debug INSN.
+	Call ix86_avx_u128_mode_source to check mode for each component
+	of source operand.
+
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* config/i386/sse.md (<insn><mode>3): lowpart_subreg
+	operands[2] from SImode to QImode.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104450
+	* gimple-isel.cc: Pass cfun around.
+	(+gimple_expand_vec_cond_expr): Do not combine a throwing
+	comparison with the select.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Guard shift
+	folding for NULL LHS.
+
 2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
 
 	PR rtl-optimization/104198

@@ -1,3 +1,12 @@
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* c-parser.cc (c_parser_postfix_expression)
+	<case RID_BUILTIN_ASSOC_BARRIER>: Use parser_build_unary_op
+	instead of build1_loc to build PAREN_EXPR.
+	* c-typeck.cc (build_unary_op): Handle PAREN_EXPR.
+	* c-fold.cc (c_fully_fold_internal): Likewise.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

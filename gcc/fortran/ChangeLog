@@ -1,3 +1,10 @@
+2022-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/66193
+	* arith.cc (reduce_binary_ac): When reducing binary expressions,
+	try simplification.  Handle case of empty constructor.
+	(reduce_binary_ca): Likewise.
+
 2022-02-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104311

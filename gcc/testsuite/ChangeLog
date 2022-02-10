@@ -1,3 +1,200 @@
+2022-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/uninit-1.c: Add test coverage for shifts,
+	comparisons, +, -, *, /, and __builtin_strlen.
+	* gcc.dg/analyzer/uninit-CWE-457-examples.c: New test.
+
+2022-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/66193
+	* gfortran.dg/array_constructor_55.f90: New test.
+
+2022-02-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/Wstringop-overflow-69.c: Add -Wno-psabi.
+	* gcc.dg/loop-unswitch-6.c: Omit -fcompare-debug on AIX.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c: Compile with -march=x86-64.
+	* gcc.target/i386/pr104441-1b.c: Likewise.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* gcc.dg/pr104427.c: New test.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104462
+	* gcc.target/i386/pr104462.c: New test.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104458
+	* gcc.target/i386/pr104458.c: New test.
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.misc-tests/godump-1.c: Adjust for alignment field rename.
+
+2022-02-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Handle expected
+	prototypes for each call to vec_replace_unaligned.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-13.c: New test.
+	* gcc.target/aarch64/vec-init-14.c: Likewise.
+	* gcc.target/aarch64/vec-init-15.c: Likewise.
+	* gcc.target/aarch64/vec-init-16.c: Likewise.
+	* gcc.target/aarch64/vec-init-17.c: Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-12.c: New test.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-9.c: New test.
+	* gcc.target/aarch64/vec-init-10.c: Likewise.
+	* gcc.target/aarch64/vec-init-11.c: Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-8.c: New test.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-6.c: New file.
+	* gcc.target/aarch64/vec-init-7.c: New file.
+
+2022-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104432
+	* g++.dg/template/non-dependent19.C: New test.
+	* g++.dg/template/non-dependent19a.C: New test.
+	* g++.dg/template/non-dependent20.C: New test.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103752
+	* g++.dg/modules/explicit-bool-1_b.C: New test.
+	* g++.dg/modules/explicit-bool-1_a.H: New test.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104464
+	* gcc.dg/pr104464.c: New testcase.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust.
+
+2022-02-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/104420
+	* gcc.dg/pr104420-1.c: New test case.
+	* gcc.dg/pr104420-2.c: New test case.
+	* gcc.dg/pr104420-3.c: New test case.
+	* gcc.dg/pr104420-4.c: New test case.
+	* gcc.dg/pr96392.c: Remove incorrect test.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104407
+	* g++.dg/debug/dwarf2/pr104407.C: New test.
+
+2022-02-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gcc.dg/pr104288.c: New.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104445
+	PR tree-optimization/102832
+	* gcc.dg/vect/pr104445.c: New testcase.
+	* gcc.dg/vect/pr102832.c: New file.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/35513
+	PR target/100593
+	* g++.target/i386/pr35513-1.C: New file.
+	* g++.target/i386/pr35513-2.C: Likewise.
+	* gcc.target/i386/pr35513-1a.c: Likewise.
+	* gcc.target/i386/pr35513-1b.c: Likewise.
+	* gcc.target/i386/pr35513-2a.c: Likewise.
+	* gcc.target/i386/pr35513-2b.c: Likewise.
+	* gcc.target/i386/pr35513-3a.c: Likewise.
+	* gcc.target/i386/pr35513-3b.c: Likewise.
+	* gcc.target/i386/pr35513-4a.c: Likewise.
+	* gcc.target/i386/pr35513-4b.c: Likewise.
+	* gcc.target/i386/pr35513-5a.c: Likewise.
+	* gcc.target/i386/pr35513-5b.c: Likewise.
+	* gcc.target/i386/pr35513-6a.c: Likewise.
+	* gcc.target/i386/pr35513-6b.c: Likewise.
+	* gcc.target/i386/pr35513-7a.c: Likewise.
+	* gcc.target/i386/pr35513-7b.c: Likewise.
+	* gcc.target/i386/pr35513-8.c: Likewise.
+	* gcc.target/i386/pr35513-9a.c: Likewise.
+	* gcc.target/i386/pr35513-9b.c: Likewise.
+	* gcc.target/i386/pr35513-10a.c: Likewise.
+	* gcc.target/i386/pr35513-10b.c: Likewise.
+	* gcc.target/i386/pr35513-11a.c: Likewise.
+	* gcc.target/i386/pr35513-11b.c: Likewise.
+	* gcc.target/i386/pr35513-12a.c: Likewise.
+	* gcc.target/i386/pr35513-12b.c: Likewise.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c: New test.
+	* gcc.target/i386/pr104441-1b.c: Likewise.
+
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* gcc.target/i386/pr104451.c: New test.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104450
+	* g++.dg/torture/pr104450.C: New testcase.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* gcc.target/i386/pr104453.c: New testcase.
+
+2022-02-09  Joel Teichroeb  <joel@teichroeb.net>
+
+	PR analyzer/101081
+	* gcc.dg/analyzer/analyzer-verbosity-2a.c: Replace #include of
+	stdio.h with declarations needed by the test.
+	* gcc.dg/analyzer/analyzer-verbosity-3a.c: Likewise.
+	* gcc.dg/analyzer/edges-1.c: Likewise.
+	* gcc.dg/analyzer/file-1.c: Likewise.
+	* gcc.dg/analyzer/file-2.c: Likewise.
+	* gcc.dg/analyzer/file-paths-1.c: Likewise.
+	* gcc.dg/analyzer/file-pr58237.c: Likewise.
+	* gcc.dg/analyzer/pr99716-1.c: Likewise.
+
+2022-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104452
+	* gcc.dg/analyzer/pr104452.c: New test.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96876
+	* g++.dg/cpp1z/aggr-base11.C: New test.
+	* g++.dg/eh/aggregate2.C: New test.
+
 2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
 
 	PR rtl-optimization/104198

@@ -1,3 +1,11 @@
+2022-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104452
+	* region-model.cc (selftest::test_bit_range_regions): New.
+	(selftest::analyzer_region_model_cc_tests): Call it.
+	* region.h (bit_range_region::key_t::hash): Fix hashing of m_bits
+	to avoid using uninitialized data.
+
 2022-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104417

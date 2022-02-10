@@ -1,3 +1,10 @@
+2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/104442
+	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): Move spin
+	 loop inside do loop so that threads failing the wait, reload
+	 _M_ver.
+
 2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fs_dir.cc (_Dir(DIR*, const path&)): Change first

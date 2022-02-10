@@ -1,3 +1,8 @@
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Update values
+	of __cpp_constexpr and __cpp_concepts for C++20.
+
 2022-01-24  Marek Polacek  <polacek@redhat.com>
 
 	PR preprocessor/104030
