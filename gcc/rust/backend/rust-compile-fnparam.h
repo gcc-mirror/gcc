@@ -43,19 +43,18 @@ public:
     if (!pattern.is_mut ())
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    bool address_taken = false;
-    compiled_param = ctx->get_backend ()->parameter_variable (
-      fndecl, pattern.get_identifier (), decl_type, address_taken, locus);
+    compiled_param
+      = ctx->get_backend ()->parameter_variable (fndecl,
+						 pattern.get_identifier (),
+						 decl_type, locus);
   }
 
   void visit (HIR::WildcardPattern &pattern) override
   {
     decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    bool address_taken = false;
     compiled_param
-      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type,
-						 address_taken, locus);
+      = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
   }
 
 private:
@@ -82,9 +81,8 @@ public:
     if (is_immutable)
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    bool address_taken = false;
     return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						    address_taken, locus);
+						    locus);
   }
 };
 

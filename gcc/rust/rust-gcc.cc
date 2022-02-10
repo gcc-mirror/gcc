@@ -310,11 +310,10 @@ public:
 
   void global_variable_set_init (Bvariable *, tree);
 
-  Bvariable *local_variable (tree, const std::string &, tree, Bvariable *, bool,
+  Bvariable *local_variable (tree, const std::string &, tree, Bvariable *,
 			     Location);
 
-  Bvariable *parameter_variable (tree, const std::string &, tree, bool,
-				 Location);
+  Bvariable *parameter_variable (tree, const std::string &, tree, Location);
 
   Bvariable *static_chain_variable (tree, const std::string &, tree, Location);
 
@@ -2464,7 +2463,7 @@ Gcc_backend::global_variable_set_init (Bvariable *var, tree expr_tree)
 Bvariable *
 Gcc_backend::local_variable (tree function, const std::string &name,
 			     tree type_tree, Bvariable *decl_var,
-			     bool is_address_taken, Location location)
+			     Location location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2472,8 +2471,7 @@ Gcc_backend::local_variable (tree function, const std::string &name,
 			  get_identifier_from_string (name), type_tree);
   DECL_CONTEXT (decl) = function;
   TREE_USED (decl) = 1;
-  if (is_address_taken)
-    TREE_ADDRESSABLE (decl) = 1;
+
   if (decl_var != NULL)
     {
       DECL_HAS_VALUE_EXPR_P (decl) = 1;
@@ -2487,8 +2485,7 @@ Gcc_backend::local_variable (tree function, const std::string &name,
 
 Bvariable *
 Gcc_backend::parameter_variable (tree function, const std::string &name,
-				 tree type_tree, bool is_address_taken,
-				 Location location)
+				 tree type_tree, Location location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
@@ -2497,8 +2494,6 @@ Gcc_backend::parameter_variable (tree function, const std::string &name,
   DECL_CONTEXT (decl) = function;
   DECL_ARG_TYPE (decl) = type_tree;
   TREE_USED (decl) = 1;
-  if (is_address_taken)
-    TREE_ADDRESSABLE (decl) = 1;
   rust_preserve_from_gc (decl);
   return new Bvariable (decl);
 }

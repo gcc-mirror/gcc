@@ -458,15 +458,14 @@ public:
   // the frontend will call init_statement to set the initial value.
   virtual Bvariable *local_variable (tree function, const std::string &name,
 				     tree type, Bvariable *decl_var,
-				     bool is_address_taken, Location location)
+				     Location location)
     = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
   virtual Bvariable *parameter_variable (tree function, const std::string &name,
-					 tree type, bool is_address_taken,
-					 Location location)
+					 tree type, Location location)
     = 0;
 
   // Create a static chain parameter.  This is the closure parameter.

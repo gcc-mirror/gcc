@@ -55,26 +55,19 @@ public:
     if (!pattern.is_mut ())
       translated_type = ctx->get_backend ()->immutable_type (translated_type);
 
-    // this gets updated when the compilation _actually_ wants to take an
-    // address
-    bool address_taken = false;
     compiled_variable
       = ctx->get_backend ()->local_variable (fndecl, pattern.get_identifier (),
 					     translated_type, NULL /*decl_var*/,
-					     address_taken, locus);
+					     locus);
   }
 
   void visit (HIR::WildcardPattern &pattern) override
   {
     translated_type = ctx->get_backend ()->immutable_type (translated_type);
 
-    // this gets updated when the compilation _actually_ wants to take an
-    // address
-    bool address_taken = false;
     compiled_variable
       = ctx->get_backend ()->local_variable (fndecl, "_", translated_type,
-					     NULL /*decl_var*/, address_taken,
-					     locus);
+					     NULL /*decl_var*/, locus);
   }
 
 private:
