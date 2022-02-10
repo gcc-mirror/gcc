@@ -45,7 +45,6 @@ pragma Assertion_Policy (Pre                => Ignore,
 --  type. The arguments Lo, Hi are the bounds of the type.
 
 with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
-use Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
 generic
 
@@ -54,7 +53,14 @@ generic
 package System.Width_U
   with Pure
 is
-   package Unsigned_Conversion is new Unsigned_Conversions (Int => Uns);
+   package BI_Ghost renames Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+   subtype Big_Integer is BI_Ghost.Big_Integer with Ghost;
+   subtype Big_Natural is BI_Ghost.Big_Natural with Ghost;
+   subtype Big_Positive is BI_Ghost.Big_Positive with Ghost;
+   use type BI_Ghost.Big_Integer;
+
+   package Unsigned_Conversion is
+     new BI_Ghost.Unsigned_Conversions (Int => Uns);
 
    function Big (Arg : Uns) return Big_Integer renames
      Unsigned_Conversion.To_Big_Integer;
