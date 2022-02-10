@@ -332,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      {
-		__atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+		__atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	      }
 	    return __atomic_spin(__pred, __spin);
 	  }
@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     __platform_wait_t& __val,
 		     _Spin __spin = _Spin{ })
 	  {
-	    __atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	    __atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	    return __atomic_spin(__pred, __spin);
 	  }
 
