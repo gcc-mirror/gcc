@@ -16327,15 +16327,20 @@ filter_memfn_lookup (tree oldfns, tree newfns, tree newtype)
   /* Record all member functions from the old lookup set OLDFNS into
      VISIBLE_SET.  */
   hash_set<tree> visible_set;
+  bool seen_dep_using = false;
   for (tree fn : lkp_range (oldfns))
     {
       if (TREE_CODE (fn) == USING_DECL)
 	{
-	  /* FIXME: Punt on (dependent) USING_DECL for now; mapping
-	     a dependent USING_DECL to the member functions it introduces
-	     seems tricky.  */
+	  /* Imprecisely handle dependent using-decl by keeping all members
+	     in the new lookup set that are defined in a base class, i.e.
+	     members that could plausibly have been introduced by this
+	     dependent using-decl.
+	     FIXME: Track which members are introduced by a dependent
+	     using-decl precisely, perhaps by performing another lookup
+	     from the substituted USING_DECL_SCOPE.  */
 	  gcc_checking_assert (DECL_DEPENDENT_P (fn));
-	  return newfns;
+	  seen_dep_using = true;
 	}
       else
 	visible_set.add (fn);
@@ -16343,12 +16348,13 @@ filter_memfn_lookup (tree oldfns, tree newfns, tree newtype)
 
   /* Returns true iff (a less specialized version of) FN appeared in
      the old lookup set OLDFNS.  */
-  auto visible_p = [newtype, &visible_set] (tree fn) {
+  auto visible_p = [newtype, seen_dep_using, &visible_set] (tree fn) {
     if (DECL_CONTEXT (fn) != newtype)
       /* FN is a member function from a base class, introduced via a
-	 non-dependent using-decl; look in the old lookup set for
-	 FN exactly.  */
-      return visible_set.contains (fn);
+	 using-decl; if it might have been introduced by a dependent
+	 using-decl then just conservatively keep it, otherwise look
+	 in the old lookup set for FN exactly.  */
+      return seen_dep_using || visible_set.contains (fn);
     else if (TREE_CODE (fn) == TEMPLATE_DECL)
       /* FN is a member function template from the current class;
 	 look in the old lookup set for the TEMPLATE_DECL from which
@@ -16382,7 +16388,9 @@ filter_memfn_lookup (tree oldfns, tree newfns, tree newtype)
 	filtered_fns = lookup_add (fn, filtered_fns);
 	filtered_size++;
       }
-  gcc_checking_assert (filtered_size == visible_set.elements ());
+  gcc_checking_assert (seen_dep_using
+		       ? filtered_size >= visible_set.elements ()
+		       : filtered_size == visible_set.elements ());
 
   return filtered_fns;
 }
