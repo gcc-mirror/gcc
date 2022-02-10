@@ -19,19 +19,17 @@
 #ifndef RUST_COMPILE_IMPLITEM_H
 #define RUST_COMPILE_IMPLITEM_H
 
-#include "rust-compile-base.h"
-#include "rust-compile-tyty.h"
-#include "rust-compile-var-decl.h"
-#include "rust-compile-stmt.h"
+#include "rust-compile-item.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
 
-class CompileInherentImplItem : public HIRCompileBase
+// this is a proxy for HIR::ImplItem's back to use the normel HIR::Item path
+class CompileInherentImplItem : public CompileItem
 {
-  using Rust::Compile::HIRCompileBase::visit;
+  using Rust::Compile::CompileItem::visit;
 
 public:
   static tree Compile (HIR::ImplItem *item, Context *ctx,
@@ -50,265 +48,11 @@ public:
     return compiler.reference;
   }
 
-  void visit (HIR::ConstantItem &constant) override
-  {
-    TyTy::BaseType *resolved_type = nullptr;
-    bool ok
-      = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
-					&resolved_type);
-    rust_assert (ok);
-
-    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
-
-    const Resolver::CanonicalPath *canonical_path = nullptr;
-    ok = ctx->get_mappings ()->lookup_canonical_path (
-      constant.get_mappings ().get_crate_num (),
-      constant.get_mappings ().get_nodeid (), &canonical_path);
-    rust_assert (ok);
-
-    std::string ident = canonical_path->get ();
-    tree const_expr = ctx->get_backend ()->named_constant_expression (
-      type, constant.get_identifier (), value, constant.get_locus ());
-
-    ctx->push_const (const_expr);
-    ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
-
-    reference = const_expr;
-  }
-
-  void visit (HIR::Function &function) override
-  {
-    TyTy::BaseType *fntype_tyty;
-    if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
-					 &fntype_tyty))
-      {
-	rust_fatal_error (function.get_locus (),
-			  "failed to lookup function type");
-	return;
-      }
-
-    rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
-    if (fntype->has_subsititions_defined ())
-      {
-	// we cant do anything for this only when it is used and a concrete type
-	// is given
-	if (concrete == nullptr)
-	  return;
-	else
-	  {
-	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
-	    fntype = static_cast<TyTy::FnType *> (concrete);
-	  }
-      }
-
-    // items can be forward compiled which means we may not need to invoke this
-    // code. We might also have already compiled this generic function as well.
-    tree lookup = NULL_TREE;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				   fntype->get_id (), fntype))
-      {
-	// has this been added to the list then it must be finished
-	if (ctx->function_completed (lookup))
-	  {
-	    tree dummy = NULL_TREE;
-	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      {
-		ctx->insert_function_decl (fntype, lookup);
-	      }
-	    reference
-	      = ctx->get_backend ()->function_code_expression (lookup,
-							       ref_locus);
-	    return;
-	  }
-      }
-
-    if (fntype->has_subsititions_defined ())
-      {
-	// override the Hir Lookups for the substituions in this context
-	fntype->override_context ();
-      }
-
-    // convert to the actual function type
-    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-
-    const Resolver::CanonicalPath *canonical_path = nullptr;
-    bool ok = ctx->get_mappings ()->lookup_canonical_path (
-      function.get_mappings ().get_crate_num (),
-      function.get_mappings ().get_nodeid (), &canonical_path);
-    rust_assert (ok);
-
-    std::string ir_symbol_name
-      = canonical_path->get () + fntype->subst_as_string ();
-    std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
-
-    unsigned int flags = 0;
-    tree fndecl
-      = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
-				       asm_name, flags, function.get_locus ());
-    setup_attributes_on_fndecl (fndecl, false, function.has_visibility (),
-				function.get_qualifiers (),
-				function.get_outer_attrs ());
-    ctx->insert_function_decl (fntype, fndecl);
-
-    // setup the params
-    TyTy::BaseType *tyret = fntype->get_return_type ();
-    std::vector<Bvariable *> param_vars;
-
-    if (function.is_method ())
-      {
-	// insert self
-	TyTy::BaseType *self_tyty_lookup = nullptr;
-	if (!ctx->get_tyctx ()->lookup_type (
-	      function.get_self_param ().get_mappings ().get_hirid (),
-	      &self_tyty_lookup))
-	  {
-	    rust_error_at (function.get_self_param ().get_locus (),
-			   "failed to lookup self param type");
-	    return;
-	  }
-
-	tree self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
-	if (self_type == nullptr)
-	  {
-	    rust_error_at (function.get_self_param ().get_locus (),
-			   "failed to compile self param type");
-	    return;
-	  }
-
-	Bvariable *compiled_self_param
-	  = CompileSelfParam::compile (ctx, fndecl, function.get_self_param (),
-				       self_type,
-				       function.get_self_param ().get_locus ());
-	if (compiled_self_param == nullptr)
-	  {
-	    rust_error_at (function.get_self_param ().get_locus (),
-			   "failed to compile self param variable");
-	    return;
-	  }
-
-	param_vars.push_back (compiled_self_param);
-	ctx->insert_var_decl (
-	  function.get_self_param ().get_mappings ().get_hirid (),
-	  compiled_self_param);
-      }
-
-    // offset from + 1 for the TyTy::FnType being used when this is a method to
-    // skip over Self on the FnType
-    size_t i = function.is_method () ? 1 : 0;
-    for (auto referenced_param : function.get_function_params ())
-      {
-	auto tyty_param = fntype->param_at (i);
-	auto param_tyty = tyty_param.second;
-
-	auto compiled_param_type
-	  = TyTyResolveCompile::compile (ctx, param_tyty);
-	if (compiled_param_type == nullptr)
-	  {
-	    rust_error_at (referenced_param.get_locus (),
-			   "failed to compile parameter type");
-	    return;
-	  }
-
-	Location param_locus
-	  = ctx->get_mappings ()->lookup_location (param_tyty->get_ref ());
-	Bvariable *compiled_param_var
-	  = CompileFnParam::compile (ctx, fndecl, &referenced_param,
-				     compiled_param_type, param_locus);
-	if (compiled_param_var == nullptr)
-	  {
-	    rust_error_at (param_locus, "Failed to compile parameter variable");
-	    return;
-	  }
-
-	param_vars.push_back (compiled_param_var);
-
-	ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
-			      compiled_param_var);
-	i++;
-      }
-
-    if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
-      {
-	rust_fatal_error (function.get_locus (),
-			  "failed to setup parameter variables");
-	return;
-      }
-
-    // lookup locals
-    auto block_expr = function.get_definition ().get ();
-    auto body_mappings = block_expr->get_mappings ();
-
-    Resolver::Rib *rib = nullptr;
-    if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-					      &rib))
-      {
-	rust_fatal_error (function.get_locus (),
-			  "failed to setup locals per block");
-	return;
-      }
-
-    std::vector<Bvariable *> locals;
-    ok = compile_locals_for_block (*rib, fndecl, locals);
-    rust_assert (ok);
-
-    tree enclosing_scope = NULL_TREE;
-    HIR::BlockExpr *function_body = function.get_definition ().get ();
-    Location start_location = function_body->get_locus ();
-    Location end_location = function_body->get_end_locus ();
-
-    tree code_block
-      = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				    start_location, end_location);
-    ctx->push_block (code_block);
-
-    Bvariable *return_address = nullptr;
-    if (function.has_function_return_type ())
-      {
-	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
-
-	bool address_is_taken = false;
-	tree ret_var_stmt = NULL_TREE;
-
-	return_address = ctx->get_backend ()->temporary_variable (
-	  fndecl, code_block, return_type, NULL, address_is_taken,
-	  function.get_locus (), &ret_var_stmt);
-
-	ctx->add_statement (ret_var_stmt);
-      }
-
-    ctx->push_fn (fndecl, return_address);
-
-    compile_function_body (fndecl, *function.get_definition ().get (),
-			   function.has_function_return_type ());
-
-    ctx->pop_block ();
-    auto body = ctx->get_backend ()->block_statement (code_block);
-    if (!ctx->get_backend ()->function_set_body (fndecl, body))
-      {
-	rust_error_at (function.get_locus (), "failed to set body to function");
-	return;
-      }
-
-    ctx->pop_fn ();
-    ctx->push_function (fndecl);
-
-    reference
-      = ctx->get_backend ()->function_code_expression (fndecl, ref_locus);
-  }
-
 private:
   CompileInherentImplItem (Context *ctx, TyTy::BaseType *concrete,
 			   Location ref_locus)
-    : HIRCompileBase (ctx), concrete (concrete),
-      reference (ctx->get_backend ()->error_expression ()),
-      ref_locus (ref_locus)
+    : CompileItem (ctx, concrete, ref_locus)
   {}
-
-  TyTy::BaseType *concrete;
-  tree reference;
-  Location ref_locus;
 };
 
 class CompileTraitItem : public HIRCompileBase
@@ -316,12 +60,11 @@ class CompileTraitItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static tree Compile (const TyTy::BaseType *self, HIR::TraitItem *item,
-		       Context *ctx, TyTy::BaseType *concrete,
-		       bool is_query_mode = false,
+  static tree Compile (HIR::TraitItem *item, Context *ctx,
+		       TyTy::BaseType *concrete, bool is_query_mode = false,
 		       Location ref_locus = Location ())
   {
-    CompileTraitItem compiler (self, ctx, concrete, ref_locus);
+    CompileTraitItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
     if (is_query_mode
@@ -332,240 +75,17 @@ public:
     return compiler.reference;
   }
 
-  void visit (HIR::TraitItemConst &constant) override
-  {
-    rust_assert (concrete != nullptr);
-    TyTy::BaseType *resolved_type = concrete;
+  void visit (HIR::TraitItemConst &constant) override;
 
-    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    tree value = CompileExpr::Compile (constant.get_expr ().get (), ctx);
-
-    const Resolver::CanonicalPath *canonical_path = nullptr;
-    bool ok = ctx->get_mappings ()->lookup_canonical_path (
-      constant.get_mappings ().get_crate_num (),
-      constant.get_mappings ().get_nodeid (), &canonical_path);
-    rust_assert (ok);
-
-    std::string ident = canonical_path->get ();
-    tree const_expr = ctx->get_backend ()->named_constant_expression (
-      type, constant.get_name (), value, constant.get_locus ());
-
-    ctx->push_const (const_expr);
-    ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
-
-    reference = const_expr;
-  }
-
-  void visit (HIR::TraitItemFunc &func) override
-  {
-    rust_assert (func.has_block_defined ());
-
-    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
-    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (concrete);
-
-    // items can be forward compiled which means we may not need to invoke this
-    // code. We might also have already compiled this generic function as well.
-    tree lookup = NULL_TREE;
-    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
-				   fntype->get_id (), fntype))
-      {
-	// has this been added to the list then it must be finished
-	if (ctx->function_completed (lookup))
-	  {
-	    tree dummy = NULL_TREE;
-	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	      {
-		ctx->insert_function_decl (fntype, lookup);
-	      }
-	    reference
-	      = ctx->get_backend ()->function_code_expression (lookup,
-							       ref_locus);
-	    return;
-	  }
-      }
-
-    if (fntype->has_subsititions_defined ())
-      {
-	// override the Hir Lookups for the substituions in this context
-	fntype->override_context ();
-      }
-
-    // convert to the actual function type
-    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
-    HIR::TraitFunctionDecl &function = func.get_decl ();
-
-    const Resolver::CanonicalPath *canonical_path = nullptr;
-    bool ok = ctx->get_mappings ()->lookup_canonical_path (
-      func.get_mappings ().get_crate_num (), func.get_mappings ().get_nodeid (),
-      &canonical_path);
-    rust_assert (ok);
-
-    std::string fn_identifier = canonical_path->get ();
-    std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
-
-    unsigned int flags = 0;
-    tree fndecl
-      = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
-				       asm_name, flags, func.get_locus ());
-    setup_attributes_on_fndecl (fndecl, false, false,
-				func.get_decl ().get_qualifiers (),
-				func.get_outer_attrs ());
-    ctx->insert_function_decl (fntype, fndecl);
-
-    // setup the params
-    TyTy::BaseType *tyret = fntype->get_return_type ();
-    std::vector<Bvariable *> param_vars;
-
-    if (function.is_method ())
-      {
-	// insert self
-	TyTy::BaseType *self_tyty_lookup = nullptr;
-	if (!ctx->get_tyctx ()->lookup_type (
-	      function.get_self ().get_mappings ().get_hirid (),
-	      &self_tyty_lookup))
-	  {
-	    rust_error_at (function.get_self ().get_locus (),
-			   "failed to lookup self param type");
-	    return;
-	  }
-
-	tree self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
-	if (self_type == nullptr)
-	  {
-	    rust_error_at (function.get_self ().get_locus (),
-			   "failed to compile self param type");
-	    return;
-	  }
-
-	Bvariable *compiled_self_param
-	  = CompileSelfParam::compile (ctx, fndecl, function.get_self (),
-				       self_type,
-				       function.get_self ().get_locus ());
-	if (compiled_self_param == nullptr)
-	  {
-	    rust_error_at (function.get_self ().get_locus (),
-			   "failed to compile self param variable");
-	    return;
-	  }
-
-	param_vars.push_back (compiled_self_param);
-	ctx->insert_var_decl (function.get_self ().get_mappings ().get_hirid (),
-			      compiled_self_param);
-      }
-
-    // offset from + 1 for the TyTy::FnType being used when this is a method to
-    // skip over Self on the FnType
-    size_t i = function.is_method () ? 1 : 0;
-    for (auto referenced_param : function.get_function_params ())
-      {
-	auto tyty_param = fntype->param_at (i);
-	auto param_tyty = tyty_param.second;
-
-	auto compiled_param_type
-	  = TyTyResolveCompile::compile (ctx, param_tyty);
-	if (compiled_param_type == nullptr)
-	  {
-	    rust_error_at (referenced_param.get_locus (),
-			   "failed to compile parameter type");
-	    return;
-	  }
-
-	Location param_locus
-	  = ctx->get_mappings ()->lookup_location (param_tyty->get_ref ());
-	Bvariable *compiled_param_var
-	  = CompileFnParam::compile (ctx, fndecl, &referenced_param,
-				     compiled_param_type, param_locus);
-	if (compiled_param_var == nullptr)
-	  {
-	    rust_error_at (param_locus, "Failed to compile parameter variable");
-	    return;
-	  }
-
-	param_vars.push_back (compiled_param_var);
-
-	ctx->insert_var_decl (referenced_param.get_mappings ().get_hirid (),
-			      compiled_param_var);
-	i++;
-      }
-
-    if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
-      {
-	rust_fatal_error (func.get_locus (),
-			  "failed to setup parameter variables");
-	return;
-      }
-
-    // lookup locals
-    auto block_expr = func.get_block_expr ().get ();
-    auto body_mappings = block_expr->get_mappings ();
-
-    Resolver::Rib *rib = nullptr;
-    if (!ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-					      &rib))
-      {
-	rust_fatal_error (func.get_locus (),
-			  "failed to setup locals per block");
-	return;
-      }
-
-    std::vector<Bvariable *> locals;
-    ok = compile_locals_for_block (*rib, fndecl, locals);
-    rust_assert (ok);
-
-    tree enclosing_scope = NULL_TREE;
-    HIR::BlockExpr *function_body = func.get_block_expr ().get ();
-    Location start_location = function_body->get_locus ();
-    Location end_location = function_body->get_end_locus ();
-
-    tree code_block
-      = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				    start_location, end_location);
-    ctx->push_block (code_block);
-
-    Bvariable *return_address = nullptr;
-    if (function.has_return_type ())
-      {
-	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
-
-	bool address_is_taken = false;
-	tree ret_var_stmt = NULL_TREE;
-
-	return_address = ctx->get_backend ()->temporary_variable (
-	  fndecl, code_block, return_type, NULL, address_is_taken,
-	  func.get_locus (), &ret_var_stmt);
-
-	ctx->add_statement (ret_var_stmt);
-      }
-
-    ctx->push_fn (fndecl, return_address);
-
-    compile_function_body (fndecl, *func.get_block_expr ().get (),
-			   function.has_return_type ());
-
-    ctx->pop_block ();
-    auto body = ctx->get_backend ()->block_statement (code_block);
-    if (!ctx->get_backend ()->function_set_body (fndecl, body))
-      {
-	rust_error_at (func.get_locus (), "failed to set body to function");
-	return;
-      }
-
-    ctx->pop_fn ();
-    ctx->push_function (fndecl);
-
-    reference
-      = ctx->get_backend ()->function_code_expression (fndecl, ref_locus);
-  }
+  void visit (HIR::TraitItemFunc &func) override;
 
 private:
-  CompileTraitItem (const TyTy::BaseType *self, Context *ctx,
-		    TyTy::BaseType *concrete, Location ref_locus)
-    : HIRCompileBase (ctx), self (self), concrete (concrete),
+  CompileTraitItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+    : HIRCompileBase (ctx), concrete (concrete),
       reference (ctx->get_backend ()->error_expression ()),
       ref_locus (ref_locus)
   {}
 
-  const TyTy::BaseType *self;
   TyTy::BaseType *concrete;
   tree reference;
   Location ref_locus;

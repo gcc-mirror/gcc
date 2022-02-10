@@ -16,10 +16,10 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-linemap.h"
-#include "rust-backend.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-item.h"
+#include "rust-compile-implitem.h"
+#include "rust-compile-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 
@@ -131,7 +131,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       tree fn = NULL_TREE;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
-	  return ctx->get_backend ()->function_code_expression (fn, expr_locus);
+	  return address_expression (fn, expr_locus);
 	}
     }
 
@@ -245,8 +245,8 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      associated->setup_associated_types ();
 
 	      return CompileTraitItem::Compile (
-		receiver, trait_item_ref->get_hir_trait_item (), ctx, lookup,
-		true, expr_locus);
+		trait_item_ref->get_hir_trait_item (), ctx, lookup, true,
+		expr_locus);
 	    }
 	  else
 	    {

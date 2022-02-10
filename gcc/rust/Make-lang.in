@@ -96,6 +96,8 @@ GRS_OBJS = \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
     rust/rust-base62.o \
+    rust/rust-compile-item.o \
+    rust/rust-compile-implitem.o \
     rust/rust-compile-expr.o \
     rust/rust-compile-type.o \
     rust/rust-constexpr.o \

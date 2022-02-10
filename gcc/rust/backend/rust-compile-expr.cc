@@ -18,6 +18,7 @@
 
 #include "rust-compile.h"
 #include "rust-compile-item.h"
+#include "rust-compile-implitem.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
 #include "rust-hir-trait-resolve.h"
@@ -713,7 +714,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
   tree fn = NULL_TREE;
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
-      return ctx->get_backend ()->function_code_expression (fn, expr_locus);
+      return address_expression (fn, expr_locus);
     }
 
   // Now we can try and resolve the address since this might be a forward
@@ -765,8 +766,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       // contain an implementation we should actually return
       // error_mark_node
 
-      return CompileTraitItem::Compile (receiver,
-					trait_item_ref->get_hir_trait_item (),
+      return CompileTraitItem::Compile (trait_item_ref->get_hir_trait_item (),
 					ctx, fntype, true, expr_locus);
     }
   else
@@ -1343,8 +1343,7 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
     }
   else if (ctx->lookup_function_decl (ref, &fn))
     {
-      translated
-	= ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
+      translated = address_expression (fn, expr.get_locus ());
     }
   else if (ctx->lookup_var_decl (ref, &var))
     {

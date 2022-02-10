@@ -510,7 +510,6 @@ struct FunctionParam
 {
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
-
   Location locus;
   Analysis::NodeMapping mappings;
 
@@ -1226,11 +1225,7 @@ public:
 
   bool is_method () const { return !self.is_error (); }
 
-  SelfParam &get_self_param ()
-  {
-    rust_assert (is_method ());
-    return self;
-  }
+  SelfParam &get_self_param () { return self; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2242,11 +2237,7 @@ public:
 
   bool is_method () const { return !self.is_error (); }
 
-  SelfParam &get_self ()
-  {
-    rust_assert (is_method ());
-    return self;
-  }
+  SelfParam &get_self () { return self; }
 
   Identifier get_function_name () const { return function_name; }
 
@@ -2341,7 +2332,8 @@ public:
     return TraitItemKind::FUNC;
   }
 
-  AST::AttrVec get_outer_attrs () const { return outer_attrs; }
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
 
 protected:
   // Clone function implementation as (not pure) virtual method

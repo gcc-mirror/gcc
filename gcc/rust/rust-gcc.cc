@@ -229,8 +229,6 @@ public:
 
   tree convert_expression (tree type, tree expr, Location);
 
-  tree function_code_expression (tree, Location);
-
   tree struct_field_expression (tree, size_t, Location);
 
   tree compound_expression (tree, tree, Location);
@@ -1302,18 +1300,6 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
   else
     ret = fold_convert_loc (location.gcc_location (), type_tree, expr_tree);
 
-  return ret;
-}
-
-// Get the address of a function.
-
-tree
-Gcc_backend::function_code_expression (tree func, Location location)
-{
-  if (func == error_mark_node)
-    return this->error_expression ();
-
-  tree ret = build_fold_addr_expr_loc (location.gcc_location (), func);
   return ret;
 }
 
