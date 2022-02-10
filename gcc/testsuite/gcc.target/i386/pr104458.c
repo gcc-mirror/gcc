@@ -9,5 +9,5 @@ int i;
 void
 foo (F f)
 {
-  i += i % (long) f;
+  i += i % (long long) f;
 }
