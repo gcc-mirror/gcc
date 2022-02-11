@@ -33,7 +33,9 @@ public:
 
     IMM_REF,
     MUT_REF,
-    DEREF_REF
+    DEREF,
+    DEREF_MUT,
+    INDIRECTION,
   };
 
   // ctor for all adjustments except derefs
@@ -42,11 +44,12 @@ public:
   {}
 
   static Adjustment get_op_overload_deref_adjustment (
-    const TyTy::BaseType *expected, TyTy::FnType *fn, HIR::ImplItem *deref_item,
+    AdjustmentType type, const TyTy::BaseType *expected, TyTy::FnType *fn,
+    HIR::ImplItem *deref_item,
     Adjustment::AdjustmentType requires_ref_adjustment)
   {
-    return Adjustment (Adjustment::DEREF_REF, expected, fn, deref_item,
-		       requires_ref_adjustment);
+    rust_assert (type == DEREF || type == DEREF_MUT);
+    return Adjustment (type, expected, fn, deref_item, requires_ref_adjustment);
   }
 
   AdjustmentType get_type () const { return type; }
@@ -69,8 +72,12 @@ public:
 	return "IMM_REF";
       case AdjustmentType::MUT_REF:
 	return "MUT_REF";
-      case AdjustmentType::DEREF_REF:
-	return "DEREF_REF";
+      case AdjustmentType::DEREF:
+	return "DEREF";
+      case AdjustmentType::DEREF_MUT:
+	return "DEREF_MUT";
+      case AdjustmentType::INDIRECTION:
+	return "INDIRECTION";
       }
     gcc_unreachable ();
     return "";
@@ -80,7 +87,9 @@ public:
 
   bool is_error () const { return type == ERROR; }
 
-  bool is_deref_adjustment () const { return type == DEREF_REF; }
+  bool is_deref_adjustment () const { return type == DEREF; }
+
+  bool is_deref_mut_adjustment () const { return type == DEREF_MUT; }
 
   bool has_operator_overload () const { return deref_operator_fn != nullptr; }
 
@@ -120,9 +129,11 @@ public:
 
   TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments);
 
-  static bool needs_address (const std::vector<Adjustment> &adjustments);
+  static Adjustment
+  try_deref_type (const TyTy::BaseType *ty,
+		  Analysis::RustLangItem::ItemType deref_lang_item);
 
-  static Adjustment try_deref_type (const TyTy::BaseType *ty);
+  static Adjustment try_raw_deref_type (const TyTy::BaseType *ty);
 
 private:
   const TyTy::BaseType *base;

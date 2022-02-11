@@ -19,6 +19,7 @@
 #include "rust-autoderef.h"
 #include "rust-hir-path-probe.h"
 #include "rust-hir-dot-operator.h"
+#include "rust-hir-trait-resolve.h"
 
 namespace Rust {
 namespace Resolver {
@@ -28,26 +29,6 @@ resolve_operator_overload_fn (
   Analysis::RustLangItem::ItemType lang_item_type, const TyTy::BaseType *ty,
   TyTy::FnType **resolved_fn, HIR::ImplItem **impl_item,
   Adjustment::AdjustmentType *requires_ref_adjustment);
-
-bool
-Adjuster::needs_address (const std::vector<Adjustment> &adjustments)
-{
-  for (auto &adjustment : adjustments)
-    {
-      switch (adjustment.get_type ())
-	{
-	case Adjustment::AdjustmentType::IMM_REF:
-	case Adjustment::AdjustmentType::MUT_REF:
-	case Adjustment::AdjustmentType::DEREF_REF:
-	  return true;
-
-	default:
-	  break;
-	}
-    }
-
-  return false;
-}
 
 TyTy::BaseType *
 Adjuster::adjust_type (const std::vector<Adjustment> &adjustments)
@@ -59,23 +40,22 @@ Adjuster::adjust_type (const std::vector<Adjustment> &adjustments)
 }
 
 Adjustment
-Adjuster::try_deref_type (const TyTy::BaseType *ty)
+Adjuster::try_deref_type (const TyTy::BaseType *ty,
+			  Analysis::RustLangItem::ItemType deref_lang_item)
 {
-  // probe for the lang-item
-  TyTy::BaseType *resolved_base = ty->clone ();
-
   HIR::ImplItem *impl_item = nullptr;
   TyTy::FnType *fn = nullptr;
   Adjustment::AdjustmentType requires_ref_adjustment
     = Adjustment::AdjustmentType::ERROR;
   bool operator_overloaded
-    = resolve_operator_overload_fn (Analysis::RustLangItem::ItemType::DEREF, ty,
-				    &fn, &impl_item, &requires_ref_adjustment);
-  if (operator_overloaded)
+    = resolve_operator_overload_fn (deref_lang_item, ty, &fn, &impl_item,
+				    &requires_ref_adjustment);
+  if (!operator_overloaded)
     {
-      resolved_base = fn->get_return_type ()->clone ();
+      return Adjustment::get_error ();
     }
 
+  auto resolved_base = fn->get_return_type ()->clone ();
   bool is_valid_type = resolved_base->get_kind () == TyTy::TypeKind::REF;
   if (!is_valid_type)
     return Adjustment::get_error ();
@@ -83,10 +63,39 @@ Adjuster::try_deref_type (const TyTy::BaseType *ty)
   TyTy::ReferenceType *ref_base
     = static_cast<TyTy::ReferenceType *> (resolved_base);
 
+  Adjustment::AdjustmentType adjustment_type
+    = Adjustment::AdjustmentType::ERROR;
+  switch (deref_lang_item)
+    {
+    case Analysis::RustLangItem::ItemType::DEREF:
+      adjustment_type = Adjustment::AdjustmentType::DEREF;
+      break;
+
+    case Analysis::RustLangItem::ItemType::DEREF_MUT:
+      adjustment_type = Adjustment::AdjustmentType::DEREF_MUT;
+      break;
+
+    default:
+      break;
+    }
+
+  return Adjustment::get_op_overload_deref_adjustment (adjustment_type,
+						       ref_base, fn, impl_item,
+						       requires_ref_adjustment);
+}
+
+Adjustment
+Adjuster::try_raw_deref_type (const TyTy::BaseType *ty)
+{
+  bool is_valid_type = ty->get_kind () == TyTy::TypeKind::REF;
+  if (!is_valid_type)
+    return Adjustment::get_error ();
+
+  const TyTy::ReferenceType *ref_base
+    = static_cast<const TyTy::ReferenceType *> (ty);
   auto infered = ref_base->get_base ()->clone ();
 
-  return Adjustment::get_op_overload_deref_adjustment (infered, fn, impl_item,
-						       requires_ref_adjustment);
+  return Adjustment (Adjustment::AdjustmentType::INDIRECTION, infered);
 }
 
 static bool

@@ -1199,8 +1199,13 @@ HIRCompileBase::resolve_adjustements (
 	  e = address_expression (e, locus);
 	  break;
 
-	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	case Resolver::Adjustment::AdjustmentType::DEREF:
+	case Resolver::Adjustment::AdjustmentType::DEREF_MUT:
 	  e = resolve_deref_adjustment (adjustment, e, locus);
+	  break;
+
+	case Resolver::Adjustment::AdjustmentType::INDIRECTION:
+	  e = resolve_indirection_adjustment (adjustment, e, locus);
 	  break;
 	}
     }
@@ -1212,17 +1217,9 @@ tree
 HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 					  tree expression, Location locus)
 {
-  rust_assert (adjustment.is_deref_adjustment ());
-
-  tree expected_type
-    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-  if (!adjustment.has_operator_overload ())
-    {
-      return ctx->get_backend ()->indirect_expression (expected_type,
-						       expression,
-						       true, /* known_valid*/
-						       locus);
-    }
+  rust_assert (adjustment.is_deref_adjustment ()
+	       || adjustment.is_deref_mut_adjustment ());
+  rust_assert (adjustment.has_operator_overload ());
 
   TyTy::FnType *lookup = adjustment.get_deref_operator_fn ();
   HIR::ImplItem *resolved_item = adjustment.get_deref_hir_item ();
@@ -1246,13 +1243,19 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 
   // make the call
   auto fncontext = ctx->peek_fn ();
-  tree deref_call
-    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
-					    {adjusted_argument}, nullptr,
-					    locus);
+  return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
+					       {adjusted_argument}, nullptr,
+					       locus);
+}
 
-  // do the indirect expression
-  return ctx->get_backend ()->indirect_expression (expected_type, deref_call,
+tree
+HIRCompileBase::resolve_indirection_adjustment (
+  Resolver::Adjustment &adjustment, tree expression, Location locus)
+{
+  tree expected_type
+    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+
+  return ctx->get_backend ()->indirect_expression (expected_type, expression,
 						   true, /* known_valid*/
 						   locus);
 }
