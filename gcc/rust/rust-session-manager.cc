@@ -17,17 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 // #include "rust-session-manager.h"
 
-#include <fstream>
-#include <sstream>
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
-#include "diagnostic.h"
-#include "input.h"
-
-#include "target.h"
-#include "tm.h"
-#include "memmodel.h"
-#include "tm_p.h"
 
 //#include "rust-target.h"
 /*TODO This isn't (currently?) necessary, but if '#include'd after '#include
@@ -53,6 +44,16 @@
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
+
+#include "diagnostic.h"
+#include "input.h"
+#include "target.h"
+#include "tm.h"
+#include "memmodel.h"
+#include "tm_p.h"
+
+extern bool
+saw_errors (void);
 
 extern Linemap *
 rust_get_linemap ();

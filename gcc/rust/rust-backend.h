@@ -29,12 +29,6 @@
 #include "operator.h"
 #include "tree.h"
 
-extern bool
-saw_errors (void);
-
-// TODO: Will have to be significantly modified to work with Rust and current
-// setup of gccrs
-
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -75,11 +69,6 @@ public:
   virtual tree get_identifier_node (const std::string &str) = 0;
 
   // Types.
-
-  // Get a void type.  This is used in (at least) two ways: 1) as the
-  // return type of a function with no result parameters; 2)
-  // unsafe.Pointer is represented as *void.
-  virtual tree void_type () = 0;
 
   // get unit-type
   virtual tree unit_type () = 0;

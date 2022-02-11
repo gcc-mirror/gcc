@@ -117,8 +117,6 @@ public:
 
   // Types.
 
-  tree void_type () { return void_type_node; }
-
   tree unit_type ()
   {
     static tree unit_type;
