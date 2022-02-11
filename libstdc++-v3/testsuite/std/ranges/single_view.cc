@@ -73,10 +73,25 @@ test04()
   std::as_const(s).data();
 }
 
+void
+test06()
+{
+  // PR libstdc++/100475 comment #7
+  struct S {
+    S() = default;
+    S(std::initializer_list<S>) = delete;
+    S(const S&) {}
+  };
+  S obj;
+  auto x = std::views::single(obj);
+  auto y = std::views::single(std::move(obj));
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test06();
 }

@@ -82,9 +82,10 @@ test01()
 }
 static_assert(test01());
 
-template<bool make_semiregular>
+template<bool make_copyable>
   struct A {
-    A() requires make_semiregular;
+    A(const A&) = default;
+    A& operator=(const A&) requires make_copyable;
     A(int, int);
     A(std::initializer_list<int>) = delete;
   };
@@ -93,9 +94,51 @@ void
 test02()
 {
   // PR libstdc++/100475
-  static_assert(std::semiregular<A<true>>);
+  static_assert(std::copyable<A<true>>);
   __box<A<true>> x2(std::in_place, 0, 0);
 
-  static_assert(!std::semiregular<A<false>>);
+  static_assert(!std::copyable<A<false>>);
   __box<A<false>> x1(std::in_place, 0, 0);
 }
+
+constexpr bool
+test03()
+{
+  // Verify correctness of the non-defaulted operator= for the partial
+  // specialization of __box.
+  struct B {
+    constexpr B(int* p) : p(p) { }
+    constexpr ~B() { ++*p; };
+    B(const B&) = default;
+    B& operator=(const B&) = delete;
+    int* p;
+  };
+  static_assert(!std::copyable<B>);
+  static_assert(std::is_nothrow_copy_constructible_v<B>);
+  static_assert(sizeof(__box<B>) == sizeof(B));
+
+  int m = 0;
+  __box<B> x(std::in_place, &m);
+  __glibcxx_assert(m == 0);
+  x = x;
+  __glibcxx_assert(m == 0);
+  x = std::move(x);
+  __glibcxx_assert(m == 0);
+
+  int n = 0;
+  __box<B> y(std::in_place, &n);
+  auto z = x;
+  x = y;
+  __glibcxx_assert(m == 1);
+  __glibcxx_assert(n == 0);
+  __glibcxx_assert(x->p == &n);
+  __glibcxx_assert(y->p == &n);
+  y = std::move(z);
+  __glibcxx_assert(m == 1);
+  __glibcxx_assert(n == 1);
+  __glibcxx_assert(y->p == &m);
+  __glibcxx_assert(z->p == &m);
+
+  return true;
+}
+static_assert(test03());
