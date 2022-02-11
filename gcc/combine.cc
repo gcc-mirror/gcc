@@ -5534,6 +5534,12 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		  if (!x)
 		    return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 		}
+	      /* CONST_INTs shouldn't be substituted into PRE_DEC, PRE_MODIFY
+		 etc. arguments, otherwise we can ICE before trying to recog
+		 it.  See PR104446.  */
+	      else if (CONST_SCALAR_INT_P (new_rtx)
+		       && GET_RTX_CLASS (GET_CODE (x)) == RTX_AUTOINC)
+		return gen_rtx_CLOBBER (VOIDmode, const0_rtx);
 	      else
 		SUBST (XEXP (x, i), new_rtx);
 	    }
