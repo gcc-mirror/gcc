@@ -5778,7 +5778,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
        (icmp @0 { csts; })
        (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
-	 (icmp (convert:utype @0) { csts; }))))))))
+	 (icmp (view_convert:utype @0) { csts; }))))))))
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
