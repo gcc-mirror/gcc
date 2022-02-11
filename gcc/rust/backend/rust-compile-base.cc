@@ -445,8 +445,26 @@ HIRCompileBase::compile_constant_item (
       folded_expr = ConstCtx::fold (call);
     }
 
-  return ctx->get_backend ()->named_constant_expression (const_type, ident,
-							 folded_expr, locus);
+  return named_constant_expression (const_type, ident, folded_expr, locus);
+}
+
+tree
+HIRCompileBase::named_constant_expression (tree type_tree,
+					   const std::string &name,
+					   tree const_val, Location location)
+{
+  if (type_tree == error_mark_node || const_val == error_mark_node)
+    return error_mark_node;
+
+  tree name_tree = get_identifier_with_length (name.data (), name.length ());
+  tree decl
+    = build_decl (location.gcc_location (), CONST_DECL, name_tree, type_tree);
+  DECL_INITIAL (decl) = const_val;
+  TREE_CONSTANT (decl) = 1;
+  TREE_READONLY (decl) = 1;
+
+  rust_preserve_from_gc (decl);
+  return decl;
 }
 
 } // namespace Compile

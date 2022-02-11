@@ -195,9 +195,6 @@ public:
 
   tree indirect_expression (tree, tree expr, bool known_valid, Location);
 
-  tree named_constant_expression (tree type, const std::string &name, tree val,
-				  Location);
-
   tree integer_constant_expression (tree type, mpz_t val);
 
   tree float_constant_expression (tree type, mpfr_t val);
@@ -1094,27 +1091,6 @@ Gcc_backend::indirect_expression (tree type_tree, tree expr_tree,
   if (known_valid)
     TREE_THIS_NOTRAP (ret) = 1;
   return ret;
-}
-
-// Return an expression that declares a constant named NAME with the
-// constant value VAL in BTYPE.
-
-tree
-Gcc_backend::named_constant_expression (tree type_tree, const std::string &name,
-					tree const_val, Location location)
-{
-  if (type_tree == error_mark_node || const_val == error_mark_node)
-    return error_mark_node;
-
-  tree name_tree = get_identifier_from_string (name);
-  tree decl
-    = build_decl (location.gcc_location (), CONST_DECL, name_tree, type_tree);
-  DECL_INITIAL (decl) = const_val;
-  TREE_CONSTANT (decl) = 1;
-  TREE_READONLY (decl) = 1;
-
-  rust_preserve_from_gc (decl);
-  return decl;
 }
 
 // Return a typed value as a constant integer.

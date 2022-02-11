@@ -186,12 +186,6 @@ public:
 				    Location)
     = 0;
 
-  // Return an expression that declares a constant named NAME with the
-  // constant value VAL in BTYPE.
-  virtual tree named_constant_expression (tree btype, const std::string &name,
-					  tree val, Location)
-    = 0;
-
   // Return an expression for the multi-precision integer VAL in BTYPE.
   virtual tree integer_constant_expression (tree btype, mpz_t val) = 0;
 

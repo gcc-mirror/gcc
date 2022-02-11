@@ -96,6 +96,10 @@ protected:
   compile_constant_item (Context *ctx, TyTy::BaseType *resolved_type,
 			 const Resolver::CanonicalPath *canonical_path,
 			 HIR::Expr *const_value_expr, Location locus);
+
+  static tree named_constant_expression (tree type_tree,
+					 const std::string &name,
+					 tree const_val, Location location);
 };
 
 } // namespace Compile
