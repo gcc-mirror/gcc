@@ -2498,9 +2498,15 @@ process_alt_operands (int only_alternative)
 		  if (mode == BLKmode)
 		    break;
 		  this_alternative = reg_class_subunion[this_alternative][cl];
+		  if (hard_reg_set_subset_p (this_alternative_set,
+					     reg_class_contents[cl]))
+		    this_alternative_exclude_start_hard_regs
+		      = ira_exclude_class_mode_regs[cl][mode];
+		  else if (!hard_reg_set_subset_p (reg_class_contents[cl],
+						   this_alternative_set))
+		    this_alternative_exclude_start_hard_regs
+		      |= ira_exclude_class_mode_regs[cl][mode];
 		  this_alternative_set |= reg_class_contents[cl];
-		  this_alternative_exclude_start_hard_regs
-		    |= ira_exclude_class_mode_regs[cl][mode];
 		  if (costly_p)
 		    {
 		      this_costly_alternative
