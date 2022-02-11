@@ -250,6 +250,7 @@ static enum gimplify_status gimplify_compound_expr (tree *, gimple_seq *, bool);
 static hash_map<tree, tree> *oacc_declare_returns;
 static enum gimplify_status gimplify_expr (tree *, gimple_seq *, gimple_seq *,
 					   bool (*) (tree), fallback_t, bool);
+static void prepare_gimple_addressable (tree *, gimple_seq *);
 
 /* Shorter alias name for the above function for use in gimplify.cc
    only.  */
@@ -3122,10 +3123,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      gimplified before gimplifying the size expressions.
 
      So we do this in three steps.  First we deal with variable
-     bounds, sizes, and positions, then we gimplify the base,
-     then we deal with the annotations for any variables in the
-     components and any indices, from left to right.  */
+     bounds, sizes, and positions, then we gimplify the base and
+     ensure it is memory if needed, then we deal with the annotations
+     for any variables in the components and any indices, from left
+     to right.  */
 
+  bool need_non_reg = false;
   for (i = expr_stack.length () - 1; i >= 0; i--)
     {
       tree t = expr_stack[i];
@@ -3161,6 +3164,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 3) = elmt_size;
 		}
 	    }
+	  need_non_reg = true;
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
 	{
@@ -3182,6 +3186,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  TREE_OPERAND (t, 2) = offset;
 		}
 	    }
+	  need_non_reg = true;
 	}
     }
 
@@ -3191,6 +3196,12 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   tret = gimplify_expr (p, pre_p, post_p, is_gimple_min_lval,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
+
+  /* Step 2a: if we have component references we do not support on
+     registers then make sure the base isn't a register.  Of course
+     we can only do so if an rvalue is OK.  */
+  if (need_non_reg && (fallback & fb_rvalue))
+    prepare_gimple_addressable (p, pre_p);
 
   /* Step 3: gimplify size expressions and the indices and operands of
      ARRAY_REF.  During this loop we also remove any useless conversions.  */
