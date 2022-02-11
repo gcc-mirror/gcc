@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package issues
+package go1_17 // don't permit non-interface elements in interfaces
 
 import (
 	"fmt"
@@ -79,11 +79,11 @@ func issue9473(a []int, b ...int) {
 // Check that embedding a non-interface type in an interface results in a good error message.
 func issue10979() {
 	type _ interface {
-		int /* ERROR int is not an interface */
+		int /* ERROR non-interface type int */
 	}
 	type T struct{}
 	type _ interface {
-		T /* ERROR T is not an interface */
+		T /* ERROR non-interface type T */
 	}
 	type _ interface {
 		nosuchtype /* ERROR undeclared name: nosuchtype */
@@ -165,8 +165,8 @@ func issue10260() {
 	_ = map[int]I1{0: i0 /* ERROR cannot use .* missing method foo */ }
 	_ = map[int]I1{0: i2 /* ERROR cannot use .* wrong type for method foo */ }
 
-	make(chan I1) <- i0 /* ERROR cannot use .* in send: missing method foo */
-	make(chan I1) <- i2 /* ERROR cannot use .* in send: wrong type for method foo */
+	make(chan I1) <- i0 /* ERROR I0 does not implement I1: missing method foo */
+	make(chan I1) <- i2 /* ERROR wrong type for method foo \(have func\(x int\), want func\(\)\) */
 }
 
 // Check that constants representable as integers are in integer form
@@ -280,7 +280,7 @@ type issue25301b /* ERROR cycle */ = interface {
 }
 
 type issue25301c interface {
-	notE // ERROR struct\{\} is not an interface
+	notE // ERROR non-interface type struct\{\}
 }
 
 type notE = struct{}

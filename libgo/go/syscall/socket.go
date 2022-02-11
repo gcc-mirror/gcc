@@ -12,6 +12,18 @@ package syscall
 
 import "unsafe"
 
+// These functions are called from the internal/syscall/unix package.
+// Use go:linkname to export them.
+//
+//go:linkname recvfromInet4
+//go:linkname recvfromInet6
+//go:linkname sendtoInet4
+//go:linkname sendtoInet6
+//go:linkname sendmsgNInet4
+//go:linkname sendmsgNInet6
+//go:linkname recvmsgInet4
+//go:linkname recvmsgInet6
+
 // For testing: clients can set this flag to force
 // creation of IPv6 sockets to return EAFNOSUPPORT.
 var SocketDisableIPv6 bool
@@ -332,6 +344,119 @@ func Recvfrom(fd int, p []byte, flags int) (n int, from Sockaddr, err error) {
 	return
 }
 
+func recvfromInet4(fd int, p []byte, flags int, from *SockaddrInet4) (n int, err error) {
+	var rsa RawSockaddrAny
+	var socklen Socklen_t = SizeofSockaddrAny
+	if n, err = recvfrom(fd, p, flags, &rsa, &socklen); err != nil {
+		return
+	}
+	pp := (*RawSockaddrInet4)(unsafe.Pointer(&rsa))
+	port := (*[2]byte)(unsafe.Pointer(&pp.Port))
+	from.Port = int(port[0])<<8 + int(port[1])
+	from.Addr = pp.Addr
+	return
+}
+
+func recvfromInet6(fd int, p []byte, flags int, from *SockaddrInet6) (n int, err error) {
+	var rsa RawSockaddrAny
+	var socklen Socklen_t = SizeofSockaddrAny
+	if n, err = recvfrom(fd, p, flags, &rsa, &socklen); err != nil {
+		return
+	}
+	pp := (*RawSockaddrInet6)(unsafe.Pointer(&rsa))
+	port := (*[2]byte)(unsafe.Pointer(&pp.Port))
+	from.Port = int(port[0])<<8 + int(port[1])
+	from.ZoneId = pp.Scope_id
+	from.Addr = pp.Addr
+	return
+}
+
+func recvmsgInet4(fd int, p, oob []byte, flags int, from *SockaddrInet4) (n, oobn int, recvflags int, err error) {
+	var rsa RawSockaddrAny
+	n, oobn, recvflags, err = recvmsgRaw(fd, p, oob, flags, &rsa)
+	if err != nil {
+		return
+	}
+	pp := (*RawSockaddrInet4)(unsafe.Pointer(&rsa))
+	port := (*[2]byte)(unsafe.Pointer(&pp.Port))
+	from.Port = int(port[0])<<8 + int(port[1])
+	from.Addr = pp.Addr
+	return
+}
+
+func recvmsgInet6(fd int, p, oob []byte, flags int, from *SockaddrInet6) (n, oobn int, recvflags int, err error) {
+	var rsa RawSockaddrAny
+	n, oobn, recvflags, err = recvmsgRaw(fd, p, oob, flags, &rsa)
+	if err != nil {
+		return
+	}
+	pp := (*RawSockaddrInet6)(unsafe.Pointer(&rsa))
+	port := (*[2]byte)(unsafe.Pointer(&pp.Port))
+	from.Port = int(port[0])<<8 + int(port[1])
+	from.ZoneId = pp.Scope_id
+	from.Addr = pp.Addr
+	return
+}
+
+func Recvmsg(fd int, p, oob []byte, flags int) (n, oobn int, recvflags int, from Sockaddr, err error) {
+	var rsa RawSockaddrAny
+	n, oobn, recvflags, err = recvmsgRaw(fd, p, oob, flags, &rsa)
+	// source address is only specified if the socket is unconnected
+	if rsa.Addr.Family != AF_UNSPEC {
+		from, err = anyToSockaddr(&rsa)
+	}
+	return
+}
+
+func Sendmsg(fd int, p, oob []byte, to Sockaddr, flags int) (err error) {
+	_, err = SendmsgN(fd, p, oob, to, flags)
+	return
+}
+
+func SendmsgN(fd int, p, oob []byte, to Sockaddr, flags int) (n int, err error) {
+	var ptr *RawSockaddrAny
+	var salen Socklen_t
+	if to != nil {
+		ptr, salen, err = to.sockaddr()
+		if err != nil {
+			return 0, err
+		}
+	}
+	return sendmsgN(fd, p, oob, ptr, salen, flags)
+}
+
+func sendmsgNInet4(fd int, p, oob []byte, to *SockaddrInet4, flags int) (n int, err error) {
+	ptr, salen, err := to.sockaddr()
+	if err != nil {
+		return 0, err
+	}
+	return sendmsgN(fd, p, oob, ptr, salen, flags)
+}
+
+func sendmsgNInet6(fd int, p, oob []byte, to *SockaddrInet6, flags int) (n int, err error) {
+	ptr, salen, err := to.sockaddr()
+	if err != nil {
+		return 0, err
+	}
+	return sendmsgN(fd, p, oob, ptr, salen, flags)
+}
+
+func sendtoInet4(fd int, p []byte, flags int, to *SockaddrInet4) (err error) {
+	ptr, n, err := to.sockaddr()
+	if err != nil {
+		return err
+	}
+	return sendto(fd, p, flags, ptr, n)
+}
+
+func sendtoInet6(fd int, p []byte, flags int, to *SockaddrInet6) (err error) {
+	ptr, n, err := to.sockaddr()
+	if err != nil {
+		return err
+	}
+	return sendto(fd, p, flags, ptr, n)
+}
+
 func Sendto(fd int, p []byte, flags int, to Sockaddr) (err error) {
 	ptr, n, err := to.sockaddr()
 	if err != nil {
@@ -340,9 +465,8 @@ func Sendto(fd int, p []byte, flags int, to Sockaddr) (err error) {
 	return sendto(fd, p, flags, ptr, n)
 }
 
-func Recvmsg(fd int, p, oob []byte, flags int) (n, oobn int, recvflags int, from Sockaddr, err error) {
+func recvmsgRaw(fd int, p, oob []byte, flags int, rsa *RawSockaddrAny) (n, oobn int, recvflags int, err error) {
 	var msg Msghdr
-	var rsa RawSockaddrAny
 	msg.Name = (*byte)(unsafe.Pointer(&rsa))
 	msg.Namelen = uint32(SizeofSockaddrAny)
 	var iov Iovec
@@ -372,30 +496,12 @@ func Recvmsg(fd int, p, oob []byte, flags int) (n, oobn int, recvflags int, from
 	}
 	oobn = int(msg.Controllen)
 	recvflags = int(msg.Flags)
-	// source address is only specified if the socket is unconnected
-	if rsa.Addr.Family != AF_UNSPEC {
-		from, err = anyToSockaddr(&rsa)
-	}
 	return
 }
 
-func Sendmsg(fd int, p, oob []byte, to Sockaddr, flags int) (err error) {
-	_, err = SendmsgN(fd, p, oob, to, flags)
-	return
-}
-
-func SendmsgN(fd int, p, oob []byte, to Sockaddr, flags int) (n int, err error) {
-	var ptr *RawSockaddrAny
-	var salen Socklen_t
-	if to != nil {
-		var err error
-		ptr, salen, err = to.sockaddr()
-		if err != nil {
-			return 0, err
-		}
-	}
+func sendmsgN(fd int, p, oob []byte, to *RawSockaddrAny, salen Socklen_t, flags int) (n int, err error) {
 	var msg Msghdr
-	msg.Name = (*byte)(unsafe.Pointer(ptr))
+	msg.Name = (*byte)(unsafe.Pointer(to))
 	msg.Namelen = uint32(salen)
 	var iov Iovec
 	if len(p) > 0 {

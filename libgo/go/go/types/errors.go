@@ -7,6 +7,7 @@
 package types
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"go/ast"
@@ -62,40 +63,63 @@ func (check *Checker) markImports(pkg *Package) {
 	}
 }
 
-func (check *Checker) sprintf(format string, args ...interface{}) string {
+func (check *Checker) sprintf(format string, args ...any) string {
+	return sprintf(check.fset, check.qualifier, false, format, args...)
+}
+
+func sprintf(fset *token.FileSet, qf Qualifier, debug bool, format string, args ...any) string {
 	for i, arg := range args {
 		switch a := arg.(type) {
 		case nil:
 			arg = "<nil>"
 		case operand:
-			panic("internal error: should always pass *operand")
+			panic("got operand instead of *operand")
 		case *operand:
-			arg = operandString(a, check.qualifier)
+			arg = operandString(a, qf)
 		case token.Pos:
-			arg = check.fset.Position(a).String()
+			if fset != nil {
+				arg = fset.Position(a).String()
+			}
 		case ast.Expr:
 			arg = ExprString(a)
+		case []ast.Expr:
+			var buf bytes.Buffer
+			buf.WriteByte('[')
+			writeExprList(&buf, a)
+			buf.WriteByte(']')
+			arg = buf.String()
 		case Object:
-			arg = ObjectString(a, check.qualifier)
+			arg = ObjectString(a, qf)
 		case Type:
-			arg = TypeString(a, check.qualifier)
+			arg = typeString(a, qf, debug)
+		case []Type:
+			var buf bytes.Buffer
+			buf.WriteByte('[')
+			for i, x := range a {
+				if i > 0 {
+					buf.WriteString(", ")
+				}
+				buf.WriteString(typeString(x, qf, debug))
+			}
+			buf.WriteByte(']')
+			arg = buf.String()
 		}
 		args[i] = arg
 	}
 	return fmt.Sprintf(format, args...)
 }
 
-func (check *Checker) trace(pos token.Pos, format string, args ...interface{}) {
+func (check *Checker) trace(pos token.Pos, format string, args ...any) {
 	fmt.Printf("%s:\t%s%s\n",
 		check.fset.Position(pos),
 		strings.Repeat(".  ", check.indent),
-		check.sprintf(format, args...),
+		sprintf(check.fset, check.qualifier, true, format, args...),
 	)
 }
 
 // dump is only needed for debugging
-func (check *Checker) dump(format string, args ...interface{}) {
-	fmt.Println(check.sprintf(format, args...))
+func (check *Checker) dump(format string, args ...any) {
+	fmt.Println(sprintf(check.fset, check.qualifier, true, format, args...))
 }
 
 func (check *Checker) err(err error) {
@@ -164,7 +188,7 @@ func (check *Checker) newError(at positioner, code errorCode, soft bool, msg str
 }
 
 // newErrorf creates a new Error, but does not handle it.
-func (check *Checker) newErrorf(at positioner, code errorCode, soft bool, format string, args ...interface{}) error {
+func (check *Checker) newErrorf(at positioner, code errorCode, soft bool, format string, args ...any) error {
 	msg := check.sprintf(format, args...)
 	return check.newError(at, code, soft, msg)
 }
@@ -173,23 +197,23 @@ func (check *Checker) error(at positioner, code errorCode, msg string) {
 	check.err(check.newError(at, code, false, msg))
 }
 
-func (check *Checker) errorf(at positioner, code errorCode, format string, args ...interface{}) {
+func (check *Checker) errorf(at positioner, code errorCode, format string, args ...any) {
 	check.error(at, code, check.sprintf(format, args...))
 }
 
-func (check *Checker) softErrorf(at positioner, code errorCode, format string, args ...interface{}) {
+func (check *Checker) softErrorf(at positioner, code errorCode, format string, args ...any) {
 	check.err(check.newErrorf(at, code, true, format, args...))
 }
 
-func (check *Checker) invalidAST(at positioner, format string, args ...interface{}) {
+func (check *Checker) invalidAST(at positioner, format string, args ...any) {
 	check.errorf(at, 0, "invalid AST: "+format, args...)
 }
 
-func (check *Checker) invalidArg(at positioner, code errorCode, format string, args ...interface{}) {
+func (check *Checker) invalidArg(at positioner, code errorCode, format string, args ...any) {
 	check.errorf(at, code, "invalid argument: "+format, args...)
 }
 
-func (check *Checker) invalidOp(at positioner, code errorCode, format string, args ...interface{}) {
+func (check *Checker) invalidOp(at positioner, code errorCode, format string, args ...any) {
 	check.errorf(at, code, "invalid operation: "+format, args...)
 }
 
@@ -236,7 +260,7 @@ func (s atPos) Pos() token.Pos {
 func spanOf(at positioner) posSpan {
 	switch x := at.(type) {
 	case nil:
-		panic("internal error: nil")
+		panic("nil positioner")
 	case posSpan:
 		return x
 	case ast.Node:
@@ -259,7 +283,7 @@ func stripAnnotations(s string) string {
 	var b strings.Builder
 	for _, r := range s {
 		// strip #'s and subscript digits
-		if r != instanceMarker && !('₀' <= r && r < '₀'+10) { // '₀' == U+2080
+		if r < '₀' || '₀'+10 <= r { // '₀' == U+2080
 			b.WriteRune(r)
 		}
 	}

@@ -366,6 +366,7 @@ go_cmd_gofmt_files = \
 
 go_cmd_cgo_files = \
 	$(cmdsrcdir)/cgo/ast.go \
+	$(cmdsrcdir)/cgo/ast_go118.go \
 	$(cmdsrcdir)/cgo/doc.go \
 	$(cmdsrcdir)/cgo/gcc.go \
 	$(cmdsrcdir)/cgo/godefs.go \
@@ -896,6 +897,7 @@ mostlyclean-local:
 @NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/mod check-go-dir/src/cmd/vendor/golang.org/x/
 @NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/crypto check-go-dir/src/cmd/vendor/golang.org/x/
 @NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/xerrors check-go-dir/src/cmd/vendor/golang.org/x/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/golang.org/x/tools check-go-dir/src/cmd/vendor/golang.org/x/
 @NATIVE_TRUE@	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \

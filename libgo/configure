@@ -649,6 +649,7 @@ HAVE_SYS_MMAN_H_FALSE
 HAVE_SYS_MMAN_H_TRUE
 PTHREAD_LIBS
 PTHREAD_CFLAGS
+RT_LIBS
 NET_LIBS
 MATH_LIBS
 GOC_IS_LLGO_FALSE
@@ -2608,7 +2609,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=20:0:0
+libtool_VERSION=21:0:0
 
 
 # Default to --enable-multilib
@@ -11544,7 +11545,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11547 "configure"
+#line 11548 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11650,7 +11651,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11653 "configure"
+#line 11654 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14745,6 +14746,12 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_lib_sockets" >&5
 $as_echo "$libgo_cv_lib_sockets" >&6; }
 NET_LIBS="$libgo_cv_lib_sockets"
+
+
+RT_LIBS=
+case ${host} in
+  *-*-linux*) RT_LIBS=-lrt ;;
+esac
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -pthread is supported" >&5

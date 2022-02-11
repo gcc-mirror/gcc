@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build !js
-// +build !js
 
 package net
 
@@ -353,6 +352,7 @@ var lookupCNAMETests = []struct {
 
 func TestLookupCNAME(t *testing.T) {
 	mustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
 
 	if !supportsIPv4() || !*testIPv4 {
 		t.Skip("IPv4 is required")
@@ -391,6 +391,7 @@ var lookupGoogleHostTests = []struct {
 
 func TestLookupGoogleHost(t *testing.T) {
 	mustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
 
 	if !supportsIPv4() || !*testIPv4 {
 		t.Skip("IPv4 is required")
@@ -443,6 +444,7 @@ var lookupGoogleIPTests = []struct {
 
 func TestLookupGoogleIP(t *testing.T) {
 	mustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
 
 	if !supportsIPv4() || !*testIPv4 {
 		t.Skip("IPv4 is required")
@@ -633,6 +635,7 @@ func TestLookupDotsWithRemoteSource(t *testing.T) {
 		testenv.SkipFlaky(t, 27992)
 	}
 	mustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
 
 	if !supportsIPv4() || !*testIPv4 {
 		t.Skip("IPv4 is required")
@@ -657,7 +660,6 @@ func TestLookupDotsWithRemoteSource(t *testing.T) {
 func testDots(t *testing.T, mode string) {
 	names, err := LookupAddr("8.8.8.8") // Google dns server
 	if err != nil {
-		testenv.SkipFlakyNet(t)
 		t.Errorf("LookupAddr(8.8.8.8): %v (mode=%v)", err, mode)
 	} else {
 		for _, name := range names {
@@ -670,7 +672,6 @@ func testDots(t *testing.T, mode string) {
 
 	cname, err := LookupCNAME("www.mit.edu")
 	if err != nil {
-		testenv.SkipFlakyNet(t)
 		t.Errorf("LookupCNAME(www.mit.edu, mode=%v): %v", mode, err)
 	} else if !strings.HasSuffix(cname, ".") {
 		t.Errorf("LookupCNAME(www.mit.edu) = %v, want cname ending in . with trailing dot (mode=%v)", cname, mode)
@@ -678,7 +679,6 @@ func testDots(t *testing.T, mode string) {
 
 	mxs, err := LookupMX("google.com")
 	if err != nil {
-		testenv.SkipFlakyNet(t)
 		t.Errorf("LookupMX(google.com): %v (mode=%v)", err, mode)
 	} else {
 		for _, mx := range mxs {
@@ -691,7 +691,6 @@ func testDots(t *testing.T, mode string) {
 
 	nss, err := LookupNS("google.com")
 	if err != nil {
-		testenv.SkipFlakyNet(t)
 		t.Errorf("LookupNS(google.com): %v (mode=%v)", err, mode)
 	} else {
 		for _, ns := range nss {
@@ -704,7 +703,6 @@ func testDots(t *testing.T, mode string) {
 
 	cname, srvs, err := LookupSRV("xmpp-server", "tcp", "google.com")
 	if err != nil {
-		testenv.SkipFlakyNet(t)
 		t.Errorf("LookupSRV(xmpp-server, tcp, google.com): %v (mode=%v)", err, mode)
 	} else {
 		if !hasSuffixFold(cname, ".google.com.") {
@@ -890,7 +888,7 @@ func TestLookupContextCancel(t *testing.T) {
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	ctxCancel()
 	_, err := DefaultResolver.LookupIPAddr(ctx, "google.com")
-	if err != errCanceled {
+	if err.(*DNSError).Err != errCanceled.Error() {
 		testenv.SkipFlakyNet(t)
 		t.Fatal(err)
 	}
@@ -926,6 +924,9 @@ func TestNilResolverLookup(t *testing.T) {
 // canceled lookups (see golang.org/issue/24178 for details).
 func TestLookupHostCancel(t *testing.T) {
 	mustHaveExternalNetwork(t)
+	testenv.SkipFlakyNet(t)
+	t.Parallel() // Executes 600ms worth of sequential sleeps.
+
 	const (
 		google        = "www.google.com"
 		invalidDomain = "invalid.invalid" // RFC 2606 reserves .invalid
@@ -944,9 +945,15 @@ func TestLookupHostCancel(t *testing.T) {
 		if err == nil {
 			t.Fatalf("LookupHost(%q): returns %v, but should fail", invalidDomain, addr)
 		}
-		if !strings.Contains(err.Error(), "canceled") {
-			t.Fatalf("LookupHost(%q): failed with unexpected error: %v", invalidDomain, err)
-		}
+
+		// Don't verify what the actual error is.
+		// We know that it must be non-nil because the domain is invalid,
+		// but we don't have any guarantee that LookupHost actually bothers
+		// to check for cancellation on the fast path.
+		// (For example, it could use a local cache to avoid blocking entirely.)
+
+		// The lookup may deduplicate in-flight requests, so give it time to settle
+		// in between.
 		time.Sleep(time.Millisecond * 1)
 	}
 
@@ -1050,7 +1057,7 @@ func TestLookupIPAddrPreservesContextValues(t *testing.T) {
 	defer func() { testHookLookupIP = origTestHookLookupIP }()
 
 	keyValues := []struct {
-		key, value interface{}
+		key, value any
 	}{
 		{"key-1", 12},
 		{384, "value2"},
@@ -1266,4 +1273,72 @@ func TestResolverLookupIP(t *testing.T) {
 			}
 		})
 	}
+}
+
+// A context timeout should still return a DNSError.
+func TestDNSTimeout(t *testing.T) {
+	origTestHookLookupIP := testHookLookupIP
+	defer func() { testHookLookupIP = origTestHookLookupIP }()
+	defer dnsWaitGroup.Wait()
+
+	timeoutHookGo := make(chan bool, 1)
+	timeoutHook := func(ctx context.Context, fn func(context.Context, string, string) ([]IPAddr, error), network, host string) ([]IPAddr, error) {
+		<-timeoutHookGo
+		return nil, context.DeadlineExceeded
+	}
+	testHookLookupIP = timeoutHook
+
+	checkErr := func(err error) {
+		t.Helper()
+		if err == nil {
+			t.Error("expected an error")
+		} else if dnserr, ok := err.(*DNSError); !ok {
+			t.Errorf("got error type %T, want %T", err, (*DNSError)(nil))
+		} else if !dnserr.IsTimeout {
+			t.Errorf("got error %#v, want IsTimeout == true", dnserr)
+		} else if isTimeout := dnserr.Timeout(); !isTimeout {
+			t.Errorf("got err.Timeout() == %t, want true", isTimeout)
+		}
+	}
+
+	// Single lookup.
+	timeoutHookGo <- true
+	_, err := LookupIP("golang.org")
+	checkErr(err)
+
+	// Double lookup.
+	var err1, err2 error
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		_, err1 = LookupIP("golang1.org")
+	}()
+	go func() {
+		defer wg.Done()
+		_, err2 = LookupIP("golang1.org")
+	}()
+	close(timeoutHookGo)
+	wg.Wait()
+	checkErr(err1)
+	checkErr(err2)
+
+	// Double lookup with context.
+	timeoutHookGo = make(chan bool)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		_, err1 = DefaultResolver.LookupIPAddr(ctx, "golang2.org")
+	}()
+	go func() {
+		defer wg.Done()
+		_, err2 = DefaultResolver.LookupIPAddr(ctx, "golang2.org")
+	}()
+	time.Sleep(10 * time.Nanosecond)
+	close(timeoutHookGo)
+	wg.Wait()
+	checkErr(err1)
+	checkErr(err2)
+	cancel()
 }
