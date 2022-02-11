@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -77,11 +77,12 @@
 # define __cpp_lib_array_constexpr 201803L
 #endif
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
 # include <new>
 # include <bits/exception_defines.h>
 # include <bits/iterator_concepts.h>
+# include <bits/stl_construct.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -93,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cpp_lib_concepts
   namespace __detail
   {
     // Weaken iterator_category _Cat to _Limit if it is derived from that,
@@ -103,6 +104,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= __conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
   }
 #endif
+
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   // 24.4.1 Reverse iterators
   /**
@@ -150,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Iterator					iterator_type;
       typedef typename __traits_type::pointer		pointer;
-#if __cplusplus <= 201703L
+#if ! __cpp_lib_concepts
       typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::reference		reference;
 #else
@@ -574,6 +579,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=>(const reverse_iterator<_IteratorL>& __x,
 		const reverse_iterator<_IteratorR>& __y)
     { return __y.base() <=> __x.base(); }
+
+  // Additional, non-standard overloads to avoid ambiguities with greedy,
+  // unconstrained overloads in associated namespaces.
+
+  template<typename _Iterator>
+    [[nodiscard]]
+    constexpr bool
+    operator==(const reverse_iterator<_Iterator>& __x,
+	       const reverse_iterator<_Iterator>& __y)
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
+    { return __x.base() == __y.base(); }
+
+  template<three_way_comparable _Iterator>
+    [[nodiscard]]
+    constexpr compare_three_way_result_t<_Iterator, _Iterator>
+    operator<=>(const reverse_iterator<_Iterator>& __x,
+		const reverse_iterator<_Iterator>& __y)
+    { return __y.base() <=> __x.base(); }
 #endif // C++20
   ///@}
 
@@ -616,7 +639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return reverse_iterator<_Iterator>(__i); }
 
 # if __cplusplus >= 201402L
-#  define __cpp_lib_make_reverse_iterator 201402
+#  define __cpp_lib_make_reverse_iterator 201402L
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 2285. make_reverse_iterator
@@ -972,6 +995,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return *this; }
     };
 
+#pragma GCC diagnostic pop
+
   /**
    *  @param __x  A container of arbitrary type.
    *  @param __i  An iterator into the container.
@@ -1161,6 +1186,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		const __normal_iterator<_IteratorR, _Container>& __rhs)
     noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
     { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
+
+  template<typename _Iterator, typename _Container>
+    [[nodiscard]]
+    constexpr bool
+    operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    noexcept(noexcept(__lhs.base() == __rhs.base()))
+    requires requires {
+      { __lhs.base() == __rhs.base() } -> std::convertible_to<bool>;
+    }
+    { return __lhs.base() == __rhs.base(); }
+
+  template<typename _Iterator, typename _Container>
+    [[nodiscard]]
+    constexpr std::__detail::__synth3way_t<_Iterator>
+    operator<=>(const __normal_iterator<_Iterator, _Container>& __lhs,
+		const __normal_iterator<_Iterator, _Container>& __rhs)
+    noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
+    { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
 #else
    // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
@@ -1312,32 +1356,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
-  // Need to specialize pointer_traits because the primary template will
-  // deduce element_type of __normal_iterator<T*, C> as T* rather than T.
+#if __cplusplus <= 201703L
+  // Need to overload __to_address because the pointer_traits primary template
+  // will deduce element_type of __normal_iterator<T*, C> as T* rather than T.
   template<typename _Iterator, typename _Container>
-    struct pointer_traits<__gnu_cxx::__normal_iterator<_Iterator, _Container>>
-    {
-    private:
-      using _Base = pointer_traits<_Iterator>;
-
-    public:
-      using element_type = typename _Base::element_type;
-      using pointer = __gnu_cxx::__normal_iterator<_Iterator, _Container>;
-      using difference_type = typename _Base::difference_type;
-
-      template<typename _Tp>
-	using rebind = __gnu_cxx::__normal_iterator<_Tp, _Container>;
-
-      static pointer
-      pointer_to(element_type& __e) noexcept
-      { return pointer(_Base::pointer_to(__e)); }
-
-#if __cplusplus >= 202002L
-      static element_type*
-      to_address(pointer __p) noexcept
-      { return __p.base(); }
+    constexpr auto
+    __to_address(const __gnu_cxx::__normal_iterator<_Iterator,
+						    _Container>& __it) noexcept
+    -> decltype(std::__to_address(__it.base()))
+    { return std::__to_address(__it.base()); }
 #endif
-    };
 
   /**
    * @addtogroup iterators
@@ -1689,13 +1717,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     { return !(__x < __y); }
 
-#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
   // Note: See __normal_iterator operators note from Gaby to understand
   // why we have these extra overloads for some move_iterator operators.
-
-  // These extra overloads are not needed in C++20, because the ones above
-  // are constrained with a requires-clause and so overload resolution will
-  // prefer them to greedy unconstrained function templates.
 
   template<typename _Iterator>
     [[__nodiscard__]]
@@ -1704,6 +1727,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const move_iterator<_Iterator>& __y)
     { return __x.base() == __y.base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<three_way_comparable _Iterator>
+    [[__nodiscard__]]
+    constexpr compare_three_way_result_t<_Iterator>
+    operator<=>(const move_iterator<_Iterator>& __x,
+		const move_iterator<_Iterator>& __y)
+    { return __x.base() <=> __y.base(); }
+#else
   template<typename _Iterator>
     [[__nodiscard__]]
     inline _GLIBCXX17_CONSTEXPR bool
@@ -1882,14 +1913,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if constexpr (is_trivially_default_constructible_v<_It>)
 	      _M_it = std::move(__x._M_it);
 	    else
-	      ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	      std::construct_at(std::__addressof(_M_it), __x._M_it);
 	  }
 	else if (_M_index == 1)
 	  {
 	    if constexpr (is_trivially_default_constructible_v<_Sent>)
 	      _M_sent = std::move(__x._M_sent);
 	    else
-	      ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	      std::construct_at(std::__addressof(_M_sent), __x._M_sent);
 	  }
       }
 
@@ -1903,18 +1934,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if constexpr (is_trivially_default_constructible_v<_It>)
 	    _M_it = std::move(__x._M_it);
 	  else
-	    ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	    std::construct_at(std::__addressof(_M_it), __x._M_it);
 	}
       else if (_M_index == 1)
 	{
 	  if constexpr (is_trivially_default_constructible_v<_Sent>)
 	    _M_sent = std::move(__x._M_sent);
 	  else
-	    ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	    std::construct_at(std::__addressof(_M_sent), __x._M_sent);
 	}
     }
 
-    common_iterator&
+    constexpr common_iterator&
     operator=(const common_iterator& __x)
     noexcept(is_nothrow_copy_assignable_v<_It>
 	     && is_nothrow_copy_assignable_v<_Sent>
@@ -1929,7 +1960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	&& convertible_to<const _Sent2&, _Sent>
 	&& assignable_from<_It&, const _It2&>
 	&& assignable_from<_Sent&, const _Sent2&>
-      common_iterator&
+      constexpr common_iterator&
       operator=(const common_iterator<_It2, _Sent2>& __x)
       noexcept(is_nothrow_constructible_v<_It, const _It2&>
 	       && is_nothrow_constructible_v<_Sent, const _Sent2&>
@@ -1949,7 +1980,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_index = -1;
 	    [[fallthrough]];
 	  case 0b1001:
-	    ::new((void*)std::__addressof(_M_sent)) _Sent(__x._M_sent);
+	    std::construct_at(std::__addressof(_M_sent), _Sent(__x._M_sent));
 	    _M_index = 1;
 	    break;
 	  case 0b0100:
@@ -1957,7 +1988,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_index = -1;
 	    [[fallthrough]];
 	  case 0b1000:
-	    ::new((void*)std::__addressof(_M_it)) _It(__x._M_it);
+	    std::construct_at(std::__addressof(_M_it), _It(__x._M_it));
 	    _M_index = 0;
 	    break;
 	  default:
@@ -1967,6 +1998,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+    constexpr
     ~common_iterator()
     {
       switch (_M_index)
@@ -1981,7 +2013,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator*()
     {
       __glibcxx_assert(_M_index == 0);
@@ -1989,7 +2021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator*() const requires __detail::__dereferenceable<const _It>
     {
       __glibcxx_assert(_M_index == 0);
@@ -1997,7 +2029,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     [[nodiscard]]
-    decltype(auto)
+    constexpr decltype(auto)
     operator->() const requires __detail::__common_iter_has_arrow<_It>
     {
       __glibcxx_assert(_M_index == 0);
@@ -2012,7 +2044,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __arrow_proxy{*_M_it};
     }
 
-    common_iterator&
+    constexpr common_iterator&
     operator++()
     {
       __glibcxx_assert(_M_index == 0);
@@ -2020,7 +2052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return *this;
     }
 
-    decltype(auto)
+    constexpr decltype(auto)
     operator++(int)
     {
       __glibcxx_assert(_M_index == 0);
@@ -2042,7 +2074,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2>
-      friend bool
+      friend constexpr bool
       operator== [[nodiscard]] (const common_iterator& __x,
 				const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2064,7 +2096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _It2, sentinel_for<_It> _Sent2>
       requires sentinel_for<_Sent, _It2> && equality_comparable_with<_It, _It2>
-      friend bool
+      friend constexpr bool
       operator== [[nodiscard]] (const common_iterator& __x,
 				const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2087,7 +2119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<sized_sentinel_for<_It> _It2, sized_sentinel_for<_It> _Sent2>
       requires sized_sentinel_for<_Sent, _It2>
-      friend iter_difference_t<_It2>
+      friend constexpr iter_difference_t<_It2>
       operator- [[nodiscard]] (const common_iterator& __x,
 			       const common_iterator<_It2, _Sent2>& __y)
       {
@@ -2109,7 +2141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     [[nodiscard]]
-    friend iter_rvalue_reference_t<_It>
+    friend constexpr iter_rvalue_reference_t<_It>
     iter_move(const common_iterator& __i)
     noexcept(noexcept(ranges::iter_move(std::declval<const _It&>())))
     requires input_iterator<_It>
@@ -2119,7 +2151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template<indirectly_swappable<_It> _It2, typename _Sent2>
-      friend void
+      friend constexpr void
       iter_swap(const common_iterator& __x,
 		const common_iterator<_It2, _Sent2>& __y)
       noexcept(noexcept(ranges::iter_swap(std::declval<const _It&>(),
@@ -2134,7 +2166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<input_or_output_iterator _It2, sentinel_for<_It2> _Sent2>
       friend class common_iterator;
 
-    bool _M_has_value() const noexcept { return _M_index < 2; }
+    constexpr bool _M_has_value() const noexcept { return _M_index < 2; }
 
     union
     {

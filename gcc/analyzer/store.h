@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -559,6 +559,8 @@ public:
 
   bool symbolic_p () const;
 
+  const region *get_base_region () const { return m_base_region; }
+
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
@@ -784,6 +786,8 @@ class store_manager
 {
 public:
   store_manager (region_model_manager *mgr) : m_mgr (mgr) {}
+
+  logger *get_logger () const;
 
   /* binding consolidation.  */
   const concrete_binding *

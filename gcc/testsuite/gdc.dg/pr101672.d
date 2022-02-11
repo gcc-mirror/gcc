@@ -8,7 +8,7 @@ interface I101672
     static int i101672;
 }
 
-class A101672 : I101672 // { dg-error "class object.A101672 missing or corrupt object.d" }
+class A101672 : I101672
 {
     static int a101672;
 }

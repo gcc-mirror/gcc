@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag11132.d(22): Error: overlapping initialization for field a and b
+fail_compilation/diag11132.d(22): Error: overlapping initialization for field `a` and `b`
 ---
 */
 

@@ -1,7 +1,7 @@
 module imports.testmod2a;
 
 /**********************************/
-// bug 1904
+// https://issues.dlang.org/show_bug.cgi?id=1904
 
 // testmod.d
 private void bar(alias a)() {}

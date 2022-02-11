@@ -5,9 +5,24 @@ define(real_type, `GFC_REAL_'kind)dnl
 define(`upcase', `translit(`$*', `a-z', `A-Z')')dnl
 define(q,ifelse(kind,4,f,ifelse(kind,8,`',ifelse(kind,10,l,ifelse(kind,16,l,`_'kind)))))dnl
 define(Q,translit(q,`a-z',`A-Z'))dnl
-define(hasmathfunc,`ifelse(kind,4,`defined (HAVE_'upcase($1)`F)',ifelse(kind,8,`defined (HAVE_'upcase($1)`)',ifelse(kind,10,`defined (HAVE_'upcase($1)`L)',ifelse(kind,16,`(defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_'upcase($1)`L))',`error out'))))')
-define(mathfunc_macro,`ifelse(kind,16,`#if defined(GFC_REAL_16_IS_FLOAT128)
+define(hasmathfunc,dnl
+`ifelse(kind,4,`defined (HAVE_'upcase($1)`F)',dnl
+ifelse(kind,8,`defined (HAVE_'upcase($1)`)',dnl
+ifelse(kind,10,`defined (HAVE_'upcase($1)`L)',dnl
+ifelse(kind,16,`(defined(GFC_REAL_16_IS_FLOAT128) || defined(HAVE_'upcase($1)`L))',dnl
+ifelse(kind,17,`1 /* FIXME: figure this out later.  */',dnl
+`error out')))))')
+define(mathfunc_macro,`ifelse(kind,17,dnl
+`#if defined(POWER_IEEE128)
+#define MATHFUNC(funcname) __ ## funcname ## ieee128
+#else
+#define MATHFUNC(funcname) funcname ## q
+#endif',dnl
+`ifelse(kind,16,dnl
+`#if defined(GFC_REAL_16_IS_FLOAT128)
 #define MATHFUNC(funcname) funcname ## q
 #else
 #define MATHFUNC(funcname) funcname ## l
-#endif',ifelse(kind,8,``#''`define MATHFUNC(funcname) funcname',```#'''`define MATHFUNC(funcname) funcname '```#'''```#'''` 'q))')dnl
+#endif',dnl
+ifelse(kind,8,``#''`define MATHFUNC(funcname) funcname',dnl
+```#'''`define MATHFUNC(funcname) funcname '```#'''```#'''` 'q))')')dnl

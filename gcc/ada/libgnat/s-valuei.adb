@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,11 @@ package body System.Value_I is
    -- Scan_Integer --
    ------------------
 
-   function Scan_Integer
+   procedure Scan_Integer
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Int
+      Max : Integer;
+      Res : out Int)
    is
       Uval : Uns;
       --  Unsigned result
@@ -59,13 +60,13 @@ package body System.Value_I is
          Bad_Value (Str);
       end if;
 
-      Uval := Scan_Raw_Unsigned (Str, Ptr, Max);
+      Scan_Raw_Unsigned (Str, Ptr, Max, Uval);
 
       --  Deal with overflow cases, and also with largest negative number
 
       if Uval > Uns (Int'Last) then
          if Minus and then Uval = Uns (-(Int'First)) then
-            return Int'First;
+            Res := Int'First;
          else
             Bad_Value (Str);
          end if;
@@ -73,12 +74,12 @@ package body System.Value_I is
       --  Negative values
 
       elsif Minus then
-         return -(Int (Uval));
+         Res := -(Int (Uval));
 
       --  Positive values
 
       else
-         return Int (Uval);
+         Res := Int (Uval);
       end if;
    end Scan_Integer;
 
@@ -106,7 +107,7 @@ package body System.Value_I is
             V : Int;
             P : aliased Integer := Str'First;
          begin
-            V := Scan_Integer (Str, P'Access, Str'Last);
+            Scan_Integer (Str, P'Access, Str'Last, V);
             Scan_Trailing_Blanks (Str, P);
             return V;
          end;

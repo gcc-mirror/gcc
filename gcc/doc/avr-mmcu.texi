@@ -1,11 +1,11 @@
-@c Copyright (C) 2012-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2012-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
 
 @c This file is generated automatically using
-@c gcc/config/avr/gen-avr-mmcu-texi.c from:
+@c gcc/config/avr/gen-avr-mmcu-texi.cc from:
 @c	 gcc/config/avr/avr-arch.h
-@c	 gcc/config/avr/avr-devices.c
+@c	 gcc/config/avr/avr-devices.cc
 @c	 gcc/config/avr/avr-mcus.def
 
 @c Please do not edit manually.

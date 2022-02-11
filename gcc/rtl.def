@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 
    3.  The print format, and type of each rtx->u.fld[] (field) in this rtx.
    These formats are stored in rtx_format[].
-   The meaning of the formats is documented in front of this array in rtl.c
+   The meaning of the formats is documented in front of this array in rtl.cc
 
    4.  The class of the rtx.  These are stored in rtx_class and are accessed
    via the GET_RTX_CLASS macro.  They are defined as follows:
@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", RTX_EXTRA)
 
 /* Used in the cselib routines to describe a value.  Objects of this
-   kind are only allocated in cselib.c, in an alloc pool instead of in
+   kind are only allocated in cselib.cc, in an alloc pool instead of in
    GC memory.  The only operand of a VALUE is a cselib_val.
    var-tracking requires this to have a distinct integral value from
    DECL codes in trees.  */
@@ -125,7 +125,7 @@ DEF_RTL_EXPR(INT_LIST, "int_list", "ie", RTX_EXTRA)
    objects.  Only passes after pass_free_cfg are expected to handle them.  */
 DEF_RTL_EXPR(SEQUENCE, "sequence", "E", RTX_EXTRA)
 
-/* Represents a non-global base address.  This is only used in alias.c.  */
+/* Represents a non-global base address.  This is only used in alias.cc.  */
 DEF_RTL_EXPR(ADDRESS, "address", "i", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
@@ -167,7 +167,7 @@ DEF_RTL_EXPR(BARRIER, "barrier", "uu00000", RTX_EXTRA)
 
 /* Holds a label that is followed by instructions.
    Operand:
-   3: is used in jump.c for the use-count of the label.
+   3: is used in jump.cc for the use-count of the label.
    4: is used in the sh backend.
    5: is a number that is unique in the entire compilation.
    6: is the user-given name of the label, if any.  */
@@ -224,7 +224,7 @@ DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEEi", RTX_EXTRA)
    2nd operand is a unique value saying which of a number of machine-specific
      operations is to be performed.
    (Note that the vector must be the first operand because of the way that
-   genrecog.c record positions within an insn.)
+   genrecog.cc record positions within an insn.)
 
    UNSPEC can occur all by itself in a PATTERN, as a component of a PARALLEL,
    or inside an expression.
@@ -1312,7 +1312,7 @@ DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ww", RTX_EXTRA)
 /* A conditional expression which is true if the specified flag is
    true for the insn being scheduled in reorg.
 
-   genattr.c defines the following flags which can be tested by
+   genattr.cc defines the following flags which can be tested by
    (attr_flag "foo") expressions in eligible_for_delay: forward, backward.  */
 
 DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", RTX_EXTRA)

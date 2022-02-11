@@ -1,0 +1,9 @@
+# Shared versions of vx_crt{begin,end}.o, those one must be compiled only
+# when the shared libraries are available
+
+vx_crtbeginS.o: $(srcdir)/config/vxcrtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -DCRT_BEGIN -c $< -DCRTSTUFFS_O
+vx_crtendS.o: $(srcdir)/config/vxcrtstuff.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -DCRT_END -c $< -DCRTSTUFFS_O
+
+EXTRA_PARTS += vx_crtbeginS.o vx_crtendS.o

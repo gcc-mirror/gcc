@@ -1,5 +1,5 @@
 /* Operations with very long integers.  -*- C++ -*-
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3338,7 +3338,7 @@ gt_pch_nx (generic_wide_int <T> *)
 
 template<typename T>
 void
-gt_pch_nx (generic_wide_int <T> *, void (*) (void *, void *), void *)
+gt_pch_nx (generic_wide_int <T> *, gt_pointer_operator, void *)
 {
 }
 
@@ -3356,7 +3356,7 @@ gt_pch_nx (trailing_wide_ints <N> *)
 
 template<int N>
 void
-gt_pch_nx (trailing_wide_ints <N> *, void (*) (void *, void *), void *)
+gt_pch_nx (trailing_wide_ints <N> *, gt_pointer_operator, void *)
 {
 }
 

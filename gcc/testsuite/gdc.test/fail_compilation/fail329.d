@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail329.d(28): Error: variable fail329.A.foo.__ensure.result cannot modify result 'result' in contract
+fail_compilation/fail329.d(28): Error: variable `fail329.A.foo.__ensure.result` cannot modify result `result` in contract
 ---
 */
 
@@ -27,7 +27,7 @@ class A
         assert(x == 7);
         result++;
     }
-    body
+    do
     {
         return i;
     }
@@ -49,7 +49,7 @@ class B : A
         assert(result < 8);
         assert(x == 7);
     }
-    body
+    do
     {
         return i - 1;
     }

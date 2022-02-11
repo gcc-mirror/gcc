@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,6 @@
 --  operations have been made abstract in the spec of System (to avoid
 --  inappropriate use by applications programs). In addition, the logical
 --  operations may not be available if type Address is a signed integer.
-
-pragma Compiler_Unit_Warning;
 
 package System.Address_Operations is
    pragma Pure;

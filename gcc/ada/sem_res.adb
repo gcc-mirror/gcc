@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,7 @@ with Sinfo.CN;       use Sinfo.CN;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Style;          use Style;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
@@ -301,7 +302,7 @@ package body Sem_Res is
    --  of the context, or the type of the other operand has a user-defined
    --  literal aspect that can be applied to the literal to resolve the node.
    --  If such aspect exists, replace literal with a call to the
-   --  corresponing function and return True, return false otherwise.
+   --  corresponding function and return True, return false otherwise.
 
    -------------------------
    -- Ambiguous_Character --
@@ -1773,11 +1774,11 @@ package body Sem_Res is
                   elsif Opnd_Type = Universal_Real then
                      Orig_Type := Type_In_P (Is_Real_Type'Access);
 
+                  elsif Opnd_Type = Universal_Access then
+                     Orig_Type := Type_In_P (Is_Definite_Access_Type'Access);
+
                   elsif Opnd_Type = Any_String then
                      Orig_Type := Type_In_P (Is_String_Type'Access);
-
-                  elsif Opnd_Type = Any_Access then
-                     Orig_Type := Type_In_P (Is_Definite_Access_Type'Access);
 
                   elsif Opnd_Type = Any_Composite then
                      Orig_Type := Type_In_P (Is_Composite_Type'Access);
@@ -3179,6 +3180,27 @@ package body Sem_Res is
       --  Only one interpretation
 
       else
+         --  Prevent implicit conversions between access-to-subprogram types
+         --  with different strub modes. Explicit conversions are acceptable in
+         --  some circumstances. We don't have to be concerned about data or
+         --  access-to-data types. Conversions between data types can safely
+         --  drop or add strub attributes from types, because strub effects are
+         --  associated with the locations rather than values. E.g., converting
+         --  a hypothetical Strub_Integer variable to Integer would load the
+         --  value from the variable, enabling stack scrabbing for the
+         --  enclosing subprogram, and then convert the value to Integer. As
+         --  for conversions between access-to-data types, that's no different
+         --  from any other case of type punning.
+
+         if Is_Access_Type (Typ)
+           and then Ekind (Designated_Type (Typ)) = E_Subprogram_Type
+           and then Is_Access_Type (Expr_Type)
+           and then Ekind (Designated_Type (Expr_Type)) = E_Subprogram_Type
+         then
+            Check_Same_Strub_Mode
+              (Designated_Type (Typ), Designated_Type (Expr_Type));
+         end if;
+
          --  In Ada 2005, if we have something like "X : T := 2 + 2;", where
          --  the "+" on T is abstract, and the operands are of universal type,
          --  the above code will have (incorrectly) resolved the "+" to the
@@ -3417,7 +3439,7 @@ package body Sem_Res is
          end case;
 
          --  Mark relevant use-type and use-package clauses as effective using
-         --  the original node because constant folding may have occured and
+         --  the original node because constant folding may have occurred and
          --  removed references that need to be examined.
 
          if Nkind (Original_Node (N)) in N_Op then
@@ -8726,7 +8748,7 @@ package body Sem_Res is
             Set_Etype (N, Any_Type);
             return;
 
-         elsif T = Any_Access
+         elsif T = Universal_Access
            or else Ekind (T) in E_Allocator_Type | E_Access_Attribute_Type
          then
             T := Find_Unique_Access_Type;
@@ -9752,7 +9774,7 @@ package body Sem_Res is
       ----------------------------
 
       procedure Resolve_Set_Membership is
-         Alt  : Node_Id;
+         Alt : Node_Id;
 
       begin
          --  If the left operand is overloaded, find type compatible with not
@@ -10163,7 +10185,7 @@ package body Sem_Res is
                        ("\\interpretation as call yields&", Arg, Typ);
                      Error_Msg_NE
                        ("\\interpretation as indexing of call yields&",
-                         Arg, Component_Type (Typ));
+                         Arg, Ctyp);
 
                   else
                      Error_Msg_N ("ambiguous operand for concatenation!", Arg);
@@ -10186,10 +10208,30 @@ package body Sem_Res is
                end;
             end if;
 
-            Resolve (Arg, Component_Type (Typ));
+            Resolve (Arg, Ctyp);
 
             if Nkind (Arg) = N_String_Literal then
-               Set_Etype (Arg, Component_Type (Typ));
+               Set_Etype (Arg, Ctyp);
+
+            elsif Is_Scalar_Type (Etype (Arg))
+              and then Compile_Time_Known_Value (Arg)
+            then
+               --  Determine if the out-of-range violation constitutes a
+               --  warning or an error according to the expression base type,
+               --  according to Ada 2022 RM 4.9 (35/2).
+
+               if Is_Out_Of_Range (Arg, Base_Type (Ctyp)) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}", CE_Range_Check_Failed,
+                     Ent => Base_Type (Ctyp),
+                     Typ => Base_Type (Ctyp));
+
+               elsif Is_Out_Of_Range (Arg, Ctyp) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}??", CE_Range_Check_Failed,
+                     Ent => Ctyp,
+                     Typ => Ctyp);
+               end if;
             end if;
 
             if Arg = Left_Opnd (N) then
@@ -10552,7 +10594,7 @@ package body Sem_Res is
       end if;
 
       --  AI12-0100: Once the qualified expression is resolved, check whether
-      --  operand statisfies a static predicate of the target subtype, if any.
+      --  operand satisfies a static predicate of the target subtype, if any.
       --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
@@ -10732,6 +10774,30 @@ package body Sem_Res is
             Fold_Uint (H, Expr_Value (H), Static => True);
          end if;
       end if;
+
+      --  If we have a compile-time-known null range, we warn, because that is
+      --  likely to be a mistake. (Dynamic null ranges make sense, but often
+      --  compile-time-known ones do not.) Warn only if this is in a subtype
+      --  declaration. We do this here, rather than while analyzing a subtype
+      --  declaration, in case we decide to expand the cases. We do not want to
+      --  warn in all cases, because some are idiomatic, such as an empty
+      --  aggregate (1 .. 0 => <>).
+
+      --  We don't warn in generics or their instances, because there might be
+      --  some instances where the range is null, and some where it is not,
+      --  which would lead to false alarms.
+
+      if not (Inside_A_Generic or In_Instance)
+        and then Comes_From_Source (N)
+        and then Compile_Time_Compare
+          (Low_Bound (N), High_Bound (N), Assume_Valid => True) = GT
+        and then Nkind (Parent (N)) = N_Range_Constraint
+        and then Nkind (Parent (Parent (N))) = N_Subtype_Indication
+        and then Nkind (Parent (Parent (Parent (N)))) = N_Subtype_Declaration
+        and then Is_OK_Static_Range (N)
+      then
+         Error_Msg_N ("null range??", N);
+      end if;
    end Resolve_Range;
 
    --------------------------
@@ -10743,17 +10809,23 @@ package body Sem_Res is
 
    begin
       --  Special processing for fixed-point literals to make sure that the
-      --  value is an exact multiple of small where this is required. We skip
-      --  this for the universal real case, and also for generic types.
+      --  value is an exact multiple of the small where this is required. We
+      --  skip this for the universal real case, and also for generic types.
 
       if Is_Fixed_Point_Type (Typ)
         and then Typ /= Universal_Fixed
         and then Typ /= Any_Fixed
         and then not Is_Generic_Type (Typ)
       then
+         --  We must freeze the base type to get the proper value of the small
+
+         if not Is_Frozen (Base_Type (Typ)) then
+            Freeze_Fixed_Point_Type (Base_Type (Typ));
+         end if;
+
          declare
             Val   : constant Ureal := Realval (N);
-            Cintr : constant Ureal := Val / Small_Value (Typ);
+            Cintr : constant Ureal := Val / Small_Value (Base_Type (Typ));
             Cint  : constant Uint  := UR_Trunc (Cintr);
             Den   : constant Uint  := Norm_Den (Cintr);
             Stat  : Boolean;
@@ -10998,7 +11070,7 @@ package body Sem_Res is
       --  resolution was complete to do this, since otherwise we can't tell if
       --  we are an lvalue or not.
 
-      if May_Be_Lvalue (N) then
+      if Known_To_Be_Assigned (N) then
          Generate_Reference (Entity (S), S, 'm');
       else
          Generate_Reference (Entity (S), S, 'r');
@@ -11024,7 +11096,7 @@ package body Sem_Res is
          if Is_Entity_Name (P)
            and then Has_Deferred_Reference (Entity (P))
          then
-            if May_Be_Lvalue (N) then
+            if Known_To_Be_Assigned (N) then
                Generate_Reference (Entity (P), P, 'm');
             else
                Generate_Reference (Entity (P), P, 'r');
@@ -11694,14 +11766,14 @@ package body Sem_Res is
                Comp_Typ_Hi : constant Node_Id :=
                                Type_High_Bound (Component_Type (Typ));
 
-               Char_Val : Int;
+               Char_Val : Uint;
 
             begin
                if Compile_Time_Known_Value (Comp_Typ_Lo)
                  and then Compile_Time_Known_Value (Comp_Typ_Hi)
                then
                   for J in 1 .. Strlen loop
-                     Char_Val := Int (Get_String_Char (Str, J));
+                     Char_Val := UI_From_CC (Get_String_Char (Str, J));
 
                      if Char_Val < Expr_Value (Comp_Typ_Lo)
                        or else Char_Val > Expr_Value (Comp_Typ_Hi)
@@ -11709,7 +11781,7 @@ package body Sem_Res is
                         Apply_Compile_Time_Constraint_Error
                           (N, "character out of range??",
                            CE_Range_Check_Failed,
-                           Loc => Source_Ptr (Int (Loc) + J));
+                           Loc => Loc + Source_Ptr (J));
                      end if;
                   end loop;
 
@@ -12144,7 +12216,7 @@ package body Sem_Res is
       end if;
 
       --  Ada 2012: Once the type conversion is resolved, check whether the
-      --  operand statisfies a static predicate of the target subtype, if any.
+      --  operand satisfies a static predicate of the target subtype, if any.
       --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
@@ -13100,7 +13172,7 @@ package body Sem_Res is
       function In_Instance_Code return Boolean;
       --  Return True if expression is within an instance but is not in one of
       --  the actuals of the instantiation. Type conversions within an instance
-      --  are not rechecked because type visbility may lead to spurious errors,
+      --  are not rechecked because type visibility may lead to spurious errors
       --  but conversions in an actual for a formal object must be checked.
 
       function Is_Discrim_Of_Bad_Access_Conversion_Argument
@@ -14154,7 +14226,15 @@ package body Sem_Res is
             end;
          end if;
 
-         return True;
+         --  Check that the strub modes are compatible.
+         --  We wish to reject explicit conversions only for
+         --  incompatible modes.
+
+         return Conversion_Check
+                  (Compatible_Strub_Modes
+                     (Designated_Type (Target_Type),
+                      Designated_Type (Opnd_Type)),
+                   "incompatible `strub` modes");
 
       --  Remote access to subprogram types
 
@@ -14180,7 +14260,16 @@ package body Sem_Res is
               Designated_Type (Corresponding_Remote_Type (Opnd_Type)),
             Err_Loc =>
               N);
-         return True;
+
+         --  Check that the strub modes are compatible.
+         --  We wish to reject explicit conversions only for
+         --  incompatible modes.
+
+         return Conversion_Check
+                  (Compatible_Strub_Modes
+                     (Designated_Type (Target_Type),
+                      Designated_Type (Opnd_Type)),
+                   "incompatible `strub` modes");
 
       --  If it was legal in the generic, it's legal in the instance
 

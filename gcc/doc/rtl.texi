@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2205,7 +2205,7 @@ On a few targets, @code{FLOAT_WORDS_BIG_ENDIAN} disagrees with
 @code{WORDS_BIG_ENDIAN}.  However, most parts of the compiler treat
 floating point values as if they had the same endianness as integer
 values.  This works because they handle them solely as a collection of
-integer values, with no particular numerical value.  Only real.c and
+integer values, with no particular numerical value.  Only real.cc and
 the runtime libraries care about @code{FLOAT_WORDS_BIG_ENDIAN}.
 
 Thus,
@@ -3846,7 +3846,7 @@ equivalent to testing whether @samp{LABEL_KIND (label) == LABEL_NORMAL}.
 The only place that cares about the distinction between static, global,
 and weak alternate entry points, besides the front-end code that creates
 them, is the function @code{output_alternate_entry_point}, in
-@file{final.c}.
+@file{final.cc}.
 
 To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 
@@ -4935,7 +4935,7 @@ It returns true on success or false if no suitable location exists.
 
 The pass should also tentatively change the pattern of the instruction
 to whatever form the pass wants the instruction to have.  This should use
-the facilities provided by @file{recog.c}.  For example:
+the facilities provided by @file{recog.cc}.  For example:
 
 @smallexample
 rtl_insn *rtl = insn->rtl ();
@@ -5223,7 +5223,7 @@ side-effects on other insns.
 @item
 During initial RTL generation, shared structure is freely introduced.
 After all the RTL for a function has been generated, all shared
-structure is copied by @code{unshare_all_rtl} in @file{emit-rtl.c},
+structure is copied by @code{unshare_all_rtl} in @file{emit-rtl.cc},
 after which the above rules are guaranteed to be followed.
 
 @findex copy_rtx_if_shared
@@ -5240,7 +5240,7 @@ combiner is finished with the insn.  This is done by calling
 
 To read an RTL object from a file, call @code{read_rtx}.  It takes one
 argument, a stdio stream, and returns a single RTL object.  This routine
-is defined in @file{read-rtl.c}.  It is not available in the compiler
+is defined in @file{read-rtl.cc}.  It is not available in the compiler
 itself, only the various programs that generate the compiler back end
 from the machine description.
 

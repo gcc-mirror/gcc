@@ -98,6 +98,22 @@ if test "$gofiles" = ""; then
     exit 1
 fi
 
+gobuild() {
+    line=$(echo "$1" | sed -e 's|//go:build ||')
+    line=$(echo "$line" | sed -e 's/go1\.[0-9]\+/1/g' -e 's/goexperiment\./goexperiment/')
+    line=" $line "
+    wrap='[ ()!&|]'
+    for ones in $goarch $goos $cgotag $cmdlinetag gccgo goexperimentfieldtrack; do
+	line=$(echo "$line" | sed -e "s/\\(${wrap}\\)${ones}\\(${wrap}\\)/"'\11\2/g')
+    done
+    # 386 is a special case since it looks like a number to the shell.
+    # We need it to be 0 if it's not $goarch.
+    if test "$goarch" != "386"; then
+	line=$(echo "$line" | sed -e "s/\\(${wrap}\\)386\\(${wrap}\\)/\10\2/g")
+    fi
+    (($line))
+}
+
 matched=
 for f in $gofiles; do
     tag1=`echo $f | sed -e 's/^.*_\([^_]*\).go$/\1/'`
@@ -138,62 +154,74 @@ for f in $gofiles; do
 	    ;;
     esac
 
-    if test x$tag1 != xnonmatchingtag -a x$tag2 != xnonmatchingtag; then
-	# Pipe through cat so that `set -e` doesn't affect fgrep.
-	tags=`sed '/^package /q' < $f | grep '^// *+build ' | cat`
-	omatch=true
-	first=true
-	match=false
-	for tag in $tags; do
-	    case $tag in
-		"//")
-		    ;;
-		"+build" | "//+build")
-		    if test "$first" = "true"; then
-			first=false
-		    elif test "$match" = "false"; then
-			omatch=false
-		    fi
-		    match=false
-		    ;;
-		$goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
-		    match=true
-		    ;;
-		"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
-		    ;;
-		*,*)
-		    cmatch=true
-		    for ctag in `echo $tag | sed -e 's/,/ /g'`; do
-			case $ctag in
-			    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
-				;;
-			    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
-				cmatch=false
-				;;
-			    "!"*)
-				;;
-			    *)
-				cmatch=false
-				;;
-			esac
-		    done
-		    if test "$cmatch" = "true"; then
-			match=true
-		    fi
-		    ;;
-		"!"*)
-		    match=true
-		    ;;
-	    esac
-	done
+    if test x$tag1 = xnonmatchingtag -o x$tag2 = xnonmatchingtag; then
+	continue
+    fi
 
-	if test "$match" = "false" -a "$first" = "false"; then
-	    omatch=false
-	fi
-
-	if test "$omatch" = "true"; then
+    # Check for go:build line
+    build=$(sed '/^package /q' < $f | grep '^//go:build ' | cat)
+    if test -n "$build"; then
+	if $(gobuild "$build"); then
 	    matched="$matched $srcdir/$f"
 	fi
+	continue
+    fi
+
+    # No go:build line, check for +build lines.
+    # Pipe through cat so that `set -e` doesn't affect fgrep.
+    tags=`sed '/^package /q' < $f | grep '^// *+build ' | cat`
+    omatch=true
+    first=true
+    match=false
+    for tag in $tags; do
+	case $tag in
+	    "//")
+	    ;;
+	    "+build" | "//+build")
+		if test "$first" = "true"; then
+		    first=false
+		elif test "$match" = "false"; then
+		    omatch=false
+		fi
+		match=false
+		;;
+	    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
+		match=true
+		;;
+	    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
+		;;
+	    *,*)
+		cmatch=true
+		for ctag in `echo $tag | sed -e 's/,/ /g'`; do
+		    case $ctag in
+			$goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | "goexperiment.fieldtrack" | go1.[0-9] | go1.[0-9][0-9])
+			;;
+			"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!goexperiment.fieldtrack" | "!"go1.[0-9] | "!"go1.1[0-7])
+			    cmatch=false
+			    ;;
+			"!"*)
+			    ;;
+			*)
+			    cmatch=false
+			    ;;
+		    esac
+		done
+		if test "$cmatch" = "true"; then
+		    match=true
+		fi
+		;;
+	    "!"*)
+		match=true
+		;;
+	esac
+    done
+
+    if test "$match" = "false" -a "$first" = "false"; then
+	omatch=false
+    fi
+
+    if test "$omatch" = "true"; then
+	matched="$matched $srcdir/$f"
     fi
 done
 

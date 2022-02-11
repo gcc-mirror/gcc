@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
-;;   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+;;   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -3261,7 +3261,7 @@
 ;; If the count is run-time determined, the register with the byte count
 ;; is clobbered by the copying code, and therefore it is forced to operand 2.
 ;;
-;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; We used to clobber operands 0 and 1.  However, a change to regrename.cc
 ;; broke this semantic for pseudo registers.  We can't use match_scratch
 ;; as this requires two registers in the class R1_REGS when the MEMs for
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
@@ -3449,7 +3449,7 @@
 ;; If the count is run-time determined, the register with the byte count
 ;; is clobbered by the copying code, and therefore it is forced to operand 2.
 ;;
-;; We used to clobber operands 0 and 1.  However, a change to regrename.c
+;; We used to clobber operands 0 and 1.  However, a change to regrename.cc
 ;; broke this semantic for pseudo registers.  We can't use match_scratch
 ;; as this requires two registers in the class R1_REGS when the MEMs for
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
@@ -5357,6 +5357,88 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,4")])
 
+(define_insn "addti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(plus:TI (match_operand:TI 1 "register_operand" "r")
+		 (match_operand:TI 2 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"add %4,%5,%3\;add,dc %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "addvti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(plus:TI (match_operand:TI 1 "register_operand" "r")
+		 (match_operand:TI 2 "register_operand" "r")))
+   (trap_if (ne (plus:OI (sign_extend:OI (match_dup 1))
+			 (sign_extend:OI (match_dup 2)))
+		(sign_extend:OI (plus:TI (match_dup 1)
+					 (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"add %4,%5,%3\;add,dc,tsv %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "subti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(minus:TI (match_operand:TI 1 "register_operand" "r")
+		  (match_operand:TI 2 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"sub %4,%5,%3\;sub,db %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "subvti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(minus:TI (match_operand:TI 1 "register_operand" "r")
+		  (match_operand:TI 2 "register_operand" "r")))
+   (trap_if (ne (minus:OI (sign_extend:OI (match_dup 1))
+			  (sign_extend:OI (match_dup 2)))
+		(sign_extend:OI (minus:TI (match_dup 1)
+					  (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"sub %4,%5,%3\;sub,db,tsv %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 ;; Trap instructions.
 
 (define_insn "trap"
@@ -5897,7 +5979,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   "!TARGET_64BIT"
   "sub %%r0,%R1,%R0\;{subb|sub,b} %%r0,%1,%0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
 (define_insn ""
@@ -5907,6 +5989,21 @@
   "sub %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
+
+(define_insn "negti2"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(neg:TI (match_operand:TI 1 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = gen_lowpart (DImode, operands[1]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  return \"sub %%r0,%3,%2\;sub,db %%r0,%1,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_expand "negvdi2"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
@@ -5925,7 +6022,7 @@
 	    (const_int 0))]
   "!TARGET_64BIT"
   "sub %%r0,%R1,%R0\;{subbo|sub,b,tsv} %%r0,%1,%0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
 (define_insn ""
@@ -5938,6 +6035,24 @@
   "sub,tsv %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
+
+(define_insn "negvti2"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(neg:TI (match_operand:TI 1 "register_operand" "r")))
+   (trap_if (ne (neg:OI (sign_extend:OI (match_dup 1)))
+		(sign_extend:OI (neg:TI (match_dup 1))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = gen_lowpart (DImode, operands[1]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  return \"sub %%r0,%3,%2\;sub,db,tsv %%r0,%1,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -6548,7 +6663,7 @@
 	      DONE;
 	    }
 	}
-      /* Fallback to using optabs.c's expand_doubleword_shift.  */
+      /* Fallback to using optabs.cc's expand_doubleword_shift.  */
       FAIL;
     }
   if (GET_CODE (operands[2]) != CONST_INT)
@@ -6565,6 +6680,42 @@
      there are no patterns for that.  */
   operands[1] = force_reg (DImode, operands[1]);
 }")
+
+(define_expand "ashlti3"
+  [(set (match_operand:TI 0 "register_operand" "")
+	(ashift:TI (match_operand:TI 1 "lhs_lshift_operand" "")
+		   (match_operand:TI 2 "arith32_operand" "")))]
+  "TARGET_64BIT"
+{
+  if (REG_P (operands[0]) && GET_CODE (operands[2]) == CONST_INT)
+    {
+      unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
+      rtx dst = operands[0];
+      rtx src = force_reg (TImode, operands[1]);
+      if (shift >= 1 && shift <= 63)
+	{
+	  emit_insn (gen_shrpd_internal (gen_highpart (DImode, dst),
+					 gen_lowpart (DImode, src),
+					 GEN_INT (64-shift),
+					 gen_highpart (DImode, src),
+					 GEN_INT (shift)));
+	  emit_insn (gen_ashldi3 (gen_lowpart (DImode, dst),
+				  gen_lowpart (DImode, src),
+				  GEN_INT (shift)));
+	  DONE;
+	}
+      else if (shift >= 64 && shift <= 127)
+	{
+	  emit_insn (gen_ashldi3 (gen_highpart (DImode, dst),
+				  gen_lowpart (DImode, src),
+				  GEN_INT (shift - 64)));
+	  emit_move_insn (gen_lowpart (DImode, dst), GEN_INT (0));
+	  DONE;
+	}
+    }
+  /* Fallback to using optabs.cc's expand_doubleword_shift.  */
+  FAIL;
+})
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -6943,6 +7094,15 @@
 	  (ashift:SI (match_operand:SI 3 "register_operand")
 		     (match_operand:SI 4 "const_int_operand"))))]
   "")
+
+(define_expand "shrpd_internal"
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI
+	  (lshiftrt:DI (match_operand:DI 1 "register_operand")
+		       (match_operand:DI 2 "const_int_operand"))
+	  (ashift:DI (match_operand:DI 3 "register_operand")
+		     (match_operand:DI 4 "const_int_operand"))))]
+  "TARGET_64BIT")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -10206,10 +10366,12 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx mem = operands[0];
-      rtx val = operands[1];
-      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
-	DONE;
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, QImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], QImode);
+      DONE;
     }
   FAIL;
 })
@@ -10224,10 +10386,12 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx mem = operands[0];
-      rtx val = operands[1];
-      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
-	DONE;
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, HImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], HImode);
+      DONE;
     }
   FAIL;
 })
@@ -10242,10 +10406,12 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx mem = operands[0];
-      rtx val = operands[1];
-      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
-	DONE;
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, SImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], SImode);
+      DONE;
     }
   FAIL;
 })
@@ -10293,10 +10459,12 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
   if (TARGET_SYNC_LIBCALL)
     {
-      rtx mem = operands[0];
-      rtx val = operands[1];
-      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
-	DONE;
+      rtx libfunc = optab_libfunc (sync_lock_test_and_set_optab, DImode);
+      rtx addr = convert_memory_address (Pmode, XEXP (operands[0], 0));
+
+      emit_library_call (libfunc, LCT_NORMAL, VOIDmode, addr, Pmode,
+			 operands[1], DImode);
+      DONE;
     }
 
   if (TARGET_64BIT || TARGET_SOFT_FLOAT)

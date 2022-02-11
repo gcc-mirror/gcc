@@ -1,4 +1,4 @@
-#  Copyright (C) 2016-2021 Free Software Foundation, Inc.
+#  Copyright (C) 2016-2022 Free Software Foundation, Inc.
 #
 #  This file is free software; you can redistribute it and/or modify it under
 #  the terms of the GNU General Public License as published by the Free
@@ -16,13 +16,13 @@
 
 GTM_H += $(HASH_TABLE_H)
 
-driver-gcn.o: $(srcdir)/config/gcn/driver-gcn.c
+driver-gcn.o: $(srcdir)/config/gcn/driver-gcn.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
 CFLAGS-mkoffload.o += $(DRIVER_DEFINES) \
 	-DGCC_INSTALL_NAME=\"$(GCC_INSTALL_NAME)\"
-mkoffload.o: $(srcdir)/config/gcn/mkoffload.c
+mkoffload.o: $(srcdir)/config/gcn/mkoffload.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 ALL_HOST_OBJS += mkoffload.o
@@ -34,7 +34,7 @@ mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a \
 
 CFLAGS-gcn-run.o += -DVERSION_STRING=$(PKGVERSION_s)
 COMPILE-gcn-run.o = $(filter-out -fno-rtti,$(COMPILE))
-gcn-run.o: $(srcdir)/config/gcn/gcn-run.c
+gcn-run.o: $(srcdir)/config/gcn/gcn-run.cc
 	$(COMPILE-gcn-run.o) -x c -std=gnu11 -Wno-error=pedantic $<
 	$(POSTCOMPILE)
 ALL_HOST_OBJS += gcn-run.o
@@ -45,7 +45,7 @@ gcn-run$(exeext): gcn-run.o
 MULTILIB_OPTIONS = march=gfx900/march=gfx906/march=gfx908
 MULTILIB_DIRNAMES = gfx900 gfx906 gfx908
 
-gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.c
+gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 ALL_HOST_OBJS += gcn-tree.o

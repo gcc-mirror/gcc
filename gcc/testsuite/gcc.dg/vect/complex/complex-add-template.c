@@ -3,6 +3,9 @@
 void add0 (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	   _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = a[i] + b[i];
 }
@@ -10,6 +13,9 @@ void add0 (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add90snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	       _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = a[i] + (b[i] * I);
 }
@@ -19,6 +25,9 @@ void add90snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add180snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	        _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = a[i] + (b[i] * I * I);
 }
@@ -26,6 +35,9 @@ void add180snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add270snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	        _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = a[i] + (b[i] * I * I * I);
 }
@@ -35,6 +47,9 @@ void add270snd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add90fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	       _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = (a[i] * I) + b[i];
 }
@@ -44,6 +59,9 @@ void add90fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add180fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	        _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = (a[i] * I * I) + b[i];
 }
@@ -51,6 +69,9 @@ void add180fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void add270fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 	        _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = (a[i] * I * I * I) + b[i];
 }
@@ -60,6 +81,9 @@ void add270fst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void addconjfst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 		 _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = ~a[i] + b[i];
 }
@@ -67,6 +91,9 @@ void addconjfst (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void addconjsnd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 		 _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = a[i] + ~b[i];
 }
@@ -74,6 +101,9 @@ void addconjsnd (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 void addconjboth (_Complex TYPE a[restrict N], _Complex TYPE b[restrict N],
 		  _Complex TYPE c[restrict N])
 {
+#if defined (UNROLL)
+#pragma GCC unroll 16
+#endif
   for (int i=0; i < N; i++)
     c[i] = ~a[i] + ~b[i];
 }

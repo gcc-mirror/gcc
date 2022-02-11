@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2003-2021, AdaCore                     --
+--                     Copyright (C) 2003-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,7 +128,7 @@ package body GNAT.Memory_Dump is
                           (Count - Ctr, 16, 0, Offset_Buf, Last);
                         Len := Last - 4;
 
-                        Line_Buf (1 .. AIL - Len - 2) := (others => '0');
+                        Line_Buf (1 .. AIL - Len - 2) := [others => '0'];
                         Line_Buf (AIL - Len - 1 .. AIL - 2) :=
                           Offset_Buf (4 .. Last - 1);
                         Line_Buf (AIL - 1 .. AIL) := ": ";
@@ -138,7 +138,7 @@ package body GNAT.Memory_Dump is
                      null;
                end case;
 
-               Line_Buf (AIL + 1 .. Line_Buf'Last) := (others => ' ');
+               Line_Buf (AIL + 1 .. Line_Buf'Last) := [others => ' '];
                Line_Buf (AIL + 3 * 16 + 1) := '"';
             end if;
 

@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -112,7 +112,7 @@ unsigned int sparc_regmode_natural_size (machine_mode);
 
 extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
 
-/* Routines implemented in sparc-d.c  */
+/* Routines implemented in sparc-d.cc  */
 extern void sparc_d_target_versions (void);
 extern void sparc_d_register_target_info (void);
 

@@ -1,5 +1,5 @@
 ;;- Instruction patterns for the System z vector facility builtins.
-;;  Copyright (C) 2015-2021 Free Software Foundation, Inc.
+;;  Copyright (C) 2015-2022 Free Software Foundation, Inc.
 ;;  Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 ;; This file is part of GCC.
@@ -514,7 +514,7 @@
 ; implemented as: op0 = (op1 & op3) | (op2 & ~op3)
 
 ; Used to expand the vec_sel builtin. Operands op1 and op2 already got
-; swapped in s390-c.c when we get here.
+; swapped in s390-c.cc when we get here.
 
 (define_insn "vsel<mode>"
   [(set (match_operand:V_HW                      0 "register_operand" "=v")

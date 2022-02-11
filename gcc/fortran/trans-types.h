@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -65,10 +65,7 @@ enum gfc_packed {
   PACKED_STATIC
 };
 
-/* be-function.c */
-void gfc_convert_function_code (gfc_namespace *);
-
-/* trans-types.c */
+/* trans-types.cc */
 void gfc_init_kinds (void);
 void gfc_init_types (void);
 void gfc_init_c_interop_kinds (void);
@@ -117,7 +114,6 @@ int gfc_is_nodesc_array (gfc_symbol *);
 tree gfc_get_dtype_rank_type (int, tree);
 tree gfc_get_dtype (tree, int *rank = NULL);
 
-tree gfc_get_ppc_type (gfc_component *);
 tree gfc_get_caf_vector_type (int dim);
 tree gfc_get_caf_reference_type ();
 

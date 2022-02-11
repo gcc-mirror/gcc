@@ -1,6 +1,6 @@
 // Output streams -*- C++ -*-
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -505,7 +505,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
-    { return __ostream_insert(__out, &__c, 1); }
+    {
+      if (__out.width() != 0)
+	return __ostream_insert(__out, &__c, 1);
+      __out.put(__c);
+      return __out;
+    }
 
   template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
@@ -516,7 +521,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
-    { return __ostream_insert(__out, &__c, 1); }
+    {
+      if (__out.width() != 0)
+	return __ostream_insert(__out, &__c, 1);
+      __out.put(__c);
+      return __out;
+    }
 
   // Signed and unsigned
   template<typename _Traits>

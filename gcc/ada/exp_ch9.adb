@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2937,7 +2937,7 @@ package body Exp_Ch9 is
    --             Desired_Comp : Comp_Type := Expected_Comp;
    --             Comp         : Comp_Type renames Desired_Comp;
    --
-   --             <original delarations after the object renaming declaration
+   --             <original declarations after the object renaming declaration
    --              of Comp>
    --
    --          begin
@@ -2977,7 +2977,7 @@ package body Exp_Ch9 is
    --                              (_Object.Comp'Address));
    --       Comp          : Comp_Type renames Expected_Comp;
    --
-   --       <original delarations after the object renaming declaration of
+   --       <original declarations after the object renaming declaration of
    --        Comp>
    --
    --    begin
@@ -4394,7 +4394,7 @@ package body Exp_Ch9 is
       --  It would be better to encapsulate this as a routine in Exp_Dbug ???
 
       if Append_Char /= ' ' then
-         if Append_Char = 'P' or Append_Char = 'N' then
+         if Append_Char in 'P' | 'N' then
             Add_Char_To_Name_Buffer (Append_Char);
             return Name_Find;
          else
@@ -12516,13 +12516,7 @@ package body Exp_Ch9 is
          --  procedure for this corresponding record type and we won't get it
          --  in time if we don't freeze now.
 
-         declare
-            L : constant List_Id := Freeze_Entity (Rec_Ent, N);
-         begin
-            if Is_Non_Empty_List (L) then
-               Insert_List_After (Body_Decl, L);
-            end if;
-         end;
+         Insert_List_After (Body_Decl, List => Freeze_Entity (Rec_Ent, N));
       end if;
 
       --  Complete the expansion of access types to the current task type, if

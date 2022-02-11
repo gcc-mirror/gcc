@@ -1,6 +1,6 @@
 /* Target definitions for i386 running Darwin with a 32b host and supporting
    a 64b multilib.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,19 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_64BIT_DEFAULT 0
 #define TARGET_BI_ARCH 1
-
-/* WORKAROUND pr80556:
-   For x86_64 Darwin10 and later, the unwinder is in libunwind (redirected
-   from libSystem).  This doesn't use the keymgr (see keymgr.c) and therefore
-   the calls that libgcc makes to obtain the KEYMGR_GCC3_DW2_OBJ_LIST are not
-   updated to include new images, and might not even be valid for a single
-   image.
-   Therefore, for 64b exes at least, we must use the libunwind implementation,
-   even when static-libgcc is specified.  We put libSystem first so that
-   unwinder symbols are satisfied from there. */
-#undef PR80556_WORKAROUND
-#define PR80556_WORKAROUND \
-" %{m64:%:version-compare(>= 10.6 mmacosx-version-min= -lSystem)} "
 
 #undef  DARWIN_SUBARCH_SPEC
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC

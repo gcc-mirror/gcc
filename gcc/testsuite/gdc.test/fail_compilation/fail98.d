@@ -5,7 +5,7 @@ fail_compilation/fail98.d(17): Error: cannot implicitly convert expression `256`
 ---
 */
 
-// 139
+// https://issues.dlang.org/show_bug.cgi?id=139
 
 E foo(int index)
 {

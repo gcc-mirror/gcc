@@ -1,3 +1,198 @@
+2022-02-08  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	* MAINTAINERS: Remove Hartmut Penner as s390 maintainer.
+
+2022-01-31  Ed Smith-Rowland  <esmithrowland@gmail.com>
+
+	* MAINTAINERS: Update my email and add myself to the DCO list.
+
+2022-01-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2021-09-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR bootstrap/67102
+	* Makefile.def: Have configure-target-libffi depend on
+	all-target-libstdc++-v3.
+	* Makefile.in: Regenerate.
+
+2022-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/104181
+	* build.log: Remove.
+
+2022-01-20  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Adjust email address based on IRC request.
+
+2022-01-18  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Rename .c names to .cc.
+
+2022-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am: Remove.
+
+2022-01-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: New file.
+
+2022-01-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Sort 2 names.
+
+2022-01-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix obvious issues with sorting.
+
+2022-01-07  liuhongt  <hongtao.liu@intel.com>
+
+	* build.log: New file.
+
+2022-01-05  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Add DCO entry.  Sort that list.
+
+2022-01-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* MAINTAINERS: Change of email address in both DCO and
+	Write After Approval list.
+
+2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+
+2021-12-21  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Change mode back to 755.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Sync from master.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
+2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (BUILD_CFLAGS): New.
+	(CFLAGS): Append $(BUILD_CFLAGS).
+	(CXXFLAGS): Likewise.
+	(PGO_BUILD_GEN_FLAGS_TO_PASS): New.
+	(PGO_BUILD_TRAINING_CFLAGS): Likewise.
+	(PGO_BUILD_TRAINING_CXXFLAGS): Likewise.
+	(PGO_BUILD_TRAINING_FLAGS_TO_PASS): Likewise.
+	(PGO_BUILD_TRAINING_MFLAGS): Likewise.
+	(PGO_BUILD_USE_FLAGS_TO_PASS): Likewise.
+	(PGO-TRAINING-TARGETS): Likewise.
+	(PGO_BUILD_TRAINING): Likewise.
+	(all): Add '+' to the command line for recursive make.  Support
+	the PGO build.
+	* configure.ac: Add --enable-pgo-build[=lto].
+	AC_SUBST PGO_BUILD_GEN_CFLAGS, PGO_BUILD_USE_CFLAGS and
+	PGO_BUILD_LTO_CFLAGS.  Enable the PGO build in Makefile.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2021-12-14  Marc Poulhiès  <poulhies@adacore.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2021-12-06  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	* MAINTAINERS: Adding myself.
+
+2021-12-02  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* configure: Regenerate.
+	* configure.ac: For CPP_FOR_BUILD use $(CC_FOR_BUILD) -E instead of
+	$(CPP).
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.def: Add bootstrap to libbacktrace, libphobos, zlib, and
+	libatomic.
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Fix command for GDC.
+	(STAGE1_CONFIGURE_FLAGS): Add --with-libphobos-druntime-only if
+	target-libphobos-bootstrap.
+	(STAGE2_CONFIGURE_FLAGS): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add support for bootstrapping D front-end.
+
+2021-11-16  Martin Uecker  <uecker@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself to DCO section and update email address.
+
+2021-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Ensure that PIC (shared) defaults are set
+	correctly for Darwin.
+
+2021-11-16  Jim Wilson  <jim.wilson.gcc@gmail.com>
+
+	* MAINTAINERS: Update my address.
+
+2021-11-12  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.def (configure-opcodes): Depend on configure-bfd.
+	* Makefile.in: Regenerate.
+
+2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* MAINTAINERS: Clarify the policy WRT the Write After Approval
+	list.
+
+2021-11-02  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* MAINTAINERS (Reviewers, arc): Remove my entry.
+	(Write After Approval): Add an entry for myself.
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* Makefile.tpl: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+
 2021-10-26  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* MAINTAINERS: Fix up Maciej's entries.

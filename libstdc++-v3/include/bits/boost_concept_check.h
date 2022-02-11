@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -483,7 +483,9 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       *__i++ = __val();                 // require postincrement and assignment
     }
     _Tp __i;
-    _ValueT __val() const;
+    // Use a function pointer here so no definition of the function needed.
+    // Just need something that returns a _ValueT (which might be a reference).
+    _ValueT (*__val)();
   };
 
   template<typename _Tp>

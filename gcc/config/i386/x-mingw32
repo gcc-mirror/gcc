@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,10 +25,10 @@ local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|
 # code does not handle that, so we have to disable checking here.
 WERROR_FLAGS += -Wno-format
 
-host-mingw32.o : $(srcdir)/config/i386/host-mingw32.c $(CONFIG_H) $(SYSTEM_H) \
+host-mingw32.o : $(srcdir)/config/i386/host-mingw32.cc $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h hosthooks.h hosthooks-def.h toplev.h $(DIAGNOSTIC_H) $(HOOKS_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/i386/host-mingw32.c
+		$(srcdir)/config/i386/host-mingw32.cc
 
-driver-mingw32.o : $(srcdir)/config/i386/driver-mingw32.c $(CONFIG_H)
+driver-mingw32.o : $(srcdir)/config/i386/driver-mingw32.cc $(CONFIG_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -103,7 +103,7 @@ extern const char * msp430_check_path_for_devices (int, const char **);
 extern const char *msp430_propagate_region_opt (int, const char **);
 extern const char *msp430_get_linker_devices_include_path (int, const char **);
 
-/* There must be a trailing comma after the last item, see gcc.c
+/* There must be a trailing comma after the last item, see gcc.cc
    "static_spec_functions".  */
 # define EXTRA_SPEC_FUNCTIONS				\
   { "msp430_hwmult_lib", msp430_select_hwmult_lib },	\
@@ -128,7 +128,7 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
    reason that a spec function is used.  There are so many possible
    values of FOO that a table is used to look up the name and map
    it to a hardware multiply library.  This table (in device-msp430.c)
-   must be kept in sync with the same table in msp430.c.  */
+   must be kept in sync with the same table in msp430.cc.  */
 #undef  LIB_SPEC
 #define LIB_SPEC "					\
 --start-group						\

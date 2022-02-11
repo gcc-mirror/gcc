@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -258,6 +258,19 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
       const region *pointee_reg = parm_ptr->get_pointee ();
       add (pointee_reg, is_mutable);
     }
+  /* Treat all svalues within a compound_svalue as reachable.  */
+  if (const compound_svalue *compound_sval
+      = sval->dyn_cast_compound_svalue ())
+    {
+      for (compound_svalue::iterator_t iter = compound_sval->begin ();
+	   iter != compound_sval->end (); ++iter)
+	{
+	  const svalue *iter_sval = (*iter).second;
+	  handle_sval (iter_sval);
+	}
+    }
+  if (const svalue *cast = sval->maybe_undo_cast ())
+    handle_sval (cast);
 }
 
 /* Update the store to mark the clusters that were found to be mutable

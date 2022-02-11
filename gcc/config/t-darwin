@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2021 Free Software Foundation, Inc.
+# Copyright (C) 2002-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -18,22 +18,22 @@
 
 TM_H += $(srcdir)/config/darwin-sections.def
 
-darwin.o: $(srcdir)/config/darwin.c config/darwin-sections.def
+darwin.o: $(srcdir)/config/darwin.cc config/darwin-sections.def
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-darwin-c.o: $(srcdir)/config/darwin-c.c
+darwin-c.o: $(srcdir)/config/darwin-c.cc
 	$(COMPILE) $(PREPROCESSOR_DEFINES) $<
 	$(POSTCOMPILE)
 
-darwin-d.o: $(srcdir)/config/darwin-d.c
+darwin-d.o: $(srcdir)/config/darwin-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-darwin-f.o: $(srcdir)/config/darwin-f.c
+darwin-f.o: $(srcdir)/config/darwin-f.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-darwin-driver.o: $(srcdir)/config/darwin-driver.c
+darwin-driver.o: $(srcdir)/config/darwin-driver.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

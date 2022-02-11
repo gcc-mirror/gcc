@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
@@ -9,7 +15,7 @@ extern(C) int printf(const char*, ...);
 }
 
 /***********************/
-// 3032
+// https://issues.dlang.org/show_bug.cgi?id=3032
 
 void test3032() @nogc
 {
@@ -23,7 +29,7 @@ void test3032() @nogc
 }
 
 /***********************/
-// 12642
+// https://issues.dlang.org/show_bug.cgi?id=12642
 
 __gshared int[1] data12642;
 
@@ -44,7 +50,7 @@ void test12642() @nogc
 }
 
 /***********************/
-// 12936
+// https://issues.dlang.org/show_bug.cgi?id=12936
 
 void test12936() @nogc
 {

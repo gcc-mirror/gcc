@@ -1,5 +1,5 @@
-/* Declarations and definitons for stringpool.c.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+/* Declarations and definitons for stringpool.cc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

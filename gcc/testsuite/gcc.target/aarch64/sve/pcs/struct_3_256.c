@@ -933,7 +933,11 @@ SEL2 (struct, nonpst1)
 
 /*
 ** test_nonpst1:
+** (
+**	fmov	d0, d3
+** |
 **	mov	v0\.8b, v3\.8b
+** )
 **	ret
 */
 /* { dg-final { scan-assembler-not {\t\.variant_pcs\ttest_nonpst1\n} } } */

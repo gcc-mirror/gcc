@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992-2021 Free Software Foundation, Inc.
+;; Copyright (C) 1992-2022 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GCC.
@@ -4667,7 +4667,7 @@
   DONE;
 })
 
-;; Block move/clear, see alpha.c for more details.
+;; Block move/clear, see alpha.cc for more details.
 ;; Argument 0 is the destination
 ;; Argument 1 is the source
 ;; Argument 2 is the length
@@ -4920,7 +4920,7 @@
 ;; an lda/ldah pair and we want to align them properly.  So we have two
 ;; unspec_volatile insns, the first of which emits the ldgp assembler macro
 ;; and the second of which emits nothing.  However, both are marked as type
-;; IADD (the default) so the alignment code in alpha.c does the right thing
+;; IADD (the default) so the alignment code in alpha.cc does the right thing
 ;; with them.
 
 (define_expand "prologue_ldgp"

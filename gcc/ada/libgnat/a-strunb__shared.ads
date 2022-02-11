@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,6 +45,8 @@ pragma Assertion_Policy (Pre => Ignore);
 
 --  This version is supported on:
 --    - all Alpha platforms
+--    - all AARCH64 platforms
+--    - all ARM platforms
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms

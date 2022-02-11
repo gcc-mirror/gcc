@@ -1,0 +1,53 @@
+# Copyright (C) 2021-2022 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib libphobos-dg.exp
+
+set dg-output-text [list]
+
+# Arguments to pass to the compiler, expected output, and return code.
+set unit_test_list [list \
+    { "-fversion=PassNoPrintout"  0 } \
+    { "-fversion=GoodTests" 0 } \
+    { "-fversion=FailNoPrintout" 1 } \
+    { "-fversion=FailedTests" 1 } \
+    { "-fversion=NoTests" 0 } \
+]
+
+# Initialize dg.
+dg-init
+
+# Gather a list of all tests.
+set tests [lsort [find $srcdir/$subdir *.d]]
+
+# Main loop.
+foreach unit_test $unit_test_list {
+    # The version flags to build the program with.
+    set test_flags [lindex $unit_test 0]
+
+    # Whether the program is expected to fail.
+    set expected_fail [lindex $unit_test 1]
+
+    foreach test $tests {
+        set shouldfail $expected_fail
+        dg-test $test "" $test_flags
+    }
+
+    set shouldfail 0
+}
+
+# All done.
+dg-finish

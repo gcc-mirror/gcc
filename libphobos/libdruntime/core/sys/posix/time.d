@@ -341,11 +341,6 @@ else version (OpenBSD)
     int clock_gettime(clockid_t, timespec*);
     int clock_settime(clockid_t, const scope timespec*);
     int nanosleep(const scope timespec*, timespec*);
-    int timer_create(clockid_t, sigevent*, timer_t*);
-    int timer_delete(timer_t);
-    int timer_gettime(timer_t, itimerspec*);
-    int timer_getoverrun(timer_t);
-    int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
 }
 else version (Solaris)
 {

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -252,6 +252,7 @@ case ${target} in
  | cr16-*-*				\
  | hppa[12]*-*-hpux10*			\
  | hppa[12]*-*-hpux11*			\
+ | m32c-*-rtems*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
@@ -329,7 +330,7 @@ aarch64*-*-*)
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
 	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch64-bti-insert.o aarch64-cc-fusion.o"
-	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
+	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.cc \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
@@ -352,14 +353,14 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o aarch-common.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	d_target_objs="arm-d.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
-	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c"
+	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.cc \$(srcdir)/config/arm/arm-mve-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.cc"
 	;;
 avr-*-*)
 	cpu_type=avr
@@ -392,7 +393,7 @@ i[34567]86-*-* | x86_64-*-*)
 	cxx_target_objs="i386-c.o"
 	d_target_objs="i386-d.o"
 	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o i386-options.o i386-builtins.o i386-expand.o i386-features.o"
-	target_gtfiles="\$(srcdir)/config/i386/i386-builtins.c \$(srcdir)/config/i386/i386-expand.c \$(srcdir)/config/i386/i386-options.c"
+	target_gtfiles="\$(srcdir)/config/i386/i386-builtins.cc \$(srcdir)/config/i386/i386-expand.cc \$(srcdir)/config/i386/i386-options.cc"
 	extra_options="${extra_options} fused-madd.opt"
 	extra_headers="cpuid.h mmintrin.h mm3dnow.h xmmintrin.h emmintrin.h
 		       pmmintrin.h tmmintrin.h ammintrin.h smmintrin.h
@@ -484,7 +485,7 @@ powerpc*-*-*)
 	cpu_type=rs6000
 	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
 	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
-	extra_objs="${extra_objs} rs6000-builtins.o"
+	extra_objs="${extra_objs} rs6000-builtins.o rs6000-builtin.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
@@ -499,8 +500,8 @@ powerpc*-*-*)
 		;;
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.cc \$(srcdir)/config/rs6000/rs6000-call.cc"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.cc"
 	target_gtfiles="$target_gtfiles ./rs6000-builtins.h"
 	;;
 pru-*-*)
@@ -515,8 +516,8 @@ rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
 	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.cc \$(srcdir)/config/rs6000/rs6000-call.cc"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-pcrel-opt.cc"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -676,14 +677,28 @@ case ${target} in
     macos_min=0
   fi
   def_ld64=85.2
+  # Tools hosted on earlier versions of Darwin constrained all object
+  # alignment to be 2^15 or smaller.  From Darwin11 (macOS 10.7) the
+  # alignment of non-common is allowed to be up to 2^28.  Note that the
+  # larger alignment is permitted when targeting 10.6 from 10.7 so that
+  # the constraint only need be applied per host (and only if the host
+  # is Darwin).
+  case ${host} in
+      *-*-darwin[4-9]* | *-*-darwin10*)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=15U"
+          ;;
+      *)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=28U"
+          ;;
+  esac
   case ${target} in
       # Darwin 4 to 19 correspond to macOS 10.0 to 10.15
       *-*-darwin[4-9]* | *-*-darwin1[0-9]*)
         macos_min=`expr $darwin_maj - 4`
         ;;
-      *-*-darwin20*)
-        # Darwin 20 corresponds to macOS 11.
-        macos_maj=11
+      *-*-darwin2*)
+        # Darwin 20 corresponds to macOS 11, Darwin 21 to macOS 12.
+        macos_maj=`expr $darwin_maj - 9`
         def_ld64=609.0
         ;;
       *-*-darwin)
@@ -711,7 +726,7 @@ case ${target} in
   tm_defines="$tm_defines DEF_LD64=\\\"${def_ld64}\\\""
   tm_file="${tm_file} ${cpu_type}/darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
-  target_gtfiles="$target_gtfiles \$(srcdir)/config/darwin.c"
+  target_gtfiles="$target_gtfiles \$(srcdir)/config/darwin.cc"
   extra_options="${extra_options} rpath.opt darwin.opt"
   c_target_objs="${c_target_objs} darwin-c.o"
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
@@ -976,7 +991,7 @@ case ${target} in
   xmake_file=vms/x-vms
   tmake_file="vms/t-vms t-slibgcc"
   extra_objs="vms.o"
-  target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.c"
+  target_gtfiles="$target_gtfiles \$(srcdir)/config/vms/vms.cc"
   tm_p_file="${tm_p_file} vms/vms-protos.h"
   xm_file="vms/xm-vms.h"
   c_target_objs="vms-c.o"
@@ -1019,16 +1034,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
   extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
 
-  # We provide stdint.h ...
-
+  # We provide (a tailored version of) stdint.h
   tm_file="${tm_file} vxworks-stdint.h"
-
-  # .. only through the yvals conditional wrapping mentioned above
-  # to abide by the VxWorks 7 expectations.  The final copy is performed
-  # explicitly by a t-vxworks Makefile rule.
-
-  use_gcc_stdint=none
-  extra_headers="${extra_headers} ../../ginclude/stdint-gcc.h"
+  use_gcc_stdint=provide
 
   case ${enable_threads} in
     no) ;;
@@ -1534,7 +1542,7 @@ bpf-*-*)
         extra_headers="bpf-helpers.h"
         use_gcc_stdint=provide
         extra_objs="coreout.o"
-        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.c"
+        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc"
         ;;
 cr16-*-elf)
         tm_file="elfos.h ${tm_file} newlib-stdint.h"
@@ -1569,7 +1577,7 @@ csky-*-*)
 	fi
 	tm_file="csky/csky.h"
 	md_file="csky/csky.md"
-	out_file="csky/csky.c"
+	out_file="csky/csky.cc"
 	tm_p_file="${tm_p_file} csky/csky-protos.h"
 	extra_options="${extra_options} csky/csky_tables.opt"
 
@@ -1612,7 +1620,7 @@ csky-*-*)
 	esac
 	;;
 epiphany-*-elf | epiphany-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h"
+	tm_file="dbxelf.h elfos.h ${tm_file}"
 	tmake_file="${tmake_file} epiphany/t-epiphany"
 	case ${target} in
 	epiphany-*-rtems*)
@@ -1854,7 +1862,7 @@ hppa[12]*-*-hpux11*)
 		dwarf2=no
 	fi
 	;;
-i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2[0-9]*)
+i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2*)
 	echo "Error: 32bit target is not supported after Darwin17" 1>&2
 	;;
 i[34567]86-*-darwin*)
@@ -1864,7 +1872,7 @@ i[34567]86-*-darwin*)
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch t-slibgcc"
 	tm_file="${cpu_type}/darwin32-biarch.h ${tm_file} "
 	;;
-x86_64-*-darwin1[89]* | x86_64-*-darwin2[01]*)
+x86_64-*-darwin1[89]* | x86_64-*-darwin2*)
 	# Only 64b from now
 	tm_defines="${tm_defines} TARGET_64BIT_DEFAULT=(OPTION_MASK_ISA_64BIT|OPTION_MASK_ABI_64)"
 	tm_defines="${tm_defines} TARGET_BI_ARCH=0"
@@ -2104,7 +2112,7 @@ i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h i386/cygwin-stdint.h"
 	xm_file=i386/xm-cygwin.h
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.cc"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
 	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
@@ -2122,7 +2130,7 @@ x86_64-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h i386/cygwin-w64.h i386/cygwin-stdint.h"
 	xm_file=i386/xm-cygwin.h
 	tmake_file="${tmake_file} i386/t-cygming t-slibgcc i386/t-cygwin-w64"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.cc"
 	extra_options="${extra_options} i386/cygming.opt i386/cygwin.opt"
 	extra_objs="${extra_objs} winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
@@ -2194,7 +2202,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			;;
 	esac
         native_system_header_dir=/mingw/include
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/i386/winnt.cc"
 	extra_options="${extra_options} i386/cygming.opt i386/mingw.opt"
 	case ${target} in
 		*-w64-*)
@@ -2286,7 +2294,7 @@ ia64-hp-*vms*)
 	;;
 iq2000*-*-elf*)
         tm_file="elfos.h newlib-stdint.h iq2000/iq2000.h"
-        out_file=iq2000/iq2000.c
+        out_file=iq2000/iq2000.cc
         md_file=iq2000/iq2000.md
         ;;
 lm32-*-elf*)
@@ -3160,7 +3168,7 @@ s390x-*-linux*)
 	cxx_target_objs="${cxx_target_objs} s390-c.o"
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
-	out_file=s390/s390.c
+	out_file=s390/s390.cc
 	tmake_file="${tmake_file} s390/t-linux64 s390/t-s390"
 	;;
 s390x-ibm-tpf*)
@@ -3170,7 +3178,7 @@ s390x-ibm-tpf*)
 	cxx_target_objs="${cxx_target_objs} s390-c.o"
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
-	out_file=s390/s390.c
+	out_file=s390/s390.cc
 	thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
 	tmake_file="${tmake_file} s390/t-s390"
@@ -3524,7 +3532,7 @@ xstormy16-*-elf)
 	tm_p_file=stormy16/stormy16-protos.h
 	tm_d_file="elfos.h stormy16/stormy16.h"
 	md_file=stormy16/stormy16.md
-	out_file=stormy16/stormy16.c
+	out_file=stormy16/stormy16.cc
 	extra_options=stormy16/stormy16.opt
 	tmake_file="stormy16/t-stormy16"
 	;;
@@ -3614,9 +3622,9 @@ fi
 
 if [ "$common_out_file" = "" ]; then
   if [ "$target_has_targetm_common" = "yes" ]; then
-    common_out_file="$cpu_type/$cpu_type-common.c"
+    common_out_file="$cpu_type/$cpu_type-common.cc"
   else
-    common_out_file="default-common.c"
+    common_out_file="default-common.cc"
   fi
 fi
 
@@ -4315,6 +4323,13 @@ case "${target}" in
 		fi
 		;;
 
+	avr-*-*)
+		# Handle --with-multilib-list.
+		if test "x${with_multilib_list}" != xdefault; then
+			TM_MULTILIB_CONFIG="${with_multilib_list}"
+		fi
+	;;
+
     csky-*-*)
 	supported_defaults="cpu endian float"
 	;;
@@ -4626,14 +4641,16 @@ case "${target}" in
 		esac
 
 		case "${with_isa_spec}" in
-		""|default|2.2)
-			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
-			;;
-		20191213 | 201912)
+		""|default|20191213|201912)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20191213"
+			with_isa_spec=20191213
+			;;
+		2.2)
+			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_2P2"
 			;;
 		20190608 | 201906)
 			tm_defines="${tm_defines} TARGET_DEFAULT_ISA_SPEC=ISA_SPEC_CLASS_20190608"
+			with_isa_spec=20190608
 			;;
 		*)
 			echo "--with-isa-spec only accept 2.2, 20191213, 201912, 20190608 or 201906" 1>&2
@@ -5088,16 +5105,6 @@ case "${target}" in
 			(at="/opt/$with_advance_toolchain"
 			 echo "/* Use Advance Toolchain $at */"
 			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC32"
-			 echo "#define LINK_OS_EXTRA_SPEC32" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib -rpath $at/lib\""
-			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC64"
-			 echo "#define LINK_OS_EXTRA_SPEC64" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib64 -rpath $at/lib64\""
-			 echo
 			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
 			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \
 			      "\"--enable-new-dtags\""
@@ -5369,7 +5376,7 @@ case ${target} in
 		then
 			target_cpu_default2="\\\"$with_cpu\\\""
 		fi
-		out_file="${cpu_type}/${cpu_type}.c"
+		out_file="${cpu_type}/${cpu_type}.cc"
 		c_target_objs="${c_target_objs} ${cpu_type}-c.o"
 		cxx_target_objs="${cxx_target_objs} ${cpu_type}-c.o"
 		d_target_objs="${d_target_objs} ${cpu_type}-d.o"
@@ -5425,7 +5432,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan fp_32 odd_spreg_32 divide llsc mips-plt synci tls lxc1-sxc1 madd4 isa_spec"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`

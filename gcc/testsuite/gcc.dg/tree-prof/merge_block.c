@@ -1,5 +1,5 @@
 
-/* { dg-options "-O2 -fno-ipa-pure-const -fdump-tree-optimized-blocks-details -fno-early-inlining" } */
+/* { dg-options "-O2 -fno-ipa-pure-const -fdump-tree-optimized-blocks-details -fno-early-inlining -fno-ipa-modref" } */
 int a[8];
 int t()
 {

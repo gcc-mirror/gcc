@@ -1,6 +1,6 @@
 // Definition of gcc4-compatible Copy-on-Write basic_string -*- C++ -*-
 
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,9 +35,9 @@
 #if ! _GLIBCXX_USE_CXX11_ABI
 
 #ifdef __cpp_lib_is_constant_evaluated
-// Support P1032R1 in C++20 (but not P0980R1 yet).
+// Support P1032R1 in C++20 (but not P0980R1 for COW strings).
 # define __cpp_lib_constexpr_string 201811L
-#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 // Support P0426R1 changes to char_traits in C++17.
 # define __cpp_lib_constexpr_string 201611L
 #endif
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  destroy the empty-string _Rep object.
    *
    *  All but the last paragraph is considered pretty conventional
-   *  for a C++ string implementation.
+   *  for a Copy-On-Write C++ string implementation.
   */
   // 21.3  Template class basic_string
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -222,10 +222,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // but one reference concurrently with this check, so we need this
 	  // load to be acquire to synchronize with release fetch_and_add in
 	  // _M_dispose.
-	  return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
-#else
-	  return this->_M_refcount > 0;
+	  if (!__gnu_cxx::__is_single_threaded())
+	    return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
 #endif
+	  return this->_M_refcount > 0;
 	}
 
 	void
@@ -621,24 +621,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @a __str is a valid, but unspecified string.
        */
       basic_string(basic_string&& __str) noexcept
-#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       : _M_dataplus(std::move(__str._M_dataplus))
       {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+	// Make __str use the shared empty string rep.
 	__str._M_data(_S_empty_rep()._M_refdata());
-      }
 #else
-      : _M_dataplus(__str._M_rep())
-      {
 	// Rather than allocate an empty string for the rvalue string,
 	// just share ownership with it by incrementing the reference count.
-	// If the rvalue string was "leaked" then it was the unique owner,
-	// so need an extra increment to indicate shared ownership.
-	if (_M_rep()->_M_is_leaked())
-	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 2);
-	else
+	// If the rvalue string was the unique owner then there are exactly
+	// two owners now.
+	if (_M_rep()->_M_is_shared())
 	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 1);
-      }
+	else
+	  _M_rep()->_M_refcount = 1;
 #endif
+      }
 
       /**
        *  @brief  Construct string from an initializer %list.
@@ -667,10 +665,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else
 	  _M_dataplus._M_p = _S_construct(__str.begin(), __str.end(), __a);
       }
+#endif // C++11
 
+#if __cplusplus >= 202100L
       basic_string(nullptr_t) = delete;
       basic_string& operator=(nullptr_t) = delete;
-#endif // C++11
+#endif // C++23
 
       /**
        *  @brief  Construct string as copy of a range.
@@ -692,7 +692,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
        */
-      template<typename _Tp, typename = _If_sv<_Tp, void>>
+      template<typename _Tp,
+	       typename = enable_if_t<is_convertible_v<const _Tp&, __sv_type>>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
 	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }
@@ -3368,10 +3369,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _M_leak_hard()
     {
-#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
-      if (_M_rep() == &_S_empty_rep())
+      // No need to create a new copy of an empty string when a non-const
+      // reference/pointer/iterator into it is obtained. Modifying the
+      // trailing null character is undefined, so the ref/pointer/iterator
+      // is effectively const anyway.
+      if (this->empty())
 	return;
-#endif
+
       if (_M_rep()->_M_is_shared())
 	_M_mutate(0, 0, 0);
       _M_rep()->_M_set_leaked();

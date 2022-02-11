@@ -1,5 +1,5 @@
 /* Symbolic values.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -192,6 +192,14 @@ svalue::can_merge_p (const svalue *other,
       if (null0 != null1)
 	return NULL;
     }
+
+  /* Reject merging svalues that have non-purgable sm-state,
+     to avoid falsely reporting memory leaks by merging them
+     with something else.  */
+  if (!merger->mergeable_svalue_p (this))
+    return NULL;
+  if (!merger->mergeable_svalue_p (other))
+    return NULL;
 
   /* Widening.  */
   /* Merge: (new_cst, existing_cst) -> widen (existing, new).  */

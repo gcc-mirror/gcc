@@ -1,3 +1,515 @@
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* testsuite/libgomp.c++/target-virtual-1.C: New test.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.texi: Updated entry for HAS_DEVICE_ADDR.
+	* target.c (copy_firstprivate_data): Copy only if host address is not
+	NULL.
+	* testsuite/libgomp.c++/target-has-device-addr-2.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-4.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-5.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-6.C: New test.
+	* testsuite/libgomp.c-c++-common/target-has-device-addr-1.c: New test.
+	* testsuite/libgomp.c/target-has-device-addr-3.c: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-1.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-2.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-3.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-4.f90: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/104385
+	* task.c (gomp_task_run_post_handle_dependers): If parent is NULL,
+	clear task->parent.
+	* testsuite/libgomp.c/pr104385.c: New test.
+
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.f90: Remove spurious
+	STOP of previous commit.
+
+2022-02-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c (is_64bit_aligned): Renamed
+	from is_64bit_aligned_.
+	* testsuite/libgomp.fortran/allocate-1.f90: Fix interface decl
+	and use it, more implicit none, remove unused argument.
+
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* configure: Regenerate.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/private-atomic-1.c: Remove
+	PR83812 workaround.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-vector.f90: Same.
+	* testsuite/libgomp.oacc-fortran/private-atomic-1-worker.f90: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-c-c++-common/broadcast-many.c: Reduce
+	num_workers for nvidia accelerator to fix libgomp error 'insufficient
+	resources'.
+	* testsuite/libgomp.oacc-c-c++-common/par-loop-comb-reduction-4.c:
+	Same.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Same.
+
+2022-02-01  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90: Reduce
+	recursion depth.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90: Same.
+
+2022-01-31  Martin Liska  <mliska@suse.cz>
+
+	* acinclude.m4: Detect *_ld_is_mold and use it.
+	* configure: Regenerate.
+
+2022-01-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.0): Update implementation status.
+
+2022-01-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Strengthen.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+
+2022-01-19  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* config/gcn/icv-device.c: Make GOMP_DEVICE_NUM_VAR public (remove
+	"static") to make the device num available in the offload image.
+
+2022-01-19  Martin Liska  <mliska@suse.cz>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Update scanning
+	patterns.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-2.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
+2022-01-18  Martin Liska  <mliska@suse.cz>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Update keyword
+	in dg-warning.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-loop-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr95270-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/struct-copyout-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-64-1.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/attach-descriptor-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-2.f95: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
+2022-01-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: Extend.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: Likewise.
+
+2022-01-17  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-1.f95: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-2.C: New test.
+	* testsuite/libgomp.oacc-c++/privatized-ref-3.C: New test.
+
+2022-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Andrew Stubbs   <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (parse_target_attributes): Automatically set
+	the number of teams and threads if necessary.
+	(gcn_exec): Automatically set the number of gangs and workers if
+	necessary.
+
+2022-01-13  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* testsuite/libgomp.fortran/allocate-1.c: New test.
+	* testsuite/libgomp.fortran/allocate-1.f90: New test.
+	* libgomp.texi: Remove string that says that allocate clause
+	support is for C/C++ only.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/on_device_arch.h
+	(any_device_arch, any_device_arch_intel_mic): New.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device_any_intel_mic): New.
+	* testsuite/libgomp.c-c++-common/target-45.c: Use it.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/102192
+	* testsuite/libgomp.oacc-fortran/routine-10.f90: Document current
+	'-Wuninitialized' diagnostics.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Document
+	current '-Wuninitialized' diagnostics.
+	* testsuite/libgomp.oacc-fortran/data-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gemm-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/gemm.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr70643.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr96628-part1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-7.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reference-reductions.f90:
+	Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/address-space-1.c: Remove 'dg-xfail-run-if'
+	for 'offload_device_intel_mic'.
+
+2022-01-13  Julian Brown  <julian@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Remove GCN
+	offloading execution XFAIL.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/100280
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Update.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+
+2022-01-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	Enhance.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/f-asyncwait-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/asyncwait-3.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
+2022-01-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/target-45.c: Iterate over all devices.
+	* testsuite/libgomp.fortran/target10.f90: Likewise.
+
+2022-01-04  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_load_image): Change uses of STRINGX
+	into XSTRING when looking for GOMP_DEVICE_NUM_VAR in offload image.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_load_image): Likewise.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
+2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Set Fortran support for atomic to 'Y'.
+	* testsuite/libgomp.fortran/atomic-19.f90: New test.
+
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct gcn_image_desc): Remove global_variables.
+	(GOMP_OFFLOAD_load_image): Locate the offload variables via the
+	table, not individual symbols.
+
+2021-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.c++/target-lambda-1.C: Only run under
+	"target offload_device_nonshared_as"
+	* testsuite/libgomp.c++/target-this-3.C: Likewise.
+	* testsuite/libgomp.c++/target-this-4.C: Likewise.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Make sure attached pointer is
+	not overwritten during cross-host/device copying.
+	(gomp_update): Likewise.
+	(gomp_exit_data): Likewise.
+	* testsuite/libgomp.c++/target-11.C: Adjust testcase.
+	* testsuite/libgomp.c++/target-12.C: Likewise.
+	* testsuite/libgomp.c++/target-15.C: Likewise.
+	* testsuite/libgomp.c++/target-16.C: Likewise.
+	* testsuite/libgomp.c++/target-17.C: Likewise.
+	* testsuite/libgomp.c++/target-21.C: Likewise.
+	* testsuite/libgomp.c++/target-23.C: Likewise.
+	* testsuite/libgomp.c/target-23.c: Likewise.
+	* testsuite/libgomp.c/target-29.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: New testcase.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* libgomp.h (gomp_attach_pointer): Add bool parameter.
+	* oacc-mem.c (acc_attach_async): Update call to gomp_attach_pointer.
+	(goacc_enter_data_internal): Likewise.
+	* target.c (gomp_map_vars_existing): Update assert condition to
+	include GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION.
+	(gomp_map_pointer): Add 'bool allow_zero_length_array_sections'
+	parameter, add support for mapping a pointer with NULL target.
+	(gomp_attach_pointer): Add 'bool allow_zero_length_array_sections'
+	parameter, add support for attaching a pointer with NULL target.
+	(gomp_map_vars_internal): Update calls to gomp_map_pointer and
+	gomp_attach_pointer, add handling for
+	GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION, and
+	GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION cases.
+	* testsuite/libgomp.c++/target-23.C: New testcase.
+	* testsuite/libgomp.c++/target-lambda-1.C: New testcase.
+	* testsuite/libgomp.c++/target-lambda-2.C: New testcase.
+	* testsuite/libgomp.c++/target-this-1.C: New testcase.
+	* testsuite/libgomp.c++/target-this-2.C: New testcase.
+	* testsuite/libgomp.c++/target-this-3.C: New testcase.
+	* testsuite/libgomp.c++/target-this-4.C: New testcase.
+	* testsuite/libgomp.c++/target-this-5.C: New testcase.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Update status.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OMP_PLACES): Extend description for OMP 5.1 changes.
+
+2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/90030
+	* testsuite/libgomp.oacc-fortran/pr90030.f90: New test.
+	* testsuite/libgomp.fortran/pr90030.f90: New test.
+
+2021-11-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Remove
+	temporary skip.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Temporarily
+	skip.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* oacc-plugin.c (GOMP_PLUGIN_acc_default_dim): Remove unreachable
+	return.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103384
+	* testsuite/libgomp.c/declare-variant-2.c: New test.
+
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* alloc.c (gomp_aligned_alloc): Fix typo.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (GOMP_USE_ALIGNED_WORK_SHARES): Define if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined and __AMDGCN__ is not.
+	(struct gomp_work_share): Use GOMP_USE_ALIGNED_WORK_SHARES instead of
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+	* work.c (alloc_work_share, gomp_work_share_start): Likewise.
+	* team.c (gomp_new_team): If GOMP_USE_ALIGNED_WORK_SHARES, use
+	gomp_aligned_alloc instead of team_malloc.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* alloc.c (gomp_aligned_alloc): Prefer _aligned_alloc over
+	memalign over posix_memalign over aligned_alloc over fallback
+	with malloc instead of aligned_alloc over _aligned_alloc over
+	posix_memalign over memalign over fallback with malloc.  For
+	aligned_alloc, round up size up to multiple of al.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark thread_limit clause to target
+	construct as implemented.
+
+2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/thread-limit-1.f90: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_target_task): Copy args array as well.
+	* target.c (gomp_target_fallback): Add args argument.
+	Set gomp_icv (true)->thread_limit_var if thread_limit is present.
+	(GOMP_target): Adjust gomp_target_fallback caller.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_task_fn): Likewise.
+	* config/nvptx/team.c (gomp_nvptx_main): Set
+	gomp_global_icv.thread_limit_var.
+	* testsuite/libgomp.c-c++-common/thread-limit-1.c: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/team.c (__gomp_team_num): Define as
+	__attribute__((shared)) var.
+	(gomp_nvptx_main): Initialize __gomp_team_num to 0.
+	* config/nvptx/target.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(GOMP_teams4): Use __gomp_team_num as the team number instead of
+	%ctaid.x.  If first, initialize it to %ctaid.x.  If num_teams_lower
+	is bigger than num_blocks, use num_teams_lower teams and arrange for
+	bumping of __gomp_team_num if !first and returning false once we run
+	out of teams.
+	* config/nvptx/teams.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(omp_get_team_num): Return __gomp_team_num value instead of %ctaid.x.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/teams-5.c: New test.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103201
+	* config/gcn/icv-device.c (omp_get_num_teams, omp_get_team_num): Move
+	to ...
+	* config/gcn/teams.c: ... here.  New file.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Add 'bool implicit' parameter, add
+	implicit map handling to allow a "superset" existing map as valid case.
+	(get_kind): Adjust to filter out GOMP_MAP_IMPLICIT bits in return value.
+	(get_implicit): New function to extract implicit status.
+	(gomp_map_fields_existing): Adjust arguments in calls to
+	gomp_map_vars_existing, and add uses of get_implicit.
+	(gomp_map_vars_internal): Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-1.c: New test.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp_g.h (GOMP_teams4): Declare.
+	* libgomp.map (GOMP_5.1): Export GOMP_teams4.
+	* target.c (GOMP_teams4): New function.
+	* config/nvptx/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* config/gcn/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* testsuite/libgomp.c/teams-4.c (main): Expect exactly 2
+	teams instead of <= 2.
+	* testsuite/libgomp.c-c++-common/teams-2.c: New test.
+
+2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/teams-1.f90: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_thread): Add num_teams and team_num members.
+	* team.c (struct gomp_thread_start_data): Likewise.
+	(gomp_thread_start): Initialize thr->num_teams and thr->team_num.
+	(gomp_team_start): Initialize start_data->num_teams and
+	start_data->team_num.  Update nthr->num_teams and nthr->team_num.
+	* teams.c (gomp_num_teams, gomp_team_num): Remove.
+	(GOMP_teams_reg): Set and restore thr->num_teams and thr->team_num
+	instead of gomp_num_teams and gomp_team_num.
+	(omp_get_num_teams): Use thr->num_teams + 1 instead of gomp_num_teams.
+	(omp_get_team_num): Use thr->team_num instead of gomp_team_num.
+	* testsuite/libgomp.c/teams-4.c: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/teams-1.c: New test.
+
+2021-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* env.c (parse_gomp_openacc_dim): Restore parsing.
+
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* testsuite/libgomp.c-c++-common/icv-3.c: Nest API calls inside
+	parallel construct.
+	* testsuite/libgomp.c-c++-common/icv-4.c: Likewise.
+	* testsuite/libgomp.c/target-3.c: Likewise.
+	* testsuite/libgomp.c/target-5.c: Likewise.
+	* testsuite/libgomp.c/target-6.c: Likewise.
+	* testsuite/libgomp.c/target-teams-1.c: Likewise.
+	* testsuite/libgomp.c/teams-1.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-2.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-3.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-4.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-5.c: Likewise.
+	* testsuite/libgomp.fortran/icv-3.f90: Likewise.
+	* testsuite/libgomp.fortran/icv-4.f90: Likewise.
+	* testsuite/libgomp.fortran/teams1.f90: Likewise.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust for threading changes.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Same.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.0): Mention that Non-rectangular loop nests
+	aren't implemented for Fortran yet.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-26.c: New test.
+	* testsuite/libgomp.c/loop-27.c: New test.
+
 2021-10-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR testsuite/102910
@@ -16220,7 +16732,7 @@
 
 	Initial implementation and checkin.
 
-Copyright (C) 2005-2021 Free Software Foundation, Inc.
+Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -12,15 +12,25 @@ void test_amx_bf16_dpbf16ps ();
 /* Transformation functions between bf16/float */
 static uint16_t make_bf16 (float f)
 {
-  uint32_t u = (uint32_t)f;
-  u = (u >> 16) & 0xffff;
-  return (uint16_t)u;
+  union
+  {
+    float f;
+    uint32_t u;
+  } fu;
+  fu.f = f;
+  fu.u = (fu.u >> 16) & 0xffff;
+  return (uint16_t) fu.u;
 }
 
 static float make_f32 (uint16_t bf)
 {
-  uint32_t u = (uint32_t)(bf << 16);
-  return (float)u;
+  union
+  {
+    float f;
+    uint32_t u;
+  } fu;
+  fu.u = (uint32_t) bf << 16;
+  return fu.f;
 }
 
 /* Init tile buffer with bf16 pairs */
@@ -54,10 +64,10 @@ void calc_matrix_dpbf16ps (__tile *dst, __tile *src1, __tile *src2)
 	for (t = 0; t < 2; t+=2)
 	  {    
 	    dst_buf[i * N + k] += 
-	      (make_f32(src1_buf[i * 4 * N + 4 * j + t]) *
-	      make_f32(src2_buf[j * 4 * K + 4 * k + t])) +
-	      (make_f32(src1_buf[i * 4 * N + 4 * j + t + 1]) *
-	      make_f32(src2_buf[j * 4 * K + 4 * k + t + 1]));
+	      (make_f32(src1_buf[i * 2 * N + 2 * j + t]) *
+	      make_f32(src2_buf[j * 2 * K + 2 * k + t])) +
+	      (make_f32(src1_buf[i * 2 * N + 2 * j + t + 1]) *
+	      make_f32(src2_buf[j * 2 * K + 2 * k + t + 1]));
 	  }
 
 }
@@ -80,6 +90,6 @@ void test_amx_bf16_dpbf16ps ()
   _tile_dpbf16ps (1, 2, 3);
   _tile_stored (1, dst_ref.buf, _STRIDE);
 
-  if (!check_tile_register (&dst_ref, &dst))
+  if (!check_float_tile_register (&dst_ref, &dst))
         abort();
 }

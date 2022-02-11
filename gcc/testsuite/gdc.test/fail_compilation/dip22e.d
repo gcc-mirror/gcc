@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS:
+EXTRA_FILES: imports/dip22d.d imports/dip22e.d
 TEST_OUTPUT:
 ---
 fail_compilation/dip22e.d(14): Error: undefined identifier `foo`, did you mean struct `Foo`?

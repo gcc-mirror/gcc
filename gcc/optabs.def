@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -241,6 +241,8 @@ OPTAB_D (cond_smin_optab, "cond_smin$a")
 OPTAB_D (cond_smax_optab, "cond_smax$a")
 OPTAB_D (cond_umin_optab, "cond_umin$a")
 OPTAB_D (cond_umax_optab, "cond_umax$a")
+OPTAB_D (cond_fmin_optab, "cond_fmin$a")
+OPTAB_D (cond_fmax_optab, "cond_fmax$a")
 OPTAB_D (cond_fma_optab, "cond_fma$a")
 OPTAB_D (cond_fms_optab, "cond_fms$a")
 OPTAB_D (cond_fnma_optab, "cond_fnma$a")
@@ -257,6 +259,7 @@ OPTAB_D (usubv4_optab, "usubv$I$a4")
 OPTAB_D (umulv4_optab, "umulv$I$a4")
 OPTAB_D (negv3_optab, "negv$I$a3")
 OPTAB_D (addptr3_optab, "addptr$a3")
+OPTAB_D (spaceship_optab, "spaceship$a3")
 
 OPTAB_D (smul_highpart_optab, "smul$a3_highpart")
 OPTAB_D (umul_highpart_optab, "umul$a3_highpart")
@@ -328,11 +331,17 @@ OPTAB_D (sinh_optab, "sinh$a2")
 OPTAB_D (tan_optab, "tan$a2")
 OPTAB_D (tanh_optab, "tanh$a2")
 
+OPTAB_D (fegetround_optab, "fegetround$a")
+OPTAB_D (feclearexcept_optab, "feclearexcept$a")
+OPTAB_D (feraiseexcept_optab, "feraiseexcept$a")
+
 /* C99 implementations of fmax/fmin.  */
 OPTAB_D (fmax_optab, "fmax$a3")
 OPTAB_D (fmin_optab, "fmin$a3")
 
 /* Vector reduction to a scalar.  */
+OPTAB_D (reduc_fmax_scal_optab, "reduc_fmax_scal_$a")
+OPTAB_D (reduc_fmin_scal_optab, "reduc_fmin_scal_$a")
 OPTAB_D (reduc_smax_scal_optab, "reduc_smax_scal_$a")
 OPTAB_D (reduc_smin_scal_optab, "reduc_smin_scal_$a")
 OPTAB_D (reduc_plus_scal_optab, "reduc_plus_scal_$a")
@@ -447,6 +456,11 @@ OPTAB_D (atomic_sub_fetch_optab, "atomic_sub_fetch$I$a")
 OPTAB_D (atomic_sub_optab, "atomic_sub$I$a")
 OPTAB_D (atomic_xor_fetch_optab, "atomic_xor_fetch$I$a")
 OPTAB_D (atomic_xor_optab, "atomic_xor$I$a")
+OPTAB_D (atomic_add_fetch_cmp_0_optab, "atomic_add_fetch_cmp_0$I$a")
+OPTAB_D (atomic_sub_fetch_cmp_0_optab, "atomic_sub_fetch_cmp_0$I$a")
+OPTAB_D (atomic_and_fetch_cmp_0_optab, "atomic_and_fetch_cmp_0$I$a")
+OPTAB_D (atomic_or_fetch_cmp_0_optab, "atomic_or_fetch_cmp_0$I$a")
+OPTAB_D (atomic_xor_fetch_cmp_0_optab, "atomic_xor_fetch_cmp_0$I$a")
 
 OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
 OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")

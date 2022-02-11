@@ -1,7 +1,20 @@
 module imports.test11931d;
 
-import std.array;
-import std.algorithm;
+template filter(alias pred)
+{
+    auto filter(Range)(Range r)
+    {
+        struct FilterResult
+        {
+            Range array()
+            {
+                return data;
+            }
+            Range data;
+        }
+        return FilterResult(r);
+    }
+}
 
 struct ConnectionPoint
 {
@@ -26,5 +39,5 @@ struct Signal(T, A...)
 
 private:
     alias D = T delegate(A);
-    D _arr[];
+    D[] _arr;
 }

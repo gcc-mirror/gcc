@@ -1,5 +1,6 @@
 /*
 REQUIRED_ARGS: -mv=its.a.dessert.topping=imports/imp16798.d -mv=its.a.floorwax=imports/
+EXTRA_FILES: imports/imp16798.d imports/wax16798.d
 PERMUTE_ARGS:
 TEST_OUTPUT:
 ---

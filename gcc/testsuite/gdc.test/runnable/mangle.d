@@ -14,7 +14,8 @@ false
 import imports.testmangle;
 
 /***************************************************/
-// 10077 - pragma(mangle)
+// https://issues.dlang.org/show_bug.cgi?id=10077
+// pragma(mangle)
 
 pragma(mangle, "_test10077a_") int test10077a;
 static assert(test10077a.mangleof == "_test10077a_");
@@ -54,7 +55,7 @@ void test10077i()
 }
 
 /***************************************************/
-// 13050
+// https://issues.dlang.org/show_bug.cgi?id=13050
 
 void func13050(int);
 template decl13050(Arg)
@@ -79,7 +80,7 @@ static assert(is(typeof(&problem13050!int) == void function(int)));
 static assert(is(typeof(&workaround13050!int) == void function(int)));
 
 /***************************************************/
-// 2774
+// https://issues.dlang.org/show_bug.cgi?id=2774
 
 int foo2774(int n) { return 0; }
 static assert(foo2774.mangleof == "_D6mangle7foo2774FiZi");
@@ -100,7 +101,7 @@ void test2774()
 }
 
 /*******************************************/
-// 8847
+// https://issues.dlang.org/show_bug.cgi?id=8847
 
 auto S8847()
 {
@@ -294,7 +295,7 @@ static assert(typeof(f8847a()).mangleof == "S6mangle6f8847aFNaZ1S");
 static assert(typeof(f8847b()).mangleof == "S6mangle6f8847bFNaZ1S");
 
 /*******************************************/
-// 12352
+// https://issues.dlang.org/show_bug.cgi?id=12352
 
 auto bar12352()
 {
@@ -325,7 +326,7 @@ static assert(typeof(baz12352())     .mangleof ==  "C6mangle8baz12352FZ1C");
 static assert(typeof(baz12352()).func.mangleof == "_D6mangle8baz12352FZ1C4funcMFZv");
 
 /*******************************************/
-// 9525
+// https://issues.dlang.org/show_bug.cgi?id=9525
 
 void f9525(T)(in T*) { }
 
@@ -334,27 +335,29 @@ void test9525()
     enum result1 = "S6mangle8test9525FZ"~tl!"26"~"__T5test1S"~tl!"13"~id!("6mangle","QBc")~"5f9525Z"~id!("5test1","Qr")~"MFZ1S";
     enum result2 = "S6mangle8test9525FZ"~tl!"26"~"__T5test2S"~tl!"13"~id!("6mangle","QBc")~"5f9525Z"~id!("5test2","Qr")~"MFNaNbZ1S";
 
-    void test1(alias a)()
+    bool test1(alias a)()
     {
         static struct S {}
         static assert(S.mangleof == result1);
         S s;
         a(&s);  // Error: Cannot convert &S to const(S*) at compile time
+        return true;
     }
-    static assert((test1!f9525(), true));
+    enum evalTest1 = test1!f9525();
 
-    void test2(alias a)() pure nothrow
+    bool test2(alias a)() pure nothrow
     {
         static struct S {}
         static assert(S.mangleof == result2);
         S s;
         a(&s);  // Error: Cannot convert &S to const(S*) at compile time
+        return true;
     }
-    static assert((test2!f9525(), true));
+    enum evalTest2 = test2!f9525();
 }
 
 /******************************************/
-// 10249
+// https://issues.dlang.org/show_bug.cgi?id=10249
 
 template Seq10249(T...) { alias Seq10249 = T; }
 
@@ -390,7 +393,7 @@ static: // necessary to make overloaded symbols accessible via __traits(getOverl
 }
 
 /*******************************************/
-// 11718
+// https://issues.dlang.org/show_bug.cgi?id=11718
 
 struct Ty11718(alias sym) {}
 
@@ -431,7 +434,7 @@ void test11718()
 }
 
 /*******************************************/
-// 11776
+// https://issues.dlang.org/show_bug.cgi?id=11776
 
 struct S11776(alias fun) { }
 
@@ -454,7 +457,7 @@ void test11776()
 }
 
 /***************************************************/
-// 12044
+// https://issues.dlang.org/show_bug.cgi?id=12044
 
 struct S12044(T)
 {
@@ -481,7 +484,7 @@ void test12044()
 }
 
 /*******************************************/
-// 12217
+// https://issues.dlang.org/show_bug.cgi?id=12217
 
 void test12217(int)
 {
@@ -499,7 +502,7 @@ void test12217(int)
 void test12217() {}
 
 /***************************************************/
-// 12231
+// https://issues.dlang.org/show_bug.cgi?id=12231
 
 void func12231a()()
 if (is(typeof({
@@ -599,6 +602,13 @@ void fooB(void delegate (void delegate()) scope dg)
 //pragma(msg, fooB.mangleof);
 static assert(typeof(fooA).mangleof != typeof(fooB).mangleof);
 
+
+/***************************************************/
+
+@live int testLive() { return 42; }
+
+static assert(testLive.mangleof == "_D6mangle8testLiveFNmZi");
+
 /***************************************************/
 
 alias noreturn = typeof(*null);
@@ -608,6 +618,12 @@ static assert(funcd.mangleof == "_D6mangle5funcdFPFZNnZi");
 
 /***************************************************/
 
+struct S21753 { void function() f1; }
+void fun21753(S21753 v)() {}
+alias fl21753 = (){};
+static assert((fun21753!(S21753(fl21753))).mangleof == "_D6mangle__T8fun21753VSQv6S21753S1f_DQBj10" ~ fl21753.stringof ~ "MFNaNbNiNfZvZQCbQp");
+
+/***************************************************/
 void main()
 {
     test10077h();

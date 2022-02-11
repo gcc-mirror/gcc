@@ -1,5 +1,5 @@
 /* Define regsets.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,6 +48,9 @@ typedef bitmap regset;
 
 /* Clear a register set by freeing up the linked list.  */
 #define CLEAR_REG_SET(HEAD) bitmap_clear (HEAD)
+
+/* True if the register set is empty.  */
+#define REG_SET_EMPTY_P(HEAD) bitmap_empty_p (HEAD)
 
 /* Copy a register set to another register set.  */
 #define COPY_REG_SET(TO, FROM) bitmap_copy (TO, FROM)
@@ -114,7 +117,7 @@ typedef bitmap_iterator reg_set_iterator;
 /* An obstack for regsets.  */
 extern bitmap_obstack reg_obstack;
 
-/* In df-core.c (which should use regset consistently instead of bitmap...)  */
+/* In df-core.cc (which should use regset consistently instead of bitmap...)  */
 extern void dump_regset (regset, FILE *);
 
 #endif /* GCC_REGSET_H */

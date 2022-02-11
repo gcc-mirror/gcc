@@ -220,6 +220,7 @@ toolexeclibgodatabasesql_DATA = \
 toolexeclibgodebugdir = $(toolexeclibgodir)/debug
 
 toolexeclibgodebug_DATA = \
+	debug/buildinfo.gox \
 	debug/dwarf.gox \
 	debug/elf.gox \
 	debug/gosym.gox \
@@ -325,6 +326,7 @@ toolexeclibgonetdir = $(toolexeclibgodir)/net
 toolexeclibgonet_DATA = \
 	net/http.gox \
 	net/mail.gox \
+	net/netip.gox \
 	net/rpc.gox \
 	net/smtp.gox \
 	net/textproto.gox \
@@ -429,6 +431,7 @@ noinst_DATA = \
 	internal/testenv.gox \
 	internal/trace.gox \
 	net/internal/socktest.gox \
+	os/exec/internal/fdtest.gox \
 	os/signal/internal/pty.gox \
 	reflect/internal/example1.gox \
 	reflect/internal/example2.gox
@@ -483,53 +486,68 @@ version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
 	echo "package sys" > version.go.tmp
-	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
-	echo 'const GOOS = "'$(GOOS)'"' >> version.go.tmp
 	echo 'const GccgoToolDir = "$(libexecsubdir)"' >> version.go.tmp
 	echo 'const StackGuardMultiplierDefault = 1' >> version.go.tmp
-	echo >> version.go.tmp
-	echo "const (" >> version.go.tmp
-	echo "	UNKNOWN ArchFamilyType = iota" >> version.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
+	$(STAMP) $@
+
+zgoarch.go: s-zgoarch; @true
+s-zgoarch: Makefile goarch.sh
+	rm -f zgoarch.go.tmp
+	echo "package goarch" > zgoarch.go.tmp
+	echo >> zgoarch.go.tmp
+	echo 'const GOARCH = "'$(GOARCH)'"' >> zgoarch.go.tmp
+	echo >> zgoarch.go.tmp
+	echo 'const (' >> zgoarch.go.tmp
+	echo "  _ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> zgoarch.go.tmp
+	echo "  _BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> zgoarch.go.tmp
+	echo "  _DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> zgoarch.go.tmp
+	echo "  _Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> zgoarch.go.tmp
+	echo "  _MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> zgoarch.go.tmp
+	echo "  _PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> zgoarch.go.tmp
+	echo "  _StackAlign = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) stackalign`" >> zgoarch.go.tmp
+	echo ")" >> zgoarch.go.tmp
+	echo >> zgoarch.go.tmp
+	echo "const (" >> zgoarch.go.tmp
+	echo "	UNKNOWN ArchFamilyType = iota" >> zgoarch.go.tmp
 	for a in $(ALLGOARCHFAMILY); do \
-	  echo "	$${a}" >> version.go.tmp; \
+	  echo "	$${a}" >> zgoarch.go.tmp; \
 	done
-	echo ")" >> version.go.tmp
-	echo >> version.go.tmp
+	echo ")" >> zgoarch.go.tmp
+	echo >> zgoarch.go.tmp
 	for a in $(ALLGOARCH); do \
 	  f=`echo $${a} | sed -e 's/\(.\).*/\1/' -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`; \
 	  n="$${f}`echo $${a} | sed -e 's/.//'`"; \
 	  if test "$${a}" = "$(GOARCH)"; then \
-	    echo "const Goarch$${n} = 1" >> version.go.tmp; \
+	    echo "const Is$${n} = 1" >> zgoarch.go.tmp; \
 	  else \
-	    echo "const Goarch$${n} = 0" >> version.go.tmp; \
+	    echo "const Is$${n} = 0" >> zgoarch.go.tmp; \
 	  fi; \
 	done
-	echo >> version.go.tmp
-	echo "const (" >> version.go.tmp
-	echo "  _ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
-	echo "  _BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
-	echo "  _DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
-	echo "  _Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
-	echo "  _MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
-	echo "  _PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
-	echo "  _StackAlign = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) stackalign`" >> version.go.tmp
-	echo ")" >> version.go.tmp
-	echo >> version.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh zgoarch.go.tmp zgoarch.go
+	$(STAMP) $@
+
+zgoos.go: s-zgoos; @true
+s-zgoos: Makefile
+	rm -f zgoos.go.tmp
+	echo "package goos" > zgoos.go.tmp
+	echo >> zgoos.go.tmp
+	echo 'const GOOS = "'$(GOOS)'"' >> zgoos.go.tmp
+	echo >> zgoos.go.tmp
 	for a in $(ALLGOOS); do \
 	  f=`echo $${a} | sed -e 's/\(.\).*/\1/' -e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/'`; \
 	  n="$${f}`echo $${a} | sed -e 's/.//'`"; \
 	  if test "$${a}" = "$(GOOS)"; then \
-	    echo "const Goos$${n} = 1" >> version.go.tmp; \
+	    echo "const Is$${n} = 1" >> zgoos.go.tmp; \
 	  else \
-	    echo "const Goos$${n} = 0" >> version.go.tmp; \
+	    echo "const Is$${n} = 0" >> zgoos.go.tmp; \
 	  fi; \
 	done
-	echo >> version.go.tmp
-	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
+	$(SHELL) $(srcdir)/mvifdiff.sh zgoos.go.tmp zgoos.go
 	$(STAMP) $@
 
 cpugen.go: s-cpu; @true
-s-cpu: Makefile
+s-cpu: Makefile goarch.sh
 	rm -f cpugen.go.tmp
 	echo "package cpu" > cpugen.go.tmp
 	echo "const CacheLinePadSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
@@ -538,7 +556,7 @@ s-cpu: Makefile
 	$(STAMP) $@
 
 gcpugen.go: s-gcpu; @true
-s-gcpu: Makefile
+s-gcpu: Makefile goarch.sh
 	rm -f gcpugen.go.tmp
 	echo "package cpu" > gcpugen.go.tmp
 	echo "const cacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> gcpugen.go.tmp
@@ -560,6 +578,7 @@ s-buildcfg: Makefile
 	echo "import \"runtime\"" >> buildcfg.go.tmp
 	echo 'func defaultGOROOTValue() string { return `$(prefix)` }' >> buildcfg.go.tmp
 	echo 'const defaultGO386 = `sse2`' >> buildcfg.go.tmp
+	echo 'const defaultGOAMD64 = `v1`' >> buildcfg.go.tmp
 	echo 'const defaultGOARM = `5`' >> buildcfg.go.tmp
 	echo 'const defaultGOMIPS = `hardfloat`' >> buildcfg.go.tmp
 	echo 'const defaultGOMIPS64 = `hardfloat`' >> buildcfg.go.tmp
@@ -813,7 +832,8 @@ libgo_ldflags = \
 
 libgo_libadd = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
-	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
+	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) \
+	$(NET_LIBS) $(RT_LIBS)
 
 libgo_la_SOURCES = $(runtime_files)
 libgo_la_LDFLAGS = $(libgo_ldflags)
@@ -904,7 +924,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(RT_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -1064,6 +1084,12 @@ runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
 extra_go_files_internal_cpu = cpugen.go
 internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
+
+extra_go_files_internal_goarch = zgoarch.go
+internal/goarch.lo.dep: $(extra_go_files_internal_goarch)
+
+extra_go_files_internal_goos = zgoos.go
+internal/goos.lo.dep: $(extra_go_files_internal_goos)
 
 extra_go_files_golang_org_x_sys_cpu = gcpugen.go
 golang.org/x/sys/cpu.lo.dep: $(extra_go_files_golang_org_x_sys_cpu)

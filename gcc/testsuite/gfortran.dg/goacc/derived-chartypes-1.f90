@@ -1,3 +1,5 @@
+! { dg-additional-options -Wuninitialized }
+
 type :: type1
   character(len=35) :: a
 end type type1

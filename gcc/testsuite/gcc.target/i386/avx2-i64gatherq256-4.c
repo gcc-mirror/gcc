@@ -26,15 +26,19 @@ avx2_test (void)
   long long i;
   union256i_q idx;
   union256i_q res, src, mask;
-  long long s1[4], res_ref[4] = { 0 };
+  long long s1[16], res_ref[4] = { 0 };
+  long long *s1_ptr = s1 + 8;
 
-  for (i = 0; i < 4; ++i)
+  for (i = 0; i < ARRAY_SIZE (s1); i++)
     {
       /* Set some stuff */
       s1[i] = 1983 * (i + 1) * (i + 2);
+    }
 
+  for (i = 0; i < 4; ++i)
+    {
       /* Set src as something different from s1 */
-      src.a[i] = -s1[i];
+      src.a[i] = -s1_ptr[i];
 
       /* Mask out evens */
       ((long long *) mask.a)[i] = i % 2 ? 0 : -1;
@@ -45,10 +49,10 @@ avx2_test (void)
     }
 
   res.x = _mm256_mask_i64gather_epi64 (src.x,
-				       (long long int *) s1,
+				       (long long int *) s1_ptr,
 				       idx.x, mask.x, 2);
 
-  compute_i64gatherq256 (src.a, s1, idx.a, mask.a, 2, res_ref);
+  compute_i64gatherq256 (src.a, s1_ptr, idx.a, mask.a, 2, res_ref);
 
   if (check_union256i_q (res, res_ref) != 0)
     abort ();

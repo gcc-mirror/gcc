@@ -1,7 +1,7 @@
 /* Streamer hooks.  Support for adding streamer-specific callbacks to
    generic streaming routines.
 
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -86,7 +86,7 @@ struct streamer_hooks {
 /* Streamer hooks.  */
 extern struct streamer_hooks streamer_hooks;
 
-/* In streamer-hooks.c.  */
+/* In streamer-hooks.cc.  */
 void streamer_hooks_init (void);
 
 #endif  /* GCC_STREAMER_HOOKS_H  */

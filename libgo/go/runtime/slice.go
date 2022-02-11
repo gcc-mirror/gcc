@@ -5,6 +5,8 @@
 package runtime
 
 import (
+	"internal/abi"
+	"internal/goarch"
 	"runtime/internal/math"
 	"runtime/internal/sys"
 	"unsafe"
@@ -79,11 +81,14 @@ func makeslicecopy(et *_type, tolen int, fromlen int, from unsafe.Pointer) unsaf
 
 	if raceenabled {
 		callerpc := getcallerpc()
-		pc := funcPC(makeslicecopy)
+		pc := abi.FuncPCABIInternal(makeslicecopy)
 		racereadrangepc(from, copymem, callerpc, pc)
 	}
 	if msanenabled {
 		msanread(from, copymem)
+	}
+	if asanenabled {
+		asanread(from, copymem)
 	}
 
 	memmove(to, from, copymem)
@@ -130,16 +135,15 @@ func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer {
 }
 
 func unsafeslice(et *_type, ptr unsafe.Pointer, len int) {
-	if len == 0 {
-		return
-	}
-
-	if ptr == nil {
-		panic(errorString("unsafe.Slice: ptr is nil and len is not zero"))
+	if len < 0 {
+		panicunsafeslicelen()
 	}
 
 	mem, overflow := math.MulUintptr(et.size, uintptr(len))
-	if overflow || mem > maxAlloc || len < 0 {
+	if overflow || mem > -uintptr(ptr) {
+		if ptr == nil {
+			panic(errorString("unsafe.Slice: ptr is nil and len is not zero"))
+		}
 		panicunsafeslicelen()
 	}
 }
@@ -176,10 +180,13 @@ func panicunsafeslicelen() {
 func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slice {
 	if raceenabled {
 		callerpc := getcallerpc()
-		racereadrangepc(oldarray, uintptr(oldlen*int(et.size)), callerpc, funcPC(growslice))
+		racereadrangepc(oldarray, uintptr(oldlen*int(et.size)), callerpc, abi.FuncPCABIInternal(growslice))
 	}
 	if msanenabled {
 		msanread(oldarray, uintptr(oldlen*int(et.size)))
+	}
+	if asanenabled {
+		asanread(oldarray, uintptr(oldlen*int(et.size)))
 	}
 
 	if cap < oldcap {
@@ -197,13 +204,17 @@ func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slic
 	if cap > doublecap {
 		newcap = cap
 	} else {
-		if oldcap < 1024 {
+		const threshold = 256
+		if oldcap < threshold {
 			newcap = doublecap
 		} else {
 			// Check 0 < newcap to detect overflow
 			// and prevent an infinite loop.
 			for 0 < newcap && newcap < cap {
-				newcap += newcap / 4
+				// Transition from growing 2x for small slices
+				// to growing 1.25x for large slices. This formula
+				// gives a smooth-ish transition between the two.
+				newcap += (newcap + 3*threshold) / 4
 			}
 			// Set newcap to the requested cap when
 			// the newcap calculation overflowed.
@@ -226,15 +237,15 @@ func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slic
 		capmem = roundupsize(uintptr(newcap))
 		overflow = uintptr(newcap) > maxAlloc
 		newcap = int(capmem)
-	case et.size == sys.PtrSize:
-		lenmem = uintptr(oldlen) * sys.PtrSize
-		newlenmem = uintptr(cap) * sys.PtrSize
-		capmem = roundupsize(uintptr(newcap) * sys.PtrSize)
-		overflow = uintptr(newcap) > maxAlloc/sys.PtrSize
-		newcap = int(capmem / sys.PtrSize)
+	case et.size == goarch.PtrSize:
+		lenmem = uintptr(oldlen) * goarch.PtrSize
+		newlenmem = uintptr(cap) * goarch.PtrSize
+		capmem = roundupsize(uintptr(newcap) * goarch.PtrSize)
+		overflow = uintptr(newcap) > maxAlloc/goarch.PtrSize
+		newcap = int(capmem / goarch.PtrSize)
 	case isPowerOfTwo(et.size):
 		var shift uintptr
-		if sys.PtrSize == 8 {
+		if goarch.PtrSize == 8 {
 			// Mask shift for better code generation.
 			shift = uintptr(sys.Ctz64(uint64(et.size))) & 63
 		} else {
@@ -312,13 +323,17 @@ func slicecopy(toPtr unsafe.Pointer, toLen int, fromPtr unsafe.Pointer, fromLen 
 	size := uintptr(n) * width
 	if raceenabled {
 		callerpc := getcallerpc()
-		pc := funcPC(slicecopy)
+		pc := abi.FuncPCABIInternal(slicecopy)
 		racereadrangepc(fromPtr, size, callerpc, pc)
 		racewriterangepc(toPtr, size, callerpc, pc)
 	}
 	if msanenabled {
 		msanread(fromPtr, size)
 		msanwrite(toPtr, size)
+	}
+	if asanenabled {
+		asanread(fromPtr, size)
+		asanwrite(toPtr, size)
 	}
 
 	if size == 1 { // common case worth about 2x to do here

@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2021 Free Software Foundation, Inc.
+// Copyright (C) 2018-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,8 +72,8 @@ int main()
 
   string s = L"PR libstdc++/87749 a string that is longer than a short string";
   const auto ptr = s.c_str();
-  oom = true;
   string ss;
+  oom = true;
   ss = std::move(s); // allocators are equal, should not allocate new storage
   VERIFY( ss.c_str() == ptr );
 }

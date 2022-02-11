@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -956,7 +956,7 @@ extern scalar_int_mode byte_mode;
 extern scalar_int_mode word_mode;
 extern scalar_int_mode ptr_mode;
 
-/* Target-dependent machine mode initialization - in insn-modes.c.  */
+/* Target-dependent machine mode initialization - in insn-modes.cc.  */
 extern void init_adjust_machine_modes (void);
 
 #define TRULY_NOOP_TRUNCATION_MODES_P(MODE1, MODE2) \
@@ -987,7 +987,7 @@ struct int_n_data_t {
   /* RID_* is RID_INTN_BASE + index into this array */
 };
 
-/* This is also in tree.h.  genmodes.c guarantees the're sorted from
+/* This is also in tree.h.  genmodes.cc guarantees the're sorted from
    smallest bitsize to largest bitsize. */
 extern bool int_n_enabled_p[NUM_INT_N_ENTS];
 extern const int_n_data_t int_n_data[NUM_INT_N_ENTS];
@@ -1199,7 +1199,7 @@ gt_pch_nx (pod_mode<T> *)
 
 template<typename T>
 void
-gt_pch_nx (pod_mode<T> *, void (*) (void *, void *), void *)
+gt_pch_nx (pod_mode<T> *, gt_pointer_operator, void *)
 {
 }
 

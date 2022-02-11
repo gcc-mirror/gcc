@@ -1,6 +1,6 @@
 // <numeric> -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -156,10 +156,10 @@ namespace __detail
 
 #if __cplusplus >= 201703L
 
-#define __cpp_lib_gcd_lcm 201606
+#define __cpp_lib_gcd_lcm 201606L
 // These were used in drafts of SD-6:
-#define __cpp_lib_gcd 201606
-#define __cpp_lib_lcm 201606
+#define __cpp_lib_gcd 201606L
+#define __cpp_lib_lcm 201606L
 
   /// Greatest common divisor
   template<typename _Mn, typename _Nn>

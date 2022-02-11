@@ -1,4 +1,4 @@
-@c Copyright (C) 2008-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2008-2022 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2691,21 +2691,21 @@ modifying the file @code{gimple.def}, which contains all the GIMPLE
 codes.  Then you must add a corresponding gimple subclass
 located in @code{gimple.h}.  This in turn, will require you to add a
 corresponding @code{GTY} tag in @code{gsstruct.def}, and code to handle
-this tag in @code{gss_for_code} which is located in @code{gimple.c}.
+this tag in @code{gss_for_code} which is located in @code{gimple.cc}.
 
 In order for the garbage collector to know the size of the
 structure you created in @code{gimple.h}, you need to add a case to
 handle your new GIMPLE statement in @code{gimple_size} which is located
-in @code{gimple.c}.
+in @code{gimple.cc}.
 
 You will probably want to create a function to build the new
-gimple statement in @code{gimple.c}.  The function should be called
+gimple statement in @code{gimple.cc}.  The function should be called
 @code{gimple_build_@var{new-tuple-name}}, and should return the new tuple
 as a pointer to the appropriate gimple subclass.
 
 If your new statement requires accessors for any members or
 operands it may have, put simple inline accessors in
-@code{gimple.h} and any non-trivial accessors in @code{gimple.c} with a
+@code{gimple.h} and any non-trivial accessors in @code{gimple.cc} with a
 corresponding prototype in @code{gimple.h}.
 
 You should add the new statement subclass to the class hierarchy diagram

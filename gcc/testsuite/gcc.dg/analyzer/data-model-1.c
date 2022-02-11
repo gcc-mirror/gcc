@@ -1,4 +1,5 @@
 /* { dg-require-effective-target alloca } */
+/* { dg-additional-options "-fno-ipa-modref" } */
 
 #include <stdlib.h>
 #include <string.h>
@@ -151,7 +152,7 @@ int test_12 (void)
 /* Use of uninit value.  */
 int test_12a (void)
 {
-  int i;
+  int i; /* { dg-message "region created on stack here" } */
   return i; /* { dg-warning "use of uninitialized value 'i'" } */
 }
 
@@ -162,7 +163,7 @@ void test_12b (void *p, void *q)
 
 int test_12c (void)
 {
-  int i;
+  int i; /* { dg-message "region created on stack here" } */
   int j;
 
   j = i; /* { dg-warning "use of uninitialized value 'i'" } */
@@ -348,7 +349,7 @@ void test_18 (int i)
 
 void test_19 (void)
 {
-  int i, j;
+  int i, j; /* { dg-message "region created on stack here" } */
   /* Compare two uninitialized locals.  */
     __analyzer_eval (i == j); /* { dg-warning "UNKNOWN" "unknown " } */
     /* { dg-warning "use of uninitialized value 'i'" "uninit i" { target *-*-* } .-1 } */
@@ -632,7 +633,7 @@ void test_29a (struct coord p[])
 
 void test_29b (void)
 {
-  struct coord p[11];
+  struct coord p[11]; /* { dg-message "region created on stack here" } */
   struct coord *q;
 
   p[0].x = 100024;
@@ -818,7 +819,7 @@ void test_36 (int i)
 
 int test_37 (void)
 {
-  int *ptr;
+  int *ptr; /* { dg-message "region created on stack here" } */
   return *ptr; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 
@@ -826,7 +827,7 @@ int test_37 (void)
 
 void test_37a (int i)
 {
-  int *ptr;
+  int *ptr; /* { dg-message "region created on stack here" } */
   *ptr = i; /* { dg-warning "use of uninitialized value 'ptr'" } */
 }
 

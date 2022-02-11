@@ -1,3 +1,234 @@
+2022-01-25  Florian Weimer  <fweimer@redhat.com>
+
+	PR libgcc/104207
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Add NULL check.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c: Rename .c names to .cc.
+
+2022-01-15  David  <gccbugzilla@limegreensocks.com>
+
+	* config/i386/gthr-win32.c (__gthr_i486_lock_cmp_xchg):
+	Remove inlined version, Windows 95 is no longer relevant.
+	* config/i386/gthr-win32.h
+	(__GTHREAD_I486_INLINE_LOCK_PRIMITIVES): unset.
+
+2022-01-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/linux-unwind.h (arc_fallback_frame_state): Use
+	DWARF_ALT_FRAME_RETURN_COLUMN macro.
+
+2022-01-04  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call _dl_find_object
+	if available.
+
+2022-01-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (_ASM_EFAULT): Define.
+	(__kernel_cmpxchg): Nullify illegal iitlbp instruction if error
+	return is not equal _ASM_EFAULT.
+	(__kernel_cmpxchg2): Likewise.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add shim declaration header to powerpc*-darwin builds.
+	* config/rs6000/t-darwin-ehs: Remove dependency on the powerpc end
+	file.
+	* config/t-darwin-ehs: Add dependencies to the shared unwinder
+	objects.
+	* config/t-slibgcc-darwin: Add extra_parts to the dependencies for
+	the shared EH lib.  Add all-multi to the dependencies for the
+	libgcc_s.1.dylib redirections.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-*-vxworks7*): Remove
+	rs6000/t-linux and t-slibgcc-libgcc from tmake_file.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*vxworks*): Remove special case for
+	arm on the use of vxcrtstuff.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxcrtstuffS: New Makefile fragment.
+	* config/vxcrtstuff.c: Provide __dso_handle. Provide _init/_fini
+	functions for INITFINI_ARRAY support in shared libs and guard
+	the definition of eh table registration functions on conditions
+	indicating they are needed.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): Place t-crtstuff
+	ahead of the other files in tmake_files.
+	* config/t-vxworks: Add to CRTSTUFF_T_CFLAGS instead of
+	overriding it.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Simplify and handle
+	both VxWorks7 and earlier.
+	* config/t-vxworks7: Remove.
+	* config.host: Remove special case for vxworks7.
+
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Make constructor and destructor
+	functions static when possible.
+
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Remove constructor/destructor
+	declarations.
+
+2021-12-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Add libgcc_tm.h to the dependencies
+	for darwin10-unwind-find-enc-func.
+
+2021-12-10  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/rs6000/t-vxworks: New file.
+	* config.host (powerpc*-*-vxworks*): Use it instead of
+	t-ppccomm.
+
+2021-12-09  Fred Konrad  <konrad@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): Fix path to
+	rs6000/t-ppc64-fp, relative to config/ not libgcc/.
+
+2021-12-09  Olivier Hainque  <hainque@adacore.com>
+	    Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/t-vxworks: Set CRTSTUFF_T_CFLAGS to
+	$(LIBGCC2_INCLUDES).
+	* config/t-vxworks7: Likewise.
+
+2021-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host (*-*-darwin*): Add logic to build a shared
+	unwinder library for Darwin8-10.
+	* config/i386/t-darwin: Build legacy libgcc_s.1.
+	* config/rs6000/t-darwin: Likewise.
+	* config/t-darwin: Reorganise the EH fragments to place
+	them for inclusion in a shared EH lib.
+	* config/t-slibgcc-darwin: Build a legacy libgcc_s.1 and
+	the supporting pieces (all FAT libs).
+	* config/t-darwin-noeh: Removed.
+	* config/darwin-unwind.ver: New file.
+	* config/rs6000/t-darwin-ehs: New file.
+	* config/t-darwin-ehs: New file.
+
+2021-12-06  Nelson Chu  <nelson.chu@sifive.com>
+
+	* config/riscv/div.S: Add the hidden alias symbol for __udivdi3, and
+	then use HIDDEN_JUMPTARGET to target it since it is non-preemptible.
+	* config/riscv/riscv-asm.h: Added new macros HIDDEN_JUMPTARGET and
+	HIDDEN_DEF.
+
+2021-11-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Undefine caddr_t, pid_t, rlim_t,
+	ssize_t and vfork after including auto-host.h.
+
+2021-11-29  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config.host (powerpc-wrs-vxworks): Do not add crtbegin.o and
+	crtend.o to extra_parts.
+
+2021-11-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/t-dimode (lib2difuncs): Fix typo.
+
+2021-11-25  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Add hdr.
+	Remove func, ret.
+	(find_fde_tail): New function.  Split from
+	_Unwind_IteratePhdrCallback.  Move the result initialization
+	from _Unwind_Find_FDE.
+	(_Unwind_Find_FDE): Updated to call find_fde_tail.
+
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (NEED_DBASE_MEMBER): Define.
+	(struct unw_eh_callback_data): Make dbase member conditional.
+	(unw_eh_callback_data_dbase): New function.
+	(base_from_cb_data): Simplify for the non-dbase case.
+	(_Unwind_IteratePhdrCallback): Adjust.
+	(_Unwind_Find_FDE): Likewise.
+
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Remove
+	tbase member.
+	(base_from_cb_data): Adjust.
+	(_Unwind_IteratePhdrCallback): Likewise.
+	(_Unwind_Find_FDE): Likewise.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add weak emutls crt to the extra_parts.
+	* config/i386/darwin-lib.h (DECLARE_LIBRARY_RENAMES): Remove
+	workaround.
+	* config/libgcc-libsystem.ver: Add exclude list for the system-
+	provided unwinder.
+	* config/t-slibgcc-darwin: Bump SO version, remove stubs code.
+	* config/i386/libgcc-darwin.10.4.ver: Removed.
+	* config/i386/libgcc-darwin.10.5.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.4.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.5.ver: Removed.
+	* config/t-darwin-noeh: New file.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Build weak-defined emutls objects.
+	* emutls.c (__emutls_get_address): Add optional attributes.
+	(__emutls_register_common): Likewise.
+	(EMUTLS_ATTR): New.
+
+2021-11-11  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	PR libgcc/103044
+	* config/rs6000/linux-unwind.h (ppc_backchain_fallback): Check if it's
+	called with a null argument or at the end of the backtrace and return.
+	* unwind.inc (_Unwind_ForcedUnwind_Phase2): Treat _URC_NORMAL_STOP.
+
+2021-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/linux-unwind.h (ppc_back_fallback): Make it static,
+	formatting fix.
+
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin10-unwind-find-enc-func.c: Include libgcc_tm.h.
+	* config/i386/darwin-lib.h: Declare Darwin10 crt function.
+
+2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/96661
+	* config.host (hppa*64*-*-linux*): Revise tmake_file.
+	(hppa*64*-*-hpux11*): Likewise.
+	* config/pa/sfp-exceptions.c: New.
+	* config/pa/sfp-machine.h: New.
+	* config/pa/t-dimode: New.
+	* config/pa/t-softfp-sfdftf: New.
+
+2021-10-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host (hppa*64*-*-linux*): Don't add pa/t-linux to
+	tmake_file.
+	* config/pa/linux-atomic.c: Define u8, u16 and u64 types.
+	Use them in FETCH_AND_OP_2, OP_AND_FETCH_2, COMPARE_AND_SWAP_2,
+	SYNC_LOCK_TEST_AND_SET_2 and SYNC_LOCK_RELEASE_1 macros.
+	* config/pa/t-linux64 (LIB1ASMSRC): New define.
+	(LIB1ASMFUNCS): Revise.
+	(HOST_LIBGCC2_CFLAGS): Add "-DLINUX=1".
+
 2021-10-22  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/sfp-machine.h (_FP_TININESS_AFTER_ROUNDING):
@@ -11774,7 +12005,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2021 Free Software Foundation, Inc.
+Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

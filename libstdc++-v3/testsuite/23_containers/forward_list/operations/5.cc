@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,13 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 23.2.3.n forward_list xxx [lib.forward_list.xxx]
+// C++11 23.3.4.6 Operations [forwardlist.ops]
 
 #include <forward_list>
 #include <testsuite_hooks.h>
 
 // This test verifies the following:
-//   
+//   merge
 void
 test01()
 {

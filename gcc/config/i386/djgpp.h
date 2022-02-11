@@ -1,5 +1,5 @@
 /* Configuration for an i386 running MS-DOS with DJGPP.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -166,7 +166,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef  TARGET_ASM_LTO_END
 #define TARGET_ASM_LTO_END i386_djgpp_asm_lto_end
 
-/* Function protypes for gcc/i386/djgpp.c */
+/* Function protypes for gcc/i386/djgpp.cc */
 
 void
 i386_djgpp_asm_named_section(const char *name, unsigned int flags,

@@ -1,8 +1,14 @@
-// EXTRA_SOURCES: imports/a17a.d
+/*
+EXTRA_SOURCES: imports/a17a.d
+RUN_OUTPUT:
+---
+barx
+---
+*/
 
 module a17;
 
-import std.stdio;
+import core.stdc.stdio;
 
 private import imports.a17a;
 

@@ -1,5 +1,5 @@
 /* Header file for the GIMPLE range interface.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -47,6 +47,7 @@ class gimple_ranger : public range_query
 {
 public:
   gimple_ranger ();
+  ~gimple_ranger ();
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL) OVERRIDE;
   virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) OVERRIDE;
   virtual bool range_on_edge (irange &r, edge e, tree name) OVERRIDE;
@@ -58,10 +59,16 @@ public:
   void debug ();
   void dump_bb (FILE *f, basic_block bb);
   auto_edge_flag non_executable_edge_flag;
+  bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
+  void register_side_effects (gimple *s);
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
+  void prefill_name (irange &r, tree name);
+  void prefill_stmt_dependencies (tree ssa);
   ranger_cache m_cache;
   range_tracer tracer;
+  basic_block current_bb;
+  vec<tree> m_stmt_list;
 };
 
 /* Create a new ranger instance and associate it with a function.

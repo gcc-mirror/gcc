@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,7 @@
 #include <testsuite_hooks.h>
 
 class Counting_output_iterator
-: public std::iterator< std::output_iterator_tag, void, void, void, void >
+: public std::iterator< std::output_iterator_tag, void, void, void, void >  // { dg-warning "is deprecated" "" { target c++17 } }
 {
   std::size_t c;
 public:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package System.Interrupt_Management is
    --  The interrupt that is used to implement task abort if an interrupt is
    --  used for that purpose. This is one of the reserved interrupts.
 
-   Keep_Unmasked : Interrupt_Set := (others => False);
+   Keep_Unmasked : Interrupt_Set := [others => False];
    --  Keep_Unmasked (I) is true iff the interrupt I is one that must be kept
    --  unmasked at all times, except (perhaps) for short critical sections.
    --  This includes interrupts that are mapped to exceptions (see
@@ -83,7 +83,7 @@ package System.Interrupt_Management is
    --  reasons. Where interrupts are implemented as OS signals, and signal
    --  masking is per-task, the interrupt should be unmasked in ALL TASKS.
 
-   Reserve : Interrupt_Set := (others => False);
+   Reserve : Interrupt_Set := [others => False];
    --  Reserve (I) is true iff the interrupt I is one that cannot be permitted
    --  to be attached to a user handler. The possible reasons are many. For
    --  example, it may be mapped to an exception used to implement task abort,

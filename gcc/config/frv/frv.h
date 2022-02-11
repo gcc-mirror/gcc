@@ -1,5 +1,5 @@
 /* Target macros for the FRV port of GCC.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Red Hat Inc.
 
    This file is part of GCC.
@@ -1525,7 +1525,7 @@ do {									\
 
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 
-/* This is for final.c, because it is used by ASM_DECLARE_OBJECT_NAME.  */
+/* This is for final.cc, because it is used by ASM_DECLARE_OBJECT_NAME.  */
 extern int size_directive_output;
 
 /* Like `ASM_OUTPUT_ALIGNED_LOCAL' except that it takes an additional

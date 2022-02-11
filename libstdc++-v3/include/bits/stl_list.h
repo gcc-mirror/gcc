@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 // Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -174,8 +174,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _Cmp _M_cmp;
 
 	  bool
-	  operator()(const __detail::_List_node_base* __lhs,
-		     const __detail::_List_node_base* __rhs) /* not const */
+	  operator()(__detail::_List_node_base* __lhs,
+		     __detail::_List_node_base* __rhs) /* not const */
 	  { return _M_cmp(*_Iter(__lhs), *_Iter(__rhs)); }
 	};
 
@@ -183,8 +183,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct _Ptr_cmp<_Iter, void>
 	{
 	  bool
-	  operator()(const __detail::_List_node_base* __lhs,
-		     const __detail::_List_node_base* __rhs) const
+	  operator()(__detail::_List_node_base* __lhs,
+		     __detail::_List_node_base* __rhs) const
 	  { return *_Iter(__lhs) < *_Iter(__rhs); }
 	};
 

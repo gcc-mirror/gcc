@@ -11,7 +11,7 @@ class Base3602
        assert(x > 0);
        assert(y > 0);
    }
-   body
+   do
    {
    }
 }
@@ -25,7 +25,7 @@ class Base5230
     out (res)
     {
     }
-    body
+    do
     {
         return 42;
     }

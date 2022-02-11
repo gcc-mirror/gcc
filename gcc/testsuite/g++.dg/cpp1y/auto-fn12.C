@@ -1,5 +1,6 @@
 // { dg-do compile { target c++14 } }
 // { dg-final { scan-assembler "_ZN1AIiEcvDaEv" } }
+// { dg-additional-options -fno-implicit-constexpr }
 
 template <class T>
 struct A {

@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fkeep-inline-functions }
 // { dg-final { scan-assembler "_ZZN1AIiEC4IiEET_S2_Ed_NKUlvE_clEv" } }
 
 template <class T> struct A

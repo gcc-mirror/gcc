@@ -1,5 +1,5 @@
 /* Part of CPP library.
-   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -287,6 +287,9 @@ struct lexer_state
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
   unsigned char pragma_allow_expansion;
+
+  /* Nonzero if _Pragma should not be interpreted.  */
+  unsigned char ignore__Pragma;
 };
 
 /* Special nodes - identifiers with predefined significance.  */
@@ -531,15 +534,15 @@ struct cpp_reader
   cpp_token avoid_paste;
   cpp_token endarg;
 
-  /* Opaque handle to the dependencies of mkdeps.c.  */
+  /* Opaque handle to the dependencies of mkdeps.cc.  */
   class mkdeps *deps;
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
-     See identifiers.c */
+     See identifiers.cc */
   struct obstack hash_ob;
 
   /* Obstack holding buffer and conditional structures.  This is a
-     real stack.  See directives.c.  */
+     real stack.  See directives.cc.  */
   struct obstack buffer_ob;
 
   /* Pragma table - dynamic, because a library user can add to the
@@ -574,7 +577,7 @@ struct cpp_reader
     location_t first_line;
   } out;
 
-  /* Used for buffer overlays by traditional.c.  */
+  /* Used for buffer overlays by traditional.cc.  */
   const unsigned char *saved_cur, *saved_rlimit, *saved_line_base;
 
   /* A saved list of the defined macros, for dependency checking
@@ -597,6 +600,14 @@ struct cpp_reader
   /* Location identifying the main source file -- intended to be line
      zero of said file.  */
   location_t main_loc;
+
+  /* Returns true iff we should warn about UTF-8 bidirectional control
+     characters.  */
+  bool warn_bidi_p () const
+  {
+    return (CPP_OPTION (this, cpp_warn_bidirectional)
+	    & (bidirectional_unpaired|bidirectional_any));
+  }
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -604,7 +615,7 @@ struct cpp_reader
    definition of a pp-number in the C standard [section 6.4.8 of C99].
 
    In the unlikely event that characters other than \r and \n enter
-   the set is_vspace, the macro handle_newline() in lex.c must be
+   the set is_vspace, the macro handle_newline() in lex.cc must be
    updated.  */
 #define _dollar_ok(x)	((x) == '$' && CPP_OPTION (pfile, dollars_in_ident))
 
@@ -663,7 +674,7 @@ inline bool _cpp_defined_macro_p (cpp_hashnode *node)
   return cpp_macro_p (node) && !(node->flags & NODE_CONDITIONAL);
 }
 
-/* In macro.c */
+/* In macro.cc */
 extern bool _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 				   location_t);
 inline bool _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
@@ -692,11 +703,11 @@ extern void _cpp_push_token_context (cpp_reader *, cpp_hashnode *,
 				     const cpp_token *, unsigned int);
 extern void _cpp_backup_tokens_direct (cpp_reader *, unsigned int);
 
-/* In identifiers.c */
+/* In identifiers.cc */
 extern void _cpp_init_hashtable (cpp_reader *, cpp_hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
-/* In files.c */
+/* In files.cc */
 enum _cpp_find_file_kind
   { _cpp_FFK_NORMAL, _cpp_FFK_FAKE, _cpp_FFK_PRE_INCLUDE, _cpp_FFK_HAS_INCLUDE };
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
@@ -722,11 +733,11 @@ extern struct stat *_cpp_get_file_stat (_cpp_file *);
 extern bool _cpp_has_header (cpp_reader *, const char *, int,
 			     enum include_type);
 
-/* In expr.c */
+/* In expr.cc */
 extern bool _cpp_parse_expr (cpp_reader *, bool);
 extern struct op *_cpp_expand_op_stack (cpp_reader *);
 
-/* In lex.c */
+/* In lex.cc */
 extern void _cpp_process_line_notes (cpp_reader *, int);
 extern void _cpp_clean_line (cpp_reader *);
 extern bool _cpp_get_fresh_line (cpp_reader *);
@@ -749,13 +760,13 @@ static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
 }
 extern void *_cpp_commit_buff (cpp_reader *pfile, size_t size);
 
-/* In init.c.  */
+/* In init.cc.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
 extern const char *cpp_named_operator2name (enum cpp_ttype type);
 extern void _cpp_restore_special_builtin (cpp_reader *pfile,
 					  struct def_pragma_macro *);
 
-/* In directives.c */
+/* In directives.cc */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);
 extern int _cpp_handle_directive (cpp_reader *, bool);
 extern void _cpp_define_builtin (cpp_reader *, const char *);
@@ -769,7 +780,10 @@ extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 extern void _cpp_pop_buffer (cpp_reader *);
 extern char *_cpp_bracket_include (cpp_reader *);
 
-/* In traditional.c.  */
+/* In errors.cc  */
+extern location_t cpp_diagnostic_get_current_location (cpp_reader *);
+
+/* In traditional.cc.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
@@ -782,7 +796,7 @@ extern unsigned char *_cpp_copy_replacement_text (const cpp_macro *,
 						  unsigned char *);
 extern size_t _cpp_replacement_text_len (const cpp_macro *);
 
-/* In charset.c.  */
+/* In charset.cc.  */
 
 /* The normalization state at this point in the sequence.
    It starts initialized to all zeros, and at the end
@@ -887,7 +901,7 @@ ufputs (const unsigned char *s, FILE *f)
   return fputs ((const char *)s, f);
 }
 
-/* In line-map.c.  */
+/* In line-map.cc.  */
 
 /* Create and return a virtual location for a token that is part of a
    macro expansion-list at a macro expansion point.  See the comment
@@ -934,6 +948,26 @@ int linemap_get_expansion_line (class line_maps *,
    SET is the line map set LOCATION comes from.  */
 const char* linemap_get_expansion_filename (class line_maps *,
 					    location_t);
+
+/* A subclass of rich_location for emitting a diagnostic
+   at the current location of the reader, but flagging
+   it with set_escape_on_output (true).  */
+class encoding_rich_location : public rich_location
+{
+ public:
+  encoding_rich_location (cpp_reader *pfile)
+  : rich_location (pfile->line_table,
+		   cpp_diagnostic_get_current_location (pfile))
+  {
+    set_escape_on_output (true);
+  }
+
+  encoding_rich_location (cpp_reader *pfile, location_t loc)
+  : rich_location (pfile->line_table, loc)
+  {
+    set_escape_on_output (true);
+  }
+};
 
 #ifdef __cplusplus
 }

@@ -27,5 +27,5 @@ nothrow:
 static if (__DARWIN_C_LEVEL >= __DARWIN_C_FULL)
 {
     // ^ __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-    pure void* memmem(return const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    pure void* memmem(return scope const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
 }

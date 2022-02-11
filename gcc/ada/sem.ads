@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -503,7 +503,7 @@ package Sem is
       --  Save contents of Check_Policy_List on entry to restore on exit. The
       --  Check_Policy pragmas are chained with Check_Policy_List pointing to
       --  the most recent entry. This list is searched starting here, so that
-      --  the search finds the most recent appicable entry. When we restore
+      --  the search finds the most recent applicable entry. When we restore
       --  Check_Policy_List on exit from the scope, the effect is to remove
       --  all entries set in the scope being exited.
 

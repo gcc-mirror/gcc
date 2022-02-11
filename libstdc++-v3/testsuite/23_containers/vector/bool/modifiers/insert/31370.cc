@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,11 +24,7 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_DEBUG
-  using std::_GLIBCXX_STD_C::_S_word_bit;
-#else
-  using std::_S_word_bit;
-#endif
+using std::_S_word_bit;
 
 inline void
 check_cap_ge_size(const std::vector<bool>& x)

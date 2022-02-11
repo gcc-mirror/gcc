@@ -129,7 +129,6 @@ void test3()
     assert([1]  .init == null);
     assert([1:1].init == null);
     assert(1.0  .init is double.nan);
-    assert(10i  .init is idouble.nan);
     assert('c'  .init == 0xFF);
     assert("s"  .init == null);
 
@@ -138,7 +137,6 @@ void test3()
     assert([1]  .init() == 1);
     assert([1:1].init() == 1);
     assert(1.0  .init() == 1);
-    assert(10i  .init() == 1);
     assert('c'  .init() == 1);
     assert("s"  .init() == 1);
 
@@ -147,7 +145,6 @@ void test3()
     assert([1]  .init!(int[])()    == 1);
     assert([1:1].init!(int[int])() == 1);
     assert(1.0  .init!double()     == 1);
-    assert(10i  .init!idouble()    == 1);
     assert('c'  .init!char()       == 1);
     assert("s"  .init!string()     == 1);
 
@@ -199,6 +196,7 @@ void test5()
     {
         // f5_1 .. f5_5 are symbols which declared in module scope
         assert(100.f5_1() == 1);
+        assert(001.f5_1() == 1); // https://issues.dlang.org/show_bug.cgi?id=8346
         assert("s".f5_2() == 2);
         assert(1.4.f5_3() == 3);
         assert(100.f5_4() == 1);
@@ -422,9 +420,7 @@ class C5 : B5
 }
 
 /*******************************************/
-// 662
-
-import std.stdio,std.string, std.conv;
+// https://issues.dlang.org/show_bug.cgi?id=662
 
 enum Etest
 {
@@ -450,6 +446,10 @@ int test(Etest test)
 //{
 //  return cast(int)i;
 //}
+string to(T)(int i) {
+    assert(i == 22);
+    return "22";
+}
 
 void test682()
 {
@@ -465,15 +465,55 @@ void test682()
 }
 
 /*******************************************/
-// 3382
-
-import std.range, std.algorithm;
+// https://issues.dlang.org/show_bug.cgi?id=3382
 
 @property T twice(T)(T x){ return x * x; }
-real toreal(ireal x){ return x.im; }
 char toupper(char c){ return ('a'<=c && c<='z') ? cast(char)(c - 'a' + 'A') : c; }
 
 @property ref T setter(T)(ref T x, T v){ x = v; return x; }
+
+auto iota(T)(T min, T max)
+{
+    static struct Result
+    {
+        T cur, end;
+
+        T front() { return cur; }
+        bool empty() { return front == end; }
+        void popFront() { cur++; }
+    }
+    return Result(min, max);
+}
+
+auto map(string s, R)(R range)
+{
+    static struct Result
+    {
+        R source;
+        auto front() { auto a = source.front; return mixin(s); }
+        alias source this;
+    }
+    return Result(range);
+}
+
+auto filter(string s, R)(R range)
+{
+    static struct Result
+    {
+        R source;
+        alias source this;
+        void popFront()
+        {
+            while (true)
+            {
+                auto a = source.front;
+                if (mixin(s)) break;
+                source.popFront();
+            }
+        }
+    }
+    return Result(range);
+}
 
 void test3382()
 {
@@ -483,17 +523,29 @@ void test3382()
 
     assert(10.twice == 100);
     assert(0.5.twice == 0.25);
-    assert(1.4i.toreal() == 1.4);
     assert('c'.toupper() == 'C');
 }
 
 /*******************************************/
-// 6185
+// https://issues.dlang.org/show_bug.cgi?id=6185
+
+ref T front(T)(T[] array) { return array[0]; }
+bool empty(T)(T[] array) { return array.length == 0; }
+void popFront(T)(ref T[] array) { array = array[1..$]; }
+
+bool equal(T, U)(T t, U u)
+{
+    while (true)
+    {
+        if (t.empty) return u.empty;
+        if (u.empty || t.front != u.front) return false;
+        t.popFront();
+        u.popFront();
+    }
+}
 
 void test6185()
 {
-    import std.algorithm;
-
     auto r1 = [1,2,3].map!"a*2";
     assert(equal(r1, [2,4,6]));
 
@@ -502,7 +554,7 @@ void test6185()
 }
 
 /*******************************************/
-// 6070
+// https://issues.dlang.org/show_bug.cgi?id=6070
 
 enum test6070a = ["test"].foo6070();
 enum test6070b = foo6070(["test"]);
@@ -510,13 +562,13 @@ enum test6070b = foo6070(["test"]);
 string foo6070(string[] s) { return ""; }
 
 /*******************************************/
-// 7670
+// https://issues.dlang.org/show_bug.cgi?id=7670
 
 struct A7670
 {
     double x;
 }
-@property ref double y7670(ref A7670 a)
+@property ref double y7670(return ref A7670 a)
 {
     return a.x;
 }
@@ -528,7 +580,7 @@ void test7670()
 }
 
 /*******************************************/
-// 7703
+// https://issues.dlang.org/show_bug.cgi?id=7703
 void f7703(T)(T a) { }
 
 void test7703()
@@ -541,9 +593,9 @@ void test7703()
 }
 
 /*******************************************/
-// 7773
+// https://issues.dlang.org/show_bug.cgi?id=7773
 
-//import std.stdio;
+//import core.stdc.stdio;
 void writeln7773(int n){}
 void test7773()
 {
@@ -552,7 +604,7 @@ void test7773()
 }
 
 /*******************************************/
-// 7943
+// https://issues.dlang.org/show_bug.cgi?id=7943
 
 struct Foo7943
 {
@@ -570,7 +622,7 @@ void test7943()
 }
 
 /*******************************************/
-// 8180
+// https://issues.dlang.org/show_bug.cgi?id=8180
 
 int writeln8180(T...)(T args) { return 1; }
 
@@ -587,7 +639,7 @@ void test8180()
 }
 
 /*******************************************/
-// 8245
+// https://issues.dlang.org/show_bug.cgi?id=8245
 
           string toStr8245(immutable(char)* p) { return null; }
 @property string asStr8245(immutable(char)* p) { return null; }
@@ -600,7 +652,7 @@ void test8245()
 }
 
 /*******************************************/
-// 8252
+// https://issues.dlang.org/show_bug.cgi?id=8252
 
 bool f(int x) { return !x; }
 
@@ -611,7 +663,7 @@ void test8252()
 }
 
 /*******************************************/
-// 8453
+// https://issues.dlang.org/show_bug.cgi?id=8453
 
 T[] sort8453(T)(T[] a) { return a; }
 
@@ -623,7 +675,7 @@ void test8453()
 }
 
 /*******************************************/
-// 8503
+// https://issues.dlang.org/show_bug.cgi?id=8503
 
 void α8503(int i) {}
 
@@ -634,7 +686,7 @@ void test8503()
 }
 
 /*******************************************/
-// 9014
+// https://issues.dlang.org/show_bug.cgi?id=9014
 
 @property ref int foo9014(int[] a)
 {
@@ -649,7 +701,7 @@ void test9014()
 }
 
 /*******************************************/
-// 9590
+// https://issues.dlang.org/show_bug.cgi?id=9590
 
 auto func9590(E)(lazy E expr) { }
 
@@ -666,7 +718,7 @@ void test9590()
 }
 
 /*******************************************/
-// 9946
+// https://issues.dlang.org/show_bug.cgi?id=9946
 
 size_t count9946(alias x)(int[] haystack)
 {
@@ -682,7 +734,7 @@ void test9946()
 }
 
 /*******************************************/
-// 10618
+// https://issues.dlang.org/show_bug.cgi?id=10618
 
 template Temp10618(T)
 {
@@ -695,7 +747,7 @@ void test10618()
 }
 
 /*******************************************/
-// 10003
+// https://issues.dlang.org/show_bug.cgi?id=10003
 
 void foo10003(void *p) {}
 void test10003()
@@ -705,7 +757,7 @@ void test10003()
 }
 
 /*******************************************/
-// 10041
+// https://issues.dlang.org/show_bug.cgi?id=10041
 
 auto writeln10041(T...)(T args) { return typeof(args[0]).stringof; }
 
@@ -717,7 +769,7 @@ void test10041()
 }
 
 /*******************************************/
-// 10047
+// https://issues.dlang.org/show_bug.cgi?id=10047
 
 struct Typedef10047(T)
 {
@@ -737,7 +789,7 @@ void test10047()
 }
 
 /*******************************************/
-// 10166
+// https://issues.dlang.org/show_bug.cgi?id=10166
 
 auto foo10166()
 {
@@ -752,7 +804,7 @@ void bar10166(alias handler, T)(T t, int i)
 void buzz10166() {}
 
 /*******************************************/
-// 10526
+// https://issues.dlang.org/show_bug.cgi?id=10526
 
 struct S10526
 {
@@ -781,7 +833,7 @@ void test10526()
 }
 
 /********************************************************/
-// 10609
+// https://issues.dlang.org/show_bug.cgi?id=10609
 
 int foo10609(int x) { return x; }
 
@@ -794,7 +846,7 @@ void test10609()
 }
 
 /*******************************************/
-// 11312
+// https://issues.dlang.org/show_bug.cgi?id=11312
 
 struct S11312;
 
@@ -809,7 +861,7 @@ void test11312()
 }
 
 /*******************************************/
-// 15123
+// https://issues.dlang.org/show_bug.cgi?id=15123
 
 auto keys15123(K, V)(V[K] aa) { return [1]; }
 auto values15123(K, V)(V[K] aa) { return [2]; }

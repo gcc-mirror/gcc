@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -743,6 +743,7 @@ unsigned HOST_WIDE_INT aarch64_and_split_imm2 (HOST_WIDE_INT val_in);
 bool aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode);
 int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
+bool aarch64_advsimd_struct_mode_p (machine_mode mode);
 opt_machine_mode aarch64_vq_mode (scalar_mode);
 opt_machine_mode aarch64_full_sve_mode (scalar_mode);
 bool aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode);
@@ -845,6 +846,7 @@ const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr_rtx (void);
 rtx aarch64_return_addr (int, rtx);
 rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
+rtx aarch64_gen_shareable_zero (machine_mode);
 bool aarch64_simd_mem_operand_p (rtx);
 bool aarch64_sve_ld1r_operand_p (rtx);
 bool aarch64_sve_ld1rq_operand_p (rtx);
@@ -923,8 +925,6 @@ bool aarch64_split_128bit_move_p (rtx, rtx);
 
 bool aarch64_mov128_immediate (rtx);
 
-void aarch64_split_simd_combine (rtx, rtx, rtx);
-
 void aarch64_split_simd_move (rtx, rtx);
 
 /* Check for a legitimate floating point constant for FMOV.  */
@@ -968,6 +968,7 @@ rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+void handle_arm_neon_h (void);
 
 namespace aarch64_sve {
   void init_builtins ();
@@ -997,6 +998,7 @@ void aarch64_atomic_assign_expand_fenv (tree *, tree *, tree *);
 int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
+bool aarch64_mergeable_load_pair_p (machine_mode, rtx, rtx);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
 bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
 void aarch64_swap_ldrstr_operands (rtx *, bool);
@@ -1009,7 +1011,7 @@ extern bool aarch64_classify_address (struct aarch64_address_info *, rtx,
 				      machine_mode, bool,
 				      aarch64_addr_query_type = ADDR_QUERY_M);
 
-/* Defined in common/config/aarch64-common.c.  */
+/* Defined in common/config/aarch64-common.cc.  */
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);
@@ -1019,7 +1021,7 @@ enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
 void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
 
-/* Defined in aarch64-d.c  */
+/* Defined in aarch64-d.cc  */
 extern void aarch64_d_target_versions (void);
 extern void aarch64_d_register_target_info (void);
 

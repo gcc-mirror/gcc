@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,33 @@
 
 --  Boolean'Image
 
-package System.Img_Bool is
-   pragma Pure;
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+with System.Val_Bool;
+
+package System.Img_Bool
+  with SPARK_Mode, Preelaborate
+is
 
    procedure Image_Boolean
      (V : Boolean;
       S : in out String;
-      P : out Natural);
+      P : out Natural)
+   with
+     Pre  => S'First = 1
+       and then (if V then S'Length >= 4 else S'Length >= 5),
+     Post => (if V then P = 4 else P = 5)
+       and then System.Val_Bool.Is_Boolean_Image_Ghost (S (1 .. P))
+       and then System.Val_Bool.Value_Boolean (S (1 .. P)) = V;
    --  Computes Boolean'Image (V) and stores the result in S (1 .. P)
    --  setting the resulting value of P. The caller guarantees that S
    --  is long enough to hold the result, and that S'First is 1.

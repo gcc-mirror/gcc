@@ -1,16 +1,19 @@
+// Written in the D programming language.
 /**
 Utility and ancillary artifacts of `std.experimental.allocator`. This module
 shouldn't be used directly; its functionality will be migrated into more
 appropriate parts of `std`.
 
 Authors: $(HTTP erdani.com, Andrei Alexandrescu), Timon Gehr (`Ternary`)
+
+Source: $(PHOBOSSRC std/experimental/allocator/common.d)
 */
 module std.experimental.allocator.common;
 import std.algorithm.comparison, std.traits;
 
 /**
 Returns the size in bytes of the state that needs to be allocated to hold an
-object of type $(D T). $(D stateSize!T) is zero for $(D struct)s that are not
+object of type `T`. `stateSize!T` is zero for `struct`s that are not
 nested and have no nonstatic member variables.
  */
 template stateSize(T)
@@ -54,7 +57,7 @@ template hasStaticallyKnownAlignment(Allocator)
 }
 
 /**
-$(D chooseAtRuntime) is a compile-time constant of type $(D size_t) that several
+`chooseAtRuntime` is a compile-time constant of type `size_t` that several
 parameterized structures in this module recognize to mean deferral to runtime of
 the exact value. For example, $(D BitmappedBlock!(Allocator, 4096)) (described in
 detail below) defines a block allocator with block size of 4096 bytes, whereas
@@ -64,11 +67,11 @@ field storing the block size, initialized by the user.
 enum chooseAtRuntime = size_t.max - 1;
 
 /**
-$(D unbounded) is a compile-time constant of type $(D size_t) that several
+`unbounded` is a compile-time constant of type `size_t` that several
 parameterized structures in this module recognize to mean "infinite" bounds for
-the parameter. For example, $(D Freelist) (described in detail below) accepts a
-$(D maxNodes) parameter limiting the number of freelist items. If $(D unbounded)
-is passed for $(D maxNodes), then there is no limit and no checking for the
+the parameter. For example, `Freelist` (described in detail below) accepts a
+`maxNodes` parameter limiting the number of freelist items. If `unbounded`
+is passed for `maxNodes`, then there is no limit and no checking for the
 number of nodes.
 */
 enum unbounded = size_t.max;
@@ -80,7 +83,7 @@ current platform.
 enum uint platformAlignment = std.algorithm.comparison.max(double.alignof, real.alignof);
 
 /**
-The default good size allocation is deduced as $(D n) rounded up to the
+The default good size allocation is deduced as `n` rounded up to the
 allocator's alignment.
 */
 size_t goodAllocSize(A)(auto ref A a, size_t n)
@@ -88,7 +91,7 @@ size_t goodAllocSize(A)(auto ref A a, size_t n)
     return n.roundUpToMultipleOf(a.alignment);
 }
 
-/**
+/*
 Returns s rounded up to a multiple of base.
 */
 @safe @nogc nothrow pure
@@ -108,13 +111,13 @@ unittest
     assert(118.roundUpToMultipleOf(11) == 121);
 }
 
-/**
+/*
 Returns `n` rounded up to a multiple of alignment, which must be a power of 2.
 */
 @safe @nogc nothrow pure
 package size_t roundUpToAlignment(size_t n, uint alignment)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     assert(alignment.isPowerOf2);
     immutable uint slack = cast(uint) n & (alignment - 1);
     const result = slack
@@ -133,13 +136,13 @@ unittest
     assert(118.roundUpToAlignment(64) == 128);
 }
 
-/**
+/*
 Returns `n` rounded down to a multiple of alignment, which must be a power of 2.
 */
 @safe @nogc nothrow pure
 package size_t roundDownToAlignment(size_t n, uint alignment)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     assert(alignment.isPowerOf2);
     return n & ~size_t(alignment - 1);
 }
@@ -153,7 +156,7 @@ unittest
     assert(63.roundDownToAlignment(64) == 0);
 }
 
-/**
+/*
 Advances the beginning of `b` to start at alignment `a`. The resulting buffer
 may therefore be shorter. Returns the adjusted buffer, or null if obtaining a
 non-empty buffer is impossible.
@@ -177,7 +180,7 @@ package void[] roundUpToAlignment(void[] b, uint a)
     assert(roundUpToAlignment(buf, 128) !is null);
 }
 
-/**
+/*
 Like `a / b` but rounds the result up, not down.
 */
 @safe @nogc nothrow pure
@@ -187,7 +190,7 @@ package size_t divideRoundUp(size_t a, size_t b)
     return (a + b - 1) / b;
 }
 
-/**
+/*
 Returns `s` rounded up to a multiple of `base`.
 */
 @nogc nothrow pure
@@ -209,8 +212,8 @@ nothrow pure
     assert(roundStartToMultipleOf(p, 16) is p);
 }
 
-/**
-Returns $(D s) rounded up to the nearest power of 2.
+/*
+Returns `s` rounded up to the nearest power of 2.
 */
 @safe @nogc nothrow pure
 package size_t roundUpToPowerOf2(size_t s)
@@ -246,18 +249,14 @@ unittest
     assert(((size_t.max >> 1) + 1).roundUpToPowerOf2 == (size_t.max >> 1) + 1);
 }
 
-/**
-Returns the number of trailing zeros of $(D x).
+/*
+Returns the number of trailing zeros of `x`.
 */
 @safe @nogc nothrow pure
 package uint trailingZeros(ulong x)
 {
-    uint result;
-    while (result < 64 && !(x & (1UL << result)))
-    {
-        ++result;
-    }
-    return result;
+    import core.bitop : bsf;
+    return x == 0 ? 64 : bsf(x);
 }
 
 @safe @nogc nothrow pure
@@ -270,7 +269,7 @@ unittest
     assert(trailingZeros(4) == 2);
 }
 
-/**
+/*
 Returns `true` if `ptr` is aligned at `alignment`.
 */
 @nogc nothrow pure
@@ -279,14 +278,14 @@ package bool alignedAt(T)(T* ptr, uint alignment)
     return cast(size_t) ptr % alignment == 0;
 }
 
-/**
+/*
 Returns the effective alignment of `ptr`, i.e. the largest power of two that is
 a divisor of `ptr`.
 */
 @nogc nothrow pure
-package uint effectiveAlignment(void* ptr)
+package size_t effectiveAlignment(void* ptr)
 {
-    return 1U << trailingZeros(cast(size_t) ptr);
+    return (cast(size_t) 1) << trailingZeros(cast(size_t) ptr);
 }
 
 @nogc nothrow pure
@@ -294,28 +293,31 @@ package uint effectiveAlignment(void* ptr)
 {
     int x;
     assert(effectiveAlignment(&x) >= int.alignof);
+
+    const max = (cast(size_t) 1) << (size_t.sizeof * 8 - 1);
+    assert(effectiveAlignment(cast(void*) max) == max);
 }
 
-/**
+/*
 Aligns a pointer down to a specified alignment. The resulting pointer is less
 than or equal to the given pointer.
 */
 @nogc nothrow pure
-package void* alignDownTo(void* ptr, uint alignment)
+package void* alignDownTo(return scope void* ptr, uint alignment)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     assert(alignment.isPowerOf2);
     return cast(void*) (cast(size_t) ptr & ~(alignment - 1UL));
 }
 
-/**
+/*
 Aligns a pointer up to a specified alignment. The resulting pointer is greater
 than or equal to the given pointer.
 */
 @nogc nothrow pure
-package void* alignUpTo(void* ptr, uint alignment)
+package void* alignUpTo(return scope void* ptr, uint alignment)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     assert(alignment.isPowerOf2);
     immutable uint slack = cast(size_t) ptr & (alignment - 1U);
     return slack ? ptr + alignment - slack : ptr;
@@ -324,27 +326,27 @@ package void* alignUpTo(void* ptr, uint alignment)
 @safe @nogc nothrow pure
 package bool isGoodStaticAlignment(uint x)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     return x.isPowerOf2;
 }
 
 @safe @nogc nothrow pure
 package bool isGoodDynamicAlignment(uint x)
 {
-    import std.math : isPowerOf2;
+    import std.math.traits : isPowerOf2;
     return x.isPowerOf2 && x >= (void*).sizeof;
 }
 
 /**
-The default $(D reallocate) function first attempts to use $(D expand). If $(D
-Allocator.expand) is not defined or returns $(D false), $(D reallocate)
+The default `reallocate` function first attempts to use `expand`. If $(D
+Allocator.expand) is not defined or returns `false`, `reallocate`
 allocates a new block of memory of appropriate size and copies data from the old
-block to the new block. Finally, if $(D Allocator) defines $(D deallocate), $(D
+block to the new block. Finally, if `Allocator` defines `deallocate`, $(D
 reallocate) uses it to free the old memory block.
 
-$(D reallocate) does not attempt to use $(D Allocator.reallocate) even if
+`reallocate` does not attempt to use `Allocator.reallocate` even if
 defined. This is deliberate so allocators may use it internally within their own
-implementation of $(D reallocate).
+implementation of `reallocate`.
 
 */
 bool reallocate(Allocator)(ref Allocator a, ref void[] b, size_t s)
@@ -366,20 +368,21 @@ bool reallocate(Allocator)(ref Allocator a, ref void[] b, size_t s)
 
 /**
 
-The default $(D alignedReallocate) function first attempts to use $(D expand).
-If $(D Allocator.expand) is not defined or returns $(D false),  $(D
+The default `alignedReallocate` function first attempts to use `expand`.
+If `Allocator.expand` is not defined or returns `false`,  $(D
 alignedReallocate) allocates a new block of memory of appropriate size and
-copies data from the old block to the new block. Finally, if $(D Allocator)
-defines $(D deallocate), $(D alignedReallocate) uses it to free the old memory
+copies data from the old block to the new block. Finally, if `Allocator`
+defines `deallocate`, `alignedReallocate` uses it to free the old memory
 block.
 
-$(D alignedReallocate) does not attempt to use $(D Allocator.reallocate) even if
+`alignedReallocate` does not attempt to use `Allocator.reallocate` even if
 defined. This is deliberate so allocators may use it internally within their own
-implementation of $(D reallocate).
+implementation of `reallocate`.
 
 */
 bool alignedReallocate(Allocator)(ref Allocator alloc,
         ref void[] b, size_t s, uint a)
+if (hasMember!(Allocator, "alignedAllocate"))
 {
     static if (hasMember!(Allocator, "expand"))
     {
@@ -388,15 +391,73 @@ bool alignedReallocate(Allocator)(ref Allocator alloc,
     }
     else
     {
-        if (b.length == s) return true;
+        if (b.length == s && b.ptr.alignedAt(a)) return true;
     }
     auto newB = alloc.alignedAllocate(s, a);
+    if (newB.length != s) return false;
     if (newB.length <= b.length) newB[] = b[0 .. newB.length];
     else newB[0 .. b.length] = b[];
     static if (hasMember!(Allocator, "deallocate"))
         alloc.deallocate(b);
     b = newB;
     return true;
+}
+
+@system unittest
+{
+    bool called = false;
+    struct DummyAllocator
+    {
+        void[] alignedAllocate(size_t size, uint alignment)
+        {
+            called = true;
+            return null;
+        }
+    }
+
+    struct DummyAllocatorExpand
+    {
+        void[] alignedAllocate(size_t size, uint alignment)
+        {
+            return null;
+        }
+
+        bool expand(ref void[] b, size_t length)
+        {
+            called = true;
+            return true;
+        }
+    }
+
+    char[128] buf;
+    uint alignment = 32;
+    auto alignedPtr = roundUpToMultipleOf(cast(size_t) buf.ptr, alignment);
+    auto diff = alignedPtr - cast(size_t) buf.ptr;
+
+    // Align the buffer to 'alignment'
+    void[] b = cast(void[]) (buf.ptr + diff)[0 .. buf.length - diff];
+
+    DummyAllocator a1;
+    // Ask for same length and alignment, should not call 'alignedAllocate'
+    assert(alignedReallocate(a1, b, b.length, alignment));
+    assert(!called);
+
+    // Ask for same length, different alignment
+    // should call 'alignedAllocate' if not aligned to new value
+    alignedReallocate(a1, b, b.length, alignment + 1);
+    assert(b.ptr.alignedAt(alignment + 1) || called);
+    called = false;
+
+    DummyAllocatorExpand a2;
+    // Ask for bigger length, same alignment, should call 'expand'
+    assert(alignedReallocate(a2, b, b.length + 1, alignment));
+    assert(called);
+    called = false;
+
+    // Ask for bigger length, different alignment
+    // should call 'alignedAllocate' if not aligned to new value
+    alignedReallocate(a2, b, b.length + 1, alignment + 1);
+    assert(b.ptr.alignedAt(alignment + 1) || !called);
 }
 
 /**
@@ -417,14 +478,13 @@ Forwards each of the methods in `funs` (if defined) to `member`.
     return result;
 }
 
-version (unittest)
+version (StdUnittest)
 {
-    import std.experimental.allocator : IAllocator, ISharedAllocator;
 
     package void testAllocator(alias make)()
     {
         import std.conv : text;
-        import std.math : isPowerOf2;
+        import std.math.traits : isPowerOf2;
         import std.stdio : writeln, stderr;
         import std.typecons : Ternary;
         alias A = typeof(make());
@@ -449,6 +509,18 @@ version (unittest)
         auto b2 = a.allocate(2);
         assert(b2.length == 2);
         assert(b2.ptr + b2.length <= b1.ptr || b1.ptr + b1.length <= b2.ptr);
+
+        // Test allocateZeroed
+        static if (hasMember!(A, "allocateZeroed"))
+        {{
+            auto b3 = a.allocateZeroed(8);
+            if (b3 !is null)
+            {
+                assert(b3.length == 8);
+                foreach (e; cast(ubyte[]) b3)
+                    assert(e == 0);
+            }
+        }}
 
         // Test alignedAllocate
         static if (hasMember!(A, "alignedAllocate"))
@@ -545,18 +617,22 @@ version (unittest)
          }}
     }
 
-    package void testAllocatorObject(AllocInterface)(AllocInterface a)
-        if (is(AllocInterface : IAllocator)
-            || is (AllocInterface : shared ISharedAllocator))
+    package void testAllocatorObject(RCAllocInterface)(RCAllocInterface a)
     {
+        // this used to be a template constraint, but moving it inside prevents
+        // unnecessary import of std.experimental.allocator
+        import std.experimental.allocator : RCIAllocator, RCISharedAllocator;
+        static assert(is(RCAllocInterface == RCIAllocator)
+            || is (RCAllocInterface == RCISharedAllocator));
+
         import std.conv : text;
-        import std.math : isPowerOf2;
+        import std.math.traits : isPowerOf2;
         import std.stdio : writeln, stderr;
         import std.typecons : Ternary;
         scope(failure) stderr.writeln("testAllocatorObject failed for ",
-                AllocInterface.stringof);
+                RCAllocInterface.stringof);
 
-        assert(a);
+        assert(!a.isNull);
 
         // Test alignment
         assert(a.alignment.isPowerOf2);

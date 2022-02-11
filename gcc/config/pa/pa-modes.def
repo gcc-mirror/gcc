@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -30,3 +30,6 @@ FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* HPPA floating comparisons produce distinct condition codes.  */
 CC_MODE (CCFP);
+
+/* Mode used for signed overflow checking of TImode.  */
+INT_MODE (OI, 32);

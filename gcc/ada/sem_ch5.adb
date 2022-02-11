@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,7 +142,7 @@ package body Sem_Ch5 is
       --  If the right-hand side of an assignment statement is a build-in-place
       --  call we cannot build in place, so we insert a temp initialized with
       --  the call, and transform the assignment statement to copy the temp.
-      --  Transform_BIP_Assignment does the tranformation, and
+      --  Transform_BIP_Assignment does the transformation, and
       --  Should_Transform_BIP_Assignment determines whether we should.
       --  The same goes for qualified expressions and conversions whose
       --  operand is such a call.
@@ -2906,8 +2906,8 @@ package body Sem_Ch5 is
       procedure Check_Predicate_Use (T : Entity_Id);
       --  Diagnose Attempt to iterate through non-static predicate. Note that
       --  a type with inherited predicates may have both static and dynamic
-      --  forms. In this case it is not sufficent to check the static predicate
-      --  function only, look for a dynamic predicate aspect as well.
+      --  forms. In this case it is not sufficient to check the static
+      --  predicate function only, look for a dynamic predicate aspect as well.
 
       procedure Process_Bounds (R : Node_Id);
       --  If the iteration is given by a range, create temporaries and
@@ -3560,7 +3560,7 @@ package body Sem_Ch5 is
                      Set_Is_Null_Loop (Loop_Nod);
                      Null_Range := True;
 
-                     --  Suppress other warnigns about the body of the loop, as
+                     --  Suppress other warnings about the body of the loop, as
                      --  it will never execute.
                      Set_Suppress_Loop_Warnings (Loop_Nod);
                   end if;

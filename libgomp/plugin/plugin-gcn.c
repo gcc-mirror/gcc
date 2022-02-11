@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -392,7 +392,6 @@ struct gcn_image_desc
   const unsigned kernel_count;
   struct hsa_kernel_description *kernel_infos;
   const unsigned global_variable_count;
-  struct global_var_info *global_variables;
 };
 
 /* This enum mirrors the corresponding LLVM enum's values for all ISAs that we
@@ -1220,24 +1219,55 @@ parse_target_attributes (void **input,
 
   if (gcn_dims_found)
     {
+      bool gfx900_workaround_p = false;
+
       if (agent->device_isa == EF_AMDGPU_MACH_AMDGCN_GFX900
 	  && gcn_threads == 0 && override_z_dim == 0)
 	{
-	  gcn_threads = 4;
+	  gfx900_workaround_p = true;
 	  GCN_WARNING ("VEGA BUG WORKAROUND: reducing default number of "
-		       "threads to 4 per team.\n");
+		       "threads to at most 4 per team.\n");
 	  GCN_WARNING (" - If this is not a Vega 10 device, please use "
 		       "GCN_NUM_THREADS=16\n");
 	}
 
+      /* Ideally, when a dimension isn't explicitly specified, we should
+	 tune it to run 40 (or 32?) threads per CU with no threads getting queued.
+	 In practice, we tune for peak performance on BabelStream, which
+	 for OpenACC is currently 32 threads per CU.  */
       def->ndim = 3;
-      /* Fiji has 64 CUs, but Vega20 has 60.  */
-      def->gdims[0] = (gcn_teams > 0) ? gcn_teams : get_cu_count (agent);
-      /* Each thread is 64 work items wide.  */
-      def->gdims[1] = 64;
-      /* A work group can have 16 wavefronts.  */
-      def->gdims[2] = (gcn_threads > 0) ? gcn_threads : 16;
-      def->wdims[0] = 1; /* Single team per work-group.  */
+      if (gcn_teams <= 0 && gcn_threads <= 0)
+	{
+	  /* Set up a reasonable number of teams and threads.  */
+	  gcn_threads = gfx900_workaround_p ? 4 : 16; // 8;
+	  def->gdims[0] = get_cu_count (agent); // * (40 / gcn_threads);
+	  def->gdims[2] = gcn_threads;
+	}
+      else if (gcn_teams <= 0 && gcn_threads > 0)
+	{
+	  /* Auto-scale the number of teams with the number of threads.  */
+	  def->gdims[0] = get_cu_count (agent); // * (40 / gcn_threads);
+	  def->gdims[2] = gcn_threads;
+	}
+      else if (gcn_teams > 0 && gcn_threads <= 0)
+	{
+	  int max_threads = gfx900_workaround_p ? 4 : 16;
+
+	  /* Auto-scale the number of threads with the number of teams.  */
+	  def->gdims[0] = gcn_teams;
+	  def->gdims[2] = 16; // get_cu_count (agent) * 40 / gcn_teams;
+	  if (def->gdims[2] == 0)
+	    def->gdims[2] = 1;
+	  else if (def->gdims[2] > max_threads)
+	    def->gdims[2] = max_threads;
+	}
+      else
+	{
+	  def->gdims[0] = gcn_teams;
+	  def->gdims[2] = gcn_threads;
+	}
+      def->gdims[1] = 64; /* Each thread is 64 work items wide.  */
+      def->wdims[0] = 1;  /* Single team per work-group.  */
       def->wdims[1] = 64;
       def->wdims[2] = 16;
       *result = def;
@@ -3032,13 +3062,34 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
   if (hsa_kernel_desc->oacc_dims[2] > 0)
     dims[2] = hsa_kernel_desc->oacc_dims[2];
 
-  /* If any of the OpenACC dimensions remain 0 then we get to pick a number.
-     There isn't really a correct answer for this without a clue about the
-     problem size, so let's do a reasonable number of single-worker gangs.
-     64 gangs matches a typical Fiji device.  */
+  /* Ideally, when a dimension isn't explicitly specified, we should
+     tune it to run 40 (or 32?) threads per CU with no threads getting queued.
+     In practice, we tune for peak performance on BabelStream, which
+     for OpenACC is currently 32 threads per CU.  */
+  if (dims[0] == 0 && dims[1] == 0)
+    {
+      /* If any of the OpenACC dimensions remain 0 then we get to pick a
+	 number.  There isn't really a correct answer for this without a clue
+	 about the problem size, so let's do a reasonable number of workers
+	 and gangs.  */
 
-  if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
-  if (dims[1] == 0) dims[1] = 16; /* Workers.  */
+      dims[0] = get_cu_count (kernel->agent) * 4; /* Gangs.  */
+      dims[1] = 8; /* Workers.  */
+    }
+  else if (dims[0] == 0 && dims[1] > 0)
+    {
+      /* Auto-scale the number of gangs with the requested number of workers.  */
+      dims[0] = get_cu_count (kernel->agent) * (32 / dims[1]);
+    }
+  else if (dims[0] > 0 && dims[1] == 0)
+    {
+      /* Auto-scale the number of workers with the requested number of gangs.  */
+      dims[1] = get_cu_count (kernel->agent) * 32 / dims[0];
+      if (dims[1] == 0)
+	dims[1] = 1;
+      if (dims[1] > 16)
+	dims[1] = 16;
+    }
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
      vectors.  The HSA dimensions are expressed in terms of "work-items",
@@ -3365,45 +3416,49 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   if (!create_and_finalize_hsa_program (agent))
     return -1;
 
-  for (unsigned i = 0; i < var_count; i++)
+  if (var_count > 0)
     {
-      struct global_var_info *v = &image_desc->global_variables[i];
-      GCN_DEBUG ("Looking for variable %s\n", v->name);
-
       hsa_status_t status;
       hsa_executable_symbol_t var_symbol;
       status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						     v->name, agent->id,
+						     ".offload_var_table",
+						     agent->id,
 						     0, &var_symbol);
 
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not find symbol for variable in the code object",
 		   status);
 
-      uint64_t var_addr;
-      uint32_t var_size;
+      uint64_t var_table_addr;
       status = hsa_fns.hsa_executable_symbol_get_info_fn
-	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS, &var_addr);
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &var_table_addr);
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not extract a variable from its symbol", status);
-      status = hsa_fns.hsa_executable_symbol_get_info_fn
-	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE, &var_size);
-      if (status != HSA_STATUS_SUCCESS)
-	hsa_fatal ("Could not extract a variable size from its symbol", status);
 
-      pair->start = var_addr;
-      pair->end = var_addr + var_size;
-      GCN_DEBUG ("Found variable %s at %p with size %u\n", v->name,
-		 (void *)var_addr, var_size);
-      pair++;
+      struct {
+	uint64_t addr;
+	uint64_t size;
+      } var_table[var_count];
+      GOMP_OFFLOAD_dev2host (agent->device_id, var_table,
+			     (void*)var_table_addr, sizeof (var_table));
+
+      for (unsigned i = 0; i < var_count; i++)
+	{
+	  pair->start = var_table[i].addr;
+	  pair->end = var_table[i].addr + var_table[i].size;
+	  GCN_DEBUG ("Found variable at %p with size %lu\n",
+		     (void *)var_table[i].addr, var_table[i].size);
+	  pair++;
+	}
     }
 
-  GCN_DEBUG ("Looking for variable %s\n", STRINGX (GOMP_DEVICE_NUM_VAR));
+  GCN_DEBUG ("Looking for variable %s\n", XSTRING (GOMP_DEVICE_NUM_VAR));
 
   hsa_status_t status;
   hsa_executable_symbol_t var_symbol;
   status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						 STRINGX (GOMP_DEVICE_NUM_VAR),
+						 XSTRING (GOMP_DEVICE_NUM_VAR),
 						 agent->id, 0, &var_symbol);
   if (status == HSA_STATUS_SUCCESS)
     {

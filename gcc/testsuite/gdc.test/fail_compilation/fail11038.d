@@ -2,16 +2,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11038.d(16): Error: `writeln` is not defined, perhaps `import std.stdio;` is needed?
+fail_compilation/fail11038.d(16): Error: `printf` is not defined, perhaps `import core.stdc.stdio;` is needed?
 ---
 */
 
 static
 {
-    import std.stdio;
+    import core.stdc.stdio;
 }
 
 void main()
 {
-    writeln("foo");  // compiles
+    printf("foo");  // compiles
 }

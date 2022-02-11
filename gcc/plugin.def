@@ -1,5 +1,5 @@
 /* This file contains the definitions for plugin events in GCC.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,7 +104,7 @@ DEFEVENT (PLUGIN_INCLUDE_FILE)
 DEFEVENT (PLUGIN_ANALYZER_INIT)
 
 /* When adding a new hard-coded plugin event, don't forget to edit in
-   file plugin.c the functions register_callback and
+   file plugin.cc the functions register_callback and
    invoke_plugin_callbacks_full accordingly!  */
 
 /* After the hard-coded events above, plugins can dynamically allocate events

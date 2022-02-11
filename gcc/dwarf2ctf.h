@@ -1,5 +1,5 @@
 /* dwarf2ctf.h - DWARF interface for CTF/BTF generation.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "flags.h"
 
-/* Debug Format Interface.  Used in dwarf2out.c.  */
+/* Debug Format Interface.  Used in dwarf2out.cc.  */
 
 extern void ctf_debug_init (void);
 extern void ctf_debug_init_postprocess (bool);
@@ -35,7 +35,7 @@ extern void ctf_debug_early_finish (const char *);
 extern void ctf_debug_finish (const char *);
 
 /* Wrappers for CTF/BTF to fetch information from GCC DWARF DIE.  Used in
-   ctfc.c.
+   ctfc.cc.
 
    A CTF container does not store all debug information internally.  Some of
    the info is fetched indirectly via the DIE reference available in each CTF

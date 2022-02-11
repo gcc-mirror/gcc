@@ -6,6 +6,6 @@ template<typename T> decltype(T{}) fooB(T);
 
 void bar()
 {
-  fooA((auto*)0);  // { dg-error "invalid use" }
-  fooB((auto*)0);  // { dg-error "invalid use" }
+  fooA((auto*)0);  // { dg-error "expected" }
+  fooB((auto*)0);  // { dg-error "expected" }
 }

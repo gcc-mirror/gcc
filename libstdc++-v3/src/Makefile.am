@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2021 Free Software Foundation, Inc.
+## Copyright (C) 1997-2022 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -28,8 +28,16 @@ else
 filesystem_dir =
 endif
 
+if ENABLE_BACKTRACE
+backtrace_dir = libbacktrace
+backtrace_supported_h = $(backtrace_dir)/backtrace-supported.h
+else
+backtrace_dir =
+backtrace_supported_h =
+endif
+
 ## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
-SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir)
+SUBDIRS = c++98 c++11 c++17 c++20 $(filesystem_dir) $(backtrace_dir)
 
 # Cross compiler support.
 if VTV_CYGMIN
@@ -63,6 +71,9 @@ vpath % $(top_srcdir)/src/c++17
 vpath % $(top_srcdir)/src/c++20
 if ENABLE_FILESYSTEM_TS
 vpath % $(top_srcdir)/src/filesystem
+endif
+if ENABLE_BACKTRACE
+vpath % $(top_srcdir)/src/libbacktrace
 endif
 
 if GLIBCXX_LDBL_COMPAT
@@ -393,7 +404,15 @@ stamp-debug: Makefile $(foreach dir,$(SUBDIRS),$(dir)/Makefile)
 	fi; \
 	echo `date` > stamp-debug;
 
-build-debug: stamp-debug
+if ENABLE_BACKTRACE
+${debugdir}/$(backtrace_supported_h): $(backtrace_supported_h) stamp-debug
+	cp $< $@
+debug_backtrace_supported_h = ${debugdir}/$(backtrace_supported_h)
+else
+debug_backtrace_supported_h =
+endif
+
+build-debug: stamp-debug $(debug_backtrace_supported_h)
 	  (cd ${debugdir}; \
 	  mv Makefile Makefile.tmp; \
 	  sed -e 's,all-local: all-once,all-local:,' \

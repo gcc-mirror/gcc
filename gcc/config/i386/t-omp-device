@@ -1,6 +1,6 @@
-omp-device-properties-i386: $(srcdir)/config/i386/i386-options.c
+omp-device-properties-i386: $(srcdir)/config/i386/i386-options.cc
 	echo kind: cpu > $@
 	echo arch: intel_mic x86 x86_64 i386 i486 i586 i686 ia32 >> $@
 	echo isa: sse4 `sed -n '/^static struct ix86_target_opts isa2\?_opts\[\] =/,/^};/p' \
-	  $(srcdir)/config/i386/i386-options.c | \
+	  $(srcdir)/config/i386/i386-options.cc | \
 	  sed -n 's/",.*$$//;s/^  { "-m//p'` >> $@

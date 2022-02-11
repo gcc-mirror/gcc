@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail8217.d(22): Error: this for foo needs to be type D not type fail8217.D.C
+fail_compilation/fail8217.d(22): Error: `this` for `foo` needs to be type `D` not type `fail8217.D.C`
 ---
 */
 

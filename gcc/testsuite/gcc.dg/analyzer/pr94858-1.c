@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+
 #include <stdlib.h>
 
 typedef short hashNx;

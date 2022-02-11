@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -33,3 +33,9 @@ X:
 #define FUNC_ALIAS(X,Y)		\
 	.globl X;		\
 	X = Y
+
+#define CONCAT1(a, b)		CONCAT2(a, b)
+#define CONCAT2(a, b)		a ## b
+#define HIDDEN_JUMPTARGET(X)	CONCAT1(__hidden_, X)
+#define HIDDEN_DEF(X)		FUNC_ALIAS(HIDDEN_JUMPTARGET(X), X);     \
+				.hidden HIDDEN_JUMPTARGET(X)

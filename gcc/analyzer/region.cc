@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -99,6 +99,7 @@ region::get_base_region () const
 	case RK_ELEMENT:
 	case RK_OFFSET:
 	case RK_SIZED:
+	case RK_BIT_RANGE:
 	  iter = iter->get_parent_region ();
 	  continue;
 	case RK_CAST:
@@ -124,6 +125,7 @@ region::base_region_p () const
     case RK_OFFSET:
     case RK_SIZED:
     case RK_CAST:
+    case RK_BIT_RANGE:
       return false;
 
     default:
@@ -497,41 +499,16 @@ region::calc_offset () const
       switch (iter_region->get_kind ())
 	{
 	case RK_FIELD:
-	  {
-	    const field_region *field_reg
-	      = (const field_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
-	    bit_offset_t rel_bit_offset;
-	    if (!field_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
-	    accum_bit_offset += rel_bit_offset;
-	  }
-	  continue;
-
 	case RK_ELEMENT:
-	  {
-	    const element_region *element_reg
-	      = (const element_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
-	    bit_offset_t rel_bit_offset;
-	    if (!element_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
-	    accum_bit_offset += rel_bit_offset;
-	  }
-	  continue;
-
 	case RK_OFFSET:
+	case RK_BIT_RANGE:
 	  {
-	    const offset_region *offset_reg
-	      = (const offset_region *)iter_region;
-	    iter_region = iter_region->get_parent_region ();
-
 	    bit_offset_t rel_bit_offset;
-	    if (!offset_reg->get_relative_concrete_offset (&rel_bit_offset))
-	      return region_offset::make_symbolic (iter_region);
+	    if (!iter_region->get_relative_concrete_offset (&rel_bit_offset))
+	      return region_offset::make_symbolic
+		(iter_region->get_parent_region ());
 	    accum_bit_offset += rel_bit_offset;
+	    iter_region = iter_region->get_parent_region ();
 	  }
 	  continue;
 
@@ -562,19 +539,32 @@ region::get_relative_concrete_offset (bit_offset_t *) const
   return false;
 }
 
-/* Copy from SRC_REG to DST_REG, using CTXT for any issues that occur.  */
+/* Attempt to get the position and size of this region expressed as a
+   concrete range of bytes relative to its parent.
+   If successful, return true and write to *OUT.
+   Otherwise return false.  */
 
-void
-region_model::copy_region (const region *dst_reg, const region *src_reg,
-			   region_model_context *ctxt)
+bool
+region::get_relative_concrete_byte_range (byte_range *out) const
 {
-  gcc_assert (dst_reg);
-  gcc_assert (src_reg);
-  if (dst_reg == src_reg)
-    return;
+  /* We must have a concrete offset relative to the parent.  */
+  bit_offset_t rel_bit_offset;
+  if (!get_relative_concrete_offset (&rel_bit_offset))
+    return false;
+  /* ...which must be a whole number of bytes.  */
+  if (rel_bit_offset % BITS_PER_UNIT != 0)
+    return false;
+  byte_offset_t start_byte_offset = rel_bit_offset / BITS_PER_UNIT;
 
-  const svalue *sval = get_store_value (src_reg, ctxt);
-  set_value (dst_reg, sval, ctxt);
+  /* We must have a concrete size, which must be a whole number
+     of bytes.  */
+  byte_size_t num_bytes;
+  if (!get_byte_size (&num_bytes))
+    return false;
+
+  /* Success.  */
+  *out = byte_range (start_byte_offset, num_bytes);
+  return true;
 }
 
 /* Dump a description of this region to stderr.  */
@@ -634,6 +624,20 @@ region::symbolic_for_unknown_ptr_p () const
 {
   if (const symbolic_region *sym_reg = dyn_cast_symbolic_region ())
     if (sym_reg->get_pointer ()->get_kind () == SK_UNKNOWN)
+      return true;
+  return false;
+}
+
+/* Return true if this is a region for a decl with name DECL_NAME.
+   Intended for use when debugging (for assertions and conditional
+   breakpoints).  */
+
+DEBUG_FUNCTION bool
+region::is_named_decl_p (const char *decl_name) const
+{
+  if (tree decl = maybe_get_decl ())
+    if (DECL_NAME (decl)
+	&& !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), decl_name))
       return true;
   return false;
 }
@@ -1154,7 +1158,7 @@ field_region::dump_to_pp (pretty_printer *pp, bool simple) const
 bool
 field_region::get_relative_concrete_offset (bit_offset_t *out) const
 {
-  /* Compare with e.g. gimple-fold.c's
+  /* Compare with e.g. gimple-fold.cc's
      fold_nonarray_ctor_reference.  */
   tree byte_offset = DECL_FIELD_OFFSET (m_field);
   if (TREE_CODE (byte_offset) != INTEGER_CST)
@@ -1430,6 +1434,75 @@ string_region::dump_to_pp (pretty_printer *pp, bool simple) const
 	  pp_string (pp, "))");
 	}
     }
+}
+
+/* class bit_range_region : public region.  */
+
+/* Implementation of region::dump_to_pp vfunc for bit_range_region.  */
+
+void
+bit_range_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    {
+      pp_string (pp, "BIT_RANGE_REG(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_string (pp, ", ");
+      m_bits.dump_to_pp (pp);
+      pp_string (pp, ")");
+    }
+  else
+    {
+      pp_string (pp, "bit_range_region(");
+      get_parent_region ()->dump_to_pp (pp, simple);
+      pp_string (pp, ", ");
+      m_bits.dump_to_pp (pp);
+      pp_printf (pp, ")");
+    }
+}
+
+/* Implementation of region::get_byte_size vfunc for bit_range_region.  */
+
+bool
+bit_range_region::get_byte_size (byte_size_t *out) const
+{
+  if (m_bits.m_size_in_bits % BITS_PER_UNIT == 0)
+    {
+      *out = m_bits.m_size_in_bits / BITS_PER_UNIT;
+      return true;
+    }
+  return false;
+}
+
+/* Implementation of region::get_bit_size vfunc for bit_range_region.  */
+
+bool
+bit_range_region::get_bit_size (bit_size_t *out) const
+{
+  *out = m_bits.m_size_in_bits;
+  return true;
+}
+
+/* Implementation of region::get_byte_size_sval vfunc for bit_range_region.  */
+
+const svalue *
+bit_range_region::get_byte_size_sval (region_model_manager *mgr) const
+{
+  if (m_bits.m_size_in_bits % BITS_PER_UNIT != 0)
+    return mgr->get_or_create_unknown_svalue (size_type_node);
+
+  HOST_WIDE_INT num_bytes = m_bits.m_size_in_bits.to_shwi () / BITS_PER_UNIT;
+  return mgr->get_or_create_int_cst (size_type_node, num_bytes);
+}
+
+/* Implementation of region::get_relative_concrete_offset vfunc for
+   bit_range_region.  */
+
+bool
+bit_range_region::get_relative_concrete_offset (bit_offset_t *out) const
+{
+  *out = m_bits.get_start_bit_offset ();
+  return true;
 }
 
 /* class unknown_region : public region.  */

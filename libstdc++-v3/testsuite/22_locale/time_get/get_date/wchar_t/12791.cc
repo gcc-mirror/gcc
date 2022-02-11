@@ -1,6 +1,6 @@
 // 2003-12-03  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,14 +40,14 @@ void test01()
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
-  iss.str(L"60/04/71");
+  iss.str(L"62/04/71");
   iterator_type is_it01(iss);
   tm time01;
   errorstate = good;
   iterator_type ret01 = tim_get.get_date(is_it01, end, iss, errorstate,
 					 &time01);
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *ret01 == L'6' );
+  VERIFY( *ret01 == L'2' );
 
   iss.str(L"04/38/71");
   iterator_type is_it02(iss);

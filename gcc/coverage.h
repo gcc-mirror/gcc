@@ -1,5 +1,5 @@
-/* coverage.h - Defines data exported from coverage.c
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+/* coverage.h - Defines data exported from coverage.cc
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

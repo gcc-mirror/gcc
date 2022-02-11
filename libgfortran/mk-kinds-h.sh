@@ -64,15 +64,19 @@ for k in $possible_real_kinds; do
     case $k in
       4) ctype="float" ; cplxtype="complex float" ; suffix="f" ;;
       8) ctype="double" ; cplxtype="complex double" ; suffix="" ;;
+      # If we have a REAL(KIND=10), it is always long double
       10) ctype="long double" ; cplxtype="complex long double" ; suffix="l" ;;
-      16) if [ $long_double_kind -eq 10 ]; then
+      # If we have a REAL(KIND=16), it is either long double or __float128
+      16) if [ $long_double_kind -ne 16 ]; then
 	    ctype="__float128"
 	    cplxtype="_Complex float __attribute__((mode(TC)))"
 	    suffix="q"
+	    echo "#define GFC_REAL_16_IS_FLOAT128"
 	  else
 	    ctype="long double"
 	    cplxtype="complex long double"
 	    suffix="l"
+	    echo "#define GFC_REAL_16_IS_LONG_DOUBLE"
 	  fi ;;
       *) echo "$0: Unknown type" >&2 ; exit 1 ;;
     esac
@@ -80,6 +84,12 @@ for k in $possible_real_kinds; do
     # Check for the value of HUGE
     echo "print *, huge(0._$k) ; end" > tmq$$.f90
     huge=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
+		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
+    rm -f tmq$$.*
+
+    # Check for the value of TINY
+    echo "print *, tiny(0._$k) ; end" > tmq$$.f90
+    tiny=`$compile -S -fdump-parse-tree tmq$$.f90 | grep TRANSFER \
 		| sed 's/ *TRANSFER *//' | sed 's/_.*//'`
     rm -f tmq$$.*
 
@@ -101,6 +111,7 @@ for k in $possible_real_kinds; do
     echo "#define HAVE_GFC_REAL_${k}"
     echo "#define HAVE_GFC_COMPLEX_${k}"
     echo "#define GFC_REAL_${k}_HUGE ${huge}${suffix}"
+    echo "#define GFC_REAL_${k}_TINY ${tiny}${suffix}"
     echo "#define GFC_REAL_${k}_LITERAL_SUFFIX ${suffix}"
     if [ "x$suffix" = "x" ]; then
       echo "#define GFC_REAL_${k}_LITERAL(X) (X)"

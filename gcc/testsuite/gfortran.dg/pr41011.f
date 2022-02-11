@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O3 -std=legacy" }
-      CALL UVSET(NX,NY,NZ,HVAR,ZET,NP,DZ,DKM,UM,VM,UG,VG,TM,DCDX, ! { dg-warning "Rank mismatch" }
+      CALL UVSET(NX,NY,NZ,HVAR,ZET,NP,DZ,DKM,UM,VM,UG,VG,TM,DCDX, ! { dg-warning "Rank mismatch|Invalid procedure argument" }
      *ITY,ISH,NSMT,F)
          CALL DCTDX(NX,NY,NX1,NFILT,C(MLAG),DCDX(MLAG),HELP,HELPA,
      *   HELP,HELPA,FY,FYC,SAVEY)
@@ -18,6 +18,6 @@
      *WORK(*)
       IF(IH.EQ.0) THEN
          CALL PADEC(DKM,VM,HVAR,WORK(LWM),WORK(LWG), ! { dg-warning "Rank mismatch" }
-     *   WORK(LF),NZ,WORK(LA),WORK(LB),WORK(LC),ITY)
+     *   WORK(LF),NZ,WORK(LA),WORK(LB),WORK(LC),ITY) ! { dg-warning "Type mismatch" }
       ENDIF
       END

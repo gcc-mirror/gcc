@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag9620.d(18): Error: pure function 'diag9620.main.bar' cannot call impure function 'diag9620.foo1'
-fail_compilation/diag9620.d(19): Error: pure function 'diag9620.main.bar' cannot call impure function 'diag9620.foo2!().foo2'
+fail_compilation/diag9620.d(18): Error: `pure` function `diag9620.main.bar` cannot call impure function `diag9620.foo1`
+fail_compilation/diag9620.d(19): Error: `pure` function `diag9620.main.bar` cannot call impure function `diag9620.foo2!().foo2`
 ---
 */
 

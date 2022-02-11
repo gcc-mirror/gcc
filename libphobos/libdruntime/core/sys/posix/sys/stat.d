@@ -340,26 +340,23 @@ version (CRuntime_Glibc)
             }
             c_long[14]  st_pad5;
         }
+        static if (!__USE_FILE_OFFSET64)
+            static assert(stat_t.sizeof == 144);
+        else
+            static assert(stat_t.sizeof == 160);
     }
     else version (MIPS64)
     {
         struct stat_t
         {
-            c_ulong     st_dev;
+            dev_t       st_dev;
             int[3]      st_pad1;
-            static if (!__USE_FILE_OFFSET64)
-            {
-                ino_t       st_ino;
-            }
-            else
-            {
-                c_ulong     st_ino;
-            }
+            ino_t       st_ino;
             mode_t      st_mode;
             nlink_t     st_nlink;
             uid_t       st_uid;
             gid_t       st_gid;
-            c_ulong     st_rdev;
+            dev_t       st_rdev;
             static if (!__USE_FILE_OFFSET64)
             {
                 uint[2]     st_pad2;
@@ -368,8 +365,8 @@ version (CRuntime_Glibc)
             }
             else
             {
-                c_long[3]   st_pad2;
-                c_long      st_size;
+                uint[3]     st_pad2;
+                off_t       st_size;
             }
             static if (__USE_MISC || __USE_XOPEN2K8)
             {
@@ -394,15 +391,26 @@ version (CRuntime_Glibc)
             }
             blksize_t   st_blksize;
             uint        st_pad4;
+            blkcnt_t    st_blocks;
+            int[14]     st_pad5;
+        }
+        version (MIPS_N32)
+        {
             static if (!__USE_FILE_OFFSET64)
-            {
-                blkcnt_t    st_blocks;
-            }
+                static assert(stat_t.sizeof == 160);
             else
-            {
-                c_long  st_blocks;
-            }
-            c_long[14]  st_pad5;
+                static assert(stat_t.sizeof == 176);
+        }
+        else version (MIPS_O64)
+        {
+            static if (!__USE_FILE_OFFSET64)
+                static assert(stat_t.sizeof == 160);
+            else
+                static assert(stat_t.sizeof == 176);
+        }
+        else
+        {
+            static assert(stat_t.sizeof == 216);
         }
     }
     else version (PPC)

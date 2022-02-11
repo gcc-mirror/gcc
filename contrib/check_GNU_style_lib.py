@@ -276,7 +276,7 @@ def check_GNU_style_file(file, file_encoding, format):
     for pfile in patch.added_files + patch.modified_files:
         t = pfile.target_file.lstrip('b/')
         # Skip testsuite files
-        if 'testsuite' in t:
+        if 'testsuite' in t or t.endswith('.py'):
             continue
 
         for hunk in pfile:

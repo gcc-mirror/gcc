@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice13221.d(20): Error: variable r cannot be read at compile time
+fail_compilation/ice13221.d(20): Error: variable `r` cannot be read at compile time
 ---
 */
 

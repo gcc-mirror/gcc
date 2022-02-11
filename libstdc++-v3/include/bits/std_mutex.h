@@ -1,6 +1,6 @@
 // std::mutex implementation -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -149,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Expects: Calling thread has locked __m.
     void
-    wait(mutex& __m) noexcept
+    wait(mutex& __m)
     {
       int __e __attribute__((__unused__))
 	= __gthread_cond_wait(&_M_cond, __m.native_handle());
@@ -157,14 +157,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     void
-    wait_until(mutex& __m, timespec& __abs_time) noexcept
+    wait_until(mutex& __m, timespec& __abs_time)
     {
       __gthread_cond_timedwait(&_M_cond, __m.native_handle(), &__abs_time);
     }
 
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
     void
-    wait_until(mutex& __m, clockid_t __clock, timespec& __abs_time) noexcept
+    wait_until(mutex& __m, clockid_t __clock, timespec& __abs_time)
     {
       pthread_cond_clockwait(&_M_cond, __m.native_handle(), __clock,
 			     &__abs_time);

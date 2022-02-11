@@ -1,7 +1,7 @@
 # Makefile for the libiberty library.
 # Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
-# Copyright (C) 1990-2021 Free Software Foundation, Inc.
+# Copyright (C) 1990-2022 Free Software Foundation, Inc.
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -429,8 +429,10 @@ stamp-noasandir:
 
 .PHONY: all etags tags TAGS ls clean stage1 stage2
 
+ETAGS = @ETAGS@
+
 etags tags TAGS: etags-subdir
-	cd $(srcdir) && etags $(CFILES)
+	cd $(srcdir) && $(ETAGS) $(CFILES)
 
 # The standalone demangler (c++filt) has been moved to binutils.
 # But make this target work anyway for demangler hacking.

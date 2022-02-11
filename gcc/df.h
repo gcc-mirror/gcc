@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -800,7 +800,7 @@ public:
 
 /* An obstack for bitmap not related to specific dataflow problems.
    This obstack should e.g. be used for bitmaps with a short life time
-   such as temporary bitmaps.  This obstack is declared in df-core.c.  */
+   such as temporary bitmaps.  This obstack is declared in df-core.cc.  */
 
 extern bitmap_obstack df_bitmap_obstack;
 
@@ -959,7 +959,7 @@ extern class df_d *df;
 #endif
 
 
-/* Functions defined in df-core.c.  */
+/* Functions defined in df-core.cc.  */
 
 extern void df_add_problem (const struct df_problem *);
 extern int df_set_flags (int);
@@ -1015,7 +1015,7 @@ extern void debug_df_useno (unsigned int);
 extern void debug_df_ref (df_ref);
 extern void debug_df_chain (struct df_link *);
 
-/* Functions defined in df-problems.c. */
+/* Functions defined in df-problems.cc. */
 
 extern struct df_link *df_chain_create (df_ref, df_ref);
 extern void df_chain_unlink (df_ref);
@@ -1058,7 +1058,7 @@ extern bool can_move_insns_across (rtx_insn *, rtx_insn *,
 				   rtx_insn *, rtx_insn *,
 				   basic_block, regset,
 				   regset, rtx_insn **);
-/* Functions defined in df-scan.c.  */
+/* Functions defined in df-scan.cc.  */
 
 extern void df_scan_alloc (bitmap);
 extern void df_scan_add_problem (void);

@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) intercommunication header file.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -314,6 +314,13 @@ struct ira_allocno
      vector where a bit with given index represents allocno with the
      same number.  */
   unsigned int conflict_vec_p : 1;
+  /* True if the parent loop has an allocno for the same register and
+     if the parent allocno's assignment might not be valid in this loop.
+     This means that we cannot merge this allocno and the parent allocno
+     together.
+
+     This is only ever true for non-cap allocnos.  */
+  unsigned int might_conflict_with_parent_p : 1;
   /* Hard register assigned to given allocno.  Negative value means
      that memory was allocated to the allocno.  During the reload,
      spilled allocno has value equal to the corresponding stack slot
@@ -423,6 +430,8 @@ struct ira_allocno
 #define ALLOCNO_CAP_MEMBER(A) ((A)->cap_member)
 #define ALLOCNO_NREFS(A) ((A)->nrefs)
 #define ALLOCNO_FREQ(A) ((A)->freq)
+#define ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P(A) \
+  ((A)->might_conflict_with_parent_p)
 #define ALLOCNO_HARD_REGNO(A) ((A)->hard_regno)
 #define ALLOCNO_CALL_FREQ(A) ((A)->call_freq)
 #define ALLOCNO_CALLS_CROSSED_NUM(A) ((A)->calls_crossed_num)
@@ -470,7 +479,7 @@ typedef struct ira_emit_data *ira_emit_data_t;
 struct ira_emit_data
 {
   /* TRUE if the allocno assigned to memory was a destination of
-     removed move (see ira-emit.c) at loop exit because the value of
+     removed move (see ira-emit.cc) at loop exit because the value of
      the corresponding pseudo-register is not changed inside the
      loop.  */
   unsigned int mem_optimized_dest_p : 1;
@@ -484,7 +493,7 @@ struct ira_emit_data
   /* Final rtx representation of the allocno.  */
   rtx reg;
   /* Non NULL if we remove restoring value from given allocno to
-     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
+     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.cc) because the
      allocno value is not changed inside the loop.  */
   ira_allocno_t mem_optimized_dest;
 };
@@ -623,7 +632,7 @@ extern class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 /* Correspondingly overall cost of the allocation, cost of the
    allocnos assigned to hard-registers, cost of the allocnos assigned
    to memory, cost of loads, stores and register move insns generated
-   for pseudo-register live range splitting (see ira-emit.c).  */
+   for pseudo-register live range splitting (see ira-emit.cc).  */
 extern int64_t ira_overall_cost;
 extern int64_t ira_reg_cost, ira_mem_cost;
 extern int64_t ira_load_cost, ira_store_cost, ira_shuffle_cost;
@@ -960,7 +969,7 @@ extern class target_ira_int *this_target_ira_int;
 #define ira_prohibited_mode_move_regs \
   (this_target_ira_int->x_ira_prohibited_mode_move_regs)
 
-/* ira.c: */
+/* ira.cc: */
 
 extern void *ira_allocate (size_t);
 extern void ira_free (void *addr);
@@ -973,7 +982,7 @@ extern void ira_init_register_move_cost (machine_mode);
 extern alternative_mask ira_setup_alts (rtx_insn *);
 extern int ira_get_dup_out_num (int, alternative_mask, bool &);
 
-/* ira-build.c */
+/* ira-build.cc */
 
 /* The current loop tree node and its regno allocno map.  */
 extern ira_loop_tree_node_t ira_curr_loop_tree_node;
@@ -1032,13 +1041,13 @@ extern void ira_flattening (int, int);
 extern bool ira_build (void);
 extern void ira_destroy (void);
 
-/* ira-costs.c */
+/* ira-costs.cc */
 extern void ira_init_costs_once (void);
 extern void ira_init_costs (void);
 extern void ira_costs (void);
 extern void ira_tune_allocno_costs (void);
 
-/* ira-lives.c */
+/* ira-lives.cc */
 
 extern void ira_rebuild_start_finish_chains (void);
 extern void ira_print_live_range_list (FILE *, live_range_t);
@@ -1053,11 +1062,12 @@ extern void ira_finish_allocno_live_ranges (void);
 extern void ira_implicitly_set_insn_hard_regs (HARD_REG_SET *,
 					       alternative_mask);
 
-/* ira-conflicts.c */
+/* ira-conflicts.cc */
 extern void ira_debug_conflicts (bool);
 extern void ira_build_conflicts (void);
 
-/* ira-color.c */
+/* ira-color.cc */
+extern ira_allocno_t ira_soft_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_debug_hard_regs_forest (void);
 extern int ira_loop_edge_freq (ira_loop_tree_node_t, int, bool);
 extern void ira_reassign_conflict_allocnos (int);
@@ -1065,7 +1075,7 @@ extern void ira_initiate_assign (void);
 extern void ira_finish_assign (void);
 extern void ira_color (void);
 
-/* ira-emit.c */
+/* ira-emit.cc */
 extern void ira_initiate_emit_data (void);
 extern void ira_finish_emit_data (void);
 extern void ira_emit (bool);
@@ -1537,6 +1547,163 @@ ira_need_caller_save_p (ira_allocno_t a, unsigned int regno)
   return call_clobbered_in_region_p (ALLOCNO_CROSSED_CALLS_ABIS (a),
 				     ALLOCNO_CROSSED_CALLS_CLOBBERED_REGS (a),
 				     ALLOCNO_MODE (a), regno);
+}
+
+/* Represents the boundary between an allocno in one loop and its parent
+   allocno in the enclosing loop.  It is usually possible to change a
+   register's allocation on this boundary; the class provides routines
+   for calculating the cost of such changes.  */
+class ira_loop_border_costs
+{
+public:
+  ira_loop_border_costs (ira_allocno_t);
+
+  int move_between_loops_cost () const;
+  int spill_outside_loop_cost () const;
+  int spill_inside_loop_cost () const;
+
+private:
+  /* The mode and class of the child allocno.  */
+  machine_mode m_mode;
+  reg_class m_class;
+
+  /* Sums the frequencies of the entry edges and the exit edges.  */
+  int m_entry_freq, m_exit_freq;
+};
+
+/* Return the cost of storing the register on entry to the loop and
+   loading it back on exit from the loop.  This is the cost to use if
+   the register is spilled within the loop but is successfully allocated
+   in the parent loop.  */
+inline int
+ira_loop_border_costs::spill_inside_loop_cost () const
+{
+  return (m_entry_freq * ira_memory_move_cost[m_mode][m_class][0]
+	  + m_exit_freq * ira_memory_move_cost[m_mode][m_class][1]);
+}
+
+/* Return the cost of loading the register on entry to the loop and
+   storing it back on exit from the loop.  This is the cost to use if
+   the register is successfully allocated within the loop but is spilled
+   in the parent loop.  */
+inline int
+ira_loop_border_costs::spill_outside_loop_cost () const
+{
+  return (m_entry_freq * ira_memory_move_cost[m_mode][m_class][1]
+	  + m_exit_freq * ira_memory_move_cost[m_mode][m_class][0]);
+}
+
+/* Return the cost of moving the pseudo register between different hard
+   registers on entry and exit from the loop.  This is the cost to use
+   if the register is successfully allocated within both this loop and
+   the parent loop, but the allocations for the loops differ.  */
+inline int
+ira_loop_border_costs::move_between_loops_cost () const
+{
+  ira_init_register_move_cost_if_necessary (m_mode);
+  auto move_cost = ira_register_move_cost[m_mode][m_class][m_class];
+  return move_cost * (m_entry_freq + m_exit_freq);
+}
+
+/* Return true if subloops that contain allocnos for A's register can
+   use a different assignment from A.  ALLOCATED_P is true for the case
+   in which allocation succeeded for A.  EXCLUDE_OLD_RELOAD is true if
+   we should always return false for non-LRA targets.  (This is a hack
+   and should be removed along with old reload.)  */
+inline bool
+ira_subloop_allocnos_can_differ_p (ira_allocno_t a, bool allocated_p = true,
+				   bool exclude_old_reload = true)
+{
+  if (exclude_old_reload && !ira_use_lra_p)
+    return false;
+
+  auto regno = ALLOCNO_REGNO (a);
+
+  if (pic_offset_table_rtx != NULL
+      && regno == (int) REGNO (pic_offset_table_rtx))
+    return false;
+
+  ira_assert (regno < ira_reg_equiv_len);
+  if (ira_equiv_no_lvalue_p (regno))
+    return false;
+
+  /* Avoid overlapping multi-registers.  Moves between them might result
+     in wrong code generation.  */
+  if (allocated_p)
+    {
+      auto pclass = ira_pressure_class_translate[ALLOCNO_CLASS (a)];
+      if (ira_reg_class_max_nregs[pclass][ALLOCNO_MODE (a)] > 1)
+	return false;
+    }
+
+  return true;
+}
+
+/* Return true if we should treat A and SUBLOOP_A as belonging to a
+   single region.  */
+inline bool
+ira_single_region_allocno_p (ira_allocno_t a, ira_allocno_t subloop_a)
+{
+  if (flag_ira_region != IRA_REGION_MIXED)
+    return false;
+
+  if (ALLOCNO_MIGHT_CONFLICT_WITH_PARENT_P (subloop_a))
+    return false;
+
+  auto rclass = ALLOCNO_CLASS (a);
+  auto pclass = ira_pressure_class_translate[rclass];
+  auto loop_used_regs = ALLOCNO_LOOP_TREE_NODE (a)->reg_pressure[pclass];
+  return loop_used_regs <= ira_class_hard_regs_num[pclass];
+}
+
+/* Return the set of all hard registers that conflict with A.  */
+inline HARD_REG_SET
+ira_total_conflict_hard_regs (ira_allocno_t a)
+{
+  auto obj_0 = ALLOCNO_OBJECT (a, 0);
+  HARD_REG_SET conflicts = OBJECT_TOTAL_CONFLICT_HARD_REGS (obj_0);
+  for (int i = 1; i < ALLOCNO_NUM_OBJECTS (a); i++)
+    conflicts |= OBJECT_TOTAL_CONFLICT_HARD_REGS (ALLOCNO_OBJECT (a, i));
+  return conflicts;
+}
+
+/* Return the cost of saving a caller-saved register before each call
+   in A's live range and restoring the same register after each call.  */
+inline int
+ira_caller_save_cost (ira_allocno_t a)
+{
+  auto mode = ALLOCNO_MODE (a);
+  auto rclass = ALLOCNO_CLASS (a);
+  return (ALLOCNO_CALL_FREQ (a)
+	  * (ira_memory_move_cost[mode][rclass][0]
+	     + ira_memory_move_cost[mode][rclass][1]));
+}
+
+/* A and SUBLOOP_A are allocnos for the same pseudo register, with A's
+   loop immediately enclosing SUBLOOP_A's loop.  If we allocate to A a
+   hard register R that is clobbered by a call in SUBLOOP_A, decide
+   which of the following approaches should be used for handling the
+   conflict:
+
+   (1) Spill R on entry to SUBLOOP_A's loop, assign memory to SUBLOOP_A,
+       and restore R on exit from SUBLOOP_A's loop.
+
+   (2) Spill R before each necessary call in SUBLOOP_A's live range and
+       restore R after each such call.
+
+   Return true if (1) is better than (2).  SPILL_COST is the cost of
+   doing (1).  */
+inline bool
+ira_caller_save_loop_spill_p (ira_allocno_t a, ira_allocno_t subloop_a,
+			      int spill_cost)
+{
+  if (!ira_subloop_allocnos_can_differ_p (a))
+    return false;
+
+  /* Calculate the cost of saving a call-clobbered register
+     before each call and restoring it afterwards.  */
+  int call_cost = ira_caller_save_cost (subloop_a);
+  return call_cost && call_cost >= spill_cost;
 }
 
 #endif /* GCC_IRA_INT_H */

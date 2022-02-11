@@ -93,11 +93,11 @@ void test11485()
     class C {}
     interface I {}
 
-    // 11485 TypeBasic --> Tclass
+    // https://issues.dlang.org/show_bug.cgi?id=11485 TypeBasic --> Tclass
     { int x; auto y = cast(C)x; }
     { int x; auto y = cast(I)x; }
 
-    //  7472 TypeBasic <-- Tclass
+    // https://issues.dlang.org/show_bug.cgi?id=7472 TypeBasic <-- Tclass
     { C x; auto y = cast(int)x; }
     { I x; auto y = cast(int)x; }
 }
@@ -133,7 +133,7 @@ void test13959()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_casting.d(144): Error: cannot cast expression `mi.x` of type `int` to `MyUbyte14154`
+fail_compilation/fail_casting.d(144): Error: cannot cast expression `mi` of type `MyInt14154` to `MyUbyte14154` because of different sizes
 ---
 */
 struct MyUbyte14154 { ubyte x; alias x this; }
@@ -147,10 +147,10 @@ void test14154()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_casting.d(179): Error: cannot cast expression `__tup$n$.__expand_field_0` of type `int` to `object.Object`
-fail_compilation/fail_casting.d(179): Error: cannot cast expression `__tup$n$.__expand_field_1` of type `int` to `object.Object`
+fail_compilation/fail_casting.d(179): Error: cannot cast expression `point` of type `Tuple14093!(int, "x", int, "y")` to `object.Object`
 ---
 */
+
 alias TypeTuple14093(T...) = T;
 struct Tuple14093(T...)
 {

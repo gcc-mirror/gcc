@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -506,10 +506,11 @@ package body System.Value_R is
       --  Local copy of string pointer
 
       Start : Positive;
-      pragma Unreferenced (Start);
 
       Value : Uns;
       --  Mantissa as an Integer
+
+      Expon : Integer;
 
    begin
       --  The default base is 10
@@ -643,7 +644,8 @@ package body System.Value_R is
       --  Update pointer and scan exponent
 
       Ptr.all := Index;
-      Scale := Scale + Scan_Exponent (Str, Ptr, Max, Real => True);
+      Scan_Exponent (Str, Ptr, Max, Expon, Real => True);
+      Scale := Scale + Expon;
 
       --  Here is where we check for a bad based number
 

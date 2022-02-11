@@ -139,8 +139,27 @@ int check_tile_register (__tile* ref, __tile* target)
 
   for (i = 0; i < rows; i++)
     for (j = 0; j < colsb; j++)
-	if (ref->buf[i * colsb + j] != target->buf[i * colsb + j])
-	    return 0;
+      if (ref->buf[i * colsb + j] != target->buf[i * colsb + j])
+	return 0;
+
+  return 1;
+}
+
+/* Compare float tile register value with __tile variable */
+int check_float_tile_register (__tile* ref, __tile* target)
+{
+  /* Tile register should be stored from tmm to
+     memory and compare with emulation results. */
+  int rows = target->rows;
+  int colsb = target->colsb / 4;
+  int i, j;
+  uint32_t *ref_buf = (uint32_t *) ref->buf;
+  uint32_t *target_buf = (uint32_t *) target->buf;
+
+  for (i = 0; i < rows; i++)
+    for (j = 0; j < colsb; j++)
+      if (abs(ref_buf[i * colsb + j] - target_buf[i * colsb + j]) > 1)
+	return 0;
 
   return 1;
 }

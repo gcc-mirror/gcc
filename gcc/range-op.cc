@@ -1,5 +1,5 @@
 /* Code for range operators.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -144,22 +144,21 @@ range_operator::wi_fold_in_parts (irange &r, tree type,
 				  const wide_int &rh_lb,
 				  const wide_int &rh_ub) const
 {
-  wi::overflow_type ov_rh, ov_lh;
   int_range_max tmp;
-  wide_int rh_range = wi::sub (rh_ub, rh_lb, TYPE_SIGN (type), &ov_rh);
-  wide_int lh_range = wi::sub (lh_ub, lh_lb, TYPE_SIGN (type), &ov_lh);
-  signop sign = TYPE_SIGN (type);;
+  widest_int rh_range = wi::sub (widest_int::from (rh_ub, TYPE_SIGN (type)),
+				 widest_int::from (rh_lb, TYPE_SIGN (type)));
+  widest_int lh_range = wi::sub (widest_int::from (lh_ub, TYPE_SIGN (type)),
+				 widest_int::from (lh_lb, TYPE_SIGN (type)));
   // If there are 2, 3, or 4 values in the RH range, do them separately.
   // Call wi_fold_in_parts to check the RH side.
-  if (wi::gt_p (rh_range, 0, sign) && wi::lt_p (rh_range, 4, sign)
-      && ov_rh == wi::OVF_NONE)
+  if (rh_range > 0 && rh_range < 4)
     {
       wi_fold_in_parts (r, type, lh_lb, lh_ub, rh_lb, rh_lb);
-      if (wi::gt_p (rh_range, 1, sign))
+      if (rh_range > 1)
 	{
 	  wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 1, rh_lb + 1);
 	  r.union_ (tmp);
-	  if (wi::eq_p (rh_range, 3))
+	  if (rh_range == 3)
 	    {
 	      wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_lb + 2, rh_lb + 2);
 	      r.union_ (tmp);
@@ -170,15 +169,14 @@ range_operator::wi_fold_in_parts (irange &r, tree type,
     }
   // Otherise check for 2, 3, or 4 values in the LH range and split them up.
   // The RH side has been checked, so no recursion needed.
-  else if (wi::gt_p (lh_range, 0, sign) && wi::lt_p (lh_range, 4, sign)
-	   && ov_lh == wi::OVF_NONE)
+  else if (lh_range > 0 && lh_range < 4)
     {
       wi_fold (r, type, lh_lb, lh_lb, rh_lb, rh_ub);
-      if (wi::gt_p (lh_range, 1, sign))
+      if (lh_range > 1)
 	{
 	  wi_fold (tmp, type, lh_lb + 1, lh_lb + 1, rh_lb, rh_ub);
 	  r.union_ (tmp);
-	  if (wi::eq_p (lh_range, 3))
+	  if (lh_range == 3)
 	    {
 	      wi_fold (tmp, type, lh_lb + 2, lh_lb + 2, rh_lb, rh_ub);
 	      r.union_ (tmp);
@@ -209,10 +207,12 @@ range_operator::fold_range (irange &r, tree type,
   unsigned num_rh = rh.num_pairs ();
 
   // If both ranges are single pairs, fold directly into the result range.
-  if (num_lh == 1 && num_rh == 1)
+  // If the number of subranges grows too high, produce a summary result as the
+  // loop becomes exponential with little benefit.  See PR 103821.
+  if ((num_lh == 1 && num_rh == 1) || num_lh * num_rh > 12)
     {
-      wi_fold_in_parts (r, type, lh.lower_bound (0), lh.upper_bound (0),
-			rh.lower_bound (0), rh.upper_bound (0));
+      wi_fold_in_parts (r, type, lh.lower_bound (), lh.upper_bound (),
+			rh.lower_bound (), rh.upper_bound ());
       op1_op2_relation_effect (r, type, lh, rh, rel);
       return true;
     }
@@ -1832,13 +1832,6 @@ operator_div::wi_fold (irange &r, tree type,
       return;
     }
 
-  // If flag_non_call_exceptions, we must not eliminate a division by zero.
-  if (cfun->can_throw_non_call_exceptions)
-    {
-      r.set_varying (type);
-      return;
-    }
-
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {
@@ -1946,8 +1939,24 @@ public:
 			  const irange &lhs,
 			  const irange &op2,
 			  relation_kind rel = VREL_NONE) const;
+  virtual enum tree_code lhs_op1_relation (const irange &lhs,
+					   const irange &op1,
+					   const irange &op2) const;
 } op_rshift;
 
+
+enum tree_code
+operator_rshift::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
+				   const irange &op1,
+				   const irange &op2) const
+{
+  // If both operands range are >= 0, then the LHS <= op1.
+  if (!op1.undefined_p () && !op2.undefined_p ()
+      && wi::ge_p (op1.lower_bound (), 0, TYPE_SIGN (op1.type ()))
+      && wi::ge_p (op2.lower_bound (), 0, TYPE_SIGN (op2.type ())))
+    return LE_EXPR;
+  return VREL_NONE;
+}
 
 bool
 operator_lshift::fold_range (irange &r, tree type,

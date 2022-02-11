@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# Copyright (C) 2008-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,43 +22,43 @@ TM_H += $(srcdir)/config/i386/x86-tune.def \
 	$(srcdir)/config/i386/i386-isa.def
 PASSES_EXTRA += $(srcdir)/config/i386/i386-passes.def
 
-i386-c.o: $(srcdir)/config/i386/i386-c.c
+i386-c.o: $(srcdir)/config/i386/i386-c.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
-x86-tune-sched.o: $(srcdir)/config/i386/x86-tune-sched.c
+x86-tune-sched.o: $(srcdir)/config/i386/x86-tune-sched.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
-x86-tune-sched-bd.o: $(srcdir)/config/i386/x86-tune-sched-bd.c
+x86-tune-sched-bd.o: $(srcdir)/config/i386/x86-tune-sched-bd.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
-x86-tune-sched-atom.o: $(srcdir)/config/i386/x86-tune-sched-atom.c
+x86-tune-sched-atom.o: $(srcdir)/config/i386/x86-tune-sched-atom.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
-x86-tune-sched-core.o: $(srcdir)/config/i386/x86-tune-sched-core.c
+x86-tune-sched-core.o: $(srcdir)/config/i386/x86-tune-sched-core.cc
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
-i386-d.o: $(srcdir)/config/i386/i386-d.c
+i386-d.o: $(srcdir)/config/i386/i386-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-i386-options.o: $(srcdir)/config/i386/i386-options.c
+i386-options.o: $(srcdir)/config/i386/i386-options.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-i386-builtins.o: $(srcdir)/config/i386/i386-builtins.c
+i386-builtins.o: $(srcdir)/config/i386/i386-builtins.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-i386-expand.o: $(srcdir)/config/i386/i386-expand.c
+i386-expand.o: $(srcdir)/config/i386/i386-expand.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-i386-features.o: $(srcdir)/config/i386/i386-features.c
+i386-features.o: $(srcdir)/config/i386/i386-features.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

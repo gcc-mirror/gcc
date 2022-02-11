@@ -791,8 +791,7 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
 
   // The types are convertible if they have identical underlying
   // types, ignoring struct field tags.
-  if ((lhs->named_type() != NULL || rhs->named_type() != NULL)
-      && Type::are_identical(lhs->base(), rhs->base(), 0, reason))
+  if (Type::are_identical(lhs->base(), rhs->base(), 0, reason))
     return true;
 
   // The types are convertible if they are both unnamed pointer types
@@ -2514,13 +2513,18 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Expression_list* vals = new Expression_list();
   vals->reserve(12);
 
-  if (!this->has_pointer())
+  bool has_pointer;
+  if (name != NULL)
+    has_pointer = name->has_pointer();
+  else
+    has_pointer = this->has_pointer();
+  if (!has_pointer)
     runtime_type_kind |= RUNTIME_TYPE_KIND_NO_POINTERS;
   if (this->is_direct_iface_type())
     runtime_type_kind |= RUNTIME_TYPE_KIND_DIRECT_IFACE;
   int64_t ptrsize;
   int64_t ptrdata;
-  if (this->needs_gcprog(gogo, &ptrsize, &ptrdata))
+  if (has_pointer && this->needs_gcprog(gogo, &ptrsize, &ptrdata))
     runtime_type_kind |= RUNTIME_TYPE_KIND_GC_PROG;
 
   Struct_field_list::const_iterator p = fields->begin();
@@ -2531,7 +2535,10 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   ++p;
   go_assert(p->is_field_name("ptrdata"));
   type_info = Expression::TYPE_INFO_DESCRIPTOR_PTRDATA;
-  vals->push_back(Expression::make_type_info(this, type_info));
+  if (has_pointer)
+    vals->push_back(Expression::make_type_info(this, type_info));
+  else
+    vals->push_back(Expression::make_integer_ul(0, p->type(), bloc));
 
   ++p;
   go_assert(p->is_field_name("hash"));
@@ -2577,7 +2584,12 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 
   ++p;
   go_assert(p->is_field_name("gcdata"));
-  vals->push_back(Expression::make_gc_symbol(this));
+  if (has_pointer)
+    vals->push_back(Expression::make_gc_symbol(this));
+  else
+    vals->push_back(Expression::make_cast(p->type(),
+					  Expression::make_nil(bloc),
+					  bloc));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -6454,9 +6466,18 @@ get_backend_struct_fields(Gogo* gogo, Struct_type* type, bool use_placeholder,
 			     ? p->type()->get_backend_placeholder(gogo)
 			     : p->type()->get_backend(gogo));
       (*bfields)[i].location = p->location();
-      lastsize = gogo->backend()->type_size((*bfields)[i].btype);
-      if (lastsize != 0)
-        saw_nonzero = true;
+      int64_t size = gogo->backend()->type_size((*bfields)[i].btype);
+      if (size != 0)
+	saw_nonzero = true;
+
+      if (size > 0 || !Gogo::is_sink_name(p->field_name()))
+	lastsize = size;
+      else
+	{
+	  // There is an unreferenceable field of zero size.  This
+	  // doesn't affect whether we may need zero padding, so leave
+	  // lastsize unchanged.
+	}
     }
   go_assert(i == fields->size());
   if (saw_nonzero && lastsize == 0 && !type->is_results_struct())
@@ -10886,6 +10907,10 @@ Named_type::do_verify()
 bool
 Named_type::do_has_pointer() const
 {
+  // A type that is not in the heap has no pointers that we care about.
+  if (!this->in_heap_)
+    return false;
+
   if (this->seen_)
     return false;
   this->seen_ = true;

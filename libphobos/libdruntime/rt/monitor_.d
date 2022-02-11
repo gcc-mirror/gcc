@@ -2,12 +2,9 @@
  * Contains the implementation for object monitors.
  *
  * Copyright: Copyright Digital Mars 2000 - 2015.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright, Sean Kelly, Martin Nowak
- */
-
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
+ * Source: $(DRUNTIMESRC rt/_monitor_.d)
  */
 module rt.monitor_;
 
@@ -25,7 +22,7 @@ in
 {
     assert(ownee.__monitor is null);
 }
-body
+do
 {
     auto m = ensureMonitor(cast(Object) owner);
     if (m.impl is null)
@@ -81,7 +78,7 @@ in
 {
     assert(h !is null, "Synchronized object must not be null.");
 }
-body
+do
 {
     auto m = cast(Monitor*) ensureMonitor(h);
     auto i = m.impl;
@@ -174,36 +171,7 @@ package:
 alias IMonitor = Object.Monitor;
 alias DEvent = void delegate(Object);
 
-version (GNU)
-{
-    import gcc.config;
-    static if (GNU_Thread_Model == ThreadModel.Single)
-        version = SingleThreaded;
-    // Ignore ThreadModel, we don't want posix threads on windows and
-    // will always use native threading instead.
-}
-
-version (SingleThreaded)
-{
-    alias Mutex = int;
-
-    void initMutex(Mutex* mtx)
-    {
-    }
-
-    void destroyMutex(Mutex* mtx)
-    {
-    }
-
-    void lockMutex(Mutex* mtx)
-    {
-    }
-
-    void unlockMutex(Mutex* mtx)
-    {
-    }
-}
-else version (Windows)
+version (Windows)
 {
     version (CRuntime_DigitalMars)
     {
@@ -262,7 +230,7 @@ struct Monitor
 
 private:
 
-@property ref shared(Monitor*) monitor(Object h) pure nothrow @nogc
+@property ref shared(Monitor*) monitor(return scope Object h) pure nothrow @nogc
 {
     return *cast(shared Monitor**)&h.__monitor;
 }

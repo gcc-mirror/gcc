@@ -1,7 +1,7 @@
 // Written in the D programming language.
 
 /**
-Networking client functionality as provided by $(HTTP _curl.haxx.se/libcurl,
+Networking client functionality as provided by $(HTTP curl.haxx.se/libcurl,
 libcurl). The libcurl library must be installed on the system in order to use
 this module.
 
@@ -28,19 +28,21 @@ to your $(B dub.json) file if you are using $(LINK2 http://code.dlang.org, DUB).
 
 Windows x86 note:
 A DMD compatible libcurl static library can be downloaded from the dlang.org
-$(LINK2 http://dlang.org/download.html, download page).
+$(LINK2 http://downloads.dlang.org/other/index.html, download archive page).
+
+This module is not available for iOS, tvOS or watchOS.
 
 Compared to using libcurl directly this module allows simpler client code for
 common uses, requires no unsafe operations, and integrates better with the rest
-of the language. Futhermore it provides <a href="std_range.html">$(D range)</a>
+of the language. Futhermore it provides $(MREF_ALTTEXT range, std,range)
 access to protocols supported by libcurl both synchronously and asynchronously.
 
 A high level and a low level API are available. The high level API is built
 entirely on top of the low level one.
 
 The high level API is for commonly used functionality such as HTTP/FTP get. The
-$(LREF byLineAsync) and $(LREF byChunkAsync) provides asynchronous <a
-href="std_range.html">$(D ranges)</a> that performs the request in another
+$(LREF byLineAsync) and $(LREF byChunkAsync) provides asynchronous
+$(MREF_ALTTEXT range, std,range) that performs the request in another
 thread while handling a line/chunk in the current thread.
 
 The low level API allows for streaming and other advanced features.
@@ -86,9 +88,9 @@ dlang.org web page asynchronously.)
 )
 $(LEADINGROW Low level
 )
-$(TR $(TDNW $(LREF HTTP)) $(TD $(D HTTP) struct for advanced usage))
-$(TR $(TDNW $(LREF FTP)) $(TD $(D FTP) struct for advanced usage))
-$(TR $(TDNW $(LREF SMTP)) $(TD $(D SMTP) struct for advanced usage))
+$(TR $(TDNW $(LREF HTTP)) $(TD `HTTP` struct for advanced usage))
+$(TR $(TDNW $(LREF FTP)) $(TD `FTP` struct for advanced usage))
+$(TR $(TDNW $(LREF SMTP)) $(TD `SMTP` struct for advanced usage))
 )
 
 
@@ -139,13 +141,13 @@ the onReceive callback. See $(LREF onReceiveHeader)/$(LREF onReceive) for more
 information. Finally the HTTP request is effected by calling perform(), which is
 synchronous.
 
-Source: $(PHOBOSSRC std/net/_curl.d)
+Source: $(PHOBOSSRC std/net/curl.d)
 
 Copyright: Copyright Jonas Drewsen 2011-2012
 License: $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors: Jonas Drewsen. Some of the SMTP code contributed by Jimmy Cao.
 
-Credits: The functionally is based on $(HTTP _curl.haxx.se/libcurl, libcurl).
+Credits: The functionally is based on $(HTTP curl.haxx.se/libcurl, libcurl).
          LibCurl is licensed under an MIT/X derivative license.
 */
 /*
@@ -156,36 +158,39 @@ Distributed under the Boost Software License, Version 1.0.
 */
 module std.net.curl;
 
-import core.thread;
-import etc.c.curl;
-import std.concurrency;
-import std.encoding;
-import std.exception;
-import std.meta;
-import std.range.primitives;
-import std.socket : InternetAddress;
-import std.traits;
-import std.typecons;
-
-import std.internal.cstring;
-
 public import etc.c.curl : CurlOption;
+import core.time : dur;
+import etc.c.curl : CURLcode;
+import std.range.primitives;
+import std.encoding : EncodingScheme;
+import std.traits : isSomeChar;
+import std.typecons : Flag, Yes, No, Tuple;
 
-version (unittest)
+version (iOS)
+    version = iOSDerived;
+else version (TVOS)
+    version = iOSDerived;
+else version (WatchOS)
+    version = iOSDerived;
+
+version (iOSDerived) {}
+else:
+
+version (StdUnittest)
 {
-    // Run unit test with the PHOBOS_TEST_ALLOW_NET=1 set in order to
-    // allow net traffic
-    import std.range;
-    import std.stdio;
-
-    import std.socket : Address, INADDR_LOOPBACK, Socket, SocketShutdown, TcpSocket;
+    import std.socket : Socket, SocketShutdown;
 
     private struct TestServer
     {
+        import std.concurrency : Tid;
+
+        import std.socket : Socket, TcpSocket;
+
         string addr() { return _addr; }
 
         void handle(void function(Socket s) dg)
         {
+            import std.concurrency : send;
             tid.send(dg);
         }
 
@@ -196,6 +201,9 @@ version (unittest)
 
         static void loop(shared TcpSocket listener)
         {
+            import std.concurrency : OwnerTerminated, receiveOnly;
+            import std.stdio : stderr;
+
             try while (true)
             {
                 void function(Socket) handler = void;
@@ -207,13 +215,17 @@ version (unittest)
             }
             catch (Throwable e)
             {
-                stderr.writeln(e);  // Bugzilla 7018
+                // https://issues.dlang.org/show_bug.cgi?id=7018
+                stderr.writeln(e);
             }
         }
     }
 
     private TestServer startServer()
     {
+        import std.concurrency : spawn;
+        import std.socket : INADDR_LOOPBACK, InternetAddress, TcpSocket;
+
         tlsInit = true;
         auto sock = new TcpSocket;
         sock.bind(new InternetAddress(INADDR_LOOPBACK, InternetAddress.PORT_ANY));
@@ -223,11 +235,14 @@ version (unittest)
         return TestServer(addr, tid, sock);
     }
 
+    /** Test server */
     __gshared TestServer server;
+    /** Thread-local storage init */
     bool tlsInit;
 
     private ref TestServer testServer()
     {
+        import std.concurrency : initOnce;
         return initOnce!server(startServer());
     }
 
@@ -365,7 +380,7 @@ CALLBACK_PARAMS = $(TABLE ,
   * ---
   * import std.net.curl;
   * // Two requests below will do the same.
-  * string content;
+  * char[] content;
   *
   * // Explicit connection provided
   * content = get!HTTP("dlang.org");
@@ -407,7 +422,7 @@ private template isCurlConn(Conn)
  * Example:
  * ----
  * import std.net.curl;
- * download("d-lang.appspot.com/testUrl2", "/tmp/downloaded-http-file");
+ * download("https://httpbin.org/get", "/tmp/downloaded-http-file");
  * ----
  */
 void download(Conn = AutoProtocol)(const(char)[] url, string saveToPath, Conn conn = Conn())
@@ -464,7 +479,7 @@ if (isCurlConn!Conn)
  * ----
  * import std.net.curl;
  * upload("/tmp/downloaded-ftp-file", "ftp.digitalmars.com/sieve.ds");
- * upload("/tmp/downloaded-http-file", "d-lang.appspot.com/testUrl2");
+ * upload("/tmp/downloaded-http-file", "https://httpbin.org/post");
  * ----
  */
 void upload(Conn = AutoProtocol)(string loadFromPath, const(char)[] url, Conn conn = Conn())
@@ -531,16 +546,16 @@ if (isCurlConn!Conn)
  * conn = connection to use e.g. FTP or HTTP. The default AutoProtocol will
  *        guess connection type and create a new instance for this call only.
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]). If asking
- * for $(D char), content will be converted from the connection character set
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`. If asking
+ * for `char`, content will be converted from the connection character set
  * (specified in HTTP response headers or FTP connection properties, both ISO-8859-1
  * by default) to UTF-8.
  *
  * Example:
  * ----
  * import std.net.curl;
- * auto content = get("d-lang.appspot.com/testUrl2");
+ * auto content = get("https://httpbin.org/get");
  * ----
  *
  * Returns:
@@ -548,7 +563,7 @@ if (isCurlConn!Conn)
  *
  * Throws:
  *
- * $(D CurlException) on error.
+ * `CurlException` on error.
  *
  * See_Also: $(LREF HTTP.Method)
  */
@@ -595,15 +610,15 @@ if ( isCurlConn!Conn && (is(T == char) || is(T == ubyte)) )
  * Params:
  *     url = resource to post to
  *     postDict = data to send as the body of the request. An associative array
- *                of $(D string) is accepted and will be encoded using
+ *                of `string` is accepted and will be encoded using
  *                www-form-urlencoding
  *     postData = data to send as the body of the request. An array
  *                of an arbitrary type is accepted and will be cast to ubyte[]
  *                before sending it.
  *     conn = HTTP connection to use
- *     T    = The template parameter $(D T) specifies the type to return. Possible values
- *            are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]). If asking
- *            for $(D char), content will be converted from the connection character set
+ *     T    = The template parameter `T` specifies the type to return. Possible values
+ *            are `char` and `ubyte` to return `char[]` or `ubyte[]`. If asking
+ *            for `char`, content will be converted from the connection character set
  *            (specified in HTTP response headers or FTP connection properties, both ISO-8859-1
  *            by default) to UTF-8.
  *
@@ -611,8 +626,8 @@ if ( isCurlConn!Conn && (is(T == char) || is(T == ubyte)) )
  * ----
  * import std.net.curl;
  *
- * auto content1 = post("d-lang.appspot.com/testUrl2", ["name1" : "value1", "name2" : "value2"]);
- * auto content2 = post("d-lang.appspot.com/testUrl2", [1,2,3,4]);
+ * auto content1 = post("https://httpbin.org/post", ["name1" : "value1", "name2" : "value2"]);
+ * auto content2 = post("https://httpbin.org/post", [1,2,3,4]);
  * ----
  *
  * Returns:
@@ -668,19 +683,27 @@ if (is(T == char) || is(T == ubyte))
 {
     import std.uri : urlEncode;
 
-    return post(url, urlEncode(postDict), conn);
+    return post!T(url, urlEncode(postDict), conn);
 }
 
 @system unittest
 {
+    import std.algorithm.searching : canFind;
+    import std.meta : AliasSeq;
+
+    static immutable expected = ["name1=value1&name2=value2", "name2=value2&name1=value1"];
+
     foreach (host; [testServer.addr, "http://" ~ testServer.addr])
     {
-        testServer.handle((s) {
-            auto req = s.recvReq!char;
-            s.send(httpOK(req.bdy));
-        });
-        auto res = post(host ~ "/path", ["name1" : "value1", "name2" : "value2"]);
-        assert(res == "name1=value1&name2=value2" || res == "name2=value2&name1=value1");
+        foreach (T; AliasSeq!(char, ubyte))
+        {
+            testServer.handle((s) {
+                auto req = s.recvReq!char;
+                s.send(httpOK(req.bdy));
+            });
+            auto res = post!T(host ~ "/path", ["name1" : "value1", "name2" : "value2"]);
+            assert(canFind(expected, res));
+        }
     }
 }
 
@@ -694,16 +717,16 @@ if (is(T == char) || is(T == ubyte))
  * conn = connection to use e.g. FTP or HTTP. The default AutoProtocol will
  *        guess connection type and create a new instance for this call only.
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]). If asking
- * for $(D char), content will be converted from the connection character set
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`. If asking
+ * for `char`, content will be converted from the connection character set
  * (specified in HTTP response headers or FTP connection properties, both ISO-8859-1
  * by default) to UTF-8.
  *
  * Example:
  * ----
  * import std.net.curl;
- * auto content = put("d-lang.appspot.com/testUrl2",
+ * auto content = put("https://httpbin.org/put",
  *                      "Putting this data");
  * ----
  *
@@ -762,7 +785,7 @@ if ( isCurlConn!Conn && (is(T == char) || is(T == ubyte)) )
  * Example:
  * ----
  * import std.net.curl;
- * del("d-lang.appspot.com/testUrl2");
+ * del("https://httpbin.org/delete");
  * ----
  *
  * See_Also: $(LREF HTTP.Method)
@@ -779,6 +802,7 @@ if (isCurlConn!Conn)
     {
         import std.algorithm.searching : findSplitAfter;
         import std.conv : text;
+        import std.exception : enforce;
 
         auto trimmed = url.findSplitAfter("ftp://")[1];
         auto t = trimmed.findSplitAfter("/");
@@ -824,14 +848,14 @@ if (isCurlConn!Conn)
  * conn = connection to use e.g. FTP or HTTP. The default AutoProtocol will
  *        guess connection type and create a new instance for this call only.
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]).
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`.
  *
  * Example:
  * ----
  * import std.net.curl;
  * auto http = HTTP();
- * options("d-lang.appspot.com/testUrl2", http);
+ * options("https://httpbin.org/headers", http);
  * writeln("Allow set to " ~ http.responseHeaders["Allow"]);
  * ----
  *
@@ -868,13 +892,13 @@ if (is(T == char) || is(T == ubyte))
  * conn = connection to use e.g. FTP or HTTP. The default AutoProtocol will
  *        guess connection type and create a new instance for this call only.
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]).
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`.
  *
  * Example:
  * ----
  * import std.net.curl;
- * trace("d-lang.appspot.com/testUrl1");
+ * trace("https://httpbin.org/headers");
  * ----
  *
  * Returns:
@@ -909,13 +933,13 @@ if (is(T == char) || is(T == ubyte))
  * url = resource make a connect to
  * conn = HTTP connection to use
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]).
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`.
  *
  * Example:
  * ----
  * import std.net.curl;
- * connect("d-lang.appspot.com/testUrl1");
+ * connect("https://httpbin.org/headers");
  * ----
  *
  * Returns:
@@ -953,14 +977,14 @@ if (is(T == char) || is(T == ubyte))
  *           before sending it.
  * conn = HTTP connection to use
  *
- * The template parameter $(D T) specifies the type to return. Possible values
- * are $(D char) and $(D ubyte) to return $(D char[]) or $(D ubyte[]).
+ * The template parameter `T` specifies the type to return. Possible values
+ * are `char` and `ubyte` to return `char[]` or `ubyte[]`.
  *
  * Example:
  * ----
  * auto http = HTTP();
  * http.addRequestHeader("Content-Type", "application/json");
- * auto content = patch("d-lang.appspot.com/testUrl2", `{"title": "Patched Title"}`, http);
+ * auto content = patch("https://httpbin.org/patch", `{"title": "Patched Title"}`, http);
  * ----
  *
  * Returns:
@@ -1001,6 +1025,8 @@ private auto _basicHTTP(T)(const(char)[] url, const(void)[] sendData, HTTP clien
 {
     import std.algorithm.comparison : min;
     import std.format : format;
+    import std.exception : enforce;
+    import etc.c.curl : CurlSeek, CurlSeekPos;
 
     immutable doSend = sendData !is null &&
         (client.method == HTTP.Method.post ||
@@ -1077,6 +1103,7 @@ private auto _basicHTTP(T)(const(char)[] url, const(void)[] sendData, HTTP clien
 @system unittest
 {
     import std.algorithm.searching : canFind;
+    import std.exception : collectException;
 
     testServer.handle((s) {
         auto req = s.recvReq;
@@ -1088,7 +1115,8 @@ private auto _basicHTTP(T)(const(char)[] url, const(void)[] sendData, HTTP clien
     assert(e.status == 404);
 }
 
-// Bugzilla 14760 - content length must be reset after post
+// Content length must be reset after post
+// https://issues.dlang.org/show_bug.cgi?id=14760
 @system unittest
 {
     import std.algorithm.searching : canFind;
@@ -1197,6 +1225,7 @@ private auto _decodeContent(T)(ubyte[] content, string encoding)
     }
     else
     {
+        import std.exception : enforce;
         import std.format : format;
 
         // Optimally just return the utf8 encoded content
@@ -1252,7 +1281,7 @@ struct ByLineBuffer(Char)
 /** HTTP/FTP fetch content as a range of lines.
  *
  * A range of lines is returned when the request is complete. If the method or
- * other request properties is to be customized then set the $(D conn) parameter
+ * other request properties is to be customized then set the `conn` parameter
  * with a HTTP/FTP instance that has these properties set.
  *
  * Example:
@@ -1264,7 +1293,7 @@ struct ByLineBuffer(Char)
  *
  * Params:
  * url = The url to receive content from
- * keepTerminator = $(D Yes.keepTerminator) signals that the line terminator should be
+ * keepTerminator = `Yes.keepTerminator` signals that the line terminator should be
  *                  returned as part of the lines in the range.
  * terminator = The character that terminates a line
  * conn = The connection to use e.g. HTTP or FTP.
@@ -1302,6 +1331,7 @@ if (isCurlConn!Conn && isSomeChar!Char && isSomeChar!Terminator)
 
         @property @safe Char[] front()
         {
+            import std.exception : enforce;
             enforce!CurlException(currentValid, "Cannot call front() on empty range");
             return current;
         }
@@ -1309,6 +1339,7 @@ if (isCurlConn!Conn && isSomeChar!Char && isSomeChar!Terminator)
         void popFront()
         {
             import std.algorithm.searching : findSplitAfter, findSplit;
+            import std.exception : enforce;
 
             enforce!CurlException(currentValid, "Cannot call popFront() on empty range");
             if (lines.empty)
@@ -1361,7 +1392,7 @@ if (isCurlConn!Conn && isSomeChar!Char && isSomeChar!Terminator)
 /** HTTP/FTP fetch content as a range of chunks.
  *
  * A range of chunks is returned when the request is complete. If the method or
- * other request properties is to be customized then set the $(D conn) parameter
+ * other request properties is to be customized then set the `conn` parameter
  * with a HTTP/FTP instance that has these properties set.
  *
  * Example:
@@ -1458,6 +1489,8 @@ private T[] _getForRange(T,Conn)(const(char)[] url, Conn conn)
  */
 private mixin template WorkerThreadProtocol(Unit, alias units)
 {
+    import core.time : Duration;
+
     @property bool empty()
     {
         tryEnsureUnits();
@@ -1476,7 +1509,9 @@ private mixin template WorkerThreadProtocol(Unit, alias units)
 
     void popFront()
     {
+        import std.concurrency : send;
         import std.format : format;
+
         tryEnsureUnits();
         assert(state == State.gotUnits,
                format("Expected %s but got $s",
@@ -1492,7 +1527,9 @@ private mixin template WorkerThreadProtocol(Unit, alias units)
     */
     bool wait(Duration d)
     {
+        import core.time : dur;
         import std.datetime.stopwatch : StopWatch;
+        import std.concurrency : receiveTimeout;
 
         if (state == State.gotUnits)
             return true;
@@ -1543,6 +1580,7 @@ private mixin template WorkerThreadProtocol(Unit, alias units)
 
     void tryEnsureUnits()
     {
+        import std.concurrency : receive;
         while (true)
         {
             final switch (state)
@@ -1574,41 +1612,14 @@ private mixin template WorkerThreadProtocol(Unit, alias units)
     }
 }
 
-// @@@@BUG 15831@@@@
-// this should be inside byLineAsync
-// Range that reads one line at a time asynchronously.
-private static struct AsyncLineInputRange(Char)
-{
-    private Char[] line;
-    mixin WorkerThreadProtocol!(Char, line);
-
-    private Tid workerTid;
-    private State running;
-
-    private this(Tid tid, size_t transmitBuffers, size_t bufferSize)
-    {
-        workerTid = tid;
-        state = State.needUnits;
-
-        // Send buffers to other thread for it to use.  Since no mechanism is in
-        // place for moving ownership a cast to shared is done here and casted
-        // back to non-shared in the receiving end.
-        foreach (i ; 0 .. transmitBuffers)
-        {
-            auto arr = new Char[](bufferSize);
-            workerTid.send(cast(immutable(Char[]))arr);
-        }
-    }
-}
-
 /** HTTP/FTP fetch content as a range of lines asynchronously.
  *
  * A range of lines is returned immediately and the request that fetches the
  * lines is performed in another thread. If the method or other request
- * properties is to be customized then set the $(D conn) parameter with a
+ * properties is to be customized then set the `conn` parameter with a
  * HTTP/FTP instance that has these properties set.
  *
- * If $(D postData) is non-_null the method will be set to $(D post) for HTTP
+ * If `postData` is non-_null the method will be set to `post` for HTTP
  * requests.
  *
  * The background thread will buffer up to transmitBuffers number of lines
@@ -1617,8 +1628,8 @@ private static struct AsyncLineInputRange(Char)
  * to receive more data from the network.
  *
  * If no data is available and the main thread accesses the range it will block
- * until data becomes available. An exception to this is the $(D wait(Duration)) method on
- * the $(LREF AsyncLineInputRange). This method will wait at maximum for the
+ * until data becomes available. An exception to this is the `wait(Duration)` method on
+ * the $(LREF LineInputRange). This method will wait at maximum for the
  * specified duration and return true if data is available.
  *
  * Example:
@@ -1649,7 +1660,7 @@ private static struct AsyncLineInputRange(Char)
  * Params:
  * url = The url to receive content from
  * postData = Data to HTTP Post
- * keepTerminator = $(D Yes.keepTerminator) signals that the line terminator should be
+ * keepTerminator = `Yes.keepTerminator` signals that the line terminator should be
  *                  returned as part of the lines in the range.
  * terminator = The character that terminates a line
  * transmitBuffers = The number of lines buffered asynchronously
@@ -1677,17 +1688,18 @@ if (isCurlConn!Conn && isSomeChar!Char && isSomeChar!Terminator)
     }
     else
     {
+        import std.concurrency : OnCrowding, send, setMaxMailboxSize, spawn, thisTid, Tid;
         // 50 is just an arbitrary number for now
         setMaxMailboxSize(thisTid, 50, OnCrowding.block);
-        auto tid = spawn(&_spawnAsync!(Conn, Char, Terminator));
+        auto tid = spawn(&_async!().spawn!(Conn, Char, Terminator));
         tid.send(thisTid);
         tid.send(terminator);
         tid.send(keepTerminator == Yes.keepTerminator);
 
-        _asyncDuplicateConnection(url, conn, postData, tid);
+        _async!().duplicateConnection(url, conn, postData, tid);
 
-        return AsyncLineInputRange!Char(tid, transmitBuffers,
-                                        Conn.defaultAsyncStringBufferSize);
+        return _async!().LineInputRange!Char(tid, transmitBuffers,
+                                             Conn.defaultAsyncStringBufferSize);
     }
 }
 
@@ -1727,41 +1739,14 @@ auto byLineAsync(Conn = AutoProtocol, Terminator = char, Char = char)
     }
 }
 
-// @@@@BUG 15831@@@@
-// this should be inside byLineAsync
-// Range that reads one chunk at a time asynchronously.
-private static struct AsyncChunkInputRange
-{
-    private ubyte[] chunk;
-    mixin WorkerThreadProtocol!(ubyte, chunk);
-
-    private Tid workerTid;
-    private State running;
-
-    private this(Tid tid, size_t transmitBuffers, size_t chunkSize)
-    {
-        workerTid = tid;
-        state = State.needUnits;
-
-        // Send buffers to other thread for it to use.  Since no mechanism is in
-        // place for moving ownership a cast to shared is done here and a cast
-        // back to non-shared in the receiving end.
-        foreach (i ; 0 .. transmitBuffers)
-        {
-            ubyte[] arr = new ubyte[](chunkSize);
-            workerTid.send(cast(immutable(ubyte[]))arr);
-        }
-    }
-}
-
 /** HTTP/FTP fetch content as a range of chunks asynchronously.
  *
  * A range of chunks is returned immediately and the request that fetches the
  * chunks is performed in another thread. If the method or other request
- * properties is to be customized then set the $(D conn) parameter with a
+ * properties is to be customized then set the `conn` parameter with a
  * HTTP/FTP instance that has these properties set.
  *
- * If $(D postData) is non-_null the method will be set to $(D post) for HTTP
+ * If `postData` is non-_null the method will be set to `post` for HTTP
  * requests.
  *
  * The background thread will buffer up to transmitBuffers number of chunks
@@ -1770,8 +1755,8 @@ private static struct AsyncChunkInputRange
  * thread to receive more data from the network.
  *
  * If no data is available and the main thread access the range it will block
- * until data becomes available. An exception to this is the $(D wait(Duration))
- * method on the $(LREF AsyncChunkInputRange). This method will wait at maximum for the specified
+ * until data becomes available. An exception to this is the `wait(Duration)`
+ * method on the $(LREF ChunkInputRange). This method will wait at maximum for the specified
  * duration and return true if data is available.
  *
  * Example:
@@ -1827,14 +1812,15 @@ if (isCurlConn!(Conn))
     }
     else
     {
+        import std.concurrency : OnCrowding, send, setMaxMailboxSize, spawn, thisTid, Tid;
         // 50 is just an arbitrary number for now
         setMaxMailboxSize(thisTid, 50, OnCrowding.block);
-        auto tid = spawn(&_spawnAsync!(Conn, ubyte));
+        auto tid = spawn(&_async!().spawn!(Conn, ubyte));
         tid.send(thisTid);
 
-        _asyncDuplicateConnection(url, conn, postData, tid);
+        _async!().duplicateConnection(url, conn, postData, tid);
 
-        return AsyncChunkInputRange(tid, transmitBuffers, chunkSize);
+        return _async!().ChunkInputRange(tid, transmitBuffers, chunkSize);
     }
 }
 
@@ -1876,51 +1862,6 @@ if (isCurlConn!(Conn))
 }
 
 
-/* Used by byLineAsync/byChunkAsync to duplicate an existing connection
- * that can be used exclusively in a spawned thread.
- */
-private void _asyncDuplicateConnection(Conn, PostData)
-    (const(char)[] url, Conn conn, PostData postData, Tid tid)
-{
-    // no move semantic available in std.concurrency ie. must use casting.
-    auto connDup = conn.dup();
-    connDup.url = url;
-
-    static if ( is(Conn : HTTP) )
-    {
-        connDup.p.headersOut = null;
-        connDup.method = conn.method == HTTP.Method.undefined ?
-            HTTP.Method.get : conn.method;
-        if (postData !is null)
-        {
-            if (connDup.method == HTTP.Method.put)
-            {
-                connDup.handle.set(CurlOption.infilesize_large,
-                                   postData.length);
-            }
-            else
-            {
-                // post
-                connDup.method = HTTP.Method.post;
-                connDup.handle.set(CurlOption.postfieldsize_large,
-                                   postData.length);
-            }
-            connDup.handle.set(CurlOption.copypostfields,
-                               cast(void*) postData.ptr);
-        }
-        tid.send(cast(ulong) connDup.handle.handle);
-        tid.send(connDup.method);
-    }
-    else
-    {
-        enforce!CurlException(postData is null,
-                                "Cannot put ftp data using byLineAsync()");
-        tid.send(cast(ulong) connDup.handle.handle);
-        tid.send(HTTP.Method.undefined);
-    }
-    connDup.p.curl.handle = null; // make sure handle is not freed
-}
-
 /*
   Mixin template for all supported curl protocols. This is the commom
   functionallity such as timeouts and network interface settings. This should
@@ -1930,8 +1871,11 @@ private void _asyncDuplicateConnection(Conn, PostData)
 */
 private mixin template Protocol()
 {
+    import etc.c.curl : CurlReadFunc, RawCurlProxy = CurlProxy;
+    import core.time : Duration;
+    import std.socket : InternetAddress;
 
-    /// Value to return from $(D onSend)/$(D onReceive) delegates in order to
+    /// Value to return from `onSend`/`onReceive` delegates in order to
     /// pause a request
     alias requestPause = CurlReadFunc.pause;
 
@@ -2012,7 +1956,7 @@ private mixin template Protocol()
     }
 
     /// Type of proxy
-    alias CurlProxy = etc.c.curl.CurlProxy;
+    alias CurlProxy = RawCurlProxy;
 
     /** Proxy type
      *  See: $(HTTP curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTPROXY, _proxy_type)
@@ -2155,7 +2099,7 @@ private mixin template Protocol()
         http.setAuthentication("user", "pass");
         http.perform();
 
-        // Bugzilla 17540
+        // https://issues.dlang.org/show_bug.cgi?id=17540
         http.setNoProxy("www.example.com");
     }
 
@@ -2180,15 +2124,15 @@ private mixin template Protocol()
 
     /**
      * The event handler that gets called when data is needed for sending. The
-     * length of the $(D void[]) specifies the maximum number of bytes that can
+     * length of the `void[]` specifies the maximum number of bytes that can
      * be sent.
      *
      * Returns:
      * The callback returns the number of elements in the buffer that have been
      * filled and are ready to send.
-     * The special value $(D .abortRequest) can be returned in order to abort the
+     * The special value `.abortRequest` can be returned in order to abort the
      * current request.
-     * The special value $(D .pauseRequest) can be returned in order to pause the
+     * The special value `.pauseRequest` can be returned in order to pause the
      * current request.
      *
      * Example:
@@ -2259,10 +2203,11 @@ private mixin template Protocol()
       * ----
       * import std.net.curl, std.stdio;
       * auto client = HTTP("dlang.org");
-      * client.onProgress = delegate int(size_t dl, size_t dln, size_t ul, size_t ult)
+      * client.onProgress = delegate int(size_t dl, size_t dln, size_t ul, size_t uln)
       * {
       *     writeln("Progress: downloaded ", dln, " of ", dl);
       *     writeln("Progress: uploaded ", uln, " of ", ul);
+      *     return 0;
       * };
       * client.perform();
       * ----
@@ -2275,8 +2220,8 @@ private mixin template Protocol()
 }
 
 /*
-  Decode $(D ubyte[]) array using the provided EncodingScheme up to maxChars
-  Returns: Tuple of ubytes read and the $(D Char[]) characters decoded.
+  Decode `ubyte[]` array using the provided EncodingScheme up to maxChars
+  Returns: Tuple of ubytes read and the `Char[]` characters decoded.
            Not all ubytes are guaranteed to be read in case of decoding error.
 */
 private Tuple!(size_t,Char[])
@@ -2284,6 +2229,7 @@ decodeString(Char = char)(const(ubyte)[] data,
                           EncodingScheme scheme,
                           size_t maxChars = size_t.max)
 {
+    import std.encoding : INVALID_SEQUENCE;
     Char[] res;
     immutable startLen = data.length;
     size_t charsDecoded = 0;
@@ -2301,7 +2247,7 @@ decodeString(Char = char)(const(ubyte)[] data,
 }
 
 /*
-  Decode $(D ubyte[]) array using the provided $(D EncodingScheme) until a the
+  Decode `ubyte[]` array using the provided `EncodingScheme` until a the
   line terminator specified is found. The basesrc parameter is effectively
   prepended to src as the first thing.
 
@@ -2324,6 +2270,8 @@ private bool decodeLineInto(Terminator, Char = char)(ref const(ubyte)[] basesrc,
                                                      Terminator terminator)
 {
     import std.algorithm.searching : endsWith;
+    import std.encoding : INVALID_SEQUENCE;
+    import std.exception : enforce;
 
     // if there is anything in the basesrc then try to decode that
     // first.
@@ -2374,17 +2322,28 @@ private bool decodeLineInto(Terminator, Char = char)(ref const(ubyte)[] basesrc,
   * HTTP client functionality.
   *
   * Example:
+  *
+  * Get with custom data receivers:
+  *
   * ---
   * import std.net.curl, std.stdio;
   *
-  * // Get with custom data receivers
-  * auto http = HTTP("dlang.org");
+  * auto http = HTTP("https://dlang.org");
   * http.onReceiveHeader =
   *     (in char[] key, in char[] value) { writeln(key ~ ": " ~ value); };
   * http.onReceive = (ubyte[] data) { /+ drop +/ return data.length; };
   * http.perform();
+  * ---
   *
-  * // Put with data senders
+  */
+
+/**
+  * Put with data senders:
+  *
+  * ---
+  * import std.net.curl, std.stdio;
+  *
+  * auto http = HTTP("https://dlang.org");
   * auto msg = "Hello world";
   * http.contentLength = msg.length;
   * http.onSend = (void[] data)
@@ -2397,10 +2356,19 @@ private bool decodeLineInto(Terminator, Char = char)(ref const(ubyte)[] basesrc,
   *     return len;
   * };
   * http.perform();
+  * ---
   *
-  * // Track progress
+  */
+
+/**
+  * Tracking progress:
+  *
+  * ---
+  * import std.net.curl, std.stdio;
+  *
+  * auto http = HTTP();
   * http.method = HTTP.Method.get;
-  * http.url = "http://upload.wikimedia.org/wikipedia/commons/"
+  * http.url = "http://upload.wikimedia.org/wikipedia/commons/" ~
   *            "5/53/Wikipedia-logo-en-big.png";
   * http.onReceive = (ubyte[] data) { return data.length; };
   * http.onProgress = (size_t dltotal, size_t dlnow,
@@ -2412,7 +2380,7 @@ private bool decodeLineInto(Terminator, Char = char)(ref const(ubyte)[] basesrc,
   * http.perform();
   * ---
   *
-  * See_Also: $(_HTTP www.ietf.org/rfc/rfc2616.txt, RFC2616)
+  * See_Also: $(LINK2 http://www.ietf.org/rfc/rfc2616.txt, RFC2616)
   *
   */
 struct HTTP
@@ -2420,6 +2388,8 @@ struct HTTP
     mixin Protocol;
 
     import std.datetime.systime : SysTime;
+    import std.typecons : RefCounted;
+    import etc.c.curl : CurlAuth, CurlInfo, curl_slist, CURLVERSION_NOW, curl_off_t;
 
     /// Authentication method equal to $(REF CurlAuth, etc,c,curl)
     alias AuthMethod = CurlAuth;
@@ -2505,9 +2475,10 @@ struct HTTP
     }
 
     private RefCounted!Impl p;
+    import etc.c.curl : CurlTimeCond;
 
     /// Parse status line, as received from / generated by cURL.
-    private static bool parseStatusLine(in char[] header, out StatusLine status) @safe
+    private static bool parseStatusLine(const char[] header, out StatusLine status) @safe
     {
         import std.conv : to;
         import std.regex : regex, match;
@@ -2600,7 +2571,7 @@ struct HTTP
        Perform a http request.
 
        After the HTTP client has been setup and possibly assigned callbacks the
-       $(D perform()) method will start performing the request towards the
+       `perform()` method will start performing the request towards the
        specified server.
 
        Params:
@@ -2676,7 +2647,9 @@ struct HTTP
     // docs mixed in.
     version (StdDdoc)
     {
-        /// Value to return from $(D onSend)/$(D onReceive) delegates in order to
+        static import etc.c.curl;
+
+        /// Value to return from `onSend`/`onReceive` delegates in order to
         /// pause a request
         alias requestPause = CurlReadFunc.pause;
 
@@ -2801,15 +2774,15 @@ struct HTTP
 
         /**
          * The event handler that gets called when data is needed for sending. The
-         * length of the $(D void[]) specifies the maximum number of bytes that can
+         * length of the `void[]` specifies the maximum number of bytes that can
          * be sent.
          *
          * Returns:
          * The callback returns the number of elements in the buffer that have been
          * filled and are ready to send.
-         * The special value $(D .abortRequest) can be returned in order to abort the
+         * The special value `.abortRequest` can be returned in order to abort the
          * current request.
-         * The special value $(D .pauseRequest) can be returned in order to pause the
+         * The special value `.pauseRequest` can be returned in order to pause the
          * current request.
          *
          * Example:
@@ -2870,10 +2843,11 @@ struct HTTP
          * ----
          * import std.net.curl, std.stdio;
          * auto client = HTTP("dlang.org");
-         * client.onProgress = delegate int(size_t dl, size_t dln, size_t ul, size_t ult)
+         * client.onProgress = delegate int(size_t dl, size_t dln, size_t ul, size_t uln)
          * {
          *     writeln("Progress: downloaded ", dln, " of ", dl);
          *     writeln("Progress: uploaded ", uln, " of ", ul);
+         *     return 0;
          * };
          * client.perform();
          * ----
@@ -2908,6 +2882,7 @@ struct HTTP
     void addRequestHeader(const(char)[] name, const(char)[] value)
     {
         import std.format : format;
+        import std.internal.cstring : tempCString;
         import std.uni : icmp;
 
         if (icmp(name, "User-Agent") == 0)
@@ -2947,7 +2922,7 @@ struct HTTP
     /** Set the value of the user agent request header field.
      *
      * By default a request has it's "User-Agent" field set to $(LREF
-     * defaultUserAgent) even if $(D setUserAgent) was never called.  Pass
+     * defaultUserAgent) even if `setUserAgent` was never called.  Pass
      * an empty string to suppress the "User-Agent" field altogether.
      */
     void setUserAgent(const(char)[] userAgent)
@@ -2957,23 +2932,23 @@ struct HTTP
 
     /**
      * Get various timings defined in $(REF CurlInfo, etc, c, curl).
-     * The value is usable only if the return value is equal to $(D etc.c.curl.CurlError.ok).
+     * The value is usable only if the return value is equal to `etc.c.curl.CurlError.ok`.
      *
      * Params:
      *      timing = one of the timings defined in $(REF CurlInfo, etc, c, curl).
      *               The values are:
-     *               $(D etc.c.curl.CurlInfo.namelookup_time),
-     *               $(D etc.c.curl.CurlInfo.connect_time),
-     *               $(D etc.c.curl.CurlInfo.pretransfer_time),
-     *               $(D etc.c.curl.CurlInfo.starttransfer_time),
-     *               $(D etc.c.curl.CurlInfo.redirect_time),
-     *               $(D etc.c.curl.CurlInfo.appconnect_time),
-     *               $(D etc.c.curl.CurlInfo.total_time).
+     *               `etc.c.curl.CurlInfo.namelookup_time`,
+     *               `etc.c.curl.CurlInfo.connect_time`,
+     *               `etc.c.curl.CurlInfo.pretransfer_time`,
+     *               `etc.c.curl.CurlInfo.starttransfer_time`,
+     *               `etc.c.curl.CurlInfo.redirect_time`,
+     *               `etc.c.curl.CurlInfo.appconnect_time`,
+     *               `etc.c.curl.CurlInfo.total_time`.
      *      val    = the actual value of the inquired timing.
      *
      * Returns:
      *      The return code of the operation. The value stored in val
-     *      should be used only if the return value is $(D etc.c.curl.CurlInfo.ok).
+     *      should be used only if the return value is `etc.c.curl.CurlInfo.ok`.
      *
      * Example:
      * ---
@@ -2986,7 +2961,7 @@ struct HTTP
      * double val;
      * CurlCode code;
      *
-     * code = http.getTiming(CurlInfo.namelookup_time, val);
+     * code = client.getTiming(CurlInfo.namelookup_time, val);
      * assert(code == CurlError.ok);
      * ---
      */
@@ -3060,7 +3035,7 @@ struct HTTP
        Set time condition on the request.
 
        Params:
-       cond =  $(D CurlTimeCond.{none,ifmodsince,ifunmodsince,lastmod})
+       cond =  `CurlTimeCond.{none,ifmodsince,ifunmodsince,lastmod}`
        timestamp = Timestamp for the condition
 
        $(HTTP www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.25, _RFC2616 Section 14.25)
@@ -3166,7 +3141,7 @@ struct HTTP
       * Set the event handler that receives incoming headers.
       *
       * The callback will receive a header field key, value as parameter. The
-      * $(D const(char)[]) arrays are not valid after the delegate has returned.
+      * `const(char)[]` arrays are not valid after the delegate has returned.
       *
       * Example:
       * ----
@@ -3187,7 +3162,7 @@ struct HTTP
        Callback for each received StatusLine.
 
        Notice that several callbacks can be done for each call to
-       $(D perform()) due to redirections.
+       `perform()` due to redirections.
 
        See_Also: $(LREF StatusLine)
      */
@@ -3310,11 +3285,11 @@ struct HTTP
 
 @system unittest // charset/Charset/CHARSET/...
 {
-    import std.meta : AliasSeq;
+    import etc.c.curl;
 
-    foreach (c; AliasSeq!("charset", "Charset", "CHARSET", "CharSet", "charSet",
-        "ChArSeT", "cHaRsEt"))
-    {
+    static foreach (c; ["charset", "Charset", "CHARSET", "CharSet", "charSet",
+        "ChArSeT", "cHaRsEt"])
+    {{
         testServer.handle((s) {
             s.send("HTTP/1.1 200 OK\r\n"~
                 "Content-Length: 0\r\n"~
@@ -3326,7 +3301,7 @@ struct HTTP
         http.perform();
         assert(http.p.charset == "foo");
 
-        // Bugzilla 16736
+        // https://issues.dlang.org/show_bug.cgi?id=16736
         double val;
         CurlCode code;
 
@@ -3344,7 +3319,7 @@ struct HTTP
         assert(code == CurlError.ok);
         code = http.getTiming(CurlInfo.appconnect_time, val);
         assert(code == CurlError.ok);
-    }
+    }}
 }
 
 /**
@@ -3356,6 +3331,9 @@ struct FTP
 {
 
     mixin Protocol;
+
+    import std.typecons : RefCounted;
+    import etc.c.curl : CurlError, CurlInfo, curl_off_t, curl_slist;
 
     private struct Impl
     {
@@ -3449,7 +3427,9 @@ struct FTP
     // docs mixed in.
     version (StdDdoc)
     {
-        /// Value to return from $(D onSend)/$(D onReceive) delegates in order to
+        static import etc.c.curl;
+
+        /// Value to return from `onSend`/`onReceive` delegates in order to
         /// pause a request
         alias requestPause = CurlReadFunc.pause;
 
@@ -3574,15 +3554,15 @@ struct FTP
 
         /**
          * The event handler that gets called when data is needed for sending. The
-         * length of the $(D void[]) specifies the maximum number of bytes that can
+         * length of the `void[]` specifies the maximum number of bytes that can
          * be sent.
          *
          * Returns:
          * The callback returns the number of elements in the buffer that have been
          * filled and are ready to send.
-         * The special value $(D .abortRequest) can be returned in order to abort the
+         * The special value `.abortRequest` can be returned in order to abort the
          * current request.
-         * The special value $(D .pauseRequest) can be returned in order to pause the
+         * The special value `.pauseRequest` can be returned in order to pause the
          * current request.
          *
          */
@@ -3642,6 +3622,7 @@ struct FTP
      */
     void addCommand(const(char)[] command)
     {
+        import std.internal.cstring : tempCString;
         p.commands = Curl.curl.slist_append(p.commands,
                                             command.tempCString().buffPtr);
         p.curl.set(CurlOption.postquote, p.commands);
@@ -3670,23 +3651,23 @@ struct FTP
 
     /**
      * Get various timings defined in $(REF CurlInfo, etc, c, curl).
-     * The value is usable only if the return value is equal to $(D etc.c.curl.CurlError.ok).
+     * The value is usable only if the return value is equal to `etc.c.curl.CurlError.ok`.
      *
      * Params:
      *      timing = one of the timings defined in $(REF CurlInfo, etc, c, curl).
      *               The values are:
-     *               $(D etc.c.curl.CurlInfo.namelookup_time),
-     *               $(D etc.c.curl.CurlInfo.connect_time),
-     *               $(D etc.c.curl.CurlInfo.pretransfer_time),
-     *               $(D etc.c.curl.CurlInfo.starttransfer_time),
-     *               $(D etc.c.curl.CurlInfo.redirect_time),
-     *               $(D etc.c.curl.CurlInfo.appconnect_time),
-     *               $(D etc.c.curl.CurlInfo.total_time).
+     *               `etc.c.curl.CurlInfo.namelookup_time`,
+     *               `etc.c.curl.CurlInfo.connect_time`,
+     *               `etc.c.curl.CurlInfo.pretransfer_time`,
+     *               `etc.c.curl.CurlInfo.starttransfer_time`,
+     *               `etc.c.curl.CurlInfo.redirect_time`,
+     *               `etc.c.curl.CurlInfo.appconnect_time`,
+     *               `etc.c.curl.CurlInfo.total_time`.
      *      val    = the actual value of the inquired timing.
      *
      * Returns:
      *      The return code of the operation. The value stored in val
-     *      should be used only if the return value is $(D etc.c.curl.CurlInfo.ok).
+     *      should be used only if the return value is `etc.c.curl.CurlInfo.ok`.
      *
      * Example:
      * ---
@@ -3701,7 +3682,7 @@ struct FTP
      * double val;
      * CurlCode code;
      *
-     * code = http.getTiming(CurlInfo.namelookup_time, val);
+     * code = client.getTiming(CurlInfo.namelookup_time, val);
      * assert(code == CurlError.ok);
      * ---
      */
@@ -3755,6 +3736,8 @@ struct FTP
 struct SMTP
 {
     mixin Protocol;
+    import std.typecons : RefCounted;
+    import etc.c.curl : CurlUseSSL, curl_slist;
 
     private struct Impl
     {
@@ -3840,6 +3823,7 @@ struct SMTP
     @property void url(const(char)[] url)
     {
         import std.algorithm.searching : startsWith;
+        import std.exception : enforce;
         import std.uni : toLower;
 
         auto lowered = url.toLower();
@@ -3869,7 +3853,9 @@ struct SMTP
     // docs mixed in.
     version (StdDdoc)
     {
-        /// Value to return from $(D onSend)/$(D onReceive) delegates in order to
+        static import etc.c.curl;
+
+        /// Value to return from `onSend`/`onReceive` delegates in order to
         /// pause a request
         alias requestPause = CurlReadFunc.pause;
 
@@ -3994,15 +3980,15 @@ struct SMTP
 
         /**
          * The event handler that gets called when data is needed for sending. The
-         * length of the $(D void[]) specifies the maximum number of bytes that can
+         * length of the `void[]` specifies the maximum number of bytes that can
          * be sent.
          *
          * Returns:
          * The callback returns the number of elements in the buffer that have been
          * filled and are ready to send.
-         * The special value $(D .abortRequest) can be returned in order to abort the
+         * The special value `.abortRequest` can be returned in order to abort the
          * current request.
-         * The special value $(D .pauseRequest) can be returned in order to pause the
+         * The special value `.pauseRequest` can be returned in order to pause the
          * current request.
          */
         @property void onSend(size_t delegate(void[]) callback);
@@ -4048,6 +4034,7 @@ struct SMTP
     */
     void mailTo()(const(char)[][] recipients...)
     {
+        import std.internal.cstring : tempCString;
         assert(!recipients.empty, "Recipient must not be empty");
         curl_slist* recipients_list = null;
         foreach (recipient; recipients)
@@ -4068,6 +4055,20 @@ struct SMTP
         p.message = msg;
     }
 }
+
+@system unittest
+{
+    import std.net.curl;
+
+    // Send an email with SMTPS
+    auto smtp = SMTP("smtps://smtp.gmail.com");
+    smtp.setAuthentication("from.addr@gmail.com", "password");
+    smtp.mailTo = ["<to.addr@gmail.com>"];
+    smtp.mailFrom = "<from.addr@gmail.com>";
+    smtp.message = "Example Message";
+    //smtp.perform();
+}
+
 
 /++
     Exception thrown on errors in std.net.curl functions.
@@ -4143,14 +4144,16 @@ class HTTPStatusException : CurlException
 /// Equal to $(REF CURLcode, etc,c,curl)
 alias CurlCode = CURLcode;
 
-import std.typecons : Flag, Yes, No;
 /// Flag to specify whether or not an exception is thrown on error.
 alias ThrowOnError = Flag!"throwOnError";
 
 private struct CurlAPI
 {
+    import etc.c.curl : CurlGlobal;
     static struct API
     {
+    import etc.c.curl : curl_version_info, curl_version_info_data,
+                        CURL, CURLcode, CURLINFO, CURLoption, CURLversion, curl_slist;
     extern(C):
         import core.stdc.config : c_long;
         CURLcode function(c_long flags) global_init;
@@ -4179,6 +4182,8 @@ private struct CurlAPI
 
     static void* loadAPI()
     {
+        import std.exception : enforce;
+
         version (Posix)
         {
             import core.sys.posix.dlfcn : dlsym, dlopen, dlclose, RTLD_LAZY;
@@ -4186,7 +4191,7 @@ private struct CurlAPI
         }
         else version (Windows)
         {
-            import core.sys.windows.windows : GetProcAddress, GetModuleHandleA,
+            import core.sys.windows.winbase : GetProcAddress, GetModuleHandleA,
                 LoadLibraryA;
             alias loadSym = GetProcAddress;
         }
@@ -4207,7 +4212,12 @@ private struct CurlAPI
             version (Posix)
                 dlclose(handle);
 
-            version (OSX)
+            version (LibcurlPath)
+            {
+                import std.string : strip;
+                static immutable names = [strip(import("LibcurlPathFile"))];
+            }
+            else version (OSX)
                 static immutable names = ["libcurl.4.dylib"];
             else version (Posix)
             {
@@ -4251,7 +4261,7 @@ private struct CurlAPI
             }
             else version (Windows)
             {
-                import core.sys.windows.windows : FreeLibrary;
+                import core.sys.windows.winbase : FreeLibrary;
                 FreeLibrary(_handle);
             }
             else
@@ -4269,7 +4279,7 @@ private struct CurlAPI
 
 /**
   Wrapper to provide a better interface to libcurl than using the plain C API.
-  It is recommended to use the $(D HTTP)/$(D FTP) etc. structs instead unless
+  It is recommended to use the `HTTP`/`FTP` etc. structs instead unless
   raw access to libcurl is needed.
 
   Warning: This struct uses interior pointers for callbacks. Only allocate it
@@ -4279,6 +4289,11 @@ private struct CurlAPI
 */
 struct Curl
 {
+    import etc.c.curl : CURL, CurlError, CurlPause, CurlSeek, CurlSeekPos,
+                        curl_socket_t, CurlSockType,
+                        CurlReadFunc, CurlInfo, curlsocktype, curl_off_t,
+                        LIBCURL_VERSION_MAJOR, LIBCURL_VERSION_MINOR, LIBCURL_VERSION_PATCH;
+
     alias OutData = void[];
     alias InData = ubyte[];
     private bool _stopped;
@@ -4288,7 +4303,7 @@ struct Curl
     // A handle should not be used by two threads simultaneously
     private CURL* handle;
 
-    // May also return $(D CURL_READFUNC_ABORT) or $(D CURL_READFUNC_PAUSE)
+    // May also return `CURL_READFUNC_ABORT` or `CURL_READFUNC_PAUSE`
     private size_t delegate(OutData) _onSend;
     private size_t delegate(InData) _onReceive;
     private void delegate(in char[]) _onReceiveHeader;
@@ -4305,6 +4320,7 @@ struct Curl
     */
     void initialize()
     {
+        import std.exception : enforce;
         enforce!CurlException(!handle, "Curl instance already initialized");
         handle = curl.easy_init();
         enforce!CurlException(handle, "Curl instance couldn't be initialized");
@@ -4328,6 +4344,7 @@ struct Curl
     */
     Curl dup()
     {
+        import std.meta : AliasSeq;
         Curl copy;
         copy.handle = curl.easy_duphandle(handle);
         copy._stopped = false;
@@ -4378,6 +4395,7 @@ struct Curl
 
     private void _check(CurlCode code)
     {
+        import std.exception : enforce;
         enforce!CurlTimeoutException(code != CurlError.operation_timedout,
                                        errorString(code));
 
@@ -4397,6 +4415,7 @@ struct Curl
 
     private void throwOnStopped(string message = null)
     {
+        import std.exception : enforce;
         auto def = "Curl instance called after being cleaned up";
         enforce!CurlException(!stopped,
                                 message == null ? def : message);
@@ -4404,7 +4423,7 @@ struct Curl
 
     /**
         Stop and invalidate this curl instance.
-        Warning: Do not call this from inside a callback handler e.g. $(D onReceive).
+        Warning: Do not call this from inside a callback handler e.g. `onReceive`.
     */
     void shutdown()
     {
@@ -4433,6 +4452,7 @@ struct Curl
     */
     void set(CurlOption option, const(char)[] value)
     {
+        import std.internal.cstring : tempCString;
         throwOnStopped();
         _check(curl.easy_setopt(this.handle, option, value.tempCString().buffPtr));
     }
@@ -4506,7 +4526,7 @@ struct Curl
        Get the various timings like name lookup time, total time, connect time etc.
        The timed category is passed through the timing parameter while the timing
        value is stored at val. The value is usable only if res is equal to
-       $(D etc.c.curl.CurlError.ok).
+       `etc.c.curl.CurlError.ok`.
     */
     CurlCode getTiming(CurlInfo timing, ref double val)
     {
@@ -4519,7 +4539,7 @@ struct Curl
       * The event handler that receives incoming data.
       *
       * Params:
-      * callback = the callback that receives the $(D ubyte[]) data.
+      * callback = the callback that receives the `ubyte[]` data.
       * Be sure to copy the incoming data and not store
       * a slice.
       *
@@ -4587,14 +4607,14 @@ struct Curl
       * The event handler that gets called when data is needed for sending.
       *
       * Params:
-      * callback = the callback that has a $(D void[]) buffer to be filled
+      * callback = the callback that has a `void[]` buffer to be filled
       *
       * Returns:
       * The callback returns the number of elements in the buffer that have been
       * filled and are ready to send.
-      * The special value $(D Curl.abortRequest) can be returned in
+      * The special value `Curl.abortRequest` can be returned in
       * order to abort the current request.
-      * The special value $(D Curl.pauseRequest) can be returned in order to
+      * The special value `Curl.pauseRequest` can be returned in order to
       * pause the current request.
       *
       * Example:
@@ -4666,7 +4686,7 @@ struct Curl
 
     /**
       * The event handler that gets called when the net socket has been created
-      * but a $(D connect()) call has not yet been done. This makes it possible to set
+      * but a `connect()` call has not yet been done. This makes it possible to set
       * misc. socket options.
       *
       * Params:
@@ -4715,16 +4735,17 @@ struct Curl
       *
       * Example:
       * ----
-      * import std.net.curl;
+      * import std.net.curl, std.stdio;
       * Curl curl;
       * curl.initialize();
       * curl.set(CurlOption.url, "http://dlang.org");
-      * curl.onProgress = delegate int(size_t dltotal, size_t dlnow, size_t ultotal, size_t uln)
+      * curl.onProgress = delegate int(size_t dltotal, size_t dlnow, size_t ultotal, size_t ulnow)
       * {
       *     writeln("Progress: downloaded bytes ", dlnow, " of ", dltotal);
       *     writeln("Progress: uploaded bytes ", ulnow, " of ", ultotal);
-      *     curl.perform();
+      *     return 0;
       * };
+      * curl.perform();
       * ----
       */
     @property void onProgress(int delegate(size_t dlTotal,
@@ -4865,6 +4886,7 @@ private struct Pool(Data)
 
     @safe Data pop()
     {
+        import std.exception : enforce;
         enforce!Exception(root != null, "pop() called on empty pool");
         auto d = root.data;
         auto n = root.next;
@@ -4875,276 +4897,397 @@ private struct Pool(Data)
     }
 }
 
-// Shared function for reading incoming chunks of data and
-// sending the to a parent thread
-private static size_t _receiveAsyncChunks(ubyte[] data, ref ubyte[] outdata,
-                                          Pool!(ubyte[]) freeBuffers,
-                                          ref ubyte[] buffer, Tid fromTid,
-                                          ref bool aborted)
+// Lazily-instantiated namespace to avoid importing std.concurrency until needed.
+private struct _async()
 {
-    immutable datalen = data.length;
-
-    // Copy data to fill active buffer
-    while (!data.empty)
+static:
+    // https://issues.dlang.org/show_bug.cgi?id=15831
+    // this should be inside byLineAsync
+    // Range that reads one chunk at a time asynchronously.
+    private struct ChunkInputRange
     {
+        import std.concurrency : Tid, send;
 
-        // Make sure a buffer is present
-        while ( outdata.empty && freeBuffers.empty)
+        private ubyte[] chunk;
+        mixin WorkerThreadProtocol!(ubyte, chunk);
+
+        private Tid workerTid;
+        private State running;
+
+        private this(Tid tid, size_t transmitBuffers, size_t chunkSize)
         {
-            // Active buffer is invalid and there are no
-            // available buffers in the pool. Wait for buffers
-            // to return from main thread in order to reuse
-            // them.
-            receive((immutable(ubyte)[] buf)
-                    {
-                        buffer = cast(ubyte[]) buf;
-                        outdata = buffer[];
-                    },
-                    (bool flag) { aborted = true; }
-                    );
-            if (aborted) return cast(size_t) 0;
-        }
-        if (outdata.empty)
-        {
-            buffer = freeBuffers.pop();
-            outdata = buffer[];
-        }
+            workerTid = tid;
+            state = State.needUnits;
 
-        // Copy data
-        auto copyBytes = outdata.length < data.length ?
-            outdata.length : data.length;
-
-        outdata[0 .. copyBytes] = data[0 .. copyBytes];
-        outdata = outdata[copyBytes..$];
-        data = data[copyBytes..$];
-
-        if (outdata.empty)
-            fromTid.send(thisTid, curlMessage(cast(immutable(ubyte)[])buffer));
-    }
-
-    return datalen;
-}
-
-// ditto
-private static void _finalizeAsyncChunks(ubyte[] outdata, ref ubyte[] buffer,
-                                         Tid fromTid)
-{
-    if (!outdata.empty)
-    {
-        // Resize the last buffer
-        buffer.length = buffer.length - outdata.length;
-        fromTid.send(thisTid, curlMessage(cast(immutable(ubyte)[])buffer));
-    }
-}
-
-
-// Shared function for reading incoming lines of data and sending the to a
-// parent thread
-private static size_t _receiveAsyncLines(Terminator, Unit)
-    (const(ubyte)[] data, ref EncodingScheme encodingScheme,
-     bool keepTerminator, Terminator terminator,
-     ref const(ubyte)[] leftOverBytes, ref bool bufferValid,
-     ref Pool!(Unit[]) freeBuffers, ref Unit[] buffer,
-     Tid fromTid, ref bool aborted)
-{
-    import std.format : format;
-
-    immutable datalen = data.length;
-
-    // Terminator is specified and buffers should be resized as determined by
-    // the terminator
-
-    // Copy data to active buffer until terminator is found.
-
-    // Decode as many lines as possible
-    while (true)
-    {
-
-        // Make sure a buffer is present
-        while (!bufferValid && freeBuffers.empty)
-        {
-            // Active buffer is invalid and there are no available buffers in
-            // the pool. Wait for buffers to return from main thread in order to
-            // reuse them.
-            receive((immutable(Unit)[] buf)
-                    {
-                        buffer = cast(Unit[]) buf;
-                        buffer.length = 0;
-                        buffer.assumeSafeAppend();
-                        bufferValid = true;
-                    },
-                    (bool flag) { aborted = true; }
-                    );
-            if (aborted) return cast(size_t) 0;
-        }
-        if (!bufferValid)
-        {
-            buffer = freeBuffers.pop();
-            bufferValid = true;
-        }
-
-        // Try to read a line from left over bytes from last onReceive plus the
-        // newly received bytes.
-        try
-        {
-            if (decodeLineInto(leftOverBytes, data, buffer,
-                               encodingScheme, terminator))
+            // Send buffers to other thread for it to use.  Since no mechanism is in
+            // place for moving ownership a cast to shared is done here and a cast
+            // back to non-shared in the receiving end.
+            foreach (i ; 0 .. transmitBuffers)
             {
-                if (keepTerminator)
+                ubyte[] arr = new ubyte[](chunkSize);
+                workerTid.send(cast(immutable(ubyte[]))arr);
+            }
+        }
+    }
+
+    // https://issues.dlang.org/show_bug.cgi?id=15831
+    // this should be inside byLineAsync
+    // Range that reads one line at a time asynchronously.
+    private static struct LineInputRange(Char)
+    {
+        private Char[] line;
+        mixin WorkerThreadProtocol!(Char, line);
+
+        private Tid workerTid;
+        private State running;
+
+        private this(Tid tid, size_t transmitBuffers, size_t bufferSize)
+        {
+            import std.concurrency : send;
+
+            workerTid = tid;
+            state = State.needUnits;
+
+            // Send buffers to other thread for it to use.  Since no mechanism is in
+            // place for moving ownership a cast to shared is done here and casted
+            // back to non-shared in the receiving end.
+            foreach (i ; 0 .. transmitBuffers)
+            {
+                auto arr = new Char[](bufferSize);
+                workerTid.send(cast(immutable(Char[]))arr);
+            }
+        }
+    }
+
+    import std.concurrency : Tid;
+
+    // Shared function for reading incoming chunks of data and
+    // sending the to a parent thread
+    private size_t receiveChunks(ubyte[] data, ref ubyte[] outdata,
+                                 Pool!(ubyte[]) freeBuffers,
+                                 ref ubyte[] buffer, Tid fromTid,
+                                 ref bool aborted)
+    {
+        import std.concurrency : receive, send, thisTid;
+
+        immutable datalen = data.length;
+
+        // Copy data to fill active buffer
+        while (!data.empty)
+        {
+
+            // Make sure a buffer is present
+            while ( outdata.empty && freeBuffers.empty)
+            {
+                // Active buffer is invalid and there are no
+                // available buffers in the pool. Wait for buffers
+                // to return from main thread in order to reuse
+                // them.
+                receive((immutable(ubyte)[] buf)
+                        {
+                            buffer = cast(ubyte[]) buf;
+                            outdata = buffer[];
+                        },
+                        (bool flag) { aborted = true; }
+                        );
+                if (aborted) return cast(size_t) 0;
+            }
+            if (outdata.empty)
+            {
+                buffer = freeBuffers.pop();
+                outdata = buffer[];
+            }
+
+            // Copy data
+            auto copyBytes = outdata.length < data.length ?
+                outdata.length : data.length;
+
+            outdata[0 .. copyBytes] = data[0 .. copyBytes];
+            outdata = outdata[copyBytes..$];
+            data = data[copyBytes..$];
+
+            if (outdata.empty)
+                fromTid.send(thisTid, curlMessage(cast(immutable(ubyte)[])buffer));
+        }
+
+        return datalen;
+    }
+
+    // ditto
+    private void finalizeChunks(ubyte[] outdata, ref ubyte[] buffer,
+                                Tid fromTid)
+    {
+        import std.concurrency : send, thisTid;
+        if (!outdata.empty)
+        {
+            // Resize the last buffer
+            buffer.length = buffer.length - outdata.length;
+            fromTid.send(thisTid, curlMessage(cast(immutable(ubyte)[])buffer));
+        }
+    }
+
+
+    // Shared function for reading incoming lines of data and sending the to a
+    // parent thread
+    private static size_t receiveLines(Terminator, Unit)
+        (const(ubyte)[] data, ref EncodingScheme encodingScheme,
+         bool keepTerminator, Terminator terminator,
+         ref const(ubyte)[] leftOverBytes, ref bool bufferValid,
+         ref Pool!(Unit[]) freeBuffers, ref Unit[] buffer,
+         Tid fromTid, ref bool aborted)
+    {
+        import std.concurrency : prioritySend, receive, send, thisTid;
+        import std.exception : enforce;
+        import std.format : format;
+        import std.traits : isArray;
+
+        immutable datalen = data.length;
+
+        // Terminator is specified and buffers should be resized as determined by
+        // the terminator
+
+        // Copy data to active buffer until terminator is found.
+
+        // Decode as many lines as possible
+        while (true)
+        {
+
+            // Make sure a buffer is present
+            while (!bufferValid && freeBuffers.empty)
+            {
+                // Active buffer is invalid and there are no available buffers in
+                // the pool. Wait for buffers to return from main thread in order to
+                // reuse them.
+                receive((immutable(Unit)[] buf)
+                        {
+                            buffer = cast(Unit[]) buf;
+                            buffer.length = 0;
+                            buffer.assumeSafeAppend();
+                            bufferValid = true;
+                        },
+                        (bool flag) { aborted = true; }
+                        );
+                if (aborted) return cast(size_t) 0;
+            }
+            if (!bufferValid)
+            {
+                buffer = freeBuffers.pop();
+                bufferValid = true;
+            }
+
+            // Try to read a line from left over bytes from last onReceive plus the
+            // newly received bytes.
+            try
+            {
+                if (decodeLineInto(leftOverBytes, data, buffer,
+                                   encodingScheme, terminator))
                 {
-                    fromTid.send(thisTid,
-                                 curlMessage(cast(immutable(Unit)[])buffer));
+                    if (keepTerminator)
+                    {
+                        fromTid.send(thisTid,
+                                     curlMessage(cast(immutable(Unit)[])buffer));
+                    }
+                    else
+                    {
+                        static if (isArray!Terminator)
+                            fromTid.send(thisTid,
+                                         curlMessage(cast(immutable(Unit)[])
+                                                 buffer[0..$-terminator.length]));
+                        else
+                            fromTid.send(thisTid,
+                                         curlMessage(cast(immutable(Unit)[])
+                                                 buffer[0..$-1]));
+                    }
+                    bufferValid = false;
                 }
                 else
                 {
-                    static if (isArray!Terminator)
-                        fromTid.send(thisTid,
-                                     curlMessage(cast(immutable(Unit)[])
-                                             buffer[0..$-terminator.length]));
-                    else
-                        fromTid.send(thisTid,
-                                     curlMessage(cast(immutable(Unit)[])
-                                             buffer[0..$-1]));
+                    // Could not decode an entire line. Save
+                    // bytes left in data for next call to
+                    // onReceive. Can be up to a max of 4 bytes.
+                    enforce!CurlException(data.length <= 4,
+                                            format(
+                                            "Too many bytes left not decoded %s"~
+                                            " > 4. Maybe the charset specified in"~
+                                            " headers does not match "~
+                                            "the actual content downloaded?",
+                                            data.length));
+                    leftOverBytes ~= data;
+                    break;
                 }
-                bufferValid = false;
             }
-            else
+            catch (CurlException ex)
             {
-                // Could not decode an entire line. Save
-                // bytes left in data for next call to
-                // onReceive. Can be up to a max of 4 bytes.
-                enforce!CurlException(data.length <= 4,
-                                        format(
-                                        "Too many bytes left not decoded %s"~
-                                        " > 4. Maybe the charset specified in"~
-                                        " headers does not match "~
-                                        "the actual content downloaded?",
-                                        data.length));
-                leftOverBytes ~= data;
-                break;
+                prioritySend(fromTid, cast(immutable(CurlException))ex);
+                return cast(size_t) 0;
             }
         }
-        catch (CurlException ex)
+        return datalen;
+    }
+
+    // ditto
+    private static
+    void finalizeLines(Unit)(bool bufferValid, Unit[] buffer, Tid fromTid)
+    {
+        import std.concurrency : send, thisTid;
+        if (bufferValid && buffer.length != 0)
+            fromTid.send(thisTid, curlMessage(cast(immutable(Unit)[])buffer[0..$]));
+    }
+
+    /* Used by byLineAsync/byChunkAsync to duplicate an existing connection
+     * that can be used exclusively in a spawned thread.
+     */
+    private void duplicateConnection(Conn, PostData)
+        (const(char)[] url, Conn conn, PostData postData, Tid tid)
+    {
+        import std.concurrency : send;
+        import std.exception : enforce;
+
+        // no move semantic available in std.concurrency ie. must use casting.
+        auto connDup = conn.dup();
+        connDup.url = url;
+
+        static if ( is(Conn : HTTP) )
         {
-            prioritySend(fromTid, cast(immutable(CurlException))ex);
-            return cast(size_t) 0;
+            connDup.p.headersOut = null;
+            connDup.method = conn.method == HTTP.Method.undefined ?
+                HTTP.Method.get : conn.method;
+            if (postData !is null)
+            {
+                if (connDup.method == HTTP.Method.put)
+                {
+                    connDup.handle.set(CurlOption.infilesize_large,
+                                       postData.length);
+                }
+                else
+                {
+                    // post
+                    connDup.method = HTTP.Method.post;
+                    connDup.handle.set(CurlOption.postfieldsize_large,
+                                       postData.length);
+                }
+                connDup.handle.set(CurlOption.copypostfields,
+                                   cast(void*) postData.ptr);
+            }
+            tid.send(cast(ulong) connDup.handle.handle);
+            tid.send(connDup.method);
         }
-    }
-    return datalen;
-}
-
-// ditto
-private static
-void _finalizeAsyncLines(Unit)(bool bufferValid, Unit[] buffer, Tid fromTid)
-{
-    if (bufferValid && buffer.length != 0)
-        fromTid.send(thisTid, curlMessage(cast(immutable(Unit)[])buffer[0..$]));
-}
-
-
-// Spawn a thread for handling the reading of incoming data in the
-// background while the delegate is executing.  This will optimize
-// throughput by allowing simultaneous input (this struct) and
-// output (e.g. AsyncHTTPLineOutputRange).
-private static void _spawnAsync(Conn, Unit, Terminator = void)()
-{
-    Tid fromTid = receiveOnly!Tid();
-
-    // Get buffer to read into
-    Pool!(Unit[]) freeBuffers;  // Free list of buffer objects
-
-    // Number of bytes filled into active buffer
-    Unit[] buffer;
-    bool aborted = false;
-
-    EncodingScheme encodingScheme;
-    static if ( !is(Terminator == void))
-    {
-        // Only lines reading will receive a terminator
-        const terminator = receiveOnly!Terminator();
-        const keepTerminator = receiveOnly!bool();
-
-        // max number of bytes to carry over from an onReceive
-        // callback. This is 4 because it is the max code units to
-        // decode a code point in the supported encodings.
-        auto leftOverBytes =  new const(ubyte)[4];
-        leftOverBytes.length = 0;
-        auto bufferValid = false;
-    }
-    else
-    {
-        Unit[] outdata;
-    }
-
-    // no move semantic available in std.concurrency ie. must use casting.
-    auto connDup = cast(CURL*) receiveOnly!ulong();
-    auto client = Conn();
-    client.p.curl.handle = connDup;
-
-    // receive a method for both ftp and http but just use it for http
-    auto method = receiveOnly!(HTTP.Method)();
-
-    client.onReceive = (ubyte[] data)
-    {
-        // If no terminator is specified the chunk size is fixed.
-        static if ( is(Terminator == void) )
-            return _receiveAsyncChunks(data, outdata, freeBuffers, buffer,
-                                       fromTid, aborted);
         else
-            return _receiveAsyncLines(data, encodingScheme,
-                                      keepTerminator, terminator, leftOverBytes,
-                                      bufferValid, freeBuffers, buffer,
-                                      fromTid, aborted);
-    };
-
-    static if ( is(Conn == HTTP) )
-    {
-        client.method = method;
-        // register dummy header handler
-        client.onReceiveHeader = (in char[] key, in char[] value)
         {
-            if (key == "content-type")
-                encodingScheme = EncodingScheme.create(client.p.charset);
+            enforce!CurlException(postData is null,
+                                    "Cannot put ftp data using byLineAsync()");
+            tid.send(cast(ulong) connDup.handle.handle);
+            tid.send(HTTP.Method.undefined);
+        }
+        connDup.p.curl.handle = null; // make sure handle is not freed
+    }
+
+    // Spawn a thread for handling the reading of incoming data in the
+    // background while the delegate is executing.  This will optimize
+    // throughput by allowing simultaneous input (this struct) and
+    // output (e.g. AsyncHTTPLineOutputRange).
+    private static void spawn(Conn, Unit, Terminator = void)()
+    {
+        import std.concurrency : Tid, prioritySend, receiveOnly, send, thisTid;
+        import etc.c.curl : CURL, CurlError;
+        Tid fromTid = receiveOnly!Tid();
+
+        // Get buffer to read into
+        Pool!(Unit[]) freeBuffers;  // Free list of buffer objects
+
+        // Number of bytes filled into active buffer
+        Unit[] buffer;
+        bool aborted = false;
+
+        EncodingScheme encodingScheme;
+        static if ( !is(Terminator == void))
+        {
+            // Only lines reading will receive a terminator
+            const terminator = receiveOnly!Terminator();
+            const keepTerminator = receiveOnly!bool();
+
+            // max number of bytes to carry over from an onReceive
+            // callback. This is 4 because it is the max code units to
+            // decode a code point in the supported encodings.
+            auto leftOverBytes =  new const(ubyte)[4];
+            leftOverBytes.length = 0;
+            auto bufferValid = false;
+        }
+        else
+        {
+            Unit[] outdata;
+        }
+
+        // no move semantic available in std.concurrency ie. must use casting.
+        auto connDup = cast(CURL*) receiveOnly!ulong();
+        auto client = Conn();
+        client.p.curl.handle = connDup;
+
+        // receive a method for both ftp and http but just use it for http
+        auto method = receiveOnly!(HTTP.Method)();
+
+        client.onReceive = (ubyte[] data)
+        {
+            // If no terminator is specified the chunk size is fixed.
+            static if ( is(Terminator == void) )
+                return receiveChunks(data, outdata, freeBuffers, buffer,
+                                     fromTid, aborted);
+            else
+                return receiveLines(data, encodingScheme,
+                                    keepTerminator, terminator, leftOverBytes,
+                                    bufferValid, freeBuffers, buffer,
+                                    fromTid, aborted);
         };
-    }
-    else
-    {
-        encodingScheme = EncodingScheme.create(client.encoding);
-    }
 
-    // Start the request
-    CurlCode code;
-    try
-    {
-        code = client.perform(No.throwOnError);
-    }
-    catch (Exception ex)
-    {
-        prioritySend(fromTid, cast(immutable(Exception)) ex);
-        fromTid.send(thisTid, curlMessage(true)); // signal done
-        return;
-    }
-
-    if (code != CurlError.ok)
-    {
-        if (aborted && (code == CurlError.aborted_by_callback ||
-                        code == CurlError.write_error))
+        static if ( is(Conn == HTTP) )
         {
+            client.method = method;
+            // register dummy header handler
+            client.onReceiveHeader = (in char[] key, in char[] value)
+            {
+                if (key == "content-type")
+                    encodingScheme = EncodingScheme.create(client.p.charset);
+            };
+        }
+        else
+        {
+            encodingScheme = EncodingScheme.create(client.encoding);
+        }
+
+        // Start the request
+        CurlCode code;
+        try
+        {
+            code = client.perform(No.throwOnError);
+        }
+        catch (Exception ex)
+        {
+            prioritySend(fromTid, cast(immutable(Exception)) ex);
             fromTid.send(thisTid, curlMessage(true)); // signal done
             return;
         }
-        prioritySend(fromTid, cast(immutable(CurlException))
-                     new CurlException(client.p.curl.errorString(code)));
+
+        if (code != CurlError.ok)
+        {
+            if (aborted && (code == CurlError.aborted_by_callback ||
+                            code == CurlError.write_error))
+            {
+                fromTid.send(thisTid, curlMessage(true)); // signal done
+                return;
+            }
+            prioritySend(fromTid, cast(immutable(CurlException))
+                         new CurlException(client.p.curl.errorString(code)));
+
+            fromTid.send(thisTid, curlMessage(true)); // signal done
+            return;
+        }
+
+        // Send remaining data that is not a full chunk size
+        static if ( is(Terminator == void) )
+            finalizeChunks(outdata, buffer, fromTid);
+        else
+            finalizeLines(bufferValid, buffer, fromTid);
 
         fromTid.send(thisTid, curlMessage(true)); // signal done
-        return;
     }
-
-    // Send remaining data that is not a full chunk size
-    static if ( is(Terminator == void) )
-        _finalizeAsyncChunks(outdata, buffer, fromTid);
-    else
-        _finalizeAsyncLines(bufferValid, buffer, fromTid);
-
-    fromTid.send(thisTid, curlMessage(true)); // signal done
 }

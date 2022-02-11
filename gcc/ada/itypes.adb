@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,7 +89,7 @@ package body Itypes is
        Related_Nod : Node_Id;
        Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
    is
-      I_Typ        : Entity_Id;
+      I_Typ : Entity_Id;
 
    begin
       pragma Assert (Is_Access_Type (T));

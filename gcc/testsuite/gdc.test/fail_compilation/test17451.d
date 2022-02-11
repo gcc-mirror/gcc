@@ -1,9 +1,9 @@
 /* TEST_OUTPUT:
 ---
 fail_compilation/test17451.d(22): Error: undefined identifier `allocator`
-fail_compilation/test17451.d(23): Error: `long` has no effect in expression `false`
-fail_compilation/test17451.d(30): Error: variable test17451.HashMap!(ThreadSlot).HashMap.__lambda2.v size of type ThreadSlot is invalid
-fail_compilation/test17451.d(44): Error: template instance test17451.HashMap!(ThreadSlot) error instantiating
+fail_compilation/test17451.d(23): Error: `false` has no effect
+fail_compilation/test17451.d(30): Error: variable `test17451.HashMap!(ThreadSlot).HashMap.__lambda2.v` size of type `ThreadSlot` is invalid
+fail_compilation/test17451.d(44): Error: template instance `test17451.HashMap!(ThreadSlot)` error instantiating
 ---
 */
 
@@ -20,7 +20,7 @@ struct ArraySet(Key)
         ~this()
     {
                 try allocator;
-                catch false; // should never happen
+                catch (Exception e) false; // should never happen
         }
 }
 
@@ -40,6 +40,6 @@ struct ThreadSlot {
         ArraySet!Task tasks;
 }
 
-class Libevent2ManualEvent {
+class Libevent2ManualEvent : ManualEvent {
         HashMap!ThreadSlot m_waiters;
 }

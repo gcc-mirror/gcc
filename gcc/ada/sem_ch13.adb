@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -593,7 +593,7 @@ package body Sem_Ch13 is
          Comp   := First_Component_Or_Discriminant (R);
          while Present (Comp) loop
             declare
-               CC   : constant Node_Id := Component_Clause (Comp);
+               CC : constant Node_Id := Component_Clause (Comp);
 
             begin
                --  Collect only component clauses whose last bit is less than
@@ -3670,7 +3670,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Abstract_State appears on a generic package,
-                  --  it is propageted to the package instance. The context in
+                  --  it is propagated to the package instance. The context in
                   --  this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -3903,7 +3903,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Initial_Condition appears on a generic
-                  --  package, it is propageted to the package instance. The
+                  --  package, it is propagated to the package instance. The
                   --  context in this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -3951,7 +3951,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Initializes appears on a generic package,
-                  --  it is propageted to the package instance. The context
+                  --  it is propagated to the package instance. The context
                   --  in this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -6249,7 +6249,7 @@ package body Sem_Ch13 is
 
       Check_Restriction_No_Use_Of_Attribute (N);
 
-      if Get_Aspect_Id (Chars (N)) /= No_Aspect then
+      if Is_Aspect_Id (Chars (N)) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
@@ -7404,7 +7404,7 @@ package body Sem_Ch13 is
                else False); -- can't happen
             --  For X'Size, X can be a type or object; for X'Value_Size,
             --  X can be a type. Note that we already checked that 'Size
-            --  can be specified only for a first subytype.
+            --  can be specified only for a first subtype.
 
          begin
             FOnly := True;
@@ -10666,8 +10666,7 @@ package body Sem_Ch13 is
                --  what happens if a return appears within a return.
 
                BTemp :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('B'));
+                 Make_Temporary (Loc, 'B');
 
                FBody :=
                  Make_Subprogram_Body (Loc,
@@ -12284,26 +12283,18 @@ package body Sem_Ch13 is
             --  Find maximum bit of any component of the parent type
 
             Parent_Last_Bit := UI_From_Int (System_Address_Size - 1);
-            Pcomp := First_Entity (Tagged_Parent);
+            Pcomp := First_Component_Or_Discriminant (Tagged_Parent);
             while Present (Pcomp) loop
-               if Ekind (Pcomp) in E_Discriminant | E_Component then
-                  if Present (Component_Bit_Offset (Pcomp))
-                    and then Known_Static_Esize (Pcomp)
-                  then
-                     Parent_Last_Bit :=
-                       UI_Max
-                         (Parent_Last_Bit,
-                          Component_Bit_Offset (Pcomp) + Esize (Pcomp) - 1);
-                  end if;
-               else
-
-                  --  Skip anonymous types generated for constrained array
-                  --  or record components.
-
-                  null;
+               if Present (Component_Bit_Offset (Pcomp))
+                 and then Known_Static_Esize (Pcomp)
+               then
+                  Parent_Last_Bit :=
+                    UI_Max
+                      (Parent_Last_Bit,
+                       Component_Bit_Offset (Pcomp) + Esize (Pcomp) - 1);
                end if;
 
-               Next_Entity (Pcomp);
+               Next_Component_Or_Discriminant (Pcomp);
             end loop;
          end if;
       end;
@@ -12618,9 +12609,11 @@ package body Sem_Ch13 is
       end if;
 
       --  Skip the following warnings if overlap was detected; programmer
-      --  should fix the errors first.
+      --  should fix the errors first. Also skip the warnings for types in
+      --  generics, because their representation information is not fully
+      --  computed.
 
-      if not Overlap_Detected then
+      if not Overlap_Detected and then not In_Generic_Scope (Rectype) then
          --  Check for record holes (gaps)
 
          if Warn_On_Record_Holes then
@@ -13162,6 +13155,7 @@ package body Sem_Ch13 is
                   if Get_Aspect_Id (Ritem) in Aspect_CPU
                                             | Aspect_Dynamic_Predicate
                                             | Aspect_Predicate
+                                            | Aspect_Static_Predicate
                                             | Aspect_Priority
                   then
                     --  Retrieve the visibility to components and discriminants
@@ -13169,6 +13163,34 @@ package body Sem_Ch13 is
 
                      Push_Type (E);
                      Check_Aspect_At_Freeze_Point (Ritem);
+
+                     --  In the case of predicate aspects, there will be
+                     --  a corresponding Predicate pragma associated with
+                     --  the aspect, and the expression of the pragma also
+                     --  needs to be analyzed at this point, to ensure that
+                     --  Save_Global_References will capture global refs in
+                     --  expressions that occur in generic bodies, for proper
+                     --  later resolution of the pragma in instantiations.
+
+                     if Is_Type (E)
+                       and then Inside_A_Generic
+                       and then Has_Predicates (E)
+                       and then Present (Aspect_Rep_Item (Ritem))
+                     then
+                        declare
+                           Pragma_Args : constant List_Id :=
+                             Pragma_Argument_Associations
+                               (Aspect_Rep_Item (Ritem));
+                           Pragma_Expr : constant Node_Id :=
+                             Expression (Next (First (Pragma_Args)));
+                        begin
+                           if Present (Pragma_Expr) then
+                              Analyze_And_Resolve
+                                (Pragma_Expr, Standard_Boolean);
+                           end if;
+                        end;
+                     end if;
+
                      Pop_Type (E);
 
                   else
@@ -13652,7 +13674,7 @@ package body Sem_Ch13 is
       function Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
         (Rep_Item : Node_Id) return Boolean;
       --  This routine checks if Rep_Item is either a pragma or an aspect
-      --  specification node whose correponding pragma (if any) is present in
+      --  specification node whose corresponding pragma (if any) is present in
       --  the Rep Item chain of the entity it has been specified to.
 
       --------------------------------------------------
@@ -15527,7 +15549,7 @@ package body Sem_Ch13 is
             Add_Unnamed_Subp := Subp;
 
          elsif Op_Name = Name_New_Indexed then
-            New_Indexed_Subp :=  Subp;
+            New_Indexed_Subp := Subp;
 
          elsif Op_Name = Name_Assign_Indexed then
             Assign_Indexed_Subp := Subp;
@@ -15982,7 +16004,7 @@ package body Sem_Ch13 is
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
       begin
-         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ)  then
+         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ) then
             return False;
 
          elsif Ekind (E) = E_Constant then
@@ -17102,13 +17124,12 @@ package body Sem_Ch13 is
 
    procedure Validate_Literal_Aspect (Typ : Entity_Id; ASN : Node_Id) is
       A_Id        : constant Aspect_Id := Get_Aspect_Id (ASN);
-      pragma Assert ((A_Id = Aspect_Integer_Literal) or
-                     (A_Id = Aspect_Real_Literal) or
-                     (A_Id = Aspect_String_Literal));
+      pragma Assert (A_Id in Aspect_Integer_Literal |
+                             Aspect_Real_Literal | Aspect_String_Literal);
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 
-      I            : Interp_Index;
+      I            : Interp_Index := 0;
       It           : Interp;
       Param_Type   : Entity_Id;
       Match_Found  : Boolean := False;
@@ -17521,6 +17542,22 @@ package body Sem_Ch13 is
         and then In_Same_Source_Unit (Target, N)
       then
          Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
+      end if;
+
+      --  If the unchecked conversion is between Address and an access
+      --  subprogram type, show that we shouldn't use an internal
+      --  representation for the access subprogram type.
+
+      if Is_Access_Subprogram_Type (Target)
+        and then Is_Descendant_Of_Address (Source)
+        and then In_Same_Source_Unit (Target, N)
+      then
+         Set_Can_Use_Internal_Rep (Target, False);
+      elsif Is_Access_Subprogram_Type (Source)
+        and then Is_Descendant_Of_Address (Target)
+        and then In_Same_Source_Unit (Source, N)
+      then
+         Set_Can_Use_Internal_Rep (Source, False);
       end if;
 
       --  Generate N_Validate_Unchecked_Conversion node for back end in case

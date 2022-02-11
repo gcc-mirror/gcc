@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,9 +25,9 @@
    NAME:    `__builtin_arc_name' will be the user-level name of the builtin.
             `ARC_BUILTIN_NAME' will be the internal builtin's id.
    N_ARGS:  Number of input arguments.  If special treatment is needed,
-            set to -1 and handle it by hand, see arc.c:arc_expand_builtin().
+            set to -1 and handle it by hand, see arc.cc:arc_expand_builtin().
    TYPE:    A tree node describing the prototype of the built-in.
-   ICODE:   Name of attached insn or expander.  If special treatment in arc.c
+   ICODE:   Name of attached insn or expander.  If special treatment in arc.cc
             is needed to expand the built-in, use `nothing'.
    MASK:    CPU selector mask.  */
 

@@ -7,7 +7,7 @@ enum Side
     right
 }
 
-ref int getSide(Side side, ref int left, ref int right)
+ref int getSide(Side side, return ref int left, return ref int right)
 {
     return side == Side.left ? left : right;
 }

@@ -1,5 +1,5 @@
 /* d-tree.h -- Definitions and declarations for code generation.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ typedef Array <Expression *> Expressions;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: METHOD_CALL_EXPR
-   1: CALL_EXPR_ARGS_ORDERED (in CALL_EXPR).
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_SHARED
@@ -351,11 +350,6 @@ lang_tree_node
 #define METHOD_CALL_EXPR(NODE) \
   (TREE_LANG_FLAG_0 (NODE))
 
-/* True if all arguments in a call expression should be evaluated in the
-   order they are given (left to right).  */
-#define CALL_EXPR_ARGS_ORDERED(NODE) \
-  (TREE_LANG_FLAG_1 (CALL_EXPR_CHECK (NODE)))
-
 /* True if the type was declared 'shared'.  */
 #define TYPE_SHARED(NODE) \
   (TYPE_LANG_FLAG_0 (NODE))
@@ -430,6 +424,7 @@ enum d_tree_index
 
   DTI_ARRAY_TYPE,
   DTI_NULL_ARRAY,
+  DTI_BOTTOM_TYPE,
 
   DTI_MAX
 };
@@ -465,6 +460,8 @@ extern GTY(()) tree d_global_trees[DTI_MAX];
 #define array_type_node			d_global_trees[DTI_ARRAY_TYPE]
 /* Null initializer for dynamic arrays.  */
 #define null_array_node			d_global_trees[DTI_NULL_ARRAY]
+/* The bottom type, referred to as `noreturn` in code.  */
+#define noreturn_type_node		d_global_trees[DTI_BOTTOM_TYPE]
 
 /* A prefix for internal variables, which are not user-visible.  */
 #if !defined (NO_DOT_IN_LABEL)
@@ -617,7 +614,6 @@ extern void add_import_paths (const char *, const char *, bool);
 
 /* In d-lang.cc.  */
 extern void d_add_builtin_module (Module *);
-extern void d_add_entrypoint_module (Module *, Module *);
 extern d_tree_node_structure_enum d_tree_node_structure (lang_tree_node *);
 extern struct lang_type *build_lang_type (Type *);
 extern struct lang_decl *build_lang_decl (Declaration *);

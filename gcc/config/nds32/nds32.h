@@ -1,5 +1,5 @@
 /* Definitions of target machine of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -22,7 +22,7 @@
 /* ------------------------------------------------------------------------ */
 
 /* The following are auxiliary macros or structure declarations
-   that are used all over the nds32.c and nds32.h.  */
+   that are used all over the nds32.cc and nds32.h.  */
 
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   (LENGTH = nds32_adjust_insn_length (INSN, LENGTH))
@@ -147,7 +147,7 @@ enum nds32_16bit_address_type
 
 /* Determine whether we would like to have code generation strictly aligned.
    We set it strictly aligned when -malways-align is enabled.
-   Check gcc/common/config/nds32/nds32-common.c for the optimizations that
+   Check gcc/common/config/nds32/nds32-common.cc for the optimizations that
    apply -malways-align.  */
 #define NDS32_ALIGN_P() (TARGET_ALWAYS_ALIGN)
 
@@ -342,7 +342,7 @@ typedef struct
    0 for reset handler,
    1-8 for exception handler,
    and 9-72 for interrupt handler.
-   We use an array, which is defined in nds32.c, to record
+   We use an array, which is defined in nds32.cc, to record
    essential information for each vector.  */
 #define NDS32_N_ISR_VECTORS 73
 
@@ -373,7 +373,7 @@ enum nds32_isr_nested_type
 
 /* Define structure to record isr information.
    The isr vector array 'isr_vectors[]' with this structure
-   is defined in nds32.c.  */
+   is defined in nds32.cc.  */
 struct nds32_isr_info
 {
   /* The field to identify isr category.
@@ -1411,7 +1411,7 @@ enum reg_class
 	  chain_value
 	  nested function address
 
-   Please check nds32.c implementation for more information.  */
+   Please check nds32.cc implementation for more information.  */
 #define TRAMPOLINE_SIZE 24
 
 /* Because all instructions/data in trampoline template are 4-byte size,

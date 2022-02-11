@@ -1,5 +1,5 @@
-/* Target-dependent costs for expmed.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Target-dependent costs for expmed.cc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -132,15 +132,6 @@ struct alg_hash_entry {
 #else
 #define NUM_ALG_HASH_ENTRIES 307
 #endif
-
-#define NUM_MODE_INT \
-  (MAX_MODE_INT - MIN_MODE_INT + 1)
-#define NUM_MODE_PARTIAL_INT \
-  (MIN_MODE_PARTIAL_INT == E_VOIDmode ? 0 \
-   : MAX_MODE_PARTIAL_INT - MIN_MODE_PARTIAL_INT + 1)
-#define NUM_MODE_VECTOR_INT \
-  (MIN_MODE_VECTOR_INT == E_VOIDmode ? 0 \
-   : MAX_MODE_VECTOR_INT - MIN_MODE_VECTOR_INT + 1)
 
 #define NUM_MODE_IP_INT (NUM_MODE_INT + NUM_MODE_PARTIAL_INT)
 #define NUM_MODE_IPV_INT (NUM_MODE_IP_INT + NUM_MODE_VECTOR_INT)

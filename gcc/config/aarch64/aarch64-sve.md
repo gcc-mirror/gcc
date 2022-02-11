@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -6287,8 +6287,8 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated fmax/fmin (the libm functions).  The optabs for the
-;; smin/smax rtx codes are handled in the generic section above.
-(define_expand "<maxmin_uns><mode>3"
+;; smax/smin rtx codes are handled in the generic section above.
+(define_expand "<fmaxmin><mode>3"
   [(set (match_operand:SVE_FULL_F 0 "register_operand")
 	(unspec:SVE_FULL_F
 	  [(match_dup 3)
@@ -6300,6 +6300,23 @@
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
+)
+
+;; Predicated fmax/fmin (the libm functions).  The optabs for the
+;; smax/smin rtx codes are handled in the generic section above.
+(define_expand "cond_<fmaxmin><mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand")
+	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_maxmin_operand")]
+	     SVE_COND_FP_MAXMIN_PUBLIC)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
 )
 
 ;; Predicated floating-point maximum/minimum.
@@ -7261,11 +7278,11 @@
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot1><mode> (tmp, operands[4],
-					     operands[3], operands[2],
-					     operands[1], operands[5]));
+					     operands[2], operands[1],
+					     operands[3], operands[5]));
   emit_insn
     (gen_aarch64_pred_fcmla<sve_rot2><mode> (operands[0], operands[4],
-					     operands[3], operands[2],
+					     operands[2], operands[1],
 					     tmp, operands[5]));
   DONE;
 })
@@ -8546,6 +8563,17 @@
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (unspec:<VEL> [(match_operand:SVE_FULL_F 1 "register_operand")]
+		 FMAXMINNMV)]
+  "TARGET_SVE"
+  {
+    emit_insn (gen_reduc_<optab>_scal_<mode> (operands[0], operands[1]));
+    DONE;
   }
 )
 

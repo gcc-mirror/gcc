@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag11756.d(15): Error: cannot read uninitialized variable cnt in CTFE
-fail_compilation/diag11756.d(34):        called from here: foo.ptr2.opAssign(Ptr(& n))
-fail_compilation/diag11756.d(39):        called from here: test()
+fail_compilation/diag11756.d(15): Error: cannot read uninitialized variable `cnt` in CTFE
+fail_compilation/diag11756.d(34):        called from here: `foo.ptr2.opAssign(Ptr(& n))`
+fail_compilation/diag11756.d(39):        called from here: `test()`
 fail_compilation/diag11756.d(39):        while evaluating: `static assert(test())`
 ---
 */

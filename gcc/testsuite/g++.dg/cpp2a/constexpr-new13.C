@@ -9,7 +9,7 @@ struct A {
 
 struct B : A {
   constexpr B () : b (0) {}
-  virtual int foo () { return 0 + b * 4; }	// { dg-message "declared here" }
+  virtual int foo () { return 0 + b * 4; }	// { dg-message "declared here" "" { target { ! implicit_constexpr } } }
   int b;
 };
 
@@ -18,7 +18,7 @@ foo ()
 {
   A *a = new B ();
   a->a = 4;
-  int r = a->foo ();	// { dg-error "call to non-.constexpr. function" }
+  int r = a->foo ();	// { dg-error "call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
   delete a;
   return r;
 }

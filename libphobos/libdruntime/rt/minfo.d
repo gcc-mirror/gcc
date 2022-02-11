@@ -7,7 +7,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Walter Bright, Sean Kelly
- * Source: $(DRUNTIMESRC src/rt/_minfo.d)
+ * Source: $(DRUNTIMESRC rt/_minfo.d)
  */
 
 module rt.minfo;
@@ -165,7 +165,7 @@ struct ModuleGroup
     void sortCtors(string cycleHandling)
     {
         import core.bitop : bts, btr, bt, BitRange;
-        import rt.util.container.hashtab;
+        import core.internal.container.hashtab;
 
         enum OnCycle
         {
@@ -287,7 +287,7 @@ struct ModuleGroup
             else
                 enum EOL = "\n";
 
-            sink("Cyclic dependency between module ");
+            sink("Cyclic dependency between module constructors/destructors of ");
             sink(_modules[sourceIdx].name);
             sink(" and ");
             sink(_modules[cycleIdx].name);
@@ -544,7 +544,7 @@ struct ModuleGroup
      * behavior.
      *
      * Params:
-     *   edges - The module edges as found in the `importedModules` member of
+     *   edges = The module edges as found in the `importedModules` member of
      *          each ModuleInfo. Generated in sortCtors.
      * Returns:
      *   true if no cycle is found, false if one was.
@@ -566,7 +566,7 @@ struct ModuleGroup
         }
 
         auto stack = (cast(StackRec*).calloc(len, StackRec.sizeof))[0 .. len];
-        // TODO: reuse GCBits by moving it to rt.util.container or core.internal
+        // TODO: reuse GCBits by moving it to core.internal.container
         immutable nwords = (len + 8 * size_t.sizeof - 1) / (8 * size_t.sizeof);
         auto ctorstart = cast(size_t*).malloc(nwords * size_t.sizeof);
         auto ctordone = cast(size_t*).malloc(nwords * size_t.sizeof);

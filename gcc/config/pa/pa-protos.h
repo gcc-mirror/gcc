@@ -1,5 +1,5 @@
-/* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+/* Prototypes for pa.cc functions used in the md file & elsewhere.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Prototype function used in various macros.  */
 extern rtx pa_eh_return_handler_rtx (void);
 
-/* Define functions in pa.c and used in insn-output.c.  */
+/* Define functions in pa.cc and used in insn-output.cc.  */
 
 extern const char *pa_output_and (rtx *);
 extern const char *pa_output_64bit_and (rtx *);
@@ -67,13 +67,12 @@ extern int pa_attr_length_indirect_call (rtx_insn *);
 extern rtx pa_legitimize_reload_address (rtx, machine_mode,
 					 int, int, int);
 
-/* Declare functions defined in pa.c and used in templates.  */
+/* Declare functions defined in pa.cc and used in templates.  */
 
 extern rtx pa_return_addr_rtx (int, rtx);
 
 extern int pa_insn_refs_are_delayed (rtx_insn *);
 extern rtx pa_get_deferred_plabel (rtx);
-extern rtx pa_maybe_emit_compare_and_swap_exchange_loop (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 extern int pa_and_mask_p (unsigned HOST_WIDE_INT);
@@ -90,7 +89,7 @@ extern void pa_expand_prologue (void);
 extern void pa_expand_epilogue (void);
 extern bool pa_can_use_return_insn (void);
 
-/* Miscellaneous functions in pa.c.  */
+/* Miscellaneous functions in pa.cc.  */
 #ifdef TREE_CODE
 extern int pa_reloc_needed (tree);
 extern bool pa_return_in_memory (const_tree, const_tree);
@@ -113,6 +112,6 @@ extern void hppa_profile_hook (int);
 
 extern const int pa_magic_milli[];
 
-/* Routines implemented in pa-d.c  */
+/* Routines implemented in pa-d.cc  */
 extern void pa_d_target_versions (void);
 extern void pa_d_register_target_info (void);

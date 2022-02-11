@@ -1,6 +1,6 @@
 // Pair implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -127,20 +127,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return __and_<is_convertible<_U1&&, _T1>,
 		      is_convertible<_U2&&, _T2>>::value;
-      }
-
-      template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _DeprConsPair()
-      {
-	using __do_converts = __and_<is_convertible<_U1&&, _T1>,
-				     is_convertible<_U2&&, _T2>>;
-	using __converts = __conditional_t<__implicit,
-					   __do_converts,
-					   __not_<__do_converts>>;
-	return __and_<is_constructible<_T1, _U1&&>,
-		      is_constructible<_T2, _U2&&>,
-		      __converts
-		     >::value;
       }
     };
 
@@ -462,62 +448,81 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(__p.first), second(__p.second) { }
 
 #if _GLIBCXX_USE_DEPRECATED
+#if defined(__DEPRECATED)
+# define _GLIBCXX_DEPRECATED_PAIR_CTOR \
+      __attribute__ ((__deprecated__ ("use 'nullptr' instead of '0' to " \
+				      "initialize std::pair of move-only " \
+				      "type and pointer")))
+#else
+# define _GLIBCXX_DEPRECATED_PAIR_CTOR
+#endif
+
     private:
       /// @cond undocumented
 
       // A type which can be constructed from literal zero, but not nullptr
-      struct __null_ptr_constant
+      struct __zero_as_null_pointer_constant
       {
-	__null_ptr_constant(int __null_ptr_constant::*) { }
+	__zero_as_null_pointer_constant(int __zero_as_null_pointer_constant::*)
+	{ }
 	template<typename _Tp,
 		 typename = __enable_if_t<is_null_pointer<_Tp>::value>>
-	__null_ptr_constant(_Tp) = delete;
+	__zero_as_null_pointer_constant(_Tp) = delete;
       };
-
-      // True if type _Up is one of _Tp& or const _Tp&
-      template<typename _Up, typename _Tp>
-	using __is_lvalue_of
-	  = __or_<is_same<_Up, const _Tp&>, is_same<_Up, _Tp&>>;
-
       /// @endcond
     public:
 
       // Deprecated extensions to DR 811.
+      // These allow construction from an rvalue and a literal zero,
+      // in cases where the standard says the zero should be deduced as int
       template<typename _U1,
-	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
-			     && _PCCP::template
-			       _DeprConsPair<true, _U1, nullptr_t>(),
+	       __enable_if_t<__and_<__not_<is_reference<_U1>>,
+				    is_pointer<_T2>,
+				    is_constructible<_T1, _U1>,
+				    __not_<is_constructible<_T1, const _U1&>>,
+				    is_convertible<_U1, _T1>>::value,
 			     bool> = true>
-       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
-       constexpr pair(_U1&& __x, __null_ptr_constant)
-       : first(std::forward<_U1>(__x)), second(nullptr) { }
+	_GLIBCXX_DEPRECATED_PAIR_CTOR
+	constexpr
+	pair(_U1&& __x, __zero_as_null_pointer_constant, ...)
+	: first(std::forward<_U1>(__x)), second(nullptr) { }
 
       template<typename _U1,
-	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
-			     && _PCCP::template
-			       _DeprConsPair<false, _U1, nullptr_t>(),
+	       __enable_if_t<__and_<__not_<is_reference<_U1>>,
+				    is_pointer<_T2>,
+				    is_constructible<_T1, _U1>,
+				    __not_<is_constructible<_T1, const _U1&>>,
+				    __not_<is_convertible<_U1, _T1>>>::value,
 			     bool> = false>
-       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
-       explicit constexpr pair(_U1&& __x, __null_ptr_constant)
-       : first(std::forward<_U1>(__x)), second(nullptr) { }
+	_GLIBCXX_DEPRECATED_PAIR_CTOR
+	explicit constexpr
+	pair(_U1&& __x, __zero_as_null_pointer_constant, ...)
+	: first(std::forward<_U1>(__x)), second(nullptr) { }
 
       template<typename _U2,
-	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
-			     && _PCCP::template
-			       _DeprConsPair<true, nullptr_t, _U2>(),
+	       __enable_if_t<__and_<is_pointer<_T1>,
+				    __not_<is_reference<_U2>>,
+				    is_constructible<_T2, _U2>,
+				    __not_<is_constructible<_T2, const _U2&>>,
+				    is_convertible<_U2, _T2>>::value,
 			     bool> = true>
-       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
-       constexpr pair(__null_ptr_constant, _U2&& __y)
-       : first(nullptr), second(std::forward<_U2>(__y)) { }
+	_GLIBCXX_DEPRECATED_PAIR_CTOR
+	constexpr
+	pair(__zero_as_null_pointer_constant, _U2&& __y, ...)
+	: first(nullptr), second(std::forward<_U2>(__y)) { }
 
       template<typename _U2,
-	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
-			     && _PCCP::template
-			       _DeprConsPair<false, nullptr_t, _U2>(),
+	       __enable_if_t<__and_<is_pointer<_T1>,
+				    __not_<is_reference<_U2>>,
+				    is_constructible<_T2, _U2>,
+				    __not_<is_constructible<_T2, const _U2&>>,
+				    __not_<is_convertible<_U2, _T2>>>::value,
 			     bool> = false>
-       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
-       explicit pair(__null_ptr_constant, _U2&& __y)
-       : first(nullptr), second(std::forward<_U2>(__y)) { }
+	_GLIBCXX_DEPRECATED_PAIR_CTOR
+	explicit constexpr
+	pair(__zero_as_null_pointer_constant, _U2&& __y, ...)
+	: first(nullptr), second(std::forward<_U2>(__y)) { }
+#undef _GLIBCXX_DEPRECATED_PAIR_CTOR
 #endif
 
       template<typename _U1, typename _U2, typename
@@ -770,6 +775,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<class _Tp1, class _Tp2>
     struct tuple_element<1, pair<_Tp1, _Tp2>>
     { typedef _Tp2 type; };
+
+#if __cplusplus >= 201703L
+  template<typename _Tp1, typename _Tp2>
+    inline constexpr size_t tuple_size_v<pair<_Tp1, _Tp2>> = 2;
+
+  template<typename _Tp1, typename _Tp2>
+    inline constexpr size_t tuple_size_v<const pair<_Tp1, _Tp2>> = 2;
+
+  template<typename _Tp>
+    inline constexpr bool __is_pair = false;
+
+  template<typename _Tp, typename _Up>
+    inline constexpr bool __is_pair<pair<_Tp, _Up>> = true;
+
+  template<typename _Tp, typename _Up>
+    inline constexpr bool __is_pair<const pair<_Tp, _Up>> = true;
+#endif
 
   /// @cond undocumented
   template<size_t _Int>

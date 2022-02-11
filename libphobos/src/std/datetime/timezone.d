@@ -1,18 +1,37 @@
 // Written in the D programming language
 
 /++
+
+$(SCRIPT inhibitQuickIndex = 1;)
+$(DIVC quickindex,
+$(BOOKTABLE,
+$(TR $(TH Category) $(TH Functions))
+$(TR $(TD Time zones) $(TD
+    $(LREF TimeZone)
+    $(LREF UTC)
+    $(LREF LocalTime)
+    $(LREF PosixTimeZone)
+    $(LREF WindowsTimeZone)
+    $(LREF SimpleTimeZone)
+))
+$(TR $(TD Utilities) $(TD
+    $(LREF clearTZEnvVar)
+    $(LREF parseTZConversions)
+    $(LREF setTZEnvVar)
+    $(LREF TZConversions)
+))
+))
+
     License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
-    Authors:   Jonathan M Davis
-    Source:    $(PHOBOSSRC std/datetime/_timezone.d)
+    Authors:   $(HTTP jmdavisprog.com, Jonathan M Davis)
+    Source:    $(PHOBOSSRC std/datetime/timezone.d)
 +/
 module std.datetime.timezone;
 
-import core.time;
-import std.datetime.date;
-import std.datetime.systime;
-import std.exception : enforce;
-import std.range.primitives;
-import std.traits : isIntegral, isSomeString, Unqual;
+import core.time : abs, convert, dur, Duration, hours, minutes;
+import std.datetime.systime : Clock, stdTimeToUnixTime, SysTime;
+import std.range.primitives : back, empty, front, isOutputRange, popFront;
+import std.traits : isIntegral, isSomeString;
 
 version (OSX)
     version = Darwin;
@@ -26,7 +45,7 @@ else version (WatchOS)
 version (Windows)
 {
     import core.stdc.time : time_t;
-    import core.sys.windows.windows;
+    import core.sys.windows.winbase;
     import core.sys.windows.winsock2;
     import std.windows.registry;
 
@@ -42,7 +61,7 @@ else version (Posix)
     import core.sys.posix.sys.types : time_t;
 }
 
-version (unittest) import std.exception : assertThrown;
+version (StdUnittest) import std.exception : assertThrown;
 
 
 /++
@@ -54,8 +73,13 @@ abstract class TimeZone
 public:
 
     /++
-        The name of the time zone per the TZ Database. This is the name used to
-        get a $(LREF TimeZone) by name with $(D TimeZone.getTimeZone).
+        The name of the time zone. Exactly how the time zone name is formatted
+        depends on the derived class. In the case of $(LREF PosixTimeZone), it's
+        the TZ Database name, whereas with $(LREF WindowsTimeZone), it's the
+        name that Windows chose to give the registry key for that time zone
+        (typically the name that they give $(LREF stdTime) if the OS is in
+        English). For other time zone types, what it is depends on how they're
+        implemented.
 
         See_Also:
             $(HTTP en.wikipedia.org/wiki/Tz_database, Wikipedia entry on TZ
@@ -76,7 +100,7 @@ public:
         However, on Windows, it may be the unabbreviated name (e.g. Pacific
         Standard Time). Regardless, it is not the same as name.
       +/
-    @property string stdName() @safe const nothrow
+    @property string stdName() @safe const scope nothrow
     {
         return _stdName;
     }
@@ -89,7 +113,7 @@ public:
         However, on Windows, it may be the unabbreviated name (e.g. Pacific
         Daylight Time). Regardless, it is not the same as name.
       +/
-    @property string dstName() @safe const nothrow
+    @property string dstName() @safe const scope nothrow
     {
         return _dstName;
     }
@@ -98,7 +122,7 @@ public:
     /++
         Whether this time zone has Daylight Savings Time at any point in time.
         Note that for some time zone types it may not have DST for current dates
-        but will still return true for $(D hasDST) because the time zone did at
+        but will still return true for `hasDST` because the time zone did at
         some point have DST.
       +/
     @property abstract bool hasDST() @safe const nothrow;
@@ -113,7 +137,7 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    abstract bool dstInEffect(long stdTime) @safe const nothrow;
+    abstract bool dstInEffect(long stdTime) @safe const scope nothrow;
 
 
     /++
@@ -124,7 +148,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    abstract long utcToTZ(long stdTime) @safe const nothrow;
+    abstract long utcToTZ(long stdTime) @safe const scope nothrow;
 
 
     /++
@@ -135,7 +159,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    abstract long tzToUTC(long adjTime) @safe const nothrow;
+    abstract long tzToUTC(long adjTime) @safe const scope nothrow;
 
 
     /++
@@ -146,7 +170,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    Duration utcOffsetAt(long stdTime) @safe const nothrow
+    Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return dur!"hnsecs"(utcToTZ(stdTime) - stdTime);
     }
@@ -213,6 +237,7 @@ public:
             //assert(tz.dstName == dstName);  //Locale-dependent
             assert(tz.hasDST == hasDST);
 
+            import std.datetime.date : DateTime;
             immutable stdDate = DateTime(2010, north ? 1 : 7, 1, 6, 0, 0);
             immutable dstDate = DateTime(2010, north ? 7 : 1, 1, 6, 0, 0);
             auto std = SysTime(stdDate, tz);
@@ -233,11 +258,14 @@ public:
             {
                 setTZEnvVar(tzName);
 
-                static void testTM(in SysTime st)
+                static void testTM(scope const SysTime st)
                 {
-                    import core.stdc.time : localtime, tm;
+                    import core.stdc.time : tm;
+                    import core.sys.posix.time : localtime_r;
+
                     time_t unixTime = st.toUnixTime();
-                    tm* osTimeInfo = localtime(&unixTime);
+                    tm osTimeInfo = void;
+                    localtime_r(&unixTime, &osTimeInfo);
                     tm ourTimeInfo = st.toTM();
 
                     assert(ourTimeInfo.tm_sec == osTimeInfo.tm_sec);
@@ -292,6 +320,7 @@ public:
             return tz;
         }
 
+        import std.datetime.date : DateTime;
         auto dstSwitches = [/+America/Los_Angeles+/ tuple(DateTime(2012, 3, 11),  DateTime(2012, 11, 4), 2, 2),
                             /+America/New_York+/    tuple(DateTime(2012, 3, 11),  DateTime(2012, 11, 4), 2, 2),
                             ///+America/Santiago+/    tuple(DateTime(2011, 8, 21),  DateTime(2011, 5, 8), 0, 0),
@@ -299,9 +328,11 @@ public:
                             /+Europe/Paris+/        tuple(DateTime(2012, 3, 25),  DateTime(2012, 10, 28), 2, 3),
                             /+Australia/Adelaide+/  tuple(DateTime(2012, 10, 7),  DateTime(2012, 4, 1), 2, 3)];
 
+        import std.datetime.date : DateTimeException;
         version (Posix)
         {
             version (FreeBSD)            enum utcZone = "Etc/UTC";
+            else version (OpenBSD)       enum utcZone = "UTC";
             else version (NetBSD)        enum utcZone = "UTC";
             else version (DragonFlyBSD)  enum utcZone = "UTC";
             else version (linux)         enum utcZone = "UTC";
@@ -360,6 +391,7 @@ public:
             // a DST switch.
             foreach (hour; -12 .. 13)
             {
+                import std.exception : enforce;
                 auto st = SysTime(dstSwitches[i][0] + dur!"hours"(hour), tz);
                 immutable targetHour = hour < 0 ? hour + 24 : hour;
 
@@ -419,7 +451,7 @@ public:
             bool first = true;
             auto springSwitch = SysTime(dstSwitches[i][0] + dur!"hours"(spring), UTC()) - stdOffset;
             auto fallSwitch = SysTime(dstSwitches[i][1] + dur!"hours"(fall), UTC()) - dstOffset;
-            // @@@BUG@@@ 3659 makes this necessary.
+            // https://issues.dlang.org/show_bug.cgi?id=3659 makes this necessary.
             auto fallSwitchMinus1 = fallSwitch - dur!"hours"(1);
 
             foreach (hour; -24 .. 25)
@@ -435,6 +467,7 @@ public:
                                                __FILE__, line);
                     }
 
+                    import std.exception : enforce;
                     enforce((utc + offset).hour == local.hour, msg("1"));
                     enforce((utc + offset + dur!"minutes"(1)).hour == local.hour, msg("2"));
                 }
@@ -510,7 +543,7 @@ public:
       +/
     static immutable(LocalTime) opCall() @trusted pure nothrow
     {
-        alias FuncType = @safe pure nothrow immutable(LocalTime) function();
+        alias FuncType = immutable(LocalTime) function() @safe pure nothrow;
         return (cast(FuncType)&singleton)();
     }
 
@@ -518,14 +551,12 @@ public:
     version (StdDdoc)
     {
         /++
-            The name of the time zone per the TZ Database. This is the name used
-            to get a $(LREF TimeZone) by name with $(D TimeZone.getTimeZone).
-
-            Note that this always returns the empty string. This is because time
-            zones cannot be uniquely identified by the attributes given by the
-            OS (such as the $(D stdName) and $(D dstName)), and neither Posix
-            systems nor Windows systems provide an easy way to get the TZ
-            Database name of the local time zone.
+            In principle, this is the name of the local time zone. However,
+            this always returns the empty string. This is because time zones
+            cannot be uniquely identified by the attributes given by the
+            OS (such as the `stdName` and `dstName`), and neither Posix systems
+            nor Windows systems provide an easy way to get the TZ Database name
+            of the local time zone.
 
             See_Also:
                 $(HTTP en.wikipedia.org/wiki/Tz_database, Wikipedia entry on TZ
@@ -549,7 +580,7 @@ public:
         dynamically rather than it being fixed like it would be with most time
         zones.
       +/
-    @property override string stdName() @trusted const nothrow
+    @property override string stdName() @trusted const scope nothrow
     {
         version (Posix)
         {
@@ -566,7 +597,7 @@ public:
             GetTimeZoneInformation(&tzInfo);
 
             // Cannot use to!string() like this should, probably due to bug
-            // http://d.puremagic.com/issues/show_bug.cgi?id=5016
+            // https://issues.dlang.org/show_bug.cgi?id=5016
             //return to!string(tzInfo.StandardName);
 
             wchar[32] str;
@@ -634,7 +665,7 @@ public:
         dynamically rather than it being fixed like it would be with most time
         zones.
       +/
-    @property override string dstName() @trusted const nothrow
+    @property override string dstName() @trusted const scope nothrow
     {
         version (Posix)
         {
@@ -651,7 +682,7 @@ public:
             GetTimeZoneInformation(&tzInfo);
 
             // Cannot use to!string() like this should, probably due to bug
-            // http://d.puremagic.com/issues/show_bug.cgi?id=5016
+            // https://issues.dlang.org/show_bug.cgi?id=5016
             //return to!string(tzInfo.DaylightName);
 
             wchar[32] str;
@@ -714,7 +745,7 @@ public:
     /++
         Whether this time zone has Daylight Savings Time at any point in time.
         Note that for some time zone types it may not have DST for current
-        dates but will still return true for $(D hasDST) because the time zone
+        dates but will still return true for `hasDST` because the time zone
         did at some point have DST.
       +/
     @property override bool hasDST() @trusted const nothrow
@@ -727,6 +758,7 @@ public:
             {
                 try
                 {
+                    import std.datetime.date : Date;
                     auto currYear = (cast(Date) Clock.currTime()).year;
                     auto janOffset = SysTime(Date(currYear, 1, 4), cast(immutable) this).stdTime -
                                      SysTime(Date(currYear, 1, 4), UTC()).stdTime;
@@ -777,19 +809,25 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    override bool dstInEffect(long stdTime) @trusted const nothrow
+    override bool dstInEffect(long stdTime) @trusted const scope nothrow
     {
-        import core.stdc.time : localtime, tm;
+        import core.stdc.time : tm;
+
         time_t unixTime = stdTimeToUnixTime(stdTime);
 
         version (Posix)
         {
-            tm* timeInfo = localtime(&unixTime);
+            import core.sys.posix.time : localtime_r;
+
+            tm timeInfo = void;
+            localtime_r(&unixTime, &timeInfo);
 
             return cast(bool)(timeInfo.tm_isdst);
         }
         else version (Windows)
         {
+            import core.stdc.time : localtime;
+
             // Apparently Windows isn't smart enough to deal with negative time_t.
             if (unixTime >= 0)
             {
@@ -823,17 +861,19 @@ public:
                       time.
 
         See_Also:
-            $(D TimeZone.utcToTZ)
+            `TimeZone.utcToTZ`
       +/
-    override long utcToTZ(long stdTime) @trusted const nothrow
+    override long utcToTZ(long stdTime) @trusted const scope nothrow
     {
         version (Solaris)
             return stdTime + convert!("seconds", "hnsecs")(tm_gmtoff(stdTime));
         else version (Posix)
         {
-            import core.stdc.time : localtime, tm;
+            import core.stdc.time : tm;
+            import core.sys.posix.time : localtime_r;
             time_t unixTime = stdTimeToUnixTime(stdTime);
-            tm* timeInfo = localtime(&unixTime);
+            tm timeInfo = void;
+            localtime_r(&unixTime, &timeInfo);
 
             return stdTime + convert!("seconds", "hnsecs")(timeInfo.tm_gmtoff);
         }
@@ -858,25 +898,27 @@ public:
         time to UTC from the appropriate time zone.
 
         See_Also:
-            $(D TimeZone.tzToUTC)
+            `TimeZone.tzToUTC`
 
         Params:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @trusted const nothrow
+    override long tzToUTC(long adjTime) @trusted const scope nothrow
     {
         version (Posix)
         {
-            import core.stdc.time : localtime, tm;
+            import core.stdc.time : tm;
+            import core.sys.posix.time : localtime_r;
             time_t unixTime = stdTimeToUnixTime(adjTime);
 
             immutable past = unixTime - cast(time_t) convert!("days", "seconds")(1);
-            tm* timeInfo = localtime(past < unixTime ? &past : &unixTime);
+            tm timeInfo = void;
+            localtime_r(past < unixTime ? &past : &unixTime, &timeInfo);
             immutable pastOffset = timeInfo.tm_gmtoff;
 
             immutable future = unixTime + cast(time_t) convert!("days", "seconds")(1);
-            timeInfo = localtime(future > unixTime ? &future : &unixTime);
+            localtime_r(future > unixTime ? &future : &unixTime, &timeInfo);
             immutable futureOffset = timeInfo.tm_gmtoff;
 
             if (pastOffset == futureOffset)
@@ -886,7 +928,7 @@ public:
                 unixTime -= cast(time_t) convert!("hours", "seconds")(1);
 
             unixTime -= pastOffset;
-            timeInfo = localtime(&unixTime);
+            localtime_r(&unixTime, &timeInfo);
 
             return adjTime - convert!("seconds", "hnsecs")(timeInfo.tm_gmtoff);
         }
@@ -915,6 +957,7 @@ public:
         {
             scope(exit) clearTZEnvVar();
 
+            import std.datetime.date : DateTime;
             auto tzInfos = [tuple("America/Los_Angeles", DateTime(2012, 3, 11), DateTime(2012, 11, 4), 2, 2),
                             tuple("America/New_York",    DateTime(2012, 3, 11), DateTime(2012, 11, 4), 2, 2),
                             //tuple("America/Santiago",    DateTime(2011, 8, 21), DateTime(2011, 5, 8), 0, 0),
@@ -925,6 +968,7 @@ public:
 
             foreach (i; 0 .. tzInfos.length)
             {
+                import std.exception : enforce;
                 auto tzName = tzInfos[i][0];
                 setTZEnvVar(tzName);
                 immutable spring = tzInfos[i][3];
@@ -996,7 +1040,7 @@ public:
                 bool first = true;
                 auto springSwitch = SysTime(tzInfos[i][1] + dur!"hours"(spring), UTC()) - stdOffset;
                 auto fallSwitch = SysTime(tzInfos[i][2] + dur!"hours"(fall), UTC()) - dstOffset;
-                // @@@BUG@@@ 3659 makes this necessary.
+                // https://issues.dlang.org/show_bug.cgi?id=3659 makes this necessary.
                 auto fallSwitchMinus1 = fallSwitch - dur!"hours"(1);
 
                 foreach (hour; -24 .. 25)
@@ -1070,13 +1114,14 @@ private:
     {
         long tm_gmtoff(long stdTime) @trusted const nothrow
         {
-            import core.stdc.time : localtime, gmtime, tm;
+            import core.stdc.time : tm;
+            import core.sys.posix.time : localtime_r, gmtime_r;
 
             time_t unixTime = stdTimeToUnixTime(stdTime);
-            tm* buf = localtime(&unixTime);
-            tm timeInfo = *buf;
-            buf = gmtime(&unixTime);
-            tm timeInfoGmt = *buf;
+            tm timeInfo = void;
+            localtime_r(&unixTime, &timeInfo);
+            tm timeInfoGmt = void;
+            gmtime_r(&unixTime, &timeInfoGmt);
 
             return timeInfo.tm_sec - timeInfoGmt.tm_sec +
                    convert!("minutes", "seconds")(timeInfo.tm_min - timeInfoGmt.tm_min) +
@@ -1094,7 +1139,7 @@ final class UTC : TimeZone
 public:
 
     /++
-        $(D UTC) is a singleton class. $(D UTC) returns its only instance.
+        `UTC` is a singleton class. `UTC` returns its only instance.
       +/
     static immutable(UTC) opCall() @safe pure nothrow
     {
@@ -1114,7 +1159,7 @@ public:
     /++
         Always returns false.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         return false;
     }
@@ -1128,9 +1173,9 @@ public:
                       time.
 
         See_Also:
-            $(D TimeZone.utcToTZ)
+            `TimeZone.utcToTZ`
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         return stdTime;
     }
@@ -1144,6 +1189,7 @@ public:
             scope(exit) clearTZEnvVar();
 
             setTZEnvVar("UTC");
+            import std.datetime.date : Date;
             auto std = SysTime(Date(2010, 1, 1));
             auto dst = SysTime(Date(2010, 7, 1));
             assert(UTC().utcToTZ(std.stdTime) == std.stdTime);
@@ -1156,13 +1202,13 @@ public:
         Returns the given hnsecs without changing them at all.
 
         See_Also:
-            $(D TimeZone.tzToUTC)
+            `TimeZone.tzToUTC`
 
         Params:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
         return adjTime;
     }
@@ -1176,6 +1222,7 @@ public:
             scope(exit) clearTZEnvVar();
 
             setTZEnvVar("UTC");
+            import std.datetime.date : Date;
             auto std = SysTime(Date(2010, 1, 1));
             auto dst = SysTime(Date(2010, 7, 1));
             assert(UTC().tzToUTC(std.stdTime) == std.stdTime);
@@ -1191,7 +1238,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    override Duration utcOffsetAt(long stdTime) @safe const nothrow
+    override Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return dur!"hnsecs"(0);
     }
@@ -1214,10 +1261,10 @@ private:
     UTC but no DST.
 
     It's primarily used as the time zone in the result of
-    $(REF SysTime,std,datetime,systime)'s $(D fromISOString),
-    $(D fromISOExtString), and $(D fromSimpleString).
+    $(REF SysTime,std,datetime,systime)'s `fromISOString`,
+    `fromISOExtString`, and `fromSimpleString`.
 
-    $(D name) and $(D dstName) are always the empty string since this time zone
+    `name` and `dstName` are always the empty string since this time zone
     has no DST, and while it may be meant to represent a time zone which is in
     the TZ Database, obviously it's not likely to be following the exact rules
     of any of the time zones in the TZ Database, so it makes no sense to set it.
@@ -1238,7 +1285,7 @@ public:
     /++
         Always returns false.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         return false;
     }
@@ -1252,7 +1299,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         return stdTime + _utcOffset.total!"hnsecs";
     }
@@ -1279,7 +1326,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
         return adjTime - _utcOffset.total!"hnsecs";
     }
@@ -1305,7 +1352,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    override Duration utcOffsetAt(long stdTime) @safe const nothrow
+    override Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return _utcOffset;
     }
@@ -1315,11 +1362,13 @@ public:
         Params:
             utcOffset = This time zone's offset from UTC with west of UTC being
                         negative (it is added to UTC to get the adjusted time).
-            stdName   = The $(D stdName) for this time zone.
+            stdName   = The `stdName` for this time zone.
       +/
     this(Duration utcOffset, string stdName = "") @safe immutable pure
     {
         // FIXME This probably needs to be changed to something like (-12 - 13).
+        import std.datetime.date : DateTimeException;
+        import std.exception : enforce;
         enforce!DateTimeException(abs(utcOffset) < dur!"minutes"(1440),
                                     "Offset from UTC must be within range (-24:00 - 24:00).");
         super("", stdName, "");
@@ -1359,14 +1408,32 @@ package:
       +/
     static string toISOString(Duration utcOffset) @safe pure
     {
-        import std.format : format;
+        import std.array : appender;
+        auto w = appender!string();
+        w.reserve(5);
+        toISOString(w, utcOffset);
+        return w.data;
+    }
+
+    // ditto
+    static void toISOString(W)(ref W writer, Duration utcOffset)
+    if (isOutputRange!(W, char))
+    {
+        import std.datetime.date : DateTimeException;
+        import std.exception : enforce;
+        import std.format.write : formattedWrite;
         immutable absOffset = abs(utcOffset);
         enforce!DateTimeException(absOffset < dur!"minutes"(1440),
                                   "Offset from UTC must be within range (-24:00 - 24:00).");
         int hours;
         int minutes;
         absOffset.split!("hours", "minutes")(hours, minutes);
-        return format(utcOffset < Duration.zero ? "-%02d%02d" : "+%02d%02d", hours, minutes);
+        formattedWrite(
+            writer,
+            utcOffset < Duration.zero ? "-%02d%02d" : "+%02d%02d",
+            hours,
+            minutes
+        );
     }
 
     @safe unittest
@@ -1376,6 +1443,7 @@ package:
             return SimpleTimeZone.toISOString(offset);
         }
 
+        import std.datetime.date : DateTimeException;
         assertThrown!DateTimeException(testSTZInvalid(dur!"minutes"(1440)));
         assertThrown!DateTimeException(testSTZInvalid(dur!"minutes"(-1440)));
 
@@ -1411,7 +1479,19 @@ package:
       +/
     static string toISOExtString(Duration utcOffset) @safe pure
     {
-        import std.format : format;
+        import std.array : appender;
+        auto w = appender!string();
+        w.reserve(6);
+        toISOExtString(w, utcOffset);
+        return w.data;
+    }
+
+    // ditto
+    static void toISOExtString(W)(ref W writer, Duration utcOffset)
+    {
+        import std.datetime.date : DateTimeException;
+        import std.format.write : formattedWrite;
+        import std.exception : enforce;
 
         immutable absOffset = abs(utcOffset);
         enforce!DateTimeException(absOffset < dur!"minutes"(1440),
@@ -1419,7 +1499,12 @@ package:
         int hours;
         int minutes;
         absOffset.split!("hours", "minutes")(hours, minutes);
-        return format(utcOffset < Duration.zero ? "-%02d:%02d" : "+%02d:%02d", hours, minutes);
+        formattedWrite(
+            writer,
+            utcOffset < Duration.zero ? "-%02d:%02d" : "+%02d:%02d",
+            hours,
+            minutes
+        );
     }
 
     @safe unittest
@@ -1429,6 +1514,7 @@ package:
             return SimpleTimeZone.toISOExtString(offset);
         }
 
+        import std.datetime.date : DateTimeException;
         assertThrown!DateTimeException(testSTZInvalid(dur!"minutes"(1440)));
         assertThrown!DateTimeException(testSTZInvalid(dur!"minutes"(-1440)));
 
@@ -1466,34 +1552,43 @@ package:
     static immutable(SimpleTimeZone) fromISOString(S)(S isoString) @safe pure
         if (isSomeString!S)
     {
-        import std.algorithm.searching : startsWith, countUntil, all;
-        import std.ascii : isDigit;
-        import std.conv : to;
-        import std.format : format;
+        import std.algorithm.searching : startsWith;
+        import std.conv : text, to, ConvException;
+        import std.datetime.date : DateTimeException;
+        import std.exception : enforce;
 
-        auto dstr = to!dstring(isoString);
+        auto whichSign = isoString.startsWith('-', '+');
+        enforce!DateTimeException(whichSign > 0, text("Invalid ISO String ", isoString));
 
-        enforce!DateTimeException(dstr.startsWith('-', '+'), "Invalid ISO String");
-
-        auto sign = dstr.startsWith('-') ? -1 : 1;
-
-        dstr.popFront();
-        enforce!DateTimeException(all!isDigit(dstr), format("Invalid ISO String: %s", dstr));
-
+        isoString = isoString[1 .. $];
+        auto sign = whichSign == 1 ? -1 : 1;
         int hours;
         int minutes;
 
-        if (dstr.length == 2)
-            hours = to!int(dstr);
-        else if (dstr.length == 4)
+        try
         {
-            hours = to!int(dstr[0 .. 2]);
-            minutes = to!int(dstr[2 .. 4]);
+            // cast to int from uint is used because it checks for
+            // non digits without extra loops
+            if (isoString.length == 2)
+            {
+                hours = cast(int) to!uint(isoString);
+            }
+            else if (isoString.length == 4)
+            {
+                hours = cast(int) to!uint(isoString[0 .. 2]);
+                minutes = cast(int) to!uint(isoString[2 .. 4]);
+            }
+            else
+            {
+                throw new DateTimeException(text("Invalid ISO String ", isoString));
+            }
         }
-        else
-            throw new DateTimeException(format("Invalid ISO String: %s", dstr));
+        catch (ConvException)
+        {
+            throw new DateTimeException(text("Invalid ISO String ", isoString));
+        }
 
-        enforce!DateTimeException(hours < 24 && minutes < 60, format("Invalid ISO String: %s", dstr));
+        enforce!DateTimeException(hours < 24 && minutes < 60, text("Invalid ISO String ", isoString));
 
         return new immutable SimpleTimeZone(sign * (dur!"hours"(hours) + dur!"minutes"(minutes)));
     }
@@ -1517,6 +1612,7 @@ package:
                        "-ab:cd", "+abcd", "-0Z:00", "-Z", "-00Z",
                        "01:00", "12:00", "23:59"])
         {
+            import std.datetime.date : DateTimeException;
             assertThrown!DateTimeException(SimpleTimeZone.fromISOString(str), format("[%s]", str));
         }
 
@@ -1563,7 +1659,7 @@ package:
         import core.exception : AssertError;
         import std.format : format;
 
-        static void test(in string isoString, int expectedOffset, size_t line = __LINE__)
+        static void test(scope const string isoString, int expectedOffset, size_t line = __LINE__)
         {
             auto stz = SimpleTimeZone.fromISOExtString(isoString);
             if (stz.utcOffset != dur!"minutes"(expectedOffset))
@@ -1607,44 +1703,54 @@ package:
         Params:
             isoExtString = A string which represents a time zone in the ISO format.
       +/
-    static immutable(SimpleTimeZone) fromISOExtString(S)(S isoExtString) @safe pure
+    static immutable(SimpleTimeZone) fromISOExtString(S)(scope S isoExtString) @safe pure
         if (isSomeString!S)
     {
-        import std.algorithm.searching : startsWith, countUntil, all;
-        import std.ascii : isDigit;
-        import std.conv : to;
+        import std.algorithm.searching : startsWith;
+        import std.conv : ConvException, to;
+        import std.datetime.date : DateTimeException;
+        import std.exception : enforce;
         import std.format : format;
+        import std.string : indexOf;
 
-        auto dstr = to!dstring(isoExtString);
+        auto whichSign = isoExtString.startsWith('-', '+');
+        enforce!DateTimeException(whichSign > 0, format("Invalid ISO String: %s", isoExtString));
+        auto sign = whichSign == 1 ? -1 : 1;
 
-        enforce!DateTimeException(dstr.startsWith('-', '+'), "Invalid ISO String");
+        isoExtString = isoExtString[1 .. $];
+        enforce!DateTimeException(!isoExtString.empty, format("Invalid ISO String: %s", isoExtString));
 
-        auto sign = dstr.startsWith('-') ? -1 : 1;
-
-        dstr.popFront();
-        enforce!DateTimeException(!dstr.empty, "Invalid ISO String");
-
-        immutable colon = dstr.countUntil(':');
-
-        dstring hoursStr;
-        dstring minutesStr;
+        immutable colon = isoExtString.indexOf(':');
+        S hoursStr;
+        S minutesStr;
+        int hours, minutes;
 
         if (colon != -1)
         {
-            hoursStr = dstr[0 .. colon];
-            minutesStr = dstr[colon + 1 .. $];
-            enforce!DateTimeException(minutesStr.length == 2, format("Invalid ISO String: %s", dstr));
+            hoursStr = isoExtString[0 .. colon];
+            minutesStr = isoExtString[colon + 1 .. $];
+            enforce!DateTimeException(minutesStr.length == 2, format("Invalid ISO String: %s", isoExtString));
         }
         else
-            hoursStr = dstr;
+        {
+            hoursStr = isoExtString;
+        }
 
-        enforce!DateTimeException(hoursStr.length == 2, format("Invalid ISO String: %s", dstr));
-        enforce!DateTimeException(all!isDigit(hoursStr), format("Invalid ISO String: %s", dstr));
-        enforce!DateTimeException(all!isDigit(minutesStr), format("Invalid ISO String: %s", dstr));
+        enforce!DateTimeException(hoursStr.length == 2, format("Invalid ISO String: %s", isoExtString));
 
-        immutable hours = to!int(hoursStr);
-        immutable minutes = minutesStr.empty ? 0 : to!int(minutesStr);
-        enforce!DateTimeException(hours < 24 && minutes < 60, format("Invalid ISO String: %s", dstr));
+        try
+        {
+            // cast to int from uint is used because it checks for
+            // non digits without extra loops
+            hours = cast(int) to!uint(hoursStr);
+            minutes = cast(int) (minutesStr.empty ? 0 : to!uint(minutesStr));
+        }
+        catch (ConvException)
+        {
+            throw new DateTimeException(format("Invalid ISO String: %s", isoExtString));
+        }
+
+        enforce!DateTimeException(hours < 24 && minutes < 60, format("Invalid ISO String: %s", isoExtString));
 
         return new immutable SimpleTimeZone(sign * (dur!"hours"(hours) + dur!"minutes"(minutes)));
     }
@@ -1668,6 +1774,7 @@ package:
                        "-ab:cd", "abcd", "-0Z:00", "-Z", "-00Z",
                        "0100", "1200", "2359"])
         {
+            import std.datetime.date : DateTimeException;
             assertThrown!DateTimeException(SimpleTimeZone.fromISOExtString(str), format("[%s]", str));
         }
 
@@ -1714,7 +1821,7 @@ package:
         import core.exception : AssertError;
         import std.format : format;
 
-        static void test(in string isoExtString, int expectedOffset, size_t line = __LINE__)
+        static void test(scope const string isoExtString, int expectedOffset, size_t line = __LINE__)
         {
             auto stz = SimpleTimeZone.fromISOExtString(isoExtString);
             if (stz.utcOffset != dur!"minutes"(expectedOffset))
@@ -1758,21 +1865,19 @@ private:
     Represents a time zone from a TZ Database time zone file. Files from the TZ
     Database are how Posix systems hold their time zone information.
     Unfortunately, Windows does not use the TZ Database. To use the TZ Database,
-    use $(D PosixTimeZone) (which reads its information from the TZ Database
+    use `PosixTimeZone` (which reads its information from the TZ Database
     files on disk) on Windows by providing the TZ Database files and telling
-    $(D PosixTimeZone.getTimeZone) where the directory holding them is.
+    `PosixTimeZone.getTimeZone` where the directory holding them is.
 
-    To get a $(D PosixTimeZone), either call $(D PosixTimeZone.getTimeZone)
-    (which allows specifying the location the time zone files) or call
-    $(D TimeZone.getTimeZone) (which will give a $(D PosixTimeZone) on Posix
-    systems and a $(LREF WindowsTimeZone) on Windows systems).
+    To get a `PosixTimeZone`, call `PosixTimeZone.getTimeZone`
+    (which allows specifying the location the time zone files).
 
     Note:
         Unless your system's local time zone deals with leap seconds (which is
         highly unlikely), then the only way to get a time zone which
-        takes leap seconds into account is to use $(D PosixTimeZone) with a
+        takes leap seconds into account is to use `PosixTimeZone` with a
         time zone whose name starts with "right/". Those time zone files do
-        include leap seconds, and $(D PosixTimeZone) will take them into account
+        include leap seconds, and `PosixTimeZone` will take them into account
         (though posix systems which use a "right/" time zone as their local time
         zone will $(I not) take leap seconds into account even though they're
         in the file).
@@ -1796,7 +1901,7 @@ public:
     /++
         Whether this time zone has Daylight Savings Time at any point in time.
         Note that for some time zone types it may not have DST for current
-        dates but will still return true for $(D hasDST) because the time zone
+        dates but will still return true for `hasDST` because the time zone
         did at some point have DST.
       +/
     @property override bool hasDST() @safe const nothrow
@@ -1814,7 +1919,7 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         assert(!_transitions.empty);
 
@@ -1838,7 +1943,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         assert(!_transitions.empty);
 
@@ -1863,9 +1968,9 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
-        assert(!_transitions.empty);
+        assert(!_transitions.empty, "UTC offset's not available");
 
         immutable leapSecs = calculateLeapSeconds(adjTime);
         time_t unixTime = stdTimeToUnixTime(adjTime);
@@ -1901,32 +2006,37 @@ public:
     }
 
 
-    version (Android)
+    version (StdDdoc)
     {
-        // Android concatenates all time zone data into a single file and stores it here.
+        /++
+            The default directory where the TZ Database files are stored. It's
+            empty for Windows, since Windows doesn't have them. You can also use
+            the TZDatabaseDir version to pass an arbitrary path at compile-time,
+            rather than hard-coding it here. Android concatenates all time zone
+            data into a single file called tzdata and stores it in the directory
+            below.
+          +/
+        enum defaultTZDatabaseDir = "";
+    }
+    else version (TZDatabaseDir)
+    {
+        import std.string : strip;
+        enum defaultTZDatabaseDir = strip(import("TZDatabaseDirFile"));
+    }
+    else version (Android)
+    {
         enum defaultTZDatabaseDir = "/system/usr/share/zoneinfo/";
     }
     else version (Solaris)
     {
-        /++
-            The default directory where the TZ Database files are. It's empty
-            for Windows, since Windows doesn't have them.
-          +/
         enum defaultTZDatabaseDir = "/usr/share/lib/zoneinfo/";
     }
     else version (Posix)
     {
-        /++
-            The default directory where the TZ Database files are. It's empty
-            for Windows, since Windows doesn't have them.
-          +/
         enum defaultTZDatabaseDir = "/usr/share/zoneinfo/";
     }
     else version (Windows)
     {
-        /++ The default directory where the TZ Database files are. It's empty
-            for Windows, since Windows doesn't have them.
-          +/
         enum defaultTZDatabaseDir = "";
     }
 
@@ -1952,7 +2062,7 @@ public:
 
         Throws:
             $(REF DateTimeException,std,datetime,date) if the given time zone
-            could not be found or $(D FileException) if the TZ Database file
+            could not be found or `FileException` if the TZ Database file
             could not be opened.
       +/
     // TODO make it possible for tzDatabaseDir to be gzipped tar file rather than an uncompressed
@@ -1961,6 +2071,8 @@ public:
     {
         import std.algorithm.sorting : sort;
         import std.conv : to;
+        import std.datetime.date : DateTimeException;
+        import std.exception : enforce;
         import std.format : format;
         import std.path : asNormalizedPath, chainPath;
         import std.range : retro;
@@ -1987,6 +2099,7 @@ public:
         version (Android) tzFile.seek(*tzfileOffset);
         immutable gmtZone = name.representation().canFind("GMT");
 
+        import std.datetime.date : DateTimeException;
         try
         {
             _enforceValidTZFile(readVal!(char[])(tzFile, 4) == "TZif");
@@ -2303,12 +2416,13 @@ public:
                             located.
 
         Throws:
-            $(D FileException) if it fails to read from disk.
+            `FileException` if it fails to read from disk.
       +/
-    static string[] getInstalledTZNames(string subName = "", string tzDatabaseDir = defaultTZDatabaseDir) @trusted
+    static string[] getInstalledTZNames(string subName = "", string tzDatabaseDir = defaultTZDatabaseDir) @safe
     {
         import std.algorithm.sorting : sort;
         import std.array : appender;
+        import std.exception : enforce;
         import std.format : format;
 
         version (Posix)
@@ -2320,6 +2434,7 @@ public:
             subName = replace(strip(subName), "/", dirSeparator);
         }
 
+        import std.datetime.date : DateTimeException;
         enforce(tzDatabaseDir.exists(), new DateTimeException(format("Directory %s does not exist.", tzDatabaseDir)));
         enforce(tzDatabaseDir.isDir, new DateTimeException(format("%s is not a directory.", tzDatabaseDir)));
 
@@ -2329,27 +2444,36 @@ public:
         {
             import std.algorithm.iteration : filter;
             import std.algorithm.mutation : copy;
-            tzdataIndex(tzDatabaseDir).byKey.filter!(a => a.startsWith(subName)).copy(timezones);
+
+            const index = () @trusted { return tzdataIndex(tzDatabaseDir); }();
+            index.byKey.filter!(a => a.startsWith(subName)).copy(timezones);
         }
         else
         {
-            foreach (DirEntry de; dirEntries(tzDatabaseDir, SpanMode.depth))
-            {
-                if (de.isFile)
+            import std.path : baseName;
+            // dirEntries is @system because it uses a DirIterator with a
+            // RefCounted variable, but here, no references to the payload is
+            // escaped to the outside, so this should be @trusted
+            () @trusted {
+                foreach (DirEntry de; dirEntries(tzDatabaseDir, SpanMode.depth))
                 {
-                    auto tzName = de.name[tzDatabaseDir.length .. $];
-
-                    if (!tzName.extension().empty ||
-                        !tzName.startsWith(subName) ||
-                        tzName == "leapseconds" ||
-                        tzName == "+VERSION")
+                    if (de.isFile)
                     {
-                        continue;
-                    }
+                        auto tzName = de.name[tzDatabaseDir.length .. $];
 
-                    timezones.put(tzName);
+                        if (!tzName.extension().empty ||
+                            !tzName.startsWith(subName) ||
+                            baseName(tzName) == "leapseconds" ||
+                            tzName == "+VERSION" ||
+                            tzName == "SECURITY")
+                        {
+                            continue;
+                        }
+
+                        timezones.put(tzName);
+                    }
                 }
-            }
+            }();
         }
 
         sort(timezones.data);
@@ -2377,6 +2501,7 @@ public:
 
         auto tzNames = getInstalledTZNames();
 
+        import std.datetime.date : DateTimeException;
         foreach (tzName; tzNames)
             assertNotThrown!DateTimeException(testPTZSuccess(tzName));
 
@@ -2403,7 +2528,7 @@ private:
 
     /+
         Holds information on when a time transition occures (usually a
-        transition to or from DST) as well as a pointer to the $(D TTInfo) which
+        transition to or from DST) as well as a pointer to the `TTInfo` which
         holds information on the utc offset past the transition.
       +/
     struct Transition
@@ -2440,7 +2565,7 @@ private:
       +/
     struct TTInfo
     {
-        this(in TempTTInfo tempTTInfo, string abbrev) @safe immutable pure
+        this(scope const TempTTInfo tempTTInfo, string abbrev) @safe immutable pure
         {
             utcOffset = tempTTInfo.tt_gmtoff;
             isDST = tempTTInfo.tt_isdst;
@@ -2454,7 +2579,7 @@ private:
 
 
     /+
-        Struct used to hold information relating to $(D TTInfo) while organizing
+        Struct used to hold information relating to `TTInfo` while organizing
         the time zone information prior to putting it in its final form.
       +/
     struct TempTTInfo
@@ -2473,7 +2598,7 @@ private:
 
 
     /+
-        Struct used to hold information relating to $(D Transition) while
+        Struct used to hold information relating to `Transition` while
         organizing the time zone information prior to putting it in its final
         form.
       +/
@@ -2493,8 +2618,8 @@ private:
 
 
     /+
-        Struct used to hold information relating to $(D Transition) and
-        $(D TTInfo) while organizing the time zone information prior to putting
+        Struct used to hold information relating to `Transition` and
+        `TTInfo` while organizing the time zone information prior to putting
         it in its final form.
       +/
     struct TransitionType
@@ -2517,7 +2642,7 @@ private:
         Reads an int from a TZ file.
       +/
     static T readVal(T)(ref File tzFile) @trusted
-        if ((isIntegral!T || isSomeChar!T) || is(Unqual!T == bool))
+        if ((isIntegral!T || isSomeChar!T) || is(immutable T == immutable bool))
     {
         import std.bitmanip : bigEndianToNative;
         T[1] buff;
@@ -2544,7 +2669,7 @@ private:
 
 
     /+
-        Reads a $(D TempTTInfo) from a TZ file.
+        Reads a `TempTTInfo` from a TZ file.
       +/
     static T readVal(T)(ref File tzFile) @safe
         if (is(T == TempTTInfo))
@@ -2557,16 +2682,17 @@ private:
 
     /+
         Throws:
-            $(REF DateTimeException,std,datetime,date) if $(D result) is false.
+            $(REF DateTimeException,std,datetime,date) if `result` is false.
       +/
     static void _enforceValidTZFile(bool result, size_t line = __LINE__) @safe pure
     {
+        import std.datetime.date : DateTimeException;
         if (!result)
             throw new DateTimeException("Not a valid tzdata file.", __FILE__, line);
     }
 
 
-    int calculateLeapSeconds(long stdTime) @safe const pure nothrow
+    int calculateLeapSeconds(long stdTime) @safe const scope pure nothrow
     {
         if (_leapSeconds.empty)
             return 0;
@@ -2631,12 +2757,13 @@ private:
         {
             import std.concurrency : initOnce;
 
-            static __gshared uint[string] _tzIndex;
+            __gshared uint[string] _tzIndex;
 
             // _tzIndex is initialized once and then shared across all threads.
             initOnce!_tzIndex(
             {
                 import std.conv : to;
+                import std.datetime.date : DateTimeException;
                 import std.format : format;
                 import std.path : asNormalizedPath, chainPath;
 
@@ -2709,24 +2836,21 @@ version (StdDdoc)
         does not use the TZ Database. To use the TZ Database, use
         $(LREF PosixTimeZone) (which reads its information from the TZ Database
         files on disk) on Windows by providing the TZ Database files and telling
-        $(D PosixTimeZone.getTimeZone) where the directory holding them is.
+        `PosixTimeZone.getTimeZone` where the directory holding them is.
 
         The TZ Database files and Windows' time zone information frequently
         do not match. Windows has many errors with regards to when DST switches
         occur (especially for historical dates). Also, the TZ Database files
         include far more time zones than Windows does. So, for accurate
         time zone information, use the TZ Database files with
-        $(LREF PosixTimeZone) rather than $(D WindowsTimeZone). However, because
-        $(D WindowsTimeZone) uses Windows system calls to deal with the time,
+        $(LREF PosixTimeZone) rather than `WindowsTimeZone`. However, because
+        `WindowsTimeZone` uses Windows system calls to deal with the time,
         it's far more likely to match the behavior of other Windows programs.
         Be aware of the differences when selecting a method.
 
-        $(D WindowsTimeZone) does not exist on Posix systems.
+        `WindowsTimeZone` does not exist on Posix systems.
 
-        To get a $(D WindowsTimeZone), either call
-        $(D WindowsTimeZone.getTimeZone) or call $(D TimeZone.getTimeZone)
-        (which will give a $(LREF PosixTimeZone) on Posix systems and a
-         $(D WindowsTimeZone) on Windows systems).
+        To get a `WindowsTimeZone`, call `WindowsTimeZone.getTimeZone`.
 
         See_Also:
             $(HTTP www.iana.org/time-zones, Home of the TZ Database files)
@@ -2738,10 +2862,10 @@ version (StdDdoc)
         /++
             Whether this time zone has Daylight Savings Time at any point in
             time. Note that for some time zone types it may not have DST for
-            current dates but will still return true for $(D hasDST) because the
+            current dates but will still return true for `hasDST` because the
             time zone did at some point have DST.
           +/
-        @property override bool hasDST() @safe const nothrow;
+        @property override bool hasDST() @safe const scope nothrow;
 
 
         /++
@@ -2753,7 +2877,7 @@ version (StdDdoc)
                 stdTime = The UTC time that needs to be checked for DST in this
                           time zone.
           +/
-        override bool dstInEffect(long stdTime) @safe const nothrow;
+        override bool dstInEffect(long stdTime) @safe const scope nothrow;
 
 
         /++
@@ -2765,7 +2889,7 @@ version (StdDdoc)
                 stdTime = The UTC time that needs to be adjusted to this time
                           zone's time.
           +/
-        override long utcToTZ(long stdTime) @safe const nothrow;
+        override long utcToTZ(long stdTime) @safe const scope nothrow;
 
 
         /++
@@ -2777,7 +2901,7 @@ version (StdDdoc)
                 adjTime = The time in this time zone that needs to be adjusted
                           to UTC time.
           +/
-        override long tzToUTC(long adjTime) @safe const nothrow;
+        override long tzToUTC(long adjTime) @safe const scope nothrow;
 
 
         /++
@@ -2810,7 +2934,7 @@ version (StdDdoc)
             Returns a list of the names of the time zones installed on the
             system. The list returned by WindowsTimeZone contains the Windows
             TZ names, not the TZ Database names. However,
-            $(D TimeZone.getinstalledTZNames) will return the TZ Database names
+            `TimeZone.getinstalledTZNames` will return the TZ Database names
             which are equivalent to the Windows TZ names.
           +/
         static string[] getInstalledTZNames() @safe;
@@ -2822,9 +2946,9 @@ version (StdDdoc)
         else
             alias TIME_ZONE_INFORMATION = void*;
 
-        static bool _dstInEffect(const TIME_ZONE_INFORMATION* tzInfo, long stdTime) nothrow;
-        static long _utcToTZ(const TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) nothrow;
-        static long _tzToUTC(const TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) nothrow;
+        static bool _dstInEffect(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime) nothrow;
+        static long _utcToTZ(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) nothrow;
+        static long _tzToUTC(const scope TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) nothrow;
 
         this() immutable pure
         {
@@ -2844,25 +2968,25 @@ else version (Windows)
 
     public:
 
-        @property override bool hasDST() @safe const nothrow
+        @property override bool hasDST() @safe const scope nothrow
         {
             return _tzInfo.DaylightDate.wMonth != 0;
         }
 
 
-        override bool dstInEffect(long stdTime) @safe const nothrow
+        override bool dstInEffect(long stdTime) @safe const scope nothrow
         {
             return _dstInEffect(&_tzInfo, stdTime);
         }
 
 
-        override long utcToTZ(long stdTime) @safe const nothrow
+        override long utcToTZ(long stdTime) @safe const scope nothrow
         {
             return _utcToTZ(&_tzInfo, stdTime, hasDST);
         }
 
 
-        override long tzToUTC(long adjTime) @safe const nothrow
+        override long tzToUTC(long adjTime) @safe const scope nothrow
         {
             return _tzToUTC(&_tzInfo, adjTime, hasDST);
         }
@@ -2887,7 +3011,8 @@ else version (Windows)
 
                 scope tziVal = tzKey.getValue("TZI");
                 auto binVal = tziVal.value_BINARY;
-                assert(binVal.length == REG_TZI_FORMAT.sizeof);
+                assert(binVal.length == REG_TZI_FORMAT.sizeof,
+                        "Unexpected size while getTimeZone with name " ~ name);
                 auto tziFmt = cast(REG_TZI_FORMAT*) binVal.ptr;
 
                 TIME_ZONE_INFORMATION tzInfo;
@@ -2909,6 +3034,7 @@ else version (Windows)
 
                 return new immutable WindowsTimeZone(name, tzInfo);
             }
+            import std.datetime.date : DateTimeException;
             throw new DateTimeException(format("Failed to find time zone: %s", name));
         }
 
@@ -2938,6 +3064,7 @@ else version (Windows)
 
             auto tzNames = getInstalledTZNames();
 
+            import std.datetime.date : DateTimeException;
             foreach (tzName; tzNames)
                 assertNotThrown!DateTimeException(testWTZSuccess(tzName));
         }
@@ -2945,18 +3072,20 @@ else version (Windows)
 
     private:
 
-        static bool _dstInEffect(const TIME_ZONE_INFORMATION* tzInfo, long stdTime) @trusted nothrow
+        static bool _dstInEffect(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime) @trusted nothrow
         {
             try
             {
                 if (tzInfo.DaylightDate.wMonth == 0)
                     return false;
 
+                import std.datetime.date : DateTime, Month;
                 auto utcDateTime = cast(DateTime) SysTime(stdTime, UTC());
 
                 //The limits of what SystemTimeToTzSpecificLocalTime will accept.
                 if (utcDateTime.year < 1601)
                 {
+                    import std.datetime.date : Month;
                     if (utcDateTime.month == Month.feb && utcDateTime.day == 29)
                         utcDateTime.day = 28;
                     utcDateTime.year = 1601;
@@ -2994,7 +3123,7 @@ else version (Windows)
                 immutable result = SystemTimeToTzSpecificLocalTime(cast(TIME_ZONE_INFORMATION*) tzInfo,
                                                                    &utcTime,
                                                                    &otherTime);
-                assert(result);
+                assert(result, "Failed to create SystemTimeToTzSpecificLocalTime");
 
                 immutable otherDateTime = DateTime(otherTime.wYear,
                                                    otherTime.wMonth,
@@ -3008,7 +3137,7 @@ else version (Windows)
                 if (minutes == tzInfo.DaylightBias)
                     return true;
 
-                assert(minutes == tzInfo.StandardBias);
+                assert(minutes == tzInfo.StandardBias, "Unexpected difference");
 
                 return false;
             }
@@ -3021,12 +3150,13 @@ else version (Windows)
             TIME_ZONE_INFORMATION tzInfo;
             GetTimeZoneInformation(&tzInfo);
 
+            import std.datetime.date : DateTime;
             foreach (year; [1600, 1601, 30_827, 30_828])
                 WindowsTimeZone._dstInEffect(&tzInfo, SysTime(DateTime(year, 1, 1)).stdTime);
         }
 
 
-        static long _utcToTZ(const TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) @safe nothrow
+        static long _utcToTZ(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) @safe nothrow
         {
             if (hasDST && WindowsTimeZone._dstInEffect(tzInfo, stdTime))
                 return stdTime - convert!("minutes", "hnsecs")(tzInfo.Bias + tzInfo.DaylightBias);
@@ -3035,12 +3165,13 @@ else version (Windows)
         }
 
 
-        static long _tzToUTC(const TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) @trusted nothrow
+        static long _tzToUTC(const scope TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) @trusted nothrow
         {
             if (hasDST)
             {
                 try
                 {
+                    import std.datetime.date : DateTime, Month;
                     bool dstInEffectForLocalDateTime(DateTime localDateTime)
                     {
                         // The limits of what SystemTimeToTzSpecificLocalTime will accept.
@@ -3086,6 +3217,7 @@ else version (Windows)
                                                                            &localTime,
                                                                            &utcTime);
                         assert(result);
+                        assert(result, "Failed to create _tzToUTC");
 
                         immutable utcDateTime = DateTime(utcTime.wYear,
                                                          utcTime.wMonth,
@@ -3100,11 +3232,12 @@ else version (Windows)
                         if (minutes == tzInfo.DaylightBias)
                             return true;
 
-                        assert(minutes == tzInfo.StandardBias);
+                        assert(minutes == tzInfo.StandardBias, "Unexpected difference");
 
                         return false;
                     }
 
+                    import std.datetime.date : DateTime;
                     auto localDateTime = cast(DateTime) SysTime(adjTime, UTC());
                     auto localDateTimeBefore = localDateTime - dur!"hours"(1);
                     auto localDateTimeAfter = localDateTime + dur!"hours"(1);
@@ -3280,6 +3413,7 @@ TZConversions parseTZConversions(string windowsZonesXMLText) @safe pure
 
     foreach (line; windowsZonesXMLText.lineSplitter())
     {
+        import std.exception : enforce;
         // Sample line:
         // <mapZone other="Canada Central Standard Time" territory="CA" type="America/Regina America/Swift_Current"/>
 
@@ -3362,7 +3496,8 @@ For terms of use, see http://www.unicode.org/copyright.html
 
             <!-- (UTC-09:00) Alaska -->
             <mapZone other="Alaskan Standard Time" territory="001" type="America/Anchorage"/>
-            <mapZone other="Alaskan Standard Time" territory="US" type="America/Anchorage America/Juneau America/Nome America/Sitka America/Yakutat"/>
+            <mapZone other="Alaskan Standard Time" territory="US" `
+                ~ `type="America/Anchorage America/Juneau America/Nome America/Sitka America/Yakutat"/>
         </mapTimezones>
     </windowsZones>
 </supplementalData>`;

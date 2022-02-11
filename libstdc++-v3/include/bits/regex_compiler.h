@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -121,13 +121,45 @@ namespace __detail
 	void
 	_M_insert_bracket_matcher(bool __neg);
 
-      // Returns true if successfully matched one term and should continue.
+      // Cache of the last atom seen in a bracketed range expression.
+      struct _BracketState
+      {
+	enum class _Type : char { _None, _Char, _Class } _M_type = _Type::_None;
+	_CharT _M_char;
+
+	void
+	set(_CharT __c) noexcept { _M_type = _Type::_Char; _M_char = __c; }
+
+	_GLIBCXX_NODISCARD _CharT
+	get() const noexcept { return _M_char; }
+
+	void
+	reset(_Type __t = _Type::_None) noexcept { _M_type = __t; }
+
+	explicit operator bool() const noexcept
+	{ return _M_type != _Type::_None; }
+
+	// Previous token was a single character.
+	_GLIBCXX_NODISCARD bool
+	_M_is_char() const noexcept { return _M_type == _Type::_Char; }
+
+	// Previous token was a character class, equivalent class,
+	// collating symbol etc.
+	_GLIBCXX_NODISCARD bool
+	_M_is_class() const noexcept { return _M_type == _Type::_Class; }
+      };
+
+      template<bool __icase, bool __collate>
+	using _BracketMatcher
+	  = std::__detail::_BracketMatcher<_TraitsT, __icase, __collate>;
+
+      // Returns true if successfully parsed one term and should continue
+      // compiling a bracket expression.
       // Returns false if the compiler should move on.
       template<bool __icase, bool __collate>
 	bool
-	_M_expression_term(pair<bool, _CharT>& __last_char,
-			   _BracketMatcher<_TraitsT, __icase, __collate>&
-			   __matcher);
+	_M_expression_term(_BracketState& __last_char,
+			   _BracketMatcher<__icase, __collate>& __matcher);
 
       int
       _M_cur_int_value(int __radix);
@@ -189,9 +221,9 @@ namespace __detail
       _CharT
       _M_translate(_CharT __ch) const
       {
-	if (__icase)
+	if _GLIBCXX17_CONSTEXPR (__icase)
 	  return _M_traits.translate_nocase(__ch);
-	else if (__collate)
+	else if _GLIBCXX17_CONSTEXPR (__collate)
 	  return _M_traits.translate(__ch);
 	else
 	  return __ch;
@@ -253,9 +285,10 @@ namespace __detail
       bool
       _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
       {
-	if (!__icase)
+	if _GLIBCXX17_CONSTEXPR (!__icase)
 	  return __first <= __ch && __ch <= __last;
-	return this->_M_in_range_icase(__first, __last, __ch);
+	else
+	  return this->_M_in_range_icase(__first, __last, __ch);
       }
     };
 

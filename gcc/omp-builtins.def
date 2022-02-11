@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    Offloading and Multi Processing builtins used in the GNU compiler.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,7 +111,7 @@ DEF_GOMP_BUILTIN (BUILT_IN_GOMP_CRITICAL_NAME_END,
 		  BT_FN_VOID_PTRPTR, ATTR_NOTHROW_LEAF_LIST)
 /* NOTE: Do not change the order of BUILT_IN_GOMP_LOOP_*_START.  They
    are used in index arithmetic with enum omp_clause_schedule_kind
-   in omp-low.c.  */
+   in omp-low.cc.  */
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_LOOP_STATIC_START,
 		  "GOMP_loop_static_start",
 		  BT_FN_BOOL_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR,
@@ -334,7 +334,7 @@ DEF_GOMP_BUILTIN (BUILT_IN_GOMP_LOOP_ULL_ORDERED_RUNTIME_NEXT,
 		  BT_FN_BOOL_ULONGLONGPTR_ULONGLONGPTR, ATTR_NOTHROW_LEAF_LIST)
 /* NOTE: Do not change the order of BUILT_IN_GOMP_PARALLEL_LOOP_*.
    They are used in index arithmetic with enum omp_clause_schedule_kind
-   in omp-low.c.  */
+   in omp-low.cc.  */
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_PARALLEL_LOOP_STATIC,
 		  "GOMP_parallel_loop_static",
 		  BT_FN_VOID_OMPFN_PTR_UINT_LONG_LONG_LONG_LONG_UINT,
@@ -442,8 +442,8 @@ DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TARGET_UPDATE, "GOMP_target_update_ext",
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TARGET_ENTER_EXIT_DATA,
 		  "GOMP_target_enter_exit_data",
 		  BT_FN_VOID_INT_SIZE_PTR_PTR_PTR_UINT_PTR, ATTR_NOTHROW_LIST)
-DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TEAMS, "GOMP_teams",
-		  BT_FN_VOID_UINT_UINT, ATTR_NOTHROW_LIST)
+DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TEAMS4, "GOMP_teams4",
+		  BT_FN_BOOL_UINT_UINT_UINT_BOOL, ATTR_NOTHROW_LIST)
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TEAMS_REG, "GOMP_teams_reg",
 		  BT_FN_VOID_OMPFN_PTR_UINT_UINT_UINT, ATTR_NOTHROW_LIST)
 DEF_GOMP_BUILTIN (BUILT_IN_GOMP_TASKGROUP_REDUCTION_REGISTER,

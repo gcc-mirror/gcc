@@ -1,5 +1,5 @@
 /* Definitions of target machine for Visium.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -376,7 +376,7 @@
    with spaces, and write first any length keyword, then `unsigned' if
    appropriate, and finally `int'.  The string must exactly match one
    of the data type names defined in the function
-   `init_decl_processing' in the file `c-decl.c'.  You may not omit
+   `init_decl_processing' in the file `c-decl.cc'.  You may not omit
    `int' or change the order--that would cause the compiler to crash
    on startup.
 
@@ -1234,7 +1234,7 @@ do									\
 
    `EXTRA_SECTION_FUNCTIONS'
 
-   One or more functions to be defined in `varasm.c'.  These functions
+   One or more functions to be defined in `varasm.cc'.  These functions
    should do jobs analogous to those of `text_section' and
    `data_section', for your additional sections.  Do not define this
    macro if you do not define `EXTRA_SECTIONS'.
@@ -1344,7 +1344,7 @@ do									\
    `IMMEDIATE_PREFIX'
 
    If defined, C string expressions to be used for the `%R', `%L',
-   `%U', and `%I' options of `asm_fprintf' (see `final.c').  These are
+   `%U', and `%I' options of `asm_fprintf' (see `final.cc').  These are
    useful when a single `md' file must support multiple assembler
    formats.  In that case, the various `tm.h' files can define these
    macros differently. */

@@ -1003,39 +1003,6 @@ Compile_Time_Warning resulted in a fatal error. Now the compiler always emits
 a warning. You can use :ref:`Compile_Time_Error` to force the generation of
 an error.
 
-Pragma Compiler_Unit
-====================
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Compiler_Unit;
-
-
-This pragma is obsolete. It is equivalent to Compiler_Unit_Warning. It is
-retained so that old versions of the GNAT run-time that use this pragma can
-be compiled with newer versions of the compiler.
-
-Pragma Compiler_Unit_Warning
-============================
-
-Syntax:
-
-
-.. code-block:: ada
-
-  pragma Compiler_Unit_Warning;
-
-
-This pragma is intended only for internal use in the GNAT run-time library.
-It indicates that the unit is used as part of the compiler build. The effect
-is to generate warnings for the use of constructs (for example, conditional
-expressions) that would cause trouble when bootstrapping using an older
-version of GNAT. For the exact list of restrictions, see the compiler sources
-and references to Check_Compiler_Unit.
-
 Pragma Complete_Representation
 ==============================
 
@@ -2400,6 +2367,30 @@ of GNAT specific extensions are recognized as follows:
   component is visible at the point of a selected_component using that
   name, preference is given to the component in a selected_component
   (as is currently the case for tagged types with such component names).
+
+* Expression defaults for generic formal functions
+
+  The declaration of a generic formal function is allowed to specify
+  an expression as a default, using the syntax of an expression function.
+
+  Here is an example of this feature:
+
+  .. code-block:: ada
+
+      generic
+         type T is private;
+         with function Copy (Item : T) return T is (Item); -- Defaults to Item
+      package Stacks is
+
+         type Stack is limited private;
+
+         procedure Push (S : in out Stack; X : T); -- Calls Copy on X
+
+         function Pop (S : in out Stack) return T; -- Calls Copy to return item
+
+      private
+         -- ...
+      end Stacks;
 
 .. _Pragma-Extensions_Visible:
 
@@ -7146,7 +7137,9 @@ or not to be given individually for each accept statement.
 
 The left hand side of an assignment does not count as a reference for the
 purpose of this pragma. Thus it is fine to assign to an entity for which
-pragma Unreferenced is given.
+pragma Unreferenced is given. However, use of an entity as an actual for
+an out parameter does count as a reference unless warnings for unread output
+parameters are enabled via :switch:`-gnatw.o`.
 
 Note that if a warning is desired for all calls to a given subprogram,
 regardless of whether they occur in the same unit as the subprogram

@@ -1,5 +1,5 @@
-/* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Declarations for interface to insn recognizer and insn-output.cc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */
 #define MAX_RECOG_ALTERNATIVES 35
-typedef uint64_t alternative_mask;  /* Keep in sync with genattrtab.c.  */
+typedef uint64_t alternative_mask;  /* Keep in sync with genattrtab.cc.  */
 
 /* A mask of all alternatives.  */
 #define ALL_ALTERNATIVES ((alternative_mask) -1)
@@ -390,7 +390,7 @@ which_op_alt ()
   return &recog_op_alt[which_alternative * recog_data.n_operands];
 }
 
-/* A table defined in insn-output.c that give information about
+/* A table defined in insn-output.cc that give information about
    each insn-code value.  */
 
 typedef bool (*insn_operand_predicate_fn) (rtx, machine_mode);
@@ -413,7 +413,7 @@ struct insn_gen_fn
 
   // The wrapped function pointer must be public and there must not be any
   // constructors.  Otherwise the insn_data_d struct initializers generated
-  // by genoutput.c will result in static initializer functions, which defeats
+  // by genoutput.cc will result in static initializer functions, which defeats
   // the purpose of the generated insn_data_d array.
   stored_funcptr func;
 };

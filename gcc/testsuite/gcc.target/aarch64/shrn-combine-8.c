@@ -6,7 +6,7 @@
 
 uint8x16_t foo (uint16x8_t a, uint16x8_t b)
 {
-  return vrshrn_high_n_u16 (vrshrn_n_u16 (a, 8), b, 8);
+  return vshrn_high_n_u16 (vshrn_n_u16 (a, 8), b, 8);
 }
 
 /* { dg-final { scan-assembler-times {\tuzp2\t} 1 } } */

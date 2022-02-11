@@ -1,5 +1,5 @@
 /* Tree based alias analysis and alias oracle.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Contributed by Richard Guenther  <rguenther@suse.de>
 
    This file is part of GCC.
@@ -108,9 +108,12 @@ ao_ref::max_size_known_p () const
   return known_size_p (max_size);
 }
 
-/* In tree-ssa-alias.c  */
+/* In tree-ssa-alias.cc  */
 extern void ao_ref_init (ao_ref *, tree);
 extern void ao_ref_init_from_ptr_and_size (ao_ref *, tree, tree);
+extern void ao_ref_init_from_ptr_and_range (ao_ref *, tree, bool,
+					    poly_int64, poly_int64,
+					    poly_int64);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern alias_set_type ao_ref_base_alias_set (ao_ref *);
@@ -162,7 +165,7 @@ extern void debug_points_to_info_for (tree);
 extern void dump_alias_stats (FILE *);
 
 
-/* In tree-ssa-structalias.c  */
+/* In tree-ssa-structalias.cc  */
 extern unsigned int compute_may_aliases (void);
 extern bool pt_solution_empty_p (const pt_solution *);
 extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);

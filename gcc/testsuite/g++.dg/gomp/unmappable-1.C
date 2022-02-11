@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
 
-class C /* { dg-message "type .C. with virtual members is not mappable" } */
+class C
 {
 public:
   static int static_member; /* { dg-message "static field .C::static_member. is not mappable" } */

@@ -1,5 +1,5 @@
 /* d-attribs.c -- D attributes handling.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/attrib.h"
 #include "dmd/declaration.h"
+#include "dmd/expression.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
 #include "dmd/template.h"
@@ -336,10 +337,10 @@ build_attributes (Expressions *eattrs)
 	continue;
 
       /* Get the result of the attribute if it hasn't already been folded.  */
-      if (attr->op == TOKcall)
+      if (attr->op == EXP::call)
 	attr = attr->ctfeInterpret ();
 
-      if (attr->op != TOKstructliteral)
+      if (attr->op != EXP::structLiteral)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "%qE attribute has no effect",
@@ -352,7 +353,7 @@ build_attributes (Expressions *eattrs)
       Expressions *elems = attr->isStructLiteralExp ()->elements;
       Expression *e0 = (*elems)[0];
 
-      if (e0->op != TOKstring)
+      if (e0->op != EXP::string_)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "unknown attribute %qs", e0->toChars());
@@ -852,7 +853,9 @@ parse_optimize_options (tree args)
   unsigned j = 1;
   for (unsigned i = 1; i < decoded_options_count; ++i)
     {
-      if (! (cl_options[decoded_options[i].opt_index].flags & CL_OPTIMIZATION))
+      unsigned opt_index = decoded_options[i].opt_index;
+      if (opt_index >= cl_options_count
+	  || ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
 	{
 	  ret = false;
 	  warning (OPT_Wattributes,

@@ -1,8 +1,10 @@
 /* Check offloaded function's attributes and classification for OpenACC
    kernels.  */
 
+/* { dg-additional-options "--param openacc-kernels=decompose" } */
+
 /* { dg-additional-options "-O2" }
-   { dg-additional-options "-fopt-info-optimized-omp" }
+   { dg-additional-options "-fopt-info-all-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-parloops1-all" }
    { dg-additional-options "-fdump-tree-oaccloops" } */
@@ -19,6 +21,7 @@ extern unsigned int *__restrict c;
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[i] + b[i];
 }

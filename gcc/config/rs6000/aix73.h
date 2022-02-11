@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.3.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -34,7 +34,7 @@ do {									\
     {									\
       rs6000_long_double_type_size = 64;				\
       if (OPTION_SET_P (rs6000_long_double_type_size))		\
-	warning (0, "soft-float and long-double-128 are incompatible");	\
+	warning (0, "%<soft-float%> and long-double-128 are incompatible");	\
     }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
     {									\
@@ -73,7 +73,7 @@ do {									\
 #define ASM_SPEC_COMMON "-u %(asm_cpu)"
 
 /* Common ASM definitions used by ASM_SPEC amongst the various targets for
-   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
+   handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.cc to
    provide the default assembler options if the user uses -mcpu=native, so if
    you make changes here, make them there also.  */
 #undef ASM_CPU_SPEC

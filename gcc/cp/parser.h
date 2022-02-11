@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -434,7 +434,7 @@ struct GTY(()) cp_parser {
 
 };
 
-/* In parser.c  */
+/* In parser.cc  */
 extern void debug (cp_token &ref);
 extern void debug (cp_token *ptr);
 extern void cp_lexer_debug_tokens (vec<cp_token, va_gc> *);

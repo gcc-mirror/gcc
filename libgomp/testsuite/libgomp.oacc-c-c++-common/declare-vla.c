@@ -1,5 +1,13 @@
 /* Verify OpenACC 'declare' with VLAs.  */
 
+/* { dg-additional-options "-fopt-info-omp-all" }
+   { dg-additional-options "-foffload=-fopt-info-all-omp" } */
+
+/* { dg-additional-options "--param=openacc-privatization=noisy" }
+   { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+   Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):
+   { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
+
 #include <assert.h>
 
 
@@ -14,6 +22,8 @@ f (void)
     A[i] = -i;
 
 #pragma acc kernels
+  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } .-1 }
+     { dg-optimized {assigned OpenACC gang loop parallelism} {} { target { __OPTIMIZE__ } } .-2 } */
   for (i = 0; i < N; i++)
     A[i] = i;
 
@@ -30,6 +40,7 @@ void
 f_data (void)
 {
 #pragma acc data
+  /* { dg-bogus {note: variable [^\n\r]+ candidate for adjusting OpenACC privatization level} {TODO 'data'} { xfail *-*-* } .-1 } */
   {
     int N = 1000;
     int i, A[N];
@@ -45,6 +56,8 @@ f_data (void)
 #endif
 
 # pragma acc kernels
+  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { ! __OPTIMIZE__ } } .-1 }
+     { dg-optimized {assigned OpenACC gang loop parallelism} {} { target { __OPTIMIZE__ } } .-2 } */
     for (i = 0; i < N; i++)
       A[i] = i;
 
@@ -65,3 +78,6 @@ main ()
 
   return 0;
 }
+
+
+/* { dg-note dummy "" { target n-on-e } } to disable 'prune_notes'.  */

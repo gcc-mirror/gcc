@@ -38,3 +38,8 @@ int dladdr(const scope void* addr, Dl_info* info);
 enum RTLD_NOLOAD = 0x10;
 enum RTLD_NODELETE = 0x80;
 enum RTLD_FIRST = 0x100;
+
+enum RTLD_NEXT = cast(void*) -1;
+enum RTLD_DEFAULT = cast(void*) -2;
+enum RTLD_SELF = cast(void*) -3;
+enum RTLD_MAIN_ONLY = cast(void*) -5;

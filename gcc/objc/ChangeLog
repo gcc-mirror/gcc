@@ -1,3 +1,68 @@
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Rename .c names to .cc.
+	* config-lang.in: Likewise.
+	* lang-specs.h: Likewise.
+	* objc-act.cc (objc_build_component_ref): Likewise.
+	(objc_copy_binfo): Likewise.
+	(lookup_method_in_hash_lists): Likewise.
+	(objc_finish_foreach_loop): Likewise.
+	* objc-act.h (objc_common_init_ts): Likewise.
+	* objc-gnu-runtime-abi-01.cc: Likewise.
+	* objc-lang.cc (struct lang_hooks): Likewise.
+	* objc-map.cc: Likewise.
+	* objc-next-runtime-abi-01.cc (generate_objc_symtab_decl): Likewise.
+	* objc-runtime-shared-support.cc: Likewise.
+	* objc-runtime-shared-support.h (build_protocol_initializer): Likewise.
+
+2022-01-17  Martin Liska  <mliska@suse.cz>
+
+	* objc-act.c: Moved to...
+	* objc-act.cc: ...here.
+	* objc-encoding.c: Moved to...
+	* objc-encoding.cc: ...here.
+	* objc-gnu-runtime-abi-01.c: Moved to...
+	* objc-gnu-runtime-abi-01.cc: ...here.
+	* objc-lang.c: Moved to...
+	* objc-lang.cc: ...here.
+	* objc-map.c: Moved to...
+	* objc-map.cc: ...here.
+	* objc-next-runtime-abi-01.c: Moved to...
+	* objc-next-runtime-abi-01.cc: ...here.
+	* objc-next-runtime-abi-02.c: Moved to...
+	* objc-next-runtime-abi-02.cc: ...here.
+	* objc-runtime-shared-support.c: Moved to...
+	* objc-runtime-shared-support.cc: ...here.
+
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101597
+	* objc-act.c (objc_rewrite_function_call): Build OBJ_TYPE_REF
+	with INTEGER_CST OBJ_TYPE_REF_TOKEN with type equal to
+	OBJ_TYPE_REF_OBJECT type.
+	* objc-next-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-gnu-runtime-abi-01.c (build_objc_method_call): Likewise.
+	* objc-next-runtime-abi-02.c (build_v2_objc_method_fixup_call,
+	build_v2_build_objc_method_call): Likewise.
+
+2021-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (objc_rt_trees): Declare here.
+	* objc-next-runtime-abi-01.c: Remove from here.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Reorder headers, provide
+	a GTY declaration the definition of objc_rt_trees.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* objc-act.c (objc_build_setter_call): Remove unreachable
+	return.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663
@@ -4153,7 +4218,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2021 Free Software Foundation, Inc.
+Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

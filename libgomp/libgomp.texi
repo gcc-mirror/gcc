@@ -7,7 +7,7 @@
 
 
 @copying
-Copyright @copyright{} 2006-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2006-2022 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -187,7 +187,8 @@ The OpenMP 4.5 specification is fully supported.
       env variable @tab Y @tab
 @item Nested-parallel changes to @emph{max-active-levels-var} ICV @tab Y @tab
 @item @code{requires} directive @tab P
-      @tab Only fulfillable requirement is @code{atomic_default_mem_order}
+      @tab Only fulfillable requirement are @code{atomic_default_mem_order}
+      and @code{dynamic_allocators}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
 @item Non-rectangular loop nests @tab P @tab Only C/C++
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
@@ -203,7 +204,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{reduction} clause @tab Y @tab
 @item @code{in_reduction} clause on @code{task} constructs @tab Y @tab
 @item @code{in_reduction} clause on @code{target} constructs @tab P
-      @tab Only C/C++, @code{nowait} only stub
+      @tab @code{nowait} only stub
 @item @code{task_reduction} clause with @code{taskgroup} @tab Y @tab
 @item @code{task} modifier to @code{reduction} clause @tab Y @tab
 @item @code{affinity} clause to @code{task} construct @tab Y @tab Stub only
@@ -219,7 +220,7 @@ The OpenMP 4.5 specification is fully supported.
       @tab Y @tab Some are only stubs
 @item Memory management routines @tab Y @tab
 @item @code{allocate} directive @tab N @tab
-@item @code{allocate} clause @tab P @tab initial support in C/C++ only
+@item @code{allocate} clause @tab P @tab initial support
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause
       @tab P @tab Reverse offload unsupported
@@ -292,8 +293,8 @@ The OpenMP 4.5 specification is fully supported.
       clauses of the taskloop construct @tab Y @tab
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
-@item @code{thread_limit} clause to @code{target} construct @tab N @tab
-@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
+@item @code{thread_limit} clause to @code{target} construct @tab Y @tab
+@item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
 @item iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab
 @item indirect calls to the device version of a procedure or function in
@@ -301,7 +302,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{interop} directive @tab N @tab
 @item @code{omp_interop_t} object support in runtime routines @tab N @tab
 @item @code{nowait} clause in @code{taskwait} directive @tab N @tab
-@item Extensions to the @code{atomic} directive @tab P @tab C/C++ only
+@item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
 @item @code{inoutset} argument to the @code{depend} clause @tab N @tab
 @item @code{private} and @code{firstprivate} argument to @code{default}
@@ -318,7 +319,7 @@ The OpenMP 4.5 specification is fully supported.
       @code{omp_aligned_calloc} runtime routines @tab Y @tab
 @item @code{omp_alloctrait_key_t} enum: @code{omp_atv_serialized} added,
       @code{omp_atv_default} changed @tab Y @tab
-@item @code{omp_display_env} runtime routine @tab P
+@item @code{omp_display_env} runtime routine @tab Y
       @tab Not inside @code{target} regions
 @item @code{ompt_scope_endpoint_t} enum: @code{ompt_scope_beginend} @tab N @tab
 @item @code{ompt_sync_region_t} enum additions @tab N @tab
@@ -2031,25 +2032,33 @@ When undefined, @env{OMP_PROC_BIND} defaults to @code{TRUE} when
 @table @asis
 @item @emph{Description}:
 The thread placement can be either specified using an abstract name or by an
-explicit list of the places.  The abstract names @code{threads}, @code{cores}
-and @code{sockets} can be optionally followed by a positive number in
-parentheses, which denotes the how many places shall be created.  With
-@code{threads} each place corresponds to a single hardware thread; @code{cores}
-to a single core with the corresponding number of hardware threads; and with
-@code{sockets} the place corresponds to a single socket.  The resulting
-placement can be shown by setting the @env{OMP_DISPLAY_ENV} environment
-variable.
+explicit list of the places.  The abstract names @code{threads}, @code{cores},
+@code{sockets}, @code{ll_caches} and @code{numa_domains} can be optionally
+followed by a positive number in parentheses, which denotes the how many places
+shall be created.  With @code{threads} each place corresponds to a single
+hardware thread; @code{cores} to a single core with the corresponding number of
+hardware threads; with @code{sockets} the place corresponds to a single
+socket; with @code{ll_caches} to a set of cores that shares the last level
+cache on the device; and @code{numa_domains} to a set of cores for which their
+closest memory on the device is the same memory and at a similar distance from
+the cores.  The resulting placement can be shown by setting the
+@env{OMP_DISPLAY_ENV} environment variable.
 
 Alternatively, the placement can be specified explicitly as comma-separated
 list of places.  A place is specified by set of nonnegative numbers in curly
-braces, denoting the denoting the hardware threads.  The hardware threads
+braces, denoting the hardware threads.  The curly braces can be omitted
+when only a single number has been specified.  The hardware threads
 belonging to a place can either be specified as comma-separated list of
 nonnegative thread numbers or using an interval.  Multiple places can also be
 either specified by a comma-separated list of places or by an interval.  To
-specify an interval, a colon followed by the count is placed after after
+specify an interval, a colon followed by the count is placed after
 the hardware thread number or the place.  Optionally, the length can be
 followed by a colon and the stride number -- otherwise a unit stride is
-assumed.  For instance, the following specifies the same places list:
+assumed.  Placing an exclamation mark (@code{!}) directly before a curly
+brace or numbers inside the curly braces (excluding intervals) will
+exclude those hardware threads.
+
+For instance, the following specifies the same places list:
 @code{"@{0,1,2@}, @{3,4,6@}, @{7,8,9@}, @{10,11,12@}"};
 @code{"@{0:3@}, @{3:3@}, @{7:3@}, @{10:3@}"}; and @code{"@{0:2@}:4:3"}.
 

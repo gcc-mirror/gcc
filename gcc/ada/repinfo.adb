@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Output;         use Output;
 with Osint.C;        use Osint.C;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Eval;       use Sem_Eval;
+with Sem_Util;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -426,11 +427,14 @@ package body Repinfo is
          end if;
 
       --  Alignment is not always set for task, protected, and class-wide
-      --  types.
+      --  types. Representation aspects are not computed for types in a
+      --  generic unit.
 
       else
          pragma Assert
-           (Is_Concurrent_Type (Ent) or else Is_Class_Wide_Type (Ent));
+           (Is_Concurrent_Type (Ent) or else
+              Is_Class_Wide_Type (Ent) or else
+              Sem_Util.In_Generic_Scope (Ent));
       end if;
    end List_Common_Type_Info;
 
@@ -487,9 +491,7 @@ package body Repinfo is
          --  been produced when listing the enclosing scope.
 
          if List_Representation_Info_Mechanisms
-           and then (Is_Subprogram (Ent)
-                      or else Ekind (Ent) = E_Entry
-                      or else Ekind (Ent) = E_Entry_Family)
+           and then Is_Subprogram_Or_Entry (Ent)
            and then not In_Subprogram
          then
             List_Subprogram_Info (Ent);
@@ -537,12 +539,12 @@ package body Repinfo is
                elsif Is_Record_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Record_Info (E, Bytes_Big_Endian);
-                  end if;
 
-                  --  Recurse into entities local to a record type
+                     --  Recurse into entities local to a record type
 
-                  if List_Representation_Info = 4 then
-                     List_Entities (E, Bytes_Big_Endian, False);
+                     if List_Representation_Info = 4 then
+                        List_Entities (E, Bytes_Big_Endian, False);
+                     end if;
                   end if;
 
                elsif Is_Array_Type (E) then
@@ -566,12 +568,14 @@ package body Repinfo is
                   end if;
                end if;
 
-               --  Recurse into nested package, but not if they are package
-               --  renamings (in particular renamings of the enclosing package,
-               --  as for some Java bindings and for generic instances).
+               --  Recurse into nested package, but not child packages, and not
+               --  nested package renamings (in particular renamings of the
+               --  enclosing package, as for some Java bindings and for generic
+               --  instances).
 
                if Ekind (E) = E_Package then
-                  if No (Renamed_Entity (E)) then
+                  if No (Renamed_Entity (E)) and then not Is_Child_Unit (E)
+                  then
                      List_Entities (E, Bytes_Big_Endian);
                   end if;
 
@@ -902,6 +906,13 @@ package body Repinfo is
 
    procedure List_Object_Info (Ent : Entity_Id) is
    begin
+      --  The information has not been computed in a generic unit, so don't try
+      --  to print it.
+
+      if Sem_Util.In_Generic_Scope (Ent) then
+         return;
+      end if;
+
       Write_Separator;
 
       if List_Representation_Info_To_JSON then
@@ -1112,7 +1123,7 @@ package body Repinfo is
          Npos  : constant Uint := Normalized_Position (Ent);
          Fbit  : constant Uint := Normalized_First_Bit (Ent);
          Spos  : Uint;
-         Sbit  : Uint;
+         Sbit  : Uint := No_Uint;
          Lbit  : Uint;
 
       begin
@@ -1176,13 +1187,17 @@ package body Repinfo is
             Write_Str (" range  ");
          end if;
 
-         Sbit := Starting_First_Bit + Fbit;
+         if Known_Static_Normalized_First_Bit (Ent) then
+            Sbit := Starting_First_Bit + Fbit;
 
-         if Sbit >= SSU then
-            Sbit := Sbit - SSU;
+            if Sbit >= SSU then
+               Sbit := Sbit - SSU;
+            end if;
+
+            UI_Write (Sbit, Decimal);
+         else
+            Write_Unknown_Val;
          end if;
-
-         UI_Write (Sbit, Decimal);
 
          if List_Representation_Info_To_JSON then
             Write_Line (", ");

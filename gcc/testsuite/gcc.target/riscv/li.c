@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O1" } */
+/* { dg-options "" } */
 #include <stdlib.h>
 #define LOAD_IMM(var, val) \
         asm ("li %0, %1\n": "=r"(var): "i" (val))

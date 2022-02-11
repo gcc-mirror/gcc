@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
@@ -31,13 +31,13 @@ extern int s390_float_const_zero_p (rtx value);
 extern bool s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment);
 
 
-/* In s390-common.c.  */
+/* In s390-common.cc.  */
 extern bool s390_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 				struct gcc_options *opts_set ATTRIBUTE_UNUSED,
 				const struct cl_decoded_option *decoded,
 				location_t loc);
 
-/* Declare functions in s390.c.  */
+/* Declare functions in s390.cc.  */
 
 extern HOST_WIDE_INT s390_initial_elimination_offset (int, int);
 extern void s390_emit_prologue (void);
@@ -168,14 +168,14 @@ extern void s390_indirect_branch_via_thunk (unsigned int regno,
 extern void s390_indirect_branch_via_inline_thunk (rtx execute_target);
 #endif /* RTX_CODE */
 
-/* s390-c.c routines */
+/* s390-c.cc routines */
 extern void s390_cpu_cpp_builtins (struct cpp_reader *);
 extern void s390_register_target_pragmas (void);
 
-/* Routines for s390-c.c */
+/* Routines for s390-c.cc */
 extern bool s390_const_operand_ok (tree, int, int, tree);
 
-/* s390-d.c routines */
+/* s390-d.cc routines */
 extern void s390_d_target_versions (void);
 extern void s390_d_register_target_info (void);
 

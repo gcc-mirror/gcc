@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -600,10 +600,11 @@ same_data_refs_base_objects (data_reference_p a, data_reference_p b)
 }
 
 /* Return true when the data references A and B are accessing the same
-   memory object with the same access functions.  */
+   memory object with the same access functions.  Optionally skip the
+   last OFFSET dimensions in the data reference.  */
 
 static inline bool
-same_data_refs (data_reference_p a, data_reference_p b)
+same_data_refs (data_reference_p a, data_reference_p b, int offset = 0)
 {
   unsigned int i;
 
@@ -614,7 +615,7 @@ same_data_refs (data_reference_p a, data_reference_p b)
   if (!same_data_refs_base_objects (a, b))
     return false;
 
-  for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+  for (i = offset; i < DR_NUM_DIMENSIONS (a); i++)
     if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
       return false;
 

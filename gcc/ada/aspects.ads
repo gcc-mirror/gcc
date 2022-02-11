@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -772,6 +772,14 @@ package Aspects is
    pragma Inline (Get_Aspect_Id);
    --  Given an aspect specification, return the corresponding aspect_id value.
    --  If the name does not match any aspect, return No_Aspect.
+
+   function Is_Aspect_Id (Aspect : Name_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
+
+   function Is_Aspect_Id (Aspect : Node_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
 
    ------------------------------------
    -- Delaying Evaluation of Aspects --

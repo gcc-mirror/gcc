@@ -1,7 +1,7 @@
 /* Functions to convert descriptors between CFI and gfortran
    and the CFI function declarations whose prototypes appear
    in ISO_Fortran_binding.h.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by Daniel Celis Garza  <celisdanieljr@gmail.com>
 	       and Paul Thomas  <pault@gcc.gnu.org>
 

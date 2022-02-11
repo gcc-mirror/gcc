@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2021 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -13,13 +13,13 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 C++ bindings for libgccjit
 ==========================
 
 This document describes the C++ bindings to
-`libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API for embedding GCC
+`libgccjit <https://gcc.gnu.org/wiki/JIT>`_, an API for embedding GCC
 inside programs and libraries.
 
 The C++ bindings consist of a single header file ``libgccjit++.h``.

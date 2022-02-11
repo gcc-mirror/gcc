@@ -1,6 +1,6 @@
-/* Declarations for insn-output.c and other code to write to asm_out_file.
-   These functions are defined in final.c, and varasm.c.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+/* Declarations for insn-output.cc and other code to write to asm_out_file.
+   These functions are defined in final.cc, and varasm.cc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,7 +29,7 @@ extern void init_final (const char *);
 extern void app_enable (void);
 
 /* Disable APP processing of subsequent output.
-   Called from varasm.c before most kinds of output.  */
+   Called from varasm.cc before most kinds of output.  */
 extern void app_disable (void);
 
 /* Return the number of slots filled in the current
@@ -86,16 +86,16 @@ extern void output_operand (rtx, int);
 extern void output_operand_lossage (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* Output a string of assembler code, substituting insn operands.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern void output_asm_insn (const char *, rtx *);
 
 /* Compute a worst-case reference address of a branch so that it
    can be safely used in the presence of aligned labels.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern int insn_current_reference_address (rtx_insn *);
 
 /* Find the alignment associated with a CODE_LABEL.
-   Defined in final.c.  */
+   Defined in final.cc.  */
 extern align_flags label_to_alignment (rtx);
 
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
@@ -147,7 +147,7 @@ extern void leaf_renumber_regs_insn (rtx);
 /* Locate the proper template for the given insn-code.  */
 extern const char *get_insn_template (int, rtx_insn *);
 
-/* Functions in varasm.c.  */
+/* Functions in varasm.cc.  */
 
 /* Emit any pending weak declarations.  */
 extern void weak_finish (void);
@@ -308,7 +308,7 @@ extern void output_quoted_string (FILE *, const char *);
    sequence is being output, so it can be used as a test in the
    insn output code.
 
-   This variable is defined  in final.c.  */
+   This variable is defined  in final.cc.  */
 extern rtx_sequence *final_sequence;
 
 /* File in which assembler code is being written.  */
@@ -470,7 +470,7 @@ struct GTY(()) named_section {
 
 /* A callback that writes the assembly code for switching to an unnamed
    section.  The argument provides callback-specific data.  */
-typedef void (*unnamed_section_callback) (const void *);
+typedef void (*unnamed_section_callback) (const char *);
 
 /* Information about a SECTION_UNNAMED section.  */
 struct GTY(()) unnamed_section {
@@ -478,8 +478,8 @@ struct GTY(()) unnamed_section {
 
   /* The callback used to switch to the section, and the data that
      should be passed to the callback.  */
-  unnamed_section_callback GTY ((skip)) callback;
-  const void *GTY ((skip)) data;
+  unnamed_section_callback GTY ((callback)) callback;
+  const char *data;
 
   /* The next entry in the chain of unnamed sections.  */
   section *next;
@@ -503,7 +503,7 @@ struct GTY(()) noswitch_section {
   struct section_common common;
 
   /* The callback used to assemble decls in this section.  */
-  noswitch_section_callback GTY ((skip)) callback;
+  noswitch_section_callback GTY ((callback)) callback;
 };
 
 /* Information about a section, which may be named or unnamed.  */
@@ -538,8 +538,8 @@ extern GTY(()) section *bss_noswitch_section;
 extern GTY(()) section *in_section;
 extern GTY(()) bool in_cold_section_p;
 
-extern section *get_unnamed_section (unsigned int, void (*) (const void *),
-				     const void *);
+extern section *get_unnamed_section (unsigned int, void (*) (const char *),
+				     const char *);
 extern section *get_section (const char *, unsigned int, tree,
 			     bool not_existing = false);
 extern section *get_named_section (tree, const char *, int);
@@ -561,7 +561,7 @@ extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *, tree = nullptr);
-extern void output_section_asm_op (const void *);
+extern void output_section_asm_op (const char *);
 
 extern void record_tm_clone_pair (tree, tree);
 extern void finish_tm_clone_pairs (void);

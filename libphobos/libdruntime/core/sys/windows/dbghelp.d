@@ -39,7 +39,8 @@ extern(Windows)
     alias BOOL         function(HANDLE hProcess, DWORD64 Address, DWORD64 *Displacement, IMAGEHLP_SYMBOLA64 *Symbol) SymGetSymFromAddr64Func;
     alias DWORD        function(PCSTR DecoratedName, PSTR UnDecoratedName, DWORD UndecoratedLength, DWORD Flags) UnDecorateSymbolNameFunc;
     alias DWORD64      function(HANDLE hProcess, HANDLE hFile, PCSTR ImageName, PCSTR ModuleName, DWORD64 BaseOfDll, DWORD SizeOfDll) SymLoadModule64Func;
-    alias BOOL         function(HANDLE HProcess, PTSTR SearchPath, DWORD SearchPathLength) SymGetSearchPathFunc;
+    alias BOOL         function(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength) SymGetSearchPathFunc;
+    alias BOOL         function(HANDLE hProcess, PCSTR SearchPath) SymSetSearchPathFunc;
     alias BOOL         function(HANDLE hProcess, DWORD64 Address) SymUnloadModule64Func;
     alias BOOL         function(HANDLE hProcess, ULONG ActionCode, ulong CallbackContext, ulong UserContext) PSYMBOL_REGISTERED_CALLBACK64;
     alias BOOL         function(HANDLE hProcess, PSYMBOL_REGISTERED_CALLBACK64 CallbackFunction, ulong UserContext) SymRegisterCallback64Func;
@@ -61,6 +62,7 @@ struct DbgHelp
     UnDecorateSymbolNameFunc UnDecorateSymbolName;
     SymLoadModule64Func      SymLoadModule64;
     SymGetSearchPathFunc     SymGetSearchPath;
+    SymSetSearchPathFunc     SymSetSearchPath;
     SymUnloadModule64Func    SymUnloadModule64;
     SymRegisterCallback64Func SymRegisterCallback64;
     ImagehlpApiVersionFunc   ImagehlpApiVersion;
@@ -84,6 +86,7 @@ struct DbgHelp
             sm_inst.UnDecorateSymbolName     = cast(UnDecorateSymbolNameFunc) GetProcAddress(sm_hndl,"UnDecorateSymbolName");
             sm_inst.SymLoadModule64          = cast(SymLoadModule64Func) GetProcAddress(sm_hndl,"SymLoadModule64");
             sm_inst.SymGetSearchPath         = cast(SymGetSearchPathFunc) GetProcAddress(sm_hndl,"SymGetSearchPath");
+            sm_inst.SymSetSearchPath         = cast(SymSetSearchPathFunc) GetProcAddress(sm_hndl,"SymSetSearchPath");
             sm_inst.SymUnloadModule64        = cast(SymUnloadModule64Func) GetProcAddress(sm_hndl,"SymUnloadModule64");
             sm_inst.SymRegisterCallback64    = cast(SymRegisterCallback64Func) GetProcAddress(sm_hndl, "SymRegisterCallback64");
             sm_inst.ImagehlpApiVersion       = cast(ImagehlpApiVersionFunc) GetProcAddress(sm_hndl, "ImagehlpApiVersion");
@@ -91,7 +94,8 @@ struct DbgHelp
                     sm_inst.SymSetOptions && sm_inst.SymFunctionTableAccess64 && sm_inst.SymGetLineFromAddr64 &&
                     sm_inst.SymGetModuleBase64 && sm_inst.SymGetModuleInfo64 && sm_inst.SymGetSymFromAddr64 &&
                     sm_inst.UnDecorateSymbolName && sm_inst.SymLoadModule64 && sm_inst.SymGetSearchPath &&
-                    sm_inst.SymUnloadModule64 && sm_inst.SymRegisterCallback64 && sm_inst.ImagehlpApiVersion);
+                    sm_inst.SymSetSearchPath && sm_inst.SymUnloadModule64 && sm_inst.SymRegisterCallback64 &&
+                    sm_inst.ImagehlpApiVersion);
 
             return &sm_inst;
         }

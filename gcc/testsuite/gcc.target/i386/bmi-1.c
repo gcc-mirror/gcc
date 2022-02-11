@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-ipa-icf -mbmi " } */
-/* { dg-final { scan-assembler "andn\[^\\n]*eax" } } */
+/* { dg-final { scan-assembler-times "andn\[^\\n]*eax" 2 } } */
 /* { dg-final { scan-assembler-times "bextr\[ \\t]+\[^\\n]*eax" 2 } } */
 /* { dg-final { scan-assembler-times "blsi\[^\\n]*eax" 2 } } */
 /* { dg-final { scan-assembler-times "blsmsk\[^\\n]*eax" 2 } } */
@@ -13,6 +13,12 @@ unsigned int
 func_andn32 (unsigned int X, unsigned int Y)
 {
   return __andn_u32(X, Y);
+}
+
+unsigned int
+func_andn32_2 (unsigned int X, unsigned int Y)
+{
+  return _andn_u32(X, Y);
 }
 
 unsigned int

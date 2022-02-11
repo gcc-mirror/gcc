@@ -20,6 +20,43 @@ static assert(!(ed1 <= ed2));
 
 bool b;
 
+
+T byCTFE(T)()
+{
+    T x;
+    return x;
+}
+
+bool bittst(const ubyte[] ba, uint pos)
+{
+    uint mask = 1 << (pos % 8);
+    version(LittleEndian)
+        return (ba[pos / 8] & mask) != 0;
+    else
+        return (ba[$ - 1 - pos / 8] & mask) != 0;
+}
+
+void test2(T)()
+{
+    T a = T.init, b = T.nan;
+    assert(a is b);
+
+    enum c = byCTFE!T();
+    assert(a is c);
+
+    static if (T.mant_dig == 64 && T.max_exp == 16384)
+        enum size = 10; // x87, exclude padding
+    else
+        enum size = T.sizeof;
+    const pa = (cast(ubyte*) &a)[0 .. size];
+
+    // the highest 2 bits of the mantissa should be set, everything else zero
+    assert(bittst(pa, T.mant_dig - 1));
+    assert(bittst(pa, T.mant_dig - 2));
+    foreach(p; 0..T.mant_dig - 2)
+        assert(!bittst(pa, p));
+}
+
 bool test()
 {
         real r1 = real.nan;
@@ -53,5 +90,8 @@ bool test()
 
 void main()
 {
-        assert(test());
+    assert(test());
+    test2!float();
+    test2!double();
+    test2!real();
 }

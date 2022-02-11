@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -41,7 +41,7 @@ public:
 
 extern fast_call_summary<edge_growth_cache_entry *, va_heap> *edge_growth_cache;
 
-/* In ipa-inline-analysis.c  */
+/* In ipa-inline-analysis.cc  */
 int estimate_size_after_inlining (struct cgraph_node *, struct cgraph_edge *);
 int estimate_growth (struct cgraph_node *);
 bool growth_positive_p (struct cgraph_node *, struct cgraph_edge *, int);
@@ -52,12 +52,12 @@ void reset_node_cache (struct cgraph_node *node);
 void initialize_growth_caches ();
 void free_growth_caches (void);
 
-/* In ipa-inline.c  */
+/* In ipa-inline.cc  */
 unsigned int early_inliner (function *fun);
 bool inline_account_function_p (struct cgraph_node *node);
 
 
-/* In ipa-inline-transform.c  */
+/* In ipa-inline-transform.cc  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,
 		  bool *callee_removed = NULL);
 unsigned int inline_transform (struct cgraph_node *);

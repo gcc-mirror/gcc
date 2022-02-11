@@ -37,14 +37,14 @@ int main (string[] args)
                 inword = 0;
             ++c_cnt;
         }
-        printf ("%8lu%8lu%8lu %.*s\n", l_cnt, w_cnt, c_cnt, arg.length, arg.ptr);
+        printf ("%8u%8u%8u %.*s\n", l_cnt, w_cnt, c_cnt, cast(int)arg.length, arg.ptr);
         l_total += l_cnt;
         w_total += w_cnt;
         c_total += c_cnt;
     }
     if (args.length > 2)
     {
-        printf ("--------------------------------------\n%8lu%8lu%8lu total",
+        printf ("--------------------------------------\n%8u%8u%8u total",
             l_total, w_total, c_total);
     }
     return 0;

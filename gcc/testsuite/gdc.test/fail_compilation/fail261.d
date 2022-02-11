@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail261.d(18): Error: invalid foreach aggregate `range`, define opApply(), range primitives, or use .tupleof
+fail_compilation/fail261.d(18): Error: invalid `foreach` aggregate `range`, define `opApply()`, range primitives, or use `.tupleof`
 ---
 */
 

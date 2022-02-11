@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,6 @@ with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Output;         use Output;
-with Restrict;       use Restrict;
 with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
@@ -669,7 +668,6 @@ package body Sem_Ch6 is
 
    procedure Analyze_Extended_Return_Statement (N : Node_Id) is
    begin
-      Check_Compiler_Unit ("extended return statement", N);
       Analyze_Return_Statement (N);
    end Analyze_Extended_Return_Statement;
 
@@ -1686,7 +1684,7 @@ package body Sem_Ch6 is
 
                Error_Msg_Warn := SPARK_Mode /= On;
                Error_Msg_N ("cannot return a local value by reference<<", N);
-               Error_Msg_NE ("\& [<<", N, Standard_Program_Error);
+               Error_Msg_N ("\Program_Error [<<", N);
             end if;
          end if;
 
@@ -2715,13 +2713,11 @@ package body Sem_Ch6 is
                   end if;
 
                else
-                  Ensure_Freeze_Node (Typ);
-
                   declare
                      IR : constant Node_Id := Make_Itype_Reference (Sloc (N));
                   begin
                      Set_Itype (IR, Etype (Designator));
-                     Append_Freeze_Actions (Typ, New_List (IR));
+                     Append_Freeze_Action (Typ, IR);
                   end;
                end if;
 
@@ -5044,7 +5040,7 @@ package body Sem_Ch6 is
       --  object representing the minimum of the accessibility level value that
       --  is passed in and the accessibility level of the callee's parameter
       --  and locals and use it in the case of a call to a nested subprogram.
-      --  This generated object is refered to as a "minimum accessiblity
+      --  This generated object is referred to as a "minimum accessibility
       --  level."
 
       if Present (Spec_Id) or else Present (Body_Id) then
@@ -11380,11 +11376,11 @@ package body Sem_Ch6 is
          if not Comes_From_Source (S) then
 
             --  Add an inherited primitive for an untagged derived type to
-            --  Derived_Type's list of primitives. Tagged primitives are dealt
-            --  with in Check_Dispatching_Operation.
+            --  Derived_Type's list of primitives. Tagged primitives are
+            --  dealt with in Check_Dispatching_Operation. Do this even when
+            --  Extensions_Allowed is False to issue better error messages.
 
             if Present (Derived_Type)
-              and then Extensions_Allowed
               and then not Is_Tagged_Type (Derived_Type)
             then
                Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
@@ -11418,13 +11414,13 @@ package body Sem_Ch6 is
                   Set_Has_Primitive_Operations (B_Typ);
                   Set_Is_Primitive (S);
 
-                  --  Add a primitive for an untagged type to B_Typ's list
-                  --  of primitives. Tagged primitives are dealt with in
-                  --  Check_Dispatching_Operation.
+                  --  Add a primitive for an untagged type to B_Typ's
+                  --  list of primitives. Tagged primitives are dealt with
+                  --  in Check_Dispatching_Operation. Do this even when
+                  --  Extensions_Allowed is False to issue better error
+                  --  messages.
 
-                  if Extensions_Allowed
-                    and then not Is_Tagged_Type (B_Typ)
-                  then
+                  if not Is_Tagged_Type (B_Typ) then
                      Add_Or_Replace_Untagged_Primitive (B_Typ);
                   end if;
 
@@ -11463,11 +11459,11 @@ package body Sem_Ch6 is
 
                   --  Add a primitive for an untagged type to B_Typ's list
                   --  of primitives. Tagged primitives are dealt with in
-                  --  Check_Dispatching_Operation.
+                  --  Check_Dispatching_Operation. Do this even when
+                  --  Extensions_Allowed is False to issue better error
+                  --  messages.
 
-                  if Extensions_Allowed
-                    and then not Is_Tagged_Type (B_Typ)
-                  then
+                  if not Is_Tagged_Type (B_Typ) then
                      Add_Or_Replace_Untagged_Primitive (B_Typ);
                   end if;
 
@@ -11641,7 +11637,7 @@ package body Sem_Ch6 is
             E : Entity_Id;
 
          begin
-            --  Search for entities in the enclosing scope of this synchonized
+            --  Search for entities in the enclosing scope of this synchronized
             --  type.
 
             pragma Assert (Is_Concurrent_Type (Conc_Typ));

@@ -1,5 +1,5 @@
 /* A class for referring to events within a diagnostic_path.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
    For example, a 3-event path has event offsets 0, 1, and 2,
    which would be shown to the user as "(1)", "(2)" and "(3)".
 
-   This has its own header so that pretty-print.c can use this
+   This has its own header so that pretty-print.cc can use this
    to implement "%@" without bringing in all of diagnostic_path
    (which e.g. refers to "tree").  */
 

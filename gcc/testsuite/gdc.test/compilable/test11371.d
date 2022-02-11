@@ -1,5 +1,5 @@
 
-version(D_SIMD)
+static if (__traits(compiles, __vector(long[2])))
 {
     __vector(long[2]) f()
     {

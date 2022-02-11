@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-64.
-;; Copyright (C) 2004-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2022 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -653,7 +653,7 @@
 
 ;; True if OP is valid as a base register in a reg + offset address.
 ;; ??? Should I copy the flag_omit_frame_pointer and cse_not_expected
-;; checks from pa.c basereg_operand as well?  Seems to be OK without them
+;; checks from pa.cc basereg_operand as well?  Seems to be OK without them
 ;; in test runs.
 (define_predicate "basereg_operand"
   (match_operand 0 "register_operand")

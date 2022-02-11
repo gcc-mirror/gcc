@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,7 +96,7 @@ struct vtv_graph_node {
    node; generate a unique (monotonically ascending) id for both the
    vtbl_map_node and the vtv_graph_node; and insert the node into two
    data structures (to make it easy to find in several different
-   ways): 1). A hash table ("vtbl_map_hash" in vtable-verify.c).
+   ways): 1). A hash table ("vtbl_map_hash" in vtable-verify.cc).
    This gives us an easy way to check to see if we already have a node
    for the vtable map variable or not; and 2). An array (vector) of
    vtbl_map_nodes, where the array index corresponds to the unique id

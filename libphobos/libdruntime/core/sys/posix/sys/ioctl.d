@@ -375,6 +375,11 @@ else version (NetBSD)
 }
 else version (OpenBSD)
 {
+    import core.sys.posix.termios; // termios
+    import core.sys.posix.sys.time; // timeval
+
+    public import core.sys.posix.sys.ttycom; // Terminal related ioctls
+
     struct winsize
     {
         ushort ws_row;
@@ -382,6 +387,8 @@ else version (OpenBSD)
         ushort ws_xpixel;
         ushort ws_ypixel;
     }
+
+    public import core.sys.posix.sys.filio; // File related ioctls
 
     int ioctl(int, c_ulong, ...);
 }

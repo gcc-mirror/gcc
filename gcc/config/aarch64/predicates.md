@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -253,6 +253,10 @@
        (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
 						  false,
 						  ADDR_QUERY_LDP_STP_N)")))
+
+(define_predicate "aarch64_reg_or_mem_pair_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_mem_pair_lanes_operand")))
 
 (define_predicate "aarch64_prefetch_operand"
   (match_test "aarch64_address_valid_for_prefetch_p (op, false)"))

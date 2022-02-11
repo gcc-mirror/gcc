@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <xmmintrin.h>
 
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
+#endif
+
 #ifdef __SSE2__
 #include <emmintrin.h>
 
@@ -65,10 +69,6 @@ typedef union
   __m128  x;
   float a[4];
 } union128;
-
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
-#endif
 
 #ifdef DEBUG
 #define PRINTF printf

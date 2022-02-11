@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -232,6 +232,10 @@ Driver RejectNegative Separate
 no_dead_strip_inits_and_terms
 Driver RejectNegative
 (Obsolete) Current linkers never dead-strip these items, so the option is not needed.
+
+nodefaultexport
+Driver RejectNegative
+Do not add a default symbol exports to modules or dynamic libraries.
 
 nofixprebinding
 Driver RejectNegative

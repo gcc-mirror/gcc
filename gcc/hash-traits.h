@@ -1,5 +1,5 @@
 /* Traits for hashable types.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -254,7 +254,7 @@ struct ggc_remove
   static void
   pch_nx (T &p, gt_pointer_operator op, void *cookie)
   {
-    op (&p, cookie);
+    op (&p, NULL, cookie);
   }
 };
 

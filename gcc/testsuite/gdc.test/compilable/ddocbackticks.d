@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh backticks
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 /++
         Closely related to std.datetime is <a href="core_time.html">`core.time`</a>,

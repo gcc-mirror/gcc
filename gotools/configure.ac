@@ -85,6 +85,15 @@ dnl Test if -lrt is required for sched_yield and/or nanosleep.
 AC_SEARCH_LIBS([sched_yield], [rt])
 AC_SEARCH_LIBS([nanosleep], [rt])
 
+dnl On GNU/Linux we need to link the runtime package against -lrt.
+dnl This is a target test, unlike sched_yield/nanosleep above
+dnl which is a host test.
+RT_LIBS=
+case ${target} in
+  *-*-linux*) RT_LIBS=-lrt ;;
+esac
+AC_SUBST(RT_LIBS)
+
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT

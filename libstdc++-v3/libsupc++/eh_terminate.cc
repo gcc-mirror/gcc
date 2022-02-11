@@ -1,5 +1,5 @@
 // -*- C++ -*- std::terminate, std::unexpected and friends.
-// Copyright (C) 1994-2021 Free Software Foundation, Inc.
+// Copyright (C) 1994-2022 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -58,6 +58,7 @@ std::terminate () throw()
   __cxxabiv1::__terminate (get_terminate ());
 }
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void
 __cxxabiv1::__unexpected (std::unexpected_handler handler)
 {

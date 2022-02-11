@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -670,7 +670,7 @@ In general @code{LIVE} is the most useful of the three.  The macros
 The macros take a basic block number and return a bitmap that is indexed
 by the register number.  This information is only guaranteed to be up to
 date after calls are made to @code{df_analyze}.  See the file
-@code{df-core.c} for details on using the dataflow.
+@code{df-core.cc} for details on using the dataflow.
 
 
 @findex REG_DEAD, REG_UNUSED

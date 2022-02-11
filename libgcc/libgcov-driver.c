@@ -1,6 +1,6 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,7 +79,7 @@ static int gcov_error (const char *, ...);
 static void gcov_error_exit (void);
 #endif
 
-#include "gcov-io.c"
+#include "gcov-io.cc"
 
 #define GCOV_PROF_PREFIX "libgcov profiling error:%s:"
 

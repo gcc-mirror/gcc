@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern int cpu_type;
 
-/* Various globals defined in h8300.c.  */
+/* Various globals defined in h8300.cc.  */
 
 extern const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 extern const char * const *h8_reg_names;
@@ -447,7 +447,7 @@ struct cum_arg
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(regno) 0
@@ -564,7 +564,7 @@ struct cum_arg
 
 #define BRANCH_COST(speed_p, predictable_p) 0
 
-/* Tell final.c how to eliminate redundant test instructions.  */
+/* Tell final.cc how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  No extra ones are needed for the h8300.  */

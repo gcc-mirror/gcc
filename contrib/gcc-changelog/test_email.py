@@ -446,3 +446,8 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('non-ascii-email.patch')
         assert (email.errors[0].message ==
                 'non-ASCII characters in git commit email address (jbglaw@ług-owl.de)')
+
+    def test_new_file_in_root_folder(self):
+        email = self.from_patch_glob('toplev-new-file.patch')
+        assert (email.errors[0].message ==
+                'new file in the top-level folder not mentioned in a ChangeLog')

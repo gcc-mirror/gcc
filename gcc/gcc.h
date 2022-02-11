@@ -1,5 +1,5 @@
-/* Header file for modules that link with gcc.c
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+/* Header file for modules that link with gcc.cc
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -69,12 +69,12 @@ struct spec_function
   const char *(*func) (int, const char **);
 };
 
-/* These are exported by gcc.c.  */
+/* These are exported by gcc.cc.  */
 extern int do_spec (const char *);
 extern void record_temp_file (const char *, int, int);
 extern void set_input (const char *);
 
-/* Spec files linked with gcc.c must provide definitions for these.  */
+/* Spec files linked with gcc.cc must provide definitions for these.  */
 
 /* Called before processing to change/add/remove arguments.  */
 extern void lang_specific_driver (struct cl_decoded_option **,

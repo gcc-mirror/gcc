@@ -528,8 +528,8 @@
 
 #ifndef __cpp_concepts
 #  error "__cpp_concepts"
-#elif __cpp_concepts != 201907
-#  error "__cpp_concepts != 201907"
+#elif __cpp_concepts != 202002
+#  error "__cpp_concepts != 202002"
 #endif
 
 #ifndef __cpp_using_enum
@@ -550,4 +550,10 @@
 #  error "__cpp_if_consteval"
 #elif __cpp_if_consteval != 202106
 #  error "__cpp_if_consteval != 202106"
+#endif
+
+#ifndef __cpp_multidimensional_subscript
+#  error "__cpp_multidimensional_subscript"
+#elif __cpp_multidimensional_subscript != 202110
+#  error "__cpp_multidimensional_subscript != 202110"
 #endif

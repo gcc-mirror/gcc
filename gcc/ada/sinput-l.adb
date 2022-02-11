@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -420,7 +420,7 @@ package body Sinput.L is
       if Null_Source_Buffer_Ptr (Src) then
          Source_File.Decrement_Last;
 
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             return No_Source_File;
          else
             return No_Access_To_Source_File;

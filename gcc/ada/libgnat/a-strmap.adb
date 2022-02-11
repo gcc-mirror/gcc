@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,7 +135,7 @@ is
       J      : Natural;
 
       type Character_Index is array (Character) of Natural with Ghost;
-      Indexes : Character_Index := (others => 0) with Ghost;
+      Indexes : Character_Index := [others => 0] with Ghost;
 
    begin
       J := 0;
@@ -367,7 +367,7 @@ is
 
       Domain : String (1 .. Map'Length) with Ghost, Relaxed_Initialization;
       type Character_Index is array (Character) of Natural with Ghost;
-      Indexes : Character_Index := (others => 0) with Ghost;
+      Indexes : Character_Index := [others => 0] with Ghost;
 
    --  Start of processing for To_Range
 

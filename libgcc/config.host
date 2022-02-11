@@ -1,5 +1,5 @@
 # libgcc host-specific configuration file.
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -214,8 +214,18 @@ esac
 case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
-  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o"
+  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic"
+  # The unwinder is provided by the system shared libraries, do not add one
+  # to the shared libgcc but, for older systems, we build a shared unwinder
+  # separately so that we can construct a libgcc_s.1 to use for binaries
+  # linked against the old libgcc_ext.10.x stubs.
+  case ${host} in
+    *-*-darwin[89]* | *-*-darwin10*)
+      tmake_file="$tmake_file t-darwin-ehs ${cpu_type}/t-darwin-ehs"
+      ;;
+  esac
+  tmake_file="$tmake_file t-slibgcc-darwin"
+  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -315,9 +325,6 @@ case ${host} in
   tmake_file="vms/t-vms"
   extra_parts="crt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
-*-*-vxworks7*)
-  tmake_file=t-vxworks7
-  ;;
 *-*-vxworksae*)
   tmake_file=t-vxworksae
   ;;
@@ -329,11 +336,8 @@ case ${host} in
   ;;
 esac
 
-# Except on ARM where we do not use DWARF, table based EH on VxWorks
-# relies on specially crafted crtstuff files
+# VxWorks ports rely on specially crafted crtstuff files
 case ${host} in
-arm-*-vxworks*)
-  ;;
 *-*-vxworks*)
   tmake_file="${tmake_file} t-vxcrtstuff"
   ;;
@@ -619,7 +623,8 @@ h8300-*-linux*)
 	tm_file="$tm_file h8300/h8300-lib.h"
 	;;
 hppa*64*-*-linux*)
-	tmake_file="$tmake_file pa/t-linux pa/t-linux64"
+	tmake_file="$tmake_file pa/t-linux64 pa/t-dimode"
+	tmake_file="$tmake_file pa/t-softfp-sfdftf t-softfp"
 	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
 	;;
 hppa*-*-linux*)
@@ -645,7 +650,8 @@ hppa[12]*-*-hpux10*)
 	md_unwind_header=pa/hpux-unwind.h
 	;;
 hppa*64*-*-hpux11*)
-	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-stublib t-libgcc-pic t-slibgcc"
+	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-dimode"
+	tmake_file="$tmake_file pa/t-stublib t-libgcc-pic t-slibgcc"
 	# Set the libgcc version number
 	if test x$ac_cv_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
@@ -653,6 +659,7 @@ hppa*64*-*-hpux11*)
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
 	tmake_file="$tmake_file pa/t-slibgcc-hpux t-slibgcc-hpux"
+	tmake_file="$tmake_file pa/t-softfp-sfdftf t-softfp"
 	tm_file="$tm_file pa/pa64-hpux-lib.h"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 		     libgcc_stub.a"
@@ -1133,10 +1140,14 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
@@ -1225,7 +1236,8 @@ powerpc*-*-linux*)
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc*-wrs-vxworks7*)
-        tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules config/rs6000/t-ppc64-fp t-slibgcc-libgcc"
+        tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-dfprules rs6000/t-ppc64-fp"
+        tmake_file="rs6000/t-crtstuff ${tmake_file}"
         case $ppc_fp_type in
         64)
                 ;;
@@ -1242,8 +1254,7 @@ powerpc*-wrs-vxworks7*)
         esac
         ;;
 powerpc-wrs-vxworks*)
-	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o"
+	tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-fdpbit"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

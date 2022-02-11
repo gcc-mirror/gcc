@@ -90,7 +90,9 @@ AC_SYS_LARGEFILE
 GLIBCXX_CONFIGURE
 
 # Libtool setup.
-if test "x${with_newlib}" != "xyes" && test "x${with_avrlibc}" != "xyes"; then
+if test "x${with_newlib}" != "xyes" &&
+    test "x${with_avrlibc}" != "xyes" &&
+    test "x$with_headers" != "xno"; then
   AC_LIBTOOL_DLOPEN
 fi
 AM_PROG_LIBTOOL
@@ -170,7 +172,7 @@ GLIBCXX_ENABLE_LONG_LONG([yes])
 GLIBCXX_ENABLE_WCHAR_T([yes])
 GLIBCXX_ENABLE_C99([yes])
 GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
-GLIBCXX_ENABLE_DEBUG_FLAGS(["-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"])
+GLIBCXX_ENABLE_DEBUG_FLAGS(["-g3 -O0 -D_GLIBCXX_ASSERTIONS"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_PARALLEL([yes])
 GLIBCXX_ENABLE_CXX_FLAGS
@@ -351,7 +353,7 @@ else
 
     AC_DEFINE(HAVE_ICONV)
     AC_DEFINE(HAVE_MEMALIGN)
-  else
+  elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi
 
@@ -390,7 +392,11 @@ GCC_CHECK_UNWIND_GETIPINFO
 
 GCC_LINUX_FUTEX([AC_DEFINE(HAVE_LINUX_FUTEX, 1, [Define if futex syscall is available.])])
 
+if test "$is_hosted" = yes; then
+# TODO: remove this and change src/c++11/compatibility-atomic-c++0x.cc to
+# use <stdint.h> instead of <gstdint.h>.
 GCC_HEADER_STDINT(include/gstdint.h)
+fi
 
 GLIBCXX_ENABLE_SYMVERS([yes])
 AC_SUBST(libtool_VERSION)
@@ -468,6 +474,10 @@ GLIBCXX_CHECK_X86_RDRAND
 # Check if assembler supports rdseed opcode.
 GLIBCXX_CHECK_X86_RDSEED
 
+# Check for other random number APIs
+GLIBCXX_CHECK_GETENTROPY
+GLIBCXX_CHECK_ARC4RANDOM
+
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
 
@@ -478,6 +488,8 @@ GLIBCXX_CHECK_GTHREADS
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
+
+GLIBCXX_ENABLE_BACKTRACE
 
 # For Networking TS.
 AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
@@ -619,6 +631,7 @@ AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES([scripts/testsuite_flags],[chmod +x scripts/testsuite_flags])
 AC_CONFIG_FILES([scripts/extract_symvers],[chmod +x scripts/extract_symvers])
 AC_CONFIG_FILES([doc/xsl/customization.xsl])
+AC_CONFIG_FILES([src/libbacktrace/backtrace-supported.h])
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.

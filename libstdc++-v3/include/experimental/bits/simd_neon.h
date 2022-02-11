@@ -1,6 +1,6 @@
 // Simd NEON specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ struct _CommonImplNeon : _CommonImplBuiltin
 
 // }}}
 // _SimdImplNeon {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _SimdImplNeon : _SimdImplBuiltin<_Abi>
   {
     using _Base = _SimdImplBuiltin<_Abi>;
@@ -390,7 +390,7 @@ struct _MaskImplNeonMixin
 
 // }}}
 // _MaskImplNeon {{{
-template <typename _Abi>
+template <typename _Abi, typename>
   struct _MaskImplNeon : _MaskImplNeonMixin, _MaskImplBuiltin<_Abi>
   {
     using _MaskImplBuiltinMixin::_S_to_maskvector;

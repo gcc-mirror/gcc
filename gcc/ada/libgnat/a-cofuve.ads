@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2016-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2016-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -303,7 +303,7 @@ package Ada.Containers.Functional_Vectors with SPARK_Mode is
          and then Get (Add'Result, Position) = New_Item
          and then Range_Equal
                     (Left  => Container,
-                     Right =>  Add'Result,
+                     Right => Add'Result,
                      Fst   => Index_Type'First,
                      Lst   => Index_Type'Pred (Position))
          and then Range_Shifted

@@ -1,4 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=17494
+// REQUIRED_ARGS: -revert=dtorfields
 struct S
 {
     ~this() {}

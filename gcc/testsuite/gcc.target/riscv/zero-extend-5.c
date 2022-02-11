@@ -1,5 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-march=rv64gc -mabi=lp64 -O2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64" } */
 int
 sub (unsigned int i, unsigned int j, unsigned int k, int *array)
 {

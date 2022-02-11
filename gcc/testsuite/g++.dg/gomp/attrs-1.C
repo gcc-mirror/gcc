@@ -121,7 +121,7 @@ baz (int d, int m, int i1, int i2, int p, int *idp, int s,
 }
 
 void
-bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
+bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
      int nte, int tl, int nth, int g, int nta, int fi, int pp, int *q, int *dd, int ntm,
      const char *msg)
 {
@@ -185,20 +185,20 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   [[omp::directive (target parallel
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
-    nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
     ;
   [[omp::directive (target parallel for
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
     lastprivate (l) linear (ll:1) ordered schedule(static, 4) collapse(1) nowait depend(inout: dd[0])
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (target parallel for
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
     lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1) nowait depend(inout: dd[0]) order(concurrent)
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::sequence (omp::directive (target parallel for simd
@@ -206,31 +206,32 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
     lastprivate (l) linear (ll:1) schedule(static, 4) collapse(1)
     safelen(8) simdlen(4) aligned(q: 32) nowait depend(inout: dd[0]) nontemporal(ntm) if (simd: i3) order(concurrent)
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2)))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda)))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::sequence (directive (target teams
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
-    shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) nowait depend(inout: dd[0])
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2)))]]
+    shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl) nowait depend(inout: dd[0])
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda)))]]
     ;
   [[omp::sequence (directive (target
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
-    nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2)))]]
+    nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda)))]]
     ;
   [[omp::sequence (omp::directive (target teams distribute
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) order(concurrent)
-    collapse(1) dist_schedule(static, 16) nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2)))]]
+    collapse(1) dist_schedule(static, 16) nowait depend(inout: dd[0]) allocate (omp_default_mem_alloc:f) in_reduction(+:r2)
+    has_device_addr (hda)))]]
   for (int i = 0; i < 64; i++)
     ;
   [[omp::directive (target teams distribute parallel for
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
-    shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16)
     if (parallel: i2) num_threads (nth) proc_bind(spread)
     lastprivate (l) schedule(static, 4) nowait depend(inout: dd[0]) order(concurrent)
-     allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+     allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (target teams distribute parallel for simd
@@ -240,22 +241,22 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     if (parallel: i2) num_threads (nth) proc_bind(spread)
     lastprivate (l) schedule(static, 4) order(concurrent)
     safelen(8) simdlen(4) aligned(q: 32) nowait depend(inout: dd[0]) nontemporal(ntm) if (simd: i3)
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (target teams distribute simd
     device(d) map (tofrom: m) if (i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
-    shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16) order(concurrent)
     safelen(8) simdlen(4) aligned(q: 32) nowait depend(inout: dd[0]) nontemporal(ntm)
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (target simd
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     safelen(8) simdlen(4) lastprivate (l) linear(ll: 1) aligned(q: 32) reduction(+:r)
     nowait depend(inout: dd[0]) nontemporal(ntm) if(simd:i3) order(concurrent)
-    allocate (omp_default_mem_alloc:f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc:f) in_reduction(+:r2) has_device_addr (hda))]]
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::sequence (directive (taskgroup task_reduction(+:r2) allocate (r2)),
@@ -309,7 +310,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ;
   [[omp::directive (teams
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     allocate (omp_default_mem_alloc: f))]]
     ;
   [[omp::sequence (omp::directive (target),
@@ -322,7 +323,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ll++;
   [[omp::sequence (directive (target),
     directive (teams distribute parallel for simd
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16)
     if (parallel: i2) num_threads (nth) proc_bind(spread)
     lastprivate (l) schedule(static, 4) order(concurrent)
@@ -339,7 +340,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (teams distribute parallel for
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16)
     if (parallel: i2) num_threads (nth) proc_bind(spread)
     lastprivate (l) schedule(static, 4) copyin(t) allocate (f))]]
@@ -353,7 +354,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (teams distribute parallel for simd
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16)
     if (parallel: i2) num_threads (nth) proc_bind(spread)
     lastprivate (l) schedule(static, 4)
@@ -371,7 +372,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (teams distribute simd
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte-1:nte) thread_limit(tl)
     collapse(1) dist_schedule(static, 16) order(concurrent)
     safelen(8) simdlen(4) aligned(q: 32) if(i3) nontemporal(ntm) allocate(f))]]
   for (int i = 0; i < 64; i++)
@@ -507,7 +508,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (l = 0; l < 64; ++l)
     ;
   [[omp::directive (teams loop
-    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl)
+    private(p) firstprivate (f) shared(s) default(shared) reduction(+:r) num_teams(nte - 1:nte) thread_limit(tl)
     collapse(1) lastprivate (l) order(concurrent) allocate (f))]]
   for (l = 0; l < 64; ++l)
     ;
@@ -515,28 +516,28 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
     nowait depend(inout: dd[0]) lastprivate (l) bind(parallel) order(concurrent) collapse(1)
-    allocate (omp_default_mem_alloc: f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc: f) in_reduction(+:r2) has_device_addr (hda))]]
   for (l = 0; l < 64; ++l)
     ;
   [[omp::directive (target parallel loop
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread)
     nowait depend(inout: dd[0]) lastprivate (l) order(concurrent) collapse(1)
-    allocate (omp_default_mem_alloc: f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc: f) in_reduction(+:r2) has_device_addr (hda))]]
   for (l = 0; l < 64; ++l)
     ;
   [[omp::directive (target teams loop
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
     shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) nowait depend(inout: dd[0])
     lastprivate (l) bind(teams) collapse(1)
-    allocate (omp_default_mem_alloc: f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc: f) in_reduction(+:r2) has_device_addr (hda))]]
   for (l = 0; l < 64; ++l)
     ;
   [[omp::directive (target teams loop
     device(d) map (tofrom: m) if (target: i1) private (p) firstprivate (f) defaultmap(tofrom: scalar) is_device_ptr (idp)
-    shared(s) default(shared) reduction(+:r) num_teams(nte) thread_limit(tl) nowait depend(inout: dd[0])
+    shared(s) default(shared) reduction(+:r) num_teams(nte - 1 : nte) thread_limit(tl) nowait depend(inout: dd[0])
     lastprivate (l) order(concurrent) collapse(1)
-    allocate (omp_default_mem_alloc: f) in_reduction(+:r2))]]
+    allocate (omp_default_mem_alloc: f) in_reduction(+:r2) has_device_addr (hda))]]
   for (l = 0; l < 64; ++l)
     ;
   [[omp::directive (critical)]] {

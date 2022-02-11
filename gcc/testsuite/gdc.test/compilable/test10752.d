@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/test10752.d
 import imports.test10752;
 void main()
 {

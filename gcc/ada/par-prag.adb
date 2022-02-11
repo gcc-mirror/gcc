@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -393,24 +393,6 @@ begin
             Ada_Version := Ada_2022;
             Ada_Version_Explicit := Ada_2022;
             Ada_Version_Pragma := Pragma_Node;
-         end if;
-
-      ---------------------------
-      -- Compiler_Unit_Warning --
-      ---------------------------
-
-      --  This pragma must be processed at parse time, since the resulting
-      --  status may be tested during the parsing of the program.
-
-      when Pragma_Compiler_Unit
-         | Pragma_Compiler_Unit_Warning
-      =>
-         Check_Arg_Count (0);
-
-         --  Only recognized in main unit
-
-         if Current_Source_Unit = Main_Unit then
-            Compiler_Unit := True;
          end if;
 
       -----------

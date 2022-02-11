@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2020-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,6 +258,8 @@ package Gen_IL.Fields is
       Is_Folded_In_Parser,
       Is_Generic_Contract_Pragma,
       Is_Homogeneous_Aggregate,
+      Is_Parenthesis_Aggregate,
+      Is_Enum_Array_Aggregate,
       Is_Ignored,
       Is_Ignored_Ghost_Pragma,
       Is_In_Discriminant_Check,

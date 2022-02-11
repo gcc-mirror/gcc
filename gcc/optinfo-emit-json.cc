@@ -1,5 +1,5 @@
 /* Emit optimization information as JSON files.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -55,7 +55,7 @@ optrecord_json_writer::optrecord_json_writer ()
 {
   m_root_tuple = new json::array ();
 
-  /* Populate with metadata; compare with toplev.c: print_version.  */
+  /* Populate with metadata; compare with toplev.cc: print_version.  */
   json::object *metadata = new json::object ();
   m_root_tuple->append (metadata);
   metadata->set ("format", new json::string ("1"));
@@ -68,7 +68,7 @@ optrecord_json_writer::optrecord_json_writer ()
   generator->set ("target", new json::string (TARGET_NAME));
 
   /* TODO: capture command-line?
-     see gen_producer_string in dwarf2out.c (currently static).  */
+     see gen_producer_string in dwarf2out.cc (currently static).  */
 
   /* TODO: capture "any plugins?" flag (or the plugins themselves).  */
 

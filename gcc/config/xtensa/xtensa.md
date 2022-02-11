@@ -1,5 +1,5 @@
 ;; GCC machine description for Tensilica's Xtensa architecture.
-;; Copyright (C) 2001-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2001-2022 Free Software Foundation, Inc.
 ;; Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 ;; This file is part of GCC.
@@ -779,7 +779,7 @@
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 1) (match_dup 3))]
 {
@@ -1053,7 +1053,7 @@
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 1) (match_dup 3))]
 {

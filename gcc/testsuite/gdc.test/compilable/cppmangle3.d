@@ -1,5 +1,13 @@
+// https://issues.dlang.org/show_bug.cgi?id=15512
+// https://issues.dlang.org/show_bug.cgi?id=19893
+// https://issues.dlang.org/show_bug.cgi?id=19920
 module cppmangle3;
 
+version (CppRuntime_Clang)       version = CppMangle_Itanium;
+version (CppRuntime_DigitalMars) version = CppMangle_MSVC;
+version (CppRuntime_Gcc)         version = CppMangle_Itanium;
+version (CppRuntime_Microsoft)   version = CppMangle_MSVC;
+version (CppRuntime_Sun)         version = CppMangle_Itanium;
 
 extern(C++, "true")
 {
@@ -20,8 +28,8 @@ extern(C++, "std", "chrono")
     void func();
 }
 
-version(Windows) static assert(func.mangleof == "?func@chrono@std@@YAXXZ");
-else             static assert(func.mangleof == "_ZNSt6chrono4funcEv");
+version(CppMangle_MSVC) static assert(func.mangleof == "?func@chrono@std@@YAXXZ");
+else                    static assert(func.mangleof == "_ZNSt6chrono4funcEv");
 
 struct Foo
 {
@@ -34,4 +42,22 @@ struct Foo
 alias Alias(alias a) = a;
 alias Alias(T) = T;
 
-static assert(is(Alias!(__traits(parent, bar)) == Foo));
+static assert(is(Alias!(__traits(parent, Foo.bar)) == Foo));
+
+extern(C++, "std"):
+debug = 456;
+debug = def;
+version = 456;
+version = def;
+
+extern(C++, "std")
+{
+    debug = 456;
+    debug = def;
+    version = 456;
+    version = def;
+}
+
+extern(C++, "foo")
+extern(C++, "bar")
+version = baz;

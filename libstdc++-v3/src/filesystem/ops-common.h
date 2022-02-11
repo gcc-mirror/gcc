@@ -1,6 +1,6 @@
 // Filesystem operation utilities -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,6 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __last_system_error() noexcept
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    // N.B. use error_code::default_error_condition() to convert to generic.
     return {(int)::GetLastError(), std::system_category()};
 #else
     return {errno, std::generic_category()};

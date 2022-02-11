@@ -11,5 +11,5 @@ void f94777()
         this(this) { }
     }
     auto var = S94777(0);
-    variadic(var, S94777(1));
+    variadic(var, S94777(1)); // { dg-error "cannot pass types with postblits or copy constructors as variadic arguments" }
 }

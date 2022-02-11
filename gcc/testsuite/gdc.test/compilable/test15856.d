@@ -1,11 +1,6 @@
 // REQUIRED_ARGS: -de
 // PERMUTE_ARGS:
-/*
-TEST_PUTPUT:
----
----
-*/
-
+// EXTRA_FILES: imports/a15856.d
 class Foo
 {
     import imports.a15856;

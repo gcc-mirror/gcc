@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021 Free Software Foundation, Inc.
+# Copyright (C) 2019-2022 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ if { ![is-effective-target d_runtime_has_std_library] } {
 # Gather a list of all tests.
 set tests [lsort [filter_libphobos_unittests [find $srcdir/../src "*.d"]]]
 
-set version_flags ""
+set version_flags "-fversion=StdUnittest"
 
 if { [is-effective-target linux_pre_2639] } {
     lappend version_flags "-fversion=Linux_Pre_2639"

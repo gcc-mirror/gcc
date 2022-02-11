@@ -1,4 +1,4 @@
-/* Copyright (C) 2019 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -3336,6 +3336,23 @@ _mm_set1_pch (_Float16 _Complex __A)
 
   return (__m128h) _mm_set1_ps (u.b);
 }
+
+// intrinsics below are alias for f*mul_*ch
+#define _mm_mul_pch(A, B) _mm_fmul_pch ((A), (B))
+#define _mm_mask_mul_pch(W, U, A, B) _mm_mask_fmul_pch ((W), (U), (A), (B))
+#define _mm_maskz_mul_pch(U, A, B) _mm_maskz_fmul_pch ((U), (A), (B))
+#define _mm256_mul_pch(A, B) _mm256_fmul_pch ((A), (B))
+#define _mm256_mask_mul_pch(W, U, A, B)				      \
+  _mm256_mask_fmul_pch ((W), (U), (A), (B))
+#define _mm256_maskz_mul_pch(U, A, B) _mm256_maskz_fmul_pch ((U), (A), (B))
+
+#define _mm_cmul_pch(A, B) _mm_fcmul_pch ((A), (B))
+#define _mm_mask_cmul_pch(W, U, A, B) _mm_mask_fcmul_pch ((W), (U), (A), (B))
+#define _mm_maskz_cmul_pch(U, A, B) _mm_maskz_fcmul_pch ((U), (A), (B))
+#define _mm256_cmul_pch(A, B) _mm256_fcmul_pch ((A), (B))
+#define _mm256_mask_cmul_pch(W, U, A, B)			      \
+   _mm256_mask_fcmul_pch ((W), (U), (A), (B))
+#define _mm256_maskz_cmul_pch(U, A, B) _mm256_maskz_fcmul_pch((U), (A), (B))
 
 #ifdef __DISABLE_AVX512FP16VL__
 #undef __DISABLE_AVX512FP16VL__

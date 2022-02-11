@@ -1334,6 +1334,7 @@ if test "${build}" != "${host}" ; then
   AR_FOR_BUILD=${AR_FOR_BUILD-ar}
   AS_FOR_BUILD=${AS_FOR_BUILD-as}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
+  CPP_FOR_BUILD="${CPP_FOR_BUILD-\$(CC_FOR_BUILD) -E}"
   CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
   DSYMUTIL_FOR_BUILD=${DSYMUTIL_FOR_BUILD-dsymutil}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
@@ -1405,6 +1406,7 @@ int main() {}])],
 fi
 
 ACX_PROG_GNAT
+ACX_PROG_GDC
 ACX_PROG_CMP_IGNORE_INITIAL
 
 AC_ARG_ENABLE([bootstrap],
@@ -1462,6 +1464,65 @@ elif test "$have_compiler" = yes; then
     AX_CXX_COMPILE_STDCXX(11, [], [], [_FOR_BUILD])
   fi
 fi
+
+AC_ARG_ENABLE([pgo-build],
+[AS_HELP_STRING([--enable-pgo-build[[=lto]]],
+		[enable the PGO build])],
+[enable_pgo_build=$enableval],
+[enable_pgo_build=no])
+
+# Issue errors and warnings for invalid/strange PGO build combinations.
+case "$have_compiler:$host:$target:$enable_pgo_build" in
+  *:*:*:no) ;;
+
+  # Allow the PGO build only if we aren't building a compiler and
+  # we are in a native configuration.
+  no:$build:$build:yes | no:$build:$build:lto) ;;
+
+  # Disallow the PGO bootstrap if we are building a compiler.
+  yes:*:*:yes | yes:*:*:lto)
+    AC_MSG_ERROR([cannot perform the PGO bootstrap when building a compiler]) ;;
+
+  *)
+    AC_MSG_ERROR([invalid option for --enable-pgo-build])
+    ;;
+esac
+
+if test "$enable_pgo_build" != "no"; then
+  AC_MSG_CHECKING([whether the compiler supports -fprofile-generate])
+  old_CFLAGS="$CFLAGS"
+  PGO_BUILD_GEN_CFLAGS="-fprofile-generate"
+  CFLAGS="$CFLAGS $PGO_BUILD_CFLAGS"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([int foo;])],,
+		    [PGO_BUILD_GEN_CFLAGS=])
+  CFLAGS="$old_CFLAGS"
+  if test -n "$PGO_BUILD_GEN_CFLAGS"; then
+    AC_MSG_RESULT([yes])
+    PGO_BUILD_USE_CFLAGS="-fprofile-use"
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([cannot perform the PGO build without -fprofile-generate])
+  fi
+
+  if test "$enable_pgo_build" = "lto"; then
+    AC_MSG_CHECKING([whether the compiler supports -flto=jobserver -ffat-lto-objects])
+    old_CFLAGS="$CFLAGS"
+    PGO_BUILD_LTO_CFLAGS="-flto=jobserver -ffat-lto-objects"
+    CFLAGS="$CFLAGS $PGO_BUILD_LTO_CFLAGS"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([int foo;])],,
+		      [PGO_BUILD_LTO_CFLAGS=])
+    CFLAGS="$old_CFLAGS"
+    if test -n "$PGO_BUILD_LTO_CFLAGS"; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_WARN([LTO is disabled for the PGO build])
+    fi
+  fi
+fi
+AC_SUBST(PGO_BUILD_GEN_CFLAGS)
+AC_SUBST(PGO_BUILD_USE_CFLAGS)
+AC_SUBST(PGO_BUILD_LTO_CFLAGS)
 
 # Used for setting $lt_cv_objdir
 _LT_CHECK_OBJDIR
@@ -1858,7 +1919,20 @@ AC_SUBST(extra_linker_plugin_flags)
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],
 		[build host code as shared libraries])],
-[host_shared=$enableval], [host_shared=no])
+[host_shared=$enableval
+ case $target in
+   x86_64-*-darwin* | aarch64-*-darwin*)
+     if test x$host_shared != xyes ; then
+       # PIC is the default, and actually cannot be switched off.
+       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       host_shared=yes
+     fi ;;
+  *) ;;
+ esac],
+[case $target in
+  x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
+  *) host_shared=no ;;
+ esac])
 AC_SUBST(host_shared)
 
 # By default, C and C++ are the only stage 1 languages.
@@ -2073,6 +2147,22 @@ if test -d ${srcdir}/gcc; then
             ;;
         esac
 
+        # Disable D if no preexisting GDC is available.
+        case ${add_this_lang}:${language}:${have_gdc} in
+          yes:d:no)
+            # Specifically requested language; tell them.
+            AC_MSG_ERROR([GDC is required to build $language])
+           ;;
+          all:d:no)
+            AC_MSG_WARN([GDC is required to build $language])
+            add_this_lang=unsupported
+            ;;
+          *:d:no)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+        esac
+
         # Disable jit if -enable-host-shared not specified
         # but not if building for Mingw. All code in Windows
         # is position independent code (PIC).
@@ -2140,7 +2230,7 @@ directories, to avoid imposing the performance cost of
 		  *) stage1_languages="${stage1_languages}${language}," ;;
 		esac
 		# We need to bootstrap any supporting libraries.
-		bootstrap_target_libs="${bootstrap_target_libs}${target_libs},"
+		bootstrap_target_libs=`echo "${bootstrap_target_libs}${target_libs}," | sed "s/ /,/g"`
 		;;
 	    esac
 	    ;;
@@ -2823,6 +2913,16 @@ if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
 fi
 
+# If we are building libatomic and the list of enabled languages includes the
+# D frontend, bootstrap it.
+if echo " ${target_configdirs} " | grep " libatomic " > /dev/null 2>&1; then
+  case ,${enable_languages}, in
+    *,d,*)
+      bootstrap_target_libs=${bootstrap_target_libs}target-libatomic,
+      ;;
+  esac
+fi
+
 # Determine whether gdb needs tk/tcl or not.
 # Use 'maybe' since enable_gdbtk might be true even if tk isn't available
 # and in that case we want gdb to be built without tk.  Ugh!
@@ -2954,6 +3054,12 @@ extrasub_target="$extrasub_target
 /^@if /,/^@endif /d
 /^@unless /d
 /^@endunless /d"
+
+if test "$enable_pgo_build" != "no"; then
+  extrasub_build="$extrasub_build
+/^@if pgo-build\$/d
+/^@endif pgo-build\$/d"
+fi
 
 # Create the serialization dependencies.  This uses a temporary file.
 
@@ -3323,6 +3429,7 @@ esac
 # our build compiler if desired.
 if test x"${build}" = x"${host}" ; then
   CFLAGS_FOR_BUILD=${CFLAGS_FOR_BUILD-${CFLAGS}}
+  CPPFLAGS_FOR_BUILD=${CPPFLAGS_FOR_BUILD-${CPPFLAGS}}
   CXXFLAGS_FOR_BUILD=${CXXFLAGS_FOR_BUILD-${CXXFLAGS}}
   LDFLAGS_FOR_BUILD=${LDFLAGS_FOR_BUILD-${LDFLAGS}}
 fi
@@ -3389,6 +3496,8 @@ AC_SUBST(AR_FOR_BUILD)
 AC_SUBST(AS_FOR_BUILD)
 AC_SUBST(CC_FOR_BUILD)
 AC_SUBST(CFLAGS_FOR_BUILD)
+AC_SUBST(CPP_FOR_BUILD)
+AC_SUBST(CPPFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS_FOR_BUILD)
 AC_SUBST(CXX_FOR_BUILD)
 AC_SUBST(DLLTOOL_FOR_BUILD)
@@ -3488,6 +3597,8 @@ AC_SUBST(CC)
 AC_SUBST(CXX)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
+AC_SUBST(GDC)
+AC_SUBST(GDCFLAGS)
 
 # Target tools.
 AC_ARG_WITH([build-time-tools], 

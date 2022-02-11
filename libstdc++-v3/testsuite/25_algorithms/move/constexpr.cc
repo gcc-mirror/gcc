@@ -17,3 +17,14 @@ test01()
 }
 
 static_assert(test01());
+
+constexpr bool
+test02()
+{
+  int x[2] = {1,2}, y[2];
+  std::span in(x), out(y);
+  std::move(in.rbegin(), in.rend(), out.rbegin());
+  return std::equal(in.rbegin(), in.rend(), out.rbegin());
+}
+
+static_assert(test02());

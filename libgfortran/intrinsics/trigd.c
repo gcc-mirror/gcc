@@ -1,5 +1,5 @@
 /* Implementation of the degree trignometric functions COSD, SIND, TAND.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargl@gcc.gnu.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -289,3 +289,52 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef HAVE_INFINITY_KIND
 
 #endif /* HAVE_GFC_REAL_16 */
+
+#ifdef HAVE_GFC_REAL_17
+
+/* Build _gfortran_sind_r17, _gfortran_cosd_r17, and _gfortran_tand_r17  */
+
+#define KIND	17
+#define TINY	0x1.p-16400	/* ~= 1.28e-4937 */
+#undef  SIND_SMALL		/* not precise */
+
+/* Proper float128 precision.  */
+#define COSD_SMALL  0x1.p-51	/* ~= 4.441e-16 */
+#define COSD30      8.66025403784438646763723170752936183e-01
+#define PIO180H     1.74532925199433197605003442731685936e-02
+#define PIO180L     -2.39912634365882824665106671063098954e-17
+
+/* libquadmath or glibc 2.32+: HAVE_*Q are never defined.  They must be available.  */
+#define ENABLE_SIND
+#define ENABLE_COSD
+#define ENABLE_TAND
+
+#ifdef GFC_REAL_17_INFINITY
+#define HAVE_INFINITY_KIND
+#endif
+
+#ifdef POWER_IEEE128
+#define COPYSIGN __copysignieee128
+#define FMOD __fmodieee128
+#define FABS __fabsieee128
+#define FMA __fmaieee128
+#define SIN __sinieee128
+#define COS __cosieee128
+#define TAN __tanieee128
+#endif
+
+#include "trigd_lib.inc"
+
+#undef KIND
+#undef TINY
+#undef COSD_SMALL
+#undef SIND_SMALL
+#undef COSD30
+#undef PIO180H
+#undef PIO180L
+#undef ENABLE_SIND
+#undef ENABLE_COSD
+#undef ENABLE_TAND
+#undef HAVE_INFINITY_KIND
+
+#endif /* HAVE_GFC_REAL_17 */

@@ -41,7 +41,7 @@ int main ()
    reasonably sure is to make them have the same contents (regarding the
    n tests).  */
 
-static void __attribute__((noinline)) ATTR
+static void __attribute__((noipa)) ATTR
 recurser_void1 (void)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -53,7 +53,7 @@ recurser_void1 (void)
   recurser_void2 ();
 }
 
-static void __attribute__((noinline)) ATTR
+static void __attribute__((noipa)) ATTR
 recurser_void2 (void)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -67,7 +67,7 @@ recurser_void2 (void)
 
 void *trackpoint;
 
-void __attribute__ ((noinline))
+void __attribute__ ((noipa))
 track ()
 {
   char stackpos[1];

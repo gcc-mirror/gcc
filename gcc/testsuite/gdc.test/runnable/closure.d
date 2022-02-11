@@ -689,7 +689,7 @@ void test22()
 }
 
 /************************************/
-// 1759
+// https://issues.dlang.org/show_bug.cgi?id=1759
 
 void test1759()
 {
@@ -724,7 +724,7 @@ void test1759()
 }
 
 /************************************/
-// 1841
+// https://issues.dlang.org/show_bug.cgi?id=1841
 
 int delegate() foo1841()
 {
@@ -768,7 +768,7 @@ void test1841()
 }
 
 /************************************/
-// 5911
+// https://issues.dlang.org/show_bug.cgi?id=5911
 
 void writeln5911(const(char)[] str) {}
 
@@ -791,7 +791,7 @@ void test5911()
 }
 
 /************************************/
-// 9685
+// https://issues.dlang.org/show_bug.cgi?id=9685
 
 auto get9685a(alias fun)()
 {
@@ -844,7 +844,7 @@ void test9685b()
 }
 
 /************************************/
-// 12406
+// https://issues.dlang.org/show_bug.cgi?id=12406
 
 auto createDg12406()
 {
@@ -898,7 +898,7 @@ void test12406()
 }
 
 /************************************/
-// 14730
+// https://issues.dlang.org/show_bug.cgi?id=14730
 
 void test14730()
 {

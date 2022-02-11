@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,8 +441,8 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          if Str = "" then
             return Leading_Padding ("0", Min_Length, Char);
          else
-            return (1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
-                           => Char) & Str;
+            return [1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
+                           => Char] & Str;
          end if;
       end Leading_Padding;
 
@@ -468,8 +468,8 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
             return Str (Str'First .. Str'First + Length - 1);
          else
             return Str &
-              (1 .. Integer'Max (Integer (Length) - Str'Length, 0)
-                      => Char);
+              [1 .. Integer'Max (Integer (Length) - Str'Length, 0)
+                      => Char];
          end if;
       end Trailing_Padding;
 
@@ -495,7 +495,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
             if Index < 0 then
                return Leading_Padding ("0", Fore)
                  & "."
-                 & Trailing_Padding ((1 .. -Index => '0') & Str, Aft)
+                 & Trailing_Padding ([1 .. -Index => '0'] & Str, Aft)
                  & (if Exp = 0 then "" else "E+" & Image (Natural (Exp)));
             else
                return Leading_Padding (Str (Str'First .. Index), Fore)

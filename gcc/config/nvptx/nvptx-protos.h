@@ -1,5 +1,5 @@
-/* Prototypes for exported functions defined in nvptx.c.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+/* Prototypes for exported functions defined in nvptx.cc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -59,5 +59,7 @@ extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);
 extern const char *nvptx_output_simt_exit (rtx);
 extern const char *nvptx_output_red_partition (rtx, rtx);
 extern const char *nvptx_output_atomic_insn (const char *, rtx *, int, int);
+extern bool nvptx_mem_local_p (rtx);
+extern bool nvptx_mem_maybe_shared_p (const_rtx);
 #endif
 #endif

@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -o-
+// EXTRA_FILES: imports/a15667.d
 /*
 TEST_OUTPUT:
 ---

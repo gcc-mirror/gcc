@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build ppc || ppc64 || ppc64le
-// +build ppc ppc64 ppc64le
 
 package unix
 

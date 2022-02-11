@@ -1,0 +1,47 @@
+# Copyright (C) 2021-2022 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+load_lib libphobos-dg.exp
+
+set dg-output-text [list]
+
+# Test, arguments to pass to the test program, and return code.
+set config_test_list [list \
+    { test19433 "--DRT-dont-eat-me" 0 } \
+    { test20459 "foo bar -- --DRT-gcopts=profile:1" 0 } \
+    { test22523 "-- --DRT-testmode=run-main" 0 } \
+]
+
+# Initialize dg.
+dg-init
+
+# Main loop.
+foreach config_test $config_test_list {
+    set test "$srcdir/$subdir/[lindex $config_test 0].d"
+
+    set libphobos_run_args "[lindex $config_test 1]"
+    set shouldfail [lindex $config_test 2]
+    set libphobos_test_name "[dg-trim-dirname $srcdir $test] $libphobos_run_args"
+
+    dg-runtest $test "" $DEFAULT_DFLAGS
+
+    set libphobos_test_name ""
+    set shouldfail 0
+    set libphobos_run_args ""
+}
+
+# All done.
+dg-finish

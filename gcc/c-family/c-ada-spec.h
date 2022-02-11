@@ -1,5 +1,5 @@
 /* Interface for -fdump-ada-spec capability.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "pretty-print.h"
 
-/* In c-ada-spec.c  */
+/* In c-ada-spec.cc  */
 
 enum cpp_operation {
   HAS_DEPENDENT_TEMPLATE_ARGS,

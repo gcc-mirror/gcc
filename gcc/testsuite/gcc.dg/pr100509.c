@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O" } */
+/* { dg-require-alias "" } */
 
 struct X {
   int a;

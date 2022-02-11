@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C++.
-#   Copyright (C) 1994-2021 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -120,15 +120,15 @@ cp-warn = $(STRICT_WARN)
 # compute checksum over all object files and the options
 # re-use the checksum from the prev-final stage so it passes
 # the bootstrap comparison and allows comparing of the cc1 binary
-cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
 	$(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) 
 	if [ -f ../stage_final ] \
 	   && cmp -s ../stage_current ../stage_final; then \
-	   cp ../prev-gcc/cc1plus-checksum.c cc1plus-checksum.c; \
+	   cp ../prev-gcc/cc1plus-checksum.cc cc1plus-checksum.cc; \
 	else \
 	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) \
-                     checksum-options > cc1plus-checksum.c.tmp &&	   \
-	  $(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c; \
+                     checksum-options > cc1plus-checksum.cc.tmp &&	   \
+	  $(srcdir)/../move-if-change cc1plus-checksum.cc.tmp cc1plus-checksum.cc; \
 	fi
 
 cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
@@ -174,9 +174,9 @@ c++.srcinfo:
 c++.srcextra:
 
 c++.tags: force
-	cd $(srcdir)/cp; etags -o TAGS.sub *.c *.cc *.h --language=none \
+	cd $(srcdir)/cp; $(ETAGS) -o TAGS.sub *.c *.cc *.h --language=none \
 	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 c++.man: doc/g++.1
 
@@ -221,7 +221,7 @@ check-c++17:
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,2a,concepts" check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,20,23,impcx" check-g++
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:

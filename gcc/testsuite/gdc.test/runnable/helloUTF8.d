@@ -1,4 +1,10 @@
-﻿// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+hello world
+---
+*/
 
 extern(C) int printf(const char *, ...);
 

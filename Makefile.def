@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2019 Free Software Foundation
+//   Copyright 2002-2021 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -169,14 +169,14 @@ target_modules = { module= newlib; };
 target_modules = { module= libgcc; bootstrap=true; no_check=true;
 		  missing=TAGS;
 		  missing=install-dvi; };
-target_modules = { module= libbacktrace; };
+target_modules = { module= libbacktrace; bootstrap=true; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc;
 		  missing=TAGS;
 		  missing=install-dvi; };
 target_modules = { module= libgo; };
-target_modules = { module= libphobos;
+target_modules = { module= libphobos; bootstrap=true;
 		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
@@ -186,12 +186,12 @@ target_modules = { module= libtermcap; no_check=true;
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libffi; no_install=true; };
-target_modules = { module= zlib; };
+target_modules = { module= zlib; bootstrap=true; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
-target_modules = { module= libatomic; lib_path=.libs; };
+target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.
@@ -493,6 +493,7 @@ dependencies = { module=install-strip-ld; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-libctf; };
 
 // libopcodes depends on libbfd
+dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
@@ -619,7 +620,6 @@ dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };
 dependencies = { module=configure-target-libgo; on=configure-target-libffi; };
 dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
-dependencies = { module=configure-target-libffi; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };

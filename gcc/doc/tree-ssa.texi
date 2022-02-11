@@ -1,4 +1,4 @@
-@c Copyright (C) 2004-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2004-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -183,7 +183,7 @@ call to @code{update_stmt}.
 @cindex Operand Iterators
 @cindex Operand Access Routines
 
-Operands are collected by @file{tree-ssa-operands.c}.  They are stored
+Operands are collected by @file{tree-ssa-operands.cc}.  They are stored
 inside each statement's annotation and can be accessed through either the
 operand iterators or an access routine.
 
@@ -462,7 +462,7 @@ expressions are renamed so that their version number matches that of
 the most recent assignment.
 
 We represent variable versions using @code{SSA_NAME} nodes.  The
-renaming process in @file{tree-ssa.c} wraps every real and
+renaming process in @file{tree-ssa.cc} wraps every real and
 virtual operand with an @code{SSA_NAME} node which contains
 the version number and the statement that created the
 @code{SSA_NAME}.  Only definitions and virtual definitions may
@@ -763,7 +763,7 @@ or that is used by pure or nested const calls.
 @item Type-based alias analysis
 
 Type-based alias analysis is frontend dependent though generic
-support is provided by the middle-end in @code{alias.c}.  TBAA
+support is provided by the middle-end in @code{alias.cc}.  TBAA
 code is used by both tree optimizers and RTL optimizers.
 
 Every language that wishes to perform language-specific alias analysis

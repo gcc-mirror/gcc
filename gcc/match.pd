@@ -1,8 +1,8 @@
 /* Match-and-simplify patterns for shared GENERIC and GIMPLE folding.
-   This file is consumed by genmatch which produces gimple-match.c
-   and generic-match.c from it.
+   This file is consumed by genmatch which produces gimple-match.cc
+   and generic-match.cc from it.
 
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -37,7 +37,9 @@ along with GCC; see the file COPYING3.  If not see
    integer_pow2p
    uniform_integer_cst_p
    HONOR_NANS
-   uniform_vector_p)
+   uniform_vector_p
+   expand_vec_cmp_expr_p
+   bitmask_inv_cst_vector_p)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
@@ -89,12 +91,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   plus minus
   mult trunc_div trunc_mod rdiv
   min max
+  IFN_FMIN IFN_FMAX
   bit_and bit_ior bit_xor
   lshift rshift)
 (define_operator_list COND_BINARY
   IFN_COND_ADD IFN_COND_SUB
   IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
   IFN_COND_MIN IFN_COND_MAX
+  IFN_COND_FMIN IFN_COND_FMAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR
   IFN_COND_SHL IFN_COND_SHR)
 
@@ -103,6 +107,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_FMA IFN_FMS IFN_FNMA IFN_FNMS)
 (define_operator_list COND_TERNARY
   IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
+
+/* __atomic_fetch_or_*, __atomic_fetch_xor_*, __atomic_xor_fetch_*  */
+(define_operator_list ATOMIC_FETCH_OR_XOR_N
+  BUILT_IN_ATOMIC_FETCH_OR_1 BUILT_IN_ATOMIC_FETCH_OR_2
+  BUILT_IN_ATOMIC_FETCH_OR_4 BUILT_IN_ATOMIC_FETCH_OR_8
+  BUILT_IN_ATOMIC_FETCH_OR_16
+  BUILT_IN_ATOMIC_FETCH_XOR_1 BUILT_IN_ATOMIC_FETCH_XOR_2
+  BUILT_IN_ATOMIC_FETCH_XOR_4 BUILT_IN_ATOMIC_FETCH_XOR_8
+  BUILT_IN_ATOMIC_FETCH_XOR_16
+  BUILT_IN_ATOMIC_XOR_FETCH_1 BUILT_IN_ATOMIC_XOR_FETCH_2
+  BUILT_IN_ATOMIC_XOR_FETCH_4 BUILT_IN_ATOMIC_XOR_FETCH_8
+  BUILT_IN_ATOMIC_XOR_FETCH_16)
+/* __sync_fetch_and_or_*, __sync_fetch_and_xor_*, __sync_xor_and_fetch_*  */
+(define_operator_list SYNC_FETCH_OR_XOR_N
+  BUILT_IN_SYNC_FETCH_AND_OR_1 BUILT_IN_SYNC_FETCH_AND_OR_2
+  BUILT_IN_SYNC_FETCH_AND_OR_4 BUILT_IN_SYNC_FETCH_AND_OR_8
+  BUILT_IN_SYNC_FETCH_AND_OR_16
+  BUILT_IN_SYNC_FETCH_AND_XOR_1 BUILT_IN_SYNC_FETCH_AND_XOR_2
+  BUILT_IN_SYNC_FETCH_AND_XOR_4 BUILT_IN_SYNC_FETCH_AND_XOR_8
+  BUILT_IN_SYNC_FETCH_AND_XOR_16
+  BUILT_IN_SYNC_XOR_AND_FETCH_1 BUILT_IN_SYNC_XOR_AND_FETCH_2
+  BUILT_IN_SYNC_XOR_AND_FETCH_4 BUILT_IN_SYNC_XOR_AND_FETCH_8
+  BUILT_IN_SYNC_XOR_AND_FETCH_16)
+/* __atomic_fetch_and_*.  */
+(define_operator_list ATOMIC_FETCH_AND_N
+  BUILT_IN_ATOMIC_FETCH_AND_1 BUILT_IN_ATOMIC_FETCH_AND_2
+  BUILT_IN_ATOMIC_FETCH_AND_4 BUILT_IN_ATOMIC_FETCH_AND_8
+  BUILT_IN_ATOMIC_FETCH_AND_16)
+/* __sync_fetch_and_and_*.  */
+(define_operator_list SYNC_FETCH_AND_AND_N
+  BUILT_IN_SYNC_FETCH_AND_AND_1 BUILT_IN_SYNC_FETCH_AND_AND_2
+  BUILT_IN_SYNC_FETCH_AND_AND_4 BUILT_IN_SYNC_FETCH_AND_AND_8
+  BUILT_IN_SYNC_FETCH_AND_AND_16)
 
 /* With nop_convert? combine convert? and view_convert? in one pattern
    plus conditionalize on tree_nop_conversion_p conversions.  */
@@ -196,7 +233,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    is volatile.  */
 (simplify
  (minus @0 @0)
- (if (!FLOAT_TYPE_P (type) || !tree_expr_maybe_nan_p (@0))
+ (if (!FLOAT_TYPE_P (type)
+      || (!tree_expr_maybe_nan_p (@0)
+	  && !tree_expr_maybe_infinite_p (@0)))
   { build_zero_cst (type); }))
 (simplify
  (pointer_diff @@0 @0)
@@ -206,15 +245,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult @0 integer_zerop@1)
  @1)
 
+/* -x == x -> x == 0 */
+(for cmp (eq ne)
+ (simplify
+  (cmp:c @0 (negate @0))
+   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+        && !TYPE_OVERFLOW_WRAPS (TREE_TYPE(@0)))
+    (cmp @0 { build_zero_cst (TREE_TYPE(@0)); }))))
+
 /* Maybe fold x * 0 to 0.  The expressions aren't the same
    when x is NaN, since x * 0 is also NaN.  Nor are they the
    same in modes with signed zeros, since multiplying a
-   negative value by 0 gives -0, not +0.  */
+   negative value by 0 gives -0, not +0.  Nor when x is +-Inf,
+   since x * 0 is NaN.  */
 (simplify
  (mult @0 real_zerop@1)
  (if (!tree_expr_maybe_nan_p (@0)
-      && !tree_expr_maybe_real_minus_zero_p (@0)
-      && !tree_expr_maybe_real_minus_zero_p (@1))
+      && (!HONOR_NANS (type) || !tree_expr_maybe_infinite_p (@0))
+      && (!HONOR_SIGNED_ZEROS (type) || tree_expr_nonnegative_p (@0)))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -354,36 +402,65 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* X / bool_range_Y is X.  */ 
  (simplify
   (div @0 SSA_NAME@1)
-  (if (INTEGRAL_TYPE_P (type) && ssa_name_has_boolean_range (@1))
+  (if (INTEGRAL_TYPE_P (type)
+       && ssa_name_has_boolean_range (@1)
+       && !flag_non_call_exceptions)
    @0))
  /* X / X is one.  */
  (simplify
   (div @0 @0)
   /* But not for 0 / 0 so that we can get the proper warnings and errors.
      And not for _Fract types where we can't build 1.  */
-  (if (!integer_zerop (@0) && !ALL_FRACT_MODE_P (TYPE_MODE (type)))
+  (if (!ALL_FRACT_MODE_P (TYPE_MODE (type))
+       && !integer_zerop (@0)
+       && (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
    { build_one_cst (type); }))
  /* X / abs (X) is X < 0 ? -1 : 1.  */
  (simplify
    (div:C @0 (abs @0))
    (if (INTEGRAL_TYPE_P (type)
-	&& TYPE_OVERFLOW_UNDEFINED (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type)
+	&& !integer_zerop (@0)
+	&& (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
     (cond (lt @0 { build_zero_cst (type); })
           { build_minus_one_cst (type); } { build_one_cst (type); })))
  /* X / -X is -1.  */
  (simplify
    (div:C @0 (negate @0))
    (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-	&& TYPE_OVERFLOW_UNDEFINED (type))
+	&& TYPE_OVERFLOW_UNDEFINED (type)
+	&& !integer_zerop (@0)
+	&& (!flag_non_call_exceptions || tree_expr_nonzero_p (@0)))
     { build_minus_one_cst (type); })))
 
 /* For unsigned integral types, FLOOR_DIV_EXPR is the same as
-   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  */
+   TRUNC_DIV_EXPR.  Rewrite into the latter in this case.  Similarly
+   for MOD instead of DIV.  */
+(for floor_divmod (floor_div floor_mod)
+     trunc_divmod (trunc_div trunc_mod)
+ (simplify
+  (floor_divmod @0 @1)
+  (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+       && TYPE_UNSIGNED (type))
+   (trunc_divmod @0 @1))))
+
+/* 1 / X -> X == 1 for unsigned integer X.
+   1 / X -> X >= -1 && X <= 1 ? X : 0 for signed integer X.
+   But not for 1 / 0 so that we can get proper warnings and errors,
+   and not for 1-bit integers as they are edge cases better handled
+   elsewhere.  */
 (simplify
- (floor_div @0 @1)
- (if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
-      && TYPE_UNSIGNED (type))
-  (trunc_div @0 @1)))
+ (trunc_div integer_onep@0 @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) > 1
+      && !integer_zerop (@1)
+      && (!flag_non_call_exceptions || tree_expr_nonzero_p (@1)))
+  (if (TYPE_UNSIGNED (type))
+   (convert (eq:boolean_type_node @1 { build_one_cst (type); }))
+   (with { tree utype = unsigned_type_for (type); }
+    (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
+	      { build_int_cst (utype, 2); })
+     @1 { build_zero_cst (type); })))))
 
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */
@@ -606,6 +683,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (minus (convert1? @0) (convert2? (mult:c (trunc_div @@0 @@1) @1)))
  (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
   (convert (trunc_mod @0 @1))))
+
+/* x * (1 + y / x) - y -> x - y % x */
+(simplify
+ (minus (mult:cs @0 (plus:s (trunc_div:s @1 @0) integer_onep)) @1)
+ (if (INTEGRAL_TYPE_P (type))
+  (minus @0 (trunc_mod @1 @0))))
 
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
    i.e. "X % C" into "X & (C - 1)", if X and C are positive.
@@ -830,6 +913,49 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (with
     { tree utype = unsigned_type_for (type); }
     (convert (rshift (lshift (convert:utype @0) @2) @3))))))
+
+/* Fold ((type)(a<0)) << SIGNBITOFA into ((type)a) & signbit. */
+(simplify
+ (lshift (convert (lt @0 integer_zerop@1)) INTEGER_CST@2)
+ (if (TYPE_SIGN (TREE_TYPE (@0)) == SIGNED
+      && wi::eq_p (wi::to_wide (@2), TYPE_PRECISION (TREE_TYPE (@0)) - 1))
+  (with { wide_int wone = wi::one (TYPE_PRECISION (type)); }
+   (bit_and (convert @0)
+            { wide_int_to_tree (type,
+				wi::lshift (wone, wi::to_wide (@2))); }))))
+
+/* Fold (-x >> C) into -(x > 0) where C = precision(type) - 1.  */
+(for cst (INTEGER_CST VECTOR_CST)
+ (simplify
+  (rshift (negate:s @0) cst@1)
+   (if (!TYPE_UNSIGNED (type)
+        && TYPE_OVERFLOW_UNDEFINED (type))
+    (with { tree stype = TREE_TYPE (@1);
+	    tree bt = truth_type_for (type);
+	    tree zeros = build_zero_cst (type);
+	    tree cst = NULL_TREE; }
+     (switch
+      /* Handle scalar case.  */
+      (if (INTEGRAL_TYPE_P (type)
+	   /* If we apply the rule to the scalar type before vectorization
+	      we will enforce the result of the comparison being a bool
+	      which will require an extra AND on the result that will be
+	      indistinguishable from when the user did actually want 0
+	      or 1 as the result so it can't be removed.  */
+	   && canonicalize_math_after_vectorization_p ()
+	   && wi::eq_p (wi::to_wide (@1), TYPE_PRECISION (type) - 1))
+       (negate (convert (gt @0 { zeros; }))))
+      /* Handle vector case.  */
+      (if (VECTOR_INTEGER_TYPE_P (type)
+	   /* First check whether the target has the same mode for vector
+	      comparison results as it's operands do.  */
+	   && TYPE_MODE (bt) == TYPE_MODE (type)
+	   /* Then check to see if the target is able to expand the comparison
+	      with the given type later on, otherwise we may ICE.  */
+	   && expand_vec_cmp_expr_p (type, bt, GT_EXPR)
+	   && (cst = uniform_integer_cst_p (@1)) != NULL
+	   && wi::eq_p (wi::to_wide (cst), element_precision (type) - 1))
+       (view_convert (gt:bt @0 { zeros; }))))))))
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
@@ -1411,23 +1537,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (absu tree_expr_nonnegative_p@0)
  (convert @0))
 
-/* Simplify (-(X < 0) | 1) * X into abs (X).  */
+/* Simplify (-(X < 0) | 1) * X into abs (X) or absu(X).  */
 (simplify
- (mult:c (bit_ior (negate (convert? (lt @0 integer_zerop))) integer_onep) @0)
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
-  (abs @0)))
-
-/* Similarly (-(X < 0) | 1U) * X into absu (X).  */
-(simplify
- (mult:c (bit_ior (nop_convert (negate (convert? (lt @0 integer_zerop))))
-		  integer_onep) (nop_convert @0))
+ (mult:c (nop_convert1?
+	  (bit_ior (nop_convert2? (negate (convert? (lt @0 integer_zerop))))
+		    integer_onep))
+	 (nop_convert3? @0))
  (if (INTEGRAL_TYPE_P (type)
-      && TYPE_UNSIGNED (type)
       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && !TYPE_UNSIGNED (TREE_TYPE (@0)))
-  (absu @0)))
+  (if (TYPE_UNSIGNED (type))
+   (absu @0)
+   (abs @0)
+  )
+ )
+)
 
-/* A few cases of fold-const.c negate_expr_p predicate.  */
+/* A few cases of fold-const.cc negate_expr_p predicate.  */
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
@@ -1515,7 +1641,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree stype = TREE_TYPE (@0);
 	  tree ntype = TYPE_UNSIGNED (stype) ? signed_type_for (stype)
 					     : unsigned_type_for (stype); }
-   (convert (rshift:ntype (convert:ntype @0) @1)))))
+   (if (VECTOR_TYPE_P (type))
+    (view_convert (rshift (view_convert:ntype @0) @1))
+    (convert (rshift (convert:ntype @0) @1))))))
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
@@ -1528,17 +1656,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bitop (convert@2 @0) (convert?@3 @1))
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	 && int_fits_type_p (@1, TREE_TYPE (@0)))
+	 && (int_fits_type_p (@1, TREE_TYPE (@0))
+	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
-       /* ???  This transform conflicts with fold-const.c doing
+       /* ???  This transform conflicts with fold-const.cc doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
 	  in c).  This folds extension into the BIT_AND_EXPR.
 	  Restrict it to GIMPLE to avoid endless recursions.  */
        && (bitop != BIT_AND_EXPR || GIMPLE)
        && (/* That's a good idea if the conversion widens the operand, thus
-	      after hoisting the conversion the operation will be narrower.  */
+	      after hoisting the conversion the operation will be narrower.
+	      It is also a good if the conversion is a nop as moves the
+	      conversion to one side; allowing for combining of the conversions.  */
 	   TYPE_PRECISION (TREE_TYPE (@0)) < TYPE_PRECISION (type)
+	   /* The conversion check for being a nop can only be done at the gimple
+	      level as fold_binary has some re-association code which can conflict
+	      with this if there is a "constant" which is not a full INTEGER_CST.  */
+	   || (GIMPLE && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
 	   /* It's also a good idea if the conversion is to a non-integer
 	      mode.  */
 	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
@@ -1663,6 +1798,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (negate (nop_convert? (bit_not @0)))
  (plus (view_convert @0) { build_each_one_cst (type); }))
 
+/* (a & b) ^ (a == b) -> !(a | b) */
+/* (a & b) == (a ^ b) -> !(a | b) */
+(for first_op (bit_xor eq)
+     second_op (eq bit_xor)
+ (simplify
+  (first_op:c (bit_and:c truth_valued_p@0 truth_valued_p@1) (second_op:c @0 @1))
+    (bit_not (bit_ior @0 @1))))
+
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
  (bit_not (convert? (minus @0 integer_each_onep)))
@@ -1704,10 +1847,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (convert (bit_and (bit_not @1) @0))))
 
 /* (m1 CMP m2) * d -> (m1 CMP m2) ? d : 0  */
-(for cmp (gt lt ge le)
-(simplify
- (mult (convert (cmp @0 @1)) @2)
-  (if (GIMPLE || !TREE_SIDE_EFFECTS (@2))
+(if (!canonicalize_math_p ())
+ (for cmp (gt lt ge le)
+  (simplify
+   (mult (convert (cmp @0 @1)) @2)
    (cond (cmp @0 @1) @2 { build_zero_cst (type); }))))
 
 /* For integral types with undefined overflow and C != 0 fold
@@ -2038,6 +2181,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (pointer_plus (pointer_plus:s @0 @1) @3)
   (pointer_plus @0 (plus @1 @3)))
+#if GENERIC
+(simplify
+  (pointer_plus (convert:s (pointer_plus:s @0 @1)) @3)
+  (convert:type (pointer_plus @0 (plus @1 @3))))
+#endif
 
 /* Pattern match
      tem1 = (long) ptr1;
@@ -3009,6 +3157,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @0
     @2)))
 
+/* Simplify min (&var[off0], &var[off1]) etc. depending on whether
+   the addresses are known to be less, equal or greater.  */
+(for minmax (min max)
+     cmp (lt gt)
+ (simplify
+  (minmax (convert1?@2 addr@0) (convert2?@3 addr@1))
+  (with
+   {
+     poly_int64 off0, off1;
+     tree base0, base1;
+     int equal = address_compare (cmp, TREE_TYPE (@2), @0, @1, base0, base1,
+				  off0, off1, GENERIC);
+   }
+   (if (equal == 1)
+    (if (minmax == MIN_EXPR)
+     (if (known_le (off0, off1))
+      @2
+      (if (known_gt (off0, off1))
+       @3))
+     (if (known_ge (off0, off1))
+      @2
+      (if (known_lt (off0, off1))
+       @3)))))))
+
 /* (convert (minmax ((convert (x) c)))) -> minmax (x c) if x is promoted
    and the outer convert demotes the expression back to x's type.  */
 (for minmax (min max)
@@ -3382,6 +3554,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    (if (shift_type != TREE_TYPE (@3))
 	     (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; })
 	     (bit_and @4 { newmaskt; })))))))))))))
+
+/* ((1 << n) & M) != 0  -> n == log2 (M) */
+(for cmp (ne eq)
+       icmp (eq ne)
+ (simplify
+  (cmp
+   (bit_and
+    (nop_convert? (lshift integer_onep @0)) integer_pow2p@1) integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
+   (icmp @0 { wide_int_to_tree (TREE_TYPE (@0),
+				wi::exact_log2 (wi::to_wide (@1))); }))))
 
 /* Fold (X {&,^,|} C2) << C1 into (X << C1) {&,^,|} (C2 << C1)
    (X {&,^,|} C2) >> C1 into (X >> C1) & (C2 >> C1).  */
@@ -3863,9 +4046,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Only optimize constant conditions when the selected branch
    has the same type as the COND_EXPR.  This avoids optimizing
    away "c ? x : throw", where the throw has a void type.
-   Note that we cannot throw away the fold-const.c variant nor
+   Note that we cannot throw away the fold-const.cc variant nor
    this one as we depend on doing this transform before possibly
-   A ? B : B -> B triggers and the fold-const.c one can optimize
+   A ? B : B -> B triggers and the fold-const.cc one can optimize
    0 ? A : B to B even if A has side-effects.  Something
    genmatch cannot handle.  */
 (simplify
@@ -3905,6 +4088,84 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
   (vec_cond @0 (op! @3 @1) (op! @3 @2))))
+#endif
+
+#if GIMPLE
+(match (nop_atomic_bit_test_and_p @0 @1 @4)
+ (bit_and (convert?@4 (ATOMIC_FETCH_OR_XOR_N @2 INTEGER_CST@0 @3))
+	   INTEGER_CST@1)
+ (with {
+	 int ibit = tree_log2 (@0);
+	 int ibit2 = tree_log2 (@1);
+       }
+  (if (ibit == ibit2
+      && ibit >= 0
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))))))
+
+(match (nop_atomic_bit_test_and_p @0 @1 @3)
+ (bit_and (convert?@3 (SYNC_FETCH_OR_XOR_N @2 INTEGER_CST@0))
+	  INTEGER_CST@1)
+ (with {
+	 int ibit = tree_log2 (@0);
+	 int ibit2 = tree_log2 (@1);
+       }
+  (if (ibit == ibit2
+      && ibit >= 0
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))))))
+
+(match (nop_atomic_bit_test_and_p @0 @0 @4)
+ (bit_and:c
+  (convert1?@4
+   (ATOMIC_FETCH_OR_XOR_N @2 (nop_convert? (lshift@0 integer_onep@5 @6)) @3))
+  (convert2? @0))
+ (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))))
+
+(match (nop_atomic_bit_test_and_p @0 @0 @4)
+ (bit_and:c
+  (convert1?@4
+   (SYNC_FETCH_OR_XOR_N @2 (nop_convert? (lshift@0 integer_onep@3 @5))))
+  (convert2? @0))
+ (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0)))))
+
+(match (nop_atomic_bit_test_and_p @0 @1 @3)
+ (bit_and@4 (convert?@3 (ATOMIC_FETCH_AND_N @2 INTEGER_CST@0 @5))
+	    INTEGER_CST@1)
+ (with {
+	 int ibit = wi::exact_log2 (wi::zext (wi::bit_not (wi::to_wide (@0)),
+					      TYPE_PRECISION(type)));
+	 int ibit2 = tree_log2 (@1);
+       }
+  (if (ibit == ibit2
+      && ibit >= 0
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))))))
+
+(match (nop_atomic_bit_test_and_p @0 @1 @3)
+ (bit_and@4
+  (convert?@3 (SYNC_FETCH_AND_AND_N @2 INTEGER_CST@0))
+  INTEGER_CST@1)
+ (with {
+	 int ibit = wi::exact_log2 (wi::zext (wi::bit_not (wi::to_wide (@0)),
+					      TYPE_PRECISION(type)));
+	 int ibit2 = tree_log2 (@1);
+       }
+  (if (ibit == ibit2
+      && ibit >= 0
+      && TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@0))))))
+
+(match (nop_atomic_bit_test_and_p @4 @0 @3)
+ (bit_and:c
+  (convert1?@3
+   (ATOMIC_FETCH_AND_N @2 (nop_convert?@4 (bit_not (lshift@0 integer_onep@6 @7))) @5))
+  (convert2? @0))
+ (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@4)))))
+
+(match (nop_atomic_bit_test_and_p @4 @0 @3)
+ (bit_and:c
+  (convert1?@3
+   (SYNC_FETCH_AND_AND_N @2 (nop_convert?@4 (bit_not (lshift@0 integer_onep@6 @7)))))
+  (convert2? @0))
+  (if (TYPE_PRECISION (type) <= TYPE_PRECISION (TREE_TYPE (@4)))))
+
 #endif
 
 /* (v ? w : 0) ? a : b is just (v & w) ? a : b
@@ -3987,8 +4248,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (integer_onep (@2))
       (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } )))
      /* a ? powerof2cst : 0 -> (!a) << (log2(powerof2cst)) */
-     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2)
-         && TYPE_PRECISION (type) != 1)
+     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2))
       (with {
 	tree shift = build_int_cst (integer_type_node, tree_log2 (@2));
        }
@@ -4185,6 +4445,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (if (code == MIN_EXPR)
 	(op (min @X { wide_int_to_tree (from_type, real_c1); })
 	    { wide_int_to_tree (from_type, c2); })))))))))
+
+/* X != C1 ? -X : C2 simplifies to -X when -C1 == C2.  */
+(simplify
+ (cond (ne @0 INTEGER_CST@1) (negate@3 @0) INTEGER_CST@2)
+ (if (!TYPE_SATURATING (type)
+      && (TYPE_OVERFLOW_WRAPS (type)
+	  || !wi::only_sign_bit_p (wi::to_wide (@1)))
+      && wi::eq_p (wi::neg (wi::to_wide (@1)), wi::to_wide (@2)))
+  @3))
+
+/* X != C1 ? ~X : C2 simplifies to ~X when ~C1 == C2.  */
+(simplify
+ (cond (ne @0 INTEGER_CST@1) (bit_not@3 @0) INTEGER_CST@2)
+ (if (wi::eq_p (wi::bit_not (wi::to_wide (@1)), wi::to_wide (@2)))
+  @3))
+
+/* (X + 1) > Y ? -X : 1 simplifies to X >= Y ? -X : 1 when
+   X is unsigned, as when X + 1 overflows, X is -1, so -X == 1.  */
+(simplify
+ (cond (gt (plus @0 integer_onep) @1) (negate @0) integer_onep@2)
+ (if (TYPE_UNSIGNED (type))
+  (cond (ge @0 @1) (negate @0) @2)))
 
 (for cnd (cond vec_cond)
  /* A ? B : (A ? X : C) -> A ? B : C.  */
@@ -4458,7 +4740,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (! FLOAT_TYPE_P (TREE_TYPE (@0))
        || ! HONOR_NANS (@0))
    { constant_boolean_node (true, type); }
-   (if (cmp != EQ_EXPR)
+   (if (cmp != EQ_EXPR
+	/* With -ftrapping-math conversion to EQ loses an exception.  */
+	&& (! FLOAT_TYPE_P (TREE_TYPE (@0))
+	    || ! flag_trapping_math))
     (eq @0 @0)))))
 (for cmp (ne gt lt)
  (simplify
@@ -5291,132 +5576,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with
    {
      poly_int64 off0, off1;
-     tree base0 = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off0);
-     tree base1 = get_addr_base_and_unit_offset (TREE_OPERAND (@1, 0), &off1);
-     if (base0 && TREE_CODE (base0) == MEM_REF)
-       {
-	 off0 += mem_ref_offset (base0).force_shwi ();
-         base0 = TREE_OPERAND (base0, 0);
-       }
-     if (base1 && TREE_CODE (base1) == MEM_REF)
-       {
-	 off1 += mem_ref_offset (base1).force_shwi ();
-         base1 = TREE_OPERAND (base1, 0);
-       }
+     tree base0, base1;
+     int equal = address_compare (cmp, TREE_TYPE (@2), @0, @1, base0, base1,
+				  off0, off1, GENERIC);
    }
-   (if (base0 && base1)
-    (with
-     {
-       int equal = 2;
-       /* Punt in GENERIC on variables with value expressions;
-	  the value expressions might point to fields/elements
-	  of other vars etc.  */
-       if (GENERIC
-	   && ((VAR_P (base0) && DECL_HAS_VALUE_EXPR_P (base0))
-	       || (VAR_P (base1) && DECL_HAS_VALUE_EXPR_P (base1))))
-	 ;
-       else if (decl_in_symtab_p (base0)
-		&& decl_in_symtab_p (base1))
-         equal = symtab_node::get_create (base0)
-	           ->equal_address_to (symtab_node::get_create (base1));
-       else if ((DECL_P (base0)
-		 || TREE_CODE (base0) == SSA_NAME
-		 || TREE_CODE (base0) == STRING_CST)
-		&& (DECL_P (base1)
-		    || TREE_CODE (base1) == SSA_NAME
-		    || TREE_CODE (base1) == STRING_CST))
-         equal = (base0 == base1);
-       if (equal == 0)
-	 {
-	   HOST_WIDE_INT ioff0 = -1, ioff1 = -1;
-	   off0.is_constant (&ioff0);
-	   off1.is_constant (&ioff1);
-	   if ((DECL_P (base0) && TREE_CODE (base1) == STRING_CST)
-	       || (TREE_CODE (base0) == STRING_CST && DECL_P (base1))
-	       || (TREE_CODE (base0) == STRING_CST
-		   && TREE_CODE (base1) == STRING_CST
-		   && ioff0 >= 0 && ioff1 >= 0
-		   && ioff0 < TREE_STRING_LENGTH (base0)
-		   && ioff1 < TREE_STRING_LENGTH (base1)
-		   /* This is a too conservative test that the STRING_CSTs
-		      will not end up being string-merged.  */
-		   && strncmp (TREE_STRING_POINTER (base0) + ioff0,
-			       TREE_STRING_POINTER (base1) + ioff1,
-			       MIN (TREE_STRING_LENGTH (base0) - ioff0,
-				    TREE_STRING_LENGTH (base1) - ioff1)) != 0))
-	     ;
-	   else if (!DECL_P (base0) || !DECL_P (base1))
-	     equal = 2;
-	   else if (cmp != EQ_EXPR && cmp != NE_EXPR)
-	     equal = 2;
-	   /* If this is a pointer comparison, ignore for now even
-	      valid equalities where one pointer is the offset zero
-	      of one object and the other to one past end of another one.  */
-	   else if (!INTEGRAL_TYPE_P (TREE_TYPE (@2)))
-	     ;
-	   /* Assume that automatic variables can't be adjacent to global
-	      variables.  */
-	   else if (is_global_var (base0) != is_global_var (base1))
-	     ;
-	   else
-	     {
-	       tree sz0 = DECL_SIZE_UNIT (base0);
-	       tree sz1 = DECL_SIZE_UNIT (base1);
-	       /* If sizes are unknown, e.g. VLA or not representable,
-		  punt.  */
-	       if (!tree_fits_poly_int64_p (sz0)
-		   || !tree_fits_poly_int64_p (sz1))
-		 equal = 2;
-	       else
-		 {
-		   poly_int64 size0 = tree_to_poly_int64 (sz0);
-		   poly_int64 size1 = tree_to_poly_int64 (sz1);
-		   /* If one offset is pointing (or could be) to the beginning
-		      of one object and the other is pointing to one past the
-		      last byte of the other object, punt.  */
-		   if (maybe_eq (off0, 0) && maybe_eq (off1, size1))
-		     equal = 2;
-		   else if (maybe_eq (off1, 0) && maybe_eq (off0, size0))
-		     equal = 2;
-		   /* If both offsets are the same, there are some cases
-		      we know that are ok.  Either if we know they aren't
-		      zero, or if we know both sizes are no zero.  */
-		   if (equal == 2
-		       && known_eq (off0, off1)
-		       && (known_ne (off0, 0)
-			   || (known_ne (size0, 0) && known_ne (size1, 0))))
-		     equal = 0;
-		 }
-	     }
-	 }
-     }
-     (if (equal == 1
-	  && (cmp == EQ_EXPR || cmp == NE_EXPR
-	      /* If the offsets are equal we can ignore overflow.  */
-	      || known_eq (off0, off1)
-	      || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
-		 /* Or if we compare using pointers to decls or strings.  */
-	      || (POINTER_TYPE_P (TREE_TYPE (@2))
-		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
-      (switch
-       (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
-	{ constant_boolean_node (known_eq (off0, off1), type); })
-       (if (cmp == NE_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
-	{ constant_boolean_node (known_ne (off0, off1), type); })
-       (if (cmp == LT_EXPR && (known_lt (off0, off1) || known_ge (off0, off1)))
-	{ constant_boolean_node (known_lt (off0, off1), type); })
-       (if (cmp == LE_EXPR && (known_le (off0, off1) || known_gt (off0, off1)))
-	{ constant_boolean_node (known_le (off0, off1), type); })
-       (if (cmp == GE_EXPR && (known_ge (off0, off1) || known_lt (off0, off1)))
-	{ constant_boolean_node (known_ge (off0, off1), type); })
-       (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
-	{ constant_boolean_node (known_gt (off0, off1), type); }))
-      (if (equal == 0)
-	(switch
-	 (if (cmp == EQ_EXPR)
-	  { constant_boolean_node (false, type); })
-	 (if (cmp == NE_EXPR)
-	  { constant_boolean_node (true, type); })))))))))
+   (if (equal == 1)
+    (switch
+     (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+      { constant_boolean_node (known_eq (off0, off1), type); })
+     (if (cmp == NE_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+      { constant_boolean_node (known_ne (off0, off1), type); })
+     (if (cmp == LT_EXPR && (known_lt (off0, off1) || known_ge (off0, off1)))
+      { constant_boolean_node (known_lt (off0, off1), type); })
+     (if (cmp == LE_EXPR && (known_le (off0, off1) || known_gt (off0, off1)))
+      { constant_boolean_node (known_le (off0, off1), type); })
+     (if (cmp == GE_EXPR && (known_ge (off0, off1) || known_lt (off0, off1)))
+      { constant_boolean_node (known_ge (off0, off1), type); })
+     (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
+      { constant_boolean_node (known_gt (off0, off1), type); }))
+    (if (equal == 0)
+     (switch
+      (if (cmp == EQ_EXPR)
+       { constant_boolean_node (false, type); })
+      (if (cmp == NE_EXPR)
+       { constant_boolean_node (true, type); })))))))
 
 /* Simplify pointer equality compares using PTA.  */
 (for neeq (ne eq)
@@ -5583,9 +5766,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    replace if (x == 0) with tem = ~x; if (tem != 0) which is
    clearly less optimal and which we'll transform again in forwprop.  */
 
+/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
+   where ~Y + 1 == pow2 and Z = ~Y.  */
+(for cst (VECTOR_CST INTEGER_CST)
+ (for cmp (eq ne)
+      icmp (le gt)
+  (simplify
+   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
+    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
+     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+       (icmp @0 { csts; })
+       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
+	 (icmp (view_convert:utype @0) { csts; }))))))))
+
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with
-   ADD_OVERFLOW detection in tree-ssa-math-opts.c.
+   ADD_OVERFLOW detection in tree-ssa-math-opts.cc.
    CONVERT?(CONVERT?(A) + CST) CMP A  ->  A CMP' CST' */
 (for cmp (lt le ge gt)
      out (gt gt le le)
@@ -5605,7 +5802,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				- wi::to_wide (@1)); })))))
 
 /* To detect overflow in unsigned A - B, A < B is simpler than A - B > A.
-   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.c
+   However, the detection logic for SUB_OVERFLOW in tree-ssa-math-opts.cc
    expects the long form, so we restrict the transformation for now.  */
 (for cmp (gt le)
  (simplify
@@ -6247,6 +6444,47 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && direct_internal_fn_supported_p (as_internal_fn (tos),
 					     type, OPTIMIZE_FOR_BOTH))
        (tos @0))))
+
+/* Simplify (trunc)copysign ((extend)x, (extend)y) to copysignf (x, y),
+   x,y is float value, similar for _Float16/double.  */
+(for copysigns (COPYSIGN_ALL)
+ (simplify
+  (convert (copysigns (convert@2 @0) (convert @1)))
+   (if (optimize
+       && !HONOR_SNANS (@2)
+       && types_match (type, TREE_TYPE (@0))
+       && types_match (type, TREE_TYPE (@1))
+       && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@2))
+       && direct_internal_fn_supported_p (IFN_COPYSIGN,
+					  type, OPTIMIZE_FOR_BOTH))
+    (IFN_COPYSIGN @0 @1))))
+
+(for froms (BUILT_IN_FMAF BUILT_IN_FMA BUILT_IN_FMAL)
+     tos (IFN_FMA IFN_FMA IFN_FMA)
+ (simplify
+  (convert (froms (convert@3 @0) (convert @1) (convert @2)))
+   (if (flag_unsafe_math_optimizations
+       && optimize
+       && FLOAT_TYPE_P (type)
+       && FLOAT_TYPE_P (TREE_TYPE (@3))
+       && types_match (type, TREE_TYPE (@0))
+       && types_match (type, TREE_TYPE (@1))
+       && types_match (type, TREE_TYPE (@2))
+       && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@3))
+       && direct_internal_fn_supported_p (as_internal_fn (tos),
+					  type, OPTIMIZE_FOR_BOTH))
+    (tos @0 @1 @2))))
+
+(for maxmin (max min)
+ (simplify
+  (convert (maxmin (convert@2 @0) (convert @1)))
+   (if (optimize
+       && FLOAT_TYPE_P (type)
+       && FLOAT_TYPE_P (TREE_TYPE (@2))
+       && types_match (type, TREE_TYPE (@0))
+       && types_match (type, TREE_TYPE (@1))
+       && element_precision (type) < element_precision (TREE_TYPE (@2)))
+    (maxmin @0 @1))))
 #endif
 
 (for froms (XFLOORL XCEILL XROUNDL XRINTL)
@@ -6705,7 +6943,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 					  TREE_TYPE (TREE_TYPE (ctor)))
 			     ? type
 			     : build_vector_type (TREE_TYPE (TREE_TYPE (ctor)),
-						  count));
+						  count * k));
 	      res = (constant_p ? build_vector_from_ctor (evtype, vals)
 		     : build_constructor (evtype, vals));
 	    }
@@ -7146,13 +7384,15 @@ and,
   (vec_cond @0 (view_convert? (uncond_op@4 @1 @2)) @3)
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
     (view_convert (cond_op @0 @1 @2 (view_convert:op_type @3))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@4 @2 @3)))
   (with { tree op_type = TREE_TYPE (@4); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@4))
     (view_convert (cond_op (bit_not @0) @2 @3 (view_convert:op_type @1)))))))
 
 /* Same for ternary operations.  */
@@ -7162,13 +7402,15 @@ and,
   (vec_cond @0 (view_convert? (uncond_op@5 @1 @2 @3)) @4)
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
     (view_convert (cond_op @0 @1 @2 @3 (view_convert:op_type @4))))))
  (simplify
   (vec_cond @0 @1 (view_convert? (uncond_op@5 @2 @3 @4)))
   (with { tree op_type = TREE_TYPE (@5); }
    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
-	&& is_truth_type_for (op_type, TREE_TYPE (@0)))
+	&& is_truth_type_for (op_type, TREE_TYPE (@0))
+	&& single_use (@5))
     (view_convert (cond_op (bit_not @0) @2 @3 @4
 		  (view_convert:op_type @1)))))))
 #endif

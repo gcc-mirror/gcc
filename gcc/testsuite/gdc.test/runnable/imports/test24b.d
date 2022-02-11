@@ -1,3 +1,3 @@
 module imports.test24b;
 
-public import std.string;
+public import imports.test24c;

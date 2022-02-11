@@ -1,5 +1,5 @@
-// RUNNABLE_PHOBOS_TEST
-import std.stdio;
+
+import core.stdc.stdio;
 
 /*******************************************************/
 
@@ -591,7 +591,7 @@ class Foo18
     {
         void doSayHello()
         {
-            writefln("Betty");
+            printf("Betty\n");
             sayHello();
         }
     }
@@ -599,7 +599,7 @@ class Foo18
 
     void sayHello()
     {
-        writefln("Hello");
+        printf("Hello\n");
     }
 }
 
@@ -614,7 +614,7 @@ class Foo182 : Foo18
 void test18()
 {
     Foo182 foo = new Foo182();
-    writefln("This should print Hello:");
+    printf("This should print Hello:\n");
 
     foo.bar.doSayHello();
 }
@@ -627,7 +627,7 @@ class Foo19
     {
         void doSayHello()
         {
-            writefln("Betty");
+            printf("Betty\n");
             sayHello();
         }
     }
@@ -635,7 +635,7 @@ class Foo19
 
     void sayHello()
     {
-        writefln("Hello");
+        printf("Hello\n");
     }
 
     this()
@@ -651,7 +651,7 @@ class Foo192 : Foo19
 void test19()
 {
     Foo192 foo = new Foo192();
-    writefln("This should print Hello:");
+    printf("This should print Hello:\n");
 
     foo.bar.doSayHello();
 }
@@ -796,7 +796,7 @@ struct S7426
 }
 
 /*******************************************************/
-// 14046
+// https://issues.dlang.org/show_bug.cgi?id=14046
 
 class A14046
 {
@@ -828,7 +828,7 @@ void test14046()
 }
 
 /*******************************************************/
-// 15839
+// https://issues.dlang.org/show_bug.cgi?id=15839
 
 class AnimatedProgress15839(bool makeClosure)
 {

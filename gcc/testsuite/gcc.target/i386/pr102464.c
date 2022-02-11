@@ -1,6 +1,6 @@
 /* PR target/102464.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512fp16" } */
+/* { dg-options "-O2 -mavx512fp16 -fno-trapping-math" } */
 
 #define FOO(FUNC,SUFFIX)                       \
   _Float16                                     \

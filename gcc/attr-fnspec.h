@@ -1,5 +1,5 @@
 /* Handling of fnspec attribute specifiers
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Contributed by Richard Guenther  <rguenther@suse.de>
 
    This file is part of GCC.
@@ -262,6 +262,29 @@ public:
   errno_maybe_written_p ()
   {
     return str[1] == 'C' || str[1] == 'P';
+  }
+
+  /* Return EAF flags for arg I.  */
+  int
+  arg_eaf_flags (unsigned int i)
+  {
+    int flags = 0;
+
+    if (!arg_specified_p (i))
+      ;
+    else if (!arg_used_p (i))
+      flags = EAF_UNUSED;
+    else
+      {
+	if (arg_direct_p (i))
+	  flags |= EAF_NO_INDIRECT_READ | EAF_NO_INDIRECT_ESCAPE
+		   | EAF_NOT_RETURNED_INDIRECTLY | EAF_NO_INDIRECT_CLOBBER;
+	if (arg_noescape_p (i))
+	  flags |= EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE;
+	if (arg_readonly_p (i))
+	  flags |= EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
+      }
+    return flags;
   }
 
   /* Check validity of the string.  */

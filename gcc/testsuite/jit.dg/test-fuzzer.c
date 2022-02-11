@@ -193,12 +193,18 @@ get_random_type (fuzzer *f)
 static gcc_jit_type *
 make_random_type (fuzzer *f)
 {
-  switch (fuzzer_randrange (f, 0, 5))
+  switch (fuzzer_randrange (f, 0, 8))
     {
     case 0:
       return gcc_jit_type_get_pointer (get_random_type (f));
     case 1:
       return gcc_jit_type_get_const (get_random_type (f));
+    case 2:
+      return gcc_jit_type_get_vector (get_random_type (f), 4);
+    case 3:
+      return gcc_jit_type_get_volatile (get_random_type (f));
+    case 4:
+      return gcc_jit_type_get_aligned (get_random_type (f), 4);
     default:
       {
 	/* Create a struct.  */

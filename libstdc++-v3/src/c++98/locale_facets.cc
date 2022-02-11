@@ -1,4 +1,4 @@
-// Copyright (C) 1997-2021 Free Software Foundation, Inc.
+// Copyright (C) 1997-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -132,6 +132,116 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __verify_grouping_impl(__grouping, __grouping_size,
                                   __grouping_tmp.c_str(),
                                   __grouping_tmp.size());
+  }
+
+  namespace
+  {
+    bool
+    is_leap(int year)
+    {
+      return (year % 100 != 0 || year % 400 == 0) && year % 4 == 0;
+    }
+
+    const unsigned short int mon_yday[2][13] =
+    {
+      // Normal years.
+      { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+      // Leap years.
+      { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+    };
+
+    int
+    day_of_the_week (int year, int mon, int mday)
+    {
+      // We know that January 1st 1970 was a Thursday (= 4).  Compute the
+      // difference between this date and the one in arguments and so
+      // determine the weekday.
+      int corr_year = 1900 + year - (mon < 2);
+      int wday = (-473
+		  + (365 * (year - 70))
+		  + (corr_year / 4)
+		  - ((corr_year / 4) / 25) + ((corr_year / 4) % 25 < 0)
+		  + (((corr_year / 4) / 25) / 4)
+		  + mon_yday[0][mon]
+		  + mday - 1);
+      return ((wday % 7) + 7) % 7;
+    }
+
+    // Compute the day of the year.
+    int
+    day_of_the_year (tm *tm)
+    {
+      return (mon_yday[is_leap (1900 + tm->tm_year)][tm->tm_mon]
+	      + (tm->tm_mday - 1));
+    }
+  }
+
+  // Finalize time_get state.
+  void
+  __time_get_state::
+  _M_finalize_state(tm* tm)
+  {
+    if (_M_have_I && _M_is_pm)
+      tm->tm_hour += 12;
+    if (_M_have_century)
+      {
+	if (_M_want_century)
+	  tm->tm_year = tm->tm_year % 100;
+	else
+	  tm->tm_year = 0;
+	tm->tm_year += (_M_century - 19) * 100;
+      }
+    if (_M_want_xday && !_M_have_wday)
+      {
+	if (!(_M_have_mon && _M_have_mday) && _M_have_yday)
+	  {
+	    // We don't have tm_mon and/or tm_mday, compute them.
+	    int t_mon = 0;
+	    while (mon_yday[is_leap(1900 + tm->tm_year)][t_mon]
+		   <= tm->tm_yday)
+	      ++t_mon;
+	    if (!_M_have_mon)
+	      tm->tm_mon = t_mon - 1;
+	    if (!_M_have_mday)
+	      tm->tm_mday
+		= (tm->tm_yday
+		   - mon_yday[is_leap(1900 + tm->tm_year)][t_mon - 1] + 1);
+	    _M_have_mon = 1;
+	    _M_have_mday = 1;
+	  }
+	// Don't crash in day_of_the_week if tm_mon is uninitialized.
+	if (_M_have_mon || (unsigned) tm->tm_mon <= 11)
+	  tm->tm_wday
+	    = day_of_the_week (tm->tm_year, tm->tm_mon, tm->tm_mday);
+      }
+    if (_M_want_xday
+	&& !_M_have_yday
+	&& (_M_have_mon || (unsigned) tm->tm_mon <= 11))
+      tm->tm_yday = day_of_the_year (tm);
+    if ((_M_have_uweek || _M_have_wweek) && _M_have_wday)
+      {
+	int w_offset = _M_have_uweek ? 0 : 1;
+	int wday = day_of_the_week (tm->tm_year, 0, 1);
+
+	if (!_M_have_yday)
+	  tm->tm_yday = ((7 - (wday - w_offset)) % 7
+			 + (_M_week_no - 1) * 7
+			 + (tm->tm_wday - w_offset + 7) % 7);
+
+	if (!_M_have_mday || !_M_have_mon)
+	  {
+	    int t_mon = 0;
+	    while (mon_yday[is_leap(1900 + tm->tm_year)][t_mon]
+		   <= tm->tm_yday)
+	      ++t_mon;
+	    if (!_M_have_mon)
+	      tm->tm_mon = t_mon - 1;
+	    if (!_M_have_mday)
+	      tm->tm_mday
+		= (tm->tm_yday
+		   - mon_yday[is_leap(1900 + tm->tm_year)][t_mon - 1] + 1);
+	  }
+      }
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -1,5 +1,5 @@
 /* Array bounds checking.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,13 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_ARRAY_BOUNDS_H
 #define GCC_GIMPLE_ARRAY_BOUNDS_H
 
+#include "pointer-query.h"
+
 class array_bounds_checker
 {
   friend class check_array_bounds_dom_walker;
 
 public:
-  array_bounds_checker (struct function *fun, range_query *v)
-    : fun (fun), ranges (v) { }
+  array_bounds_checker (struct function *, range_query *);
   void check ();
 
 private:
@@ -38,8 +39,9 @@ private:
 
   /* Current function.  */
   struct function *fun;
-  /* Ranger instance.  */
-  range_query *ranges;
+  /* A pointer_query object to store information about pointers and
+     their targets in.  */
+  pointer_query m_ptr_qry;
   /* Current statement.  */
   gimple *m_stmt;
 };

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,18 +163,6 @@ package Exp_Util is
    --  Implementation limitation: Assoc_Node must be a statement. We can
    --  generalize to expressions if there is a need but this is tricky to
    --  implement because of short-circuits (among other things).
-
-   procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
-   --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
-   --  Insert_Action (N, Decl), but inserts Decl outside the expression in
-   --  which N appears. This is called Insert_Declaration because the intended
-   --  use is for declarations that have no associated code. We can't go
-   --  moving other kinds of things out of the current expression, since they
-   --  could be executed conditionally (e.g. right operand of short circuit,
-   --  or THEN/ELSE of if expression). This is currently used only in
-   --  Modify_Tree_For_C mode, where it is needed because in C we have no
-   --  way of having declarations within an expression (a really annoying
-   --  limitation).
 
    procedure Insert_Library_Level_Action (N : Node_Id);
    --  This procedure inserts and analyzes the node N as an action at the
@@ -703,7 +691,7 @@ package Exp_Util is
    procedure Get_Current_Value_Condition
      (Var : Node_Id;
       Op  : out Node_Kind;
-      Val : out Node_Id);
+      Val : out Node_Id) with Post => Val /= Var;
    --  This routine processes the Current_Value field of the variable Var. If
    --  the Current_Value field is null or if it represents a known value, then
    --  on return Cond is set to N_Empty, and Val is set to Empty.

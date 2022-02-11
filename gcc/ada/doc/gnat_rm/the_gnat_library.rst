@@ -2163,7 +2163,7 @@ This package provides the declaration of an atomic counter type,
 together with efficient routines (using hardware
 synchronization primitives) for incrementing, decrementing,
 and testing of these counters. This package is implemented
-on most targets, including all Alpha, ia64, PowerPC, SPARC V9,
+on most targets, including all Alpha, AARCH64, ARM, ia64, PowerPC, SPARC V9,
 x86, and x86_64 platforms.
 
 .. _`System.Memory_(s-memory.ads)`:

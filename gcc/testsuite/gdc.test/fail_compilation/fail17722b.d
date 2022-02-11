@@ -1,6 +1,6 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/fail17722b.d(12): Error: static assert  `__traits(compiles, a1 || a2)` is false
+fail_compilation/fail17722b.d(12): Error: static assert:  `__traits(compiles, a1 || a2)` is false
 ---
 */
 

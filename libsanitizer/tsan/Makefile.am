@@ -38,6 +38,7 @@ tsan_files = \
 	tsan_platform_windows.cpp \
 	tsan_report.cpp \
 	tsan_rtl.cpp \
+	tsan_rtl_access.cpp \
 	tsan_rtl_mutex.cpp \
 	tsan_rtl_proc.cpp \
 	tsan_rtl_report.cpp \

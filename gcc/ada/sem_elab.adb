@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1752,13 +1752,13 @@ package body Sem_Elab is
 
       function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Ada_Semantic_Target);
-      --  Determine whether arbitrary entity Id denodes a source or internally
+      --  Determine whether arbitrary entity Id denotes a source or internally
       --  generated subprogram which emulates Ada semantics.
 
       function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Assertion_Pragma_Target);
       --  Determine whether arbitrary entity Id denotes a procedure which
-      --  varifies the run-time semantics of an assertion pragma.
+      --  verifies the run-time semantics of an assertion pragma.
 
       function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean;
       pragma Inline (Is_Bodiless_Subprogram);
@@ -4949,7 +4949,7 @@ package body Sem_Elab is
          --  which started the recursive search. If this is not the case, then
          --  there is a potential ABE if the access value is used to call the
          --  subprogram. Emit a warning only when switch -gnatw.f (warnings on
-         --  suspucious 'Access) is in effect.
+         --  suspicious 'Access) is in effect.
 
          elsif Warn_On_Elab_Access
            and then Present (Body_Decl)
@@ -6965,6 +6965,11 @@ package body Sem_Elab is
          --  Determine whether arbitrary node N denotes a suitable construct
          --  for inclusion into the early call region.
 
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id;
+         pragma Inline (Previous_Suitable_Construct);
+         --  Return the previous node suitable for inclusion into the early
+         --  call region.
+
          procedure Transition_Body_Declarations
            (Bod  : Node_Id;
             Curr : out Node_Id);
@@ -7209,7 +7214,7 @@ package body Sem_Elab is
          begin
             --  The early call region starts at N
 
-            Curr  := Prev (N);
+            Curr  := Previous_Suitable_Construct (N);
             Start := N;
 
             --  Inspect each node in reverse declarative order while going in
@@ -7286,7 +7291,7 @@ package body Sem_Elab is
             --  Otherwise the input node is still within some list
 
             else
-               Curr := Prev (Start);
+               Curr := Previous_Suitable_Construct (Start);
             end if;
          end Include;
 
@@ -7377,6 +7382,23 @@ package body Sem_Elab is
                   return True;
             end case;
          end Is_Suitable_Construct;
+
+         ---------------------------------
+         -- Previous_Suitable_Construct --
+         ---------------------------------
+
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id is
+            P : Node_Id;
+
+         begin
+            P := Prev (N);
+
+            while Present (P) and then not Is_Suitable_Construct (P) loop
+               Prev (P);
+            end loop;
+
+            return P;
+         end Previous_Suitable_Construct;
 
          ----------------------------------
          -- Transition_Body_Declarations --
@@ -9011,7 +9033,7 @@ package body Sem_Elab is
             if not Comes_From_Source (Curr) then
                null;
 
-            --  If the traversal came from the handled sequence of statments,
+            --  If the traversal came from the handled sequence of statements,
             --  then the node appears at the level of the enclosing construct.
             --  This is a more reliable test because transients scopes within
             --  the declarative region of the encapsulator are hard to detect.
@@ -9033,7 +9055,7 @@ package body Sem_Elab is
          elsif Nkind (Curr) in
                  N_Entry_Body | N_Subprogram_Body | N_Task_Body
          then
-            --  If the traversal came from the handled sequence of statments,
+            --  If the traversal came from the handled sequence of statements,
             --  then the node cannot possibly appear at any level. This is
             --  a more reliable test because transients scopes within the
             --  declarative region of the encapsulator are hard to detect.
@@ -15360,7 +15382,7 @@ package body Sem_Elab is
 
                elsif Present (Vis_Decls)
                  and then List_Containing (FNode) = Vis_Decls
-                 and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
+                 and then Is_Empty_List (Prv_Decls)
                then
                   null;
 

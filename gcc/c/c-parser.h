@@ -1,5 +1,5 @@
 /* Declarations for the parser for C and Objective-C.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
    influenced by and fragments based on the C++ parser.
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_PARSER_H
 #define GCC_C_PARSER_H
 
-/* The C lexer intermediates between the lexer in cpplib and c-lex.c
+/* The C lexer intermediates between the lexer in cpplib and c-lex.cc
    and the C parser.  Unlike the C++ lexer, the parser structure
    stores the lexer information instead of using a separate structure.
    Identifiers are separated into ordinary identifiers, type names,

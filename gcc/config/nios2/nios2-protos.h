@@ -1,5 +1,5 @@
 /* Subroutine declarations for Altera Nios II target support.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com).
    Contributed by Mentor Graphics, Inc.
 

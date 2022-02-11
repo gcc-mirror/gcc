@@ -197,9 +197,10 @@ def decode_path(path):
 
 
 class Error:
-    def __init__(self, message, line=None):
+    def __init__(self, message, line=None, details=None):
         self.message = message
         self.line = line
+        self.details = details
 
     def __repr__(self):
         s = self.message
@@ -687,9 +688,11 @@ class GitCommit:
         for file in sorted(mentioned_files - changed_files):
             msg = 'unchanged file mentioned in a ChangeLog'
             candidates = difflib.get_close_matches(file, changed_files, 1)
+            details = None
             if candidates:
                 msg += f' (did you mean "{candidates[0]}"?)'
-            self.errors.append(Error(msg, file))
+                details = '\n'.join(difflib.Differ().compare([file], [candidates[0]])).rstrip()
+            self.errors.append(Error(msg, file, details))
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
                 if file in self.new_files:
@@ -715,9 +718,15 @@ class GitCommit:
                         self.changelog_entries.append(entry)
                     # strip prefix of the file
                     assert file.startswith(entry.folder)
-                    file = file[len(entry.folder):].lstrip('/')
-                    entry.lines.append('\t* %s: New file.' % file)
-                    entry.files.append(file)
+                    # do not allow auto-addition of New files
+                    # for the top-level folder
+                    if entry.folder:
+                        file = file[len(entry.folder):].lstrip('/')
+                        entry.lines.append('\t* %s: New file.' % file)
+                        entry.files.append(file)
+                    else:
+                        msg = 'new file in the top-level folder not mentioned in a ChangeLog'
+                        self.errors.append(Error(msg, file))
                 else:
                     used_pattern = [p for p in mentioned_patterns
                                     if file.startswith(p)]

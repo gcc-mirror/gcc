@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -de
+// EXTRA_FILES: imports/protectionimp.d
 import imports.protectionimp;
 
 alias TypeTuple(T...) = T;
@@ -76,7 +77,7 @@ void main()
 }
 
 /***************************************************/
-// 14169
+// https://issues.dlang.org/show_bug.cgi?id=14169
 
 template staticMap14169(alias fun, T...)
 {

@@ -1,4 +1,3 @@
-// RUNNABLE_PHOBOS_TEST
 // PERMUTE_ARGS:
 
 // $HeadURL$
@@ -7,7 +6,6 @@
 
 module dstress.run.line_token_03;
 
-import std.stdio;
 import core.exception;
 
 int main(){
@@ -21,8 +19,6 @@ int main(){
 
         assert(0);
 }
-
-import std.stdio;
 
 /*
  * @WARNING@: this code depends on the phobos implementation.
@@ -39,6 +35,5 @@ void checkFileSpec(Object o){
                 }
         }
 
-writeln(str);
         assert(str[start .. start+3]=="(1)");
 }

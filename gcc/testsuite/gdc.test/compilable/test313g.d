@@ -1,5 +1,6 @@
 // REQUIRED_ARGS: -de
-// EXTRA_SOURCES: imports/g313.d
+// COMPILED_IMPORTS: imports/g313.d
+// EXTRA_FILES: imports/g313public.d imports/g313staticif.d imports/g313stringmixin.d imports/g313templatemixin.d
 import imports.g313;
 
 void test15900()

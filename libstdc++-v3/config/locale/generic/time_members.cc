@@ -1,6 +1,6 @@
 // std::time_get, std::time_put implementation, generic version -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,7 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_data->_M_date_time_era_format = "";
       _M_data->_M_am = "AM";
       _M_data->_M_pm = "PM";
-      _M_data->_M_am_pm_format = "";
+      _M_data->_M_am_pm_format = "%I:%M:%S %p";
 
       // Day names, starting with "C"'s Sunday.
       _M_data->_M_day1 = "Sunday";
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_data->_M_date_time_era_format = L"";
       _M_data->_M_am = L"AM";
       _M_data->_M_pm = L"PM";
-      _M_data->_M_am_pm_format = L"";
+      _M_data->_M_am_pm_format = L"%I:%M:%S %p";
 
       // Day names, starting with "C"'s Sunday.
       _M_data->_M_day1 = L"Sunday";

@@ -1,5 +1,5 @@
 /* Target Definitions for OpenRISC.
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by Stafford Horne.
 
    This file is part of GCC.
@@ -392,12 +392,7 @@ do {                                                    \
 
 /* Emit rtl for profiling.  Output assembler code to call "_mcount" for
    profiling a function entry.  */
-#define PROFILE_HOOK(LABEL)						\
-  {									\
-    rtx fun;								\
-    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode);			\
-  }
+#define PROFILE_HOOK(LABEL)  or1k_profile_hook()
 
 /* All the work is done in PROFILE_HOOK, but this is still required.  */
 #define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)

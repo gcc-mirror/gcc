@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -151,7 +151,7 @@ along with GCC; see the file COPYING3.  If not see
   }									\
   while (0)
 
-/* Get tree.c to declare a target-specific specialization of
+/* Get tree.cc to declare a target-specific specialization of
    merge_decl_attributes.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
@@ -381,7 +381,7 @@ do {						\
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* MSVC returns aggregate types of up to 8 bytes via registers.
-   See i386.c:ix86_return_in_memory.  */
+   See i386.cc:ix86_return_in_memory.  */
 #undef MS_AGGREGATE_RETURN
 #define MS_AGGREGATE_RETURN 1
 

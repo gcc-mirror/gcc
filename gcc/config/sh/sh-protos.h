@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -39,7 +39,7 @@ enum sh_function_kind {
 extern rtx sh_fsca_sf2int (void);
 extern rtx sh_fsca_int2sf (void);
 
-/* Declare functions defined in sh.c and used in templates.  */
+/* Declare functions defined in sh.cc and used in templates.  */
 extern bool sh_lra_p (void);
 
 extern const char *output_branch (int, rtx_insn *, rtx *);

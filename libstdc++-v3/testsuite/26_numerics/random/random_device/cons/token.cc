@@ -3,7 +3,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 
 #include <random>
 #include <stdexcept>
+#include <cstdio>
 #include <testsuite_hooks.h>
 #include <testsuite_random.h>
 
@@ -42,7 +43,7 @@ test02()
 #ifdef _GLIBCXX_USE_DEV_RANDOM
   std::random_device x1("/dev/urandom");
   std::random_device x2("/dev/random");
-  VERIFY( x1() != x2() );
+  VERIFY( x1() != x2() || x1() != x2() );
 #endif
 }
 
@@ -51,14 +52,22 @@ test03()
 {
   // At least one of these tokens should be valid.
   const std::string tokens[] = {
-    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19937",
-    "prng"
+    "rdseed", "rdrand", "darn",
+    "rand_s", "/dev/urandom", "/dev/random",
+    "getentropy", "arc4random",
+    "mt19937", "prng"
   };
   int count = 0;
   for (const std::string& token : tokens)
   {
+    std::printf("checking std::random_device(\"%s\"):\t", token.c_str());
     if (__gnu_test::random_device_available(token))
+    {
+      std::puts("yes");
       ++count;
+    }
+    else
+      std::puts("no");
   }
   VERIFY( count != 0 );
 }

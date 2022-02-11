@@ -14,7 +14,7 @@ ie.:     tool -lfilename.h  target.h
 containing coretypes.h.  Typically that is in gcc/gcc from a source checkout.
 For these tools to work on files not in this directory, their path needs to be
 specified on the command line.
-ie.:     tool c/c-decl.c  lto/lto.c
+ie.:     tool c/c-decl.cc  lto/lto.cc
 
 - options can be intermixed with filenames anywhere on the command line
 ie.   tool ssa.h rtl.h -a   is equivalent to 
@@ -39,7 +39,7 @@ gcc-order-headers
   Any files which are changed are output, and the original is saved with a
   .bak extention.
 
-  ex.:     gcc-order-headers tree-ssa.c c/c-decl.c
+  ex.:     gcc-order-headers tree-ssa.cc c/c-decl.cc
 
   -s will list all of the known headers in their canonical order. It does not
   show which of those headers include other headers, just the final canonical
@@ -67,8 +67,8 @@ show-headers
 
   This tool must be run in the core gcc source directory.
 
-  ex.: show-headers -sansidecl.h tree-ssa.c
-	tree-ssa.c
+  ex.: show-headers -sansidecl.h tree-ssa.cc
+	tree-ssa.cc
 	  config.h
 	    auto-host.h
 	    ansidecl.h  (1)               <<-------
@@ -124,13 +124,13 @@ included-by
      check rather than performing the much slower find command.
 
   ex: included-by tree-vectorizer.h
-	config/aarch64/aarch64.c
-	config/i386/i386.c
-	config/rs6000/rs6000.c
-	tree-loop-distribution.c
-	tree-parloops.c
-	tree-ssa-loop-ivopts.c
-	tree-ssa-loop.c
+	config/aarch64/aarch64.cc
+	config/i386/i386.cc
+	config/rs6000/rs6000.cc
+	tree-loop-distribution.cc
+	tree-parloops.cc
+	tree-ssa-loop-ivopts.cc
+	tree-ssa-loop.cc
 
 
 
@@ -219,8 +219,8 @@ reduce-headers
   reduce-headers -b../../build -t../../targets -falias.h -fexpr.h tree*.c  (1)
        #  This will attempt to remove only alias.h and expr.h from tree*.c
 
-  reduce-headers -b../../build -t../../targets tree-ssa-live.c
-       #  This will attempt to remove all header files from tree-ssa-live.c
+  reduce-headers -b../../build -t../../targets tree-ssa-live.cc
+       #  This will attempt to remove all header files from tree-ssa-live.cc
   
 
   the tool will generate a number of log files:
@@ -240,14 +240,14 @@ reduce-headers
     $header.h.log: The same log is put into the relevant header log as well.
 
 
-a sample output from ira.c.log:
+a sample output from ira.cc.log:
 
 Compilation failed:
  for shrink-wrap.h:
 
  ============================================
- /gcc/2015-09-09/gcc/gcc/ira.c: In function ‘bool split_live_ranges_for_shrink_wrap()’:
- /gcc/2015-09-09/gcc/gcc/ira.c:4839:8: error: ‘SHRINK_WRAPPING_ENABLED’ was not declared in this scope
+ /gcc/2015-09-09/gcc/gcc/ira.cc: In function ‘bool split_live_ranges_for_shrink_wrap()’:
+ /gcc/2015-09-09/gcc/gcc/ira.cc:4839:8: error: ‘SHRINK_WRAPPING_ENABLED’ was not declared in this scope
     if (!SHRINK_WRAPPING_ENABLED)
             ^
 	    make: *** [ira.o] Error 1
@@ -280,4 +280,4 @@ graph-include-web
   useful for finding cycles and redundancies, or simply to see what a single
   file looks like.
 
-  ex.: graph-include-web tree.c
+  ex.: graph-include-web tree.cc

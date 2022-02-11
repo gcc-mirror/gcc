@@ -18,7 +18,7 @@
 @ifinfo
 This file documents the internals of the GNU C Preprocessor.
 
-Copyright (C) 2000-2021 Free Software Foundation, Inc.
+Copyright (C) 2000-2022 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -47,7 +47,7 @@ into another language, under the above conditions for modified versions.
 @page
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 2000-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2000-2022 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -131,7 +131,7 @@ behavior.
 @cindex escaped newlines
 
 @section Overview
-The lexer is contained in the file @file{lex.c}.  It is a hand-coded
+The lexer is contained in the file @file{lex.cc}.  It is a hand-coded
 lexer, and not implemented as a state machine.  It can understand C, C++
 and Objective-C source code, and has been extended to allow reasonably
 successful preprocessing of assembly language.  The lexer does not make
@@ -853,7 +853,7 @@ This variable therefore uniquely enumerates each line in the translation
 unit.  With some simple infrastructure, it is straight forward to map
 from this to the original source file and line number pair, saving space
 whenever line number information needs to be saved.  The code the
-implements this mapping lies in the files @file{line-map.c} and
+implements this mapping lies in the files @file{line-map.cc} and
 @file{line-map.h}.
 
 Command-line macros and assertions are implemented by pushing a buffer
@@ -996,7 +996,7 @@ is turned off.
 @cindex files
 
 Fairly obviously, the file handling code of cpplib resides in the file
-@file{files.c}.  It takes care of the details of file searching,
+@file{files.cc}.  It takes care of the details of file searching,
 opening, reading and caching, for both the main source file and all the
 headers it recursively includes.
 

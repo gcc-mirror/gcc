@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ package body Ada.Strings.Text_Buffers is
             Buffer.Indent_Pending := False;
             if Buffer.Indentation > 0 then
                Put_UTF_8_Implementation
-                 (Buffer, (1 .. Buffer.Indentation => ' '));
+                 (Buffer, [1 .. Buffer.Indentation => ' ']);
             end if;
          end if;
 
@@ -111,7 +111,7 @@ package body Ada.Strings.Text_Buffers is
       procedure New_Line (Buffer : in out Buffer_Type) is
       begin
          Buffer.Indent_Pending := False; --  just for a moment
-         Put (Buffer, (1 => ASCII.LF));
+         Put (Buffer, [ASCII.LF]);
          Buffer.Indent_Pending := True;
          Buffer.UTF_8_Column   := 1;
       end New_Line;

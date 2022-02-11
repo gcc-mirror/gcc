@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2021, AdaCore                     --
+--                     Copyright (C) 1999-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -627,8 +627,8 @@ package body GNAT.Calendar.Time_IO is
       subtype String3 is String (1 .. 3);
       Abbrev_Upper_Month_Names :
         constant array (Ada.Calendar.Month_Number) of String3 :=
-         ("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-          "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
+         ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+          "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
       --  Short version of the month names, used when parsing date strings
 
       S : String := Str;

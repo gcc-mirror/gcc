@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,14 @@
 #include <string>
 #include <iterator>
 
-struct hate_T_iterator : std::iterator<std::forward_iterator_tag, char> {
+struct hate_T_iterator {
+
+    typedef std::forward_iterator_tag iterator_category;
+    typedef char value_type;
+    typedef std::ptrdiff_t difference_type;
+    typedef char* pointer;
+    typedef char& reference;
+
     explicit hate_T_iterator(char* p) : p(p) {}
     char* p;
 

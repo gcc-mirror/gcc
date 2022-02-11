@@ -107,10 +107,12 @@ main (int argc, char **argv)
 
 /* vfma_lane_f64.
    vfma_laneq_f64. */
-/* { dg-final { scan-assembler-times "fmadd\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "fmadd\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmadd\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 2 { target aarch64_little_endian } } } */
 
 /* vfmaq_lane_f64.
    vfmaq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 { target aarch64_little_endian } } } */
 
 

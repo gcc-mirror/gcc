@@ -1,5 +1,21 @@
-// PERMUTE_ARGS: -inline -g -O
-
+/* PERMUTE_ARGS: -inline -g -O
+TEST_OUTPUT:
+---
+runnable/testcontracts.d(323): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(324): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(325): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(326): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(328): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(329): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(330): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(331): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(502): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(503): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(504): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(505): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+runnable/testcontracts.d(505): Deprecation: Usage of the `body` keyword is deprecated. Use `do` instead.
+---
+*/
 extern(C) int printf(const char*, ...);
 
 /*******************************************/
@@ -192,7 +208,7 @@ void test5()
 }
 
 /*******************************************/
-// 3273
+// https://issues.dlang.org/show_bug.cgi?id=3273
 
 // original case
 struct Bug3273
@@ -205,7 +221,7 @@ struct Bug3273
 ref int func3273()
 out(r)
 {
-    // Regression check of issue 3390
+    // Regression check of https://issues.dlang.org/show_bug.cgi?id=3390
     static assert(!__traits(compiles, r = 1));
 }
 do
@@ -223,7 +239,7 @@ void test6()
 /*******************************************/
 
 /+
-// http://d.puremagic.com/issues/show_bug.cgi?id=3722
+// https://issues.dlang.org/show_bug.cgi?id=3722
 
 class Bug3722A
 {
@@ -318,13 +334,13 @@ void test9()
 
 /*******************************************/
 
-auto test10() body { return 3; }
-auto test11()() body { return 3; }
+auto test10() do { return 3; }
+auto test11()() do { return 3; }
 
 auto test12()
 {
-    auto test10() body { return 3; }
-    auto test11()() body { return 3; }
+    auto test10() do { return 3; }
+    auto test11()() do { return 3; }
     return 3;
 }
 
@@ -335,7 +351,7 @@ void test13()
 }
 
 /*******************************************/
-// 4785
+// https://issues.dlang.org/show_bug.cgi?id=4785
 
 int cnt;
 
@@ -360,7 +376,7 @@ void test4785()
 }
 
 /*******************************************/
-// 5039
+// https://issues.dlang.org/show_bug.cgi?id=5039
 
 class C5039 {
     int x;
@@ -375,7 +391,7 @@ class C5039 {
 }
 
 /*******************************************/
-// 5204
+// https://issues.dlang.org/show_bug.cgi?id=5204
 
 interface IFoo5204
 {
@@ -388,7 +404,7 @@ class Foo5204 : IFoo5204
 }
 
 /*******************************************/
-// 6417
+// https://issues.dlang.org/show_bug.cgi?id=6417
 
 class Bug6417
 {
@@ -422,7 +438,7 @@ void test6417()
 }
 
 /*******************************************/
-// 6549
+// https://issues.dlang.org/show_bug.cgi?id=6549
 
 class C6549
 {
@@ -472,7 +488,7 @@ void test6549()
 }
 
 /*******************************************/
-// 7218
+// https://issues.dlang.org/show_bug.cgi?id=7218
 
 void test7218()
 {
@@ -491,7 +507,55 @@ void test7218()
 }
 
 /*******************************************/
-// 7517
+// https://issues.dlang.org/show_bug.cgi?id=7335
+
+class A7335
+{
+    int mValue = 10;
+
+    void setValue(int newValue)
+    in { }
+    out { assert(mValue == 3); }
+    do
+    {
+        mValue = newValue;
+    }
+}
+
+class B7335 : A7335
+{
+    override void setValue(int newValue)
+    in { assert(false); }
+    out { assert(mValue == 3); }
+    do
+    {
+        mValue = newValue;
+    }
+}
+
+class C7335 : A7335
+{
+    override void setValue(int newValue)
+    in { int a = newValue; }
+    out { assert(mValue == 3); }
+    do
+    {
+        mValue = newValue;
+    }
+}
+
+void test7335()
+{
+    A7335 aObject = new B7335();
+    aObject.setValue(3);
+
+    A7335 bObject = new C7335();
+    bObject.setValue(3);    // <<<<<  will crash because undefined mValue in the
+                            // A7335.setValue().out-block.
+}
+
+/*******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7517
 
 void test7517()
 {
@@ -575,7 +639,7 @@ void test7517()
 }
 
 /*******************************************/
-// 7699
+// https://issues.dlang.org/show_bug.cgi?id=7699
 
 class P7699
 {
@@ -589,7 +653,7 @@ class D7699 : P7699
 }
 
 /*******************************************/
-// 7883
+// https://issues.dlang.org/show_bug.cgi?id=7883
 
 // Segmentation fault
 class AA7883
@@ -665,7 +729,7 @@ class DC7883 : CC7883
 }
 
 /*******************************************/
-// 7892
+// https://issues.dlang.org/show_bug.cgi?id=7892
 
 struct S7892
 {
@@ -695,7 +759,7 @@ class C7892
 }
 
 /*******************************************/
-// 8066
+// https://issues.dlang.org/show_bug.cgi?id=8066
 
 struct CLCommandQueue
 {
@@ -709,7 +773,7 @@ struct CLCommandQueue
 }
 
 /*******************************************/
-// 8073
+// https://issues.dlang.org/show_bug.cgi?id=8073
 
 struct Container8073
 {
@@ -748,7 +812,7 @@ void test8073()
 }
 
 /*******************************************/
-// 8093
+// https://issues.dlang.org/show_bug.cgi?id=8093
 
 void test8093()
 {
@@ -785,7 +849,7 @@ void test8093()
 }
 
 /*******************************************/
-// 9383
+// https://issues.dlang.org/show_bug.cgi?id=9383
 
 class A9383
 {
@@ -871,7 +935,8 @@ void test9383()
 }
 
 /*******************************************/
-// 15524 - Different from issue 9383 cases, closed variable size is bigger than REGSIZE.
+// https://issues.dlang.org/show_bug.cgi?id=15524
+// Different from issue 9383 cases, closed variable size is bigger than REGSIZE.
 
 class A15524
 {
@@ -1004,7 +1069,7 @@ class Test15524b
 }
 
 /*******************************************/
-// 10479
+// https://issues.dlang.org/show_bug.cgi?id=10479
 
 class B10479
 {
@@ -1018,7 +1083,7 @@ class D10479 : B10479
 }
 
 /*******************************************/
-// 10596
+// https://issues.dlang.org/show_bug.cgi?id=10596
 
 class Foo10596
 {
@@ -1028,7 +1093,7 @@ class Foo10596
 }
 
 /*******************************************/
-// 10721
+// https://issues.dlang.org/show_bug.cgi?id=10721
 
 class Foo10721
 {
@@ -1049,7 +1114,7 @@ struct Bar10721
 }
 
 /*******************************************/
-// 10981
+// https://issues.dlang.org/show_bug.cgi?id=10981
 
 class C10981
 {
@@ -1060,7 +1125,7 @@ class C10981
 }
 
 /*******************************************/
-// 14779
+// https://issues.dlang.org/show_bug.cgi?id=14779
 
 class C14779
 {
@@ -1076,6 +1141,79 @@ void test14779()
 {
     auto c = new C14779();
     c.foo(0);
+}
+
+/*******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15984
+
+I15984 i15984;
+C15984 c15984;
+
+void check15984(T)(const char* s, T this_, int i)
+{
+    printf("%s this = %p, i = %d\n", s, this_, i);
+    static if (is(T == I15984)) assert(this_ is i15984);
+    else static if (is(T == C15984)) assert(this_ is c15984);
+    else static assert(0);
+    assert(i == 5);
+}
+
+interface I15984
+{
+    void f1(int i)
+    in  { check15984("I.f1.i", this, i); assert(0); }
+    out { check15984("I.f1.o", this, i); }
+
+    int[3] f2(int i)
+    in  { check15984("I.f2.i", this, i); assert(0); }
+    out { check15984("I.f2.o", this, i); }
+
+    void f3(int i)
+    in  { void nested() { check15984("I.f3.i", this, i); } nested(); assert(0); }
+    out { void nested() { check15984("I.f3.o", this, i); } nested(); }
+
+    void f4(out int i, lazy int j)
+    in  { }
+    out { }
+}
+
+class C15984 : I15984
+{
+    void f1(int i)
+    in  { check15984("C.f1.i", this, i); }
+    out { check15984("C.f1.o", this, i); }
+    do  { check15984("C.f1  ", this, i); }
+
+    int[3] f2(int i)
+    in  { check15984("C.f2.i", this, i); }
+    out { check15984("C.f2.o", this, i); }
+    do  { check15984("C.f2  ", this, i); return [0,0,0]; }
+
+    void f3(int i)
+    in  { void nested() { check15984("C.f3.i", this, i); } nested(); }
+    out { void nested() { check15984("C.f3.o", this, i); } nested(); }
+    do  { check15984("C.f3  ", this, i); }
+
+    void f4(out int i, lazy int j)
+    in  { assert(0); }
+    do  { i = 10; }
+}
+
+void test15984()
+{
+    c15984 = new C15984;
+    i15984 = c15984;
+    printf("i = %p\n", i15984);
+    printf("c = %p\n", c15984);
+    printf("====\n");
+    i15984.f1(5);
+    printf("====\n");
+    i15984.f2(5);
+    printf("====\n");
+    i15984.f3(5);
+    int i;
+    i15984.f4(i, 1);
+    assert(i == 10);
 }
 
 /*******************************************/
@@ -1170,6 +1308,7 @@ int main()
     test6417();
     test6549();
     test7218();
+    test7335();
     test7517();
     test8073();
     test8093();
@@ -1177,6 +1316,7 @@ int main()
     test15524();
     test15524a();
     test14779();
+    test15984();
     dip1009_1(1);
     dip1009_2(1);
     dip1009_3(1);

@@ -1,6 +1,6 @@
 /* OpenACC worker partitioning via middle end neutering/broadcasting scheme
 
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -58,7 +58,7 @@
 
 /* Loop structure of the function.  The entire function is described as
    a NULL loop.  */
-/* Adapted from 'gcc/config/nvptx/nvptx.c:struct parallel'.  */
+/* Adapted from 'gcc/config/nvptx/nvptx.cc:struct parallel'.  */
 
 struct parallel_g
 {
@@ -186,7 +186,7 @@ omp_sese_active_worker_call (gcall *call)
    partitioning mode of the function as a whole.  Populate MAP with
    head and tail blocks.  We also clear the BB visited flag, which is
    used when finding partitions.  */
-/* Adapted from 'gcc/config/nvptx/nvptx.c:nvptx_split_blocks'.  */
+/* Adapted from 'gcc/config/nvptx/nvptx.cc:nvptx_split_blocks'.  */
 
 static void
 omp_sese_split_blocks (bb_stmt_map_t *map)
@@ -345,7 +345,7 @@ mask_name (unsigned mask)
 }
 
 /* Dump this parallel and all its inner parallels.  */
-/* Adapted from 'gcc/config/nvptx/nvptx.c:nvptx_dump_pars'.  */
+/* Adapted from 'gcc/config/nvptx/nvptx.cc:nvptx_dump_pars'.  */
 
 static void
 omp_sese_dump_pars (parallel_g *par, unsigned depth)
@@ -371,7 +371,7 @@ omp_sese_dump_pars (parallel_g *par, unsigned depth)
 /* If BLOCK contains a fork/join marker, process it to create or
    terminate a loop structure.  Add this block to the current loop,
    and then walk successor blocks.   */
-/* Adapted from 'gcc/config/nvptx/nvptx.c:nvptx_find_par'.  */
+/* Adapted from 'gcc/config/nvptx/nvptx.cc:nvptx_find_par'.  */
 
 static parallel_g *
 omp_sese_find_par (bb_stmt_map_t *map, parallel_g *par, basic_block block)
@@ -477,7 +477,7 @@ walk_successors:
    to head & tail markers, discovered when splitting blocks.  This
    speeds up the discovery.  We rely on the BB visited flag having
    been cleared when splitting blocks.  */
-/* Adapted from 'gcc/config/nvptx/nvptx.c:nvptx_discover_pars'.  */
+/* Adapted from 'gcc/config/nvptx/nvptx.cc:nvptx_discover_pars'.  */
 
 static parallel_g *
 omp_sese_discover_pars (bb_stmt_map_t *map)
@@ -939,7 +939,7 @@ worker_single_simple (basic_block from, basic_block to,
 
 /* Build COMPONENT_REF and set TREE_THIS_VOLATILE and TREE_READONLY on it
    as appropriate.  */
-/* Adapted from 'gcc/omp-low.c:omp_build_component_ref'.  */
+/* Adapted from 'gcc/omp-low.cc:omp_build_component_ref'.  */
 
 static tree
 oacc_build_component_ref (tree obj, tree field)

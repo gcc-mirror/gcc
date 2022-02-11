@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1916,90 +1916,6 @@ package body Sem_Eval is
          return False;
    end Compile_Time_Known_Value;
 
-   --------------------------------------
-   -- Compile_Time_Known_Value_Or_Aggr --
-   --------------------------------------
-
-   function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean is
-   begin
-      --  If we have an entity name, then see if it is the name of a constant
-      --  and if so, test the corresponding constant value, or the name of
-      --  an enumeration literal, which is always a constant.
-
-      if Is_Entity_Name (Op) then
-         declare
-            E : constant Entity_Id := Entity (Op);
-            V : Node_Id;
-
-         begin
-            if Ekind (E) = E_Enumeration_Literal then
-               return True;
-
-            elsif Ekind (E) /= E_Constant then
-               return False;
-
-            else
-               V := Constant_Value (E);
-               return Present (V)
-                 and then Compile_Time_Known_Value_Or_Aggr (V);
-            end if;
-         end;
-
-      --  We have a value, see if it is compile-time-known
-
-      else
-         if Compile_Time_Known_Value (Op) then
-            return True;
-
-         elsif Nkind (Op) = N_Aggregate then
-
-            if Present (Expressions (Op)) then
-               declare
-                  Expr : Node_Id;
-               begin
-                  Expr := First (Expressions (Op));
-                  while Present (Expr) loop
-                     if not Compile_Time_Known_Value_Or_Aggr (Expr) then
-                        return False;
-                     else
-                        Next (Expr);
-                     end if;
-                  end loop;
-               end;
-            end if;
-
-            if Present (Component_Associations (Op)) then
-               declare
-                  Cass : Node_Id;
-
-               begin
-                  Cass := First (Component_Associations (Op));
-                  while Present (Cass) loop
-                     if not
-                       Compile_Time_Known_Value_Or_Aggr (Expression (Cass))
-                     then
-                        return False;
-                     end if;
-
-                     Next (Cass);
-                  end loop;
-               end;
-            end if;
-
-            return True;
-
-         elsif Nkind (Op) = N_Qualified_Expression then
-            return Compile_Time_Known_Value_Or_Aggr (Expression (Op));
-
-         --  All other types of values are not known at compile time
-
-         else
-            return False;
-         end if;
-
-      end if;
-   end Compile_Time_Known_Value_Or_Aggr;
-
    ---------------------------------------
    -- CRT_Safe_Compile_Time_Known_Value --
    ---------------------------------------
@@ -2117,6 +2033,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2139,6 +2056,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "mod with zero divisor", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2159,6 +2077,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "rem with zero divisor", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2218,7 +2137,8 @@ package body Sem_Eval is
             else pragma Assert (Nkind (N) = N_Op_Divide);
                if UR_Is_Zero (Right_Real) then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "division by zero", CE_Divide_By_Zero);
+                    (N, "division by zero", CE_Divide_By_Zero,
+                     Loc => Sloc (Right));
                   return;
                end if;
 
@@ -3882,7 +3802,7 @@ package body Sem_Eval is
       --  Fold will perform the other relevant tests.
 
       if Nkind (Parent (N)) /= N_Attribute_Reference
-        and then Is_LHS (N) = No
+        and then not Known_To_Be_Assigned (N)
         and then not Is_Actual_Out_Or_In_Out_Parameter (N)
       then
          --  Simplify a selected_component on an aggregate by extracting
@@ -4723,7 +4643,7 @@ package body Sem_Eval is
    ------------------
 
    function Expr_Value_E (N : Node_Id) return Entity_Id is
-      Ent  : constant Entity_Id := Entity (N);
+      Ent : constant Entity_Id := Entity (N);
    begin
       if Ekind (Ent) = E_Enumeration_Literal then
          return Ent;
@@ -7479,13 +7399,11 @@ package body Sem_Eval is
       procedure Why_Not_Static_List (L : List_Id) is
          N : Node_Id;
       begin
-         if Is_Non_Empty_List (L) then
-            N := First (L);
-            while Present (N) loop
-               Why_Not_Static (N);
-               Next (N);
-            end loop;
-         end if;
+         N := First (L);
+         while Present (N) loop
+            Why_Not_Static (N);
+            Next (N);
+         end loop;
       end Why_Not_Static_List;
 
    --  Start of processing for Why_Not_Static

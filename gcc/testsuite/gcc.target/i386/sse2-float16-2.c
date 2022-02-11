@@ -13,4 +13,5 @@ foo (union flt x)
   return x.flt;
 }
 
-/* { dg-final { scan-assembler {(?n)pinsrw[\t ].*%xmm0} } } */
+/* { dg-final { scan-assembler {(?n)pinsrw[\t ].*%xmm0} { target ia32 } } } */
+/* { dg-final { scan-assembler {(?n)movd[\t ].*%xmm0} { target { ! ia32 } } } } */

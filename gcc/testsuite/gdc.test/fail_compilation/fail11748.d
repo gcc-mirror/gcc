@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11748.d(12): Error: expression my_function(0) is void and has no value
+fail_compilation/fail11748.d(12): Error: expression `my_function(0)` is `void` and has no value
 ---
 */
 

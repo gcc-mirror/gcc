@@ -1,3 +1,61 @@
+2022-01-31  Nick Clifton  <nickc@redhat.com>
+
+	PR demangler/98886
+	PR demangler/99935
+	* rust-demangle.c (struct rust_demangler): Add a recursion
+	counter.
+	(demangle_path): Increment/decrement the recursion counter upon
+	entry and exit.  Fail if the counter exceeds a fixed limit.
+	(demangle_type): Likewise.
+	(rust_demangle_callback): Initialise the recursion counter,
+	disabling if requested by the option flags.
+
+2022-01-15  Martin Sebor  <msebor@redhat.com>
+
+	* regex.c: Suppress -Wuse-after-free.
+
+2021-12-30  Lancelot SIX  <lsix@lancelotsix.com>
+
+	* cp-demangle.c (d_clone_suffix): Support digits in clone tag
+	names.
+	* testsuite/demangle-expected: Check demangling of clone symbols
+	with digits in name.
+
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	(configure_deps): Depend on ../config/gcc-plugin.m4.
+	* configure.ac: AC_SUBST AR_PLUGIN_OPTION and
+	RANLIB_PLUGIN_OPTION.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	(configure_deps): Depend on ../config/gcc-plugin.m4.
+	* configure.ac: AC_SUBST AR_PLUGIN_OPTION and
+	RANLIB_PLUGIN_OPTION.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Makefile.in: Use ETAGS variable in TAGS target.
+	* configure: Regenerate.
+	* configure.ac: Allow ETAGS variable to be overridden.
+
+2021-11-29  Andrew Pinski  <apinski@marvell.com>
+
+	* make-temp-file.c (try_dir): Check to see if the dir
+	is actually a directory.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

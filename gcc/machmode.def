@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -184,7 +184,7 @@ along with GCC; see the file COPYING3.  If not see
 	the number of units doubles the size and precision as well.
 
    Note: If a mode is ever made which is more than 255 bytes wide,
-   machmode.h and genmodes.c will have to be changed to allocate
+   machmode.h and genmodes.cc will have to be changed to allocate
    more space for the mode_size and mode_alignment arrays.  */
 
 /* VOIDmode is used when no mode needs to be specified,

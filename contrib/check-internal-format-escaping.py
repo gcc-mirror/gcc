@@ -66,7 +66,7 @@ def lint_gcc_internal_format(msg: polib.POEntry):
 
     def outside_quotes(m: Match[str]):
         before = msgid[:m.start(0)]
-        return before.count("%<") == before.count("%>")
+        return before.count('%<') == before.count('%>')
 
     def lint_matching_placeholders():
         """
@@ -127,7 +127,7 @@ def lint_gcc_internal_format(msg: polib.POEntry):
         to separate the words.
         """
 
-        for match in re.finditer("(.?[a-zA-Z0-9])%<", msgid):
+        for match in re.finditer('(.?[a-zA-Z0-9])%<', msgid):
             if match.group(1) != '%s':
                 warn(msg,
                      'no-space-before-quote',
@@ -143,7 +143,7 @@ def lint_gcc_internal_format(msg: polib.POEntry):
         * static_cast and the like (which are legitimate)
         """
 
-        for match in re.finditer("_", msgid):
+        for match in re.finditer('_', msgid):
             if outside_quotes(match):
                 warn(msg,
                      'underscore-outside-quotes',
@@ -163,13 +163,13 @@ def lint_gcc_internal_format(msg: polib.POEntry):
                  'the term "may not" is ambiguous')
 
     def lint_unbalanced_quotes():
-        if msgid.count("%<") != msgid.count("%>"):
+        if msgid.count('%<') != msgid.count('%>'):
             warn(msg,
                  'unbalanced-quotes',
                  'unbalanced %< and %> quotes')
 
         if msg.translated():
-            if msg.msgstr.count("%<") != msg.msgstr.count("%>"):
+            if msg.msgstr.count('%<') != msg.msgstr.count('%>'):
                 warn(msg,
                      'unbalanced-quotes',
                      'unbalanced %< and %> quotes')

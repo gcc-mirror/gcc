@@ -1,6 +1,6 @@
 /* Libiberty basename.  Like basename, but is not overridden by the
    system C library.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or

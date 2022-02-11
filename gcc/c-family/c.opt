@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2021 Free Software Foundation, Inc.
+; Copyright (C) 2003-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -374,6 +374,33 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types.
 
+Wbidi-chars
+C ObjC C++ ObjC++ Warning Alias(Wbidi-chars=,any,none)
+;
+
+Wbidi-chars=
+C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level) EnumSet
+-Wbidi-chars=[none|unpaired|any|ucn] Warn about UTF-8 bidirectional control characters.
+
+; Required for these enum values.
+SourceInclude
+cpplib.h
+
+Enum
+Name(cpp_bidirectional_level) Type(int) UnknownError(argument %qs to %<-Wbidi-chars%> not recognized)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none) Set(1)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired) Set(1)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any) Set(1)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(ucn) Value(bidirectional_ucn) Set(2)
+
 Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about boolean expression compared with an integer value different from true/false.
@@ -523,6 +550,14 @@ Warn when all constructors and destructors are private.
 Wdangling-else
 C ObjC C++ ObjC++ Var(warn_dangling_else) Warning LangEnabledBy(C ObjC C++ ObjC++,Wparentheses)
 Warn about dangling else.
+
+Wdangling-pointer
+C ObjC C++ LTO ObjC++ Alias(Wdangling-pointer=, 2, 0) Warning
+Warn for uses of pointers to auto variables whose lifetime has ended.
+
+Wdangling-pointer=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) IntegerRange(0, 2)
+Warn for uses of pointers to auto variables whose lifetime has ended.
 
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
@@ -714,6 +749,10 @@ Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.
 
+Winfinite-recursion
+C ObjC C++ LTO ObjC++ Var(warn_infinite_recursion) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn for infinitely recursive calls.
+
 Waddress-of-packed-member
 C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
 Warn when the address of packed member of struct or union is taken.
@@ -851,6 +890,10 @@ Warn about missing fields in struct initializers.
 Wmissing-requires
 C++ ObjC++ Var(warn_missing_requires) Init(1) Warning
 Warn about likely missing requires keyword.
+
+Wmissing-template-keyword
+C++ ObjC++ Var(warn_missing_template_keyword) Init(1) Warning
+Warn when the template keyword is missing after a member access token in a dependent member access expression if that member is a template.
 
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -1334,6 +1377,18 @@ Wunused-const-variable=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(C ObjC,Wunused-variable, 1, 0) IntegerRange(0, 2)
 Warn when a const variable is unused.
 
+# Defining these options here in addition to common.opt is necessary
+# in order for the default -Wall setting of -Wuse-after-free=2 to take
+# effect.
+
+Wuse-after-free
+LangEnabledBy(C ObjC C++ LTO ObjC++)
+; in common.opt
+
+Wuse-after-free=
+LangEnabledBy(C ObjC C++ LTO ObjC++, Wall,2,0)
+; in common.opt
+
 Wvariadic-macros
 C ObjC C++ ObjC++ CPP(warn_variadic_macros) CppReason(CPP_W_VARIADIC_MACROS) Var(cpp_warn_variadic_macros) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wpedantic || Wtraditional)
 Warn about using variadic macros.
@@ -1587,6 +1642,10 @@ fconstexpr-cache-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
 -fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
 
+fconstexpr-fp-except
+C++ ObjC++ Var(flag_constexpr_fp_except) Init(0)
+Allow IEC559 floating point exceptions in constant expressions.
+
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
@@ -1711,6 +1770,10 @@ No longer supported.
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
 Export functions even if they can be inlined.
+
+fimplicit-constexpr
+C++ ObjC++ Var(flag_implicit_constexpr)
+Make inline functions constexpr by default.
 
 fimplicit-inline-templates
 C++ ObjC++ Var(flag_implicit_inline_templates) Init(1)

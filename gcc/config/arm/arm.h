@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -79,11 +79,11 @@ extern GTY(()) rtx arm_target_insn;
 extern void (*arm_lang_output_object_attributes_hook)(void);
 
 /* This type is the user-visible __fp16.  We need it in a few places in
-   the backend.  Defined in arm-builtins.c.  */
+   the backend.  Defined in arm-builtins.cc.  */
 extern tree arm_fp16_type_node;
 
 /* This type is the user-visible __bf16.  We need it in a few places in
-   the backend.  Defined in arm-builtins.c.  */
+   the backend.  Defined in arm-builtins.cc.  */
 extern tree arm_bf16_type_node;
 extern tree arm_bf16_ptr_type_node;
 
@@ -452,7 +452,8 @@ enum base_architecture
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
   BASE_ARCH_8M_MAIN = 8,
-  BASE_ARCH_8R = 8
+  BASE_ARCH_8R = 8,
+  BASE_ARCH_9A = 9
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */
@@ -1714,7 +1715,7 @@ typedef struct
 		bl	mcount
 		.word	LP1
 
-   profile_function() in final.c outputs the .data section, FUNCTION_PROFILER
+   profile_function() in final.cc outputs the .data section, FUNCTION_PROFILER
    will output the .text section.
 
    The ``mov ip,lr'' seems like a good idea to stick with cc convention.
@@ -2227,7 +2228,7 @@ extern int making_const_table;
    that ASM_OUTPUT_REG_PUSH will be matched with ASM_OUTPUT_REG_POP, and
    that r7 isn't used by the function profiler, so we can use it as a
    scratch reg.  WARNING: This isn't safe in the general case!  It may be
-   sensitive to future changes in final.c:profile_function.  */
+   sensitive to future changes in final.cc:profile_function.  */
 #define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)		\
   do							\
     {							\

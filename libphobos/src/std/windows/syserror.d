@@ -3,12 +3,12 @@
 /**
  * Convert Win32 error code to string.
  *
- * Copyright: Copyright Digital Mars 2006 - 2013.
+ * Copyright: Copyright The D Language Foundation" 2006 - 2013.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
  * Credits:   Based on code written by Regan Heath
  */
-/*          Copyright Digital Mars 2006 - 2013.
+/*          Copyright The D Language Foundation" 2006 - 2013.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,7 @@ version (StdDdoc)
 
     /** Query the text for a Windows error code, as returned by
         $(LINK2 http://msdn.microsoft.com/en-us/library/windows/desktop/ms679360.aspx,
-        $(D GetLastError)), as a D string.
+        `GetLastError`), as a D string.
      */
     string sysErrorString(
         DWORD errCode,
@@ -37,20 +37,20 @@ version (StdDdoc)
     /*********************
        Thrown if errors that set
        $(LINK2 http://msdn.microsoft.com/en-us/library/windows/desktop/ms679360.aspx,
-       $(D GetLastError)) occur.
+       `GetLastError`) occur.
      */
     class WindowsException : Exception
     {
         private alias DWORD = int;
-        final @property DWORD code(); /// $(D GetLastError)'s return value.
+        final @property DWORD code(); /// `GetLastError`'s return value.
         this(DWORD code, string str=null, string file = null, size_t line = 0) @trusted;
     }
 
     /++
-        If $(D !!value) is true, $(D value) is returned. Otherwise,
+        If `!!value` is true, `value` is returned. Otherwise,
         $(D new WindowsException(GetLastError(), msg)) is thrown.
-        $(D WindowsException) assumes that the last operation set
-        $(D GetLastError()) appropriately.
+        `WindowsException` assumes that the last operation set
+        `GetLastError()` appropriately.
 
         Example:
         --------------------
@@ -65,10 +65,10 @@ else:
 
 version (Windows):
 
-import core.sys.windows.windows;
+import core.sys.windows.winbase, core.sys.windows.winnt;
 import std.array : appender;
 import std.conv : to;
-import std.format : formattedWrite;
+import std.format.write : formattedWrite;
 import std.windows.charset;
 
 string sysErrorString(
@@ -117,9 +117,9 @@ bool putSysError(Writer)(DWORD code, Writer w, /*WORD*/int langId = 0)
 
 class WindowsException : Exception
 {
-    import core.sys.windows.windows : DWORD;
+    import core.sys.windows.windef : DWORD;
 
-    final @property DWORD code() { return _code; } /// $(D GetLastError)'s return value.
+    final @property DWORD code() { return _code; } /// `GetLastError`'s return value.
     private DWORD _code;
 
     this(DWORD code, string str=null, string file = null, size_t line = 0) @trusted

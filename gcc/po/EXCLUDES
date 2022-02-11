@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2021 Free Software Foundation, Inc.
+# Copyright (C) 2001-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -30,69 +30,26 @@ limity.h
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these
 #   people typically need to be able to read English anyway.
-genattr.c
-genattrtab.c
-genautomata.c
-gencheck.c
-gencodes.c
-genconditions.c
-genconfig.c
-genconstants.c
-genemit.c
-genextract.c
-genflags.c
-gengenrtl.c
-gengtype.c
-genhooks.c
-genmodes.c
-genopinit.c
-genoutput.c
-genpeep.c
-genpreds.c
-genrecog.c
-gensupport.c
+genattr.cc
+genattrtab.cc
+genautomata.cc
+gencheck.cc
+gencodes.cc
+genconditions.cc
+genconfig.cc
+genconstants.cc
+genemit.cc
+genextract.cc
+genflags.cc
+gengenrtl.cc
+gengtype.cc
+genhooks.cc
+genmodes.cc
+genopinit.cc
+genoutput.cc
+genpeep.cc
+genpreds.cc
+genrecog.cc
+gensupport.cc
 gensupport.h
-read-md.c
-
-#   These files are part of the front end to D, and have no i18n support.
-d/dmd/arrayop.c
-d/dmd/attrib.c
-d/dmd/blockexit.c
-d/dmd/canthrow.c
-d/dmd/constfold.c
-d/dmd/cppmangle.c
-d/dmd/ctfeexpr.c
-d/dmd/dcast.c
-d/dmd/dclass.c
-d/dmd/declaration.c
-d/dmd/denum.c
-d/dmd/dimport.c
-d/dmd/dinterpret.c
-d/dmd/dmangle.c
-d/dmd/dmodule.c
-d/dmd/doc.c
-d/dmd/dscope.c
-d/dmd/dstruct.c
-d/dmd/dsymbol.c
-d/dmd/dtemplate.c
-d/dmd/dversion.c
-d/dmd/expression.c
-d/dmd/expressionsem.c
-d/dmd/func.c
-d/dmd/iasmgcc.c
-d/dmd/initsem.c
-d/dmd/lexer.c
-d/dmd/mtype.c
-d/dmd/nogc.c
-d/dmd/nspace.c
-d/dmd/objc.c
-d/dmd/opover.c
-d/dmd/optimize.c
-d/dmd/parse.c
-d/dmd/safe.c
-d/dmd/sideeffect.c
-d/dmd/statement.c
-d/dmd/statementsem.c
-d/dmd/staticassert.c
-d/dmd/staticcond.c
-d/dmd/traits.c
+read-md.cc

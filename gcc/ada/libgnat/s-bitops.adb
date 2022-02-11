@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2021, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2022, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,10 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
-with System;                 use System;
-with System.Unsigned_Types;  use System.Unsigned_Types;
+with System.Unsigned_Types; use System.Unsigned_Types;
 
 with Ada.Exceptions;         use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
@@ -59,14 +56,14 @@ package body System.Bit_Ops is
    --  The following is an array of masks used to mask the final byte, either
    --  at the high end (big-endian case) or the low end (little-endian case).
 
-   Masks : constant array (1 .. 7) of Packed_Byte := (
+   Masks : constant array (1 .. 7) of Packed_Byte := [
      (1 - LE) * 2#1000_0000# + LE * 2#0000_0001#,
      (1 - LE) * 2#1100_0000# + LE * 2#0000_0011#,
      (1 - LE) * 2#1110_0000# + LE * 2#0000_0111#,
      (1 - LE) * 2#1111_0000# + LE * 2#0000_1111#,
      (1 - LE) * 2#1111_1000# + LE * 2#0001_1111#,
      (1 - LE) * 2#1111_1100# + LE * 2#0011_1111#,
-     (1 - LE) * 2#1111_1110# + LE * 2#0111_1111#);
+     (1 - LE) * 2#1111_1110# + LE * 2#0111_1111#];
 
    -----------------------
    -- Local Subprograms --

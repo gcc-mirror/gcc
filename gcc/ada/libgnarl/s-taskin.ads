@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -773,7 +773,10 @@ package System.Tasking is
    -- Priority info --
    -------------------
 
-   Unspecified_Priority : constant Integer := System.Priority'First - 1;
+   Unspecified_Priority : constant Integer := -1;
+   --  Indicates that a task has an unspecified priority. This is hardcoded as
+   --  -1 rather than System.Priority'First - 1 as the value needs to be used
+   --  in init.c to specify that the main task has no specified priority.
 
    Priority_Not_Boosted : constant Integer := System.Priority'First - 1;
    --  Definition of Priority actually has to come from the RTS configuration
@@ -1154,7 +1157,7 @@ package System.Tasking is
       --  non-terminated task so that the associated storage is automatically
       --  reclaimed when the task terminates.
 
-      Attributes : Attribute_Array := (others => 0);
+      Attributes : Attribute_Array := [others => 0];
       --  Task attributes
 
       --  IMPORTANT Note: the Entry_Queues field is last for efficiency of

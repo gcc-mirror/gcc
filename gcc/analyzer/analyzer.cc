@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -241,7 +241,7 @@ is_special_named_call_p (const gcall *call, const char *funcname,
 /* Helper function for checkers.  Is FNDECL an extern fndecl at file scope
    that has the given FUNCNAME?
 
-   Compare with special_function_p in calls.c.  */
+   Compare with special_function_p in calls.cc.  */
 
 bool
 is_named_call_p (const_tree fndecl, const char *funcname)
@@ -271,7 +271,7 @@ is_named_call_p (const_tree fndecl, const char *funcname)
 }
 
 /* Return true if FNDECL is within the namespace "std".
-   Compare with cp/typeck.c: decl_in_std_namespace_p, but this doesn't
+   Compare with cp/typeck.cc: decl_in_std_namespace_p, but this doesn't
    rely on being the C++ FE (or handle inline namespaces inside of std).  */
 
 static inline bool

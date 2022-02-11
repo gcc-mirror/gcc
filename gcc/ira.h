@@ -1,6 +1,6 @@
 /* Communication between the Integrated Register Allocator (IRA) and
    the rest of the compiler.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -117,6 +117,11 @@ struct target_ira
      the allocation of given register class whose targetm.hard_regno_mode_ok
      values for given mode are false.  */
   HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
+
+  /* When an allocatable hard register in given mode can not be placed in given
+     register class, it is in the set of the following array element.  It can
+     happen only when given mode requires more one hard register.  */
+  HARD_REG_SET x_ira_exclude_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 };
 
 extern struct target_ira default_target_ira;
@@ -164,6 +169,8 @@ extern struct target_ira *this_target_ira;
   (this_target_ira->x_ira_no_alloc_regs)
 #define ira_prohibited_class_mode_regs \
   (this_target_ira->x_ira_prohibited_class_mode_regs)
+#define ira_exclude_class_mode_regs \
+  (this_target_ira->x_ira_exclude_class_mode_regs)
 
 /* Major structure describing equivalence info for a pseudo.  */
 struct ira_reg_equiv_s
@@ -215,10 +222,10 @@ extern bool ira_remove_insn_scratches (rtx_insn *insn, bool all_p, FILE *dump_fi
 extern void ira_restore_scratches (FILE *dump_file);
 extern void ira_nullify_asm_goto (rtx_insn *insn);
 
-/* ira-costs.c */
-extern void ira_costs_c_finalize (void);
+/* ira-costs.cc */
+extern void ira_costs_cc_finalize (void);
 
-/* ira-lives.c */
+/* ira-lives.cc */
 extern rtx non_conflicting_reg_copy_p (rtx_insn *);
 
 /* Spilling static chain pseudo may result in generation of wrong

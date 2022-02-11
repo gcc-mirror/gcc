@@ -2,7 +2,7 @@
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,8 +24,11 @@
 #include <testsuite_hooks.h>
 
 struct compare_counter
-  : std::binary_function<int, int, bool>
 {
+  typedef int result_type;
+  typedef int first_argument_type;
+  typedef bool second_argument_type;
+
   static int count;
   
   bool operator()(int a, int b) const

@@ -34,7 +34,7 @@ int main(string[] args)
     a.bar = "hello";
     a.bar = baz ~ "betty";
 
-    printf("a.bar = '%.*s'\n", a.bar.length, a.bar.ptr);
+    printf("a.bar = '%.*s'\n", cast(int)a.bar.length, a.bar.ptr);
     assert(a.bar == "lolobetty");
     return 0;
 }

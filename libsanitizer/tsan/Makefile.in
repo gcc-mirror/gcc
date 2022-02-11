@@ -102,6 +102,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/override.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/toolexeclibdir.m4 \
+	$(top_srcdir)/../config/warnings.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
@@ -153,10 +154,10 @@ am__objects_1 = tsan_clock.lo tsan_debugging.lo tsan_external.lo \
 	tsan_md5.lo tsan_mman.lo tsan_mutexset.lo tsan_new_delete.lo \
 	tsan_platform_linux.lo tsan_platform_mac.lo \
 	tsan_platform_posix.lo tsan_platform_windows.lo tsan_report.lo \
-	tsan_rtl.lo tsan_rtl_mutex.lo tsan_rtl_proc.lo \
-	tsan_rtl_report.lo tsan_rtl_thread.lo tsan_stack_trace.lo \
-	tsan_suppressions.lo tsan_symbolize.lo tsan_sync.lo \
-	tsan_vector_clock.lo
+	tsan_rtl.lo tsan_rtl_access.lo tsan_rtl_mutex.lo \
+	tsan_rtl_proc.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
+	tsan_stack_trace.lo tsan_suppressions.lo tsan_symbolize.lo \
+	tsan_sync.lo tsan_vector_clock.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -336,6 +337,7 @@ STRIP = @STRIP@
 TSAN_TARGET_DEPENDENT_OBJECTS = @TSAN_TARGET_DEPENDENT_OBJECTS@
 VERSION = @VERSION@
 VIEW_FILE = @VIEW_FILE@
+WARN_FLAGS = @WARN_FLAGS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -389,6 +391,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -441,6 +444,7 @@ tsan_files = \
 	tsan_platform_windows.cpp \
 	tsan_report.cpp \
 	tsan_rtl.cpp \
+	tsan_rtl_access.cpp \
 	tsan_rtl_mutex.cpp \
 	tsan_rtl_proc.cpp \
 	tsan_rtl_report.cpp \
@@ -605,6 +609,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_aarch64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_access.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_amd64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mips64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mutex.Plo@am__quote@

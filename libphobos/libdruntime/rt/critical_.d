@@ -2,8 +2,9 @@
  * Implementation of support routines for synchronized blocks.
  *
  * Copyright: Copyright Digital Mars 2000 - 2011.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright, Sean Kelly
+ * Source: $(DRUNTIMESRC rt/_critical_.d)
  */
 
 /*          Copyright Digital Mars 2000 - 2011.

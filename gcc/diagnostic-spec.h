@@ -1,6 +1,6 @@
 /* Language-independent APIs to enable/disable per-location warnings.
 
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>
 
    This file is part of GCC.
@@ -41,11 +41,13 @@ public:
      NW_UNINIT = 1 << 3,
      /* Warnings about arithmetic overflow.  */
      NW_VFLOW = 1 << 4,
+     /* Warnings about dangling pointers.  */
+     NW_DANGLING = 1 << 5,
      /* All other unclassified warnings.  */
-     NW_OTHER = 1 << 5,
+     NW_OTHER = 1 << 6,
      /* All groups of warnings.  */
      NW_ALL = (NW_ACCESS | NW_LEXICAL | NW_NONNULL
-	       | NW_UNINIT | NW_VFLOW | NW_OTHER)
+	       | NW_UNINIT | NW_VFLOW | NW_DANGLING | NW_OTHER)
    };
 
   nowarn_spec_t (): m_bits () { }
@@ -130,10 +132,9 @@ operator!= (const nowarn_spec_t &lhs, const nowarn_spec_t &rhs)
   return !(lhs == rhs);
 }
 
-typedef int_hash <location_t, 0, UINT_MAX> xint_hash_t;
-typedef hash_map<xint_hash_t, nowarn_spec_t> xint_hash_map_t;
+typedef hash_map<location_hash, nowarn_spec_t> nowarn_map_t;
 
 /* A mapping from a 'location_t' to the warning spec set for it.  */
-extern GTY(()) xint_hash_map_t *nowarn_map;
+extern GTY(()) nowarn_map_t *nowarn_map;
 
 #endif // DIAGNOSTIC_SPEC_H_INCLUDED

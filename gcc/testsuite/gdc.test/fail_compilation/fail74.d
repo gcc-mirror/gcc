@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail74.d(13): Error: cannot append type C[1] to type C[1]
+fail_compilation/fail74.d(13): Error: cannot append type `C[1]` to type `C[1]`
 ---
 */
 

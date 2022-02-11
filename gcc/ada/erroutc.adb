@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -902,6 +902,7 @@ package body Erroutc is
          Is_Serious_Error     := True;
          Is_Unconditional_Msg := False;
          Is_Warning_Msg       := False;
+         Is_Runtime_Raise     := False;
 
          --  Check style message
 
@@ -1226,7 +1227,6 @@ package body Erroutc is
          else
             Set_At;
             Set_Msg_Str ("line ");
-            Int_File := False;
             Set_Msg_Int (Int (Get_Logical_Line_Number (Loc)));
          end if;
 

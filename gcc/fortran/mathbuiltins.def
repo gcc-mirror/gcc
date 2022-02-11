@@ -1,4 +1,4 @@
-/* Copyright (C) 2004-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2004-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 /* DEFINE_MATH_BUILTIN (CODE, NAME, ARGTYPE)
    NAME	  The name of the builtin
    SNAME  The name of the builtin as a string
-   ARGTYPE The type of the arguments.  See f95-lang.c
+   ARGTYPE The type of the arguments.  See f95-lang.cc
 
    Use DEFINE_MATH_BUILTIN_C if the complex versions of the builtin are
    also available.  */

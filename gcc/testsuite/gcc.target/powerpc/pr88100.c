@@ -10,35 +10,35 @@
 vector unsigned char
 splatu1 (void)
 {
-  return vec_splat_u8(0x100);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_u8(0x100);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }
 
 vector unsigned short
 splatu2 (void)
 {
-  return vec_splat_u16(0x10000);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_u16(0x10000);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }
 
 vector unsigned int
 splatu3 (void)
 {
-  return vec_splat_u32(0x10000000);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_u32(0x10000000);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }
 
 vector signed char
 splats1 (void)
 {
-  return vec_splat_s8(0x100);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_s8(0x100);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }
 
 vector signed short
 splats2 (void)
 {
-  return vec_splat_s16(0x10000);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_s16(0x10000);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }
 
 vector signed int
 splats3 (void)
 {
-  return vec_splat_s32(0x10000000);/* { dg-error "argument 1 must be a 5-bit signed literal" } */
+  return vec_splat_s32(0x10000000);/* { dg-error "argument 1 must be a literal between -16 and 15, inclusive" } */
 }

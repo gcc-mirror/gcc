@@ -1,5 +1,5 @@
 /* Find near-matches for identifiers.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "spellcheck.h"
 
-/* spellcheck-tree.c  */
+/* spellcheck-tree.cc  */
 
 extern edit_distance_t
 get_edit_distance (tree ident_s, tree ident_t);

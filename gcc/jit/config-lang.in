@@ -1,5 +1,5 @@
 # Top level configure fragment for libgccjit.so.
-#   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -29,7 +29,7 @@ compilers=""
 
 target_libs=""
 
-gtfiles="\$(srcdir)/jit/dummy-frontend.c"
+gtfiles="\$(srcdir)/jit/dummy-frontend.cc"
 
 # The configuration requires --enable-host-shared
 # for jit to be supported (only when not building for Mingw).

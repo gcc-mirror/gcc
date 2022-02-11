@@ -1,5 +1,5 @@
 /* AIX cross support for collect2.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_COLLECT2_AIX_H
 #define GCC_COLLECT2_AIX_H
-/* collect2-aix.c requires mmap support.  It should otherwise be
+/* collect2-aix.cc requires mmap support.  It should otherwise be
    fairly portable.  */
 #if defined(CROSS_DIRECTORY_STRUCTURE) \
     && defined(TARGET_AIX_VERSION) \

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2022 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_H8300_PROTOS_H
 #define GCC_H8300_PROTOS_H
 
-/* Declarations for functions used in insn-output.c.  */
+/* Declarations for functions used in insn-output.cc.  */
 #ifdef RTX_CODE
 extern unsigned int compute_mov_length (rtx *);
 extern const char *output_plussi (rtx *, bool);
@@ -59,7 +59,7 @@ extern int byte_accesses_mergeable_p (rtx, rtx);
 extern int same_cmp_preceding_p (rtx_insn *);
 extern int same_cmp_following_p (rtx_insn *);
 
-/* Used in builtins.c */
+/* Used in builtins.cc */
 extern rtx h8300_return_addr_rtx (int, rtx);
 
 /* Classifies an h8sx shift operation.

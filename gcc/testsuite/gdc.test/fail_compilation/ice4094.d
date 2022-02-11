@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice4094.d(11): Error: circular reference to variable 'ice4094.Zug!0.Zug.bahn'
-fail_compilation/ice4094.d(19): Error: template instance ice4094.Zug!0 error instantiating
+fail_compilation/ice4094.d(11): Error: circular reference to variable `ice4094.Zug!0.Zug.bahn`
+fail_compilation/ice4094.d(19): Error: template instance `ice4094.Zug!0` error instantiating
 ---
 */
 // REQUIRED_ARGS: -d

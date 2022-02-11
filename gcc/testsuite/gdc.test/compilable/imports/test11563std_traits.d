@@ -16,7 +16,7 @@ template moduleName(alias T)
     }
     else
     {
-        pragma(msg, "--error--");
+        enum moduleName = "--error--";
     }
 }
 

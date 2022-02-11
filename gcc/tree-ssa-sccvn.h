@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -21,7 +21,7 @@
 #ifndef TREE_SSA_SCCVN_H
 #define TREE_SSA_SCCVN_H
 
-/* In tree-ssa-sccvn.c  */
+/* In tree-ssa-sccvn.cc  */
 bool expressions_equal_p (tree, tree, bool = true);
 
 
@@ -291,6 +291,7 @@ value_id_constant_p (unsigned int v)
 tree fully_constant_vn_reference_p (vn_reference_t);
 tree vn_nary_simplify (vn_nary_op_t);
 
+unsigned do_rpo_vn (function *, edge, bitmap, bool, bool, vn_lookup_kind);
 unsigned do_rpo_vn (function *, edge, bitmap);
 void run_rpo_vn (vn_lookup_kind);
 unsigned eliminate_with_rpo_vn (bitmap);

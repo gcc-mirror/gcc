@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2021, AdaCore                     --
+--                     Copyright (C) 1998-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,7 +367,7 @@ package body GNAT.Spitbol.Patterns is
    --  one character on success, and not to make any entries on the stack.
 
    OK_For_Simple_Arbno : constant array (Pattern_Code) of Boolean :=
-     (PC_Any_CS    |
+     [PC_Any_CS    |
       PC_Any_CH    |
       PC_Any_VF    |
       PC_Any_VP    |
@@ -387,7 +387,7 @@ package body GNAT.Spitbol.Patterns is
       PC_String_4  |
       PC_String_5  |
       PC_String_6   => True,
-      others        => False);
+      others        => False];
 
    -------------------------------
    -- The Pattern History Stack --
@@ -2836,7 +2836,6 @@ package body GNAT.Spitbol.Patterns is
       L     : Natural;
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -2855,7 +2854,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern) return Boolean
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 
@@ -2935,7 +2933,6 @@ package body GNAT.Spitbol.Patterns is
 
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Start, Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -2952,7 +2949,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern)
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Start, Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 
@@ -3135,7 +3131,6 @@ package body GNAT.Spitbol.Patterns is
 
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Start, Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -3152,7 +3147,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : PString)
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Start, Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 

@@ -1767,6 +1767,17 @@ fix = {
     test_text = ""; /* Don't provide this for wrap fixes.  */
 };
 
+/*  The darwin headers don't accept __FLT_EVAL_METHOD__ == 16.  */
+fix = {
+    hackname  = darwin_flt_eval_method;
+    mach      = "*-*-darwin*";
+    files     = math.h;
+    select    = "^#if __FLT_EVAL_METHOD__ == 0$";
+    c_fix     = format;
+    c_fix_arg = "#if __FLT_EVAL_METHOD__ == 0 || __FLT_EVAL_METHOD__ == 16";
+    test_text = "#if __FLT_EVAL_METHOD__ == 0";
+};
+
 /*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
@@ -5146,23 +5157,75 @@ fix = {
         
     test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";
 };
-
+ 
 /*
- *  Wrap VxWorks mkdir to be posix compliant
+ * Provide C99 FP classification support in VxWorks math.h if
+ * not already there. Note the strict expectation on #define without
+ * whitespaces in the bypass expression, which "works" for
+ * the system headers we have met and doesn't match test texts for
+ * other hacks, found in the test baseline.
  */
 fix = {
-    hackname    = vxworks_mkdir_macro;
+    hackname  = vxworks_math_h_fp_c99;
+    mach      = "*-*-vxworks*";
+    files     = math.h;
+    bypass    = "#define[ \t]+FP_INFINITE";
+    select    = "#define HUGE_VAL[ \t]*_ARCH.*";
+    c_fix     = format;
+    c_fix_arg = << _EOArg_
+
+%0
+
+#if _C99
+
+#define FP_INFINITE  1
+#define FP_NAN       2
+#define FP_NORMAL    (-1)
+#define FP_SUBNORMAL (-2)
+#define FP_ZERO      0
+
+#define fpclassify(x) \
+  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, \
+		       FP_SUBNORMAL, FP_ZERO, (x))
+
+#define signbit(x) __builtin_signbit(x)
+#define isfinite(x) __builtin_isfinite(x)
+#define isnormal(x) __builtin_isnormal(x)
+#define isnan(x) __builtin_isnan(x)
+#define isinf(x) __builtin_isinf(x)
+
+#define isgreater(x, y) __builtin_isgreater((x),(y))
+#define isgreaterequal(x, y) __builtin_isgreaterequal((x),(y))
+#define isless(x, y) __builtin_isless((x),(y))
+#define islessequal(x, y) __builtin_islessequal((x),(y))
+#define islessgreater(x, y) __builtin_islessgreater((x),(y))
+#define isunordered(x, y) __builtin_isunordered((x),(y))
+
+#endif /* _C99 */
+
+_EOArg_;
+
+    test_text  = "#define HUGE_VAL _ARCH_HUGH_VAL";
+};
+
+/*
+ *  mkdir's posix interface expects two arguments.  While the RTP VxWorks
+ *  API is fine, the kernel version handles only one.  We used to expose
+ *  a macro and this didn't play nice with uses such as posix:mkdir(x, y)
+ *  in libstdc++, so we expose a vararg prototype instead.
+ */
+fix = {
+    hackname    = vxworks_posix_mkdir;
     files       = sys/stat.h;
     mach        = "*-*-vxworks*";
 
     c_fix       = format;
-    c_fix_arg   = "%0\n"
-                "#define mkdir(dir, ...) ((void)0, ##__VA_ARGS__, (mkdir)(dir))\n";
+    c_fix_arg   = "extern STATUS mkdir(const char *dir, ...);";
     c_fix_arg   = "extern[\t ]+STATUS[\t ]+mkdir[\t ]*"
                 "\\([\t ]*const[\t ]+char[\t ]*\\*[\t ]*" /* arg type */
                 "(|[_[:alpha:]][_[:alnum:]]*)" /* arg name (optional) */
                 "\\)[\t ]*;";
-        
+
     test_text   = "extern STATUS mkdir (const char * _qwerty) ;";
 };
 
@@ -5198,6 +5261,28 @@ fix = {
 };
 
 /*
+ * yvals.h on VxWorks-6 expects the toolchain to provide its own
+ * version of the header, which we don't do.  Arrange to fallback
+ * on the system definition.
+ */
+fix = {
+    hackname  = vxworks_next_yvals;
+    mach      = "*-*-vxworks*";
+    files     = yvals.h;
+    select    = "#include_next <yvals.h>";
+    c_fix     = format;
+    c_fix_arg = "#if 0 /* GCC does not provide yvals.h.  */\n%1";
+    c_fix_arg = "#if .*\n"
+                "/\\* .*\n"
+                "(#include_next <yvals.h>\n)";
+
+    test_text = "#if (defined(__cplusplus) && defined(__GNUC__))\n"
+                "/* GCC C++ has it's own yvals.h */\n"
+                "#include_next <yvals.h>\n"
+                "#else\n";
+};
+
+/*
  *  Make it so VxWorks does not include gcc/regs.h accidentally
  */
 fix = {
@@ -5209,6 +5294,47 @@ fix = {
     c_fix_arg   = "#include <arch/../regs.h>";
         
     test_text   = "#include <regs.h>\n";
+};
+
+/*
+ * Likewise, open's posix interface allows two or three arguments and
+ * some VxWorks headers expose only a strict 3 arguments version.  Merely
+ * changing the prototype into a varargs one is risky as the implementation
+ * would receive garbage in the third arg for calls providing only two,
+ * which libstdc++ does.  We simply provide an always inline overload for C++
+ * instead.
+ *
+ * Both fcntl.h and ioLib.h might "feature" such a prototype for _WRS_KERNEL.
+ * The latter #includes the former though (since 1992 according to the embedded
+ * log), so just leave ioLib.h alone.
+ */
+fix = {
+    hackname    = vxworks_posix_open;
+    mach        = "*-*-vxworks*";
+    files       = fcntl.h;
+
+    select      = "extern int.*open \\(const char \\*[ a-z]*, int[ a-z]*, int[ a-z]*\\);";
+    c_fix       = format;
+    c_fix_arg = << _EOArg_
+%0
+
+#if defined(__cplusplus)
+extern "C++" {
+  inline int open (const char *, int) __attribute__((__always_inline__));
+
+  inline int
+  open (const char *name, int flags)
+  {
+    return open (name, flags, 0);
+  }
+}
+#endif
+
+_EOArg_;
+
+    test_text   =
+      "extern int open (const char *, int, int);\n"
+      "extern int open (const char *name, int flags, int mode );\n";
 };
 
 /*
@@ -5269,6 +5395,38 @@ fix = {
     c_fix_arg   = "#include <unistd.h>";
 
     test_text       = "#include \"unistd.h\"";
+};
+
+/*
+ *  Make sure there is a visible prototype of sysClkRateGet() when
+ *  CLOCKS_PER_SEC is #defined to that in time.h for VxWorks.  This would
+ *  typically be provided by sysLib.h.
+ *
+ *  The new #include has to come after the one for vxWorks.h in kernel headers
+ *  and vxWorks.h is typically not #included in RTP headers. yvals.h is
+ *  conditionally included in the latter, instead, and new #include are better
+ *  inserted after that.
+ */
+fix = {
+    hackname    = vxworks_time_h_syslib;
+    files       = time.h;
+    mach        = "*-*-vxworks*";
+    select      = "[ \t]*#define[ \t]+CLOCKS_PER_SEC[ \t]+sysClkRateGet.*";
+
+    c_fix       = format;
+    c_fix_arg   = "%0\n#include <sysLib.h>";
+    c_fix_arg   = "#include <vxWorks.h>|#endif.* _YVALS.*";
+
+    test_text   =
+    "/* kernel header pattern:  */\n"
+    "#include <vxWorks.h>\n"
+    "\n"
+    "/* rtp header pattern:  */\n"
+    "#ifndef _YVALS\n"
+    "#include <yvals.h>\n"
+    "#endif /* _YVALS */\n"
+    "\n"
+    "#define CLOCKS_PER_SEC  sysClkRateGet()";
 };
 
 /*

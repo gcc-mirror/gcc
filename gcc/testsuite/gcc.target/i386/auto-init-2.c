@@ -29,7 +29,7 @@ void foo()
   return;
 }
 
-/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe" 2 "expand" } } */
+/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe" 1 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffffffefe" 1 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "0xfffffffffefefefe" 2 "expand" { target lp64 } } } */
 /* { dg-final { scan-rtl-dump-times "0xfefefefefefefefe" 3 "expand" { target lp64 } } } */

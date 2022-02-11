@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/link14074x.d
 // EXTRA_SOURCES: imports/link14074y.d
 import imports.link14074x;
 import imports.link14074y;

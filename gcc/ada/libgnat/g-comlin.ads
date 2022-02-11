@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2021, AdaCore                     --
+--                     Copyright (C) 1999-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1097,11 +1097,11 @@ private
       --  This type and this variable are provided to store the current switch
       --  and parameter.
 
-      Is_Switch : Is_Switch_Type (1 .. Arg_Count) := (others => False);
+      Is_Switch : Is_Switch_Type (1 .. Arg_Count) := [others => False];
       --  Indicates wich arguments on the command line are considered not be
       --  switches or parameters to switches (leaving e.g. filenames,...)
 
-      Section : Section_Type (1 .. Arg_Count) := (others => 1);
+      Section : Section_Type (1 .. Arg_Count) := [others => 1];
       --  Contains the number of the section associated with the current
       --  switch. If this number is 0, then it is a section delimiter, which is
       --  never returned by GetOpt.

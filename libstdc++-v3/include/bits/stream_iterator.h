@@ -1,6 +1,6 @@
 // Stream iterators
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,6 +42,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup iterators
    * @{
    */
+
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
   /// Provides input iterator semantics for streams.
   template<typename _Tp, typename _CharT = char,
@@ -256,6 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int) _GLIBCXX_NOEXCEPT
       { return *this; }
     };
+#pragma GCC diagnostic pop
 
   /// @} group iterators
 

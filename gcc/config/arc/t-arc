@@ -1,6 +1,6 @@
 # GCC Makefile fragment for Synopsys DesignWare ARC.
 #
-# Copyright (C) 2016-2021 Free Software Foundation, Inc.
+# Copyright (C) 2016-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -19,14 +19,14 @@
 
 TM_H += $(srcdir)/config/arc/arc-c.def
 
-driver-arc.o: $(srcdir)/config/arc/driver-arc.c \
+driver-arc.o: $(srcdir)/config/arc/driver-arc.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-arc-c.o: $(srcdir)/config/arc/arc-c.c $(CONFIG_H) $(SYSTEM_H) \
+arc-c.o: $(srcdir)/config/arc/arc-c.cc $(CONFIG_H) $(SYSTEM_H) \
 $(TREE_H) $(TM_H) $(TM_P_H) coretypes.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/arc/arc-c.c
+		$(srcdir)/config/arc/arc-c.cc
 
 #Run `arc-cpus` if you changed something in arc-cpus.def
 

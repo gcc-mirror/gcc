@@ -189,7 +189,7 @@ void test_15 (void)
 
 void test_16 (void)
 {
-  void *p, *q;
+  void *p, *q; /* { dg-message "region created on stack here" } */
 
   p = malloc (1024);
   if (!p)
@@ -457,7 +457,7 @@ test_39 (int i)
 int *
 test_40 (int i)
 {
-  int *p = (int*)malloc(sizeof(int*));
+  int *p = (int*)malloc(sizeof(int*)); /* { dg-message "region created on heap here" } */
   i = *p; /* { dg-warning "dereference of possibly-NULL 'p' \\\[CWE-690\\\]" "possibly-null" } */
   /* { dg-warning "use of uninitialized value '\\*p'" "uninit" { target *-*-*} .-1 } */
   return p;

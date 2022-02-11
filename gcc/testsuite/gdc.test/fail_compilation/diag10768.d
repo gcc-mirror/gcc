@@ -1,15 +1,14 @@
-// PERMUTE_ARGS:
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag10768.d(36): Error: cannot implicitly override base class method diag10768.Frop.frop with diag10768.Foo.frop; add 'override' attribute
+fail_compilation/diag10768.d(35): Error: cannot implicitly override base class method `diag10768.Frop.frop` with `diag10768.Foo.frop`; add `override` attribute
 ---
 */
 
 struct CirBuff(T)
 {
-    import std.traits: isArray;
-    CirBuff!T opAssign(R)(R) if (isArray!R)
+
+    CirBuff!T opAssign(R)(R)
     {}
 
     T[] toArray()

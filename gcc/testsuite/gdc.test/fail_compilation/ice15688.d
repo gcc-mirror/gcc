@@ -3,7 +3,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/ice15688.d(12): Error: undefined identifier `mappings`
-fail_compilation/ice15688.d(12): Error: function expected before (), not 0 of type int
+fail_compilation/ice15688.d(12): Error: function expected before `()`, not `0` of type `int`
 ---
 */
 

@@ -1,3 +1,16 @@
+/*
+RUN_OUTPUT:
+---
+Foo.~this()
+Foo.~this()
+Foo.~this()
+Foo.~this()
+A2.this()
+Hello world.
+A2.~this()
+Success
+---
+*/
 
 import core.stdc.stdio;
 

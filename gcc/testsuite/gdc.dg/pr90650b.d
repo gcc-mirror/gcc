@@ -9,5 +9,5 @@ class c
 }
 void g ()
 {
-  if ([0] & c.f()) {}   // { dg-error "array operation \\\[0\\\] & f\\(\\) without destination memory not allowed" }
+  if ([0] & c.f()) {}   // { dg-error "array operation .\\\[0\\\] & f\\(\\). without destination memory not allowed" }
 }

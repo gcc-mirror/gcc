@@ -1,6 +1,6 @@
 // Implementation of std::reference_wrapper -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,6 +52,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename... _ArgTypes>
     struct _Maybe_unary_or_binary_function { };
 
+// Ignore warnings about unary_function and binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /// Derives from @c unary_function, as appropriate.
   template<typename _Res, typename _T1>
     struct _Maybe_unary_or_binary_function<_Res, _T1>
@@ -61,6 +65,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res, typename _T1, typename _T2>
     struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
     : std::binary_function<_T1, _T2, _Res> { };
+
+#pragma GCC diagnostic pop
 
   template<typename _Signature>
     struct _Mem_fn_traits;
@@ -215,6 +221,10 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     : _Weak_result_type<_Tp>, _Refwrap_base_arg1<_Tp>, _Refwrap_base_arg2<_Tp>
     { };
 
+// Ignore warnings about unary_function and binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   // - a function type (unary)
   template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
     struct _Reference_wrapper_base<_Res(_T1) _GLIBCXX_NOEXCEPT_QUAL>
@@ -280,6 +290,7 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     {
       using result_type = typename _Mem_fn_traits<_MemFunPtr>::__result_type;
     };
+#pragma GCC diagnostic pop
 #endif // ! C++20
 
   /// @endcond

@@ -1,8 +1,6 @@
-/* { dg-options "-mips1 -mfix-r4000 -dp -EB" } */
+/* { dg-options "-mips1 -mfix-r4000 -dp -EB -fexpensive-optimizations" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 typedef unsigned int uint32_t;
 typedef unsigned long long uint64_t;
 NOMIPS16 uint32_t foo (uint32_t x, uint32_t y) { return ((uint64_t) x * y) >> 32; }
-/* ??? A highpart pattern would be a better choice, but we currently
-   don't use them.  */
-/* { dg-final { scan-assembler "[concat {\tmultu\t\$[45],\$[45][^\n]+umulsidi3_32bit_r4000\n\tmflo\t\$3\n\tmfhi\t\$2\n}]" } } */
+/* { dg-final { scan-assembler "[concat {\tmultu\t\$[45],\$[45][^\n]+umulsi3_highpart_internal\n\tmfhi\t\$2\n}]" } } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2011-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,7 +113,7 @@ package body System.Multiprocessors.Dispatching_Domains is
 
    function Create (First : CPU; Last : CPU_Range) return Dispatching_Domain is
    begin
-      return Create ((First .. Last => True));
+      return Create ([First .. Last => True]);
    end Create;
 
    function Create (Set : CPU_Set) return Dispatching_Domain is
@@ -156,7 +156,7 @@ package body System.Multiprocessors.Dispatching_Domains is
            ST.System_Domain (Rng);
          Actual : constant ST.Dispatching_Domain :=
            ST_DD_Slice and not System_Domain_Slice;
-         Expected : constant ST.Dispatching_Domain := (Rng => False);
+         Expected : constant ST.Dispatching_Domain := [Rng => False];
       begin
          if Actual /= Expected then
             raise Dispatching_Domain_Error with
@@ -184,7 +184,7 @@ package body System.Multiprocessors.Dispatching_Domains is
 
       New_System_Domain (Rng) := New_System_Domain (Rng) and not ST_DD_Slice;
 
-      if New_System_Domain = (New_System_Domain'Range => False) then
+      if New_System_Domain = [New_System_Domain'Range => False] then
          raise Dispatching_Domain_Error with
            "would leave System_Dispatching_Domain empty";
       end if;

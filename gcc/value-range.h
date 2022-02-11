@@ -1,5 +1,5 @@
 /* Support routines for value ranges.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Andrew Macleod <amacleod@redhat.com>.
 
@@ -162,7 +162,7 @@ private:
   template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
 
-  // ?? These stubs are for ipa-prop.c which use a value_range in a
+  // ?? These stubs are for ipa-prop.cc which use a value_range in a
   // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
   // instead of picking up the gt_ggc_mx (T *) version.
   friend void gt_ggc_mx (int_range<1> *&);
@@ -365,8 +365,8 @@ gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
 {
   for (unsigned i = 0; i < x->m_num_ranges; ++i)
     {
-      op (&x->m_base[i * 2], cookie);
-      op (&x->m_base[i * 2 + 1], cookie);
+      op (&x->m_base[i * 2], NULL, cookie);
+      op (&x->m_base[i * 2 + 1], NULL, cookie);
     }
 }
 

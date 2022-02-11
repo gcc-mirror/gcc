@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       --  HT.Busy := 0;
       --  HT.Lock := 0;
       HT.Free := -1;
-      HT.Buckets := (others => 0);  -- optimize this somehow ???
+      HT.Buckets := [others => 0];  -- optimize this somehow ???
    end Clear;
 
    --------------------------
@@ -439,7 +439,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
      (Stream : not null access Root_Stream_Type'Class;
       HT     : out Hash_Table_Type'Class)
    is
-      N  : Count_Type'Base;
+      N : Count_Type'Base;
 
    begin
       Clear (HT);

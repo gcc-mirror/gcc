@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -312,7 +312,7 @@ package body Switch.B is
 
             Ptr := Max + 1;
 
-            if not Is_Read_Accessible_File (Force_Elab_Order_File.all) then
+            if not Is_Regular_File (Force_Elab_Order_File.all) then
                Osint.Fail (Force_Elab_Order_File.all & ": file not found");
             end if;
 

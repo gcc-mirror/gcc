@@ -1,5 +1,5 @@
 /* Modeling API uses and misuses via state machines.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -68,6 +68,15 @@ public:
      but we should not inherit the "malloc:non-null" state of a field
      within a heap-allocated struct.  */
   virtual bool inherited_state_p () const = 0;
+
+  /* A vfunc for more general handling of inheritance.  */
+  virtual state_t
+  alt_get_inherited_state (const sm_state_map &,
+			   const svalue *,
+			   const extrinsic_state &) const
+  {
+    return NULL;
+  }
 
   virtual state_machine::state_t get_default_state (const svalue *) const
   {
@@ -261,6 +270,9 @@ public:
   {
     return NULL;
   }
+
+  /* Are we handling an external function with unknown side effects?  */
+  virtual bool unknown_side_effects_p () const { return false; }
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)

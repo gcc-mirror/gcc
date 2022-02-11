@@ -1,5 +1,5 @@
 /* Derivation and subsumption rules for constraints.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Andrew Sutton (andrew.n.sutton@gmail.com)
 
 This file is part of GCC.
@@ -495,7 +495,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (0, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
@@ -536,7 +535,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (2, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{

@@ -1,6 +1,6 @@
 /* Gimple simplify definitions.
 
-   Copyright (C) 2011-2021 Free Software Foundation, Inc.
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -31,14 +31,46 @@ public:
   code_helper () {}
   code_helper (tree_code code) : rep ((int) code) {}
   code_helper (combined_fn fn) : rep (-(int) fn) {}
-  operator tree_code () const { return (tree_code) rep; }
-  operator combined_fn () const { return (combined_fn) -rep; }
+  code_helper (internal_fn fn) : rep (-(int) as_combined_fn (fn)) {}
+  explicit operator tree_code () const { return (tree_code) rep; }
+  explicit operator combined_fn () const { return (combined_fn) -rep; }
+  explicit operator internal_fn () const;
+  explicit operator built_in_function () const;
   bool is_tree_code () const { return rep > 0; }
   bool is_fn_code () const { return rep < 0; }
+  bool is_internal_fn () const;
+  bool is_builtin_fn () const;
   int get_rep () const { return rep; }
+  bool operator== (const code_helper &other) { return rep == other.rep; }
+  bool operator!= (const code_helper &other) { return rep != other.rep; }
+  bool operator== (tree_code c) { return rep == code_helper (c).rep; }
+  bool operator!= (tree_code c) { return rep != code_helper (c).rep; }
+
 private:
   int rep;
 };
+
+inline code_helper::operator internal_fn () const
+{
+  return as_internal_fn (combined_fn (*this));
+}
+
+inline code_helper::operator built_in_function () const
+{
+  return as_builtin_fn (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_internal_fn () const
+{
+  return is_fn_code () && internal_fn_p (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_builtin_fn () const
+{
+  return is_fn_code () && builtin_fn_p (combined_fn (*this));
+}
 
 /* Represents the condition under which an operation should happen,
    and the value to use otherwise.  The condition applies elementwise
@@ -333,11 +365,49 @@ gimple_simplified_result_is_gimple_val (const gimple_match_op *op)
 
 extern tree (*mprts_hook) (gimple_match_op *);
 
+bool gimple_extract_op (gimple *, gimple_match_op *);
 bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,
 			    tree res = NULL_TREE);
 void maybe_build_generic_op (gimple_match_op *);
 
+bool commutative_binary_op_p (code_helper, tree);
+bool commutative_ternary_op_p (code_helper, tree);
+int first_commutative_argument (code_helper, tree);
+bool associative_binary_op_p (code_helper, tree);
+code_helper canonicalize_code (code_helper, tree);
+
+#ifdef GCC_OPTABS_TREE_H
+bool directly_supported_p (code_helper, tree, optab_subtype = optab_default);
+#endif
+
+internal_fn get_conditional_internal_fn (code_helper, tree);
+
+extern tree gimple_build (gimple_seq *, location_t,
+			  code_helper, tree, tree);
+inline tree
+gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0)
+{
+  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0);
+}
+
+extern tree gimple_build (gimple_seq *, location_t,
+			  code_helper, tree, tree, tree);
+inline tree
+gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0,
+	      tree op1)
+{
+  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1);
+}
+
+extern tree gimple_build (gimple_seq *, location_t,
+			  code_helper, tree, tree, tree, tree);
+inline tree
+gimple_build (gimple_seq *seq, code_helper code, tree type, tree op0,
+	      tree op1, tree op2)
+{
+  return gimple_build (seq, UNKNOWN_LOCATION, code, type, op0, op1, op2);
+}
 
 #endif  /* GCC_GIMPLE_MATCH_H */

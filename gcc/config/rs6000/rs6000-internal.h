@@ -1,6 +1,6 @@
 /* Internal to rs6000 type, variable, and function declarations and
    definitons shared between the various rs6000 source files.
-   Copyright (C) 1991-2021 Free Software Foundation, Inc.
+   Copyright (C) 1991-2022 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -21,6 +21,8 @@
 
 #ifndef GCC_RS6000_INTERNAL_H
 #define GCC_RS6000_INTERNAL_H
+
+#include "rs6000-builtins.h"
 
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
@@ -76,8 +78,8 @@ extern const char *rs6000_machine;
 #define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
 
 
-/* Declare functions in rs6000-logue.c or called in rs6000.c
-   from rs6000-logue.c  */
+/* Declare functions in rs6000-logue.cc or called in rs6000.cc
+   from rs6000-logue.cc  */
 
 extern int uses_TOC (void);
 extern bool rs6000_global_entry_point_needed_p (void);
@@ -111,7 +113,7 @@ quad_address_offset_p (HOST_WIDE_INT offset)
   return (IN_RANGE (offset, -32768, 32767) && ((offset) & 0xf) == 0);
 }
 
-/* Mach-O (Darwin) support for longcalls, emitted from  rs6000-logue.c.  */
+/* Mach-O (Darwin) support for longcalls, emitted from  rs6000-logue.cc.  */
 
 #if TARGET_MACHO
 
@@ -125,8 +127,8 @@ extern vec<branch_island, va_gc> *branch_islands;
 
 #endif
 
-/* Declare functions in rs6000-call.c or called in rs6000.c
-   from rs6000-call.c  */
+/* Declare functions in rs6000-call.cc or called in rs6000.cc
+   from rs6000-call.cc  */
 extern int rs6000_darwin64_struct_check_p (machine_mode mode, const_tree type);
 extern bool rs6000_discover_homogeneous_aggregate (machine_mode mode,
 						   const_tree type,
@@ -140,6 +142,7 @@ extern void rs6000_output_mi_thunk (FILE *file,
 extern bool rs6000_output_addr_const_extra (FILE *file, rtx x);
 extern bool rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi);
 extern tree rs6000_build_builtin_va_list (void);
+extern void rs6000_invalid_builtin (rs6000_gen_builtins fncode);
 extern void rs6000_va_start (tree valist, rtx nextarg);
 extern tree rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 				    gimple_seq *post_p);
@@ -180,9 +183,6 @@ extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
 			         tree *args ATTRIBUTE_UNUSED,
 			         bool ignore ATTRIBUTE_UNUSED);
 
-#if TARGET_ELF
-extern bool rs6000_passes_ieee128;
-#endif
 extern bool rs6000_passes_float;
 extern bool rs6000_passes_long_double;
 extern bool rs6000_passes_vector;

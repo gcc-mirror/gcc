@@ -1,3 +1,5 @@
+/* { dg-require-effective-target alloca } */
+
 #include <stdlib.h>
 #include "analyzer-decls.h"
 
@@ -53,7 +55,7 @@ test_malloc (void)
 void
 test_alloca (size_t sz)
 {
-  void *p = alloca (sz);
+  void *p = __builtin_alloca (sz);
   __analyzer_dump_capacity (p); /* { dg-warning "capacity: 'INIT_VAL\\(sz_\[^\n\r\]*\\)'" } */
 }
 

@@ -1,0 +1,39 @@
+/* Builtin lists for Arm MVE
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef DEF_MVE_TYPE
+#error "arm-mve-builtins.def included without defining DEF_MVE_TYPE"
+#endif
+
+#define REQUIRES_FLOAT false
+DEF_MVE_TYPE (mve_pred16_t, boolean_type_node)
+DEF_MVE_TYPE (uint8x16_t, unsigned_intQI_type_node)
+DEF_MVE_TYPE (uint16x8_t, unsigned_intHI_type_node)
+DEF_MVE_TYPE (uint32x4_t, unsigned_intSI_type_node)
+DEF_MVE_TYPE (uint64x2_t, unsigned_intDI_type_node)
+DEF_MVE_TYPE (int8x16_t, intQI_type_node)
+DEF_MVE_TYPE (int16x8_t, intHI_type_node)
+DEF_MVE_TYPE (int32x4_t, intSI_type_node)
+DEF_MVE_TYPE (int64x2_t, intDI_type_node)
+#undef REQUIRES_FLOAT
+
+#define REQUIRES_FLOAT true
+DEF_MVE_TYPE (float16x8_t, arm_fp16_type_node)
+DEF_MVE_TYPE (float32x4_t, float_type_node)
+#undef REQUIRES_FLOAT

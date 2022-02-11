@@ -1,6 +1,6 @@
 // Filesystem directory utilities -*- C++ -*-
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -537,6 +537,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     struct _Dir_stack;
     std::__shared_ptr<_Dir_stack> _M_dirs;
+
+    recursive_directory_iterator&
+    __erase(error_code* = nullptr);
+
+    friend uintmax_t
+    filesystem::remove_all(const path&, error_code&);
+    friend uintmax_t
+    filesystem::remove_all(const path&);
   };
 
   /// @relates std::filesystem::recursive_directory_iterator @{

@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -34,7 +34,7 @@ struct ipa_dfs_info {
 };
 
 
-/* In ipa-utils.c  */
+/* In ipa-utils.cc  */
 void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
 int ipa_reduced_postorder (struct cgraph_node **, bool,
 			  bool (*ignore_edge) (struct cgraph_edge *));
@@ -47,10 +47,16 @@ void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
 
-/* In ipa-profile.c  */
+/* In ipa-pure-const.cc  */
+bool finite_function_p ();
+bool builtin_safe_for_const_function_p (bool *, tree);
+bool ipa_make_function_const (cgraph_node *, bool, bool);
+bool ipa_make_function_pure (cgraph_node *, bool, bool);
+
+/* In ipa-profile.cc  */
 bool ipa_propagate_frequency (struct cgraph_node *node);
 
-/* In ipa-devirt.c  */
+/* In ipa-devirt.cc  */
 
 struct odr_type_d;
 typedef odr_type_d *odr_type;

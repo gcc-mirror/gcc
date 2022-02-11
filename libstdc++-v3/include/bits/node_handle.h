@@ -1,6 +1,6 @@
 // Node handles for containers -*- C++ -*-
 
-// Copyright (C) 2016-2021 Free Software Foundation, Inc.
+// Copyright (C) 2016-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 #pragma GCC system_header
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_node_extract 201606
+# define __cpp_lib_node_extract 201606L
 
 #include <new>
 #include <bits/alloc_traits.h>

@@ -1,8 +1,15 @@
+// COMPILABLE_MATH_TEST
 // PERMUTE_ARGS:
+// EXTRA_FILES: imports/a12506.d
+/* TEST_OUTPUT:
+---
+compilable/compile1.d(229): Deprecation: use of complex type `cdouble` is deprecated, use `std.complex.Complex!(double)` instead
+---
+*/
 
-/**************************************************
-    1748 class template with stringof
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=1748
+// class template with stringof
 
 struct S1748(T) {}
 static assert(S1748!int.stringof == "S1748!int");
@@ -10,18 +17,17 @@ static assert(S1748!int.stringof == "S1748!int");
 class C1748(T) {}
 static assert(C1748!int.stringof == "C1748!int");
 
-/**************************************************
-    2354 pragma + single semicolon DeclarationBlock
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=2354
+// pragma + single semicolon DeclarationBlock
 
 version(all)
     pragma(inline, true);
 else
     pragma(inline, false);
 
-/**************************************************
-    2438
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=2438
 
 alias void delegate() Dg2438;
 
@@ -35,9 +41,8 @@ alias typeof(Dg2438.init.funcptr) FP2438b;
 static assert(is(CP2438b == void*));
 static assert(is(FP2438b == void function()));
 
-/**************************************************
-    4225
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4225
 
 struct Foo4225
 {
@@ -49,9 +54,9 @@ struct Foo4225
     }
 }
 
-/**************************************************
-    5996    ICE(expression.c)
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5996
+// ICE(expression.c)
 
 template T5996(T)
 {
@@ -62,17 +67,19 @@ template T5996(T)
 }
 static assert(!is(typeof(T5996!(int).bug5996())));
 
-/**************************************************
-    8532    segfault(mtype.c) - type inference + pure
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8532
+// segfault(mtype.c) - type inference + pure
+
 auto segfault8532(Y, R ...)(R r, Y val) pure
 { return segfault8532(r, val); }
 
 static assert(!is(typeof( segfault8532(1,2,3))));
 
-/**************************************************
-    8982    ICE(ctfeexpr.c) __parameters with error in default value
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8982
+// ICE(ctfeexpr.c) __parameters with error in default value
+
 template ice8982(T)
 {
     void bug8982(ref const int v = 7){}
@@ -85,16 +92,17 @@ template ice8982(T)
 static assert(!is(ice8982!(int)));
 
 
-/**************************************************
-    8801    ICE assigning to __ctfe
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8801
+// ICE assigning to __ctfe
+
 static assert(!is(typeof( { bool __ctfe= true; })));
 static assert(!is(typeof( { __ctfe |= true; })));
 
-/**************************************************
-    5932    ICE(s2ir.c)
-    6675    ICE(glue.c)
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5932
+// https://issues.dlang.org/show_bug.cgi?id=6675
+// ICE(s2ir.c), ICE(glue.c)
 
 void bug3932(T)() {
     static assert( 0 );
@@ -113,9 +121,9 @@ static assert(!is(typeof(
     }()
 )));
 
-/**************************************************
-    6650    ICE(glue.c) or wrong-code
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6650
+// ICE(glue.c) or wrong-code
 
 auto bug6650(X)(X y)
 {
@@ -127,9 +135,9 @@ auto bug6650(X)(X y)
 static assert(!is(typeof(bug6650!(int)(6))));
 static assert(!is(typeof(bug6650!(int)(18))));
 
-/**************************************************
-    14710    VC-built DMD crashes on templated variadic function IFTI
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=14710
+// VC-built DMD crashes on templated variadic function IFTI
 
 void bug14710a(T)(T val, T[] arr...)
 {
@@ -140,9 +148,9 @@ void bug14710b()
     bug14710a("", "");
 }
 
-/**************************************************
-  6661 Templates instantiated only through is(typeof()) shouldn't cause errors
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6661
+// Templates instantiated only through is(typeof()) shouldn't cause errors
 
 template bug6661(Q)
 {
@@ -168,9 +176,9 @@ template bug6661x(Q)
 // should pass, but doesn't in current
 //static assert(!is(typeof(bug6661x!(int))));
 
-/**************************************************
-    6599    ICE(constfold.c) or segfault
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6599
+// ICE(constfold.c) or segfault
 
 string bug6599extraTest(string x) { return x ~ "abc"; }
 
@@ -191,9 +199,9 @@ template Bug6599(X)
 
 static assert(!is(typeof(Bug6599!int)));
 
-/**************************************************
-    8422    TypeTuple of tuples can't be read at compile time
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8422
+// TypeTuple of tuples can't be read at compile time
 
 template TypeTuple8422(TList...)
 {
@@ -215,9 +223,9 @@ void test8422()
     }
 }
 
-/**************************************************
-    6096    ICE(el.c) with -O
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6096
+// ICE(el.c) with -O
 
 cdouble c6096;
 
@@ -227,35 +235,35 @@ int bug6096()
     return 1;
 }
 
-/**************************************************
-    7681  Segfault
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7681
+// Segfault
 
 static assert( !is(typeof( (){
       undefined ~= delegate(){}; return 7;
   }())));
 
-/**************************************************
-    8639  Buffer overflow
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8639
+// Buffer overflow
 
 void t8639(alias a)() {}
 void bug8639() {
   t8639!({auto r = -real.max;})();
 }
 
-/**************************************************
-    7751  Segfault
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7751
+// Segfault
 
 static assert( !is(typeof( (){
     bar[]r; r ~= [];
      return 7;
   }())));
 
-/**************************************************
-    7639  Segfault
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=7639
+// Segfault
 
 static assert( !is(typeof( (){
     enum foo =
@@ -264,9 +272,8 @@ static assert( !is(typeof( (){
     ];
 })));
 
-/**************************************************
-    11991
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11991
 
 void main()
 {
@@ -280,9 +287,8 @@ void main()
     }
 }
 
-/**************************************************
-    11939
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11939
 
 void test11939()
 {
@@ -293,9 +299,8 @@ void test11939()
     throw new Exception("");
 }
 
-/**************************************************
-    5796
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=5796
 
 template A(B) {
     pragma(lib, "missing ;")
@@ -304,18 +309,17 @@ template A(B) {
 
 static assert(!is(typeof(A!(int))));
 
-/**************************************************
-    6720
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=6720
+
 void bug6720() { }
 
 static assert(!is(typeof(
 cast(bool)bug6720()
 )));
 
-/**************************************************
-    1099
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=1099
 
 template Mix1099(int a) {
    alias typeof(this) ThisType;
@@ -331,9 +335,9 @@ struct Foo1099 {
     mixin Mix1099!(2);
 }
 
-/**************************************************
-    8788 - super() and return
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=8788
+// super() and return
 
 class B8788 {
         this ( ) { }
@@ -435,9 +439,9 @@ static assert(!is(typeof( { new C8788!(7)(0); } )));
 static assert(!is(typeof( { new C8788!(8)(0); } )));
 static assert(!is(typeof( { new C8788!(9)(0); } )));
 
-/**************************************************
-    4967, 7058
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=4967
+// https://issues.dlang.org/show_bug.cgi?id=7058
 
 enum Bug7058 bug7058 = { 1.5f, 2};
 static assert(bug7058.z == 99);
@@ -498,7 +502,7 @@ alias test8163!(ubyte, ubyte, ushort, float) _BBSf;
 
 
 /***************************************************/
-// 4757
+// https://issues.dlang.org/show_bug.cgi?id=4757
 
 auto foo4757(T)(T)
 {
@@ -518,7 +522,7 @@ void test4757()
 }
 
 /***************************************************/
-// 9348
+// https://issues.dlang.org/show_bug.cgi?id=9348
 
 void test9348()
 {
@@ -529,7 +533,7 @@ void test9348()
 }
 
 /***************************************************/
-// 9690
+// https://issues.dlang.org/show_bug.cgi?id=9690
 
 @disable
 {
@@ -545,7 +549,7 @@ void test9348()
 }
 
 /***************************************************/
-// 9987
+// https://issues.dlang.org/show_bug.cgi?id=9987
 
 static if (is(object.ModuleInfo == struct))
 {
@@ -564,7 +568,7 @@ static if (is(object.ModuleInfo == class))
 }
 
 /***************************************************/
-// 10158
+// https://issues.dlang.org/show_bug.cgi?id=10158
 
 class Outer10158
 {
@@ -586,7 +590,7 @@ void test10158()
 }
 
 /***************************************************/
-// 10326
+// https://issues.dlang.org/show_bug.cgi?id=10326
 
 class C10326
 {
@@ -596,7 +600,7 @@ class C10326
 }
 
 /***************************************************/
-// 11042
+// https://issues.dlang.org/show_bug.cgi?id=11042
 
 static if           ((true  || error) == true ) {} else { static assert(0); }
 static if           ((false && error) == false) {} else { static assert(0); }
@@ -620,7 +624,7 @@ int f11042a3()() if (__traits(compiles, true  || error) == false) { return 0; } 
 int f11042b3()() if (__traits(compiles, false && error) == false) { return 0; }   enum x11042b3 = f11042b3();
 
 /***************************************************/
-// 11554
+// https://issues.dlang.org/show_bug.cgi?id=11554
 
 enum E11554;
 static assert(is(E11554 == enum));
@@ -629,7 +633,7 @@ struct Bro11554(N...) {}
 static assert(!is(E11554 unused : Bro11554!M, M...));
 
 /***************************************************/
-// 12302
+// https://issues.dlang.org/show_bug.cgi?id=12302
 
 template isCallable12302(T...)
     if (T.length == 1)
@@ -657,7 +661,7 @@ A12302 func12302() { return null; }
 enum b12302 = isCallable12302!func12302;
 
 /***************************************************/
-// 12476
+// https://issues.dlang.org/show_bug.cgi?id=12476
 
 template A12476(T) {  }
 
@@ -686,14 +690,14 @@ static assert(__traits(isSame, sb12476, A12476!int));
 static assert(__traits(isSame, cb12476, A12476!int));
 
 /***************************************************/
-// 12506
+// https://issues.dlang.org/show_bug.cgi?id=12506
 
 import imports.a12506;
 private           bool[9] r12506a = f12506!(i => true)(); // OK
 private immutable bool[9] r12506b = f12506!(i => true)(); // OK <- error
 
 /***************************************************/
-// 12555
+// https://issues.dlang.org/show_bug.cgi?id=12555
 
 class A12555(T)
 {
@@ -705,7 +709,7 @@ static assert(!__traits(compiles, {
 }));
 
 /***************************************************/
-// 11622
+// https://issues.dlang.org/show_bug.cgi?id=11622
 
 class A11622(T)
 {
@@ -724,7 +728,7 @@ static assert(!__traits(compiles, {
 }));
 
 /***************************************************/
-// 12688
+// https://issues.dlang.org/show_bug.cgi?id=12688
 
 void writeln12688(A...)(A) {}
 
@@ -741,7 +745,7 @@ void test12688()
 }
 
 /***************************************************/
-// 12703
+// https://issues.dlang.org/show_bug.cgi?id=12703
 
 struct S12703
 {
@@ -754,7 +758,7 @@ final class C12703
 }
 
 /***************************************************/
-// 12799
+// https://issues.dlang.org/show_bug.cgi?id=12799
 
 struct A12799
 {
@@ -764,12 +768,12 @@ struct A12799
 }
 
 /***************************************************/
-// 13236
+// https://issues.dlang.org/show_bug.cgi?id=13236
 
 enum bug13286 = is(typeof({ struct S { S x; } }));
 
 /***************************************************/
-// 13280
+// https://issues.dlang.org/show_bug.cgi?id=13280
 
 struct S13280
 {
@@ -780,7 +784,7 @@ struct S13280
 }
 
 /***************************************************/
-// 13481
+// https://issues.dlang.org/show_bug.cgi?id=13481
 
 mixin template Mix13481(void function() callback)
 {
@@ -791,7 +795,7 @@ mixin template Mix13481(void function() callback)
 }
 
 /***************************************************/
-// 13564
+// https://issues.dlang.org/show_bug.cgi?id=13564
 
 class E13564(T)
 {
@@ -818,7 +822,7 @@ void test13564()
 }
 
 /***************************************************/
-// 14166
+// https://issues.dlang.org/show_bug.cgi?id=14166
 
 struct Proxy14166(T)
 {
@@ -868,7 +872,7 @@ static assert(is(typeof(makeAA14166()[0] = 1) == X14166)); // ok <- error
 static assert(is(typeof(tup14166.field = makeTup14166()) == TT14166!(int, int))); // ok <- error
 
 /***************************************************/
-// 14388
+// https://issues.dlang.org/show_bug.cgi?id=14388
 
 @property immutable(T)[] idup14388(T)(T[] a)
 {
@@ -913,7 +917,7 @@ void test14388()
 }
 
 /***************************************************/
-// 15163
+// https://issues.dlang.org/show_bug.cgi?id=15163
 
 void function() func15164(int[] arr)
 {
@@ -926,9 +930,9 @@ void test15163()
     func15164(arr[0])();
 }
 
-/**************************************************
-    3438
-**************************************************/
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=3438
+
 import core.vararg;
 struct S3438_1 { this(int x, int y = 1) { } }
 struct S3438_2 { this(int x, ...) { } }
@@ -937,7 +941,7 @@ struct S3438_4 { this(...) { } }
 struct S3438_5 { this(int[] arr...) { } }
 
 /***************************************************/
-// 15362
+// https://issues.dlang.org/show_bug.cgi?id=15362
 
 void func15362()
 {
@@ -952,7 +956,7 @@ void func15362()
 }
 
 /***************************************************/
-// 15799
+// https://issues.dlang.org/show_bug.cgi?id=15799
 
 interface I15799
 {
@@ -963,3 +967,28 @@ interface I15799
         assert(n);
     }; // Semicolon is not a part of function declaration. It's an empty declaration.
 }
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=21163
+
+struct B21163
+{
+    void function(scope int) fp;
+}
+
+B21163 b21163 = {
+    (scope int x){}
+};
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11624
+
+interface I11624
+{
+    void foo();
+}
+
+static assert(!__traits(compiles,
+{
+    static class C11624 : I11624 { }
+}));

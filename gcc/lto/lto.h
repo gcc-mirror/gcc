@@ -1,5 +1,5 @@
 /* LTO declarations.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -31,10 +31,10 @@ struct lto_file
   off_t offset;
 };
 
-/* In lto-lang.c  */
+/* In lto-lang.cc  */
 extern const char *resolution_file_name;
 
-/* In lto.c  */
+/* In lto.cc  */
 extern tree lto_eh_personality (void);
 extern void lto_main (void);
 extern void lto_read_all_file_options (void);

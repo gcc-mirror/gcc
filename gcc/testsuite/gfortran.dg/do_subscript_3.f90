@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-O0" }
 ! PR fortran/91424
 ! Check that only one warning is issued inside blocks, and that
 ! warnings are also issued for contained subroutines.

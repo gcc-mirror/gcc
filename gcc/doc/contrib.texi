@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -190,7 +190,7 @@ Eric Christopher for his Java porting help and clean-ups.
 Branko Cibej for more warning contributions.
 
 @item
-The @uref{http://www.gnu.org/software/classpath/,,GNU Classpath project}
+The @uref{https://www.gnu.org/software/classpath/,,GNU Classpath project}
 for all of their merged runtime code.
 
 @item
@@ -668,7 +668,7 @@ entire Debian archive.
 
 @item
 David Miller for his direction via the steering committee, lots of
-SPARC work, improvements in jump.c and interfacing with the Linux kernel
+SPARC work, improvements in jump.cc and interfacing with the Linux kernel
 developers.
 
 @item

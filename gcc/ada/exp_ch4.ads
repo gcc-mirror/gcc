@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,20 +89,16 @@ package Exp_Ch4 is
    --  while for records without variants only a simple expression is needed.
 
    function Expand_Record_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id;
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id;
    --  Expand a record equality into an expression that compares the fields
    --  individually to yield the required Boolean result. Loc is the
    --  location for the generated nodes. Typ is the type of the record, and
    --  Lhs, Rhs are the record expressions to be compared, these
    --  expressions need not to be analyzed but have to be side-effect free.
-   --  Bodies is a list on which to attach bodies of local functions that
-   --  are created in the process. This is the responsibility of the caller
-   --  to insert those bodies at the right place. Nod provides the Sloc
-   --  value for generated code.
+   --  Nod provides the Sloc value for generated code.
 
    procedure Expand_Set_Membership (N : Node_Id);
    --  For each choice of a set membership, we create a simple equality or

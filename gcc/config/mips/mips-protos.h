@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -388,7 +388,7 @@ extern void mips_register_frame_header_opt (void);
 extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 extern void mips_expand_vec_cmp_expr (rtx *);
 
-/* Routines implemented in mips-d.c  */
+/* Routines implemented in mips-d.cc  */
 extern void mips_d_target_versions (void);
 extern void mips_d_register_target_info (void);
 

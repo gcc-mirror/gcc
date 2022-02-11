@@ -1,6 +1,6 @@
 // Core concepts and definitions for <ranges> -*- C++ -*-
 
-// Copyright (C) 2019-2021 Free Software Foundation, Inc.
+// Copyright (C) 2019-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -383,6 +383,8 @@ namespace ranges
     template<typename _Tp>
       concept __sentinel_size = requires(_Tp& __t)
 	{
+	  requires (!is_unbounded_array_v<remove_reference_t<_Tp>>);
+
 	  { _Begin{}(__t) } -> forward_iterator;
 
 	  { _End{}(__t) } -> sized_sentinel_for<decltype(_Begin{}(__t))>;
@@ -466,6 +468,8 @@ namespace ranges
     template<typename _Tp>
       concept __eq_iter_empty = requires(_Tp& __t)
 	{
+	  requires (!is_unbounded_array_v<remove_reference_t<_Tp>>);
+
 	  { _Begin{}(__t) } -> forward_iterator;
 
 	  bool(_Begin{}(__t) == _End{}(__t));
@@ -752,20 +756,23 @@ namespace ranges
 	  {
 	    const auto __diff = __bound - __it;
 
-	    // n and bound must not lead in opposite directions:
-	    __glibcxx_assert(__n == 0 || __diff == 0 || (__n < 0 == __diff < 0));
-	    const auto __absdiff = __diff < 0 ? -__diff : __diff;
-	    const auto __absn = __n < 0 ? -__n : __n;;
-	    if (__absn >= __absdiff)
+	    if (__diff == 0)
+	      return __n;
+	    else if (__diff > 0 ? __n >= __diff : __n <= __diff)
 	      {
 		(*this)(__it, __bound);
 		return __n - __diff;
 	      }
-	    else
+	    else if (__n != 0) [[likely]]
 	      {
+		// n and bound must not lead in opposite directions:
+		__glibcxx_assert(__n < 0 == __diff < 0);
+
 		(*this)(__it, __n);
 		return 0;
 	      }
+	    else
+	      return 0;
 	  }
 	else if (__it == __bound || __n == 0)
 	  return __n;

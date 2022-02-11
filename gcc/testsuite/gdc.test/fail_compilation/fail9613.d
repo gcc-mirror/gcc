@@ -1,4 +1,4 @@
-// PREMUTE_ARGS:
+// PERMUTE_ARGS:
 /*
 TEST_OUTPUT:
 ---

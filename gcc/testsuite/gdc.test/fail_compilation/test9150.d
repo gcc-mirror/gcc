@@ -1,5 +1,5 @@
-// Issue 9150 - Mismatching static array length should be detected in foreach
-
+// https://issues.dlang.org/show_bug.cgi?id=9150
+// Mismatching static array length should be detected in foreach
 /*
 TEST_OUTPUT:
 ---

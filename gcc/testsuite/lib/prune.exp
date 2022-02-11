@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -95,6 +95,13 @@ proc prune_gcc_output { text } {
 
     # Ignore stabs obsoletion warnings
     regsub -all "(^|\n)\[^\n\]*\[Ww\]arning: STABS debugging information is obsolete and not supported anymore\[^\n\]*" $text "" text
+
+    # Ignore missing lto jobserver for tests that do more than 1 LTRANS unit
+    regsub -all "(^|\n)\[^\n\]*lto\[^\n\]*: warning: using serial compilation of \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*lto\[^\n\]*: note: see the \[^\n\]*'-flto' option documentation\[^\n\]* for more information" $text "" text
+
+    # Many tests that use visibility will still pass on platforms that don't support it.
+    regsub -all "(^|\n)\[^\n\]*lto1: warning: visibility attribute not supported in this configuration; ignored\[^\n\]*" $text "" text
 
     # If dg-enable-nn-line-numbers was provided, then obscure source-margin
     # line numbers by converting them to "NN" form.

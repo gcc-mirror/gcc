@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2021 Free Software Foundation, Inc.
+# Copyright (C) 2003-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,33 +20,33 @@
 # doing the build, it may not be installed yet.
 LIMITS_H_TEST = true
 
-winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+winnt.o: $(srcdir)/config/i386/winnt.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
   $(TM_P_H) $(HASH_TABLE_H) $(GGC_H) $(LTO_STREAMER_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/winnt.c
+	$(srcdir)/config/i386/winnt.cc
 
-winnt-cxx.o: $(srcdir)/config/i386/winnt-cxx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+winnt-cxx.o: $(srcdir)/config/i386/winnt-cxx.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h \
   $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/winnt-cxx.c
+	$(srcdir)/config/i386/winnt-cxx.cc
 
 
-winnt-stubs.o: $(srcdir)/config/i386/winnt-stubs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+winnt-stubs.o: $(srcdir)/config/i386/winnt-stubs.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
   $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/winnt-stubs.c
+	$(srcdir)/config/i386/winnt-stubs.cc
 
-winnt-d.o: $(srcdir)/config/i386/winnt-d.c
+winnt-d.o: $(srcdir)/config/i386/winnt-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-msformat-c.o: $(srcdir)/config/i386/msformat-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+msformat-c.o: $(srcdir)/config/i386/msformat-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h output.h $(TREE_H) flags.h \
   $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	$(srcdir)/config/i386/msformat-c.c
+	$(srcdir)/config/i386/msformat-c.cc
 
 STMP_FIXINC=stmp-fixinc

@@ -1,5 +1,5 @@
 ;; DFA scheduling description for EPIPHANY
-;; Copyright (C) 2004-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2022 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 
 ;; This file is part of GCC.
@@ -77,7 +77,7 @@
   "issue,issue+int,issue+int,issue+int,int")
 
 ;; Loads have a latency of two.
-;; Note that we fix up the latency of post_modify in epiphany.c:epiphany_adjust_cost
+;; Note that we fix up the latency of post_modify in epiphany.cc:epiphany_adjust_cost
 
 (define_insn_reservation "load" 3
   (and (eq_attr "pipe_model" "epiphany")

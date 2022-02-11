@@ -1,5 +1,5 @@
 ;; Predicate definitions for code generation on the EPIPHANY cpu.
-;; Copyright (C) 1994-2021 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2022 Free Software Foundation, Inc.
 ;; Contributed by Embecosm on behalf of Adapteva, Inc.
 ;;
 ;; This file is part of GCC.
@@ -246,7 +246,7 @@
       return REGNO (cc) == CC_REGNUM;
     /* From combiner.  */
     case E_QImode: case E_SImode: case E_SFmode: case E_HImode:
-    /* From cse.c:dead_libcall_p.  */
+    /* From cse.cc:dead_libcall_p.  */
     case E_DFmode:
       return 0;
     default:

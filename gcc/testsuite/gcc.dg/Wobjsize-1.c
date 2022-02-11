@@ -7,11 +7,12 @@ char buf[6];
 
 int main(int argc, char **argv)
 {
-  strcpy (buf,"hello ");    /* { dg-warning "\\\[-Wstringop-overflow" } */
+  strcpy (buf,"hello ");
   return 0;
 }
 
-/* { dg-message "file included" "included" { target *-*-* } 0 }
+/* { dg-warning "\\\[-Wstringop-overflow" "warning" { target *-*-* } 0 }
+   { dg-message "file included" "included" { target *-*-* } 0 }
    { dg-message "inlined from" "inlined" { target *-*-* } 0 }
 
    The test might emit two warnings, one for the strcpy call and

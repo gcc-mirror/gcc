@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2014-2021 Free Software Foundation, Inc.
+// Copyright (C) 2014-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,4 +52,3 @@ auto b = a < a;
 // { dg-error "no match for 'operator<'" "" { target c++20 } 0 }
 // { dg-error "no match for .*_Synth3way|in requirements" "" { target c++20 } 0 }
 // { dg-error "ordered comparison" "" { target c++17_down } 0 }
-// { dg-error "not a return-statement" "" { target c++11_only } 0 }

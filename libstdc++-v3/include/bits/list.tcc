@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -499,7 +499,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Scratch_list* __fill = __tmp;
 	_Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<const_iterator, void> __ptr_comp;
+	_Scratch_list::_Ptr_cmp<iterator, void> __ptr_comp;
 
 	__try
 	  {
@@ -623,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _Scratch_list* __fill = __tmp;
 	  _Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<const_iterator, _StrictWeakOrdering> __ptr_comp
+	_Scratch_list::_Ptr_cmp<iterator, _StrictWeakOrdering> __ptr_comp
 	  = { __comp };
 
 	  __try

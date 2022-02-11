@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,12 @@ package Rtsfind is
    --  compilation. The presence of extraneous visible stuff has no effect on
    --  the compilation except in the presence of use clauses, which might
    --  result in unexpected ambiguities.
+
+   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
+   --  this mechanism must not contain private with clauses. This is because
+   --  the special context installation/removal for private with clauses
+   --  only works in a clean environment for compilation, and could lead
+   --  here to removing visibility over lib units in the calling context.
 
    --  NOTE: If RTU_Id is modified, the subtypes of RTU_Id in the package body
    --  might need to be modified. See Get_Unit_Name.
@@ -620,6 +626,7 @@ package Rtsfind is
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
      RE_Suspend_Until_True,              -- Ada.Synchronous_Task_Control
+     RE_Suspension_Object,               -- Ada.Synchronous_Task_Control
 
      RE_Access_Level,                    -- Ada.Tags
      RE_Alignment,                       -- Ada.Tags
@@ -2305,6 +2312,7 @@ package Rtsfind is
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
      RE_Suspend_Until_True               => Ada_Synchronous_Task_Control,
+     RE_Suspension_Object                => Ada_Synchronous_Task_Control,
 
      RE_Access_Level                     => Ada_Tags,
      RE_Alignment                        => Ada_Tags,

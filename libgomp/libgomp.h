@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -93,6 +93,10 @@ enum memmodel
 /* Defined if gomp_aligned_alloc doesn't use fallback version
    and free can be used instead of gomp_aligned_free.  */
 #define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC 1
+#endif
+
+#if defined(GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC) && !defined(__AMDGCN__)
+#define GOMP_USE_ALIGNED_WORK_SHARES 1
 #endif
 
 extern void *gomp_malloc (size_t) __attribute__((malloc));
@@ -348,7 +352,7 @@ struct gomp_work_share
      are in a different cache line.  */
 
   /* This lock protects the update of the following members.  */
-#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+#ifdef GOMP_USE_ALIGNED_WORK_SHARES
   gomp_mutex_t lock __attribute__((aligned (64)));
 #else
   char pad[64 - offsetof (struct gomp_work_share_1st_cacheline, pad)];
@@ -767,6 +771,14 @@ struct gomp_thread
 
   /* User pthread thread pool */
   struct gomp_thread_pool *thread_pool;
+
+#ifdef LIBGOMP_USE_PTHREADS
+  /* omp_get_num_teams () - 1.  */
+  unsigned int num_teams;
+
+  /* omp_get_team_num ().  */
+  unsigned int team_num;
+#endif
 
 #if defined(LIBGOMP_USE_PTHREADS) \
     && (!defined(HAVE_TLS) \
@@ -1271,7 +1283,7 @@ extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
 extern void gomp_attach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree,
 				 splay_tree_key, uintptr_t, size_t,
-				 struct gomp_coalesce_buf *);
+				 struct gomp_coalesce_buf *, bool);
 extern void gomp_detach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree_key,
 				 uintptr_t, bool, struct gomp_coalesce_buf *);

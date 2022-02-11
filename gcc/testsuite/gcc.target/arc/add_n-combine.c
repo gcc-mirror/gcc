@@ -45,6 +45,6 @@ void f() {
   a(at3.bn[bu]);
 }
 
-/* { dg-final { scan-assembler "add1" } } */
-/* { dg-final { scan-assembler "add2" } } */
+/* { dg-final { scan-assembler "@at1\\+1" } } */
+/* { dg-final { scan-assembler "@at2\\+2" } } */
 /* { dg-final { scan-assembler "add3" } } */

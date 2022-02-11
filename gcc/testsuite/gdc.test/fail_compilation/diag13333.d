@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT*
 ---
-fail_compilation/diag13333.d(29): Error: template instance VariantN!(maxSize!(S), T) recursive template expansion
-fail_compilation/diag13333.d(29): Error: template instance diag13333.maxSize!(S) error instantiating
-fail_compilation/diag13333.d(34):        instantiated from here: Algebraic!(S)
+fail_compilation/diag13333.d(29): Error: template instance `VariantN!(maxSize!(S), T)` recursive template expansion
+fail_compilation/diag13333.d(29): Error: template instance `diag13333.maxSize!(S)` error instantiating
+fail_compilation/diag13333.d(34):        instantiated from here: `Algebraic!(S)`
 ---
 */
 

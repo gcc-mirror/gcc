@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfc-internals.info
-@set copyrights-gfortran 2007-2021
+@set copyrights-gfortran 2007-2022
 
 @include gcc-common.texi
 
@@ -187,7 +187,7 @@ machinery to create the code that enables @command{gfortran} and
 call the relevant handler function.
 
 This generated code calls the @code{gfc_handle_option} code in
-@file{options.c} with an enumerator variable indicating which option is
+@file{options.cc} with an enumerator variable indicating which option is
 to be processed, and the relevant integer or string values associated
 with that option flag.  Typically, @code{gfc_handle_option} uses these
 arguments to set global flags which record the option states.
@@ -195,7 +195,7 @@ arguments to set global flags which record the option states.
 The global flags that record the option states are stored in the
 @code{gfc_option_t} struct, which is defined in @file{gfortran.h}.
 Before the options are processed, initial values for these flags are set
-in @code{gfc_init_option} in @file{options.c}; these become the default
+in @code{gfc_init_option} in @file{options.cc}; these become the default
 values for the options.
 
 
@@ -232,7 +232,7 @@ variable, this will be parsed as an assignment statement, and the error
 discarded.  However, when @code{IF} is not a valid variable, this
 buffered error message will be reported to the user.
 
-The error handling code is implemented in @file{error.c}.  Errors are
+The error handling code is implemented in @file{error.cc}.  Errors are
 normally entered into the buffer with the @code{gfc_error} function.
 Warnings go through a similar buffering process, and are entered into
 the buffer with @code{gfc_warning}.  There is also a special-purpose
@@ -269,7 +269,7 @@ The syntax for the strings used to produce the error/warning message in
 the various error and warning functions is similar to the @code{printf}
 syntax, with @samp{%}-escapes to insert variable values.  The details,
 and the allowable codes, are documented in the @code{error_print}
-function in @file{error.c}.
+function in @file{error.cc}.
 
 @c ---------------------------------------------------------------------
 @c Frontend Data Structures
@@ -281,7 +281,7 @@ function in @file{error.c}.
 
 This chapter should describe the details necessary to understand how
 the various @code{gfc_*} data are used and interact.  In general it is
-advisable to read the code in @file{dump-parse-tree.c} as its routines
+advisable to read the code in @file{dump-parse-tree.cc} as its routines
 should exhaust all possible valid combinations of content for these
 structures.
 
@@ -831,7 +831,7 @@ needs to be executed before and after evaluation of the expression.
 When using a local @code{gfc_se} to convert some expression, it is
 often necessary to add the generated @code{pre} and @code{post} blocks
 to the @code{pre} or @code{post} blocks of the outer @code{gfc_se}.
-Code like this (lifted from @file{trans-expr.c}) is fairly common:
+Code like this (lifted from @file{trans-expr.cc}) is fairly common:
 
 @smallexample
 gfc_se cont_se;

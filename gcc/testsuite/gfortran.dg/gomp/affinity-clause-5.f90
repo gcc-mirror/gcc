@@ -18,6 +18,6 @@ end
 
 ! { dg-final { scan-tree-dump-times "pragma omp task affinity\\(iterator\\)" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(\\*\\(c_char \\*\\) &iterator\\\[2\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\\[2\\\]\\)" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=1:10:1\\):\\*\\(c_char \\*\\) &iterator\\\[.* <?i>? \\+ -1\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task affinity\\(iterator\\(integer\\(kind=4\\) i=1:10:1\\):iterator\\\[.* <?i>? \\+ -1\\\]\\)" 1 "original" } }

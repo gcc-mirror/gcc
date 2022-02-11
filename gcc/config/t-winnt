@@ -1,4 +1,4 @@
-# Copyright (C) 2013-2021 Free Software Foundation, Inc.
+# Copyright (C) 2013-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,7 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-winnt-c.o: config/winnt-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+winnt-c.o: config/winnt-c.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(C_TARGET_H) $(C_TARGET_DEF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  $< $(OUTPUT_OPTION)

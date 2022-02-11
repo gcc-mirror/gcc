@@ -1,6 +1,6 @@
 // <system_error> implementation file
 
-// Copyright (C) 2007-2021 Free Software Foundation, Inc.
+// Copyright (C) 2007-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,10 @@
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <memory>
 #include <windows.h>
+#endif
+
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#  define __constinit [[clang::require_constant_initialization]]
 #endif
 
 namespace

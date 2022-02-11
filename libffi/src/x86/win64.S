@@ -85,14 +85,13 @@ C(ffi_call_win64):
 
 /* Below, we're space constrained most of the time.  Thus we eschew the
    modern "mov, pop, ret" sequence (5 bytes) for "leave, ret" (2 bytes).  */
-.macro epilogue
-	leaveq
-	cfi_remember_state
-	cfi_def_cfa(%rsp, 8)
-	cfi_restore(%rbp)
-	ret
+#define epilogue		\
+	leaveq;			\
+	cfi_remember_state;	\
+	cfi_def_cfa(%rsp, 8);	\
+	cfi_restore(%rbp);	\
+	ret;			\
 	cfi_restore_state
-.endm
 
 	.align	8
 0:

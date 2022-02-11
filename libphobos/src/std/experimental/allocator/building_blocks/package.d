@@ -1,9 +1,10 @@
+// Written in the D programming language.
 /**
 $(H2 Assembling Your Own Allocator)
 
-In addition to defining the interfaces above, this package also implements
+This package also implements
 untyped composable memory allocators. They are $(I untyped) because they deal
-exclusively in $(D void[]) and have no notion of what type the memory allocated
+exclusively in `void[]` and have no notion of what type the memory allocated
 would be destined for. They are $(I composable) because the included allocators
 are building blocks that can be assembled in complex nontrivial allocators.
 
@@ -16,11 +17,11 @@ performance implications, and is virtually always redundant because client code
 needs knowledge of the allocated size in order to avoid buffer overruns. (See
 more discussion in a $(HTTP open-
 std.org/JTC1/SC22/WG21/docs/papers/2013/n3536.html, proposal) for sized
-deallocation in C++.) For this reason, allocators herein traffic in $(D void[])
-as opposed to $(D void*).)
+deallocation in C++.) For this reason, allocators herein traffic in `void[]`
+as opposed to `void*`.)
 
 $(P In order to be usable as an _allocator, a type should implement the
-following methods with their respective semantics. Only $(D alignment) and  $(D
+following methods with their respective semantics. Only `alignment` and  $(D
 allocate) are required. If any of the other methods is missing, the _allocator
 is assumed to not have that capability (for example some allocators do not offer
 manual deallocation of memory). Allocators should NOT implement
@@ -35,23 +36,23 @@ $(TR $(TH Method name) $(TH Semantics))
 
 $(TR $(TDC uint alignment;, $(POST $(RES) > 0)) $(TD Returns the minimum
 alignment of all data returned by the allocator. An allocator may implement $(D
-alignment) as a statically-known $(D enum) value only. Applications that need
-dynamically-chosen alignment values should use the $(D alignedAllocate) and $(D
+alignment) as a statically-known `enum` value only. Applications that need
+dynamically-chosen alignment values should use the `alignedAllocate` and $(D
 alignedReallocate) APIs.))
 
 $(TR $(TDC size_t goodAllocSize(size_t n);, $(POST $(RES) >= n)) $(TD Allocators
 customarily allocate memory in discretely-sized chunks. Therefore, a request for
-$(D n) bytes may result in a larger allocation. The extra memory allocated goes
+`n` bytes may result in a larger allocation. The extra memory allocated goes
 unused and adds to the so-called $(HTTP goo.gl/YoKffF,internal fragmentation).
-The function $(D goodAllocSize(n)) returns the actual number of bytes that would
-be allocated upon a request for $(D n) bytes. This module defines a default
-implementation that returns $(D n) rounded up to a multiple of the allocator's
+The function `goodAllocSize(n)` returns the actual number of bytes that would
+be allocated upon a request for `n` bytes. This module defines a default
+implementation that returns `n` rounded up to a multiple of the allocator's
 alignment.))
 
 $(TR $(TDC void[] allocate(size_t s);, $(POST $(RES) is null || $(RES).length ==
 s)) $(TD If $(D s == 0), the call may return any empty slice (including $(D
-null)). Otherwise, the call allocates $(D s) bytes of memory and returns the
-allocated block, or $(D null) if the request could not be satisfied.))
+null)). Otherwise, the call allocates `s` bytes of memory and returns the
+allocated block, or `null` if the request could not be satisfied.))
 
 $(TR $(TDC void[] alignedAllocate(size_t s, uint a);, $(POST $(RES) is null ||
 $(RES).length == s)) $(TD Similar to `allocate`, with the additional
@@ -60,41 +61,41 @@ must be a power of 2.))
 
 $(TR $(TDC void[] allocateAll();) $(TD Offers all of allocator's memory to the
 caller, so it's usually defined by fixed-size allocators. If the allocator is
-currently NOT managing any memory, then $(D allocateAll()) shall allocate and
+currently NOT managing any memory, then `allocateAll()` shall allocate and
 return all memory available to the allocator, and subsequent calls to all
-allocation primitives should not succeed (e.g. $(D allocate) shall return $(D
-null) etc). Otherwise, $(D allocateAll) only works on a best-effort basis, and
-the allocator is allowed to return $(D null) even if does have available memory.
-Memory allocated with $(D allocateAll) is not otherwise special (e.g. can be
+allocation primitives should not succeed (e.g. `allocate` shall return $(D
+null) etc). Otherwise, `allocateAll` only works on a best-effort basis, and
+the allocator is allowed to return `null` even if does have available memory.
+Memory allocated with `allocateAll` is not otherwise special (e.g. can be
 reallocated or deallocated with the usual primitives, if defined).))
 
 $(TR $(TDC bool expand(ref void[] b, size_t delta);, $(POST !$(RES) || b.length
-== $(I old)(b).length + delta)) $(TD Expands $(D b) by $(D delta) bytes. If $(D
-delta == 0), succeeds without changing $(D b). If $(D b is null), returns
+== $(I old)(b).length + delta)) $(TD Expands `b` by `delta` bytes. If $(D
+delta == 0), succeeds without changing `b`. If $(D b is null), returns
 `false` (the null pointer cannot be expanded in place). Otherwise, $(D
 b) must be a buffer previously allocated with the same allocator. If expansion
-was successful, $(D expand) changes $(D b)'s length to $(D b.length + delta) and
-returns $(D true). Upon failure, the call effects no change upon the allocator
-object, leaves $(D b) unchanged, and returns $(D false).))
+was successful, `expand` changes `b`'s length to $(D b.length + delta) and
+returns `true`. Upon failure, the call effects no change upon the allocator
+object, leaves `b` unchanged, and returns `false`.))
 
 $(TR $(TDC bool reallocate(ref void[] b, size_t s);, $(POST !$(RES) || b.length
-== s)) $(TD Reallocates $(D b) to size $(D s), possibly moving memory around.
-$(D b) must be $(D null) or a buffer allocated with the same allocator. If
-reallocation was successful, $(D reallocate) changes $(D b) appropriately and
-returns $(D true). Upon failure, the call effects no change upon the allocator
-object, leaves $(D b) unchanged, and returns $(D false). An allocator should
-implement $(D reallocate) if it can derive some advantage from doing so;
-otherwise, this module defines a $(D reallocate) free function implemented in
-terms of $(D expand), $(D allocate), and $(D deallocate).))
+== s)) $(TD Reallocates `b` to size `s`, possibly moving memory around.
+`b` must be `null` or a buffer allocated with the same allocator. If
+reallocation was successful, `reallocate` changes `b` appropriately and
+returns `true`. Upon failure, the call effects no change upon the allocator
+object, leaves `b` unchanged, and returns `false`. An allocator should
+implement `reallocate` if it can derive some advantage from doing so;
+otherwise, this module defines a `reallocate` free function implemented in
+terms of `expand`, `allocate`, and `deallocate`.))
 
 $(TR $(TDC bool alignedReallocate(ref void[] b,$(BR) size_t s, uint a);, $(POST
-!$(RES) || b.length == s)) $(TD Similar to $(D reallocate), but guarantees the
-reallocated memory is aligned at $(D a) bytes. The buffer must have been
-originated with a call to $(D alignedAllocate). $(D a) must be a power of 2
-greater than $(D (void*).sizeof). An allocator should implement $(D
+!$(RES) || b.length == s)) $(TD Similar to `reallocate`, but guarantees the
+reallocated memory is aligned at `a` bytes. The buffer must have been
+originated with a call to `alignedAllocate`. `a` must be a power of 2
+greater than `(void*).sizeof`. An allocator should implement $(D
 alignedReallocate) if it can derive some advantage from doing so; otherwise,
-this module defines a $(D alignedReallocate) free function implemented in terms
-of $(D expand), $(D alignedAllocate), and $(D deallocate).))
+this module defines a `alignedReallocate` free function implemented in terms
+of `expand`, `alignedAllocate`, and `deallocate`.))
 
 $(TR $(TDC Ternary owns(void[] b);) $(TD Returns `Ternary.yes` if `b` has been
 allocated with this allocator. An allocator should define this method only if it
@@ -128,23 +129,23 @@ $(TR $(TDC static Allocator instance;, $(POST instance $(I is a valid)
 Allocator $(I object))) $(TD Some allocators are $(I monostate), i.e. have only
 an instance and hold only global state. (Notable examples are C's own
 `malloc`-based allocator and D's garbage-collected heap.) Such allocators must
-define a static $(D instance) instance that serves as the symbolic placeholder
+define a static `instance` instance that serves as the symbolic placeholder
 for the global instance of the allocator. An allocator should not hold state
 and define `instance` simultaneously. Depending on whether the allocator is
-thread-safe or not, this instance may be $(D shared).))
+thread-safe or not, this instance may be `shared`.))
 )
 
 $(H2 Sample Assembly)
 
 The example below features an _allocator modeled after $(HTTP goo.gl/m7329l,
 jemalloc), which uses a battery of free-list allocators spaced so as to keep
-internal fragmentation to a minimum. The $(D FList) definitions specify no
-bounds for the freelist because the $(D Segregator) does all size selection in
+internal fragmentation to a minimum. The `FList` definitions specify no
+bounds for the freelist because the `Segregator` does all size selection in
 advance.
 
 Sizes through 3584 bytes are handled via freelists of staggered sizes. Sizes
-from 3585 bytes through 4072 KB are handled by a $(D BitmappedBlock) with a
-block size of 4 KB. Sizes above that are passed direct to the $(D GCAllocator).
+from 3585 bytes through 4072 KB are handled by a `BitmappedBlock` with a
+block size of 4 KB. Sizes above that are passed direct to the `GCAllocator`.
 
 ----
     alias FList = FreeList!(GCAllocator, 0, unbounded);
@@ -176,23 +177,23 @@ One allocation pattern used in multithreaded applications is to share memory
 across threads, and to deallocate blocks in a different thread than the one that
 allocated it.
 
-All allocators in this module accept and return $(D void[]) (as opposed to
+All allocators in this module accept and return `void[]` (as opposed to
 $(D shared void[])). This is because at the time of allocation, deallocation, or
-reallocation, the memory is effectively not $(D shared) (if it were, it would
+reallocation, the memory is effectively not `shared` (if it were, it would
 reveal a bug at the application level).
 
-The issue remains of calling $(D a.deallocate(b)) from a different thread than
-the one that allocated $(D b). It follows that both threads must have access to
-the same instance $(D a) of the respective allocator type. By definition of D,
-this is possible only if $(D a) has the $(D shared) qualifier. It follows that
-the allocator type must implement $(D allocate) and $(D deallocate) as $(D
-shared) methods. That way, the allocator commits to allowing usable $(D shared)
+The issue remains of calling `a.deallocate(b)` from a different thread than
+the one that allocated `b`. It follows that both threads must have access to
+the same instance `a` of the respective allocator type. By definition of D,
+this is possible only if `a` has the `shared` qualifier. It follows that
+the allocator type must implement `allocate` and `deallocate` as $(D
+shared) methods. That way, the allocator commits to allowing usable `shared`
 instances.
 
-Conversely, allocating memory with one non-$(D shared) allocator, passing it
-across threads (by casting the obtained buffer to $(D shared)), and later
+Conversely, allocating memory with one non-`shared` allocator, passing it
+across threads (by casting the obtained buffer to `shared`), and later
 deallocating it in a different thread (either with a different allocator object
-or with the same allocator object after casting it to $(D shared)) is illegal.
+or with the same allocator object after casting it to `shared`) is illegal.
 
 $(H2 Building Blocks)
 
@@ -212,17 +213,20 @@ starting point for defining other allocators or for studying the API.))
 
 $(TR $(TDC3 GCAllocator, gc_allocator) $(TD The system-provided garbage-collector allocator.
 This should be the default fallback allocator tapping into system memory. It
-offers manual $(D free) and dutifully collects litter.))
+offers manual `free` and dutifully collects litter.))
 
 $(TR $(TDC3 Mallocator, mallocator) $(TD The C heap _allocator, a.k.a. $(D
-malloc)/$(D realloc)/$(D free). Use sparingly and only for code that is unlikely
+malloc)/`realloc`/`free`. Use sparingly and only for code that is unlikely
 to leak.))
 
 $(TR $(TDC3 AlignedMallocator, mallocator) $(TD Interface to OS-specific _allocators that
 support specifying alignment:
-$(HTTP man7.org/linux/man-pages/man3/posix_memalign.3.html, $(D posix_memalign))
+$(HTTP man7.org/linux/man-pages/man3/posix_memalign.3.html, `posix_memalign`)
 on Posix and $(HTTP msdn.microsoft.com/en-us/library/fs9stz4e(v=vs.80).aspx,
-$(D __aligned_xxx)) on Windows.))
+`__aligned_xxx`) on Windows.))
+
+$(TR $(TDC2 AlignedBlockList, aligned_block_list) $(TD A wrapper around a list of allocators
+which allow for very fast deallocations.))
 
 $(TR $(TDC2 AffixAllocator, affix_allocator) $(TD Allocator that allows and manages allocating
 extra prefix and/or a suffix bytes for each block allocated.))
@@ -231,8 +235,8 @@ $(TR $(TDC2 BitmappedBlock, bitmapped_block) $(TD Organizes one contiguous chunk
 equal-size blocks and tracks allocation status at the cost of one bit per
 block.))
 
-$(TR $(TDC2 FallbackAllocator, fallback_allocator) $(TD Allocator that combines two other allocators
- - primary and fallback. Allocation requests are first tried with primary, and
+$(TR $(TDC2 FallbackAllocator, fallback_allocator) $(TD Allocator that combines two other
+ allocators - primary and fallback. Allocation requests are first tried with primary, and
  upon failure are passed to the fallback. Useful for small and fast allocators
  fronting general-purpose ones.))
 
@@ -241,10 +245,10 @@ wikipedia.org/wiki/Free_list, free list) on top of any other allocator. The
 preferred size, tolerance, and maximum elements are configurable at compile- and
 run time.))
 
-$(TR $(TDC2 SharedFreeList, free_list) $(TD Same features as $(D FreeList), but packaged as
-a $(D shared) structure that is accessible to several threads.))
+$(TR $(TDC2 SharedFreeList, free_list) $(TD Same features as `FreeList`, but packaged as
+a `shared` structure that is accessible to several threads.))
 
-$(TR $(TDC2 FreeTree, free_tree) $(TD Allocator similar to $(D FreeList) that uses a
+$(TR $(TDC2 FreeTree, free_tree) $(TD Allocator similar to `FreeList` that uses a
 binary search tree to adaptively store not one, but many free lists.))
 
 $(TR $(TDC2 Region, region) $(TD Region allocator organizes a chunk of memory as a
@@ -276,27 +280,34 @@ and dispatches them to distinct allocators.))
 $(TR $(TDC2 Bucketizer, bucketizer) $(TD Divides allocation sizes in discrete buckets and
 uses an array of allocators, one per bucket, to satisfy requests.))
 
+$(TR $(TDC2 AscendingPageAllocator, ascending_page_allocator) $(TD A memory safe allocator
+where sizes are rounded to a multiple of the page size and allocations are satisfied at increasing addresses.))
+
 $(COMMENT $(TR $(TDC2 InternalPointersTree) $(TD Adds support for resolving internal
 pointers on top of another allocator.)))
 )
 
+Source: $(PHOBOSSRC std/experimental/allocator/building_blocks/package.d)
+
 Macros:
 MYREF2 = $(REF_SHORT $1, std,experimental,allocator,building_blocks,$2)
 MYREF3 = $(REF_SHORT $1, std,experimental,allocator,$2)
-TDC = $(TDNW $(D $1)$+)
+TDC = $(TDNW `$1`$+)
 TDC2 = $(TDNW $(D $(MYREF2 $1,$+))$(BR)$(SMALL
-$(D std.experimental.allocator.building_blocks.$2)))
+`std.experimental.allocator.building_blocks.$2`))
 TDC3 = $(TDNW $(D $(MYREF3 $1,$+))$(BR)$(SMALL
-$(D std.experimental.allocator.$2)))
+`std.experimental.allocator.$2`))
 RES = $(I result)
-POST = $(BR)$(SMALL $(I Post:) $(BLUE $(D $0)))
+POST = $(BR)$(SMALL $(I Post:) $(BLUE `$0`))
 */
 
 module std.experimental.allocator.building_blocks;
 
 public import
     std.experimental.allocator.building_blocks.affix_allocator,
+    std.experimental.allocator.building_blocks.aligned_block_list,
     std.experimental.allocator.building_blocks.allocator_list,
+    std.experimental.allocator.building_blocks.ascending_page_allocator,
     std.experimental.allocator.building_blocks.bucketizer,
     std.experimental.allocator.building_blocks.fallback_allocator,
     std.experimental.allocator.building_blocks.free_list,

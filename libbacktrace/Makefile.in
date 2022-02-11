@@ -2408,18 +2408,18 @@ uninstall-am:
 @HAVE_ELF_TRUE@@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@	mv $@.tmp $@
 
 @NATIVE_TRUE@elf_%.c: elf.c
+@NATIVE_TRUE@	nlinit=`echo 'nl="'; echo '"'`; eval "$$nlinit"; \
 @NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_ELF_SIZE"'; \
-@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_ELF_SIZE\
-@NATIVE_TRUE@	#define BACKTRACE_ELF_SIZE'; \
+@NATIVE_TRUE@	REPLACE="#undef BACKTRACE_ELF_SIZE\\$${nl}#define BACKTRACE_ELF_SIZE"; \
 @NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 @NATIVE_TRUE@		$< \
 @NATIVE_TRUE@		> $@.tmp
 @NATIVE_TRUE@	mv $@.tmp $@
 
 @NATIVE_TRUE@xcoff_%.c: xcoff.c
+@NATIVE_TRUE@	nlinit=`echo 'nl="'; echo '"'`; eval "$$nlinit"; \
 @NATIVE_TRUE@	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
-@NATIVE_TRUE@	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
-@NATIVE_TRUE@	#define BACKTRACE_XCOFF_SIZE'; \
+@NATIVE_TRUE@	REPLACE="#undef BACKTRACE_XCOFF_SIZE\\$${nl}#define BACKTRACE_XCOFF_SIZE"; \
 @NATIVE_TRUE@	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 @NATIVE_TRUE@		$< \
 @NATIVE_TRUE@		> $@.tmp

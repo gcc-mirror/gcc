@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -922,8 +922,8 @@ package body Par_SCO is
    ---------------------
 
    procedure Record_Instance (Id : Instance_Id; Inst_Sloc : Source_Ptr) is
-      Inst_Src  : constant Source_File_Index :=
-                    Get_Source_File_Index (Inst_Sloc);
+      Inst_Src : constant Source_File_Index :=
+                   Get_Source_File_Index (Inst_Sloc);
    begin
       SCO_Instance_Table.Append
         ((Inst_Dep_Num       => Dependency_Num (Unit (Inst_Src)),
@@ -2417,21 +2417,18 @@ package body Par_SCO is
 
       --  Loop through statements or declarations
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
+      N := First (L);
+      while Present (N) loop
 
-            --  Note: For separate bodies, we see the tree after Par.Labl has
-            --  introduced implicit labels, so we need to ignore those nodes.
+         --  Note: For separate bodies, we see the tree after Par.Labl has
+         --  introduced implicit labels, so we need to ignore those nodes.
 
-            if Nkind (N) /= N_Implicit_Label_Declaration then
-               Traverse_One (N);
-            end if;
+         if Nkind (N) /= N_Implicit_Label_Declaration then
+            Traverse_One (N);
+         end if;
 
-            Next (N);
-         end loop;
-
-      end if;
+         Next (N);
+      end loop;
 
       --  End sequence of statements and flush deferred decisions
 

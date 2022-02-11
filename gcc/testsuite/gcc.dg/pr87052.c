@@ -38,4 +38,4 @@ void test (void)
    { dg-final { scan-tree-dump-times "c = \"\";"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "d = { *};"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "e = "  1 "gimple" } }
-   { dg-final { scan-tree-dump-times "e = {CLOBBER}"  1 "gimple" } }  */
+   { dg-final { scan-tree-dump-times "e = {CLOBBER\\(eol\\)}"  1 "gimple" } }  */

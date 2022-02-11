@@ -4,8 +4,10 @@
  * Copyright: Copyright Kenji Hara 2014-.
  * License:   <a href="http://www.boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
  * Authors:   Kenji Hara
+ * Source: $(DRUNTIMESRC rt/util/_typeinfo.d)
  */
 module rt.util.typeinfo;
+import rt.util.utility : d_cfloat, d_cdouble, d_creal, isComplex;
 static import core.internal.hash;
 
 template Floating(T)
@@ -35,14 +37,16 @@ if (is(T == float) || is(T == double) || is(T == real))
 
     public alias hashOf = core.internal.hash.hashOf;
 }
+
+// @@@DEPRECATED_2.105@@@
 template Floating(T)
-if (is(T == cfloat) || is(T == cdouble) || is(T == creal))
+if (isComplex!T)
 {
   pure nothrow @safe:
 
     bool equals(T f1, T f2)
     {
-        return f1 == f2;
+        return f1.re == f2.re && f1.im == f2.im;
     }
 
     int compare(T f1, T f2)
@@ -62,12 +66,14 @@ if (is(T == cfloat) || is(T == cdouble) || is(T == creal))
         return result;
     }
 
-    public alias hashOf = core.internal.hash.hashOf;
+    size_t hashOf(scope const T val)
+    {
+        return core.internal.hash.hashOf(val.re, core.internal.hash.hashOf(val.im));
+    }
 }
 
 template Array(T)
-if (is(T ==  float) || is(T ==  double) || is(T ==  real) ||
-    is(T == cfloat) || is(T == cdouble) || is(T == creal))
+if (is(T == float) || is(T == double) || is(T == real))
 {
   pure nothrow @safe:
 
@@ -94,17 +100,56 @@ if (is(T ==  float) || is(T ==  double) || is(T ==  real) ||
             if (int c = Floating!T.compare(s1[u], s2[u]))
                 return c;
         }
-        if (s1.length < s2.length)
-            return -1;
-        else if (s1.length > s2.length)
-            return 1;
-        return 0;
+        return (s1.length > s2.length) - (s1.length < s2.length);
     }
 
     public alias hashOf = core.internal.hash.hashOf;
 }
 
-version (unittest)
+// @@@DEPRECATED_2.105@@@
+template Array(T)
+if (isComplex!T)
+{
+  pure nothrow @safe:
+
+    bool equals(T[] s1, T[] s2)
+    {
+        size_t len = s1.length;
+        if (len != s2.length)
+            return false;
+        for (size_t u = 0; u < len; u++)
+        {
+            if (!Floating!T.equals(s1[u], s2[u]))
+                return false;
+        }
+        return true;
+    }
+
+    int compare(T[] s1, T[] s2)
+    {
+        size_t len = s1.length;
+        if (s2.length < len)
+            len = s2.length;
+        for (size_t u = 0; u < len; u++)
+        {
+            if (int c = Floating!T.compare(s1[u], s2[u]))
+                return c;
+        }
+        return (s1.length > s2.length) - (s1.length < s2.length);
+    }
+
+    size_t hashOf(scope const T[] val)
+    {
+        size_t hash = 0;
+        foreach (ref o; val)
+        {
+            hash = core.internal.hash.hashOf(Floating!T.hashOf(o), hash);
+        }
+        return hash;
+    }
+}
+
+version (CoreUnittest)
 {
     alias TypeTuple(T...) = T;
 }
@@ -162,109 +207,6 @@ unittest
         ti = typeid(S[3]);
         assert(ti.getHash(&sa1) == ti.getHash(&sa2));
     }();
-
-    // imaginary types
-    foreach (F; TypeTuple!(ifloat, idouble, ireal))
-    (){ // workaround #2396
-        alias S = SX!F;
-        F f1 = +0.0i,
-          f2 = -0.0i;
-
-        assert(f1  == f2);
-        assert(f1 !is f2);
-        ti = typeid(F);
-        assert(ti.getHash(&f1) == ti.getHash(&f2));
-
-        F[] a1 = [f1, f1, f1];
-        F[] a2 = [f2, f2, f2];
-        assert(a1  == a2);
-        assert(a1 !is a2);
-        ti = typeid(F[]);
-        assert(ti.getHash(&a1) == ti.getHash(&a2));
-
-        F[][] aa1 = [a1, a1, a1];
-        F[][] aa2 = [a2, a2, a2];
-        assert(aa1  == aa2);
-        assert(aa1 !is aa2);
-        ti = typeid(F[][]);
-        assert(ti.getHash(&aa1) == ti.getHash(&aa2));
-
-        S s1 = {f1},
-          s2 = {f2};
-        assert(s1  == s2);
-        assert(s1 !is s2);
-        ti = typeid(S);
-        assert(ti.getHash(&s1) == ti.getHash(&s2));
-
-        S[] da1 = [S(f1), S(f1), S(f1)],
-            da2 = [S(f2), S(f2), S(f2)];
-        assert(da1  == da2);
-        assert(da1 !is da2);
-        ti = typeid(S[]);
-        assert(ti.getHash(&da1) == ti.getHash(&da2));
-
-        S[3] sa1 = {f1},
-             sa2 = {f2};
-        assert(sa1  == sa2);
-        assert(sa1[] !is sa2[]);
-        ti = typeid(S[3]);
-        assert(ti.getHash(&sa1) == ti.getHash(&sa2));
-    }();
-
-    // complex types
-    foreach (F; TypeTuple!(cfloat, cdouble, creal))
-    (){ // workaround #2396
-        alias S = SX!F;
-        F[4] f = [+0.0 + 0.0i,
-                  +0.0 - 0.0i,
-                  -0.0 + 0.0i,
-                  -0.0 - 0.0i];
-
-        foreach (i, f1; f) foreach (j, f2; f) if (i != j)
-        {
-            assert(f1 == 0 + 0i);
-
-            assert(f1 == f2);
-            assert(f1 !is f2);
-            ti = typeid(F);
-            assert(ti.getHash(&f1) == ti.getHash(&f2));
-
-            F[] a1 = [f1, f1, f1];
-            F[] a2 = [f2, f2, f2];
-            assert(a1  == a2);
-            assert(a1 !is a2);
-            ti = typeid(F[]);
-            assert(ti.getHash(&a1) == ti.getHash(&a2));
-
-            F[][] aa1 = [a1, a1, a1];
-            F[][] aa2 = [a2, a2, a2];
-            assert(aa1  == aa2);
-            assert(aa1 !is aa2);
-            ti = typeid(F[][]);
-            assert(ti.getHash(&aa1) == ti.getHash(&aa2));
-
-            S s1 = {f1},
-              s2 = {f2};
-            assert(s1  == s2);
-            assert(s1 !is s2);
-            ti = typeid(S);
-            assert(ti.getHash(&s1) == ti.getHash(&s2));
-
-            S[] da1 = [S(f1), S(f1), S(f1)],
-                da2 = [S(f2), S(f2), S(f2)];
-            assert(da1  == da2);
-            assert(da1 !is da2);
-            ti = typeid(S[]);
-            assert(ti.getHash(&da1) == ti.getHash(&da2));
-
-            S[3] sa1 = {f1},
-                 sa2 = {f2};
-            assert(sa1  == sa2);
-            assert(sa1[] !is sa2[]);
-            ti = typeid(S[3]);
-            assert(ti.getHash(&sa1) == ti.getHash(&sa2));
-        }
-    }();
 }
 
 // Reduces to `T` if `cond` is `true` or `U` otherwise.
@@ -279,7 +221,7 @@ TypeInfo information for built-in types.
 
 A `Base` type may be specified, which must be a type with the same layout, alignment, hashing, and
 equality comparison as type `T`. This saves on code size because parts of `Base` will be reused. Example:
-`float` and `ifloat` or `char` and `ubyte`. The implementation assumes `Base` and `T` hash the same, swap
+`char` and `ubyte`. The implementation assumes `Base` and `T` hash the same, swap
 the same, have the same ABI flags, and compare the same for equality. For ordering comparisons, we detect
 during compilation whether they have different signedness and override appropriately. For initializer, we
 detect if we need to override. The overriding initializer should be nonzero.
@@ -296,7 +238,7 @@ if (T.sizeof == Base.sizeof && T.alignof == Base.alignof)
     static if (is(T == Base))
         override size_t getHash(scope const void* p)
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
                 return Floating!T.hashOf(*cast(T*)p);
             else
                 return hashOf(*cast(const T *)p);
@@ -306,7 +248,7 @@ if (T.sizeof == Base.sizeof && T.alignof == Base.alignof)
     static if (is(T == Base))
         override bool equals(in void* p1, in void* p2)
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
                 return Floating!T.equals(*cast(T*)p1, *cast(T*)p2);
             else
                 return *cast(T *)p1 == *cast(T *)p2;
@@ -316,7 +258,7 @@ if (T.sizeof == Base.sizeof && T.alignof == Base.alignof)
     static if (is(T == Base) || (__traits(isIntegral, T) && T.max != Base.max))
         override int compare(in void* p1, in void* p2)
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
             {
                 return Floating!T.compare(*cast(T*)p1, *cast(T*)p2);
             }
@@ -375,9 +317,12 @@ if (T.sizeof == Base.sizeof && T.alignof == Base.alignof)
         }
 
     static if (is(T == Base))
-        static if (__traits(isFloating, T) && T.mant_dig != 64)
+    {
+        static if ((__traits(isFloating, T) && T.mant_dig != 64) ||
+                   (isComplex!T && T.re.mant_dig != 64))
             // FP types except 80-bit X87 are passed in SIMD register.
             override @property uint flags() const { return 2; }
+    }
 }
 
 unittest
@@ -414,7 +359,7 @@ TypeInfo information for arrays of built-in types.
 
 A `Base` type may be specified, which must be a type with the same layout, alignment, hashing, and
 equality comparison as type `T`. This saves on code size because parts of `Base` will be reused. Example:
-`float` and `ifloat` or `char` and `ubyte`. The implementation assumes `Base` and `T` hash the same, swap
+`char` and `ubyte`. The implementation assumes `Base` and `T` hash the same, swap
 the same, have the same ABI flags, and compare the same for equality. For ordering comparisons, we detect
 during compilation whether they have different signedness and override appropriately. For initializer, we
 detect if we need to override. The overriding initializer should be nonzero.
@@ -429,7 +374,7 @@ private class TypeInfoArrayGeneric(T, Base = T) : Select!(is(T == Base), TypeInf
     static if (is(T == Base))
         override size_t getHash(scope const void* p) @trusted const
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
                 return Array!T.hashOf(*cast(T[]*)p);
             else
                 return hashOf(*cast(const T[]*) p);
@@ -438,7 +383,7 @@ private class TypeInfoArrayGeneric(T, Base = T) : Select!(is(T == Base), TypeInf
     static if (is(T == Base))
         override bool equals(in void* p1, in void* p2) const
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
             {
                 return Array!T.equals(*cast(T[]*)p1, *cast(T[]*)p2);
             }
@@ -455,7 +400,7 @@ private class TypeInfoArrayGeneric(T, Base = T) : Select!(is(T == Base), TypeInf
     static if (is(T == Base) || (__traits(isIntegral, T) && T.max != Base.max))
         override int compare(in void* p1, in void* p2) const
         {
-            static if (__traits(isFloating, T))
+            static if (__traits(isFloating, T) || isComplex!T)
             {
                 return Array!T.compare(*cast(T[]*)p1, *cast(T[]*)p2);
             }
@@ -519,12 +464,12 @@ class TypeInfo_v : TypeInfoGeneric!ubyte
     {
         return 1;
     }
+}
 
-    unittest
-    {
-        assert(typeid(void).toString == "void");
-        assert(typeid(void).flags == 1);
-    }
+unittest
+{
+    assert(typeid(void).toString == "void");
+    assert(typeid(void).flags == 1);
 }
 
 // All integrals.
@@ -545,17 +490,36 @@ static if (is(ucent)) class TypeInfo_zk : TypeInfoGeneric!ucent {}
 
 // All simple floating-point types.
 class TypeInfo_f : TypeInfoGeneric!float {}
-class TypeInfo_o : TypeInfoGeneric!(ifloat, float) {}
 class TypeInfo_d : TypeInfoGeneric!double {}
-class TypeInfo_p : TypeInfoGeneric!(idouble, double) {}
 class TypeInfo_e : TypeInfoGeneric!real {}
-class TypeInfo_j : TypeInfoGeneric!(ireal, real) {}
+
+// All imaginary floating-point types.
+
+// ifloat @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_o : TypeInfoGeneric!float
+{
+    override string toString() const pure nothrow @safe { return "ifloat"; }
+}
+
+// idouble @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_p : TypeInfoGeneric!double
+{
+    override string toString() const pure nothrow @safe { return "idouble"; }
+}
+
+// ireal @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_j : TypeInfoGeneric!real
+{
+    override string toString() const pure nothrow @safe { return "ireal"; }
+}
 
 // All complex floating-point types.
 
-// cfloat
-class TypeInfo_q : TypeInfoGeneric!cfloat
+// cfloat @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_q : TypeInfoGeneric!d_cfloat
 {
+    override string toString() const pure nothrow @safe { return "cfloat"; }
+
     const: nothrow: pure: @trusted:
     static if (__traits(hasMember, TypeInfo, "argTypes"))
         override int argTypes(out TypeInfo arg1, out TypeInfo arg2)
@@ -565,9 +529,11 @@ class TypeInfo_q : TypeInfoGeneric!cfloat
         }
 }
 
-// cdouble
-class TypeInfo_r : TypeInfoGeneric!cdouble
+// cdouble @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_r : TypeInfoGeneric!d_cdouble
 {
+    override string toString() const pure nothrow @safe { return "cdouble"; }
+
     const: nothrow: pure: @trusted:
     static if (__traits(hasMember, TypeInfo, "argTypes"))
         override int argTypes(out TypeInfo arg1, out TypeInfo arg2)
@@ -578,9 +544,11 @@ class TypeInfo_r : TypeInfoGeneric!cdouble
         }
 }
 
-// creal
-class TypeInfo_c : TypeInfoGeneric!creal
+// creal @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_c : TypeInfoGeneric!d_creal
 {
+    override string toString() const pure nothrow @safe { return "creal"; }
+
     const: nothrow: pure: @trusted:
     static if (__traits(hasMember, TypeInfo, "argTypes"))
         override int argTypes(out TypeInfo arg1, out TypeInfo arg2)
@@ -590,18 +558,6 @@ class TypeInfo_c : TypeInfoGeneric!creal
             return 0;
         }
 }
-
-static if (__traits(hasMember, TypeInfo, "argTypes"))
-    unittest
-    {
-        TypeInfo t1, t2;
-        assert(typeid(cfloat).argTypes(t1, t2) == 0 && t1 == typeid(double) &&
-            t2 is null);
-        assert(typeid(cdouble).argTypes(t1, t2) == 0 && t1 == typeid(double) &&
-            t2 == typeid(double));
-        assert(typeid(creal).argTypes(t1, t2) == 0 && t1 == typeid(real) &&
-            t2 == typeid(real));
-    }
 
 // Arrays of all integrals.
 class TypeInfo_Ah : TypeInfoArrayGeneric!ubyte {}
@@ -623,7 +579,7 @@ class TypeInfo_Aw : TypeInfoArrayGeneric!(dchar, uint) {}
 class TypeInfo_Am : TypeInfoArrayGeneric!ulong {}
 class TypeInfo_Al : TypeInfoArrayGeneric!(long, ulong) {}
 
-version (unittest)
+version (CoreUnittest)
     private extern (C) void[] _adSort(void[] a, TypeInfo ti);
 
 unittest
@@ -662,16 +618,50 @@ unittest
     assert(!(a1 < b1 && b1 < a1)); // Original failing case
 }
 
-// Arrays of all floating point types.
+// Arrays of all simple floating-point types.
 class TypeInfo_Af : TypeInfoArrayGeneric!float {}
-class TypeInfo_Ao : TypeInfoArrayGeneric!(ifloat, float) {}
 class TypeInfo_Ad : TypeInfoArrayGeneric!double {}
-class TypeInfo_Ap : TypeInfoArrayGeneric!(idouble, double) {}
 class TypeInfo_Ae : TypeInfoArrayGeneric!real {}
-class TypeInfo_Aj : TypeInfoArrayGeneric!(ireal, real) {}
-class TypeInfo_Aq : TypeInfoArrayGeneric!cfloat {}
-class TypeInfo_Ar : TypeInfoArrayGeneric!cdouble {}
-class TypeInfo_Ac : TypeInfoArrayGeneric!creal {}
+
+// Arrays of all imaginary floating-point types.
+
+// ifloat @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Ao : TypeInfoArrayGeneric!float
+{
+    override string toString() const pure nothrow @safe { return "ifloat[]"; }
+}
+
+// idouble @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Ap : TypeInfoArrayGeneric!double
+{
+    override string toString() const pure nothrow @safe { return "idouble[]"; }
+}
+
+// ireal @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Aj : TypeInfoArrayGeneric!real
+{
+    override string toString() const pure nothrow @safe { return "ireal[]"; }
+}
+
+// Arrays of all complex floating-point types.
+
+// cfloat @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Aq : TypeInfoArrayGeneric!d_cfloat
+{
+    override string toString() const pure nothrow @safe { return "cfloat[]"; }
+}
+
+// cdouble @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Ar : TypeInfoArrayGeneric!d_cdouble
+{
+    override string toString() const pure nothrow @safe { return "cdouble[]"; }
+}
+
+// creal @@@DEPRECATED_2.105@@@
+deprecated class TypeInfo_Ac : TypeInfoArrayGeneric!d_creal
+{
+    override string toString() const pure nothrow @safe { return "creal[]"; }
+}
 
 // void[] is a bit different, behaves like ubyte[] for comparison purposes.
 class TypeInfo_Av : TypeInfo_Ah

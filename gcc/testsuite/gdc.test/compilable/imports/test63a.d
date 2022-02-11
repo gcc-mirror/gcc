@@ -4,7 +4,7 @@ private import test63;
 
 struct s {
 
-    char a[ SIZE ];
+    char[SIZE] a;
 
 }
 

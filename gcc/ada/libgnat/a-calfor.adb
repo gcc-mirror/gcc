@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;            use Ada.Calendar;
 with Ada.Calendar.Time_Zones; use Ada.Calendar.Time_Zones;
 
 package body Ada.Calendar.Formatting is
@@ -100,8 +99,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, Mo, H, Mi);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return D;
@@ -132,8 +129,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
@@ -291,8 +286,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, Mo, D, H);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return Mi;
@@ -315,8 +308,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, D, H, Mi);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return Mo;
@@ -335,8 +326,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le);
@@ -583,8 +572,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le);
@@ -897,8 +884,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);

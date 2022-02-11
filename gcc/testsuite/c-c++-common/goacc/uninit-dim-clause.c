@@ -6,6 +6,9 @@
 void acc_parallel()
 {
   int i, j, k;
+  /* { dg-note {'i' was declared here} {} { target *-*-* } .-1 } */
+  /* { dg-note {'j' was declared here} {} { target *-*-* } .-2 } */
+  /* { dg-note {'k' was declared here} {} { target *-*-* } .-3 } */
 
   #pragma acc parallel num_gangs(i) /* { dg-warning "is used uninitialized" } */
   /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 } */
@@ -23,6 +26,9 @@ void acc_parallel()
 void acc_kernels()
 {
   int i, j, k;
+  /* { dg-note {'i' was declared here} {} { target *-*-* } .-1 } */
+  /* { dg-note {'j' was declared here} {} { target *-*-* } .-2 } */
+  /* { dg-note {'k' was declared here} {} { target *-*-* } .-3 } */
 
   #pragma acc kernels num_gangs(i) /* { dg-warning "is used uninitialized" } */
   ;

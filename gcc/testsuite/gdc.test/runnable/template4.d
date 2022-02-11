@@ -1,4 +1,4 @@
-/* RUNNABLE_PHOBOS_TEST
+/*
 TEST_OUTPUT:
 ---
 This actually gets evaluated!
@@ -10,7 +10,6 @@ Alias Test instantiated
 Alias Test instantiated
 ---
 */
-import std.stdio;
 import core.stdc.stdio;
 
 /*********************************************************/
@@ -246,31 +245,6 @@ void test6()
 
 /*********************************************************/
 
-template factorial7(float n, cdouble c, string sss, string ttt)
-{
-    static if (n == 1)
-        const float factorial7 = 1;
-    else
-        const float factorial7 = n * 2;
-}
-
-template bar7(wstring abc, dstring def)
-{
-    const int x = 3;
-}
-
-void test7()
-{
-    float f = factorial7!(4.25, 6.8+3i, "hello", null);
-    printf("%g\n", f);
-    assert(f == 8.5);
-    int i = bar7!("abc"w, "def"d).x;
-    printf("%d\n", i);
-    assert(i == 3);
-}
-
-/*********************************************************/
-
 template whale(string walrus)
 {
     const char [] whale = walrus;
@@ -449,20 +423,15 @@ template horse(string w)
 void test14()
 {
     bool lion = zebra!("a");
-    writeln(lion);
     assert(!lion);
     lion = zebra!("aqb");
-    writeln(lion);
     assert(lion);
 
     lion = horse!("a");
-    writeln(lion);
     assert(lion);
     lion = horse!("aqb");
-    writeln(lion);
     assert(lion);
     lion = horse!("ab");
-    writeln(lion);
     assert(!lion);
 }
 
@@ -529,7 +498,7 @@ void test16()
 {
     for (int i=0; i<smallfactorials.length; ++i)
     {
-        writefln("%d  %d", i, smallfactorials[i]);
+        printf("%d  %d\n", i, smallfactorials[i]);
         assert(smallfactorials[i] == testtable[i]);
     }
 }
@@ -621,7 +590,7 @@ template sqrt(real x, real root = x/2, int ntries = 0)
 void test20()
 {
     real x = sqrt!(2);
-    writefln("%.20g", x); // 1.4142135623730950487
+    printf("%.20Lg\n", x); // 1.4142135623730950487
 }
 
 /*********************************************************/
@@ -642,7 +611,7 @@ uint foo21()
 void test21()
 {
     auto i = foo21();
-    writeln(i);
+    printf("%d\n", i);
     assert(i == 1871483972);
 }
 
@@ -826,10 +795,14 @@ void test31()
     i2s[1] = "Hello";
     i2s[5] = "There";
 
-    writeln( i2s.get31(1, "yeh") );
-    writeln( i2s.get31(2, "default") );
-    writeln( i2s.get31(1) );
-    writeln( i2s.get31(2) );
+    auto result = i2s.get31(1, "yeh");
+    printf("%.*s\n", cast(int)result.length, result.ptr);
+    result = i2s.get31(2, "default");
+    printf("%.*s\n", cast(int)result.length, result.ptr);
+    result = i2s.get31(1);
+    printf("%.*s\n", cast(int)result.length, result.ptr);
+    result = i2s.get31(2);
+    printf("%.*s\n", cast(int)result.length, result.ptr);
 }
 
 /*********************************************************/
@@ -860,7 +833,7 @@ struct Composer(T) {
         }
         return result;
     }
-    public void opAddAssign(Fun f) {
+    public void opOpAssign(string op)(Fun f) if (op == "+") {
         funs ~= f;
     }
 }
@@ -904,14 +877,14 @@ void test33() {
     comp += delegate double (double x) { return x/3.0;};
     comp += delegate double (double x) { return x*x;};
     comp += (double x) => x + 1.0;
-    writefln("%f", comp(2.0));
+    printf("%f\n", comp(2.0));
 
     // Try function objects
     Composer!(double) comp2;
     comp2 += tofp!(div3!(double))();
     comp2 += tofp!(square!(double))();
     comp2 += tofp!(plus1!(double))();
-    writefln("%f", comp2( 2.0));
+    printf("%f\n", comp2( 2.0));
 }
 
 /*********************************************************/
@@ -1035,7 +1008,7 @@ void instantiate4652()
 }
 
 /*********************************************************/
-// 7589
+// https://issues.dlang.org/show_bug.cgi?id=7589
 
 struct T7589(T)
 {
@@ -1062,7 +1035,7 @@ void test39()
 }
 
 /*********************************************************/
-// 6701
+// https://issues.dlang.org/show_bug.cgi?id=6701
 
 uint foo_6701(uint v:0)() { return 1; }
 uint foo_6701(uint v)() { return 0; }
@@ -1076,7 +1049,7 @@ void test6701()
 }
 
 /******************************************/
-// 7469
+// https://issues.dlang.org/show_bug.cgi?id=7469
 
 struct Foo7469a(int x) { }
 struct Foo7469b(int x) { }
@@ -1142,7 +1115,6 @@ int main()
     test4();
     test5();
     test6();
-    test7();
     test8();
     test9();
     test10();

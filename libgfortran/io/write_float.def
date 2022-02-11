@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Write float code factoring to this file by Jerry DeLisle   
    F2003 I/O support contributed by Jerry DeLisle
@@ -799,6 +799,10 @@ CALCULATE_EXP(10)
 #ifdef HAVE_GFC_REAL_16
 CALCULATE_EXP(16)
 #endif
+
+#ifdef HAVE_GFC_REAL_17
+CALCULATE_EXP(17)
+#endif
 #undef CALCULATE_EXP
 
 
@@ -834,8 +838,16 @@ snprintf (buffer, size, "%+-#.*e", (prec), (val))
 snprintf (buffer, size, "%+-#.*Le", (prec), (val))
 
 
-#if defined(GFC_REAL_16_IS_FLOAT128)
-#define DTOA2Q(prec,val) \
+#if defined(HAVE_GFC_REAL_17)
+# if defined(POWER_IEEE128)
+#  define DTOA2Q(prec,val) \
+__snprintfieee128 (buffer, size, "%+-#.*Le", (prec), (val))
+# else
+#  define DTOA2Q(prec,val) \
+quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
+# endif
+#elif defined(GFC_REAL_16_IS_FLOAT128)
+# define DTOA2Q(prec,val) \
 quadmath_snprintf (buffer, size, "%+-#.*Qe", (prec), (val))
 #endif
 
@@ -849,10 +861,17 @@ snprintf (buffer, size, "%+-#.*f", (prec), (val))
 snprintf (buffer, size, "%+-#.*Lf", (prec), (val))
 
 
-#if defined(GFC_REAL_16_IS_FLOAT128)
-#define FDTOA2Q(prec,val) \
-quadmath_snprintf (buffer, size, "%+-#.*Qf", \
-			     (prec), (val))
+#if defined(HAVE_GFC_REAL_17)
+# if defined(POWER_IEEE128)
+#  define FDTOA2Q(prec,val) \
+__snprintfieee128 (buffer, size, "%+-#.*Lf", (prec), (val))
+# else
+# define FDTOA2Q(prec,val) \
+quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
+# endif
+#elif defined(GFC_REAL_16_IS_FLOAT128)
+# define FDTOA2Q(prec,val) \
+quadmath_snprintf (buffer, size, "%+-#.*Qf", (prec), (val))
 #endif
 
 
@@ -925,6 +944,11 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 # endif
       break;
 #endif
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      EN_PREC(17,Q)
+#endif
+      break;
     default:
       internal_error (NULL, "bad real kind");
     }
@@ -1126,6 +1150,11 @@ get_float_string (st_parameter_dt *dtp, const fnode *f, const char *source,
 # else
       FORMAT_FLOAT(16,L)
 # endif
+      break;
+#endif
+#ifdef HAVE_GFC_REAL_17
+    case 17:
+      FORMAT_FLOAT(17,Q)
       break;
 #endif
     default:

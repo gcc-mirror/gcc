@@ -29,5 +29,6 @@ void bar (void)
   x.c.b.a = 10;
 }
 
-/* { dg-final { scan-assembler-times "st\.di" 1 } } */
-/* { dg-final { scan-assembler-times "st\.as\.di" 1 } } */
+/* { dg-final { scan-assembler-times "st\.di" 2 { target { *-linux-* } } } } */
+/* { dg-final { scan-assembler-times "st\.di" 1 { target { *-elf32-* } } } } */
+/* { dg-final { scan-assembler-times "st\.as\.di" 1 { target { *-elf32-* } } } } */

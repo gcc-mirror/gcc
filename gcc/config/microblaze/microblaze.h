@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Xilinx MicroBlaze.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -21,7 +21,7 @@
 
 /* Standard GCC variables that we reference.  */
 
-/* MicroBlaze external variables defined in microblaze.c.  */
+/* MicroBlaze external variables defined in microblaze.cc.  */
 
 /* Which pipeline to schedule for.  */
 enum pipeline_type

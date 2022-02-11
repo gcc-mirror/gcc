@@ -1,5 +1,5 @@
 /* Autopar with IF conditions.  */
-/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-vrp-thread1" } */
+/* { dg-additional-options "-fno-thread-jumps" } */
 
 void abort();
 

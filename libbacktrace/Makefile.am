@@ -1,5 +1,5 @@
 # Makefile.am -- Backtrace Makefile.
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -145,18 +145,18 @@ endif HAVE_OBJCOPY_DEBUGLINK
 endif HAVE_ELF
 
 elf_%.c: elf.c
+	nlinit=`echo 'nl="'; echo '"'`; eval "$$nlinit"; \
 	SEARCH='#error "Unknown BACKTRACE_ELF_SIZE"'; \
-	REPLACE='#undef BACKTRACE_ELF_SIZE\
-	#define BACKTRACE_ELF_SIZE'; \
+	REPLACE="#undef BACKTRACE_ELF_SIZE\\$${nl}#define BACKTRACE_ELF_SIZE"; \
 	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 		$< \
 		> $@.tmp
 	mv $@.tmp $@
 
 xcoff_%.c: xcoff.c
+	nlinit=`echo 'nl="'; echo '"'`; eval "$$nlinit"; \
 	SEARCH='#error "Unknown BACKTRACE_XCOFF_SIZE"'; \
-	REPLACE='#undef BACKTRACE_XCOFF_SIZE\
-	#define BACKTRACE_XCOFF_SIZE'; \
+	REPLACE="#undef BACKTRACE_XCOFF_SIZE\\$${nl}#define BACKTRACE_XCOFF_SIZE"; \
 	$(SED) "s/^$$SEARCH\$$/$$REPLACE $*/" \
 		$< \
 		> $@.tmp

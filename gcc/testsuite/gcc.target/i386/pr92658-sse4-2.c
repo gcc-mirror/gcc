@@ -81,7 +81,7 @@ bar_s8_s64 (v2di * dst, v16qi src)
   dst[0] = *(v2di *) tem;
 }
 
-/* { dg-final { scan-assembler-times "pmovsxbq" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "pmovsxbq" 2 } } */
 
 void
 foo_s16_s32 (v4si * dst, v8hi * __restrict src)

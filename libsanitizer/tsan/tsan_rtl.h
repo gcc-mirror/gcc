@@ -440,7 +440,7 @@ void InitializeDynamicAnnotations();
 
 void ForkBefore(ThreadState *thr, uptr pc);
 void ForkParentAfter(ThreadState *thr, uptr pc);
-void ForkChildAfter(ThreadState *thr, uptr pc);
+void ForkChildAfter(ThreadState *thr, uptr pc, bool start_thread);
 
 void ReportRace(ThreadState *thr);
 bool OutputReport(ThreadState *thr, const ScopedReport &srep);
@@ -748,6 +748,44 @@ void TraceMutexUnlock(ThreadState *thr, uptr addr);
 void TraceTime(ThreadState *thr);
 
 }  // namespace v3
+
+void GrowShadowStack(ThreadState *thr);
+
+ALWAYS_INLINE
+void FuncEntry(ThreadState *thr, uptr pc) {
+  DPrintf2("#%d: FuncEntry %p\n", (int)thr->fast_state.tid(), (void *)pc);
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeFuncEnter, pc);
+  }
+
+  // Shadow stack maintenance can be replaced with
+  // stack unwinding during trace switch (which presumably must be faster).
+  DCHECK_GE(thr->shadow_stack_pos, thr->shadow_stack);
+#if !SANITIZER_GO
+  DCHECK_LT(thr->shadow_stack_pos, thr->shadow_stack_end);
+#else
+  if (thr->shadow_stack_pos == thr->shadow_stack_end)
+    GrowShadowStack(thr);
+#endif
+  thr->shadow_stack_pos[0] = pc;
+  thr->shadow_stack_pos++;
+}
+
+ALWAYS_INLINE
+void FuncExit(ThreadState *thr) {
+  DPrintf2("#%d: FuncExit\n", (int)thr->fast_state.tid());
+  if (kCollectHistory) {
+    thr->fast_state.IncrementEpoch();
+    TraceAddEvent(thr, thr->fast_state, EventTypeFuncExit, 0);
+  }
+
+  DCHECK_GT(thr->shadow_stack_pos, thr->shadow_stack);
+#if !SANITIZER_GO
+  DCHECK_LT(thr->shadow_stack_pos, thr->shadow_stack_end);
+#endif
+  thr->shadow_stack_pos--;
+}
 
 #if !SANITIZER_GO
 extern void (*on_initialize)(void);

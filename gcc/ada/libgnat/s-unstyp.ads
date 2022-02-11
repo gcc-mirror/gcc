@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,6 @@
 --  and (unlike the types in Interfaces) have corresponding names. It
 --  also contains some related definitions for other specialized types
 --  used by the compiler in connection with packed array types.
-
-pragma Compiler_Unit_Warning;
 
 package System.Unsigned_Types is
    pragma Pure;

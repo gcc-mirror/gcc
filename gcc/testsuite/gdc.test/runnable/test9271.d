@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/test9271a.d
 import algorithm = imports.test9271a;
 
 bool any(alias predicate, Range)(Range range)

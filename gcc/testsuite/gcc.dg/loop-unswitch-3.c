@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-details" } */
+/* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-all" } */
 
 #include <stdlib.h>
 #define N 32
@@ -21,7 +21,4 @@ float *foo(int ustride, int size, float *src)
    return buffer;
 }
 
-/* { dg-final { scan-tree-dump-times "guard hoisted" 1 "unswitch" } } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "unswitch" } } */
-
-
+/* { dg-final { scan-tree-dump-times "Guard hoisted" 1 "unswitch" } } */

@@ -1,7 +1,7 @@
 // PR c++/70035
 // { dg-do run }
 // { dg-shouldfail "ubsan" }
-// { dg-options "-fsanitize=vptr -fno-sanitize-recover=undefined" }
+// { dg-options "-fsanitize=vptr -fno-sanitize-recover=undefined -fno-implicit-constexpr" }
 
 struct A {
   A (int) {}

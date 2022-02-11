@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,10 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-glibc-c.o: config/glibc-c.c
+glibc-c.o: config/glibc-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-glibc-d.o: config/glibc-d.c
+glibc-d.o: config/glibc-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

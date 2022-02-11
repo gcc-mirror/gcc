@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice12841.d(23): Error: taskPool().amap(Args...)(Args args) is not an lvalue
-fail_compilation/ice12841.d(24): Error: amap(Args...)(Args args) is not an lvalue
+fail_compilation/ice12841.d(23): Error: `taskPool().amap(Args...)(Args args)` is not an lvalue and cannot be modified
+fail_compilation/ice12841.d(24): Error: `amap(Args...)(Args args)` is not an lvalue and cannot be modified
 ---
 */
 

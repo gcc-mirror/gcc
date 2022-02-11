@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512f" } */
+/* { dg-options "-O2 -mavx512f -fno-stack-protector" } */
 
 struct B
 {

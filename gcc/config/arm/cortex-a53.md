@@ -1,5 +1,5 @@
 ;; ARM Cortex-A53 pipeline description
-;; Copyright (C) 2013-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2022 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;

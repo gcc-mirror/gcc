@@ -18,6 +18,9 @@ free_slotinfo (struct dtv_slotinfo_list **elemp)
   return 1;
 }
 
+/* Prune out the valid warning for the function above:
+   { dg-prune-output "-Winfinite-recursion" } */
+
 __attribute__ ((used, retain, section ("__libc_freeres_fn")))
 static void free_mem (void)
 {

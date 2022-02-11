@@ -19,11 +19,11 @@ struct S
     p = (int*) new unsigned char [sizeof (int) * m];
 
     for (int i = 0; i < m; i++)
-      new (p + i) int ();
+      new (p + i) int (); /* { dg-bogus "bounds" "pr102690" { xfail *-*-* } } */
   }
 };
 
 S a (0);
 
-/* Verify the loop has been eliminated.
-   { dg-final { scan-tree-dump-not "goto" "optimized" } } */
+/* The loop cannot be eliminated since the global 'new' can change 'm'.  */
+/* { dg-final { scan-tree-dump-not "goto" "optimized" { xfail *-*-* } } } */

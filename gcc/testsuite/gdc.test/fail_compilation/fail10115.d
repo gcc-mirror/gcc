@@ -1,12 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10115.d(35): Error: cannot have out parameter of type S because the default construction is disabled
-fail_compilation/fail10115.d(35): Error: cannot have out parameter of type E because the default construction is disabled
-fail_compilation/fail10115.d(35): Error: cannot have out parameter of type U because the default construction is disabled
-fail_compilation/fail10115.d(40): Error: struct fail10115.S default construction is disabled
-fail_compilation/fail10115.d(41): Error: struct fail10115.S default construction is disabled
-fail_compilation/fail10115.d(42): Error: union fail10115.U default construction is disabled
+fail_compilation/fail10115.d(35): Error: cannot have `out` parameter of type `S` because the default construction is disabled
+fail_compilation/fail10115.d(35): Error: cannot have `out` parameter of type `E` because the default construction is disabled
+fail_compilation/fail10115.d(35): Error: cannot have `out` parameter of type `U` because the default construction is disabled
+fail_compilation/fail10115.d(40): Error: struct `fail10115.S` default construction is disabled
+fail_compilation/fail10115.d(41): Error: struct `fail10115.S` default construction is disabled
+fail_compilation/fail10115.d(42): Error: union `fail10115.U` default construction is disabled
 ---
 */
 

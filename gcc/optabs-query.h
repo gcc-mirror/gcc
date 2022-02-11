@@ -1,5 +1,5 @@
 /* IR-agnostic target query functions relating to optabs
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -193,8 +193,9 @@ bool can_compare_and_swap_p (machine_mode, bool);
 bool can_atomic_exchange_p (machine_mode, bool);
 bool can_atomic_load_p (machine_mode);
 bool lshift_cheap_p (bool);
-bool supports_vec_gather_load_p ();
-bool supports_vec_scatter_store_p ();
+bool supports_vec_gather_load_p (machine_mode = E_VOIDmode);
+bool supports_vec_scatter_store_p (machine_mode = E_VOIDmode);
+bool can_vec_extract (machine_mode, machine_mode);
 
 /* Version of find_widening_optab_handler_and_mode that operates on
    specific mode types.  */

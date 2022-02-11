@@ -4,7 +4,7 @@
  * Translated from MinGW Windows headers
  *
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_regstr.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_regstr.d)
  */
 module core.sys.windows.regstr;
 version (Windows):

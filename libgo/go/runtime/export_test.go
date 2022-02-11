@@ -7,6 +7,8 @@
 package runtime
 
 import (
+	"internal/goarch"
+	"internal/goos"
 	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
@@ -26,8 +28,6 @@ var Entersyscall = entersyscall
 var Exitsyscall = exitsyscall
 var LockedOSThread = lockedOSThread
 var Xadduintptr = atomic.Xadduintptr
-
-var FuncPC = funcPC
 
 var Fastlog2 = fastlog2
 
@@ -75,7 +75,7 @@ func Netpoll(delta int64) {
 	})
 }
 
-func GCMask(x interface{}) (ret []byte) {
+func GCMask(x any) (ret []byte) {
 	return nil
 }
 
@@ -144,48 +144,43 @@ func RunSchedLocalQueueStealTest() {
 	}
 }
 
-// Temporary to enable register ABI bringup.
-// TODO(register args): convert back to local variables in RunSchedLocalQueueEmptyTest that
-// get passed to the "go" stmts there.
-var RunSchedLocalQueueEmptyState struct {
-	done  chan bool
-	ready *uint32
-	p     *p
-}
-
 func RunSchedLocalQueueEmptyTest(iters int) {
-	// Test that runq is not spuriously reported as empty.
-	// Runq emptiness affects scheduling decisions and spurious emptiness
-	// can lead to underutilization (both runnable Gs and idle Ps coexist
-	// for arbitrary long time).
-	done := make(chan bool, 1)
-	RunSchedLocalQueueEmptyState.done = done
-	p := new(p)
-	RunSchedLocalQueueEmptyState.p = p
-	gs := make([]g, 2)
-	ready := new(uint32)
-	RunSchedLocalQueueEmptyState.ready = ready
-	for i := 0; i < iters; i++ {
-		*ready = 0
-		next0 := (i & 1) == 0
-		next1 := (i & 2) == 0
-		runqput(p, &gs[0], next0)
-		go func() {
-			for atomic.Xadd(RunSchedLocalQueueEmptyState.ready, 1); atomic.Load(RunSchedLocalQueueEmptyState.ready) != 2; {
-			}
-			if runqempty(RunSchedLocalQueueEmptyState.p) {
-				//println("next:", next0, next1)
-				throw("queue is empty")
-			}
-			RunSchedLocalQueueEmptyState.done <- true
-		}()
-		for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
-		}
-		runqput(p, &gs[1], next1)
-		runqget(p)
-		<-done
-		runqget(p)
-	}
+
+	/* FIXME: gofrontend fails to compile this code because
+	      p, next0, next1, and done escape to the heap, which is
+	      not permitted in the runtime package.
+
+	   	// Test that runq is not spuriously reported as empty.
+	   	// Runq emptiness affects scheduling decisions and spurious emptiness
+	   	// can lead to underutilization (both runnable Gs and idle Ps coexist
+	   	// for arbitrary long time).
+	   	done := make(chan bool, 1)
+	   	p := new(p)
+	   	gs := make([]g, 2)
+	   	ready := new(uint32)
+	   	for i := 0; i < iters; i++ {
+	   		*ready = 0
+	   		next0 := (i & 1) == 0
+	   		next1 := (i & 2) == 0
+	   		runqput(p, &gs[0], next0)
+	   		go func() {
+	   			for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
+	   			}
+	   			if runqempty(p) {
+	   				println("next:", next0, next1)
+	   				throw("queue is empty")
+	   			}
+	   			done <- true
+	   		}()
+	   		for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
+	   		}
+	   		runqput(p, &gs[1], next1)
+	   		runqget(p)
+	   		<-done
+	   		runqget(p)
+	   	}
+
+	*/
 }
 
 var (
@@ -207,7 +202,7 @@ func MemclrBytes(b []byte) {
 	memclrNoHeapPointers(s.array, uintptr(s.len))
 }
 
-var HashLoad = &hashLoad
+const HashLoad = hashLoad
 
 // entry point for testing
 //func GostringW(w []uint16) (s string) {
@@ -223,11 +218,9 @@ var Write = write
 func Envs() []string     { return envs }
 func SetEnvs(e []string) { envs = e }
 
-//var BigEndian = sys.BigEndian
-
 // For benchmarking.
 
-func BenchSetType(n int, x interface{}) {
+func BenchSetType(n int, x any) {
 	e := *efaceOf(&x)
 	t := e._type
 	var size uintptr
@@ -254,7 +247,7 @@ func BenchSetType(n int, x interface{}) {
 	})
 }
 
-const PtrSize = sys.PtrSize
+const PtrSize = goarch.PtrSize
 
 var ForceGCPeriod = &forcegcperiod
 
@@ -272,7 +265,7 @@ var ReadUnaligned64 = readUnaligned64
 func CountPagesInUse() (pagesInUse, counted uintptr) {
 	stopTheWorld("CountPagesInUse")
 
-	pagesInUse = uintptr(mheap_.pagesInUse)
+	pagesInUse = uintptr(mheap_.pagesInUse.Load())
 
 	for _, s := range mheap_.allspans {
 		if s.state.get() == mSpanInUse {
@@ -554,7 +547,7 @@ func MapTombstoneCheck(m map[int]int) {
 	// We should have a series of filled and emptyOne cells, followed by
 	// a series of emptyRest cells.
 	h := *(**hmap)(unsafe.Pointer(&m))
-	i := interface{}(m)
+	i := any(m)
 	t := *(**maptype)(unsafe.Pointer(&i))
 
 	for x := 0; x < 1<<h.B; x++ {
@@ -804,21 +797,17 @@ func (p *PageAlloc) Free(base, npages uintptr) {
 		// None of the tests need any higher-level locking, so we just
 		// take the lock internally.
 		lock(pp.mheapLock)
-		pp.free(base, npages)
+		pp.free(base, npages, true)
 		unlock(pp.mheapLock)
 	})
 }
 func (p *PageAlloc) Bounds() (ChunkIdx, ChunkIdx) {
 	return ChunkIdx((*pageAlloc)(p).start), ChunkIdx((*pageAlloc)(p).end)
 }
-func (p *PageAlloc) Scavenge(nbytes uintptr, mayUnlock bool) (r uintptr) {
+func (p *PageAlloc) Scavenge(nbytes uintptr) (r uintptr) {
 	pp := (*pageAlloc)(p)
 	systemstack(func() {
-		// None of the tests need any higher-level locking, so we just
-		// take the lock internally.
-		lock(pp.mheapLock)
-		r = pp.scavenge(nbytes, mayUnlock)
-		unlock(pp.mheapLock)
+		r = pp.scavenge(nbytes)
 	})
 	return
 }
@@ -1060,7 +1049,19 @@ func FreePageAlloc(pp *PageAlloc) {
 //
 // This should not be higher than 0x100*pallocChunkBytes to support
 // mips and mipsle, which only have 31-bit address spaces.
-var BaseChunkIdx = ChunkIdx(chunkIndex(((0xc000*pageAlloc64Bit + 0x100*pageAlloc32Bit) * pallocChunkBytes) + arenaBaseOffset*sys.GoosAix*sys.GoarchPpc64))
+var BaseChunkIdx = func() ChunkIdx {
+	var prefix uintptr
+	if pageAlloc64Bit != 0 {
+		prefix = 0xc000
+	} else {
+		prefix = 0x100
+	}
+	baseAddr := prefix * pallocChunkBytes
+	if goos.IsAix != 0 {
+		baseAddr += arenaBaseOffset
+	}
+	return ChunkIdx(chunkIndex(baseAddr))
+}()
 
 // PageBase returns an address given a chunk index and a page index
 // relative to that chunk.
@@ -1225,3 +1226,95 @@ func GCTestPointerClass(p unsafe.Pointer) string {
 }
 
 const Raceenabled = raceenabled
+
+const (
+	GCBackgroundUtilization = gcBackgroundUtilization
+	GCGoalUtilization       = gcGoalUtilization
+)
+
+type GCController struct {
+	gcControllerState
+}
+
+func NewGCController(gcPercent int) *GCController {
+	// Force the controller to escape. We're going to
+	// do 64-bit atomics on it, and if it gets stack-allocated
+	// on a 32-bit architecture, it may get allocated unaligned
+	// space.
+	g := escape(new(GCController)).(*GCController)
+	g.gcControllerState.test = true // Mark it as a test copy.
+	g.init(int32(gcPercent))
+	return g
+}
+
+func (c *GCController) StartCycle(stackSize, globalsSize uint64, scannableFrac float64, gomaxprocs int) {
+	c.scannableStackSize = stackSize
+	c.globalsScan = globalsSize
+	c.heapLive = c.trigger
+	c.heapScan += uint64(float64(c.trigger-c.heapMarked) * scannableFrac)
+	c.startCycle(0, gomaxprocs)
+}
+
+func (c *GCController) AssistWorkPerByte() float64 {
+	return c.assistWorkPerByte.Load()
+}
+
+func (c *GCController) HeapGoal() uint64 {
+	return c.heapGoal
+}
+
+func (c *GCController) HeapLive() uint64 {
+	return c.heapLive
+}
+
+func (c *GCController) HeapMarked() uint64 {
+	return c.heapMarked
+}
+
+func (c *GCController) Trigger() uint64 {
+	return c.trigger
+}
+
+type GCControllerReviseDelta struct {
+	HeapLive        int64
+	HeapScan        int64
+	HeapScanWork    int64
+	StackScanWork   int64
+	GlobalsScanWork int64
+}
+
+func (c *GCController) Revise(d GCControllerReviseDelta) {
+	c.heapLive += uint64(d.HeapLive)
+	c.heapScan += uint64(d.HeapScan)
+	c.heapScanWork.Add(d.HeapScanWork)
+	c.stackScanWork.Add(d.StackScanWork)
+	c.globalsScanWork.Add(d.GlobalsScanWork)
+	c.revise()
+}
+
+func (c *GCController) EndCycle(bytesMarked uint64, assistTime, elapsed int64, gomaxprocs int) {
+	c.assistTime = assistTime
+	triggerRatio := c.endCycle(elapsed, gomaxprocs, false)
+	c.resetLive(bytesMarked)
+	c.commit(triggerRatio)
+}
+
+var escapeSink any
+
+//go:noinline
+func escape(x any) any {
+	escapeSink = x
+	escapeSink = nil
+	return x
+}
+
+// Acquirem blocks preemption.
+func Acquirem() {
+	acquirem()
+}
+
+func Releasem() {
+	releasem(getg().m)
+}
+
+var Timediv = timediv

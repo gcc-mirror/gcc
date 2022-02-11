@@ -1,5 +1,5 @@
-/* Declarations and data structures for stmt.c.
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+/* Declarations and data structures for stmt.cc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

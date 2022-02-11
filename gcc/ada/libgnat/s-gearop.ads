@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,29 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package System.Generic_Array_Operations is
-pragma Pure (Generic_Array_Operations);
+--  Proof of this unit is only done up to silver level, i.e. absence of runtime
+--  errors, and only regarding runtime checks that depend on the generic part,
+--  ignoring runtime checks related to formal generic subprogram parameters
+--  in instantiations. For example, contracts do not protect against scalar
+--  overflows in arithmetic operations passed on as formal generic subprogram
+--  parameters.
+
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced
+--  by setting the corresponding assertion policy to Ignore. Postconditions
+--  and contract cases should not be executed at runtime as well, in order
+--  not to slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+package System.Generic_Array_Operations
+  with SPARK_Mode
+is
+
+   pragma Pure (Generic_Array_Operations);
 
    ---------------------
    -- Back_Substitute --
@@ -43,7 +64,10 @@ pragma Pure (Generic_Array_Operations);
       with function "*" (Left, Right : Scalar) return Scalar is <>;
       with function "/" (Left, Right : Scalar) return Scalar is <>;
       with function Is_Non_Zero (X : Scalar) return Boolean is <>;
-   procedure Back_Substitute (M, N : in out Matrix);
+   procedure Back_Substitute (M, N : in out Matrix)
+   with
+     Pre => M'First (1) = N'First (1)
+       and then M'Last (1) = N'Last (1);
 
    --------------
    -- Diagonal --
@@ -53,7 +77,14 @@ pragma Pure (Generic_Array_Operations);
       type Scalar is private;
       type Vector is array (Integer range <>) of Scalar;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
-   function Diagonal (A : Matrix) return Vector;
+   function Diagonal (A : Matrix) return Vector
+   with
+     Pre => A'First (1) < A'Last (1)
+       and then A'First (2) < A'Last (2)
+       and then (if A'First (1) <= 0 then
+                   A'Last (1) < Integer'Last + A'First (1))
+       and then (if A'First (2) <= 0 then
+                   A'Last (2) < Integer'Last + A'First (2));
 
    -----------------------
    -- Forward_Eliminate --
@@ -76,7 +107,10 @@ pragma Pure (Generic_Array_Operations);
    procedure Forward_Eliminate
      (M   : in out Matrix;
       N   : in out Matrix;
-      Det : out Scalar);
+      Det : out Scalar)
+   with
+     Pre => M'First (1) = N'First (1)
+       and then M'Last (1) = N'Last (1);
 
    --------------------------
    -- Square_Matrix_Length --
@@ -85,8 +119,14 @@ pragma Pure (Generic_Array_Operations);
    generic
       type Scalar is private;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
-   function Square_Matrix_Length (A : Matrix) return Natural;
-   --  If A is non-square, raise Constraint_Error,  else return its dimension
+   function Square_Matrix_Length (A : Matrix) return Natural
+   with
+     Pre => (if A'First (1) <= 0 then
+               A'Last (1) < Integer'Last + A'First (1))
+       and then (if A'First (2) <= 0 then
+                   A'Last (2) < Integer'Last + A'First (2))
+       and then A'Length (1) = A'Length (2);
+   --  If A is non-square, raise Constraint_Error, else return its dimension
 
    ----------------------------------
    -- Vector_Elementwise_Operation --
@@ -129,7 +169,13 @@ pragma Pure (Generic_Array_Operations);
               Right : Right_Scalar) return Result_Scalar;
    function Vector_Vector_Elementwise_Operation
      (Left  : Left_Vector;
-      Right : Right_Vector) return Result_Vector;
+      Right : Right_Vector) return Result_Vector
+   with
+     Pre => (if Left'First <= 0 then
+               Left'Last < Integer'Last + Left'First)
+       and then (if Right'First <= 0 then
+                   Right'Last < Integer'Last + Right'First)
+       and then Left'Length = Right'Length;
 
    ------------------------------------------------
    -- Vector_Vector_Scalar_Elementwise_Operation --
@@ -150,7 +196,11 @@ pragma Pure (Generic_Array_Operations);
    function Vector_Vector_Scalar_Elementwise_Operation
      (X : X_Vector;
       Y : Y_Vector;
-      Z : Z_Scalar) return Result_Vector;
+      Z : Z_Scalar) return Result_Vector
+   with
+     Pre => (if X'First <= 0 then X'Last < Integer'Last + X'First)
+       and then (if Y'First <= 0 then Y'Last < Integer'Last + Y'First)
+       and then X'Length = Y'Length;
 
    -----------------------------------------
    -- Matrix_Matrix_Elementwise_Operation --
@@ -171,7 +221,18 @@ pragma Pure (Generic_Array_Operations);
               Right : Right_Scalar) return Result_Scalar;
    function Matrix_Matrix_Elementwise_Operation
      (Left  : Left_Matrix;
-      Right : Right_Matrix) return Result_Matrix;
+      Right : Right_Matrix) return Result_Matrix
+   with
+     Pre => (if Left'First (1) <= 0 then
+               Left'Last (1) < Integer'Last + Left'First (1))
+       and then (if Right'First (1) <= 0 then
+                   Right'Last (1) < Integer'Last + Right'First (1))
+       and then Left'Length (1) = Right'Length (1)
+       and then (if Left'First (2) <= 0 then
+                   Left'Last (2) < Integer'Last + Left'First (2))
+       and then (if Right'First (2) <= 0 then
+                   Right'Last (2) < Integer'Last + Right'First (2))
+       and then Left'Length (2) = Right'Length (2);
 
    ------------------------------------------------
    -- Matrix_Matrix_Scalar_Elementwise_Operation --
@@ -193,7 +254,18 @@ pragma Pure (Generic_Array_Operations);
    function Matrix_Matrix_Scalar_Elementwise_Operation
      (X : X_Matrix;
       Y : Y_Matrix;
-      Z : Z_Scalar) return Result_Matrix;
+      Z : Z_Scalar) return Result_Matrix
+   with
+     Pre => (if X'First (1) <= 0 then
+               X'Last (1) < Integer'Last + X'First (1))
+       and then (if Y'First (1) <= 0 then
+                   Y'Last (1) < Integer'Last + Y'First (1))
+       and then X'Length (1) = Y'Length (1)
+       and then (if X'First (2) <= 0 then
+                   X'Last (2) < Integer'Last + X'First (2))
+       and then (if Y'First (2) <= 0 then
+                   Y'Last (2) < Integer'Last + Y'First (2))
+       and then X'Length (2) = Y'Length (2);
 
    -----------------------------------------
    -- Vector_Scalar_Elementwise_Operation --
@@ -286,7 +358,13 @@ pragma Pure (Generic_Array_Operations);
               Right : Result_Scalar) return Result_Scalar is <>;
    function Inner_Product
      (Left  : Left_Vector;
-      Right : Right_Vector) return Result_Scalar;
+      Right : Right_Vector) return Result_Scalar
+   with
+     Pre => (if Left'First <= 0 then
+               Left'Last < Integer'Last + Left'First)
+       and then (if Right'First <= 0 then
+                   Right'Last < Integer'Last + Right'First)
+       and then Left'Length = Right'Length;
 
    -------------
    -- L2_Norm --
@@ -340,7 +418,13 @@ pragma Pure (Generic_Array_Operations);
               Right : Result_Scalar) return Result_Scalar is <>;
    function Matrix_Vector_Product
      (Left  : Matrix;
-      Right : Right_Vector) return Result_Vector;
+      Right : Right_Vector) return Result_Vector
+   with
+     Pre => (if Left'First (2) <= 0 then
+               Left'Last (2) < Integer'Last + Left'First (2))
+       and then (if Right'First <= 0 then
+                   Right'Last < Integer'Last + Right'First)
+       and then Left'Length (2) = Right'Length;
 
    ---------------------------
    -- Vector_Matrix_Product --
@@ -363,7 +447,13 @@ pragma Pure (Generic_Array_Operations);
               Right : Result_Scalar) return Result_Scalar is <>;
    function Vector_Matrix_Product
      (Left  : Left_Vector;
-      Right : Matrix) return Result_Vector;
+      Right : Matrix) return Result_Vector
+   with
+     Pre => (if Left'First <= 0 then
+               Left'Last < Integer'Last + Left'First)
+       and then (if Right'First (1) <= 0 then
+                   Right'Last (1) < Integer'Last + Right'First (1))
+       and then Left'Length = Right'Length (1);
 
    ---------------------------
    -- Matrix_Matrix_Product --
@@ -388,7 +478,13 @@ pragma Pure (Generic_Array_Operations);
               Right : Result_Scalar) return Result_Scalar is <>;
    function Matrix_Matrix_Product
      (Left  : Left_Matrix;
-      Right : Right_Matrix) return Result_Matrix;
+      Right : Right_Matrix) return Result_Matrix
+   with
+     Pre => (if Left'First (2) <= 0 then
+               Left'Last (2) < Integer'Last + Left'First (2))
+       and then (if Right'First (1) <= 0 then
+                   Right'Last (1) < Integer'Last + Right'First (1))
+       and then Left'Length (2) = Right'Length (1);
 
    ----------------------------
    -- Matrix_Vector_Solution --
@@ -404,7 +500,16 @@ pragma Pure (Generic_Array_Operations);
              (M   : in out Matrix;
               N   : in out Matrix;
               Det : out Scalar) is <>;
-   function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector;
+   function Matrix_Vector_Solution (A : Matrix; X : Vector) return Vector
+   with
+     Pre => (if A'First (1) <= 0 then
+               A'Last (1) < Integer'Last + A'First (1))
+       and then (if A'First (2) <= 0 then
+                   A'Last (2) < Integer'Last + A'First (2))
+       and then A'Length (1) = A'Length (2)
+       and then (if X'First <= 0 then
+                   X'Last < Integer'Last + X'First)
+       and then A'Length (1) = X'Length;
 
    ----------------------------
    -- Matrix_Matrix_Solution --
@@ -419,7 +524,16 @@ pragma Pure (Generic_Array_Operations);
              (M   : in out Matrix;
               N   : in out Matrix;
               Det : out Scalar) is <>;
-   function Matrix_Matrix_Solution (A : Matrix; X : Matrix) return Matrix;
+   function Matrix_Matrix_Solution (A : Matrix; X : Matrix) return Matrix
+   with
+     Pre => (if A'First (1) <= 0 then
+               A'Last (1) < Integer'Last + A'First (1))
+       and then (if A'First (2) <= 0 then
+                   A'Last (2) < Integer'Last + A'First (2))
+       and then A'Length (1) = A'Length (2)
+       and then (if X'First (1) <= 0 then
+                   X'Last (1) < Integer'Last + X'First (1))
+       and then A'Length (1) = X'Length (1);
 
    ----------
    -- Sqrt --
@@ -436,7 +550,10 @@ pragma Pure (Generic_Array_Operations);
    generic
       type Scalar is private;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
-   procedure Swap_Column (A : in out Matrix; Left, Right : Integer);
+   procedure Swap_Column (A : in out Matrix; Left, Right : Integer)
+   with
+     Pre => Left in A'Range (2)
+       and then Right in A'Range (2);
 
    ---------------
    -- Transpose --
@@ -445,7 +562,18 @@ pragma Pure (Generic_Array_Operations);
    generic
       type Scalar is private;
       type Matrix is array (Integer range <>, Integer range <>) of Scalar;
-   procedure Transpose (A : Matrix; R : out Matrix);
+   procedure Transpose (A : Matrix; R : out Matrix)
+   with
+     Relaxed_Initialization => R,
+     Pre  => A'First (1) = R'First (2)
+       and then A'Last (1) = R'Last (2)
+       and then A'First (2) = R'First (1)
+       and then A'Last (2) = R'Last (1)
+       and then (if A'First (1) < 0 then
+                   A'Last (1) <= Integer'Last + A'First (1))
+       and then (if A'First (2) < 0 then
+                   A'Last (2) <= Integer'Last + A'First (2)),
+     Post => R'Initialized;
 
    -------------------------------
    -- Update_Vector_With_Vector --
@@ -457,7 +585,13 @@ pragma Pure (Generic_Array_Operations);
       type X_Vector is array (Integer range <>) of X_Scalar;
       type Y_Vector is array (Integer range <>) of Y_Scalar;
       with procedure Update (X : in out X_Scalar; Y : Y_Scalar);
-   procedure Update_Vector_With_Vector (X : in out X_Vector; Y : Y_Vector);
+   procedure Update_Vector_With_Vector (X : in out X_Vector; Y : Y_Vector)
+   with
+     Pre => (if X'First <= 0 then
+               X'Last < Integer'Last + X'First)
+       and then (if Y'First <= 0 then
+                   Y'Last < Integer'Last + Y'First)
+       and then X'Length = Y'Length;
 
    -------------------------------
    -- Update_Matrix_With_Matrix --
@@ -469,7 +603,18 @@ pragma Pure (Generic_Array_Operations);
       type X_Matrix is array (Integer range <>, Integer range <>) of X_Scalar;
       type Y_Matrix is array (Integer range <>, Integer range <>) of Y_Scalar;
       with procedure Update (X : in out X_Scalar; Y : Y_Scalar);
-   procedure Update_Matrix_With_Matrix (X : in out X_Matrix; Y : Y_Matrix);
+   procedure Update_Matrix_With_Matrix (X : in out X_Matrix; Y : Y_Matrix)
+   with
+     Pre => (if X'First (1) <= 0 then
+               X'Last (1) < Integer'Last + X'First (1))
+       and then (if Y'First (1) <= 0 then
+                   Y'Last (1) < Integer'Last + Y'First (1))
+       and then X'Length (1) = Y'Length (1)
+       and then (if X'First (2) <= 0 then
+                   X'Last (2) < Integer'Last + X'First (2))
+       and then (if Y'First (2) <= 0 then
+                   Y'Last (2) < Integer'Last + Y'First (2))
+       and then X'Length (2) = Y'Length (2);
 
    -----------------
    -- Unit_Matrix --
@@ -483,7 +628,10 @@ pragma Pure (Generic_Array_Operations);
    function Unit_Matrix
      (Order   : Positive;
       First_1 : Integer := 1;
-      First_2 : Integer := 1) return Matrix;
+      First_2 : Integer := 1) return Matrix
+   with
+     Pre => First_1 <= Integer'Last - Order + 1
+       and then First_2 <= Integer'Last - Order + 1;
 
    -----------------
    -- Unit_Vector --
@@ -497,6 +645,10 @@ pragma Pure (Generic_Array_Operations);
    function Unit_Vector
      (Index : Integer;
       Order : Positive;
-      First : Integer := 1) return Vector;
+      First : Integer := 1) return Vector
+   with
+     Pre => Index >= First
+       and then First <= Integer'Last - Order + 1
+       and then Index <= First + (Order - 1);
 
 end System.Generic_Array_Operations;

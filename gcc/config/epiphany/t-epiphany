@@ -1,4 +1,4 @@
-# Copyright (C) 1997-2021 Free Software Foundation, Inc.
+# Copyright (C) 1997-2022 Free Software Foundation, Inc.
 # Contributed by Embecosm on behalf of Adapteva, Inc.
 #
 # This file is part of GCC.
@@ -17,13 +17,13 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-mode-switch-use.o : $(srcdir)/config/epiphany/mode-switch-use.c \
+mode-switch-use.o : $(srcdir)/config/epiphany/mode-switch-use.cc \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) \
    $(TREE_PASS_H) $(INSN_ATTR_H) $(EMIT_RTL_H) $(FUNCTION_H) $(RECOG_H) \
    insn-config.h $(DF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $<
 
-resolve-sw-modes.o : $(srcdir)/config/epiphany/resolve-sw-modes.c \
+resolve-sw-modes.o : $(srcdir)/config/epiphany/resolve-sw-modes.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(MACHMODE_H) $(TM_H) hard-reg-set.h \
   $(TM_P_H) $(VEC_H) sbitmap.h $(BASIC_BLOCK_H) $(DF_H) $(RTL_H) \
   insn-config.h insn-codes.h $(EMIT_RTL_H) $(RECOG_H) $(FUNCTION_H) \

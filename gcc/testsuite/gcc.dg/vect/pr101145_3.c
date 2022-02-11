@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_long_long } */
 /* { dg-additional-options "-O3" } */
 #define TYPE int *
 #define MIN ((TYPE)0)

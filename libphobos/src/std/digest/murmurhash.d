@@ -685,7 +685,7 @@ the 'put' method.
     assert(hashed == [181, 151, 88, 252]);
 }
 
-version (unittest)
+version (StdUnittest)
 {
     private auto hash(H, Element = H.Element)(string data)
     {

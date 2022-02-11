@@ -1,5 +1,5 @@
 /* Handling inline asm in the analyzer.
-   Copyright (C) 2021 Free Software Foundation, Inc.
+   Copyright (C) 2021-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -126,7 +126,7 @@ deterministic_p (const gasm *asm_stmt)
 /* Update this model for the asm STMT, using CTXT to report any
    diagnostics.
 
-   Compare with cfgexpand.c: expand_asm_stmt.  */
+   Compare with cfgexpand.cc: expand_asm_stmt.  */
 
 void
 region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)

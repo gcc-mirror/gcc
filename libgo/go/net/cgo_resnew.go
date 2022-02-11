@@ -3,9 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //go:build cgo && !netgo && (aix || darwin || hurd || (linux && !android) || netbsd || solaris)
-// +build cgo
-// +build !netgo
-// +build aix darwin hurd linux,!android netbsd solaris
 
 package net
 

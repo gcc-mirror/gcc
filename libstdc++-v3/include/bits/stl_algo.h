@@ -1,6 +1,6 @@
 // Algorithm implementation -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -3603,7 +3603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
-#define __cpp_lib_clamp 201603
+#define __cpp_lib_clamp 201603L
 
   /**
    *  @brief  Returns the value clamped between lo and hi.
@@ -5858,7 +5858,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
 #if __cplusplus > 201402L
-#define __cpp_lib_sample 201603
+#define __cpp_lib_sample 201603L
   /// Take a random sample from a population.
   template<typename _PopulationIterator, typename _SampleIterator,
            typename _Distance, typename _UniformRandomBitGenerator>

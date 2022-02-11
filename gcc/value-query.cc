@@ -1,5 +1,5 @@
 /* Support routines for value queries.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Andrew MacLeod <amacleod@redhat.com>.
 
@@ -434,14 +434,6 @@ gimple_range_global (tree name)
 // global_range_query implementation.
 
 global_range_query global_ranges;
-
-// Like get_range_query, but for accessing global ranges.
-
-range_query *
-get_global_range_query ()
-{
-  return &global_ranges;
-}
 
 bool
 global_range_query::range_of_expr (irange &r, tree expr, gimple *stmt)

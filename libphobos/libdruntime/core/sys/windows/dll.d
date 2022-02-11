@@ -6,7 +6,7 @@
  *      $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  *    (See accompanying file LICENSE)
  * Authors:   Rainer Schuetze
- * Source: $(DRUNTIMESRC src/core/sys/windows/_dll.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_dll.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -425,7 +425,6 @@ int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
                 mov peb, RAX;
             }
         }
-
     }
     else version (Win32)
     {
@@ -574,10 +573,10 @@ bool dll_thread_detach( bool detach_thread = true, bool exitTls = true )
 /// ---
 mixin template SimpleDllMain()
 {
-    import core.sys.windows.windef : HINSTANCE;
+    import core.sys.windows.windef : HINSTANCE, BOOL, DWORD, LPVOID;
 
     extern(Windows)
-    bool DllMain(HINSTANCE hInstance, uint ulReason, void* reserved)
+    BOOL DllMain(HINSTANCE hInstance, DWORD ulReason, LPVOID reserved)
     {
         import core.sys.windows.winnt;
         import core.sys.windows.dll :

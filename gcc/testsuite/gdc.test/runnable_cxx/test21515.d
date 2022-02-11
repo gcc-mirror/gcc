@@ -1,5 +1,6 @@
 // https://issues.dlang.org/show_bug.cgi?id=21515
 // EXTRA_CPP_SOURCES: test21515.cpp
+// CXXFLAGS: -std=c++11
 // DISABLED: win32 win64
 
 // ABI layout of native complex

@@ -3,23 +3,32 @@
 
 int magicVariable()
 {
-  if (__ctfe)
-   return 3;
+    if (__ctfe)
+        return 3;
 
-  shared int var = 2;
-  return var;
+    shared int var = 2;
+    return var;
 }
 
 static assert(magicVariable()==3);
 
-void main()
+/************************************/
+// https://issues.dlang.org/show_bug.cgi?id=11159
+
+void test11159()
 {
-  assert(!__ctfe);
-  assert(magicVariable()==2);
+    import std.math : pow;
+    enum ulong
+        e_2_pow_64 = 2uL^^64,
+        e_10_pow_19 = 10uL^^19,
+        e_10_pow_20 = 10uL^^20;
+    assert(e_2_pow_64 == pow(2uL, 64));
+    assert(e_10_pow_19 == pow(10uL, 19));
+    assert(e_10_pow_20 == pow(10uL, 20));
 }
 
-// bug 991 -- invalid.
-// bug 3500 -- is this related to 2127?
+// https://issues.dlang.org/show_bug.cgi?id=991 -- invalid.
+// https://issues.dlang.org/show_bug.cgi?id=3500 -- is this related to 2127?
 
 // Tests for ^^
 // TODO: These tests should not require import std.math.
@@ -31,6 +40,25 @@ static assert( 2.0 ^^ 3 == 8.0);
 
 static assert( 2.0 ^^ 4 == 16.0);
 static assert( 2 ^^ 4 == 16);
+
+static assert((2 ^^ 8) == 256);
+static assert((3 ^^ 8.0) == 6561);
+static assert((4.0 ^^ 8) == 65536);
+static assert((5.0 ^^ 8.0) == 390625);
+
+static assert((0.5 ^^ 3) == 0.125);
+static assert((1.5 ^^ 3.0) == 3.375);
+static assert((2.5 ^^ 3) == 15.625);
+static assert((3.5 ^^ 3.0) == 42.875);
+
+static assert(((-2) ^^ -5.0) == -0.031250);
+static assert(((-2.0) ^^ -6) == 0.015625);
+static assert(((-2.0) ^^ -7.0) == -0.0078125);
+
+static assert((144 ^^ 0.5) == 12);
+static assert((1089 ^^ 0.5) == 33);
+static assert((1764 ^^ 0.5) == 42);
+static assert((650.25 ^^ 0.5) == 25.5);
 
 // Check the typing rules.
 static assert( is (typeof(2.0^^7) == double));
@@ -78,13 +106,16 @@ static assert( 2 ^^ 3 ^^ 2 == 2 ^^ 9);
 static assert( 2.0 ^^ -3 ^^ 2 == 2.0 ^^ -9);
 
 // 1 ^^ n is always 1, even if n is negative
-static assert( 1 ^^ -5 == 1);
+static assert( 1 ^^ -5.0 == 1);
 
-// -1 ^^ n gets transformed into  n & 1 ? -1 : 1
-// even if n is negative
-static assert( (-1) ^^ -5 == -1);
-static assert( (-1) ^^ -4 == 1);
-static assert( (-1) ^^ 0 == 1);
+// -1.0 ^^ n is either 1 or -1 if n is integral.
+static assert( (-1.0) ^^ -5 == -1);
+static assert( (-1.0) ^^ -4 == 1);
+static assert( (-1.0) ^^ 0 == 1);
+// -1.0 ^^ n is otherwise always NaN.
+static assert( (-1.0) ^^ -5.5 is double.nan);
+static assert( (-1.0) ^^ -4.4 is double.nan);
+static assert( (-1.0) ^^ -0.1 is double.nan);
 
 // n ^^ 0 is always 1
 static assert( (-5) ^^ 0 == 1);
@@ -100,7 +131,7 @@ static assert( 9 ^^ -1.0 == 1.0 / 9);
 static assert( !is(typeof(2 ^^ -5)));
 static assert( !is(typeof((-2) ^^ -4)));
 
-// Bug 3535
+// https://issues.dlang.org/show_bug.cgi?id=3535
 struct StructWithCtor
 {
     this(int _n) {
@@ -231,4 +262,13 @@ int anotherPowTest()
 {
    double x = 5.0;
    return x^^4 > 2.0 ? 3: 2;
+}
+
+/************************************/
+
+void main()
+{
+    assert(!__ctfe);
+    assert(magicVariable()==2);
+    test11159();
 }

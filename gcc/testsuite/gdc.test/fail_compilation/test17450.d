@@ -1,9 +1,11 @@
 /*
-REQUIRED_ARGS: -dip1000 -dip25
+REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test17450.d(15): Error: returning `&s.bar` escapes a reference to parameter `s`, perhaps annotate with `return`
-fail_compilation/test17450.d(18): Error: returning `&this.bar` escapes a reference to parameter `this`, perhaps annotate with `return`
+fail_compilation/test17450.d(17): Error: returning `&s.bar` escapes a reference to parameter `s`
+fail_compilation/test17450.d(17):        perhaps annotate the parameter with `return`
+fail_compilation/test17450.d(20): Error: returning `&this.bar` escapes a reference to parameter `this`
+fail_compilation/test17450.d(20):        perhaps annotate the parameter with `return`
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=17450

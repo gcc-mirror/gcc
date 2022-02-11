@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,28 +62,24 @@ package body Ch2 is
 
    --  Error recovery: can raise Error_Resync (cannot return Error)
 
-   function P_Identifier (C : Id_Check := None) return Node_Id is
+   function P_Identifier
+     (C         : Id_Check := None;
+      Force_Msg : Boolean  := False)
+     return Node_Id
+   is
       Ident_Node : Node_Id;
 
    begin
       --  All set if we do indeed have an identifier
 
-      --  Code duplication, see Par_Ch3.P_Defining_Identifier???
-
       if Token = Tok_Identifier then
          Check_Future_Keyword;
-         Ident_Node := Token_Node;
-         Scan; -- past Identifier
-         return Ident_Node;
 
       --  If we have a reserved identifier, manufacture an identifier with
       --  a corresponding name after posting an appropriate error message
 
       elsif Is_Reserved_Identifier (C) then
-         Scan_Reserved_Identifier (Force_Msg => False);
-         Ident_Node := Token_Node;
-         Scan; -- past the node
-         return Ident_Node;
+         Scan_Reserved_Identifier (Force_Msg => Force_Msg);
 
       --  Otherwise we have junk that cannot be interpreted as an identifier
 
@@ -91,6 +87,15 @@ package body Ch2 is
          T_Identifier; -- to give message
          raise Error_Resync;
       end if;
+
+      if Style_Check then
+         Style.Check_Defining_Identifier_Casing;
+      end if;
+
+      Ident_Node := Token_Node;
+      Scan; -- past the identifier
+
+      return Ident_Node;
    end P_Identifier;
 
    --------------------------

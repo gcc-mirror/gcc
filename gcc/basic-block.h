@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -146,7 +146,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   /* The index of this block.  */
   int index;
 
-  /* Expected number of executions: calculated in profile.c.  */
+  /* Expected number of executions: calculated in profile.cc.  */
   profile_count count;
 
   /* The discriminator for this block.  The discriminator distinguishes

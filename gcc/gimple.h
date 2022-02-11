@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -405,7 +405,7 @@ struct GTY((tag("GSS_BIND")))
      which is analogous to TREE_BLOCK (i.e., the lexical block holding
      this statement).  This field is the equivalent of BIND_EXPR_BLOCK
      in tree land (i.e., the lexical scope defined by this bind).  See
-     gimple-low.c.  */
+     gimple-low.cc.  */
   tree block;
 
   /* [ WORD 9 ]  */
@@ -1589,6 +1589,8 @@ gimple_seq gimple_seq_copy (gimple_seq);
 bool gimple_call_same_target_p (const gimple *, const gimple *);
 int gimple_call_flags (const gimple *);
 int gimple_call_arg_flags (const gcall *, unsigned);
+int gimple_call_retslot_flags (const gcall *);
+int gimple_call_static_chain_flags (const gcall *);
 int gimple_call_return_flags (const gcall *);
 bool gimple_call_nonnull_result_p (gcall *);
 tree gimple_call_nonnull_arg (gcall *);
@@ -2935,6 +2937,15 @@ gimple_clobber_p (const gimple *s)
 {
   return gimple_assign_single_p (s)
          && TREE_CLOBBER_P (gimple_assign_rhs1 (s));
+}
+
+/* Return true if S is a clobber statement.  */
+
+static inline bool
+gimple_clobber_p (const gimple *s, enum clobber_kind kind)
+{
+  return gimple_clobber_p (s)
+	 && CLOBBER_KIND (gimple_assign_rhs1 (s)) == kind;
 }
 
 /* Return true if GS is a GIMPLE_CALL.  */
@@ -4690,6 +4701,44 @@ gimple_phi_arg_has_location (const gphi *phi, size_t i)
   return gimple_phi_arg_location (phi, i) != UNKNOWN_LOCATION;
 }
 
+/* Return the number of arguments that can be accessed by gimple_arg.  */
+
+static inline unsigned
+gimple_num_args (const gimple *gs)
+{
+  if (auto phi = dyn_cast<const gphi *> (gs))
+    return gimple_phi_num_args (phi);
+  if (auto call = dyn_cast<const gcall *> (gs))
+    return gimple_call_num_args (call);
+  return gimple_num_ops (as_a <const gassign *> (gs)) - 1;
+}
+
+/* GS must be an assignment, a call, or a PHI.
+   If it's an assignment, return rhs operand I.
+   If it's a call, return function argument I.
+   If it's a PHI, return the value of PHI argument I.  */
+
+static inline tree
+gimple_arg (const gimple *gs, unsigned int i)
+{
+  if (auto phi = dyn_cast<const gphi *> (gs))
+    return gimple_phi_arg_def (phi, i);
+  if (auto call = dyn_cast<const gcall *> (gs))
+    return gimple_call_arg (call, i);
+  return gimple_op (as_a <const gassign *> (gs), i + 1);
+}
+
+/* Return a pointer to gimple_arg (GS, I).  */
+
+static inline tree *
+gimple_arg_ptr (gimple *gs, unsigned int i)
+{
+  if (auto phi = dyn_cast<gphi *> (gs))
+    return gimple_phi_arg_def_ptr (phi, i);
+  if (auto call = dyn_cast<gcall *> (gs))
+    return gimple_call_arg_ptr (call, i);
+  return gimple_op_ptr (as_a <gassign *> (gs), i + 1);
+}
 
 /* Return the region number for GIMPLE_RESX RESX_STMT.  */
 
@@ -6708,7 +6757,7 @@ is_gimple_resx (const gimple *gs)
 
 
 /* Enum and arrays used for allocation stats.  Keep in sync with
-   gimple.c:gimple_alloc_kind_names.  */
+   gimple.cc:gimple_alloc_kind_names.  */
 enum gimple_alloc_kind
 {
   gimple_alloc_kind_assign,	/* Assignments.  */

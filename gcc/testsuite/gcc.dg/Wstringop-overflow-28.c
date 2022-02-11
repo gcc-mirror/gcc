@@ -152,8 +152,8 @@ void ptr_add_2 (int n, int i0, int i1)
   q += i0;
   q[0] = 0;   // p[0]
   q += i1;
-  q[0] = 1;   // p[1]
-  q[1] = 2;   // p[2]     // { dg-warning "\\\[-Wstringop-overflow" }
+  q[0] = 1;   // p[1]     // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  q[1] = 2;   // p[2]     // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
 
   sink (p, q);
 }
@@ -175,8 +175,8 @@ void ptr_add_3 (int n, int i0, int i1, int i2)
   q[0] = 1;   // p[1]
   q[1] = 2;   // p[2]
   q += i2;
-  q[0] = 3;   // p[3]
-  q[1] = 4;   // p[4]     // { dg-warning "\\\[-Wstringop-overflow" }
+  q[0] = 3;   // p[3]     // { dg-warning "\\\[-Wstringop-overflow" "" { target { vect_slp_v2qi_store_unalign } } }
+  q[1] = 4;   // p[4]     // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v2qi_store_unalign } } }
 
   sink (p, q);
 }

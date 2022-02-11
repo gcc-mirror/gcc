@@ -25,7 +25,7 @@ libgccjit 11.0.0 (experimental 20210114), Jan 14, 2021
 
 David Malcolm
 
-Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2014-2022 Free Software Foundation, Inc.
 @end quotation
 
 @end copying
@@ -48,7 +48,7 @@ Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
 
 @c %**start of body
 @anchor{index doc}@anchor{0}
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -63,9 +63,9 @@ Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
-This document describes libgccjit@footnote{http://gcc.gnu.org/wiki/JIT}, an API
+This document describes libgccjit@footnote{https://gcc.gnu.org/wiki/JIT}, an API
 for embedding GCC inside programs and libraries.
 
 There are actually two APIs for the library:
@@ -83,7 +83,7 @@ wrapper classes around the C API, to save typing.
 
 Contents:
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -98,7 +98,7 @@ Contents:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Tutorial:: 
@@ -403,7 +403,7 @@ Running the test suite
 @chapter Tutorial
 
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -418,7 +418,7 @@ Running the test suite
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Tutorial part 1; “Hello world”: Tutorial part 1 “Hello world”. 
@@ -447,7 +447,7 @@ the details in later parts of this tutorial.
 
 @example
 /* Smoketest example for libgccjit.so
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -463,7 +463,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit.h>
 
@@ -591,7 +591,7 @@ $ ./tut01-hello-world
 hello world
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -606,7 +606,7 @@ hello world
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 2 Creating a trivial machine code function,Tutorial part 3 Loops and variables,Tutorial part 1 “Hello world”,Tutorial
 @anchor{intro/tutorial02 doc}@anchor{6}@anchor{intro/tutorial02 tutorial-part-2-creating-a-trivial-machine-code-function}@anchor{7}
@@ -985,7 +985,7 @@ Here’s what the above looks like as a complete program:
 
 @example
 /* Usage example for libgccjit.so
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1001,7 +1001,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit.h>
 
@@ -1113,7 +1113,7 @@ $ ./tut02-square
 result: 25
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -1128,7 +1128,7 @@ result: 25
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 3 Loops and variables,Tutorial part 4 Adding JIT-compilation to a toy interpreter,Tutorial part 2 Creating a trivial machine code function,Tutorial
 @anchor{intro/tutorial03 doc}@anchor{21}@anchor{intro/tutorial03 tutorial-part-3-loops-and-variables}@anchor{22}
@@ -1544,7 +1544,7 @@ install it with @cite{yum install python-xdot}):
 
 @example
 /* Usage example for libgccjit.so
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1560,7 +1560,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit.h>
 
@@ -1731,7 +1731,7 @@ $ ./tut03-sum-of-squares
 loop_test returned: 285
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -1746,7 +1746,7 @@ loop_test returned: 285
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 4 Adding JIT-compilation to a toy interpreter,Tutorial part 5 Implementing an Ahead-of-Time compiler,Tutorial part 3 Loops and variables,Tutorial
 @anchor{intro/tutorial04 doc}@anchor{35}@anchor{intro/tutorial04 tutorial-part-4-adding-jit-compilation-to-a-toy-interpreter}@anchor{36}
@@ -3590,7 +3590,7 @@ instr9:
 @}
 @end example
 
-@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -3605,7 +3605,7 @@ instr9:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 5 Implementing an Ahead-of-Time compiler,,Tutorial part 4 Adding JIT-compilation to a toy interpreter,Tutorial
 @anchor{intro/tutorial05 doc}@anchor{48}@anchor{intro/tutorial05 tutorial-part-5-implementing-an-ahead-of-time-compiler}@anchor{49}
@@ -4394,7 +4394,7 @@ to an executable.  It’s also possible to compile it to an object file,
 and to a dynamic library.  See the documentation of
 @ref{4a,,gcc_jit_context_compile_to_file()} for more information.
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -4409,14 +4409,14 @@ and to a dynamic library.  See the documentation of
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Topic Reference,C++ bindings for libgccjit,Tutorial,Top
 @anchor{topics/index doc}@anchor{4f}@anchor{topics/index topic-reference}@anchor{50}
 @chapter Topic Reference
 
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -4431,7 +4431,7 @@ and to a dynamic library.  See the documentation of
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Compilation contexts:: 
@@ -5122,7 +5122,7 @@ its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5137,7 +5137,7 @@ its presence using
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Objects,Types,Compilation contexts,Topic Reference
 @anchor{topics/objects doc}@anchor{76}@anchor{topics/objects objects}@anchor{77}
@@ -5232,7 +5232,7 @@ object’s context is released.
 @end cartouche
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5247,7 +5247,7 @@ object’s context is released.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Types,Expressions,Objects,Topic Reference
 @anchor{topics/types doc}@anchor{79}@anchor{topics/types types}@anchor{7a}
@@ -5868,7 +5868,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 Function pointer types can be created using
 @ref{95,,gcc_jit_context_new_function_ptr_type()}.
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -5883,7 +5883,7 @@ Function pointer types can be created using
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Expressions,Creating and using functions,Types,Topic Reference
 @anchor{topics/expressions doc}@anchor{96}@anchor{topics/expressions expressions}@anchor{97}
@@ -6909,7 +6909,7 @@ PTR[INDEX]
 in C (or, indeed, to @code{PTR + INDEX}).
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -6924,7 +6924,7 @@ in C (or, indeed, to @code{PTR + INDEX}).
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Creating and using functions,Function pointers<2>,Expressions,Topic Reference
 @anchor{topics/functions doc}@anchor{d5}@anchor{topics/functions creating-and-using-functions}@anchor{d6}
@@ -7534,7 +7534,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 See also @ref{f1,,gcc_jit_extended_asm} for entrypoints for adding inline
 assembler statements to a function.
 
-@c Copyright (C) 2017-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2017-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7549,7 +7549,7 @@ assembler statements to a function.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Function pointers<2>,Source Locations,Creating and using functions,Topic Reference
 @anchor{topics/function-pointers doc}@anchor{f2}@anchor{topics/function-pointers function-pointers}@anchor{f3}
@@ -7615,7 +7615,7 @@ given return type and parameters.
 Each of @cite{param_types} must be non-@cite{void}; @cite{return_type} may be @cite{void}.
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7630,7 +7630,7 @@ Each of @cite{param_types} must be non-@cite{void}; @cite{return_type} may be @c
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Source Locations,Compiling a context,Function pointers<2>,Topic Reference
 @anchor{topics/locations doc}@anchor{f5}@anchor{topics/locations source-locations}@anchor{f6}
@@ -7699,7 +7699,7 @@ argument is true, this will also set up @cite{gcc_jit_location} information
 throughout the context, pointing at the dump file as if it were a source
 file, giving you @emph{something} you can step through in the debugger.
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7714,7 +7714,7 @@ file, giving you @emph{something} you can step through in the debugger.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Compiling a context,ABI and API compatibility,Source Locations,Topic Reference
 @anchor{topics/compilation doc}@anchor{f8}@anchor{topics/compilation compiling-a-context}@anchor{f9}
@@ -7970,7 +7970,7 @@ There is currently no support for specifying libraries to link
 against.
 @end deffn
 
-@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -7985,7 +7985,7 @@ against.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node ABI and API compatibility,Performance,Compiling a context,Topic Reference
 @anchor{topics/compatibility doc}@anchor{101}@anchor{topics/compatibility abi-and-api-compatibility}@anchor{102}
@@ -8335,7 +8335,7 @@ embedding assembler instructions:
 @end itemize
 @end quotation
 
-@c Copyright (C) 2015-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2015-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -8350,7 +8350,7 @@ embedding assembler instructions:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Performance,Using Assembly Language with libgccjit,ABI and API compatibility,Topic Reference
 @anchor{topics/performance doc}@anchor{12c}@anchor{topics/performance performance}@anchor{12d}
@@ -8618,7 +8618,7 @@ for its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2020-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2020-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -8633,7 +8633,7 @@ for its presence using
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Using Assembly Language with libgccjit,,Performance,Topic Reference
 @anchor{topics/asm doc}@anchor{131}@anchor{topics/asm using-assembly-language-with-libgccjit}@anchor{132}
@@ -9015,7 +9015,7 @@ the following API calls could be used:
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9030,7 +9030,7 @@ the following API calls could be used:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node C++ bindings for libgccjit,Internals,Topic Reference,Top
 @anchor{cp/index doc}@anchor{135}@anchor{cp/index c-bindings-for-libgccjit}@anchor{136}
@@ -9038,7 +9038,7 @@ the following API calls could be used:
 
 
 This document describes the C++ bindings to
-libgccjit@footnote{http://gcc.gnu.org/wiki/JIT}, an API for embedding GCC
+libgccjit@footnote{https://gcc.gnu.org/wiki/JIT}, an API for embedding GCC
 inside programs and libraries.
 
 The C++ bindings consist of a single header file @code{libgccjit++.h}.
@@ -9049,7 +9049,7 @@ so there is nothing extra to link against.
 
 Contents:
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9064,7 +9064,7 @@ Contents:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Tutorial: Tutorial<2>. 
@@ -9077,7 +9077,7 @@ Contents:
 @section Tutorial
 
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9092,7 +9092,7 @@ Contents:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Tutorial part 1; “Hello world”: Tutorial part 1 “Hello world”<2>. 
@@ -9120,7 +9120,7 @@ the details in later parts of this tutorial.
 
 @example
 /* Smoketest example for libgccjit.so C++ API
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9136,7 +9136,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit++.h>
 
@@ -9248,7 +9248,7 @@ $ ./tut01-hello-world
 hello world
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9263,7 +9263,7 @@ hello world
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 2 Creating a trivial machine code function<2>,Tutorial part 3 Loops and variables<2>,Tutorial part 1 “Hello world”<2>,Tutorial<2>
 @anchor{cp/intro/tutorial02 doc}@anchor{13b}@anchor{cp/intro/tutorial02 tutorial-part-2-creating-a-trivial-machine-code-function}@anchor{13c}
@@ -9590,7 +9590,7 @@ Here’s what the above looks like as a complete program:
 
 @example
 /* Usage example for libgccjit.so's C++ API
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9606,7 +9606,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit++.h>
 
@@ -9700,7 +9700,7 @@ $ ./tut02-square
 result: 25
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -9715,7 +9715,7 @@ result: 25
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 3 Loops and variables<2>,Tutorial part 4 Adding JIT-compilation to a toy interpreter<2>,Tutorial part 2 Creating a trivial machine code function<2>,Tutorial<2>
 @anchor{cp/intro/tutorial03 doc}@anchor{14c}@anchor{cp/intro/tutorial03 tutorial-part-3-loops-and-variables}@anchor{14d}
@@ -10148,7 +10148,7 @@ install it with @cite{yum install python-xdot}):
 
 @example
 /* Usage example for libgccjit.so's C++ API
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -10164,7 +10164,7 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<https://www.gnu.org/licenses/>.  */
 
 #include <libgccjit++.h>
 
@@ -10300,7 +10300,7 @@ $ ./tut03-sum-of-squares
 loop_test returned: 285
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -10315,7 +10315,7 @@ loop_test returned: 285
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Tutorial part 4 Adding JIT-compilation to a toy interpreter<2>,,Tutorial part 3 Loops and variables<2>,Tutorial<2>
 @anchor{cp/intro/tutorial04 doc}@anchor{15e}@anchor{cp/intro/tutorial04 tutorial-part-4-adding-jit-compilation-to-a-toy-interpreter}@anchor{15f}
@@ -12104,7 +12104,7 @@ instr9:
 @}
 @end example
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12119,14 +12119,14 @@ instr9:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Topic Reference<2>,,Tutorial<2>,C++ bindings for libgccjit
 @anchor{cp/topics/index doc}@anchor{16f}@anchor{cp/topics/index topic-reference}@anchor{170}
 @section Topic Reference
 
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12141,7 +12141,7 @@ instr9:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @menu
 * Compilation contexts: Compilation contexts<2>. 
@@ -12453,7 +12453,7 @@ its presence using
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12468,7 +12468,7 @@ its presence using
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Objects<2>,Types<2>,Compilation contexts<2>,Topic Reference<2>
 @anchor{cp/topics/objects doc}@anchor{1ab}@anchor{cp/topics/objects objects}@anchor{1ac}
@@ -12545,7 +12545,7 @@ obj: 4.0 * (float)i
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12560,7 +12560,7 @@ obj: 4.0 * (float)i
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Types<2>,Expressions<2>,Objects<2>,Topic Reference<2>
 @anchor{cp/topics/types doc}@anchor{1b7}@anchor{cp/topics/types types}@anchor{1b8}
@@ -12813,7 +12813,7 @@ size of the struct is not known), or later specified using
 @ref{91,,gcc_jit_struct_set_fields()}.
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -12828,7 +12828,7 @@ size of the struct is not known), or later specified using
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Expressions<2>,Creating and using functions<2>,Types<2>,Topic Reference<2>
 @anchor{cp/topics/expressions doc}@anchor{1f6}@anchor{cp/topics/expressions expressions}@anchor{1f7}
@@ -13623,7 +13623,7 @@ gccjit::lvalue element = array[0];
 @end example
 @end quotation
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -13638,7 +13638,7 @@ gccjit::lvalue element = array[0];
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Creating and using functions<2>,Source Locations<2>,Expressions<2>,Topic Reference<2>
 @anchor{cp/topics/functions doc}@anchor{2fb}@anchor{cp/topics/functions creating-and-using-functions}@anchor{2fc}
@@ -14046,7 +14046,7 @@ create_code (gcc_jit_context *c_ctxt, void *user_data)
 @end quotation
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14061,7 +14061,7 @@ create_code (gcc_jit_context *c_ctxt, void *user_data)
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Source Locations<2>,Compiling a context<2>,Creating and using functions<2>,Topic Reference<2>
 @anchor{cp/topics/locations doc}@anchor{33e}@anchor{cp/topics/locations source-locations}@anchor{33f}
@@ -14123,7 +14123,7 @@ argument is true, this will also set up @cite{gccjit::location} information
 throughout the context, pointing at the dump file as if it were a source
 file, giving you @emph{something} you can step through in the debugger.
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14138,7 +14138,7 @@ file, giving you @emph{something} you can step through in the debugger.
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Compiling a context<2>,Using Assembly Language with libgccjit++,Source Locations<2>,Topic Reference<2>
 @anchor{cp/topics/compilation doc}@anchor{347}@anchor{cp/topics/compilation compiling-a-context}@anchor{348}
@@ -14195,7 +14195,7 @@ This is a thin wrapper around the
 @ref{4a,,gcc_jit_context_compile_to_file()} API entrypoint.
 @end deffn
 
-@c Copyright (C) 2020-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2020-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14210,7 +14210,7 @@ This is a thin wrapper around the
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Using Assembly Language with libgccjit++,,Compiling a context<2>,Topic Reference<2>
 @anchor{cp/topics/asm doc}@anchor{352}@anchor{cp/topics/asm using-assembly-language-with-libgccjit}@anchor{353}
@@ -14588,7 +14588,7 @@ the following API calls could be used:
 @end example
 @end deffn
 
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Originally contributed by David Malcolm <dmalcolm@redhat.com>
 @c 
 @c This is free software: you can redistribute it and/or modify it
@@ -14603,7 +14603,7 @@ the following API calls could be used:
 @c 
 @c You should have received a copy of the GNU General Public License
 @c along with this program.  If not, see
-@c <http://www.gnu.org/licenses/>.
+@c <https://www.gnu.org/licenses/>.
 
 @node Internals,Indices and tables,C++ bindings for libgccjit,Top
 @anchor{internals/index doc}@anchor{382}@anchor{internals/index internals}@anchor{383}
@@ -14769,11 +14769,11 @@ The jit testsuite detects if
 @geindex environment variable; RUN_UNDER_VALGRIND
 @code{RUN_UNDER_VALGRIND} is present in the
 environment (with any value).  If it is present, it runs the test client
-code under valgrind@footnote{http://valgrind.org},
+code under valgrind@footnote{https://valgrind.org},
 specifcally, the default
-memcheck@footnote{http://valgrind.org/docs/manual/mc-manual.html}
+memcheck@footnote{https://valgrind.org/docs/manual/mc-manual.html}
 tool with
---leak-check=full@footnote{http://valgrind.org/docs/manual/mc-manual.html#opt.leak-check}.
+--leak-check=full@footnote{https://valgrind.org/docs/manual/mc-manual.html#opt.leak-check}.
 
 It automatically parses the output from valgrind, injecting XFAIL results if
 any issues are found, or PASS results if the output is clean.  The output
@@ -14959,12 +14959,12 @@ extension for legacy reasons.
 @itemize *
 
 @item 
-@code{libgccjit.c} implements the API entrypoints.  It performs error
+@code{libgccjit.cc} implements the API entrypoints.  It performs error
 checking, then calls into classes of the gcc::jit::recording namespace
-within @code{jit-recording.c} and @code{jit-recording.h}.
+within @code{jit-recording.cc} and @code{jit-recording.h}.
 
 @item 
-The gcc::jit::recording classes (within @code{jit-recording.c} and
+The gcc::jit::recording classes (within @code{jit-recording.cc} and
 @code{jit-recording.h}) record the API calls that are made:
 
 @quotation
@@ -15004,7 +15004,7 @@ The gcc::jit::recording classes (within @code{jit-recording.c} and
 
 @item 
 When the context is compiled, the gcc::jit::playback classes (within
-@code{jit-playback.c} and @code{jit-playback.h}) replay the API calls
+@code{jit-playback.cc} and @code{jit-playback.h}) replay the API calls
 within langhook:parse_file:
 
 @quotation
@@ -15038,10 +15038,10 @@ Client Code   . Generated .            libgccjit.so
     ──────────────────────────>      .               .
               .           .    │     .               .
               .           .    V     .               .
-              .           .    ──> libgccjit.c       .
+              .           .    ──> libgccjit.cc       .
               .           .        │ (error-checking).
               .           .        │                 .
-              .           .        ──> jit-recording.c
+              .           .        ──> jit-recording.cc
               .           .              (record API calls)
               .           .    <───────              .
               .           .    │     .               .
@@ -15068,7 +15068,7 @@ Client Code   . Generated .            libgccjit.so
               .           .          .    │          .
 ..........................................│..................VVVVVVVVVVVVV...
               .           .          .    │          .       No GC in here
-              .           .          .    │ jit-playback.c
+              .           .          .    │ jit-playback.cc
               .           .          .    │   (playback of API calls)
               .           .          .    ───────────────> creation of functions,
               .           .          .               .     types, expression trees
@@ -15425,9 +15425,9 @@ It should not be possible for client code to cause an internal compiler
 error.  If this @emph{does} happen, the root cause should be isolated (perhaps
 using @ref{5d,,gcc_jit_context_dump_reproducer_to_file()}) and the cause
 should be rejected via additional checking.  The checking ideally should
-be within the libgccjit API entrypoints in libgccjit.c, since this is as
+be within the libgccjit API entrypoints in libgccjit.cc, since this is as
 close as possible to the error; failing that, a good place is within
-@code{recording::context::validate ()} in jit-recording.c.
+@code{recording::context::validate ()} in jit-recording.cc.
 
 @node Submitting patches,,Design notes,Internals
 @anchor{internals/index submitting-patches}@anchor{392}
@@ -15556,7 +15556,7 @@ array. See the file for examples.
 
 Typically a patch that touches the .rst documentation will also need the
 texinfo to be regenerated.  You can do this with
-Sphinx 1.0@footnote{http://sphinx-doc.org/} or later by
+Sphinx 1.0@footnote{https://sphinx-doc.org/} or later by
 running @code{make texinfo} within @code{SRCDIR/gcc/jit/docs}.   Don’t do this
 within the patch sent to the mailing list; it can often be relatively
 large and inconsequential (e.g. anchor renumbering), rather like generated
@@ -15586,7 +15586,7 @@ search
 @c The Sphinx C domain appears to lack explicit support for enum values,
 @c so I've been using :c:macro: for them.
 @c 
-@c See http://sphinx-doc.org/domains.html#the-c-domain
+@c See https://sphinx-doc.org/domains.html#the-c-domain
 
 @node Index,,Indices and tables,Top
 @unnumbered Index

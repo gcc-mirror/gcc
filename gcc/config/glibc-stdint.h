@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types on systems using GNU libc or uClibc.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    OPTION_MUSL is defined correctly before using the TYPE macros. */
 #ifndef OPTION_MUSL
 #define OPTION_MUSL 0
+#endif
+#ifndef OPTION_MUSL_P
+#define OPTION_MUSL_P(opts) 0
 #endif
 
 #define SIG_ATOMIC_TYPE "int"

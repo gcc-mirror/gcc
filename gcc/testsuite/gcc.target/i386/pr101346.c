@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -fprofile-generate -msse" } */
 /* { dg-require-profiling "-fprofile-generate" } */
+/* { dg-require-effective-target dfp } */
 
 _Decimal128
 foo (_Decimal128 x)

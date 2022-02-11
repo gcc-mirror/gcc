@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,7 +78,7 @@ extern struct target_libfuncs *this_target_libfuncs;
   (libfunc_table[LTI_unwind_sjlj_unregister])
 #define synchronize_libfunc	(libfunc_table[LTI_synchronize])
 
-/* In explow.c */
+/* In explow.cc */
 extern void set_stack_check_libfunc (const char *);
 
 #endif /* GCC_LIBFUNCS_H */

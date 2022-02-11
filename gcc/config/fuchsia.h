@@ -1,5 +1,5 @@
 /* Base configuration file for all Fuchsia targets.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    Contributed by Google.
 
 This file is part of GCC.
@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 /* We are using MUSL as our libc.  */
 #undef  OPTION_MUSL
 #define OPTION_MUSL 1
+#undef  OPTION_MUSL_P
+#define OPTION_MUSL_P(opts) 1
 
 #ifndef TARGET_SUB_OS_CPP_BUILTINS
 #define TARGET_SUB_OS_CPP_BUILTINS()

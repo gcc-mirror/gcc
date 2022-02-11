@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11591b.d(16): Error: AA key type S11591 does not have 'bool opEquals(ref const S11591) const'
+fail_compilation/fail11591b.d(16): Error: AA key type `S11591` does not have `bool opEquals(ref const S11591) const`
 ---
 */
 
@@ -19,8 +19,8 @@ void test11591()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11591b.d(30): Error: AA key type S12307a does not have 'bool opEquals(ref const S12307a) const'
-fail_compilation/fail11591b.d(31): Error: AA key type S12307b does not have 'bool opEquals(ref const S12307b) const'
+fail_compilation/fail11591b.d(30): Error: AA key type `S12307a` does not have `bool opEquals(ref const S12307a) const`
+fail_compilation/fail11591b.d(31): Error: AA key type `S12307b` does not have `bool opEquals(ref const S12307b) const`
 ---
 */
 struct S12307a { bool opEquals(T : typeof(this))(T) { return false; } }

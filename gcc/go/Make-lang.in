@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
 
-# Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -133,8 +133,8 @@ go.srcinfo: doc/gccgo.info
 go.srcextra:
 go.tags: force
 	cd $(srcdir)/go; \
-	etags -o TAGS.sub *.c *.h gofrontend/*.h gofrontend/*.cc; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	$(ETAGS) -o TAGS.sub *.c *.h gofrontend/*.h gofrontend/*.cc; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 go.man: doc/gccgo.1
 go.srcman: doc/gccgo.1
 	-cp -p $^ $(srcdir)/doc

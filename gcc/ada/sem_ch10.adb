@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,6 +268,8 @@ package body Sem_Ch10 is
    ------------------------------
 
    procedure Analyze_Compilation_Unit (N : Node_Id) is
+      Unit_Node : constant Node_Id := Unit (N);
+
       procedure Check_Redundant_Withs
         (Context_Items      : List_Id;
          Spec_Context_Items : List_Id := No_List);
@@ -577,16 +579,18 @@ package body Sem_Ch10 is
                         Error_Msg_N -- CODEFIX
                           ("redundant with clause in body?r?", Clause);
                      end if;
-
-                     Used_In_Body      := False;
-                     Used_In_Spec      := False;
-                     Used_Type_Or_Elab := False;
-                     Withed_In_Spec    := False;
                   end;
 
                --  Standalone package spec or body check
 
                else
+                  if Is_Ancestor_Package (Entity (Name (Clause)),
+                                          Defining_Entity (Unit_Node))
+                  then
+                     Error_Msg_N
+                       ("unnecessary with of ancestor?r?", Clause);
+                  end if;
+
                   declare
                      Dummy  : Boolean := False;
                      Withed : Boolean := False;
@@ -617,7 +621,6 @@ package body Sem_Ch10 is
       --  Local variables
 
       Main_Cunit    : constant Node_Id := Cunit (Main_Unit);
-      Unit_Node     : constant Node_Id := Unit (N);
       Lib_Unit      : Node_Id          := Library_Unit (N);
       Par_Spec_Name : Unit_Name_Type;
       Spec_Id       : Entity_Id;
@@ -2276,7 +2279,7 @@ package body Sem_Ch10 is
       ----------------------------
 
       procedure Re_Install_Use_Clauses is
-         U  : Node_Id;
+         U : Node_Id;
       begin
          for J in reverse 1 .. Num_Scopes loop
             U := Use_Clauses (J);
@@ -2951,23 +2954,6 @@ package body Sem_Ch10 is
       Priv_Child : Entity_Id;
       Par_Lib    : Entity_Id;
       Par_Spec   : Node_Id;
-
-      function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean;
-      --  Returns true if and only if the library unit is declared with
-      --  an explicit designation of private.
-
-      -----------------------------
-      -- Is_Private_Library_Unit --
-      -----------------------------
-
-      function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean is
-         Comp_Unit : constant Node_Id := Parent (Unit_Declaration_Node (Unit));
-
-      begin
-         return Private_Present (Comp_Unit);
-      end Is_Private_Library_Unit;
-
-   --  Start of processing for Check_Private_Child_Unit
 
    begin
       if Nkind (Lib_Unit) in N_Package_Body | N_Subprogram_Body then
@@ -5288,7 +5274,7 @@ package body Sem_Ch10 is
             end if;
 
             if Is_Generic_Instance (Uname)
-              and then Ekind (Uname) in Subprogram_Kind
+              and then Is_Subprogram (Uname)
             then
                --  Set flag as well on the visible entity that denotes the
                --  instance, which renames the current one.

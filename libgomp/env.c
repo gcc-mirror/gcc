@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -1243,7 +1243,7 @@ parse_gomp_openacc_dim (void)
 
       errno = 0;
       val = strtol (pos, &eptr, 10);
-      if (errno || eptr != pos || val < 0 || (unsigned)val != val)
+      if (errno || eptr == pos || val < 0 || (unsigned)val != val)
 	break;
 
       goacc_default_dims[i] = (int)val;

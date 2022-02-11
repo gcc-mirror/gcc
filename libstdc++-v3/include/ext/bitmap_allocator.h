@@ -1,6 +1,6 @@
 // Bitmap Allocator. -*- C++ -*-
 
-// Copyright (C) 2004-2021 Free Software Foundation, Inc.
+// Copyright (C) 2004-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +31,7 @@
 
 #include <utility> // For std::pair.
 #include <bits/functexcept.h> // For __throw_bad_alloc().
-#include <functional> // For greater_equal, and less_equal.
+#include <bits/stl_function.h> // For greater_equal, and less_equal.
 #include <new> // For operator new.
 #include <debug/debug.h> // _GLIBCXX_DEBUG_ASSERT
 #include <ext/concurrence.h>
@@ -277,7 +277,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // _Tp should be a pointer type.
     template<typename _Tp>
       class _Inclusive_between 
-      : public std::unary_function<typename std::pair<_Tp, _Tp>, bool>
       {
 	typedef _Tp pointer;
 	pointer _M_ptr_value;
@@ -301,8 +300,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Used to pass a Functor to functions by reference.
     template<typename _Functor>
       class _Functor_Ref 
-      : public std::unary_function<typename _Functor::argument_type, 
-				   typename _Functor::result_type>
       {
 	_Functor& _M_fref;
 	
@@ -327,16 +324,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // the vector.
     template<typename _Tp>
       class _Ffit_finder 
-      : public std::unary_function<typename std::pair<_Tp, _Tp>, bool>
       {
-	typedef typename std::pair<_Tp, _Tp> _Block_pair;
-	typedef typename __detail::__mini_vector<_Block_pair> _BPVector;
+	typedef std::pair<_Tp, _Tp> _Block_pair;
+	typedef __detail::__mini_vector<_Block_pair> _BPVector;
 	typedef typename _BPVector::difference_type _Counter_type;
 
 	std::size_t* _M_pbitmap;
 	_Counter_type _M_data_offset;
 
       public:
+	typedef bool result_type;
+	typedef _Block_pair argument_type;
+
 	_Ffit_finder() : _M_pbitmap(0), _M_data_offset(0)
 	{ }
 

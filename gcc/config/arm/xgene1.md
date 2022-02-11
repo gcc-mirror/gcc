@@ -1,5 +1,5 @@
 ;; Machine description for AppliedMicro xgene1 core.
-;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ;; Contributed by Theobroma Systems Design und Consulting GmbH.
 ;;
 ;; This file is part of GCC.

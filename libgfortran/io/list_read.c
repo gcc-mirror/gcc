@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "fbuf.h"
 #include "unix.h"
 #include <string.h>
-#include <ctype.h>
 
 typedef unsigned char uchar;
 
@@ -811,7 +810,7 @@ read_logical (st_parameter_dt *dtp, int length)
   if (parse_repeat (dtp))
     return;
 
-  c = tolower (next_char (dtp));
+  c = safe_tolower (next_char (dtp));
   l_push_char (dtp, c);
   switch (c)
     {
@@ -837,7 +836,7 @@ read_logical (st_parameter_dt *dtp, int length)
       break;
 
     case '.':
-      c = tolower (next_char (dtp));
+      c = safe_tolower (next_char (dtp));
       switch (c)
 	{
 	  case 't':
@@ -1052,7 +1051,7 @@ read_integer (st_parameter_dt *dtp, int length)
     }
 
  get_integer:
-  if (!isdigit (c))
+  if (!safe_isdigit (c))
     goto bad_integer;
   push_char (dtp, c);
 
@@ -1303,7 +1302,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
     c = '.';
 
-  if (!isdigit (c) && c != '.')
+  if (!safe_isdigit (c) && c != '.')
     {
       if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
 	goto inf_nan;
@@ -1377,7 +1376,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
     }
 
  exp2:
-  if (!isdigit (c))
+  if (!safe_isdigit (c))
     {
       /* Extension: allow default exponent of 0 when omitted.  */
       if (dtp->common.flags & IOPARM_DT_DEC_EXT)
@@ -1748,7 +1747,7 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
   if (c == ',' && dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
     c = '.';
 
-  if (!isdigit (c) && c != '.')
+  if (!safe_isdigit (c) && c != '.')
     {
       if (c == 'i' || c == 'I' || c == 'n' || c == 'N')
 	goto inf_nan;
@@ -1828,7 +1827,7 @@ read_real (st_parameter_dt *dtp, void *dest, int length)
     }
 
  exp2:
-  if (!isdigit (c))
+  if (!safe_isdigit (c))
     {
       /* Extension: allow default exponent of 0 when omitted.  */
       if (dtp->common.flags & IOPARM_DT_DEC_EXT)
@@ -2757,7 +2756,7 @@ nml_match_name (st_parameter_dt *dtp, const char *name, index_type len)
   for (i = 0; i < len; i++)
     {
       c = next_char (dtp);
-      if (c == EOF || (tolower (c) != tolower (name[i])))
+      if (c == EOF || (safe_tolower (c) != safe_tolower (name[i])))
 	{
 	  dtp->u.p.nml_read_error = 1;
 	  break;
@@ -3286,7 +3285,7 @@ get_name:
   do
     {
       if (!is_separator (c))
-	push_char_default (dtp, tolower(c));
+	push_char_default (dtp, safe_tolower(c));
       if ((c = next_char (dtp)) == EOF)
 	goto nml_err_ret;
     }

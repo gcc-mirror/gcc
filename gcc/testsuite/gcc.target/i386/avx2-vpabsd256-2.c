@@ -27,7 +27,7 @@ avx2_test (void)
 
   union256i_d s, d;
 
-  for (i = 0; i < 256; ++i)
+  for (i = 0; i < 256 - 7; ++i)
     {
       /* Recompute the results for 256-bits */
       compute_pabs256 (&vals[i], ck);

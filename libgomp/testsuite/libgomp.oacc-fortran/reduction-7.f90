@@ -1,5 +1,7 @@
 ! { dg-do run }
 
+! { dg-additional-options -Wuninitialized }
+
 !TODO
 ! { dg-xfail-run-if TODO { openacc_radeon_accel_selected && { ! __OPTIMIZE__ } } }
 
@@ -62,6 +64,8 @@ subroutine redsub_bogus(sum, n)
 
   !$acc parallel firstprivate(sum)
   !$acc loop gang worker vector reduction (+:sum)
+  ! { dg-bogus {'sum\.[0-9]+' is used uninitialized} TODO { xfail *-*-* } .-1 }
+  !   { dg-note {'sum\.[0-9]+' was declared here} {} { target *-*-* } .-2 }
   do i = 1, n
      sum = sum + 1
   end do
@@ -80,6 +84,8 @@ subroutine redsub_combined(sum, n, arr)
      sum = i;
 
      !$acc loop reduction(+:sum)
+     ! { dg-bogus {'sum\.[0-9]+' may be used uninitialized} TODO { xfail { ! __OPTIMIZE__ } } .-1 }
+     !   { dg-note {'sum\.[0-9]+' was declared here} {} { target { ! __OPTIMIZE__ } } .-2 }
      do j = 1, n
         sum = sum + 1
      end do

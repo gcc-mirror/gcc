@@ -1,5 +1,5 @@
 /* Demangler for the Rust programming language
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
    Written by David Tolnay (dtolnay@gmail.com).
    Rewritten by Eduard-Mihai Burtescu (eddyb@lyken.rs) for v0 support.
 
@@ -73,6 +73,12 @@ struct rust_demangler
 
   /* Rust mangling version, with legacy mangling being -1. */
   int version;
+
+  /* Recursion depth.  */
+  unsigned int recursion;
+  /* Maximum number of times demangle_path may be called recursively.  */
+#define RUST_MAX_RECURSION_COUNT  1024
+#define RUST_NO_RECURSION_LIMIT   ((unsigned int) -1)
 
   uint64_t bound_lifetime_depth;
 };
@@ -671,6 +677,15 @@ demangle_path (struct rust_demangler *rdm, int in_value)
   if (rdm->errored)
     return;
 
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	goto fail_return;
+    }
+
   switch (tag = next (rdm))
     {
     case 'C':
@@ -688,10 +703,7 @@ demangle_path (struct rust_demangler *rdm, int in_value)
     case 'N':
       ns = next (rdm);
       if (!ISLOWER (ns) && !ISUPPER (ns))
-        {
-          rdm->errored = 1;
-          return;
-        }
+	goto fail_return;
 
       demangle_path (rdm, in_value);
 
@@ -776,9 +788,15 @@ demangle_path (struct rust_demangler *rdm, int in_value)
         }
       break;
     default:
-      rdm->errored = 1;
-      return;
+      goto fail_return;
     }
+  goto pass_return;
+
+ fail_return:
+  rdm->errored = 1;
+ pass_return:
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 static void
@@ -868,6 +886,19 @@ demangle_type (struct rust_demangler *rdm)
     {
       PRINT (basic);
       return;
+    }
+
+   if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    {
+      ++ rdm->recursion;
+      if (rdm->recursion > RUST_MAX_RECURSION_COUNT)
+	/* FIXME: There ought to be a way to report
+	   that the recursion limit has been reached.  */
+	{
+	  rdm->errored = 1;
+	  -- rdm->recursion;
+	  return;
+	}
     }
 
   switch (tag)
@@ -1030,6 +1061,9 @@ demangle_type (struct rust_demangler *rdm)
       rdm->next--;
       demangle_path (rdm, 0);
     }
+
+  if (rdm->recursion != RUST_NO_RECURSION_LIMIT)
+    -- rdm->recursion;
 }
 
 /* A trait in a trait object may have some "existential projections"
@@ -1320,6 +1354,7 @@ rust_demangle_callback (const char *mangled, int options,
   rdm.skipping_printing = 0;
   rdm.verbose = (options & DMGL_VERBOSE) != 0;
   rdm.version = 0;
+  rdm.recursion = (options & DMGL_NO_RECURSE_LIMIT) ? RUST_NO_RECURSION_LIMIT : 0;
   rdm.bound_lifetime_depth = 0;
 
   /* Rust symbols always start with _R (v0) or _ZN (legacy). */

@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C++.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-/* This is the contribution to the `default_compilers' array in gcc.c for
+/* This is the contribution to the `default_compilers' array in gcc.cc for
    obj-c++.  It is based on -- and should be kept in sync with -- the g++
    spec (found in cp/lang-specs.h).  */
 

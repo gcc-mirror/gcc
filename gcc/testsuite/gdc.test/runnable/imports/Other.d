@@ -2,13 +2,12 @@ module imports.Other; // makes no difference if removed
 import Same;
 import core.stdc.stdio;
 
-class Other : Same // segfault
-// class Other : Same.Same //***UGLY ALERT*** but doesn't segfault
+class Other : Same.Same
 {
-this()
-{
-printf("other\n");
-}
+    this()
+    {
+        printf("other\n");
+    }
 }
 
 int main()

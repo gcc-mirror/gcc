@@ -1,5 +1,5 @@
 # Top level configure fragment for LTO
-#   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -20,7 +20,7 @@
 language="lto"
 compilers="lto1\$(exeext)"
 
-gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.c \$(srcdir)/lto/lto.c \$(srcdir)/lto/lto.h \$(srcdir)/lto/lto-common.h \$(srcdir)/lto/lto-common.c \$(srcdir)/lto/lto-dump.c"
+gtfiles="\$(srcdir)/lto/lto-tree.h \$(srcdir)/lto/lto-lang.cc \$(srcdir)/lto/lto.cc \$(srcdir)/lto/lto.h \$(srcdir)/lto/lto-common.h \$(srcdir)/lto/lto-common.cc \$(srcdir)/lto/lto-dump.cc"
 
 # LTO is a special front end.  From a user's perspective it is not
 # really a language, but a middle end feature.  However, the GIMPLE

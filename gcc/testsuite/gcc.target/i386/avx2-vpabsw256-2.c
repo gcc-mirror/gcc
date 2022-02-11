@@ -28,7 +28,7 @@ avx2_test (void)
 
   union256i_w s, d;
 
-  for (i = 0; i < 256; ++i)
+  for (i = 0; i < 256 - 7; ++i)
     {
       /* Using only first 2 bytes of int */
       /* Recompute the results for 256-bits */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The arguments to NAMED_*CST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
-     -- the value it has, for use in trans-types.c  
+     -- the value it has, for use in trans-types.cc  
      -- the standard that supports this type  */
 
 NAMED_INTCST (ISOCBINDING_INT, "c_int", gfc_c_int_kind, GFC_STD_F2003)

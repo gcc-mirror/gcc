@@ -1,5 +1,5 @@
 ;; Predicate definitions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -215,7 +215,7 @@
   (match_code "parallel")
 {
   /* To verify 'load' operation, pass 'true' for the second argument.
-     See the implementation in nds32.c for details.  */
+     See the implementation in nds32.cc for details.  */
   return nds32_valid_multiple_load_store_p (op, true, false);
 })
 
@@ -224,7 +224,7 @@
 {
   /* To verify 'load' operation, pass 'true' for the second argument.
      to verify 'update address' operation, pass 'true' for the third argument
-     See the implementation in nds32.c for details.  */
+     See the implementation in nds32.cc for details.  */
   return nds32_valid_multiple_load_store_p (op, true, true);
 })
 
@@ -232,7 +232,7 @@
   (match_code "parallel")
 {
   /* To verify 'store' operation, pass 'false' for the second argument.
-     See the implementation in nds32.c for details.  */
+     See the implementation in nds32.cc for details.  */
   return nds32_valid_multiple_load_store_p (op, false, false);
 })
 
@@ -241,7 +241,7 @@
 {
   /* To verify 'store' operation, pass 'false' for the second argument,
      to verify 'update address' operation, pass 'true' for the third argument
-     See the implementation in nds32.c for details.  */
+     See the implementation in nds32.cc for details.  */
   return nds32_valid_multiple_load_store_p (op, false, true);
 })
 
@@ -249,7 +249,7 @@
   (match_code "parallel")
 {
   /* To verify 'push' operation, pass 'true' for the second argument.
-     See the implementation in nds32-predicates.c for details.  */
+     See the implementation in nds32-predicates.cc for details.  */
   return nds32_valid_stack_push_pop_p (op, true);
 })
 
@@ -257,7 +257,7 @@
   (match_code "parallel")
 {
   /* To verify 'pop' operation, pass 'false' for the second argument.
-     See the implementation in nds32-predicates.c for details.  */
+     See the implementation in nds32-predicates.cc for details.  */
   return nds32_valid_stack_push_pop_p (op, false);
 })
 

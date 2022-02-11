@@ -2,9 +2,9 @@ void f(int x, Object y);
 
 void g()
 {
-       Object o;
-       f(o, o, 404);
-       f(5, 6, 404);
+	Object o;
+	f(o, o, 404);
+	f(5, 6, 404);
 }
 
 /* 

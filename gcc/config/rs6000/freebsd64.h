@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -239,8 +239,8 @@ extern int dot_symbols;
 /************************[  Target stuff  ]***********************************/
 
 /* Define the actual types of some ANSI-mandated types.  
-   Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.c,
-   c-common.c, and config/<arch>/<arch>.h.  */
+   Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.cc,
+   c-common.cc, and config/<arch>/<arch>.h.  */
 
 
 #undef  SIZE_TYPE

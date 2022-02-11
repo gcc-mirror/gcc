@@ -14,7 +14,7 @@ struct foo
 struct foo *__attribute__((noinline))
 alloc_foo (int a, int b)
 {
-  struct foo *p = malloc (sizeof (struct foo));
+  struct foo *p = malloc (sizeof (struct foo)); /* { dg-message "region created on heap here" } */
   if (!p)
     return NULL;
   p->i = a;

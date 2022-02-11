@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail187.d(16): Error: catch at fail_compilation/fail187.d(20) hides catch at fail_compilation/fail187.d(24)
+fail_compilation/fail187.d(16): Error: `catch` at fail_compilation/fail187.d(20) hides `catch` at fail_compilation/fail187.d(24)
 ---
 */
 

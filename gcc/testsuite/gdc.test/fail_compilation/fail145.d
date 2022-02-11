@@ -1,8 +1,9 @@
 /*
+REQUIRED_ARGS: -checkaction=context
 TEST_OUTPUT:
 ---
-fail_compilation/fail145.d(13): Error: assert(i < 0) failed
-fail_compilation/fail145.d(26):        called from here: bar(7)
+fail_compilation/fail145.d(14): Error: `"assert(i && (i < 0)) failed"`
+fail_compilation/fail145.d(27):        called from here: `bar(7)`
 ---
 */
 
@@ -10,7 +11,7 @@ fail_compilation/fail145.d(26):        called from here: bar(7)
 
 int bar(int i)
 {
-    assert(i < 0);
+    assert(i && i < 0);
     foreach_reverse (k, v; "hello")
     {
         i <<= 1;
@@ -26,5 +27,5 @@ void main()
     static b = bar(7);
     auto c = bar(7);
     //printf("b = %d, %d\n", b, c);
-    assert(b == 674);
+    assert(b && b == 674);
 }

@@ -1,6 +1,7 @@
 // PR c++/81860
 // { dg-do compile { target c++11 } }
 // { dg-final { scan-assembler "_ZN1AIjEC\[12\]Ev" } }
+// { dg-additional-options -fno-implicit-constexpr }
 
 template <typename T>
 struct A

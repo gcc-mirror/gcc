@@ -21,8 +21,8 @@ TupleType test2();
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12436.d(28): Error: functions cannot return opaque type Opaque by value
-fail_compilation/fail12436.d(29): Error: functions cannot return opaque type Opaque[1] by value
+fail_compilation/fail12436.d(28): Error: functions cannot return opaque type `Opaque` by value
+fail_compilation/fail12436.d(29): Error: functions cannot return opaque type `Opaque[1]` by value
 ---
 */
 Opaque    ret12436a();  // error
@@ -40,7 +40,7 @@ ref Opaque[1] ret12436g();  // no error
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12436.d(46): Error: cannot have parameter of function type void()
+fail_compilation/fail12436.d(46): Error: cannot have parameter of function type `void()`
 ---
 */
 void test3(FuncType) {}
@@ -48,8 +48,8 @@ void test3(FuncType) {}
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12436.d(55): Error: cannot have parameter of opaque type Opaque by value
-fail_compilation/fail12436.d(56): Error: cannot have parameter of opaque type Opaque[1] by value
+fail_compilation/fail12436.d(55): Error: cannot have parameter of opaque type `Opaque` by value
+fail_compilation/fail12436.d(56): Error: cannot have parameter of opaque type `Opaque[1]` by value
 ---
 */
 void param12436a(Opaque);     // error
@@ -66,9 +66,9 @@ void param12436i(out Opaque[1]);  // no error
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12436.d(75): Error: cannot have parameter of opaque type A14906 by value
-fail_compilation/fail12436.d(76): Error: cannot have parameter of opaque type A14906[3] by value
-fail_compilation/fail12436.d(77): Error: cannot have parameter of opaque type A14906[3][3] by value
+fail_compilation/fail12436.d(75): Error: cannot have parameter of opaque type `A14906` by value
+fail_compilation/fail12436.d(76): Error: cannot have parameter of opaque type `A14906[3]` by value
+fail_compilation/fail12436.d(77): Error: cannot have parameter of opaque type `A14906[3][3]` by value
 ---
 */
 enum A14906;

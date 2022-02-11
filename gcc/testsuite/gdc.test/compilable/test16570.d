@@ -5,4 +5,4 @@ enum Regression
     a = _a,
 }
 
-static assert(is(typeof(Regression.a) == Regression));
+static assert(is(typeof(Regression.a) == immutable(Regression)));

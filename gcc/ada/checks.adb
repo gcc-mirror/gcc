@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1388,6 +1388,8 @@ package body Checks is
 
          if Nkind (N) = N_Aggregate
            and then No (Expressions (N))
+           and then Nkind (First (Component_Associations (N))) =
+             N_Component_Association
            and then Nkind
             (First (Choices (First (Component_Associations (N)))))
               = N_Others_Choice
@@ -4453,8 +4455,8 @@ package body Checks is
 
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding component % of object % must "
                     & "be initialized??",
                   Ent => Defining_Identifier (Comp)));
@@ -4465,8 +4467,8 @@ package body Checks is
          elsif Array_Comp then
             Discard_Node
               (Compile_Time_Constraint_Error
-                 (N      => N,
-                  Msg    =>
+                 (N   => N,
+                  Msg =>
                     "(Ada 2005) null-excluding array components must "
                     & "be initialized??",
                   Ent => Defining_Identifier (N)));
@@ -10894,8 +10896,8 @@ package body Checks is
                   Add_Check
                     (Compile_Time_Constraint_Error
                        ((if Present (Warn_Node)
-                        then Warn_Node else Low_Bound (Expr)),
-                        "static value does not equal lower bound of}??",
+                         then Warn_Node else Low_Bound (Expr)),
+                         "static value does not equal lower bound of}??",
                         T_Typ));
                   Check_Added := True;
                end if;

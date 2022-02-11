@@ -1,5 +1,5 @@
 /* Code for GIMPLE range related routines.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -34,16 +34,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
+#include "gimple-fold.h"
+#include "gimple-walk.h"
 
 gimple_ranger::gimple_ranger () :
 	non_executable_edge_flag (cfun),
 	m_cache (non_executable_edge_flag),
-	tracer ("")
+	tracer (""),
+	current_bb (NULL)
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
     tracer.enable_trace ();
+  m_stmt_list.create (0);
+  m_stmt_list.safe_grow (num_ssa_names);
+  m_stmt_list.truncate (0);
 
   // Ensure the not_executable flag is clear everywhere.
   if (flag_checking)
@@ -57,6 +63,11 @@ gimple_ranger::gimple_ranger () :
 	    gcc_checking_assert ((e->flags & non_executable_edge_flag) == 0);
 	}
     }
+}
+
+gimple_ranger::~gimple_ranger ()
+{
+  m_stmt_list.release ();
 }
 
 bool
@@ -82,8 +93,18 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   // If there is no statement, just get the global value.
   if (!stmt)
     {
-      if (!m_cache.get_global_range (r, expr))
-        r = gimple_range_global (expr);
+      int_range_max tmp;
+      m_cache.get_global_range (r, expr);
+      // Pick up implied context information from the on-entry cache
+      // if current_bb is set.  Do not attempt any new calculations.
+      if (current_bb && m_cache.block_range (tmp, current_bb, expr, false))
+	{
+	  r.intersect (tmp);
+	  char str[80];
+	  sprintf (str, "picked up range from bb %d\n",current_bb->index);
+	  if (idx)
+	    tracer.print (idx, str);
+	}
     }
   // For a debug stmt, pick the best value currently available, do not
   // trigger new value calculations.  PR 100781.
@@ -97,8 +118,10 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       // If name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  range_of_stmt (r, def_stmt, expr);
-	  m_cache.m_non_null.adjust_range (r, expr, bb, true);
+	  // Check for a definition override from a block walk.
+	  if (!POINTER_TYPE_P (TREE_TYPE (expr))
+	      || !m_cache.block_range (r, bb, expr, false))
+	    range_of_stmt (r, def_stmt, expr);
 	}
       // Otherwise OP comes from outside this block, use range on entry.
       else
@@ -131,7 +154,12 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   if (m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
 
-  m_cache.m_non_null.adjust_range (r, name, bb, true);
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+      if (dom_bb)
+	m_cache.m_non_null.adjust_range (r, name, dom_bb, true);
+    }
 
   if (idx)
     tracer.trailer (idx, "range_on_entry", true, name, r);
@@ -203,10 +231,13 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   bool res = true;
   if (!gimple_range_ssa_p (name))
-    return get_tree_range (r, name, NULL);
+    res = get_tree_range (r, name, NULL);
   else
     {
       range_on_exit (r, e->src, name);
+      // If this is not an abnormal edge, check for a non-null exit .
+      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
+	m_cache.m_non_null.adjust_range (r, name, e->src, false);
       gcc_checking_assert  (r.undefined_p ()
 			    || range_compatible_p (r.type(), TREE_TYPE (name)));
 
@@ -217,7 +248,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   if (idx)
     tracer.trailer (idx, "range_on_edge", res, name, r);
-  return true;
+  return res;
 }
 
 // fold_range wrapper for range_of_stmt to use as an internal client.
@@ -256,19 +287,37 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 
   // If no name, simply call the base routine.
   if (!name)
-    res = fold_range_internal (r, s, NULL_TREE);
+    {
+      res = fold_range_internal (r, s, NULL_TREE);
+      if (res && is_a <gcond *> (s))
+	{
+	  // Update any exports in the cache if this is a gimple cond statement.
+	  tree exp;
+	  basic_block bb = gimple_bb (s);
+	  FOR_EACH_GORI_EXPORT_NAME (m_cache.m_gori, bb, exp)
+	    m_cache.propagate_updated_value (exp, bb);
+	}
+    }
   else if (!gimple_range_ssa_p (name))
     res = get_tree_range (r, name, NULL);
-  // Check if the stmt has already been processed, and is not stale.
-  else if (m_cache.get_non_stale_global_range (r, name))
-    {
-      if (idx)
-	tracer.trailer (idx, " cached", true, name, r);
-      return true;
-    }
   else
     {
-      // Otherwise calculate a new value.
+      bool current;
+      // Check if the stmt has already been processed.
+      if (m_cache.get_global_range (r, name, current))
+	{
+	  // If it isn't stale, use this cached value.
+	  if (current)
+	    {
+	      if (idx)
+		tracer.trailer (idx, " cached", true, name, r);
+	      return true;
+	    }
+	}
+      else
+	prefill_stmt_dependencies (name);
+
+      // Calculate a new value.
       int_range_max tmp;
       fold_range_internal (tmp, s, name);
 
@@ -283,6 +332,129 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (idx)
     tracer.trailer (idx, "range_of_stmt", res, name, r);
   return res;
+}
+
+
+// Check if NAME is a dependency that needs resolving, and push it on the
+// stack if so.  R is a scratch range.
+
+inline void
+gimple_ranger::prefill_name (irange &r, tree name)
+{
+  if (!gimple_range_ssa_p (name))
+    return;
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
+    return;
+
+  bool current;
+  // If this op has not been processed yet, then push it on the stack
+  if (!m_cache.get_global_range (r, name, current))
+    m_stmt_list.safe_push (name);
+}
+
+// This routine will seed the global cache with most of the depnedencies of
+// NAME.  This prevents excessive call depth through the normal API.
+
+void
+gimple_ranger::prefill_stmt_dependencies (tree ssa)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (ssa))
+    return;
+
+  int_range_max r;
+  unsigned idx;
+  gimple *stmt = SSA_NAME_DEF_STMT (ssa);
+  gcc_checking_assert (stmt && gimple_bb (stmt));
+
+  // Only pre-process range-ops and phis.
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
+    return;
+
+  // Mark where on the stack we are starting.
+  unsigned start = m_stmt_list.length ();
+  m_stmt_list.safe_push (ssa);
+
+  idx = tracer.header ("ROS dependence fill\n");
+
+  // Loop until back at the start point.
+  while (m_stmt_list.length () > start)
+    {
+      tree name = m_stmt_list.last ();
+      // NULL is a marker which indicates the next name in the stack has now
+      // been fully resolved, so we can fold it.
+      if (!name)
+	{
+	  // Pop the NULL, then pop the name.
+	  m_stmt_list.pop ();
+	  name = m_stmt_list.pop ();
+	  // Don't fold initial request, it will be calculated upon return.
+	  if (m_stmt_list.length () > start)
+	    {
+	      // Fold and save the value for NAME.
+	      stmt = SSA_NAME_DEF_STMT (name);
+	      fold_range_internal (r, stmt, name);
+	      m_cache.set_global_range (name, r);
+	    }
+	  continue;
+	}
+
+      // Add marker indicating previous NAME in list should be folded
+      // when we get to this NULL.
+      m_stmt_list.safe_push (NULL_TREE);
+      stmt = SSA_NAME_DEF_STMT (name);
+
+      if (idx)
+	{
+	  tracer.print (idx, "ROS dep fill (");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fputs (") at stmt ", dump_file);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
+      gphi *phi = dyn_cast <gphi *> (stmt);
+      if (phi)
+	{
+	  for (unsigned x = 0; x < gimple_phi_num_args (phi); x++)
+	    prefill_name (r, gimple_phi_arg_def (phi, x));
+	}
+      else
+	{
+	  gcc_checking_assert (gimple_range_handler (stmt));
+	  tree op = gimple_range_operand2 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	  op = gimple_range_operand1 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	}
+    }
+  if (idx)
+    tracer.trailer (idx, "ROS ", false, ssa, r);
+}
+
+
+// This routine will invoke the gimple fold_stmt routine, providing context to
+// range_of_expr calls via an private interal API.
+
+bool
+gimple_ranger::fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  current_bb = gimple_bb (stmt);
+  bool ret = ::fold_stmt (gsi, valueize);
+  current_bb = NULL;
+  return ret;
+}
+
+// Called during dominator walks to register any side effects that take effect
+// from this point forward.  Current release is only for tracking non-null
+// within a block.
+
+void
+gimple_ranger::register_side_effects (gimple *s)
+{
+  m_cache.block_apply_nonnull (s);
 }
 
 // This routine will export whatever global ranges are known to GCC
@@ -431,6 +603,7 @@ enable_ranger (struct function *fun)
 {
   gimple_ranger *r;
 
+  gcc_checking_assert (!fun->x_range_query);
   r = new gimple_ranger;
   fun->x_range_query = r;
 
@@ -443,7 +616,7 @@ enable_ranger (struct function *fun)
 void
 disable_ranger (struct function *fun)
 {
+  gcc_checking_assert (fun->x_range_query);
   delete fun->x_range_query;
-
-  fun->x_range_query = &global_ranges;
+  fun->x_range_query = NULL;
 }

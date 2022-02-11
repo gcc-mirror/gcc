@@ -1,14 +1,14 @@
 // Written in the D programming language.
 
 /**
-This module implements experimental additions/modifications to $(MREF std, _typecons).
+This module implements experimental additions/modifications to $(MREF std, typecons).
 
-Use this module to test out new functionality for $(REF wrap, std, _typecons)
+Use this module to test out new functionality for $(REF wrap, std, typecons)
 which allows for a struct to be wrapped against an interface; the
-implementation in $(MREF std, _typecons) only allows for classes to use the wrap
+implementation in $(MREF std, typecons) only allows for classes to use the wrap
 functionality.
 
-Source:    $(PHOBOSSRC std/experimental/_typecons.d)
+Source:    $(PHOBOSSRC std/experimental/typecons.d)
 
 Copyright: Copyright the respective authors, 2008-
 License:   $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
@@ -23,8 +23,7 @@ module std.experimental.typecons;
 import std.meta; // : AliasSeq, allSatisfy;
 import std.traits;
 
-import std.typecons : Tuple, tuple, Bind, DerivedFunctionType, mixinAll, staticIota,
-       GetOverloadedMethods;
+import std.typecons : Tuple, tuple, Bind, DerivedFunctionType, GetOverloadedMethods;
 
 private
 {
@@ -59,14 +58,14 @@ if (is(T == class) || is(T == interface))
 
 @system unittest
 {
-    class C { @disable opCast(T)() {} }
+    class C { @disable void opCast(T)(); }
     auto c = new C;
     static assert(!__traits(compiles, cast(Object) c));
     auto o = dynamicCast!Object(c);
     assert(c is o);
 
-    interface I { @disable opCast(T)() {} Object instance(); }
-    interface J { @disable opCast(T)() {} Object instance(); }
+    interface I { @disable void opCast(T)(); Object instance(); }
+    interface J { @disable void opCast(T)(); Object instance(); }
     class D : I, J { Object instance() { return this; } }
     I i = new D();
     static assert(!__traits(compiles, cast(J) i));
@@ -112,13 +111,15 @@ if (Targets.length >= 1 && allSatisfy!(isMutable, Targets))
             else
             {
                 enum foundFunc = findCovariantFunction!(TargetMembers[i], Source, SourceMembers);
-                version (unittest) {}
+
+                version (StdUnittest) {}
                 else debug
                 {
                     static if (foundFunc == -1)
                         pragma(msg, "Could not locate matching function for: ",
                                TargetMembers[i].stringof);
                 }
+
                 enum hasRequiredMethods =
                     foundFunc != -1 &&
                     hasRequiredMethods!(i + 1);
@@ -290,7 +291,7 @@ if (Targets.length >= 1 && allSatisfy!(isInterface, Targets))
                 }
 
                 import std.conv : to;
-                import std.functional : forward;
+                import core.lifetime : forward;
                 template generateFun(size_t i)
                 {
                     enum name = TargetMembers[i].name;
@@ -299,7 +300,7 @@ if (Targets.length >= 1 && allSatisfy!(isInterface, Targets))
                     {
                         string r;
                         bool first = true;
-                        foreach (i; staticIota!(0, num))
+                        foreach (i; 0 .. num)
                         {
                             import std.conv : to;
                             r ~= (first ? "" : ", ") ~ " a" ~ (i+1).to!string;
@@ -324,8 +325,8 @@ if (Targets.length >= 1 && allSatisfy!(isInterface, Targets))
                 }
 
             public:
-                mixin mixinAll!(
-                    staticMap!(generateFun, staticIota!(0, TargetMembers.length)));
+                static foreach (i; 0 .. TargetMembers.length)
+                    mixin(generateFun!i);
             }
         }
     }
@@ -662,9 +663,10 @@ template unwrap(Target)
         assert(d.draw(10) == 10);
     }
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=10377
 @system unittest
 {
-    // Bugzilla 10377
     import std.algorithm, std.range;
 
     interface MyInputRange(T)
@@ -679,9 +681,10 @@ template unwrap(Target)
     auto r = iota(0,10,1).inputRangeObject().wrap!(MyInputRange!int)();
     assert(equal(r, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=10536
 @system unittest
 {
-    // Bugzilla 10536
     interface Interface
     {
         int foo();
@@ -695,9 +698,10 @@ template unwrap(Target)
     Interface i = new Pluggable().wrap!Interface;
     assert(i.foo() == 1);
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=10538
 @system unittest
 {
-    // Enhancement 10538
     interface Interface
     {
         int foo();
@@ -980,9 +984,6 @@ pure nothrow @safe unittest
     Final!A a = new A;
     static assert(!__traits(compiles, a = new A));
 
-    static void foo(ref A a) pure nothrow @safe @nogc {}
-    static assert(!__traits(compiles, foo(a)));
-
     assert(a.i == 0);
     a.i = 42;
     assert(a.i == 42);
@@ -1051,7 +1052,7 @@ pure nothrow @safe unittest
     assert((arr ~ 4) == [1, 2, 3, 4]);
 }
 
-// issue 17270
+// https://issues.dlang.org/show_bug.cgi?id=17270
 pure nothrow @nogc @system unittest
 {
     int i = 1;

@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphviz.h"
 #include "cgraph.h"
 #include "tree-dfa.h"
+#include "bitmap.h"
 #include "cfganal.h"
 #include "function.h"
 #include "json.h"
@@ -904,7 +905,7 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
       break;
     }
 
-  /* Adapted from graph.c:draw_cfg_node_succ_edges.  */
+  /* Adapted from graph.cc:draw_cfg_node_succ_edges.  */
   if (::edge cfg_edge = get_any_cfg_edge ())
     {
       if (cfg_edge->flags & EDGE_FAKE)

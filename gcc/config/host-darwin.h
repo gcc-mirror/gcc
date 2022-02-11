@@ -1,5 +1,5 @@
 /* Darwin host-specific hook definitions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,7 +18,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 extern void * darwin_gt_pch_get_address (size_t sz, int fd);
-extern int darwin_gt_pch_use_address (void *addr, size_t sz, int fd, 
+extern int darwin_gt_pch_use_address (void *&addr, size_t sz, int fd, 
 				      size_t off);
 
 #undef HOST_HOOKS_GT_PCH_GET_ADDRESS

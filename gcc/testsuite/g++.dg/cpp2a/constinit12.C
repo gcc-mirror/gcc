@@ -8,7 +8,7 @@ struct S {
 template <class T>
 struct U {
   T m;
-  constexpr U(int i) : m(i) { } // { dg-error "call to non-.constexpr. function" }
+  constexpr U(int i) : m(i) { } // { dg-error "call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
 };
 
-constinit U<S> u(42); // { dg-error "does not have a constant initializer|called in a constant expression" }
+constinit U<S> u(42); // { dg-error "does not have a constant initializer|called in a constant expression" "" { target { ! implicit_constexpr } } }

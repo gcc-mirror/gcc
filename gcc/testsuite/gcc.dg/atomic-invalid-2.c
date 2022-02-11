@@ -38,13 +38,13 @@ exchange (atomic_int *i)
 {
   int r;
 
-  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_seq_cst, memory_order_release); /* { dg-warning "invalid failure memory" } */
-  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_seq_cst, memory_order_acq_rel); /* { dg-warning "invalid failure memory" } */
-  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_relaxed, memory_order_consume); /* { dg-warning "failure memory model cannot be stronger" } */
+  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_seq_cst, memory_order_release); /* { dg-warning "invalid failure memory model 'memory_order_release'" } */
+  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_seq_cst, memory_order_acq_rel); /* { dg-warning "invalid failure memory model 'memory_order_acq_rel'" } */
+  atomic_compare_exchange_strong_explicit (i, &r, 0, memory_order_relaxed, memory_order_consume); /* { dg-warning "failure memory model 'memory_order_consume' cannot be stronger than success memory model 'memory_order_relaxed'" } */
 
-  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_seq_cst, memory_order_release); /* { dg-warning "invalid failure memory" } */
-  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_seq_cst, memory_order_acq_rel); /* { dg-warning "invalid failure memory" } */
-  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_relaxed, memory_order_consume); /* { dg-warning "failure memory model cannot be stronger" } */
+  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_seq_cst, memory_order_release); /* { dg-warning "invalid failure memory model 'memory_order_release'" } */
+  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_seq_cst, memory_order_acq_rel); /* { dg-warning "invalid failure memory model 'memory_order_acq_rel'" } */
+  atomic_compare_exchange_weak_explicit (i, &r, 0, memory_order_relaxed, memory_order_consume); /* { dg-warning "failure memory model 'memory_order_consume' cannot be stronger than success memory model 'memory_order_relaxed'" } */
 }
 
 /* atomic_flag_clear():

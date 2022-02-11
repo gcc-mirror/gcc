@@ -52,7 +52,7 @@ void foo_compiles() {}
 }
 
 /******************************************/
-// 12630
+// https://issues.dlang.org/show_bug.cgi?id=12630
 
 void test12630() @nogc
 {
@@ -86,7 +86,7 @@ void test12630() @nogc
 }
 
 /******************************************/
-// 12642
+// https://issues.dlang.org/show_bug.cgi?id=12642
 
 static if (is(__vector(ulong[2])))
 {
@@ -99,7 +99,7 @@ static if (is(__vector(ulong[2])))
 }
 
 /******************************************/
-// 13550
+// https://issues.dlang.org/show_bug.cgi?id=13550
 
 auto foo13550() @nogc
 {

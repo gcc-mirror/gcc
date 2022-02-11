@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1191,15 +1191,6 @@ package body CStand is
       pragma Assert (not Known_Esize (Any_Id));
       pragma Assert (not Known_Alignment (Any_Id));
 
-      Any_Access := New_Standard_Entity ("an access type");
-      Mutate_Ekind          (Any_Access, E_Access_Type);
-      Set_Scope             (Any_Access, Standard_Standard);
-      Set_Etype             (Any_Access, Any_Access);
-      Init_Size             (Any_Access, System_Address_Size);
-      Set_Elem_Alignment    (Any_Access);
-      Set_Directly_Designated_Type
-                            (Any_Access, Any_Type);
-
       Any_Character := New_Standard_Entity ("a character type");
       Mutate_Ekind          (Any_Character, E_Enumeration_Type);
       Set_Scope             (Any_Character, Standard_Standard);
@@ -1415,6 +1406,16 @@ package body CStand is
       Set_Elem_Alignment   (Universal_Fixed);
       Set_Size_Known_At_Compile_Time
                            (Universal_Fixed);
+
+      Universal_Access := New_Standard_Entity ("universal_access");
+      Decl := New_Node (N_Full_Type_Declaration, Stloc);
+      Set_Defining_Identifier (Decl, Universal_Access);
+      Mutate_Ekind                 (Universal_Access, E_Access_Type);
+      Set_Etype                    (Universal_Access, Universal_Access);
+      Set_Scope                    (Universal_Access, Standard_Standard);
+      Init_Size                    (Universal_Access, System_Address_Size);
+      Set_Elem_Alignment           (Universal_Access);
+      Set_Directly_Designated_Type (Universal_Access, Any_Type);
 
       --  Create type declaration for Duration, using a 64-bit size. The
       --  delta and size values depend on the mode set in system.ads.

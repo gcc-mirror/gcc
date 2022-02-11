@@ -1,3 +1,13 @@
+2022-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Set XCFLAGS to -mno-gnu-attribute on
+	powerpc64le*-linux*.
+	* configure: Regenerated.
+
+2022-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
 2021-06-08  Martin Liska  <mliska@suse.cz>
 
 	* libquadmath.texi: Fix typo.

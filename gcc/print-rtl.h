@@ -1,5 +1,5 @@
 /* Print RTL for GCC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -68,8 +68,10 @@ class rtx_writer
      - insn names are prefixed with "c" (e.g. "cinsn", "cnote", etc).  */
   bool m_compact;
 
+#ifndef GENERATOR_FILE
   /* An optional instance of rtx_reuse_manager.  */
   rtx_reuse_manager *m_rtx_reuse_manager;
+#endif
 };
 
 #ifdef BUFSIZ

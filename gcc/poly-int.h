@@ -1,5 +1,5 @@
 /* Polynomial integer classes.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2717,7 +2717,7 @@ gt_pch_nx (poly_int_pod<N, C> *)
 
 template<unsigned int N, typename C>
 void
-gt_pch_nx (poly_int_pod<N, C> *, void (*) (void *, void *), void *)
+gt_pch_nx (poly_int_pod<N, C> *, gt_pointer_operator, void *)
 {
 }
 

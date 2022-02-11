@@ -11,4 +11,4 @@ struct B : A
   using A::A;
 };
 
-constexpr B b;  // { dg-error "literal" }
+constexpr B b;  // { dg-error "literal" "" { target { ! implicit_constexpr } } }

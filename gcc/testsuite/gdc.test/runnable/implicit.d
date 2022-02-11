@@ -1,5 +1,17 @@
-// RUNNABLE_PHOBOS_TEST
-import std.stdio;
+/*
+TEST_OUTPUT:
+---
+runnable/implicit.d(162): Deprecation: slice of static array temporary returned by `pureMaker3c()` assigned to longer lived variable `z1`
+runnable/implicit.d(163): Deprecation: slice of static array temporary returned by `pureMaker3c()` assigned to longer lived variable `z2`
+---
+
+RUN_OUTPUT:
+---
+Success
+---
+*/
+
+import core.stdc.stdio;
 
 /***********************************/
 
@@ -150,7 +162,8 @@ void testDIP29_3()
     immutable z1 = pureMaker3c()[];
     immutable z2 = pureMaker3c()[0..2];
 
-    // Issue 12467 - conversion from lvalue of mutable static array to immutable slice
+    // https://issues.dlang.org/show_bug.cgi?id=12467
+    // conversion from lvalue of mutable static array to immutable slice
     char[3] arr = "foo";
     static assert(!__traits(compiles, { string str = arr[]; }));
 }
@@ -182,11 +195,11 @@ void testDIP29_4()
 }
 
 /***********************************/
-// 14155
+// https://issues.dlang.org/show_bug.cgi?id=14155
 
 immutable int g14155;
 
-static this() { g14155 = 1; }
+shared static this() { g14155 = 1; }
 
              int*  make14155m (             int*  p) pure { return null; }
        const(int*) make14155c (       const(int*) p) pure { return &g14155; }
@@ -232,7 +245,7 @@ void test14155_for_testDIP29_4()
 }
 
 /***********************************/
-// 14141
+// https://issues.dlang.org/show_bug.cgi?id=14141
 
 struct S14141
 {
@@ -265,7 +278,7 @@ int*[] pureFoo() pure { return null; }
 
 void testDIP29_5() pure
 {
-    { char[] s; immutable x = s.dup; }
+    { char[] s; immutable x = s.idup; }
     { immutable x = (cast(int*[])null).dup; }
     { immutable x = pureFoo(); }
     { immutable x = pureFoo().dup; }
@@ -396,7 +409,7 @@ void testDIP29_6()
     }));
 }
 
-// 14155
+// https://issues.dlang.org/show_bug.cgi?id=14155
 
 void test14155_for_testDIP29_6()
 {
@@ -417,7 +430,7 @@ void test14155_for_testDIP29_6()
 }
 
 /***********************************/
-// 13640
+// https://issues.dlang.org/show_bug.cgi?id=13640
 
 struct S13640
 {
@@ -437,7 +450,7 @@ struct S13640
 }
 
 /***********************************/
-// 15778
+// https://issues.dlang.org/show_bug.cgi?id=15778
 
 void test15778()
 {
@@ -477,5 +490,5 @@ void main()
     testDIP29_6();
     test15778();
 
-    writefln("Success");
+    printf("Success\n");
 }

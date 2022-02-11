@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2021 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see
-   <http://www.gnu.org/licenses/>.
+   <https://www.gnu.org/licenses/>.
 
 Internals
 =========
@@ -136,12 +136,12 @@ Running under valgrind
 
 The jit testsuite detects if :envvar:`RUN_UNDER_VALGRIND` is present in the
 environment (with any value).  If it is present, it runs the test client
-code under `valgrind <http://valgrind.org>`_,
+code under `valgrind <https://valgrind.org>`_,
 specifcally, the default
-`memcheck <http://valgrind.org/docs/manual/mc-manual.html>`_
+`memcheck <https://valgrind.org/docs/manual/mc-manual.html>`_
 tool with
 `--leak-check=full
-<http://valgrind.org/docs/manual/mc-manual.html#opt.leak-check>`_.
+<https://valgrind.org/docs/manual/mc-manual.html#opt.leak-check>`_.
 
 It automatically parses the output from valgrind, injecting XFAIL results if
 any issues are found, or PASS results if the output is clean.  The output
@@ -294,11 +294,11 @@ Overview of code structure
 The library is implemented in C++.  The source files have the ``.c``
 extension for legacy reasons.
 
-* ``libgccjit.c`` implements the API entrypoints.  It performs error
+* ``libgccjit.cc`` implements the API entrypoints.  It performs error
   checking, then calls into classes of the gcc::jit::recording namespace
-  within ``jit-recording.c`` and ``jit-recording.h``.
+  within ``jit-recording.cc`` and ``jit-recording.h``.
 
-* The gcc::jit::recording classes (within ``jit-recording.c`` and
+* The gcc::jit::recording classes (within ``jit-recording.cc`` and
   ``jit-recording.h``) record the API calls that are made:
 
    .. literalinclude:: ../../jit-common.h
@@ -307,7 +307,7 @@ extension for legacy reasons.
     :language: c++
 
 * When the context is compiled, the gcc::jit::playback classes (within
-  ``jit-playback.c`` and ``jit-playback.h``) replay the API calls
+  ``jit-playback.cc`` and ``jit-playback.h``) replay the API calls
   within langhook:parse_file:
 
    .. literalinclude:: ../../jit-common.h
@@ -339,9 +339,9 @@ It should not be possible for client code to cause an internal compiler
 error.  If this *does* happen, the root cause should be isolated (perhaps
 using :c:func:`gcc_jit_context_dump_reproducer_to_file`) and the cause
 should be rejected via additional checking.  The checking ideally should
-be within the libgccjit API entrypoints in libgccjit.c, since this is as
+be within the libgccjit API entrypoints in libgccjit.cc, since this is as
 close as possible to the error; failing that, a good place is within
-``recording::context::validate ()`` in jit-recording.c.
+``recording::context::validate ()`` in jit-recording.cc.
 
 Submitting patches
 ------------------
@@ -431,7 +431,7 @@ Every new testcase that doesn't generate errors should also touch
 
 Typically a patch that touches the .rst documentation will also need the
 texinfo to be regenerated.  You can do this with
-`Sphinx 1.0 <http://sphinx-doc.org/>`_ or later by
+`Sphinx 1.0 <https://sphinx-doc.org/>`_ or later by
 running ``make texinfo`` within ``SRCDIR/gcc/jit/docs``.   Don't do this
 within the patch sent to the mailing list; it can often be relatively
 large and inconsequential (e.g. anchor renumbering), rather like generated

@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2021 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -4042,7 +4042,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr_alternative "length"
      [(cond
 	[(eq_attr "iscompact" "false") (const_int 4)
-	; We have to mention (match_dup 3) to convince genattrtab.c that this
+	; We have to mention (match_dup 3) to convince genattrtab.cc that this
 	; is a varying length insn.
 	 (eq (symbol_ref "1+1") (const_int 2)) (const_int 2)
 	 (gt (minus (match_dup 3) (pc)) (const_int 42)) (const_int 4)]
@@ -4663,10 +4663,10 @@ core_3, archs4x, archs4xd, archs4xd_slow"
       return \"trap_s %0\";
     }
 
-  /* Keep this message in sync with the one in arc.c:arc_expand_builtin,
+  /* Keep this message in sync with the one in arc.cc:arc_expand_builtin,
      because *.md files do not get scanned by exgettext.  */
   fatal_error (input_location,
-	       \"operand to trap_s should be an unsigned 6-bit value\");
+	       \"operand to %<trap_s%> should be an unsigned 6-bit value\");
 }
   [(set_attr "length" "2")
   (set_attr "type" "misc")])
@@ -4844,7 +4844,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "arc_can_use_return_insn ()"
   "")
 
- ;; Comment in final.c (insn_current_reference_address) says
+ ;; Comment in final.cc (insn_current_reference_address) says
  ;; forward branch addresses are calculated from the next insn after branch
  ;; and for backward branches, it is calculated from the branch insn start.
  ;; The shortening logic here is tuned to accomodate this behavior
@@ -5223,7 +5223,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ;; subdf alternative that matches a zero operand 1, which then can allow
 ;; to use bxor to flip the high bit of an integer register.
 ;; ??? we actually can't use the floating point hardware for neg, because
-;; this would not work right for -0.  OTOH optabs.c has already code
+;; this would not work right for -0.  OTOH optabs.cc has already code
 ;; to synthesyze negate by flipping the sign bit.
 
 ;;V2 instructions
@@ -6023,26 +6023,26 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 (define_expand "maddhisi4"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:HI 1 "register_operand" "")
-   (match_operand:HI 2 "extend_operand"   "")
+   (match_operand:HI 2 "register_operand" "")
    (match_operand:SI 3 "register_operand" "")]
   "TARGET_PLUS_MACD"
   "{
-   rtx acc_reg = gen_rtx_REG (SImode, ACC_REG_FIRST);
+   rtx acc_reg = gen_rtx_REG (SImode, ACCL_REGNO);
 
    emit_move_insn (acc_reg, operands[3]);
-   emit_insn (gen_machi (operands[1], operands[2]));
-   emit_move_insn (operands[0], acc_reg);
+   emit_insn (gen_machi (operands[0], operands[1], operands[2], acc_reg));
    DONE;
   }")
 
 (define_insn "machi"
-  [(set (reg:SI ARCV2_ACC)
+  [(set (match_operand:SI 0 "register_operand" "=Ral,r")
 	(plus:SI
-	 (mult:SI (sign_extend:SI (match_operand:HI 0 "register_operand" "%r"))
-		  (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))
-	 (reg:SI ARCV2_ACC)))]
+	 (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand" "%r,r"))
+		  (sign_extend:SI (match_operand:HI 2 "register_operand" "r,r")))
+	 (match_operand:SI 3 "accl_operand" "")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_MACD"
-  "vmac2h\\t0,%0,%1"
+  "dmach\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
    (set_attr "predicable" "no")
@@ -6056,22 +6056,22 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (match_operand:SI 3 "register_operand" "")]
   "TARGET_PLUS_MACD"
   "{
-   rtx acc_reg = gen_rtx_REG (SImode, ACC_REG_FIRST);
+   rtx acc_reg = gen_rtx_REG (SImode, ACCL_REGNO);
 
    emit_move_insn (acc_reg, operands[3]);
-   emit_insn (gen_umachi (operands[1], operands[2]));
-   emit_move_insn (operands[0], acc_reg);
+   emit_insn (gen_umachi (operands[0], operands[1], operands[2], acc_reg));
    DONE;
   }")
 
 (define_insn "umachi"
-  [(set (reg:SI ARCV2_ACC)
+  [(set (match_operand:SI 0 "register_operand" "=Ral,r")
 	(plus:SI
-	 (mult:SI (zero_extend:SI (match_operand:HI 0 "register_operand" "%r"))
-		  (zero_extend:SI (match_operand:HI 1 "register_operand" "r")))
-	 (reg:SI ARCV2_ACC)))]
+	 (mult:SI (zero_extend:SI (match_operand:HI 1 "register_operand" "%r,r"))
+		  (zero_extend:SI (match_operand:HI 2 "register_operand" "r,r")))
+	 (match_operand:SI 3 "accl_operand" "")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_MACD"
-  "vmac2hu\\t0,%0,%1"
+  "dmachu\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
    (set_attr "predicable" "no")

@@ -1,6 +1,6 @@
 // Primitive numeric conversions (to_chars and from_chars) -*- C++ -*-
 
-// Copyright (C) 2017-2021 Free Software Foundation, Inc.
+// Copyright (C) 2017-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,6 @@
 
 #include <type_traits>
 #include <bit>			// for __bit_width
-#include <cctype>		// for isdigit
 #include <bits/charconv.h>	// for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
 #include <ext/numeric_traits.h>
@@ -466,7 +465,7 @@ namespace __detail
       return true;
     }
 
-  constexpr unsigned char
+  constexpr char
   __from_chars_alpha_to_num(char __c)
   {
     switch (__c)
@@ -550,10 +549,10 @@ namespace __detail
     case 'Z':
       return 35;
     }
-    return __gnu_cxx::__int_traits<unsigned char>::__max;
+    return 127;
   }
 
-  /// std::from_chars implementation for integers in bases 11 to 26.
+  /// std::from_chars implementation for integers in bases 11 to 36.
   template<typename _Tp>
     bool
     __from_chars_alnum(const char*& __first, const char* __last, _Tp& __val,
@@ -562,8 +561,8 @@ namespace __detail
       bool __valid = true;
       while (__first != __last)
 	{
-	  unsigned char __c = *__first;
-	  if (std::isdigit(__c))
+	  char __c = *__first;
+	  if ('0' <= __c && __c <= '9') // isdigit
 	    __c -= '0';
 	  else
 	    {

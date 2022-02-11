@@ -48,8 +48,31 @@ test01()
   VERIFY( is_sorted(l, std::greater<int>()) );
 }
 
+void
+test02()
+{
+  // The standard doesn't require comparisons to be const-correct.
+  // The initial fix for PR 66742 caused a regression here.
+
+  struct X
+  {
+    bool operator<(X&) /* non-const */ { return false; }
+  };
+
+  struct Cmp
+  {
+    bool operator()(X&, X&) /* non-const */ { return false; }
+  };
+
+  std::list<X> l;
+  l.sort();
+  Cmp c;
+  l.sort(c);
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

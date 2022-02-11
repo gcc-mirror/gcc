@@ -1,5 +1,5 @@
 /* Definitions of Objective-C front-end entry points used for C and C++.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,7 +99,7 @@ extern enum objc_property_attribute_kind objc_prop_attr_kind_for_rid (enum rid);
 /* Objective-C / Objective-C++ entry points.  */
 
 /* The following ObjC/ObjC++ functions are called by the C and/or C++
-   front-ends; they all must have corresponding stubs in stub-objc.c.  */
+   front-ends; they all must have corresponding stubs in stub-objc.cc.  */
 extern void objc_write_global_declarations (void);
 extern tree objc_is_class_name (tree);
 extern tree objc_is_object_ptr (tree);

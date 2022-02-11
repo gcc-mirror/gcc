@@ -1,5 +1,5 @@
 /* Definitions for LynxOS on i386.
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ASM_OUTPUT_ALIGN
 
-/* The file i386.c defines TARGET_HAVE_TLS unconditionally if
+/* The file i386.cc defines TARGET_HAVE_TLS unconditionally if
    HAVE_AS_TLS is defined.  HAVE_AS_TLS is defined as gas support for
    TLS is detected by configure.  We undefine it here.  */
 

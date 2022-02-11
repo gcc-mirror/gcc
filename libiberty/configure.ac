@@ -61,6 +61,11 @@ fi
 AC_SUBST(MAINT)dnl
 AC_SUBST(NOTMAINT)dnl
 
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+
 # Do we have a single-tree copy of texinfo?  Even if we do, we can't
 # rely on it - libiberty is built before texinfo.
 AC_CHECK_PROG(MAKEINFO, makeinfo, makeinfo, )

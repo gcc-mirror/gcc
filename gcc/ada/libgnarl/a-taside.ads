@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -92,7 +92,9 @@ is
 
    function Activation_Is_Complete (T : Task_Id) return Boolean with
      Volatile_Function,
+     Pre    => T /= Null_Task_Id,
      Global => Tasking_State;
+   pragma Inline (Activation_Is_Complete);
 
 private
    pragma SPARK_Mode (Off);

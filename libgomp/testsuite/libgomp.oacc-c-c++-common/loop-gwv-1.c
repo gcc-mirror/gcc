@@ -19,9 +19,12 @@ int main ()
 
   for (ix = 0; ix < N;ix++)
     ary[ix] = -1;
-  
-#pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
-	    copy(ary) copy(ondev) copyout(gangsize, workersize, vectorsize)
+
+#define NG 32
+#define NW 32
+#define VL 32
+#pragma acc parallel num_gangs(NG) num_workers(NW) vector_length(VL) \
+	    copy(ary) copy(ondev)
   /* { dg-note {variable 'ix' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
   {
 #pragma acc loop gang worker vector
@@ -45,11 +48,19 @@ int main ()
 	else
 	  ary[ix] = ix;
       }
-
-    gangsize = __builtin_goacc_parlevel_size (GOMP_DIM_GANG);
-    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
-    vectorsize = __builtin_goacc_parlevel_size (GOMP_DIM_VECTOR);
   }
+  gangsize = NG;
+  workersize = NW;
+  vectorsize = VL;
+#ifdef ACC_DEVICE_TYPE_radeon
+  /* AMD GCN has an upper limit of 'num_workers(16)'.  */
+  if (workersize > 16)
+    workersize = 16;
+  /* AMD GCN uses the autovectorizer for the vector dimension: the use
+     of a function call in vector-partitioned code in this test is not
+     currently supported.  */
+  vectorsize = 1;
+#endif
 
   for (ix = 0; ix < N; ix++)
     {

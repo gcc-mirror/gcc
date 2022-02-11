@@ -1,5 +1,5 @@
 /* d-longdouble.cc -- Software floating-point emulation for the frontend.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,12 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 #include "longdouble.h"
 
-
-/* Constant real values 0, 1, -1 and 0.5.  */
-real_t CTFloat::zero;
-real_t CTFloat::one;
-real_t CTFloat::minusone;
-real_t CTFloat::half;
 
 /* Truncate longdouble to the highest precision supported by target.  */
 

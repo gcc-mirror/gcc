@@ -107,10 +107,12 @@ main (int argc, char **argv)
 
 /* vmul_lane_f64.
    Vmul_laneq_f64. */
-/* { dg-final { scan-assembler-times "fmul\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "fmul\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmul\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 { target aarch64_little_endian } } } */
 
 /* vmulq_lane_f64.
    vmulq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmul\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "fmul\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "fmul\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 { target aarch64_little_endian } } } */
 
 

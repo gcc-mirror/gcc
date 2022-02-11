@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12390.d(14): Error: `==` has no effect in expression `fun().i == 4`
+fail_compilation/fail12390.d(14): Error: `fun().i == 4` has no effect
 ---
 */
 

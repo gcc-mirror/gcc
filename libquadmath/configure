@@ -13096,6 +13096,30 @@ fi
 
 XCFLAGS="$XCFLAGS $CET_FLAGS"
 
+case x$target in
+  xpowerpc64le*-linux*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if __SIZEOF_LONG_DOUBLE__ != 16
+                         #error long double is double
+                         #endif
+int
+main ()
+{
+(void) 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  XCFLAGS="$XCFLAGS -mno-gnu-attribute"
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+    ;;
+  *)
+    ;;
+esac
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure

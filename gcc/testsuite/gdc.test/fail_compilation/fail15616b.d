@@ -1,19 +1,33 @@
 /*
 REQUIRED_ARGS: -v
+TRANSFORM_OUTPUT: remove_lines("^(predefs|binary|version|config|DFLAG|parse|import|semantic|entry|\s*$)")
 TEST_OUTPUT:
 ---
-fail_compilation/fail15616b.d(43): Error: none of the overloads of 'foo' are callable using argument types (double), candidates are:
-fail_compilation/fail15616b.d(16):        fail15616b.foo(int a)
-fail_compilation/fail15616b.d(19):        fail15616b.foo(int a, int b)
-fail_compilation/fail15616b.d(28):        fail15616b.foo(int a, int b, int c)
-fail_compilation/fail15616b.d(31):        fail15616b.foo(string a)
-fail_compilation/fail15616b.d(34):        fail15616b.foo(string a, string b)
-fail_compilation/fail15616b.d(37):        fail15616b.foo(string a, string b, string c)
-fail_compilation/fail15616b.d(22):        fail15616b.foo(T)(T a) if (is(T == float))
-fail_compilation/fail15616b.d(25):        fail15616b.foo(T)(T a) if (is(T == char))
+fail_compilation/fail15616b.d(44): Error: none of the overloads of `foo` are callable using argument types `(double)`
+fail_compilation/fail15616b.d(17):        Candidates are: `fail15616b.foo(int a)`
+fail_compilation/fail15616b.d(20):                        `fail15616b.foo(int a, int b)`
+fail_compilation/fail15616b.d(29):                        `fail15616b.foo(int a, int b, int c)`
+fail_compilation/fail15616b.d(32):                        `fail15616b.foo(string a)`
+fail_compilation/fail15616b.d(35):                        `fail15616b.foo(string a, string b)`
+fail_compilation/fail15616b.d(38):                        `fail15616b.foo(string a, string b, string c)`
+fail_compilation/fail15616b.d(23):                        `foo(T)(T a)`
+  with `T = double`
+  whose parameters have the following constraints:
+  `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+`  > is(T == float)
+`  `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+fail_compilation/fail15616b.d(26):                        `foo(T)(T a)`
+  with `T = double`
+  whose parameters have the following constraints:
+  `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+`  > is(T == char)
+`  `~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+fail_compilation/fail15616b.d(44):        All possible candidates are marked as `deprecated` or `@disable`
+  Tip: not satisfied constraints are marked with `>`
 ---
 */
 
+#line 17
 void foo(int a)
 {}
 

@@ -1,5 +1,5 @@
 /* Stub for defining degree-valued trigonometric functions in libgfortran.
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargl@gcc.gnu.org>
    and Fritz Reese <foreese@gcc.gnu.org>
 
@@ -65,6 +65,7 @@ PIO180L               -- lower bits of pi/180 for FMA
 #define CONCAT(x,y) x ## y
 #define CONCAT_EXPAND(x,y) CONCAT(x,y)
 
+#ifndef COPYSIGN
 #define COPYSIGN LITERAL(copysign)
 #define FMOD LITERAL(fmod)
 #define FABS LITERAL(fabs)
@@ -72,6 +73,7 @@ PIO180L               -- lower bits of pi/180 for FMA
 #define SIN LITERAL(sin)
 #define COS LITERAL(cos)
 #define TAN LITERAL(tan)
+#endif
 
 #ifdef TINY
 #define TINY_LITERAL LITERAL(TINY)

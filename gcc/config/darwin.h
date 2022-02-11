@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -43,6 +43,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DARWIN_X86 0
 #define DARWIN_PPC 0
 
+#define OBJECT_FORMAT_MACHO 1
+
 /* Suppress g++ attempt to link in the math library automatically. */
 #define MATH_LIBRARY ""
 
@@ -53,6 +55,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Define an empty body for the function do_global_dtors() in libgcc2.c.  */
 
 #define DO_GLOBAL_DTORS_BODY
+
+/* Register static destructors to run from __cxa_atexit instead of putting
+   them into a .mod_term_funcs section.  */
+
+#define TARGET_DTORS_FROM_CXA_ATEXIT true
 
 /* The string value for __SIZE_TYPE__.  */
 
@@ -263,11 +270,6 @@ extern GTY(()) int darwin_ms_struct;
   "%{unexported_symbols_list*:\
      -Xlinker -unexported_symbols_list -Xlinker %*} \
      %<unexported_symbols_list*",					\
-  "%{!weak_reference_mismatches*:\
-     %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
- %:version-compare(< 10.5 asm_macosx_version_min= -weak_reference_mismatches) \
-     %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
-     %:version-compare(< 10.5 asm_macosx_version_min= non-weak)}",	\
   "%{weak_reference_mismatches*:\
     -Xlinker -weak_reference_mismatches -Xlinker %*} \
     %<weak_reference_mismatches*",					\
@@ -283,13 +285,17 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
-/* FIXME: we should check that the linker supports the -pie and -no_pie.
+/* Code built with mdynamic-no-pic does not support PIE/PIC, so  we disallow
+   these combinations; we also ensure that the no_pie option is passed to
+   ld64 on system versions that default to PIE when mdynamic-no-pic is given.
+   FIXME: we should check that the linker supports the -pie and -no_pie.
    options.  */
 #define DARWIN_PIE_SPEC \
 "%{pie|fpie|fPIE:\
    %{mdynamic-no-pic: \
      %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
-     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }} "
+     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }; \
+   mdynamic-no-pic:%:version-compare(>= 10.7 mmacosx-version-min= -no_pie) } "
 
 #define DARWIN_NOPIE_SPEC \
 "%{no-pie|fno-pie|fno-PIE: \
@@ -317,7 +323,7 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 /* Machine dependent cpp options.  Don't add more options here, add
-   them to darwin_cpp_builtins in darwin-c.c.  */
+   them to darwin_cpp_builtins in darwin-c.cc.  */
 
 #undef	CPP_SPEC
 #define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}" \
@@ -373,6 +379,16 @@ extern GTY(()) int darwin_ms_struct;
       %(link_ssp) \
       %:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef) \
       %(link_gcc_c_sequence) \
+      %{!nodefaultexport:%{dylib|dynamiclib|bundle: \
+	%:version-compare(>= 10.11 asm_macosx_version_min= -U) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= ___emutls_get_address) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= -exported_symbol) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= ___emutls_get_address) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= -U) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= ___emutls_register_common) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= -exported_symbol) \
+	%:version-compare(>= 10.11 asm_macosx_version_min= ___emutls_register_common) \
+      }} \
     }}}\
     %{!r:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} "\
     DARWIN_PIE_SPEC \
@@ -399,14 +415,11 @@ extern GTY(()) int darwin_ms_struct;
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-/* Fix PR47558 by linking against libSystem ahead of libgcc. See also
-   PR 80556 and the fallout from this.  */
-
+/* We only want one instance of %G, since libSystem (Darwin's -lc) does not
+   depend on libgcc. */
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-"%{!static:%{!static-libgcc: \
-    %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } \
-  %G %{!nolibc:%L}"
+ "%G %{!nolibc:%L} "
 
 /* ld64 supports a sysroot, it just has a different name and there's no easy
    way to check for it at config time.  */
@@ -438,6 +451,7 @@ extern GTY(()) int darwin_ms_struct;
                      %:replace-outfile(-lobjc libobjc-gnu.a%s); \
                     :%:replace-outfile(-lobjc -lobjc-gnu )}}\
    %{static|static-libgcc|static-libgfortran:%:replace-outfile(-lgfortran libgfortran.a%s)}\
+   %{static|static-libgcc|static-libphobos:%:replace-outfile(-lgphobos libgphobos.a%s)}\
    %{static|static-libgcc|static-libstdc++|static-libgfortran:%:replace-outfile(-lgomp libgomp.a%s)}\
    %{static|static-libgcc|static-libstdc++:%:replace-outfile(-lstdc++ libstdc++.a%s)}\
    %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
@@ -451,37 +465,62 @@ extern GTY(()) int darwin_ms_struct;
 
 #define LIB_SPEC "%{!static:-lSystem}"
 
-/* Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
-   libraries to link against, and by not linking against libgcc_s on
-   earlier-than-10.3.9.  If we need exceptions, prior to 10.3.9, then we have
-   to link the static eh lib, since there's no shared version on the system.
-
-   Note that by default, except as above, -lgcc_eh is not linked against.
+/*
+   Note that by default, -lgcc_eh is not linked against.
    This is because,in general, we need to unwind through system libraries that
    are linked with the shared unwinder in libunwind (or libgcc_s for 10.4/5).
 
-   The static version of the current libgcc unwinder (which differs from the
-   implementation in libunwind.dylib on systems Darwin10 [10.6]+) can be used
-   by specifying -static-libgcc.
+   For -static-libgcc: < 10.6, use the unwinder in libgcc_eh (and find
+   the emultls impl. there too).
 
-   If libgcc_eh is linked against, it has to be before -lgcc, because it might
-   need symbols from -lgcc.  */
+   For -static-libgcc: >= 10.6, the unwinder *still* comes from libSystem and
+   we find the emutls impl from lemutls_w. In either case, the builtins etc.
+   are linked from -lgcc.
 
+   When we have specified shared-libgcc or any case that might require
+   exceptions, we pull the libgcc content (including emulated tls) from
+   -lgcc_s.1 in GCC and the unwinder from /usr/lib/libgcc_s.1 for < 10.6 and
+   libSystem for >= 10.6 respectively.
+   Otherwise, we just link the emutls/builtins from convenience libs.
+
+   If we need exceptions, prior to 10.3.9, then we have to link the static
+   eh lib, since there's no shared version on the system.
+
+   In all cases, libgcc_s.1 will be installed with the compiler, or any app
+   built using it, so we can link the builtins and emutls shared on all.
+
+   We have to work around that DYLD_XXXX are disabled in macOS 10.11+ which
+   means that any bootstrap trying to use a shared libgcc with a bumped SO-
+   name will fail.  This means that we do not accept shared libgcc for these
+   versions.
+
+   For -static-libgcc: >= 10.6, the unwinder *still* comes from libSystem and
+   we find the emutls impl from lemutls_w. In either case, the builtins etc.
+   are linked from -lgcc.
+>
+   Otherwise, we just link the shared version of gcc_s.1.1 and pick up
+   exceptions:
+     * Prior to 10.3.9, then we have to link the static eh lib, since there
+       is no shared version on the system.
+     * from 10.3.9 to 10.5, from /usr/lib/libgcc_s.1.dylib
+     * from 10.6 onwards, from libSystem.dylib
+
+   In all cases, libgcc_s.1.1 will be installed with the compiler, or any app
+   built using it, so we can link the builtins and emutls shared on all.
+*/
 #undef REAL_LIBGCC_SPEC
-#define REAL_LIBGCC_SPEC						   \
-   "%{static-libgcc|static: -lgcc_eh -lgcc;				   \
-      shared-libgcc|fexceptions|fobjc-exceptions|fgnu-runtime:		   \
-       %:version-compare(!> 10.3.9 mmacosx-version-min= -lgcc_eh)	   \
-       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
-       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
-       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
-       -lgcc ;								   \
-      :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
-       %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
-       %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
-       -lgcc }"
+#define REAL_LIBGCC_SPEC \
+"%{static-libgcc|static:						  \
+    %:version-compare(!> 10.6 mmacosx-version-min= -lgcc_eh)		  \
+    %:version-compare(>= 10.6 mmacosx-version-min= -lemutls_w);		  \
+   shared-libgcc|fexceptions|fobjc-exceptions|fgnu-runtime:		  \
+    %:version-compare(!> 10.11 mmacosx-version-min= -lgcc_s.1.1)	  \
+    %:version-compare(>= 10.11 mmacosx-version-min= -lemutls_w)		  \
+    %:version-compare(!> 10.3.9 mmacosx-version-min= -lgcc_eh)		  \
+    %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4)   \
+    %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5);	  \
+   : -lemutls_w								  \
+  } -lgcc "
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
@@ -547,7 +586,7 @@ extern GTY(()) int darwin_ms_struct;
 #endif
 
 #if HAVE_GNU_AS
-/* The options are added in gcc.c for this case.  */
+/* The options are added in gcc.cc for this case.  */
 #define ASM_OPTIONS ""
 #else
 /* When we detect that we're cctools or llvm as, we need to insert the right
@@ -834,13 +873,12 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
   if ((LOG) != 0)			\
     fprintf (FILE, "\t%s\t%d\n", ALIGN_ASM_OP, (LOG))
 
-/* The maximum alignment which the object file format can support in
-   bits.  For Mach-O, this is 2^15 bytes.  */
+/* The maximum alignment which the object file format can support in bits
+   which depends on the OS version and whether the object is a common
+   variable.  */
 
 #undef	MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT (0x8000 * 8)
-
-#define L2_MAX_OFILE_ALIGNMENT 15
+#define MAX_OFILE_ALIGNMENT ((1U << L2_MAX_OFILE_ALIGNMENT) * 8U)
 
 /*  These are the three variants that emit referenced blank space.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
@@ -921,6 +959,8 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
       sprintf (LABEL, "*%s%ld", "lubsan_type", (long)(NUM));\
     else if (strcmp ("LASAN", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
+    else if (strcmp ("LTRAMP", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lTRAMP", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)

@@ -1,8 +1,8 @@
-// 9892
+// https://issues.dlang.org/show_bug.cgi?id=9892
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail9892.d(11): Error: enum member fail9892.a circular reference to enum member
+fail_compilation/fail9892.d(11): Error: enum member `fail9892.a` circular reference to `enum` member
 ---
 */
 

@@ -4,7 +4,7 @@ It can be used as a queue, dequeue or stack.
 
 This module is a submodule of $(MREF std, container).
 
-Source: $(PHOBOSSRC std/container/_dlist.d)
+Source: $(PHOBOSSRC std/container/dlist.d)
 
 Copyright: 2010- Andrei Alexandrescu. All rights reserved by the respective holders.
 
@@ -127,19 +127,19 @@ nothrow @safe pure:
     }
 
     @property
-    bool empty() const
+    bool empty() const scope
     {
         assert((_first is null) == (_last is null), "DList.Range: Invalidated state");
         return !_first;
     }
 
-    @property BaseNode* front()
+    @property BaseNode* front() return scope
     {
         assert(!empty, "DList.Range.front: Range is empty");
         return _first;
     }
 
-    void popFront()
+    void popFront() scope
     {
         assert(!empty, "DList.Range.popFront: Range is empty");
         if (_first is _last)
@@ -153,13 +153,13 @@ nothrow @safe pure:
         }
     }
 
-    @property BaseNode* back()
+    @property BaseNode* back() return scope
     {
         assert(!empty, "DList.Range.front: Range is empty");
         return _last;
     }
 
-    void popBack()
+    void popBack() scope
     {
         assert(!empty, "DList.Range.popBack: Range is empty");
         if (_first is _last)
@@ -174,13 +174,13 @@ nothrow @safe pure:
     }
 
     /// Forward range primitive.
-    @property DRange save() { return this; }
+    @property DRange save() return scope { return this; }
 }
 
 /**
 Implements a doubly-linked list.
 
-$(D DList) uses reference semantics.
+`DList` uses reference semantics.
  */
 struct DList(T)
 {
@@ -195,6 +195,12 @@ struct DList(T)
         alias _base this;
 
         T _payload = T.init;
+
+        this (BaseNode _base, T _payload)
+        {
+            this._base = _base;
+            this._payload = _payload;
+        }
 
         inout(BaseNode)* asBaseNode() inout @trusted
         {
@@ -222,12 +228,12 @@ struct DList(T)
     }
     ref inout(BaseNode*) _first() @property @safe nothrow pure inout
     {
-        assert(_root);
+        assert(_root, "Root pointer must not be null");
         return _root._next;
     }
     ref inout(BaseNode*) _last() @property @safe nothrow pure inout
     {
-        assert(_root);
+        assert(_root, "Root pointer must not be null");
         return _root._prev;
     }
   } //end private
@@ -241,7 +247,7 @@ Constructor taking a number of nodes
     }
 
 /**
-Constructor taking an input range
+Constructor taking an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
      */
     this(Stuff)(Stuff stuff)
     if (isInputRange!Stuff && isImplicitlyConvertible!(ElementType!Stuff, T))
@@ -252,8 +258,8 @@ Constructor taking an input range
 /**
 Comparison for equality.
 
-Complexity: $(BIGOH min(n, n1)) where $(D n1) is the number of
-elements in $(D rhs).
+Complexity: $(BIGOH min(n, n1)) where `n1` is the number of
+elements in `rhs`.
      */
     bool opEquals()(ref const DList rhs) const
     if (is(typeof(front == front)))
@@ -316,7 +322,7 @@ elements in $(D rhs).
     }
 
 /**
-Property returning $(D true) if and only if the container has no
+Property returning `true` if and only if the container has no
 elements.
 
 Complexity: $(BIGOH 1)
@@ -327,9 +333,9 @@ Complexity: $(BIGOH 1)
     }
 
 /**
-Removes all contents from the $(D DList).
+Removes all contents from the `DList`.
 
-Postcondition: $(D empty)
+Postcondition: `empty`
 
 Complexity: $(BIGOH 1)
      */
@@ -365,7 +371,7 @@ Complexity: $(BIGOH 1)
     }
 
 /**
-Forward to $(D opSlice().front).
+Forward to `opSlice().front`.
 
 Complexity: $(BIGOH 1)
      */
@@ -376,7 +382,7 @@ Complexity: $(BIGOH 1)
     }
 
 /**
-Forward to $(D opSlice().back).
+Forward to `opSlice().back`.
 
 Complexity: $(BIGOH 1)
      */
@@ -391,8 +397,8 @@ Complexity: $(BIGOH 1)
 /+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ +/
 
 /**
-Returns a new $(D DList) that's the concatenation of $(D this) and its
-argument $(D rhs).
+Returns a new `DList` that's the concatenation of `this` and its
+argument `rhs`.
      */
     DList opBinary(string op, Stuff)(Stuff rhs)
     if (op == "~" && is(typeof(insertBack(rhs))))
@@ -403,8 +409,8 @@ argument $(D rhs).
     }
 
 /**
-Returns a new $(D DList) that's the concatenation of the argument $(D lhs)
-and $(D this).
+Returns a new `DList` that's the concatenation of the argument `lhs`
+and `this`.
      */
     DList opBinaryRight(string op, Stuff)(Stuff lhs)
     if (op == "~" && is(typeof(insertFront(lhs))))
@@ -415,7 +421,7 @@ and $(D this).
     }
 
 /**
-Appends the contents of the argument $(D rhs) into $(D this).
+Appends the contents of the argument `rhs` into `this`.
      */
     DList opOpAssign(string op, Stuff)(Stuff rhs)
     if (op == "~" && is(typeof(insertBack(rhs))))
@@ -429,8 +435,8 @@ Appends the contents of the argument $(D rhs) into $(D this).
 /+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ +/
 
 /**
-Inserts $(D stuff) to the front/back of the container. $(D stuff) can be a
-value convertible to $(D T) or a range of objects convertible to $(D
+Inserts `stuff` to the front/back of the container. `stuff` can be a
+value convertible to `T` or a range of objects convertible to $(D
 T). The stable version behaves the same, but guarantees that ranges
 iterating over the container are never invalidated.
 
@@ -464,18 +470,18 @@ Complexity: $(BIGOH log(n))
     alias stableInsertBack = insertBack;
 
 /**
-Inserts $(D stuff) after range $(D r), which must be a non-empty range
+Inserts `stuff` after range `r`, which must be a non-empty range
 previously extracted from this container.
 
-$(D stuff) can be a value convertible to $(D T) or a range of objects
-convertible to $(D T). The stable version behaves the same, but
+`stuff` can be a value convertible to `T` or a range of objects
+convertible to `T`. The stable version behaves the same, but
 guarantees that ranges iterating over the container are never
 invalidated.
 
 Returns: The number of values inserted.
 
-Complexity: $(BIGOH k + m), where $(D k) is the number of elements in
-$(D r) and $(D m) is the length of $(D stuff).
+Complexity: $(BIGOH k + m), where `k` is the number of elements in
+`r` and `m` is the length of `stuff`.
      */
     size_t insertBefore(Stuff)(Range r, Stuff stuff)
     {
@@ -515,7 +521,7 @@ Picks one value in an unspecified position in the container, removes
 it from the container, and returns it. The stable version behaves the same,
 but guarantees that ranges iterating over the container are never invalidated.
 
-Precondition: $(D !empty)
+Precondition: `!empty`
 
 Returns: The element removed.
 
@@ -538,7 +544,7 @@ Removes the value at the front/back of the container. The stable version
 behaves the same, but guarantees that ranges iterating over the
 container are never invalidated.
 
-Precondition: $(D !empty)
+Precondition: `!empty`
 
 Complexity: $(BIGOH 1).
      */
@@ -564,9 +570,9 @@ Complexity: $(BIGOH 1).
     alias stableRemoveBack = removeBack;
 
 /**
-Removes $(D howMany) values at the front or back of the
+Removes `howMany` values at the front or back of the
 container. Unlike the unparameterized versions above, these functions
-do not throw if they could not remove $(D howMany) elements. Instead,
+do not throw if they could not remove `howMany` elements. Instead,
 if $(D howMany > n), all elements are removed. The returned value is
 the effective number of elements removed. The stable version behaves
 the same, but guarantees that ranges iterating over the container are
@@ -612,11 +618,11 @@ Complexity: $(BIGOH howMany).
     alias stableRemoveBack = removeBack;
 
 /**
-Removes all elements belonging to $(D r), which must be a range
+Removes all elements belonging to `r`, which must be a range
 obtained originally from this container.
 
 Returns: A range spanning the remaining elements in the container that
-initially were right after $(D r).
+initially were right after `r`.
 
 Complexity: $(BIGOH 1)
      */
@@ -642,9 +648,12 @@ Complexity: $(BIGOH 1)
         return remove(r);
     }
 
+    /// ditto
+    alias stableRemove = remove;
+
 /**
-Removes first element of $(D r), wich must be a range obtained originally
-from this container, from both DList instance and range $(D r).
+Removes first element of `r`, wich must be a range obtained originally
+from this container, from both DList instance and range `r`.
 
 Compexity: $(BIGOH 1)
      */
@@ -659,8 +668,8 @@ Compexity: $(BIGOH 1)
     }
 
 /**
-Removes last element of $(D r), wich must be a range obtained originally
-from this container, from both DList instance and range $(D r).
+Removes last element of `r`, wich must be a range obtained originally
+from this container, from both DList instance and range `r`.
 
 Compexity: $(BIGOH 1)
      */
@@ -675,8 +684,8 @@ Compexity: $(BIGOH 1)
     }
 
 /**
-$(D linearRemove) functions as $(D remove), but also accepts ranges that are
-result the of a $(D take) operation. This is a convenient way to remove a
+`linearRemove` functions as `remove`, but also accepts ranges that are
+result the of a `take` operation. This is a convenient way to remove a
 fixed amount of elements from the range.
 
 Complexity: $(BIGOH r.walkLength)
@@ -698,11 +707,46 @@ Complexity: $(BIGOH r.walkLength)
     }
 
     /// ditto
-    alias stableRemove = remove;
-    /// ditto
     alias stableLinearRemove = linearRemove;
 
+/**
+Removes the first occurence of an element from the list in linear time.
+
+Returns: True if the element existed and was successfully removed, false otherwise.
+
+Params:
+    value = value of the node to be removed
+
+Complexity: $(BIGOH n)
+     */
+    bool linearRemoveElement(T value)
+    {
+        auto n1 = findNodeByValue(_root, value);
+        if (n1)
+        {
+            auto n2 = n1._next._next;
+            BaseNode.connect(n1, n2);
+            return true;
+        }
+
+        return false;
+    }
+
+
 private:
+
+    BaseNode* findNodeByValue(BaseNode* n, T value)
+    {
+        if (!n) return null;
+        auto ahead = n._next;
+        while (ahead && ahead.getPayload!T() != value)
+        {
+            n = ahead;
+            ahead = n._next;
+            if (ahead == _last._next) return null;
+        }
+        return n;
+    }
 
     // Helper: Inserts stuff before the node n.
     size_t insertBeforeNode(Stuff)(BaseNode* n, ref Stuff stuff)
@@ -760,6 +804,38 @@ private:
         }
         return Range(first, last);
     }
+}
+
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+
+    auto e = DList!int();
+    auto b = e.linearRemoveElement(1);
+    assert(b == false);
+    assert(e.empty());
+    auto a = DList!int(-1, 1, 2, 1, 3, 4);
+    b = a.linearRemoveElement(1);
+    assert(equal(a[], [-1, 2, 1, 3, 4]));
+    assert(b == true);
+    b = a.linearRemoveElement(-1);
+    assert(b == true);
+    assert(equal(a[], [2, 1, 3, 4]));
+    b = a.linearRemoveElement(1);
+    assert(b == true);
+    assert(equal(a[], [2, 3, 4]));
+    b = a.linearRemoveElement(2);
+    assert(b == true);
+    b = a.linearRemoveElement(20);
+    assert(b == false);
+    assert(equal(a[], [3, 4]));
+    b = a.linearRemoveElement(4);
+    assert(b == true);
+    assert(equal(a[], [3]));
+    b = a.linearRemoveElement(3);
+    assert(b == true);
+    assert(a.empty());
+    a.linearRemoveElement(3);
 }
 
 @safe unittest
@@ -917,7 +993,7 @@ private:
     assert(r.back == 1);
 }
 
-// Issue 8895
+// https://issues.dlang.org/show_bug.cgi?id=8895
 @safe unittest
 {
     auto a = make!(DList!int)(1,2,3,4);
@@ -988,7 +1064,7 @@ private:
 {
     import std.algorithm.comparison : equal;
 
-    //8905
+    // https://issues.dlang.org/show_bug.cgi?id=8905
     auto a = DList!int([1, 2, 3, 4]);
     auto r = a[];
     a.stableRemoveBack();
@@ -996,7 +1072,8 @@ private:
     assert(a[].equal([1, 2, 3, 7]));
 }
 
-@safe unittest //12566
+// https://issues.dlang.org/show_bug.cgi?id=12566
+@safe unittest
 {
     auto dl2 = DList!int([2,7]);
     dl2.removeFront();
@@ -1005,14 +1082,16 @@ private:
     assert(dl2.empty, "not empty?!");
 }
 
-@safe unittest //13076
+// https://issues.dlang.org/show_bug.cgi?id=13076
+@safe unittest
 {
     DList!int list;
     assert(list.empty);
     list.clear();
 }
 
-@safe unittest //13425
+// https://issues.dlang.org/show_bug.cgi?id=13425
+@safe unittest
 {
     import std.range : drop, take;
     auto list = DList!int([1,2,3,4,5]);
@@ -1022,7 +1101,8 @@ private:
     assert(r.empty); // fails
 }
 
-@safe unittest //14300
+// https://issues.dlang.org/show_bug.cgi?id=14300
+@safe unittest
 {
     interface ITest {}
     static class Test : ITest {}
@@ -1030,7 +1110,8 @@ private:
     DList!ITest().insertBack(new Test());
 }
 
-@safe unittest //15263
+// https://issues.dlang.org/show_bug.cgi?id=15263
+@safe unittest
 {
     import std.range : iota;
     auto a = DList!int();

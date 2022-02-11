@@ -1,5 +1,5 @@
 /* intrinsics.def -- Definitions for D compiler intrinsics.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -77,12 +77,12 @@ DEF_D_BUILTIN (INTRINSIC_POPCNT32, BUILT_IN_NONE, "popcnt", "core.bitop",
 DEF_D_BUILTIN (INTRINSIC_POPCNT64, BUILT_IN_NONE, "popcnt", "core.bitop",
 	       "FNaNbNiNfmZi")
 
-DEF_D_BUILTIN (INTRINSIC_ROL, BUILT_IN_NONE, "rol", "core.bitop", "FNaI1TkZI1T")
+DEF_D_BUILTIN (INTRINSIC_ROL, BUILT_IN_NONE, "rol", "core.bitop", "FNa@1TkZ@1T")
 DEF_D_BUILTIN (INTRINSIC_ROL_TIARG, BUILT_IN_NONE, "rol", "core.bitop",
-	       "FNaI1TZI1T")
-DEF_D_BUILTIN (INTRINSIC_ROR, BUILT_IN_NONE, "ror", "core.bitop", "FNaI1TkZI1T")
+	       "FNa@1TZ@1T")
+DEF_D_BUILTIN (INTRINSIC_ROR, BUILT_IN_NONE, "ror", "core.bitop", "FNa@1TkZ@1T")
 DEF_D_BUILTIN (INTRINSIC_ROR_TIARG, BUILT_IN_NONE, "ror", "core.bitop",
-	       "FNaI1TZI1T")
+	       "FNa@1TZ@1T")
 
 /* core.volatile intrinsics.  */
 
@@ -183,75 +183,74 @@ DEF_D_BUILTIN (INTRINSIC_SQRT, BUILT_IN_SQRT, "sqrt", "core.math",
 DEF_D_BUILTIN (INTRINSIC_SQRTL, BUILT_IN_SQRTL, "sqrt", "core.math",
 	       "FNaNbNiNfeZe")
 DEF_D_BUILTIN (INTRINSIC_TOPRECF, BUILT_IN_NONE, "toPrec", "core.math",
-	       "FfZI1T")
-DEF_D_BUILTIN (INTRINSIC_TOPREC, BUILT_IN_NONE, "toPrec", "core.math", "FdZI1T")
+	       "FfZ@1T")
+DEF_D_BUILTIN (INTRINSIC_TOPREC, BUILT_IN_NONE, "toPrec", "core.math", "FdZ@1T")
 DEF_D_BUILTIN (INTRINSIC_TOPRECL, BUILT_IN_NONE, "toPrec", "core.math",
-	       "FeZI1T")
+	       "FeZ@1T")
 
 /* std.math intrinsics.  */
 
-DEF_CTFE_BUILTIN (INTRINSIC_TAN, BUILT_IN_TANL, "tan", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_TAN, BUILT_IN_TANL, "tan", "std.math.trigonometry",
 		  "FNaNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_ISNAN, BUILT_IN_ISNAN, "isNaN", "std.math",
-		  "FNaNbNiNeI1XZb")
+
+DEF_CTFE_BUILTIN (INTRINSIC_ISNAN, BUILT_IN_ISNAN, "isNaN", "std.math.traits",
+		  "FNaNbNiNe@1XZb")
 DEF_CTFE_BUILTIN (INTRINSIC_ISINFINITY, BUILT_IN_ISINF, "isInfinity",
-		  "std.math", "FNaNbNiNeI1XZb")
-DEF_CTFE_BUILTIN (INTRINSIC_ISFINITE, BUILT_IN_ISFINITE, "isFinite", "std.math",
-		  "FNaNbNiNeI1XZb")
+		  "std.math.traits", "FNaNbNiNe@1XZb")
+DEF_CTFE_BUILTIN (INTRINSIC_ISFINITE, BUILT_IN_ISFINITE, "isFinite",
+		  "std.math.traits", "FNaNbNiNe@1XZb")
+DEF_CTFE_BUILTIN (INTRINSIC_COPYSIGN, BUILT_IN_NONE, "copysign",
+		  "std.math.traits", "FNaNbNiNe@1R@1XZ@1R")
+DEF_CTFE_BUILTIN (INTRINSIC_COPYSIGNI, BUILT_IN_NONE, "copysign",
+		  "std.math.traits", "FNaNbNiNe@1X@1RZ@1R")
 
-DEF_CTFE_BUILTIN (INTRINSIC_EXP, BUILT_IN_EXPL, "exp", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_EXP, BUILT_IN_EXPL, "exp", "std.math.exponential",
 		  "FNaNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_EXPM1, BUILT_IN_EXPM1L, "expm1", "std.math",
-		  "FNaNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_EXP2, BUILT_IN_EXP2L, "exp2", "std.math",
-		  "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_EXPM1, BUILT_IN_EXPM1L, "expm1",
+		  "std.math.exponential", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_EXP2, BUILT_IN_EXP2L, "exp2",
+		  "std.math.exponential", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_LOG, BUILT_IN_LOGL, "log", "std.math.exponential",
+		  "FNaNbNiNfeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_LOG2, BUILT_IN_LOG2L, "log2",
+		  "std.math.exponential", "FNaNbNiNfeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_LOG10, BUILT_IN_LOG10L, "log10",
+		  "std.math.exponential", "FNaNbNiNfeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_POW, BUILT_IN_NONE, "pow", "std.math.exponential",
+		  "FNaNbNiNe@1F@1GZ@")
 
-DEF_CTFE_BUILTIN (INTRINSIC_LOG, BUILT_IN_LOGL, "log", "std.math",
-		  "FNaNbNiNfeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_LOG2, BUILT_IN_LOG2L, "log2", "std.math",
-		  "FNaNbNiNfeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_LOG10, BUILT_IN_LOG10L, "log10", "std.math",
-		  "FNaNbNiNfeZe")
-
-DEF_CTFE_BUILTIN (INTRINSIC_ROUND, BUILT_IN_ROUNDL, "round", "std.math",
-		  "FNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_FLOORF, BUILT_IN_FLOORF, "floor", "std.math",
-		  "FNaNbNiNefZf")
-DEF_CTFE_BUILTIN (INTRINSIC_FLOOR, BUILT_IN_FLOOR, "floor", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_ROUND, BUILT_IN_ROUNDL, "round",
+		  "std.math.rounding", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_FLOORF, BUILT_IN_FLOORF, "floor",
+		  "std.math.rounding", "FNaNbNiNefZf")
+DEF_CTFE_BUILTIN (INTRINSIC_FLOOR, BUILT_IN_FLOOR, "floor", "std.math.rounding",
 		  "FNaNbNiNedZd")
-DEF_CTFE_BUILTIN (INTRINSIC_FLOORL, BUILT_IN_FLOORL, "floor", "std.math",
-		  "FNaNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_CEILF, BUILT_IN_CEILF, "ceil", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_FLOORL, BUILT_IN_FLOORL, "floor",
+		  "std.math.rounding", "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_CEILF, BUILT_IN_CEILF, "ceil", "std.math.rounding",
 		  "FNaNbNiNefZf")
-DEF_CTFE_BUILTIN (INTRINSIC_CEIL, BUILT_IN_CEIL, "ceil", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_CEIL, BUILT_IN_CEIL, "ceil", "std.math.rounding",
 		  "FNaNbNiNedZd")
-DEF_CTFE_BUILTIN (INTRINSIC_CEILL, BUILT_IN_CEILL, "ceil", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_CEILL, BUILT_IN_CEILL, "ceil", "std.math.rounding",
 		  "FNaNbNiNeeZe")
+DEF_CTFE_BUILTIN (INTRINSIC_TRUNC, BUILT_IN_TRUNCL, "trunc",
+		  "std.math.rounding", "FNaNbNiNeeZe")
 
-DEF_CTFE_BUILTIN (INTRINSIC_TRUNC, BUILT_IN_TRUNCL, "trunc", "std.math",
-		  "FNbNiNeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_FMIN, BUILT_IN_FMINL, "fmin", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_FMIN, BUILT_IN_FMINL, "fmin", "std.math.operations",
 		  "FNaNbNiNfeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_FMAX, BUILT_IN_FMAXL, "fmax", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_FMAX, BUILT_IN_FMAXL, "fmax", "std.math.operations",
 		  "FNaNbNiNfeeZe")
-DEF_CTFE_BUILTIN (INTRINSIC_COPYSIGN, BUILT_IN_NONE, "copysign", "std.math",
-		  "FNaNbNiNeI1RI1XZI1R")
-DEF_CTFE_BUILTIN (INTRINSIC_COPYSIGNI, BUILT_IN_NONE, "copysign", "std.math",
-		  "FNaNbNiNeI1XI1RZI1R")
-
-DEF_CTFE_BUILTIN (INTRINSIC_POW, BUILT_IN_NONE, "pow", "std.math",
-		  "FNaNbNiNeI1FI1GZ@")
-DEF_CTFE_BUILTIN (INTRINSIC_FMA, BUILT_IN_FMAL, "fma", "std.math",
+DEF_CTFE_BUILTIN (INTRINSIC_FMA, BUILT_IN_FMAL, "fma", "std.math.operations",
 		  "FNaNbNiNfeeeZe")
 
 /* core.stdc.stdarg intrinsics.  */
 
 DEF_D_BUILTIN (INTRINSIC_VA_ARG, BUILT_IN_NONE, "va_arg", "core.stdc.stdarg",
-	       "FKI7va_listKI1TZv")
+	       "FK@7va_listK@1TZv")
 DEF_D_BUILTIN (INTRINSIC_C_VA_ARG, BUILT_IN_NONE, "va_arg", "core.stdc.stdarg",
-	       "FKI7va_listZI1T")
+	       "FK@7va_listZ@1T")
 DEF_D_BUILTIN (INTRINSIC_VASTART, BUILT_IN_NONE, "va_start", "core.stdc.stdarg",
-	       "FJI7va_listKI1TZv")
+	       "FJ@7va_listK@1TZv")
 
 #undef DEF_D_BUILTIN
 #undef DEF_CTFE_BUILTIN

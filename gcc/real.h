@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989-2021 Free Software Foundation, Inc.
+   Copyright (C) 1989-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -48,7 +48,7 @@ struct GTY(()) real_value {
   /* 1 if number is signalling.  */
   unsigned int signalling : 1;
   /* 1 if number is canonical
-  All are generally used for handling cases in real.c.  */
+  All are generally used for handling cases in real.cc.  */
   unsigned int canonical : 1;
   /* unbiased exponent of the number.  */
   unsigned int uexp : EXP_BITS;
@@ -178,13 +178,12 @@ struct real_format
    decimal float modes indexed by (MODE - first decimal float mode) +
    the number of float modes.  */
 extern const struct real_format *
-  real_format_for_mode[MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1
-		       + MAX_MODE_DECIMAL_FLOAT - MIN_MODE_DECIMAL_FLOAT + 1];
+  real_format_for_mode[NUM_MODE_FLOAT + NUM_MODE_DECIMAL_FLOAT];
 
 #define REAL_MODE_FORMAT(MODE)						\
   (real_format_for_mode[DECIMAL_FLOAT_MODE_P (MODE)			\
 			? (((MODE) - MIN_MODE_DECIMAL_FLOAT)		\
-			   + (MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1))	\
+			   + NUM_MODE_FLOAT)				\
 			: GET_MODE_CLASS (MODE) == MODE_FLOAT		\
 			? ((MODE) - MIN_MODE_FLOAT)			\
 			: (gcc_unreachable (), 0)])
@@ -234,7 +233,7 @@ inline format_helper::format_helper (const T &m)
   : m_format (m == VOIDmode ? 0 : REAL_MODE_FORMAT (m))
 {}
 
-/* Declare functions in real.c.  */
+/* Declare functions in real.cc.  */
 
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
@@ -343,7 +342,7 @@ extern void real_2expN (REAL_VALUE_TYPE *, int, format_helper);
 extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 
 
-/* Target formats defined in real.c.  */
+/* Target formats defined in real.cc.  */
 extern const struct real_format ieee_single_format;
 extern const struct real_format mips_single_format;
 extern const struct real_format motorola_single_format;
@@ -489,7 +488,7 @@ extern bool exact_real_inverse (format_helper, REAL_VALUE_TYPE *);
    in TMODE.  */
 bool real_can_shorten_arithmetic (machine_mode, machine_mode);
 
-/* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
+/* In tree.cc: wrap up a REAL_VALUE_TYPE in a tree node.  */
 extern tree build_real (tree, REAL_VALUE_TYPE);
 
 /* Likewise, but first truncate the value to the type.  */

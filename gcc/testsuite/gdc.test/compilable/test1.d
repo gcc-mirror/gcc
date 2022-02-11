@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/test1imp.d
 class File
 {
     import imports.test1imp;

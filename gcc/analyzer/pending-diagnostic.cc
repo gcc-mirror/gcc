@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -33,10 +33,42 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
+#include "selftest.h"
+#include "tristate.h"
+#include "analyzer/call-string.h"
+#include "analyzer/program-point.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
+
+/* struct interesting_t.  */
+
+/* Mark the creation of REG as being interesting.  */
+
+void
+interesting_t::add_region_creation (const region *reg)
+{
+  gcc_assert (reg);
+  m_region_creation.safe_push (reg);
+}
+
+void
+interesting_t::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  pp_string (pp, "{ region creation: [");
+  unsigned i;
+  const region *reg;
+  FOR_EACH_VEC_ELT (m_region_creation, i, reg)
+    {
+      if (i > 0)
+	pp_string (pp, ", ");
+      reg->dump_to_pp (pp, simple);
+    }
+  pp_string (pp, "]}");
+}
 
 /* Generate a label_text by printing FMT.
 

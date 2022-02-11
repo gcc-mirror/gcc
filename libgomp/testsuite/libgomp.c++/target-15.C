@@ -14,7 +14,7 @@ foo (S s)
     d = id;
 
   int err;
-  #pragma omp target map(tofrom: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3]) map(to: sep) map(from: err)
+  #pragma omp target map(tofrom: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3]) map(to: sep) map(from: err)
   {
     err = s.a != 11 || s.b[0] != 12 || s.b[1] != 13;
     err |= s.c[1] != 15 || s.c[2] != 16 || s.d[-2] != 18 || s.d[-1] != 19 || s.d[0] != 20;
@@ -48,7 +48,7 @@ foo (S s)
 	  || omp_target_is_present (&s.h, d)
 	  || omp_target_is_present (&s.h[2], d)))
     abort ();
-  #pragma omp target data map(alloc: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
+  #pragma omp target data map(alloc: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
   {
     if (!omp_target_is_present (&s.a, d)
 	|| !omp_target_is_present (s.b, d)
@@ -61,8 +61,8 @@ foo (S s)
 	|| !omp_target_is_present (&s.h, d)
 	|| !omp_target_is_present (&s.h[2], d))
       abort ();
-    #pragma omp target update to(s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
-    #pragma omp target map(alloc: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3]) map(from: err)
+    #pragma omp target update to(s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
+    #pragma omp target map(alloc: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3]) map(from: err)
     {
       err = s.a != 50 || s.b[0] != 49 || s.b[1] != 48;
       err |= s.c[1] != 47 || s.c[2] != 46 || s.d[-2] != 45 || s.d[-1] != 44 || s.d[0] != 43;
@@ -73,7 +73,7 @@ foo (S s)
       s.e = 25; s.f[0] = 26; s.f[1] = 27; s.g[1] = 28; s.g[2] = 29;
       s.h[2] = 30; s.h[3] = 31; s.h[4] = 32;
     }
-    #pragma omp target update from(s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
+    #pragma omp target update from(s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
   }
   if (sep
       && (omp_target_is_present (&s.a, d)
@@ -97,7 +97,7 @@ foo (S s)
   s.c[1] = 36; s.c[2] = 37; s.d[-2] = 38; s.d[-1] = 39; s.d[0] = 40;
   s.e = 41; s.f[0] = 42; s.f[1] = 43; s.g[1] = 44; s.g[2] = 45;
   s.h[2] = 46; s.h[3] = 47; s.h[4] = 48;
-  #pragma omp target enter data map(alloc: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
+  #pragma omp target enter data map(alloc: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
   if (!omp_target_is_present (&s.a, d)
       || !omp_target_is_present (s.b, d)
       || !omp_target_is_present (&s.c[1], d)
@@ -109,8 +109,8 @@ foo (S s)
       || !omp_target_is_present (&s.h, d)
       || !omp_target_is_present (&s.h[2], d))
     abort ();
-  #pragma omp target enter data map(always, to: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
-  #pragma omp target map(alloc: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3]) map(from: err)
+  #pragma omp target enter data map(always, to: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
+  #pragma omp target map(alloc: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3]) map(from: err)
   {
     err = s.a != 33 || s.b[0] != 34 || s.b[1] != 35;
     err |= s.c[1] != 36 || s.c[2] != 37 || s.d[-2] != 38 || s.d[-1] != 39 || s.d[0] != 40;
@@ -121,7 +121,7 @@ foo (S s)
     s.e = 31; s.f[0] = 40; s.f[1] = 39; s.g[1] = 38; s.g[2] = 37;
     s.h[2] = 36; s.h[3] = 35; s.h[4] = 34;
   }
-  #pragma omp target exit data map(always, from: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
+  #pragma omp target exit data map(always, from: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
   if (!omp_target_is_present (&s.a, d)
       || !omp_target_is_present (s.b, d)
       || !omp_target_is_present (&s.c[1], d)
@@ -133,7 +133,7 @@ foo (S s)
       || !omp_target_is_present (&s.h, d)
       || !omp_target_is_present (&s.h[2], d))
     abort ();
-  #pragma omp target exit data map(release: s.a, s.b, s.c[1:2], s.d[-2:3], s.e, s.f, s.g[1:2], s.h[2:3])
+  #pragma omp target exit data map(release: s.a, s.b, s.c[1:2], s.d, s.d[-2:3], s.e, s.f, s.g[1:2], s.h, s.h[2:3])
   if (sep
       && (omp_target_is_present (&s.a, d)
 	  || omp_target_is_present (s.b, d)

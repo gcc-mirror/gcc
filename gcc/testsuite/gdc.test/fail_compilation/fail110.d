@@ -1,14 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail110.d(16): Error: variable i is shadowing variable fail110.main.i
-fail_compilation/fail110.d(17): Error: variable i is shadowing variable fail110.main.i
-fail_compilation/fail110.d(18): Error: variable i is shadowing variable fail110.main.i
+fail_compilation/fail110.d(16): Error: variable `i` is shadowing variable `fail110.main.i`
+fail_compilation/fail110.d(17): Error: variable `i` is shadowing variable `fail110.main.i`
+fail_compilation/fail110.d(18): Error: variable `i` is shadowing variable `fail110.main.i`
 ---
 */
 
-// Issue 297 - Shadowing declarations allowed in foreach type lists
-
+// https://issues.dlang.org/show_bug.cgi?id=297
+// Shadowing declarations allowed in foreach type lists
 void main()
 {
     int i;

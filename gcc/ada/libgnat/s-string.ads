@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,6 @@
 --  Note: this package is in the System hierarchy so that it can be directly
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.String (file g-string.ads).
-
-pragma Compiler_Unit_Warning;
 
 with Ada.Unchecked_Deallocation;
 

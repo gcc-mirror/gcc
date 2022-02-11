@@ -1,7 +1,8 @@
 module imports.template_ovs1;
 
 /***************************************************/
-// 1900 - template overload set
+// https://issues.dlang.org/show_bug.cgi?id=1900
+// template overload set
 
 auto foo1900a(int num) { return 1; }
 auto foo1900b(T)(T arg) if (is(T : const(char)[])) { return 2; }
@@ -34,7 +35,7 @@ auto merge1900(T)(int)
 }
 
 /***************************************************/
-// 1900
+// https://issues.dlang.org/show_bug.cgi?id=1900
 
 class AClass1900 {}
 template Traits1900(T : AClass1900) { enum name = "AClass"; }
@@ -47,12 +48,12 @@ template Value1900b(T) if (is(T == double)) { enum Value1900b = 1; }
 void Value1900b() {}
 
 /***************************************************/
-// 8352
+// https://issues.dlang.org/show_bug.cgi?id=8352
 
 Range remove8352a(alias pred, Range)(Range range) { return range; }
 void remove8352b(in char[] name) {}
 
 /***************************************************/
-// 10658
+// https://issues.dlang.org/show_bug.cgi?id=10658
 
 template Val10658(int n) { enum Val10658 = 1; }

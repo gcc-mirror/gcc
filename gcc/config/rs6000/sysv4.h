@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995-2021 Free Software Foundation, Inc.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -309,7 +309,7 @@ do {									\
    in bits).  This macro must evaluate to a value equal to or larger
    than STACK_BOUNDARY.
    For the SYSV ABI and variants the alignment of the stack pointer
-   is usually controlled manually in rs6000.c. However, to maintain
+   is usually controlled manually in rs6000.cc. However, to maintain
    alignment across alloca () in all circumstances,
    PREFERRED_STACK_BOUNDARY needs to be set as well.
    This has the additional advantage of allowing a bigger maximum

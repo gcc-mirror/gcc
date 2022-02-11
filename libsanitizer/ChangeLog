@@ -1,3 +1,60 @@
+2022-02-03  David Seifert  <soap@gentoo.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Support --disable-werror.
+	* aclocal.m4: Include also ../config/warnings.m4.
+	* libbacktrace/Makefile.am (WARN_FLAGS): Remove.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* hwasan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit 70b043845d7.
+
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR sanitizer/103466
+	* tsan/tsan_rtl_amd64.S (__tsan_trace_switch_thunk): Replace
+	vmovdqu with movdqu.
+	(__tsan_report_race_thunk): Likewise.
+
+2021-11-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR sanitizer/62157
+	* Makefile.am: Force DIST_SUBDIRS to be SUBDIRS.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Likewise.
+	* hwasan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/102675
+	* sanitizer_common/Makefile.am: Use -DUSE_SYSTEM_MD5 in AM_CXXFLAGS
+	of sanitizer_platform_limits_freebsd.cpp.
+	* sanitizer_common/Makefile.in: Regenerated.
+
+2021-11-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update git revision.
+
 2021-10-08  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR sanitizer/102632

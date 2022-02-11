@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    Address Sanitizer and Thread Sanitizer builtins used in the GNU compiler.
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
      DEF_SANITIZER_BUILTIN (ENUM, NAME, TYPE, ATTRS)
 
    See builtins.def for details.
-   The builtins are created by the C-family of FEs in c-family/c-common.c,
-   for other FEs by asan.c.  */
+   The builtins are created by the C-family of FEs in c-family/c-common.cc,
+   for other FEs by asan.cc.  */
 
 /* This has to come before all the sanitizer builtins.  */
 DEF_BUILTIN_STUB(BEGIN_SANITIZER_BUILTINS, (const char *)0)
@@ -36,7 +36,7 @@ DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_INIT, "__asan_init",
 DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_VERSION_MISMATCH_CHECK,
 		      "__asan_version_mismatch_check_v8",
 		      BT_FN_VOID, ATTR_NOTHROW_LEAF_LIST)
-/* Do not reorder the BUILT_IN_ASAN_{REPORT,CHECK}* builtins, e.g. cfgcleanup.c
+/* Do not reorder the BUILT_IN_ASAN_{REPORT,CHECK}* builtins, e.g. cfgcleanup.cc
    relies on this order.  */
 DEF_SANITIZER_BUILTIN(BUILT_IN_ASAN_REPORT_LOAD1, "__asan_report_load1",
 		      BT_FN_VOID_PTR, ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST)

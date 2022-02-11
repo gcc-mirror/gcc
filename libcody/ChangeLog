@@ -1,3 +1,8 @@
+2021-11-01  Martin Liska  <mliska@suse.cz>
+
+	PR other/102657
+	* Makefile.in: Add mostlyclean Makefile target.
+
 2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* netserver.cc (ListenInet6): Set pointer to null after
@@ -172,7 +177,7 @@
 	* tests/jouster: New.
 
 
-Copyright (C) 2020-2021 Free Software Foundation, Inc.
+Copyright (C) 2020-2022 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

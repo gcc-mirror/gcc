@@ -16,7 +16,8 @@
       The standard library conforms to the dialect of C++ specified by the
       <option>-std</option> option passed to the compiler.
       By default, <command>g++</command> is equivalent to
-      <command>g++ -std=gnu++14</command> since GCC 6, and
+      <command>g++ -std=gnu++17</command> since GCC 11, and
+      <command>g++ -std=gnu++14</command> in GCC 6, 7, 8, 9, and 10, and
       <command>g++ -std=gnu++98</command> for older releases.
     </para>
 

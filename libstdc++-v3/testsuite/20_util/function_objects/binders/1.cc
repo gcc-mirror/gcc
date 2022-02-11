@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2021 Free Software Foundation, Inc.
+// Copyright (C) 2005-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // 20.3.6 Binders
 
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile }
 
 #include <functional>

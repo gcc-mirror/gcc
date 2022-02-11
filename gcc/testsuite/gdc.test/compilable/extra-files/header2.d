@@ -18,7 +18,7 @@ void foo2(const C2 c);
 struct Foo3
 {
    int k;
-   ~this() @trusted @disable @nogc { k = 1; }
+   ~this() @trusted @disable @nogc @live { k = 1; }
    this(this) { k = 2; }
 }
 
@@ -91,7 +91,7 @@ template templateVariableBar(T) if (is(T == int))
 
 auto flit = 3 / 2.0;
 
-// 11217
+// https://issues.dlang.org/show_bug.cgi?id=11217
 void foo11217()(    const int[] arr) {}
 void foo11217()(immutable int[] arr) {}
 void foo11217()(      ref int[] arr) {}
@@ -101,7 +101,7 @@ void foo11217()(    scope int[] arr) {}
 void foo11217()(       in int[] arr) {}
 void foo11217()(    inout int[] arr) {}
 
-// 13275
+// https://issues.dlang.org/show_bug.cgi?id=13275
 void test13275()
 {
     if (        auto n = 1) {}
@@ -141,12 +141,69 @@ void test13275()
     foreach (shared const(int) e; [1,2]) {}
 }
 
-// 9766
+// https://issues.dlang.org/show_bug.cgi?id=9766
 align (1) struct S9766
 {
+align {}
 align (true ? 2 : 3):
     int var1;
 
 align:
     int var2;
 }
+
+align(2) struct S12200_1
+{
+align:
+}
+
+align(2) struct S12200_2
+{
+align(1):
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=16140
+void gun()()
+{
+    int[] res;
+    while (auto va = fun()) {}  // expression expected, not 'auto'
+
+    while (true)
+        if (auto va = fun()) {}
+        else break;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=16649
+void leFoo()()
+{
+    sign = a == 2 ? false : (y < 0) ^ sign;
+    sign = a == 2 ? false : sign ^ (y < 0);
+    sign = 2 + 3 | 7 + 5;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=17371
+interface LeInterface
+{}
+class LeClass
+{
+    this()
+    {
+        auto foo = new class () LeInterface {};
+    }
+}
+const levar = new class LeClass, LeInterface {};
+
+// https://issues.dlang.org/show_bug.cgi?id=20074
+class CC
+{
+    void fun()() @safe
+    {
+        () @trusted pure
+        {
+        } ();
+    }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=17663
+private:
+public struct Export {}

@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 
-/* Copyright (C) 1999-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
 This file is part of GCC.
@@ -374,28 +374,9 @@ extern int _CRT_MT;
 extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
 #endif /* _WIN32 && !__CYGWIN__ */
 
-/* The Windows95 kernel does not export InterlockedCompareExchange.
-   This provides a substitute.   When building apps that reference
-   gthread_mutex_try_lock, the  __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
-   macro  must be defined if Windows95 is a target.  Currently
-   gthread_mutex_try_lock is not referenced by libgcc or libstdc++.  */
-#ifdef __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
-static inline long
-__gthr_i486_lock_cmp_xchg(long *__dest, long __xchg, long __comperand)
-{
-  long result;
-  __asm__ __volatile__ ("\n\
-	lock\n\
-	cmpxchg{l} {%4, %1|%1, %4}\n"
-	: "=a" (result), "=m" (*__dest)
-	: "0" (__comperand), "m" (*__dest), "r" (__xchg)
-	: "cc");
-  return result;
-}
-#define __GTHR_W32_InterlockedCompareExchange __gthr_i486_lock_cmp_xchg
-#else  /* __GTHREAD_I486_INLINE_LOCK_PRIMITIVES */
+/* __GTHR_W32_InterlockedCompareExchange is left over from win95,
+   which did not support InterlockedCompareExchange. */
 #define __GTHR_W32_InterlockedCompareExchange InterlockedCompareExchange
-#endif /* __GTHREAD_I486_INLINE_LOCK_PRIMITIVES */
 
 static inline int
 __gthread_active_p (void)

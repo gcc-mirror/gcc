@@ -3,7 +3,7 @@
 
 void main()
 {
-    writef!"%s";    // { dg-error "template instance writef!\"%s\" template .writef. is not defined" }
-    writef!"`%s";   // { dg-error "template instance writef!\"`%s\" template .writef. is not defined" }
-    writef!"%%s`";  // { dg-error "template instance writef!\"%%s`\" template .writef. is not defined" }
+    writef!"%s";    // { dg-error "template instance .writef!\"%s\". template .writef. is not defined" }
+    writef!"`%s";   // { dg-error "template instance .writef!\"`%s\". template .writef. is not defined" }
+    writef!"%%s`";  // { dg-error "template instance .writef!\"%%s`\". template .writef. is not defined" }
 }

@@ -1,9 +1,15 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern(C) int printf(const char*, ...);
 
 alias TypeTuple(T...) = T;
 
 /***************************************************/
-// 13336
+// https://issues.dlang.org/show_bug.cgi?id=13336
 
 struct S13336
 {
@@ -96,7 +102,7 @@ out(r)
     assert(r == (f ? sx : sy));
     result13336 = r;
 }
-body
+do
 {
     mixin(fbody13336);
 }
@@ -109,7 +115,7 @@ out(r)
     assert(r == (f ? sx : sy));
     result13336 = r;
 }
-body
+do
 {
     mixin(fbody13336);
 }
@@ -150,7 +156,7 @@ void test13336()
 }
 
 /***************************************************/
-// 15018
+// https://issues.dlang.org/show_bug.cgi?id=15018
 
 struct S15018(int n)
 {

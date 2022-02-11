@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a PowerPC using elf.
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
    This file is part of GCC.
@@ -82,7 +82,7 @@
 #define	RS6000_ABI_NAME "linux"
 
 /* Copy and paste from linux64.h and freebsd64.h */
-#define INVALID_64BIT "-m%s not supported in this configuration"
+#define INVALID_64BIT "%<-m%s%> not supported in this configuration"
 
 /* A lot of copy and paste from linux64.h and freebsd64.h */
 #undef	SUBSUBTARGET_OVERRIDE_OPTIONS

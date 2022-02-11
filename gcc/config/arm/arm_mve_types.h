@@ -1,6 +1,6 @@
 /* Arm MVE intrinsics include file.
 
-   Copyright (C) 2020-2021 Free Software Foundation, Inc.
+   Copyright (C) 2020-2022 Free Software Foundation, Inc.
    Contributed by Arm.
 
    This file is part of GCC.
@@ -25,37 +25,9 @@
 #if (__ARM_FEATURE_MVE & 2) /* MVE Floating point.  */
 typedef __fp16 float16_t;
 typedef float float32_t;
-typedef __simd128_float16_t float16x8_t;
-typedef __simd128_float32_t float32x4_t;
-
-typedef struct { float16x8_t val[2]; } float16x8x2_t;
-typedef struct { float16x8_t val[4]; } float16x8x4_t;
-typedef struct { float32x4_t val[2]; } float32x4x2_t;
-typedef struct { float32x4_t val[4]; } float32x4x4_t;
 #endif
 
-typedef uint16_t mve_pred16_t;
-typedef __simd128_uint8_t uint8x16_t;
-typedef __simd128_uint16_t uint16x8_t;
-typedef __simd128_uint32_t uint32x4_t;
-typedef __simd128_uint64_t uint64x2_t;
-typedef __simd128_int8_t int8x16_t;
-typedef __simd128_int16_t int16x8_t;
-typedef __simd128_int32_t int32x4_t;
-typedef __simd128_int64_t int64x2_t;
-
-typedef struct { int16x8_t val[2]; } int16x8x2_t;
-typedef struct { int16x8_t val[4]; } int16x8x4_t;
-typedef struct { int32x4_t val[2]; } int32x4x2_t;
-typedef struct { int32x4_t val[4]; } int32x4x4_t;
-typedef struct { int8x16_t val[2]; } int8x16x2_t;
-typedef struct { int8x16_t val[4]; } int8x16x4_t;
-typedef struct { uint16x8_t val[2]; } uint16x8x2_t;
-typedef struct { uint16x8_t val[4]; } uint16x8x4_t;
-typedef struct { uint32x4_t val[2]; } uint32x4x2_t;
-typedef struct { uint32x4_t val[4]; } uint32x4x4_t;
-typedef struct { uint8x16_t val[2]; } uint8x16x2_t;
-typedef struct { uint8x16_t val[4]; } uint8x16x4_t;
+#pragma GCC arm "arm_mve_types.h"
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

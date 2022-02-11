@@ -1,9 +1,10 @@
 /*
+EXTRA_FILES: imports/fail347a.d
 TEST_OUTPUT:
 ---
-fail_compilation/fail347.d(21): Error: undefined identifier `bbr`, did you mean variable `bar`?
-fail_compilation/fail347.d(22): Error: no property 'ofo' for type 'S', did you mean 'fail347.S.foo'?
-fail_compilation/fail347.d(23): Error: undefined identifier `strlenx`, did you mean function `strlen`?
+fail_compilation/fail347.d(22): Error: undefined identifier `bbr`, did you mean variable `bar`?
+fail_compilation/fail347.d(23): Error: no property `ofo` for type `S`, did you mean `fail347.S.foo`?
+fail_compilation/fail347.d(24): Error: undefined identifier `strlenx`, did you mean function `strlen`?
 ---
 */
 

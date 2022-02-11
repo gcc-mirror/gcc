@@ -1,5 +1,5 @@
 /* Target-independent configuration for VxWorks and VxWorks AE.   
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2022 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -23,8 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
    to be used in port-specific vxworks.h.  */
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC VXWORKS_LIBGCC_SPEC
+
+/* REAL_LIBGCC_SPEC needs to be used since the non-static option is not
+   handled in gcc.cc.  */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC VXWORKS_LIBGCC_SPEC
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 
@@ -97,7 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* ------------------------ Misc configuration bits ----------------------  */
 
-#ifndef TARGET_VXWORKS7
+#if !TARGET_VXWORKS7
 /* VxWorks, prior to version 7, could not have dots in constructor
    labels, because it used a mutant variation of collect2 that
    generates C code instead of assembly.  Thus each constructor label

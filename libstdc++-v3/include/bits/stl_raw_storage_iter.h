@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,12 +60,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /**
    *  This iterator class lets algorithms store their results into
    *  uninitialized memory.
   */
   template <class _OutputIterator, class _Tp>
-    class raw_storage_iterator
+    class _GLIBCXX17_DEPRECATED raw_storage_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     protected:
@@ -116,6 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 2454. Add raw_storage_iterator::base() member
       _OutputIterator base() const { return _M_iter; }
     };
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

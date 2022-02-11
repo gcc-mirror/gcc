@@ -1,6 +1,6 @@
 module imports.g313;
 
-// adds public package imports (see Bugzilla 15900)
+// adds public package imports (see https://issues.dlang.org/show_bug.cgi?id=15900)
 public import imports.g313public;
 // same w/ deferred semantics
 static if (true)

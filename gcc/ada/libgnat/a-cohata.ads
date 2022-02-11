@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,7 @@ package Ada.Containers.Hash_Tables is
          TC      : aliased Helpers.Tamper_Counts;
          Free    : Count_Type'Base             := -1;
          Nodes   : Nodes_Type (1 .. Capacity);
-         Buckets : Buckets_Type (1 .. Modulus) := (others => 0);
+         Buckets : Buckets_Type (1 .. Modulus) := [others => 0];
       end record;
 
       package Implementation is new Helpers.Generic_Implementation;

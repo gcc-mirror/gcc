@@ -1,4 +1,4 @@
-pa-d.o: $(srcdir)/config/pa/pa-d.c
+pa-d.o: $(srcdir)/config/pa/pa-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 

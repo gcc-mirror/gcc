@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail287.d(14): Error: had 299 cases which is more than 256 cases in case range
+fail_compilation/fail287.d(14): Error: had 300 cases which is more than 257 cases in case range
 ---
 */
 

@@ -137,7 +137,7 @@ immutable(void)* g10063(inout int* p) pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(154): Error: pure function 'testInference.bar14049' cannot call impure function 'testInference.foo14049!int.foo14049'
+fail_compilation/testInference.d(154): Error: `pure` function `testInference.bar14049` cannot call impure function `testInference.foo14049!int.foo14049`
 ---
 */
 auto impure14049() { static int i = 1; return i; }
@@ -157,7 +157,7 @@ void bar14049() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(166): Error: pure function 'testInference.f14160' cannot access mutable static data 'g14160'
+fail_compilation/testInference.d(166): Error: `pure` function `testInference.f14160` cannot access mutable static data `g14160`
 ---
 */
 int g14160;
@@ -169,7 +169,7 @@ int* f14160() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(180): Error: pure function 'testInference.test12422' cannot call impure function 'testInference.test12422.bar12422!().bar12422'
+fail_compilation/testInference.d(180): Error: `pure` function `testInference.test12422` cannot call impure function `testInference.test12422.bar12422!().bar12422`
 ---
 */
 int g12422;
@@ -183,8 +183,8 @@ void test12422() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(196): Error: pure function 'testInference.test13729a' cannot access mutable static data 'g13729'
-fail_compilation/testInference.d(206): Error: pure function 'testInference.test13729b' cannot call impure function 'testInference.test13729b.foo!().foo'
+fail_compilation/testInference.d(198): Error: `pure` function `testInference.test13729a` cannot call impure function `testInference.test13729a.foo`
+fail_compilation/testInference.d(206): Error: `pure` function `testInference.test13729b` cannot call impure function `testInference.test13729b.foo!().foo`
 ---
 */
 int g13729;
@@ -193,9 +193,9 @@ void test13729a() pure
 {
     static void foo()   // typed as impure
     {
-        g13729++;       // disallowed
+        g13729++;
     }
-    foo();
+    foo();              // cannot call impure function
 }
 void test13729b() pure
 {
@@ -209,10 +209,10 @@ void test13729b() pure
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/testInference.d(225): Error: testInference.test17086 called with argument types (bool) matches both:
-fail_compilation/testInference.d(219):     testInference.test17086!(bool, false).test17086(bool x)
+fail_compilation/testInference.d(225): Error: `testInference.test17086` called with argument types `(bool)` matches both:
+fail_compilation/testInference.d(219):     `testInference.test17086!(bool, false).test17086(bool x)`
 and:
-fail_compilation/testInference.d(220):     testInference.test17086!(bool, false).test17086(bool y)
+fail_compilation/testInference.d(220):     `testInference.test17086!(bool, false).test17086(bool y)`
 ---
 */
 
@@ -223,4 +223,17 @@ void test17086_call ()
 {
     bool f;
     test17086(f);
+}
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/testInference.d(238): Error: `pure` function `testInference.test20047_pure_function` cannot call impure function `testInference.test20047_pure_function.bug`
+---
+*/
+void test20047_impure_function() {}
+void test20047_pure_function() pure
+{
+    static void bug() { return test20047_impure_function(); }
+    bug();
 }

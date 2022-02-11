@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2020-2021, Free Software Foundation, Inc.      --
+--             Copyright (C) 2020-2022, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1072,7 +1072,7 @@ package body Exp_Put_Image is
       Loc : constant Source_Ptr := Sloc (N);
       U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
       Sink_Entity : constant Entity_Id :=
-        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('S'));
+        Make_Temporary (Loc, 'S');
       Sink_Decl : constant Node_Id :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Sink_Entity,
@@ -1090,7 +1090,7 @@ package body Exp_Put_Image is
             New_Occurrence_Of (Sink_Entity, Loc),
             Image_Prefix));
       Result_Entity : constant Entity_Id :=
-        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('R'));
+        Make_Temporary (Loc, 'R');
       Result_Decl : constant Node_Id :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Result_Entity,

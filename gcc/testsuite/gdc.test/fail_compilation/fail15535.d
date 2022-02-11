@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail15535.d(17): Error: goto default not allowed in final switch statement
+fail_compilation/fail15535.d(17): Error: `goto default` not allowed in `final switch` statement
 ---
 */
 

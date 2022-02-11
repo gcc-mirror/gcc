@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2021 Free Software Foundation, Inc.
+   Copyright (C) 1993-2022 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config/vxworks-dummy.h"
 
-/* Unfortunately, insn-attrtab.c doesn't include insn-codes.h.  We can't
-   include it here, because bconfig.h is also included by gencodes.c .  */
+/* Unfortunately, insn-attrtab.cc doesn't include insn-codes.h.  We can't
+   include it here, because bconfig.h is also included by gencodes.cc .  */
 /* ??? No longer true.  */
 extern int code_for_indirect_jump_scratch;
 
@@ -433,7 +433,7 @@ extern const sh_atomic_model& selected_atomic_model (void);
 #define MIN_UNITS_PER_WORD 4
 
 /* Scaling factor for Dwarf data offsets for CFI information.
-   The dwarf2out.c default would use -UNITS_PER_WORD.  */
+   The dwarf2out.cc default would use -UNITS_PER_WORD.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
 /* Width in bits of a pointer.
@@ -1284,7 +1284,7 @@ extern bool current_function_interrupt;
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 #define REGNO_OK_FOR_BASE_P(REGNO) \
   (GENERAL_OR_AP_REGISTER_P (REGNO) \

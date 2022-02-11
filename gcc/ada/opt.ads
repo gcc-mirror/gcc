@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -351,15 +351,6 @@ package Opt is
    --  GNATCLEAN, GPRCLEAN:
    --    set True to delete only the files produced by the compiler but not the
    --    library files or the executable files.
-
-   Compiler_Unit : Boolean := False;
-   --  GNAT1
-   --  Set True by an occurrence of pragma Compiler_Unit_Warning (or of the
-   --  obsolete pragma Compiler_Unit) in the main unit. Once set True, stays
-   --  True, since any units that are with'ed directly or indirectly by
-   --  a Compiler_Unit_Warning main unit are subject to the same restrictions.
-   --  Such units really should have their own pragmas, but we do not bother to
-   --  check for that, so this transitivity provides extra checking.
 
    Config_File : Boolean := True;
    --  GNAT

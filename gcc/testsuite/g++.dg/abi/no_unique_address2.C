@@ -41,3 +41,30 @@ struct B4
 #define SA(X) static_assert ((X), #X)
 SA (sizeof (B2) == sizeof (B1));
 SA (sizeof (B3) == sizeof (B4));
+
+namespace N2
+{
+  // C as big as _vptr to test PR c++/104139
+  struct C
+  {
+    long c;
+  };
+
+  struct D: virtual C
+  {
+    virtual void f();
+  };
+
+  struct B3: D
+  {
+    char c2;
+  };
+
+  struct B4
+  {
+    D d [[no_unique_address]];
+    char c2;
+  };
+
+  SA (sizeof (B3) == sizeof (B4));
+}

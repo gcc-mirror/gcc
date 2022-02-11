@@ -1,5 +1,5 @@
 # Makefile fragment for building GCC for the TI MSP430 target.
-# Copyright (C) 2012-2021 Free Software Foundation, Inc.
+# Copyright (C) 2012-2022 Free Software Foundation, Inc.
 # Contributed by Red Hat.
 #
 # This file is part of GCC.
@@ -18,11 +18,11 @@
 # License along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-driver-msp430.o: $(srcdir)/config/msp430/driver-msp430.c \
+driver-msp430.o: $(srcdir)/config/msp430/driver-msp430.cc \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-msp430-devices.o: $(srcdir)/config/msp430/msp430-devices.c \
+msp430-devices.o: $(srcdir)/config/msp430/msp430-devices.cc \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) -DTARGET_SUBDIR=$(target_subdir) $(INCLUDES) $<
 
@@ -49,5 +49,5 @@ MULTILIB_REQUIRED += mlarge/mdata-region=none/fno-exceptions
 
 MULTILIB_EXTRA_OPTS =
 
-msp430-c.o: $(srcdir)/config/msp430/msp430-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
+msp430-c.o: $(srcdir)/config/msp430/msp430-c.cc $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

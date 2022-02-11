@@ -1,5 +1,5 @@
 ;; Constraint definitions for TI PRU.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;;
 ;; This file is part of GCC.

@@ -1,27 +1,26 @@
-// RUNNABLE_PHOBOS_TEST
-import std.stdio;
+extern (C) int printf(const scope char*, ...);
 
 struct S {
     int x = 3;
-    void fun(T)(T x) { writefln("S.fun(%s)(%s)",typeid(T),x); this.x += x; }
+    void fun(T)(T x) { printf("S.fun(%s)(%d)\n", T.stringof.ptr, x); this.x += x; }
 }
 
 class Tst(TST, int v = 2) {
     int x = 3;
     int z = 4;
 
-    final private void proc(int x) { writefln("proc(%s) -> %s",x,this.x); }
-    void fun(T)(T x) { writefln("fun(%s)(%s) -> %s",typeid(T),x,this.x);}
-    void fun()() { writefln("fun()() -> %s",this.x); }
-    void fun2()() { writefln("fun2"); }
+    final private void proc(int x) { printf("proc(%d) -> %d\n", x, this.x); }
+    void fun(T)(T x) { printf("fun(%s)(%d) -> %d\n", T.stringof.ptr, x, this.x);}
+    void fun()() { printf("fun()() -> %d\n", this.x); }
+    void fun2()() { printf("fun2\n"); }
 
     class Inner {
         int y = 99;
         Tst outer;
         void f3() { z = 55; }
         // Make sure the correct this-ptr is used
-        void f1() { writefln("Inner.f1"); proc(-11); outer.proc(-11); }
-        void f2() { writefln("Inner.f2"); fun(-17); outer.fun(-17); }
+        void f1() { printf("Inner.f1\n"); proc(-11); outer.proc(-11); }
+        void f2() { printf("Inner.f2\n"); fun(-17); outer.fun(-17); }
     }
     Inner inner;
 
@@ -30,38 +29,36 @@ class Tst(TST, int v = 2) {
         inner.outer = this;
     }
 
-    void callInnerf1() { writefln("callInnerf1"); inner.f1(); }
-    void callInnerf2() { writefln("callInnerf2"); inner.f2(); }
+    void callInnerf1() { printf("callInnerf1\n"); inner.f1(); }
+    void callInnerf2() { printf("callInnerf2\n"); inner.f2(); }
 
 
 //
-    void opAdd(T)(T x) { this.x += x; writefln("opAdd(%s)",x); }
-    void opPos()() { writefln("opPos()"); }
-    //void opPos() { writefln("xxx"); }
-    void opIndex(T)(T x) { writefln("opIndex[%s]",x); }
+    void opBinary(string op : "+", T)(T x) { this.x += x; printf("opAdd(%d)\n", x); }
+    void opUnary(string op : "+")() { printf("opPos()\n"); }
+    //void opPos() { printf("xxx"); }
+    void opIndex(T)(T x) { printf("opIndex[%d]\n",x); }
 
     void opIndex(A,B,C)(A a, B b, C c) {
-        writefln("opIndex[(%s)%s,(%s)%s,(%s)%s]",typeid(A),a,
-                 typeid(B),b,typeid(C),c);
+        printf("opIndex[(%s) %d, (%s) %d, (%s) %d]\n", A.stringof.ptr, a,
+                 B.stringof.ptr,b,C.stringof.ptr,c);
     }
-
 
     static if (v > 1) {
-        void opCall(A = int, B = float)(A a = 1, B b = 8.2) { writefln("opCall(%s,%s)",a,b); this.x++; }
-
+        void opCall(A = int, B = float)(A a = 1, B b = 8.2) { printf("opCall(%d, %d)\n",a,b); this.x++; }
     }
-    void opSlice(A,B)(A a, B b) { writefln("opSlice(%s,%s)",a,b); }
-    void opSlice()() { writefln("opSlice()"); }
+    void opSlice(A,B)(A a, B b) { printf("opSlice(%d, %d)\n",a,b); }
+    void opSlice()() { printf("opSlice()\n"); }
 
     void opIndexAssign(A,B)(A a, B b) {
-        writefln("opIndexAssign((%s)%s,(%s)%s)",typeid(A),a,typeid(B),b);
+        printf("opIndexAssign((%s) %d, (%s) %d)\n", A.stringof.ptr, a, B.stringof.ptr, b);
     }
 
     void opSliceAssign(A,B,C)(A a, B b, C c) {
-        writefln("opSliceAssign(%s,%s,%s)",a,b,c);
+        printf("opSliceAssign(%.s, %d, %d)\n", a.length, a.ptr, b, c);
     }
 
-    bool opEquals(A)(A x) { writefln("opEquals((%s))",typeid(A));return true; }
+    bool opEquals(A)(A x) { printf("opEquals((%s))\n", A.stringof.ptr); return true; }
 
     int opApply(T)(int delegate(ref T)dg) {
         for (int i = 0; i < 5; i++) {
@@ -103,8 +100,6 @@ void main() {
     t[];
     t[1..2];
     u[1..2.5];
-    t[1i] = 5;
-    t[-4.5..7i] = "hello";
     t == t;
     auto b = t != t; // without assignment -> "! has no effect in expression"
     t == u;
@@ -112,10 +107,10 @@ void main() {
     u == u;
     b = u != u;
     foreach(int i;t) {
-        writefln("%s",i);
+        printf("%d\n", i);
     }
     foreach(double i;t) {
-        writefln("%s",i);
+        printf("%g\n", i);
     }
 
 }

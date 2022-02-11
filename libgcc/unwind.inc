@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines. -*- C -*-
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -160,12 +160,13 @@ _Unwind_ForcedUnwind_Phase2 (struct _Unwind_Exception *exc,
 
       /* Set up fs to describe the FDE for the caller of cur_context.  */
       code = uw_frame_state_for (context, &fs);
-      if (code != _URC_NO_REASON && code != _URC_END_OF_STACK)
+      if (code != _URC_NO_REASON && code != _URC_END_OF_STACK
+	  && code != _URC_NORMAL_STOP)
 	return _URC_FATAL_PHASE2_ERROR;
 
       /* Unwind successful.  */
       action = _UA_FORCE_UNWIND | _UA_CLEANUP_PHASE;
-      if (code == _URC_END_OF_STACK)
+      if (code == _URC_END_OF_STACK || code == _URC_NORMAL_STOP)
 	action |= _UA_END_OF_STACK;
       stop_code = (*stop) (1, action, exc->exception_class, exc,
 			   context, stop_argument);

@@ -1,5 +1,5 @@
 ;; Machine Description for TI PRU.
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;; Based on the NIOS2 GCC port.
 ;;
@@ -432,7 +432,7 @@
 ;; We define it solely to allow combine to choose SImode
 ;; for word mode when trying to match our cbranch_qbbx_* insn.
 ;;
-;; Check how combine.c:make_extraction() uses
+;; Check how combine.cc:make_extraction() uses
 ;; get_best_reg_extraction_insn() to select the op size.
 (define_insn "extzv<mode>"
   [(set (match_operand:QISI 0 "register_operand"	"=r")

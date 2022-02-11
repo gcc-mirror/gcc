@@ -9,7 +9,7 @@ struct A
 template<typename> struct B
 {
   A a;
-  constexpr int bar() { return a.foo(); } // { dg-error "foo" }
+  constexpr int bar() { return a.foo(); } // { dg-error "foo" "" { target { ! implicit_constexpr } } }
 };
 
-constexpr int i = B<void>().bar(); // { dg-error "bar" }
+constexpr int i = B<void>().bar(); // { dg-error "bar" "" { target { ! implicit_constexpr } } }

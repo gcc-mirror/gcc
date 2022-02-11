@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2021 Free Software Foundation, Inc.
+; Copyright (C) 2005-2022 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -154,10 +154,6 @@ Target RejectNegative Undocumented WarnRemoved
 maltivec
 Target Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions.
-
-mfold-gimple
-Target Var(rs6000_fold_gimple) Init(1)
-Enable early gimple folding of builtins.
 
 mhard-dfp
 Target Mask(DFP) Var(rs6000_isa_flags)
@@ -639,6 +635,18 @@ Enable instructions that guard against return-oriented programming attacks.
 mprivileged
 Target Var(rs6000_privileged) Init(0)
 Generate code that will run in privileged state.
+
+msplat-word-constant
+Target Var(TARGET_SPLAT_WORD_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIW instruction.
+
+msplat-float-constant
+Target Var(TARGET_SPLAT_FLOAT_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIDP instruction.
+
+mieee128-constant
+Target Var(TARGET_IEEE128_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the LXVKQ instruction.
 
 -param=rs6000-density-pct-threshold=
 Target Undocumented Joined UInteger Var(rs6000_density_pct_threshold) Init(85) IntegerRange(0, 100) Param

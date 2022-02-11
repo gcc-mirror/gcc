@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -247,7 +247,7 @@ package body Sem_Elim is
 
       --  Elimination of objects and types is not implemented yet
 
-      elsif Ekind (E) not in Subprogram_Kind then
+      elsif not Is_Subprogram (E) then
          return;
       end if;
 

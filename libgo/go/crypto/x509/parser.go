@@ -214,22 +214,22 @@ func parseValidity(der cryptobyte.String) (time.Time, time.Time, error) {
 func parseExtension(der cryptobyte.String) (pkix.Extension, error) {
 	var ext pkix.Extension
 	if !der.ReadASN1ObjectIdentifier(&ext.Id) {
-		return ext, errors.New("x509: malformed extention OID field")
+		return ext, errors.New("x509: malformed extension OID field")
 	}
 	if der.PeekASN1Tag(cryptobyte_asn1.BOOLEAN) {
 		if !der.ReadASN1Boolean(&ext.Critical) {
-			return ext, errors.New("x509: malformed extention critical field")
+			return ext, errors.New("x509: malformed extension critical field")
 		}
 	}
 	var val cryptobyte.String
 	if !der.ReadASN1(&val, cryptobyte_asn1.OCTET_STRING) {
-		return ext, errors.New("x509: malformed extention value field")
+		return ext, errors.New("x509: malformed extension value field")
 	}
 	ext.Value = val
 	return ext, nil
 }
 
-func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{}, error) {
+func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (any, error) {
 	der := cryptobyte.String(keyData.PublicKey.RightAlign())
 	switch algo {
 	case RSA:

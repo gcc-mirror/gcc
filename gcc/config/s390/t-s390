@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2021 Free Software Foundation, Inc.
+# Copyright (C) 2015-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,13 +20,13 @@ TM_H += $(srcdir)/config/s390/s390-builtins.def
 TM_H += $(srcdir)/config/s390/s390-builtin-types.def
 PASSES_EXTRA += $(srcdir)/config/s390/s390-passes.def
 
-s390-c.o: $(srcdir)/config/s390/s390-c.c \
+s390-c.o: $(srcdir)/config/s390/s390-c.cc \
   $(srcdir)/config/s390/s390-protos.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) $(TM_P_H) $(FLAGS_H) $(C_COMMON_H) $(GGC_H) \
   $(TARGET_H) $(TARGET_DEF_H) $(CPPLIB_H) $(C_PRAGMA_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/s390/s390-c.c
+		$(srcdir)/config/s390/s390-c.cc
 
-s390-d.o: $(srcdir)/config/s390/s390-d.c
+s390-d.o: $(srcdir)/config/s390/s390-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

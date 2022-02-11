@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail224.d(22): Error: need 'this' of type A to access member x from static function f
+fail_compilation/fail224.d(22): Error: need `this` of type `A` to access member `x` from static function `f`
 ---
 */
 

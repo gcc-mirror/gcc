@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -de
+// EXTRA_FILES: imports/test6013.d
 import imports.test6013;
 
 static assert(__traits(compiles, public_alias_value));

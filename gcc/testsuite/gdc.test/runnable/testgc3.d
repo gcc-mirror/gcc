@@ -1,5 +1,11 @@
-// PERMUTE_ARGS:
-// REQUIRED_ARGS:
+/*
+PERMUTE_ARGS:
+REQUIRED_ARGS:
+RUN_OUTPUT:
+---
+finished
+---
+*/
 
 import core.stdc.stdio;
 
@@ -21,4 +27,3 @@ void main()
     printf("finished\n");
     aa[] = null;
 }
-

@@ -90,8 +90,8 @@ gcc/config/m68k/m68k-tables.opt: gcc/config/m68k/m68k-devices.def gcc/config/m68
 gcc/config/mips/mips-tables.opt: gcc/config/mips/mips-cpus.def gcc/config/mips/genopt.sh
 gcc/config/rs6000/rs6000-tables.opt: gcc/config/rs6000/rs6000-cpus.def gcc/config/rs6000/genopt.sh
 gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
-gcc/config/tilegx/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
-gcc/config/tilepro/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
+gcc/config/tilegx/mul-tables.cc: gcc/config/tilepro/gen-mul-tables.cc
+gcc/config/tilepro/mul-tables.cc: gcc/config/tilepro/gen-mul-tables.cc
 # And then, language-specific files
 gcc/cp/cfns.h: gcc/cp/cfns.gperf
 # testsuite
@@ -239,7 +239,7 @@ apply_patch () {
 }
 
 # Check whether this indeed looks like a local tree.
-if [ ! -f gcc/reload.c ]; then
+if [ ! -f gcc/reload.cc ]; then
     echo "This does not seem to be a GCC tree!"
     exit
 fi

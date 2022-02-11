@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001-2021 Free Software Foundation, Inc.
+// Copyright (C) 2001-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -171,6 +171,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // behave a little like basic_ostringstream<sequence::value_type> and a
   // little like containers.
 
+// Ignore warnings about std::iterator.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   template<class _Sequence, std::size_t _Buf_sz = 100>
     class sequence_buffer
     : public std::iterator<std::output_iterator_tag, void, void, void, void>
@@ -306,6 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator++(int)
       { return *this; }
     };
+#pragma GCC diagnostic pop
   
   // The following should be treated as private, at least for now.
   template<class _CharT>
@@ -430,7 +435,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Some helpers, so we can use power on ropes.
   // See below for why this isn't local to the implementation.
-  
+
+// Ignore warnings about std::binary_function.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   // This uses a nonstandard refcount convention.
   // The result has refcount 0.
   template<class _CharT, class _Alloc>
@@ -443,6 +451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const rope<_CharT, _Alloc>& __y)
       { return __x + __y; }
     };
+#pragma GCC diagnostic pop
 
   template <class _CharT, class _Alloc>
     inline rope<_CharT, _Alloc>
@@ -1059,6 +1068,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Iterators are assumed to be thread private.  Ropes can
   // be shared.
   
+// Ignore warnings about std::iterator
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<class _CharT, class _Alloc>
     class _Rope_iterator_base
     : public std::iterator<std::random_access_iterator_tag, _CharT>
@@ -1136,6 +1148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
     };
+#pragma GCC diagnostic pop
 
   template<class _CharT, class _Alloc>
     class _Rope_iterator;

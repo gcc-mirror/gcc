@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-details -fdump-tree-thread4" } */
+/* { dg-options "-O2 -fdump-tree-threadfull1-details -fdump-tree-thread2" } */
 
 extern int status, pt;
 extern int count;
@@ -35,7 +35,7 @@ foo (int N, int c, int b, int *a)
 /* There are 2 jump threading opportunities (which don't cross loops),
    all of which will be realized, which will eliminate testing of
    FLAG, completely.  */
-/* { dg-final { scan-tree-dump-times "Registering jump" 2 "thread1"} } */
+/* { dg-final { scan-tree-dump-times "Registering jump" 2 "threadfull1"} } */
 
 /* We used to remove references to FLAG by DCE2, but this was
    depending on early threaders threading through loop boundaries
@@ -43,4 +43,4 @@ foo (int N, int c, int b, int *a)
    run after loop optimizations , can successfully eliminate the
    references to FLAG.  Verify that ther are no references by the late
    threading passes.  */
-/* { dg-final { scan-tree-dump-not "if .flag" "thread4"} } */
+/* { dg-final { scan-tree-dump-not "if .flag" "thread2"} } */

@@ -1,5 +1,5 @@
 /* Memory and optimization statistics helpers.
-   Copyright (C) 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004-2022 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -60,7 +60,7 @@
 
 struct function;
 
-/* In statistics.c */
+/* In statistics.cc */
 extern void statistics_early_init (void);
 extern void statistics_init (void);
 extern void statistics_fini (void);

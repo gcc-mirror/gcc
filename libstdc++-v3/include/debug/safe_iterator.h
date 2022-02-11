@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003-2021 Free Software Foundation, Inc.
+// Copyright (C) 2003-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1012,6 +1012,23 @@ namespace __gnu_debug
     { return __it.base(); }
 
 } // namespace __gnu_debug
+
+#if __cplusplus >= 201103L && __cplusplus <= 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Iterator, typename _Container, typename _Sequence>
+    constexpr auto
+    __to_address(const __gnu_debug::_Safe_iterator<
+		 __gnu_cxx::__normal_iterator<_Iterator, _Container>,
+		 _Sequence>& __it) noexcept
+    -> decltype(std::__to_address(__it.base().base()))
+    { return std::__to_address(__it.base().base()); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+}
+#endif
 
 #undef _GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS
 #undef _GLIBCXX_DEBUG_VERIFY_REL_OPERANDS

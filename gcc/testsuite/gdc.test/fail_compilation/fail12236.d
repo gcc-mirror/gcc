@@ -1,13 +1,13 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12236.d(16): Error: forward reference to inferred return type of function 'f1'
-fail_compilation/fail12236.d(16):        while evaluating pragma(msg, f1.mangleof)
-fail_compilation/fail12236.d(21): Error: forward reference to inferred return type of function 'f2'
-fail_compilation/fail12236.d(21):        while evaluating pragma(msg, f2(T)(T).mangleof)
-fail_compilation/fail12236.d(27): Error: template instance fail12236.f2!int error instantiating
-fail_compilation/fail12236.d(31): Error: forward reference to inferred return type of function '__lambda1'
-fail_compilation/fail12236.d(31):        while evaluating pragma(msg, __lambda1.mangleof)
+fail_compilation/fail12236.d(16): Error: forward reference to inferred return type of function `f1`
+fail_compilation/fail12236.d(16):        while evaluating `pragma(msg, f1.mangleof)`
+fail_compilation/fail12236.d(21): Error: forward reference to inferred return type of function `f2`
+fail_compilation/fail12236.d(21):        while evaluating `pragma(msg, f2(T)(T).mangleof)`
+fail_compilation/fail12236.d(27): Error: template instance `fail12236.f2!int` error instantiating
+fail_compilation/fail12236.d(31): Error: forward reference to inferred return type of function `__lambda1`
+fail_compilation/fail12236.d(31):        while evaluating `pragma(msg, __lambda1.mangleof)`
 ---
 */
 

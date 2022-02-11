@@ -2226,6 +2226,12 @@
 #endif
 
 
+/* Define to 1 if ld64 supports '-platform_version'. */
+#ifndef USED_FOR_TARGET
+#undef LD64_HAS_PLATFORM_VERSION
+#endif
+
+
 /* Define to ld64 version. */
 #ifndef USED_FOR_TARGET
 #undef LD64_VERSION
@@ -2363,6 +2369,18 @@
 /* Define to PREFIX/include if cpp should also search that directory. */
 #ifndef USED_FOR_TARGET
 #undef PREFIX_INCLUDE_DIR
+#endif
+
+
+/* The size of `dev_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_DEV_T
+#endif
+
+
+/* The size of `ino_t', as computed by sizeof. */
+#ifndef USED_FOR_TARGET
+#undef SIZEOF_INO_T
 #endif
 
 

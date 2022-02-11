@@ -182,7 +182,7 @@ nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
-AM_CFLAGS = -Wall -g -fexceptions
+AM_CFLAGS = -Wall -g -fexceptions $(CET_FLAGS)
 if FFI_DEBUG
 # Build debug. Define FFI_DEBUG on the commandline so that, when building with
 # MSVC, it can link against the debug CRT.
@@ -218,7 +218,7 @@ libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script
 libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
-AM_CCASFLAGS = $(AM_CPPFLAGS)
+AM_CCASFLAGS = $(AM_CPPFLAGS) $(CET_FLAGS)
 
 # Multilib support.  Automake should provide these on its own.
 all-recursive: all-multi

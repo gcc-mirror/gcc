@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,11 +31,26 @@
 
 --  Integer exponentiation (checks off)
 
+--  Preconditions, postconditions, ghost code, loop invariants and assertions
+--  in this unit are meant for analysis only, not for run-time checking, as it
+--  would be too costly otherwise. This is enforced by setting the assertion
+--  policy to Ignore.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Exponn;
 
-package System.Exn_Int is
+package System.Exn_Int
+  with SPARK_Mode
+is
 
-   function Exn_Integer is new Exponn (Integer);
-   pragma Pure_Function (Exn_Integer);
+   package Exponn_Integer is new Exponn (Integer);
+
+   function Exn_Integer (Left : Integer; Right : Natural) return Integer
+     renames Exponn_Integer.Expon;
 
 end System.Exn_Int;

@@ -17,7 +17,13 @@ static void SetNaClSwitchExpectations (void)
 void TestSyscall(void)
 {
   SetNaClSwitchExpectations();
+
   _setjmp (g_return_jmp_buf);
 }
+
+/* sizeof g_return_jmp_buf is zero size but it's being passed to
+   a function declared to take an array of one element which might
+   trigger a warning.  Prune it out:
+   { dg-prune-output "-Wstringop-overflow" } */
 
 /* { dg-final { scan-tree-dump-not "setjmp" "optimized" } } */

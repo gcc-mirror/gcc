@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2021 Free Software Foundation, Inc.
+   Copyright (C) 2014-2022 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -36,7 +36,7 @@
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 
-/* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
+/* Avoid the default in ../../gcc.cc, which adds "-pthread", which is not
    supported for nvptx.  */
 #define GOMP_SELF_SPECS ""
 
@@ -87,8 +87,14 @@
 #define STACK_SIZE_MODE Pmode
 
 #define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
+#define TARGET_SM53 (ptx_isa_option >= PTX_ISA_SM53)
+#define TARGET_SM70 (ptx_isa_option >= PTX_ISA_SM70)
+#define TARGET_SM75 (ptx_isa_option >= PTX_ISA_SM75)
+#define TARGET_SM80 (ptx_isa_option >= PTX_ISA_SM80)
 
+#define TARGET_PTX_6_0 (ptx_version_option >= PTX_VERSION_6_0)
 #define TARGET_PTX_6_3 (ptx_version_option >= PTX_VERSION_6_3)
+#define TARGET_PTX_7_0 (ptx_version_option >= PTX_VERSION_7_0)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.
@@ -315,7 +321,7 @@ struct GTY(()) machine_function
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 
-#define STORE_FLAG_VALUE -1
+#define STORE_FLAG_VALUE 1
 #define FLOAT_STORE_FLAG_VALUE(MODE) REAL_VALUE_ATOF("1.0", (MODE))
 
 #define CASE_VECTOR_MODE SImode

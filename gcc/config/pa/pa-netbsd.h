@@ -1,5 +1,5 @@
 /* Definitions for PA_RISC with ELF format
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GLOBAL_ASM_OP ".globl "
 
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
-   labels in a function declaration (since pa.c seems determined to do
+   labels in a function declaration (since pa.cc seems determined to do
    it differently)  */
 
 #undef ASM_DECLARE_FUNCTION_NAME

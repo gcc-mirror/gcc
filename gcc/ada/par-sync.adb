@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,7 +172,7 @@ package body Sync is
                --  current malformed aspect has been successfully skipped.
 
                if Token = Tok_Identifier
-                 and then Get_Aspect_Id (Token_Name) /= No_Aspect
+                 and then Is_Aspect_Id (Token_Name)
                then
                   Restore_Scan_State (Scan_State);
                   exit;

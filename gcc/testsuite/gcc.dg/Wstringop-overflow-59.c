@@ -200,7 +200,11 @@ void memset_malloc_2_off (void)
     memset (p5_7, 0, 3);
     memset (p5_7, 0, 4);
     memset (p5_7, 0, 5);
-    memset (p5_7, 0, 6);      // { dg-warning "memset' writing 6 bytes into a region of size 5 " }
+    /* The warning code conservatively "merges" both the sizes and the offsets
+       into A5 and A7 and so only the second store below is diagnosed but not
+       the first.  See PR 103215.  The logic needs to be tightened up.  */
+    memset (p5_7, 0, 6);      // { dg-warning "memset' writing 6 bytes into a region of size 5 " "pr??????" { xfail *-*-* } }
+    memset (p5_7, 0, 7);      // { dg-warning "memset' writing 7 bytes into a region of size 6 " }
   }
 
   int i3 = SR (3, INT_MAX);
@@ -215,7 +219,8 @@ void memset_malloc_2_off (void)
     // { dg-message "at offset \\\[4, 9] into destination object 'a9'" "note" { target *-*-* } .-1 }
     // { dg-message "at offset \\\[3, 9] into destination object 'a9'" "note" { target *-*-* } .-2 }
     // { dg-message "at offset \\\[2, 9] into destination object 'a9'" "note" { target *-*-* } .-3 }
-    // { dg-message ": destination object 'a9'" "note" { target *-*-* } .-4 }
+    // { dg-message "at offset \\\[1, 9] into destination object 'a9'" "note" { target *-*-* } .-4 }
+    // { dg-message ": destination object 'a9'" "pr??????" { xfail *-*-* } .-5 }
     char *p5_p2 = a5 + i2;    // 3 bytes left
     char *p9_p3 = a9 + i3;    // 6 bytes left
     char *p =
@@ -227,7 +232,8 @@ void memset_malloc_2_off (void)
     memset (q, 0, 3);
     memset (q, 0, 4);
     memset (q, 0, 5);
-    memset (q, 0, 6);         // { dg-warning "memset' writing 6 bytes into a region of size 5" }
+    memset (q, 0, 6);         // { dg-warning "memset' writing 6 bytes into a region of size 5" "pr??????" { xfail *-*-* } }
+    memset (q, 0, 7);         // { dg-warning "memset' writing 7 bytes into a region of size 6" }
 
     --q;                      // [3 - 6] bytes left
     memset (q, 0, 1);
@@ -236,7 +242,8 @@ void memset_malloc_2_off (void)
     memset (q, 0, 4);
     memset (q, 0, 5);
     memset (q, 0, 6);
-    memset (q, 0, 7);         // { dg-warning "memset' writing 7 bytes into a region of size 6" }
+    memset (q, 0, 7);         // { dg-warning "memset' writing 7 bytes into a region of size 6" "pr??????" { xfail *-*-* } }
+    memset (q, 0, 8);         // { dg-warning "memset' writing 8 bytes into a region of size 7" }
 
     --q;                      // [4 - 7] bytes left
     memset (q, 0, 1);
@@ -246,7 +253,8 @@ void memset_malloc_2_off (void)
     memset (q, 0, 5);
     memset (q, 0, 6);
     memset (q, 0, 7);
-    memset (q, 0, 8);         // { dg-warning "memset' writing 8 bytes into a region of size 7" }
+    memset (q, 0, 8);         // { dg-warning "memset' writing 8 bytes into a region of size 7" "pr??????" { xfail *-*-* } }
+    memset (q, 0, 9);         // { dg-warning "memset' writing 9 bytes into a region of size 8" }
 
     int m1_x = SR (-1, INT_MAX);
     int m2_x = SR (-2, INT_MAX);

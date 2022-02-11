@@ -1,6 +1,6 @@
 // P0806R2
 // { dg-do compile { target c++17 } }
-// { dg-options "" }
+// { dg-options "-pedantic" }
 
 struct X {
   int x;

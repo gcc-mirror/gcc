@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2022 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -351,7 +351,7 @@ enum reg_class
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
  
 #define REGNO_OK_FOR_BASE_P(regno)             \
@@ -569,7 +569,7 @@ struct cum_arg { int nbytes; };
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* According expr.c, a value of around 6 should minimize code size, and
+/* According expr.cc, a value of around 6 should minimize code size, and
    for the V850 series, that's our primary concern.  */
 #define MOVE_RATIO(speed) 6
 
@@ -766,7 +766,7 @@ typedef enum
 /* enum GHS_SECTION_KIND is an enumeration of the kinds of sections that
    can appear in the "ghs section" pragma.  These names are used to index
    into the GHS_default_section_names[] and GHS_current_section_names[]
-   that are defined in v850.c, and so the ordering of each must remain
+   that are defined in v850.cc, and so the ordering of each must remain
    consistent. 
 
    These arrays give the default and current names for each kind of 

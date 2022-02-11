@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,28 +35,28 @@ package body Ada.Strings.Text_Buffers.Utils is
      (Buffer : in out Root_Buffer_Type'Class; Item : Character_7)
    is
    begin
-      Put (Buffer, (1 => Item));
+      Put (Buffer, [Item]);
    end Put_7bit;
 
    procedure Put_Character
      (Buffer : in out Root_Buffer_Type'Class; Item : Character)
    is
    begin
-      Put (Buffer, (1 => Item));
+      Put (Buffer, [Item]);
    end Put_Character;
 
    procedure Put_Wide_Character
      (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Character)
    is
    begin
-      Wide_Put (Buffer, (1 => Item));
+      Wide_Put (Buffer, [Item]);
    end Put_Wide_Character;
 
    procedure Put_Wide_Wide_Character
      (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Wide_Character)
    is
    begin
-      Wide_Wide_Put (Buffer, (1 => Item));
+      Wide_Wide_Put (Buffer, [Item]);
    end Put_Wide_Wide_Character;
 
    procedure Put_UTF_8_Lines

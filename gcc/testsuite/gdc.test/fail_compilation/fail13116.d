@@ -1,12 +1,13 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13116.d(13): Error: this is not an lvalue
+fail_compilation/fail13116.d(14): Error: `this` is not an lvalue and cannot be modified
+fail_compilation/fail13116.d(23): Error: `super` is not an lvalue and cannot be modified
 ---
 */
 struct S
 {
-    ref S notEvil() { return this; } // this should be accepted
+    ref S notEvil() return { return this; } // this should be accepted
 }
 class C
 {
@@ -16,12 +17,6 @@ void main()
 {
 }
 
-/*
-TEST_OUTPUT:
----
-fail_compilation/fail13116.d(28): Error: super is not an lvalue
----
-*/
 class Base { }
 class Derived : Base
 {

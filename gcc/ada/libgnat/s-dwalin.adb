@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@ with Ada.Unchecked_Deallocation;
 
 with Interfaces; use Interfaces;
 
-with System;                   use System;
 with System.Address_Image;
 with System.Bounded_Strings;   use System.Bounded_Strings;
 with System.IO;                use System.IO;

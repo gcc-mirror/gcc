@@ -7,7 +7,15 @@ int
 main (void)
 {
   int l, l2, l3, l4;
+  /* { dg-note {'l' was declared here} {} { target *-*-* } .-1 } */
+  /* { dg-note {'l2' was declared here} {} { target *-*-* } .-2 } */
+  /* { dg-note {'l3' was declared here} {} { target *-*-* } .-3 } */
+  /* { dg-note {'l4' was declared here} {} { target *-*-* } .-4 } */
   bool b, b2, b3, b4;
+  /* { dg-note {'b' was declared here} {} { target *-*-* } .-1 } */
+  /* { dg-note {'b2' was declared here} {} { target *-*-* } .-2 } */
+  /* { dg-note {'b3' was declared here} {} { target *-*-* } .-3 } */
+  /* { dg-note {'b4' was declared here} {} { target *-*-* } .-4 } */
   int i, i2;
 
   #pragma acc parallel if(l) /* { dg-warning "is used uninitialized" } */

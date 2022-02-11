@@ -1,5 +1,5 @@
-/* toplev.h - Various declarations for functions found in toplev.c
-   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+/* toplev.h - Various declarations for functions found in toplev.cc
+   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,9 +54,9 @@ extern void rest_of_type_compilation (tree, int);
 extern void init_optimization_passes (void);
 extern bool enable_rtl_dump_file (void);
 
-/* In except.c.  Initialize exception handling.  This is used by the Ada
-   and LTO front ends to initialize EH "on demand".  See lto-streamer-in.c
-   and ada/gcc-interface/misc.c.  */
+/* In except.cc.  Initialize exception handling.  This is used by the Ada
+   and LTO front ends to initialize EH "on demand".  See lto-streamer-in.cc
+   and ada/gcc-interface/misc.cc.  */
 extern void init_eh (void);
 
 extern void announce_function (tree);
@@ -76,7 +76,7 @@ extern void target_reinit (void);
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 
-/* See toplev.c.  */
+/* See toplev.cc.  */
 extern int flag_rerun_cse_after_global_opts;
 
 extern void print_version (FILE *, const char *, bool);

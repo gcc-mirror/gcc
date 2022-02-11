@@ -94,7 +94,7 @@ package Ada.Strings.UTF_Encoding is
                 Character'Val (16#FE#);
 
    BOM_16   : constant UTF_16_Wide_String :=
-                (1 => Wide_Character'Val (16#FEFF#));
+                [Wide_Character'Val (16#FEFF#)];
 
    function Encoding
      (Item    : UTF_String;

@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 //
-// Copyright (C) 2011-2021 Free Software Foundation, Inc.
+// Copyright (C) 2011-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,8 +40,26 @@ test01()
   }
 }
 
+#pragma GCC push_options
+#pragma GCC optimize "0"
+
+void
+test02()
+{
+  {
+    const size_t len = 3;
+    typedef std::array<int, len> array_type;
+    array_type a;
+
+    VERIFY( a.max_size() == len );  // { dg-bogus "-Wmaybe-uninitialized"
+  }
+}
+
+#pragma GCC pop_options
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }

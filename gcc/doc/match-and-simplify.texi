@@ -1,4 +1,4 @@
-@c Copyright (C) 2014-2021 Free Software Foundation, Inc.
+@c Copyright (C) 2014-2022 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -12,7 +12,7 @@ tries to address several issues.
 
 @enumerate
 @item unify expression simplifications currently spread and duplicated
-    over separate files like fold-const.c, gimple-fold.c and builtins.c
+    over separate files like fold-const.cc, gimple-fold.cc and builtins.cc
 @item allow for a cheap way to implement building and simplifying
     non-trivial GIMPLE expressions, avoiding the need to go through
     building and simplifying GENERIC via fold_buildN and then

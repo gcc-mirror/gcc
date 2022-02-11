@@ -1,5 +1,5 @@
 /* XL compiler hardware transactional execution intrinsics
-   Copyright (C) 2013-2021 Free Software Foundation, Inc.
+   Copyright (C) 2013-2022 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ extern "C" {
 /* FIXME: __TM_simple_begin and __TM_begin should be marked
    __always_inline__ as well but this currently produces an error
    since the tbegin builtins are "returns_twice" and setjmp_call_p
-   (calls.c) therefore identifies the functions as calling setjmp.
+   (calls.cc) therefore identifies the functions as calling setjmp.
    The tree inliner currently refuses to inline functions calling
    setjmp.  */
 

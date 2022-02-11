@@ -1,5 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,7 +48,7 @@ enum prediction
    TAKEN
 };
 
-/* In emit-rtl.c.  */
+/* In emit-rtl.cc.  */
 extern profile_probability split_branch_probability;
 
 extern gcov_type get_hot_bb_threshold (void);
@@ -104,7 +104,7 @@ extern void change_edge_frequency (edge, profile_probability);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 
-/* In ipa-pure-const.c   */
+/* In ipa-pure-const.cc   */
 extern void warn_function_cold (tree);
 
 #endif  /* GCC_PREDICT_H */

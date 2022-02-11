@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail13574.d(21): Error: '$' is not an lvalue
-fail_compilation/fail13574.d(27): Error: '$' is not an lvalue
+fail_compilation/fail13574.d(21): Error: cannot modify operator `$`
+fail_compilation/fail13574.d(27): Error: cannot modify operator `$`
 ---
 */
 

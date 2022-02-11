@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2022 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -745,6 +745,7 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   size_t depend_size = 0;
   uintptr_t depend_cnt = 0;
   size_t tgt_align = 0, tgt_size = 0;
+  uintptr_t args_cnt = 0;
 
   if (depend != NULL)
     {
@@ -769,10 +770,22 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
 	tgt_size += tgt_align - 1;
       else
 	tgt_size = 0;
+      if (args)
+	{
+	  void **cargs = args;
+	  while (*cargs)
+	    {
+	      intptr_t id = (intptr_t) *cargs++;
+	      if (id & GOMP_TARGET_ARG_SUBSEQUENT_PARAM)
+		cargs++;
+	    }
+	  args_cnt = cargs + 1 - args;
+	}
     }
 
   task = gomp_malloc (sizeof (*task) + depend_size
 		      + sizeof (*ttask)
+		      + args_cnt * sizeof (void *)
 		      + mapnum * (sizeof (void *) + sizeof (size_t)
 				  + sizeof (unsigned short))
 		      + tgt_size);
@@ -785,9 +798,18 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   ttask->devicep = devicep;
   ttask->fn = fn;
   ttask->mapnum = mapnum;
-  ttask->args = args;
   memcpy (ttask->hostaddrs, hostaddrs, mapnum * sizeof (void *));
-  ttask->sizes = (size_t *) &ttask->hostaddrs[mapnum];
+  if (args_cnt)
+    {
+      ttask->args = (void **) &ttask->hostaddrs[mapnum];
+      memcpy (ttask->args, args, args_cnt * sizeof (void *));
+      ttask->sizes = (size_t *) &ttask->args[args_cnt];
+    }
+  else
+    {
+      ttask->args = args;
+      ttask->sizes = (size_t *) &ttask->hostaddrs[mapnum];
+    }
   memcpy (ttask->sizes, sizes, mapnum * sizeof (size_t));
   ttask->kinds = (unsigned short *) &ttask->sizes[mapnum];
   memcpy (ttask->kinds, kinds, mapnum * sizeof (unsigned short));
@@ -1226,6 +1248,8 @@ gomp_task_run_post_handle_dependers (struct gomp_task *child_task,
 		}
 	    }
 	}
+      else
+	task->parent = NULL;
       if (taskgroup)
 	{
 	  priority_queue_insert (PQ_TASKGROUP, &taskgroup->taskgroup_queue,

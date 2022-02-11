@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail249.d(16): Error: invalid foreach aggregate `bar()`
+fail_compilation/fail249.d(16): Error: invalid `foreach` aggregate `bar()`
 ---
 */
 

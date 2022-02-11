@@ -1,0 +1,304 @@
+/* Routines for reading GIMPLE from a file stream.
+
+   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Contributed by Diego Novillo <dnovillo@google.com>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
+#include "backend.h"
+#include "tree.h"
+#include "gimple.h"
+#include "ssa.h"
+#include "gimple-streamer.h"
+#include "tree-eh.h"
+#include "gimple-iterator.h"
+#include "cgraph.h"
+#include "value-prof.h"
+
+/* Read a PHI function for basic block BB in function FN.  DATA_IN is
+   the file being read.  IB is the input block to use for reading.  */
+
+static gphi *
+input_phi (class lto_input_block *ib, basic_block bb, class data_in *data_in,
+	   struct function *fn)
+{
+  unsigned HOST_WIDE_INT ix;
+  tree phi_result;
+  int i, len;
+  gphi *result;
+
+  ix = streamer_read_uhwi (ib);
+  phi_result = (*SSANAMES (fn))[ix];
+  len = EDGE_COUNT (bb->preds);
+  result = create_phi_node (phi_result, bb);
+
+  /* We have to go through a lookup process here because the preds in the
+     reconstructed graph are generally in a different order than they
+     were in the original program.  */
+  for (i = 0; i < len; i++)
+    {
+      tree def = stream_read_tree (ib, data_in);
+      int src_index = streamer_read_uhwi (ib);
+      bitpack_d bp = streamer_read_bitpack (ib);
+      basic_block sbb = BASIC_BLOCK_FOR_FN (fn, src_index);
+      edge e = NULL;
+      int j;
+
+      for (j = 0; j < len; j++)
+	if (EDGE_PRED (bb, j)->src == sbb)
+	  {
+	    e = EDGE_PRED (bb, j);
+	    break;
+	  }
+
+      add_phi_arg (result, def, e, UNKNOWN_LOCATION);
+      /* Read location and lexical block information.  */
+      location_t *arg_locp = gimple_phi_arg_location_ptr (result, e->dest_idx);
+      data_in->location_cache.input_location_and_block (arg_locp, &bp, ib,
+							data_in);
+    }
+
+  return result;
+}
+
+
+/* Read a statement with tag TAG in function FN from block IB using
+   descriptors in DATA_IN.  */
+
+static gimple *
+input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
+		   enum LTO_tags tag)
+{
+  gimple *stmt;
+  enum gimple_code code;
+  unsigned HOST_WIDE_INT num_ops;
+  size_t i;
+  struct bitpack_d bp;
+  bool has_hist;
+
+  code = lto_tag_to_gimple_code (tag);
+
+  /* Read the tuple header.  */
+  bp = streamer_read_bitpack (ib);
+  num_ops = bp_unpack_var_len_unsigned (&bp);
+  stmt = gimple_alloc (code, num_ops);
+  stmt->no_warning = bp_unpack_value (&bp, 1);
+  if (is_gimple_assign (stmt))
+    stmt->nontemporal_move = bp_unpack_value (&bp, 1);
+  stmt->has_volatile_ops = bp_unpack_value (&bp, 1);
+  has_hist = bp_unpack_value (&bp, 1);
+  stmt->subcode = bp_unpack_var_len_unsigned (&bp);
+
+  /* Read location and lexical block information.  */
+  data_in->location_cache.input_location_and_block (gimple_location_ptr (stmt),
+						    &bp, ib, data_in);
+
+  /* Read in all the operands.  */
+  switch (code)
+    {
+    case GIMPLE_RESX:
+      gimple_resx_set_region (as_a <gresx *> (stmt),
+			      streamer_read_hwi (ib));
+      break;
+
+    case GIMPLE_EH_MUST_NOT_THROW:
+      gimple_eh_must_not_throw_set_fndecl (
+	as_a <geh_mnt *> (stmt),
+	stream_read_tree (ib, data_in));
+      break;
+
+    case GIMPLE_EH_DISPATCH:
+      gimple_eh_dispatch_set_region (as_a <geh_dispatch *> (stmt),
+				     streamer_read_hwi (ib));
+      break;
+
+    case GIMPLE_ASM:
+      {
+	/* FIXME lto.  Move most of this into a new gimple_asm_set_string().  */
+	gasm *asm_stmt = as_a <gasm *> (stmt);
+	tree str;
+	asm_stmt->ni = streamer_read_uhwi (ib);
+	asm_stmt->no = streamer_read_uhwi (ib);
+	asm_stmt->nc = streamer_read_uhwi (ib);
+	asm_stmt->nl = streamer_read_uhwi (ib);
+	str = streamer_read_string_cst (data_in, ib);
+	asm_stmt->string = TREE_STRING_POINTER (str);
+      }
+      /* Fallthru  */
+
+    case GIMPLE_ASSIGN:
+    case GIMPLE_CALL:
+    case GIMPLE_RETURN:
+    case GIMPLE_SWITCH:
+    case GIMPLE_LABEL:
+    case GIMPLE_COND:
+    case GIMPLE_GOTO:
+    case GIMPLE_DEBUG:
+      for (i = 0; i < num_ops; i++)
+	{
+	  tree *opp, op = stream_read_tree (ib, data_in);
+	  gimple_set_op (stmt, i, op);
+	  if (!op)
+	    continue;
+
+	  opp = gimple_op_ptr (stmt, i);
+	  if (TREE_CODE (*opp) == ADDR_EXPR)
+	    opp = &TREE_OPERAND (*opp, 0);
+	  while (handled_component_p (*opp))
+	    opp = &TREE_OPERAND (*opp, 0);
+	  /* At LTO output time we wrap all global decls in MEM_REFs to
+	     allow seamless replacement with prevailing decls.  Undo this
+	     here if the prevailing decl allows for this.
+	     ???  Maybe we should simply fold all stmts.  */
+	  if (TREE_CODE (*opp) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (*opp, 0)) == ADDR_EXPR
+	      && integer_zerop (TREE_OPERAND (*opp, 1))
+	      && (TREE_THIS_VOLATILE (*opp)
+		  == TREE_THIS_VOLATILE
+		       (TREE_OPERAND (TREE_OPERAND (*opp, 0), 0)))
+	      && !TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (*opp, 1)))
+	      && (TREE_TYPE (*opp)
+		  == TREE_TYPE (TREE_TYPE (TREE_OPERAND (*opp, 1))))
+	      && (TREE_TYPE (*opp)
+		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*opp, 0), 0))))
+	    *opp = TREE_OPERAND (TREE_OPERAND (*opp, 0), 0);
+	}
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
+	{
+	  if (gimple_call_internal_p (call_stmt))
+	    gimple_call_set_internal_fn
+	      (call_stmt, streamer_read_enum (ib, internal_fn, IFN_LAST));
+	  else
+	    gimple_call_set_fntype (call_stmt, stream_read_tree (ib, data_in));
+	}
+      break;
+
+    case GIMPLE_NOP:
+    case GIMPLE_PREDICT:
+      break;
+
+    case GIMPLE_TRANSACTION:
+      gimple_transaction_set_label_norm (as_a <gtransaction *> (stmt),
+				         stream_read_tree (ib, data_in));
+      gimple_transaction_set_label_uninst (as_a <gtransaction *> (stmt),
+				           stream_read_tree (ib, data_in));
+      gimple_transaction_set_label_over (as_a <gtransaction *> (stmt),
+				         stream_read_tree (ib, data_in));
+      break;
+
+    default:
+      internal_error ("bytecode stream: unknown GIMPLE statement tag %s",
+		      lto_tag_name (tag));
+    }
+
+  /* Update the properties of symbols, SSA names and labels associated
+     with STMT.  */
+  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
+    {
+      tree lhs = gimple_get_lhs (stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	SSA_NAME_DEF_STMT (lhs) = stmt;
+    }
+  else if (code == GIMPLE_ASM)
+    {
+      gasm *asm_stmt = as_a <gasm *> (stmt);
+      unsigned i;
+
+      for (i = 0; i < gimple_asm_noutputs (asm_stmt); i++)
+	{
+	  tree op = TREE_VALUE (gimple_asm_output_op (asm_stmt, i));
+	  if (TREE_CODE (op) == SSA_NAME)
+	    SSA_NAME_DEF_STMT (op) = stmt;
+	}
+    }
+
+  /* Reset alias information.  */
+  if (code == GIMPLE_CALL)
+    gimple_call_reset_alias_info (as_a <gcall *> (stmt));
+
+  /* Mark the statement modified so its operand vectors can be filled in.  */
+  gimple_set_modified (stmt, true);
+  if (has_hist)
+    stream_in_histogram_value (ib, stmt);
+
+  return stmt;
+}
+
+
+/* Read a basic block with tag TAG from DATA_IN using input block IB.
+   FN is the function being processed.  */
+
+void
+input_bb (class lto_input_block *ib, enum LTO_tags tag,
+	  class data_in *data_in, struct function *fn,
+	  int count_materialization_scale)
+{
+  unsigned int index;
+  basic_block bb;
+  gimple_stmt_iterator bsi;
+
+  /* This routine assumes that CFUN is set to FN, as it needs to call
+     basic GIMPLE routines that use CFUN.  */
+  gcc_assert (cfun == fn);
+
+  index = streamer_read_uhwi (ib);
+  bb = BASIC_BLOCK_FOR_FN (fn, index);
+
+  bb->count = profile_count::stream_in (ib);
+  if (count_materialization_scale != REG_BR_PROB_BASE
+      && bb->count.ipa ().nonzero_p ())
+    bb->count
+      = bb->count.apply_scale (count_materialization_scale, REG_BR_PROB_BASE);
+  bb->flags = streamer_read_hwi (ib);
+  bb->discriminator = streamer_read_hwi (ib);
+
+  /* LTO_bb1 has statements.  LTO_bb0 does not.  */
+  if (tag == LTO_bb0)
+    return;
+
+  bsi = gsi_start_bb (bb);
+  tag = streamer_read_record_start (ib);
+  while (tag)
+    {
+      gimple *stmt = input_gimple_stmt (ib, data_in, tag);
+      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+
+      /* After the statement, expect a 0 delimiter or the EH region
+	 that the previous statement belongs to.  */
+      tag = streamer_read_record_start (ib);
+      lto_tag_check_set (tag, 2, LTO_eh_region, LTO_null);
+
+      if (tag == LTO_eh_region)
+	{
+	  HOST_WIDE_INT region = streamer_read_hwi (ib);
+	  gcc_assert (region == (int) region);
+	  add_stmt_to_eh_lp (stmt, region);
+	}
+
+      tag = streamer_read_record_start (ib);
+    }
+
+  tag = streamer_read_record_start (ib);
+  while (tag)
+    {
+      input_phi (ib, bb, data_in, fn);
+      tag = streamer_read_record_start (ib);
+    }
+}

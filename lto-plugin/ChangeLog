@@ -1,3 +1,10 @@
+2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* lto-plugin.c: Fix -linker-output-auto-notlo-rel ->
+	-linker-output-auto-nolto-rel typo.
+	(process_option): Adjust accordingly, accepting both old and
+	new spelling.
+
 2021-09-13  Andrew Pinski  <apinski@marvell.com>
 
 	PR lto/49664

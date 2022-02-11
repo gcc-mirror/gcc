@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/imports/a13465.d(10): Error: cannot infer type from template instance isMaskField!()
-fail_compilation/ice13465a.d(17): Error: template instance imports.a13465.isMatchingMaskField!() error instantiating
+fail_compilation/imports/a13465.d(10): Error: cannot infer type from template instance `isMaskField!()`
+fail_compilation/ice13465a.d(17): Error: template instance `imports.a13465.isMatchingMaskField!()` error instantiating
 ---
 */
 

@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -o-
+// EXTRA_FILES: imports/a13226.d
 // PERMUTE_ARGS: -version=bug
 
 import imports.a13226;

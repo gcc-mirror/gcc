@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test11047.d(11): Error: value of x is not known at compile time
-fail_compilation/test11047.d(11): Error: value of x is not known at compile time
+fail_compilation/test11047.d(11): Error: value of `x` is not known at compile time
+fail_compilation/test11047.d(11): Error: value of `x` is not known at compile time
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=11047

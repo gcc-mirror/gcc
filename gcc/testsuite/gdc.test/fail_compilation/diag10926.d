@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag10926.d(11): Error: cast(const(int)[])c is not an lvalue
+fail_compilation/diag10926.d(11): Error: `cast(const(int)[])c` is not an lvalue and cannot be modified
 ---
 */
 

@@ -130,16 +130,18 @@ void test_width_var (void)
 
   {
     /* Create an unsigned range with a lower bound greater than 1 and
-       an upper bound in excess of INT_MAX and verify that the lower
-       bound isn't used as the minimum output (since the excessive
-       upper bound wraps around zero).  It's possible to constrain
-       the upper bound on the output more, based on the upper bound
-       of the width here, but not worth the trouble.  */
-    extern unsigned w;
+       an upper bound in excess of INT_MAX and verify that after conversion
+       to signed int the lower bound isn't used as the minimum output (since
+       the excessive upper bound wraps around zero).  Passing the precision
+       as unsigned, without the cast to signed int, is undedined.
+       It's possible to constrain the upper bound on the output more, based
+       on the upper bound of the width here, but not worth the trouble.  */
+    unsigned w = W (unsigned);
     if (w < 5 || (unsigned)-1 - 7 < w)
       w = 5;
+    int val = V (int);
 
-    T ("%*u", w, V (int));   /* { dg-warning "between 1 and 2147483648 " } */
+    T ("%*u", (int)w, val);   /* { dg-warning "between 1 and 2147483648 " } */
   }
 
   {
@@ -234,13 +236,17 @@ void test_precision_var (void)
   {
     /* Similar to the corresponding width case, create an unsigned range
        with a lower bound greater than 1 and an upper bound in excess of
-       INT_MAX and verify that the lower bound isn't used as the minimum
-       output (since the excessive upper bound wraps around zero).  */
-    extern unsigned p;
+       INT_MAX and verify that after conversion to int the lower bound isn't
+       used as the minimum output (since the excessive upper bound wraps
+       around zero).  Passing the precision as unsigned, without a cast to
+       signed int, is undefined.  */
+    unsigned p = V (unsigned);
     if (p < 7 || (unsigned)-1 - 9 < p)
       p = 7;
 
-    T ("%.*u", p, V (int));   /* { dg-warning "up to 2147483647 " } */
+    int val = V (int);
+
+    T ("%.*u", (int)p, val);   /* { dg-warning "up to 2147483647 " } */
   }
 
   {

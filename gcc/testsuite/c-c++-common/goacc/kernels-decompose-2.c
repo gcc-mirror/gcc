@@ -1,8 +1,13 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
+
 /* { dg-additional-options "--param=openacc-kernels=decompose" }
 /* { dg-additional-options "-O2" } for 'parloops'.  */
+
+/* { dg-additional-options "--param=openacc-privatization=noisy" }
+   Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):
+   { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
@@ -13,7 +18,7 @@
    passed to 'incr' may be unset, and in that case, it will be set to [...]",
    so to maintain compatibility with earlier Tcl releases, we manually
    initialize counter variables:
-   { dg-line l_dummy[variable c_loop_i 0 c_loop_j 0 c_loop_k 0 c_part 0] }
+   { dg-line l_dummy[variable c_compute 0 c_loop_i 0 c_loop_j 0 c_loop_k 0 c_part 0] }
    { dg-message "dummy" "" { target iN-VAl-Id } l_dummy } to avoid
    "WARNING: dg-line var l_dummy defined, but not used".  */
 
@@ -40,23 +45,43 @@ main ()
 #define N 10
   int a[N], b[N], c[N];
 
-#pragma acc kernels
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {variable 'x\.0' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   {
-    x = 0; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    x = 0;
     y = x < 10;
     z = x++;
     ;
   }
 
-  { /*TODO Instead of using 'for (int i = 0; [...])', move 'int i' outside, to work around for ICE detailed in 'kernels-decompose-ice-1.c'.  */
+  {
     int i;
-#pragma acc kernels /* { dg-optimized "assigned OpenACC gang loop parallelism" } */
-  for (i = 0; i < N; i++) /* { dg-message "note: beginning 'parloops' part in OpenACC 'kernels' region" } */
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  for (i = 0; i < N; i++)
     a[i] = 0;
   }
 
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
+  {
+    int i;
+  }
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  for (int i = 0; i < N; i++)
+    a[i] = 0;
+
 #pragma acc kernels loop /* { dg-line l_loop_i[incr c_loop_i] } */
-  /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
+  /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
+  /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+  /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
   /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
   for (int i = 0; i < N; i++)
     b[i] = a[N - i - 1];
@@ -64,44 +89,60 @@ main ()
 #pragma acc kernels
   {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       b[i] = a[N - i - 1];
 
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       c[i] = a[i] * b[i];
 
-    a[z] = 0; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    a[z] = 0;
 
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       c[i] += a[i];
 
 #pragma acc loop seq /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0 + 1; i < N; i++)
       c[i] += c[i - 1];
   }
 
-#pragma acc kernels
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   /*TODO What does this mean?
-    TODO { dg-optimized "assigned OpenACC worker vector loop parallelism" "" { target *-*-* } .-2 } */
+    TODO { dg-optimized "assigned OpenACC worker vector loop parallelism" "" { target *-*-* } l_compute$c_compute } */
   {
 #pragma acc loop independent /* { dg-line l_loop_i[incr c_loop_i] } */
+    /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; ++i)
 #pragma acc loop independent /* { dg-line l_loop_j[incr c_loop_j] } */
+      /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
+      /* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
       /* { dg-optimized "assigned OpenACC worker loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j } */
       for (int j = 0; j < N; ++j)
 #pragma acc loop independent /* { dg-line l_loop_k[incr c_loop_k] } */
+	/* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
 	/* { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } l_loop_k$c_loop_k } */
 	/* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_k$c_loop_k } */
 	for (int k = 0; k < N; ++k)
@@ -111,23 +152,27 @@ main ()
 
     /*TODO Should the following turn into "gang-single" instead of "parloops"?
       TODO The problem is that the first STMT is 'if (y <= 4) goto <D.2547>; else goto <D.2548>;', thus "parloops".  */
-    if (y < 5) /* { dg-message "note: beginning 'parloops' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    if (y < 5)
 #pragma acc loop independent /* { dg-line l_loop_j[incr c_loop_j] } */
+      /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
       /* { dg-missed "unparallelized loop nest in OpenACC 'kernels' region: it's executed conditionally" "" { target *-*-* } l_loop_j$c_loop_j } */
       for (int j = 0; j < N; ++j)
 	b[j] = f_w (c[j]);
   }
 
-#pragma acc kernels
-  /* { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } .-1 } */
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } l_compute$c_compute } */
   {
     y = f_g (a[5]); /* { dg-line l_part[incr c_part] } */
     /*TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?
-      { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" "" { target *-*-* } l_part$c_part } */
+      { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_part$c_part } */
     /* { dg-optimized "assigned OpenACC gang worker vector loop parallelism" "" { target *-*-* } l_part$c_part } */
 
 #pragma acc loop independent /* { dg-line l_loop_j[incr c_loop_j] } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
     /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j } */
     for (int j = 0; j < N; ++j)
       b[j] = y + f_w (c[j]); /* { dg-optimized "assigned OpenACC worker vector loop parallelism" } */
@@ -135,18 +180,23 @@ main ()
 
 #pragma acc kernels
   {
-    y = 3; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    y = 3;
 
 #pragma acc loop independent /* { dg-line l_loop_j[incr c_loop_j] } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
+    /* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
     /* { dg-optimized "assigned OpenACC gang worker loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j } */
     for (int j = 0; j < N; ++j)
       b[j] = y + f_v (c[j]); /* { dg-optimized "assigned OpenACC vector loop parallelism" } */
 
-    z = 2; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    z = 2;
   }
 
-#pragma acc kernels /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+#pragma acc kernels
   ;
 
   return 0;

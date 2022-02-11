@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Wind River Systems.
    Rewritten by CodeSourcery, LLC.
 
@@ -28,45 +28,70 @@ along with GCC; see the file COPYING3.  If not see
    like a traditional Unix, with more external files.  Most of our specs
    must be aware of the difference.  */
 
-/* We look for the VxWorks header files using the environment
-   variables that are set in VxWorks to indicate the location of the
-   system header files.  We use -idirafter so that the GCC's own
-   header-file directories (containing <stddef.h>, etc.) come before
-   the VxWorks system header directories.  */
+/* Help locate system headers, assuming $sysroot set to $VSB_DIR on vx7 and
+   $WIND_BASE/target prior to that.  Specs allow tailoring for RTP vs kernel,
+   and -idirafter allows putting system directories after GCC's own directories
+   for standard headers such as <stddef.h> or fixed include.
+
+   Regarding fixed includes, note the effect of sysroot_headers_suffix_spec:
+
+   For the case of VxWorks prior to 7 below, we have:
+
+     #define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/h}"
+
+   This results in
+
+     $build_sysroot/h     ---> $prefix/include-fixed
+     $build_sysroot/usr/h ---> $prefix/include-fixed/mrtp for -mrtp
+
+   This is very different from what we'd get without a headers_suffix,
+   which would be:
+
+     $build_sysroot     ---> $prefix/include-fixed/h
+                                                  /usr/h
+
+   From (say) #include <assert.h>, we would find the fixed version
+   in the first case, not in the second.  */
 
 /* Since we provide a default -isystem, expand -isystem on the command
-   line early.  */
+   line early.  Then restrict the amount of references we add when compiling
+   self-tests, as these may be run in contexts where the VxWorks environment
+   isn't available.  */
 
-/* Self-tests may be run in contexts where the VxWorks environment isn't
-   available.  Prevent attempts at designating the location of runtime header
-   files, libraries or startfiles, which would fail on unset environment
-   variables and aren't needed for such tests.  */
 #if TARGET_VXWORKS7
+
+/* We arrange not rely on fixed includes for vx7 and the headers spread over
+   common kernel/rtp directories in addition to specific ones for each mode.
+   Setup sysroot_headers_suffix_spec to deal with kernel/rtp distinction.  */
+
+#undef SYSROOT_HEADERS_SUFFIX_SPEC
+#define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/krnl/h}"
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC                     \
  "%{!nostdinc:%{!fself-test=*:                          \
     %{isystem*}                                         \
-    %{mrtp: -idirafter %:getenv(VSB_DIR /h)             \
-            -idirafter %:getenv(VSB_DIR /share/h)       \
-            -idirafter %:getenv(VSB_DIR /usr/h/public)  \
-            -idirafter %:getenv(VSB_DIR /usr/h)         \
-      ;:    -idirafter %:getenv(VSB_DIR /h)             \
-            -idirafter %:getenv(VSB_DIR /share/h)       \
-            -idirafter %:getenv(VSB_DIR /krnl/h/system) \
-            -idirafter %:getenv(VSB_DIR /krnl/h/public)}}}"
+    -idirafter %:getenv(VSB_DIR /h)  \
+    -idirafter %:getenv(VSB_DIR /share/h)  \
+    -idirafter =/system \
+    -idirafter =/public \
+  }}"
 
 #else /* TARGET_VXWORKS7 */
+
+/* Prior to vx7, rtp and kernel headers are fairly segregated and fixincludes
+   is needed on each set of headers to cope with expectations of not so old
+   libstdc++.  A perfect use case for sysroot_headers_suffix.  */
+
+#undef SYSROOT_HEADERS_SUFFIX_SPEC
+#define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/h}"
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC		\
  "%{!nostdinc:%{!fself-test=*:			\
     %{isystem*}					\
-    %{mrtp: -idirafter %:getenv(WIND_USR /h)	\
-	    -idirafter %:getenv(WIND_USR /h/wrn/coreip) \
-      ;:    -idirafter %:getenv(WIND_BASE /target/h) \
-	    -idirafter %:getenv(WIND_BASE /target/h/wrn/coreip) \
-}}}"
+    -idirafter =/wrn/coreip \
+  }}"
 
 #endif
 
@@ -76,11 +101,23 @@ along with GCC; see the file COPYING3.  If not see
    the default CPP spec for C++ as well.  */
 #undef CPLUSPLUS_CPP_SPEC
 
-/* For VxWorks static rtps, the system provides libc_internal.a, a superset of
-   libgcc.a that we need to use e.g. to satisfy references to __init and
-   __fini.  We still want our libgcc to prevail for symbols it would provide
-   (e.g. register save entry points), so re-place it here between libraries
-   that might reference it and libc_internal.
+/* For VxWorks static rtps, the system provides libc_internal.a for a variety
+   of purposes. Care is needed to include it appropriately.
+
+   - In some configurations, libc_internal fills in possible references from
+     the static libc that we don't wouldn't satisfy ourselves, say, with
+     libgcc.  An example is the __aeabi_memcpy family of functions on arm,
+     which have very specific ABI allowances.
+
+   - OTOH, in some configurations the library provides typical libgcc
+     services, for example register save/restore entry points on powerpc. We
+     want our libgcc to prevail for symbols it would provide, so place
+     -lc_internal after -lc -lgcc.
+
+   - libc_internal also contains __init/__fini functions for
+     USE_INITFINI_ARRAY support. However, the system expects these in
+     every shared lib as well, with slightly different names, and it is
+     simpler for us to provide our own versions through vxcrtstuff.
 
    In addition, some versions of VxWorks rely on explicit extra libraries for
    system calls and the set of base network libraries of common use varies
@@ -95,7 +132,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
 #endif
 
-#define VXWORKS_BASE_LIBS_RTP "-lc -lgcc -lc_internal"
+#define VXWORKS_BASE_LIBS_RTP "-lc -lgcc %{!shared:-lc_internal}"
 
 #define VXWORKS_EXTRA_LIBS_RTP
 
@@ -118,48 +155,77 @@ along with GCC; see the file COPYING3.  If not see
    tlsLib, responsible for TLS support by the OS.  */
 
 #if TARGET_VXWORKS7
+
+/* For static links, /usr/lib/common has everything. For dynamic links,
+   /usr/lib/common/PIC has the static libs and objects that might be needed
+   in the closure (e.g. crt0.o), while the shared version of standard deps
+   (e.g. libc.so) are still in /usr/lib/common.  */
 #undef  STARTFILE_PREFIX_SPEC
 #define STARTFILE_PREFIX_SPEC \
-  "%{!fself-test=*:%:getenv(VSB_DIR /usr/lib/common)}"
+  "%{shared|non-static:/usr/lib/common/PIC} /usr/lib/common"
+
 #define TLS_SYM "-u __tls__"
+
 #else
+
 #define TLS_SYM ""
+
 #endif
 
 #undef VXWORKS_LIB_SPEC
-#define	VXWORKS_LIB_SPEC						\
-"%{mrtp:%{shared:-u " USER_LABEL_PREFIX "__init -u " USER_LABEL_PREFIX "__fini} \
-	%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
-		  " TLS_SYM " \
+#define	VXWORKS_LIB_SPEC						   \
+"%{mrtp:%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
+		  " TLS_SYM "                                              \
 		  --start-group " VXWORKS_LIBS_RTP " --end-group}}"
 
-/* The no-op spec for "-shared" below is present because otherwise GCC
-   will treat it as an unrecognized option.  */
-#undef VXWORKS_LINK_SPEC
-#define VXWORKS_LINK_SPEC				\
+#if TARGET_VXWORKS7
+#define VXWORKS_EXTRA_LINK_SPEC ""
+#else
+/* Older VxWorks RTPs can only link with shared libs, and
+   need special switches --force-dynamic --export-dynamic. */
+#define VXWORKS_EXTRA_LINK_SPEC				\
+"%{mrtp:%{!shared:%{non-static:--force-dynamic --export-dynamic}}}"
+#endif
+
+/* A default link_os expansion for RTPs, that cpu ports may override.  */
+#undef VXWORKS_LINK_OS_SPEC
+#define VXWORKS_LINK_OS_SPEC "%(link_os)"
+
+/* The -B and -X switches are for DIAB based linking. */
+#undef VXWORKS_BASE_LINK_SPEC
+#define VXWORKS_BASE_LINK_SPEC				\
 "%{!mrtp:-r}						\
- %{!shared:						\
-   %{mrtp:-q %{h*}					\
-          %{R*} %{!T*: %(link_start) }			\
-          %(link_target) %(link_os)}}			\
- %{v:-v}						\
+ %{v:-V}						\
  %{shared:-shared}					\
  %{Bstatic:-Bstatic}					\
  %{Bdynamic:-Bdynamic}					\
  %{!Xbind-lazy:-z now}					\
  %{Xbind-now:%{Xbind-lazy:				\
    %e-Xbind-now and -Xbind-lazy are incompatible}}	\
- %{mrtp:%{!shared:%{!non-static:-static}		\
- 		  %{non-static:--force-dynamic --export-dynamic}}}"
+ %{mrtp:-q %{!shared:%{!non-static:-static}}            \
+        %{h*} %{R*} %{!T*: %(link_start)}"              \
+        VXWORKS_LINK_OS_SPEC "}"
+
+#undef VXWORKS_LINK_SPEC
+#define VXWORKS_LINK_SPEC VXWORKS_BASE_LINK_SPEC " " VXWORKS_EXTRA_LINK_SPEC
 
 #undef VXWORKS_LIBGCC_SPEC
+#if defined(ENABLE_SHARED_LIBGCC)
+#define VXWORKS_LIBGCC_SPEC                                             \
+"%{!mrtp:-lgcc -lgcc_eh}                                                \
+ %{mrtp:%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc -lgcc_eh}}  \
+         %{static-libgcc:-lgcc -lgcc_eh}}"
+#else
 #define VXWORKS_LIBGCC_SPEC "-lgcc"
+#endif
 
-/* Setup the crtstuff begin/end we might need for dwarf EH registration.  */
+/* Setup the crtstuff begin/end we might need for dwarf EH registration
+   and/or INITFINI_ARRAY support for shared libs.  */
 
-#if !defined(CONFIG_SJLJ_EXCEPTIONS) && DWARF2_UNWIND_INFO
-#define VX_CRTBEGIN_SPEC "vx_crtbegin.o%s"
-#define VX_CRTEND_SPEC "-l:vx_crtend.o"
+#if (HAVE_INITFINI_ARRAY_SUPPORT && defined(ENABLE_SHARED_LIBGCC)) \
+    || (DWARF2_UNWIND_INFO && !defined(CONFIG_SJLJ_EXCEPTIONS))
+#define VX_CRTBEGIN_SPEC "%{!shared:vx_crtbegin.o%s;:vx_crtbeginS.o%s}"
+#define VX_CRTEND_SPEC   "%{!shared:vx_crtend.o%s;:vx_crtendS.o%s}"
 #else
 #define VX_CRTBEGIN_SPEC ""
 #define VX_CRTEND_SPEC ""
@@ -262,6 +328,12 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	   if (!flag_isoc99 && !c_dialect_cxx())			\
              builtin_define ("_ALLOW_KEYWORD_MACROS");			\
         }								\
+      /* C++ support relies on C99 features from C++11, even C++98	\
+         for listdc++ in particular, with corresponding checks at	\
+         configure time.  Make sure C99 features are exposed by the	\
+         system headers.  */						\
+      if (c_dialect_cxx())						\
+        builtin_define("_C99");						\
     }									\
   while (0)
 
@@ -306,4 +378,4 @@ extern void vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end);
    further incremental LTO linking.  We do not do repeated incremental linking
    so silence the warning (instead of passing -flinker-output=nolto-rel).  */
 #undef LTO_PLUGIN_SPEC
-#define LTO_PLUGIN_SPEC "%{!mrtp:-plugin-opt=-linker-output-auto-notlo-rel}"
+#define LTO_PLUGIN_SPEC "%{!mrtp:-plugin-opt=-linker-output-auto-nolto-rel}"

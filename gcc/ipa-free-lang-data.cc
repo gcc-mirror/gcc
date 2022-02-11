@@ -1,7 +1,7 @@
 /* Pass to free or clear language-specific data structures from
    the IL before they reach the middle end.
 
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -354,7 +354,7 @@ fld_simplified_type (tree t, class free_lang_data_d *fld)
 /* Reset the expression *EXPR_P, a size or position.
 
    ??? We could reset all non-constant sizes or positions.  But it's cheap
-   enough to not do so and refrain from adding workarounds to dwarf2out.c.
+   enough to not do so and refrain from adding workarounds to dwarf2out.cc.
 
    We need to reset self-referential sizes or positions because they cannot
    be gimplified and thus can contain a CALL_EXPR after the gimplification
@@ -613,7 +613,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
       DECL_SAVED_TREE (decl) = NULL_TREE;
 
       /* Clear the abstract origin if it refers to a method.
-         Otherwise dwarf2out.c will ICE as we splice functions out of
+         Otherwise dwarf2out.cc will ICE as we splice functions out of
          TYPE_FIELDS and thus the origin will not be output
          correctly.  */
       if (DECL_ABSTRACT_ORIGIN (decl)

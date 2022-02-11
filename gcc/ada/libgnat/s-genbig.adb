@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,10 +50,10 @@ package body System.Generic_Bignums is
 
    subtype LLI is Long_Long_Integer;
 
-   One_Data : constant Digit_Vector (1 .. 1) := (1 => 1);
+   One_Data : constant Digit_Vector (1 .. 1) := [1];
    --  Constant one
 
-   Zero_Data : constant Digit_Vector (1 .. 0) := (1 .. 0 => 0);
+   Zero_Data : constant Digit_Vector (1 .. 0) := [];
    --  Constant zero
 
    -----------------------
@@ -332,7 +332,7 @@ package body System.Generic_Bignums is
       elsif X.Len = 1 and then X.D (1) = 2 and then Y.D (1) < 32 then
          declare
             D : constant Digit_Vector (1 .. 1) :=
-                  (1 => Shift_Left (SD'(1), Natural (Y.D (1))));
+                  [Shift_Left (SD'(1), Natural (Y.D (1)))];
          begin
             return Normalize (D, X.Neg);
          end;
@@ -573,7 +573,7 @@ package body System.Generic_Bignums is
    -------------
 
    function Big_Mul (X, Y : Bignum) return Big_Integer is
-      Result : Digit_Vector (1 .. X.Len + Y.Len) := (others => 0);
+      Result : Digit_Vector (1 .. X.Len + Y.Len) := [others => 0];
       --  Accumulate result (max length of result is sum of operand lengths)
 
       L : Length;
@@ -1149,22 +1149,22 @@ package body System.Generic_Bignums is
 
    begin
       if X = 0 then
-         return Allocate_Big_Integer ((1 .. 0 => <>), False);
+         return Allocate_Big_Integer ([], False);
 
       --  One word result
 
       elsif X in -(2 ** 32 - 1) .. +(2 ** 32 - 1) then
-         return Allocate_Big_Integer ((1 => SD (abs X)), X < 0);
+         return Allocate_Big_Integer ([SD (abs X)], X < 0);
 
       --  Large negative number annoyance
 
       elsif X = -2 ** 63 then
-         return Allocate_Big_Integer ((2 ** 31, 0), True);
+         return Allocate_Big_Integer ([2 ** 31, 0], True);
 
       elsif Long_Long_Long_Integer'Size = 128
         and then X = Long_Long_Long_Integer'First
       then
-         return Allocate_Big_Integer ((2 ** 31, 0, 0, 0), True);
+         return Allocate_Big_Integer ([2 ** 31, 0, 0, 0], True);
 
       --  Other negative numbers
 
@@ -1196,17 +1196,17 @@ package body System.Generic_Bignums is
    function To_Bignum (X : Unsigned_128) return Big_Integer is
    begin
       if X = 0 then
-         return Allocate_Big_Integer ((1 .. 0 => <>), False);
+         return Allocate_Big_Integer ([], False);
 
       --  One word result
 
       elsif X < 2 ** 32 then
-         return Allocate_Big_Integer ((1 => SD (X)), False);
+         return Allocate_Big_Integer ([SD (X)], False);
 
       --  Two word result
 
       elsif Shift_Right (X, 32) < 2 ** 32 then
-         return Allocate_Big_Integer ((SD (X / Base), SD (X mod Base)), False);
+         return Allocate_Big_Integer ([SD (X / Base), SD (X mod Base)], False);
 
       --  Three or four word result
 
@@ -1241,7 +1241,7 @@ package body System.Generic_Bignums is
    function To_String
      (X : Bignum; Width : Natural := 0; Base : Positive := 10) return String
    is
-      Big_Base : aliased Bignum_Data := (1, False, (1 => SD (Base)));
+      Big_Base : aliased Bignum_Data := (1, False, [SD (Base)]);
 
       function Add_Base (S : String) return String;
       --  Add base information if Base /= 10
@@ -1285,7 +1285,7 @@ package body System.Generic_Bignums is
       function Image (Arg : Bignum) return String is
       begin
          if Big_LT (Arg, Big_Base'Unchecked_Access) then
-            return (1 => Hex_Chars (Natural (From_Bignum (Arg))));
+            return [Hex_Chars (Natural (From_Bignum (Arg)))];
          else
             declare
                Div    : aliased Big_Integer;
@@ -1315,8 +1315,8 @@ package body System.Generic_Bignums is
          Min_Length : Natural;
          Char       : Character := ' ') return String is
       begin
-         return (1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
-                        => Char) & Str;
+         return [1 .. Integer'Max (Integer (Min_Length) - Str'Length, 0)
+                        => Char] & Str;
       end Leading_Padding;
 
       Zero : aliased Bignum_Data := (0, False, D => Zero_Data);

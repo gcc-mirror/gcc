@@ -10,7 +10,7 @@ struct Data2
     char buffer;
 }
 
-@property const(char)[] filename(const ref Data2 d) pure nothrow
+@property const(char)[] filename(const return ref Data2 d) pure nothrow
 {
     return (&d.buffer)[0 .. 1];
 }

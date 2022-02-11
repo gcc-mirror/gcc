@@ -4,7 +4,7 @@
  * Translated from MinGW API for MS-Windows 3.10
  *
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_lmuseflg.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_lmuseflg.d)
  */
 module core.sys.windows.lmuseflg;
 version (Windows):

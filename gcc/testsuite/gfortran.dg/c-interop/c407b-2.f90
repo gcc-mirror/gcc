@@ -78,11 +78,11 @@ subroutine s2 (x, y)
   end select
 
   ! relational operations
-  if (x & ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+  if (x & ! { dg-error "Assumed.type" "pr101337" }
       .eq. y) then  ! { dg-error "Assumed.type" } 
     return
   end if
-  if (.not. (x & ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+  if (.not. (x & ! { dg-error "Assumed.type" "pr101337" }
              .ne. y)) then  ! { dg-error "Assumed.type" } 
     return
   end if
@@ -99,7 +99,7 @@ subroutine s2 (x, y)
   ! arithmetic
   i = x + 1  ! { dg-error "Assumed.type" } 
   i = -y  ! { dg-error "Assumed.type" } 
-  i = (x & ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+  i = (x & ! { dg-error "Assumed.type" "pr101337" }
        + y)  ! { dg-error "Assumed.type" } 
 
   ! computed go to
@@ -131,19 +131,19 @@ subroutine s3 (x, y)
   i = exponent (x)  ! { dg-error "Assumed.type" }
 
   if (extends_type_of (x, &  ! { dg-error "Assumed.type" }
-                       y)) then  ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+                       y)) then  ! { dg-error "Assumed.type" "pr101337" }
     return
   end if
 
   if (same_type_as (x, &  ! { dg-error "Assumed.type" }
-                    y)) then  ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+                    y)) then  ! { dg-error "Assumed.type" "pr101337" }
     return
   end if
 
   i = storage_size (x)  ! { dg-error "Assumed.type" }
 
   i = iand (x, &  ! { dg-error "Assumed.type" }
-            y)    ! { dg-error "Assumed.type" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+            y)    ! { dg-error "Assumed.type" "pr101337" }
 
   i = kind (x)  ! { dg-error "Assumed.type" }
 

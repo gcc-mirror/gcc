@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,19 +60,19 @@ namespace __detail
 
   // Helper function: return distance(first, last) for forward
   // iterators, or 0/1 for input iterators.
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::input_iterator_tag)
     { return __first != __last ? 1 : 0; }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::forward_iterator_tag)
     { return std::distance(__first, __last); }
 
-  template<class _Iterator>
+  template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last)
     { return __distance_fw(__first, __last,
@@ -244,6 +244,20 @@ namespace __detail
       using __hash_cached = __bool_constant<_Cache_hash_code>;
       using __constant_iterators = __bool_constant<_Constant_iterators>;
       using __unique_keys = __bool_constant<_Unique_keys>;
+    };
+
+  /**
+   *  struct _Hashtable_hash_traits
+   *
+   *  Important traits for hash tables depending on associated hasher.
+   *
+   */
+  template<typename _Hash>
+    struct _Hashtable_hash_traits
+    {
+      static constexpr std::size_t
+      __small_size_threshold() noexcept
+      { return std::__is_fast_hash<_Hash>::value ? 0 : 20; }
     };
 
   /**
@@ -798,6 +812,17 @@ namespace __detail
       return __pos->second;
     }
 
+  // Partial specialization for unordered_map<const T, U>, see PR 104174.
+  template<typename _Key, typename _Val, typename _Alloc, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits, bool __uniq>
+    struct _Map_base<const _Key, pair<const _Key, _Val>,
+		     _Alloc, _Select1st, _Equal, _Hash,
+		     _RangeHash, _Unused, _RehashPolicy, _Traits, __uniq>
+    : _Map_base<_Key, pair<const _Key, _Val>, _Alloc, _Select1st, _Equal, _Hash,
+		_RangeHash, _Unused, _RehashPolicy, _Traits, __uniq>
+    { };
+
   /**
    *  Primary class template _Insert_base.
    *
@@ -1105,10 +1130,12 @@ namespace __detail
 			_Hash, _RangeHash, _Unused, _RehashPolicy, _Traits,
 			true_type /* Has load factor */>
     {
+    private:
       using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
 				     _Equal, _Hash, _RangeHash, _Unused,
 				     _RehashPolicy, _Traits>;
 
+    public:
       float
       max_load_factor() const noexcept
       {
@@ -1249,6 +1276,27 @@ namespace __detail
 	    "hash function must be invocable with an argument of key type");
 	  return _M_hash()(__k);
 	}
+
+      __hash_code
+      _M_hash_code(const _Hash&,
+		   const _Hash_node_value<_Value, true>& __n) const
+      { return __n._M_hash_code; }
+
+      // Compute hash code using _Hash as __n _M_hash_code, if present, was
+      // computed using _H2.
+      template<typename _H2>
+	__hash_code
+	_M_hash_code(const _H2&,
+		const _Hash_node_value<_Value, __cache_hash_code>& __n) const
+	{ return _M_hash_code(_ExtractKey{}(__n._M_v())); }
+
+      __hash_code
+      _M_hash_code(const _Hash_node_value<_Value, false>& __n) const
+      { return _M_hash_code(_ExtractKey{}(__n._M_v())); }
+
+      __hash_code
+      _M_hash_code(const _Hash_node_value<_Value, true>& __n) const
+      { return __n._M_hash_code; }
 
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
@@ -1628,27 +1676,40 @@ namespace __detail
       { }
 
       bool
-      _M_equals(const _Key& __k, __hash_code __c,
-		const _Hash_node_value<_Value, __hash_cached::value>& __n) const
+      _M_key_equals(const _Key& __k,
+		    const _Hash_node_value<_Value,
+					   __hash_cached::value>& __n) const
       {
 	static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
 	  "key equality predicate must be invocable with two arguments of "
 	  "key type");
-	return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	return _M_eq()(__k, _ExtractKey{}(__n._M_v()));
       }
+
+      template<typename _Kt>
+	bool
+	_M_key_equals_tr(const _Kt& __k,
+			 const _Hash_node_value<_Value,
+					     __hash_cached::value>& __n) const
+	{
+	  static_assert(
+	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
+	    "key equality predicate must be invocable with two arguments of "
+	    "key type");
+	  return _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	}
+
+      bool
+      _M_equals(const _Key& __k, __hash_code __c,
+		const _Hash_node_value<_Value, __hash_cached::value>& __n) const
+      { return _S_equals(__c, __n) && _M_key_equals(__k, __n); }
 
       template<typename _Kt>
 	bool
 	_M_equals_tr(const _Kt& __k, __hash_code __c,
 		     const _Hash_node_value<_Value,
 					    __hash_cached::value>& __n) const
-	{
-	  static_assert(
-	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
-	    "key equality predicate must be invocable with two arguments of "
-	    "key type");
-	  return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
-	}
+	{ return _S_equals(__c, __n) && _M_key_equals_tr(__k, __n); }
 
       bool
       _M_node_equals(
@@ -1656,7 +1717,7 @@ namespace __detail
 	const _Hash_node_value<_Value, __hash_cached::value>& __rhn) const
       {
 	return _S_node_equals(__lhn, __rhn)
-	  && _M_eq()(_ExtractKey{}(__lhn._M_v()), _ExtractKey{}(__rhn._M_v()));
+	  && _M_key_equals(_ExtractKey{}(__lhn._M_v()), __rhn);
       }
 
       void

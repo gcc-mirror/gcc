@@ -10,7 +10,7 @@ func _bool() {
 	const t = true == true
 	const f = true == false
 	_ = t /* ERROR "cannot compare" */ < f
-	_ = 0 /* ERROR "cannot convert" */ == t
+	_ = 0 /* ERROR "mismatched types untyped int and untyped bool" */ == t
 	var b bool
 	var x, y float32
 	b = x < y
@@ -29,7 +29,7 @@ func arrays() {
 	_ = a == b
 	_ = a != b
 	_ = a /* ERROR < not defined */ < b
-	_ = a == nil /* ERROR cannot convert */
+	_ = a /* ERROR cannot compare.*mismatched types */ == nil
 
 	type C [10]int
 	var c C
@@ -53,7 +53,7 @@ func structs() {
 	_ = s == t
 	_ = s != t
 	_ = s /* ERROR < not defined */ < t
-	_ = s == nil /* ERROR cannot convert */
+	_ = s /* ERROR cannot compare.*mismatched types */ == nil
 
 	type S struct {
 		x int

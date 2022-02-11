@@ -1,4 +1,4 @@
-
+// EXTRA_FILES: imports/bar10378.d
 int writeln() { return 3; }
 
 struct S {

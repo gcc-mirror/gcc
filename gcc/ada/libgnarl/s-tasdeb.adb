@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package body System.Tasking.Debug is
 
    type Trace_Flag_Set is array (Character) of Boolean;
 
-   Trace_On : Trace_Flag_Set := ('A' .. 'Z' => False, others => True);
+   Trace_On : Trace_Flag_Set := ['A' .. 'Z' => False, others => True];
 
    Stderr_Fd : constant := 2;
    --  File descriptor for standard error

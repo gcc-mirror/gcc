@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2021 Free Software Foundation, Inc.
+; Copyright (C) 2003-2022 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -83,13 +83,16 @@ int flag_gen_aux_info = 0
 Variable
 int flag_shlib
 
-; These two are really VEC(char_p,heap) *.
+; These three are really VEC(char_p,heap) *.
 
 Variable
 void *flag_instrument_functions_exclude_functions
 
 Variable
 void *flag_instrument_functions_exclude_files
+
+Variable
+void *flag_ignored_attributes
 
 ; Generic structs (e.g. templates not explicitly specialized)
 ; may not have a compilation unit associated with them, and so
@@ -147,7 +150,7 @@ bool flag_stack_usage_info = false
 ; the generated assembly code (to make it more readable).  This option
 ; is generally only of use to those who actually need to read the
 ; generated assembly code (perhaps while debugging the compiler itself).
-; Currently, this switch is only used by dwarf2out.c; however, it is intended
+; Currently, this switch is only used by dwarf2out.cc; however, it is intended
 ; to be a catchall for printing debug information in the assembler file.
 Variable
 int flag_debug_asm
@@ -219,10 +222,6 @@ unsigned int flag_sanitize
 ; What sanitizers should recover from errors
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS | SANITIZE_KERNEL_HWADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
-
-; What the coverage sanitizers should instrument
-Variable
-unsigned int flag_sanitize_coverage
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -480,6 +479,10 @@ Og
 Common Optimization
 Optimize for debugging experience rather than speed or size.
 
+Oz
+Common Optimization
+Optimize for space aggressively rather than speed.
+
 Q
 Driver
 
@@ -545,9 +548,21 @@ Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
 
+Wuse-after-free
+Common Var(warn_use_after_free) Warning
+Warn for uses of pointers to deallocated storage.
+
+Wuse-after-free=
+Common Joined RejectNegative UInteger Var(warn_use_after_free) Warning IntegerRange(0, 3)
+Warn for uses of pointers to deallocated storage.
+
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
+
+Wattributes=
+Common Joined
+Do not warn about specified attributes.
 
 Wattribute-alias
 Common Alias(Wattribute_alias=, 1, 0) Warning
@@ -628,6 +643,10 @@ Common Alias(Wimplicit-fallthrough=,3,0) Warning
 Wimplicit-fallthrough=
 Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning IntegerRange(0, 5)
 Warn when a switch case falls through.
+
+Winfinite-recursion
+Var(warn_infinite_recursion) Warning
+Warn for infinitely recursive calls.
 
 Winline
 Common Var(warn_inline) Warning Optimization
@@ -979,6 +998,10 @@ Driver Undocumented
 ;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
 ;
+; 17: Fixes layout of classes that inherit from aggregate classes with default
+;     member initializers in C++14 and up.
+;     Default in G++ 12.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -1049,7 +1072,7 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined RejectNegative Enum(sanitize_coverage)
+Common Joined Enum(sanitize_coverage) Var(flag_sanitize_coverage) EnumBitSet
 Select type of coverage sanitization.
 
 Enum
@@ -1365,6 +1388,10 @@ fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json]	Select output format.
 
+fdiagnostics-escape-format=
+Common Joined RejectNegative Enum(diagnostics_escape_format)
+-fdiagnostics-escape-format=[unicode|bytes]	Select how to escape non-printable-ASCII bytes in the source for diagnostics that suggest it.
+
 ; Required for these enum values.
 SourceInclude
 diagnostic.h
@@ -1377,6 +1404,15 @@ Enum(diagnostics_column_unit) String(display) Value(DIAGNOSTICS_COLUMN_UNIT_DISP
 
 EnumValue
 Enum(diagnostics_column_unit) String(byte) Value(DIAGNOSTICS_COLUMN_UNIT_BYTE)
+
+Enum
+Name(diagnostics_escape_format) Type(int)
+
+EnumValue
+Enum(diagnostics_escape_format) String(unicode) Value(DIAGNOSTICS_ESCAPE_FORMAT_UNICODE)
+
+EnumValue
+Enum(diagnostics_escape_format) String(bytes) Value(DIAGNOSTICS_ESCAPE_FORMAT_BYTES)
 
 Enum
 Name(diagnostics_output_format) Type(int)
@@ -1722,6 +1758,14 @@ fguess-branch-probability
 Common Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
 
+fharden-compares
+Common Var(flag_harden_compares) Optimization
+Harden conditionals not used in branches, checking reversed conditions.
+
+fharden-conditional-branches
+Common Var(flag_harden_conditional_branches) Optimization
+Harden conditional branches by checking reversed conditions.
+
 ; Nonzero means ignore `#ident' directives.  0 means handle them.
 ; Generate position-independent code for executables if possible
 ; On SVR4 targets, it also controls whether or not to emit a
@@ -1912,6 +1956,10 @@ Perform IPA Value Range Propagation.
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.
+
+fipa-strict-aliasing
+Common Var(flag_ipa_strict_aliasing) Init(1) Optimization
+Assume strict aliasing rules apply across (uninlined) function boundaries.
 
 Enum
 Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)
@@ -2295,6 +2343,10 @@ fprofile-prefix-path=
 Common Joined RejectNegative Var(profile_prefix_path)
 Remove prefix from absolute path before mangling name for -fprofile-generate= and -fprofile-use=.
 
+fprofile-prefix-map=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fprofile-prefix-map=<old>=<new>	Map one directory name to another in GCOV coverage result.
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.
@@ -2511,7 +2563,7 @@ Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining.
 
 fsemantic-interposition
-Common Var(flag_semantic_interposition) Init(1)
+Common Var(flag_semantic_interposition) Init(1) Optimization
 Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker.
 
 ; sched_stalled_insns means that insns can be moved prematurely from the queue
@@ -2997,6 +3049,10 @@ Use the gold linker instead of the default linker.
 fuse-ld=lld
 Common Driver Negative(fuse-ld=lld)
 Use the lld LLVM linker instead of the default linker.
+
+fuse-ld=mold
+Common Driver Negative(fuse-ld=mold)
+Use the Modern linker (MOLD) linker instead of the default linker.
 
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)
@@ -3498,6 +3554,10 @@ Driver
 static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
+
+static-libphobos
+Driver
+; Documented for D, but always accepted by driver.
 
 static-libstdc++
 Driver

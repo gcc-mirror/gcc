@@ -1,5 +1,5 @@
 /* Classes for saving, deduplicating, and emitting analyzer diagnostics.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -141,7 +141,8 @@ private:
 
   void add_events_for_eedge (const path_builder &pb,
 			     const exploded_edge &eedge,
-			     checker_path *emission_path) const;
+			     checker_path *emission_path,
+			     interesting_t *interest) const;
 
   bool significant_edge_p (const path_builder &pb,
 			   const exploded_edge &eedge) const;

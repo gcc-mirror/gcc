@@ -1,3 +1,33 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unique-ptr.h: Removed.
+
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION_GCN): Bump.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* gomp-constants.h (enum gomp_map_kind):
+	Add GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION, and
+	GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION map kinds.
+	(GOMP_MAP_POINTER_P):
+	Include GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_3): Define special bit macro.
+	(GOMP_MAP_IMPLICIT): New special map kind bits value.
+	(GOMP_MAP_FLAG_SPECIAL_BITS): Define helper mask for whole set of
+	special map kind bits.
+	(GOMP_MAP_IMPLICIT_P): New predicate macro for implicit map kinds.
+
+2021-11-05  Gerald Pfeifer  <gerald@pfeifer.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* md5.h (USE_SYSTEM_MD5): Introduce.
+
 2021-09-27  Vincent Lefevre  <vincent@vinc17.net>
 
 	* floatformat.h: Update pathname for IBM long double description.

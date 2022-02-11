@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --            (Version for IBM Mainframe Packed Decimal Format)             --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package body Interfaces.Packed_Decimal is
    --  using table look up in this direction because divides are expensive.
 
    Packed_Byte : constant array (00 .. 99) of Unsigned_8 :=
-      (16#00#, 16#01#, 16#02#, 16#03#, 16#04#,
+      [16#00#, 16#01#, 16#02#, 16#03#, 16#04#,
        16#05#, 16#06#, 16#07#, 16#08#, 16#09#,
        16#10#, 16#11#, 16#12#, 16#13#, 16#14#,
        16#15#, 16#16#, 16#17#, 16#18#, 16#19#,
@@ -67,7 +67,7 @@ package body Interfaces.Packed_Decimal is
        16#80#, 16#81#, 16#82#, 16#83#, 16#84#,
        16#85#, 16#86#, 16#87#, 16#88#, 16#89#,
        16#90#, 16#91#, 16#92#, 16#93#, 16#94#,
-       16#95#, 16#96#, 16#97#, 16#98#, 16#99#);
+       16#95#, 16#96#, 16#97#, 16#98#, 16#99#];
 
    ---------------------
    -- Int32_To_Packed --

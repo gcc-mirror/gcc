@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3.d(41): Error: incompatible types for ((a) + (b)): both operands are of type 'vec2'
+fail_compilation/fail3.d(41): Error: incompatible types for `(a) + (b)`: both operands are of type `vec2`
 ---
 */
 

@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU C++.
-#   Copyright (C) 1994-2021 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2022 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -36,22 +36,22 @@ gtfiles="\
 \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \
 \$(srcdir)/c-family/c-pragma.h \$(srcdir)/cp/decl.h \
 \$(srcdir)/cp/parser.h \
-\$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-format.c \
-\$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.c \
-\$(srcdir)/cp/call.c \$(srcdir)/cp/class.c \$(srcdir)/cp/constexpr.c \
+\$(srcdir)/c-family/c-common.cc \$(srcdir)/c-family/c-format.cc \
+\$(srcdir)/c-family/c-cppbuiltin.cc \$(srcdir)/c-family/c-pragma.cc \
+\$(srcdir)/cp/call.cc \$(srcdir)/cp/class.cc \$(srcdir)/cp/constexpr.cc \
 \$(srcdir)/cp/constraint.cc \$(srcdir)/cp/coroutines.cc \
-\$(srcdir)/cp/cp-gimplify.c \
-\$(srcdir)/cp/cp-lang.c \$(srcdir)/cp/cp-objcp-common.c \
-\$(srcdir)/cp/decl.c \$(srcdir)/cp/decl2.c \
-\$(srcdir)/cp/except.c \
-\$(srcdir)/cp/friend.c \
-\$(srcdir)/cp/init.c \
-\$(srcdir)/cp/lambda.c \$(srcdir)/cp/lex.c \$(srcdir)/cp/logic.cc \
-\$(srcdir)/cp/mangle.c \$(srcdir)/cp/method.c \$(srcdir)/cp/module.cc \
-\$(srcdir)/cp/name-lookup.c \
-\$(srcdir)/cp/parser.c \$(srcdir)/cp/pt.c \
-\$(srcdir)/cp/rtti.c \
-\$(srcdir)/cp/semantics.c \
-\$(srcdir)/cp/tree.c \$(srcdir)/cp/typeck2.c \
-\$(srcdir)/cp/vtable-class-hierarchy.c \
+\$(srcdir)/cp/cp-gimplify.cc \
+\$(srcdir)/cp/cp-lang.cc \$(srcdir)/cp/cp-objcp-common.cc \
+\$(srcdir)/cp/decl.cc \$(srcdir)/cp/decl2.cc \
+\$(srcdir)/cp/except.cc \
+\$(srcdir)/cp/friend.cc \
+\$(srcdir)/cp/init.cc \
+\$(srcdir)/cp/lambda.cc \$(srcdir)/cp/lex.cc \$(srcdir)/cp/logic.cc \
+\$(srcdir)/cp/mangle.cc \$(srcdir)/cp/method.cc \$(srcdir)/cp/module.cc \
+\$(srcdir)/cp/name-lookup.cc \
+\$(srcdir)/cp/parser.cc \$(srcdir)/cp/pt.cc \
+\$(srcdir)/cp/rtti.cc \
+\$(srcdir)/cp/semantics.cc \
+\$(srcdir)/cp/tree.cc \$(srcdir)/cp/typeck2.cc \
+\$(srcdir)/cp/vtable-class-hierarchy.cc \
 " 

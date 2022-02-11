@@ -1,8 +1,9 @@
 // REQUIRED_ARGS: -de
+// EXTRA_FILES: imports/test15897.d
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15897.d(18): Error: no property `create` for type `imports.test15897.Cat`
+fail_compilation/test15897.d(19): Error: no property `create` for type `imports.test15897.Cat`
 ---
 */
 module test15897;

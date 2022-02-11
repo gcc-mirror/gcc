@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2021 Free Software Foundation, Inc.
+# Copyright (C) 2002-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,32 +16,27 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-vxworks.o: $(srcdir)/config/vxworks.c
+vxworks.o: $(srcdir)/config/vxworks.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-vxworks-c.o: $(srcdir)/config/vxworks-c.c
+vxworks-c.o: $(srcdir)/config/vxworks-c.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-# Arrange to install our stdint.h wrapper, by copying it in the
-# build-time include dir before this include dir is installed and after
-# stmp-int-hdrs removes it (because it was told we don't provide it).
+# We leverage $sysroot to find target system headers only, distributed
+# in a VxWorks (a)typical fashion with a different set of headers for
+# rtp vs kernel mode.  We setup SYSROOT_HEADERS_SUFFIX_SPEC to handle
+# this, and need to clear NATIVE_SYSTEM_HEADER_DIR to prevent it from
+# interfering.
 
-INSTALL_HEADERS += install-stdint.h
-
-install-stdint.h: stmp-int-hdrs
-	cp -p $(srcdir)/config/vxworks/stdint.h include/stdint.h
-	chmod a+r include/stdint.h
-
-$(INSTALL_HEADERS_DIR): install-stdint.h
+NATIVE_SYSTEM_HEADER_DIR =
 
 # Both the kernel and RTP headers provide limits.h.  They embed VxWorks
 # specificities and are dated on some configurations so we both need to
 # provide our own version and make sure the system one gets exposed.
 
 LIMITS_H_TEST = true
-STMP_FIXINC = stmp-fixinc
 
 # VxWorks system environments have been GCC based for a long time and
 # we need to make sure that our files and the system ones use distinct
@@ -54,5 +49,13 @@ T_GLIMITS_H = vxw-glimits.h
 
 vxw-glimits.h: $(srcdir)/glimits.h
 	ID=`echo $(BASEVER_c) | sed -e 's/\./_/g'` && \
-	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $(srcdir)/glimits.h > $@T
+	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $< > $@T
+	mv $@T $@
+
+# Arrange to "provide" a tailored version of stdint-gcc.h
+
+T_STDINT_GCC_H = vxw-stdint-gcc.h
+
+vxw-stdint-gcc.h: $(srcdir)/ginclude/stdint-gcc.h
+	sed -e "/#define _GCC_STDINT_H/ a #include <_yvals.h>" < $< > $@T
 	mv $@T $@

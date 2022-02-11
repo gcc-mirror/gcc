@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1110,7 +1110,7 @@ package body Ada.Exceptions is
 
       else
          declare
-            New_Msg  : constant String := Prefix & Exception_Name (X);
+            New_Msg : constant String := Prefix & Exception_Name (X);
 
          begin
             --  No message present, just provide our own

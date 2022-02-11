@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice8711.d(8): Error: cannot use array to initialize int function(int)
+fail_compilation/ice8711.d(8): Error: cannot use array to initialize `int function(int)`
 ---
 */
 

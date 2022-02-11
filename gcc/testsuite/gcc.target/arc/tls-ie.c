@@ -13,5 +13,5 @@ int *ae2 (void)
   return &e2;
 }
 
-/* { dg-final { scan-assembler "ld r0,\\\[pcl,@e2@tlsie\\\]" } } */
-/* { dg-final { scan-assembler "add_s r0,r0,r25" } } */
+/* { dg-final { scan-assembler "ld\\s+r0,\\\[pcl,@e2@tlsie\\\]" } } */
+/* { dg-final { scan-assembler "add_s\\s+r0,r0,r25" } } */

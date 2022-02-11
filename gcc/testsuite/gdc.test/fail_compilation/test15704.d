@@ -1,7 +1,7 @@
 /*
  * TEST_OUTPUT:
 ---
-fail_compilation/test15704.d(15): Error: cannot copy void[] to void[] in @safe code
+fail_compilation/test15704.d(15): Error: cannot copy `void[]` to `void[]` in `@safe` code
 ---
  */
 

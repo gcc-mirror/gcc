@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -423,7 +423,7 @@ function's arguments that this function should pop is available in\n\
 DEFHOOK
 (init_sections,
  "Define this hook if you need to do something special to set up the\n\
-@file{varasm.c} sections, or if your target has some special sections\n\
+@file{varasm.cc} sections, or if your target has some special sections\n\
 of its own that you need to create.\n\
 \n\
 GCC calls this hook after processing the command line, but before writing\n\
@@ -918,7 +918,7 @@ DEFHOOK_UNDOC
    ASM_OUTPUT_LABELREF, returning result as an IDENTIFIER_NODE.  */
 DEFHOOK
 (mangle_assembler_name,
- "Given a symbol @var{name}, perform same mangling as @code{varasm.c}'s\n\
+ "Given a symbol @var{name}, perform same mangling as @code{varasm.cc}'s\n\
 @code{assemble_name}, but in memory rather than to a file stream, returning\n\
 result as an @code{IDENTIFIER_NODE}.  Required for correct LTO symtabs.  The\n\
 default implementation calls the @code{TARGET_STRIP_NAME_ENCODING} hook and\n\
@@ -929,7 +929,7 @@ then prepends the @code{USER_LABEL_PREFIX}, if any.",
 HOOK_VECTOR_END (asm_out)
 
 /* Functions relating to instruction scheduling.  All of these
-   default to null pointers, which haifa-sched.c looks for and handles.  */
+   default to null pointers, which haifa-sched.cc looks for and handles.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_SCHED_"
 HOOK_VECTOR (TARGET_SCHED, sched)
@@ -2051,7 +2051,7 @@ stores.",
 
 /* Target function to initialize the cost model for a loop or block.  */
 DEFHOOK
-(init_cost,
+(create_costs,
  "This hook should initialize target-specific data structures in preparation\n\
 for modeling the costs of vectorizing a loop or basic block.  The default\n\
 allocates three unsigned integers for accumulating costs for the prologue,\n\
@@ -2060,50 +2060,9 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block\n\
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the\n\
 current cost model is for the scalar version of a loop or block; otherwise\n\
 it is for the vector version.",
- void *,
- (class loop *loop_info, bool costing_for_scalar),
- default_init_cost)
-
-/* Target function to record N statements of the given kind using the
-   given vector type within the cost model data for the current loop or
-    block.  */
-DEFHOOK
-(add_stmt_cost,
- "This hook should update the target-specific @var{data} in response to\n\
-adding @var{count} copies of the given @var{kind} of statement to a\n\
-loop or basic block.  The default adds the builtin vectorizer cost for\n\
-the copies of the statement to the accumulator specified by @var{where},\n\
-(the prologue, body, or epilogue) and returns the amount added.  The\n\
-return value should be viewed as a tentative cost that may later be\n\
-revised.",
- unsigned,
- (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
-  enum vect_cost_model_location where),
- default_add_stmt_cost)
-
-/* Target function to calculate the total cost of the current vectorized
-   loop or block.  */
-DEFHOOK
-(finish_cost,
- "This hook should complete calculations of the cost of vectorizing a loop\n\
-or basic block based on @var{data}, and return the prologue, body, and\n\
-epilogue costs as unsigned integers.  The default returns the value of\n\
-the three accumulators.",
- void,
- (void *data, unsigned *prologue_cost, unsigned *body_cost,
-  unsigned *epilogue_cost),
- default_finish_cost)
-
-/* Function to delete target-specific cost modeling data.  */
-DEFHOOK
-(destroy_cost_data,
- "This hook should release @var{data} and any related data structures\n\
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the\n\
-accumulator.",
- void,
- (void *data),
- default_destroy_cost_data)
+ class vector_costs *,
+ (vec_info *vinfo, bool costing_for_scalar),
+ default_vectorize_create_costs)
 
 HOOK_VECTOR_END (vectorize)
 
@@ -2223,7 +2182,7 @@ the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  You can also\n\
 add @code{handle_dll_attribute} in the attribute table for your port\n\
 to perform initial processing of the @samp{dllimport} and\n\
 @samp{dllexport} attributes.  This is done in @file{i386/cygwin.h} and\n\
-@file{i386/i386.c}, for example.",
+@file{i386/i386.cc}, for example.",
  tree, (tree olddecl, tree newdecl),
  merge_decl_attributes)
 
@@ -2606,7 +2565,7 @@ ordinary types as @samp{@w{U @var{n} @var{name} @var{code}}}, where\n\
 @var{name} is the name used for the type qualifier in source code,\n\
 @var{n} is the length of @var{name} as above, and @var{code} is the\n\
 code used to represent the unqualified version of this type.  (See\n\
-@code{write_builtin_type} in @file{cp/mangle.c} for the list of\n\
+@code{write_builtin_type} in @file{cp/mangle.cc} for the list of\n\
 codes.)  In both cases the spaces are for clarity; do not include any\n\
 spaces in your string.\n\
 \n\
@@ -2626,7 +2585,7 @@ DEFHOOK
 (init_libfuncs,
  "This hook should declare additional library routines or rename\n\
 existing ones, using the functions @code{set_optab_libfunc} and\n\
-@code{init_one_libfunc} defined in @file{optabs.c}.\n\
+@code{init_one_libfunc} defined in @file{optabs.cc}.\n\
 @code{init_optabs} calls this macro after initializing all the normal\n\
 library routines.\n\
 \n\
@@ -3020,6 +2979,14 @@ The default value of this hook is based on target's libc.",
  bool, (void),
  default_has_ifunc_p)
 
+/* True if it is OK to reference indirect function resolvers locally.  */
+DEFHOOK
+(ifunc_ref_local_ok,
+ "Return true if it is OK to reference indirect function resolvers\n\
+locally.  The default is to return false.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* True if it is OK to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if
    this is an indirect call.  */
@@ -3156,7 +3123,7 @@ encode more than one bit of information, but this practice is now\n\
 discouraged; use @code{SYMBOL_REF_FLAGS}.\n\
 \n\
 The default definition of this hook, @code{default_encode_section_info}\n\
-in @file{varasm.c}, sets a number of commonly-useful bits in\n\
+in @file{varasm.cc}, sets a number of commonly-useful bits in\n\
 @code{SYMBOL_REF_FLAGS}.  Check whether the default does what you need\n\
 before overriding it.",
  void, (tree decl, rtx rtl, int new_decl_p),
@@ -3475,7 +3442,7 @@ must work.\n\
 The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
-code in @file{optabs.c}.",
+code in @file{optabs.cc}.",
  bool, (scalar_mode mode),
  default_scalar_mode_supported_p)
 
@@ -3997,7 +3964,7 @@ allocation.",
  rtx, (rtx hard_reg), NULL)
 
 /* Return nonzero if evaluating UNSPEC X might cause a trap.
-   FLAGS has the same meaning as in rtlanal.c: may_trap_p_1.  */
+   FLAGS has the same meaning as in rtlanal.cc: may_trap_p_1.  */
 DEFHOOK
 (unspec_may_trap_p,
  "This target hook returns nonzero if @var{x}, an @code{unspec} or\n\
@@ -4168,7 +4135,7 @@ DEFHOOK
  "This hook performs target-specific gimplification of\n\
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the\n\
 arguments to @code{va_arg}; the latter two are as in\n\
-@code{gimplify.c:gimplify_expr}.",
+@code{gimplify.cc:gimplify_expr}.",
  tree, (tree valist, tree type, gimple_seq *pre_p, gimple_seq *post_p),
  std_gimplify_va_arg_expr)
 
@@ -5601,7 +5568,7 @@ Normally, this is not needed.",
  bool, (const_tree field, machine_mode mode),
  default_member_type_forces_blk)
 
-/* See tree-ssa-math-opts.c:divmod_candidate_p for conditions
+/* See tree-ssa-math-opts.cc:divmod_candidate_p for conditions
    that gate the divod transform.  */
 DEFHOOK
 (expand_divmod_libfunc,
@@ -5730,7 +5697,7 @@ However, this default behavior is not correct on some machines, such as\n\
 the DEC Alpha, that store short integers in floating-point registers\n\
 differently than in integer registers.  On those machines, the default\n\
 widening will not work correctly and you must define this hook to\n\
-suppress that widening in some cases.  See the file @file{alpha.c} for\n\
+suppress that widening in some cases.  See the file @file{alpha.cc} for\n\
 details.\n\
 \n\
 With LRA, the default is to use @var{mode} unmodified.",
@@ -6569,6 +6536,41 @@ specific target options and the caller does not use the same options.",
  default_target_can_inline_p)
 
 DEFHOOK
+(update_ipa_fn_target_info,
+ "Allow target to analyze all gimple statements for the given function to\n\
+record and update some target specific information for inlining.  A typical\n\
+example is that a caller with one isa feature disabled is normally not\n\
+allowed to inline a callee with that same isa feature enabled even which is\n\
+attributed by always_inline, but with the conservative analysis on all\n\
+statements of the callee if we are able to guarantee the callee does not\n\
+exploit any instructions from the mismatch isa feature, it would be safe to\n\
+allow the caller to inline the callee.\n\
+@var{info} is one @code{unsigned int} value to record information in which\n\
+one set bit indicates one corresponding feature is detected in the analysis,\n\
+@var{stmt} is the statement being analyzed.  Return true if target still\n\
+need to analyze the subsequent statements, otherwise return false to stop\n\
+subsequent analysis.\n\
+The default version of this hook returns false.",
+ bool, (unsigned int& info, const gimple* stmt),
+ default_update_ipa_fn_target_info)
+
+DEFHOOK
+(need_ipa_fn_target_info,
+ "Allow target to check early whether it is necessary to analyze all gimple\n\
+statements in the given function to update target specific information for\n\
+inlining.  See hook @code{update_ipa_fn_target_info} for usage example of\n\
+target specific information.  This hook is expected to be invoked ahead of\n\
+the iterating with hook @code{update_ipa_fn_target_info}.\n\
+@var{decl} is the function being analyzed, @var{info} is the same as what\n\
+in hook @code{update_ipa_fn_target_info}, target can do one time update\n\
+into @var{info} without iterating for some case.  Return true if target\n\
+decides to analyze all gimple statements to collect information, otherwise\n\
+return false.\n\
+The default version of this hook returns false.",
+ bool, (const_tree decl, unsigned int& info),
+ default_need_ipa_fn_target_info)
+
+DEFHOOK
 (relayout_function,
 "This target hook fixes function @var{fndecl} after attributes are processed.\n\
 Default does nothing. On ARM, the default function's alignment is updated\n\
@@ -6817,6 +6819,16 @@ DEFHOOKPOD
  "This value is true if the target supports some ``native'' method of\n\
 collecting constructors and destructors to be run at startup and exit.\n\
 It is false if we must use @command{collect2}.",
+ bool, false)
+
+/* True if the target wants DTORs to be run from cxa_atexit.  */
+DEFHOOKPOD
+(dtors_from_cxa_atexit,
+ "This value is true if the target wants destructors to be queued to be\n\
+run from __cxa_atexit.  If this is the case then, for each priority level,\n\
+a new constructor will be entered that registers the destructors for that\n\
+level with __cxa_atexit (and there will be no destructors emitted).\n\
+It is false the method implied by @code{have_ctors_dtors} is used.",
  bool, false)
 
 /* True if thread-local storage is supported.  */

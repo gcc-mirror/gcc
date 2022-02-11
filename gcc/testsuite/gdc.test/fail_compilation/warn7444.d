@@ -1,10 +1,9 @@
 // REQUIRED_ARGS: -w
-// PERMUTE_ARGS:
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/warn7444.d(23): Error: cannot implicitly convert expression `e` of type `int` to `int[]`
+fail_compilation/warn7444.d(22): Error: cannot implicitly convert expression `e` of type `int` to `int[]`
 ---
 */
 

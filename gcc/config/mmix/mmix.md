@@ -1,5 +1,5 @@
 ;; GCC machine description for MMIX
-;; Copyright (C) 2000-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2000-2022 Free Software Foundation, Inc.
 ;; Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 ;; This file is part of GCC.
@@ -904,7 +904,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   ""
   "
 {
-  /* The head comment of optabs.c:can_compare_p says we're required to
+  /* The head comment of optabs.cc:can_compare_p says we're required to
      implement this, so we have to clean up the mess here.  */
   if (GET_CODE (operands[0]) == LE || GET_CODE (operands[0]) == GE)
     {
@@ -1036,7 +1036,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; Don't use 'p' here.  A 'p' must stand first in constraints, or reload
 ;; messes up, not registering the address for reload.  Several C++
 ;; testcases, including g++.brendan/crash40.C.  FIXME: This is arguably a
-;; bug in gcc.  Note line ~2612 in reload.c, that does things on the
+;; bug in gcc.  Note line ~2612 in reload.cc, that does things on the
 ;; condition <<else if (constraints[i][0] == 'p')>> and the comment on
 ;; ~3017 that says:
 ;; <<   case 'p':

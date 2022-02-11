@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,7 @@ is
    Graphic    : constant Character_Flags := Alphanum or Special;
 
    Char_Map : constant array (Character) of Character_Flags :=
-   (
+   [
      NUL                         => Control,
      SOH                         => Control,
      STX                         => Control,
@@ -282,7 +282,7 @@ is
      LC_Y_Acute                  => Lower,
      LC_Icelandic_Thorn          => Lower + Basic,
      LC_Y_Diaeresis              => Lower
-   );
+   ];
 
    ---------------------
    -- Is_Alphanumeric --

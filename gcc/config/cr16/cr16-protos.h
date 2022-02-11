@@ -1,5 +1,5 @@
-/* Prototypes for exported functions defined in cr16.c
-   Copyright (C) 2012-2021 Free Software Foundation, Inc.
+/* Prototypes for exported functions defined in cr16.cc
+   Copyright (C) 2012-2022 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.

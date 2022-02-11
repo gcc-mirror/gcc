@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -29,5 +29,5 @@ compilers="f951\$(exeext)"
 
 target_libs="target-libgfortran target-libbacktrace"
 
-gtfiles="\$(srcdir)/fortran/f95-lang.c \$(srcdir)/fortran/trans-decl.c \$(srcdir)/fortran/trans-intrinsic.c \$(srcdir)/fortran/trans-io.c \$(srcdir)/fortran/trans-stmt.c \$(srcdir)/fortran/trans-types.c \$(srcdir)/fortran/trans-types.h \$(srcdir)/fortran/trans.h \$(srcdir)/fortran/trans-const.h"
+gtfiles="\$(srcdir)/fortran/f95-lang.cc \$(srcdir)/fortran/trans-decl.cc \$(srcdir)/fortran/trans-intrinsic.cc \$(srcdir)/fortran/trans-io.cc \$(srcdir)/fortran/trans-stmt.cc \$(srcdir)/fortran/trans-types.cc \$(srcdir)/fortran/trans-types.h \$(srcdir)/fortran/trans.h \$(srcdir)/fortran/trans-const.h"
 

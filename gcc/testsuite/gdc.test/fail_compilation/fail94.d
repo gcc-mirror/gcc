@@ -30,7 +30,7 @@ class B : A
     {
 	printf("B.clone()\n");
     }
-    body { return ia; }
+    do { return ia; }
 }
 
 void main()
@@ -59,4 +59,3 @@ void main()
 void bar(IA delegate() dg)
 {
 }
-

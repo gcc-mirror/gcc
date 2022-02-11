@@ -1,6 +1,7 @@
 /* Verify that we can compile with debug info.  */
 /* { dg-do compile } */
-/* { dg-options "-Og -g" } */
+/* { dg-options "" } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-g" } } */
 extern int var1;
 extern int var2;
 extern void sub2 (void);

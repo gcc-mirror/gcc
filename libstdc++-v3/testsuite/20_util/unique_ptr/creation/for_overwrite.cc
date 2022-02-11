@@ -1,8 +1,8 @@
-// { dg-options "-std=gnu++20" }
+// { dg-options "-std=gnu++20 -fno-lifetime-dse -O0" }
 // { dg-do run { target c++2a } }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,13 @@
 // C++20 20.11.1.5 unique_ptr creation [unique.ptr.create]
 
 #include <memory>
+
+#ifndef __cpp_lib_smart_ptr_for_overwrite
+# error "Feature-test macro for make_unique_for_overwrite missing in <memory>"
+#elif __cpp_lib_smart_ptr_for_overwrite < 202002L
+# error "Feature-test macro for make_unique_for_overwrite has wrong value in <memory>"
+#endif
+
 #include <cstdlib>
 #include <cstring>
 #include <testsuite_hooks.h>
@@ -58,9 +65,25 @@ test02()
     VERIFY( c == 0xaa );
 }
 
+void
+test03()
+{
+  // Type with non-trivial initialization should still be default-initialized.
+  struct NonTriv
+  {
+    int init = 0xbb;
+    int uninit;
+  };
+  std::unique_ptr<NonTriv> a = std::make_unique_for_overwrite<NonTriv>();
+  VERIFY( a->init == 0xbb );
+  std::unique_ptr<NonTriv[]> b = std::make_unique_for_overwrite<NonTriv[]>(2);
+  VERIFY( b[1].init == 0xbb );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

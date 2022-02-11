@@ -1,6 +1,6 @@
 // Range access functions for containers -*- C++ -*-
 
-// Copyright (C) 2010-2021 Free Software Foundation, Inc.
+// Copyright (C) 2010-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -110,10 +110,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp> class valarray;
   // These overloads must be declared for cbegin and cend to use them.
-  template<typename _Tp> _Tp* begin(valarray<_Tp>&);
-  template<typename _Tp> const _Tp* begin(const valarray<_Tp>&);
-  template<typename _Tp> _Tp* end(valarray<_Tp>&);
-  template<typename _Tp> const _Tp* end(const valarray<_Tp>&);
+  template<typename _Tp> _Tp* begin(valarray<_Tp>&) noexcept;
+  template<typename _Tp> const _Tp* begin(const valarray<_Tp>&) noexcept;
+  template<typename _Tp> _Tp* end(valarray<_Tp>&) noexcept;
+  template<typename _Tp> const _Tp* end(const valarray<_Tp>&) noexcept;
 
   /**
    *  @brief  Return an iterator pointing to the first element of
@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++14
 
 #if __cplusplus >= 201703L
-#define __cpp_lib_nonmember_container_access 201411
+#define __cpp_lib_nonmember_container_access 201411L
 
   /**
    *  @brief  Return the size of a container.

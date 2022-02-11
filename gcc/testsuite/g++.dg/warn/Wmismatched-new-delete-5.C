@@ -1,7 +1,7 @@
 /* PR c++/100876 - -Wmismatched-new-delete should either look through
    or ignore placement new
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fdelete-null-pointer-checks" } */
 
 extern "C" {
   void* malloc (__SIZE_TYPE__);

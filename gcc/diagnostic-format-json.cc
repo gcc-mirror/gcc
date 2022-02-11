@@ -1,5 +1,5 @@
 /* JSON output for diagnostics
-   Copyright (C) 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 2018-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -264,6 +264,9 @@ json_end_diagnostic (diagnostic_context *context, diagnostic_info *diagnostic,
       json::value *path_value = context->make_json_for_path (context, path);
       diag_obj->set ("path", path_value);
     }
+
+  diag_obj->set ("escape-source",
+		 new json::literal (richloc->escape_on_output_p ()));
 }
 
 /* No-op implementation of "begin_group_cb" for JSON output.  */

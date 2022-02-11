@@ -1,12 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12255.d(29): Error: AA key type SC1 does not have 'bool opEquals(ref const SC1) const'
-fail_compilation/fail12255.d(30): Error: AA key type SC2 does not support const equality
-fail_compilation/fail12255.d(35): Error: AA key type SD1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(36): Error: AA key type SD2 supports const equality but doesn't support const hashing
-fail_compilation/fail12255.d(40): Error: AA key type SE1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(41): Error: AA key type SE2 supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(29): Error: AA key type `SC1` does not have `bool opEquals(ref const SC1) const`
+fail_compilation/fail12255.d(30): Error: AA key type `SC2` does not support const equality
+fail_compilation/fail12255.d(35): Error: AA key type `SD1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(36): Error: AA key type `SD2` supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(40): Error: AA key type `SE1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(41): Error: AA key type `SE2` supports const equality but doesn't support const hashing
 ---
 */
 
@@ -91,12 +91,12 @@ struct SE2
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12255.d(108): Error: bottom of AA key type SC1 does not have 'bool opEquals(ref const SC1) const'
-fail_compilation/fail12255.d(109): Error: bottom of AA key type SC2 does not support const equality
-fail_compilation/fail12255.d(110): Error: bottom of AA key type SD1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(111): Error: bottom of AA key type SD2 supports const equality but doesn't support const hashing
-fail_compilation/fail12255.d(112): Error: bottom of AA key type SE1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(113): Error: bottom of AA key type SE2 supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(108): Error: bottom of AA key type `SC1` does not have `bool opEquals(ref const SC1) const`
+fail_compilation/fail12255.d(109): Error: bottom of AA key type `SC2` does not support const equality
+fail_compilation/fail12255.d(110): Error: bottom of AA key type `SD1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(111): Error: bottom of AA key type `SD2` supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(112): Error: bottom of AA key type `SE1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(113): Error: bottom of AA key type `SE2` supports const equality but doesn't support const hashing
 ---
 */
 void testSArray()
@@ -116,12 +116,12 @@ void testSArray()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12255.d(133): Error: bottom of AA key type SC1 does not have 'bool opEquals(ref const SC1) const'
-fail_compilation/fail12255.d(134): Error: bottom of AA key type SC2 does not support const equality
-fail_compilation/fail12255.d(135): Error: bottom of AA key type SD1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(136): Error: bottom of AA key type SD2 supports const equality but doesn't support const hashing
-fail_compilation/fail12255.d(137): Error: bottom of AA key type SE1 should have 'size_t toHash() const nothrow @safe' if opEquals defined
-fail_compilation/fail12255.d(138): Error: bottom of AA key type SE2 supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(133): Error: bottom of AA key type `SC1` does not have `bool opEquals(ref const SC1) const`
+fail_compilation/fail12255.d(134): Error: bottom of AA key type `SC2` does not support const equality
+fail_compilation/fail12255.d(135): Error: bottom of AA key type `SD1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(136): Error: bottom of AA key type `SD2` supports const equality but doesn't support const hashing
+fail_compilation/fail12255.d(137): Error: bottom of AA key type `SE1` should have `extern (D) size_t toHash() const nothrow @safe` if `opEquals` defined
+fail_compilation/fail12255.d(138): Error: bottom of AA key type `SE2` supports const equality but doesn't support const hashing
 ---
 */
 void testDArray()

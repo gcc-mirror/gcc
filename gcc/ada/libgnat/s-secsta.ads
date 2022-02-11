@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Compiler_Unit_Warning;
 
 with System.Parameters;
 with System.Storage_Elements;
@@ -439,10 +437,5 @@ private
 
    function Get_Stack_Info (Stack : SS_Stack_Ptr) return Stack_Info;
    --  Obtain the information attributes of secondary stack Stack
-
-   pragma Machine_Attribute (SS_Allocate, "strub", "callable");
-   pragma Machine_Attribute (SS_Mark, "strub", "callable");
-   pragma Machine_Attribute (SS_Release, "strub", "callable");
-   --  Enable these to be called from within strub contexts.
 
 end System.Secondary_Stack;

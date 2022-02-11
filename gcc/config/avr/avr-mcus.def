@@ -1,5 +1,5 @@
 /* AVR MCUs.
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,7 +40,7 @@
    where the arguments are the fields of avr_mcu_t:
    
 	NAME	Name of the device as specified by -mmcu=<NAME>.  Also
-		used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.c for
+		used by DRIVER_SELF_SPECS and gen-avr-mmcu-specs.cc for
 		- the name of the device specific specs file
 		  in -specs=device-specs/spec-<NAME>
 		- the name of the startup file crt<NAME>.o

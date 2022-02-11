@@ -1,5 +1,5 @@
-/* Prototypes for ft32.c functions used in the md file & elsewhere.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+/* Prototypes for ft32.cc functions used in the md file & elsewhere.
+   Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

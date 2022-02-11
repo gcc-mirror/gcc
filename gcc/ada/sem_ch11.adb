@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -460,10 +460,6 @@ package body Sem_Ch11 is
       Exception_Name : Entity_Id        := Empty;
 
    begin
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit ("raise expression", N);
-      end if;
-
       --  Check exception restrictions on the original source
 
       if Comes_From_Source (N) then

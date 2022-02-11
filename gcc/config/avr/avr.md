@@ -1,6 +1,6 @@
 ;;   Machine description for GNU compiler,
 ;;   for ATMEL AVR micro controllers.
-;;   Copyright (C) 1998-2021 Free Software Foundation, Inc.
+;;   Copyright (C) 1998-2022 Free Software Foundation, Inc.
 ;;   Contributed by Denis Chertykov (chertykov@gmail.com)
 
 ;; This file is part of GCC.
@@ -148,7 +148,7 @@
                        (const_int 2))]
         (const_int 2)))
 
-;; Lengths of several insns are adjusted in avr.c:adjust_insn_length().
+;; Lengths of several insns are adjusted in avr.cc:adjust_insn_length().
 ;; Following insn attribute tells if and how the adjustment has to be
 ;; done:
 ;;     no     No adjustment needed; attribute "length" is fine.
@@ -328,7 +328,7 @@
 ;; This avoids creating add/sub offsets in frame_pointer save/resore.
 ;; The 'null' receiver also avoids  problems with optimisation
 ;; not recognising incoming jmp and removing code that resets frame_pointer.
-;; The code derived from builtins.c.
+;; The code derived from builtins.cc.
 
 (define_expand "nonlocal_goto_receiver"
   [(set (reg:HI REG_Y)
@@ -346,7 +346,7 @@
 
 
 ;; Defining nonlocal_goto_receiver means we must also define this
-;; even though its function is identical to that in builtins.c
+;; even though its function is identical to that in builtins.cc
 
 (define_expand "nonlocal_goto"
   [(use (match_operand 0 "general_operand"))

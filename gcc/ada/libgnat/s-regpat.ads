@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                     Copyright (C) 1996-2021, AdaCore                     --
+--                     Copyright (C) 1996-2022, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -639,10 +639,10 @@ private
       Paren_Count      : Natural      := 0;          --  # paren groups
       Flags            : Regexp_Flags := No_Flags;
       Program          : Program_Data (Program_First .. Size) :=
-                           (others => ASCII.NUL);
+                           [others => ASCII.NUL];
    end record;
 
    Never_Match : constant Pattern_Matcher :=
-      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, (others => ASCII.NUL));
+      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, [others => ASCII.NUL]);
 
 end System.Regpat;

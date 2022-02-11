@@ -1,5 +1,12 @@
-// PERMUTE_ARGS:
-// REQUIRED_ARGS: -version=3 -version=foo
+/*
+PERMUTE_ARGS:
+REQUIRED_ARGS: -version=3 -version=foo
+RUN_OUTPUT:
+---
+i = 2
+i = 2
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
@@ -64,4 +71,3 @@ int main()
     test2();
     return 0;
 }
-

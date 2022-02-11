@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,10 +43,11 @@ package System.Val_Int is
 
    package Impl is new Value_I (Integer, Unsigned, Val_Uns.Scan_Raw_Unsigned);
 
-   function Scan_Integer
+   procedure Scan_Integer
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Integer
+      Max : Integer;
+      Res : out Integer)
      renames Impl.Scan_Integer;
 
    function Value_Integer (Str : String) return Integer

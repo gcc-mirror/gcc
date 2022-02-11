@@ -1,16 +1,19 @@
 /*
-PERMUTE_ARGS:
-REQUIRED_ARGS: -dip25
+REQUIRED_ARGS:
 TEST_OUTPUT:
 ---
-fail_compilation/fail_scope.d(45): Error: returning `cast(char[])string` escapes a reference to local variable `string`
-fail_compilation/fail_scope.d(63): Error: returning `s.bar()` escapes a reference to local variable `s`
-fail_compilation/fail_scope.d(82): Error: returning `& string` escapes a reference to local variable `string`
-fail_compilation/fail_scope.d(92): Error: returning `cast(int[])a` escapes a reference to local variable `a`
-fail_compilation/fail_scope.d(100): Error: returning `cast(int[])a` escapes a reference to local variable `a`
-fail_compilation/fail_scope.d(108): Error: escaping reference to outer local variable `x`
-fail_compilation/fail_scope.d(127): Error: returning `s.bar()` escapes a reference to local variable `s`
-fail_compilation/fail_scope.d(137): Error: returning `foo16226(i)` escapes a reference to local variable `i`
+fail_compilation/fail_scope.d(44): Error: returning `cast(char[])string` escapes a reference to local variable `string`
+fail_compilation/fail_scope.d(62): Error: returning `s.bar()` escapes a reference to local variable `s`
+fail_compilation/fail_scope.d(73): Error: `fail_scope.foo8` called with argument types `(int)` matches both:
+fail_compilation/fail_scope.d(67):     `fail_scope.foo8(ref int x)`
+and:
+fail_compilation/fail_scope.d(68):     `fail_scope.foo8(return ref int x)`
+fail_compilation/fail_scope.d(81): Error: returning `& string` escapes a reference to local variable `string`
+fail_compilation/fail_scope.d(91): Error: returning `cast(int[])a` escapes a reference to local variable `a`
+fail_compilation/fail_scope.d(99): Error: returning `cast(int[])a` escapes a reference to local variable `a`
+fail_compilation/fail_scope.d(107): Deprecation: escaping reference to outer local variable `x`
+fail_compilation/fail_scope.d(126): Error: returning `s.bar()` escapes a reference to local variable `s`
+fail_compilation/fail_scope.d(136): Error: returning `foo16226(i)` escapes a reference to local variable `i`
 ---
 //fail_compilation/fail_scope.d(30): Error: scope variable `da` may not be returned
 //fail_compilation/fail_scope.d(32): Error: scope variable `o` may not be returned
@@ -20,10 +23,6 @@ fail_compilation/fail_scope.d(137): Error: returning `foo16226(i)` escapes a ref
 //fail_compilation/fail_scope.d(38): Error: scope variable `dg` may not be returned
 //fail_compilation/fail_scope.d(40): Error: scope variable `p` may not be returned
 */
-
-
-
-
 
 alias int delegate() dg_t;
 
@@ -86,7 +85,7 @@ char* fail141()
 
 int[] test1313b()
 out{}
-body
+do
 {
     int[2] a;
     return a;
@@ -94,7 +93,7 @@ body
 
 int[] test1313a()
 //out{}
-body
+do
 {
     int[2] a;
     return a;
@@ -142,4 +141,3 @@ ref foo16226(ref int bar) @safe
 {
     return bar;
 }
-

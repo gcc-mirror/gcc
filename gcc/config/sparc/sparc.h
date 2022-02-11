@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -1322,7 +1322,7 @@ do {									\
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
@@ -1366,7 +1366,7 @@ do {									\
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
+   macro is used in only one place: `find_reloads_address' in reload.cc.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	   \
 do {									   \
   int win;								   \
@@ -1513,7 +1513,7 @@ do {									   \
 /* On Sun 4, this limit is 2048.  We use 1000 to be safe, since the length
    can run past this up to a continuation point.  Once we used 1500, but
    a single entry in C++ can run more than 500 bytes, due to the length of
-   mangled symbol names.  dbxout.c should really be fixed to do
+   mangled symbol names.  dbxout.cc should really be fixed to do
    continuations when they are actually needed instead of trying to
    guess...  */
 #define DBX_CONTIN_LENGTH 1000

@@ -38,25 +38,25 @@
     higher-numbered conformance levels are more usable (i.e., require
     less recompilation) but are more complicated to implement than
     the lower-numbered conformance levels.
-      </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p><span class="emphasis"><em>Full recompilation</em></span>: The user must recompile his or
-	her entire application and all C++ libraries it depends on,
+      </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p><span class="emphasis"><em>Full recompilation</em></span>: The user must recompile
+	their entire application and all C++ libraries it depends on,
 	including the C++ standard library that ships with the
 	compiler. This must be done even if only a small part of the
 	program can use debugging features.</p></li><li class="listitem"><p><span class="emphasis"><em>Full user recompilation</em></span>: The user must recompile
-	his or her entire application and all C++ libraries it depends
+	their entire application and all C++ libraries it depends
 	on, but not the C++ standard library itself. This must be done
 	even if only a small part of the program can use debugging
 	features. This can be achieved given a full recompilation
 	system by compiling two versions of the standard library when
 	the compiler is installed and linking against the appropriate
 	one, e.g., a multilibs approach.</p></li><li class="listitem"><p><span class="emphasis"><em>Partial recompilation</em></span>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on that will use the debugging facilities
 	directly. This means that any code that uses the debuggable
 	standard containers would need to be recompiled, but code
 	that does not use them (but may, for instance, use IOStreams)
 	would not have to be recompiled.</p></li><li class="listitem"><p><span class="emphasis"><em>Per-use recompilation</em></span>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on where debugging should occur, and any other code
 	that interacts with those containers. This means that a set of
 	translation units that accesses a particular standard

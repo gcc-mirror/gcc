@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2020-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -73,11 +73,12 @@ test01()
     }
 }
 
+template<typename T>
 constexpr bool
 test02()
 {
   bool ok = true;
-  int x[6] = { 1, 2, 3, 4, 5, 6 };
+  T x[6] = { 1, 2, 3, 4, 5, 6 };
   const int y[6] = { 1, 2, 3, 4, 5, 6 };
   const int z[6] = { 17, 17, 17, 4, 5, 6 };
 
@@ -94,5 +95,6 @@ int
 main()
 {
   test01();
-  static_assert(test02());
+  static_assert(test02<int>());
+  static_assert(test02<unsigned char>()); // PR libstdc++/101608
 }

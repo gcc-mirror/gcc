@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,6 +84,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinfo.CN;       use Sinfo.CN;
 with Sinput;         use Sinput;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Stylesw;        use Stylesw;
 with Table;
 with Targparm;       use Targparm;
@@ -397,14 +398,12 @@ package body Sem_Prag is
             CC := Get_String_Char (Strval (N), J);
 
             if Opt.External_Name_Exp_Casing = Uppercase
-              and then CC >= Get_Char_Code ('a')
-              and then CC <= Get_Char_Code ('z')
+              and then CC in Get_Char_Code ('a') .. Get_Char_Code ('z')
             then
                Store_String_Char (CC - 32);
 
             elsif Opt.External_Name_Exp_Casing = Lowercase
-              and then CC >= Get_Char_Code ('A')
-              and then CC <= Get_Char_Code ('Z')
+              and then CC in Get_Char_Code ('A') .. Get_Char_Code ('Z')
             then
                Store_String_Char (CC + 32);
 
@@ -1684,7 +1683,15 @@ package body Sem_Prag is
                --  States and global objects are not used properly only when
                --  the subprogram is subject to pragma Global.
 
-               elsif Global_Seen then
+               elsif Global_Seen
+                 and then Ekind (Item_Id) in E_Abstract_State
+                                           | E_Constant
+                                           | E_Loop_Parameter
+                                           | E_Protected_Type
+                                           | E_Task_Type
+                                           | E_Variable
+                                           | Formal_Kind
+               then
                   Usage_Error (Item_Id);
                end if;
             end if;
@@ -3444,9 +3451,7 @@ package body Sem_Prag is
 
                Parent_Unit := Pack_Id;
                while Present (Parent_Unit) loop
-                  exit when
-                    Private_Present
-                      (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  exit when Is_Private_Library_Unit (Parent_Unit);
                   Parent_Unit := Scope (Parent_Unit);
                end loop;
 
@@ -3494,17 +3499,80 @@ package body Sem_Prag is
          --  encapsulating state must be declared in the same package.
 
          elsif Placement = Private_State_Space then
-            if Scope (Encap_Id) /= Pack_Id then
-               SPARK_Msg_NE
-                 ("indicator Part_Of must denote an abstract state of "
-                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
 
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the private part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
+            --  In the case of the abstract state of a nongeneric private
+            --  child package, it may be encapsulated in the state of a
+            --  public descendant of its parent package.
+
+            declare
+               function Is_Public_Descendant
+                 (Child, Ancestor : Entity_Id)
+                  return Boolean;
+               --  Return True if Child is a public descendant of Pack
+
+               --------------------------
+               -- Is_Public_Descendant --
+               --------------------------
+
+               function Is_Public_Descendant
+                 (Child, Ancestor : Entity_Id)
+                  return Boolean
+               is
+                  P : Entity_Id := Child;
+               begin
+                  while Is_Child_Unit (P)
+                    and then not Is_Private_Library_Unit (P)
+                  loop
+                     if Scope (P) = Ancestor then
+                        return True;
+                     end if;
+
+                     P := Scope (P);
+                  end loop;
+
+                  return False;
+               end Is_Public_Descendant;
+
+               --  Local variables
+
+               Immediate_Pack_Id : constant Entity_Id := Scope (Item_Id);
+
+               Is_State_Of_Private_Child : constant Boolean :=
+                 Is_Child_Unit (Immediate_Pack_Id)
+                   and then not Is_Generic_Unit (Immediate_Pack_Id)
+                   and then Is_Private_Descendant (Immediate_Pack_Id);
+
+               Is_OK_Through_Sibling : Boolean := False;
+
+            begin
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Is_State_Of_Private_Child
+                 and then Is_Public_Descendant (Scope (Encap_Id), Pack_Id)
+               then
+                  Is_OK_Through_Sibling := True;
+               end if;
+
+               if Scope (Encap_Id) /= Pack_Id
+                 and then not Is_OK_Through_Sibling
+               then
+                  if Is_State_Of_Private_Child then
+                     SPARK_Msg_NE
+                       ("indicator Part_Of must denote abstract state of & "
+                        & "or of its public descendant "
+                        & "(SPARK RM 7.2.6(3))", Indic, Pack_Id);
+                  else
+                     SPARK_Msg_NE
+                       ("indicator Part_Of must denote an abstract state of "
+                        & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
+                  end if;
+
+                  Error_Msg_Name_1 := Chars (Pack_Id);
+                  SPARK_Msg_NE
+                    ("\& is declared in the private part of package %",
+                     Indic, Item_Id);
+                  return;
+               end if;
+            end;
 
          --  Items declared in the body state space of a package do not need
          --  Part_Of indicators as the refinement has already been seen.
@@ -6603,7 +6671,9 @@ package body Sem_Prag is
 
             elsif Nkind (Parent_Node) = N_Compilation_Unit_Aux then
                if Plist /= Pragmas_After (Parent_Node) then
-                  Pragma_Misplaced;
+                  Error_Pragma
+                    ("pragma% misplaced, must be inside or after the "
+                     & "compilation unit");
 
                elsif Arg_Count = 0 then
                   Error_Pragma
@@ -6670,26 +6740,36 @@ package body Sem_Prag is
                   Unit_Node := Unit_Declaration_Node (Current_Scope);
                   Unit_Kind := Nkind (Unit_Node);
 
-                  if Nkind (Parent (Unit_Node)) /= N_Compilation_Unit then
-                     Pragma_Misplaced;
+                  if Unit_Node = Standard_Package_Node then
+                     Error_Pragma
+                       ("pragma% misplaced, must be inside or after the "
+                        & "compilation unit");
+
+                  elsif Nkind (Parent (Unit_Node)) /= N_Compilation_Unit then
+                     Error_Pragma
+                       ("pragma% misplaced, must be on library unit");
 
                   elsif Unit_Kind = N_Subprogram_Body
                     and then not Acts_As_Spec (Unit_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be on the subprogram spec");
 
                   elsif Nkind (Parent_Node) = N_Package_Body then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be on the package spec");
 
                   elsif Nkind (Parent_Node) = N_Package_Specification
                     and then Plist = Private_Declarations (Parent_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be in the public part");
 
                   elsif Nkind (Parent_Node) in N_Generic_Declaration
                     and then Plist = Generic_Formal_Declarations (Parent_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must not be in formal part");
 
                   elsif Arg_Count > 0 then
                      Analyze (Get_Pragma_Arg (Arg1));
@@ -7033,7 +7113,7 @@ package body Sem_Prag is
 
          if From_Aspect_Specification (N) then
 
-            --  Change appearence of "pragma" in message to "aspect"
+            --  Change appearance of "pragma" in message to "aspect"
 
             J := Res'First;
             while J <= Res_Last - 5 loop
@@ -7745,11 +7825,15 @@ package body Sem_Prag is
 
          if Compile_Time_Known_Value (Arg1x) then
             Validate_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
+
          else
             while Present (P) and then Nkind (P) not in N_Generic_Declaration
             loop
-               if Nkind (P) in N_Package_Body | N_Subprogram_Body then
-                  P := Corresponding_Spec (P);
+               if (Nkind (P) = N_Subprogram_Body and then not Acts_As_Spec (P))
+                 or else Nkind (P) = N_Package_Body
+               then
+                  P := Parent (Corresponding_Spec (P));
+
                else
                   P := Parent (P);
                end if;
@@ -10435,6 +10519,49 @@ package body Sem_Prag is
          Expr  : Node_Id;
          Val   : Uint;
 
+         procedure Process_No_Specification_of_Aspect;
+         --  Process the No_Specification_of_Aspect restriction
+
+         procedure Process_No_Use_Of_Attribute;
+         --  Process the No_Use_Of_Attribute restriction
+
+         ----------------------------------------
+         -- Process_No_Specification_of_Aspect --
+         ----------------------------------------
+
+         procedure Process_No_Specification_of_Aspect is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Aspect_Id (Name)
+            then
+               Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
+            else
+               Bad_Aspect (Expr, Name, Warn => True);
+
+               raise Pragma_Exit;
+            end if;
+         end Process_No_Specification_of_Aspect;
+
+         ---------------------------------
+         -- Process_No_Use_Of_Attribute --
+         ---------------------------------
+
+         procedure Process_No_Use_Of_Attribute is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Attribute_Name (Name)
+            then
+               Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
+            else
+               Bad_Attribute (Expr, Name, Warn => True);
+            end if;
+
+         end Process_No_Use_Of_Attribute;
+
+      --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
+
       begin
          --  Ignore all Restrictions pragmas in CodePeer mode
 
@@ -10659,34 +10786,12 @@ package body Sem_Prag is
             --  Case of No_Specification_Of_Aspect => aspect-identifier
 
             elsif Id = Name_No_Specification_Of_Aspect then
-               declare
-                  A_Id : Aspect_Id;
-
-               begin
-                  if Nkind (Expr) /= N_Identifier then
-                     A_Id := No_Aspect;
-                  else
-                     A_Id := Get_Aspect_Id (Chars (Expr));
-                  end if;
-
-                  if A_Id = No_Aspect then
-                     Error_Pragma_Arg ("invalid restriction name", Arg);
-                  else
-                     Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
-                  end if;
-               end;
+               Process_No_Specification_of_Aspect;
 
             --  Case of No_Use_Of_Attribute => attribute-identifier
 
             elsif Id = Name_No_Use_Of_Attribute then
-               if Nkind (Expr) /= N_Identifier
-                 or else not Is_Attribute_Name (Chars (Expr))
-               then
-                  Error_Msg_N ("unknown attribute name??", Expr);
-
-               else
-                  Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
-               end if;
+               Process_No_Use_Of_Attribute;
 
             --  Case of No_Use_Of_Entity => fully-qualified-name
 
@@ -11479,7 +11584,7 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      if Get_Aspect_Id (Chars (Pragma_Identifier (N))) /= No_Aspect then
+      if Is_Aspect_Id (Chars (Pragma_Identifier (N))) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
@@ -12867,10 +12972,6 @@ package body Sem_Prag is
                then
                   Mark_Ghost_Pragma (N, Entity (Get_Pragma_Arg (Nam_Arg)));
                end if;
-
-               --  Not allowed in compiler units (bootstrap issues)
-
-               Check_Compiler_Unit ("Entity for pragma Annotate", N);
             end if;
 
             --  Continue the processing with last argument removed for now
@@ -14230,50 +14331,6 @@ package body Sem_Prag is
             end if;
 
             Process_Compile_Time_Warning_Or_Error;
-
-         ---------------------------
-         -- Compiler_Unit_Warning --
-         ---------------------------
-
-         --  pragma Compiler_Unit_Warning;
-
-         --  Historical note
-
-         --  Originally, we had only pragma Compiler_Unit, and it resulted in
-         --  errors not warnings. This means that we had introduced a big extra
-         --  inertia to compiler changes, since even if we implemented a new
-         --  feature, and even if all versions to be used for bootstrapping
-         --  implemented this new feature, we could not use it, since old
-         --  compilers would give errors for using this feature in units
-         --  having Compiler_Unit pragmas.
-
-         --  By changing Compiler_Unit to Compiler_Unit_Warning, we solve the
-         --  problem. We no longer have any units mentioning Compiler_Unit,
-         --  so old compilers see Compiler_Unit_Warning which is unrecognized,
-         --  and thus generates a warning which can be ignored. So that deals
-         --  with the problem of old compilers not implementing the newer form
-         --  of the pragma.
-
-         --  Newer compilers recognize the new pragma, but generate warning
-         --  messages instead of errors, which again can be ignored in the
-         --  case of an old compiler which implements a wanted new feature
-         --  but at the time felt like warning about it for older compilers.
-
-         --  We retain Compiler_Unit so that new compilers can be used to build
-         --  older run-times that use this pragma. That's an unusual case, but
-         --  it's easy enough to handle, so why not?
-
-         when Pragma_Compiler_Unit
-            | Pragma_Compiler_Unit_Warning
-         =>
-            GNAT_Pragma;
-            Check_Arg_Count (0);
-
-            --  Only recognized in main unit
-
-            if Current_Sem_Unit = Main_Unit then
-               Compiler_Unit := True;
-            end if;
 
          -----------------------------
          -- Complete_Representation --
@@ -19438,7 +19495,29 @@ package body Sem_Prag is
             Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
             Def_Id := Entity (Get_Pragma_Arg (Arg1));
 
-            if Is_Access_Type (Def_Id) then
+            --  Apply the pragma to the designated type, rather than to the
+            --  access type, unless it's a strub annotation.  We wish to enable
+            --  objects of access type, as well as access types themselves, to
+            --  be annotated, so that reading the access objects (as oposed to
+            --  the designated data) automatically enables stack
+            --  scrubbing. That said, as in the attribute handler that
+            --  processes the pragma turned into a compiler attribute, a strub
+            --  annotation that must be associated with a subprogram type (for
+            --  holding an explicit strub mode), when applied to an
+            --  access-to-subprogram, gets promoted to the subprogram type. We
+            --  might be tempted to leave it alone here, since the C attribute
+            --  handler will adjust it, but then GNAT would convert the
+            --  annotated subprogram types to naked ones before using them,
+            --  cancelling out their intended effects.
+
+            if Is_Access_Type (Def_Id)
+              and then (not Strub_Pragma_P (N)
+                          or else
+                          (Present (Arg3)
+                             and then
+                             Ekind (Designated_Type
+                                      (Def_Id)) = E_Subprogram_Type))
+            then
                Def_Id := Designated_Type (Def_Id);
             end if;
 
@@ -19456,7 +19535,7 @@ package body Sem_Prag is
             if Rep_Item_Too_Late (Def_Id, N) then
                return;
             else
-               Set_Has_Gigi_Rep_Item (Entity (Get_Pragma_Arg (Arg1)));
+               Set_Has_Gigi_Rep_Item (Def_Id);
             end if;
          end Machine_Attribute;
 
@@ -25565,10 +25644,6 @@ package body Sem_Prag is
                   Reason := End_String;
                   Arg_Count := Arg_Count - 1;
 
-                  --  Not allowed in compiler units (bootstrap issues)
-
-                  Check_Compiler_Unit ("Reason for pragma Warnings", N);
-
                --  No REASON string, set null string as reason
 
                else
@@ -26510,7 +26585,7 @@ package body Sem_Prag is
 
             --  The current refinement clause is legally constructed following
             --  the rules in SPARK RM 7.2.5, therefore it can be removed from
-            --  the pool of candidates. The seach continues because a single
+            --  the pool of candidates. The search continues because a single
             --  dependence clause may have multiple matching refinements.
 
             if Inputs_Match and Outputs_Match then
@@ -28709,13 +28784,17 @@ package body Sem_Prag is
                         Placement => Placement,
                         Pack_Id   => Pack_Id);
 
-                     --  The constituent is part of the visible state of a
-                     --  private child package, but lacks a Part_Of indicator.
+                     --  The constituent is either part of the hidden state of
+                     --  the package or part of the visible state of a private
+                     --  child package, but lacks a Part_Of indicator.
 
-                     if Placement = Visible_State_Space
-                       and then Is_Child_Unit (Pack_Id)
-                       and then not Is_Generic_Unit (Pack_Id)
-                       and then Is_Private_Descendant (Pack_Id)
+                     if (Placement = Private_State_Space
+                          and then Pack_Id = Spec_Id)
+                       or else
+                         (Placement = Visible_State_Space
+                           and then Is_Child_Unit (Pack_Id)
+                           and then not Is_Generic_Unit (Pack_Id)
+                           and then Is_Private_Descendant (Pack_Id))
                      then
                         Error_Msg_Name_1 := Chars (State_Id);
                         SPARK_Msg_NE
@@ -30824,8 +30903,8 @@ package body Sem_Prag is
                   return Stmt;
 
                --  The subprogram declaration is an internally generated spec
-               --  for a stand-alone subrogram body declared inside a protected
-               --  body.
+               --  for a stand-alone subprogram body declared inside a
+               --  protected body.
 
                elsif Present (Corresponding_Body (Stmt))
                  and then Comes_From_Source (Corresponding_Body (Stmt))
@@ -31308,7 +31387,7 @@ package body Sem_Prag is
    --  whether appearance of some name in a given pragma is to be considered
    --  as a reference for the purposes of warnings about unreferenced objects.
 
-   --  -1  indicates that appearence in any argument is significant
+   --  -1  indicates that appearance in any argument is significant
    --  0   indicates that appearance in any argument is not significant
    --  +n  indicates that appearance as argument n is significant, but all
    --      other arguments are not significant
@@ -31357,8 +31436,6 @@ package body Sem_Prag is
       Pragma_CUDA_Global                    => -1,
       Pragma_Compile_Time_Error             => -1,
       Pragma_Compile_Time_Warning           => -1,
-      Pragma_Compiler_Unit                  => -1,
-      Pragma_Compiler_Unit_Warning          => -1,
       Pragma_Complete_Representation        =>  0,
       Pragma_Complex_Representation         =>  0,
       Pragma_Component_Alignment            =>  0,
@@ -32600,7 +32677,7 @@ package body Sem_Prag is
    --------------------------------------------
 
    procedure Defer_Compile_Time_Warning_Error_To_BE (N : Node_Id) is
-      Arg1  : constant Node_Id := First (Pragma_Argument_Associations (N));
+      Arg1 : constant Node_Id := First (Pragma_Argument_Associations (N));
    begin
       Compile_Time_Warnings_Errors.Append
         (New_Val => CTWE_Entry'(Eloc  => Sloc (Arg1),

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -136,10 +136,13 @@ extern unsigned long total_code_bytes;
    by default.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
+/* Select dwarf2 as the preferred debug format.  */
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 /* This used to be zero (no max length), but big enums and such can
    cause huge strings which killed gas.
 
-   We also have to avoid lossage in dbxout.c -- it does not compute the
+   We also have to avoid lossage in dbxout.cc -- it does not compute the
    string size accurately, so we are real conservative here.  */
 #undef DBX_CONTIN_LENGTH
 #define DBX_CONTIN_LENGTH 3000
@@ -255,11 +258,17 @@ typedef struct GTY(()) machine_function
    is UNITS_PER_WORD.  Otherwise, it is the constant value that is the
    smallest value that UNITS_PER_WORD can have at run-time.
 
-   FIXME: This needs to be 4 when TARGET_64BIT is true to suppress the
-   building of various TImode routines in libgcc.  The HP runtime
-   specification doesn't provide the alignment requirements and calling
-   conventions for TImode variables.  */
-#define MIN_UNITS_PER_WORD 4
+   This needs to be 8 when TARGET_64BIT is true to allow building various
+   TImode routines in libgcc.  However, we also need the DImode DIVMOD
+   routines because they are not currently implemented in pa.md.
+   
+   The HP runtime specification doesn't provide the alignment requirements
+   and calling conventions for TImode variables.  */
+#ifdef IN_LIBGCC2
+#define MIN_UNITS_PER_WORD      UNITS_PER_WORD
+#else
+#define MIN_UNITS_PER_WORD      4
+#endif
 
 /* The widest floating point format supported by the hardware.  Note that
    setting this influences some Ada floating point type sizes, currently
@@ -671,7 +680,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
 /* The profile counter if emitted must come before the prologue.  */
 #define PROFILE_BEFORE_PROLOGUE 1
 
-/* We never want final.c to emit profile counters.  When profile
+/* We never want final.cc to emit profile counters.  When profile
    counters are required, we have to defer emitting them to the end
    of the current file.  */
 #define NO_PROFILE_COUNTERS 1
@@ -721,7 +730,7 @@ extern int may_call_alloca;
    They give nonzero only if X is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
+   has been allocated, which happens in reginfo.cc during register
    allocation.  */
 
 #define REGNO_OK_FOR_INDEX_P(X) \
@@ -910,7 +919,7 @@ extern int may_call_alloca;
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.  */
+   macro is used in only one place: `find_reloads_address' in reload.cc.  */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(AD, MODE, OPNUM, TYPE, IND_L, WIN) 	     \
 do {									     \

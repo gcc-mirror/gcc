@@ -1,4 +1,4 @@
-# Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# Copyright (C) 2005-2022 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,7 +79,7 @@ proc get_dump_flags {} {
     set res [list]
 
     global srcdir
-    set file "$srcdir/../dumpfile.c"
+    set file "$srcdir/../dumpfile.cc"
     
     set a [open $file]
     set lines [split [read $a] "\n"]

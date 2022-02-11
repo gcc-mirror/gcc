@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -236,6 +236,13 @@ public:
   void get_surviving_params (vec<bool> *surviving_params);
   /* Fill a vector with new indices of surviving original parameters.  */
   void get_updated_indices (vec<int> *new_indices);
+  /* If a parameter with original INDEX has survived intact, return its new
+     index.  Otherwise return -1.  In that case, if it has been split and there
+     is a new parameter representing a portion at UNIT_OFFSET for which a value
+     of a TYPE can be substituted, store its new index into SPLIT_INDEX,
+     otherwise store -1 there.  */
+  int get_updated_index_or_split (int index, unsigned unit_offset, tree type,
+				  int *split_index);
   /* Return the original index for the given new parameter index.  Return a
      negative number if not available.  */
   int get_original_index (int newidx);
@@ -254,6 +261,7 @@ public:
   /* If true, make the function not return any value.  */
   bool m_skip_return;
 
+  static bool type_attribute_allowed_p (tree);
 private:
   ipa_param_adjustments () {}
 
@@ -328,6 +336,9 @@ public:
 			   gimple *orig_stmt);
   /* Return the new chain of parameters.  */
   tree get_new_param_chain ();
+  /* Replace all occurances of SSAs in m_dead_ssa_debug_equiv in t with what
+     they are mapped to.  */
+  void remap_with_debug_expressions (tree *t);
 
   /* Pointers to data structures defining how the function should be
      modified.  */
@@ -348,6 +359,12 @@ public:
   hash_set<gimple *> m_dead_stmts;
   hash_set<tree> m_dead_ssas;
 
+  /* Mapping from DCEd SSAs to what their potential debug_binds should be.  */
+  hash_map<tree, tree> m_dead_ssa_debug_equiv;
+  /* Mapping from DCEd statements to debug expressions that will be placed on
+     the RHS of debug statement that will replace this one.  */
+  hash_map<gimple *, tree> m_dead_stmt_debug_equiv;
+
 private:
   void common_initialization (tree old_fndecl, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map);
@@ -361,7 +378,8 @@ private:
   bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();
   void reset_debug_stmts ();
-  void mark_dead_statements (tree dead_param);
+  void mark_dead_statements (tree dead_param, vec<tree> *debugstack);
+  bool prepare_debug_expressions (tree dead_ssa);
 
   /* Declaration of the function that is being transformed.  */
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32imaf -mabi=ilp32f -mcmodel=medany" } */
+/* { dg-options "-march=rv32imaf -mabi=ilp32f -mcmodel=medany" } */
 
 int main () {
 #if !defined(__riscv)

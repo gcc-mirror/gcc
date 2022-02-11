@@ -1,5 +1,5 @@
 /* A state machine for detecting misuses of the malloc/free API.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -945,7 +945,7 @@ method_p (tree fndecl)
 }
 
 /* Return a 1-based description of ARG_IDX (0-based) of FNDECL.
-   Compare with %P in the C++ FE  (implemented in cp/error.c: parm_to_string
+   Compare with %P in the C++ FE  (implemented in cp/error.cc: parm_to_string
    as called from cp_printer).  */
 
 static label_text

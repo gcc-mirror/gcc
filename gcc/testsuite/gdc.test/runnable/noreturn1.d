@@ -66,9 +66,56 @@ void test2()
 
 /*****************************************/
 
+struct BasicStruct
+{
+	int firstInt;
+	noreturn noRet;
+	long lastLong;
+}
+
+struct AlignedStruct
+{
+	int firstInt;
+	align(16) noreturn noRet;
+	long lastLong;
+}
+
+void takeBasic(BasicStruct bs)
+{
+    assert(bs.firstInt == 13);
+    assert(bs.lastLong == 42);
+
+    assert(&bs.noRet == (&bs.firstInt + 1));
+}
+
+void takeAligned(AlignedStruct as)
+{
+    assert(as.firstInt == 99);
+    assert(as.lastLong == 0xDEADBEEF);
+
+    assert(&as.noRet == &as.lastLong);
+}
+
+void test3()
+{
+    {
+        BasicStruct bs;
+        bs.firstInt = 13;
+        bs.lastLong = 42;
+        takeBasic(bs);
+    }
+    {
+        AlignedStruct as;
+        as.firstInt = 99;
+        as.lastLong = 0xDEADBEEF;
+        takeAligned(as);
+    }
+}
+
 int main()
 {
     test1();
     test2();
+    test3();
     return 0;
 }

@@ -1,5 +1,5 @@
 ;; Cavium ThunderX pipeline description
-;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2022 Free Software Foundation, Inc.
 ;;
 ;; Written by Andrew Pinski  <apinski@cavium.com>
 

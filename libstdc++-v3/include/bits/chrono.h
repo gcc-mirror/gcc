@@ -1,6 +1,6 @@
 // chrono::duration and chrono::time_point -*- C++ -*-
 
-// Copyright (C) 2008-2021 Free Software Foundation, Inc.
+// Copyright (C) 2008-2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -327,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 
 #if __cplusplus >= 201703L
-# define __cpp_lib_chrono 201611
+# define __cpp_lib_chrono 201611L
 
     template<typename _ToDur, typename _Rep, typename _Period>
       constexpr __enable_if_is_duration<_ToDur>
@@ -1198,7 +1198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace chrono
 
 #if __cplusplus >= 201402L
-    #define __cpp_lib_chrono_udls 201304
+#define __cpp_lib_chrono_udls 201304L
 
   inline namespace literals
   {

@@ -1,5 +1,5 @@
 /* Code for GIMPLE range related routines.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -243,7 +243,7 @@ fur_list::fur_list (irange &r1, irange &r2) : fur_source (NULL)
   m_index = 0;
   m_limit = 2;
   m_local[0] = r1;
-  m_local[0] = r2;
+  m_local[1] = r2;
 }
 
 // Arbitrary number of ranges in a vector.
@@ -620,7 +620,9 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  if (dump_file && (dump_flags & TDF_DETAILS) && rel != VREL_NONE)
 	    {
 	      fprintf (dump_file, " folding with relation ");
+	      print_generic_expr (dump_file, op1, TDF_SLIM);
 	      print_relation (dump_file, rel);
+	      print_generic_expr (dump_file, op2, TDF_SLIM);
 	      fputc ('\n', dump_file);
 	    }
 	  // Fold range, and register any dependency if available.
@@ -718,14 +720,20 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 	}
       /* If &X->a is equal to X, the range of X is the result.  */
       if (off_cst && known_eq (off, 0))
-	  return true;
+	return true;
       else if (flag_delete_null_pointer_checks
 	       && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr)))
 	{
-	 /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
-	 allow going from non-NULL pointer to NULL.  */
-	   if(!range_includes_zero_p (&r))
-	    return true;
+	  /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
+	     allow going from non-NULL pointer to NULL.  */
+	  if (!range_includes_zero_p (&r))
+	    {
+	      /* We could here instead adjust r by off >> LOG2_BITS_PER_UNIT
+		 using POINTER_PLUS_EXPR if off_cst and just fall back to
+		 this.  */
+	      r = range_nonzero (TREE_TYPE (gimple_assign_rhs1 (stmt)));
+	      return true;
+	    }
 	}
       /* If MEM_REF has a "positive" offset, consider it non-NULL
 	 always, for -fdelete-null-pointer-checks also "negative"
@@ -763,6 +771,7 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   tree phi_def = gimple_phi_result (phi);
   tree type = gimple_range_type (phi);
   int_range_max arg_range;
+  int_range_max equiv_range;
   unsigned x;
 
   if (!type)
@@ -777,6 +786,10 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       tree arg = gimple_phi_arg_def (phi, x);
+      // An argument that is the same as the def provides no new range.
+      if (arg == phi_def)
+	continue;
+
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Get the range of the argument on its edge.
@@ -785,7 +798,14 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       if (!arg_range.undefined_p ())
 	{
 	  // Register potential dependencies for stale value tracking.
-	  r.union_ (arg_range);
+	  // Likewise, if the incoming PHI argument is equivalent to this
+	  // PHI definition, it provides no new info.  Accumulate these ranges
+	  // in case all arguments are equivalences.
+	  if (src.query ()->query_relation (e, arg, phi_def, false) == EQ_EXPR)
+	    equiv_range.union_(arg_range);
+	  else
+	    r.union_ (arg_range);
+
 	  if (gimple_range_ssa_p (arg) && src.gori ())
 	    src.gori ()->register_dependency (phi_def, arg);
 
@@ -803,6 +823,11 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       if (r.varying_p () && single_arg == NULL_TREE)
 	break;
     }
+
+    // If all arguments were equivalences, use the equivalence ranges as no
+    // arguments were processed.
+    if (r.undefined_p () && !equiv_range.undefined_p ())
+      r = equiv_range;
 
     // If the PHI boils down to a single effective argument, look at it.
     if (single_arg)
@@ -958,16 +983,16 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
       arg = gimple_call_arg (call, 0);
       if (src.get_operand (r, arg) && r.singleton_p ())
 	{
 	  r.set (build_one_cst (type), build_one_cst (type));
+	  return true;
+	}
+      if (cfun->after_inlining)
+	{
+	  r.set_zero (type);
+	  // r.equiv_clear ();
 	  return true;
 	}
       break;

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -865,7 +865,7 @@ __transfer_from_trampoline ()					\
    || (CODE) == '$' || (CODE) == '&' || (CODE) == '/' || (CODE) == '?')
 
 
-/* See m68k.c for the m68k specific codes.  */
+/* See m68k.cc for the m68k specific codes.  */
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
@@ -888,7 +888,7 @@ enum m68k_function_kind
   m68k_fk_interrupt_thread
 };
 
-/* Variables in m68k.c; see there for details.  */
+/* Variables in m68k.cc; see there for details.  */
 extern enum target_device m68k_cpu;
 extern enum uarch_type m68k_tune;
 extern enum fpu_type m68k_fpu;

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail160.d(22): Error: typeid(fail160.Foo).vtbl is not yet implemented at compile time
+fail_compilation/fail160.d(22): Error: `typeid(fail160.Foo).vtbl` is not yet implemented at compile time
 ---
 */
 

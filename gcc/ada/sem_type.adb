@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,7 +235,9 @@ package body Sem_Type is
          if Ada_Version >= Ada_2005 then
             if Nkind (N) in N_Binary_Op then
                Abstr_Op := Binary_Op_Interp_Has_Abstract_Op (N, Name);
-            elsif Nkind (N) = N_Function_Call then
+            elsif Nkind (N) = N_Function_Call
+              and then Ekind (Name) = E_Function
+            then
                Abstr_Op := Function_Interp_Has_Abstract_Op (N, Name);
             end if;
          end if;
@@ -770,7 +772,7 @@ package body Sem_Type is
       function Real_Actual (T : Entity_Id) return Entity_Id;
       --  If an actual in an inner instance is the formal of an enclosing
       --  generic, the actual in the enclosing instance is the one that can
-      --  create an accidental ambiguity, and the check on compatibily of
+      --  create an accidental ambiguity, and the check on compatibility of
       --  generic actual types must use this enclosing actual.
 
       ----------------------
@@ -913,10 +915,10 @@ package body Sem_Type is
       elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
+        or else (T2 = Universal_Access  and then Is_Access_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
         or else (T2 = Any_String        and then Is_String_Type (T1))
-        or else (T2 = Any_Access        and then Is_Access_Type (T1))
       then
          return True;
 
@@ -1213,7 +1215,7 @@ package body Sem_Type is
                        and then Is_Access_Type (T2)
                        and then Designated_Type (T1) = Designated_Type (T2))
                    or else
-                     (T1 = Any_Access
+                     (T1 = Universal_Access
                        and then Is_Access_Type (Underlying_Type (T2)))
                    or else
                      (T2 = Any_Composite
@@ -2357,18 +2359,23 @@ package body Sem_Type is
       Form_Parm : Node_Id;
 
    begin
-      --  Why is check on E needed below ???
-      --  In any case this para needs comments ???
+      if Is_Overloaded (N) then
+         --  Move through the formals and actuals of the call to
+         --  determine if an abstract interpretation exists.
 
-      if Is_Overloaded (N) and then Is_Overloadable (E) then
          Act_Parm  := First_Actual (N);
          Form_Parm := First_Formal (E);
          while Present (Act_Parm) and then Present (Form_Parm) loop
             Act := Act_Parm;
 
+            --  Extract the actual from a parameter association
+
             if Nkind (Act) = N_Parameter_Association then
                Act := Explicit_Actual_Parameter (Act);
             end if;
+
+            --  Use the actual and the type of its correponding formal to test
+            --  for an abstract interpretation and return it when found.
 
             Abstr_Op := Has_Abstract_Op (Act, Etype (Form_Parm));
 
@@ -2380,6 +2387,8 @@ package body Sem_Type is
             Next_Formal (Form_Parm);
          end loop;
       end if;
+
+      --  Otherwise, return empty
 
       return Empty;
    end Function_Interp_Has_Abstract_Op;
@@ -2438,8 +2447,9 @@ package body Sem_Type is
    -------------------------
 
    function Has_Compatible_Type
-     (N   : Node_Id;
-      Typ : Entity_Id) return Boolean
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      For_Comparison : Boolean := False) return Boolean
    is
       I  : Interp_Index;
       It : Interp;
@@ -2449,11 +2459,8 @@ package body Sem_Type is
          return False;
       end if;
 
-      if Nkind (N) = N_Subtype_Indication
-        or else not Is_Overloaded (N)
-      then
-         return
-           Covers (Typ, Etype (N))
+      if Nkind (N) = N_Subtype_Indication or else not Is_Overloaded (N) then
+         if Covers (Typ, Etype (N))
 
             --  Ada 2005 (AI-345): The context may be a synchronized interface.
             --  If the type is already frozen use the corresponding_record
@@ -2472,11 +2479,6 @@ package body Sem_Type is
                and then Covers (Corresponding_Record_Type (Typ), Etype (N)))
 
            or else
-             (not Is_Tagged_Type (Typ)
-               and then Ekind (Typ) /= E_Anonymous_Access_Type
-               and then Covers (Etype (N), Typ))
-
-           or else
              (Nkind (N) = N_Integer_Literal
                and then Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
 
@@ -2486,7 +2488,16 @@ package body Sem_Type is
 
            or else
              (Nkind (N) = N_String_Literal
-               and then Present (Find_Aspect (Typ, Aspect_String_Literal)));
+               and then Present (Find_Aspect (Typ, Aspect_String_Literal)))
+
+           or else
+             (For_Comparison
+               and then not Is_Tagged_Type (Typ)
+               and then Ekind (Typ) /= E_Anonymous_Access_Type
+               and then Covers (Etype (N), Typ))
+         then
+            return True;
+         end if;
 
       --  Overloaded case
 
@@ -2501,24 +2512,27 @@ package body Sem_Type is
                --  Ada 2005 (AI-345)
 
               or else
-                (Is_Concurrent_Type (It.Typ)
+                (Is_Record_Type (Typ)
+                  and then Is_Concurrent_Type (It.Typ)
                   and then Present (Corresponding_Record_Type
                                                              (Etype (It.Typ)))
                   and then Covers (Typ, Corresponding_Record_Type
                                                              (Etype (It.Typ))))
 
-              or else (not Is_Tagged_Type (Typ)
-                         and then Ekind (Typ) /= E_Anonymous_Access_Type
-                         and then Covers (It.Typ, Typ))
+             or else
+               (For_Comparison
+                 and then not Is_Tagged_Type (Typ)
+                 and then Ekind (Typ) /= E_Anonymous_Access_Type
+                 and then Covers (It.Typ, Typ))
             then
                return True;
             end if;
 
             Get_Next_Interp (I, It);
          end loop;
-
-         return False;
       end if;
+
+      return False;
    end Has_Compatible_Type;
 
    ---------------------
@@ -3374,12 +3388,12 @@ package body Sem_Type is
       elsif T1 = Any_Character and then Is_Character_Type (T2) then
          return B2;
 
-      elsif T1 = Any_Access
+      elsif T1 = Universal_Access
         and then (Is_Access_Type (T2) or else Is_Remote_Access (T2))
       then
          return T2;
 
-      elsif T2 = Any_Access
+      elsif T2 = Universal_Access
         and then (Is_Access_Type (T1) or else Is_Remote_Access (T1))
       then
          return T1;
@@ -3387,7 +3401,7 @@ package body Sem_Type is
       --  In an instance, the specific type may have a private view. Use full
       --  view to check legality.
 
-      elsif T2 = Any_Access
+      elsif T2 = Universal_Access
         and then Is_Private_Type (T1)
         and then Present (Full_View (T1))
         and then Is_Access_Type (Full_View (T1))

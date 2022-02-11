@@ -250,5 +250,4 @@ enum
 }
 
 ///
-int sysctl(const int* name, uint namelen, void* oldp, size_t* oldlenp,
-           const void* newp, size_t newlen);
+int sysctl(const int*, uint, void*, size_t*, void*, size_t);

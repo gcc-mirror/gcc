@@ -18,7 +18,7 @@ foo (int s, int m, int n, int *p)
   return r;
 }
 
-int p[10000 / 78 * 7];
+int p[((10000 / 78) + 1) * 7];
 
 int
 main ()

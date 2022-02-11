@@ -1,16 +1,26 @@
-// RUNNABLE_PHOBOS_TEST
-// PERMUTE_ARGS:
+/*
+RUNNABLE_PHOBOS_TEST
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+foo()
+foo() 2
+foo() 3
+foo() 4
+Success
+---
+*/
 
 extern(C) int printf(const char*, ...);
 
 /************************************************/
 
-int a[string];
+int[string] a;
 
 size_t foo(immutable char [3] s)
 {
     printf("foo()\n");
-    int b[string];
+    int[string] b;
     string[] key;
     int[] value;
     printf("foo() 2\n");
@@ -23,7 +33,7 @@ size_t foo(immutable char [3] s)
 
 void foo2()
 {
-    int c[string];
+    int[string] c;
     string[] key;
     int[] value;
     int i;
@@ -51,10 +61,9 @@ void foo2()
     value = c.values;
     assert(value.length == 2);
 
-    for (i = 0; i < key.length; i++)
-    {
-        printf("c[\"%.*s\"] = %d\n", key[i].length, key[i].ptr, value[i]);
-    }
+    const fooIndex = key[1] == "foo";
+    assert(key[fooIndex] == "foo" && value[fooIndex] == 3);
+    assert(key[1 - fooIndex] == "bar" && value[1 - fooIndex] == 4);
 
     assert("foo" in c);
     c.remove("foo");
@@ -70,7 +79,6 @@ void foo2()
 void testaa()
 {
     size_t i = foo("abc");
-    printf("i = %d\n", i);
     assert(i == 0);
 
     foo2();
@@ -107,7 +115,7 @@ void test4523()
 }
 
 /************************************************/
-// 3825
+// https://issues.dlang.org/show_bug.cgi?id=3825
 
 import std.math;    // necessary for ^^=
 void test3825()
@@ -257,7 +265,7 @@ void test3825x()
 }
 
 /************************************************/
-// 10106
+// https://issues.dlang.org/show_bug.cgi?id=10106
 
 struct GcPolicy10106 {}
 

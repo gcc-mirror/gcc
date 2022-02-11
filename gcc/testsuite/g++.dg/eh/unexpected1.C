@@ -30,7 +30,7 @@ doit () throw (Two)			// { dg-warning "deprecated" "" { target { c++11 } } }
 
 int main ()
 {
-  std::set_unexpected (handle_unexpected);
+  std::set_unexpected (handle_unexpected); // { dg-warning "deprecated" "" { target { c++11 } } }
 
   try
   {

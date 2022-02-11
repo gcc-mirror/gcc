@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -25,9 +25,9 @@
    NAME:    `__builtin_avr_name' will be the user-level name of the builtin.
             `AVR_BUILTIN_NAME' will be the internal builtin's id.
    N_ARGS:  Number of input arguments.  If special treatment is needed,
-            set to -1 and handle it by hand, see avr.c:avr_expand_builtin().
+            set to -1 and handle it by hand, see avr.cc:avr_expand_builtin().
    TYPE:    A tree node describing the prototype of the built-in.
-   ICODE:   Name of attached insn or expander.  If special treatment in avr.c
+   ICODE:   Name of attached insn or expander.  If special treatment in avr.cc
             is needed to expand the built-in, use `nothing'.
    LIBNAME: Name of the attached implementation in libgcc which is used if
             the builtin cannot be folded away and there is no insn.  */

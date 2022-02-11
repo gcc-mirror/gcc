@@ -1,5 +1,5 @@
 /* Definitions for option handling for IBM S/390.
-   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Which processor to generate code or schedule for. The `cpu' attribute
    defines a list that mirrors this list, so changes to s390.md must be
    made at the same time.  The enumeration must also be kept in sync with
-   `processor_table' and `processor_flags_table' in s390.c (the enumeration
+   `processor_table' and `processor_flags_table' in s390.cc (the enumeration
    values are used as indices into these tables).  */
 
 enum processor_type

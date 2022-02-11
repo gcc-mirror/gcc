@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2008-2021, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2022, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,6 @@
 
 --  This package contains a procedure for runtime concatenation of two string
 --  operands. It is used when we want to save space in the generated code.
-
-pragma Compiler_Unit_Warning;
 
 package System.Concat_2 is
 

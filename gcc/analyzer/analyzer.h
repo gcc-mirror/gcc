@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2021 Free Software Foundation, Inc.
+   Copyright (C) 2019-2022 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -67,6 +67,7 @@ class region;
   class cast_region;
   class field_region;
   class string_region;
+  class bit_range_region;
 class region_model_manager;
 struct model_merger;
 class store_manager;

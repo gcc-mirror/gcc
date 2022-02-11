@@ -1,7 +1,7 @@
 /* Implementation of W32-specific threads compatibility routines for
    libgcc2.  */
 
-/* Copyright (C) 1999-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2022 Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
    Modified and moved to separate file by Danny Smith
    <dannysmith@users.sourceforge.net>.
@@ -31,8 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __GTHREAD_HIDE_WIN32API
 # define __GTHREAD_HIDE_WIN32API 1
 #endif
-#undef  __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
-#define __GTHREAD_I486_INLINE_LOCK_PRIMITIVES
 #include "gthr-win32.h"
 
 /* Windows32 threads specific definitions. The windows32 threading model

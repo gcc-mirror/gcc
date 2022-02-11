@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 1992-2021 Free Software Foundation, Inc.
+   Copyright (C) 1992-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -131,10 +131,10 @@ extern void *xrecalloc (void *, size_t, size_t, size_t);
 
 extern void reemit_notes (rtx_insn *);
 
-/* Functions in haifa-sched.c.  */
+/* Functions in haifa-sched.cc.  */
 extern int haifa_classify_insn (const_rtx);
 
-/* Functions in sel-sched-ir.c.  */
+/* Functions in sel-sched-ir.cc.  */
 extern void sel_find_rgns (void);
 extern void sel_mark_hard_insn (rtx);
 
@@ -862,7 +862,7 @@ struct _haifa_insn_data
      current knowledge.  */
   int tick_estimate;
 
-  /* See comment on QUEUE_INDEX macro in haifa-sched.c.  */
+  /* See comment on QUEUE_INDEX macro in haifa-sched.cc.  */
   int queue_index;
 
   short cost;
@@ -948,8 +948,8 @@ extern vec<haifa_insn_data_def> h_i_d;
 
 #define HID(INSN) (&h_i_d[INSN_UID (INSN)])
 
-/* Accessor macros for h_i_d.  There are more in haifa-sched.c and
-   sched-rgn.c.  */
+/* Accessor macros for h_i_d.  There are more in haifa-sched.cc and
+   sched-rgn.cc.  */
 #define INSN_PRIORITY(INSN) (HID (INSN)->priority)
 #define INSN_FUSION_PRIORITY(INSN) (HID (INSN)->fusion_priority)
 #define INSN_REG_PRESSURE(INSN) (HID (INSN)->reg_pressure)
@@ -1024,7 +1024,7 @@ extern vec<haifa_deps_insn_data_def> h_d_i_d;
       generated to preserve semantics of the program.
 
       The probability values can be set or retrieved using the functions
-      the set_dep_weak() and get_dep_weak() in sched-deps.c.  The values
+      the set_dep_weak() and get_dep_weak() in sched-deps.cc.  The values
       are always in the range [0, MAX_DEP_WEAK].
 
 	BEGIN_DATA	: BITS_PER_DEP_WEAK
@@ -1053,7 +1053,7 @@ extern vec<haifa_deps_insn_data_def> h_d_i_d;
 				some form of speculation.
 	RESERVED	:  1 => Reserved for use in the delay slot scheduler.
 
-   See also: check_dep_status () in sched-deps.c .  */
+   See also: check_dep_status () in sched-deps.cc .  */
 
 /* The number of bits per weakness probability.  There are 4 weakness types
    and we need 8 bits for other data in a DS_T.  */
@@ -1159,7 +1159,7 @@ enum SPEC_TYPES_OFFSETS {
 #define DEP_CANCELLED (DEP_POSTPONED << 1)
 
 
-/* This represents the results of calling sched-deps.c functions,
+/* This represents the results of calling sched-deps.cc functions,
    which modify dependencies.  */
 enum DEPS_ADJUST_RESULT {
   /* No dependence needed (e.g. producer == consumer).  */
@@ -1343,7 +1343,7 @@ struct sched_deps_info_def
 extern struct sched_deps_info_def *sched_deps_info;
 
 
-/* Functions in sched-deps.c.  */
+/* Functions in sched-deps.cc.  */
 extern rtx sched_get_reverse_condition_uncached (const rtx_insn *);
 extern bool sched_insns_conditions_mutex_p (const rtx_insn *,
 					    const rtx_insn *);
@@ -1389,7 +1389,7 @@ extern void extend_dependency_caches (int, bool);
 extern void debug_ds (ds_t);
 
 
-/* Functions in haifa-sched.c.  */
+/* Functions in haifa-sched.cc.  */
 extern void initialize_live_range_shrinkage (void);
 extern void finish_live_range_shrinkage (void);
 extern void sched_init_region_reg_pressure_info (void);
@@ -1429,13 +1429,13 @@ extern rtx_insn *sched_emit_insn (rtx);
 extern rtx_insn *get_ready_element (int);
 extern int number_in_ready (void);
 
-/* Types and functions in sched-ebb.c.  */
+/* Types and functions in sched-ebb.cc.  */
 
 extern basic_block schedule_ebb (rtx_insn *, rtx_insn *, bool);
 extern void schedule_ebbs_init (void);
 extern void schedule_ebbs_finish (void);
 
-/* Types and functions in sched-rgn.c.  */
+/* Types and functions in sched-rgn.cc.  */
 
 /* A region is the main entity for interblock scheduling: insns
    are allowed to move between blocks in the same region, along
@@ -1526,7 +1526,7 @@ extern void haifa_sched_finish (void);
 
 extern void find_modifiable_mems (rtx_insn *, rtx_insn *);
 
-/* sched-deps.c interface to walk, add, search, update, resolve, delete
+/* sched-deps.cc interface to walk, add, search, update, resolve, delete
    and debug instruction dependencies.  */
 
 /* Constants defining dependences lists.  */
@@ -1579,7 +1579,7 @@ struct _sd_iterator
 typedef struct _sd_iterator sd_iterator_def;
 
 /* ??? We can move some definitions that are used in below inline functions
-   out of sched-int.h to sched-deps.c provided that the below functions will
+   out of sched-int.h to sched-deps.cc provided that the below functions will
    become global externals.
    These definitions include:
    * struct _deps_list: opaque pointer is needed at global scope.

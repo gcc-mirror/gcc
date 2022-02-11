@@ -1,5 +1,5 @@
 /* Wrappers for platform timing functions.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -213,18 +213,18 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
 static inline int
 gf_gettime (time_t * secs, long * usecs)
 {
-#ifdef HAVE_GETTIMEOFDAY
+#ifdef HAVE_CLOCK_GETTIME
+  struct timespec ts;
+  int err = clock_gettime (CLOCK_REALTIME, &ts);
+  *secs = ts.tv_sec;
+  *usecs = ts.tv_nsec / 1000;
+  return err;
+#elif defined(HAVE_GETTIMEOFDAY)
   struct timeval tv;
   int err;
   err = gettimeofday (&tv, NULL);
   *secs = tv.tv_sec;
   *usecs = tv.tv_usec;
-  return err;
-#elif defined(HAVE_CLOCK_GETTIME)
-  struct timespec ts;
-  int err = clock_gettime (CLOCK_REALTIME, &ts);
-  *secs = ts.tv_sec;
-  *usecs = ts.tv_nsec / 1000;
   return err;
 #else
   time_t t = time (NULL);

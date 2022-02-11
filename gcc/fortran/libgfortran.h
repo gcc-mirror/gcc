@@ -1,5 +1,5 @@
 /* Header file to the Fortran front-end and runtime library
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -86,14 +86,22 @@ along with GCC; see the file COPYING3.  If not see
 #define GFC_INVALID_UNIT   -3
 
 /* Possible values for the CONVERT I/O specifier.  */
-/* Keep in sync with GFC_FLAG_CONVERT_* in gcc/flags.h.  */
+/* Keep in sync with GFC_FLAG_CONVERT_* in gcc/flag-types.h.  */
 typedef enum
 {
   GFC_CONVERT_NONE = -1,
   GFC_CONVERT_NATIVE = 0,
   GFC_CONVERT_SWAP,
   GFC_CONVERT_BIG,
-  GFC_CONVERT_LITTLE
+  GFC_CONVERT_LITTLE,
+  GFC_CONVERT_R16_IEEE = 4,
+  GFC_CONVERT_R16_IEEE_SWAP,
+  GFC_CONVERT_R16_IEEE_BIG,
+  GFC_CONVERT_R16_IEEE_LITTLE,
+  GFC_CONVERT_R16_IBM = 8,
+  GFC_CONVERT_R16_IBM_SWAP,
+  GFC_CONVERT_R16_IBM_BIG,
+  GFC_CONVERT_R16_IBM_LITTLE,
 }
 unit_convert;
 
@@ -161,7 +169,7 @@ typedef enum
 #define GFC_STDOUT_UNIT_NUMBER 6
 #define GFC_STDERR_UNIT_NUMBER 0
 
-/* F2003 onward. For std < F2003, error caught in array.c(gfc_match_array_ref).  */
+/* F2003 onward. For std < F2003, error caught in array.cc(gfc_match_array_ref).  */
 #define GFC_MAX_DIMENSIONS 15
 
 #define GFC_DTYPE_RANK_MASK 0x0F
