@@ -3833,6 +3833,7 @@ bool gfc_parse_file (void);
 void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 gfc_statement match_omp_directive (void);
+bool is_omp_declarative_stmt (gfc_statement);
 
 /* dependency.c */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);

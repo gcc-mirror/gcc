@@ -1,5 +1,14 @@
 2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* gfortran.h (is_omp_declarative_stmt): New.
+	* openmp.c (match_omp_metadirective): Reject declarative OpenMP
+	directives with 'sorry'.
+	* parse.c (parse_omp_metadirective_body): Check that state stack head
+	is non-null before dereferencing.
+	(is_omp_declarative_stmt): New.
+
+2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* decl.c (gfc_match_end): Search for first previous state that is not
 	COMP_OMP_METADIRECTIVE.
 	* gfortran.h (gfc_skip_omp_metadirective_clause): Add prototype.

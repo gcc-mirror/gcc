@@ -5820,7 +5820,8 @@ parse_omp_metadirective_body (gfc_statement omp_st)
 
       gfc_in_metadirective_body = old_in_metadirective_body;
 
-      *clause->code = *gfc_state_stack->head;
+      if (gfc_state_stack->head)
+	*clause->code = *gfc_state_stack->head;
       pop_state ();
 
       gfc_commit_symbols ();
@@ -7080,5 +7081,18 @@ is_oacc (gfc_state_data *sd)
 
     default:
       return false;
+    }
+}
+
+/* Return true if ST is a declarative OpenMP statement.  */
+bool
+is_omp_declarative_stmt (gfc_statement st)
+{
+  switch (st)
+    {
+      case_omp_decl:
+	return true;
+      default:
+	return false;
     }
 }

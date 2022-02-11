@@ -43,7 +43,7 @@ program main
     end do
   !$omp end metadirective
   
-  ! Test labels in the body
+  ! Test labels in the body.
   !$omp begin metadirective &
   !$omp&	when (device={arch("nvptx")}: parallel do) &
   !$omp&	when (device={arch("gcn")}: parallel)
@@ -56,4 +56,7 @@ program main
 20    continue
     end do
   !$omp end metadirective
+
+  ! Test empty metadirective.
+  !$omp metadirective
 end program

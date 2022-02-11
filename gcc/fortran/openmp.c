@@ -5037,6 +5037,9 @@ match_omp_metadirective (bool begin_p)
       gfc_statement directive = match_omp_directive ();
       gfc_matching_omp_context_selector = false;
 
+      if (is_omp_declarative_stmt (directive))
+	sorry ("declarative directive variants are not supported");
+
       if (gfc_error_flag_test ())
 	{
 	  gfc_current_locus = old_loc;
