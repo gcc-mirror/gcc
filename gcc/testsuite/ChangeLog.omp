@@ -1,3 +1,7 @@
+2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/metadirective-8.f90: New.
+
 2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/gomp/metadirective-4.c (main): Add expected warning.

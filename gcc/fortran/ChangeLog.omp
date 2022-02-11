@@ -1,3 +1,14 @@
+2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* decl.cc (gfc_match_end): Search for first previous state that is not
+	COMP_OMP_METADIRECTIVE.
+	* gfortran.h (gfc_skip_omp_metadirective_clause): Add prototype.
+	* openmp.cc (match_omp_metadirective): Skip clause if
+	result of gfc_skip_omp_metadirective_clause is true.
+	* trans-openmp.ccc (gfc_trans_omp_set_selector): Add argument and
+	disable expression conversion if false.
+	(gfc_skip_omp_metadirective_clause): New.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* openmp.cc (omp_target_device_selectors): New.

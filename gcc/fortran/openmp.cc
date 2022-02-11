@@ -5851,8 +5851,11 @@ match_omp_metadirective (bool begin_p)
 	  new_st.ext.omp_clauses = NULL;
 	}
 
-      *next_clause = omc;
-      next_clause = &omc->next;
+      if (!gfc_skip_omp_metadirective_clause (omc))
+	{
+	  *next_clause = omc;
+	  next_clause = &omc->next;
+	}
     }
 
   if (gfc_match_omp_eos () != MATCH_YES)

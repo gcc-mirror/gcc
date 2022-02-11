@@ -8369,15 +8369,32 @@ gfc_match_end (gfc_statement *st)
 
     case COMP_CONTAINS:
     case COMP_DERIVED_CONTAINS:
-    case COMP_OMP_METADIRECTIVE:
     case COMP_OMP_BEGIN_METADIRECTIVE:
       state = gfc_state_stack->previous->state;
       block_name = gfc_state_stack->previous->sym == NULL
-		 ? NULL : gfc_state_stack->previous->sym->name;
+		   ? NULL : gfc_state_stack->previous->sym->name;
       abreviated_modproc_decl = gfc_state_stack->previous->sym
 		&& gfc_state_stack->previous->sym->abr_modproc_decl;
       break;
 
+    case COMP_OMP_METADIRECTIVE:
+      {
+	/* Metadirectives can be nested, so we need to drill down to the
+	   first state that is not COMP_OMP_METADIRECTIVE.  */
+	gfc_state_data *state_data = gfc_state_stack;
+
+	do
+	{
+	  state_data = state_data->previous;
+	  state = state_data->state;
+	  block_name = state_data->sym == NULL
+		       ? NULL : state_data->sym->name;
+	  abreviated_modproc_decl = state_data->sym
+		&& state_data->sym->abr_modproc_decl;
+	}
+	while (state == COMP_OMP_METADIRECTIVE);
+      }
+      break;
     default:
       break;
     }
