@@ -101,6 +101,9 @@ test02()
   __box<A<false>> x1(std::in_place, 0, 0);
 }
 
+#if 0
+// On the 11 branch, the partial specialization of __box admits only copyable types
+// so this test doesn't apply.
 constexpr bool
 test03()
 {
@@ -142,3 +145,4 @@ test03()
   return true;
 }
 static_assert(test03());
+#endif

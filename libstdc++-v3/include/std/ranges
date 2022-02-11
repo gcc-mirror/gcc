@@ -144,8 +144,7 @@ namespace ranges
     // std::optional.  It provides just the subset of the primary template's
     // API that we currently use.
     template<__boxable _Tp>
-      requires copyable<_Tp> || (is_nothrow_move_constructible_v<_Tp>
-				 && is_nothrow_copy_constructible_v<_Tp>)
+      requires copyable<_Tp>
       struct __box<_Tp>
       {
       private:
@@ -173,38 +172,6 @@ namespace ranges
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	  : _M_value(std::forward<_Args>(__args)...)
 	  { }
-
-	__box(const __box&) = default;
-	__box(__box&&) = default;
-	__box& operator=(const __box&) requires copyable<_Tp> = default;
-	__box& operator=(__box&&) requires copyable<_Tp> = default;
-
-	// When _Tp is nothrow_copy_constructible but not copy_assignable,
-	// copy assignment is implemented via destroy-then-copy-construct.
-	constexpr __box&
-	operator=(const __box& __that) noexcept
-	{
-	  static_assert(is_nothrow_copy_constructible_v<_Tp>);
-	  if (this != std::__addressof(__that))
-	    {
-	      _M_value.~_Tp();
-	      std::construct_at(std::__addressof(_M_value), *__that);
-	    }
-	  return *this;
-	}
-
-	// Likewise for move assignment.
-	constexpr __box&
-	operator=(__box&& __that) noexcept
-	{
-	  static_assert(is_nothrow_move_constructible_v<_Tp>);
-	  if (this != std::__addressof(__that))
-	    {
-	      _M_value.~_Tp();
-	      std::construct_at(std::__addressof(_M_value), std::move(*__that));
-	    }
-	  return *this;
-	}
 
 	constexpr bool
 	has_value() const noexcept
@@ -1177,16 +1144,6 @@ namespace views::__adaptor
 	{
 	  this->_M_reset();
 	  __other._M_reset();
-	  return *this;
-	}
-
-	constexpr __non_propagating_cache&
-	operator=(_Tp __val)
-	{
-	  this->_M_reset();
-	  std::construct_at(std::__addressof(this->_M_payload._M_payload),
-			    std::in_place, std::move(__val));
-	  this->_M_payload._M_engaged = true;
 	  return *this;
 	}
 
@@ -2886,7 +2843,7 @@ namespace views::__adaptor
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
 	    else
-	      return *_M_parent->_M_current;
+	      return _M_parent->_M_current;
 	  }
 
 	  constexpr auto&
@@ -2895,7 +2852,7 @@ namespace views::__adaptor
 	    if constexpr (forward_range<_Vp>)
 	      return _M_current;
 	    else
-	      return *_M_parent->_M_current;
+	      return _M_parent->_M_current;
 	  }
 
 	  _Parent* _M_parent = nullptr;
@@ -3143,13 +3100,15 @@ namespace views::__adaptor
       // XXX: _M_current is "present only if !forward_range<V>"
       [[no_unique_address]]
 	__detail::__maybe_present_t<!forward_range<_Vp>,
-	  __detail::__non_propagating_cache<iterator_t<_Vp>>> _M_current;
+				    iterator_t<_Vp>> _M_current;
       _Vp _M_base = _Vp();
 
 
     public:
       split_view() requires (default_initializable<_Vp>
-			     && default_initializable<_Pattern>)
+			     && default_initializable<_Pattern>
+			     && (forward_range<_Vp>
+				 || default_initializable<iterator_t<_Vp>>))
 	= default;
 
       constexpr
