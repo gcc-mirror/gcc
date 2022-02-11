@@ -7343,7 +7343,8 @@ gfc_trans_omp_declare_simd (gfc_namespace *ns)
 }
 
 static tree
-gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
+gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where,
+			    bool conv_expr_p = true)
 {
   tree set_selectors = NULL_TREE;
   gfc_omp_set_selector *oss;
@@ -7364,11 +7365,15 @@ gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
 		case CTX_PROPERTY_USER:
 		case CTX_PROPERTY_EXPR:
 		  {
-		    gfc_se se;
-		    gfc_init_se (&se, NULL);
-		    gfc_conv_expr (&se, otp->expr);
-		    properties = tree_cons (NULL_TREE, se.expr,
-					    properties);
+		    tree expr = NULL_TREE;
+		    if (conv_expr_p)
+		      {
+			gfc_se se;
+			gfc_init_se (&se, NULL);
+			gfc_conv_expr (&se, otp->expr);
+			expr = se.expr;
+		      }
+		    properties = tree_cons (NULL_TREE, expr, properties);
 		  }
 		  break;
 		case CTX_PROPERTY_ID:
@@ -7404,11 +7409,16 @@ gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
 
 	  if (os->score)
 	    {
-	      gfc_se se;
-	      gfc_init_se (&se, NULL);
-	      gfc_conv_expr (&se, os->score);
+	      tree expr = NULL_TREE;
+	      if (conv_expr_p)
+		{
+		  gfc_se se;
+		  gfc_init_se (&se, NULL);
+		  gfc_conv_expr (&se, os->score);
+		  expr = se.expr;
+		}
 	      properties = tree_cons (get_identifier (" score"),
-				      se.expr, properties);
+				      expr, properties);
 	    }
 
 	  selectors = tree_cons (get_identifier (os->trait_selector_name),
@@ -7598,4 +7608,12 @@ gfc_trans_omp_metadirective (gfc_code *code)
   /* TODO: Resolve the metadirective here if possible.  */
 
   return metadirective_tree;
+}
+
+bool gfc_skip_omp_metadirective_clause (gfc_omp_metadirective_clause *clause)
+{
+  tree selector = gfc_trans_omp_set_selector (clause->selectors,
+					      clause->where, false);
+
+  return omp_context_selector_matches (selector, true) == 0;
 }

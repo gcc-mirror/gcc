@@ -1,3 +1,8 @@
+2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-general.c (DELAY_METADIRECTIVES_AFTER_LTO): Check that cfun is
+	non-null before derefencing.
+
 2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_metadirective): Mark offloadable functions
