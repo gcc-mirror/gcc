@@ -5708,9 +5708,9 @@ package body Sem_Ch12 is
          Set_Scope (Inst_Id, Current_Scope);
 
          Set_Entity (Gen_Id, Gen_Unit);
-         Set_Is_Instantiated (Gen_Unit);
 
          if In_Extended_Main_Source_Unit (N) then
+            Set_Is_Instantiated (Gen_Unit);
             Generate_Reference (Gen_Unit, N);
          end if;
 

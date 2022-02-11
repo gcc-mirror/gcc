@@ -31,6 +31,7 @@ with Opt;            use Opt;
 with Output;         use Output;
 with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
+with Unchecked_Conversion;
 
 package body Atree is
 
