@@ -238,8 +238,11 @@ test07()
   std::pmr::monotonic_buffer_resource mbr(&cr);
   try
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size-larger-than="
     // Try to allocate a ridiculous size:
     void* p = mbr.allocate(std::size_t(-2), 1);
+#pragma GCC diagnostic pop
     // Should not reach here!
     VERIFY( !"attempt to allocate SIZE_MAX-1 should not have succeeded" );
     throw p;
