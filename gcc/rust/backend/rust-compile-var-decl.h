@@ -72,8 +72,7 @@ public:
 
 private:
   CompileVarDecl (Context *ctx, tree fndecl)
-    : HIRCompileBase (ctx), fndecl (fndecl),
-      translated_type (ctx->get_backend ()->error_type ()),
+    : HIRCompileBase (ctx), fndecl (fndecl), translated_type (error_mark_node),
       compiled_variable (ctx->get_backend ()->error_variable ())
   {}
 

@@ -205,7 +205,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 	expr.get_scrutinee_expr ()->get_mappings ().get_hirid (),
 	&scrutinee_expr_tyty))
     {
-      translated = ctx->get_backend ()->error_expression ();
+      translated = error_mark_node;
       return;
     }
 
@@ -221,7 +221,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 				       &expr_tyty))
     {
-      translated = ctx->get_backend ()->error_expression ();
+      translated = error_mark_node;
       return;
     }
 
@@ -644,7 +644,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
     }
 
   if (ref == nullptr)
-    return ctx->get_backend ()->error_expression ();
+    return error_mark_node;
 
   // get any indirection sorted out
   if (receiver->get_kind () == TyTy::TypeKind::REF)

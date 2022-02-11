@@ -58,7 +58,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
       if (!ctx->get_resolver ()->lookup_definition (ref_node_id, &def))
 	{
 	  rust_error_at (expr_locus, "unknown reference for resolved name");
-	  return ctx->get_backend ()->error_expression ();
+	  return error_mark_node;
 	}
       ref_node_id = def.parent;
     }
@@ -69,22 +69,22 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     {
       // it might be an enum data-less enum variant
       if (lookup->get_kind () != TyTy::TypeKind::ADT)
-	return ctx->get_backend ()->error_expression ();
+	return error_mark_node;
 
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
       if (!adt->is_enum ())
-	return ctx->get_backend ()->error_expression ();
+	return error_mark_node;
 
       HirId variant_id;
       if (!ctx->get_tyctx ()->lookup_variant_definition (mappings.get_hirid (),
 							 &variant_id))
-	return ctx->get_backend ()->error_expression ();
+	return error_mark_node;
 
       int union_disriminator = -1;
       TyTy::VariantDef *variant = nullptr;
       if (!adt->lookup_variant_by_id (variant_id, &variant,
 				      &union_disriminator))
-	return ctx->get_backend ()->error_expression ();
+	return error_mark_node;
 
       // this can only be for discriminant variants the others are built up
       // using call-expr or struct-init
@@ -111,7 +111,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 						 ref_node_id, &ref))
     {
       rust_error_at (expr_locus, "reverse call path lookup failure");
-      return ctx->get_backend ()->error_expression ();
+      return error_mark_node;
     }
 
   // might be a constant
@@ -274,7 +274,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	}
     }
 
-  return ctx->get_backend ()->error_expression ();
+  return error_mark_node;
 }
 
 } // namespace Compile

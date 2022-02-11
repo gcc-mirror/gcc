@@ -38,8 +38,7 @@ public:
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
-    if (is_query_mode
-	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+    if (is_query_mode && compiler.reference == error_mark_node)
       rust_internal_error_at (ref_locus, "failed to compile item: %s",
 			      item->as_string ().c_str ());
 

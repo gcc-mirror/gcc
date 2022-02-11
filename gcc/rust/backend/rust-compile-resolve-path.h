@@ -50,7 +50,7 @@ public:
 
 private:
   ResolvePathRef (Context *ctx)
-    : HIRCompileBase (ctx), resolved (ctx->get_backend ()->error_expression ())
+    : HIRCompileBase (ctx), resolved (error_mark_node)
   {}
 
   tree resolve (const HIR::PathIdentSegment &final_segment,

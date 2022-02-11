@@ -116,7 +116,6 @@ public:
   }
 
   // Types.
-  tree error_type () { return error_mark_node; }
 
   tree void_type () { return void_type_node; }
 
@@ -192,12 +191,6 @@ public:
 
   tree zero_expression (tree);
 
-  tree error_expression () { return error_mark_node; }
-
-  bool is_error_expression (tree expr) { return expr == error_mark_node; }
-
-  tree nil_pointer_expression () { return null_pointer_node; }
-
   tree unit_expression () { return integer_zero_node; }
 
   tree var_expression (Bvariable *var, Location);
@@ -261,8 +254,6 @@ public:
 
   // Statements.
 
-  tree error_statement () { return error_mark_node; }
-
   tree expression_statement (tree, tree);
 
   tree init_statement (tree, Bvariable *var, tree init);
@@ -294,8 +285,6 @@ public:
   tree block (tree, tree, const std::vector<Bvariable *> &, Location, Location);
 
   void block_add_statements (tree, const std::vector<tree> &);
-
-  tree block_statement (tree);
 
   // Variables.
 
@@ -330,8 +319,6 @@ public:
 
   // Functions.
 
-  tree error_function () { return error_mark_node; }
-
   tree function (tree fntype, const std::string &name,
 		 const std::string &asm_name, unsigned int flags, Location);
 
@@ -340,8 +327,6 @@ public:
 
   bool function_set_parameters (tree function,
 				const std::vector<Bvariable *> &);
-
-  bool function_set_body (tree function, tree code_stmt);
 
   tree lookup_gcc_builtin (const std::string &);
 
@@ -715,7 +700,7 @@ tree
 Gcc_backend::pointer_type (tree to_type)
 {
   if (to_type == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
   tree type = build_pointer_type (to_type);
   return type;
 }
@@ -726,7 +711,7 @@ tree
 Gcc_backend::reference_type (tree to_type)
 {
   if (to_type == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
   tree type = build_reference_type (to_type);
   return type;
 }
@@ -737,7 +722,7 @@ tree
 Gcc_backend::immutable_type (tree base)
 {
   if (base == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
   tree constified = build_qualified_type (base, TYPE_QUAL_CONST);
   return constified;
 }
@@ -756,7 +741,7 @@ Gcc_backend::function_type (const typed_identifier &receiver,
     {
       tree t = receiver.type;
       if (t == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
       *pp = tree_cons (NULL_TREE, t, NULL_TREE);
       pp = &TREE_CHAIN (*pp);
     }
@@ -766,7 +751,7 @@ Gcc_backend::function_type (const typed_identifier &receiver,
     {
       tree t = p->type;
       if (t == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
       *pp = tree_cons (NULL_TREE, t, NULL_TREE);
       pp = &TREE_CHAIN (*pp);
     }
@@ -786,7 +771,7 @@ Gcc_backend::function_type (const typed_identifier &receiver,
       result = result_struct;
     }
   if (result == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   // The libffi library cannot represent a zero-sized object.  To
   // avoid causing confusion on 32-bit SPARC, we treat a function that
@@ -798,7 +783,7 @@ Gcc_backend::function_type (const typed_identifier &receiver,
 
   tree fntype = build_function_type (result, args);
   if (fntype == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   return build_pointer_type (fntype);
 }
@@ -817,7 +802,7 @@ Gcc_backend::function_type_varadic (
     {
       tree t = receiver.type;
       if (t == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
 
       args[offs++] = t;
     }
@@ -827,7 +812,7 @@ Gcc_backend::function_type_varadic (
     {
       tree t = p->type;
       if (t == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
       args[offs++] = t;
     }
 
@@ -842,7 +827,7 @@ Gcc_backend::function_type_varadic (
       result = result_struct;
     }
   if (result == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   // The libffi library cannot represent a zero-sized object.  To
   // avoid causing confusion on 32-bit SPARC, we treat a function that
@@ -854,7 +839,7 @@ Gcc_backend::function_type_varadic (
 
   tree fntype = build_varargs_function_type_array (result, n, args);
   if (fntype == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   return build_pointer_type (fntype);
 }
@@ -870,7 +855,7 @@ Gcc_backend::function_ptr_type (tree result_type,
   for (auto &param : parameters)
     {
       if (param == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
 
       *pp = tree_cons (NULL_TREE, param, NULL_TREE);
       pp = &TREE_CHAIN (*pp);
@@ -884,7 +869,7 @@ Gcc_backend::function_ptr_type (tree result_type,
 
   tree fntype = build_function_type (result, args);
   if (fntype == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   return build_pointer_type (fntype);
 }
@@ -919,7 +904,7 @@ Gcc_backend::fill_in_fields (tree fill,
       tree name_tree = get_identifier_from_string (p->name);
       tree type_tree = p->type;
       if (type_tree == error_mark_node)
-	return this->error_type ();
+	return error_mark_node;
       tree field = build_decl (p->location.gcc_location (), FIELD_DECL,
 			       name_tree, type_tree);
       DECL_CONTEXT (field) = fill;
@@ -952,7 +937,7 @@ tree
 Gcc_backend::fill_in_array (tree fill, tree element_type, tree length_tree)
 {
   if (element_type == error_mark_node || length_tree == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   gcc_assert (TYPE_SIZE (element_type) != NULL_TREE);
 
@@ -984,7 +969,7 @@ tree
 Gcc_backend::named_type (const std::string &name, tree type, Location location)
 {
   if (type == error_mark_node)
-    return this->error_type ();
+    return error_mark_node;
 
   // The middle-end expects a basic type to have a name.  In Rust every
   // basic type will have a name.  The first time we see a basic type,
@@ -1087,7 +1072,7 @@ Gcc_backend::var_expression (Bvariable *var, Location location)
 {
   tree ret = var->get_tree (location);
   if (ret == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   return ret;
 }
 
@@ -1098,7 +1083,7 @@ Gcc_backend::indirect_expression (tree type_tree, tree expr_tree,
 				  bool known_valid, Location location)
 {
   if (expr_tree == error_mark_node || type_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   // If the type of EXPR is a recursive pointer type, then we
   // need to insert a cast before indirecting.
@@ -1121,7 +1106,7 @@ Gcc_backend::named_constant_expression (tree type_tree, const std::string &name,
 					tree const_val, Location location)
 {
   if (type_tree == error_mark_node || const_val == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   tree name_tree = get_identifier_from_string (name);
   tree decl
@@ -1140,7 +1125,7 @@ tree
 Gcc_backend::integer_constant_expression (tree t, mpz_t val)
 {
   if (t == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   tree ret = double_int_to_tree (t, mpz_get_double_int (t, val, true));
   return ret;
@@ -1153,7 +1138,7 @@ Gcc_backend::float_constant_expression (tree t, mpfr_t val)
 {
   tree ret;
   if (t == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   REAL_VALUE_TYPE r1;
   real_from_mpfr (&r1, val, t, GMP_RNDN);
@@ -1170,7 +1155,7 @@ Gcc_backend::complex_constant_expression (tree t, mpc_t val)
 {
   tree ret;
   if (t == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   REAL_VALUE_TYPE r1;
   real_from_mpfr (&r1, mpc_realref (val), TREE_TYPE (t), GMP_RNDN);
@@ -1228,7 +1213,7 @@ tree
 Gcc_backend::real_part_expression (tree complex_tree, Location location)
 {
   if (complex_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   gcc_assert (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (complex_tree)));
   tree ret
     = fold_build1_loc (location.gcc_location (), REALPART_EXPR,
@@ -1242,7 +1227,7 @@ tree
 Gcc_backend::imag_part_expression (tree complex_tree, Location location)
 {
   if (complex_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   gcc_assert (COMPLEX_FLOAT_TYPE_P (TREE_TYPE (complex_tree)));
   tree ret
     = fold_build1_loc (location.gcc_location (), IMAGPART_EXPR,
@@ -1257,7 +1242,7 @@ Gcc_backend::complex_expression (tree real_tree, tree imag_tree,
 				 Location location)
 {
   if (real_tree == error_mark_node || imag_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (real_tree))
 	      == TYPE_MAIN_VARIANT (TREE_TYPE (imag_tree)));
   gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (real_tree)));
@@ -1275,7 +1260,7 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
 {
   if (type_tree == error_mark_node || expr_tree == error_mark_node
       || TREE_TYPE (expr_tree) == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   tree ret;
   if (this->type_size (type_tree) == 0
@@ -1311,7 +1296,7 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
 {
   if (struct_tree == error_mark_node
       || TREE_TYPE (struct_tree) == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   gcc_assert (TREE_CODE (TREE_TYPE (struct_tree)) == RECORD_TYPE
 	      || TREE_CODE (TREE_TYPE (struct_tree)) == UNION_TYPE);
   tree field = TYPE_FIELDS (TREE_TYPE (struct_tree));
@@ -1319,7 +1304,7 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
     {
       // This can happen for a type which refers to itself indirectly
       // and then turns out to be erroneous.
-      return this->error_expression ();
+      return error_mark_node;
     }
   for (unsigned int i = index; i > 0; --i)
     {
@@ -1327,7 +1312,7 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
       gcc_assert (field != NULL_TREE);
     }
   if (TREE_TYPE (field) == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   tree ret = fold_build3_loc (location.gcc_location (), COMPONENT_REF,
 			      TREE_TYPE (field), struct_tree, field, NULL_TREE);
   if (TREE_CONSTANT (struct_tree))
@@ -1341,7 +1326,7 @@ tree
 Gcc_backend::compound_expression (tree stat, tree expr, Location location)
 {
   if (stat == error_mark_node || expr == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   tree ret = fold_build2_loc (location.gcc_location (), COMPOUND_EXPR,
 			      TREE_TYPE (expr), stat, expr);
   return ret;
@@ -1357,7 +1342,7 @@ Gcc_backend::conditional_expression (tree, tree type_tree, tree cond_expr,
 {
   if (type_tree == error_mark_node || cond_expr == error_mark_node
       || then_expr == error_mark_node || else_expr == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
   tree ret = build3_loc (location.gcc_location (), COND_EXPR, type_tree,
 			 cond_expr, then_expr, else_expr);
   return ret;
@@ -1469,7 +1454,7 @@ Gcc_backend::negation_expression (NegationOperator op, tree expr_tree,
   /* Check if the expression is an error, in which case we return an error
      expression. */
   if (expr_tree == error_mark_node || TREE_TYPE (expr_tree) == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   /* For negation operators, the resulting type should be the same as its
      operand. */
@@ -1508,7 +1493,7 @@ Gcc_backend::arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
   /* Check if either expression is an error, in which case we return an error
      expression. */
   if (left_tree == error_mark_node || right_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   /* We need to determine if we're doing floating point arithmetics of integer
      arithmetics. */
@@ -1553,7 +1538,7 @@ Gcc_backend::comparison_expression (ComparisonOperator op, tree left_tree,
   /* Check if either expression is an error, in which case we return an error
      expression. */
   if (left_tree == error_mark_node || right_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   /* For comparison operators, the resulting type should be boolean. */
   auto tree_type = boolean_type_node;
@@ -1573,7 +1558,7 @@ Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
   /* Check if either expression is an error, in which case we return an error
      expression. */
   if (left_tree == error_mark_node || right_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   /* For lazy boolean operators, the resulting type should be the same as the
      rhs operand. */
@@ -1594,7 +1579,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 				     int union_index, Location location)
 {
   if (type_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   vec<constructor_elt, va_gc> *init;
   vec_alloc (init, vals.size ());
@@ -1638,7 +1623,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 	    }
 	  if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
 	      || TREE_TYPE (val) == error_mark_node)
-	    return this->error_expression ();
+	    return error_mark_node;
 
 	  if (int_size_in_bytes (TREE_TYPE (field)) == 0)
 	    {
@@ -1670,7 +1655,7 @@ Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 	      tree val = (*p);
 	      if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
 		  || TREE_TYPE (val) == error_mark_node)
-		return this->error_expression ();
+		return error_mark_node;
 
 	      if (int_size_in_bytes (TREE_TYPE (field)) == 0)
 		{
@@ -1710,7 +1695,7 @@ Gcc_backend::array_constructor_expression (
   const std::vector<tree> &vals, Location location)
 {
   if (type_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   gcc_assert (indexes.size () == vals.size ());
 
@@ -1727,7 +1712,7 @@ Gcc_backend::array_constructor_expression (
       tree val = vals[i];
 
       if (index == error_mark_node || val == error_mark_node)
-	return this->error_expression ();
+	return error_mark_node;
 
       if (element_size == 0)
 	{
@@ -1766,7 +1751,7 @@ Gcc_backend::pointer_offset_expression (tree base_tree, tree index_tree,
   tree element_type_tree = TREE_TYPE (TREE_TYPE (base_tree));
   if (base_tree == error_mark_node || TREE_TYPE (base_tree) == error_mark_node
       || index_tree == error_mark_node || element_type_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   tree element_size = TYPE_SIZE_UNIT (element_type_tree);
   index_tree
@@ -1786,7 +1771,7 @@ Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
 {
   if (array_tree == error_mark_node || TREE_TYPE (array_tree) == error_mark_node
       || index_tree == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   // A function call that returns a zero sized object will have been
   // changed to return void.  If we see void here, assume we are
@@ -1810,7 +1795,7 @@ Gcc_backend::call_expression (tree, // containing fcn for call
 			      tree chain_expr, Location location)
 {
   if (fn == error_mark_node || TREE_TYPE (fn) == error_mark_node)
-    return this->error_expression ();
+    return error_mark_node;
 
   gcc_assert (FUNCTION_POINTER_TYPE_P (TREE_TYPE (fn)));
   tree rettype = TREE_TYPE (TREE_TYPE (TREE_TYPE (fn)));
@@ -1821,7 +1806,7 @@ Gcc_backend::call_expression (tree, // containing fcn for call
     {
       args[i] = fn_args.at (i);
       if (args[i] == error_mark_node)
-	return this->error_expression ();
+	return error_mark_node;
     }
 
   tree fndecl = fn;
@@ -1893,7 +1878,7 @@ Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
 {
   tree var_tree = var->get_decl ();
   if (var_tree == error_mark_node || init_tree == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   gcc_assert (TREE_CODE (var_tree) == VAR_DECL);
 
   // To avoid problems with GNU ld, we don't make zero-sized
@@ -1925,7 +1910,7 @@ Gcc_backend::assignment_statement (tree bfn, tree lhs, tree rhs,
 				   Location location)
 {
   if (lhs == error_mark_node || rhs == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
 
   // To avoid problems with GNU ld, we don't make zero-sized
   // externally visible variables.  That might lead us to doing an
@@ -1953,10 +1938,10 @@ Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
 			       Location location)
 {
   if (fntree == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   tree result = DECL_RESULT (fntree);
   if (result == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
 
   // If the result size is zero bytes, we have set the function type
   // to have a result type of void, so don't return anything.
@@ -1970,7 +1955,7 @@ Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
 	{
 	  tree val = (*p);
 	  if (val == error_mark_node)
-	    return this->error_statement ();
+	    return error_mark_node;
 	  append_to_statement_list (val, &stmt_list);
 	}
       tree ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
@@ -1987,7 +1972,7 @@ Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
     {
       tree val = vals.front ();
       if (val == error_mark_node)
-	return this->error_statement ();
+	return error_mark_node;
       tree set = fold_build2_loc (location.gcc_location (), MODIFY_EXPR,
 				  void_type_node, result, vals.front ());
       ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
@@ -2019,7 +2004,7 @@ Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
 			       TREE_TYPE (field), rettmp, field, NULL_TREE);
 	  tree val = (*p);
 	  if (val == error_mark_node)
-	    return this->error_statement ();
+	    return error_mark_node;
 	  tree set = fold_build2_loc (location.gcc_location (), MODIFY_EXPR,
 				      void_type_node, ref, (*p));
 	  append_to_statement_list (set, &stmt_list);
@@ -2047,7 +2032,7 @@ Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
 {
   if (try_stmt == error_mark_node || except_stmt == error_mark_node
       || finally_stmt == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
 
   if (except_stmt != NULL_TREE)
     try_stmt = build2_loc (location.gcc_location (), TRY_CATCH_EXPR,
@@ -2068,7 +2053,7 @@ Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
 {
   if (cond_tree == error_mark_node || then_tree == error_mark_node
       || else_tree == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   tree ret = build3_loc (location.gcc_location (), COND_EXPR, void_type_node,
 			 cond_tree, then_tree, else_tree);
   return ret;
@@ -2125,7 +2110,7 @@ Gcc_backend::switch_statement (tree decl, tree value,
 	    {
 	      tree t = (*pcv);
 	      if (t == error_mark_node)
-		return this->error_statement ();
+		return error_mark_node;
 	      location_t loc = EXPR_LOCATION (t);
 	      tree label = create_artificial_label (loc);
 	      tree c = build_case_label ((*pcv), NULL_TREE, label);
@@ -2137,7 +2122,7 @@ Gcc_backend::switch_statement (tree decl, tree value,
 	{
 	  tree t = (*ps);
 	  if (t == error_mark_node)
-	    return this->error_statement ();
+	    return error_mark_node;
 	  append_to_statement_list (t, &stmt_list);
 	}
     }
@@ -2145,7 +2130,7 @@ Gcc_backend::switch_statement (tree decl, tree value,
 
   tree tv = value;
   if (tv == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   tree t = build2_loc (switch_location.gcc_location (), SWITCH_EXPR, NULL_TREE,
 		       tv, stmt_list);
   return t;
@@ -2159,11 +2144,11 @@ Gcc_backend::compound_statement (tree s1, tree s2)
   tree stmt_list = NULL_TREE;
   tree t = s1;
   if (t == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   append_to_statement_list (t, &stmt_list);
   t = s2;
   if (t == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
   append_to_statement_list (t, &stmt_list);
 
   // If neither statement has any side effects, stmt_list can be NULL
@@ -2185,7 +2170,7 @@ Gcc_backend::statement_list (const std::vector<tree> &statements)
     {
       tree t = (*p);
       if (t == error_mark_node)
-	return this->error_statement ();
+	return error_mark_node;
       append_to_statement_list (t, &stmt_list);
     }
   return stmt_list;
@@ -2273,15 +2258,6 @@ Gcc_backend::block_add_statements (tree bind_tree,
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   BIND_EXPR_BODY (bind_tree) = stmt_list;
-}
-
-// Return a block as a statement.
-
-tree
-Gcc_backend::block_statement (tree bind_tree)
-{
-  gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  return bind_tree;
 }
 
 // This is not static because we declare it with GTY(()) in rust-c.h.
@@ -2527,7 +2503,7 @@ Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
   if (type_tree == error_mark_node || init_tree == error_mark_node
       || fndecl == error_mark_node)
     {
-      *pstatement = this->error_statement ();
+      *pstatement = error_mark_node;
       return this->error_variable ();
     }
 
@@ -2656,7 +2632,7 @@ Gcc_backend::function (tree functype, const std::string &name,
     }
   tree id = get_identifier_from_string (name);
   if (functype == error_mark_node || id == error_mark_node)
-    return this->error_function ();
+    return error_mark_node;
 
   tree decl
     = build_decl (location.gcc_location (), FUNCTION_DECL, id, functype);
@@ -2697,7 +2673,7 @@ Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
 {
   if (undefer_tree == error_mark_node || defer_tree == error_mark_node
       || function == error_mark_node)
-    return this->error_statement ();
+    return error_mark_node;
 
   if (DECL_STRUCT_FUNCTION (function) == NULL)
     push_struct_function (function);
@@ -2742,17 +2718,6 @@ Gcc_backend::function_set_parameters (
     }
   *pp = NULL_TREE;
   DECL_ARGUMENTS (function) = params;
-  return true;
-}
-
-// Set the function body for FUNCTION using the code in CODE_BLOCK.
-
-bool
-Gcc_backend::function_set_body (tree function, tree code_stmt)
-{
-  if (function == error_mark_node || code_stmt == error_mark_node)
-    return false;
-  DECL_SAVED_TREE (function) = code_stmt;
   return true;
 }
 

@@ -40,8 +40,7 @@ public:
     CompileInherentImplItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
-    if (is_query_mode
-	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+    if (is_query_mode && compiler.reference == error_mark_node)
       rust_internal_error_at (ref_locus, "failed to compile impl item: %s",
 			      item->as_string ().c_str ());
 
@@ -67,8 +66,7 @@ public:
     CompileTraitItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
 
-    if (is_query_mode
-	&& ctx->get_backend ()->is_error_expression (compiler.reference))
+    if (is_query_mode && compiler.reference == error_mark_node)
       rust_internal_error_at (ref_locus, "failed to compile trait item: %s",
 			      item->as_string ().c_str ());
 
@@ -81,8 +79,7 @@ public:
 
 private:
   CompileTraitItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
-    : HIRCompileBase (ctx), concrete (concrete),
-      reference (ctx->get_backend ()->error_expression ()),
+    : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
       ref_locus (ref_locus)
   {}
 
