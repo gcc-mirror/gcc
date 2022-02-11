@@ -18,9 +18,14 @@
 #ifndef GCC_RUST_TARGET_H
 #define GCC_RUST_TARGET_H
 
+#include "target.h"
+#include "tm.h"
+#include "memmodel.h"
+#include "tm_p.h"
+
 // TODO: find out what this stuff actually does
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
-#define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (*NAME) PARAMS;
+// #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (*NAME) PARAMS;
 #define DEFHOOK_UNDOC DEFHOOK
 #define HOOKSTRUCT(FRAGMENT) FRAGMENT
 

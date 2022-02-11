@@ -383,8 +383,8 @@ public:
 	ctx->add_statement (ret_var_stmt);
       }
 
-    auto code_block = CompileBlock::compile (&expr, ctx, tmp);
-    auto block_stmt = ctx->get_backend ()->block_statement (code_block);
+    auto block_stmt = CompileBlock::compile (&expr, ctx, tmp);
+    rust_assert (TREE_CODE (block_stmt) == BIND_EXPR);
     ctx->add_statement (block_stmt);
 
     if (tmp != NULL)
@@ -680,9 +680,9 @@ public:
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
     ctx->add_statement (break_stmt);
 
-    tree code_block
+    tree code_block_stmt
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
-    tree code_block_stmt = ctx->get_backend ()->block_statement (code_block);
+    rust_assert (TREE_CODE (code_block_stmt) == BIND_EXPR);
     ctx->add_statement (code_block_stmt);
 
     ctx->pop_loop_begin_label ();

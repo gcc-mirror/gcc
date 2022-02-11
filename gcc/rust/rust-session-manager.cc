@@ -17,32 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 // #include "rust-session-manager.h"
 
-#include <fstream>
-#include <sstream>
 #include "rust-session-manager.h"
 #include "rust-diagnostics.h"
-#include "diagnostic.h"
-#include "input.h"
-
-#include "target.h"
-#include "tm.h"
-#include "memmodel.h"
-#include "tm_p.h"
-
-//#include "rust-target.h"
-/*TODO This isn't (currently?) necessary, but if '#include'd after '#include
-   "target.h"', causes: In file included from
-   [...]/gcc/rust/rust-session-manager.cc:31:
-    [...]/gcc/rust/rust-target.h:23: error: "DEFHOOK" redefined [-Werror]
-       23 | #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (*NAME) PARAMS;
-	  |
-    In file included from [...]/gcc/rust/rust-session-manager.cc:27:
-    [...]/gcc/target.h:272: note: this is the location of the previous
-   definition 272 | #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME)
-   PARAMS;
-	  |
-*/
-
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-macro-expand.h"
@@ -53,6 +29,13 @@
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
+
+#include "diagnostic.h"
+#include "input.h"
+#include "rust-target.h"
+
+extern bool
+saw_errors (void);
 
 extern Linemap *
 rust_get_linemap ();

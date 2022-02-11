@@ -85,7 +85,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
   Location locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
   rust_error_at (locus, "unknown builtin");
 
-  return ctx->get_backend ()->error_function ();
+  return error_mark_node;
 }
 
 } // namespace Compile

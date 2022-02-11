@@ -21,12 +21,6 @@
 
 #include "rust-compile-base.h"
 #include "rust-compile-intrinsic.h"
-#include "rust-compile-tyty.h"
-#include "rust-compile-implitem.h"
-#include "rust-compile-var-decl.h"
-#include "rust-compile-stmt.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {

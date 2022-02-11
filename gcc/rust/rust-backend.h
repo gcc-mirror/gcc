@@ -29,12 +29,6 @@
 #include "operator.h"
 #include "tree.h"
 
-extern bool
-saw_errors (void);
-
-// TODO: Will have to be significantly modified to work with Rust and current
-// setup of gccrs
-
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
@@ -75,15 +69,6 @@ public:
   virtual tree get_identifier_node (const std::string &str) = 0;
 
   // Types.
-
-  // Produce an error type.  Actually the backend could probably just
-  // crash if this is called.
-  virtual tree error_type () = 0;
-
-  // Get a void type.  This is used in (at least) two ways: 1) as the
-  // return type of a function with no result parameters; 2)
-  // unsafe.Pointer is represented as *void.
-  virtual tree void_type () = 0;
 
   // get unit-type
   virtual tree unit_type () = 0;
@@ -188,17 +173,6 @@ public:
   // converting nil to other types.
   virtual tree zero_expression (tree) = 0;
 
-  // Create an error expression. This is used for cases which should
-  // not occur in a correct program, in order to keep the compilation
-  // going without crashing.
-  virtual tree error_expression () = 0;
-
-  // return whether this is error_mark_node
-  virtual bool is_error_expression (tree) = 0;
-
-  // Create a nil pointer expression.
-  virtual tree nil_pointer_expression () = 0;
-
   virtual tree unit_expression () = 0;
 
   // Create a reference to a variable.
@@ -210,12 +184,6 @@ public:
   // of the indirected EXPR.
   virtual tree indirect_expression (tree btype, tree expr, bool known_valid,
 				    Location)
-    = 0;
-
-  // Return an expression that declares a constant named NAME with the
-  // constant value VAL in BTYPE.
-  virtual tree named_constant_expression (tree btype, const std::string &name,
-					  tree val, Location)
     = 0;
 
   // Return an expression for the multi-precision integer VAL in BTYPE.
@@ -250,10 +218,6 @@ public:
 
   // Return an expression that converts EXPR to TYPE.
   virtual tree convert_expression (tree type, tree expr, Location) = 0;
-
-  // Create an expression for the address of a function.  This is used to
-  // get the address of the code for a function.
-  virtual tree function_code_expression (tree, Location) = 0;
 
   // Return an expression for the field at INDEX in BSTRUCT.
   virtual tree struct_field_expression (tree bstruct, size_t index, Location)
@@ -327,11 +291,6 @@ public:
     = 0;
 
   // Statements.
-
-  // Create an error statement.  This is used for cases which should
-  // not occur in a correct program, in order to keep the compilation
-  // going without crashing.
-  virtual tree error_statement () = 0;
 
   // Create an expression statement within the specified function.
   virtual tree expression_statement (tree, tree) = 0;
@@ -408,10 +367,6 @@ public:
   // block.  This will called exactly once per block.  The vector may
   // be empty if there are no statements.
   virtual void block_add_statements (tree, const std::vector<tree> &) = 0;
-
-  // Return the block as a statement.  This is used to include a block
-  // in a list of statements.
-  virtual tree block_statement (tree) = 0;
 
   // Variables.
 
@@ -512,11 +467,6 @@ public:
 
   // Functions.
 
-  // Create an error function.  This is used for cases which should
-  // not occur in a correct program, in order to keep the compilation
-  // going without crashing.
-  virtual tree error_function () = 0;
-
   // Bit flags to pass to the function method.
 
   // Set if this is a function declaration rather than a definition;
@@ -560,10 +510,6 @@ public:
   function_set_parameters (tree function,
 			   const std::vector<Bvariable *> &param_vars)
     = 0;
-
-  // Set the function body for FUNCTION using the code in CODE_STMT.  Returns
-  // true on success, false on failure.
-  virtual bool function_set_body (tree function, tree code_stmt) = 0;
 
   // Look up a named built-in function in the current backend implementation.
   // Returns NULL if no built-in function by that name exists.

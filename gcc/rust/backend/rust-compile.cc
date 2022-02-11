@@ -16,14 +16,16 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-compile.h"
-#include "rust-compile-item.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-struct-field-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
+#include "rust-compile.h"
+#include "rust-compile-item.h"
+#include "rust-compile-implitem.h"
+#include "rust-compile-expr.h"
+#include "rust-compile-struct-field-expr.h"
+#include "rust-compile-stmt.h"
 
 namespace Rust {
 namespace Compile {
@@ -67,9 +69,8 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       return;
     }
 
-  std::vector<Bvariable *> locals;
-  bool ok = compile_locals_for_block (*rib, fndecl, locals);
-  rust_assert (ok);
+  std::vector<Bvariable *> locals
+    = compile_locals_for_block (ctx, *rib, fndecl);
 
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree new_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
@@ -202,87 +203,6 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 }
 
 // Shared methods in compilation
-
-void
-HIRCompileBase::compile_function_body (tree fndecl,
-				       HIR::BlockExpr &function_body,
-				       bool has_return_type)
-{
-  for (auto &s : function_body.get_statements ())
-    {
-      auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
-      if (compiled_expr != nullptr)
-	{
-	  tree compiled_stmt
-	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
-	  ctx->add_statement (compiled_stmt);
-	}
-    }
-
-  if (function_body.has_expr ())
-    {
-      // the previous passes will ensure this is a valid return
-      // or a valid trailing expression
-      tree compiled_expr
-	= CompileExpr::Compile (function_body.expr.get (), ctx);
-
-      if (compiled_expr != nullptr)
-	{
-	  if (has_return_type)
-	    {
-	      std::vector<tree> retstmts;
-	      retstmts.push_back (compiled_expr);
-
-	      auto ret = ctx->get_backend ()->return_statement (
-		fndecl, retstmts,
-		function_body.get_final_expr ()->get_locus ());
-	      ctx->add_statement (ret);
-	    }
-	  else
-	    {
-	      tree final_stmt
-		= ctx->get_backend ()->expression_statement (fndecl,
-							     compiled_expr);
-	      ctx->add_statement (final_stmt);
-	    }
-	}
-    }
-}
-
-bool
-HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
-					  std::vector<Bvariable *> &locals)
-{
-  rib.iterate_decls ([&] (NodeId n, Location) mutable -> bool {
-    Resolver::Definition d;
-    bool ok = ctx->get_resolver ()->lookup_definition (n, &d);
-    rust_assert (ok);
-
-    HIR::Stmt *decl = nullptr;
-    ok = ctx->get_mappings ()->resolve_nodeid_to_stmt (d.parent, &decl);
-    rust_assert (ok);
-
-    // if its a function we extract this out side of this fn context
-    // and it is not a local to this function
-    bool is_item = ctx->get_mappings ()->lookup_hir_item (
-		     decl->get_mappings ().get_crate_num (),
-		     decl->get_mappings ().get_hirid ())
-		   != nullptr;
-    if (is_item)
-      {
-	HIR::Item *item = static_cast<HIR::Item *> (decl);
-	CompileItem::compile (item, ctx);
-	return true;
-      }
-
-    Bvariable *compiled = CompileVarDecl::compile (fndecl, decl, ctx);
-    locals.push_back (compiled);
-
-    return true;
-  });
-
-  return true;
-}
 
 tree
 HIRCompileBase::coercion_site (tree rvalue, TyTy::BaseType *actual,
@@ -533,8 +453,8 @@ HIRCompileBase::compute_address_for_trait_item (
   rust_assert (trait_item_has_definition);
 
   HIR::TraitItem *trait_item = ref->get_hir_trait_item ();
-  return CompileTraitItem::Compile (root, trait_item, ctx, trait_item_fntype,
-				    true, locus);
+  return CompileTraitItem::Compile (trait_item, ctx, trait_item_fntype, true,
+				    locus);
 }
 
 bool

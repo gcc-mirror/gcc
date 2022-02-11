@@ -35,13 +35,8 @@ protected:
 
   Context *ctx;
 
+protected:
   Context *get_context () { return ctx; }
-
-  void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
-			      bool has_return_type);
-
-  bool compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
-				 std::vector<Bvariable *> &locals);
 
   tree coercion_site (tree rvalue, TyTy::BaseType *actual,
 		      TyTy::BaseType *expected, Location lvalue_locus,
@@ -81,6 +76,30 @@ protected:
   static tree address_expression (tree, Location);
 
   static bool mark_addressable (tree, Location);
+
+  static std::vector<Bvariable *>
+  compile_locals_for_block (Context *ctx, Resolver::Rib &rib, tree fndecl);
+
+  static void compile_function_body (Context *ctx, tree fndecl,
+				     HIR::BlockExpr &function_body,
+				     bool has_return_type);
+
+  static tree compile_function (
+    Context *ctx, const std::string &fn_name, HIR::SelfParam &self_param,
+    std::vector<HIR::FunctionParam> &function_params,
+    const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
+    AST::AttrVec &outer_attrs, Location locus, HIR::BlockExpr *function_body,
+    const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype,
+    bool function_has_return);
+
+  static tree
+  compile_constant_item (Context *ctx, TyTy::BaseType *resolved_type,
+			 const Resolver::CanonicalPath *canonical_path,
+			 HIR::Expr *const_value_expr, Location locus);
+
+  static tree named_constant_expression (tree type_tree,
+					 const std::string &name,
+					 tree const_val, Location location);
 };
 
 } // namespace Compile
