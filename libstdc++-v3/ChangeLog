@@ -1,3 +1,12 @@
+2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backported from master:
+	2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h (__waiter_base::_S_do_spin,
+	__waiter_base::_S_do_spin_v): Change memory order from relaxed
+	to acquire.
+
 2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:

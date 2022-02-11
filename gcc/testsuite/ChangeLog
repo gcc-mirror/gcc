@@ -1,3 +1,19 @@
+2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104458
+	* gcc.target/i386/pr104458.c: Replace long with long long.
+
+2022-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* gcc.target/i386/pr104469.c: New test.
+
 2022-02-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
