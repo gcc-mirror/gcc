@@ -1,3 +1,11 @@
+2022-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* gcc.target/i386/pr104469.c: New test.
+
 2022-02-09  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/104451
