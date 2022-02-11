@@ -930,6 +930,9 @@ class region_model_context
   virtual bool get_taint_map (sm_state_map **out_smap,
 			      const state_machine **out_sm,
 			      unsigned *out_sm_idx) = 0;
+
+  /* Get the current statement, if any.  */
+  virtual const gimple *get_stmt () const = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -980,6 +983,8 @@ public:
   {
     return false;
   }
+
+  const gimple *get_stmt () const OVERRIDE { return NULL; }
 };
 
 /* A subclass of region_model_context for determining if operations fail
