@@ -12997,6 +12997,8 @@ const_vector_mask_from_tree (tree exp)
 static rtx
 const_vector_from_tree (tree exp)
 {
+    fprintf (stderr, "const vector from tree\n");
+    debug_tree(exp);
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 
   if (initializer_zerop (exp))

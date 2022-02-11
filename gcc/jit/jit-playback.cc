@@ -1048,7 +1048,41 @@ playback::context::new_rvalue_vector_perm (location *loc,
   tree t_elements1 = elements1->as_tree ();
   tree t_elements2 = elements2->as_tree ();
   tree t_mask = mask->as_tree ();
-  debug_tree (t_mask);
+
+  /*size_t mask_len = VECTOR_CST_NPATTERNS (t_mask);
+  size_t pattern_len = VECTOR_CST_NPATTERNS (t_mask);
+  fprintf(stderr, "Mask len: %lu (%lu)\n", mask_len, pattern_len);
+  size_t maskl = 16;
+  vec_perm_builder sel (maskl, maskl, 1);
+  sel.quick_push (0);
+  sel.quick_push (1);
+  sel.quick_push (2);
+  sel.quick_push (3);
+  sel.quick_push (4);
+  sel.quick_push (5);
+  sel.quick_push (6);
+  sel.quick_push (7);
+  sel.quick_push (8);
+  sel.quick_push (9);
+  sel.quick_push (10);
+  sel.quick_push (11);
+  sel.quick_push (12);
+  sel.quick_push (13);
+  sel.quick_push (14);
+  sel.quick_push (15);
+  vec_perm_indices indices (sel, maskl, 1);
+  fprintf(stderr, "Orig mask type\n");
+  debug_tree (TREE_TYPE (TREE_TYPE (t_mask)));
+  tree mask_type = build_vector_type (build_nonstandard_integer_type
+          (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (TREE_TYPE (t_mask)))), 1),
+          maskl);
+  fprintf(stderr, "Mask type\n");
+  debug_tree(mask_type);
+  // FIXME: this way of creating the mask vector works. Find out of way to initialize it correctly.
+  t_mask = vec_perm_indices_to_tree (mask_type, indices);
+  fprintf(stderr, "Mask\n");
+  debug_tree (t_mask);*/
+
   tree t_vector_perm = build3 (VEC_PERM_EXPR, TREE_TYPE (t_elements1), t_elements1, t_elements2, t_mask);
   if (loc)
     set_tree_location (t_vector_perm, loc);
