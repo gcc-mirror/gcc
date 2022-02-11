@@ -69,6 +69,7 @@ posrcxx=$pwd/$T/po-cxx-sources
 pottmp1=$pwd/$T/tmp1.pot
 pottmp2=$pwd/$T/tmp2.pot
 pottmp3=$pwd/$T/tmp3.pot
+pottmp4=$pwd/$T/tmp4.pot
 pottmp=$pwd/$T/tmp.pot
 
 # Locate files to scan.  We scan the following directories:
@@ -312,8 +313,13 @@ $xgettext --default-domain=$package --directory=$srcdir \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="$BUGURL" \
 	  --language=GCC-source -o $pottmp3
+$xgettext --default-domain=$package --directory=$srcdir \
+	  --add-comments --keyword= `cat $kopt2` --files-from=$posrcxx \
+	  --copyright-holder="Free Software Foundation, Inc." \
+	  --msgid-bugs-address="$BUGURL" \
+	  --language=GCC-source -o $pottmp4
 $xgettext --default-domain=$package \
-	  --add-comments $pottmp1 $pottmp2 $pottmp3 \
+	  --add-comments $pottmp1 $pottmp2 $pottmp3 $pottmp4 \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="$BUGURL" \
 	  --language=PO -o $pottmp
