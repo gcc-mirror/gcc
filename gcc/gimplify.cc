@@ -1804,7 +1804,6 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
 				      gimple_seq *seq_p)
 {
   tree addr_of_decl = NULL_TREE;
-  bool for_auto_init = true;
   tree fn = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
 
   if (is_vla)
@@ -1821,11 +1820,8 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
       addr_of_decl = build_fold_addr_expr (decl);
     }
 
-  gimple *call = gimple_build_call (fn,
-				    3, addr_of_decl,
-				    build_zero_cst (TREE_TYPE (addr_of_decl)),
-				    build_int_cst (integer_type_node,
-						   (int) for_auto_init));
+  gimple *call = gimple_build_call (fn, 2, addr_of_decl,
+				    build_one_cst (TREE_TYPE (addr_of_decl)));
   gimplify_seq_add_stmt (seq_p, call);
 }
 
@@ -3536,15 +3532,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  {
 	    /* Remember the original type of the argument in an internal
 	       dummy second argument, as in GIMPLE pointer conversions are
-	       useless. also mark this call as not for automatic initialization
-	       in the internal dummy third argument.  */
+	       useless.  Also mark this call as not for automatic
+	       initialization in the internal dummy third argument.  */
 	    p = CALL_EXPR_ARG (*expr_p, 0);
-	    bool for_auto_init = false;
 	    *expr_p
-	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 3, p,
-				     build_zero_cst (TREE_TYPE (p)),
-				     build_int_cst (integer_type_node,
-						    (int) for_auto_init));
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
 	    return GS_OK;
 	  }
 	break;

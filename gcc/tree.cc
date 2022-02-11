@@ -9520,7 +9520,7 @@ build_common_builtin_nodes (void)
       local_define_builtin ("__builtin_clear_padding", ftype,
 			    BUILT_IN_CLEAR_PADDING,
 			    "__builtin_clear_padding",
-			      ECF_LEAF | ECF_NOTHROW);
+			    ECF_LEAF | ECF_NOTHROW);
     }
 
   if (!builtin_decl_explicit_p (BUILT_IN_UNREACHABLE)
