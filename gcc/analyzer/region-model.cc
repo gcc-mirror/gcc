@@ -843,13 +843,21 @@ region_model::check_for_poison (const svalue *sval,
 
   if (const poisoned_svalue *poisoned_sval = sval->dyn_cast_poisoned_svalue ())
     {
+      enum poison_kind pkind = poisoned_sval->get_poison_kind ();
+
+      /* Ignore uninitialized uses of empty types; there's nothing
+	 to initialize.  */
+      if (pkind == POISON_KIND_UNINIT
+	  && sval->get_type ()
+	  && is_empty_type (sval->get_type ()))
+	return sval;
+
       /* If we have an SSA name for a temporary, we don't want to print
 	 '<unknown>'.
 	 Poisoned values are shared by type, and so we can't reconstruct
 	 the tree other than via the def stmts, using
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
-      enum poison_kind pkind = poisoned_sval->get_poison_kind ();
       const region *src_region = NULL;
       if (pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
