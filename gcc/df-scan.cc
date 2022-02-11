@@ -1769,13 +1769,15 @@ df_insn_change_bb (rtx_insn *insn, basic_block new_bb)
   if (!INSN_P (insn))
     return;
 
-  df_set_bb_dirty (new_bb);
+  if (!DEBUG_INSN_P (insn))
+    df_set_bb_dirty (new_bb);
   if (old_bb)
     {
       if (dump_file)
 	fprintf (dump_file, "  from %d to %d\n",
 		 old_bb->index, new_bb->index);
-      df_set_bb_dirty (old_bb);
+      if (!DEBUG_INSN_P (insn))
+	df_set_bb_dirty (old_bb);
     }
   else
     if (dump_file)
