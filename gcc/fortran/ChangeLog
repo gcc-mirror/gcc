@@ -1,3 +1,28 @@
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-common.cc (GFC_EQUIV_FMT): New macro respecting the
+	target's NO_DOT_IN_LABEL and NO_DOLLAR_IN_LABEL preferences.
+	(build_equiv_decl): Use GFC_EQUIV_FMT here.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104329
+	* openmp.cc (resolve_omp_atomic): Defer extra-code assert after
+	other diagnostics.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Added OMP_LIST_HAS_DEVICE_ADDR
+	case.
+	* gfortran.h: Added OMP_LIST_HAS_DEVICE_ADDR.
+	* openmp.cc (enum omp_mask2): Added OMP_CLAUSE_HAS_DEVICE_ADDR.
+	(gfc_match_omp_clauses): Parse HAS_DEVICE_ADDR clause.
+	(resolve_omp_clauses): Same.
+	* trans-openmp.cc (gfc_trans_omp_variable_list): Added
+	OMP_LIST_HAS_DEVICE_ADDR case.
+	(gfc_trans_omp_clauses): Firstprivatize of array descriptors.
+
 2022-02-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/66193

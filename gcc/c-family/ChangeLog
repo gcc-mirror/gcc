@@ -1,3 +1,9 @@
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.
+	* c-pragma.h (enum pragma_kind): Added 5.1 in comment.
+	(enum pragma_omp_clause): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR.
+
 2022-02-09  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Update values

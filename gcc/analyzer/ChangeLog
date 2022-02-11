@@ -1,3 +1,14 @@
+2022-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98797
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_sub_svalue): Generalize getting
+	individual chars of a STRING_CST from element_region to any
+	subregion which is a concrete access of a single byte from its
+	parent region.
+	* region.cc (region::get_relative_concrete_byte_range): New.
+	* region.h (region::get_relative_concrete_byte_range): New decl.
+
 2022-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104452

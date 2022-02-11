@@ -1,3 +1,29 @@
+2022-02-10  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_specializations): Use
+	STRIP_TEMPLATE.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* decl2.cc (cp_omp_mappable_type_1): Remove check for virtual
+	members as those are permitted since OpenMP 5.0.
+
+2022-02-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (filter_memfn_lookup): Handle dependent USING_DECL
+	better.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Parse 'has_device_addr' clause.
+	(cp_parser_omp_var_list_no_open): Handle array sections.
+	(cp_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(cp_parser_omp_target_update): Added HAS_DEVICE_ADDR to OMP_CLAUSE_MASK.
+	* semantics.cc (handle_omp_array_sections): Handle clause restrictions.
+	(finish_omp_clauses): Handle array sections.
+
 2022-02-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104432

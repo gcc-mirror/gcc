@@ -1,3 +1,24 @@
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* testsuite/libgomp.c++/target-virtual-1.C: New test.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* libgomp.texi: Updated entry for HAS_DEVICE_ADDR.
+	* target.c (copy_firstprivate_data): Copy only if host address is not
+	NULL.
+	* testsuite/libgomp.c++/target-has-device-addr-2.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-4.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-5.C: New test.
+	* testsuite/libgomp.c++/target-has-device-addr-6.C: New test.
+	* testsuite/libgomp.c-c++-common/target-has-device-addr-1.c: New test.
+	* testsuite/libgomp.c/target-has-device-addr-3.c: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-1.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-2.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-3.f90: New test.
+	* testsuite/libgomp.fortran/target-has-device-addr-4.f90: New test.
+
 2022-02-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/104385

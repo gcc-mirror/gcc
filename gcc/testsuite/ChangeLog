@@ -1,3 +1,140 @@
+2022-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104373
+	* g++.dg/warn/Wuninitialized-32.C (operator new[]): Use __SIZE_TYPE__
+	as type of the first argument instead of unsigned long.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* g++.dg/gomp/unmappable-1.C: Remove previously expected dg-message.
+
+2022-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98797
+	* gcc.dg/analyzer/casts-1.c: Mark xfails as fixed; add further
+	test coverage for casts of string literals.
+
+2022-02-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* gcc.target/arm/pr100775.c: New test.
+
+2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* gcc.target/i386/pr104469.c: New test.
+
+2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104458
+	* gcc.target/i386/pr104458.c: Replace long with long long.
+
+2022-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102052
+	* gcc.dg/analyzer/fields.c (size_t): Use __SIZE_TYPE__ rather than
+	hardcoding long unsigned int.
+	* gcc.dg/analyzer/gzio-3.c (size_t): Likewise.
+	* gcc.dg/analyzer/gzio-3a.c (size_t): Likewise.
+	* gcc.dg/analyzer/pr98969.c (test_1): Use __UINTPTR_TYPE__ rather
+	than long int.
+	(test_2): Likewise.
+	* gcc.dg/analyzer/pr99716-2.c (test_mountpoint): Use "rand" rather
+	than "random".
+	* gcc.dg/analyzer/pr99774-1.c (size_t): Use __SIZE_TYPE__ rather
+	than hardcoding long unsigned int.
+	* gcc.dg/analyzer/strndup-1.c: Add MinGW to targets that don't
+	implement strndup.
+	* gcc.dg/analyzer/zlib-5.c (size_t): Use __SIZE_TYPE__ rather
+	than hardcoding long unsigned int.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104373
+	* g++.dg/warn/Wuninitialized-32.C: New testcase.
+	* gcc.dg/uninit-pr20644-O0.c: Remove XFAIL.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104467
+	* gcc.dg/torture/pr104467.c: New testcase.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104466
+	* gfortran.dg/pr104466.f90: New testcase.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-2.c: New test.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-1.c: New test.
+	* gcc.target/nvptx/atomic-store-3.c: New test.
+	* gcc.target/nvptx/stack-atomics-run.c: Update.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104329
+	* gfortran.dg/gomp/atomic-28.f90: New test.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104345
+	* gcc.target/nvptx/neg-selp.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/bool-1.c: Update.
+	* gcc.target/nvptx/bool-2.c: New test case for and.pred.
+	* gcc.target/nvptx/bool-3.c: New test case for or.pred.
+	* gcc.target/nvptx/bool-4.c: New test case for xor.pred.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/mul-hi64.c: New test case.
+	* gcc.target/nvptx/umul-hi64.c: New test case.
+	* gcc.target/nvptx/mul-wide64.c: New test case.
+	* gcc.target/nvptx/umul-wide64.c: New test case.
+	* gcc.target/nvptx/isinf.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/bool-1.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-3.c: New test case for neghf2.
+	* gcc.target/nvptx/float16-4.c: New test case for abshf2.
+	* gcc.target/nvptx/float16-5.c: New test case for fmahf4.
+	* gcc.target/nvptx/float16-6.c: New test case.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/clauses-1.c: Added has_device_addr to test cases.
+	* g++.dg/gomp/attrs-1.C: Added has_device_addr to test cases.
+	* g++.dg/gomp/attrs-2.C: Added has_device_addr to test cases.
+	* c-c++-common/gomp/target-has-device-addr-1.c: New test.
+	* c-c++-common/gomp/target-has-device-addr-2.c: New test.
+	* c-c++-common/gomp/target-is-device-ptr-1.c: New test.
+	* c-c++-common/gomp/target-is-device-ptr-2.c: New test.
+	* gfortran.dg/gomp/is_device_ptr-3.f90: New test.
+	* gfortran.dg/gomp/target-has-device-addr-1.f90: New test.
+	* gfortran.dg/gomp/target-has-device-addr-2.f90: New test.
+
+2022-02-10  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* g++.dg/tree-prof/indir-call-recursive-inlining.C : New test.
+
+2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* gcc.target/aarch64/sve/pr104474-1.c: New test.
+	* gcc.target/aarch64/sve/pr104474-2.c: New test.
+	* gcc.target/aarch64/sve/pr104474-3.c: New test.
+
 2022-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/uninit-1.c: Add test coverage for shifts,

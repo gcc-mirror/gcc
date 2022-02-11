@@ -1,3 +1,23 @@
+2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h (__waiter_base::_S_do_spin,
+	__waiter_base::_S_do_spin_v): Change memory order from relaxed
+	to acquire.
+
+2022-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdatomic.h (atomic_fetch_xor): Add
+	using-declaration.
+	(atomic_fetch_xor_explicit): Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: Check
+	arithmetic and logical operations for atomic_int.
+
+2022-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/dir-common.h (_GLIBCXX_HAVE_DIRFD): Undefine
+	when <dirent.h> is not available.
+	(_GLIBCXX_HAVE_UNLINKAT):  Likewise.
+
 2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
 
 	PR libstdc++/104442

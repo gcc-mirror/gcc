@@ -1,3 +1,165 @@
+2022-02-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* function.cc (gen_call_used_regs_seq): Call
+	df_update_exit_block_uses when updating df.
+
+2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* config/i386/sse.md (vec_unpacks_float_lo_v4si):
+	Change operand 1 constraint to register_operand.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104373
+	* tree-ssa-sccvn.h (do_rpo_vn): New export exposing the
+	walk kind.
+	* tree-ssa-sccvn.cc (do_rpo_vn): Export, get the default
+	walk kind as argument.
+	(run_rpo_vn): Adjust.
+	(pass_fre::execute): Likewise.
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Skip
+	blocks not reachable.
+	(execute_late_warn_uninitialized): Mark all edges as
+	executable.
+	(execute_early_warn_uninitialized): Use VN to compute
+	executable edges.
+	(pass_data_early_warn_uninitialized): Enable a dump file,
+	change dump name to warn_uninit.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104467
+	* match.pd (vector extract simplification): Multiply the
+	number of CTOR elements with the number of element elements.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104466
+	* tree-ssa-alias.cc (refs_may_alias_p_2): Use rbase1/rbase2
+	for the MR_DEPENDENCE checks as intended.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "nvptx_atomic_store<mode>"): New
+	define_insn.
+	(define_expand "atomic_store<mode>"): Use nvptx_atomic_store<mode> for
+	TARGET_SM70.
+	(define_c_enum "unspecv"): Add UNSPECV_ST.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (nvptx_mem_maybe_shared_p): Declare.
+	* config/nvptx/nvptx.cc (nvptx_mem_data_area): New static function.
+	(nvptx_mem_maybe_shared_p): New function.
+	* config/nvptx/nvptx.md (define_expand "atomic_store<mode>"): New
+	define_expand.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97005
+	* config/nvptx/nvptx.md (define_insn "sub<mode>3"): Workaround
+	driver JIT bug by using sub.s16 instead of sub.u16.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (copysign<mode>3): Allow immediate
+	floating point constants as operands 1 and/or 2.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104345
+	* config/nvptx/nvptx.md (sel_true<mode>): Fix indentation.
+	(sel_false<mode>): Likewise.
+	(define_code_iterator eqne): New code iterator for EQ and NE.
+	(*selp<mode>_neg_<code>): New define_insn_and_split to optimize
+	the negation of a selp instruction.
+	(*selp<mode>_not_<code>): New define_insn_and_split to optimize
+	the bitwise not of a selp instruction.
+	(*setcc_int<mode>): Use set instruction for neg:SI of a selp.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (any_logic): Move code iterator earlier
+	in machine description.
+	(logic): Move code attribute earlier in machine description.
+	(ilogic): New code attribute, like logic but "ior" for IOR.
+	(and<mode>3, ior<mode>3, xor<mode>3): Delete. Replace with...
+	(<ilogic><mode>3): New define_insn for HSDIM logic operations.
+	(<ilogic>bi3): New define_insn for BI mode logic operations.
+	(define_split): Lower logic operations from integer modes to
+	BI mode predicate operations.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (UNSPEC_ISINF): New UNSPEC.
+	(one_cmplbi2): New define_insn for not.pred.
+	(mulditi3): New define_expand for signed widening multiply.
+	(umulditi3): New define_expand for unsigned widening multiply.
+	(smul<mode>3_highpart): New define_insn for signed highpart mult.
+	(umul<mode>3_highpart): New define_insn for unsigned highpart mult.
+	(*smulhi3_highpart_2): Renamed from smulhi3_highpart.
+	(*smulsi3_highpart_2): Renamed from smulsi3_highpart.
+	(*umulhi3_highpart_2): Renamed from umulhi3_highpart.
+	(*umulsi3_highpart_2): Renamed from umulsi3_highpart.
+	(*setcc<mode>_from_not_bi): New define_insn.
+	(*setcc_isinf<mode>): New define_insn for testp.infinite.
+	(isinf<mode>2): New define_expand.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (cmp<mode>): Renamed from *cmp<mode>.
+	(setcc<mode>_from_bi): Additionally support QImode.
+	(extendbi<mode>2): Additionally support QImode.
+	(zero_extendbi<mode>2): Additionally support QImode.
+	(any_sbinary, any_ubinary, any_sunary, any_uunary): New code
+	iterators for signed and unsigned, binary and unary operations.
+	(<sbinary>qi3, <ubinary>qi3, <sunary>qi2, <uunary>qi2): New
+	expanders to perform QImode operations using SImode instructions.
+	(cstoreqi4): New define_expand.
+	(*ext_truncsi2_qi): New define_insn.
+	(*zext_truncsi2_qi): New define_insn.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*cmpf): New define_insn.
+	(cstorehf4): New define_expand.
+	(fmahf4): New define_insn.
+	(neghf2): New define_insn.
+	(abshf2): New define_insn.
+
+2022-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Change the www.bitwizard.nl
+	reference to use https.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Added cases for
+	OMP_CLAUSE_HAS_DEVICE_ADDR
+	and handle array sections.
+	(gimplify_adjust_omp_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.
+	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_HAS_DEVICE_ADDR.
+	(lower_omp_target): Same.
+	* tree-core.h (enum omp_clause_code): Same.
+	* tree-nested.cc (convert_nonlocal_omp_clauses): Same.
+	(convert_local_omp_clauses): Same.
+	* tree-pretty-print.cc (dump_omp_clause): Same.
+	* tree.cc: Same.
+
+2022-02-10  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (afdo_indirect_call): Don't attempt to promote indirect calls
+	that will result in direct recursive calls.
+
+2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* config/aarch64/aarch64.cc
+	(aarch64_sve_expand_vector_init_handle_trailing_constants):
+	Use CONST0_RTX instead of const0_rtx for the non-constant elements.
+
 2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/104462

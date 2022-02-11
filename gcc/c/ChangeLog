@@ -1,3 +1,16 @@
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse 'has_device_addr'
+	clause.
+	(c_parser_omp_variable_list): Handle array sections.
+	(c_parser_omp_clause_has_device_addr): Added.
+	(c_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(c_parser_omp_target_exit_data): Added HAS_DEVICE_ADDR to
+	OMP_CLAUSE_MASK.
+	* c-typeck.cc (handle_omp_array_sections): Handle clause restrictions.
+	(c_finish_omp_clauses): Handle array sections.
+
 2022-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/104427
