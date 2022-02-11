@@ -1271,8 +1271,9 @@ omp_context_name_list_prop (tree prop)
 }
 
 #define DELAY_METADIRECTIVES_AFTER_LTO { \
-  if (metadirective_p && !(cfun->curr_properties & PROP_gimple_lomp_dev))	\
-    return -1;	\
+  if (metadirective_p \
+      && !(cfun && cfun->curr_properties & PROP_gimple_lomp_dev)) \
+    return -1; \
 }
 
 /* Return 1 if context selector matches the current OpenMP context, 0
