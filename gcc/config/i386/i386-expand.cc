@@ -23203,16 +23203,14 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
 				       enum rtx_code code, bool after,
 				       bool doubleword)
 {
-  rtx old_reg, new_reg, old_mem, success, oldval, new_mem;
-  rtx_code_label *loop_label, *pause_label, *done_label;
+  rtx old_reg, new_reg, old_mem, success;
   machine_mode mode = GET_MODE (target);
+  rtx_code_label *loop_label = NULL;
 
   old_reg = gen_reg_rtx (mode);
   new_reg = old_reg;
-  loop_label = gen_label_rtx ();
-  pause_label = gen_label_rtx ();
-  done_label = gen_label_rtx ();
   old_mem = copy_to_reg (mem);
+  loop_label = gen_label_rtx ();
   emit_label (loop_label);
   emit_move_insn (old_reg, old_mem);
 
@@ -23234,50 +23232,125 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
   if (after)
     emit_move_insn (target, new_reg);
 
-  /* Load memory again inside loop.  */
-  new_mem = copy_to_reg (mem);
-  /* Compare mem value with expected value.  */
+  success = NULL_RTX;
 
+  ix86_expand_cmpxchg_loop (&success, old_mem, mem, old_reg, new_reg,
+			    gen_int_mode (MEMMODEL_SYNC_SEQ_CST,
+					  SImode),
+			    doubleword, loop_label);
+}
+
+/* Relax cmpxchg instruction, param loop_label indicates whether
+   the instruction should be relaxed with a pause loop.  If not,
+   it will be relaxed to an atomic load + compare, and skip
+   cmpxchg instruction if mem != exp_input.  */
+
+void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
+			       rtx mem, rtx exp_input, rtx new_input,
+			       rtx mem_model, bool doubleword,
+			       rtx_code_label *loop_label)
+{
+  rtx_code_label *cmp_label = NULL;
+  rtx_code_label *done_label = NULL;
+  rtx target_bool = NULL_RTX, new_mem = NULL_RTX;
+  rtx (*gen) (rtx, rtx, rtx, rtx, rtx) = NULL;
+  rtx (*gendw) (rtx, rtx, rtx, rtx, rtx, rtx) = NULL;
+  machine_mode mode = GET_MODE (target_val), hmode = mode;
+
+  if (*ptarget_bool == NULL)
+    target_bool = gen_reg_rtx (QImode);
+  else
+    target_bool = *ptarget_bool;
+
+  cmp_label = gen_label_rtx ();
+  done_label = gen_label_rtx ();
+
+  new_mem = gen_reg_rtx (mode);
+  /* Load memory first.  */
+  expand_atomic_load (new_mem, mem, MEMMODEL_SEQ_CST);
+
+  switch (mode)
+    {
+    case TImode:
+      gendw = gen_atomic_compare_and_swapti_doubleword;
+      hmode = DImode;
+      break;
+    case DImode:
+      if (doubleword)
+	{
+	  gendw = gen_atomic_compare_and_swapdi_doubleword;
+	  hmode = SImode;
+	}
+      else
+	gen = gen_atomic_compare_and_swapdi_1;
+      break;
+    case SImode:
+      gen = gen_atomic_compare_and_swapsi_1; break;
+    case HImode:
+      gen = gen_atomic_compare_and_swaphi_1; break;
+    case QImode:
+      gen = gen_atomic_compare_and_swapqi_1; break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compare mem value with expected value.  */
   if (doubleword)
     {
-      machine_mode half_mode = (mode == DImode)? SImode : DImode;
-      rtx low_new_mem = gen_lowpart (half_mode, new_mem);
-      rtx low_old_mem = gen_lowpart (half_mode, old_mem);
-      rtx high_new_mem = gen_highpart (half_mode, new_mem);
-      rtx high_old_mem = gen_highpart (half_mode, old_mem);
-      emit_cmp_and_jump_insns (low_new_mem, low_old_mem, NE, NULL_RTX,
-			       half_mode, 1, pause_label,
+      rtx low_new_mem = gen_lowpart (hmode, new_mem);
+      rtx low_exp_input = gen_lowpart (hmode, exp_input);
+      rtx high_new_mem = gen_highpart (hmode, new_mem);
+      rtx high_exp_input = gen_highpart (hmode, exp_input);
+      emit_cmp_and_jump_insns (low_new_mem, low_exp_input, NE, NULL_RTX,
+			       hmode, 1, cmp_label,
 			       profile_probability::guessed_never ());
-      emit_cmp_and_jump_insns (high_new_mem, high_old_mem, NE, NULL_RTX,
-			       half_mode, 1, pause_label,
+      emit_cmp_and_jump_insns (high_new_mem, high_exp_input, NE, NULL_RTX,
+			       hmode, 1, cmp_label,
 			       profile_probability::guessed_never ());
     }
   else
-    emit_cmp_and_jump_insns (new_mem, old_mem, NE, NULL_RTX,
-			     GET_MODE (old_mem), 1, pause_label,
+    emit_cmp_and_jump_insns (new_mem, exp_input, NE, NULL_RTX,
+			     GET_MODE (exp_input), 1, cmp_label,
 			     profile_probability::guessed_never ());
 
-  success = NULL_RTX;
-  oldval = old_mem;
-  expand_atomic_compare_and_swap (&success, &oldval, mem, old_reg,
-				  new_reg, false, MEMMODEL_SYNC_SEQ_CST,
-				  MEMMODEL_RELAXED);
-  if (oldval != old_mem)
-    emit_move_insn (old_mem, oldval);
+  /* Directly emits cmpxchg here.  */
+  if (doubleword)
+    emit_insn (gendw (target_val, mem, exp_input,
+		      gen_lowpart (hmode, new_input),
+		      gen_highpart (hmode, new_input),
+		      mem_model));
+  else
+    emit_insn (gen (target_val, mem, exp_input, new_input, mem_model));
 
-  emit_cmp_and_jump_insns (success, const0_rtx, EQ, const0_rtx,
-			   GET_MODE (success), 1, loop_label,
-			   profile_probability::guessed_never ());
+  if (!loop_label)
+  {
+    emit_jump_insn (gen_jump (done_label));
+    emit_barrier ();
+    emit_label (cmp_label);
+    emit_move_insn (target_val, new_mem);
+    emit_label (done_label);
+    ix86_expand_setcc (target_bool, EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+		       const0_rtx);
+  }
+  else
+  {
+    ix86_expand_setcc (target_bool, EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
+		       const0_rtx);
+    emit_cmp_and_jump_insns (target_bool, const0_rtx, EQ, const0_rtx,
+			     GET_MODE (target_bool), 1, loop_label,
+			     profile_probability::guessed_never ());
+    emit_jump_insn (gen_jump (done_label));
+    emit_barrier ();
 
-  emit_jump_insn (gen_jump (done_label));
-  emit_barrier ();
+    /* If mem is not expected, pause and loop back.  */
+    emit_label (cmp_label);
+    emit_insn (gen_pause ());
+    emit_jump_insn (gen_jump (loop_label));
+    emit_barrier ();
+    emit_label (done_label);
+  }
 
-  /* If mem is not expected, pause and loop back.  */
-  emit_label (pause_label);
-  emit_insn (gen_pause ());
-  emit_jump_insn (gen_jump (loop_label));
-  emit_barrier ();
-  emit_label (done_label);
+  *ptarget_bool = target_bool;
 }
 
 #include "gt-i386-expand.h"
