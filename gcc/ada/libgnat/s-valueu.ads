@@ -43,8 +43,6 @@ pragma Assertion_Policy (Pre                => Ignore,
                          Contract_Cases     => Ignore,
                          Ghost              => Ignore,
                          Subprogram_Variant => Ignore);
-pragma Warnings (Off, "postcondition does not mention function result");
---  True postconditions are used to avoid inlining for GNATprove
 
 with System.Val_Util; use System.Val_Util;
 
