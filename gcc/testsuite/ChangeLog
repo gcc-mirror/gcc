@@ -1,3 +1,98 @@
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104499
+	* gcc.c-torture/compile/pr104499.c: New test.
+
+2022-02-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104400
+	* gcc.target/v850/pr104400.c: New.
+	* gcc.target/v850/v850.exp: New.
+
+2022-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104274
+	* gcc.dg/analyzer/torture/empty-struct-1.c: New test.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-48.c: New testcase.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104472
+	* g++.dg/cpp0x/constexpr-104472.C: New test.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* gcc.target/i386/pr104446.c: New test.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104496
+	* gcc.target/i386/pr104496.c: New testcase.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104459
+	* gcc.dg/pr104459.c: New test.
+
+2022-02-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104479.c: New test.
+	* gcc.target/i386/cond_op_shift_w-1.c: Adjust testcase.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr100576.c: Require effective target
+	non_strict_prototype.
+	* gcc.c-torture/compile/pr97576.c: Same.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	* c-c++-common/Walloca-larger-than.c: Require effective target alloca.
+	* c-c++-common/Warray-bounds-9.c: Same.
+	* c-c++-common/Wdangling-pointer-2.c: Same.
+	* c-c++-common/Wdangling-pointer-4.c: Same.
+	* c-c++-common/Wdangling-pointer-5.c: Same.
+	* c-c++-common/Wdangling-pointer.c: Same.
+	* c-c++-common/auto-init-11.c: Same.
+	* c-c++-common/auto-init-12.c: Same.
+	* c-c++-common/auto-init-15.c: Same.
+	* c-c++-common/auto-init-16.c: Same.
+	* c-c++-common/torture/builtin-clear-padding-4.c: Same.
+	* gcc.c-torture/compile/pr99787-1.c: Same.
+	* gcc.dg/Walloca-larger-than-4.c: Same.
+	* gcc.dg/Wdangling-pointer.c: Same.
+	* gcc.dg/Wfree-nonheap-object-2.c: Same.
+	* gcc.dg/Wfree-nonheap-object.c: Same.
+	* gcc.dg/Wstringop-overflow-56.c: Same.
+	* gcc.dg/Wstringop-overflow-57.c: Same.
+	* gcc.dg/Wstringop-overflow-67.c: Same.
+	* gcc.dg/Wstringop-overflow-71.c: Same.
+	* gcc.dg/Wvla-larger-than-5.c: Same.
+	* gcc.dg/analyzer/taint-alloc-1.c: Same.
+	* gcc.dg/analyzer/torture/ubsan-1.c: Same.
+	* gcc.dg/graphite/pr99085.c: Same.
+	* gcc.dg/pr100225.c: Same.
+	* gcc.dg/pr98721-1.c: Same.
+	* gcc.dg/pr99122-2.c: Same.
+	* gcc.dg/sso-14.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-25.c: Same.
+	* gcc.dg/uninit-38.c: Same.
+	* gcc.dg/uninit-39.c: Same.
+	* gcc.dg/uninit-41.c: Same.
+	* gcc.dg/uninit-pr100250.c: Same.
+	* gcc.dg/uninit-pr101300.c: Same.
+	* gcc.dg/uninit-pr101494.c: Same.
+	* gcc.dg/uninit-pr98578.c: Same.
+	* gcc.dg/uninit-pr98583.c: Same.
+	* gcc.dg/vla-stexp-1.c: Same.
+	* gcc.dg/vla-stexp-2.c: Same.
+	* gcc.dg/vla-stexp-4.c: Same.
+	* gcc.dg/vla-stexp-5.c: Same.
+
 2022-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/104373

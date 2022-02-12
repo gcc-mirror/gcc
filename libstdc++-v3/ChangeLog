@@ -1,3 +1,17 @@
+2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/temporary_buffer.cc: Fix dg-warning target
+	selector.
+
+2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc:
+	Ignore -Walloc-larger-than warning.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/cons/user_pod.cc: Compile with -O1
+	to avoid linker error for __atomic_is_lock_free.
+
 2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
 
 	* include/bits/atomic_wait.h (__waiter_base::_S_do_spin,

@@ -1,3 +1,69 @@
+2022-02-11  Iain Sandoe  <iain@sandoe.co.uk>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/104117
+	* config/rs6000/rs6000.cc (darwin_rs6000_legitimate_lo_sum_const_p):
+	Check for UNSPEC_MACHOPIC_OFFSET wrappers on symbolic addresses when
+	emitting PIC code.
+	(legitimate_lo_sum_address_p): Likewise.
+	* lra-constraints.cc (process_address_1): Do not attempt to emit a reg
+	load from an invalid lo_sum address.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104499
+	* match.pd ((X & Y) CMP 0 -> X CMP2 ~Y): Use view_convert instead
+	of convert.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (build_common_builtin_nodes): Fix up formatting in
+	__builtin_clear_padding decl creation.
+	* gimplify.cc (gimple_add_padding_init_for_auto_var): Encode
+	for_auto_init in the value of 2nd BUILT_IN_CLEAR_PADDING
+	argument rather than in 3rd argument.
+	(gimplify_call_expr): Likewise.  Fix up comment formatting.
+	* gimple-fold.cc (gimple_fold_builtin_clear_padding): Expect
+	2 arguments instead of 3, take for_auto_init from the value
+	of 2nd argument.
+
+2022-02-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104400
+	* lra-constraints.cc (process_alt_operands): Don't make union of
+	this_alternative_exclude_start_hard_regs when reg class in insn
+	alternative covers other reg classes in the same alternative.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* combine.cc (subst): Don't substitute CONST_INTs into RTX_AUTOINC
+	operands.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104496
+	* internal-fn.cc (vectorized_internal_fn_supported_p):
+	Bail out for integer mode vector types.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104459
+	* df-scan.cc (df_insn_change_bb): Don't call df_set_bb_dirty when
+	moving DEBUG_INSNs between bbs.
+
+2022-02-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/104479
+	* match.pd (uncond_op + vec_cond -> cond_op): Add single_use
+	for the dest of uncond_op.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104456
+	* config/nvptx/nvptx.cc (prevent_branch_around_nothing): Handle asm
+	insn.
+
 2022-02-10  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle-end/100775

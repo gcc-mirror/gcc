@@ -1,3 +1,9 @@
+2022-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104274
+	* region-model.cc (region_model::check_for_poison): Ignore
+	uninitialized uses of empty types.
+
 2022-02-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98797
