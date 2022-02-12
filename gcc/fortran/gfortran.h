@@ -1393,7 +1393,8 @@ enum
   OMP_LIST_USE_DEVICE_ADDR,
   OMP_LIST_NONTEMPORAL,
   OMP_LIST_ALLOCATE,
-  OMP_LIST_NUM
+  OMP_LIST_HAS_DEVICE_ADDR,
+  OMP_LIST_NUM /* Must be the last.  */
 };
 
 /* Because a symbol can belong to multiple namelists, they must be

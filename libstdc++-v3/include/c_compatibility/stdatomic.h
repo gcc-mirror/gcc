@@ -111,6 +111,8 @@ using std::atomic_fetch_sub;
 using std::atomic_fetch_sub_explicit;
 using std::atomic_fetch_or;
 using std::atomic_fetch_or_explicit;
+using std::atomic_fetch_xor;
+using std::atomic_fetch_xor_explicit;
 using std::atomic_fetch_and;
 using std::atomic_fetch_and_explicit;
 using std::atomic_flag_test_and_set;

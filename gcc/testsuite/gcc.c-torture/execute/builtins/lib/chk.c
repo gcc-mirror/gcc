@@ -517,3 +517,14 @@ vsnprintf (char *str, __SIZE_TYPE__ len, const char *fmt, va_list ap)
   return ret;
 }
 #endif
+
+#if defined(__powerpc__) && defined(__LONG_DOUBLE_IEEE128__)
+__typeof (__sprintf_chk) __sprintf_chkieee128
+  __attribute__((alias ("__sprintf_chk")));
+__typeof (__vsprintf_chk) __vsprintf_chkieee128
+  __attribute__((alias ("__vsprintf_chk")));
+__typeof (__snprintf_chk) __snprintf_chkieee128
+  __attribute__((alias ("__snprintf_chk")));
+__typeof (__vsnprintf_chk) __vsnprintf_chkieee128
+  __attribute__((alias ("__vsnprintf_chk")));
+#endif

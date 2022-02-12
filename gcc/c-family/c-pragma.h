@@ -89,8 +89,8 @@ enum pragma_kind {
 };
 
 
-/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5
-   and 5.0.  Used internally by both C and C++ parsers.  */
+/* All clauses defined by OpenACC 2.0, and OpenMP 2.5, 3.0, 3.1, 4.0, 4.5, 5.0,
+   and 5.1.  Used internally by both C and C++ parsers.  */
 enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_NONE = 0,
 
@@ -114,6 +114,7 @@ enum pragma_omp_clause {
   PRAGMA_OMP_CLAUSE_FOR,
   PRAGMA_OMP_CLAUSE_FROM,
   PRAGMA_OMP_CLAUSE_GRAINSIZE,
+  PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR,
   PRAGMA_OMP_CLAUSE_HINT,
   PRAGMA_OMP_CLAUSE_IF,
   PRAGMA_OMP_CLAUSE_IN_REDUCTION,

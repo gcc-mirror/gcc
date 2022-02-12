@@ -358,7 +358,7 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
     }
 
   if (bb)
-    m_non_null.adjust_range (r, name, bb);
+    m_non_null.adjust_range (r, name, bb, false);
 
   if (DEBUG_SOLVER && (bb || !r.varying_p ()))
     {
@@ -528,7 +528,7 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
       else
 	r.set_varying (TREE_TYPE (name));
 
-      if (m_non_null.adjust_range (r, name, bb))
+      if (m_non_null.adjust_range (r, name, bb, false))
 	set_cache (r, name);
     }
 }

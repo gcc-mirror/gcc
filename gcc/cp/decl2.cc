@@ -1540,14 +1540,6 @@ cp_omp_mappable_type_1 (tree type, bool notes)
   /* Arrays have mappable type if the elements have mappable type.  */
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
-  /* A mappable type cannot contain virtual members.  */
-  if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
-    {
-      if (notes)
-	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		"type %qT with virtual members is not mappable", type);
-      result = false;
-    }
   /* All data members must be non-static.  */
   if (CLASS_TYPE_P (type))
     {

@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=20:0:0
+libtool_VERSION=21:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -548,6 +548,12 @@ AC_CACHE_CHECK([for socket libraries], libgo_cv_lib_sockets,
 ])
 NET_LIBS="$libgo_cv_lib_sockets"
 AC_SUBST(NET_LIBS)
+
+RT_LIBS=
+case ${host} in
+  *-*-linux*) RT_LIBS=-lrt ;;
+esac
+AC_SUBST(RT_LIBS)
 
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],

@@ -1840,13 +1840,10 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 						 false, non_constant_p,
 						 overflow_p);
 	if (TREE_CODE (arg) == VECTOR_CST)
-	  return fold_const_call (CFN_VEC_CONVERT, TREE_TYPE (t), arg);
-	else
-	  {
-	    *non_constant_p = true;
-	    return t;
-	  }
+	  if (tree r = fold_const_call (CFN_VEC_CONVERT, TREE_TYPE (t), arg))
+	    return r;
       }
+      /* FALLTHRU */
 
     default:
       if (!ctx->quiet)
@@ -6652,7 +6649,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    /* Allow __FUNCTION__ etc.  */
 	    && !DECL_ARTIFICIAL (r))
 	  {
-	    gcc_assert (cxx_dialect >= cxx23);
 	    if (!ctx->quiet)
 	      {
 		if (CP_DECL_THREAD_LOCAL_P (r))

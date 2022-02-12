@@ -8,6 +8,7 @@
 package types
 
 import (
+	"fmt"
 	"go/token"
 	"strings"
 )
@@ -17,17 +18,18 @@ import (
 // function arguments args, if any. There must be at least one type parameter, no more type arguments
 // than type parameters, and params and args must match in number (incl. zero).
 // If successful, infer returns the complete list of type arguments, one for each type parameter.
-// Otherwise the result is nil and appropriate errors will be reported unless report is set to false.
+// Otherwise the result is nil and appropriate errors will be reported.
 //
-// Inference proceeds in 3 steps:
+// Inference proceeds as follows:
 //
-//   1) Start with given type arguments.
-//   2) Infer type arguments from typed function arguments.
-//   3) Infer type arguments from untyped function arguments.
+//   Starting with given type arguments
+//   1) apply FTI (function type inference) with typed arguments,
+//   2) apply CTI (constraint type inference),
+//   3) apply FTI with untyped function arguments,
+//   4) apply CTI.
 //
-// Constraint type inference is used after each step to expand the set of type arguments.
-//
-func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, params *Tuple, args []*operand, report bool) (result []Type) {
+// The process stops as soon as all type arguments are known or an error occurs.
+func (check *Checker) infer(posn positioner, tparams []*TypeParam, targs []Type, params *Tuple, args []*operand) (result []Type) {
 	if debug {
 		defer func() {
 			assert(result == nil || len(result) == len(tparams))
@@ -45,34 +47,69 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 	// Function parameters and arguments must match in number.
 	assert(params.Len() == len(args))
 
-	// --- 0 ---
 	// If we already have all type arguments, we're done.
 	if len(targs) == n {
 		return targs
 	}
 	// len(targs) < n
 
-	// --- 1 ---
-	// Explicitly provided type arguments take precedence over any inferred types;
-	// and types inferred via constraint type inference take precedence over types
-	// inferred from function arguments.
-	// If we have type arguments, see how far we get with constraint type inference.
-	if len(targs) > 0 {
-		var index int
-		targs, index = check.inferB(tparams, targs, report)
-		if targs == nil || index < 0 {
-			return targs
+	// If we have more than 2 arguments, we may have arguments with named and unnamed types.
+	// If that is the case, permutate params and args such that the arguments with named
+	// types are first in the list. This doesn't affect type inference if all types are taken
+	// as is. But when we have inexact unification enabled (as is the case for function type
+	// inference), when a named type is unified with an unnamed type, unification proceeds
+	// with the underlying type of the named type because otherwise unification would fail
+	// right away. This leads to an asymmetry in type inference: in cases where arguments of
+	// named and unnamed types are passed to parameters with identical type, different types
+	// (named vs underlying) may be inferred depending on the order of the arguments.
+	// By ensuring that named types are seen first, order dependence is avoided and unification
+	// succeeds where it can.
+	//
+	// This code is disabled for now pending decision whether we want to address cases like
+	// these and make the spec on type inference more complicated (see issue #43056).
+	const enableArgSorting = false
+	if m := len(args); m >= 2 && enableArgSorting {
+		// Determine indices of arguments with named and unnamed types.
+		var named, unnamed []int
+		for i, arg := range args {
+			if hasName(arg.typ) {
+				named = append(named, i)
+			} else {
+				unnamed = append(unnamed, i)
+			}
+		}
+
+		// If we have named and unnamed types, move the arguments with
+		// named types first. Update the parameter list accordingly.
+		// Make copies so as not to clobber the incoming slices.
+		if len(named) != 0 && len(unnamed) != 0 {
+			params2 := make([]*Var, m)
+			args2 := make([]*operand, m)
+			i := 0
+			for _, j := range named {
+				params2[i] = params.At(j)
+				args2[i] = args[j]
+				i++
+			}
+			for _, j := range unnamed {
+				params2[i] = params.At(j)
+				args2[i] = args[j]
+				i++
+			}
+			params = NewTuple(params2...)
+			args = args2
 		}
 	}
 
-	// Continue with the type arguments we have now. Avoid matching generic
+	// --- 1 ---
+	// Continue with the type arguments we have. Avoid matching generic
 	// parameters that already have type arguments against function arguments:
 	// It may fail because matching uses type identity while parameter passing
 	// uses assignment rules. Instantiate the parameter list with the type
 	// arguments we have, and continue with that parameter list.
 
-	// First, make sure we have a "full" list of type arguments, so of which
-	// may be nil (unknown).
+	// First, make sure we have a "full" list of type arguments, some of which
+	// may be nil (unknown). Make a copy so as to not clobber the incoming slice.
 	if len(targs) < n {
 		targs2 := make([]Type, n)
 		copy(targs2, targs)
@@ -82,18 +119,17 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 
 	// Substitute type arguments for their respective type parameters in params,
 	// if any. Note that nil targs entries are ignored by check.subst.
-	// TODO(gri) Can we avoid this (we're setting known type argumemts below,
+	// TODO(gri) Can we avoid this (we're setting known type arguments below,
 	//           but that doesn't impact the isParameterized check for now).
 	if params.Len() > 0 {
 		smap := makeSubstMap(tparams, targs)
-		params = check.subst(token.NoPos, params, smap).(*Tuple)
+		params = check.subst(token.NoPos, params, smap, nil).(*Tuple)
 	}
 
-	// --- 2 ---
 	// Unify parameter and argument types for generic parameters with typed arguments
 	// and collect the indices of generic parameters with untyped arguments.
 	// Terminology: generic parameter = function parameter with a type-parameterized type
-	u := newUnifier(check, false)
+	u := newUnifier(false)
 	u.x.init(tparams)
 
 	// Set the type arguments which we know already.
@@ -104,9 +140,6 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 	}
 
 	errorf := func(kind string, tpar, targ Type, arg *operand) {
-		if !report {
-			return
-		}
 		// provide a better error message if we can
 		targs, index := u.x.types()
 		if index == 0 {
@@ -121,17 +154,21 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 				}
 			}
 			if allFailed {
-				check.errorf(arg, _Todo, "%s %s of %s does not match %s (cannot infer %s)", kind, targ, arg.expr, tpar, typeNamesString(tparams))
+				check.errorf(arg, _CannotInferTypeArgs, "%s %s of %s does not match %s (cannot infer %s)", kind, targ, arg.expr, tpar, typeParamsString(tparams))
 				return
 			}
 		}
 		smap := makeSubstMap(tparams, targs)
 		// TODO(rFindley): pass a positioner here, rather than arg.Pos().
-		inferred := check.subst(arg.Pos(), tpar, smap)
+		inferred := check.subst(arg.Pos(), tpar, smap, nil)
+		// _CannotInferTypeArgs indicates a failure of inference, though the actual
+		// error may be better attributed to a user-provided type argument (hence
+		// _InvalidTypeArg). We can't differentiate these cases, so fall back on
+		// the more general _CannotInferTypeArgs.
 		if inferred != tpar {
-			check.errorf(arg, _Todo, "%s %s of %s does not match inferred type %s for %s", kind, targ, arg.expr, inferred, tpar)
+			check.errorf(arg, _CannotInferTypeArgs, "%s %s of %s does not match inferred type %s for %s", kind, targ, arg.expr, inferred, tpar)
 		} else {
-			check.errorf(arg, 0, "%s %s of %s does not match %s", kind, targ, arg.expr, tpar)
+			check.errorf(arg, _CannotInferTypeArgs, "%s %s of %s does not match %s", kind, targ, arg.expr, tpar)
 		}
 	}
 
@@ -170,10 +207,11 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 		return targs
 	}
 
+	// --- 2 ---
 	// See how far we get with constraint type inference.
 	// Note that even if we don't have any type arguments, constraint type inference
 	// may produce results for constraints that explicitly specify a type.
-	targs, index = check.inferB(tparams, targs, report)
+	targs, index = check.inferB(posn, tparams, targs)
 	if targs == nil || index < 0 {
 		return targs
 	}
@@ -189,7 +227,7 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 		// only parameter type it can possibly match against is a *TypeParam.
 		// Thus, only consider untyped arguments for generic parameters that
 		// are not of composite types and which don't have a type inferred yet.
-		if tpar, _ := par.typ.(*_TypeParam); tpar != nil && targs[tpar.index] == nil {
+		if tpar, _ := par.typ.(*TypeParam); tpar != nil && targs[tpar.index] == nil {
 			arg := args[i]
 			targ := Default(arg.typ)
 			// The default type for an untyped nil is untyped nil. We must not
@@ -208,8 +246,9 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 		return targs
 	}
 
+	// --- 4 ---
 	// Again, follow up with constraint type inference.
-	targs, index = check.inferB(tparams, targs, report)
+	targs, index = check.inferB(posn, tparams, targs)
 	if targs == nil || index < 0 {
 		return targs
 	}
@@ -217,24 +256,22 @@ func (check *Checker) infer(posn positioner, tparams []*TypeName, targs []Type, 
 	// At least one type argument couldn't be inferred.
 	assert(index >= 0 && targs[index] == nil)
 	tpar := tparams[index]
-	if report {
-		check.errorf(posn, _Todo, "cannot infer %s (%v) (%v)", tpar.name, tpar.pos, targs)
-	}
+	check.errorf(posn, _CannotInferTypeArgs, "cannot infer %s (%v)", tpar.obj.name, tpar.obj.pos)
 	return nil
 }
 
-// typeNamesString produces a string containing all the
-// type names in list suitable for human consumption.
-func typeNamesString(list []*TypeName) string {
+// typeParamsString produces a string containing all the type parameter names
+// in list suitable for human consumption.
+func typeParamsString(list []*TypeParam) string {
 	// common cases
 	n := len(list)
 	switch n {
 	case 0:
 		return ""
 	case 1:
-		return list[0].name
+		return list[0].obj.name
 	case 2:
-		return list[0].name + " and " + list[1].name
+		return list[0].obj.name + " and " + list[1].obj.name
 	}
 
 	// general case (n > 2)
@@ -243,15 +280,15 @@ func typeNamesString(list []*TypeName) string {
 		if i > 0 {
 			b.WriteString(", ")
 		}
-		b.WriteString(tname.name)
+		b.WriteString(tname.obj.name)
 	}
 	b.WriteString(", and ")
-	b.WriteString(list[n-1].name)
+	b.WriteString(list[n-1].obj.name)
 	return b.String()
 }
 
 // IsParameterized reports whether typ contains any of the type parameters of tparams.
-func isParameterized(tparams []*TypeName, typ Type) bool {
+func isParameterized(tparams []*TypeParam, typ Type) bool {
 	w := tpWalker{
 		seen:    make(map[Type]bool),
 		tparams: tparams,
@@ -261,7 +298,7 @@ func isParameterized(tparams []*TypeName, typ Type) bool {
 
 type tpWalker struct {
 	seen    map[Type]bool
-	tparams []*TypeName
+	tparams []*TypeParam
 }
 
 func (w *tpWalker) isParameterized(typ Type) (res bool) {
@@ -302,9 +339,6 @@ func (w *tpWalker) isParameterized(typ Type) (res bool) {
 			}
 		}
 
-	case *_Sum:
-		return w.isParameterizedList(t.types)
-
 	case *Signature:
 		// t.tparams may not be nil if we are looking at a signature
 		// of a generic function type (or an interface method) that is
@@ -316,24 +350,15 @@ func (w *tpWalker) isParameterized(typ Type) (res bool) {
 		return w.isParameterized(t.params) || w.isParameterized(t.results)
 
 	case *Interface:
-		if t.allMethods != nil {
-			// TODO(rFindley) at some point we should enforce completeness here
-			for _, m := range t.allMethods {
-				if w.isParameterized(m.typ) {
-					return true
-				}
+		tset := t.typeSet()
+		for _, m := range tset.methods {
+			if w.isParameterized(m.typ) {
+				return true
 			}
-			return w.isParameterizedList(unpackType(t.allTypes))
 		}
-
-		return t.iterate(func(t *Interface) bool {
-			for _, m := range t.methods {
-				if w.isParameterized(m.typ) {
-					return true
-				}
-			}
-			return w.isParameterizedList(unpackType(t.types))
-		}, nil)
+		return tset.is(func(t *term) bool {
+			return t != nil && w.isParameterized(t.typ)
+		})
 
 	case *Map:
 		return w.isParameterized(t.key) || w.isParameterized(t.elem)
@@ -342,14 +367,11 @@ func (w *tpWalker) isParameterized(typ Type) (res bool) {
 		return w.isParameterized(t.elem)
 
 	case *Named:
-		return w.isParameterizedList(t.targs)
+		return w.isParameterizedTypeList(t.targs.list())
 
-	case *_TypeParam:
+	case *TypeParam:
 		// t must be one of w.tparams
-		return t.index < len(w.tparams) && w.tparams[t.index].typ == t
-
-	case *instance:
-		return w.isParameterizedList(t.targs)
+		return tparamIndex(w.tparams, t) >= 0
 
 	default:
 		unreachable()
@@ -358,7 +380,7 @@ func (w *tpWalker) isParameterized(typ Type) (res bool) {
 	return false
 }
 
-func (w *tpWalker) isParameterizedList(list []Type) bool {
+func (w *tpWalker) isParameterizedTypeList(list []Type) bool {
 	for _, t := range list {
 		if w.isParameterized(t) {
 			return true
@@ -375,12 +397,12 @@ func (w *tpWalker) isParameterizedList(list []Type) bool {
 // first type argument in that list that couldn't be inferred (and thus is nil). If all
 // type arguments were inferred successfully, index is < 0. The number of type arguments
 // provided may be less than the number of type parameters, but there must be at least one.
-func (check *Checker) inferB(tparams []*TypeName, targs []Type, report bool) (types []Type, index int) {
+func (check *Checker) inferB(posn positioner, tparams []*TypeParam, targs []Type) (types []Type, index int) {
 	assert(len(tparams) >= len(targs) && len(targs) > 0)
 
-	// Setup bidirectional unification between those structural bounds
+	// Setup bidirectional unification between constraints
 	// and the corresponding type arguments (which may be nil!).
-	u := newUnifier(check, false)
+	u := newUnifier(false)
 	u.x.init(tparams)
 	u.y = u.x // type parameters between LHS and RHS of unification are identical
 
@@ -391,24 +413,28 @@ func (check *Checker) inferB(tparams []*TypeName, targs []Type, report bool) (ty
 		}
 	}
 
-	// Unify type parameters with their structural constraints, if any.
+	// If a constraint has a structural type, unify the corresponding type parameter with it.
 	for _, tpar := range tparams {
-		typ := tpar.typ.(*_TypeParam)
-		sbound := check.structuralType(typ.bound)
+		sbound := structuralType(tpar)
 		if sbound != nil {
-			if !u.unify(typ, sbound) {
-				if report {
-					check.errorf(tpar, _Todo, "%s does not match %s", tpar, sbound)
-				}
+			// If the structural type is the underlying type of a single
+			// defined type in the constraint, use that defined type instead.
+			if named, _ := tpar.singleType().(*Named); named != nil {
+				sbound = named
+			}
+			if !u.unify(tpar, sbound) {
+				// TODO(gri) improve error message by providing the type arguments
+				//           which we know already
+				check.errorf(posn, _InvalidTypeArg, "%s does not match %s", tpar, sbound)
 				return nil, 0
 			}
 		}
 	}
 
 	// u.x.types() now contains the incoming type arguments plus any additional type
-	// arguments for which there were structural constraints. The newly inferred non-
-	// nil entries may still contain references to other type parameters. For instance,
-	// for [A any, B interface{type []C}, C interface{type *A}], if A == int
+	// arguments which were inferred from structural types. The newly inferred non-
+	// nil entries may still contain references to other type parameters.
+	// For instance, for [A any, B interface{ []C }, C interface{ *A }], if A == int
 	// was given, unification produced the type list [int, []C, *A]. We eliminate the
 	// remaining type parameters by substituting the type parameters in this type list
 	// until nothing changes anymore.
@@ -417,6 +443,34 @@ func (check *Checker) inferB(tparams []*TypeName, targs []Type, report bool) (ty
 		for i, targ := range targs {
 			assert(targ == nil || types[i] == targ)
 		}
+	}
+
+	// The data structure of each (provided or inferred) type represents a graph, where
+	// each node corresponds to a type and each (directed) vertice points to a component
+	// type. The substitution process described above repeatedly replaces type parameter
+	// nodes in these graphs with the graphs of the types the type parameters stand for,
+	// which creates a new (possibly bigger) graph for each type.
+	// The substitution process will not stop if the replacement graph for a type parameter
+	// also contains that type parameter.
+	// For instance, for [A interface{ *A }], without any type argument provided for A,
+	// unification produces the type list [*A]. Substituting A in *A with the value for
+	// A will lead to infinite expansion by producing [**A], [****A], [********A], etc.,
+	// because the graph A -> *A has a cycle through A.
+	// Generally, cycles may occur across multiple type parameters and inferred types
+	// (for instance, consider [P interface{ *Q }, Q interface{ func(P) }]).
+	// We eliminate cycles by walking the graphs for all type parameters. If a cycle
+	// through a type parameter is detected, cycleFinder nils out the respectice type
+	// which kills the cycle; this also means that the respective type could not be
+	// inferred.
+	//
+	// TODO(gri) If useful, we could report the respective cycle as an error. We don't
+	//           do this now because type inference will fail anyway, and furthermore,
+	//           constraints with cycles of this kind cannot currently be satisfied by
+	//           any user-suplied type. But should that change, reporting an error
+	//           would be wrong.
+	w := cycleFinder{tparams, types, make(map[Type]bool)}
+	for _, t := range tparams {
+		w.typ(t) // t != nil
 	}
 
 	// dirty tracks the indices of all types that may still contain type parameters.
@@ -437,7 +491,7 @@ func (check *Checker) inferB(tparams []*TypeName, targs []Type, report bool) (ty
 		n := 0
 		for _, index := range dirty {
 			t0 := types[index]
-			if t1 := check.subst(token.NoPos, t0, smap); t1 != t0 {
+			if t1 := check.subst(token.NoPos, t0, smap, nil); t1 != t0 {
 				types[index] = t1
 				dirty[n] = index
 				n++
@@ -468,15 +522,97 @@ func (check *Checker) inferB(tparams []*TypeName, targs []Type, report bool) (ty
 	return
 }
 
-// structuralType returns the structural type of a constraint, if any.
-func (check *Checker) structuralType(constraint Type) Type {
-	if iface, _ := under(constraint).(*Interface); iface != nil {
-		check.completeInterface(token.NoPos, iface)
-		types := unpackType(iface.allTypes)
-		if len(types) == 1 {
-			return types[0]
+type cycleFinder struct {
+	tparams []*TypeParam
+	types   []Type
+	seen    map[Type]bool
+}
+
+func (w *cycleFinder) typ(typ Type) {
+	if w.seen[typ] {
+		// We have seen typ before. If it is one of the type parameters
+		// in tparams, iterative substitution will lead to infinite expansion.
+		// Nil out the corresponding type which effectively kills the cycle.
+		if tpar, _ := typ.(*TypeParam); tpar != nil {
+			if i := tparamIndex(w.tparams, tpar); i >= 0 {
+				// cycle through tpar
+				w.types[i] = nil
+			}
 		}
-		return nil
+		// If we don't have one of our type parameters, the cycle is due
+		// to an ordinary recursive type and we can just stop walking it.
+		return
 	}
-	return constraint
+	w.seen[typ] = true
+	defer delete(w.seen, typ)
+
+	switch t := typ.(type) {
+	case *Basic:
+		// nothing to do
+
+	case *Array:
+		w.typ(t.elem)
+
+	case *Slice:
+		w.typ(t.elem)
+
+	case *Struct:
+		w.varList(t.fields)
+
+	case *Pointer:
+		w.typ(t.base)
+
+	// case *Tuple:
+	//      This case should not occur because tuples only appear
+	//      in signatures where they are handled explicitly.
+
+	case *Signature:
+		// There are no "method types" so we should never see a recv.
+		assert(t.recv == nil)
+		if t.params != nil {
+			w.varList(t.params.vars)
+		}
+		if t.results != nil {
+			w.varList(t.results.vars)
+		}
+
+	case *Union:
+		for _, t := range t.terms {
+			w.typ(t.typ)
+		}
+
+	case *Interface:
+		for _, m := range t.methods {
+			w.typ(m.typ)
+		}
+		for _, t := range t.embeddeds {
+			w.typ(t)
+		}
+
+	case *Map:
+		w.typ(t.key)
+		w.typ(t.elem)
+
+	case *Chan:
+		w.typ(t.elem)
+
+	case *Named:
+		for _, tpar := range t.TypeArgs().list() {
+			w.typ(tpar)
+		}
+
+	case *TypeParam:
+		if i := tparamIndex(w.tparams, t); i >= 0 && w.types[i] != nil {
+			w.typ(w.types[i])
+		}
+
+	default:
+		panic(fmt.Sprintf("unexpected %T", typ))
+	}
+}
+
+func (w *cycleFinder) varList(list []*Var) {
+	for _, v := range list {
+		w.typ(v.typ)
+	}
 }

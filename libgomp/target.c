@@ -2510,7 +2510,7 @@ copy_firstprivate_data (char *tgt, size_t mapnum, void **hostaddrs,
   tgt_size = 0;
   size_t i;
   for (i = 0; i < mapnum; i++)
-    if ((kinds[i] & 0xff) == GOMP_MAP_FIRSTPRIVATE)
+    if ((kinds[i] & 0xff) == GOMP_MAP_FIRSTPRIVATE && hostaddrs[i] != NULL)
       {
 	size_t align = (size_t) 1 << (kinds[i] >> 8);
 	tgt_size = (tgt_size + align - 1) & ~(align - 1);

@@ -478,6 +478,10 @@ DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
 DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
                P3(POINTER, UINT64, INT32),
                R1(UINT64))
+DEF_GO_RUNTIME(ATOMIC_LOAD_1, "__atomic_load_1", P2(POINTER, INT32),
+	       R1(UINT8))
+DEF_GO_RUNTIME(ATOMIC_STORE_1, "__atomic_store_1", P3(POINTER, UINT8, INT32),
+	       R0())
 DEF_GO_RUNTIME(ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
                P3(POINTER, UINT8, INT32),
                R1(UINT8))

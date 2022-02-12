@@ -1,6 +1,7 @@
 /* PR tree-optimization/98721 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target alloca } */
 
 int
 foo (int n)

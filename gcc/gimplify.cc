@@ -1804,7 +1804,6 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
 				      gimple_seq *seq_p)
 {
   tree addr_of_decl = NULL_TREE;
-  bool for_auto_init = true;
   tree fn = builtin_decl_explicit (BUILT_IN_CLEAR_PADDING);
 
   if (is_vla)
@@ -1821,11 +1820,8 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
       addr_of_decl = build_fold_addr_expr (decl);
     }
 
-  gimple *call = gimple_build_call (fn,
-				    3, addr_of_decl,
-				    build_zero_cst (TREE_TYPE (addr_of_decl)),
-				    build_int_cst (integer_type_node,
-						   (int) for_auto_init));
+  gimple *call = gimple_build_call (fn, 2, addr_of_decl,
+				    build_one_cst (TREE_TYPE (addr_of_decl)));
   gimplify_seq_add_stmt (seq_p, call);
 }
 
@@ -3536,15 +3532,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  {
 	    /* Remember the original type of the argument in an internal
 	       dummy second argument, as in GIMPLE pointer conversions are
-	       useless. also mark this call as not for automatic initialization
-	       in the internal dummy third argument.  */
+	       useless.  Also mark this call as not for automatic
+	       initialization in the internal dummy third argument.  */
 	    p = CALL_EXPR_ARG (*expr_p, 0);
-	    bool for_auto_init = false;
 	    *expr_p
-	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 3, p,
-				     build_zero_cst (TREE_TYPE (p)),
-				     build_int_cst (integer_type_node,
-						    (int) for_auto_init));
+	      = build_call_expr_loc (EXPR_LOCATION (*expr_p), fndecl, 2, p,
+				     build_zero_cst (TREE_TYPE (p)));
 	    return GS_OK;
 	  }
 	break;
@@ -10278,6 +10271,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  flags = GOVD_EXPLICIT;
 	  goto do_add;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  flags = GOVD_EXPLICIT;
+	  goto do_add_decl;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  goto do_add;
@@ -11428,6 +11429,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    }
 	  break;
 
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = n == NULL || !(n->value & GOVD_SEEN);
+	  break;
+
+	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_NONTEMPORAL:
 	  decl = OMP_CLAUSE_DECL (c);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
@@ -11729,7 +11740,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_DETACH:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
-	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_INDEPENDENT:

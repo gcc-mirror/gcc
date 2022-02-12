@@ -76,6 +76,7 @@
 #include "intl.h"
 #include "opts.h"
 #include "tree-pretty-print.h"
+#include "rtl-iter.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -205,12 +206,117 @@ diagnose_openacc_conflict (bool optval, const char *optname)
     error ("option %s is not supported together with %<-fopenacc%>", optname);
 }
 
+static enum ptx_version
+first_ptx_version_supporting_sm (enum ptx_isa sm)
+{
+  switch (sm)
+    {
+    case PTX_ISA_SM30:
+      return PTX_VERSION_3_0;
+    case PTX_ISA_SM35:
+      return PTX_VERSION_3_1;
+    case PTX_ISA_SM53:
+      return PTX_VERSION_4_2;
+    case PTX_ISA_SM75:
+      return PTX_VERSION_6_3;
+    case PTX_ISA_SM80:
+      return PTX_VERSION_7_0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static enum ptx_version
+default_ptx_version_option (void)
+{
+  enum ptx_version first
+    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+
+  /* Pick a version that supports the sm.  */
+  enum ptx_version res = first;
+
+  /* Pick at least 3.1.  This has been the smallest version historically.  */
+  res = MAX (res, PTX_VERSION_3_1);
+
+  /* Pick at least 6.0, to enable using bar.warp.sync to have a way to force
+     warp convergence.  */
+  res = MAX (res, PTX_VERSION_6_0);
+
+  /* Verify that we pick a version that supports the sm.  */
+  gcc_assert (first <= res);
+  return res;
+}
+
+static const char *
+ptx_version_to_string (enum ptx_version v)
+{
+  switch (v)
+    {
+    case PTX_VERSION_3_0:
+      return "3.0";
+    case PTX_VERSION_3_1:
+      return "3.1";
+    case PTX_VERSION_4_2:
+      return "4.2";
+    case PTX_VERSION_6_0:
+      return "6.0";
+    case PTX_VERSION_6_3:
+      return "6.3";
+    case PTX_VERSION_7_0:
+      return "7.0";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static const char *
+sm_version_to_string (enum ptx_isa sm)
+{
+  switch (sm)
+    {
+    case PTX_ISA_SM30:
+      return "30";
+    case PTX_ISA_SM35:
+      return "35";
+    case PTX_ISA_SM53:
+      return "53";
+    case PTX_ISA_SM70:
+      return "70";
+    case PTX_ISA_SM75:
+      return "75";
+    case PTX_ISA_SM80:
+      return "80";
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+handle_ptx_version_option (void)
+{
+  if (!OPTION_SET_P (ptx_version_option))
+    {
+      ptx_version_option = default_ptx_version_option ();
+      return;
+    }
+
+  enum ptx_version first
+    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+
+  if (ptx_version_option < first)
+    error ("PTX version (-mptx) needs to be at least %s to support selected"
+	   " -misa (sm_%s)", ptx_version_to_string (first),
+	   sm_version_to_string ((enum ptx_isa)ptx_isa_option));
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  */
 
 static void
 nvptx_option_override (void)
 {
   init_machine_status = nvptx_init_machine_status;
+
+  handle_ptx_version_option ();
 
   /* Set toplevel_reorder, unless explicitly disabled.  We need
      reordering so that we emit necessary assembler decls of
@@ -938,10 +1044,13 @@ write_fn_proto_1 (std::stringstream &s, bool is_defn,
   if (DECL_STATIC_CHAIN (decl))
     argno = write_arg_type (s, -1, argno, ptr_type_node, true);
 
-  if (!argno && strcmp (name, "main") == 0)
+  if (argno < 2 && strcmp (name, "main") == 0)
     {
-      argno = write_arg_type (s, -1, argno, integer_type_node, true);
-      argno = write_arg_type (s, -1, argno, ptr_type_node, true);
+      if (argno == 0)
+	argno = write_arg_type (s, -1, argno, integer_type_node, true);
+
+      if (argno == 1)
+	argno = write_arg_type (s, -1, argno, ptr_type_node, true);
     }
 
   if (argno)
@@ -2679,6 +2788,27 @@ nvptx_print_operand_address (FILE *file, machine_mode mode, rtx addr)
   nvptx_print_address_operand (file, addr, mode);
 }
 
+static nvptx_data_area
+nvptx_mem_data_area (const_rtx x)
+{
+  gcc_assert (GET_CODE (x) == MEM);
+
+  const_rtx addr = XEXP (x, 0);
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, addr, ALL)
+    if (SYMBOL_REF_P (*iter))
+      return SYMBOL_DATA_AREA (*iter);
+
+  return DATA_AREA_GENERIC;
+}
+
+bool
+nvptx_mem_maybe_shared_p (const_rtx x)
+{
+  nvptx_data_area area = nvptx_mem_data_area (x);
+  return area == DATA_AREA_SHARED || area == DATA_AREA_GENERIC;
+}
+
 /* Print an operand, X, to FILE, with an optional modifier in CODE.
 
    Meaning of CODE:
@@ -3150,7 +3280,8 @@ nvptx_reorg_uniform_simt ()
       rtx pred = nvptx_get_unisimt_predicate ();
       pred = gen_rtx_NE (BImode, pred, const0_rtx);
       pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
-      validate_change (insn, &PATTERN (insn), pat, false);
+      bool changed_p = validate_change (insn, &PATTERN (insn), pat, false);
+      gcc_assert (changed_p);
     }
 }
 
@@ -5126,6 +5257,14 @@ prevent_branch_around_nothing (void)
 	    case CODE_FOR_nvptx_join:
 	    case CODE_FOR_nop:
 	      continue;
+	    case -1:
+	      /* Handle asm ("") and similar.  */
+	      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		  || GET_CODE (PATTERN (insn)) == ASM_OPERANDS
+		  || (GET_CODE (PATTERN (insn)) == PARALLEL
+		      && asm_noperands (PATTERN (insn)) >= 0))
+		continue;
+	      /* FALLTHROUGH.  */
 	    default:
 	      seen_label = NULL;
 	      continue;
@@ -5426,23 +5565,19 @@ static void
 nvptx_file_start (void)
 {
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
-  if (TARGET_PTX_7_0)
-    fputs ("\t.version\t7.0\n", asm_out_file);
-  else if (TARGET_PTX_6_3)
-    fputs ("\t.version\t6.3\n", asm_out_file);
-  else
-    fputs ("\t.version\t3.1\n", asm_out_file);
-  if (TARGET_SM80)
-    fputs ("\t.target\tsm_80\n", asm_out_file);
-  else if (TARGET_SM75)
-    fputs ("\t.target\tsm_75\n", asm_out_file);
-  else if (TARGET_SM53)
-    fputs ("\t.target\tsm_53\n", asm_out_file);
-  else if (TARGET_SM35)
-    fputs ("\t.target\tsm_35\n", asm_out_file);
-  else
-    fputs ("\t.target\tsm_30\n", asm_out_file);
+
+  fputs ("\t.version\t", asm_out_file);
+  fputs (ptx_version_to_string ((enum ptx_version)ptx_version_option),
+	 asm_out_file);
+  fputs ("\n", asm_out_file);
+
+  fputs ("\t.target\tsm_", asm_out_file);
+  fputs (sm_version_to_string ((enum ptx_isa)ptx_isa_option),
+	 asm_out_file);
+  fputs ("\n", asm_out_file);
+
   fprintf (asm_out_file, "\t.address_size %d\n", GET_MODE_BITSIZE (Pmode));
+
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
 
@@ -6892,6 +7027,28 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
     }
 
   return default_libc_has_function (fn_class, type);
+}
+
+bool
+nvptx_mem_local_p (rtx mem)
+{
+  gcc_assert (GET_CODE (mem) == MEM);
+
+  struct address_info info;
+  decompose_mem_address (&info, mem);
+
+  if (info.base != NULL && REG_P (*info.base)
+      && REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    {
+      if (TARGET_SOFT_STACK)
+	{
+	  /* Frame-related doesn't mean local.  */
+	}
+      else
+	return true;
+    }
+
+  return false;
 }
 
 #undef TARGET_OPTION_OVERRIDE

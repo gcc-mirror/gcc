@@ -1184,6 +1184,7 @@ See RS/6000 and PowerPC Options.
 -mabi=@var{ABI-string} @gol
 -mfdiv  -mno-fdiv @gol
 -mdiv  -mno-div @gol
+-misa-spec=@var{ISA-spec-string} @gol
 -march=@var{ISA-string} @gol
 -mtune=@var{processor-string} @gol
 -mpreferred-stack-boundary=@var{num} @gol
@@ -1436,7 +1437,7 @@ See RS/6000 and PowerPC Options.
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
--mindirect-branch-cs-prefix -mneeded}
+-mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -27633,6 +27634,22 @@ Do or don't use hardware instructions for integer division.  This requires the
 M extension.  The default is to use them if the specified architecture has
 these instructions.
 
+@item -misa-spec=@var{ISA-spec-string}
+@opindex misa-spec
+Specify the version of the RISC-V Unprivileged (formerly User-Level)
+ISA specification to produce code conforming to.  The possibilities
+for @var{ISA-spec-string} are:
+@table @code
+@item 2.2
+Produce code conforming to version 2.2.
+@item 20190608
+Produce code conforming to version 20190608.
+@item 20191213
+Produce code conforming to version 20191213.
+@end table
+The default is @option{-misa-spec=20191213} unless GCC has been configured
+with @option{--with-isa-spec=} specifying a different default version.
+
 @item -march=@var{ISA-string}
 @opindex march
 Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
@@ -32792,6 +32809,19 @@ x32 environments.
 @opindex mneeded
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property for Linux target to
 indicate the micro-architecture ISA level required to execute the binary.
+
+@item -mno-direct-extern-access
+@opindex mno-direct-extern-access
+@opindex mdirect-extern-access
+Without @option{-fpic} nor @option{-fPIC}, always use the GOT pointer
+to access external symbols.  With @option{-fpic} or @option{-fPIC},
+treat access to protected symbols as local symbols.  The default is
+@option{-mdirect-extern-access}.
+
+@strong{Warning:} shared libraries compiled with
+@option{-mno-direct-extern-access} and executable compiled with
+@option{-mdirect-extern-access} may not be binary compatible if
+protected symbols are used in shared libraries and executable.
 @end table
 
 @node x86 Windows Options

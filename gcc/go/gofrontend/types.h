@@ -2300,9 +2300,12 @@ class Pointer_type : public Type
   do_verify()
   { return this->to_type_->verify(); }
 
+  // If this is a pointer to a type that can't be in the heap, then
+  // the garbage collector does not have to look at this, so pretend
+  // that this is not a pointer at all.
   bool
   do_has_pointer() const
-  { return true; }
+  { return this->to_type_->in_heap(); }
 
   bool
   do_compare_is_identity(Gogo*)

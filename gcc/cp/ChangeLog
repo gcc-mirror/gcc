@@ -1,3 +1,109 @@
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104472
+	* constexpr.cc (cxx_eval_internal_function) <case IFN_VEC_CONVERT>:
+	Only return fold_const_call result if it is non-NULL.  Otherwise
+	fall through into the default: case to return t, set *non_constant_p
+	and emit diagnostics if needed.
+
+2022-02-10  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_specializations): Use
+	STRIP_TEMPLATE.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* decl2.cc (cp_omp_mappable_type_1): Remove check for virtual
+	members as those are permitted since OpenMP 5.0.
+
+2022-02-10  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (filter_memfn_lookup): Handle dependent USING_DECL
+	better.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_name): Parse 'has_device_addr' clause.
+	(cp_parser_omp_var_list_no_open): Handle array sections.
+	(cp_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(cp_parser_omp_target_update): Added HAS_DEVICE_ADDR to OMP_CLAUSE_MASK.
+	* semantics.cc (handle_omp_array_sections): Handle clause restrictions.
+	(finish_omp_clauses): Handle array sections.
+
+2022-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104432
+	* call.cc (build_new_method_call): When a non-dependent call
+	resolves to a specialization of a member template, always build
+	the pruned overload set using the member template, not the
+	specialization.
+	* pt.cc (filter_memfn_lookup): New parameter newtype.  Simplify
+	and correct how members from the new lookup set are matched to
+	those from the old one.
+	(tsubst_baselink): Pass binfo_type as newtype to
+	filter_memfn_lookup.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103752
+	* module.cc (trees_out::core_vals): Stream explicit specifier.
+	(trees_in::core_vals): Likewise.
+	* pt.cc (store_explicit_specifier): No longer static.
+	(tsubst_function_decl): Clear DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P.
+	* cp-tree.h (lookup_explicit_specifier): Declare.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96876
+	* typeck2.cc (split_nonconstant_init_1): Push cleanups for
+	preceding members with constant initialization.
+	(maybe_push_temp_cleanup): Do nothing if -fno-exceptions.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104379
+	* name-lookup.cc (check_local_shadow): When diagnosing shadowing
+	of a member or global declaration, add warning suppression for
+	the decl and don't warn again on it.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104403
+	* constexpr.cc (cxx_eval_constant_expression): Don't assert DECL_EXPRs
+	of TREE_STATIC vars may only appear in -std=c++23.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80951
+	* pt.cc (uses_deducible_template_parms): Consider the
+	noexcept-spec of a function type.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104410
+	* constraint.cc (satisfaction_value): Relax assert to accept
+	cv-qualified bool.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* pt.cc (preserve_args): New function.
+	(tsubst_lambda_expr): Use it when setting LAMBDA_EXPR_REGEN_INFO.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* constraint.cc (satisfy_declaration_constraints): Use
+	lambda_regenerating_args instead.
+	* cp-tree.h (lambda_regenerating_args): Declare.
+	* pt.cc (lambda_regenerating_args): Define, split out from
+	satisfy_declaration_constraints.
+	(do_auto_deduction): Use lambda_regenerating_args to obtain the
+	full set of outer template arguments for satisfaction when
+	inside a lambda.
+
 2022-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96242

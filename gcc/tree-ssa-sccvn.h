@@ -291,6 +291,7 @@ value_id_constant_p (unsigned int v)
 tree fully_constant_vn_reference_p (vn_reference_t);
 tree vn_nary_simplify (vn_nary_op_t);
 
+unsigned do_rpo_vn (function *, edge, bitmap, bool, bool, vn_lookup_kind);
 unsigned do_rpo_vn (function *, edge, bitmap);
 void run_rpo_vn (vn_lookup_kind);
 unsigned eliminate_with_rpo_vn (bitmap);

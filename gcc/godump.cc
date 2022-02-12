@@ -643,14 +643,13 @@ go_append_padding (struct obstack *ob, unsigned int from_offset,
 }
 
 /* Appends an array of type TYPE_STRING with zero elements and the name
-   "Godump_INDEX_align" to OB.  If TYPE_STRING is a null pointer, ERROR_STRING
-   is appended instead of the type.  Returns INDEX + 1.  */
+   "_" to OB.  If TYPE_STRING is a null pointer, ERROR_STRING is appended
+   instead of the type.  Returns INDEX + 1.  */
 
 static unsigned int
 go_force_record_alignment (struct obstack *ob, const char *type_string,
 			   unsigned int index, const char *error_string)
 {
-  index = go_append_artificial_name (ob, index);
   obstack_grow (ob, "_ ", 2);
   if (type_string == NULL)
     obstack_grow (ob, error_string, strlen (error_string));

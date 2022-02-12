@@ -38,8 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "calls.h"
 #include "gimple-range.h"
-
 #include "gimple-predicate-analysis.h"
+#include "domwalk.h"
+#include "tree-ssa-sccvn.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -986,7 +987,19 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->flags & EDGE_EXECUTABLE)
+	  break;
+      /* Skip unreachable blocks.  For early analysis we use VN to
+	 determine edge executability when wmaybe_uninit.  */
+      if (!e)
+	continue;
+
       basic_block succ = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+      /* ???  This could be improved when we use a greedy walk and have
+	 some edges marked as not executable.  */
       wlims.always_executed = dominated_by_p (CDI_POST_DOMINATORS, succ, bb);
 
       if (wlims.always_executed)
@@ -1319,6 +1332,11 @@ execute_late_warn_uninitialized (function *fun)
 
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Mark all edges executable, warn_uninitialized_vars will skip
+     unreachable blocks.  */
+  set_all_edges_as_executable (fun);
+
   /* Re-do the plain uninitialized variable check, as optimization may have
      straightened control flow.  Do this first so that we don't accidentally
      get a "may be" warning when we'd have seen an "is" warning later.  */
@@ -1388,7 +1406,7 @@ make_pass_late_warn_uninitialized (gcc::context *ctxt)
 }
 
 static unsigned int
-execute_early_warn_uninitialized (void)
+execute_early_warn_uninitialized (struct function *fun)
 {
   /* Currently, this pass runs always but
      execute_late_warn_uninitialized only runs with optimization.  With
@@ -1397,6 +1415,17 @@ execute_early_warn_uninitialized (void)
      optimization we need to warn here about "may be uninitialized".  */
   calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Use VN in its cheapest incarnation and without doing any
+     elimination to compute edge reachability.  Don't bother when
+     we only warn for unconditionally executed code though.  */
+  if (!optimize)
+    {
+      do_rpo_vn (fun, NULL, NULL, false, false, VN_NOWALK);
+      free_rpo_vn ();
+    }
+  else
+    set_all_edges_as_executable (fun);
 
   warn_uninitialized_vars (/*warn_maybe_uninitialized=*/!optimize);
 
@@ -1412,7 +1441,7 @@ namespace {
 const pass_data pass_data_early_warn_uninitialized =
 {
   GIMPLE_PASS, /* type */
-  "*early_warn_uninitialized", /* name */
+  "early_uninit", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_UNINIT, /* tv_id */
   PROP_ssa, /* properties_required */
@@ -1431,9 +1460,9 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *) { return gate_warn_uninitialized (); }
-  virtual unsigned int execute (function *)
+  virtual unsigned int execute (function *fun)
   {
-    return execute_early_warn_uninitialized ();
+    return execute_early_warn_uninitialized (fun);
   }
 
 }; // class pass_early_warn_uninitialized

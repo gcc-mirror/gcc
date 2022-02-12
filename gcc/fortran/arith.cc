@@ -1305,6 +1305,8 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   head = gfc_constructor_copy (op1->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
+      gfc_simplify_expr (c->expr, 0);
+
       if (c->expr->expr_type == EXPR_CONSTANT)
         rc = eval (c->expr, op2, &r);
       else
@@ -1321,9 +1323,19 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op1->where);
-      r->shape = gfc_copy_shape (op1->shape, op1->rank);
+      if (c)
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op1->where);
+	  r->shape = gfc_copy_shape (op1->shape, op1->rank);
+	}
+      else
+	{
+	  gcc_assert (op1->ts.type != BT_UNKNOWN);
+	  r = gfc_get_array_expr (op1->ts.type, op1->ts.kind,
+				  &op1->where);
+	  r->shape = gfc_get_shape (op1->rank);
+	}
       r->rank = op1->rank;
       r->value.constructor = head;
       *result = r;
@@ -1345,6 +1357,8 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   head = gfc_constructor_copy (op2->value.constructor);
   for (c = gfc_constructor_first (head); c; c = gfc_constructor_next (c))
     {
+      gfc_simplify_expr (c->expr, 0);
+
       if (c->expr->expr_type == EXPR_CONSTANT)
 	rc = eval (op1, c->expr, &r);
       else
@@ -1361,9 +1375,19 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   else
     {
       gfc_constructor *c = gfc_constructor_first (head);
-      r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
-			      &op2->where);
-      r->shape = gfc_copy_shape (op2->shape, op2->rank);
+      if (c)
+	{
+	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
+				  &op2->where);
+	  r->shape = gfc_copy_shape (op2->shape, op2->rank);
+	}
+      else
+	{
+	  gcc_assert (op2->ts.type != BT_UNKNOWN);
+	  r = gfc_get_array_expr (op2->ts.type, op2->ts.kind,
+				  &op2->where);
+	  r->shape = gfc_get_shape (op2->rank);
+	}
       r->rank = op2->rank;
       r->value.constructor = head;
       *result = r;

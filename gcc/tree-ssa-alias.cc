@@ -2420,12 +2420,12 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 	  rbase2 = TREE_OPERAND (rbase2, 0);
     }
   if (rbase1 && rbase2
-      && (TREE_CODE (base1) == MEM_REF || TREE_CODE (base1) == TARGET_MEM_REF)
-      && (TREE_CODE (base2) == MEM_REF || TREE_CODE (base2) == TARGET_MEM_REF)
+      && (TREE_CODE (rbase1) == MEM_REF || TREE_CODE (rbase1) == TARGET_MEM_REF)
+      && (TREE_CODE (rbase2) == MEM_REF || TREE_CODE (rbase2) == TARGET_MEM_REF)
       /* If the accesses are in the same restrict clique... */
-      && MR_DEPENDENCE_CLIQUE (base1) == MR_DEPENDENCE_CLIQUE (base2)
+      && MR_DEPENDENCE_CLIQUE (rbase1) == MR_DEPENDENCE_CLIQUE (rbase2)
       /* But based on different pointers they do not alias.  */
-      && MR_DEPENDENCE_BASE (base1) != MR_DEPENDENCE_BASE (base2))
+      && MR_DEPENDENCE_BASE (rbase1) != MR_DEPENDENCE_BASE (rbase2))
     return false;
 
   ind1_p = (TREE_CODE (base1) == MEM_REF

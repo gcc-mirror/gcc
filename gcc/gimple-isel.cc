@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
      u = _8;  */
 
 static gimple *
-gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
+gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 {
   enum tree_code code;
   gcall *new_stmt = NULL;
@@ -76,7 +76,7 @@ gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
       tree pos = TREE_OPERAND (lhs, 1);
       tree view_op0 = TREE_OPERAND (op0, 0);
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
-      if (auto_var_in_fn_p (view_op0, cfun->decl)
+      if (auto_var_in_fn_p (view_op0, fun->decl)
 	  && !TREE_ADDRESSABLE (view_op0) && can_vec_set_var_idx_p (outermode))
 	{
 	  location_t loc = gimple_location (stmt);
@@ -110,7 +110,7 @@ gimple_expand_vec_set_expr (gimple_stmt_iterator *gsi)
    function based on type of selected expansion.  */
 
 static gimple *
-gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
+gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 			     hash_map<tree, unsigned int> *vec_cond_ssa_name_uses)
 {
   tree lhs, op0a = NULL_TREE, op0b = NULL_TREE;
@@ -191,7 +191,6 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 						     tcode);
 
 	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
-
 	  if (can_compute_op0
 	      && integer_minus_onep (op1)
 	      && integer_zerop (op2)
@@ -203,14 +202,19 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
 	      return new_stmt;
 	    }
 
-	  if (can_compute_op0
-	      && used_vec_cond_exprs >= 2
-	      && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
-		  != CODE_FOR_nothing))
-	    {
-	      /* Keep the SSA name and use vcond_mask.  */
-	      tcode = TREE_CODE (op0);
-	    }
+	  /* When the compare has EH we do not want to forward it when
+	     it has multiple uses and in general because of the complication
+	     with EH redirection.  */
+	  if (stmt_can_throw_internal (fun, def_stmt))
+	    tcode = TREE_CODE (op0);
+
+	  /* If we can compute op0 and have multiple uses, keep the SSA
+	     name and use vcond_mask.  */
+	  else if (can_compute_op0
+		   && used_vec_cond_exprs >= 2
+		   && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
+		       != CODE_FOR_nothing))
+	    tcode = TREE_CODE (op0);
 	}
       else
 	tcode = TREE_CODE (op0);
@@ -279,18 +283,18 @@ gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi,
    VEC_COND_EXPR assignments.  */
 
 static unsigned int
-gimple_expand_vec_exprs (void)
+gimple_expand_vec_exprs (struct function *fun)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
   hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
   auto_bitmap dce_ssa_names;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  gimple *g = gimple_expand_vec_cond_expr (&gsi,
+	  gimple *g = gimple_expand_vec_cond_expr (fun, &gsi,
 						   &vec_cond_ssa_name_uses);
 	  if (g != NULL)
 	    {
@@ -299,7 +303,7 @@ gimple_expand_vec_exprs (void)
 	      gsi_replace (&gsi, g, false);
 	    }
 
-	  gimple_expand_vec_set_expr (&gsi);
+	  gimple_expand_vec_set_expr (fun, &gsi);
 	  if (gsi_end_p (gsi))
 	    break;
 	}
@@ -342,9 +346,9 @@ public:
       return true;
     }
 
-  virtual unsigned int execute (function *)
+  virtual unsigned int execute (function *fun)
     {
-      return gimple_expand_vec_exprs ();
+      return gimple_expand_vec_exprs (fun);
     }
 
 }; // class pass_gimple_isel

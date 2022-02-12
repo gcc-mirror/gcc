@@ -1,3 +1,700 @@
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104499
+	* gcc.c-torture/compile/pr104499.c: New test.
+
+2022-02-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104400
+	* gcc.target/v850/pr104400.c: New.
+	* gcc.target/v850/v850.exp: New.
+
+2022-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104274
+	* gcc.dg/analyzer/torture/empty-struct-1.c: New test.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-48.c: New testcase.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104472
+	* g++.dg/cpp0x/constexpr-104472.C: New test.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* gcc.target/i386/pr104446.c: New test.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104496
+	* gcc.target/i386/pr104496.c: New testcase.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104459
+	* gcc.dg/pr104459.c: New test.
+
+2022-02-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104479.c: New test.
+	* gcc.target/i386/cond_op_shift_w-1.c: Adjust testcase.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr100576.c: Require effective target
+	non_strict_prototype.
+	* gcc.c-torture/compile/pr97576.c: Same.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	* c-c++-common/Walloca-larger-than.c: Require effective target alloca.
+	* c-c++-common/Warray-bounds-9.c: Same.
+	* c-c++-common/Wdangling-pointer-2.c: Same.
+	* c-c++-common/Wdangling-pointer-4.c: Same.
+	* c-c++-common/Wdangling-pointer-5.c: Same.
+	* c-c++-common/Wdangling-pointer.c: Same.
+	* c-c++-common/auto-init-11.c: Same.
+	* c-c++-common/auto-init-12.c: Same.
+	* c-c++-common/auto-init-15.c: Same.
+	* c-c++-common/auto-init-16.c: Same.
+	* c-c++-common/torture/builtin-clear-padding-4.c: Same.
+	* gcc.c-torture/compile/pr99787-1.c: Same.
+	* gcc.dg/Walloca-larger-than-4.c: Same.
+	* gcc.dg/Wdangling-pointer.c: Same.
+	* gcc.dg/Wfree-nonheap-object-2.c: Same.
+	* gcc.dg/Wfree-nonheap-object.c: Same.
+	* gcc.dg/Wstringop-overflow-56.c: Same.
+	* gcc.dg/Wstringop-overflow-57.c: Same.
+	* gcc.dg/Wstringop-overflow-67.c: Same.
+	* gcc.dg/Wstringop-overflow-71.c: Same.
+	* gcc.dg/Wvla-larger-than-5.c: Same.
+	* gcc.dg/analyzer/taint-alloc-1.c: Same.
+	* gcc.dg/analyzer/torture/ubsan-1.c: Same.
+	* gcc.dg/graphite/pr99085.c: Same.
+	* gcc.dg/pr100225.c: Same.
+	* gcc.dg/pr98721-1.c: Same.
+	* gcc.dg/pr99122-2.c: Same.
+	* gcc.dg/sso-14.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-25.c: Same.
+	* gcc.dg/uninit-38.c: Same.
+	* gcc.dg/uninit-39.c: Same.
+	* gcc.dg/uninit-41.c: Same.
+	* gcc.dg/uninit-pr100250.c: Same.
+	* gcc.dg/uninit-pr101300.c: Same.
+	* gcc.dg/uninit-pr101494.c: Same.
+	* gcc.dg/uninit-pr98578.c: Same.
+	* gcc.dg/uninit-pr98583.c: Same.
+	* gcc.dg/vla-stexp-1.c: Same.
+	* gcc.dg/vla-stexp-2.c: Same.
+	* gcc.dg/vla-stexp-4.c: Same.
+	* gcc.dg/vla-stexp-5.c: Same.
+
+2022-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104373
+	* g++.dg/warn/Wuninitialized-32.C (operator new[]): Use __SIZE_TYPE__
+	as type of the first argument instead of unsigned long.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102204
+	* g++.dg/gomp/unmappable-1.C: Remove previously expected dg-message.
+
+2022-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98797
+	* gcc.dg/analyzer/casts-1.c: Mark xfails as fixed; add further
+	test coverage for casts of string literals.
+
+2022-02-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* gcc.target/arm/pr100775.c: New test.
+
+2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* gcc.target/i386/pr104469.c: New test.
+
+2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104458
+	* gcc.target/i386/pr104458.c: Replace long with long long.
+
+2022-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102052
+	* gcc.dg/analyzer/fields.c (size_t): Use __SIZE_TYPE__ rather than
+	hardcoding long unsigned int.
+	* gcc.dg/analyzer/gzio-3.c (size_t): Likewise.
+	* gcc.dg/analyzer/gzio-3a.c (size_t): Likewise.
+	* gcc.dg/analyzer/pr98969.c (test_1): Use __UINTPTR_TYPE__ rather
+	than long int.
+	(test_2): Likewise.
+	* gcc.dg/analyzer/pr99716-2.c (test_mountpoint): Use "rand" rather
+	than "random".
+	* gcc.dg/analyzer/pr99774-1.c (size_t): Use __SIZE_TYPE__ rather
+	than hardcoding long unsigned int.
+	* gcc.dg/analyzer/strndup-1.c: Add MinGW to targets that don't
+	implement strndup.
+	* gcc.dg/analyzer/zlib-5.c (size_t): Use __SIZE_TYPE__ rather
+	than hardcoding long unsigned int.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104373
+	* g++.dg/warn/Wuninitialized-32.C: New testcase.
+	* gcc.dg/uninit-pr20644-O0.c: Remove XFAIL.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104467
+	* gcc.dg/torture/pr104467.c: New testcase.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104466
+	* gfortran.dg/pr104466.f90: New testcase.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-2.c: New test.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-1.c: New test.
+	* gcc.target/nvptx/atomic-store-3.c: New test.
+	* gcc.target/nvptx/stack-atomics-run.c: Update.
+
+2022-02-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/104329
+	* gfortran.dg/gomp/atomic-28.f90: New test.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104345
+	* gcc.target/nvptx/neg-selp.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/bool-1.c: Update.
+	* gcc.target/nvptx/bool-2.c: New test case for and.pred.
+	* gcc.target/nvptx/bool-3.c: New test case for or.pred.
+	* gcc.target/nvptx/bool-4.c: New test case for xor.pred.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/mul-hi64.c: New test case.
+	* gcc.target/nvptx/umul-hi64.c: New test case.
+	* gcc.target/nvptx/mul-wide64.c: New test case.
+	* gcc.target/nvptx/umul-wide64.c: New test case.
+	* gcc.target/nvptx/isinf.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/bool-1.c: New test case.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-3.c: New test case for neghf2.
+	* gcc.target/nvptx/float16-4.c: New test case for abshf2.
+	* gcc.target/nvptx/float16-5.c: New test case for fmahf4.
+	* gcc.target/nvptx/float16-6.c: New test case.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/clauses-1.c: Added has_device_addr to test cases.
+	* g++.dg/gomp/attrs-1.C: Added has_device_addr to test cases.
+	* g++.dg/gomp/attrs-2.C: Added has_device_addr to test cases.
+	* c-c++-common/gomp/target-has-device-addr-1.c: New test.
+	* c-c++-common/gomp/target-has-device-addr-2.c: New test.
+	* c-c++-common/gomp/target-is-device-ptr-1.c: New test.
+	* c-c++-common/gomp/target-is-device-ptr-2.c: New test.
+	* gfortran.dg/gomp/is_device_ptr-3.f90: New test.
+	* gfortran.dg/gomp/target-has-device-addr-1.f90: New test.
+	* gfortran.dg/gomp/target-has-device-addr-2.f90: New test.
+
+2022-02-10  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* g++.dg/tree-prof/indir-call-recursive-inlining.C : New test.
+
+2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* gcc.target/aarch64/sve/pr104474-1.c: New test.
+	* gcc.target/aarch64/sve/pr104474-2.c: New test.
+	* gcc.target/aarch64/sve/pr104474-3.c: New test.
+
+2022-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/uninit-1.c: Add test coverage for shifts,
+	comparisons, +, -, *, /, and __builtin_strlen.
+	* gcc.dg/analyzer/uninit-CWE-457-examples.c: New test.
+
+2022-02-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/66193
+	* gfortran.dg/array_constructor_55.f90: New test.
+
+2022-02-09  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/Wstringop-overflow-69.c: Add -Wno-psabi.
+	* gcc.dg/loop-unswitch-6.c: Omit -fcompare-debug on AIX.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c: Compile with -march=x86-64.
+	* gcc.target/i386/pr104441-1b.c: Likewise.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* gcc.dg/pr104427.c: New test.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104462
+	* gcc.target/i386/pr104462.c: New test.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104458
+	* gcc.target/i386/pr104458.c: New test.
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* gcc.misc-tests/godump-1.c: Adjust for alignment field rename.
+
+2022-02-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-replace-word-runnable.c: Handle expected
+	prototypes for each call to vec_replace_unaligned.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-13.c: New test.
+	* gcc.target/aarch64/vec-init-14.c: Likewise.
+	* gcc.target/aarch64/vec-init-15.c: Likewise.
+	* gcc.target/aarch64/vec-init-16.c: Likewise.
+	* gcc.target/aarch64/vec-init-17.c: Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-12.c: New test.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-9.c: New test.
+	* gcc.target/aarch64/vec-init-10.c: Likewise.
+	* gcc.target/aarch64/vec-init-11.c: Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-8.c: New test.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/vec-init-6.c: New file.
+	* gcc.target/aarch64/vec-init-7.c: New file.
+
+2022-02-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104432
+	* g++.dg/template/non-dependent19.C: New test.
+	* g++.dg/template/non-dependent19a.C: New test.
+	* g++.dg/template/non-dependent20.C: New test.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103752
+	* g++.dg/modules/explicit-bool-1_b.C: New test.
+	* g++.dg/modules/explicit-bool-1_a.H: New test.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104464
+	* gcc.dg/pr104464.c: New testcase.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust.
+	* g++.dg/cpp2a/feat-cxx2a.C: Adjust.
+
+2022-02-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/104420
+	* gcc.dg/pr104420-1.c: New test case.
+	* gcc.dg/pr104420-2.c: New test case.
+	* gcc.dg/pr104420-3.c: New test case.
+	* gcc.dg/pr104420-4.c: New test case.
+	* gcc.dg/pr96392.c: Remove incorrect test.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104407
+	* g++.dg/debug/dwarf2/pr104407.C: New test.
+
+2022-02-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gcc.dg/pr104288.c: New.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104445
+	PR tree-optimization/102832
+	* gcc.dg/vect/pr104445.c: New testcase.
+	* gcc.dg/vect/pr102832.c: New file.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/35513
+	PR target/100593
+	* g++.target/i386/pr35513-1.C: New file.
+	* g++.target/i386/pr35513-2.C: Likewise.
+	* gcc.target/i386/pr35513-1a.c: Likewise.
+	* gcc.target/i386/pr35513-1b.c: Likewise.
+	* gcc.target/i386/pr35513-2a.c: Likewise.
+	* gcc.target/i386/pr35513-2b.c: Likewise.
+	* gcc.target/i386/pr35513-3a.c: Likewise.
+	* gcc.target/i386/pr35513-3b.c: Likewise.
+	* gcc.target/i386/pr35513-4a.c: Likewise.
+	* gcc.target/i386/pr35513-4b.c: Likewise.
+	* gcc.target/i386/pr35513-5a.c: Likewise.
+	* gcc.target/i386/pr35513-5b.c: Likewise.
+	* gcc.target/i386/pr35513-6a.c: Likewise.
+	* gcc.target/i386/pr35513-6b.c: Likewise.
+	* gcc.target/i386/pr35513-7a.c: Likewise.
+	* gcc.target/i386/pr35513-7b.c: Likewise.
+	* gcc.target/i386/pr35513-8.c: Likewise.
+	* gcc.target/i386/pr35513-9a.c: Likewise.
+	* gcc.target/i386/pr35513-9b.c: Likewise.
+	* gcc.target/i386/pr35513-10a.c: Likewise.
+	* gcc.target/i386/pr35513-10b.c: Likewise.
+	* gcc.target/i386/pr35513-11a.c: Likewise.
+	* gcc.target/i386/pr35513-11b.c: Likewise.
+	* gcc.target/i386/pr35513-12a.c: Likewise.
+	* gcc.target/i386/pr35513-12b.c: Likewise.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* gcc.target/i386/pr104441-1a.c: New test.
+	* gcc.target/i386/pr104441-1b.c: Likewise.
+
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* gcc.target/i386/pr104451.c: New test.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104450
+	* g++.dg/torture/pr104450.C: New testcase.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* gcc.target/i386/pr104453.c: New testcase.
+
+2022-02-09  Joel Teichroeb  <joel@teichroeb.net>
+
+	PR analyzer/101081
+	* gcc.dg/analyzer/analyzer-verbosity-2a.c: Replace #include of
+	stdio.h with declarations needed by the test.
+	* gcc.dg/analyzer/analyzer-verbosity-3a.c: Likewise.
+	* gcc.dg/analyzer/edges-1.c: Likewise.
+	* gcc.dg/analyzer/file-1.c: Likewise.
+	* gcc.dg/analyzer/file-2.c: Likewise.
+	* gcc.dg/analyzer/file-paths-1.c: Likewise.
+	* gcc.dg/analyzer/file-pr58237.c: Likewise.
+	* gcc.dg/analyzer/pr99716-1.c: Likewise.
+
+2022-02-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104452
+	* gcc.dg/analyzer/pr104452.c: New test.
+
+2022-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96876
+	* g++.dg/cpp1z/aggr-base11.C: New test.
+	* g++.dg/eh/aggregate2.C: New test.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104198
+	PR rtl-optimization/104153
+	* gcc.dg/pr104198.c: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104379
+	* g++.dg/warn/Wshadow-18.C: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104403
+	* g++.dg/cpp0x/lambda/lambda-104403.C: New test.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* gcc.dg/pr102140.c: New test.
+
+2022-02-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-msumc.c: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104425
+	* g++.dg/template/partial-specialization10.C: New test.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-two-insns-int.c: Fix array size.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Dito.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80951
+	* g++.dg/cpp1z/noexcept-type25.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104410
+	* g++.dg/cpp2a/concepts-pr104410.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda19.C: New test.
+
+2022-02-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103706
+	* g++.dg/cpp2a/concepts-lambda18.C: New test.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/riscv/riscv.exp: Use `gcc-dg-runtest' rather than
+	`dg-runtest'.  Add `-Og -g' and `-Oz' variants via
+	ADDITIONAL_TORTURE_OPTIONS.
+	* gcc.target/riscv/arch-1.c: Adjust test options accordingly.
+	* gcc.target/riscv/arch-10.c: Likewise.
+	* gcc.target/riscv/arch-11.c: Likewise.
+	* gcc.target/riscv/arch-12.c: Likewise.
+	* gcc.target/riscv/arch-2.c: Likewise.
+	* gcc.target/riscv/arch-3.c: Likewise.
+	* gcc.target/riscv/arch-4.c: Likewise.
+	* gcc.target/riscv/arch-5.c: Likewise.
+	* gcc.target/riscv/arch-6.c: Likewise.
+	* gcc.target/riscv/arch-7.c: Likewise.
+	* gcc.target/riscv/arch-8.c: Likewise.
+	* gcc.target/riscv/arch-9.c: Likewise.
+	* gcc.target/riscv/attribute-1.c: Likewise.
+	* gcc.target/riscv/attribute-10.c: Likewise.
+	* gcc.target/riscv/attribute-11.c: Likewise.
+	* gcc.target/riscv/attribute-12.c: Likewise.
+	* gcc.target/riscv/attribute-13.c: Likewise.
+	* gcc.target/riscv/attribute-14.c: Likewise.
+	* gcc.target/riscv/attribute-15.c: Likewise.
+	* gcc.target/riscv/attribute-16.c: Likewise.
+	* gcc.target/riscv/attribute-17.c: Likewise.
+	* gcc.target/riscv/attribute-2.c: Likewise.
+	* gcc.target/riscv/attribute-3.c: Likewise.
+	* gcc.target/riscv/attribute-4.c: Likewise.
+	* gcc.target/riscv/attribute-5.c: Likewise.
+	* gcc.target/riscv/attribute-7.c: Likewise.
+	* gcc.target/riscv/attribute-8.c: Likewise.
+	* gcc.target/riscv/attribute-9.c: Likewise.
+	* gcc.target/riscv/interrupt-1.c: Likewise.
+	* gcc.target/riscv/interrupt-2.c: Likewise.
+	* gcc.target/riscv/interrupt-3.c: Likewise.
+	* gcc.target/riscv/interrupt-4.c: Likewise.
+	* gcc.target/riscv/interrupt-conflict-mode.c: Likewise.
+	* gcc.target/riscv/interrupt-debug.c: Likewise.
+	* gcc.target/riscv/interrupt-mmode.c: Likewise.
+	* gcc.target/riscv/interrupt-smode.c: Likewise.
+	* gcc.target/riscv/interrupt-umode.c: Likewise.
+	* gcc.target/riscv/li.c: Likewise.
+	* gcc.target/riscv/load-immediate.c: Likewise.
+	* gcc.target/riscv/losum-overflow.c: Likewise.
+	* gcc.target/riscv/mcpu-6.c: Likewise.
+	* gcc.target/riscv/mcpu-7.c: Likewise.
+	* gcc.target/riscv/pr102957.c: Likewise.
+	* gcc.target/riscv/pr103302.c: Likewise.
+	* gcc.target/riscv/pr104140.c: Likewise.
+	* gcc.target/riscv/pr84660.c: Likewise.
+	* gcc.target/riscv/pr93202.c: Likewise.
+	* gcc.target/riscv/pr93304.c: Likewise.
+	* gcc.target/riscv/pr95252.c: Likewise.
+	* gcc.target/riscv/pr95683.c: Likewise.
+	* gcc.target/riscv/pr98777.c: Likewise.
+	* gcc.target/riscv/pr99702.c: Likewise.
+	* gcc.target/riscv/predef-1.c: Likewise.
+	* gcc.target/riscv/predef-10.c: Likewise.
+	* gcc.target/riscv/predef-11.c: Likewise.
+	* gcc.target/riscv/predef-12.c: Likewise.
+	* gcc.target/riscv/predef-13.c: Likewise.
+	* gcc.target/riscv/predef-14.c: Likewise.
+	* gcc.target/riscv/predef-15.c: Likewise.
+	* gcc.target/riscv/predef-16.c: Likewise.
+	* gcc.target/riscv/predef-2.c: Likewise.
+	* gcc.target/riscv/predef-3.c: Likewise.
+	* gcc.target/riscv/predef-4.c: Likewise.
+	* gcc.target/riscv/predef-5.c: Likewise.
+	* gcc.target/riscv/predef-6.c: Likewise.
+	* gcc.target/riscv/predef-7.c: Likewise.
+	* gcc.target/riscv/predef-8.c: Likewise.
+	* gcc.target/riscv/promote-type-for-libcall.c: Likewise.
+	* gcc.target/riscv/save-restore-1.c: Likewise.
+	* gcc.target/riscv/save-restore-2.c: Likewise.
+	* gcc.target/riscv/save-restore-3.c: Likewise.
+	* gcc.target/riscv/save-restore-4.c: Likewise.
+	* gcc.target/riscv/save-restore-6.c: Likewise.
+	* gcc.target/riscv/save-restore-7.c: Likewise.
+	* gcc.target/riscv/save-restore-8.c: Likewise.
+	* gcc.target/riscv/save-restore-9.c: Likewise.
+	* gcc.target/riscv/shift-and-1.c: Likewise.
+	* gcc.target/riscv/shift-and-2.c: Likewise.
+	* gcc.target/riscv/shift-shift-1.c: Likewise.
+	* gcc.target/riscv/shift-shift-2.c: Likewise.
+	* gcc.target/riscv/shift-shift-3.c: Likewise.
+	* gcc.target/riscv/shift-shift-4.c: Likewise.
+	* gcc.target/riscv/shift-shift-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-1.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-2.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-3.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-4.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-5.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-6.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-7.c: Likewise.
+	* gcc.target/riscv/shorten-memrefs-8.c: Likewise.
+	* gcc.target/riscv/switch-qi.c: Likewise.
+	* gcc.target/riscv/switch-si.c: Likewise.
+	* gcc.target/riscv/weak-1.c: Likewise.
+	* gcc.target/riscv/zba-adduw.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-01.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-02.c: Likewise.
+	* gcc.target/riscv/zba-shNadd-03.c: Likewise.
+	* gcc.target/riscv/zba-slliuw.c: Likewise.
+	* gcc.target/riscv/zba-zextw.c: Likewise.
+	* gcc.target/riscv/zbb-andn-orn-xnor-01.c: Likewise.
+	* gcc.target/riscv/zbb-andn-orn-xnor-02.c: Likewise.
+	* gcc.target/riscv/zbb-li-rotr.c: Likewise.
+	* gcc.target/riscv/zbb-min-max.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-01.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-02.c: Likewise.
+	* gcc.target/riscv/zbb-rol-ror-03.c: Likewise.
+	* gcc.target/riscv/zbbw.c: Likewise.
+	* gcc.target/riscv/zbs-bclr.c: Likewise.
+	* gcc.target/riscv/zbs-bext.c: Likewise.
+	* gcc.target/riscv/zbs-binv.c: Likewise.
+	* gcc.target/riscv/zbs-bset.c: Likewise.
+	* gcc.target/riscv/zero-extend-1.c: Likewise.
+	* gcc.target/riscv/zero-extend-2.c: Likewise.
+	* gcc.target/riscv/zero-extend-3.c: Likewise.
+	* gcc.target/riscv/zero-extend-4.c: Likewise.
+	* gcc.target/riscv/zero-extend-5.c: Likewise.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Require c99_runtime for
+	dg-do run.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104364
+	* gcc.target/nvptx/softstack-2.c: New test.
+	* gcc.target/nvptx/uniform-simt-1.c: New test.
+
+2022-02-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104059.c: New test.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104417
+	* gcc.dg/analyzer/pr104417.c: New test.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103872
+	* gcc.dg/analyzer/memcpy-1.c: Add alternate versions of test cases
+	in which the calls to memcpy are hidden from the optimizer.  Add
+	further test cases.
+	* gcc.dg/analyzer/taint-size-1.c: Add test coverage for memcpy
+	with tainted size.
+
+2022-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/asm-x86-1.c: Use dg-do "compile" rather than
+	"assemble".
+	* gcc.dg/analyzer/asm-x86-lp64-1.c: Likewise.
+	* gcc.dg/analyzer/asm-x86-lp64-2.c: Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-array_index_mask_nospec.c:
+	Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-1.c:
+	Likewise, and restrict to x86_64-pc-linux-gnu.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid-paravirt-2.c: Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-cpuid.c: Use dg-do
+	"compile" rather than "assemble".
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr-paravirt.c:
+	Likewise, and restrict to x86_64-pc-linux-gnu.
+	* gcc.dg/analyzer/torture/asm-x86-linux-rdmsr.c: Use dg-do
+	"compile" rather than "assemble".
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-full.c:
+	Likewise.
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-reduced.c:
+	Likewise.
+
+2022-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104380
+	* gcc.c-torture/execute/builtins/lib/chk.c (__sprintf_chkieee128,
+	__vsprintf_chkieee128, __snprintf_chkieee128,
+	__vsnprintf_chkieee128): New aliases to non-ieee128 suffixed functions
+	for powerpc -mabi=ieeelongdouble.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: Add new tests.
+	* gcc.target/arm/simd/vdot-2-2.c: Likewise and fix output.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-compile.c: Add new cases.
+	* gcc.target/arm/simd/vdot-exec.c: Likewise.
+
+2022-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/104327
+	* gcc.c-torture/compile/pr104327.c: New test.
+
+2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gcc.dg/torture/pr104402.c: New testcase.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-3.c: New test.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-1.c: New test.
+	* gcc.target/powerpc/pr103627-2.c: New test.
+
 2022-02-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96242

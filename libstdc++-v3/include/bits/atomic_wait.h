@@ -332,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    else
 	      {
-		__atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+		__atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	      }
 	    return __atomic_spin(__pred, __spin);
 	  }
@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     __platform_wait_t& __val,
 		     _Spin __spin = _Spin{ })
 	  {
-	    __atomic_load(__addr, &__val, __ATOMIC_RELAXED);
+	    __atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
 	    return __atomic_spin(__pred, __spin);
 	  }
 
@@ -388,12 +388,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  void
 	  _M_do_wait_v(_Tp __old, _ValFn __vfn)
 	  {
-	    __platform_wait_t __val;
-	    if (__base_type::_M_do_spin_v(__old, __vfn, __val))
-	      return;
-
 	    do
 	      {
+		__platform_wait_t __val;
+		if (__base_type::_M_do_spin_v(__old, __vfn, __val))
+		  return;
 		__base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
 	      }
 	    while (__detail::__atomic_compare(__old, __vfn()));

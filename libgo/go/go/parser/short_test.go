@@ -119,11 +119,11 @@ var validWithTParamsOnly = []string{
 	`package p; func _(T[P] /* ERROR "missing element type" */ ) T[P]`,
 	`package p; type _ struct{ T[P] /* ERROR "missing element type" */ }`,
 	`package p; type _ struct{ T[struct /* ERROR "expected expression" */ {a, b, c int}] }`,
-	`package p; type _ interface{type /* ERROR "expected '}', found 'type'" */ int}`,
-	`package p; type _ interface{type /* ERROR "expected '}', found 'type'" */ int, float32; type bool; m(); type string;}`,
+	`package p; type _ interface{int| /* ERROR "expected ';'" */ float32; bool; m(); string;}`,
 	`package p; type I1[T any /* ERROR "expected ']', found any" */ ] interface{}; type I2 interface{ I1[int] }`,
 	`package p; type I1[T any /* ERROR "expected ']', found any" */ ] interface{}; type I2[T any] interface{ I1[T] }`,
 	`package p; type _ interface { f[ /* ERROR "expected ';', found '\['" */ T any]() }`,
+	`package p; type T[P any /* ERROR "expected ']'" */ ] = T0`,
 }
 
 func TestValid(t *testing.T) {
@@ -133,9 +133,6 @@ func TestValid(t *testing.T) {
 		}
 	})
 	t.Run("tparams", func(t *testing.T) {
-		if !typeparams.Enabled {
-			t.Skip("type params are not enabled")
-		}
 		for _, src := range valids {
 			checkErrors(t, src, src, DeclarationErrors|AllErrors, false)
 		}
@@ -200,10 +197,12 @@ var invalids = []string{
 	`package p; func (type /* ERROR "found 'type'" */ T)(T) _()`,
 	`package p; type _[A+B, /* ERROR "expected ']'" */ ] int`,
 
-	// TODO: this error should be positioned on the ':'
+	// TODO(rfindley): this error should be positioned on the ':'
 	`package p; var a = a[[]int:[ /* ERROR "expected expression" */ ]int];`,
-	// TODO: the compiler error is better here: "cannot parenthesize embedded type"
-	`package p; type I1 interface{}; type I2 interface{ (/* ERROR "expected '}', found '\('" */ I1) }`,
+
+	// TODO(rfindley): the compiler error is better here: "cannot parenthesize embedded type"
+	// TODO(rfindley): confirm that parenthesized types should now be accepted.
+	// `package p; type I1 interface{}; type I2 interface{ (/* ERROR "expected '}', found '\('" */ I1) }`,
 
 	// issue 8656
 	`package p; func f() (a b string /* ERROR "missing ','" */ , ok bool)`,
@@ -242,7 +241,6 @@ var invalidNoTParamErrs = []string{
 // error messages produced when ParseTypeParams is set.
 var invalidTParamErrs = []string{
 	`package p; type _[_ any] int; var _ = T[] /* ERROR "expected operand" */ {}`,
-	`package p; type T[P any] = /* ERROR "cannot be alias" */ T0`,
 	`package p; var _ func[ /* ERROR "cannot have type parameters" */ T any](T)`,
 	`package p; func _[]/* ERROR "empty type parameter list" */()`,
 
@@ -266,9 +264,6 @@ func TestInvalid(t *testing.T) {
 		}
 	})
 	t.Run("tparams", func(t *testing.T) {
-		if !typeparams.Enabled {
-			t.Skip("type params are not enabled")
-		}
 		for _, src := range invalids {
 			checkErrors(t, src, src, DeclarationErrors|AllErrors, true)
 		}

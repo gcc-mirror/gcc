@@ -1,4 +1,5 @@
-/* { dg-options "-Os -march=rv32imc -mabi=ilp32" } */
+/* { dg-options "-march=rv32imc -mabi=ilp32" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-g" } } */
 
 /* These stores cannot be compressed because x0 is not a compressed reg.
    Therefore the shorten_memrefs pass should not attempt to rewrite them into a

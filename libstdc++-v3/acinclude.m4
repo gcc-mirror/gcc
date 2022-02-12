@@ -3609,6 +3609,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
     ac_save_CXXFLAGS="$CXXFLAGS"
 
     dnl Why do we care about 2-byte CAS on targets with 4-byte _Atomic_word?!
+    dnl Why don't we check 8-byte CAS for sparc64, where _Atomic_word is long?!
+    dnl New targets should only check for CAS for the _Atomic_word type.
     AC_TRY_COMPILE([
     #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"

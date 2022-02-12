@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mriscv-attribute" } */
+/* { dg-options "-mriscv-attribute" } */
 int foo()
 {
 }

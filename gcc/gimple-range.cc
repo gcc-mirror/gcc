@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
 #include "gimple-fold.h"
+#include "gimple-walk.h"
 
 gimple_ranger::gimple_ranger () :
 	non_executable_edge_flag (cfun),
@@ -117,8 +118,10 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       // If name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  range_of_stmt (r, def_stmt, expr);
-	  m_cache.m_non_null.adjust_range (r, expr, bb, true);
+	  // Check for a definition override from a block walk.
+	  if (!POINTER_TYPE_P (TREE_TYPE (expr))
+	      || !m_cache.block_range (r, bb, expr, false))
+	    range_of_stmt (r, def_stmt, expr);
 	}
       // Otherwise OP comes from outside this block, use range on entry.
       else
@@ -151,7 +154,12 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   if (m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
 
-  m_cache.m_non_null.adjust_range (r, name, bb, true);
+  if (dom_info_available_p (CDI_DOMINATORS))
+    {
+      basic_block dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+      if (dom_bb)
+	m_cache.m_non_null.adjust_range (r, name, dom_bb, true);
+    }
 
   if (idx)
     tracer.trailer (idx, "range_on_entry", true, name, r);
@@ -227,6 +235,9 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   else
     {
       range_on_exit (r, e->src, name);
+      // If this is not an abnormal edge, check for a non-null exit .
+      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
+	m_cache.m_non_null.adjust_range (r, name, e->src, false);
       gcc_checking_assert  (r.undefined_p ()
 			    || range_compatible_p (r.type(), TREE_TYPE (name)));
 
@@ -434,6 +445,16 @@ gimple_ranger::fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
   bool ret = ::fold_stmt (gsi, valueize);
   current_bb = NULL;
   return ret;
+}
+
+// Called during dominator walks to register any side effects that take effect
+// from this point forward.  Current release is only for tracking non-null
+// within a block.
+
+void
+gimple_ranger::register_side_effects (gimple *s)
+{
+  m_cache.block_apply_nonnull (s);
 }
 
 // This routine will export whatever global ranges are known to GCC

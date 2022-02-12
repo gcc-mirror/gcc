@@ -129,6 +129,8 @@ static tree handle_unavailable_attribute (tree *, tree, tree, int,
 					  bool *);
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *) ATTRIBUTE_NONNULL(3);
+static tree handle_vector_mask_attribute (tree *, tree, tree, int,
+					  bool *) ATTRIBUTE_NONNULL(3);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
@@ -417,6 +419,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_unavailable_attribute, NULL },
   { "vector_size",	      1, 1, false, true, false, true,
 			      handle_vector_size_attribute, NULL },
+  { "vector_mask",	      0, 0, false, true, false, true,
+			      handle_vector_mask_attribute, NULL },
   { "visibility",	      1, 1, false, false, false, false,
 			      handle_visibility_attribute, NULL },
   { "tls_model",	      1, 1, true,  false, false, false,
@@ -4412,6 +4416,38 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
   gcc_checking_assert (args != NULL);
 
   tree new_type = build_vector_type (type, nunits);
+
+  /* Build back pointers if needed.  */
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
+
+/* Handle a "vector_mask" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_vector_mask_attribute (tree *node, tree name, tree,
+			      int ARG_UNUSED (flags),
+			      bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (!flag_gimple)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  /* Determine the "base" type to apply the attribute to.  */
+  tree type = type_for_vector_size (*node);
+  if (!VECTOR_TYPE_P (type) || VECTOR_BOOLEAN_TYPE_P (type))
+    {
+      warning (OPT_Wattributes, "%qE attribute only supported on "
+	       "non-mask vector types", name);
+      return NULL_TREE;
+    }
+
+  tree new_type = truth_type_for (type);
 
   /* Build back pointers if needed.  */
   *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);

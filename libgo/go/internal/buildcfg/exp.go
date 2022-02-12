@@ -50,10 +50,9 @@ func ParseGOEXPERIMENT(goos, goarch, goexp string) (flags, baseline goexperiment
 
 	baseline = goexperiment.Flags{
 		RegabiWrappers: regabiSupported,
-		RegabiG:        regabiSupported,
 		RegabiReflect:  regabiSupported,
-		RegabiDefer:    regabiSupported,
 		RegabiArgs:     regabiSupported,
+		PacerRedesign:  true,
 	}
 
 	// Start with the statically enabled set of experiments.
@@ -78,9 +77,7 @@ func ParseGOEXPERIMENT(goos, goarch, goexp string) (flags, baseline goexperiment
 		// do the right thing.
 		names["regabi"] = func(v bool) {
 			flags.RegabiWrappers = v
-			flags.RegabiG = v
 			flags.RegabiReflect = v
-			flags.RegabiDefer = v
 			flags.RegabiArgs = v
 		}
 
@@ -109,20 +106,20 @@ func ParseGOEXPERIMENT(goos, goarch, goexp string) (flags, baseline goexperiment
 		}
 	}
 
-	// regabi is only supported on amd64.
-	if goarch != "amd64" {
-		flags.RegabiWrappers = false
-		flags.RegabiG = false
+	// regabi is always enabled on amd64.
+	if goarch == "amd64" {
+		flags.RegabiWrappers = true
+		flags.RegabiReflect = true
+		flags.RegabiArgs = true
+	}
+	// regabi is only supported on amd64, arm64, ppc64 and ppc64le.
+	if !regabiSupported {
 		flags.RegabiReflect = false
-		flags.RegabiDefer = false
 		flags.RegabiArgs = false
 	}
 	// Check regabi dependencies.
-	if flags.RegabiG && !flags.RegabiWrappers {
-		err = fmt.Errorf("GOEXPERIMENT regabig requires regabiwrappers")
-	}
-	if flags.RegabiArgs && !(flags.RegabiWrappers && flags.RegabiG && flags.RegabiReflect && flags.RegabiDefer) {
-		err = fmt.Errorf("GOEXPERIMENT regabiargs requires regabiwrappers,regabig,regabireflect,regabidefer")
+	if flags.RegabiArgs && !(flags.RegabiWrappers && flags.RegabiReflect) {
+		err = fmt.Errorf("GOEXPERIMENT regabiargs requires regabiwrappers,regabireflect")
 	}
 	return
 }
@@ -162,7 +159,11 @@ func expList(exp, base *goexperiment.Flags, all bool) []string {
 // GOEXPERIMENT is exactly what a user would set on the command line
 // to get the set of enabled experiments.
 func GOEXPERIMENT() string {
-	return strings.Join(expList(&Experiment, &experimentBaseline, false), ",")
+	goexp := strings.Join(expList(&Experiment, &experimentBaseline, false), ",")
+	if goexp == "" && DefaultGOEXPERIMENT != "" {
+		goexp = "," // non-empty to override DefaultGOEXPERIMENT
+	}
+	return goexp
 }
 
 // EnabledExperiments returns a list of enabled experiments, as

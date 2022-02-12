@@ -1375,7 +1375,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  decl = OMP_CLAUSE_DECL (c);
 	do_private:
 	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
-	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
+	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR
+	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 	      && is_gimple_omp_offloaded (ctx->stmt))
 	    {
 	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
@@ -1383,8 +1384,14 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  by_ref = !omp_privatize_by_reference (decl);
 		  install_var_field (decl, by_ref, 3, ctx);
 		}
+	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+		{
+		  if (TREE_CODE (decl) == INDIRECT_REF)
+		    decl = TREE_OPERAND (decl, 0);
+		  install_var_field (decl, true, 3, ctx);
+		}
 	      else if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-		install_var_field (decl, true, 3, ctx);
+		  install_var_field (decl, true, 3, ctx);
 	      else
 		install_var_field (decl, false, 3, ctx);
 	    }
@@ -1451,6 +1458,13 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    }
 	  install_var_local (decl, ctx);
 	  break;
+
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  decl = OMP_CLAUSE_DECL (c);
+	  while (TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == ARRAY_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	  goto do_private;
 
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  decl = OMP_CLAUSE_DECL (c);
@@ -1729,12 +1743,21 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_PRIVATE:
 	case OMP_CLAUSE_LINEAR:
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  decl = OMP_CLAUSE_DECL (c);
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+	    {
+	      while (TREE_CODE (decl) == INDIRECT_REF
+		     || TREE_CODE (decl) == ARRAY_REF)
+		decl = TREE_OPERAND (decl, 0);
+	    }
+
 	  if (is_variable_sized (decl))
 	    {
 	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
-		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 		  && is_gimple_omp_offloaded (ctx->stmt))
 		{
 		  tree decl2 = DECL_VALUE_EXPR (decl);
@@ -12819,8 +12842,15 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
       case OMP_CLAUSE_USE_DEVICE_PTR:
       case OMP_CLAUSE_USE_DEVICE_ADDR:
+      case OMP_CLAUSE_HAS_DEVICE_ADDR:
       case OMP_CLAUSE_IS_DEVICE_PTR:
 	var = OMP_CLAUSE_DECL (c);
+	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+	  {
+	    while (TREE_CODE (var) == INDIRECT_REF
+		   || TREE_CODE (var) == ARRAY_REF)
+	      var = TREE_OPERAND (var, 0);
+	  }
 	map_cnt++;
 	if (is_variable_sized (var))
 	  {
@@ -12835,7 +12865,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    SET_DECL_VALUE_EXPR (new_var, x);
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
-	else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+	else if (((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 		  && !omp_privatize_by_reference (var)
 		  && !omp_is_allocatable_or_ptr (var)
 		  && !lang_hooks.decls.omp_array_data (var, true))
@@ -13301,17 +13332,26 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    ovar = OMP_CLAUSE_DECL (c);
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+	      {
+		while (TREE_CODE (ovar) == INDIRECT_REF
+		       || TREE_CODE (ovar) == ARRAY_REF)
+		  ovar = TREE_OPERAND (ovar, 0);
+	      }
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
 
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
 	      {
-		tkind = (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+		tkind = ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+			  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
 			 ? GOMP_MAP_USE_DEVICE_PTR : GOMP_MAP_FIRSTPRIVATE_INT);
 		x = build_sender_ref ((splay_tree_key) &DECL_NAME (ovar), ctx);
 	      }
-	    else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
+	    else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+		     && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
 	      {
 		tkind = GOMP_MAP_USE_DEVICE_PTR;
 		x = build_sender_ref ((splay_tree_key) &DECL_UID (ovar), ctx);
@@ -13333,7 +13373,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    type = TREE_TYPE (ovar);
 	    if (lang_hooks.decls.omp_array_data (ovar, true))
 	      var = lang_hooks.decls.omp_array_data (ovar, false);
-	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+	    else if (((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 		      && !omp_privatize_by_reference (ovar)
 		      && !omp_is_allocatable_or_ptr (ovar))
 		     || TREE_CODE (type) == ARRAY_TYPE)
@@ -13348,6 +13389,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    if (POINTER_TYPE_P (type)
 			&& TREE_CODE (type) != ARRAY_TYPE
 			&& ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
+			    && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR
 			    && !omp_is_allocatable_or_ptr (ovar))
 			   || (omp_privatize_by_reference (ovar)
 			       && omp_is_allocatable_or_ptr (ovar))))
@@ -13545,6 +13587,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    break;
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
 	  case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    tree new_var;
 	    gimple_seq assign_body;
@@ -13555,12 +13598,21 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    var = OMP_CLAUSE_DECL (c);
 	    is_array_data = lang_hooks.decls.omp_array_data (var, true) != NULL;
 
-	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
+	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+		&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
 	      x = build_sender_ref (is_array_data
 				    ? (splay_tree_key) &DECL_NAME (var)
 				    : (splay_tree_key) &DECL_UID (var), ctx);
 	    else
-	      x = build_receiver_ref (var, false, ctx);
+	      {
+		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
+		  {
+		    while (TREE_CODE (var) == INDIRECT_REF
+			   || TREE_CODE (var) == ARRAY_REF)
+		      var = TREE_OPERAND (var, 0);
+		  }
+		x = build_receiver_ref (var, false, ctx);
+	      }
 
 	    if (is_array_data)
 	      {
@@ -13607,7 +13659,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gimple_seq_add_stmt (&assign_body,
 				     gimple_build_assign (new_var, x));
 	      }
-	    else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+	    else if (((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
 		      && !omp_privatize_by_reference (var)
 		      && !omp_is_allocatable_or_ptr (var))
 		     || TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
@@ -13630,7 +13683,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    type = TREE_TYPE (type);
 		    if (POINTER_TYPE_P (type)
 			&& TREE_CODE (type) != ARRAY_TYPE
-			&& (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
+			&& ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_USE_DEVICE_ADDR
+			    && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
 			    || (omp_privatize_by_reference (var)
 				&& omp_is_allocatable_or_ptr (var))))
 		      {
@@ -13653,7 +13707,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				     gimple_build_assign (new_var, x));
 	      }
 	    tree present;
-	    present = (do_optional_check
+	    present = ((do_optional_check
+			&& OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
 		       ? omp_check_optional_argument (OMP_CLAUSE_DECL (c), true)
 		       : NULL_TREE);
 	    if (present)

@@ -7034,15 +7034,14 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
   return walker.eliminate_cleanup ();
 }
 
-static unsigned
+unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate);
+	   bool iterate, bool eliminate, vn_lookup_kind kind);
 
 void
 run_rpo_vn (vn_lookup_kind kind)
 {
-  default_vn_walk_kind = kind;
-  do_rpo_vn (cfun, NULL, NULL, true, false);
+  do_rpo_vn (cfun, NULL, NULL, true, false, kind);
 
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
@@ -7740,11 +7739,12 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  */
 
-static unsigned
+unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
-	   bool iterate, bool eliminate)
+	   bool iterate, bool eliminate, vn_lookup_kind kind)
 {
   unsigned todo = 0;
+  default_vn_walk_kind = kind;
 
   /* We currently do not support region-based iteration when
      elimination is requested.  */
@@ -8164,8 +8164,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs)
 {
-  default_vn_walk_kind = VN_WALKREWRITE;
-  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true);
+  unsigned todo = do_rpo_vn (fn, entry, exit_bbs, false, true, VN_WALKREWRITE);
   free_rpo_vn ();
   return todo;
 }
@@ -8221,8 +8220,7 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  default_vn_walk_kind = VN_WALKREWRITE;
-  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true);
+  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true, VN_WALKREWRITE);
   free_rpo_vn ();
 
   if (iterate_p)

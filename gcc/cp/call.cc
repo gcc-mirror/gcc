@@ -11189,12 +11189,11 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
       if (really_overloaded_fn (fns))
 	{
 	  if (DECL_TEMPLATE_INFO (fn)
-	      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn))
-	      && dependent_type_p (DECL_CONTEXT (fn)))
+	      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn)))
 	    {
-	      /* FIXME: We're not prepared to fully instantiate "inside-out"
-		 partial instantiations such as A<T>::f<int>().  So instead
-		 use the selected template, not the specialization.  */
+	      /* Use the selected template, not the specialization, so that
+		 this looks like an actual lookup result for sake of
+		 filter_memfn_lookup.  */
 
 	      if (OVL_SINGLE_P (fns))
 		/* If the original overload set consists of a single function

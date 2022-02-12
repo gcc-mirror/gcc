@@ -539,6 +539,34 @@ region::get_relative_concrete_offset (bit_offset_t *) const
   return false;
 }
 
+/* Attempt to get the position and size of this region expressed as a
+   concrete range of bytes relative to its parent.
+   If successful, return true and write to *OUT.
+   Otherwise return false.  */
+
+bool
+region::get_relative_concrete_byte_range (byte_range *out) const
+{
+  /* We must have a concrete offset relative to the parent.  */
+  bit_offset_t rel_bit_offset;
+  if (!get_relative_concrete_offset (&rel_bit_offset))
+    return false;
+  /* ...which must be a whole number of bytes.  */
+  if (rel_bit_offset % BITS_PER_UNIT != 0)
+    return false;
+  byte_offset_t start_byte_offset = rel_bit_offset / BITS_PER_UNIT;
+
+  /* We must have a concrete size, which must be a whole number
+     of bytes.  */
+  byte_size_t num_bytes;
+  if (!get_byte_size (&num_bytes))
+    return false;
+
+  /* Success.  */
+  *out = byte_range (start_byte_offset, num_bytes);
+  return true;
+}
+
 /* Dump a description of this region to stderr.  */
 
 DEBUG_FUNCTION void

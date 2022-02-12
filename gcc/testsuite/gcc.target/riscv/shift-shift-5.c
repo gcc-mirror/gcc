@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d -O2" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 
 /* Fails if lshrsi3_zero_extend_3+1 uses a temp reg which has no REG_DEST
    note.  */

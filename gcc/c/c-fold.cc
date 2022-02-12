@@ -465,6 +465,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
     case CONJ_EXPR:
+    case PAREN_EXPR:
     unary:
       /* Unary operations.  */
       orig_op0 = op0 = TREE_OPERAND (expr, 0);

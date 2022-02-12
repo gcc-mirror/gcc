@@ -1,7 +1,8 @@
 /* PR middle-end/100571 - bogus -Wstringop-overflow with VLA of elements
    larger than byte
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-require-effective-target alloca } */
 
 __attribute__ ((access (read_only, 1, 2))) void fro (int *, int);
 __attribute__ ((access (write_only, 1, 2))) void fwo (int *, int);

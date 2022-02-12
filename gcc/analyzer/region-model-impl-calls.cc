@@ -491,29 +491,29 @@ region_model::impl_call_malloc (const call_details &cd)
 }
 
 /* Handle the on_call_pre part of "memcpy" and "__builtin_memcpy".  */
+// TODO: complain about overlapping src and dest.
 
 void
 region_model::impl_call_memcpy (const call_details &cd)
 {
-  const svalue *dest_sval = cd.get_arg_svalue (0);
+  const svalue *dest_ptr_sval = cd.get_arg_svalue (0);
+  const svalue *src_ptr_sval = cd.get_arg_svalue (1);
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
-  const region *dest_reg = deref_rvalue (dest_sval, cd.get_arg_tree (0),
+  const region *dest_reg = deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0),
 					 cd.get_ctxt ());
+  const region *src_reg = deref_rvalue (src_ptr_sval, cd.get_arg_tree (1),
+					cd.get_ctxt ());
 
-  cd.maybe_set_lhs (dest_sval);
+  cd.maybe_set_lhs (dest_ptr_sval);
 
-  if (tree num_bytes = num_bytes_sval->maybe_get_constant ())
-    {
-      /* "memcpy" of zero size is a no-op.  */
-      if (zerop (num_bytes))
-	return;
-    }
-
-  check_region_for_write (dest_reg, cd.get_ctxt ());
-
-  /* Otherwise, mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
+  const region *sized_src_reg
+    = m_mgr->get_sized_region (src_reg, NULL_TREE, num_bytes_sval);
+  const region *sized_dest_reg
+    = m_mgr->get_sized_region (dest_reg, NULL_TREE, num_bytes_sval);
+  const svalue *src_contents_sval
+    = get_store_value (sized_src_reg, cd.get_ctxt ());
+  set_value (sized_dest_reg, src_contents_sval, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "memset" and "__builtin_memset".  */

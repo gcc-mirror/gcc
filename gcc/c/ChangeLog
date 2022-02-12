@@ -1,3 +1,30 @@
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Properly parse
+	VEC_COND_EXPRs.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Parse 'has_device_addr'
+	clause.
+	(c_parser_omp_variable_list): Handle array sections.
+	(c_parser_omp_clause_has_device_addr): Added.
+	(c_parser_omp_all_clauses): Added PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR
+	case.
+	(c_parser_omp_target_exit_data): Added HAS_DEVICE_ADDR to
+	OMP_CLAUSE_MASK.
+	* c-typeck.cc (handle_omp_array_sections): Handle clause restrictions.
+	(c_finish_omp_clauses): Handle array sections.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104427
+	* c-parser.cc (c_parser_postfix_expression)
+	<case RID_BUILTIN_ASSOC_BARRIER>: Use parser_build_unary_op
+	instead of build1_loc to build PAREN_EXPR.
+	* c-typeck.cc (build_unary_op): Handle PAREN_EXPR.
+	* c-fold.cc (c_fully_fold_internal): Likewise.
+
 2022-01-17  Martin Liska  <mliska@suse.cz>
 
 	* Make-lang.in: Rename .c names to .cc.

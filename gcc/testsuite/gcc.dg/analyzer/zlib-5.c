@@ -2,7 +2,7 @@
 
 #include "analyzer-decls.h"
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef unsigned char Byte;
 typedef unsigned int uInt;
 typedef unsigned long uLong;

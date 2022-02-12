@@ -1,3 +1,600 @@
+2022-02-11  Iain Sandoe  <iain@sandoe.co.uk>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/104117
+	* config/rs6000/rs6000.cc (darwin_rs6000_legitimate_lo_sum_const_p):
+	Check for UNSPEC_MACHOPIC_OFFSET wrappers on symbolic addresses when
+	emitting PIC code.
+	(legitimate_lo_sum_address_p): Likewise.
+	* lra-constraints.cc (process_address_1): Do not attempt to emit a reg
+	load from an invalid lo_sum address.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104499
+	* match.pd ((X & Y) CMP 0 -> X CMP2 ~Y): Use view_convert instead
+	of convert.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (build_common_builtin_nodes): Fix up formatting in
+	__builtin_clear_padding decl creation.
+	* gimplify.cc (gimple_add_padding_init_for_auto_var): Encode
+	for_auto_init in the value of 2nd BUILT_IN_CLEAR_PADDING
+	argument rather than in 3rd argument.
+	(gimplify_call_expr): Likewise.  Fix up comment formatting.
+	* gimple-fold.cc (gimple_fold_builtin_clear_padding): Expect
+	2 arguments instead of 3, take for_auto_init from the value
+	of 2nd argument.
+
+2022-02-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104400
+	* lra-constraints.cc (process_alt_operands): Don't make union of
+	this_alternative_exclude_start_hard_regs when reg class in insn
+	alternative covers other reg classes in the same alternative.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* combine.cc (subst): Don't substitute CONST_INTs into RTX_AUTOINC
+	operands.
+
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104496
+	* internal-fn.cc (vectorized_internal_fn_supported_p):
+	Bail out for integer mode vector types.
+
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104459
+	* df-scan.cc (df_insn_change_bb): Don't call df_set_bb_dirty when
+	moving DEBUG_INSNs between bbs.
+
+2022-02-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/104479
+	* match.pd (uncond_op + vec_cond -> cond_op): Add single_use
+	for the dest of uncond_op.
+
+2022-02-11  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104456
+	* config/nvptx/nvptx.cc (prevent_branch_around_nothing): Handle asm
+	insn.
+
+2022-02-10  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle-end/100775
+	* function.cc (gen_call_used_regs_seq): Call
+	df_update_exit_block_uses when updating df.
+
+2022-02-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104469
+	* config/i386/sse.md (vec_unpacks_float_lo_v4si):
+	Change operand 1 constraint to register_operand.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104373
+	* tree-ssa-sccvn.h (do_rpo_vn): New export exposing the
+	walk kind.
+	* tree-ssa-sccvn.cc (do_rpo_vn): Export, get the default
+	walk kind as argument.
+	(run_rpo_vn): Adjust.
+	(pass_fre::execute): Likewise.
+	* tree-ssa-uninit.cc (warn_uninitialized_vars): Skip
+	blocks not reachable.
+	(execute_late_warn_uninitialized): Mark all edges as
+	executable.
+	(execute_early_warn_uninitialized): Use VN to compute
+	executable edges.
+	(pass_data_early_warn_uninitialized): Enable a dump file,
+	change dump name to warn_uninit.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104467
+	* match.pd (vector extract simplification): Multiply the
+	number of CTOR elements with the number of element elements.
+
+2022-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104466
+	* tree-ssa-alias.cc (refs_may_alias_p_2): Use rbase1/rbase2
+	for the MR_DEPENDENCE checks as intended.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "nvptx_atomic_store<mode>"): New
+	define_insn.
+	(define_expand "atomic_store<mode>"): Use nvptx_atomic_store<mode> for
+	TARGET_SM70.
+	(define_c_enum "unspecv"): Add UNSPECV_ST.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (nvptx_mem_maybe_shared_p): Declare.
+	* config/nvptx/nvptx.cc (nvptx_mem_data_area): New static function.
+	(nvptx_mem_maybe_shared_p): New function.
+	* config/nvptx/nvptx.md (define_expand "atomic_store<mode>"): New
+	define_expand.
+
+2022-02-10  Tom de Vries  <tdevries@suse.de>
+
+	PR target/97005
+	* config/nvptx/nvptx.md (define_insn "sub<mode>3"): Workaround
+	driver JIT bug by using sub.s16 instead of sub.u16.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (copysign<mode>3): Allow immediate
+	floating point constants as operands 1 and/or 2.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104345
+	* config/nvptx/nvptx.md (sel_true<mode>): Fix indentation.
+	(sel_false<mode>): Likewise.
+	(define_code_iterator eqne): New code iterator for EQ and NE.
+	(*selp<mode>_neg_<code>): New define_insn_and_split to optimize
+	the negation of a selp instruction.
+	(*selp<mode>_not_<code>): New define_insn_and_split to optimize
+	the bitwise not of a selp instruction.
+	(*setcc_int<mode>): Use set instruction for neg:SI of a selp.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (any_logic): Move code iterator earlier
+	in machine description.
+	(logic): Move code attribute earlier in machine description.
+	(ilogic): New code attribute, like logic but "ior" for IOR.
+	(and<mode>3, ior<mode>3, xor<mode>3): Delete. Replace with...
+	(<ilogic><mode>3): New define_insn for HSDIM logic operations.
+	(<ilogic>bi3): New define_insn for BI mode logic operations.
+	(define_split): Lower logic operations from integer modes to
+	BI mode predicate operations.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (UNSPEC_ISINF): New UNSPEC.
+	(one_cmplbi2): New define_insn for not.pred.
+	(mulditi3): New define_expand for signed widening multiply.
+	(umulditi3): New define_expand for unsigned widening multiply.
+	(smul<mode>3_highpart): New define_insn for signed highpart mult.
+	(umul<mode>3_highpart): New define_insn for unsigned highpart mult.
+	(*smulhi3_highpart_2): Renamed from smulhi3_highpart.
+	(*smulsi3_highpart_2): Renamed from smulsi3_highpart.
+	(*umulhi3_highpart_2): Renamed from umulhi3_highpart.
+	(*umulsi3_highpart_2): Renamed from umulsi3_highpart.
+	(*setcc<mode>_from_not_bi): New define_insn.
+	(*setcc_isinf<mode>): New define_insn for testp.infinite.
+	(isinf<mode>2): New define_expand.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (cmp<mode>): Renamed from *cmp<mode>.
+	(setcc<mode>_from_bi): Additionally support QImode.
+	(extendbi<mode>2): Additionally support QImode.
+	(zero_extendbi<mode>2): Additionally support QImode.
+	(any_sbinary, any_ubinary, any_sunary, any_uunary): New code
+	iterators for signed and unsigned, binary and unary operations.
+	(<sbinary>qi3, <ubinary>qi3, <sunary>qi2, <uunary>qi2): New
+	expanders to perform QImode operations using SImode instructions.
+	(cstoreqi4): New define_expand.
+	(*ext_truncsi2_qi): New define_insn.
+	(*zext_truncsi2_qi): New define_insn.
+
+2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*cmpf): New define_insn.
+	(cstorehf4): New define_expand.
+	(fmahf4): New define_insn.
+	(neghf2): New define_insn.
+	(abshf2): New define_insn.
+
+2022-02-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Change the www.bitwizard.nl
+	reference to use https.
+
+2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Added cases for
+	OMP_CLAUSE_HAS_DEVICE_ADDR
+	and handle array sections.
+	(gimplify_adjust_omp_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.
+	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_HAS_DEVICE_ADDR.
+	(lower_omp_target): Same.
+	* tree-core.h (enum omp_clause_code): Same.
+	* tree-nested.cc (convert_nonlocal_omp_clauses): Same.
+	(convert_local_omp_clauses): Same.
+	* tree-pretty-print.cc (dump_omp_clause): Same.
+	* tree.cc: Same.
+
+2022-02-10  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.cc (afdo_indirect_call): Don't attempt to promote indirect calls
+	that will result in direct recursive calls.
+
+2022-02-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/104474
+	* config/aarch64/aarch64.cc
+	(aarch64_sve_expand_vector_init_handle_trailing_constants):
+	Use CONST0_RTX instead of const0_rtx for the non-constant elements.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104462
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_XSAVE_UNSET):
+	Also include OPTION_MASK_ISA2_AVX2_UNSET.
+
+2022-02-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/104458
+	* config/i386/i386-expand.cc (ix86_split_idivmod):
+	Force operands[2] and operands[3] into a register..
+
+2022-02-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/97040
+	* config/v850/v850.md (*v850_fnmasf4): Renamed from fnmasf4.
+	(*v850_fnmssf4): Renamed from fnmssf4
+
+2022-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* godump.cc (go_force_record_alignment): Really name the alignment
+	field "_" (complete 2021-12-29 change).
+
+2022-02-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (VREPLACE_UN_UV2DI): Change
+	function prototype.
+	(VREPLACE_UN_UV4SI): Likewise.
+	(VREPLACE_UN_V2DF): Likewise.
+	(VREPLACE_UN_V2DI): Likewise.
+	(VREPLACE_UN_V4SF): Likewise.
+	(VREPLACE_UN_V4SI): Likewise.
+	* config/rs6000/rs6000-overload.def (VEC_REPLACE_UN): Change all
+	function prototypes.
+	* config/rs6000/vsx.md (vreplace_un_<mode>): Remove define_expand.
+	(vreplace_un_<mode>): New define_insn.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (VDCSIF): New mode iterator.
+	(VDBL): Handle SF.
+	(single_wx, single_type, single_dtype, dblq): New mode attributes.
+	* config/aarch64/aarch64-simd.md (load_pair_lanes<mode>): Extend
+	from VDC to VDCSIF.
+	(store_pair_lanes<mode>): Likewise.
+	(*aarch64_combine_internal<mode>): Likewise.
+	(*aarch64_combine_internal_be<mode>): Likewise.
+	(*aarch64_combinez<mode>): Likewise.
+	(*aarch64_combinez_be<mode>): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_classify_address): Handle
+	8-byte modes for ADDR_QUERY_LDP_STP_N.
+	(aarch64_print_operand): Likewise for %y.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (@aarch64_split_simd_mov<mode>):
+	Use aarch64_combine instead of move_lo/hi_quad.  Tabify.
+	(move_lo_quad_<mode>, aarch64_simd_move_hi_quad_<mode>): Delete.
+	(aarch64_simd_move_hi_quad_be_<mode>, move_hi_quad_<mode>): Delete.
+	(vec_pack_trunc_<mode>): Take general_operand elements and use
+	aarch64_combine rather than move_lo/hi_quad to combine them.
+	(vec_pack_trunc_df): Likewise.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_combine):
+	Delete.
+	* config/aarch64/aarch64-simd.md (@aarch64_combinez<mode>): Rename
+	to...
+	(*aarch64_combinez<mode>): ...this.
+	(@aarch64_combinez_be<mode>): Rename to...
+	(*aarch64_combinez_be<mode>): ...this.
+	(@aarch64_vec_concat<mode>): New expander.
+	(aarch64_combine<mode>): Use it.
+	(@aarch64_simd_combine<mode>): Delete.
+	* config/aarch64/aarch64.cc (aarch64_split_simd_combine): Delete.
+	(aarch64_expand_vector_init): Use aarch64_vec_concat.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/predicates.md (aarch64_reg_or_mem_pair_operand):
+	New predicate.
+	* config/aarch64/aarch64-simd.md (*aarch64_combine_internal<mode>)
+	(*aarch64_combine_internal_be<mode>): New patterns.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>)
+	(move_lo_quad_internal_be_<mode>): Delete.
+	(move_lo_quad_<mode>): Use aarch64_combine<Vhalf> instead of the above.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_mergeable_load_pair_p):
+	Declare.
+	* config/aarch64/aarch64-simd.md (load_pair_lanes<mode>): Use
+	aarch64_mergeable_load_pair_p instead of inline check.
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init): Likewise.
+	(aarch64_check_consecutive_mems): Allow the reversed parameter
+	to be null.
+	(aarch64_mergeable_load_pair_p): New function.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_set<mode>): Allow the
+	element to be an aarch64_simd_nonimmediate_operand.
+
+2022-02-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set<mode>): Use
+	aarch64_simd_nonimmediate_operand instead of
+	aarch64_simd_general_operand.
+	(@aarch64_combinez<mode>): Use nonimmediate_operand instead of
+	general_operand.
+	(@aarch64_combinez_be<mode>): Likewise.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104464
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Postpone
+	throwing check to after unproblematic replacement.
+
+2022-02-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/104420
+	* match.pd (mult @0 real_zerop): Tweak conditions for constant
+	folding X*0.0 (or X*-0.0) to HONOR_SIGNED_ZEROS when appropriate.
+
+2022-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104407
+	* dwarf2out.cc (mangle_referenced_decls): New function.
+	(tree_add_const_value_attribute): Don't call rtl_for_decl_init if
+	early_dwarf.  Instead walk the initializer and try to mangle vars or
+	functions referenced from it.
+
+2022-02-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104288
+	* gimple-range-cache.cc (non_null_ref::set_nonnull): New.
+	(non_null_ref::adjust_range): Move to header.
+	(ranger_cache::range_of_def): Don't check non-null.
+	(ranger_cache::entry_range): Don't check non-null.
+	(ranger_cache::range_on_edge): Check for nonnull on normal edges.
+	(ranger_cache::update_to_nonnull): New.
+	(non_null_loadstore): New.
+	(ranger_cache::block_apply_nonnull): New.
+	* gimple-range-cache.h (class non_null_ref): Update prototypes.
+	(non_null_ref::adjust_range): Move to here and inline.
+	(class ranger_cache): Update prototypes.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block): Do
+	not search dominators.
+	(path_range_query::adjust_for_non_null_uses): Ditto.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Check on-entry for
+	def overrides.  Do not check nonnull.
+	(gimple_ranger::range_on_entry): Check dominators for nonnull.
+	(gimple_ranger::range_on_edge): Check for nonnull on normal edges..
+	(gimple_ranger::register_side_effects): New.
+	* gimple-range.h (gimple_ranger::register_side_effects): New.
+	* tree-vrp.cc (rvrp_folder::fold_stmt): Call register_side_effects.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104445
+	PR tree-optimization/102832
+	* optabs-query.h (can_vec_extract): New.
+	* optabs-query.cc (can_vec_extract): Likewise.
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Check
+	we can extract a hi/lo part from the larger vector, rework
+	check iteration from larger to smaller sizes.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/35513
+	PR target/100593
+	* config/i386/gnu-property.cc: Include "i386-protos.h".
+	(file_end_indicate_exec_stack_and_gnu_property): Generate
+	a GNU_PROPERTY_1_NEEDED note for -mno-direct-extern-access or
+	nodirect_extern_access attribute.
+	* config/i386/i386-options.cc
+	(handle_nodirect_extern_access_attribute): New function.
+	(ix86_attribute_table): Add nodirect_extern_access attribute.
+	* config/i386/i386-protos.h (ix86_force_load_from_GOT_p): Add a
+	bool argument.
+	(ix86_has_no_direct_extern_access): New.
+	* config/i386/i386.cc (ix86_has_no_direct_extern_access): New.
+	(ix86_force_load_from_GOT_p): Add a bool argument to indicate
+	call operand.  Force non-call load from GOT for
+	-mno-direct-extern-access or nodirect_extern_access attribute.
+	(legitimate_pic_address_disp_p): Avoid copy relocation in PIE
+	for -mno-direct-extern-access or nodirect_extern_access attribute.
+	(ix86_print_operand): Pass true to ix86_force_load_from_GOT_p
+	for call operand.
+	(asm_preferred_eh_data_format): Use PC-relative format for
+	-mno-direct-extern-access to avoid copy relocation.  Check
+	ptr_mode instead of TARGET_64BIT when selecting DW_EH_PE_sdata4.
+	(ix86_binds_local_p): Set ix86_has_no_direct_extern_access to
+	true for -mno-direct-extern-access or nodirect_extern_access
+	attribute.  Don't treat protected data as extern and avoid copy
+	relocation on common symbol with -mno-direct-extern-access or
+	nodirect_extern_access attribute.
+	(ix86_reloc_rw_mask): New to avoid copy relocation for
+	-mno-direct-extern-access.
+	(TARGET_ASM_RELOC_RW_MASK): New.
+	* config/i386/i386.opt: Add -mdirect-extern-access.
+	* doc/extend.texi: Document nodirect_extern_access attribute.
+	* doc/invoke.texi: Document -m[no-]direct-extern-access.
+
+2022-02-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104441
+	* config/i386/i386.cc (ix86_avx_u128_mode_source): New function.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_ANY for debug INSN.
+	Call ix86_avx_u128_mode_source to check mode for each component
+	of source operand.
+
+2022-02-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/104451
+	* config/i386/sse.md (<insn><mode>3): lowpart_subreg
+	operands[2] from SImode to QImode.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104450
+	* gimple-isel.cc: Pass cfun around.
+	(+gimple_expand_vec_cond_expr): Do not combine a throwing
+	comparison with the select.
+
+2022-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/104453
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Guard shift
+	folding for NULL LHS.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR rtl-optimization/104198
+	PR rtl-optimization/104153
+	* ifcvt.cc (noce_convert_multiple_sets_1): Copy rtx instead of
+	using it directly.  Rework comparison handling and always
+	perform a second pass.
+
+2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* config/rs6000/rs6000.cc (vspltis_shifted): Return false also if
+	split1 pass has finished already.
+
+2022-02-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (VMSUMCUD): New.
+	* config/rs6000/rs6000-overload.def (VEC_MSUMC): New.
+	* config/rs6000/vsx.md (UNSPEC_VMSUMCUD): New constant.
+	(vmsumcud): New define_insn.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_isa): Add PTX_ISA_SM70.
+	* config/nvptx/nvptx.h (TARGET_SM70): Define.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_rtx_costs): Increase costs for load
+	on condition.
+	* config/s390/s390.md: Use paradoxical subreg.
+
+2022-02-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* combine.cc (reg_subword_p): Check for paradoxical subreg.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104283
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add PTX_VERSION_3_0
+	and PTX_VERSION_4_2.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm)
+	(default_ptx_version_option, ptx_version_to_string)
+	(sm_version_to_string, handle_ptx_version_option): New function.
+	(nvptx_option_override): Call handle_ptx_version_option.
+	(nvptx_file_start): Use ptx_version_to_string and sm_version_to_string.
+	* config/nvptx/nvptx.md (define_insn "nvptx_shuffle<mode>")
+	(define_insn "nvptx_vote_ballot"): Use TARGET_PTX_6_0.
+	* config/nvptx/nvptx.opt (mptx): Remove 'Init'.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* doc/install.texi (Configuration): Document `--with-isa-spec='
+	RISC-V option.
+	* doc/invoke.texi (Option Summary): List `-misa-spec=' RISC-V
+	option.
+	(RISC-V Options): Document it.
+
+2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/t-riscv (riscv-sr.o): Add $(TM_H) dependency.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (write_fn_proto_1): Handle 'main (int)'.
+
+2022-02-08  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104364
+	* config/nvptx/nvptx-protos.h (nvptx_mem_local_p): Declare.
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Assert that
+	change is validated.
+	(nvptx_mem_local_p): New function.
+	* config/nvptx/nvptx.md: Use nvptx_mem_local_p.
+	(define_c_enum "unspecv"): Add UNSPECV_CAS_LOCAL.
+	(define_insn "atomic_compare_and_swap<mode>_1_local"): New
+	non-atomic, non-predicable define_insn, factored out of ...
+	(define_insn "atomic_compare_and_swap<mode>_1"): ... here.
+	Make predicable again.
+	(define_expand "atomic_compare_and_swap<mode>"): Use
+	atomic_compare_and_swap<mode>_1_local.
+
+2022-02-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/104059
+	* regcprop.cc (copyprop_hardreg_forward_1): Don't propagate
+	for a more expensive reg-reg move.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vusdotq_s32, vusdot_laneq_s32,
+	vusdotq_laneq_s32, vsudot_laneq_s32, vsudotq_laneq_s32): New
+	* config/arm/arm_neon_builtins.def (usdot): Add V16QI.
+	(usdot_laneq, sudot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot_laneq<vsi2qi>): New.
+	(neon_<sup>dot_lane<vsi2qi>): Remote unneeded code.
+
+2022-02-07  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vdot_laneq_u32, vdotq_laneq_u32,
+	vdot_laneq_s32, vdotq_laneq_s32): New.
+	* config/arm/arm_neon_builtins.def (sdot_laneq, udot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.
+	(<sup>dot_prod<vsi2qi>): Re-order rtl.
+	(neon_<sup>dot_lane<vsi2qi>): Fix rtl order and endiannes.
+	(neon_<sup>dot_laneq<vsi2qi>): New.
+
+2022-02-07  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/104327
+	* config/s390/s390.cc (s390_can_inline_p): Accept a few more flags
+	if always_inline is set. Don't inline when tune differs without
+	always_inline.
+
+2022-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104402
+	* gimple-expr.cc (is_gimple_condexpr): _Complex typed
+	compares are not valid.
+	* tree-cfg.cc (verify_gimple_assign_ternary): For COND_EXPR
+	check is_gimple_condexpr.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Move the
+	hunk affecting VSX and ALTIVEC to appropriate place.
+
+2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Disable
+	MMA if !TARGET_VSX.
+
 2022-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/89074

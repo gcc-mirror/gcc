@@ -3743,6 +3743,41 @@ argument_pack_select_arg (tree t)
   return arg;
 }
 
+/* Return a modification of ARGS that's suitable for preserving inside a hash
+   table.  In particular, this replaces each ARGUMENT_PACK_SELECT with its
+   underlying argument.  ARGS is copied (upon modification) iff COW_P.  */
+
+static tree
+preserve_args (tree args, bool cow_p = true)
+{
+  if (!args)
+    return NULL_TREE;
+
+  for (int i = 0, len = TREE_VEC_LENGTH (args); i < len; ++i)
+    {
+      tree t = TREE_VEC_ELT (args, i);
+      tree r;
+      if (!t)
+	r = NULL_TREE;
+      else if (TREE_CODE (t) == ARGUMENT_PACK_SELECT)
+	r = argument_pack_select_arg (t);
+      else if (TREE_CODE (t) == TREE_VEC)
+	r = preserve_args (t, cow_p);
+      else
+	r = t;
+      if (r != t)
+	{
+	  if (cow_p)
+	    {
+	      args = copy_template_args (args);
+	      cow_p = false;
+	    }
+	  TREE_VEC_ELT (args, i) = r;
+	}
+    }
+
+  return args;
+}
 
 /* True iff FN is a function representing a built-in variadic parameter
    pack.  */
@@ -13835,7 +13870,7 @@ store_explicit_specifier (tree v, tree t)
 
 /* Lookup an element in EXPLICIT_SPECIFIER_MAP.  */
 
-static tree
+tree
 lookup_explicit_specifier (tree v)
 {
   return *explicit_specifier_map->get (v);
@@ -14068,7 +14103,13 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
 				    /*function_p=*/false,
 				    /*i_c_e_p=*/true);
       spec = build_explicit_specifier (spec, complain);
-      DECL_NONCONVERTING_P (r) = (spec == boolean_true_node);
+      if (instantiation_dependent_expression_p (spec))
+	store_explicit_specifier (r, spec);
+      else
+	{
+	  DECL_NONCONVERTING_P (r) = (spec == boolean_true_node);
+	  DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (r) = false;
+	}
     }
 
   /* OpenMP UDRs have the only argument a reference to the declared
@@ -14444,6 +14485,21 @@ most_general_lambda (tree t)
   while (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
     t = TI_TEMPLATE (ti);
   return t;
+}
+
+/* Return the set of template arguments used to regenerate the lambda T
+   from its most general lambda.  */
+
+tree
+lambda_regenerating_args (tree t)
+{
+  if (LAMBDA_FUNCTION_P (t))
+    t = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
+  gcc_assert (TREE_CODE (t) == LAMBDA_EXPR);
+  if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    return TI_ARGS (ti);
+  else
+    return NULL_TREE;
 }
 
 /* We're instantiating a variable from template function TCTX.  Return the
@@ -16261,53 +16317,55 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 }
 
 /* OLDFNS is a lookup set of member functions from some class template, and
-   NEWFNS is a lookup set of member functions from a specialization of that
-   class template.  Return the subset of NEWFNS which are specializations of
-   a function from OLDFNS.  */
+   NEWFNS is a lookup set of member functions from NEWTYPE, a specialization
+   of that class template.  Return the subset of NEWFNS which are
+   specializations of a function from OLDFNS.  */
 
 static tree
-filter_memfn_lookup (tree oldfns, tree newfns)
+filter_memfn_lookup (tree oldfns, tree newfns, tree newtype)
 {
   /* Record all member functions from the old lookup set OLDFNS into
      VISIBLE_SET.  */
   hash_set<tree> visible_set;
+  bool seen_dep_using = false;
   for (tree fn : lkp_range (oldfns))
     {
       if (TREE_CODE (fn) == USING_DECL)
 	{
-	  /* FIXME: Punt on (dependent) USING_DECL for now; mapping
-	     a dependent USING_DECL to its instantiation seems
-	     tricky.  */
+	  /* Imprecisely handle dependent using-decl by keeping all members
+	     in the new lookup set that are defined in a base class, i.e.
+	     members that could plausibly have been introduced by this
+	     dependent using-decl.
+	     FIXME: Track which members are introduced by a dependent
+	     using-decl precisely, perhaps by performing another lookup
+	     from the substituted USING_DECL_SCOPE.  */
 	  gcc_checking_assert (DECL_DEPENDENT_P (fn));
-	  return newfns;
-	}
-      else if (TREE_CODE (fn) == TEMPLATE_DECL)
-	/* A member function template.  */
-	visible_set.add (fn);
-      else if (TREE_CODE (fn) == FUNCTION_DECL)
-	{
-	  if (DECL_TEMPLATE_INFO (fn))
-	    /* A non-template member function.  */
-	    visible_set.add (DECL_TI_TEMPLATE (fn));
-	  else
-	    /* A non-template member function from a non-template base,
-	       injected via a using-decl.  */
-	    visible_set.add (fn);
+	  seen_dep_using = true;
 	}
       else
-	gcc_unreachable ();
+	visible_set.add (fn);
     }
 
   /* Returns true iff (a less specialized version of) FN appeared in
      the old lookup set OLDFNS.  */
-  auto visible_p = [&visible_set] (tree fn) {
-    if (TREE_CODE (fn) == FUNCTION_DECL
-	&& !DECL_TEMPLATE_INFO (fn))
-      return visible_set.contains (fn);
-    else if (DECL_TEMPLATE_INFO (fn))
+  auto visible_p = [newtype, seen_dep_using, &visible_set] (tree fn) {
+    if (DECL_CONTEXT (fn) != newtype)
+      /* FN is a member function from a base class, introduced via a
+	 using-decl; if it might have been introduced by a dependent
+	 using-decl then just conservatively keep it, otherwise look
+	 in the old lookup set for FN exactly.  */
+      return seen_dep_using || visible_set.contains (fn);
+    else if (TREE_CODE (fn) == TEMPLATE_DECL)
+      /* FN is a member function template from the current class;
+	 look in the old lookup set for the TEMPLATE_DECL from which
+	 it was specialized.  */
       return visible_set.contains (DECL_TI_TEMPLATE (fn));
     else
-      gcc_unreachable ();
+      /* FN is a non-template member function from the current class;
+	 look in the old lookup set for the FUNCTION_DECL from which
+	 it was specialized.  */
+      return visible_set.contains (DECL_TEMPLATE_RESULT
+				   (DECL_TI_TEMPLATE (fn)));
   };
 
   bool lookup_changed_p = false;
@@ -16330,7 +16388,9 @@ filter_memfn_lookup (tree oldfns, tree newfns)
 	filtered_fns = lookup_add (fn, filtered_fns);
 	filtered_size++;
       }
-  gcc_checking_assert (filtered_size == visible_set.elements ());
+  gcc_checking_assert (seen_dep_using
+		       ? filtered_size >= visible_set.elements ()
+		       : filtered_size == visible_set.elements ());
 
   return filtered_fns;
 }
@@ -16399,7 +16459,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	     performed in an incomplete-class context, within which
 	     later-declared members ought to remain invisible.  */
 	  BASELINK_FUNCTIONS (baselink)
-	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink));
+	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
+				   binfo_type);
 	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
 	}
 
@@ -19496,10 +19557,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
   if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
     LAMBDA_EXPR_REGEN_INFO (r)
-      = build_template_info (t, add_to_template_args (TI_ARGS (ti), args));
+      = build_template_info (t, add_to_template_args (TI_ARGS (ti),
+						      preserve_args (args)));
   else
     LAMBDA_EXPR_REGEN_INFO (r)
-      = build_template_info (t, args);
+      = build_template_info (t, preserve_args (args));
 
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -22398,6 +22460,11 @@ uses_deducible_template_parms (tree type)
       for (; parm; parm = TREE_CHAIN (parm))
 	if (uses_deducible_template_parms (TREE_VALUE (parm)))
 	  return true;
+      if (flag_noexcept_type
+	  && TYPE_RAISES_EXCEPTIONS (type)
+	  && TREE_PURPOSE (TYPE_RAISES_EXCEPTIONS (type))
+	  && deducible_expression (TREE_PURPOSE (TYPE_RAISES_EXCEPTIONS (type))))
+	return true;
     }
 
   return false;
@@ -30127,12 +30194,24 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	    return type;
 	}
 
-      if ((context == adc_return_type
-	   || context == adc_variable_type
-	   || context == adc_decomp_type)
-	  && current_function_decl
-	  && DECL_TEMPLATE_INFO (current_function_decl))
-	outer_targs = DECL_TI_ARGS (current_function_decl);
+      if (context == adc_return_type
+	  || context == adc_variable_type
+	  || context == adc_decomp_type)
+	if (tree fn = current_function_decl)
+	  if (DECL_TEMPLATE_INFO (fn) || LAMBDA_FUNCTION_P (fn))
+	    {
+	      outer_targs = DECL_TEMPLATE_INFO (fn)
+		? DECL_TI_ARGS (fn) : NULL_TREE;
+	      if (LAMBDA_FUNCTION_P (fn))
+		{
+		  /* As in satisfy_declaration_constraints.  */
+		  tree regen_args = lambda_regenerating_args (fn);
+		  if (outer_targs)
+		    outer_targs = add_to_template_args (regen_args, outer_targs);
+		  else
+		    outer_targs = regen_args;
+		}
+	    }
 
       tree full_targs = add_to_template_args (outer_targs, targs);
 

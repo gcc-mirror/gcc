@@ -1862,6 +1862,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_DEPEND:
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
