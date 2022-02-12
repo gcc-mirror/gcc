@@ -2816,6 +2816,9 @@ class Ptrmask
 void
 Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 {
+  if (!type->has_pointer())
+    return;
+
   switch (type->base()->classification())
     {
     default:
@@ -2858,9 +2861,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 
     case Type::TYPE_STRUCT:
       {
-	if (!type->has_pointer())
-	  return;
-
 	const Struct_field_list* fields = type->struct_type()->fields();
 	int64_t soffset = 0;
 	for (Struct_field_list::const_iterator pf = fields->begin();
@@ -2898,9 +2898,6 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 	}
       else
 	{
-	  if (!type->has_pointer())
-	    return;
-
 	  int64_t len;
 	  if (!type->array_type()->int_length(&len))
 	    {
