@@ -258,6 +258,7 @@ public:
     // Get the adjusted self
     Adjuster adj (receiver_tyty);
     TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
+    adjusted_self->debug ();
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
