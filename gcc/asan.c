@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fnmatch.h"
 #include "tree-inline.h"
 #include "tree-ssa.h"
+#include "tree-eh.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -726,13 +727,23 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
   gassign *g;
   gcall *gg;
   tree callee = gimple_call_fndecl (call);
+  tree lhs = gimple_call_lhs (call);
   tree old_size = gimple_call_arg (call, 0);
-  tree ptr_type = gimple_call_lhs (call) ? TREE_TYPE (gimple_call_lhs (call))
-					 : ptr_type_node;
+  tree ptr_type = lhs ? TREE_TYPE (lhs) : ptr_type_node;
   tree partial_size = NULL_TREE;
   unsigned int align
     = DECL_FUNCTION_CODE (callee) == BUILT_IN_ALLOCA
       ? 0 : tree_to_uhwi (gimple_call_arg (call, 1));
+
+  bool throws = false;
+  edge e = NULL;
+  if (stmt_can_throw_internal (cfun, call))
+    {
+      if (!lhs)
+	return;
+      throws = true;
+      e = find_fallthru_edge (gsi_bb (*iter)->succs);
+    }
 
   if (hwasan_sanitize_allocas_p ())
     {
@@ -852,29 +863,54 @@ handle_builtin_alloca (gcall *call, gimple_stmt_iterator *iter)
 			  build_int_cst (size_type_node, align));
   tree new_alloca_with_rz = make_ssa_name (ptr_type, gg);
   gimple_call_set_lhs (gg, new_alloca_with_rz);
-  gsi_insert_before (iter, gg, GSI_SAME_STMT);
+  if (throws)
+    {
+      gimple_call_set_lhs (call, NULL);
+      gsi_replace (iter, gg, true);
+    }
+  else
+    gsi_insert_before (iter, gg, GSI_SAME_STMT);
 
   /* new_alloca = new_alloca_with_rz + align.  */
   g = gimple_build_assign (make_ssa_name (ptr_type), POINTER_PLUS_EXPR,
 			   new_alloca_with_rz,
 			   build_int_cst (size_type_node,
 					  align / BITS_PER_UNIT));
-  gsi_insert_before (iter, g, GSI_SAME_STMT);
+  gimple_stmt_iterator gsi = gsi_none ();
+  if (throws)
+    {
+      gsi_insert_on_edge_immediate (e, g);
+      gsi = gsi_for_stmt (g);
+    }
+  else
+    gsi_insert_before (iter, g, GSI_SAME_STMT);
   tree new_alloca = gimple_assign_lhs (g);
 
   /* Poison newly created alloca redzones:
       __asan_alloca_poison (new_alloca, old_size).  */
   fn = builtin_decl_implicit (BUILT_IN_ASAN_ALLOCA_POISON);
   gg = gimple_build_call (fn, 2, new_alloca, old_size);
-  gsi_insert_before (iter, gg, GSI_SAME_STMT);
+  if (throws)
+    gsi_insert_after (&gsi, gg, GSI_NEW_STMT);
+  else
+    gsi_insert_before (iter, gg, GSI_SAME_STMT);
 
   /* Save new_alloca_with_rz value into last_alloca to use it during
      allocas unpoisoning.  */
   g = gimple_build_assign (last_alloca, new_alloca_with_rz);
-  gsi_insert_before (iter, g, GSI_SAME_STMT);
+  if (throws)
+    gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+  else
+    gsi_insert_before (iter, g, GSI_SAME_STMT);
 
   /* Finally, replace old alloca ptr with NEW_ALLOCA.  */
-  replace_call_with_value (iter, new_alloca);
+  if (throws)
+    {
+      g = gimple_build_assign (lhs, new_alloca);
+      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
+    }
+  else
+    replace_call_with_value (iter, new_alloca);
 }
 
 /* Return the memory references contained in a gimple statement
