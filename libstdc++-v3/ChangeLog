@@ -1,3 +1,99 @@
+2022-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	* include/std/ranges (__detail::__box): Revert r11-9555 changes
+	to the constraints on the partial specialization and the
+	now-unnecessary special member functions.
+	(__detail::__non_propagating_cache::operator=): Remove
+	now-unused overload added by r11-9555.
+	(split_view::_OuterIter::__current): Adjust after reverting the
+	r11-9555 change to the type of _M_current.
+	(split_view::_M_current): Revert r11-9555 change to its type.
+	(split_view::split_view): Constrain the default constructor
+	further.
+	* testsuite/std/ranges/adaptors/detail/copyable_box.cc: Disable
+	now-irrelevant test for the r11-9555 changes to the partial
+	specialization of __box.
+
+2022-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-07-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	PR libstdc++/101231
+	* include/std/ranges (_CachedPosition::_M_get): For non-forward
+	ranges, just call __builtin_unreachable.
+	* testsuite/std/ranges/istream_view.cc (test05): New test.
+
+2022-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	* include/bits/ranges_cmp.h (__cpp_lib_ranges): Adjust value.
+
+2022-02-11  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/103904
+	* include/bits/iterator_concepts.h (weakly_incrementable): Remove
+	default_initializable requirement.
+	* include/bits/ranges_base.h (ranges::view): Likewise.
+	* include/bits/ranges_util.h (subrange): Constrain the default
+	ctor.
+	* include/bits/stl_iterator.h (common_iterator): Constrain the
+	default ctor.
+	(counted_iterator): Likewise.
+	* include/std/ranges (__detail::__box::operator=): Handle
+	self-assignment in the primary template.
+	(__detail::__box): In the partial specialization: adjust
+	constraints as per P2325.  Add specialized operator= for the
+	case when the wrapped type is not copyable.  Constrain the
+	default ctor.  Avoid list-initialization.
+	(single_view): Constraint the default ctor.
+	(iota_view): Relax semiregular constraint to copyable.
+	Constrain the default ctor.
+	(iota_view::_Iterator): Constraint the default ctor.
+	(ref_view): Remove the default ctor.  Remove NSDMIs.
+	(ref_view::_Iterator): Constrain the default ctor.
+	(__detail::__non_propagating_cache::operator=): Define overload
+	for assigning from a value of the underlying type.
+	(filter_view): Likewise.
+	(filter_view::_Iterator): Likewise.
+	(transform_view): Likewise.
+	(transform_view::_Iterator): Likewise.
+	(take_view): Likewise.
+	(take_view::_Iterator): Likewise.
+	(take_while_view): Likewise.
+	(take_while_view::_Iterator): Likewise.
+	(drop_while_view): Likewise.
+	(drop_while_view::_Iterator): Likewise.
+	(join_view): Likewise.
+	(split_view::_OuterIter::__current): Adjust after changing the
+	type of _M_current.
+	(split_view::_M_current): Wrap it in a __non_propagating_cache.
+	(split_view::split_view): Constrain the default ctor.
+	(common_view): Constrain the default ctor.
+	(reverse_view): Likewise.
+	(elements_view): Likewise.
+	* include/std/span (enable_view<span<_ElementType, _Extent>>):
+	Define this partial specialization to true unconditionally.
+	* include/std/version (__cpp_lib_ranges): Adjust value.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc:
+	Rename to ...
+	* testsuite/std/ranges/adaptors/detail/copyable_box.cc: ... this.
+	(test02): Adjust now that __box is copyable-box not
+	semiregular-box.
+	(test03): New test.
+	* testsuite/std/ranges/p2325.cc: New test.
+	* testsuite/std/ranges/single_view.cc (test06): New test.
+	* testsuite/std/ranges/view.cc: Adjust now that view doesn't
+	require default_initializable.
+
 2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:

@@ -1,3 +1,32 @@
+2022-02-11  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-12-03  Martin Liska  <mliska@suse.cz>
+
+	PR target/101324
+	* gcc.target/powerpc/pr101324.c: New test.
+
+2022-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-12-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR testsuite/103556
+	PR testsuite/103586
+	* lib/target-supports.exp (check_effective_target_rop_ok): Remove '\n'.
+
+2022-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-12-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_rop_ok): New function.
+	* gcc.target/powerpc/rop-1.c: Use it.
+	* gcc.target/powerpc/rop-2.c: Likewise.
+	* gcc.target/powerpc/rop-3.c: Likewise.
+	* gcc.target/powerpc/rop-4.c: Likewise.
+	* gcc.target/powerpc/rop-5.c: Likewise.
+
 2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

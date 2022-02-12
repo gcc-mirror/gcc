@@ -1,3 +1,14 @@
+2022-02-11  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-12-03  Martin Liska  <mliska@suse.cz>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101324
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move the
+	disabling of shrink-wrapping when using -mrop-protect from here...
+	(rs6000_override_options_after_change): ...to here.
+
 2022-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
