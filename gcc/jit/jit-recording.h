@@ -800,6 +800,9 @@ public:
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
+  // FIXME: does not seem to work.
+  vector_type *dyn_cast_vector_type () FINAL OVERRIDE { return m_other_type->dyn_cast_vector_type (); }
+
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;

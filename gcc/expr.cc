@@ -11080,8 +11080,6 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       goto normal_inner_ref;
 
     case COMPONENT_REF:
-      /*fprintf(stderr, "*********************** Component ref: %d (constructor: %d)\n", TREE_CODE(treeop0), CONSTRUCTOR);
-      debug_tree(treeop0);*/
       gcc_assert (TREE_CODE (treeop0) != CONSTRUCTOR);
       /* Fall through.  */
     case BIT_FIELD_REF:
@@ -12997,8 +12995,6 @@ const_vector_mask_from_tree (tree exp)
 static rtx
 const_vector_from_tree (tree exp)
 {
-    fprintf (stderr, "const vector from tree\n");
-    debug_tree(exp);
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 
   if (initializer_zerop (exp))

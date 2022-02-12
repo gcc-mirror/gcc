@@ -4144,6 +4144,7 @@ gcc_jit_context_new_rvalue_vector_perm (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
 
   // TODO: check that the type of elements1 and elements2 is the same.
+  // TODO: check that the lenth of mask is the same as the input vectors.
   // TODO: check that mask is a **constant** vector.
 
   return (gcc_jit_rvalue *)ctxt->new_rvalue_vector_perm(loc, elements1, elements2, mask);
