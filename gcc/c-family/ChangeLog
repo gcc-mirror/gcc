@@ -1,3 +1,9 @@
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* c-attribs.cc (c_common_attribute_table): Add entry for
+	vector_mask.
+	(handle_vector_mask_attribute): New.
+
 2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-omp.cc (c_omp_split_clauses): Added OMP_CLAUSE_HAS_DEVICE_ADDR case.

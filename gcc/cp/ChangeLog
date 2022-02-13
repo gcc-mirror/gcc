@@ -1,3 +1,11 @@
+2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104472
+	* constexpr.cc (cxx_eval_internal_function) <case IFN_VEC_CONVERT>:
+	Only return fold_const_call result if it is non-NULL.  Otherwise
+	fall through into the default: case to return t, set *non_constant_p
+	and emit diagnostics if needed.
+
 2022-02-10  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (depset::hash::add_specializations): Use

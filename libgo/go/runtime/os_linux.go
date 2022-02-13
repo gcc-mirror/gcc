@@ -18,7 +18,7 @@ type mOS struct {
 	// creates and manages its own timer, and these fields are read and written
 	// only by this thread. But because some of the reads on profileTimerValid
 	// are in signal handling code, access to that field uses atomic operations.
-	profileTimer      uintptr
+	profileTimer      int32
 	profileTimerValid uint32
 }
 
@@ -243,16 +243,17 @@ func osinit() {
 	physHugePageSize = getHugePageSize()
 }
 
-//go:noescape
-//extern-sysinfo timer_create
-func timer_create(clockid int32, sevp *_sigevent, timerid *uintptr) int32
+func timer_create(clockid int32, sevp *_sigevent, timerid *int32) int32 {
+	return int32(syscall(_SYS_timer_create, uintptr(clockid), uintptr(unsafe.Pointer(sevp)), uintptr(unsafe.Pointer(timerid)), 0, 0, 0))
+}
 
-//go:noescape
-//extern-sysinfo timer_settime
-func timer_settime(timerid uintptr, flags int32, new, old *_itimerspec) int32
+func timer_settime(timerid int32, flags int32, new, old *_itimerspec) int32 {
+	return int32(syscall(_SYS_timer_settime, uintptr(timerid), uintptr(flags), uintptr(unsafe.Pointer(new)), uintptr(unsafe.Pointer(old)), 0, 0))
+}
 
-//extern-sysinfo timer_delete
-func timer_delete(timerid uintptr) int32
+func timer_delete(timerid int32) int32 {
+	return int32(syscall(_SYS_timer_delete, uintptr(timerid), 0, 0, 0, 0, 0))
+}
 
 // go118UseTimerCreateProfiler enables the per-thread CPU profiler.
 const go118UseTimerCreateProfiler = true
@@ -360,7 +361,7 @@ func setThreadCPUProfiler(hz int32) {
 	spec.it_value.setNsec(1 + int64(fastrandn(uint32(1e9/hz))))
 	spec.it_interval.setNsec(1e9 / int64(hz))
 
-	var timerid uintptr
+	var timerid int32
 	var sevp _sigevent
 	sevp.sigev_notify = _SIGEV_THREAD_ID
 	sevp.sigev_signo = _SIGPROF

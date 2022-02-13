@@ -549,12 +549,6 @@ AC_CACHE_CHECK([for socket libraries], libgo_cv_lib_sockets,
 NET_LIBS="$libgo_cv_lib_sockets"
 AC_SUBST(NET_LIBS)
 
-RT_LIBS=
-case ${host} in
-  *-*-linux*) RT_LIBS=-lrt ;;
-esac
-AC_SUBST(RT_LIBS)
-
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],

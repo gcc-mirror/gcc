@@ -1,3 +1,8 @@
+2022-02-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Properly parse
+	VEC_COND_EXPRs.
+
 2022-02-10  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_clause_name): Parse 'has_device_addr'

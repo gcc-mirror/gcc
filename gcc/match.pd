@@ -7686,3 +7686,17 @@ and,
    to the number of trailing zeroes.  */
 (match (ctz_table_index @1 @2 @3)
   (rshift (mult (bit_and:c (negate @1) @1) INTEGER_CST@2) INTEGER_CST@3))
+
+(match (cond_expr_convert_p @0 @2 @3 @6)
+ (cond (simple_comparison@6 @0 @1) (convert@4 @2) (convert@5 @3))
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@3))
+       && TYPE_PRECISION (type) != TYPE_PRECISION (TREE_TYPE (@0))
+       && TYPE_PRECISION (TREE_TYPE (@0))
+	  == TYPE_PRECISION (TREE_TYPE (@2))
+       && TYPE_PRECISION (TREE_TYPE (@0))
+	  == TYPE_PRECISION (TREE_TYPE (@3))
+       && single_use (@4)
+       && single_use (@5))))
