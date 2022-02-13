@@ -303,15 +303,6 @@ public:
   // TODO: this seems kinda dodgy
   std::vector<PathExprSegment> &get_segments () { return segments; }
   const std::vector<PathExprSegment> &get_segments () const { return segments; }
-
-  void iterate_path_segments (std::function<bool (PathExprSegment &)> cb)
-  {
-    for (auto it = segments.begin (); it != segments.end (); it++)
-      {
-	if (!cb (*it))
-	  return;
-      }
-  }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows generic
