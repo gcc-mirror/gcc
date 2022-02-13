@@ -1256,18 +1256,24 @@ delete_tree_ssa (struct function *fn)
 bool
 tree_ssa_useless_type_conversion (tree expr)
 {
+  tree outer_type, inner_type;
+
   /* If we have an assignment that merely uses a NOP_EXPR to change
      the top of the RHS to the type of the LHS and the type conversion
      is "safe", then strip away the type conversion so that we can
      enter LHS = RHS into the const_and_copies table.  */
-  if (CONVERT_EXPR_P (expr)
-      || TREE_CODE (expr) == VIEW_CONVERT_EXPR
-      || TREE_CODE (expr) == NON_LVALUE_EXPR)
-    return useless_type_conversion_p
-      (TREE_TYPE (expr),
-       TREE_TYPE (TREE_OPERAND (expr, 0)));
+  if (!CONVERT_EXPR_P (expr)
+      && TREE_CODE (expr) != VIEW_CONVERT_EXPR
+      && TREE_CODE (expr) != NON_LVALUE_EXPR)
+    return false;
 
-  return false;
+  outer_type = TREE_TYPE (expr);
+  inner_type = TREE_TYPE (TREE_OPERAND (expr, 0));
+
+  if (inner_type == error_mark_node)
+    return false;
+
+  return useless_type_conversion_p (outer_type, inner_type);
 }
 
 /* Strip conversions from EXP according to
