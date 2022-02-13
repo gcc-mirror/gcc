@@ -1,5 +1,5 @@
 // https://issues.dlang.org/show_bug.cgi?id=22144
-/* TEST_OUTPUT
+/* TEST_OUTPUT:
 ---
 fail_compilation/fail22144.d(12): Error: cannot cast expression `zarray1` of type `int[0]` to `int[0][]` since sizes don't line up
 ---

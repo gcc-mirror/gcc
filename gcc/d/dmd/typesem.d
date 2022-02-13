@@ -2062,7 +2062,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             switch (mtype.tok)
             {
                 case TOK.enum_:
-                    auto ed = new EnumDeclaration(mtype.loc, mtype.id, Type.tint32);
+                    auto ed = new EnumDeclaration(mtype.loc, mtype.id, mtype.base);
                     declare(ed);
                     mtype.resolved = visitEnum(new TypeEnum(ed));
                     break;
@@ -3940,7 +3940,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
 
             e = new TupleExp(e.loc, e0, exps);
             Scope* sc2 = sc.push();
-            sc2.flags |= global.params.useDIP1000 == FeatureState.enabled ? SCOPE.onlysafeaccess : SCOPE.noaccesscheck;
+            sc2.flags |= SCOPE.noaccesscheck;
             e = e.expressionSemantic(sc2);
             sc2.pop();
             return e;
@@ -4201,7 +4201,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
 
             e = new TupleExp(e.loc, e0, exps);
             Scope* sc2 = sc.push();
-            sc2.flags |= global.params.useDIP1000 == FeatureState.enabled ? SCOPE.onlysafeaccess : SCOPE.noaccesscheck;
+            sc2.flags |= SCOPE.noaccesscheck;
             e = e.expressionSemantic(sc2);
             sc2.pop();
             return e;

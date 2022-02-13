@@ -16,8 +16,8 @@ fail_compilation\noreturn.d(69): Error: `"Accessed expression of type `noreturn`
 fail_compilation\noreturn.d(79):        called from here: `casting(1)`
 fail_compilation\noreturn.d(72): Error: `"Accessed expression of type `noreturn`"`
 fail_compilation\noreturn.d(80):        called from here: `casting(2)`
+fail_compilation/noreturn.d(120): Error: uncaught CTFE exception `object.Exception("")`
 ---
-
 https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1034.md
 */
 
@@ -116,3 +116,5 @@ int inClassRef()
 
 enum forceInClassRef = inClassRef();
 */
+
+enum throwEnum = throw new Exception("");

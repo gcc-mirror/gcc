@@ -691,11 +691,8 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
             }
 
             // If va's lifetime encloses v's, then error
-            if (va &&
-                (va.enclosesLifetimeOf(v) && !(v.storage_class & (STC.parameter | STC.temp)) ||
-                 // va is class reference
-                 ae.e1.isDotVarExp() && va.type.toBasetype().isTypeClass() && (va.enclosesLifetimeOf(v) ||
-                 !va.isScope()) ||
+            if (va && !va.isDataseg() &&
+                (va.enclosesLifetimeOf(v) && !(v.storage_class & STC.temp) ||
                  vaIsRef ||
                  va.isReference() && !(v.storage_class & (STC.parameter | STC.temp))) &&
                 fd.setUnsafe())
@@ -768,7 +765,6 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag)
         }
     }
 
-ByRef:
     foreach (VarDeclaration v; er.byref)
     {
         if (log) printf("byref: %s\n", v.toChars());
@@ -797,34 +793,13 @@ ByRef:
 
         // If va's lifetime encloses v's, then error
         if (va &&
-            (va.enclosesLifetimeOf(v) && !(v.isParameter() && v.isRef()) ||
-             va.isDataseg()) &&
+            (va.enclosesLifetimeOf(v) || (va.isRef() && !(va.storage_class & STC.temp)) || va.isDataseg()) &&
             fd.setUnsafe())
         {
             if (!gag)
                 error(ae.loc, "address of variable `%s` assigned to `%s` with longer lifetime", v.toChars(), va.toChars());
             result = true;
             continue;
-        }
-
-        if (va && v.isReference())
-        {
-            Dsymbol pva = va.toParent2();
-            for (Dsymbol pv = p; pv; )
-            {
-                pv = pv.toParent2();
-                if (pva == pv)  // if v is nested inside pva
-                {
-                    if (fd.setUnsafe())
-                    {
-                        if (!gag)
-                            error(ae.loc, "reference `%s` assigned to `%s` with longer lifetime", v.toChars(), va.toChars());
-                        result = true;
-                        continue ByRef;
-                    }
-                    break;
-                }
-            }
         }
 
         if (!(va && va.isScope()))
@@ -1323,7 +1298,9 @@ private bool checkReturnEscapeImpl(Scope* sc, Expression e, bool refs, bool gag)
                     msg = "returning `%s` escapes a reference to parameter `%s`";
                     supplemental = vsr == ScopeRef.Ref_ReturnScope
                                               ? "perhaps remove `scope` parameter annotation so `return` applies to `ref`"
-                                              : "perhaps annotate the parameter with `return`";
+                                              : v.ident is Id.This
+                                                    ? "perhaps annotate the function with `return`"
+                                                    : "perhaps annotate the parameter with `return`";
                 }
                 else
                 {

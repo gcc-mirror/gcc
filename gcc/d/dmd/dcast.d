@@ -858,11 +858,8 @@ MATCH implicitConvTo(Expression e, Type t)
              * convert to immutable
              */
             if (e.f &&
-                (global.params.useDIP1000 != FeatureState.enabled ||        // lots of legacy code breaks with the following purity check
-                 e.f.isPure() >= PURE.strong ||
-                 // Special case exemption for Object.dup() which we assume is implemented correctly
-                 e.f.ident == Id.dup &&
-                 e.f.toParent2() == ClassDeclaration.object.toParent()) &&
+                // lots of legacy code breaks with the following purity check
+                (global.params.useDIP1000 != FeatureState.enabled || e.f.isPure() >= PURE.const_) &&
                  e.f.isReturnIsolated() // check isReturnIsolated last, because it is potentially expensive.
                )
             {
@@ -2245,9 +2242,12 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 ex = ex.castTo(sc, totuple ? (*totuple.arguments)[i].type : t);
                 (*te.exps)[i] = ex;
             }
+            if (totuple)
+                te.type = totuple;
             result = te;
 
-            /* Questionable behavior: In here, result.type is not set to t.
+            /* Questionable behavior: In here, result.type is not set to t
+             *  if target type is not a tuple of same length.
              * Therefoe:
              *  TypeTuple!(int, int) values;
              *  auto values2 = cast(long)values;

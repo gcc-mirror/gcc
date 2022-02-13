@@ -161,6 +161,8 @@ Target::_init (const Param &)
   this->c.longsize = int_size_in_bytes (long_integer_type_node);
   this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
   this->c.wchar_tsize = (WCHAR_TYPE_SIZE / BITS_PER_UNIT);
+  this->c.bitFieldStyle = targetm.ms_bitfield_layout_p (unknown_type_node)
+    ? TargetC::BitFieldStyle::MS : TargetC::BitFieldStyle::Gcc_Clang;
 
   /* Set-up target C++ ABI.  */
   this->cpp.reverseOverloads = false;
@@ -379,32 +381,21 @@ TargetCPP::typeMangle (Type *type)
    ARG to an extern(C++) function.  */
 
 Type *
-TargetCPP::parameterType (Parameter *arg)
+TargetCPP::parameterType (Type *type)
 {
-  Type *t = arg->type->merge2 ();
-  if (arg->storageClass & (STCout | STCref))
-    t = t->referenceTo ();
-  else if (arg->storageClass & STClazy)
-    {
-      /* Mangle as delegate.  */
-      TypeFunction *tf = TypeFunction::create (NULL, t, VARARGnone, LINK::d);
-      TypeDelegate *td = TypeDelegate::create (tf);
-      t = td->merge2 ();
-    }
-
   /* Could be a va_list, which we mangle as a pointer.  */
   Type *tvalist = target.va_listType (Loc (), NULL);
-  if (t->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
+  if (type->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
     {
-      Type *tb = t->toBasetype ()->mutableOf ();
+      Type *tb = type->toBasetype ()->mutableOf ();
       if (tb == tvalist)
 	{
-	  tb = t->nextOf ()->pointerTo ();
-	  t = tb->castMod (t->mod);
+	  tb = type->nextOf ()->pointerTo ();
+	  type = tb->castMod (type->mod);
 	}
     }
 
-  return t;
+  return type;
 }
 
 /* Checks whether TYPE is a vendor-specific fundamental type.  Stores the result
@@ -577,6 +568,14 @@ bool
 Target::libraryObjectMonitors (FuncDeclaration *, Statement *)
 {
   return true;
+}
+
+/* Returns true if the target supports `pragma(linkerDirective)'.  */
+
+bool
+Target::supportsLinkerDirective (void) const
+{
+  return false;
 }
 
 /* Decides whether an `in' parameter of the specified POD type PARAM_TYPE is to

@@ -2,7 +2,7 @@ TEST_OUTPUT:
 ---
 fail_compilation/test17284.d(1): Error: no identifier for declarator `TEST_OUTPUT`
 fail_compilation/test17284.d(1): Error: declaration expected, not `:`
-fail_compilation/test17284.d(12): Error: unrecognized declaration
+fail_compilation/test17284.d(12): Error: unmatched closing brace
 ---
 */
 

@@ -1,6 +1,6 @@
 /*
 PERMUTE_ARGS: -preview=dip1000
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/test21912.d(24): Error: function `test21912.escapeParam` is `@nogc` yet allocates closures with the GC
 fail_compilation/test21912.d(26):        test21912.escapeParam.__lambda2 closes over variable i at fail_compilation/test21912.d(24)

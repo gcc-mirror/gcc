@@ -367,7 +367,10 @@ detect if we need to override. The overriding initializer should be nonzero.
 private class TypeInfoArrayGeneric(T, Base = T) : Select!(is(T == Base), TypeInfo_Array, TypeInfoArrayGeneric!Base)
 {
     static if (is(T == Base))
-        override bool opEquals(Object o) { return TypeInfo.opEquals(o); }
+        override bool opEquals(const Object o) const @safe nothrow { return TypeInfo.opEquals(cast(const TypeInfo) o); }
+
+    alias opEquals = typeof(super).opEquals;
+    alias opEquals = TypeInfo.opEquals;
 
     override string toString() const { return (T[]).stringof; }
 

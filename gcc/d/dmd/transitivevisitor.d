@@ -1141,6 +1141,12 @@ package mixin template ParseVisitMethods(AST)
         }
     }
 
+    override void visit(AST.ThrowExp e)
+    {
+        //printf("Visiting ThrowExp\n");
+        e.e1.accept(this);
+    }
+
 // Template Parameter
 //===========================================================
 
