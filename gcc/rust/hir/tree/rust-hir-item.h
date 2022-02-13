@@ -632,6 +632,8 @@ public:
     return Visibility (IN_PATH, std::move (in_path));
   }
 
+  PublicVisType get_vis_type () const { return public_vis_type; }
+
   std::string as_string () const;
 
 protected:

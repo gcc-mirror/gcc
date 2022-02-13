@@ -30,12 +30,14 @@ namespace Compile {
 
 void
 HIRCompileBase::setup_attributes_on_fndecl (
-  tree fndecl, bool is_main_entry_point, bool has_visibility,
+  tree fndecl, bool is_main_entry_point, HIR::Visibility &visibility,
   const HIR::FunctionQualifiers &qualifiers, const AST::AttrVec &attrs)
 {
   // if its the main fn or pub visibility mark its as DECL_PUBLIC
   // please see https://github.com/Rust-GCC/gccrs/pull/137
-  if (is_main_entry_point || has_visibility)
+  bool is_pub
+    = visibility.get_vis_type () != HIR::Visibility::PublicVisType::NONE;
+  if (is_main_entry_point || is_pub)
     {
       TREE_PUBLIC (fndecl) = 1;
     }
@@ -52,16 +54,56 @@ HIRCompileBase::setup_attributes_on_fndecl (
       bool is_inline = attr.get_path ().as_string ().compare ("inline") == 0;
       if (is_inline)
 	{
-	  DECL_DECLARED_INLINE_P (fndecl) = 1;
-
-	  // do we want to force inline regardless of optimisation level?
-	  // https://gcc.gnu.org/onlinedocs/gcc/Inline.html
-	  //
-	  // /* Add attribute "always_inline": */
-	  // DECL_ATTRIBUTES (fndecl)
-	  //   = tree_cons (get_identifier ("always_inline"), NULL,
-	  //       	 DECL_ATTRIBUTES (fndecl));
+	  handle_inline_attribute_on_fndecl (fndecl, attr);
 	}
+    }
+}
+
+void
+HIRCompileBase::handle_inline_attribute_on_fndecl (tree fndecl,
+						   const AST::Attribute &attr)
+{
+  // simple #[inline]
+  if (!attr.has_attr_input ())
+    {
+      DECL_DECLARED_INLINE_P (fndecl) = 1;
+      return;
+    }
+
+  const AST::AttrInput &input = attr.get_attr_input ();
+  bool is_token_tree
+    = input.get_attr_input_type () == AST::AttrInput::AttrInputType::TOKEN_TREE;
+  rust_assert (is_token_tree);
+  const auto &option = static_cast<const AST::DelimTokenTree &> (input);
+  AST::AttrInputMetaItemContainer *meta_item = option.parse_to_meta_item ();
+  if (meta_item->get_items ().size () != 1)
+    {
+      rust_error_at (attr.get_locus (), "invalid number of arguments");
+      return;
+    }
+
+  const std::string inline_option
+    = meta_item->get_items ().at (0)->as_string ();
+
+  // we only care about NEVER and ALWAYS else its an error
+  bool is_always = inline_option.compare ("always") == 0;
+  bool is_never = inline_option.compare ("never") == 0;
+
+  // #[inline(never)]
+  if (is_never)
+    {
+      DECL_UNINLINABLE (fndecl) = 1;
+    }
+  // #[inline(always)]
+  else if (is_always)
+    {
+      DECL_DECLARED_INLINE_P (fndecl) = 1;
+      DECL_ATTRIBUTES (fndecl) = tree_cons (get_identifier ("always_inline"),
+					    NULL, DECL_ATTRIBUTES (fndecl));
+    }
+  else
+    {
+      rust_error_at (attr.get_locus (), "unknown inline option");
     }
 }
 
@@ -278,8 +320,8 @@ HIRCompileBase::compile_function (
   unsigned int flags = 0;
   tree fndecl = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 					       asm_name, flags, locus);
-  setup_attributes_on_fndecl (fndecl, is_main_fn, !visibility.is_error (),
-			      qualifiers, outer_attrs);
+  setup_attributes_on_fndecl (fndecl, is_main_fn, visibility, qualifiers,
+			      outer_attrs);
   setup_abi_options (fndecl, fntype->get_abi ());
 
   // insert into the context
