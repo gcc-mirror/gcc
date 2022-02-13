@@ -1,3 +1,28 @@
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* gcc.dg/asan/pr104449.c: New test.
+	* g++.dg/asan/pr104449.C: New test.
+
+2022-02-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/104481
+	* g++.target/i386/pr35513-1.C: Require property_1_needed target.
+	* g++.target/i386/pr35513-2.C: Likewise.
+	* gcc.target/i386/pr35513-8.c: Change to compile.
+	* lib/target-supports.exp (check_compile): Support assembly code.
+	(check_effective_target_property_1_needed): New proc.
+
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* gcc.target/i386/pr104502.c: New test.
+
+2022-02-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/79754
+	* gcc.target/i386/pr79754.c: New test.
+
 2022-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/104499

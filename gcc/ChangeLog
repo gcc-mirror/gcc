@@ -1,3 +1,22 @@
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* asan.cc: Include tree-eh.h.
+	(handle_builtin_alloca): Handle the case when __builtin_alloca or
+	__builtin_alloca_with_align can throw.
+
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* config/i386/i386.md (cvtsd2ss splitter): If operands[1] is xmm16+
+	and AVX512VL isn't available, move operands[1] to operands[0] first.
+
+2022-02-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/79754
+	* config/i386/i386.cc (type_natural_mode):
+	Skip decimal float vector modes.
+
 2022-02-11  Iain Sandoe  <iain@sandoe.co.uk>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 
