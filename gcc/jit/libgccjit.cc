@@ -2456,6 +2456,8 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  gcc::jit::recording::vector_type *vector_type = type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL (vector_type == NULL, ctxt, loc, "cannot cast vector types");
   RETURN_NULL_IF_FAIL_PRINTF3 (
     is_valid_cast (rvalue->get_type (), type),
     ctxt, loc,

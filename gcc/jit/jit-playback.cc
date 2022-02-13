@@ -2094,9 +2094,9 @@ add_assignment (location *loc,
       {
         m_func->m_ctxt->add_error (loc, "mismatched types in assignment");
         fprintf (stderr, "actual:\n");
-        debug_tree (TREE_TYPE (t_rvalue));
+        debug_tree (t_rvalue);
         fprintf (stderr, "expected:\n");
-        debug_tree (TREE_TYPE (t_lvalue));
+        debug_tree (t_lvalue);
       }
 
       t_rvalue = build1 (CONVERT_EXPR,
