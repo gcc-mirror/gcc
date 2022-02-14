@@ -6,7 +6,7 @@ riscv-builtins.o: $(srcdir)/config/riscv/riscv-builtins.c $(CONFIG_H) \
 		$(srcdir)/config/riscv/riscv-builtins.c
 
 riscv-sr.o: $(srcdir)/config/riscv/riscv-sr.c $(CONFIG_H) \
-  $(SYSTEM_H)
+  $(SYSTEM_H) $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-sr.c
 
