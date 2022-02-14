@@ -771,7 +771,7 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
       if (unary->get_op () == NOP_EXPR
 	  || unary->get_op () == VIEW_CONVERT_EXPR)
 	if (tree cst = unary->get_arg ()->maybe_get_constant ())
-	  if (zerop (cst))
+	  if (zerop (cst) && type)
 	    {
 	      const svalue *cst_sval
 		= get_or_create_constant_svalue (cst);
@@ -786,7 +786,8 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 	/* If we have a concrete 1-byte access within the parent region... */
 	byte_range subregion_bytes (0, 0);
 	if (subregion->get_relative_concrete_byte_range (&subregion_bytes)
-	    && subregion_bytes.m_size_in_bytes == 1)
+	    && subregion_bytes.m_size_in_bytes == 1
+	    && type)
 	  {
 	    /* ...then attempt to get that char from the STRING_CST.  */
 	    HOST_WIDE_INT hwi_start_byte
