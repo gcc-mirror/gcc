@@ -8287,10 +8287,32 @@ package body Sem_Util is
    -- Enclosing_Package --
    -----------------------
 
-   function Enclosing_Package (E : Entity_Id) return Entity_Id is
-      Dynamic_Scope : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+   function Enclosing_Package (N : Node_Or_Entity_Id) return Entity_Id is
+      Dynamic_Scope : Entity_Id;
 
    begin
+      --  Obtain the enclosing scope when N is a Node_Id - taking care to
+      --  handle the case when the enclosing scope is already a package.
+
+      if Nkind (N) not in N_Entity then
+         declare
+            Encl_Scop : constant Entity_Id := Find_Enclosing_Scope (N);
+         begin
+            if No (Encl_Scop) then
+               return Empty;
+            elsif Ekind (Encl_Scop) in
+                    E_Generic_Package | E_Package | E_Package_Body
+            then
+               return Encl_Scop;
+            end if;
+
+            return Enclosing_Package (Encl_Scop);
+         end;
+      end if;
+
+      --  When N is already an Entity_Id proceed
+
+      Dynamic_Scope := Enclosing_Dynamic_Scope (N);
       if Dynamic_Scope = Standard_Standard then
          return Standard_Standard;
 

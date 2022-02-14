@@ -816,9 +816,9 @@ package Sem_Util is
    --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
    --  library unit. If no such item is found, returns Empty.
 
-   function Enclosing_Package (E : Entity_Id) return Entity_Id;
+   function Enclosing_Package (N : Node_Or_Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the package enclosing
-   --  the entity E, if any. Returns Empty if no enclosing package.
+   --  the entity or node N, if any. Returns Empty if no enclosing package.
 
    function Enclosing_Package_Or_Subprogram (E : Entity_Id) return Entity_Id;
    --  Returns the entity of the package or subprogram enclosing E, if any.

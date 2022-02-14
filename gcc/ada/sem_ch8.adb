@@ -9202,8 +9202,33 @@ package body Sem_Ch8 is
      (Clause1 : Entity_Id;
       Clause2 : Entity_Id) return Entity_Id
    is
+      function Determine_Package_Scope (Clause : Node_Id) return Entity_Id;
+      --  Given a use clause, determine which package it belongs to
+
+      -----------------------------
+      -- Determine_Package_Scope --
+      -----------------------------
+
+      function Determine_Package_Scope (Clause : Node_Id) return Entity_Id is
+      begin
+         --  Check if the clause appears in the context area
+
+         --  Note we cannot employ Enclosing_Packge for use clauses within
+         --  context clauses since they are not actually "enclosed."
+
+         if Nkind (Parent (Clause)) = N_Compilation_Unit then
+            return Entity_Of_Unit (Unit (Parent (Clause)));
+         end if;
+
+         --  Otherwise, obtain the enclosing package normally
+
+         return Enclosing_Package (Clause);
+      end Determine_Package_Scope;
+
       Scope1 : Entity_Id;
       Scope2 : Entity_Id;
+
+   --  Start of processing for Most_Descendant_Use_Clause
 
    begin
       if Clause1 = Clause2 then
@@ -9213,8 +9238,8 @@ package body Sem_Ch8 is
       --  We determine which one is the most descendant by the scope distance
       --  to the ultimate parent unit.
 
-      Scope1 := Entity_Of_Unit (Unit (Parent (Clause1)));
-      Scope2 := Entity_Of_Unit (Unit (Parent (Clause2)));
+      Scope1 := Determine_Package_Scope (Clause1);
+      Scope2 := Determine_Package_Scope (Clause2);
       while Scope1 /= Standard_Standard
         and then Scope2 /= Standard_Standard
       loop
