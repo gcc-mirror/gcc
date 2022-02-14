@@ -1,3 +1,11 @@
+2022-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-02-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/79754
+	* gcc.target/i386/pr79754.c: New test.
+
 2022-02-11  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:

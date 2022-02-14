@@ -1,3 +1,12 @@
+2022-02-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2022-02-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/79754
+	* config/i386/i386.c (type_natural_mode):
+	Skip decimal float vector modes.
+
 2022-02-11  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
