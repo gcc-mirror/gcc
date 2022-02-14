@@ -1,6 +1,7 @@
 /* PR target/95252 */
-/* { dg-options "-O3 -funroll-loops -msave-restore" } */
+/* { dg-options "-funroll-loops -msave-restore" } */
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 int a[6], b = 1, d, e;
 long long c;

@@ -9227,7 +9227,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	sym->ts.u.cl = target->ts.u.cl;
 
       if (sym->ts.deferred && target->expr_type == EXPR_VARIABLE
-	  && target->symtree->n.sym->attr.dummy
 	  && sym->ts.u.cl == target->ts.u.cl)
 	{
 	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);

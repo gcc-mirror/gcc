@@ -2,6 +2,7 @@
 /* Testcase by George Thopas <george.thopas@gmail.com> */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 
 #include <stddef.h>
 #include <stdlib.h>

@@ -3296,18 +3296,22 @@ check_local_shadow (tree decl)
 
 	/* Warn if a variable shadows a non-function, or the variable
 	   is a function or a pointer-to-function.  */
-	if (!OVL_P (member)
-	    || TREE_CODE (decl) == FUNCTION_DECL
-	    || (TREE_TYPE (decl)
-		&& (TYPE_PTRFN_P (TREE_TYPE (decl))
-		    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))))
+	if ((!OVL_P (member)
+	     || TREE_CODE (decl) == FUNCTION_DECL
+	     || (TREE_TYPE (decl)
+		 && (TYPE_PTRFN_P (TREE_TYPE (decl))
+		     || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))))
+	    && !warning_suppressed_p (decl, OPT_Wshadow))
 	  {
 	    auto_diagnostic_group d;
 	    if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
-	      inform_shadowed (member);
+	      {
+		inform_shadowed (member);
+		suppress_warning (decl, OPT_Wshadow);
+	      }
 	  }
 	return;
       }
@@ -3319,14 +3323,18 @@ check_local_shadow (tree decl)
 	  || (TREE_CODE (old) == TYPE_DECL
 	      && (!DECL_ARTIFICIAL (old)
 		  || TREE_CODE (decl) == TYPE_DECL)))
-      && !instantiating_current_function_p ())
+      && !instantiating_current_function_p ()
+      && !warning_suppressed_p (decl, OPT_Wshadow))
     /* XXX shadow warnings in outer-more namespaces */
     {
       auto_diagnostic_group d;
       if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
-	inform_shadowed (old);
+	{
+	  inform_shadowed (old);
+	  suppress_warning (decl, OPT_Wshadow);
+	}
       return;
     }
 

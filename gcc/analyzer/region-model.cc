@@ -843,13 +843,21 @@ region_model::check_for_poison (const svalue *sval,
 
   if (const poisoned_svalue *poisoned_sval = sval->dyn_cast_poisoned_svalue ())
     {
+      enum poison_kind pkind = poisoned_sval->get_poison_kind ();
+
+      /* Ignore uninitialized uses of empty types; there's nothing
+	 to initialize.  */
+      if (pkind == POISON_KIND_UNINIT
+	  && sval->get_type ()
+	  && is_empty_type (sval->get_type ()))
+	return sval;
+
       /* If we have an SSA name for a temporary, we don't want to print
 	 '<unknown>'.
 	 Poisoned values are shared by type, and so we can't reconstruct
 	 the tree other than via the def stmts, using
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
-      enum poison_kind pkind = poisoned_sval->get_poison_kind ();
       const region *src_region = NULL;
       if (pkind == POISON_KIND_UNINIT)
 	src_region = get_region_for_poisoned_expr (expr);
@@ -4710,6 +4718,23 @@ test_descendent_of_p ()
   ASSERT_TRUE (cast_reg->descendent_of_p (x_reg));
 }
 
+/* Verify that bit_range_region works as expected.  */
+
+static void
+test_bit_range_regions ()
+{
+  tree x = build_global_decl ("x", integer_type_node);
+  region_model_manager mgr;
+  const region *x_reg = mgr.get_region_for_global (x);
+  const region *byte0
+    = mgr.get_bit_range (x_reg, char_type_node, bit_range (0, 8));
+  const region *byte1
+    = mgr.get_bit_range (x_reg, char_type_node, bit_range (8, 8));
+  ASSERT_TRUE (byte0->descendent_of_p (x_reg));
+  ASSERT_TRUE (byte1->descendent_of_p (x_reg));
+  ASSERT_NE (byte0, byte1);
+}
+
 /* Verify that simple assignments work as expected.  */
 
 static void
@@ -6009,6 +6034,7 @@ analyzer_region_model_cc_tests ()
   test_binop_svalue_folding ();
   test_sub_svalue_folding ();
   test_descendent_of_p ();
+  test_bit_range_regions ();
   test_assignment ();
   test_compound_assignment ();
   test_stack_frames ();

@@ -116,6 +116,17 @@ static_assert( requires (::atomic_int* i, int* e) {
   ::atomic_compare_exchange_weak_explicit(i, e, 3,
 					  memory_order_acq_rel,
 					  memory_order_relaxed);
+
+  ::atomic_fetch_add(i, 1);
+  ::atomic_fetch_add_explicit(i, 1, memory_order_relaxed);
+  ::atomic_fetch_sub(i, 1);
+  ::atomic_fetch_sub_explicit(i, 1, memory_order_relaxed);
+  ::atomic_fetch_and(i, 1);
+  ::atomic_fetch_and_explicit(i, 1, memory_order_relaxed);
+  ::atomic_fetch_or(i, 1);
+  ::atomic_fetch_or_explicit(i, 1, memory_order_relaxed);
+  ::atomic_fetch_xor(i, 1);
+  ::atomic_fetch_xor_explicit(i, 1, memory_order_relaxed);
 } );
 
 static_assert( requires (::atomic_flag* f) {

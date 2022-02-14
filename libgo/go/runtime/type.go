@@ -7,8 +7,8 @@
 package runtime
 
 import (
+	"internal/goarch"
 	"runtime/internal/atomic"
-	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -237,7 +237,7 @@ func reflect_lookupType(s string) *_type {
 			typelist.types = make(map[string]uintptr, n)
 			for _, list := range typelist.lists {
 				for i := 0; i < list.count; i++ {
-					typ := *(**_type)(add(unsafe.Pointer(&list.types), uintptr(i)*sys.PtrSize))
+					typ := *(**_type)(add(unsafe.Pointer(&list.types), uintptr(i)*goarch.PtrSize))
 					typelist.types[typ.string()] = uintptr(unsafe.Pointer(typ))
 				}
 			}

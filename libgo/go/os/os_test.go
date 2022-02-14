@@ -52,34 +52,31 @@ var sysdir = func() *sysDir {
 				"libpowermanager.so",
 			},
 		}
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			wd, err := syscall.Getwd()
-			if err != nil {
-				wd = err.Error()
-			}
-			sd := &sysDir{
-				filepath.Join(wd, "..", ".."),
-				[]string{
-					"ResourceRules.plist",
-					"Info.plist",
-				},
-			}
-			found := true
-			for _, f := range sd.files {
-				path := filepath.Join(sd.name, f)
-				if _, err := Stat(path); err != nil {
-					found = false
-					break
-				}
-			}
-			if found {
-				return sd
-			}
-			// In a self-hosted iOS build the above files might
-			// not exist. Look for system files instead below.
+	case "ios":
+		wd, err := syscall.Getwd()
+		if err != nil {
+			wd = err.Error()
 		}
+		sd := &sysDir{
+			filepath.Join(wd, "..", ".."),
+			[]string{
+				"ResourceRules.plist",
+				"Info.plist",
+			},
+		}
+		found := true
+		for _, f := range sd.files {
+			path := filepath.Join(sd.name, f)
+			if _, err := Stat(path); err != nil {
+				found = false
+				break
+			}
+		}
+		if found {
+			return sd
+		}
+		// In a self-hosted iOS build the above files might
+		// not exist. Look for system files instead below.
 	case "windows":
 		return &sysDir{
 			Getenv("SystemRoot") + "\\system32\\drivers\\etc",
@@ -113,20 +110,16 @@ func size(name string, t *testing.T) int64 {
 	if err != nil {
 		t.Fatal("open failed:", err)
 	}
-	defer file.Close()
-	var buf [100]byte
-	len := 0
-	for {
-		n, e := file.Read(buf[0:])
-		len += n
-		if e == io.EOF {
-			break
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Error(err)
 		}
-		if e != nil {
-			t.Fatal("read failed:", e)
-		}
+	}()
+	n, err := io.Copy(io.Discard, file)
+	if err != nil {
+		t.Fatal(err)
 	}
-	return int64(len)
+	return n
 }
 
 func equal(name1, name2 string) (r bool) {
@@ -142,13 +135,8 @@ func equal(name1, name2 string) (r bool) {
 // localTmp returns a local temporary directory not on NFS.
 func localTmp() string {
 	switch runtime.GOOS {
-	case "android", "windows":
+	case "android", "ios", "windows":
 		return TempDir()
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			return TempDir()
-		}
 	}
 	return "/tmp"
 }
@@ -572,15 +560,12 @@ func TestReaddirnamesOneAtATime(t *testing.T) {
 	switch runtime.GOOS {
 	case "android":
 		dir = "/system/bin"
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			wd, err := Getwd()
-			if err != nil {
-				t.Fatal(err)
-			}
-			dir = wd
+	case "ios":
+		wd, err := Getwd()
+		if err != nil {
+			t.Fatal(err)
 		}
+		dir = wd
 	case "plan9":
 		dir = "/bin"
 	case "windows":
@@ -1401,22 +1386,19 @@ func TestChdirAndGetwd(t *testing.T) {
 		dirs = []string{"/system/bin"}
 	case "plan9":
 		dirs = []string{"/", "/usr"}
-	case "darwin", "ios":
-		switch runtime.GOARCH {
-		case "arm64":
-			dirs = nil
-			for _, d := range []string{"d1", "d2"} {
-				dir, err := os.MkdirTemp("", d)
-				if err != nil {
-					t.Fatalf("TempDir: %v", err)
-				}
-				// Expand symlinks so path equality tests work.
-				dir, err = filepath.EvalSymlinks(dir)
-				if err != nil {
-					t.Fatalf("EvalSymlinks: %v", err)
-				}
-				dirs = append(dirs, dir)
+	case "ios":
+		dirs = nil
+		for _, d := range []string{"d1", "d2"} {
+			dir, err := os.MkdirTemp("", d)
+			if err != nil {
+				t.Fatalf("TempDir: %v", err)
 			}
+			// Expand symlinks so path equality tests work.
+			dir, err = filepath.EvalSymlinks(dir)
+			if err != nil {
+				t.Fatalf("EvalSymlinks: %v", err)
+			}
+			dirs = append(dirs, dir)
 		}
 	}
 	oldwd := Getenv("PWD")
@@ -1763,8 +1745,8 @@ func TestHostname(t *testing.T) {
 	// and the /bin/hostname only returns the first component
 	want := runBinHostname(t)
 	if hostname != want {
-		i := strings.Index(hostname, ".")
-		if i < 0 || hostname[0:i] != want {
+		host, _, ok := strings.Cut(hostname, ".")
+		if !ok || host != want {
 			t.Errorf("Hostname() = %q, want %q", hostname, want)
 		}
 	}
@@ -2440,8 +2422,6 @@ func TestRemoveAllRace(t *testing.T) {
 // Test that reading from a pipe doesn't use up a thread.
 func TestPipeThreads(t *testing.T) {
 	switch runtime.GOOS {
-	case "freebsd":
-		t.Skip("skipping on FreeBSD; issue 19093")
 	case "illumos", "solaris":
 		t.Skip("skipping on Solaris and illumos; issue 19111")
 	case "windows":

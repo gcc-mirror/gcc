@@ -1407,6 +1407,9 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   rtx scratch, tmp0, tmp1, tmp2;
   rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
 
+  operands[2] = force_reg (mode, operands[2]);
+  operands[3] = force_reg (mode, operands[3]);
+
   switch (mode)
     {
     case E_SImode:

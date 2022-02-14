@@ -3,7 +3,8 @@
    constant folding.  With optimization enabled the test will fail to
    link if any of the assertions fails.  Without optimization the test
    aborts at runtime if any of the assertions fails.  */
-/* { dg-do run } */
+/* { dg-do run { target c99_runtime } } */
+/* { dg-do link { target { ! c99_runtime } } } */
 /* { dg-skip-if "not IEEE float layout" { "pdp11-*-*" } } */
 /* { dg-additional-options "-O2 -Wall -Wno-pedantic -fprintf-return-value" } */
 

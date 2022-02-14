@@ -5,8 +5,8 @@
 package runtime
 
 import (
+	"internal/goarch"
 	"runtime/internal/atomic"
-	"runtime/internal/sys"
 	"unsafe"
 )
 
@@ -117,7 +117,7 @@ func (t *itabTableType) find(inter *interfacetype, typ *_type) *itab {
 	mask := t.size - 1
 	h := itabHashFunc(inter, typ) & mask
 	for i := uintptr(1); ; i++ {
-		p := (**itab)(add(unsafe.Pointer(&t.entries), h*sys.PtrSize))
+		p := (**itab)(add(unsafe.Pointer(&t.entries), h*goarch.PtrSize))
 		// Use atomic read here so if we see m != nil, we also see
 		// the initializations of the fields of m.
 		// m := *p
@@ -150,7 +150,7 @@ func itabAdd(m *itab) {
 		// t2 = new(itabTableType) + some additional entries
 		// We lie and tell malloc we want pointer-free memory because
 		// all the pointed-to values are not in the heap.
-		t2 := (*itabTableType)(mallocgc((2+2*t.size)*sys.PtrSize, nil, true))
+		t2 := (*itabTableType)(mallocgc((2+2*t.size)*goarch.PtrSize, nil, true))
 		t2.size = t.size * 2
 
 		// Copy over entries.
@@ -178,7 +178,7 @@ func (t *itabTableType) add(m *itab) {
 	mask := t.size - 1
 	h := itabHashFunc(m.inter, m._type()) & mask
 	for i := uintptr(1); ; i++ {
-		p := (**itab)(add(unsafe.Pointer(&t.entries), h*sys.PtrSize))
+		p := (**itab)(add(unsafe.Pointer(&t.entries), h*goarch.PtrSize))
 		m2 := *p
 		if m2 == m {
 			// A given itab may be used in more than one module
@@ -253,7 +253,7 @@ func iterate_itabs(fn func(*itab)) {
 	// so no other locks/atomics needed.
 	t := itabTable
 	for i := uintptr(0); i < t.size; i++ {
-		m := *(**itab)(add(unsafe.Pointer(&t.entries), i*sys.PtrSize))
+		m := *(**itab)(add(unsafe.Pointer(&t.entries), i*goarch.PtrSize))
 		if m != nil {
 			fn(m)
 		}
@@ -304,7 +304,7 @@ func getitab(lhs, rhs *_type, canfail bool) unsafe.Pointer {
 	}
 
 	// Entry doesn't exist yet. Make a new entry & add it.
-	m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(lhsi.methods)-1)*sys.PtrSize, 0, &memstats.other_sys))
+	m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(lhsi.methods)-1)*goarch.PtrSize, 0, &memstats.other_sys))
 	m.inter = lhsi
 	m.methods[0] = unsafe.Pointer(rhs)
 	m.init()

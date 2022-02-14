@@ -467,6 +467,8 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 static void
 maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
 {
+  if (!flag_exceptions)
+    return;
   if (tree cleanup
       = cxx_maybe_build_cleanup (sub, tf_warning_or_error))
     {
@@ -496,6 +498,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
   bool array_type_p = false;
   bool complete_p = true;
   HOST_WIDE_INT num_split_elts = 0;
+  tree last_split_elt = NULL_TREE;
 
   switch (TREE_CODE (type))
     {
@@ -572,6 +575,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 	      else
 		{
 		  /* Mark element for removal.  */
+		  last_split_elt = field_index;
 		  CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 		  if (idx < tidx)
 		    tidx = idx;
@@ -584,6 +588,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 					      flags));
 
 	      /* Mark element for removal.  */
+	      last_split_elt = field_index;
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 	      if (idx < tidx)
 		tidx = idx;
@@ -592,6 +597,26 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
 	      tree code;
+
+	      /* Push cleanups for any preceding members with constant
+		 initialization.  */
+	      if (CLASS_TYPE_P (type))
+		for (tree prev = (last_split_elt ?
+				  DECL_CHAIN (last_split_elt)
+				  : TYPE_FIELDS (type));
+		     ; prev = DECL_CHAIN (prev))
+		  {
+		    prev = next_initializable_field (prev);
+		    if (prev == field_index)
+		      break;
+		    tree ptype = TREE_TYPE (prev);
+		    if (type_build_dtor_call (ptype))
+		      {
+			tree pcref = build3 (COMPONENT_REF, ptype, dest, prev,
+					     NULL_TREE);
+			maybe_push_temp_cleanup (pcref, flags);
+		      }
+		  }
 
 	      /* Mark element for removal.  */
 	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
@@ -645,6 +670,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		    maybe_push_temp_cleanup (sub, flags);
 		}
 
+	      last_split_elt = field_index;
 	      num_split_elts++;
 	    }
 	}

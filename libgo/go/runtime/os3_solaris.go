@@ -35,3 +35,8 @@ func sysargs(argc int32, argv **byte) {
 func solarisExecutablePath() string {
 	return executablePath
 }
+
+//go:nosplit
+func validSIGPROF(mp *m, c *sigctxt) bool {
+	return true
+}

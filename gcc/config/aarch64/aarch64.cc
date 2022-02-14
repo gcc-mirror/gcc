@@ -4239,23 +4239,6 @@ aarch64_split_128bit_move_p (rtx dst, rtx src)
   return true;
 }
 
-/* Split a complex SIMD combine.  */
-
-void
-aarch64_split_simd_combine (rtx dst, rtx src1, rtx src2)
-{
-  machine_mode src_mode = GET_MODE (src1);
-  machine_mode dst_mode = GET_MODE (dst);
-
-  gcc_assert (VECTOR_MODE_P (dst_mode));
-  gcc_assert (register_operand (dst, dst_mode)
-	      && register_operand (src1, src_mode)
-	      && register_operand (src2, src_mode));
-
-  emit_insn (gen_aarch64_simd_combine (src_mode, dst, src1, src2));
-  return;
-}
-
 /* Split a complex SIMD move.  */
 
 void
@@ -9939,9 +9922,15 @@ aarch64_classify_address (struct aarch64_address_info *info,
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
-  if (type == ADDR_QUERY_LDP_STP_N
-      && known_eq (GET_MODE_SIZE (mode), 16))
-    mode = DFmode;
+  if (type == ADDR_QUERY_LDP_STP_N)
+    {
+      if (known_eq (GET_MODE_SIZE (mode), 16))
+	mode = DFmode;
+      else if (known_eq (GET_MODE_SIZE (mode), 8))
+	mode = SFmode;
+      else
+	return false;
+    }
 
   bool allow_reg_index_p = (!load_store_pair_p
 			    && ((vec_flags == 0
@@ -11421,7 +11410,9 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	machine_mode mode = GET_MODE (x);
 
 	if (!MEM_P (x)
-	    || (code == 'y' && maybe_ne (GET_MODE_SIZE (mode), 16)))
+	    || (code == 'y'
+		&& maybe_ne (GET_MODE_SIZE (mode), 8)
+		&& maybe_ne (GET_MODE_SIZE (mode), 16)))
 	  {
 	    output_operand_lossage ("invalid operand for '%%%c'", code);
 	    return;
@@ -20941,37 +20932,13 @@ aarch64_expand_vector_init (rtx target, rtx vals)
      of mode N in VALS and we must put their concatentation into TARGET.  */
   if (XVECLEN (vals, 0) == 2 && VECTOR_MODE_P (GET_MODE (XVECEXP (vals, 0, 0))))
     {
-      gcc_assert (known_eq (GET_MODE_SIZE (mode),
-		  2 * GET_MODE_SIZE (GET_MODE (XVECEXP (vals, 0, 0)))));
-      rtx lo = XVECEXP (vals, 0, 0);
-      rtx hi = XVECEXP (vals, 0, 1);
-      machine_mode narrow_mode = GET_MODE (lo);
-      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode);
-      gcc_assert (narrow_mode == GET_MODE (hi));
-
-      /* When we want to concatenate a half-width vector with zeroes we can
-	 use the aarch64_combinez[_be] patterns.  Just make sure that the
-	 zeroes are in the right half.  */
-      if (BYTES_BIG_ENDIAN
-	  && aarch64_simd_imm_zero (lo, narrow_mode)
-	  && general_operand (hi, narrow_mode))
-	emit_insn (gen_aarch64_combinez_be (narrow_mode, target, hi, lo));
-      else if (!BYTES_BIG_ENDIAN
-	       && aarch64_simd_imm_zero (hi, narrow_mode)
-	       && general_operand (lo, narrow_mode))
-	emit_insn (gen_aarch64_combinez (narrow_mode, target, lo, hi));
-      else
-	{
-	  /* Else create the two half-width registers and combine them.  */
-	  if (!REG_P (lo))
-	    lo = force_reg (GET_MODE (lo), lo);
-	  if (!REG_P (hi))
-	    hi = force_reg (GET_MODE (hi), hi);
-
-	  if (BYTES_BIG_ENDIAN)
-	    std::swap (lo, hi);
-	  emit_insn (gen_aarch64_simd_combine (narrow_mode, target, lo, hi));
-	}
+      machine_mode narrow_mode = GET_MODE (XVECEXP (vals, 0, 0));
+      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode
+		  && known_eq (GET_MODE_SIZE (mode),
+			       2 * GET_MODE_SIZE (narrow_mode)));
+      emit_insn (gen_aarch64_vec_concat (narrow_mode, target,
+					 XVECEXP (vals, 0, 0),
+					 XVECEXP (vals, 0, 1)));
      return;
    }
 
@@ -21063,11 +21030,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 		 for store_pair_lanes<mode>.  */
 	      if (memory_operand (x0, inner_mode)
 		  && memory_operand (x1, inner_mode)
-		  && !STRICT_ALIGNMENT
-		  && rtx_equal_p (XEXP (x1, 0),
-				  plus_constant (Pmode,
-						 XEXP (x0, 0),
-						 GET_MODE_SIZE (inner_mode))))
+		  && aarch64_mergeable_load_pair_p (mode, x0, x1))
 		{
 		  rtx t;
 		  if (inner_mode == DFmode)
@@ -21201,7 +21164,7 @@ aarch64_sve_expand_vector_init_handle_trailing_constants
 	{
 	  rtx x = builder.elt (i + nelts_reqd - n_trailing_constants);
 	  if (!valid_for_const_vector_p (elem_mode, x))
-	    x = const0_rtx;
+	    x = CONST0_RTX (elem_mode);
 	  v.quick_push (x);
 	}
       rtx const_vec = v.build ();
@@ -24687,14 +24650,20 @@ aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
   return priority;
 }
 
-/* Check if *MEM1 and *MEM2 are consecutive memory references and,
+/* If REVERSED is null, return true if memory reference *MEM2 comes
+   immediately after memory reference *MEM1.  Do not change the references
+   in this case.
+
+   Otherwise, check if *MEM1 and *MEM2 are consecutive memory references and,
    if they are, try to make them use constant offsets from the same base
    register.  Return true on success.  When returning true, set *REVERSED
    to true if *MEM1 comes after *MEM2, false if *MEM1 comes before *MEM2.  */
 static bool
 aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
 {
-  *reversed = false;
+  if (reversed)
+    *reversed = false;
+
   if (GET_RTX_CLASS (GET_CODE (XEXP (*mem1, 0))) == RTX_AUTOINC
       || GET_RTX_CLASS (GET_CODE (XEXP (*mem2, 0))) == RTX_AUTOINC)
     return false;
@@ -24723,7 +24692,7 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
       if (known_eq (UINTVAL (offset1) + size1, UINTVAL (offset2)))
 	return true;
 
-      if (known_eq (UINTVAL (offset2) + size2, UINTVAL (offset1)))
+      if (known_eq (UINTVAL (offset2) + size2, UINTVAL (offset1)) && reversed)
 	{
 	  *reversed = true;
 	  return true;
@@ -24756,27 +24725,41 @@ aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
 
       if (known_eq (expr_offset1 + size1, expr_offset2))
 	;
-      else if (known_eq (expr_offset2 + size2, expr_offset1))
+      else if (known_eq (expr_offset2 + size2, expr_offset1) && reversed)
 	*reversed = true;
       else
 	return false;
 
-      if (base2)
+      if (reversed)
 	{
-	  rtx addr1 = plus_constant (Pmode, XEXP (*mem2, 0),
-				     expr_offset1 - expr_offset2);
-	  *mem1 = replace_equiv_address_nv (*mem1, addr1);
-	}
-      else
-	{
-	  rtx addr2 = plus_constant (Pmode, XEXP (*mem1, 0),
-				     expr_offset2 - expr_offset1);
-	  *mem2 = replace_equiv_address_nv (*mem2, addr2);
+	  if (base2)
+	    {
+	      rtx addr1 = plus_constant (Pmode, XEXP (*mem2, 0),
+					 expr_offset1 - expr_offset2);
+	      *mem1 = replace_equiv_address_nv (*mem1, addr1);
+	    }
+	  else
+	    {
+	      rtx addr2 = plus_constant (Pmode, XEXP (*mem1, 0),
+					 expr_offset2 - expr_offset1);
+	      *mem2 = replace_equiv_address_nv (*mem2, addr2);
+	    }
 	}
       return true;
     }
 
   return false;
+}
+
+/* Return true if MEM1 and MEM2 can be combined into a single access
+   of mode MODE, with the combined access having the same address as MEM1.  */
+
+bool
+aarch64_mergeable_load_pair_p (machine_mode mode, rtx mem1, rtx mem2)
+{
+  if (STRICT_ALIGNMENT && MEM_ALIGN (mem1) < GET_MODE_ALIGNMENT (mode))
+    return false;
+  return aarch64_check_consecutive_mems (&mem1, &mem2, nullptr);
 }
 
 /* Given OPERANDS of consecutive load/store, check if we can merge

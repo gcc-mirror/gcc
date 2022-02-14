@@ -20431,7 +20431,10 @@ rtl_for_decl_init (tree init, tree type)
 	}
     }
   /* Other aggregates, and complex values, could be represented using
-     CONCAT: FIXME!  */
+     CONCAT: FIXME!
+     If this changes, please adjust tree_add_const_value_attribute
+     so that for early_dwarf it will for such initializers mangle referenced
+     decls.  */
   else if (AGGREGATE_TYPE_P (type)
 	   || (TREE_CODE (init) == VIEW_CONVERT_EXPR
 	       && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 0))))
@@ -20881,6 +20884,19 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
   return tree_add_const_value_attribute_for_decl (die, decl);
 }
 
+/* Mangle referenced decls.  */
+static tree
+mangle_referenced_decls (tree *tp, int *walk_subtrees, void *)
+{
+  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
+    *walk_subtrees = 0;
+
+  if (VAR_OR_FUNCTION_DECL_P (*tp))
+    assign_assembler_name_if_needed (*tp);
+
+  return NULL_TREE;
+}
+
 /* Attach a DW_AT_const_value attribute to DIE. The value of the
    attribute is the const value T.  */
 
@@ -20889,7 +20905,6 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 {
   tree init;
   tree type = TREE_TYPE (t);
-  rtx rtl;
 
   if (!t || !TREE_TYPE (t) || TREE_TYPE (t) == error_mark_node)
     return false;
@@ -20910,11 +20925,26 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
 	  return true;
 	}
     }
-  /* Generate the RTL even if early_dwarf to force mangling of all refered to
-     symbols.  */
-  rtl = rtl_for_decl_init (init, type);
-  if (rtl && !early_dwarf)
-    return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+  if (!early_dwarf)
+    {
+      rtx rtl = rtl_for_decl_init (init, type);
+      if (rtl)
+	return add_const_value_attribute (die, TYPE_MODE (type), rtl);
+    }
+  else
+    {
+      /* For early_dwarf force mangling of all referenced symbols.  */
+      tree initializer = init;
+      STRIP_NOPS (initializer);
+      /* rtl_for_decl_init punts on other aggregates, and complex values.  */
+      if (AGGREGATE_TYPE_P (type)
+	  || (TREE_CODE (initializer) == VIEW_CONVERT_EXPR
+	      && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (initializer, 0))))
+	  || TREE_CODE (type) == COMPLEX_TYPE)
+	;
+      else if (initializer_constant_valid_p (initializer, type))
+	walk_tree (&initializer, mangle_referenced_decls, NULL, NULL);
+    }
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))

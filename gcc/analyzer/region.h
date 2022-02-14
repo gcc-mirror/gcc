@@ -182,6 +182,12 @@ public:
      Otherwise return false.  */
   virtual bool get_relative_concrete_offset (bit_offset_t *out) const;
 
+  /* Attempt to get the position and size of this region expressed as a
+     concrete range of bytes relative to its parent.
+     If successful, return true and write to *OUT.
+     Otherwise return false.  */
+  bool get_relative_concrete_byte_range (byte_range *out) const;
+
   void
   get_subregions_for_binding (region_model_manager *mgr,
 			      bit_offset_t start_bit_offset,
@@ -1156,7 +1162,8 @@ public:
       inchash::hash hstate;
       hstate.add_ptr (m_parent);
       hstate.add_ptr (m_type);
-      hstate.add (&m_bits, sizeof (m_bits));
+      hstate.add_wide_int (m_bits.m_start_bit_offset);
+      hstate.add_wide_int (m_bits.m_size_in_bits);
       return hstate.end ();
     }
 

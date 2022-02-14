@@ -36,11 +36,40 @@ public:
   bool non_null_deref_p (tree name, basic_block bb, bool search_dom = true);
   bool adjust_range (irange &r, tree name, basic_block bb,
 		     bool search_dom = true);
+  bool set_nonnull (basic_block bb, tree name);
 private:
   vec <bitmap> m_nn;
   void process_name (tree name);
   bitmap_obstack m_bitmaps;
 };
+
+// If NAME has a non-null dereference in block BB, adjust R with the
+// non-zero information from non_null_deref_p, and return TRUE.  If
+// SEARCH_DOM is true, non_null_deref_p should search the dominator tree.
+
+inline bool
+non_null_ref::adjust_range (irange &r, tree name, basic_block bb,
+			    bool search_dom)
+{
+  // Non-call exceptions mean we could throw in the middle of the
+  // block, so just punt on those for now.
+  if (cfun->can_throw_non_call_exceptions)
+    return false;
+  // We only care about the null / non-null property of pointers.
+  if (!POINTER_TYPE_P (TREE_TYPE (name)))
+    return false;
+  if (r.undefined_p () || r.lower_bound () != 0 || r.upper_bound () == 0)
+    return false;
+  // Check if pointers have any non-null dereferences.
+  if (non_null_deref_p (name, bb, search_dom))
+    {
+      // Remove zero from the range.
+      unsigned prec = TYPE_PRECISION (TREE_TYPE (name));
+      r.intersect (wi::one (prec), wi::max_value (prec, UNSIGNED));
+      return true;
+    }
+  return false;
+}
 
 // This class manages a vector of pointers to ssa_block ranges.  It
 // provides the basis for the "range on entry" cache for all
@@ -106,6 +135,8 @@ public:
 
   void propagate_updated_value (tree name, basic_block bb);
 
+  void block_apply_nonnull (gimple *s);
+  void update_to_nonnull (basic_block bb, tree name);
   non_null_ref m_non_null;
   gori_compute m_gori;
 

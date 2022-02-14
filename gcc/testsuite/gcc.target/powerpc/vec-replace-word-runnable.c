@@ -54,6 +54,8 @@ main (int argc, char *argv [])
   vector double src_va_double;
   double src_a_double;
 
+  vector unsigned char vresult_uchar;
+
   /* Vector replace 32-bit element */
   src_a_uint = 345;
   src_va_uint = (vector unsigned int) { 0, 1, 2, 3 };
@@ -172,7 +174,8 @@ main (int argc, char *argv [])
   /* Byte index 7 will overwrite part of elements 2 and 3 */
   expected_vresult_uint = (vector unsigned int) { 1, 2, 345*256, 0 };
 						 
-  vresult_uint = vec_replace_unaligned (src_va_uint, src_a_uint, 3);
+  vresult_uchar = vec_replace_unaligned (src_va_uint, src_a_uint, 3);
+  vresult_uint = (vector unsigned int) vresult_uchar;
 
   if (!vec_all_eq (vresult_uint,  expected_vresult_uint)) {
 #if DEBUG
@@ -191,7 +194,8 @@ main (int argc, char *argv [])
   /* Byte index 7 will over write part of elements 1 and 2 */
   expected_vresult_int = (vector int) { 1, 234*256, 0, 4 };
 						 
-  vresult_int = vec_replace_unaligned (src_va_int, src_a_int, 7);
+  vresult_uchar = vec_replace_unaligned (src_va_int, src_a_int, 7);
+  vresult_int = (vector signed int) vresult_uchar;
 
   if (!vec_all_eq (vresult_int,  expected_vresult_int)) {
 #if DEBUG
@@ -209,7 +213,8 @@ main (int argc, char *argv [])
   vresult_float = (vector float) { 0.0, 0.0, 0.0, 0.0 };
   expected_vresult_float = (vector float) { 0.0, 34.0, 20.0, 30.0 };
 						 
-  vresult_float = vec_replace_unaligned (src_va_float, src_a_float, 8);
+  vresult_uchar = vec_replace_unaligned (src_va_float, src_a_float, 8);
+  vresult_float = (vector float) vresult_uchar;
 
   if (!vec_all_eq (vresult_float,  expected_vresult_float)) {
 #if DEBUG
@@ -231,7 +236,8 @@ main (int argc, char *argv [])
 							      0x200 };
 						 
   /* Byte index 7 will over write least significant byte of  element 0  */
-  vresult_ullint = vec_replace_unaligned (src_va_ullint, src_a_ullint, 7);
+  vresult_uchar = vec_replace_unaligned (src_va_ullint, src_a_ullint, 7);
+  vresult_ullint = (vector unsigned long long) vresult_uchar;
 
   if (!vec_all_eq (vresult_ullint,  expected_vresult_ullint)) {
 #if DEBUG
@@ -251,7 +257,8 @@ main (int argc, char *argv [])
   /* Byte index 7 will over write least significant byte of  element 0  */
   expected_vresult_llint = (vector long long int) { 678*256, 0x100 };
 						 
-  vresult_llint = vec_replace_unaligned (src_va_llint, src_a_llint, 7);
+  vresult_uchar = vec_replace_unaligned (src_va_llint, src_a_llint, 7);
+  vresult_llint = (vector signed long long) vresult_uchar;
 
   if (!vec_all_eq (vresult_llint,  expected_vresult_llint)) {
 #if DEBUG
@@ -270,7 +277,8 @@ main (int argc, char *argv [])
   vresult_double = (vector double) { 0.0, 0.0 };
   expected_vresult_double = (vector double) { 0.0, 678.0 };
 						 
-  vresult_double = vec_replace_unaligned (src_va_double, src_a_double, 0);
+  vresult_uchar = vec_replace_unaligned (src_va_double, src_a_double, 0);
+  vresult_double = (vector double) vresult_uchar;
 
   if (!vec_all_eq (vresult_double,  expected_vresult_double)) {
 #if DEBUG

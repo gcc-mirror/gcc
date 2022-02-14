@@ -4876,13 +4876,13 @@ static bool
 gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  gcc_assert (gimple_call_num_args (stmt) == 3);
+  gcc_assert (gimple_call_num_args (stmt) == 2);
   tree ptr = gimple_call_arg (stmt, 0);
   tree typearg = gimple_call_arg (stmt, 1);
-  /* the 3rd argument of __builtin_clear_padding is to distinguish whether
-     this call is made by the user or by the compiler for automatic variable
-     initialization.  */
-  bool for_auto_init = (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 2));
+  /* The 2nd argument of __builtin_clear_padding's value is used to
+     distinguish whether this call is made by the user or by the compiler
+     for automatic variable initialization.  */
+  bool for_auto_init = (bool) TREE_INT_CST_LOW (typearg);
   tree type = TREE_TYPE (TREE_TYPE (typearg));
   location_t loc = gimple_location (stmt);
   clear_padding_struct buf;

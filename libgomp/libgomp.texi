@@ -294,7 +294,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
-@item @code{has_device_addr} clause to @code{target} construct @tab N @tab
+@item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
 @item iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab
 @item indirect calls to the device version of a procedure or function in

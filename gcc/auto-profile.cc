@@ -975,7 +975,7 @@ read_profile (void)
      * after annotation, we just need to mark, and let follow-up logic to
        decide if it needs to promote and inline.  */
 
-static void
+static bool
 afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
                     bool transform)
 {
@@ -983,12 +983,12 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   tree callee;
 
   if (map.size () == 0)
-    return;
+    return false;
   gcall *stmt = dyn_cast <gcall *> (gs);
   if (!stmt
       || gimple_call_internal_p (stmt)
       || gimple_call_fndecl (stmt) != NULL_TREE)
-    return;
+    return false;
 
   gcov_type total = 0;
   icall_target_map::const_iterator max_iter = map.end ();
@@ -1003,7 +1003,7 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
       get_identifier (afdo_string_table->get_name (max_iter->first)));
   if (direct_call == NULL || !direct_call->profile_id)
-    return;
+    return false;
 
   callee = gimple_call_fn (stmt);
 
@@ -1013,20 +1013,27 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   hist->hvalue.counters = XNEWVEC (gcov_type, hist->n_counters);
   gimple_add_histogram_value (cfun, stmt, hist);
 
-  // Total counter
+  /* Total counter */
   hist->hvalue.counters[0] = total;
-  // Number of value/counter pairs
+  /* Number of value/counter pairs */
   hist->hvalue.counters[1] = 1;
-  // Value
+  /* Value */
   hist->hvalue.counters[2] = direct_call->profile_id;
-  // Counter
+  /* Counter */
   hist->hvalue.counters[3] = max_iter->second;
 
   if (!transform)
-    return;
+    return false;
+
+  cgraph_node* current_function_node = cgraph_node::get (current_function_decl);
+
+  /* If the direct call is a recursive call, don't promote it since
+     we are not set up to inline recursive calls at this stage. */
+  if (direct_call == current_function_node)
+    return false;
 
   struct cgraph_edge *indirect_edge
-      = cgraph_node::get (current_function_decl)->get_edge (stmt);
+      = current_function_node->get_edge (stmt);
 
   if (dump_file)
     {
@@ -1040,13 +1047,13 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
     {
       if (dump_file)
         fprintf (dump_file, " not transforming\n");
-      return;
+      return false;
     }
   if (DECL_STRUCT_FUNCTION (direct_call->decl) == NULL)
     {
       if (dump_file)
         fprintf (dump_file, " no declaration\n");
-      return;
+      return false;
     }
 
   if (dump_file)
@@ -1063,16 +1070,17 @@ afdo_indirect_call (gimple_stmt_iterator *gsi, const icall_target_map &map,
   cgraph_edge::redirect_call_stmt_to_callee (new_edge);
   gimple_remove_histogram_value (cfun, stmt, hist);
   inline_call (new_edge, true, NULL, NULL, false);
+  return true;
 }
 
 /* From AutoFDO profiles, find values inside STMT for that we want to measure
    histograms and adds them to list VALUES.  */
 
-static void
+static bool
 afdo_vpt (gimple_stmt_iterator *gsi, const icall_target_map &map,
           bool transform)
 {
-  afdo_indirect_call (gsi, map, transform);
+  return afdo_indirect_call (gsi, map, transform);
 }
 
 typedef std::set<basic_block> bb_set;
@@ -1498,8 +1506,8 @@ afdo_vpt_for_early_inline (stmt_set *promoted_stmts)
           {
             /* Promote the indirect call and update the promoted_stmts.  */
             promoted_stmts->insert (stmt);
-            afdo_vpt (&gsi, info.targets, true);
-            has_vpt = true;
+            if (afdo_vpt (&gsi, info.targets, true))
+              has_vpt = true;
           }
       }
   }

@@ -1,3 +1,73 @@
+2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/temporary_buffer.cc: Fix dg-warning target
+	selector.
+
+2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/monotonic_buffer_resource/allocate.cc:
+	Ignore -Walloc-larger-than warning.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic/cons/user_pod.cc: Compile with -O1
+	to avoid linker error for __atomic_is_lock_free.
+
+2022-02-10  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/bits/atomic_wait.h (__waiter_base::_S_do_spin,
+	__waiter_base::_S_do_spin_v): Change memory order from relaxed
+	to acquire.
+
+2022-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/stdatomic.h (atomic_fetch_xor): Add
+	using-declaration.
+	(atomic_fetch_xor_explicit): Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: Check
+	arithmetic and logical operations for atomic_int.
+
+2022-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/dir-common.h (_GLIBCXX_HAVE_DIRFD): Undefine
+	when <dirent.h> is not available.
+	(_GLIBCXX_HAVE_UNLINKAT):  Likewise.
+
+2022-02-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/104442
+	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): Move spin
+	 loop inside do loop so that threads failing the wait, reload
+	 _M_ver.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (_Dir(DIR*, const path&)): Change first
+	parameter to _Dir_base&&.
+	* src/filesystem/dir-common.h (_Dir_base(DIR*)): Remove.
+	* src/filesystem/dir.cc (_Dir(DIR*, const path&)): Change first
+	parameter to _Dir_base&&.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Add comment about
+	checking for CAS on correct word size.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Adjust expected results for Windows.
+
+2022-02-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104161
+	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::__erase):
+	[i_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Refresh entry._M_type member,
+	instead of checking for errno values indicating a directory.
+	* src/c++17/fs_ops.cc (fs::remove_all(const path&)): Use similar
+	logic to non-throwing overload.
+	(fs::remove_all(const path&, error_code&)): Add comments.
+	* src/filesystem/ops-common.h: Likewise.
+
 2022-02-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/dir-common.h (_Dir_base::openat): Change return

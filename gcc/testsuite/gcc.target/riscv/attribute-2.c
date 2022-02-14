@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mno-riscv-attribute" } */
+/* { dg-options "-mno-riscv-attribute" } */
 int foo()
 {
 }

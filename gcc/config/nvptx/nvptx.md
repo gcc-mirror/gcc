@@ -27,6 +27,7 @@
    UNSPEC_SIN
    UNSPEC_COS
    UNSPEC_TANH
+   UNSPEC_ISINF
 
    UNSPEC_FPINT_FLOOR
    UNSPEC_FPINT_BTRUNC
@@ -54,7 +55,9 @@
 (define_c_enum "unspecv" [
    UNSPECV_LOCK
    UNSPECV_CAS
+   UNSPECV_CAS_LOCAL
    UNSPECV_XCHG
+   UNSPECV_ST
    UNSPECV_BARSYNC
    UNSPECV_WARPSYNC
    UNSPECV_UNIFORM_WARP_CHECK
@@ -504,7 +507,14 @@
 	(minus:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
 		     (match_operand:HSDIM 2 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tsub%t0\\t%0, %1, %2;")
+  {
+    if (GET_MODE (operands[0]) == HImode)
+      /* Workaround https://developer.nvidia.com/nvidia_bug/3527713.
+	 See PR97005.  */
+      return "%.\\tsub.s16\\t%0, %1, %2;";
+
+    return "%.\\tsub%t0\\t%0, %1, %2;";
+  })
 
 (define_insn "mul<mode>3"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
@@ -595,6 +605,12 @@
   ""
   "%.\\tnot.b%T0\\t%0, %1;")
 
+(define_insn "one_cmplbi2"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(not:BI (match_operand:BI 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tnot.pred\\t%0, %1;")
+
 (define_insn "*cnot<mode>2"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
 	(eq:HSDIM (match_operand:HSDIM 1 "nvptx_register_operand" "R")
@@ -670,7 +686,57 @@
   ""
   "%.\\tmul.wide.u32\\t%0, %1, %2;")
 
-(define_insn "smulhi3_highpart"
+(define_expand "mulditi3"
+  [(set (match_operand:TI 0 "nvptx_register_operand")
+	(mult:TI (sign_extend:TI
+		  (match_operand:DI 1 "nvptx_register_operand"))
+		 (sign_extend:DI
+		  (match_operand:DI 2 "nvptx_nonmemory_operand"))))]
+  ""
+{
+  rtx hi = gen_reg_rtx (DImode);
+  rtx lo = gen_reg_rtx (DImode);
+  emit_insn (gen_smuldi3_highpart (hi, operands[1], operands[2]));
+  emit_insn (gen_muldi3 (lo, operands[1], operands[2]));
+  emit_move_insn (gen_highpart (DImode, operands[0]), hi);
+  emit_move_insn (gen_lowpart (DImode, operands[0]), lo);
+  DONE;
+})
+
+(define_expand "umulditi3"
+  [(set (match_operand:TI 0 "nvptx_register_operand")
+	(mult:TI (zero_extend:TI
+		  (match_operand:DI 1 "nvptx_register_operand"))
+		 (zero_extend:DI
+		  (match_operand:DI 2 "nvptx_nonmemory_operand"))))]
+  ""
+{
+  rtx hi = gen_reg_rtx (DImode);
+  rtx lo = gen_reg_rtx (DImode);
+  emit_insn (gen_umuldi3_highpart (hi, operands[1], operands[2]));
+  emit_insn (gen_muldi3 (lo, operands[1], operands[2]));
+  emit_move_insn (gen_highpart (DImode, operands[0]), hi);
+  emit_move_insn (gen_lowpart (DImode, operands[0]), lo);
+  DONE;
+})
+
+(define_insn "smul<mode>3_highpart"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(smul_highpart:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tmul.hi.s%T0\\t%0, %1, %2;")
+
+(define_insn "umul<mode>3_highpart"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(umul_highpart:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+  ""
+  "%.\\tmul.hi.u%T0\\t%0, %1, %2;")
+
+(define_insn "*smulhi3_highpart_2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
 	(truncate:HI
 	 (lshiftrt:SI
@@ -682,7 +748,7 @@
   ""
   "%.\\tmul.hi.s16\\t%0, %1, %2;")
 
-(define_insn "smulsi3_highpart"
+(define_insn "*smulsi3_highpart_2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -694,7 +760,7 @@
   ""
   "%.\\tmul.hi.s32\\t%0, %1, %2;")
 
-(define_insn "umulhi3_highpart"
+(define_insn "*umulhi3_highpart_2"
   [(set (match_operand:HI 0 "nvptx_register_operand" "=R")
 	(truncate:HI
 	 (lshiftrt:SI
@@ -706,7 +772,7 @@
   ""
   "%.\\tmul.hi.u16\\t%0, %1, %2;")
 
-(define_insn "umulsi3_highpart"
+(define_insn "*umulsi3_highpart_2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -743,30 +809,42 @@
 
 ;; Logical operations
 
-(define_insn "and<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(and:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
-  ""
-  "%.\\tand.b%T0\\t%0, %1, %2;")
+(define_code_iterator any_logic [and ior xor])
+(define_code_attr logic [(and "and") (ior "or") (xor "xor")])
+(define_code_attr ilogic [(and "and") (ior "ior") (xor "xor")])
 
-(define_insn "ior<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(ior:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+(define_insn "<ilogic><mode>3"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(any_logic:HSDIM
+	  (match_operand:HSDIM 1 "nvptx_register_operand" "R")
+	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
   ""
-  "%.\\tor.b%T0\\t%0, %1, %2;")
+  "%.\\t<logic>.b%T0\\t%0, %1, %2;")
 
-(define_insn "xor<mode>3"
-  [(set (match_operand:BHSDIM 0 "nvptx_register_operand" "=R")
-	(xor:BHSDIM (match_operand:BHSDIM 1 "nvptx_register_operand" "R")
-		    (match_operand:BHSDIM 2 "nvptx_nonmemory_operand" "Ri")))]
+(define_insn "<ilogic>bi3"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(any_logic:BI (match_operand:BI 1 "nvptx_register_operand" "R")
+		      (match_operand:BI 2 "nvptx_register_operand" "R")))]
   ""
-  "%.\\txor.b%T0\\t%0, %1, %2;")
+  "%.\\t<logic>.pred\\t%0, %1, %2;")
+
+(define_split
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand")
+	(any_logic:HSDIM
+	  (ne:HSDIM (match_operand:BI 1 "nvptx_register_operand")
+		    (const_int 0))
+	  (ne:HSDIM (match_operand:BI 2 "nvptx_register_operand")
+		    (const_int 0))))]
+  "can_create_pseudo_p ()"
+  [(set (match_dup 3) (any_logic:BI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ne:HSDIM (match_dup 3) (const_int 0)))]
+{
+  operands[3] = gen_reg_rtx (BImode);
+})
 
 ;; Comparisons and branches
 
-(define_insn "*cmp<mode>"
+(define_insn "cmp<mode>"
   [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
 	(match_operator:BI 1 "nvptx_comparison_operator"
 	   [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
@@ -780,6 +858,14 @@
 	   [(match_operand:SDFM 2 "nvptx_register_operand" "R")
 	    (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")]))]
   ""
+  "%.\\tsetp%c1\\t%0, %2, %3;")
+
+(define_insn "*cmphf"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(match_operator:BI 1 "nvptx_float_comparison_operator"
+	   [(match_operand:HF 2 "nvptx_register_operand" "R")
+	    (match_operand:HF 3 "nvptx_nonmemory_operand" "RF")]))]
+  "TARGET_SM53"
   "%.\\tsetp%c1\\t%0, %2, %3;")
 
 (define_insn "jump"
@@ -870,29 +956,36 @@
 ;; Conditional stores
 
 (define_insn "setcc<mode>_from_bi"
-  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(ne:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(ne:QHSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
 		   (const_int 0)))]
   ""
   "%.\\tselp%t0\\t%0, 1, 0, %1;")
 
-(define_insn "extendbi<mode>2"
+(define_insn "*setcc<mode>_from_not_bi"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(sign_extend:HSDIM
+	(eq:HSDIM (match_operand:BI 1 "nvptx_register_operand" "R")
+		   (const_int 0)))]
+  ""
+  "%.\\tselp%t0\\t%0, 0, 1, %1;")
+
+(define_insn "extendbi<mode>2"
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:QHSDIM
 	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tselp%t0\\t%0, -1, 0, %1;")
 
 (define_insn "zero_extendbi<mode>2"
-  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-	(zero_extend:HSDIM
+  [(set (match_operand:QHSDIM 0 "nvptx_register_operand" "=R")
+	(zero_extend:QHSDIM
 	 (match_operand:BI 1 "nvptx_register_operand" "R")))]
   ""
   "%.\\tselp%t0\\t%0, 1, 0, %1;")
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-        (if_then_else:HSDIM
+	(if_then_else:HSDIM
 	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
 	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
@@ -901,7 +994,7 @@
 
 (define_insn "sel_true<mode>"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-        (if_then_else:SDFM
+	(if_then_else:SDFM
 	  (ne (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
@@ -910,7 +1003,7 @@
 
 (define_insn "sel_false<mode>"
   [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
-        (if_then_else:HSDIM
+	(if_then_else:HSDIM
 	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:HSDIM 2 "nvptx_nonmemory_operand" "Ri")
 	  (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")))]
@@ -919,12 +1012,62 @@
 
 (define_insn "sel_false<mode>"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-        (if_then_else:SDFM
+	(if_then_else:SDFM
 	  (eq (match_operand:BI 1 "nvptx_register_operand" "R") (const_int 0))
 	  (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")
 	  (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")))]
   ""
   "%.\\tselp%t0\\t%0, %3, %2, %1;")
+
+(define_code_iterator eqne [eq ne])
+
+;; Split negation of a predicate into a conditional move.
+(define_insn_and_split "*selp<mode>_neg_<code>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(neg:HSDIM (eqne:HSDIM
+		     (match_operand:BI 1 "nvptx_register_operand" "R")
+		     (const_int 0))))]
+  ""
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:HSDIM
+	  (eqne (match_dup 1) (const_int 0))
+	  (const_int -1)
+	  (const_int 0)))])
+
+;; Split bitwise not of a predicate into a conditional move.
+(define_insn_and_split "*selp<mode>_not_<code>"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(not:HSDIM (eqne:HSDIM
+		     (match_operand:BI 1 "nvptx_register_operand" "R")
+		     (const_int 0))))]
+  ""
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(if_then_else:HSDIM
+	  (eqne (match_dup 1) (const_int 0))
+	  (const_int -2)
+	  (const_int -1)))])
+
+(define_insn "*setcc_int<mode>"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(neg:SI
+	  (match_operator:SI 1 "nvptx_comparison_operator"
+	    [(match_operand:HSDIM 2 "nvptx_register_operand" "R")
+	     (match_operand:HSDIM 3 "nvptx_nonmemory_operand" "Ri")])))]
+  ""
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
+
+(define_insn "*setcc_int<mode>"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(neg:SI
+	  (match_operator:SI 1 "nvptx_float_comparison_operator"
+	    [(match_operand:SDFM 2 "nvptx_register_operand" "R")
+	     (match_operand:SDFM 3 "nvptx_nonmemory_operand" "RF")])))]
+  ""
+  "%.\\tset%t0%c1\\t%0, %2, %3;")
 
 (define_insn "setcc_float<mode>"
   [(set (match_operand:SF 0 "nvptx_register_operand" "=R")
@@ -963,6 +1106,21 @@
 	  [(match_operand:SDFM 2 "nvptx_register_operand")
 	   (match_operand:SDFM 3 "nvptx_nonmemory_operand")]))]
   ""
+{
+  rtx reg = gen_reg_rtx (BImode);
+  rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
+			    operands[2], operands[3]);
+  emit_move_insn (reg, cmp);
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
+
+(define_expand "cstorehf4"
+  [(set (match_operand:SI 0 "nvptx_register_operand")
+	(match_operator:SI 1 "nvptx_float_comparison_operator"
+	  [(match_operand:HF 2 "nvptx_register_operand")
+	   (match_operand:HF 3 "nvptx_nonmemory_operand")]))]
+  "TARGET_SM53"
 {
   rtx reg = gen_reg_rtx (BImode);
   rtx cmp = gen_rtx_fmt_ee (GET_CODE (operands[1]), BImode,
@@ -1059,8 +1217,8 @@
 
 (define_insn "copysign<mode>3"
   [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
-	(unspec:SDFM [(match_operand:SDFM 1 "nvptx_register_operand" "R")
-		      (match_operand:SDFM 2 "nvptx_register_operand" "R")]
+	(unspec:SDFM [(match_operand:SDFM 1 "nvptx_nonmemory_operand" "RF")
+		      (match_operand:SDFM 2 "nvptx_nonmemory_operand" "RF")]
 		      UNSPEC_COPYSIGN))]
   ""
   "%.\\tcopysign%t0\\t%0, %2, %1;")
@@ -1136,6 +1294,25 @@
   "flag_unsafe_math_optimizations"
   "%.\\tex2.approx%t0\\t%0, %1;")
 
+(define_insn "setcc_isinf<mode>"
+  [(set (match_operand:BI 0 "nvptx_register_operand" "=R")
+	(unspec:BI [(match_operand:SDFM 1 "nvptx_register_operand" "R")]
+		   UNSPEC_ISINF))]
+  ""
+  "%.\\ttestp.infinite%t1\\t%0, %1;")
+
+(define_expand "isinf<mode>2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(unspec:SI [(match_operand:SDFM 1 "nvptx_register_operand" "R")]
+		   UNSPEC_ISINF))]
+  ""
+{
+  rtx pred = gen_reg_rtx (BImode);
+  emit_insn (gen_setcc_isinf<mode> (pred, operands[1]));
+  emit_insn (gen_setccsi_from_bi (operands[0], pred));
+  DONE;
+})
+
 ;; HFmode floating point arithmetic.
 
 (define_insn "addhf3"
@@ -1158,6 +1335,26 @@
 		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
   "TARGET_SM53"
   "%.\\tmul.f16\\t%0, %1, %2;")
+
+(define_insn "fmahf4"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(fma:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		(match_operand:HF 2 "nvptx_nonmemory_operand" "RF")
+		(match_operand:HF 3 "nvptx_nonmemory_operand" "RF")))]
+  "TARGET_SM53"
+  "%.\\tfma%#.f16\\t%0, %1, %2, %3;")
+
+(define_insn "neghf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(neg:HF (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\txor.b16\\t%0, %1, -32768;")
+
+(define_insn "abshf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(abs:HF (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  ""
+  "%.\\tand.b16\\t%0, %1, 32767;")
 
 (define_insn "exp2hf2"
   [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
@@ -1602,7 +1799,7 @@
 		  UNSPEC_SHUFFLE))]
   ""
   {
-    if (TARGET_PTX_6_3)
+    if (TARGET_PTX_6_0)
       return "%.\\tshfl.sync%S3.b32\\t%0, %1, %2, 31, 0xffffffff;";
     else
       return "%.\\tshfl%S3.b32\\t%0, %1, %2, 31;";
@@ -1614,7 +1811,7 @@
 		   UNSPEC_VOTE_BALLOT))]
   ""
   {
-    if (TARGET_PTX_6_3)
+    if (TARGET_PTX_6_0)
       return "%.\\tvote.sync.ballot.b32\\t%0, %1, 0xffffffff;";
     else
       return "%.\\tvote.ballot.b32\\t%0, %1;";
@@ -1771,14 +1968,45 @@
    (match_operand:SI 7 "const_int_operand")]		;; failure model
   ""
 {
-  emit_insn (gen_atomic_compare_and_swap<mode>_1
-    (operands[1], operands[2], operands[3], operands[4], operands[6]));
+  if (nvptx_mem_local_p (operands[2]))
+    emit_insn (gen_atomic_compare_and_swap<mode>_1_local
+		(operands[1], operands[2], operands[3], operands[4],
+		 operands[6]));
+  else
+    emit_insn (gen_atomic_compare_and_swap<mode>_1
+		(operands[1], operands[2], operands[3], operands[4],
+		 operands[6]));
 
   rtx cond = gen_reg_rtx (BImode);
   emit_move_insn (cond, gen_rtx_EQ (BImode, operands[1], operands[3]));
   emit_insn (gen_sel_truesi (operands[0], cond, GEN_INT (1), GEN_INT (0)));
   DONE;
 })
+
+(define_insn "atomic_compare_and_swap<mode>_1_local"
+  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:SDIM
+	  [(match_operand:SDIM 1 "memory_operand" "+m")
+	   (match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri")
+	   (match_operand:SDIM 3 "nvptx_nonmemory_operand" "Ri")
+	   (match_operand:SI 4 "const_int_operand")]
+	  UNSPECV_CAS_LOCAL))
+   (set (match_dup 1)
+	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS_LOCAL))]
+  ""
+  {
+	output_asm_insn ("{", NULL);
+	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
+	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
+	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
+	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
+			 operands);
+	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
+	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
+	output_asm_insn ("}", NULL);
+	return "";
+  }
+  [(set_attr "predicable" "false")])
 
 (define_insn "atomic_compare_and_swap<mode>_1"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
@@ -1792,28 +2020,11 @@
 	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
-      {
-	output_asm_insn ("{", NULL);
-	output_asm_insn ("\\t"	      ".reg.pred"  "\\t" "%%eq_p;", NULL);
-	output_asm_insn ("\\t"	      ".reg%t0"	   "\\t" "%%val;", operands);
-	output_asm_insn ("\\t"	      "ld%A1%t0"   "\\t" "%%val,%1;", operands);
-	output_asm_insn ("\\t"	      "setp.eq%t0" "\\t" "%%eq_p, %%val, %2;",
-			 operands);
-	output_asm_insn ("@%%eq_p\\t" "st%A1%t0"   "\\t" "%1,%3;", operands);
-	output_asm_insn ("\\t"	      "mov%t0"	   "\\t" "%0,%%val;", operands);
-	output_asm_insn ("}", NULL);
-	return "";
-      }
     const char *t
-      = "\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
     return nvptx_output_atomic_insn (t, operands, 1, 4);
   }
-  [(set_attr "atomic" "true")
-   (set_attr "predicable" "false")])
+  [(set_attr "atomic" "true")])
 
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")	;; output
@@ -1825,10 +2036,7 @@
 	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1844,6 +2052,53 @@
   }
   [(set_attr "atomic" "true")])
 
+(define_expand "atomic_store<mode>"
+  [(match_operand:SDIM 0 "memory_operand" "=m")		  ;; memory
+   (match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri")  ;; input
+   (match_operand:SI 2 "const_int_operand")]		  ;; model
+  ""
+{
+  struct address_info info;
+  decompose_mem_address (&info, operands[0]);
+  if (info.base != NULL && REG_P (*info.base)
+      && REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    {
+      emit_insn (gen_mov<mode> (operands[0], operands[1]));
+      DONE;
+    }
+
+  if (TARGET_SM70)
+    {
+       emit_insn (gen_nvptx_atomic_store<mode> (operands[0], operands[1],
+						operands[2]));
+       DONE;
+    }
+
+  bool maybe_shared_p = nvptx_mem_maybe_shared_p (operands[0]);
+  if (!maybe_shared_p)
+    /* Fall back to expand_atomic_store.  */
+    FAIL;
+
+  rtx tmpreg = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_atomic_exchange<mode> (tmpreg, operands[0], operands[1],
+					operands[2]));
+  DONE;
+})
+
+(define_insn "nvptx_atomic_store<mode>"
+  [(set (match_operand:SDIM 0 "memory_operand" "+m")	      ;; memory
+       (unspec_volatile:SDIM
+	 [(match_operand:SDIM 1 "nvptx_nonmemory_operand" "Ri") ;; input
+	  (match_operand:SI 2 "const_int_operand")]		;; model
+	       UNSPECV_ST))]
+  "TARGET_SM70"
+  {
+    const char *t
+      = "%.\tst%A0.b%T0\t%0, %1;";
+    return nvptx_output_atomic_insn (t, operands, 0, 2);
+  }
+  [(set_attr "atomic" "true")])
+
 (define_insn "atomic_fetch_add<mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")
 	(unspec_volatile:SDIM
@@ -1855,10 +2110,7 @@
 	(match_dup 1))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1888,10 +2140,7 @@
 	(match_dup 1))]
   ""
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg%t0"  "\\t" "%%val;", operands);
@@ -1910,9 +2159,6 @@
   }
   [(set_attr "atomic" "true")])
 
-(define_code_iterator any_logic [and ior xor])
-(define_code_attr logic [(and "and") (ior "or") (xor "xor")])
-
 (define_insn "atomic_fetch_<logic><mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")
 	(unspec_volatile:SDIM
@@ -1924,10 +2170,7 @@
 	(match_dup 1))]
   "<MODE>mode == SImode || TARGET_SM35"
   {
-    struct address_info info;
-    decompose_mem_address (&info, operands[1]);
-    if (info.base != NULL && REG_P (*info.base)
-	&& REGNO_PTR_FRAME_P (REGNO (*info.base)))
+    if (nvptx_mem_local_p (operands[1]))
       {
 	output_asm_insn ("{", NULL);
 	output_asm_insn ("\\t"	 ".reg.b%T0"    "\\t" "%%val;", operands);
@@ -2071,3 +2314,103 @@
     return nvptx_output_red_partition (operands[0], operands[1]);
   }
   [(set_attr "predicable" "false")])
+
+;; Expand QI mode operations using SI mode instructions.
+(define_code_iterator any_sbinary [plus minus smin smax])
+(define_code_attr sbinary [(plus "add") (minus "sub") (smin "smin") (smax "smax")])
+
+(define_code_iterator any_ubinary [and ior xor umin umax])
+(define_code_attr ubinary [(and "and") (ior "ior") (xor "xor") (umin "umin")
+			   (umax "umax")])
+
+(define_code_iterator any_sunary [neg abs])
+(define_code_attr sunary [(neg "neg") (abs "abs")])
+
+(define_code_iterator any_uunary [not])
+(define_code_attr uunary [(not "one_cmpl")])
+
+(define_expand "<sbinary>qi3"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_sbinary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")
+			(match_operand:QI 2 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 0);
+  rtx op1 = convert_modes (SImode, QImode, operands[2], 0);
+  if (<CODE> == MINUS)
+    op0 = force_reg (SImode, op0);
+  emit_insn (gen_<sbinary>si3 (reg, op0, op1));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<ubinary>qi3"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_ubinary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")
+			(match_operand:QI 2 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 1);
+  rtx op1 = convert_modes (SImode, QImode, operands[2], 1);
+  emit_insn (gen_<ubinary>si3 (reg, op0, op1));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<sunary>qi2"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_sunary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 0);
+  emit_insn (gen_<sunary>si2 (reg, op0));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "<uunary>qi2"
+  [(set (match_operand:QI 0 "nvptx_register_operand")
+	(any_uunary:QI (match_operand:QI 1 "nvptx_nonmemory_operand")))]
+  ""
+{
+  rtx reg = gen_reg_rtx (SImode);
+  rtx op0 = convert_modes (SImode, QImode, operands[1], 1);
+  emit_insn (gen_<uunary>si2 (reg, op0));
+  emit_insn (gen_truncsiqi2 (operands[0], reg));
+  DONE;
+})
+
+(define_expand "cstoreqi4"
+  [(set (match_operand:SI 0 "nvptx_register_operand")
+	(match_operator:SI 1 "nvptx_comparison_operator"
+	  [(match_operand:QI 2 "nvptx_nonmemory_operand")
+	   (match_operand:QI 3 "nvptx_nonmemory_operand")]))]
+  ""
+{
+  rtx reg = gen_reg_rtx (BImode);
+  enum rtx_code code = GET_CODE (operands[1]);
+  int unsignedp = unsigned_condition_p (code);
+  rtx op2 = convert_modes (SImode, QImode, operands[2], unsignedp);
+  rtx op3 = convert_modes (SImode, QImode, operands[3], unsignedp);
+  rtx cmp = gen_rtx_fmt_ee (code, SImode, op2, op3);
+  emit_insn (gen_cmpsi (reg, cmp, op2, op3));
+  emit_insn (gen_setccsi_from_bi (operands[0], reg));
+  DONE;
+})
+
+(define_insn "*ext_truncsi2_qi"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(sign_extend:SI
+	 (truncate:QI (match_operand:SI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s32.s8\\t%0, %1;")
+
+(define_insn "*zext_truncsi2_qi"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(zero_extend:SI
+	 (truncate:QI (match_operand:SI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.u32.u8\\t%0, %1;")

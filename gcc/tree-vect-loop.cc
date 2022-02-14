@@ -4997,17 +4997,21 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
   if (!constant_multiple_p (TYPE_VECTOR_SUBPARTS (old_vectype),
 			    TYPE_VECTOR_SUBPARTS (vectype), &m))
     return false;
-  /* Check the intermediate vector types are available.  */
-  while (m > 2)
+  /* Check the intermediate vector types and operations are available.  */
+  tree prev_vectype = old_vectype;
+  poly_uint64 intermediate_nunits = TYPE_VECTOR_SUBPARTS (old_vectype);
+  while (known_gt (intermediate_nunits, TYPE_VECTOR_SUBPARTS (vectype)))
     {
-      m /= 2;
+      intermediate_nunits = exact_div (intermediate_nunits, 2);
       tree intermediate_vectype = get_related_vectype_for_scalar_type
-	(TYPE_MODE (vectype), TREE_TYPE (vectype),
-	 exact_div (TYPE_VECTOR_SUBPARTS (old_vectype), m));
+	(TYPE_MODE (vectype), TREE_TYPE (vectype), intermediate_nunits);
       if (!intermediate_vectype
 	  || !directly_supported_p (STMT_VINFO_REDUC_CODE (reduc_info),
-				    intermediate_vectype))
+				    intermediate_vectype)
+	  || !can_vec_extract (TYPE_MODE (prev_vectype),
+			       TYPE_MODE (intermediate_vectype)))
 	return false;
+      prev_vectype = intermediate_vectype;
     }
 
   /* Non-SLP reductions might apply an adjustment after the reduction

@@ -5941,7 +5941,7 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 
       /* Update the data flow information.  */
       crtl->must_be_zero_on_return |= zeroed_hardregs;
-      df_set_bb_dirty (EXIT_BLOCK_PTR_FOR_FN (cfun));
+      df_update_exit_block_uses ();
     }
 }
 

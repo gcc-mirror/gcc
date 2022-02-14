@@ -4392,7 +4392,8 @@ vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
     return direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED);
 
   scalar_mode smode;
-  if (!is_a <scalar_mode> (TYPE_MODE (type), &smode))
+  if (VECTOR_TYPE_P (type)
+      || !is_a <scalar_mode> (TYPE_MODE (type), &smode))
     return false;
 
   machine_mode vmode = targetm.vectorize.preferred_simd_mode (smode);

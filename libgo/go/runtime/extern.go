@@ -78,6 +78,11 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	If the line ends with "(forced)", this GC was forced by a
 	runtime.GC() call.
 
+	harddecommit: setting harddecommit=1 causes memory that is returned to the OS to
+	also have protections removed on it. This is the only mode of operation on Windows,
+	but is helpful in debugging scavenger-related issues on other platforms. Currently,
+	only supported on Linux.
+
 	inittrace: setting inittrace=1 causes the runtime to emit a single line to standard
 	error for each package with init work, summarizing the execution time and memory
 	allocation. No information is printed for inits executed as part of plugin loading
@@ -144,7 +149,7 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	because it also disables the conservative stack scanning used
 	for asynchronously preempted goroutines.
 
-The net, net/http, and crypto/tls packages also refer to debugging variables in GODEBUG.
+The net and net/http packages also refer to debugging variables in GODEBUG.
 See the documentation for those packages for details.
 
 The GOMAXPROCS variable limits the number of operating system threads that
@@ -186,7 +191,11 @@ of the run-time system.
 */
 package runtime
 
-import "runtime/internal/sys"
+import (
+	"internal/goarch"
+	"internal/goos"
+	"runtime/internal/sys"
+)
 
 // Caller reports file and line number information about function invocations on
 // the calling goroutine's stack. The argument skip is the number of stack frames
@@ -242,11 +251,11 @@ func Version() string {
 // GOOS is the running program's operating system target:
 // one of darwin, freebsd, linux, and so on.
 // To view possible combinations of GOOS and GOARCH, run "go tool dist list".
-const GOOS string = sys.GOOS
+const GOOS string = goos.GOOS
 
 // GOARCH is the running program's architecture target:
 // one of 386, amd64, arm, s390x, and so on.
-const GOARCH string = sys.GOARCH
+const GOARCH string = goarch.GOARCH
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build
 const GCCGOTOOLDIR string = sys.GccgoToolDir

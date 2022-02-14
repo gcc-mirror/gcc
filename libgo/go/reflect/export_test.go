@@ -17,9 +17,12 @@ func IsRO(v Value) bool {
 
 var CallGC = &callGC
 
-const PtrSize = ptrSize
-
-func FuncLayout(t Type, rcvr Type) (frametype Type, argSize, retOffset uintptr, stack []byte, gc []byte, ptrs bool) {
+// FuncLayout calls funcLayout and returns a subset of the results for testing.
+//
+// Bitmaps like stack, gc, inReg, and outReg are expanded such that each bit
+// takes up one byte, so that writing out test cases is a little clearer.
+// If ptrs is false, gc will be nil.
+func FuncLayout(t Type, rcvr Type) (frametype Type, argSize, retOffset uintptr, stack, gc, inReg, outReg []byte, ptrs bool) {
 	return
 }
 
@@ -87,3 +90,5 @@ func ResolveReflectName(s string) {
 type Buffer struct {
 	buf []byte
 }
+
+var MethodValueCallCodePtr = methodValueCallCodePtr

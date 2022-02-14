@@ -1910,7 +1910,17 @@ gfc_trans_omp_variable_list (enum omp_clause_code code,
 	tree t = gfc_trans_omp_variable (namelist->sym, declare_simd);
 	if (t != error_mark_node)
 	  {
-	    tree node = build_omp_clause (input_location, code);
+	    tree node;
+	    /* For HAS_DEVICE_ADDR of an array descriptor, firstprivatize the
+	       descriptor such that the bounds are available; its data component
+	       is unmodified; it is handled as device address inside target. */
+	    if (code == OMP_CLAUSE_HAS_DEVICE_ADDR
+		&& (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (t))
+		    || (POINTER_TYPE_P (TREE_TYPE (t))
+			&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (t))))))
+	      node = build_omp_clause (input_location, OMP_CLAUSE_FIRSTPRIVATE);
+	    else
+	      node = build_omp_clause (input_location, code);
 	    OMP_CLAUSE_DECL (node) = t;
 	    list = gfc_trans_add_clause (node, list);
 
@@ -2603,6 +2613,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  goto add_clause;
 	case OMP_LIST_IS_DEVICE_PTR:
 	  clause_code = OMP_CLAUSE_IS_DEVICE_PTR;
+	  goto add_clause;
+	case OMP_LIST_HAS_DEVICE_ADDR:
+	  clause_code = OMP_CLAUSE_HAS_DEVICE_ADDR;
 	  goto add_clause;
 	case OMP_LIST_NONTEMPORAL:
 	  clause_code = OMP_CLAUSE_NONTEMPORAL;

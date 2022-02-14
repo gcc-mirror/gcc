@@ -1,4 +1,9 @@
-#include <stdio.h>
+typedef struct FILE   FILE;
+
+FILE* fopen (const char*, const char*);
+int   fclose (FILE*);
+#define SEEK_SET        0
+int fseek (FILE *, long int, int);
 
 void
 test_1 (const char *path)

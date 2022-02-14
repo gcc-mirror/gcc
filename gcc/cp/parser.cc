@@ -36341,7 +36341,9 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_GRAINSIZE;
 	  break;
 	case 'h':
-	  if (!strcmp ("hint", p))
+	  if (!strcmp ("has_device_addr", p))
+	    result = PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR;
+	  else if (!strcmp ("hint", p))
 	    result = PRAGMA_OMP_CLAUSE_HINT;
 	  else if (!strcmp ("host", p))
 	    result = PRAGMA_OACC_CLAUSE_HOST;
@@ -36644,6 +36646,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE_REDUCTION:
 	    case OMP_CLAUSE_IN_REDUCTION:
 	    case OMP_CLAUSE_TASK_REDUCTION:
+	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
 	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
@@ -40084,6 +40087,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_IS_DEVICE_PTR,
 					    clauses);
 	  c_name = "is_device_ptr";
+	  break;
+	case PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR:
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_HAS_DEVICE_ADDR,
+					    clauses);
+	  c_name = "has_device_addr";
 	  break;
 	case PRAGMA_OMP_CLAUSE_IF:
 	  clauses = cp_parser_omp_clause_if (parser, clauses, token->location,
@@ -44265,7 +44273,8 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR))
 
 static bool
 cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,

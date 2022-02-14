@@ -1,3 +1,5 @@
+/* { dg-require-effective-target non_strict_prototype } */
+
 /* PR middle-end/100576 */
 
 const char v[] = {0x12};

@@ -1,7 +1,8 @@
 /* Verify the regrename won't rename registers to register which never used
    before.  */
 /* { dg-do compile } */
-/* { dg-options "-O -frename-registers" } */
+/* { dg-options "-frename-registers" } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 static unsigned _t = 0;
 

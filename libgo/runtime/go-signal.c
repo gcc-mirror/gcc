@@ -62,6 +62,7 @@ sigtramp(int sig, siginfo_t *info, void *context)
 	G *gp;
 	void *stack_context[10];
 	void *stack;
+	void *find_stack;
 	size_t stack_size;
 	void *next_segment;
 	void *next_sp;
@@ -91,9 +92,15 @@ sigtramp(int sig, siginfo_t *info, void *context)
 
 	__splitstack_getcontext(&stack_context[0]);
 
-	stack = __splitstack_find_context((void*)(&gp->m->gsignal->stackcontext[0]),
-					  &stack_size, &next_segment,
-					  &next_sp, &initial_sp);
+	find_stack = 
+	  __splitstack_find_context((void*)(&gp->m->gsignal->stackcontext[0]),
+				    &stack_size, &next_segment,
+				    &next_sp, &initial_sp);
+	stack = find_stack;
+	if (stack == NULL) {
+		stack = gp->m->gsignalstack;
+		stack_size = gp->m->gsignalstacksize;
+	}
 
 	// If some non-Go code called sigaltstack, adjust.
 	sp = (uintptr)(&stack_size);
@@ -113,7 +120,7 @@ sigtramp(int sig, siginfo_t *info, void *context)
 		// Unfortunately __splitstack_find_context will return NULL
 		// when it is called on a context that has never been used.
 		// There isn't much we can do but assume all is well.
-		if (stack != NULL) {
+		if (find_stack != NULL) {
 			// Here the gc runtime adjusts the gsignal
 			// stack guard to match the values returned by
 			// sigaltstack.  Unfortunately we have no way

@@ -1540,14 +1540,6 @@ cp_omp_mappable_type_1 (tree type, bool notes)
   /* Arrays have mappable type if the elements have mappable type.  */
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
-  /* A mappable type cannot contain virtual members.  */
-  if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
-    {
-      if (notes)
-	inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-		"type %qT with virtual members is not mappable", type);
-      result = false;
-    }
   /* All data members must be non-static.  */
   if (CLASS_TYPE_P (type))
     {
@@ -5772,27 +5764,34 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (TREE_CODE (decl) == CONST_DECL)
     used_types_insert (DECL_CONTEXT (decl));
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && !DECL_DELETED_FN (decl)
-      && !maybe_instantiate_noexcept (decl, complain))
-    return false;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_DELETED_FN (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (DECL_ARTIFICIAL (decl)
-	  && DECL_CONV_FN_P (decl)
-	  && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
-	/* We mark a lambda conversion op as deleted if we can't
-	   generate it properly; see maybe_add_lambda_conv_op.  */
-	sorry ("converting lambda that uses %<...%> to function pointer");
-      else if (complain & tf_error)
+      if (DECL_MAYBE_DELETED (decl))
 	{
-	  error ("use of deleted function %qD", decl);
-	  if (!maybe_explain_implicit_delete (decl))
-	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	  ++function_depth;
+	  maybe_synthesize_method (decl);
+	  --function_depth;
 	}
-      return false;
+
+      if (DECL_DELETED_FN (decl))
+	{
+	  if (DECL_ARTIFICIAL (decl)
+	      && DECL_CONV_FN_P (decl)
+	      && LAMBDA_TYPE_P (DECL_CONTEXT (decl)))
+	    /* We mark a lambda conversion op as deleted if we can't
+	       generate it properly; see maybe_add_lambda_conv_op.  */
+	    sorry ("converting lambda that uses %<...%> to function pointer");
+	  else if (complain & tf_error)
+	    {
+	      error ("use of deleted function %qD", decl);
+	      if (!maybe_explain_implicit_delete (decl))
+		inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	    }
+	  return false;
+	}
+
+      if (!maybe_instantiate_noexcept (decl, complain))
+	return false;
     }
 
   if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl))

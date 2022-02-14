@@ -2,7 +2,7 @@
    a larger scalar into a smaller array
    Verify overflow by vector stores.
    { dg-do compile }
-   { dg-options "-O2" } */
+   { dg-options "-O2 -Wno-psabi" } */
 
 #define V(N) __attribute__ ((vector_size (N)))
 #define C1 (VC1){ 0 }

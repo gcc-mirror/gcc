@@ -7220,6 +7220,12 @@ On x86 targets, the @code{fentry_section} attribute sets the name
 of the section to record function entry instrumentation calls in when
 enabled with @option{-pg -mrecord-mcount}
 
+@item nodirect_extern_access
+@cindex @code{nodirect_extern_access} function attribute
+@opindex mno-direct-extern-access
+This attribute, attached to a global variable or function, is the
+counterpart to option @option{-mno-direct-extern-access}.
+
 @end table
 
 @node Xstormy16 Function Attributes
