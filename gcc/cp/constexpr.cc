@@ -9363,8 +9363,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case GOTO_EXPR:
       {
 	tree *target = &TREE_OPERAND (t, 0);
-	/* Gotos representing break and continue are OK.  */
-	if (breaks (target) || continues (target))
+	/* Gotos representing break, continue and cdtor return are OK.  */
+	if (breaks (target) || continues (target) || returns (target))
 	  {
 	    *jump_target = *target;
 	    return true;
