@@ -22,14 +22,14 @@ foo (void)
 
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
 #pragma acc loop /* { dg-line l_loop_k1 } */
-    /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k1 } */
+    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k1 } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k1 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;
 
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
 #pragma acc loop /* { dg-line l_loop_k2 } */
-    /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k2 } */
+    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k2 } */
     /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k2 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;

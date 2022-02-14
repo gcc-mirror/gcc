@@ -51,8 +51,7 @@ main (int argc, char* argv[])
         /* But here, it is made private per-worker.  */
         #pragma acc loop worker(num:32) private(pt) /* { dg-line l_loop_j[incr c_loop_j] } */
 	/* { dg-note {variable 'pt' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
-	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target c } l_loop_j$c_loop_j }
-	   { dg-note {variable 'j' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target c++ } l_loop_j$c_loop_j } */
+	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	/* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	for (j = 0; j < 32; j++)
 	  {

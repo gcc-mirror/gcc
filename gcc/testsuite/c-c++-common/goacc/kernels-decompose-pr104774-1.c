@@ -1,8 +1,5 @@
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
-/* { dg-additional-options "-fchecking" }
-   { dg-ice TODO } */
-
 /* { dg-additional-options "-fopt-info-all-omp" } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }
@@ -24,18 +21,16 @@ foo (void)
 
     /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
 #pragma acc loop seq /* { dg-line l_loop_k1 } */
-    /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k1 } */
+    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k1 } */
+    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k1 } */
     for (k = 0; k < 2; k++)
       arr_0 = k;
 
     /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
 #pragma acc loop independent reduction(+: arr_0) /* { dg-line l_loop_k2 } */
-    /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k2 } */
+    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k2 } */
+    /* { dg-optimized {assigned OpenACC gang vector loop parallelism} {} { target *-*-* } l_loop_k2 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;
   }
 }
-/* { dg-bogus {error: non-register as LHS of binary operation} {} { xfail *-*-* } .-1 }
-   { dg-bogus {error: invalid RHS for gimple memory store: 'var_decl'} {} { xfail *-*-* } .-2 }
-   { dg-allow-blank-lines-in-output 1 }
-   { dg-excess-errors ICE } */
