@@ -1,3 +1,10 @@
+2022-02-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103771
+	* match.pd (cond_expr_convert_p): New match.
+	* tree-vect-patterns.cc (gimple_cond_expr_convert_p): Declare.
+	(vect_recog_cond_expr_convert_pattern): New.
+
 2022-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/104449

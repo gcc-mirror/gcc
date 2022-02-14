@@ -1,3 +1,11 @@
+2022-02-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/104228
+	* resolve.cc (resolve_assoc_var): Also create a new character
+	length for non-dummy associate targets.
+	* trans-stmt.cc (trans_associate_var): Initialize character length
+	even if no temporary is used for the associate variable.
+
 2022-02-10  Roger Sayle  <roger@nextmovesoftware.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
