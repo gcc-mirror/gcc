@@ -287,7 +287,7 @@ test07()
     // so that careful_resource::do_allocate can distinguish this allocation
     // from any required for the pool resource's internal data structures):
     void* p = upr.allocate(std::size_t(-2), 1024);
-#pragma GCC distinguish pop
+#pragma GCC diagnostic pop
     // Should not reach here!
     VERIFY( !"attempt to allocate SIZE_MAX-1 should not have succeeded" );
     throw p;
