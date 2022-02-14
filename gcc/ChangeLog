@@ -1,3 +1,10 @@
+2022-02-13  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/ppc-asm.h: Support __PCREL__ code.
+
 2022-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

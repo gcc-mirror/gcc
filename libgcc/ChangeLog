@@ -1,3 +1,20 @@
+2022-02-13  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2021-07-15  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S (R2_SAVE): Define.
+	(__morestack): Save and restore r2.  Set up r2 for called
+	functions.
+
+2022-02-13  Alan Modra  <amodra@gmail.com>
+
+	Backported from master:
+	2020-10-01  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S,
+	* config/rs6000/tramp.S: Support __PCREL__ code.
+
 2021-10-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.host (hppa*64*-*-linux*): Don't add pa/t-linux to
