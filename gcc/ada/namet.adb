@@ -1570,15 +1570,19 @@ package body Namet is
    -- Write_Name_For_Debug --
    --------------------------
 
-   procedure Write_Name_For_Debug (Id : Name_Id) is
+   procedure Write_Name_For_Debug (Id : Name_Id; Quote : String := "") is
    begin
       if Is_Valid_Name (Id) then
+         Write_Str (Quote);
+
          declare
             Buf : Bounded_String (Max_Length => Natural (Length_Of_Name (Id)));
          begin
             Append (Buf, Id);
             Write_Str (Buf.Chars (1 .. Buf.Length));
          end;
+
+         Write_Str (Quote);
 
       elsif Id = No_Name then
          Write_Str ("<No_Name>");

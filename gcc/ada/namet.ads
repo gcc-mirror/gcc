@@ -433,9 +433,9 @@ package Namet is
    --  Like Write_Name, except that the name written is the decoded name, as
    --  described for Append_Decoded.
 
-   procedure Write_Name_For_Debug (Id : Name_Id);
+   procedure Write_Name_For_Debug (Id : Name_Id; Quote : String := "");
    --  Like Write_Name, except it tries to be robust in the presence of invalid
-   --  data.
+   --  data, and valid names are surrounded by Quote.
 
    function Name_Entries_Count return Nat;
    --  Return current number of entries in the names table

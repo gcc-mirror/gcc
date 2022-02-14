@@ -1142,7 +1142,7 @@ package body Treepr is
    procedure Print_Name (N : Name_Id) is
    begin
       if Phase = Printing then
-         Write_Name_For_Debug (N);
+         Write_Name_For_Debug (N, Quote => """");
       end if;
    end Print_Name;
 
