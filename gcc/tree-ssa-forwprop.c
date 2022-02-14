@@ -2403,6 +2403,15 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			 ? VEC_UNPACK_FLOAT_HI_EXPR
 			 : VEC_UNPACK_HI_EXPR);
 
+	  /* Conversions between DFP and FP have no special tree code
+	     but we cannot handle those since all relevant vector conversion
+	     optabs only have a single mode.  */
+	  if (CONVERT_EXPR_CODE_P (conv_code)
+	      && FLOAT_TYPE_P (TREE_TYPE (type))
+	      && (DECIMAL_FLOAT_TYPE_P (TREE_TYPE (type))
+		  != DECIMAL_FLOAT_TYPE_P (TREE_TYPE (conv_src_type))))
+	    return false;
+
 	  if (CONVERT_EXPR_CODE_P (conv_code)
 	      && (2 * TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
 		  == TYPE_PRECISION (TREE_TYPE (type)))
