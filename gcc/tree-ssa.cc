@@ -272,7 +272,7 @@ target_for_debug_bind (tree var)
 /* Called via walk_tree, look for SSA_NAMEs that have already been
    released.  */
 
-static tree
+tree
 find_released_ssa_name (tree *tp, int *walk_subtrees, void *data_)
 {
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data_;
