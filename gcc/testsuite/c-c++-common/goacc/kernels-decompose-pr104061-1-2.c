@@ -16,7 +16,8 @@ foo (void)
 {
   /* { dg-bogus {sorry, unimplemented: 'gimple_debug' not yet supported} TODO { xfail *-*-* } .+1 } */
 #pragma acc kernels /* { dg-line l_compute1 } */
-  /* { dg-bogus {note: OpenACC 'kernels' decomposition: variable 'k' declared in block made addressable} {w/ debug} { xfail *-*-* } l_compute1 } */
+  /* { dg-bogus {note: OpenACC 'kernels' decomposition: variable 'k' declared in block requested to be made addressable} {w/ debug} { xfail *-*-* } l_compute1 } */
+  /* { dg-bogus {note: variable 'k' made addressable} {w/ debug} { xfail *-*-* } l_compute1 } */
   /* { dg-note {variable 'arr_0\.0' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { xfail *-*-* } l_compute1 } */
   {
     /* { dg-bogus {note: beginning 'gang-single' part in OpenACC 'kernels' region} {w/ debug} { xfail c++ } .-1 }

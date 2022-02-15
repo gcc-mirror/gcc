@@ -29,7 +29,8 @@ extern unsigned int f (unsigned int);
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-line l_compute1 } */
-  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} {} { target *-*-* } l_compute1 } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute1 } */
+  /* { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute1 } */
   /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute1 } */
   /* { dg-note {variable '[abc]\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 } */
   /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 } */

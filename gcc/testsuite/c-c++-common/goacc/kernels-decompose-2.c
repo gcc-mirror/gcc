@@ -66,14 +66,16 @@ main ()
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
   /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_compute$c_compute } */
-  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
   {
     int i;
   }
 
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
-  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */

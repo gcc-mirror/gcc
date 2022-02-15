@@ -847,7 +847,8 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  /* See <https://gcc.gnu.org/PR100280>.  */
 	  if (!TREE_ADDRESSABLE (v))
 	    {
-	      TREE_ADDRESSABLE (v) = 1;
+	      /* Request that OMP lowering make 'v' addressable.  */
+	      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (new_clause) = 1;
 
 	      if (dump_enabled_p ())
 		{
@@ -861,7 +862,7 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 		  dump_printf_loc (MSG_NOTE, d_u_loc,
 				   "OpenACC %<kernels%> decomposition:"
 				   " variable %<%T%> declared in block"
-				   " made addressable\n",
+				   " requested to be made addressable\n",
 				   v);
 #if __GNUC__ >= 10
 # pragma GCC diagnostic pop

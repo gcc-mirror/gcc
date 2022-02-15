@@ -1495,6 +1495,37 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if (ctx->outer)
 	    scan_omp_op (&OMP_CLAUSE_SIZE (c), ctx->outer);
 	  decl = OMP_CLAUSE_DECL (c);
+	  /* If requested, make 'decl' addressable.  */
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (c))
+	    {
+	      gcc_checking_assert (DECL_P (decl));
+
+	      gcc_checking_assert (!TREE_ADDRESSABLE (decl));
+	      TREE_ADDRESSABLE (decl) = 1;
+
+	      if (dump_enabled_p ())
+		{
+		  location_t loc = OMP_CLAUSE_LOCATION (c);
+		  const dump_user_location_t d_u_loc
+		    = dump_user_location_t::from_location_t (loc);
+		  /* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+		  dump_printf_loc (MSG_NOTE, d_u_loc,
+				   "variable %<%T%>"
+				   " made addressable\n",
+				   decl);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+		}
+
+	      /* Done.  */
+	      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (c) = 0;
+	    }
 	  /* Global variables with "omp declare target" attribute
 	     don't need to be copied, the receiver side will use them
 	     directly.  However, global variables with "omp declare target link"

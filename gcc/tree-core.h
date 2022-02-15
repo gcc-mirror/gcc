@@ -1155,6 +1155,9 @@ struct GTY(()) tree_base {
        PREDICT_EXPR_OUTCOME in
 	   PREDICT_EXPR
 
+       OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE in
+	   OMP_CLAUSE
+
    static_flag:
 
        TREE_STATIC in
