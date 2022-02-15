@@ -7302,7 +7302,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx x,
   else if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
     return NULL_RTX;
   rtx ret = native_decode_rtx (outermode, buffer, 0);
-  if (ret && MODE_COMPOSITE_P (outermode))
+  if (ret && FLOAT_MODE_P (outermode))
     {
       auto_vec<target_unit, 128> buffer2 (buffer_bytes);
       if (!native_encode_rtx (outermode, ret, buffer2, 0, buffer_bytes))

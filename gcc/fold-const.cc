@@ -8643,7 +8643,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
    the buffer PTR of length LEN as a REAL_CST of type TYPE.
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
-static tree
+tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
   scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
@@ -8694,19 +8694,7 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
     }
 
   real_from_target (&r, tmp, mode);
-  tree ret = build_real (type, r);
-  if (MODE_COMPOSITE_P (mode))
-    {
-      /* For floating point values in composite modes, punt if this folding
-	 doesn't preserve bit representation.  As the mode doesn't have fixed
-	 precision while GCC pretends it does, there could be valid values that
-	 GCC can't really represent accurately.  See PR95450.  */
-      unsigned char buf[24];
-      if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
-	  || memcmp (ptr, buf, total_bytes) != 0)
-	ret = NULL_TREE;
-    }
-  return ret;
+  return build_real (type, r);
 }
 
 
@@ -8824,7 +8812,23 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
-      return native_interpret_real (type, ptr, len);
+      if (tree ret = native_interpret_real (type, ptr, len))
+	{
+	  /* For floating point values in composite modes, punt if this
+	     folding doesn't preserve bit representation.  As the mode doesn't
+	     have fixed precision while GCC pretends it does, there could be
+	     valid values that GCC can't really represent accurately.
+	     See PR95450.  Even for other modes, e.g. x86 XFmode can have some
+	     bit combinationations which GCC doesn't preserve.  */
+	  unsigned char buf[24];
+	  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
+	  int total_bytes = GET_MODE_SIZE (mode);
+	  if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
+	      || memcmp (ptr, buf, total_bytes) != 0)
+	    return NULL_TREE;
+	  return ret;
+	}
+      return NULL_TREE;
 
     case FIXED_POINT_TYPE:
       return native_interpret_fixed (type, ptr, len);
