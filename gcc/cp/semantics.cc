@@ -826,6 +826,26 @@ finish_goto_stmt (tree destination)
   return add_stmt (build_stmt (input_location, GOTO_EXPR, destination));
 }
 
+/* Returns true if CALL is a (possibly wrapped) CALL_EXPR or AGGR_INIT_EXPR
+   to operator= () that is written as an operator expression. */
+static bool
+is_assignment_op_expr_p (tree call)
+{
+  if (call == NULL_TREE)
+    return false;
+
+  call = extract_call_expr (call);
+  if (call == NULL_TREE
+      || call == error_mark_node
+      || !CALL_EXPR_OPERATOR_SYNTAX (call))
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (call);
+  return fndecl != NULL_TREE
+    && DECL_ASSIGNMENT_OPERATOR_P (fndecl)
+    && DECL_OVERLOADED_OPERATOR_IS (fndecl, NOP_EXPR);
+}
+
 /* COND is the condition-expression for an if, while, etc.,
    statement.  Convert it to a boolean value, if appropriate.
    In addition, verify sequence points if -Wsequence-point is enabled.  */
@@ -847,7 +867,7 @@ maybe_convert_cond (tree cond)
   /* Do the conversion.  */
   cond = convert_from_reference (cond);
 
-  if (TREE_CODE (cond) == MODIFY_EXPR
+  if ((TREE_CODE (cond) == MODIFY_EXPR || is_assignment_op_expr_p (cond))
       && warn_parentheses
       && !warning_suppressed_p (cond, OPT_Wparentheses)
       && warning_at (cp_expr_loc_or_input_loc (cond),

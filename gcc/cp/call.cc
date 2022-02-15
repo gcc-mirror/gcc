@@ -7111,9 +7111,10 @@ extract_call_expr (tree call)
       default:;
       }
 
-  gcc_assert (TREE_CODE (call) == CALL_EXPR
-	      || TREE_CODE (call) == AGGR_INIT_EXPR
-	      || call == error_mark_node);
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR
+      && call != error_mark_node)
+    return NULL_TREE;
   return call;
 }
 
@@ -11180,6 +11181,12 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 		*fn_p = fn;
 	      /* Build the actual CALL_EXPR.  */
 	      call = build_over_call (cand, flags, complain);
+
+	      /* Suppress warnings for if (my_struct.operator= (x)) where
+		 my_struct is implicitly converted to bool. */
+	      if (TREE_CODE (call) == MODIFY_EXPR)
+		suppress_warning (call, OPT_Wparentheses);
+
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
