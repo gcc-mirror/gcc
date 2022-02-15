@@ -2761,9 +2761,21 @@ package body Sem_Ch5 is
                end;
             end if;
 
-         --  IN iterator, domain is a range, or a call to Iterate function
+         --  IN iterator, domain is a range, a call to Iterate function,
+         --  or an object/actual parameter of an iterator type.
 
          else
+            --  If the type of the name is class-wide and its root type is a
+            --  derived type, the primitive operations (First, Next, etc.) are
+            --  those inherited by its specific type. Calls to these primitives
+            --  will be dispatching.
+
+            if Is_Class_Wide_Type (Typ)
+              and then Is_Derived_Type (Etype (Typ))
+            then
+               Typ := Etype (Typ);
+            end if;
+
             --  For an iteration of the form IN, the name must denote an
             --  iterator, typically the result of a call to Iterate. Give a
             --  useful error message when the name is a container by itself.
