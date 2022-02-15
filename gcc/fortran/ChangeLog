@@ -1,3 +1,19 @@
+2022-02-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/100337
+	Backport from master.
+	* trans-intrinsic.c (conv_co_collective): Check stat for null ptr
+	before dereferrencing.
+
+2022-02-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103790
+	Backported from master.
+	* trans-array.c (structure_alloc_comps): Prevent descriptor
+	stacking for non-array data; do not broadcast caf-tokens.
+	* trans-intrinsic.c (conv_co_collective): Prevent generation
+	of unused descriptor.
+
 2022-02-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
