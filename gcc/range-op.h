@@ -78,12 +78,15 @@ public:
   // The following routines are used to represent relations between the
   // various operations.  If the caller knows where the symbolics are,
   // it can query for relationships between them given known ranges.
+  // the optional relation passed in is the relation between op1 and op2.
   virtual enum tree_code lhs_op1_relation (const irange &lhs,
 					   const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel = VREL_NONE) const;
   virtual enum tree_code lhs_op2_relation (const irange &lhs,
 					   const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel = VREL_NONE) const;
   virtual enum tree_code op1_op2_relation (const irange &lhs) const;
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.

@@ -640,13 +640,13 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 		}
 	      if (gimple_range_ssa_p (op1))
 		{
-		  rel = handler->lhs_op1_relation (r, range1, range2);
+		  rel = handler->lhs_op1_relation (r, range1, range2, rel);
 		  if (rel != VREL_NONE)
 		    src.register_relation (s, rel, lhs, op1);
 		}
 	      if (gimple_range_ssa_p (op2))
 		{
-		  rel= handler->lhs_op2_relation (r, range1, range2);
+		  rel= handler->lhs_op2_relation (r, range1, range2, rel);
 		  if (rel != VREL_NONE)
 		    src.register_relation (s, rel, lhs, op2);
 		}

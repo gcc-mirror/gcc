@@ -249,7 +249,8 @@ range_operator::op2_range (irange &r ATTRIBUTE_UNUSED,
 enum tree_code
 range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 				  const irange &op1 ATTRIBUTE_UNUSED,
-				  const irange &op2 ATTRIBUTE_UNUSED) const
+				  const irange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return VREL_NONE;
 }
@@ -257,7 +258,8 @@ range_operator::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 enum tree_code
 range_operator::lhs_op2_relation (const irange &lhs ATTRIBUTE_UNUSED,
 				  const irange &op1 ATTRIBUTE_UNUSED,
-				  const irange &op2 ATTRIBUTE_UNUSED) const
+				  const irange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
 {
   return VREL_NONE;
 }
@@ -1182,9 +1184,11 @@ public:
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
   virtual enum tree_code lhs_op1_relation (const irange &lhs, const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel) const;
   virtual enum tree_code lhs_op2_relation (const irange &lhs, const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel) const;
 } op_plus;
 
 // Check to see if the range of OP2 indicates anything about the relation
@@ -1193,7 +1197,8 @@ public:
 enum tree_code
 operator_plus::lhs_op1_relation (const irange &lhs,
 				 const irange &op1,
-				 const irange &op2) const
+				 const irange &op2,
+				 relation_kind) const
 {
   if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
     return VREL_NONE;
@@ -1258,9 +1263,9 @@ operator_plus::lhs_op1_relation (const irange &lhs,
 
 enum tree_code
 operator_plus::lhs_op2_relation (const irange &lhs, const irange &op1,
-				 const irange &op2) const
+				 const irange &op2, relation_kind rel) const
 {
-  return lhs_op1_relation (lhs, op2, op1);
+  return lhs_op1_relation (lhs, op2, op1, rel);
 }
 
 void
@@ -1310,6 +1315,10 @@ public:
 		        const wide_int &lh_ub,
 		        const wide_int &rh_lb,
 		        const wide_int &rh_ub) const;
+  virtual enum tree_code lhs_op1_relation (const irange &lhs,
+					   const irange &op1,
+					   const irange &op2,
+					   relation_kind rel) const;
   virtual bool op1_op2_relation_effect (irange &lhs_range,
 					tree type,
 					const irange &op1_range,
@@ -1327,6 +1336,27 @@ operator_minus::wi_fold (irange &r, tree type,
   wide_int new_lb = wi::sub (lh_lb, rh_ub, s, &ov_lb);
   wide_int new_ub = wi::sub (lh_ub, rh_lb, s, &ov_ub);
   value_range_with_overflow (r, type, new_lb, new_ub, ov_lb, ov_ub);
+}
+
+
+// Return the relation between LHS and OP1 based on the relation between
+// OP1 and OP2.
+
+enum tree_code
+operator_minus::lhs_op1_relation (const irange &lhs, const irange &,
+				  const irange &, relation_kind rel) const
+{
+  if (TYPE_SIGN (lhs.type ()) == UNSIGNED)
+    switch (rel)
+      {
+      case GT_EXPR:
+	return LT_EXPR;
+      case GE_EXPR:
+	return LE_EXPR;
+      default:
+	break;
+      }
+  return VREL_NONE;
 }
 
 // Check to see if the relation REL between OP1 and OP2 has any effect on the
@@ -1899,14 +1929,16 @@ public:
 			  relation_kind rel = VREL_NONE) const;
   virtual enum tree_code lhs_op1_relation (const irange &lhs,
 					   const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel) const;
 } op_rshift;
 
 
 enum tree_code
 operator_rshift::lhs_op1_relation (const irange &lhs ATTRIBUTE_UNUSED,
 				   const irange &op1,
-				   const irange &op2) const
+				   const irange &op2,
+				   relation_kind) const
 {
   // If both operands range are >= 0, then the LHS <= op1.
   if (!op1.undefined_p () && !op2.undefined_p ()
@@ -3532,7 +3564,8 @@ public:
 			  relation_kind rel = VREL_NONE) const;
   virtual enum tree_code lhs_op1_relation (const irange &lhs,
 					   const irange &op1,
-					   const irange &op2) const;
+					   const irange &op2,
+					   relation_kind rel) const;
 } op_identity;
 
 // Determine if there is a relationship between LHS and OP1.
@@ -3540,7 +3573,8 @@ public:
 enum tree_code
 operator_identity::lhs_op1_relation (const irange &lhs,
 				     const irange &op1 ATTRIBUTE_UNUSED,
-				     const irange &op2 ATTRIBUTE_UNUSED) const
+				     const irange &op2 ATTRIBUTE_UNUSED,
+				     relation_kind) const
 {
   if (lhs.undefined_p ())
     return VREL_NONE;
@@ -4427,19 +4461,19 @@ range_relational_tests ()
   int_range<2> op2 (UCHAR (20), UCHAR (20));
 
   // Never wrapping additions mean LHS > OP1.
-  tree_code code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  tree_code code = op_plus.lhs_op1_relation (lhs, op1, op2, VREL_NONE);
   ASSERT_TRUE (code == GT_EXPR);
 
   // Most wrapping additions mean nothing...
   op1 = int_range<2> (UCHAR (8), UCHAR (10));
   op2 = int_range<2> (UCHAR (0), UCHAR (255));
-  code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  code = op_plus.lhs_op1_relation (lhs, op1, op2, VREL_NONE);
   ASSERT_TRUE (code == VREL_NONE);
 
   // However, always wrapping additions mean LHS < OP1.
   op1 = int_range<2> (UCHAR (1), UCHAR (255));
   op2 = int_range<2> (UCHAR (255), UCHAR (255));
-  code = op_plus.lhs_op1_relation (lhs, op1, op2);
+  code = op_plus.lhs_op1_relation (lhs, op1, op2, VREL_NONE);
   ASSERT_TRUE (code == LT_EXPR);
 }
 
