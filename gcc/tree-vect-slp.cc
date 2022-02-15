@@ -5380,7 +5380,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       unsigned dummy;
       finish_cost (scalar_target_cost_data, nullptr,
 		   &dummy, &scalar_cost, &dummy);
-      delete scalar_target_cost_data;
 
       /* Complete the target-specific vector cost calculation.  */
       class vector_costs *vect_target_cost_data = init_cost (bb_vinfo, false);
@@ -5393,6 +5392,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	     && li_vector_costs[vi].first == vl);
       finish_cost (vect_target_cost_data, scalar_target_cost_data,
 		   &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
+      delete scalar_target_cost_data;
       delete vect_target_cost_data;
 
       vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
