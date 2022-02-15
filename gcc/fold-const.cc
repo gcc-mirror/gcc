@@ -14208,11 +14208,7 @@ multiple_of_p (tree type, const_tree top, const_tree bottom, bool nowrap)
 	      && multiple_of_p (type, TREE_OPERAND (top, 2), bottom, nowrap));
 
     case INTEGER_CST:
-      if (TREE_CODE (bottom) != INTEGER_CST
-	  || integer_zerop (bottom)
-	  || (TYPE_UNSIGNED (type)
-	      && (tree_int_cst_sgn (top) < 0
-		  || tree_int_cst_sgn (bottom) < 0)))
+      if (TREE_CODE (bottom) != INTEGER_CST || integer_zerop (bottom))
 	return 0;
       return wi::multiple_of_p (wi::to_widest (top), wi::to_widest (bottom),
 				SIGNED);

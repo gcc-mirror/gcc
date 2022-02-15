@@ -1048,13 +1048,19 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
      which the loop exits immediately, and the iv does not overflow.
 
      Also note, we prove condition 2) by checking base and final seperately
-     along with condition 1) or 1').  */
+     along with condition 1) or 1').  Since we ensure the difference
+     computation of c does not wrap with cond below and the adjusted s
+     will fit a signed type as well as an unsigned we can safely do
+     this using the type of the IV if it is not pointer typed.  */
+  tree mtype = type;
+  if (POINTER_TYPE_P (type))
+    mtype = niter_type;
   if (!niter->control.no_overflow
       && (integer_onep (s)
-	  || (multiple_of_p (type, fold_convert (niter_type, iv->base), s,
-			     false)
-	      && multiple_of_p (type, fold_convert (niter_type, final), s,
-				false))))
+	  || (multiple_of_p (mtype, fold_convert (mtype, iv->base),
+			     fold_convert (mtype, s), false)
+	      && multiple_of_p (mtype, fold_convert (mtype, final),
+				fold_convert (mtype, s), false))))
     {
       tree t, cond, relaxed_cond = boolean_false_node;
 
