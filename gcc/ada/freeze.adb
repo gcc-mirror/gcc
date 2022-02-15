@@ -1741,17 +1741,6 @@ package body Freeze is
                 (Nkind (Parent (N)) /= N_Attribute_Reference
                   or else Attribute_Name (Parent (N)) /= Name_Class)
             then
-               --  The check does not apply to dispatching calls within the
-               --  condition, but only to calls whose static tag is that of
-               --  the parent type.
-
-               if Is_Subprogram (Entity (N))
-                 and then Nkind (Parent (N)) = N_Function_Call
-                 and then Present (Controlling_Argument (Parent (N)))
-               then
-                  return OK;
-               end if;
-
                --  Determine whether entity has a renaming
 
                New_E := Get_Mapped_Entity (Entity (N));
@@ -1794,6 +1783,10 @@ package body Freeze is
       Ifaces_List    : Elist_Id := No_Elist;
       Ifaces_Listed  : Boolean := False;
       --  Cache the list of interface operations inherited by R
+
+      Wrappers_List  : Elist_Id := No_Elist;
+      --  List containing identifiers of built wrappers. Used to defer building
+      --  and analyzing their class-wide precondition subprograms.
 
    --  Start of processing for Check_Inherited_Conditions
 
@@ -1985,15 +1978,20 @@ package body Freeze is
                Prim_Prev_E : constant Entity_Id := Prev_Entity (Prim);
 
             begin
-               --  The wrapper must be analyzed in the scope of its wrapped
-               --  primitive (to ensure its correct decoration).
-
-               Push_Scope (Scope (Prim));
-
                DTW_Spec := Build_DTW_Spec (Par_Prim);
                DTW_Id   := Defining_Entity (DTW_Spec);
                DTW_Decl := Make_Subprogram_Declaration (Loc,
                              Specification => DTW_Spec);
+
+               --  The spec of the wrapper has been built using the source
+               --  location of its parent primitive; we must update it now
+               --  (with the source location of the internal primitive built
+               --  by Derive_Subprogram that will override this wrapper) to
+               --  avoid inlining conflicts between internally built helpers
+               --  for class-wide pre/postconditions of the parent and the
+               --  helpers built for this wrapper.
+
+               Set_Sloc (DTW_Id, Sloc (Prim));
 
                --  For inherited class-wide preconditions the DTW wrapper
                --  reuses the ICW of the parent (which checks the parent
@@ -2121,42 +2119,58 @@ package body Freeze is
                     Register_Primitive (Loc, DTW_Id));
                end if;
 
-               --  Build the helper and ICW for the DTW
+               --  Defer building helpers and ICW for the DTW. Required to
+               --  ensure uniqueness in their names because when building
+               --  these wrappers for overlapped subprograms their homonym
+               --  number is not definite until all these dispatch table
+               --  wrappers of tagged type R have been analyzed.
 
                if Present (Indirect_Call_Wrapper (Par_Prim)) then
-                  declare
-                     CW_Subp : Entity_Id;
-                     Decl_N  : Node_Id;
-                     Body_N  : Node_Id;
-
-                  begin
-                     Merge_Class_Conditions (DTW_Id);
-                     Make_Class_Precondition_Subps (DTW_Id,
-                       Late_Overriding => Late_Overriding);
-
-                     CW_Subp := Static_Call_Helper (DTW_Id);
-                     Decl_N  := Unit_Declaration_Node (CW_Subp);
-                     Analyze (Decl_N);
-
-                     --  If the DTW was built for a late-overriding primitive
-                     --  its body must be analyzed now (since the tagged type
-                     --  is already frozen).
-
-                     if Late_Overriding then
-                        Body_N :=
-                          Unit_Declaration_Node
-                            (Corresponding_Body (Decl_N));
-                        Analyze (Body_N);
-                     end if;
-                  end;
+                  Append_New_Elmt (DTW_Id, Wrappers_List);
                end if;
-
-               Pop_Scope;
             end;
          end if;
 
          Next_Elmt (Op_Node);
       end loop;
+
+      --  Build and analyze deferred class-wide precondition subprograms of
+      --  built wrappers.
+
+      if Present (Wrappers_List) then
+         declare
+            Body_N  : Node_Id;
+            CW_Subp : Entity_Id;
+            Decl_N  : Node_Id;
+            DTW_Id  : Entity_Id;
+            Elmt    : Elmt_Id;
+
+         begin
+            Elmt := First_Elmt (Wrappers_List);
+
+            while Present (Elmt) loop
+               DTW_Id := Node (Elmt);
+               Next_Elmt (Elmt);
+
+               Merge_Class_Conditions (DTW_Id);
+               Make_Class_Precondition_Subps (DTW_Id, Late_Overriding);
+
+               CW_Subp := Static_Call_Helper (DTW_Id);
+               Decl_N  := Unit_Declaration_Node (CW_Subp);
+               Analyze (Decl_N);
+
+               --  If the DTW was built for a late-overriding primitive
+               --  its body must be analyzed now (since the tagged type
+               --  is already frozen).
+
+               if Late_Overriding then
+                  Body_N :=
+                    Unit_Declaration_Node (Corresponding_Body (Decl_N));
+                  Analyze (Body_N);
+               end if;
+            end loop;
+         end;
+      end if;
    end Check_Inherited_Conditions;
 
    ----------------------------
