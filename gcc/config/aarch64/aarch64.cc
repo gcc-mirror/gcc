@@ -14932,6 +14932,31 @@ private:
      - If M_VEC_FLAGS & VEC_ANY_SVE is nonzero then we're costing SVE code.  */
   unsigned int m_vec_flags = 0;
 
+  /* At the moment, we do not model LDP and STP in the vector and scalar costs.
+     This means that code such as:
+
+	a[0] = x;
+	a[1] = x;
+
+     will be costed as two scalar instructions and two vector instructions
+     (a scalar_to_vec and an unaligned_store).  For SLP, the vector form
+     wins if the costs are equal, because of the fact that the vector costs
+     include constant initializations whereas the scalar costs don't.
+     We would therefore tend to vectorize the code above, even though
+     the scalar version can use a single STP.
+
+     We should eventually fix this and model LDP and STP in the main costs;
+     see the comment in aarch64_sve_adjust_stmt_cost for some of the problems.
+     Until then, we look specifically for code that does nothing more than
+     STP-like operations.  We cost them on that basis in addition to the
+     normal latency-based costs.
+
+     If the scalar or vector code could be a sequence of STPs +
+     initialization, this variable counts the cost of the sequence,
+     with 2 units per instruction.  The variable is ~0U for other
+     kinds of code.  */
+  unsigned int m_stp_sequence_cost = 0;
+
   /* On some CPUs, SVE and Advanced SIMD provide the same theoretical vector
      throughput, such as 4x128 Advanced SIMD vs. 2x256 SVE.  In those
      situations, we try to predict whether an Advanced SIMD implementation
@@ -15724,6 +15749,104 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     }
 }
 
+/* Return true if STMT_INFO contains a memory access and if the constant
+   component of the memory address is aligned to SIZE bytes.  */
+static bool
+aarch64_aligned_constant_offset_p (stmt_vec_info stmt_info,
+				   poly_uint64 size)
+{
+  if (!STMT_VINFO_DATA_REF (stmt_info))
+    return false;
+
+  if (auto first_stmt = DR_GROUP_FIRST_ELEMENT (stmt_info))
+    stmt_info = first_stmt;
+  tree constant_offset = DR_INIT (STMT_VINFO_DATA_REF (stmt_info));
+  /* Needed for gathers & scatters, for example.  */
+  if (!constant_offset)
+    return false;
+
+  return multiple_p (wi::to_poly_offset (constant_offset), size);
+}
+
+/* Check if a scalar or vector stmt could be part of a region of code
+   that does nothing more than store values to memory, in the scalar
+   case using STP.  Return the cost of the stmt if so, counting 2 for
+   one instruction.  Return ~0U otherwise.
+
+   The arguments are a subset of those passed to add_stmt_cost.  */
+unsigned int
+aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
+			   stmt_vec_info stmt_info, tree vectype)
+{
+  /* Code that stores vector constants uses a vector_load to create
+     the constant.  We don't apply the heuristic to that case for two
+     main reasons:
+
+     - At the moment, STPs are only formed via peephole2, and the
+       constant scalar moves would often come between STRs and so
+       prevent STP formation.
+
+     - The scalar code also has to load the constant somehow, and that
+       isn't costed.  */
+  switch (kind)
+    {
+    case scalar_to_vec:
+      /* Count 2 insns for a GPR->SIMD dup and 1 insn for a FPR->SIMD dup.  */
+      return (FLOAT_TYPE_P (vectype) ? 2 : 4) * count;
+
+    case vec_construct:
+      if (FLOAT_TYPE_P (vectype))
+	/* Count 1 insn for the maximum number of FP->SIMD INS
+	   instructions.  */
+	return (vect_nunits_for_cost (vectype) - 1) * 2 * count;
+
+      /* Count 2 insns for a GPR->SIMD move and 2 insns for the
+	 maximum number of GPR->SIMD INS instructions.  */
+      return vect_nunits_for_cost (vectype) * 4 * count;
+
+    case vector_store:
+    case unaligned_store:
+      /* Count 1 insn per vector if we can't form STP Q pairs.  */
+      if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
+	return count * 2;
+      if (aarch64_tune_params.extra_tuning_flags
+	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
+	return count * 2;
+
+      if (stmt_info)
+	{
+	  /* Assume we won't be able to use STP if the constant offset
+	     component of the address is misaligned.  ??? This could be
+	     removed if we formed STP pairs earlier, rather than relying
+	     on peephole2.  */
+	  auto size = GET_MODE_SIZE (TYPE_MODE (vectype));
+	  if (!aarch64_aligned_constant_offset_p (stmt_info, size))
+	    return count * 2;
+	}
+      return CEIL (count, 2) * 2;
+
+    case scalar_store:
+      if (stmt_info && STMT_VINFO_DATA_REF (stmt_info))
+	{
+	  /* Check for a mode in which STP pairs can be formed.  */
+	  auto size = GET_MODE_SIZE (TYPE_MODE (aarch64_dr_type (stmt_info)));
+	  if (maybe_ne (size, 4) && maybe_ne (size, 8))
+	    return ~0U;
+
+	  /* Assume we won't be able to use STP if the constant offset
+	     component of the address is misaligned.  ??? This could be
+	     removed if we formed STP pairs earlier, rather than relying
+	     on peephole2.  */
+	  if (!aarch64_aligned_constant_offset_p (stmt_info, size))
+	    return ~0U;
+	}
+      return count;
+
+    default:
+      return ~0U;
+    }
+}
+
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				     stmt_vec_info stmt_info, tree vectype,
@@ -15745,6 +15868,14 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	analyze_loop_vinfo (loop_vinfo);
 
       m_analyzed_vinfo = true;
+    }
+
+  /* Apply the heuristic described above m_stp_sequence_cost.  */
+  if (m_stp_sequence_cost != ~0U)
+    {
+      uint64_t cost = aarch64_stp_sequence_cost (count, kind,
+						 stmt_info, vectype);
+      m_stp_sequence_cost = MIN (m_stp_sequence_cost + cost, ~0U);
     }
 
   /* Try to get a more accurate cost by looking at STMT_INFO instead
@@ -16016,6 +16147,15 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
       && aarch64_use_new_vector_costs_p ())
     m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					   m_costs[vect_body]);
+
+  /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
+     the scalar code in the event of a tie, since there is more chance
+     of scalar code being optimized with surrounding operations.  */
+  if (!loop_vinfo
+      && scalar_costs
+      && m_stp_sequence_cost != ~0U
+      && m_stp_sequence_cost >= scalar_costs->m_stp_sequence_cost)
+    m_costs[vect_body] = 2 * scalar_costs->total_cost ();
 
   vector_costs::finish_cost (scalar_costs);
 }
