@@ -334,7 +334,7 @@ range_def_chain::get_def_chain (tree name)
   unsigned v = SSA_NAME_VERSION (name);
 
   // If it has already been processed, just return the cached value.
-  if (has_def_chain (name))
+  if (has_def_chain (name) && m_def_chain[v].bm)
     return m_def_chain[v].bm;
 
   // No definition chain for default defs.
@@ -1301,6 +1301,100 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
       return true;
     }
   return false;
+}
+
+// Given COND ? OP1 : OP2 with ranges R1 for OP1 and R2 for OP2, Use gori
+// to further resolve R1 and R2 if there are any dependencies between
+// OP1 and COND or OP2 and COND.  All values can are to be calculated using SRC
+// as the origination source location for operands..
+// Effectively, use COND an the edge condition and solve for OP1 on the true
+// edge and OP2 on the false edge.
+
+bool
+gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
+			       tree op1, tree op2, fur_source &src)
+{
+  int_range_max tmp, cond_true, cond_false;
+  tree ssa1 = gimple_range_ssa_p (op1);
+  tree ssa2 = gimple_range_ssa_p (op2);
+  if (!ssa1 && !ssa2)
+    return false;
+  if (!COMPARISON_CLASS_P (cond))
+    return false;
+  tree type = TREE_TYPE (TREE_OPERAND (cond, 0));
+  if (type != TREE_TYPE (TREE_OPERAND (cond, 1)))
+    return false;
+  range_operator *hand = range_op_handler (TREE_CODE (cond), type);
+  if (!hand)
+    return false;
+
+  tree c1 = gimple_range_ssa_p (TREE_OPERAND (cond, 0));
+  tree c2 = gimple_range_ssa_p (TREE_OPERAND (cond, 1));
+
+  // Only solve if there is one SSA name in the condition.
+  if ((!c1 && !c2) || (c1 && c2))
+    return false;
+
+  // Pick up the current values of each part of the condition.
+  int_range_max cl, cr;
+  src.get_operand (cl, TREE_OPERAND (cond, 0));
+  src.get_operand (cr, TREE_OPERAND (cond, 1));
+
+  tree cond_name = c1 ? c1 : c2;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (cond_name);
+
+  // Evaluate the value of COND_NAME on the true and false edges, using either
+  // the op1 or op2 routines based on its location.
+  if (c1)
+    {
+      if (!hand->op1_range (cond_false, type, m_bool_zero, cr))
+	return false;
+      if (!hand->op1_range (cond_true, type, m_bool_one, cr))
+	return false;
+      cond_false.intersect (cl);
+      cond_true.intersect (cl);
+    }
+  else
+    {
+      if (!hand->op2_range (cond_false, type, m_bool_zero, cl))
+	return false;
+      if (!hand->op2_range (cond_true, type, m_bool_one, cl))
+	return false;
+      cond_false.intersect (cr);
+      cond_true.intersect (cr);
+    }
+
+  unsigned idx;
+  if ((idx = tracer.header ("cond_expr evaluation : ")))
+    {
+      fprintf (dump_file, " range1 = ");
+      r1.dump (dump_file);
+      fprintf (dump_file, ", range2 = ");
+      r1.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+
+   // Now solve for SSA1 or SSA2 if they are in the dependency chain.
+   if (ssa1 && in_chain_p (ssa1, cond_name))
+    {
+      if (compute_operand_range (tmp, def_stmt, cond_true, ssa1, src))
+	r1.intersect (tmp);
+    }
+  if (ssa2 && in_chain_p (ssa2, cond_name))
+    {
+      if (compute_operand_range (tmp, def_stmt, cond_false, ssa2, src))
+	r2.intersect (tmp);
+    }
+  if (idx)
+    {
+      tracer.print (idx, "outgoing: range1 = ");
+      r1.dump (dump_file);
+      fprintf (dump_file, ", range2 = ");
+      r1.dump (dump_file);
+      fprintf (dump_file, "\n");
+      tracer.trailer (idx, "cond_expr", true, cond_name, cond_true);
+    }
+  return true;
 }
 
 // Dump what is known to GORI computes to listing file F.
