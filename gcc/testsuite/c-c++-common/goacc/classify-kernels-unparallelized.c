@@ -9,6 +9,10 @@
    { dg-additional-options "-fdump-tree-parloops1-all" }
    { dg-additional-options "-fdump-tree-oaccloops" } */
 
+/* { dg-additional-options "--param=openacc-privatization=noisy" }
+   Prune a few: uninteresting:
+   { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
+
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
 
@@ -25,6 +29,9 @@ extern unsigned int f (unsigned int);
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-line l_compute1 } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} {} { target *-*-* } l_compute1 } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute1 } */
+  /* { dg-note {variable '[abc]\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 } */
   /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 } */
   /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
   for (unsigned int i = 0; i < N; i++)

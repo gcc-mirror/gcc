@@ -845,7 +845,29 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  prev_mapped_var = v;
 
 	  /* See <https://gcc.gnu.org/PR100280>.  */
-	  TREE_ADDRESSABLE (v) = 1;
+	  if (!TREE_ADDRESSABLE (v))
+	    {
+	      TREE_ADDRESSABLE (v) = 1;
+
+	      if (dump_enabled_p ())
+		{
+		  const dump_user_location_t d_u_loc
+		    = dump_user_location_t::from_location_t (loc);
+		  /* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+		  dump_printf_loc (MSG_NOTE, d_u_loc,
+				   "OpenACC %<kernels%> decomposition:"
+				   " variable %<%T%> declared in block"
+				   " made addressable\n",
+				   v);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+		}
+	    }
 	}
     }
 

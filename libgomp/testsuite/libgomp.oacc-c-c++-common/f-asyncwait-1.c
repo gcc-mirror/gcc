@@ -260,6 +260,7 @@ main (void)
 #pragma acc data copy (a[0:N]) copy (b[0:N]) copy (c[0:N]) copy (d[0:N])
   {
 #pragma acc kernels async (1) /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized "assigned OpenACC gang loop parallelism" "" { target { __OPTIMIZE__ } } l_compute$c_compute } */
@@ -268,6 +269,7 @@ main (void)
       b[i] = (a[i] * a[i] * a[i]) / a[i];
 
 #pragma acc kernels async (1) /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized "assigned OpenACC gang loop parallelism" "" { target { __OPTIMIZE__ } } l_compute$c_compute } */
@@ -311,6 +313,7 @@ main (void)
 #pragma acc data copy (a[0:N], b[0:N], c[0:N], d[0:N], e[0:N])
   {
 #pragma acc kernels async (1) /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block made addressable} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target { ! __OPTIMIZE__ } } l_compute$c_compute }
        { dg-optimized "assigned OpenACC gang loop parallelism" "" { target { __OPTIMIZE__ } } l_compute$c_compute } */

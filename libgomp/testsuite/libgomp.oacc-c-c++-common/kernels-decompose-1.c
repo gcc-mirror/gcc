@@ -32,6 +32,7 @@ int main()
   {
     /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     int c = 234;
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'c' declared in block made addressable} "" { target *-*-* } l_compute$c_compute } */
     /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
 
 #pragma acc loop independent gang /* { dg-line l_loop_i[incr c_loop_i] } */

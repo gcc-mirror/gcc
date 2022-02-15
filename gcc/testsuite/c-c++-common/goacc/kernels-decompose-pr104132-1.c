@@ -18,6 +18,7 @@ void
 foo (void)
 {
 #pragma acc kernels /* { dg-line l_compute1 } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'k' declared in block made addressable} {} { target *-*-* } l_compute1 } */
   /* { dg-note {variable 'k' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute1 } */
   {
     int k;
