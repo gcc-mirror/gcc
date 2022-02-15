@@ -1,6 +1,13 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-02-15 Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/depend-4.f90: New test.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2022-01-04 Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/target-45.c: Iterate over all devices.

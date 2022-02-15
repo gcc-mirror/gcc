@@ -1,6 +1,14 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-02-15 Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-4.f90: New test.
+	* gfortran.dg/gomp/depend-5.f90: New test.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-02-10 Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/104329
