@@ -3291,12 +3291,22 @@ nvptx_reorg_uniform_simt ()
 	continue;
 
       rtx pat = PATTERN (insn);
-      gcc_assert (GET_CODE (pat) == PARALLEL);
       rtx master = nvptx_get_unisimt_master ();
       bool shuffle_p = false;
-      for (int i = 0; i < XVECLEN (pat, 0); i++)
-	shuffle_p
-	  |= nvptx_unisimt_handle_set (XVECEXP (pat, 0, i), insn, master);
+      switch (GET_CODE (pat))
+       {
+       case PARALLEL:
+	 for (int i = 0; i < XVECLEN (pat, 0); i++)
+	   shuffle_p
+	     |= nvptx_unisimt_handle_set (XVECEXP (pat, 0, i), insn, master);
+	 break;
+       case SET:
+	 shuffle_p |= nvptx_unisimt_handle_set (pat, insn, master);
+	 break;
+       default:
+	 gcc_unreachable ();
+       }
+
       if (shuffle_p && TARGET_PTX_6_0)
 	{
 	  /* The shuffle is a sync, so uniformity is guaranteed.  */
