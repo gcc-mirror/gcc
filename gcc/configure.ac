@@ -5375,141 +5375,26 @@ case "$target" in
     ;;
 esac
 
-# This tests if the assembler supports two registers for global_load functions
-# (like in LLVM versions <12) or one register (like in LLVM 12).
+# AMD GCN needs the LLVM assembler and linker.
+# Test that LLVM is at least 13.0.1.
 case "$target" in
   amdgcn-* | gcn-*)
-    AC_MSG_CHECKING(assembler fix for global_load functions)
-    gcc_cv_as_gcn_global_load_fixed=yes
+    AC_MSG_CHECKING(llvm assembler version)
+    gcc_cv_as_version="unknown"
     if test x$gcc_cv_as != x; then
-      cat > conftest.s <<EOF
-	global_store_dwordx2    v[[1:2]], v[[4:5]], s[[14:15]]
-EOF
-      if $gcc_cv_as -triple=amdgcn--amdhsa -filetype=obj -mcpu=gfx900 -o conftest.o conftest.s > /dev/null 2>&1; then
-        gcc_cv_as_gcn_global_load_fixed=no
-      fi
-      rm -f conftest.s conftest.o conftest
+      gcc_cv_as_version=`$gcc_cv_as --version 2>&1 | sed -ne '/version/s/.* \([[0-9]]\)/\1/p' || echo error`
+      case "$gcc_cv_as_version" in
+	13.0.[[1-9]]*) ;;          # 13.0.1+
+	13.[[1-9]]*) ;;            # 13.1+
+	1[[4-9]]*) ;;              # 14..19
+	[[2-9]][[0-9]]*) ;;        # 20..99
+	[[1-9]][[0-9]][[0-9]]*) ;; # 100+
+	error) AC_MSG_ERROR([cannot determine LLVM version]) ;;
+	*) AC_MSG_ERROR([LLVM 13.0.1 or later is required (found LLVM $gcc_cv_as_version)]) ;;
+      esac
     fi
-    global_load_fixed=`if test x$gcc_cv_as_gcn_global_load_fixed = xyes; then echo 1; else echo 0; fi`
-    AC_DEFINE_UNQUOTED(HAVE_GCN_ASM_GLOBAL_LOAD_FIXED, $global_load_fixed,
-      [Define if your assembler has fixed global_load functions.])
-    AC_MSG_RESULT($gcc_cv_as_gcn_global_load_fixed)
+    AC_MSG_RESULT([$gcc_cv_as_version, ok])
     ;;
-esac
-
-case "$target" in
-  amdgcn-* | gcn-*)
-    # Test the LLVM assembler syntax dialect; they have made a number of
-    # changes between LLVM 12 & 13 without any backward compatibility.
-    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v2/3 syntax],
-      gcc_cv_as_gcn_asm_v3_syntax,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx906+xnack"],,
-      [AC_DEFINE(HAVE_GCN_ASM_V3_SYNTAX, 1,
-       [Define if your assembler expects amdgcn_target gfx908+xnack syntax.])])
-    gcc_GAS_CHECK_FEATURE([assembler amdgcn_target v4 syntax],
-      gcc_cv_as_gcn_asm_v4_syntax,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack],
-      [.amdgcn_target "amdgcn-unknown-amdhsa--gfx908:xnack+"],,
-      [AC_DEFINE(HAVE_GCN_ASM_V4_SYNTAX, 1,
-       [Define if your assembler expects amdgcn_target gfx908:xnack+ syntax.])])
-
-    # Some attribute names changed in the move to v4 ...
-    if test $gcc_cv_as_gcn_asm_v3_syntax = yes; then
-	sramopt="+sram-ecc"
-	sramattr="+sram-ecc"
-	xnackattr="+xnack"
-    elif test $gcc_cv_as_gcn_asm_v4_syntax = yes; then
-	sramopt="+sramecc"
-	sramattr=":sramecc+"
-	xnackattr=":xnack+"
-    else
-	AC_MSG_ERROR([Unrecognised assembler version])
-    fi
-
-    # Test whether the LLVM assembler accepts -mattr=+xnack without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # LLVM 12+ throws a warning for GPUs without support.
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for fiji],
-      gcc_cv_as_gcn_xnack_ecc_fiji,
-      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_fiji=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_FIJI, 1,
-       [Define if your assembler allows -mattr=+xnack for fiji.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx900],
-      gcc_cv_as_gcn_xnack_ecc_gfx900,
-      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx900=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX900, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx900.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx906],
-      gcc_cv_as_gcn_xnack_ecc_gfx906,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx906=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX906, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx906.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=+xnack for gfx908],
-      gcc_cv_as_gcn_xnack_ecc_gfx908,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=+xnack 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_xnack_ecc_gfx908=yes],
-      [AC_DEFINE(HAVE_GCN_XNACK_GFX908, 1,
-       [Define if your assembler allows -mattr=+xnack for gfx908.])])
-    rm -f conftest.err
-
-    # Test whether the LLVM assembler accepts -mattr=+sramecc without any
-    # diagnostic. LLVM 9 & 10 accept the option whether it makes sense or not,
-    # (some?) LLVM 12 rejects it for all GPUs, and LLVM13 throws a warning
-    # for GPUs without support.
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for fiji],
-      gcc_cv_as_gcn_sram_ecc_fiji,
-      [-triple=amdgcn--amdhsa -mcpu=fiji -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_fiji=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_FIJI, 1,
-       [Define if your assembler allows -mattr=+sramecc for fiji.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx900],
-      gcc_cv_as_gcn_sram_ecc_gfx900,
-      [-triple=amdgcn--amdhsa -mcpu=gfx900 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx900=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX900, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx900.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx906],
-      gcc_cv_as_gcn_sram_ecc_gfx906,
-      [-triple=amdgcn--amdhsa -mcpu=gfx906 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx906=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX906, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx906.])])
-    rm -f conftest.err
-    gcc_GAS_CHECK_FEATURE([assembler accepts -mattr=$sramopt for gfx908],
-      gcc_cv_as_gcn_sram_ecc_gfx908,
-      [-triple=amdgcn--amdhsa -mcpu=gfx908 -mattr=$sramopt 2>conftest.err], [],
-      [grep "." conftest.err >&AS_MESSAGE_LOG_FD \
-       || gcc_cv_as_gcn_sram_ecc_gfx908=yes],
-      [AC_DEFINE(HAVE_GCN_SRAM_ECC_GFX908, 1,
-       [Define if your assembler allows -mattr=+sramecc for gfx908.])])
-    rm -f conftest.err
-    ;;
-  arm*)
-    gcc_GAS_CHECK_FEATURE([assembler for arm accepts context-specific architecture extensions],
-      gcc_cv_as_arm_option_extensions,
-      [-march=armv8.1-m.main+mve],
-      [.text
-	.thumb
-	.syntax unified
-	vmov.f32 s0, s1],,
-      [AC_DEFINE(HAVE_GAS_ARM_EXTENDED_ARCH, 1,
-       [Define if your Arm assembler permits context-specific feature extensions.])])
 esac
 
 # ??? Not all targets support dwarf2 debug_line, even within a version

@@ -1,3 +1,44 @@
+2022-02-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-02-15  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.in: Regenerate.
+	* config/gcn/gcn-hsa.h (X_FIJI): Delete.
+	(X_900): Delete.
+	(X_906): Delete.
+	(X_908): Delete.
+	(S_FIJI): Delete.
+	(S_900): Delete.
+	(S_906): Delete.
+	(S_908): Delete.
+	(NO_XNACK): New macro.
+	(NO_SRAM_ECC): New macro.
+	(SRAMOPT): Keep only v4 variant.
+	(HSACO3_SELECT_OPT): Delete.
+	(DRIVER_SELF_SPECS): Delete.
+	(ASM_SPEC): Remove LLVM 9 support.
+	* config/gcn/gcn-valu.md
+	(gather<mode>_insn_2offsets<exec>): Remove assembler bug workaround.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Likewise.
+	* config/gcn/gcn.cc (output_file_start): Remove LLVM 9 support.
+	(print_operand_address): Remove assembler bug workaround.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_XNACK_V3): Delete.
+	(EF_AMDGPU_SRAM_ECC_V3): Delete.
+	(SET_XNACK_ON): Delete v3 variants.
+	(SET_XNACK_OFF): Delete v3 variants.
+	(TEST_XNACK): Delete v3 variants.
+	(SET_SRAM_ECC_ON): Delete v3 variants.
+	(SET_SRAM_ECC_ANY): Delete v3 variants.
+	(SET_SRAM_ECC_OFF): Delete v3 variants.
+	(SET_SRAM_ECC_UNSUPPORTED): Delete v3 variants.
+	(TEST_SRAM_ECC_ANY): Delete v3 variants.
+	(TEST_SRAM_ECC_ON): Delete v3 variants.
+	(copy_early_debug_info): Remove v3 support.
+	(main): Remove v3 support.
+	* configure: Regenerate.
+	* configure.ac: Replace all GCN feature checks with a version check.
+
 2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:

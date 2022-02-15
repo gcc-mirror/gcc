@@ -5216,49 +5216,6 @@ gcn_shared_mem_layout (unsigned HOST_WIDE_INT *lo,
 static void
 output_file_start (void)
 {
-  const char *cpu;
-  bool use_xnack_attr = true;
-  bool use_sram_attr = true;
-  switch (gcn_arch)
-    {
-    case PROCESSOR_FIJI:
-      cpu = "gfx803";
-#ifndef HAVE_GCN_XNACK_FIJI
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_VEGA10:
-      cpu = "gfx900";
-#ifndef HAVE_GCN_XNACK_GFX900
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_VEGA20:
-      cpu = "gfx906";
-#ifndef HAVE_GCN_XNACK_GFX906
-      use_xnack_attr = false;
-#endif
-      use_sram_attr = false;
-      break;
-    case PROCESSOR_GFX908:
-      cpu = "gfx908";
-#ifndef HAVE_GCN_XNACK_GFX908
-      use_xnack_attr = false;
-#endif
-#ifndef HAVE_GCN_SRAM_ECC_GFX908
-      use_sram_attr = false;
-#endif
-      break;
-    default: gcc_unreachable ();
-    }
-
-#if HAVE_GCN_ASM_V3_SYNTAX
-  const char *xnack = (flag_xnack ? "+xnack" : "");
-  const char *sram_ecc = (flag_sram_ecc ? "+sram-ecc" : "");
-#endif
-#if HAVE_GCN_ASM_V4_SYNTAX
   /* In HSACOv4 no attribute setting means the binary supports "any" hardware
      configuration.  In GCC binaries, this is true for SRAM ECC, but not
      XNACK.  */
@@ -5266,21 +5223,31 @@ output_file_start (void)
   const char *sram_ecc = (flag_sram_ecc == SRAM_ECC_ON ? ":sramecc+"
 			  : flag_sram_ecc == SRAM_ECC_OFF ? ":sramecc-"
 			  : "");
-#endif
-  if (!use_xnack_attr)
-    xnack = "";
-  if (!use_sram_attr)
-    sram_ecc = "";
+
+  const char *cpu;
+  switch (gcn_arch)
+    {
+    case PROCESSOR_FIJI:
+      cpu = "gfx803";
+      xnack = "";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_VEGA10:
+      cpu = "gfx900";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_VEGA20:
+      cpu = "gfx906";
+      sram_ecc = "";
+      break;
+    case PROCESSOR_GFX908:
+      cpu = "gfx908";
+      break;
+    default: gcc_unreachable ();
+    }
 
   fprintf(asm_out_file, "\t.amdgcn_target \"amdgcn-unknown-amdhsa--%s%s%s\"\n",
-	  cpu,
-#if HAVE_GCN_ASM_V3_SYNTAX
-	  xnack, sram_ecc
-#endif
-#ifdef HAVE_GCN_ASM_V4_SYNTAX
-	  sram_ecc, xnack
-#endif
-	  );
+	  cpu, sram_ecc, xnack);
 }
 
 /* Implement ASM_DECLARE_FUNCTION_NAME via gcn-hsa.h.
@@ -5724,23 +5691,10 @@ print_operand_address (FILE *file, rtx mem)
 	      if (vgpr_offset == NULL_RTX)
 		/* In this case, the vector offset is zero, so we use the first
 		   lane of v1, which is initialized to zero.  */
-		{
-		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-		    fprintf (file, "v1");
-		  else
-		    fprintf (file, "v[1:2]");
-		}
+		fprintf (file, "v1");
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
-		{
-		  if (HAVE_GCN_ASM_GLOBAL_LOAD_FIXED)
-		    fprintf (file, "v%d",
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG);
-		  else
-		    fprintf (file, "v[%d:%d]",
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG,
-			     REGNO (vgpr_offset) - FIRST_VGPR_REG + 1);
-		}
+		fprintf (file, "v%d", REGNO (vgpr_offset) - FIRST_VGPR_REG);
 	      else
 		output_operand_lossage ("bad ADDR_SPACE_GLOBAL address");
 	    }
