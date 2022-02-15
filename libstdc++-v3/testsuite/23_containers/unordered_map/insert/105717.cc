@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,10 +56,13 @@ int S::_count = 0;
 void test01()
 {
     S s[1] = { {2} };
-    std::unordered_map<Key, int, hash> m(s, s + 1);
+    std::unordered_map<Key, int, hash> m;
+    std::unordered_multimap<Key, int, hash> mm;
+
+    m.insert(s, s + 1);
     VERIFY( S::_count == 1 );
 
-    std::unordered_multimap<Key, int, hash> mm(s, s + 1);
+    mm.insert(s, s + 1);
     VERIFY( S::_count == 2 );
 }
 

@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2022 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include <testsuite_hooks.h>
@@ -44,10 +44,10 @@ struct S
   static int _count;
 
   int value;
-  operator std::pair<const Key, int>() const
+  operator Key() const
   {
     ++_count;
-    return { Key(&value), value };
+    return Key(&value);
   }
 };
 
@@ -55,11 +55,14 @@ int S::_count = 0;
 
 void test01()
 {
-    S s[1] = { {2} };
-    std::unordered_map<Key, int, hash> m(s, s + 1);
+    S a[1] = { {2} };
+    std::unordered_set<Key, hash> s;
+    std::unordered_multiset<Key, hash> ms;
+
+    s.insert(a, a + 1);
     VERIFY( S::_count == 1 );
 
-    std::unordered_multimap<Key, int, hash> mm(s, s + 1);
+    ms.insert(a, a + 1);
     VERIFY( S::_count == 2 );
 }
 
