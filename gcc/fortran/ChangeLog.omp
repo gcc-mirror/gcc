@@ -2,6 +2,13 @@
 
 	Backported from master:
 	2021-02-15 Tobias Burnus  <tobias@codesourcery.com>
+	* trans-openmp.cc (gfc_trans_omp_depobj): Fix to alloc/ptr dummy
+	and for c_ptr.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-02-15 Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
 	Depend on the proper addr, for ptr/alloc depend on pointee.

@@ -72,11 +72,11 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\*dosa\\)" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:aa\\\[1\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=16\\)\\\[0:\\\] \\* restrict\\) aaa.data\\)\\\[aaa.offset \\+ 2\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=16\\) \\*\\) \\(aap.data \\+ \\(sizetype\\) \\(\\(aap.offset \\+ aap.dim\\\[0\\\].stride \\* 2\\) \\* aap.span\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=\[0-9\]+\\)\\\[0:\\\] \\* restrict\\) aaa.data\\)\\\[aaa.offset \\+ 2\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=\[0-9\]+\\) \\*\\) \\(aap.data \\+ \\(sizetype\\) \\(\\(aap.offset \\+ aap.dim\\\[0\\\].stride \\* 2\\) \\* aap.span\\)\\)\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*daa\\)\\\[1\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=16\\)\\\[0:\\\] \\* restrict\\) daaa->data\\)\\\[daaa->offset \\+ 2\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=16\\) \\*\\) \\(daap->data \\+ \\(sizetype\\) \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=\[0-9\]+\\)\\\[0:\\\] \\* restrict\\) daaa->data\\)\\\[daaa->offset \\+ 2\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=\[0-9\]+\\) \\*\\) \\(daap->data \\+ \\(sizetype\\) \\(\\(daap->offset \\+ daap->dim\\\[0\\\].stride \\* 2\\) \\* daap->span\\)\\)\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*doaa\\)\\\[1\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=16\\)\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\]\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=16\\) \\*\\) \\(doaap->data \\+ \\(sizetype\\) \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\(\\*\\(integer\\(kind=\[0-9\]+\\)\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\]\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(depobj:\\*\\(integer\\(kind=\[0-9\]+\\) \\*\\) \\(doaap->data \\+ \\(sizetype\\) \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\)\\)" 1 "original" } }
