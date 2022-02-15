@@ -1,11 +1,5 @@
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
-/* { dg-additional-options "-fchecking" }
-   { dg-ice TODO }
-   { dg-prune-output {D\.[0-9]+ = arr_0\.0 \+ k;} }
-   { dg-prune-output {D\.[0-9]+ = arr_0\.1 \+ k;} }
-   { dg-prune-output {during GIMPLE pass: lower} } */
-
 /* { dg-additional-options "-fopt-info-all-omp" } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }
@@ -29,14 +23,15 @@ foo (void)
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
 #pragma acc loop /* { dg-line l_loop_k1 } */
     /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k1 } */
+    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k1 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;
 
     /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 } */
 #pragma acc loop /* { dg-line l_loop_k2 } */
     /* { dg-note {variable 'k' in 'private' clause is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_loop_k2 } */
+    /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_k2 } */
     for (k = 0; k < 2; k++)
       arr_0 += k;
-      /* { dg-bogus {error: invalid operands in binary operation} {} { xfail *-*-* } .-1 } */
   }
 }
