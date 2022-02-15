@@ -2543,6 +2543,28 @@ package body Exp_Attr is
                Analyze_And_Resolve (N, Addr);
             end;
 
+         --  'Address is an actual parameter of the call to the implicit
+         --  subprogram To_Pointer instantiated with a class-wide interface
+         --  type; its expansion requires adding an implicit type conversion
+         --  to force displacement of the "this" pointer.
+
+         elsif Tagged_Type_Expansion
+           and then Nkind (Parent (N)) = N_Function_Call
+           and then Nkind (Name (Parent (N))) in N_Has_Entity
+           and then Is_Intrinsic_Subprogram (Entity (Name (Parent (N))))
+           and then Chars (Entity (Name (Parent (N)))) = Name_To_Pointer
+           and then Is_Interface (Designated_Type (Etype (Parent (N))))
+           and then Is_Class_Wide_Type (Designated_Type (Etype (Parent (N))))
+         then
+            declare
+               Iface_Typ : constant Entity_Id :=
+                             Designated_Type (Etype (Parent (N)));
+            begin
+               Rewrite (Pref, Convert_To (Iface_Typ, Relocate_Node (Pref)));
+               Analyze_And_Resolve (Pref, Iface_Typ);
+               return;
+            end;
+
          --  Ada 2005 (AI-251): Class-wide interface objects are always
          --  "displaced" to reference the tag associated with the interface
          --  type. In order to obtain the real address of such objects we
@@ -2554,9 +2576,9 @@ package body Exp_Attr is
          --  of nested subprograms), since the address needs to be assigned
          --  as-is to such components.
 
-         elsif Is_Class_Wide_Type (Ptyp)
+         elsif Tagged_Type_Expansion
+           and then Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Underlying_Type (Ptyp))
-           and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
            and then not Is_Unnested_Component_Init (N)
@@ -2564,8 +2586,7 @@ package body Exp_Attr is
             Rewrite (N,
               Make_Function_Call (Loc,
                 Name => New_Occurrence_Of (RTE (RE_Base_Address), Loc),
-                Parameter_Associations => New_List (
-                  Relocate_Node (N))));
+                Parameter_Associations => New_List (Relocate_Node (N))));
             Analyze (N);
             return;
          end if;
