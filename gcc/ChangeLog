@@ -1,3 +1,40 @@
+2022-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104355
+	* doc/invoke.texi (-Warray-bounds): Update documentation.
+
+2022-02-14  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104253
+	* config/rs6000/rs6000.cc (init_float128_ibm): Update the
+	conversion functions used to convert IFmode types.
+
+2022-02-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Use force_reg.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104528
+	* tree-ssa.h (find_released_ssa_name): Declare.
+	* tree-ssa.cc (find_released_ssa_name): Export.
+	* cfgloop.cc (verify_loop_structure): Look for released
+	SSA names in loops nb_iterations.
+	* tree-ssa-dse.cc (pass_dse::execute): Release number of iteration
+	estimates.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104511
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Avoid
+	touching DFP <-> FP conversions.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104497
+	* gimplify.cc (gimplify_compound_lval): Make sure the
+	base is a non-register if needed and possible.
+
 2022-02-13  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/103771

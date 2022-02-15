@@ -1,3 +1,39 @@
+2022-02-14  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104253
+	* gcc.target/powerpc/pr104253.c: New test.
+
+2022-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104211
+	* gfortran.dg/pr104211.f90: New test.
+
+2022-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104513
+	* g++.dg/cpp1y/constexpr-104513.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor12.C: New test.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104528
+	* gfortran.dg/pr104528.f: New testcase.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104511
+	* gcc.dg/pr104511.c: New testcase.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR c/104505
+	* c-c++-common/pr104505.c: New testcase.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104497
+	* c-c++-common/torture/pr104497.c: New testcase.
+
 2022-02-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/104228
