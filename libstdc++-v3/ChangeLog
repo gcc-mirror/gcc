@@ -1,3 +1,33 @@
+2022-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100912
+	* config/locale/gnu/c_locale.h (__convert_from_v): Use inline
+	namespace for IEEE128 long double mode.
+	* config/os/gnu-linux/ldbl-ieee128-extra.ver: Add new symbol
+	version and export __gnu_cxx_ieee128::__convert_from_v.
+	* include/bits/locale_facets_nonio.tcc (money_put::__do_put):
+	Make __ibm128 overload use snprintf directly
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+	Remove stable IEEE128/LDBL versions.
+
+2022-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103891
+	* include/bits/c++config (_GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS):
+	Remove.
+	* include/std/variant: Check feature test macros instead.
+	* include/std/version: Likewise.
+
+2022-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc:
+	Fix typo.
+
+2022-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (FLOAT128_TO_CHARS): Depend on
+	LONG_DOUBLE_ALT128_COMPAT instead of USE_FLOAT128.
+
 2022-02-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/temporary_buffer.cc: Fix dg-warning target

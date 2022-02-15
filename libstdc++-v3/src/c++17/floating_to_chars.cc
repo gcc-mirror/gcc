@@ -76,14 +76,10 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 # define LONG_DOUBLE_KIND LDK_UNSUPPORTED
 #endif
 
-#if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
+// For now we only support __float128 when it's the powerpc64 __ieee128 type.
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT && __FLT128_MANT_DIG__ == 113
 // Define overloads of std::to_chars for __float128.
 # define FLOAT128_TO_CHARS 1
-#endif
-
-// For now we only support __float128 when it's the powerpc64 __ieee128 type.
-#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-# undef FLOAT128_TO_CHARS
 #endif
 
 #ifdef FLOAT128_TO_CHARS

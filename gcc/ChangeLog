@@ -1,3 +1,66 @@
+2022-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/104355
+	* doc/invoke.texi (-Warray-bounds): Update documentation.
+
+2022-02-14  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/104253
+	* config/rs6000/rs6000.cc (init_float128_ibm): Update the
+	conversion functions used to convert IFmode types.
+
+2022-02-14  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_expand_reduc_scalar): Use force_reg.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104528
+	* tree-ssa.h (find_released_ssa_name): Declare.
+	* tree-ssa.cc (find_released_ssa_name): Export.
+	* cfgloop.cc (verify_loop_structure): Look for released
+	SSA names in loops nb_iterations.
+	* tree-ssa-dse.cc (pass_dse::execute): Release number of iteration
+	estimates.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104511
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Avoid
+	touching DFP <-> FP conversions.
+
+2022-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/104497
+	* gimplify.cc (gimplify_compound_lval): Make sure the
+	base is a non-register if needed and possible.
+
+2022-02-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103771
+	* match.pd (cond_expr_convert_p): New match.
+	* tree-vect-patterns.cc (gimple_cond_expr_convert_p): Declare.
+	(vect_recog_cond_expr_convert_pattern): New.
+
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* asan.cc: Include tree-eh.h.
+	(handle_builtin_alloca): Handle the case when __builtin_alloca or
+	__builtin_alloca_with_align can throw.
+
+2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* config/i386/i386.md (cvtsd2ss splitter): If operands[1] is xmm16+
+	and AVX512VL isn't available, move operands[1] to operands[0] first.
+
+2022-02-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/79754
+	* config/i386/i386.cc (type_natural_mode):
+	Skip decimal float vector modes.
+
 2022-02-11  Iain Sandoe  <iain@sandoe.co.uk>
 	    Vladimir Makarov  <vmakarov@redhat.com>
 

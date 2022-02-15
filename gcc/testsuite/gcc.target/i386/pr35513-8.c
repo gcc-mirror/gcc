@@ -1,4 +1,4 @@
-/* { dg-do assemble { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-mx32 -O2 -fno-pic -fexceptions -fasynchronous-unwind-tables -mno-direct-extern-access" } */
 

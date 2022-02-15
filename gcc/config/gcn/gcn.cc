@@ -4460,7 +4460,7 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
      pair of lanes, then on every pair of results from the previous
      iteration (thereby effectively reducing every 4 lanes) and so on until
      all lanes are reduced.  */
-  rtx in, out = src;
+  rtx in, out = force_reg (mode, src);
   for (int i = 0, shift = 1; i < 6; i++, shift <<= 1)
     {
       rtx shift_val = gen_rtx_CONST_INT (VOIDmode, shift);

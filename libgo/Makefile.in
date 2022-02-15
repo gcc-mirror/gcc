@@ -233,8 +233,7 @@ am__DEPENDENCIES_4 =
 am__DEPENDENCIES_5 = $(am__DEPENDENCIES_3) \
 	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_4) \
 	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4) \
-	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4) \
-	$(am__DEPENDENCIES_4)
+	$(am__DEPENDENCIES_4) $(am__DEPENDENCIES_4)
 libgo_llgo_la_DEPENDENCIES = $(am__DEPENDENCIES_5)
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_X86_TRUE@am__objects_1 =  \
 @LIBGO_IS_LINUX_TRUE@@LIBGO_IS_X86_TRUE@	runtime/go-context.lo
@@ -466,7 +465,6 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
-RT_LIBS = @RT_LIBS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -972,8 +970,7 @@ libgo_ldflags = \
 
 libgo_libadd = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
-	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) \
-	$(NET_LIBS) $(RT_LIBS)
+	$(LIBATOMIC) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgo_la_SOURCES = $(runtime_files)
 libgo_la_LDFLAGS = $(libgo_ldflags)
@@ -1047,7 +1044,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(RT_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \

@@ -44,23 +44,21 @@
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_construct.h>
 #include <bits/utility.h> // in_place_index_t
-#ifndef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
-# include <ext/aligned_buffer.h>
-#endif
 #if __cplusplus >= 202002L
 # include <compare>
+#endif
+
+#if __cpp_concepts >= 202002L && __cpp_constexpr >= 201811L
+// P2231R1 constexpr needs constexpr unions and constrained destructors.
+# define __cpp_lib_variant 202106L
+#else
+# include <ext/aligned_buffer.h> // Use __aligned_membuf instead of union.
+# define __cpp_lib_variant 202102L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#ifdef _GLIBCXX_HAVE_COND_TRIVIAL_SPECIAL_MEMBERS
-// P2231R1 constexpr needs constexpr unions and constrained destructors.
-# define __cpp_lib_variant 202106L
-#else
-# define __cpp_lib_variant 202102L
-#endif
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;

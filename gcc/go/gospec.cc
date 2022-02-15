@@ -29,12 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #define MATHLIB		(1<<2)
 /* This bit is set if they did `-lpthread'.  */
 #define THREADLIB	(1<<3)
-/* This bit is set if they did `-lrt'.  */
-#define RTLIB		(1<<4)
 /* This bit is set if they did `-lc'.  */
-#define WITHLIBC	(1<<5)
+#define WITHLIBC	(1<<4)
 /* Skip this option.  */
-#define SKIPOPT		(1<<6)
+#define SKIPOPT		(1<<5)
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -45,8 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define THREAD_LIBRARY "pthread"
 #define THREAD_LIBRARY_PROFILE THREAD_LIBRARY
-
-#define RT_LIBRARY "rt"
 
 #define LIBGO "go"
 #define LIBGO_PROFILE LIBGO
@@ -78,9 +74,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* "-lpthread" if it appears on the command line.  */
   const struct cl_decoded_option *saw_thread = 0;
 
-  /* "-lrt" if it appears on the command line.  */
-  const struct cl_decoded_option *saw_rt = 0;
-
   /* "-lc" if it appears on the command line.  */
   const struct cl_decoded_option *saw_libc = 0;
 
@@ -90,9 +83,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Whether we need the thread library.  */
   int need_thread = 0;
-
-  /* Whether we need the rt library.  */
-  int need_rt = 0;
 
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
@@ -166,8 +156,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    }
 	  else if (strcmp (arg, THREAD_LIBRARY) == 0)
 	    args[i] |= THREADLIB;
-	  else if (strcmp (arg, RT_LIBRARY) == 0)
-	    args[i] |= RTLIB;
 	  else if (strcmp (arg, "c") == 0)
 	    args[i] |= WITHLIBC;
 	  else
@@ -272,7 +260,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
   /* Make sure to have room for the trailing NULL argument.  */
-  num_args = argc + need_math + shared_libgcc + (library > 0) * 6 + 10;
+  num_args = argc + need_math + shared_libgcc + (library > 0) * 5 + 10;
   new_decoded_options = XNEWVEC (struct cl_decoded_option, num_args);
 
   i = 0;
@@ -324,12 +312,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	{
 	  --j;
 	  saw_thread = &decoded_options[i];
-	}
-
-      if (!saw_rt && (args[i] & RTLIB) && library > 0)
-	{
-	  --j;
-	  saw_rt = &decoded_options[i];
 	}
 
       if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
@@ -413,23 +395,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
       /* When linking libgo statically we also need to link with the
-	 pthread and (on GNU/Linux) the rt library.  */
+	 pthread library.  */
       if (library > 1 || static_link)
-	{
-	  need_thread = 1;
-	  if (strstr (DEFAULT_TARGET_MACHINE, "linux") != NULL)
-	    need_rt = 1;
-	}
-    }
-
-  if (saw_rt)
-    new_decoded_options[j++] = *saw_rt;
-  else if (library > 0 && need_rt)
-    {
-      generate_option (OPT_l, RT_LIBRARY, 1, CL_DRIVER,
-		       &new_decoded_options[j]);
-      added_libraries++;
-      j++;
+	need_thread = 1;
     }
 
   if (saw_thread)
