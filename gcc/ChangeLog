@@ -1,3 +1,10 @@
+2022-02-14  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2022-02-08  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/t-riscv (riscv-sr.o): Add $(TM_H) dependency.
+
 2022-02-13  Alan Modra  <amodra@gmail.com>
 
 	Backported from master:
