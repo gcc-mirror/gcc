@@ -4405,6 +4405,33 @@
   }
 )
 
+;; Implement MAX/MIN (A, B) - C using SUBS/ADDS followed by CSEL/CSINV/CSINC.
+;; See aarch64_maxmin_plus_const for details about the supported cases.
+(define_insn_and_split "*aarch64_minmax_plus"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(plus:GPI
+	  (MAXMIN:GPI
+	    (match_operand:GPI 1 "register_operand" "r")
+	    (match_operand:GPI 2 "const_int_operand"))
+	  (match_operand:GPI 3 "aarch64_plus_immediate")))
+   (clobber (reg:CC CC_REGNUM))]
+  "aarch64_maxmin_plus_const (<CODE>, operands, false)"
+  "#"
+  "&& 1"
+  [(parallel
+     [(set (reg:CC CC_REGNUM)
+	   (compare:CC (match_dup 1) (match_dup 4)))
+      (set (match_dup 6)
+	   (plus:GPI (match_dup 1) (match_dup 3)))])
+   (set (match_dup 0)
+	(if_then_else:GPI (match_dup 5) (match_dup 6) (match_dup 7)))]
+  {
+    if (!aarch64_maxmin_plus_const (<CODE>, operands, true))
+      gcc_unreachable ();
+  }
+  [(set_attr "length" "8")]
+)
+
 ;; -------------------------------------------------------------------
 ;; Logical operations
 ;; -------------------------------------------------------------------

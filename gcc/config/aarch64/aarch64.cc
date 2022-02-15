@@ -3781,6 +3781,110 @@ aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
   return aarch64_gen_compare_reg (code, x, y);
 }
 
+/* Consider the operation:
+
+     OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
+
+   where:
+
+   - CODE is [SU]MAX or [SU]MIN
+   - OPERANDS[2] and OPERANDS[3] are constant integers
+   - OPERANDS[3] is a positive or negative shifted 12-bit immediate
+   - all operands have mode MODE
+
+   Decide whether it is possible to implement the operation using:
+
+     SUBS <tmp>, OPERANDS[1], -OPERANDS[3]
+     or
+     ADDS <tmp>, OPERANDS[1], OPERANDS[3]
+
+   followed by:
+
+     <insn> OPERANDS[0], <tmp>, [wx]zr, <cond>
+
+   where <insn> is one of CSEL, CSINV or CSINC.  Return true if so.
+   If GENERATE_P is true, also update OPERANDS as follows:
+
+     OPERANDS[4] = -OPERANDS[3]
+     OPERANDS[5] = the rtl condition representing <cond>
+     OPERANDS[6] = <tmp>
+     OPERANDS[7] = 0 for CSEL, -1 for CSINV or 1 for CSINC.  */
+bool
+aarch64_maxmin_plus_const (rtx_code code, rtx *operands, bool generate_p)
+{
+  signop sgn = (code == UMAX || code == UMIN ? UNSIGNED : SIGNED);
+  rtx dst = operands[0];
+  rtx maxmin_op = operands[2];
+  rtx add_op = operands[3];
+  machine_mode mode = GET_MODE (dst);
+
+  /* max (x, y) - z == (x >= y + 1 ? x : y) - z
+		    == (x >= y ? x : y) - z
+		    == (x > y ? x : y) - z
+		    == (x > y - 1 ? x : y) - z
+
+     min (x, y) - z == (x <= y - 1 ? x : y) - z
+		    == (x <= y ? x : y) - z
+		    == (x < y ? x : y) - z
+		    == (x < y + 1 ? x : y) - z
+
+     Check whether z is in { y - 1, y, y + 1 } and pick the form(s) for
+     which x is compared with z.  Set DIFF to y - z.  Thus the supported
+     combinations are as follows, with DIFF being the value after the ":":
+
+     max (x, y) - z == x >= y + 1 ? x - (y + 1) : -1   [z == y + 1]
+		    == x >= y ? x - y : 0              [z == y]
+		    == x > y ? x - y : 0               [z == y]
+		    == x > y - 1 ? x - (y - 1) : 1     [z == y - 1]
+
+     min (x, y) - z == x <= y - 1 ? x - (y - 1) : 1    [z == y - 1]
+		    == x <= y ? x - y : 0              [z == y]
+		    == x < y ? x - y : 0               [z == y]
+		    == x < y + 1 ? x - (y + 1) : -1    [z == y + 1].  */
+  auto maxmin_val = rtx_mode_t (maxmin_op, mode);
+  auto add_val = rtx_mode_t (add_op, mode);
+  auto sub_val = wi::neg (add_val);
+  auto diff = wi::sub (maxmin_val, sub_val);
+  if (!(diff == 0
+	|| (diff == 1 && wi::gt_p (maxmin_val, sub_val, sgn))
+	|| (diff == -1 && wi::lt_p (maxmin_val, sub_val, sgn))))
+    return false;
+
+  if (!generate_p)
+    return true;
+
+  rtx_code cmp;
+  switch (code)
+    {
+    case SMAX:
+      cmp = diff == 1 ? GT : GE;
+      break;
+    case UMAX:
+      cmp = diff == 1 ? GTU : GEU;
+      break;
+    case SMIN:
+      cmp = diff == -1 ? LT : LE;
+      break;
+    case UMIN:
+      cmp = diff == -1 ? LTU : LEU;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  rtx cc = gen_rtx_REG (CCmode, CC_REGNUM);
+
+  operands[4] = immed_wide_int_const (sub_val, mode);
+  operands[5] = gen_rtx_fmt_ee (cmp, VOIDmode, cc, const0_rtx);
+  if (can_create_pseudo_p ())
+    operands[6] = gen_reg_rtx (mode);
+  else
+    operands[6] = dst;
+  operands[7] = immed_wide_int_const (diff, mode);
+
+  return true;
+}
+
+
 /* Build the SYMBOL_REF for __tls_get_addr.  */
 
 static GTY(()) rtx tls_get_addr_libfunc;
