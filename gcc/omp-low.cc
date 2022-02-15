@@ -191,6 +191,7 @@ static int target_nesting_level;
 static bitmap task_shared_vars;
 static bitmap global_nonaddressable_vars;
 static vec<omp_context *> taskreg_contexts;
+static vec<gomp_task *> task_cpyfns;
 
 static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
@@ -1081,9 +1082,6 @@ delete_omp_context (splay_tree_value value)
       for (t = TYPE_FIELDS (ctx->srecord_type); t ; t = DECL_CHAIN (t))
 	DECL_ABSTRACT_ORIGIN (t) = NULL;
     }
-
-  if (is_task_ctx (ctx))
-    finalize_task_copyfn (as_a <gomp_task *> (ctx->stmt));
 
   if (ctx->task_reduction_map)
     {
@@ -11951,6 +11949,7 @@ create_task_copyfn (gomp_task *task_stmt, omp_context *ctx)
   size_t looptempno = 0;
 
   child_fn = gimple_omp_task_copy_fn (task_stmt);
+  task_cpyfns.safe_push (task_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
   gcc_assert (child_cfun->cfg == NULL);
   DECL_SAVED_TREE (child_fn) = alloc_stmt_list ();
@@ -14475,6 +14474,10 @@ execute_lower_omp (void)
       && (TREE_CODE (TREE_TYPE (DECL_ARGUMENTS (current_function_decl)))
 	  == POINTER_TYPE))
     remove_member_access_dummy_vars (DECL_INITIAL (current_function_decl));
+
+  for (auto task_stmt : task_cpyfns)
+    finalize_task_copyfn (task_stmt);
+  task_cpyfns.release ();
   return 0;
 }
 
