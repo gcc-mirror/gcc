@@ -196,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-    inline _Tp
+    constexpr _Tp
     make_obj_using_allocator(const _Alloc& __a, _Args&&... __args)
     {
       return std::make_from_tuple<_Tp>(
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-    inline _Tp*
+    constexpr _Tp*
     uninitialized_construct_using_allocator(_Tp* __p, const _Alloc& __a,
 					    _Args&&... __args)
     {
