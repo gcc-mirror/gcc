@@ -2881,15 +2881,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
 		    decl = build_fold_indirect_ref (decl);
-		  if (n->u.depend_op == OMP_DEPEND_DEPOBJ
-		      && POINTER_TYPE_P (TREE_TYPE (decl)))
-		    decl = build_fold_indirect_ref (decl);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 		    {
 		      decl = gfc_conv_descriptor_data_get (decl);
 		      gcc_assert (POINTER_TYPE_P (TREE_TYPE (decl)));
 		      decl = build_fold_indirect_ref (decl);
 		    }
+		  else if (n->sym->attr.allocatable || n->sym->attr.pointer)
+		    decl = build_fold_indirect_ref (decl);
 		  else if (DECL_P (decl))
 		    TREE_ADDRESSABLE (decl) = 1;
 		  OMP_CLAUSE_DECL (node) = decl;
@@ -5508,12 +5507,43 @@ gfc_trans_omp_depobj (gfc_code *code)
   if (n)
     {
       tree var;
-      if (n->expr)
-        var = gfc_convert_expr_to_tree (&block, n->expr);
+      if (n->expr && n->expr->ref->u.ar.type != AR_FULL)
+	{
+	  gfc_init_se (&se, NULL);
+	  if (n->expr->ref->u.ar.type == AR_ELEMENT)
+	    {
+	      gfc_conv_expr_reference (&se, n->expr);
+	      var = se.expr;
+	    }
+	  else
+	    {
+	      gfc_conv_expr_descriptor (&se, n->expr);
+	      var = gfc_conv_array_data (se.expr);
+	    }
+	  gfc_add_block_to_block (&block, &se.pre);
+	  gfc_add_block_to_block (&block, &se.post);
+	  gcc_assert (POINTER_TYPE_P (TREE_TYPE (var)));
+	}
       else
-	var = gfc_get_symbol_decl (n->sym);
-      if (!POINTER_TYPE_P (TREE_TYPE (var)))
-        var = gfc_build_addr_expr (NULL, var);
+	{
+	  var = gfc_get_symbol_decl (n->sym);
+	  if (POINTER_TYPE_P (TREE_TYPE (var))
+	      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (var))))
+	    var = build_fold_indirect_ref (var);
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (var)))
+	    {
+	      var = gfc_conv_descriptor_data_get (var);
+	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (var)));
+	    }
+	  else if ((n->sym->attr.allocatable || n->sym->attr.pointer)
+		   && n->sym->attr.optional)
+	    var = build_fold_indirect_ref (var);
+	  else if (!POINTER_TYPE_P (TREE_TYPE (var)))
+	    {
+	      TREE_ADDRESSABLE (var) = 1;
+	      var = gfc_build_addr_expr (NULL, var);
+	    }
+	}
       depobj = save_expr (depobj);
       tree r = build_fold_indirect_ref_loc (loc, depobj);
       gfc_add_expr_to_block (&block,
