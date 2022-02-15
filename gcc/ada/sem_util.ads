@@ -2337,12 +2337,6 @@ package Sem_Util is
    --  AI05-0139-2: Check whether Typ is derived from the predefined interface
    --  Ada.Iterator_Interfaces.Reversible_Iterator.
 
-   function Is_Selector_Name (N : Node_Id) return Boolean;
-   --  Given an N_Identifier node N, determines if it is a Selector_Name.
-   --  As described in Sinfo, Selector_Names are special because they
-   --  represent use of the N_Identifier node for a true identifier, when
-   --  normally such nodes represent a direct name.
-
    function Is_Single_Concurrent_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes the anonymous object
    --  created for a single protected or single task type.

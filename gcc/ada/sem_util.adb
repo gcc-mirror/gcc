@@ -20972,37 +20972,6 @@ package body Sem_Util is
       return False;
    end Is_Reversible_Iterator;
 
-   ----------------------
-   -- Is_Selector_Name --
-   ----------------------
-
-   function Is_Selector_Name (N : Node_Id) return Boolean is
-   begin
-      if not Is_List_Member (N) then
-         declare
-            P : constant Node_Id := Parent (N);
-         begin
-            return Nkind (P) in N_Expanded_Name
-                              | N_Generic_Association
-                              | N_Parameter_Association
-                              | N_Selected_Component
-              and then Selector_Name (P) = N;
-         end;
-
-      else
-         declare
-            L : constant List_Id := List_Containing (N);
-            P : constant Node_Id := Parent (L);
-         begin
-            return (Nkind (P) = N_Discriminant_Association
-                     and then Selector_Names (P) = L)
-              or else
-                   (Nkind (P) = N_Component_Association
-                     and then Choices (P) = L);
-         end;
-      end if;
-   end Is_Selector_Name;
-
    ---------------------------------
    -- Is_Single_Concurrent_Object --
    ---------------------------------
