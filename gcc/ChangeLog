@@ -1,3 +1,85 @@
+2022-02-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104526
+	* gimple-range-fold.cc (fold_using_range::range_of_cond_expr): Call
+	new routine.
+	* gimple-range-gori.cc (range_def_chain::get_def_chain): Force a build
+	of dependency chain if there isn't one.
+	(gori_compute::condexpr_adjust): New.
+	* gimple-range-gori.h (class gori_compute): New prototype.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100874
+	* config/aarch64/aarch64-protos.h (aarch64_maxmin_plus_const):
+	Declare.
+	* config/aarch64/aarch64.cc (aarch64_maxmin_plus_const): New function.
+	* config/aarch64/aarch64.md (*aarch64_minmax_plus): New pattern.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_scalar_ops_slice): New struct.
+	(vect_scalar_ops_slice_hash): Likewise.
+	(vect_scalar_ops_slice::op): New function.
+	* tree-vect-slp.cc (vect_scalar_ops_slice::all_same_p): New function.
+	(vect_scalar_ops_slice_hash::hash): Likewise.
+	(vect_scalar_ops_slice_hash::equal): Likewise.
+	(vect_prologue_cost_for_slp): Check for duplicate vectors.
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::m_stp_sequence_cost): New member variable.
+	(aarch64_aligned_constant_offset_p): New function.
+	(aarch64_stp_sequence_cost): Likewise.
+	(aarch64_vector_costs::add_stmt_cost): Handle new STP heuristic.
+	(aarch64_vector_costs::finish_cost): Likewise.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_bb_vectorization_profitable_p): Fix
+	use after free.
+
+2022-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104543
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Check outer loop exits
+	come after the inner loop.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104536
+	* config/i386/host-cygwin.cc (cygwin_gt_pch_get_address): Use
+	cannot instead of can%'t in diagnostics.  Formatting fixes.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104522
+	* fold-const.h (native_interpret_real): Declare.
+	* fold-const.cc (native_interpret_real): No longer static.  Don't
+	perform MODE_COMPOSITE_P verification here.
+	(native_interpret_expr) <case REAL_TYPE>: But perform it here instead
+	for all modes.
+	* gimple-fold.cc (clear_padding_type): Call native_interpret_real
+	instead of native_interpret_expr.
+	* simplify-rtx.cc (simplify_immed_subreg): Perform the native_encode_rtx
+	and comparison verification for all FLOAT_MODE_P modes, not just
+	MODE_COMPOSITE_P.
+
+2022-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104519
+	* fold-const.cc (multiple_of_p): Remove never true condition.
+	* tree-ssa-loop-niter.cc (number_of_iterations_ne): Use
+	the appropriate types for determining whether the difference
+	of final and base is a multiple of the step.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104517
+	* omp-low.cc (task_cpyfns): New variable.
+	(delete_omp_context): Don't call finalize_task_copyfn from here.
+	(create_task_copyfn): Push task_stmt into task_cpyfns.
+	(execute_lower_omp): Call finalize_task_copyfn here on entries from
+	task_cpyfns vector and release the vector.
+
 2022-02-14  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/104355

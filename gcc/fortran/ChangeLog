@@ -1,3 +1,13 @@
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_depobj): Fix to alloc/ptr dummy
+	and for c_ptr.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses, gfc_trans_omp_depobj):
+	Depend on the proper addr, for ptr/alloc depend on pointee.
+
 2022-02-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104211

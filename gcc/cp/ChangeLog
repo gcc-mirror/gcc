@@ -1,3 +1,13 @@
+2022-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104107
+	PR c++/95036
+	* pt.cc (coerce_template_template_parms): Take full parms.
+	Avoid adding too much of outer_args.
+	(coerce_template_template_parm): Adjust.
+	(template_template_parm_bindings_ok_p): Adjust.
+	(convert_template_argument): Adjust.
+
 2022-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/104513

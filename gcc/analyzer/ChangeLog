@@ -1,3 +1,22 @@
+2022-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104524
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_sub_svalue): Only call
+	get_or_create_cast if type is non-NULL.
+
+2022-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102692
+	* exploded-graph.h (impl_region_model_context::get_stmt): New.
+	* region-model.cc: Include "gimple-ssa.h", "tree-phinodes.h",
+	"tree-ssa-operands.h", and "ssa-iterators.h".
+	(within_short_circuited_stmt_p): New.
+	(region_model::check_for_poison): Don't warn about uninit values
+	if within_short_circuited_stmt_p.
+	* region-model.h (region_model_context::get_stmt): New vfunc.
+	(noop_region_model_context::get_stmt): New.
+
 2022-02-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104274

@@ -1,3 +1,108 @@
+2022-02-15  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/htm-1.c: Retry intermittent failing tbegins.
+
+2022-02-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/104526
+	* gcc.dg/pr104526.c: New.
+
+2022-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104524
+	* gcc.dg/analyzer/pr104524.c: New test.
+
+2022-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102692
+	* gcc.dg/analyzer/pr102692-2.c: New test.
+	* gcc.dg/analyzer/pr102692.c: Remove xfail.  Remove -O2 from
+	options and move to...
+	* gcc.dg/analyzer/torture/pr102692.c: ...here.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-4.f90: Add VALUE test, update scan test.
+	* gfortran.dg/gomp/depend-5.f90: Fix scan tree for -m32.
+	* gfortran.dg/gomp/depend-6.f90: New test.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/max_plus_1.c: New test.
+	* gcc.target/aarch64/max_plus_2.c: Likewise.
+	* gcc.target/aarch64/max_plus_3.c: Likewise.
+	* gcc.target/aarch64/max_plus_4.c: Likewise.
+	* gcc.target/aarch64/max_plus_5.c: Likewise.
+	* gcc.target/aarch64/max_plus_6.c: Likewise.
+	* gcc.target/aarch64/max_plus_7.c: Likewise.
+	* gcc.target/aarch64/min_plus_1.c: Likewise.
+	* gcc.target/aarch64/min_plus_2.c: Likewise.
+	* gcc.target/aarch64/min_plus_3.c: Likewise.
+	* gcc.target/aarch64/min_plus_4.c: Likewise.
+	* gcc.target/aarch64/min_plus_5.c: Likewise.
+	* gcc.target/aarch64/min_plus_6.c: Likewise.
+	* gcc.target/aarch64/min_plus_7.c: Likewise.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/store_v2vec_lanes.c: Add -fno-tree-vectorize.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/shl-combine-2.c: New test.
+	* gcc.target/aarch64/shl-combine-3.c: Likewise.
+	* gcc.target/aarch64/shl-combine-4.c: Likewise.
+	* gcc.target/aarch64/shl-combine-5.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-1.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-2.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-3.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-4.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-5.c: Likewise.
+	* gcc.target/aarch64/xtn-combine-6.c: Likewise.
+
+2022-02-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_5.c: Require -mstrict-align.
+	* gcc.target/aarch64/ldp_stp_14.h,
+	* gcc.target/aarch64/ldp_stp_14.c: New test.
+	* gcc.target/aarch64/ldp_stp_15.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_16.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_17.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_18.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_19.c: Likewise.
+
+2022-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104543
+	* gcc.dg/torture/pr104543.c: New testcase.
+
+2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-4.f90: New test.
+	* gfortran.dg/gomp/depend-5.f90: New test.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104522
+	* gcc.dg/pr104522.c: New test.
+
+2022-02-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104519
+	* gcc.dg/torture/pr104519.c: New testcase.
+
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104517
+	* gcc.dg/gomp/pr104517.c: New test.
+
+2022-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104107
+	PR c++/95036
+	* g++.dg/cpp0x/alias-decl-ttp2.C: New test.
+	* g++.dg/cpp1z/ttp2.C: New test.
+
 2022-02-14  Michael Meissner  <meissner@the-meissners.org>
 
 	PR target/104253
