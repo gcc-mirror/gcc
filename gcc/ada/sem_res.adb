@@ -4163,12 +4163,7 @@ package body Sem_Res is
             --  marked with Any_Type. Since the operation has been resolved to
             --  the user-defined operator, that is irrelevant, so reset Etype.
 
-            if Nkind (Original_Node (N)) in N_Op_Eq
-                                          | N_Op_Ge
-                                          | N_Op_Gt
-                                          | N_Op_Le
-                                          | N_Op_Lt
-                                          | N_Op_Ne
+            if Nkind (Original_Node (N)) in N_Op_Compare
               and then not Is_Boolean_Type (Etype (N))
             then
                Set_Etype (A, Etype (F));
