@@ -3868,8 +3868,7 @@ package body Sem_Res is
                when N_Identifier | N_Expanded_Name =>
                   Id := Entity (N);
 
-                  if Present (Id)
-                    and then Is_Object (Id)
+                  if Is_Object (Id)
                     and then Is_Effectively_Volatile_For_Reading (Id)
                     and then
                       not Is_OK_Volatile_Context (Context       => Parent (N),
