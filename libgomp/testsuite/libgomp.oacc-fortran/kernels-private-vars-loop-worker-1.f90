@@ -2,11 +2,15 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "--param=openacc-kernels=decompose" }
+
 ! { dg-additional-options "-fopt-info-omp-all" }
 ! { dg-additional-options "-foffload=-fopt-info-omp-all" }
 
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
 ! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! Prune a few: uninteresting:
+! { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} }
 
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
 ! passed to 'incr' may be unset, and in that case, it will be set to [...]",
@@ -25,6 +29,8 @@ program main
   end do
 
   !$acc kernels copy(arr) ! { dg-line l_compute[incr c_compute] }
+  ! { dg-note {variable 'x\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute }
+  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } .+1 }
   !$acc loop gang(num:32) private(x) ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
   do i = 0, 31
@@ -36,8 +42,8 @@ program main
         arr(i * 32 + j) = arr(i * 32 + j) + x
      end do
   end do
+  ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i }
   !$acc end kernels
-  ! { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute }
 
   do i = 0, 32 * 32 - 1
      if (arr(i) .ne. i + ieor(i / 32, mod(i, 32) * 3)) stop 1
