@@ -7698,5 +7698,11 @@ and,
 	  == TYPE_PRECISION (TREE_TYPE (@2))
        && TYPE_PRECISION (TREE_TYPE (@0))
 	  == TYPE_PRECISION (TREE_TYPE (@3))
+       /* For vect_recog_cond_expr_convert_pattern, @2 and @3 can differ in
+	  signess when convert is truncation, but not ok for extension since
+	  it's sign_extend vs zero_extend.  */
+       && (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type)
+	   || (TYPE_UNSIGNED (TREE_TYPE (@2))
+	       == TYPE_UNSIGNED (TREE_TYPE (@3))))
        && single_use (@4)
        && single_use (@5))))
