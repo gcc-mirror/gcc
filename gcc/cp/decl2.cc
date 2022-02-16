@@ -5718,6 +5718,29 @@ decl_dependent_p (tree decl)
   return false;
 }
 
+/* [basic.def.odr] A function is named [and therefore odr-used] by an
+   expression or conversion if it is the selected member of an overload set in
+   an overload resolution performed as part of forming that expression or
+   conversion, unless it is a pure virtual function and either the expression
+   is not an id-expression naming the function with an explicitly qualified
+   name or the expression forms a pointer to member.
+
+   Mostly, we call mark_used in places that actually do something with a
+   function, like build_over_call.  But in a few places we end up with a
+   non-overloaded FUNCTION_DECL that we aren't going to do any more with, like
+   convert_to_void.  resolve_nondeduced_context is called in those places,
+   but it's also called in too many other places.  */
+
+bool
+mark_single_function (tree expr, tsubst_flags_t complain)
+{
+  if (is_overloaded_fn (expr) == 1
+      && !mark_used (expr, complain)
+      && (complain & tf_error))
+    return false;
+  return true;
+}
+
 /* Mark DECL (either a _DECL or a BASELINK) as "used" in the program.
    If DECL is a specialization or implicitly declared class member,
    generate the actual definition.  Return false if something goes

@@ -7382,6 +7382,10 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      for examples.  */
   if (TYPE_REF_OBJ_P (type) || TYPE_REFFN_P (type))
     {
+      /* Check this before we strip *& to avoid redundancy.  */
+      if (!mark_single_function (expr, complain))
+	return error_mark_node;
+
       tree probe_type, probe = expr;
       if (REFERENCE_REF_P (probe))
 	probe = TREE_OPERAND (probe, 0);

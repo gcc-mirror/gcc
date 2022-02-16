@@ -2362,8 +2362,9 @@ build_offset_ref (tree type, tree member, bool address_p,
     return error_mark_node;
 
   gcc_assert (DECL_P (member) || BASELINK_P (member));
-  /* Callers should call mark_used before this point.  */
-  gcc_assert (!DECL_P (member) || TREE_USED (member));
+  /* Callers should call mark_used before this point, except for functions.  */
+  gcc_assert (!DECL_P (member) || TREE_USED (member)
+	      || TREE_CODE (member) == FUNCTION_DECL);
 
   type = TYPE_MAIN_VARIANT (type);
   if (!COMPLETE_OR_OPEN_TYPE_P (complete_type (type)))

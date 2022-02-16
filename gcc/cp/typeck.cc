@@ -6854,6 +6854,12 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    return error_mark_node;
 	  }
 
+	/* Forming a pointer-to-member is a use of non-pure-virtual fns.  */
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && !DECL_PURE_VIRTUAL_P (t)
+	    && !mark_used (t, complain) && !(complain & tf_error))
+	  return error_mark_node;
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);
