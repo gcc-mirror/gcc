@@ -277,15 +277,16 @@ struct MacroTranscriber
 {
 private:
   DelimTokenTree token_tree;
-
-  // TODO: should store location information?
+  Location locus;
 
 public:
-  MacroTranscriber (DelimTokenTree token_tree)
-    : token_tree (std::move (token_tree))
+  MacroTranscriber (DelimTokenTree token_tree, Location locus)
+    : token_tree (std::move (token_tree)), locus (locus)
   {}
 
   std::string as_string () const { return token_tree.as_string (); }
+
+  Location get_locus () const { return locus; }
 };
 
 // A macro rule? Matcher and transcriber pair?
@@ -310,7 +311,8 @@ public:
   {
     // FIXME: Once #928 is merged, give location to MacroMatcher
     return MacroRule (MacroMatcher::create_error (Location ()),
-		      MacroTranscriber (DelimTokenTree::create_empty ()));
+		      MacroTranscriber (DelimTokenTree::create_empty (),
+					Location ()));
   }
 
   std::string as_string () const;

@@ -1691,7 +1691,8 @@ Parser<ManagedTokenSource>::parse_macro_rule ()
     }
 
   // parse transcriber (this is just a delim token tree)
-  AST::MacroTranscriber transcriber (parse_delim_token_tree ());
+  Location token_tree_loc = lexer.peek_token ()->get_locus ();
+  AST::MacroTranscriber transcriber (parse_delim_token_tree (), token_tree_loc);
 
   return AST::MacroRule (std::move (matcher), std::move (transcriber));
 }
