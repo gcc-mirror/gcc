@@ -5669,7 +5669,7 @@ challenge.  This section gives a few hints that should make this task easier.
 
 GNAT supports interfacing with the G++ compiler (or any C++ compiler
 generating code that is compatible with the G++ Application Binary
-Interface —see @indicateurl{http://www.codesourcery.com/archives/cxx-abi}).
+Interface —see @indicateurl{http://itanium-cxx-abi.github.io/cxx-abi/abi.html}).
 
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific @code{Convention C_Plus_Plus}

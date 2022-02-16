@@ -3811,7 +3811,7 @@ Interfacing to C++
 
 GNAT supports interfacing with the G++ compiler (or any C++ compiler
 generating code that is compatible with the G++ Application Binary
-Interface ---see http://www.codesourcery.com/archives/cxx-abi).
+Interface ---see http://itanium-cxx-abi.github.io/cxx-abi/abi.html).
 
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific ``Convention C_Plus_Plus``
