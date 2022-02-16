@@ -5435,7 +5435,7 @@ package body Sem_Ch3 is
       --  Finally this happens in some complex cases when validity checks are
       --  enabled, where the same subtype declaration may be analyzed twice.
       --  This can happen if the subtype is created by the preanalysis of
-      --  an attribute tht gives the range of a loop statement, and the loop
+      --  an attribute that gives the range of a loop statement, and the loop
       --  itself appears within an if_statement that will be rewritten during
       --  expansion.
 
