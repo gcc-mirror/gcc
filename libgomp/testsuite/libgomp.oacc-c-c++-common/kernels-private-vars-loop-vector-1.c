@@ -1,12 +1,20 @@
-/* { dg-additional-options "-fopt-info-note-omp" }
-   { dg-additional-options "--param=openacc-privatization=noisy" }
-   { dg-additional-options "-foffload=-fopt-info-note-omp" }
-   { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
-   for testing/documenting aspects of that functionality.  */
+/* Test of vector-private variables declared on loop directive.  */
+
+/* { dg-additional-options "-fopt-info-omp-all" }
+   { dg-additional-options "-foffload=-fopt-info-omp-all" } */
+
+/* { dg-additional-options "--param=openacc-privatization=noisy" }
+   { dg-additional-options "-foffload=--param=openacc-privatization=noisy" } */
+
+/* It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
+   passed to 'incr' may be unset, and in that case, it will be set to [...]",
+   so to maintain compatibility with earlier Tcl releases, we manually
+   initialize counter variables:
+   { dg-line l_dummy[variable c_compute 0 c_loop_i 0 c_loop_j 0 c_loop_k 0] }
+   { dg-message "dummy" "" { target iN-VAl-Id } l_dummy } to avoid
+   "WARNING: dg-line var l_dummy defined, but not used".  */
 
 #include <assert.h>
-
-/* Test of vector-private variables declared on loop directive.  */
 
 int
 main (int argc, char* argv[])
@@ -16,34 +24,34 @@ main (int argc, char* argv[])
   for (i = 0; i < 32 * 32 * 32; i++)
     arr[i] = i;
 
-  #pragma acc kernels copy(arr)
-  /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
+  #pragma acc kernels copy(arr) /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {variable 'j' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
   {
     int j;
 
-    #pragma acc loop gang(num:32)
-    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
+    #pragma acc loop gang(num:32) /* { dg-line l_loop_i[incr c_loop_i] } */
+    /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
     for (i = 0; i < 32; i++)
       {
-        #pragma acc loop worker(num:32)
-	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
-	/* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
+        #pragma acc loop worker(num:32) /* { dg-line l_loop_j[incr c_loop_j] } */
+	/* { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
+	/* { dg-note {variable 'k' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j } */
 	for (j = 0; j < 32; j++)
 	  {
 	    int k;
 
-	    #pragma acc loop vector(length:32) private(x)
-	    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
-	    /* { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
+	    #pragma acc loop vector(length:32) private(x) /* { dg-line l_loop_k[incr c_loop_k] } */
+	    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
+	    /* { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
 	    for (k = 0; k < 32; k++)
 	      {
 		x = i ^ j * 3;
 		arr[i * 1024 + j * 32 + k] += x * k;
 	      }
 
-	    #pragma acc loop vector(length:32) private(x)
-	    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 } */
-	    /* { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
+	    #pragma acc loop vector(length:32) private(x) /* { dg-line l_loop_k[incr c_loop_k] } */
+	    /* { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
+	    /* { dg-note {variable 'x' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k } */
 	    for (k = 0; k < 32; k++)
 	      {
 		x = i | j * 5;
@@ -52,6 +60,7 @@ main (int argc, char* argv[])
 	  }
       }
   }
+  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
 
   for (i = 0; i < 32; i++)
     for (int j = 0; j < 32; j++)
