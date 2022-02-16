@@ -1,5 +1,5 @@
 /**
- * Optional implementation.
+ * Implementation of an 'Optional' type
  *
  * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)

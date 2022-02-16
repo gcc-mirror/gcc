@@ -1,7 +1,7 @@
 // https://issues.dlang.org/show_bug.cgi?id=19609
 /*
 EXTRA_FILES: imports/fail19609a.d imports/fail19609b.d imports/fail19609c.d imports/fail19609d.d
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/imports/fail19609a.d(1): Error: `string` expected for deprecation message, not `([""])` of type `string[]`
 fail_compilation/fail19609.d(16): Deprecation: module `imports.fail19609a` is deprecated

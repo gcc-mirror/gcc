@@ -1,3 +1,8 @@
+2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* sanitizer_common/sanitizer_linux_libcdep.cpp: Cherry-pick
+	llvm-project revision ef14b78d9a144ba81ba02083fe21eb286a88732b.
+
 2022-02-03  David Seifert  <soap@gentoo.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

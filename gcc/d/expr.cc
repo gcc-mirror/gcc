@@ -1186,6 +1186,14 @@ public:
     this->result_ = build_assign (modifycode, t1, t2);
   }
 
+  /* Build a throw expression.  */
+
+  void visit (ThrowExp *e)
+  {
+    tree arg = build_expr_dtor (e->e1);
+    this->result_ = build_libcall (LIBCALL_THROW, Type::tvoid, 1, arg);
+  }
+
   /* Build a postfix expression.  */
 
   void visit (PostExp *e)

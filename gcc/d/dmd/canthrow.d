@@ -18,6 +18,7 @@ import dmd.apply;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.astenums;
+import dmd.blockexit : BE, checkThrow;
 import dmd.declaration;
 import dmd.dsymbol;
 import dmd.expression;
@@ -29,11 +30,28 @@ import dmd.root.rootobject;
 import dmd.tokens;
 import dmd.visitor;
 
+/**
+ * Status indicating what kind of throwable might be caused by an expression.
+ *
+ * This is a subset of `BE` restricted to the values actually used by `canThrow`.
+ */
+enum CT : BE
+{
+    /// Never throws an `Exception` or `Throwable`
+    none = BE.none,
+
+    /// Might throw an `Exception`
+    exception = BE.throw_,
+
+    // Might throw an `Error`
+    error = BE.errthrow,
+}
+
 /********************************************
  * Returns true if the expression may throw exceptions.
  * If 'mustNotThrow' is true, generate an error if it throws
  */
-extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow)
+extern (C++) /* CT */ BE canThrow(Expression e, FuncDeclaration func, bool mustNotThrow)
 {
     //printf("Expression::canThrow(%d) %s\n", mustNotThrow, toChars());
     // stop walking if we determine this expression can throw
@@ -42,6 +60,7 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
         alias visit = typeof(super).visit;
         FuncDeclaration func;
         bool mustNotThrow;
+        CT result;
 
     public:
         extern (D) this(FuncDeclaration func, bool mustNotThrow)
@@ -62,7 +81,7 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
 
                     e.checkOverridenDtor(null, f, dd => dd.type.toTypeFunction().isnothrow, "not nothrow");
                 }
-                stop = true;  // if any function throws, then the whole expression throws
+                result |= CT.exception;
             }
         }
 
@@ -72,7 +91,7 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
 
         override void visit(DeclarationExp de)
         {
-            stop = Dsymbol_canThrow(de.declaration, func, mustNotThrow);
+            result |= Dsymbol_canThrow(de.declaration, func, mustNotThrow);
         }
 
         override void visit(CallExp ce)
@@ -83,18 +102,27 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
             if (global.errors && !ce.e1.type)
                 return; // error recovery
 
-            import dmd.id : Id;
-
-            if (ce.f && ce.f.ident == Id._d_delstruct)
+            if (ce.f && ce.arguments.dim > 0)
             {
-                // Only check if the dtor throws.
                 Type tb = (*ce.arguments)[0].type.toBasetype();
-                auto ts = tb.nextOf().baseElemOf().isTypeStruct();
-                if (ts)
+                auto tbNext = tb.nextOf();
+                if (tbNext)
                 {
-                    auto sd = ts.sym;
-                    if (sd.dtor)
-                        checkFuncThrows(ce, sd.dtor);
+                    auto ts = tbNext.baseElemOf().isTypeStruct();
+                    if (ts)
+                    {
+                        import dmd.id : Id;
+
+                        auto sd = ts.sym;
+                        if (sd.dtor && ce.f.ident == Id._d_delstruct)
+                            checkFuncThrows(ce, sd.dtor);
+                        else if (sd.postblit &&
+                            (ce.f.ident == Id._d_arrayctor || ce.f.ident == Id._d_arraysetctor))
+                        {
+                            checkFuncThrows(ce, sd.postblit);
+                            return;
+                        }
+                    }
                 }
             }
 
@@ -124,7 +152,7 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
                     e1 = pe.e1;
                 ce.error("`%s` is not `nothrow`", e1.toChars());
             }
-            stop = true;
+            result |= CT.exception;
         }
 
         override void visit(NewExp ne)
@@ -187,6 +215,13 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
                     checkFuncThrows(ae, postblit);
         }
 
+        override void visit(ThrowExp te)
+        {
+            const res = checkThrow(te.loc, te.e1, mustNotThrow);
+            assert((res & ~(CT.exception | CT.error)) == 0);
+            result |= res;
+        }
+
         override void visit(NewAnonClassExp)
         {
             assert(0); // should have been lowered by semantic()
@@ -194,18 +229,22 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
     }
 
     scope CanThrow ct = new CanThrow(func, mustNotThrow);
-    return walkPostorder(e, ct);
+    walkPostorder(e, ct);
+    return ct.result;
 }
 
 /**************************************
  * Does symbol, when initialized, throw?
  * Mirrors logic in Dsymbol_toElem().
  */
-private bool Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow)
+private CT Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow)
 {
+    CT result;
+
     int symbolDg(Dsymbol s)
     {
-        return Dsymbol_canThrow(s, func, mustNotThrow);
+        result |= Dsymbol_canThrow(s, func, mustNotThrow);
+        return 0;
     }
 
     //printf("Dsymbol_toElem() %s\n", s.toChars());
@@ -225,20 +264,19 @@ private bool Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow
             if (vd._init)
             {
                 if (auto ie = vd._init.isExpInitializer())
-                    if (canThrow(ie.exp, func, mustNotThrow))
-                        return true;
+                    result |= canThrow(ie.exp, func, mustNotThrow);
             }
             if (vd.needsScopeDtor())
-                return canThrow(vd.edtor, func, mustNotThrow);
+                result |= canThrow(vd.edtor, func, mustNotThrow);
         }
     }
     else if (auto ad = s.isAttribDeclaration())
     {
-        return ad.include(null).foreachDsymbol(&symbolDg) != 0;
+        ad.include(null).foreachDsymbol(&symbolDg);
     }
     else if (auto tm = s.isTemplateMixin())
     {
-        return tm.members.foreachDsymbol(&symbolDg) != 0;
+        tm.members.foreachDsymbol(&symbolDg);
     }
     else if (auto td = s.isTupleDeclaration())
     {
@@ -250,11 +288,10 @@ private bool Dsymbol_canThrow(Dsymbol s, FuncDeclaration func, bool mustNotThrow
                 Expression eo = cast(Expression)o;
                 if (auto se = eo.isDsymbolExp())
                 {
-                    if (Dsymbol_canThrow(se.s, func, mustNotThrow))
-                        return true;
+                    result |= Dsymbol_canThrow(se.s, func, mustNotThrow);
                 }
             }
         }
     }
-    return false;
+    return result;
 }

@@ -1,3 +1,10 @@
+2022-02-13  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Revert 2022-02-09 change:
+	(RT_LIBS): Don't define.
+	* Makefile.am (check-runtime): Don't set GOLIBS to $(RT_LIBS).
+	* configure, Makefile.in: Regenerate.
+
 2022-02-11  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (go_cmd_cgo_files): Add ast_go118.go

@@ -707,19 +707,43 @@ template partial(alias fun, alias arg)
     {
         static assert(false, "Cannot apply partial to a non-callable '" ~ fun.stringof ~ "'.");
     }
-    else // Assume fun is callable and uniquely defined.
+    else
     {
-        static if (Parameters!fun.length == 0)
+        import std.meta : Filter;
+
+        static if (__traits(compiles, __traits(getOverloads,
+            __traits(parent, fun), __traits(identifier, fun))))
+            alias overloads = __traits(getOverloads, __traits(parent, fun),
+                __traits(identifier, fun));
+        else
+            alias overloads = AliasSeq!(fun);
+
+        enum isCallableWithArg(alias fun) = Parameters!fun.length > 0 &&
+            is(typeof(arg) : Parameters!fun[0]);
+        alias candidates = Filter!(isCallableWithArg, overloads);
+
+        static if (overloads.length == 1 && Parameters!fun.length == 0)
         {
             static assert(0, "Cannot partially apply '" ~ fun.stringof ~ "'." ~
                 "'" ~ fun.stringof ~ "' has 0 arguments.");
         }
-        else static if (!is(typeof(arg) : Parameters!fun[0]))
+        else static if (candidates.length == 0)
         {
+            import std.meta : NoDuplicates, staticMap;
+
+            enum hasParameters(alias fun) = Parameters!fun.length > 0;
+            alias firstParameter(alias fun) = Parameters!fun[0];
+            alias firstParameters = NoDuplicates!(
+                staticMap!(firstParameter, Filter!(hasParameters, overloads)));
+
             string errorMsg()
             {
-                string msg = "Argument mismatch for '" ~ fun.stringof ~ "': expected " ~
-                    Parameters!fun[0].stringof ~ ", but got " ~ typeof(arg).stringof ~ ".";
+                string msg = "Argument mismatch for '" ~ fun.stringof ~
+                    "': expected " ~ firstParameters[0].stringof;
+                static foreach (firstParam; firstParameters[1 .. $])
+                    msg ~= " or " ~ firstParam.stringof;
+                msg ~= ", but got " ~ typeof(arg).stringof ~ ".";
+
                 return msg;
             }
             static assert(0, errorMsg());
@@ -727,10 +751,11 @@ template partial(alias fun, alias arg)
         else
         {
             import std.traits : ReturnType;
-            ReturnType!fun partial(Parameters!fun[1..$] args2)
-            {
-                return fun(arg, args2);
-            }
+            static foreach (candidate; candidates)
+                ReturnType!candidate partial(Parameters!candidate[1..$] args2)
+                {
+                    return candidate(arg, args2);
+                }
         }
     }
 }
@@ -744,6 +769,22 @@ template partial(alias fun, alias arg)
     // Note that in most cases you'd use an alias instead of a value
     // assignment. Using an alias allows you to partially evaluate template
     // functions without committing to a particular type of the function.
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21457
+///
+@safe unittest
+{
+    // Overloads are resolved when the partially applied function is called
+    // with the remaining arguments.
+    struct S
+    {
+        static char fun(int i, string s) { return s[i]; }
+        static int fun(int a, int b) { return a * b; }
+    }
+    alias fun3 = partial!(S.fun, 3);
+    assert(fun3("hello") == 'l');
+    assert(fun3(10) == 30);
 }
 
 // tests for partially evaluating callables

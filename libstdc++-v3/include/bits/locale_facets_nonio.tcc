@@ -635,6 +635,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
+extern "C"
+__typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
+
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -643,30 +646,24 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
     {
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-#if _GLIBCXX_USE_C99_STDIO
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
       char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
+      const __c_locale __old = __gnu_cxx::__uselocale(_S_get_c_locale());
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 328. Bad sprintf format modifier in money_put<>::do_put()
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+      int __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
 	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	  __len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
-					"%.*Lf", 0, __units);
+	  __len = __glibcxx_snprintfibm128(__cs, __cs_size, "%.*Lf", 0,
+					     __units);
 	}
-#else
-      // max_exponent10 + 1 for the integer part, + 2 for sign and '\0'.
-      const int __cs_size =
-	__gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 3;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      int __len = std::__convert_from_v(_S_get_c_locale(), __cs, 0, "%.*Lf", 
-					0, __units);
-#endif
+      __gnu_cxx::__uselocale(__old);
       string_type __digits(__len, char_type());
       __ctype.widen(__cs, __cs + __len, &__digits[0]);
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)

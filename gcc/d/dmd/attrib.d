@@ -43,6 +43,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.objc; // for objc.addSymbols
 import dmd.common.outbuffer;
+import dmd.root.array; // for each
 import dmd.target; // for target.systemLinkage
 import dmd.tokens;
 import dmd.visitor;
@@ -1518,4 +1519,61 @@ extern (C++) final class UserAttributeDeclaration : AttribDeclaration
             }
         }
     }
+}
+
+/**
+ * Returns `true` if the given symbol is a symbol declared in
+ * `core.attribute` and has the given identifier.
+ *
+ * This is used to determine if a symbol is a UDA declared in
+ * `core.attribute`.
+ *
+ * Params:
+ *  sym = the symbol to check
+ *  ident = the name of the expected UDA
+ */
+bool isCoreUda(Dsymbol sym, Identifier ident)
+{
+    if (sym.ident != ident || !sym.parent)
+        return false;
+
+    auto _module = sym.parent.isModule();
+    return _module && _module.isCoreModule(Id.attribute);
+}
+
+/**
+ * Iterates the UDAs attached to the given symbol.
+ *
+ * If `dg` returns `!= 0`, it will stop the iteration and return that
+ * value, otherwise it will return 0.
+ *
+ * Params:
+ *  sym = the symbol to get the UDAs from
+ *  sc = scope to use for semantic analysis of UDAs
+ *  dg = called once for each UDA. If `dg` returns `!= 0`, it will stop the
+ *      iteration and return that value, otherwise it will return `0`.
+ */
+int foreachUda(Dsymbol sym, Scope* sc, int delegate(Expression) dg)
+{
+    if (!sym.userAttribDecl)
+        return 0;
+
+    auto udas = sym.userAttribDecl.getAttributes();
+    arrayExpressionSemantic(udas, sc, true);
+
+    return udas.each!((uda) {
+        if (!uda.isTupleExp())
+            return 0;
+
+        auto exps = uda.isTupleExp().exps;
+
+        return exps.each!((e) {
+            assert(e);
+
+            if (auto result = dg(e))
+                return result;
+
+            return 0;
+        });
+    });
 }

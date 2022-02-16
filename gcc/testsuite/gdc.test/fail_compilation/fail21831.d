@@ -1,5 +1,5 @@
 /* REQUIRED_ARGS: -de -unittest
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/fail21831.d(19): Deprecation: struct `fail21831.S21831` is deprecated - Deprecated type
 fail_compilation/fail21831.d(19): Deprecation: template `fail21831.test21831(T)(T t) if (__traits(isDeprecated, T))` is deprecated - Deprecated template

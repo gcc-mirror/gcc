@@ -4807,10 +4807,10 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 	clear_padding_flush (buf, false);
       if (clear_padding_real_needs_padding_p (type))
 	{
-	  /* Use native_interpret_expr + native_encode_expr to figure out
+	  /* Use native_interpret_real + native_encode_expr to figure out
 	     which bits are padding.  */
 	  memset (buf->buf + buf->size, ~0, sz);
-	  tree cst = native_interpret_expr (type, buf->buf + buf->size, sz);
+	  tree cst = native_interpret_real (type, buf->buf + buf->size, sz);
 	  gcc_assert (cst && TREE_CODE (cst) == REAL_CST);
 	  int len = native_encode_expr (cst, buf->buf + buf->size, sz);
 	  gcc_assert (len > 0 && (size_t) len == (size_t) sz);

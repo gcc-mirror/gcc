@@ -287,6 +287,7 @@ enum class TOK : unsigned char
     _Thread_local_,
 
     // C only extended keywords
+    _import,
     cdecl,
     declspec,
     attribute__,

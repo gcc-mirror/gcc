@@ -2221,6 +2221,9 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
       u->comp_dir = NULL;
       u->abs_filename = NULL;
       u->lineoff = 0;
+      u->str_offsets_base = 0;
+      u->addr_base = 0;
+      u->rnglists_base = 0;
 
       /* The actual line number mappings will be read as needed.  */
       u->lines = NULL;

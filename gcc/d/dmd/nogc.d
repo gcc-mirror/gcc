@@ -71,6 +71,7 @@ public:
         if (!e.f)
             return;
 
+        // Treat lowered hook calls as their original expressions.
         auto fd = stripHookTraceImpl(e.f);
         if (fd.ident == Id._d_arraysetlengthT)
         {

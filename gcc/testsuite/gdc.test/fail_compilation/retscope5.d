@@ -5,7 +5,7 @@ REQUIRED_ARGS: -preview=dip1000
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope5.d(5010): Error: reference `t` assigned to `p` with longer lifetime
+fail_compilation/retscope5.d(5010): Error: address of variable `t` assigned to `p` with longer lifetime
 ---
 */
 

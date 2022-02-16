@@ -113,6 +113,41 @@ typedef hash_map<tree_operand_hash,
 		 std::pair<stmt_vec_info, innermost_loop_behavior *> >
 	  vec_base_alignments;
 
+/* Represents elements [START, START + LENGTH) of cyclical array OPS*
+   (i.e. OPS repeated to give at least START + LENGTH elements)  */
+struct vect_scalar_ops_slice
+{
+  tree op (unsigned int i) const;
+  bool all_same_p () const;
+
+  vec<tree> *ops;
+  unsigned int start;
+  unsigned int length;
+};
+
+/* Return element I of the slice.  */
+inline tree
+vect_scalar_ops_slice::op (unsigned int i) const
+{
+  return (*ops)[(i + start) % ops->length ()];
+}
+
+/* Hash traits for vect_scalar_ops_slice.  */
+struct vect_scalar_ops_slice_hash : typed_noop_remove<vect_scalar_ops_slice>
+{
+  typedef vect_scalar_ops_slice value_type;
+  typedef vect_scalar_ops_slice compare_type;
+
+  static const bool empty_zero_p = true;
+
+  static void mark_deleted (value_type &s) { s.length = ~0U; }
+  static void mark_empty (value_type &s) { s.length = 0; }
+  static bool is_deleted (const value_type &s) { return s.length == ~0U; }
+  static bool is_empty (const value_type &s) { return s.length == 0; }
+  static hashval_t hash (const value_type &);
+  static bool equal (const value_type &, const compare_type &);
+};
+
 /************************************************************************
   SLP
  ************************************************************************/

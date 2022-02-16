@@ -2345,7 +2345,7 @@ extern (C++) final class DsymbolTable : RootObject
 Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
 {
     enum log = false;
-    if (log) printf("handleTagSymbols('%s')\n", s.toChars());
+    if (log) printf("handleTagSymbols('%s') add %p existing %p\n", s.toChars(), s, s2);
     auto sd = s.isScopeDsymbol(); // new declaration
     auto sd2 = s2.isScopeDsymbol(); // existing declaration
 

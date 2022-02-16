@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice11856_1.d(13): Error: template `ice11856_1.g` cannot deduce function from argument types `!()(A)`
+fail_compilation/ice11856_1.d(13): Error: none of the overloads of template `ice11856_1.g` are callable using argument types `!()(A)`
 fail_compilation/ice11856_1.d(11):        Candidate is: `g(T)(T x)`
 ---
 */

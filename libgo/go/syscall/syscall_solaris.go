@@ -6,8 +6,6 @@ package syscall
 
 import "unsafe"
 
-const _F_DUP2FD_CLOEXEC = F_DUP2FD_CLOEXEC
-
 func (ts *Timestruc) Unix() (sec int64, nsec int64) {
 	return int64(ts.Sec), int64(ts.Nsec)
 }

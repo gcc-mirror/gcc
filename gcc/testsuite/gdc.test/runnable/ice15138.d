@@ -1,6 +1,6 @@
 // EXTRA_SOURCES: imports/ice15138a.d
 // PERMUTE_ARGS: -unittest -inline
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 
 import imports.ice15138a;
 

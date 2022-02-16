@@ -48,7 +48,9 @@ struct Symbol;          // back end symbol
 void expandTuples(Expressions *exps);
 bool isTrivialExp(Expression *e);
 bool hasSideEffect(Expression *e, bool assumeImpureCalls = false);
-bool canThrow(Expression *e, FuncDeclaration *func, bool mustNotThrow);
+
+enum BE : int32_t;
+BE canThrow(Expression *e, FuncDeclaration *func, bool mustNotThrow);
 
 typedef unsigned char OwnedBy;
 enum
@@ -738,6 +740,14 @@ public:
     Expression *msg;
 
     AssertExp *syntaxCopy();
+
+    void accept(Visitor *v) { v->visit(this); }
+};
+
+class ThrowExp : public UnaExp
+{
+public:
+    ThrowExp *syntaxCopy();
 
     void accept(Visitor *v) { v->visit(this); }
 };

@@ -1,5 +1,5 @@
 /*
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/reg6769.d(14): Error: reinterpreting cast from `int[]` to `int[7]*` is not supported in CTFE
 fail_compilation/reg6769.d(27):        called from here: `reg6769a([0, 1, 2, 3, 4, 5, 6])`

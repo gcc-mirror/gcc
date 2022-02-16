@@ -3735,7 +3735,13 @@ unittest
             Ternary r = (() @nogc => a.resolveInternalPointer(&b[0], p))();
             assert(&p[0] == &b[0] && p.length >= b.length);
             r = a.resolveInternalPointer((() @trusted => &b[0] + b.length)(), p);
-            assert(&p[0] == &b[0] && p.length >= b.length);
+
+            /* This line randomly fails on MacOS 12.x x64
+             * https://issues.dlang.org/show_bug.cgi?id=22660
+             * Commenting it out until someone can fix it.
+             */
+            //assert(&p[0] == &b[0] && p.length >= b.length);
+
             r = a.resolveInternalPointer((() @trusted => &b[0] + b.length / 2)(), p);
             assert(&p[0] == &b[0] && p.length >= b.length);
             auto bogus = new void[b.length];

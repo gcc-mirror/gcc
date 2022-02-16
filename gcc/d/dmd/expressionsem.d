@@ -3604,16 +3604,21 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 {
                     if (!cdthis)
                     {
+                        if (!sc.hasThis)
+                        {
+                            string msg = "cannot construct " ~
+                            (cd.isAnonymous ? "anonymous nested class" : "nested class `%s`") ~
+                            " because no implicit `this` reference to outer class" ~
+                            (cdn.isAnonymous ? "" : " `%s`") ~ " is available\0";
+
+                            exp.error(msg.ptr, cd.toChars, cdn.toChars);
+                            return setError();
+                        }
+
                         // Supply an implicit 'this' and try again
                         exp.thisexp = new ThisExp(exp.loc);
                         for (Dsymbol sp = sc.parent; 1; sp = sp.toParentLocal())
                         {
-                            if (!sp)
-                            {
-                                exp.error("outer class `%s` `this` needed to `new` nested class `%s`",
-                                    cdn.toChars(), cd.toChars());
-                                return setError();
-                            }
                             ClassDeclaration cdp = sp.isClassDeclaration();
                             if (!cdp)
                                 continue;
@@ -5702,12 +5707,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     || global.params.useDeprecated != DiagnosticReporting.error;
                 const bool preventAliasThis = e.targ.hasDeprecatedAliasThis && !deprecationAllowed;
 
-                // baseClass might not be set if either targ or tspec is forward referenced.
-                if (auto tc = e.targ.isTypeClass())
-                    tc.sym.dsymbolSemantic(null);
-                if (auto tc = e.tspec.isTypeClass())
-                    tc.sym.dsymbolSemantic(null);
-
                 if (preventAliasThis && e.targ.ty == Tstruct)
                 {
                     if ((cast(TypeStruct) e.targ).implicitConvToWithoutAliasThis(e.tspec))
@@ -6396,6 +6395,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             : Expression.combine(temporariesPrefix, exp).expressionSemantic(sc);
     }
 
+    override void visit(ThrowExp te)
+    {
+        import dmd.statementsem;
+
+        if (StatementSemanticVisitor.throwSemantic(te.loc, te.e1, sc))
+            result = te;
+        else
+            setError();
+    }
+
     override void visit(DotIdExp exp)
     {
         static if (LOGSEMANTIC)
@@ -6912,6 +6921,18 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         {
             exp.error("cannot take address of `%s`", exp.e1.toChars());
             return setError();
+        }
+        if (auto dve = exp.e1.isDotVarExp())
+        {
+            /* https://issues.dlang.org/show_bug.cgi?id=22749
+             * Error about taking address of any bit-field, regardless of
+             * whether SCOPE.Cfile is set.
+             */
+            if (auto bf = dve.var.isBitFieldDeclaration())
+            {
+                exp.error("cannot take address of bit-field `%s`", bf.toChars());
+                return setError();
+            }
         }
 
         bool hasOverloads;
@@ -7511,6 +7532,17 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         // https://issues.dlang.org/show_bug.cgi?id=19954
         if (exp.e1.type.ty == Ttuple)
         {
+            if (exp.to)
+            {
+                if (TypeTuple tt = exp.to.isTypeTuple())
+                {
+                    if (exp.e1.type.implicitConvTo(tt))
+                    {
+                        result = exp.e1.castTo(sc, tt);
+                        return;
+                    }
+                }
+            }
             TupleExp te = exp.e1.isTupleExp();
             if (te.exps.dim == 1)
                 exp.e1 = (*te.exps)[0];
@@ -7531,7 +7563,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
 
         if (exp.to.ty == Ttuple)
         {
-            exp.error("cannot cast `%s` to tuple type `%s`", exp.e1.toChars(), exp.to.toChars());
+            exp.error("cannot cast `%s` of type `%s` to tuple type `%s`", exp.e1.toChars(), exp.e1.type.toChars(), exp.to.toChars());
             return setError();
         }
 
@@ -8016,7 +8048,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 Expression el = new ArrayLengthExp(exp.loc, exp.e1);
                 el = el.expressionSemantic(sc);
                 el = el.optimize(WANTvalue);
-                if (el.op == EXP.int64)
+                if (el.op == EXP.int64 && t1b.ty == Tsarray)
                 {
                     // Array length is known at compile-time. Upper is in bounds if it fits length.
                     dinteger_t length = el.toInteger();
@@ -9894,7 +9926,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 Expression id = new IdentifierExp(exp.loc, Id.empty);
                 id = new DotIdExp(exp.loc, id, Id.object);
                 id = new DotIdExp(exp.loc, id, func);
-                id = id.expressionSemantic(sc);
 
                 auto arguments = new Expressions();
                 arguments.push(new CastExp(ae.loc, ae.e1, ae.e1.type.nextOf.arrayOf).expressionSemantic(sc));
@@ -11355,7 +11386,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
         }
 
-        EXP cmpop;
+
+        EXP cmpop = exp.op;
         if (auto e = exp.op_overload(sc, &cmpop))
         {
             if (!e.type.isscalar() && e.type.equals(exp.e1.type))
@@ -11365,12 +11397,45 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
             if (e.op == EXP.call)
             {
+
+                if (t1.ty == Tclass && t2.ty == Tclass)
+                {
+                    // Lower to object.__cmp(e1, e2)
+                    Expression cl = new IdentifierExp(exp.loc, Id.empty);
+                    cl = new DotIdExp(exp.loc, cl, Id.object);
+                    cl = new DotIdExp(exp.loc, cl, Id.__cmp);
+                    cl = cl.expressionSemantic(sc);
+
+                    auto arguments = new Expressions();
+                    // Check if op_overload found a better match by calling e2.opCmp(e1)
+                    // If the operands were swapped, then the result must be reversed
+                    // e1.opCmp(e2) == -e2.opCmp(e1)
+                    // cmpop takes care of this
+                    if (exp.op == cmpop)
+                    {
+                        arguments.push(exp.e1);
+                        arguments.push(exp.e2);
+                    }
+                    else
+                    {
+                        // Use better match found by op_overload
+                        arguments.push(exp.e2);
+                        arguments.push(exp.e1);
+                    }
+
+                    cl = new CallExp(exp.loc, cl, arguments);
+                    cl = new CmpExp(cmpop, exp.loc, cl, new IntegerExp(0));
+                    result = cl.expressionSemantic(sc);
+                    return;
+                }
+
                 e = new CmpExp(cmpop, exp.loc, e, IntegerExp.literal!0);
                 e = e.expressionSemantic(sc);
             }
             result = e;
             return;
         }
+
 
         if (Expression ex = typeCombine(exp, sc))
         {
@@ -13213,7 +13278,16 @@ Expression getVarExp(EnumMember em, const ref Loc loc, Scope* sc)
     if (em.errors)
         return ErrorExp.get();
     Expression e = new VarExp(loc, em);
-    return e.expressionSemantic(sc);
+    e = e.expressionSemantic(sc);
+    if (!(sc.flags & SCOPE.Cfile) && em.isCsymbol())
+    {
+        /* C11 types them as int. But if in D file,
+         * type qualified names as the enum
+         */
+        e.type = em.parent.isEnumDeclaration().type;
+        assert(e.type);
+    }
+    return e;
 }
 
 
@@ -13245,6 +13319,8 @@ Expression toBoolean(Expression exp, Scope* sc)
         case EXP.assign:
         case EXP.construct:
         case EXP.blit:
+            if (sc.flags & SCOPE.Cfile)
+                return exp;
             // Things like:
             //  if (a = b) ...
             // are usually mistakes.

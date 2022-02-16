@@ -25,7 +25,6 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
 import dmd.gluelayer;
-import dmd.canthrow;
 import dmd.constfold;
 import dmd.ctfeexpr;
 import dmd.ctorflow;
@@ -466,7 +465,17 @@ private Expression callCpCtor(Scope* sc, Expression e, Type destinationType)
              */
             auto tmp = copyToTemp(STC.rvalue, "__copytmp", e);
             if (sd.hasCopyCtor && destinationType)
-                tmp.type = destinationType;
+            {
+                // https://issues.dlang.org/show_bug.cgi?id=22619
+                // If the destination type is inout we can preserve it
+                // only if inside an inout function; if we are not inside
+                // an inout function, then we will preserve the type of
+                // the source
+                if (destinationType.hasWild && !(sc.func.storage_class & STC.wild))
+                    tmp.type = e.type;
+                else
+                    tmp.type = destinationType;
+            }
             tmp.storage_class |= STC.nodtor;
             tmp.dsymbolSemantic(sc);
             Expression de = new DeclarationExp(e.loc, tmp);
@@ -4672,6 +4681,31 @@ extern (C++) final class AssertExp : UnaExp
     override AssertExp syntaxCopy()
     {
         return new AssertExp(loc, e1.syntaxCopy(), msg ? msg.syntaxCopy() : null);
+    }
+
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+
+/***********************************************************
+ * `throw <e1>` as proposed by DIP 1034.
+ *
+ * Replacement for the deprecated `ThrowStatement` that can be nested
+ * in other expression.
+ */
+extern (C++) final class ThrowExp : UnaExp
+{
+    extern (D) this(const ref Loc loc, Expression e)
+    {
+        super(loc, EXP.throw_, __traits(classInstanceSize, ThrowExp), e);
+        this.type = Type.tnoreturn;
+    }
+
+    override ThrowExp syntaxCopy()
+    {
+        return new ThrowExp(loc, e1.syntaxCopy());
     }
 
     override void accept(Visitor v)

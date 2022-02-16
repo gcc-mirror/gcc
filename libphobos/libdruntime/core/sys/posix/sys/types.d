@@ -86,7 +86,7 @@ time_t
 uid_t
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
   static if ( __USE_FILE_OFFSET64 )
   {
@@ -108,71 +108,40 @@ version (CRuntime_Glibc)
     alias int       pid_t;
     //size_t (defined in core.stdc.stddef)
     alias c_long    ssize_t;
-    alias slong_t   time_t;
     alias uint      uid_t;
-}
-else version (CRuntime_Musl)
-{
-    version (AArch64)
-    {
-        alias int    blksize_t;
-        alias uint   nlink_t;
-    }
-    else version (MIPS64)
-    {
-        alias c_long blksize_t;
-        alias uint   nlink_t;
-    }
-    else version (RISCV64)
-    {
-        alias int    blksize_t;
-        alias uint   nlink_t;
-    }
-    else
-    {
-        alias c_long blksize_t;
-        alias c_ulong nlink_t;
-    }
-    alias long       dev_t;
-    alias long       blkcnt_t;
-    alias ulong      ino_t;
-    alias long       off_t;
-    alias int        pid_t;
-    alias uint       uid_t;
-    alias uint       gid_t;
 
-    /**
-     * Musl versions before v1.2.0 (up to v1.1.24) had different
-     * definitions for `time_t` for 32 bits.
-     * This was changed to always be 64 bits in v1.2.0:
-     * https://musl.libc.org/time64.html
-     * This change was only for 32 bits system and
-     * didn't affect 64 bits systems
-     *
-     * To check previous definitions, `grep` for `time_t` in `arch/`,
-     * and the result should be (in v1.1.24):
-     * ---
-     * // arch/riscv64/bits/alltypes.h.in:20:TYPEDEF long time_t;
-     * // arch/s390x/bits/alltypes.h.in:17:TYPEDEF long time_t;
-     * // arch/sh/bits/alltypes.h.in:21:TYPEDEF long time_t;
-     * ---
-     *
-     * In order to be compatible with old versions of Musl,
-     * one can recompile druntime with `CRuntime_Musl_Pre_Time64`.
-     */
-    version (D_X32)
-        alias long   time_t;
-    else version (CRuntime_Musl_Pre_Time64)
-        alias c_long time_t;
+    version (CRuntime_Musl)
+    {
+        /**
+         * Musl versions before v1.2.0 (up to v1.1.24) had different
+         * definitions for `time_t` for 32 bits.
+         * This was changed to always be 64 bits in v1.2.0:
+         * https://musl.libc.org/time64.html
+         * This change was only for 32 bits system and
+         * didn't affect 64 bits systems
+         *
+         * To check previous definitions, `grep` for `time_t` in `arch/`,
+         * and the result should be (in v1.1.24):
+         * ---
+         * // arch/riscv64/bits/alltypes.h.in:20:TYPEDEF long time_t;
+         * // arch/s390x/bits/alltypes.h.in:17:TYPEDEF long time_t;
+         * // arch/sh/bits/alltypes.h.in:21:TYPEDEF long time_t;
+         * ---
+         *
+         * In order to be compatible with old versions of Musl,
+         * one can recompile druntime with `CRuntime_Musl_Pre_Time64`.
+         */
+        version (D_X32)
+           alias long   time_t;
+        else version (CRuntime_Musl_Pre_Time64)
+            alias c_long time_t;
+        else
+            alias long  time_t;
+    }
     else
-        alias long   time_t;
-
-    alias c_long     clock_t;
-    alias c_ulong    pthread_t;
-    version (D_LP64)
-        alias c_long ssize_t;
-    else
-        alias int    ssize_t;
+    {
+        alias slong_t   time_t;
+    }
 }
 else version (Darwin)
 {
@@ -311,67 +280,6 @@ else version (Solaris)
     alias c_long time_t;
     alias uint uid_t;
 }
-else version (CRuntime_Bionic)
-{
-    alias c_ulong   blkcnt_t;
-    alias c_ulong   blksize_t;
-    alias size_t    dev_t;
-    alias uint      gid_t;
-    alias c_ulong   ino_t;
-    alias c_long    off_t;
-    alias int       pid_t;
-    alias c_long    ssize_t;
-    alias c_long    time_t;
-    alias uint      uid_t;
-
-    version (D_LP64)
-    {
-        alias uint      mode_t;
-        alias uint      nlink_t;
-    }
-    else
-    {
-        alias ushort    mode_t;
-        alias ushort    nlink_t;
-    }
-}
-else version (CRuntime_UClibc)
-{
-    static if ( __USE_FILE_OFFSET64 )
-    {
-        alias long      blkcnt_t;
-        alias ulong     ino_t;
-        alias long      off_t;
-    }
-    else
-    {
-        alias slong_t   blkcnt_t;
-        alias ulong_t   ino_t;
-        alias slong_t   off_t;
-    }
-
-    version (D_LP64)
-    {
-        alias ino_t ino64_t;
-        alias off_t off64_t;
-    }
-    else
-    {
-        alias ulong ino64_t;
-        alias long off64_t;
-    }
-
-    alias slong_t   blksize_t;
-    alias c_ulong   dev_t;
-    alias uint      gid_t;
-    alias uint      mode_t;
-    alias uint      nlink_t;
-    alias int       pid_t;
-    //size_t (defined in core.stdc.stddef)
-    alias c_long    ssize_t;
-    alias slong_t   time_t;
-    alias uint      uid_t;
-}
 else
 {
     static assert(false, "Unsupported platform");
@@ -390,7 +298,7 @@ suseconds_t
 useconds_t
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
   static if ( __USE_FILE_OFFSET64 )
   {
@@ -482,53 +390,6 @@ else version (Solaris)
     alias id_t poolid_t;
     alias id_t zoneid_t;
     alias id_t ctid_t;
-}
-else version (CRuntime_Bionic)
-{
-    alias c_ulong  fsblkcnt_t;
-    alias c_ulong  fsfilcnt_t;
-    alias c_long   clock_t;
-    alias uint     id_t;
-    alias int      key_t;
-    alias c_long   suseconds_t;
-    alias uint     useconds_t; // Updated in Lollipop
-}
-else version (CRuntime_Musl)
-{
-  static if ( __USE_FILE_OFFSET64 )
-  {
-    alias ulong     fsblkcnt_t;
-    alias ulong     fsfilcnt_t;
-  }
-  else
-  {
-    alias ulong_t   fsblkcnt_t;
-    alias ulong_t   fsfilcnt_t;
-  }
-    alias uint mode_t;
-    alias uint id_t;
-    version (D_X32)
-        alias long susseconds_t;
-    else
-        alias c_long suseconds_t;
-}
-else version (CRuntime_UClibc)
-{
-  static if ( __USE_FILE_OFFSET64 )
-  {
-    alias ulong     fsblkcnt_t;
-    alias ulong     fsfilcnt_t;
-  }
-  else
-  {
-    alias ulong_t   fsblkcnt_t;
-    alias ulong_t   fsfilcnt_t;
-  }
-    alias slong_t   clock_t;
-    alias uint      id_t;
-    alias int       key_t;
-    alias slong_t   suseconds_t;
-    alias uint      useconds_t;
 }
 else
 {
@@ -896,6 +757,8 @@ else version (CRuntime_Musl)
     }
 
     alias int pthread_once_t;
+
+    alias c_ulong pthread_t;
 }
 else version (Darwin)
 {

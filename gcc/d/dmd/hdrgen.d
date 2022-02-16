@@ -2364,6 +2364,12 @@ public:
         buf.writeByte(')');
     }
 
+    override void visit(ThrowExp e)
+    {
+        buf.writestring("throw ");
+        expToBuffer(e.e1, PREC.unary, buf, hgs);
+    }
+
     override void visit(DotIdExp e)
     {
         expToBuffer(e.e1, PREC.primary, buf, hgs);
@@ -3896,6 +3902,11 @@ private void typeToBufferx(Type t, OutBuffer* buf, HdrGenState* hgs)
         buf.writeByte(' ');
         if (t.id)
             buf.writestring(t.id.toChars());
+        if (t.base.ty != TY.Tint32)
+        {
+            buf.writestring(" : ");
+            visitWithMask(t.base, t.mod, buf, hgs);
+        }
     }
 
     void visitTuple(TypeTuple t)

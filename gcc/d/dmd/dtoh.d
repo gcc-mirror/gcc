@@ -16,6 +16,7 @@ import core.stdc.string;
 import core.stdc.ctype;
 
 import dmd.astcodegen;
+import dmd.astenums;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.dsymbol;

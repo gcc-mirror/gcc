@@ -1,5 +1,5 @@
 // REQUIRED_ARGS: -unittest
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/module_with_tests.d imports/another_module_with_tests.d
 
 import imports.module_with_tests;

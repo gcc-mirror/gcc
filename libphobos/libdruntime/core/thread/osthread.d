@@ -247,15 +247,6 @@ else
 class Thread : ThreadBase
 {
     //
-    // Main process thread
-    //
-    version (FreeBSD)
-    {
-        // set when suspend failed and should be retried, see Issue 13416
-        private shared bool m_suspendagain;
-    }
-
-    //
     // Standard thread data
     //
     version (Windows)
@@ -2019,7 +2010,6 @@ extern (C) void thread_suspendAll() nothrow
             // subtract own thread
             assert(cnt >= 1);
             --cnt;
-        Lagain:
             // wait for semaphore notifications
             for (; cnt; --cnt)
             {
@@ -2029,20 +2019,6 @@ extern (C) void thread_suspendAll() nothrow
                         onThreadError("Unable to wait for semaphore");
                     errno = 0;
                 }
-            }
-            version (FreeBSD)
-            {
-                // avoid deadlocks, see Issue 13416
-                t = ThreadBase.sm_tbeg.toThread;
-                while (t)
-                {
-                    auto tn = t.next;
-                    if (t.m_suspendagain && suspend(t))
-                        ++cnt;
-                    t = tn.toThread;
-                }
-                if (cnt)
-                    goto Lagain;
             }
         }
     }
@@ -2480,7 +2456,6 @@ else version (Posix)
                 status = sigdelset( &sigres, resumeSignalNumber );
                 assert( status == 0 );
 
-                version (FreeBSD) obj.m_suspendagain = false;
                 status = sem_post( &suspendCount );
                 assert( status == 0 );
 
@@ -2491,19 +2466,6 @@ else version (Posix)
                     obj.m_curr.tstack = obj.m_curr.bstack;
                 }
             }
-
-            // avoid deadlocks on FreeBSD, see Issue 13416
-            version (FreeBSD)
-            {
-                auto obj = Thread.getThis();
-                if (THR_IN_CRITICAL(obj.m_addr))
-                {
-                    obj.m_suspendagain = true;
-                    if (sem_post(&suspendCount)) assert(0);
-                    return;
-                }
-            }
-
             callWithStackShell(&op);
         }
 
@@ -2516,29 +2478,6 @@ else version (Posix)
         do
         {
 
-        }
-
-        // HACK libthr internal (thr_private.h) macro, used to
-        // avoid deadlocks in signal handler, see Issue 13416
-        version (FreeBSD) bool THR_IN_CRITICAL(pthread_t p) nothrow @nogc
-        {
-            import core.sys.posix.config : c_long;
-            import core.sys.posix.sys.types : lwpid_t;
-
-            // If the begin of pthread would be changed in libthr (unlikely)
-            // we'll run into undefined behavior, compare with thr_private.h.
-            static struct pthread
-            {
-                c_long tid;
-                static struct umutex { lwpid_t owner; uint flags; uint[2] ceilings; uint[4] spare; }
-                umutex lock;
-                uint cycle;
-                int locklevel;
-                int critical_count;
-                // ...
-            }
-            auto priv = cast(pthread*)p;
-            return priv.locklevel > 0 || priv.critical_count > 0;
         }
     }
 }

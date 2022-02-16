@@ -88,3 +88,54 @@ auto returnVoid3(int i)
     else
         return doStuff();
 }
+
+/+
+TEST_OUTPUT:
+---
+fail_compilation/noreturn2.d(104): Error: `object.Exception` is thrown but not caught
+fail_compilation/noreturn2.d(100): Error: `nothrow` function `noreturn2.doesNestedThrow` may throw
+---
++/
+
+int doesNestedThrow(int i) nothrow
+{
+    // Weird formatting is intended to check the loc
+    return i ? i++ :
+            throw
+            new
+            Exception("")
+    ;
+}
+
+int doesNestedThrowThrowable(int i) nothrow
+{
+    return i ? i++ : throw new Error("");
+}
+
+/+
+TEST_OUTPUT:
+---
+fail_compilation/noreturn2.d(130): Error: cannot create instance of interface `I`
+fail_compilation/noreturn2.d(133): Error: can only throw class objects derived from `Throwable`, not type `int[]`
+fail_compilation/noreturn2.d(138): Error: undefined identifier `UnkownException`
+---
++/
+
+int throwInvalid(int i) nothrow
+{
+    static interface I {}
+    // Weird formatting is intended to check the loc
+    return
+            throw
+            new
+            I()
+        ?
+            throw
+            new
+            int[4]
+        :
+            throw
+            new
+            UnkownException("")
+    ;
+}

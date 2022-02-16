@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "langhooks.h"
 #include "options.h"
+#include "internal-fn.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -1601,7 +1602,10 @@ c_pretty_printer::postfix_expression (tree e)
       {
 	call_expr_arg_iterator iter;
 	tree arg;
-	postfix_expression (CALL_EXPR_FN (e));
+	if (CALL_EXPR_FN (e) != NULL_TREE)
+	  postfix_expression (CALL_EXPR_FN (e));
+	else
+	  pp_string (this, internal_fn_name (CALL_EXPR_IFN (e)));
 	pp_c_left_paren (this);
 	FOR_EACH_CALL_EXPR_ARG (arg, iter, e)
 	  {
