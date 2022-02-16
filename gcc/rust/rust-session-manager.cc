@@ -29,6 +29,7 @@
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
+#include "rust-cfg-parser.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -382,87 +383,22 @@ Session::handle_cfg_option (const std::string &input)
   std::string key;
   std::string value;
 
-  enum pstate
-  {
-    KEY,
-    EQ,
-    VAL,
-    DONE,
-    ERROR
-  };
-
-  // FIXME
-  // we need to use the GCC self_test framework to unit-test this its
-  // likely got a bunch of bugs. This simple parser could be extracted to a
-  // helper function to be more easily unit-tested or it could be tested via
-  // checking what the target_options contain
-  bool expect_quote = false;
-  pstate s = KEY;
-  for (const auto &ch : input)
+  // Refactor this if needed
+  if (!parse_cfg_option (input, key, value))
     {
-      if (ch == ' ')
-	{
-	  if (!key.empty ())
-	    s = EQ;
-	  else if (!value.empty ())
-	    s = DONE;
-	  else
-	    {
-	      s = ERROR;
-	      break;
-	    }
-	}
-      else if (ch == '"')
-	{
-	  expect_quote = !expect_quote;
-	}
-      else if (ch == '=')
-	{
-	  if (key.empty ())
-	    {
-	      s = ERROR;
-	      break;
-	    }
-
-	  s = VAL;
-	}
-      else
-	{
-	  if (s == KEY)
-	    key.push_back (ch);
-	  else if (s == VAL)
-	    value.push_back (ch);
-	  else
-	    {
-	      s = ERROR;
-	      break;
-	    }
-	}
-    }
-
-  if (key.empty () && value.empty ())
-    s = ERROR;
-
-  if (expect_quote)
-    s = ERROR;
-
-  if (s == ERROR)
-    {
-      rust_error_at (Location (),
-		     "invalid %<-frust-cfg=option%> expected %<key%> or "
-		     "key=%<value%> got %<%s%>",
-		     input.c_str ());
+      rust_error_at (
+	Location (),
+	"invalid argument to %<-frust-cfg%>: Accepted formats are "
+	"%<-frust-cfg=key%> or %<-frust-cfg=key=\"value\"%> (quoted)");
       return false;
     }
 
   if (value.empty ())
-    {
-      // rustc does not seem to error on dup key
-      options.target_data.insert_key (key);
-      return true;
-    }
+    // rustc does not seem to error on dup key
+    options.target_data.insert_key (key);
+  else
+    options.target_data.insert_key_value_pair (key, value);
 
-  options.target_data.insert_key_value_pair (key, value);
   return true;
 }
 

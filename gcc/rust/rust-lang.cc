@@ -33,6 +33,7 @@
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "selftest.h"
+#include "rust-cfg-parser.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -453,6 +454,7 @@ run_rust_tests ()
 {
   // Call tests for the rust frontend here
   simple_assert ();
+  rust_cfg_parser_test ();
 }
 } // namespace selftest
 
