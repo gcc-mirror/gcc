@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:latest AS gcc-builder
 
 RUN apt-get update; \
     DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
@@ -67,5 +67,8 @@ RUN /bin/sh -c set -ex; \
     dpkg-divert --divert /usr/bin/g++.orig --rename /usr/bin/g++; \
     update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999
 
+FROM rust
+COPY --from=gcc-builder /usr/ /usr/
+RUN cargo install --git https://github.com/Rust-GCC/cargo-gccrs cargo-gccrs
 
 CMD ["bash"]
