@@ -5372,6 +5372,190 @@ workaround_barsyncs (void)
 }
 #endif
 
+/* Initialize all declared regs at function entry.
+   Advantage   : Fool-proof.
+   Disadvantage: Potentially creates a lot of long live ranges and adds a lot
+		 of insns.  */
+
+static void
+workaround_uninit_method_1 (void)
+{
+  rtx_insn *first = get_insns ();
+  rtx_insn *insert_here = NULL;
+
+  for (int ix = LAST_VIRTUAL_REGISTER + 1; ix < max_reg_num (); ix++)
+    {
+      rtx reg = regno_reg_rtx[ix];
+
+      /* Skip undeclared registers.  */
+      if (reg == const0_rtx)
+	continue;
+
+      gcc_assert (CONST0_RTX (GET_MODE (reg)));
+
+      start_sequence ();
+      emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
+      rtx_insn *inits = get_insns ();
+      end_sequence ();
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	for (rtx_insn *init = inits; init != NULL; init = NEXT_INSN (init))
+	  fprintf (dump_file, "Default init of reg %u inserted: insn %u\n",
+		   ix, INSN_UID (init));
+
+      if (first != NULL)
+	{
+	  insert_here = emit_insn_before (inits, first);
+	  first = NULL;
+	}
+      else
+	insert_here = emit_insn_after (inits, insert_here);
+    }
+}
+
+/* Find uses of regs that are not defined on all incoming paths, and insert a
+   corresponding def at function entry.
+   Advantage   : Simple.
+   Disadvantage: Potentially creates long live ranges.
+		 May not catch all cases.  F.i. a clobber cuts a live range in
+		 the compiler and may prevent entry_lr_in from being set for a
+		 reg, but the clobber does not translate to a ptx insn, so in
+		 ptx there still may be an uninitialized ptx reg.  See f.i.
+		 gcc.c-torture/compile/20020926-1.c.  */
+
+static void
+workaround_uninit_method_2 (void)
+{
+  auto_bitmap entry_pseudo_uninit;
+  {
+    auto_bitmap not_pseudo;
+    bitmap_set_range (not_pseudo, 0, LAST_VIRTUAL_REGISTER);
+
+    bitmap entry_lr_in = DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+    bitmap_and_compl (entry_pseudo_uninit, entry_lr_in, not_pseudo);
+  }
+
+  rtx_insn *first = get_insns ();
+  rtx_insn *insert_here = NULL;
+
+  bitmap_iterator iterator;
+  unsigned ix;
+  EXECUTE_IF_SET_IN_BITMAP (entry_pseudo_uninit, 0, ix, iterator)
+    {
+      rtx reg = regno_reg_rtx[ix];
+      gcc_assert (CONST0_RTX (GET_MODE (reg)));
+
+      start_sequence ();
+      emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
+      rtx_insn *inits = get_insns ();
+      end_sequence ();
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	for (rtx_insn *init = inits; init != NULL; init = NEXT_INSN (init))
+	  fprintf (dump_file, "Missing init of reg %u inserted: insn %u\n",
+		   ix, INSN_UID (init));
+
+      if (first != NULL)
+	{
+	  insert_here = emit_insn_before (inits, first);
+	  first = NULL;
+	}
+      else
+	insert_here = emit_insn_after (inits, insert_here);
+    }
+}
+
+/* Find uses of regs that are not defined on all incoming paths, and insert a
+   corresponding def on those.
+   Advantage   : Doesn't create long live ranges.
+   Disadvantage: More complex, and potentially also more defs.  */
+
+static void
+workaround_uninit_method_3 (void)
+{
+  auto_bitmap not_pseudo;
+  bitmap_set_range (not_pseudo, 0, LAST_VIRTUAL_REGISTER);
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      if (single_pred_p (bb))
+	continue;
+
+      auto_bitmap bb_pseudo_uninit;
+      bitmap_and_compl (bb_pseudo_uninit, DF_LIVE_IN (bb), DF_MIR_IN (bb));
+      bitmap_and_compl_into (bb_pseudo_uninit, not_pseudo);
+
+      bitmap_iterator iterator;
+      unsigned ix;
+      EXECUTE_IF_SET_IN_BITMAP (bb_pseudo_uninit, 0, ix, iterator)
+	{
+	  bool have_false = false;
+	  bool have_true = false;
+
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      if (bitmap_bit_p (DF_LIVE_OUT (e->src), ix))
+		have_true = true;
+	      else
+		have_false = true;
+	    }
+	  if (have_false ^ have_true)
+	    continue;
+
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      if (bitmap_bit_p (DF_LIVE_OUT (e->src), ix))
+		continue;
+
+	      rtx reg = regno_reg_rtx[ix];
+	      gcc_assert (CONST0_RTX (GET_MODE (reg)));
+
+	      start_sequence ();
+	      emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
+	      rtx_insn *inits = get_insns ();
+	      end_sequence ();
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		for (rtx_insn *init = inits; init != NULL;
+		     init = NEXT_INSN (init))
+		  fprintf (dump_file,
+			   "Missing init of reg %u inserted on edge: %d -> %d:"
+			   " insn %u\n", ix, e->src->index, e->dest->index,
+			   INSN_UID (init));
+
+	      insert_insn_on_edge (inits, e);
+	    }
+	}
+    }
+
+  commit_edge_insertions ();
+}
+
+static void
+workaround_uninit (void)
+{
+  switch (nvptx_init_regs)
+    {
+    case 0:
+      /* Skip.  */
+      break;
+    case 1:
+      workaround_uninit_method_1 ();
+      break;
+    case 2:
+      workaround_uninit_method_2 ();
+      break;
+    case 3:
+      workaround_uninit_method_3 ();
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* PTX-specific reorganization
    - Split blocks at fork and join instructions
    - Compute live registers
@@ -5401,6 +5585,8 @@ nvptx_reorg (void)
   df_set_flags (DF_NO_INSN_RESCAN | DF_NO_HARD_REGS);
   df_live_add_problem ();
   df_live_set_all_dirty ();
+  if (nvptx_init_regs == 3)
+    df_mir_add_problem ();
   df_analyze ();
   regstat_init_n_sets_and_refs ();
 
@@ -5412,6 +5598,8 @@ nvptx_reorg (void)
   for (int i = LAST_VIRTUAL_REGISTER + 1; i < max_regs; i++)
     if (REG_N_SETS (i) == 0 && REG_N_REFS (i) == 0)
       regno_reg_rtx[i] = const0_rtx;
+
+  workaround_uninit ();
 
   /* Determine launch dimensions of the function.  If it is not an
      offloaded function  (i.e. this is a regular compiler), the
