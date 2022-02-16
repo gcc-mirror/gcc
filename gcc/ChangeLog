@@ -1,3 +1,21 @@
+2022-02-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move the
+	hunk affecting VSX and ALTIVEC to appropriate place.
+
+2022-02-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Disable
+	MMA if !TARGET_VSX.
+
 2022-02-14  Maciej W. Rozycki  <macro@embecosm.com>
 
 	Backported from master:
