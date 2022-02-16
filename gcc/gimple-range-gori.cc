@@ -1322,7 +1322,7 @@ gori_compute::condexpr_adjust (irange &r1, irange &r2, gimple *, tree cond,
   if (!COMPARISON_CLASS_P (cond))
     return false;
   tree type = TREE_TYPE (TREE_OPERAND (cond, 0));
-  if (type != TREE_TYPE (TREE_OPERAND (cond, 1)))
+  if (!range_compatible_p (type, TREE_TYPE (TREE_OPERAND (cond, 1))))
     return false;
   range_operator *hand = range_op_handler (TREE_CODE (cond), type);
   if (!hand)
