@@ -87,24 +87,24 @@ class MacroMatchFragment : public MacroMatch
 {
   Identifier ident;
   MacroFragSpec frag_spec;
-
-  // TODO: should store location information?
+  Location locus;
 
 public:
-  MacroMatchFragment (Identifier ident, MacroFragSpec frag_spec)
-    : ident (std::move (ident)), frag_spec (frag_spec)
+  MacroMatchFragment (Identifier ident, MacroFragSpec frag_spec, Location locus)
+    : ident (std::move (ident)), frag_spec (frag_spec), locus (locus)
   {}
 
   // Returns whether macro match fragment is in an error state.
   bool is_error () const { return frag_spec == INVALID; }
 
   // Creates an error state macro match fragment.
-  static MacroMatchFragment create_error ()
+  static MacroMatchFragment create_error (Location locus)
   {
-    return MacroMatchFragment (std::string (""), INVALID);
+    return MacroMatchFragment (std::string (""), INVALID, locus);
   }
 
   std::string as_string () const override;
+  Location get_match_locus () const override { return locus; };
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -137,20 +137,22 @@ private:
   typedef Token MacroRepSep;
   // any token except delimiters and repetition operators
   std::unique_ptr<MacroRepSep> sep;
-
-  // TODO: should store location information?
+  Location locus;
 
 public:
   // Returns whether macro match repetition has separator token.
   bool has_sep () const { return sep != nullptr; }
 
   MacroMatchRepetition (std::vector<std::unique_ptr<MacroMatch> > matches,
-			MacroRepOp op, std::unique_ptr<MacroRepSep> sep)
-    : matches (std::move (matches)), op (op), sep (std::move (sep))
+			MacroRepOp op, std::unique_ptr<MacroRepSep> sep,
+			Location locus)
+    : matches (std::move (matches)), op (op), sep (std::move (sep)),
+      locus (locus)
   {}
 
   // Copy constructor with clone
-  MacroMatchRepetition (MacroMatchRepetition const &other) : op (other.op)
+  MacroMatchRepetition (MacroMatchRepetition const &other)
+    : op (other.op), locus (other.locus)
   {
     // guard to protect from null pointer dereference
     if (other.sep != nullptr)
@@ -165,6 +167,7 @@ public:
   MacroMatchRepetition &operator= (MacroMatchRepetition const &other)
   {
     op = other.op;
+    locus = other.locus;
 
     // guard to protect from null pointer dereference
     if (other.sep != nullptr)
@@ -184,6 +187,7 @@ public:
   MacroMatchRepetition &operator= (MacroMatchRepetition &&other) = default;
 
   std::string as_string () const override;
+  Location get_match_locus () const override { return locus; };
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -201,20 +205,22 @@ class MacroMatcher : public MacroMatch
 {
   DelimType delim_type;
   std::vector<std::unique_ptr<MacroMatch> > matches;
+  Location locus;
 
   // TODO: think of way to mark invalid that doesn't take up more space
   bool is_invalid;
 
-  // TODO: should store location information?
-
 public:
   MacroMatcher (DelimType delim_type,
-		std::vector<std::unique_ptr<MacroMatch> > matches)
-    : delim_type (delim_type), matches (std::move (matches)), is_invalid (false)
+		std::vector<std::unique_ptr<MacroMatch> > matches,
+		Location locus)
+    : delim_type (delim_type), matches (std::move (matches)), locus (locus),
+      is_invalid (false)
   {}
 
   // copy constructor with vector clone
-  MacroMatcher (MacroMatcher const &other) : delim_type (other.delim_type)
+  MacroMatcher (MacroMatcher const &other)
+    : delim_type (other.delim_type), locus (other.locus)
   {
     matches.reserve (other.matches.size ());
     for (const auto &e : other.matches)
@@ -225,6 +231,7 @@ public:
   MacroMatcher &operator= (MacroMatcher const &other)
   {
     delim_type = other.delim_type;
+    locus = other.locus;
 
     matches.reserve (other.matches.size ());
     for (const auto &e : other.matches)
@@ -238,10 +245,14 @@ public:
   MacroMatcher &operator= (MacroMatcher &&other) = default;
 
   // Creates an error state macro matcher.
-  static MacroMatcher create_error () { return MacroMatcher (true); }
+  static MacroMatcher create_error (Location locus)
+  {
+    return MacroMatcher (true, locus);
+  }
 
   // Returns whether MacroMatcher is in an error state.
   bool is_error () const { return is_invalid; }
+  Location get_match_locus () const override { return locus; }
 
   std::string as_string () const override;
 
@@ -256,7 +267,8 @@ protected:
   }
 
   // constructor only used to create error matcher
-  MacroMatcher (bool is_invalid) : delim_type (PARENS), is_invalid (is_invalid)
+  MacroMatcher (bool is_invalid, Location locus)
+    : delim_type (PARENS), locus (locus), is_invalid (is_invalid)
   {}
 };
 
@@ -296,7 +308,8 @@ public:
   // Creates an error state macro rule.
   static MacroRule create_error ()
   {
-    return MacroRule (MacroMatcher::create_error (),
+    // FIXME: Once #928 is merged, give location to MacroMatcher
+    return MacroRule (MacroMatcher::create_error (Location ()),
 		      MacroTranscriber (DelimTokenTree::create_empty ()));
   }
 

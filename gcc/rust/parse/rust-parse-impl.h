@@ -1709,6 +1709,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 
   // Map tokens to DelimType
   const_TokenPtr t = lexer.peek_token ();
+  Location locus = t->get_locus ();
   switch (t->get_id ())
     {
     case LEFT_PAREN:
@@ -1726,7 +1727,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 	"unexpected token %qs - expecting delimiters (for a macro matcher)",
 	t->get_token_description ()));
 
-      return AST::MacroMatcher::create_error ();
+      return AST::MacroMatcher::create_error (t->get_locus ());
     }
   lexer.skip_token ();
 
@@ -1747,7 +1748,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 	    t->get_token_description ());
 	  add_error (std::move (error));
 
-	  return AST::MacroMatcher::create_error ();
+	  return AST::MacroMatcher::create_error (t->get_locus ());
 	}
 
       matches.push_back (std::move (match));
@@ -1765,7 +1766,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
       // tokens match opening delimiter, so skip.
       lexer.skip_token ();
 
-      return AST::MacroMatcher (delim_type, std::move (matches));
+      return AST::MacroMatcher (delim_type, std::move (matches), locus);
     }
   else
     {
@@ -1781,7 +1782,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
 
       /* return error macro matcher despite possibly parsing mostly correct one?
        * TODO is this the best idea? */
-      return AST::MacroMatcher::create_error ();
+      return AST::MacroMatcher::create_error (t->get_locus ());
     }
 }
 
@@ -1857,6 +1858,7 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::MacroMatchFragment>
 Parser<ManagedTokenSource>::parse_macro_match_fragment ()
 {
+  Location fragment_locus = lexer.peek_token ()->get_locus ();
   skip_token (DOLLAR_SIGN);
 
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
@@ -1893,7 +1895,7 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
     }
 
   return std::unique_ptr<AST::MacroMatchFragment> (
-    new AST::MacroMatchFragment (std::move (ident), frag));
+    new AST::MacroMatchFragment (std::move (ident), frag, fragment_locus));
 }
 
 // Parses a repetition macro match.
@@ -2002,7 +2004,7 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
 
   return std::unique_ptr<AST::MacroMatchRepetition> (
     new AST::MacroMatchRepetition (std::move (matches), op,
-				   std::move (separator)));
+				   std::move (separator), t->get_locus ()));
 }
 
 /* Parses a visibility syntactical production (i.e. creating a non-default

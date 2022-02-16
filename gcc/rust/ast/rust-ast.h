@@ -111,6 +111,7 @@ public:
   virtual ~MacroMatch () {}
 
   virtual std::string as_string () const = 0;
+  virtual Location get_match_locus () const = 0;
 
   // Unique pointer custom clone function
   std::unique_ptr<MacroMatch> clone_macro_match () const
@@ -217,6 +218,7 @@ public:
   }
 
   std::string as_string () const override;
+  Location get_match_locus () const override { return tok_ref->get_locus (); };
 
   void accept_vis (ASTVisitor &vis) override;
 
