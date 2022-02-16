@@ -4558,7 +4558,7 @@
 
 (define_split
   [(set (match_operand:GPI 0 "register_operand")
-	(LOGICAL:GPI
+	(LOGICAL_OR_PLUS:GPI
 	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
 			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
 		   (match_operand:GPI 3 "const_int_operand"))
@@ -4571,16 +4571,23 @@
 	   && REGNO (operands[1]) == REGNO (operands[4])))
    && (trunc_int_for_mode (GET_MODE_MASK (GET_MODE (operands[4]))
 			   << INTVAL (operands[2]), <MODE>mode)
-       == INTVAL (operands[3]))"
+       == INTVAL (operands[3]))
+   && (<CODE> != PLUS
+       || (GET_MODE_MASK (GET_MODE (operands[4]))
+	   & INTVAL (operands[3])) == 0)"
   [(set (match_dup 5) (zero_extend:GPI (match_dup 4)))
-   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
-				   (match_dup 5)))]
-  "operands[5] = gen_reg_rtx (<MODE>mode);"
+   (set (match_dup 0) (match_dup 6))]
+  {
+    operands[5] = gen_reg_rtx (<MODE>mode);
+    rtx shift = gen_rtx_ASHIFT (<MODE>mode, operands[5], operands[2]);
+    rtx_code new_code = (<CODE> == PLUS ? IOR : <CODE>);
+    operands[6] = gen_rtx_fmt_ee (new_code, <MODE>mode, shift, operands[5]);
+  }
 )
 
 (define_split
   [(set (match_operand:GPI 0 "register_operand")
-	(LOGICAL:GPI
+	(LOGICAL_OR_PLUS:GPI
 	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
 			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
 		   (match_operand:GPI 4 "const_int_operand"))
@@ -4589,11 +4596,17 @@
    && pow2_or_zerop (UINTVAL (operands[3]) + 1)
    && (trunc_int_for_mode (UINTVAL (operands[3])
 			   << INTVAL (operands[2]), <MODE>mode)
-       == INTVAL (operands[4]))"
+       == INTVAL (operands[4]))
+   && (<CODE> != PLUS
+       || (INTVAL (operands[4]) & INTVAL (operands[3])) == 0)"
   [(set (match_dup 5) (and:GPI (match_dup 1) (match_dup 3)))
-   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
-				   (match_dup 5)))]
-  "operands[5] = gen_reg_rtx (<MODE>mode);"
+   (set (match_dup 0) (match_dup 6))]
+  {
+    operands[5] = gen_reg_rtx (<MODE>mode);
+    rtx shift = gen_rtx_ASHIFT (<MODE>mode, operands[5], operands[2]);
+    rtx_code new_code = (<CODE> == PLUS ? IOR : <CODE>);
+    operands[6] = gen_rtx_fmt_ee (new_code, <MODE>mode, shift, operands[5]);
+  }
 )
 
 (define_split
