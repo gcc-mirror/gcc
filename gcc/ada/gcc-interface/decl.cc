@@ -3846,17 +3846,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       maybe_present = true;
 
       /* The designated subtype must be elaborated as well, if it does
-	 not have its own freeze node.  But designated subtypes created
-	 for constrained components of records with discriminants are
-	 not frozen by the front-end and not elaborated here, because
-	 their use may appear before the base type is frozen and it is
-	 not clear that they are needed in gigi.  With the current model,
-	 there is no correct place where they could be elaborated.  */
+	 not have its own freeze node.  */
       if (Is_Itype (Directly_Designated_Type (gnat_entity))
 	  && !present_gnu_tree (Directly_Designated_Type (gnat_entity))
 	  && Is_Frozen (Directly_Designated_Type (gnat_entity))
 	  && No (Freeze_Node (Directly_Designated_Type (gnat_entity))))
 	{
+	  tree gnu_base_type = TREE_TYPE (gnu_decl);
+	  tree gnu_desig_base_type
+	    = TYPE_IS_FAT_POINTER_P (gnu_base_type)
+	      ? TREE_TYPE (TREE_TYPE (TYPE_FIELDS (gnu_base_type)))
+	      : TREE_TYPE (gnu_base_type);
+
 	  /* If we are to defer elaborating incomplete types, make a dummy
 	     type node and elaborate it later.  */
 	  if (defer_incomplete_level != 0)
@@ -3869,8 +3870,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      p->next = defer_incomplete_list;
 	      defer_incomplete_list = p;
 	    }
-	  else if (!Is_Incomplete_Or_Private_Type
-		      (Base_Type (Directly_Designated_Type (gnat_entity))))
+
+	  /* Otherwise elaborate the designated subtype only if its base type
+	     has already been elaborated.  */
+	  else if (!TYPE_IS_DUMMY_P (gnu_desig_base_type))
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, false);
 	}
