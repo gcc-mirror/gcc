@@ -1,3 +1,20 @@
+2022-02-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-3.c: New test.
+
+2022-02-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2022-02-07  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103627
+	* gcc.target/powerpc/pr103627-1.c: New test.
+	* gcc.target/powerpc/pr103627-2.c: New test.
+
 2022-02-10  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
