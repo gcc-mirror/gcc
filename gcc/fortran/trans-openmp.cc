@@ -3125,30 +3125,16 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree present = gfc_omp_check_optional_argument (decl, true);
 		  if (openacc && n->sym->ts.type == BT_CLASS)
 		    {
-		      tree type = TREE_TYPE (decl);
 		      if (n->sym->attr.optional)
 			sorry ("optional class parameter");
-		      if (POINTER_TYPE_P (type))
-			{
-			  node4 = build_omp_clause (input_location,
-						    OMP_CLAUSE_MAP);
-			  OMP_CLAUSE_SET_MAP_KIND (node4, GOMP_MAP_POINTER);
-			  OMP_CLAUSE_DECL (node4) = decl;
-			  OMP_CLAUSE_SIZE (node4) = size_int (0);
-			  decl = build_fold_indirect_ref (decl);
-			}
 		      tree ptr = gfc_class_data_get (decl);
 		      ptr = build_fold_indirect_ref (ptr);
 		      OMP_CLAUSE_DECL (node) = ptr;
 		      OMP_CLAUSE_SIZE (node) = gfc_class_vtab_size_get (decl);
 		      node2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
-		      OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_TO_PSET);
-		      OMP_CLAUSE_DECL (node2) = decl;
-		      OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
-		      node3 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
-		      OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_ATTACH_DETACH);
-		      OMP_CLAUSE_DECL (node3) = gfc_class_data_get (decl);
-		      OMP_CLAUSE_SIZE (node3) = size_int (0);
+		      OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_ATTACH_DETACH);
+		      OMP_CLAUSE_DECL (node2) = gfc_class_data_get (decl);
+		      OMP_CLAUSE_SIZE (node2) = size_int (0);
 		      goto finalize_map_clause;
 		    }
 		  else if (POINTER_TYPE_P (TREE_TYPE (decl))
