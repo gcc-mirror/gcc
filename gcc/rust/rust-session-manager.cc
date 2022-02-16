@@ -449,7 +449,7 @@ Session::handle_cfg_option (const std::string &input)
   if (s == ERROR)
     {
       rust_error_at (Location (),
-		     "invalid --frust-cfg= option expected %<key%> or "
+		     "invalid %<-frust-cfg=option%> expected %<key%> or "
 		     "key=%<value%> got %<%s%>",
 		     input.c_str ());
       return false;
