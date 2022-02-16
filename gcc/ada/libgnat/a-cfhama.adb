@@ -25,11 +25,11 @@
 -- <http://www.gnu.org/licenses/>.                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Containers.Hash_Tables.Generic_Bounded_Operations;
-pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Operations);
+with Ada.Containers.Hash_Tables.Generic_Formal_Operations;
+pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Formal_Operations);
 
-with Ada.Containers.Hash_Tables.Generic_Bounded_Keys;
-pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Bounded_Keys);
+with Ada.Containers.Hash_Tables.Generic_Formal_Keys;
+pragma Elaborate_All (Ada.Containers.Hash_Tables.Generic_Formal_Keys);
 
 with Ada.Containers.Prime_Numbers; use Ada.Containers.Prime_Numbers;
 
@@ -75,14 +75,14 @@ is
    --------------------------
 
    package HT_Ops is
-     new Hash_Tables.Generic_Bounded_Operations
+     new Hash_Tables.Generic_Formal_Operations
        (HT_Types  => HT_Types,
         Hash_Node => Hash_Node,
         Next      => Next,
         Set_Next  => Set_Next);
 
    package Key_Ops is
-     new Hash_Tables.Generic_Bounded_Keys
+     new Hash_Tables.Generic_Formal_Keys
        (HT_Types        => HT_Types,
         Next            => Next,
         Set_Next        => Set_Next,
