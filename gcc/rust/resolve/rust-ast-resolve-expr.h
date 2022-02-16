@@ -70,6 +70,16 @@ public:
     expr->accept_vis (resolver);
   };
 
+  void visit (AST::MacroInvocation &expr) override
+  {
+    AST::ASTFragment &fragment = expr.get_fragment ();
+
+    // FIXME
+    // this assertion might go away, maybe on failure's to expand a macro?
+    rust_assert (!fragment.get_nodes ().empty ());
+    fragment.get_nodes ().at (0).accept_vis (*this);
+  }
+
   void visit (AST::TupleIndexExpr &expr) override
   {
     resolve_expr (expr.get_tuple_expr ().get (), expr.get_node_id ());

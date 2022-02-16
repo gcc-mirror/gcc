@@ -4390,7 +4390,8 @@ DelimTokenTree::to_token_stream () const
 
   // simulate presence of delimiters
   const_TokenPtr left_paren
-    = Rust::Token::make (LEFT_PAREN, Linemap::unknown_location ());
+    = Rust::Token::make (left_delim_type_tok_token_id (delim_type),
+			 Linemap::unknown_location ());
   tokens.push_back (
     std::unique_ptr<Token> (new Token (std::move (left_paren))));
 
@@ -4403,7 +4404,8 @@ DelimTokenTree::to_token_stream () const
     }
 
   const_TokenPtr right_paren
-    = Rust::Token::make (RIGHT_PAREN, Linemap::unknown_location ());
+    = Rust::Token::make (right_delim_type_tok_token_id (delim_type),
+			 Linemap::unknown_location ());
   tokens.push_back (
     std::unique_ptr<Token> (new Token (std::move (right_paren))));
 

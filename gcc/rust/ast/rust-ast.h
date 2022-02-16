@@ -22,9 +22,6 @@
 
 #include "rust-system.h"
 #include "rust-hir-map.h"
-
-// gccrs imports
-// required for AST::Token
 #include "rust-token.h"
 #include "rust-location.h"
 
@@ -32,7 +29,6 @@ namespace Rust {
 // TODO: remove typedefs and make actual types for these
 typedef std::string Identifier;
 typedef int TupleIndex;
-
 struct Session;
 
 namespace AST {
@@ -47,34 +43,6 @@ enum DelimType
   SQUARE,
   CURLY
 };
-
-// Base AST node object - TODO is this really required or useful? Where to draw
-// line?
-/*class Node {
-  public:
-    // Gets node's Location.
-    Location get_locus() const {
-	return loc;
-    }
-
-    // Sets node's Location.
-    void set_locus(Location loc_) {
-	loc = loc_;
-    }
-
-    // Get node output as a string. Pure virtual.
-    virtual std::string as_string() const = 0;
-
-    virtual ~Node() {}
-
-    // TODO: constructor including Location? Make all derived classes have
-Location?
-
-  private:
-    // The node's location.
-    Location loc;
-};*/
-// decided to not have node as a "node" would never need to be stored
 
 // forward decl for use in token tree method
 class Token;
@@ -108,6 +76,14 @@ protected:
 class MacroMatch
 {
 public:
+  enum MacroMatchType
+  {
+    Fragment,
+    Repetition,
+    Matcher,
+    Tok
+  };
+
   virtual ~MacroMatch () {}
 
   virtual std::string as_string () const = 0;
@@ -120,6 +96,8 @@ public:
   }
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual MacroMatchType get_macro_match_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -233,6 +211,11 @@ public:
 
   // Get a new token pointer copy.
   const_TokenPtr get_tok_ptr () const { return tok_ref; }
+
+  MacroMatchType get_macro_match_type () const override
+  {
+    return MacroMatchType::Tok;
+  }
 
 protected:
   // No virtual for now as not polymorphic but can be in future
@@ -787,6 +770,43 @@ public:
   AttrInputType get_attr_input_type () const final override
   {
     return AttrInput::AttrInputType::TOKEN_TREE;
+  }
+
+  std::vector<std::unique_ptr<TokenTree> > &get_token_trees ()
+  {
+    return token_trees;
+  }
+
+  DelimType get_delim_type () const { return delim_type; }
+
+  static TokenId left_delim_type_tok_token_id (DelimType delim_type)
+  {
+    switch (delim_type)
+      {
+      case PARENS:
+	return LEFT_PAREN;
+      case SQUARE:
+	return LEFT_SQUARE;
+      case CURLY:
+	return LEFT_CURLY;
+      default:
+	gcc_unreachable ();
+      }
+  }
+
+  static TokenId right_delim_type_tok_token_id (DelimType delim_type)
+  {
+    switch (delim_type)
+      {
+      case PARENS:
+	return RIGHT_PAREN;
+      case SQUARE:
+	return RIGHT_SQUARE;
+      case CURLY:
+	return RIGHT_CURLY;
+      default:
+	gcc_unreachable ();
+      }
   }
 };
 

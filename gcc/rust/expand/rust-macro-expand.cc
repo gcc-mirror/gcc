@@ -20,6 +20,7 @@
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
 #include "rust-diagnostics.h"
+#include "rust-parse.h"
 
 namespace Rust {
 // Visitor used to expand attributes.
@@ -2509,9 +2510,20 @@ public:
       }
 
     // I don't think any macro rules can be stripped in any way
+
+    auto path = Resolver::CanonicalPath::new_seg (rules_def.get_node_id (),
+						  rules_def.get_rule_name ());
+    expander.resolver->get_macro_scope ().insert (path,
+						  rules_def.get_node_id (),
+						  rules_def.get_locus ());
+    expander.mappings->insert_macro_def (&rules_def);
   }
+
   void visit (AST::MacroInvocation &macro_invoc) override
   {
+    // FIXME
+    // we probably need another recurision check here
+
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
     if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
@@ -2522,8 +2534,9 @@ public:
 
     // I don't think any macro token trees can be stripped in any way
 
-    // TODO: maybe have stripping behaviour for the cfg! macro here?
+    expander.expand_invoc (macro_invoc);
   }
+
   void visit (AST::MetaItemPath &) override {}
   void visit (AST::MetaItemSeq &) override {}
   void visit (AST::MetaWord &) override {}
@@ -3011,7 +3024,7 @@ MacroExpander::parse_macro_to_meta_item (AST::MacroInvocData &invoc)
     }
   else
     {
-      std::vector<std::unique_ptr<AST::MetaItemInner> > meta_items (
+      std::vector<std::unique_ptr<AST::MetaItemInner>> meta_items (
 	std::move (converted_input->get_items ()));
       invoc.set_meta_item_output (std::move (meta_items));
     }
@@ -3038,9 +3051,9 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
     return AST::Literal ("false", AST::Literal::BOOL, CORETYPE_BOOL);
 }
 
-#if 0
 AST::ASTFragment
-MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc,
+MacroExpander::expand_decl_macro (Location invoc_locus,
+				  AST::MacroInvocData &invoc,
 				  AST::MacroRulesDefinition &rules_def)
 {
   // ensure that both invocation and rules are in a valid state
@@ -3081,49 +3094,87 @@ MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc,
    * TokenTree). This will prevent re-conversion of Tokens between each type
    * all the time, while still allowing the heterogenous storage of token trees.
    */
+
+  AST::DelimTokenTree &invoc_token_tree = invoc.get_delim_tok_tree ();
+
+  // find matching arm
+  AST::MacroRule *matched_rule = nullptr;
+  std::map<std::string, MatchedFragment> matched_fragments;
+  for (auto &rule : rules_def.get_rules ())
+    {
+      sub_stack.push ();
+      bool did_match_rule = try_match_rule (rule, invoc_token_tree);
+      matched_fragments = sub_stack.pop ();
+
+      if (did_match_rule)
+	{
+	  matched_rule = &rule;
+	  break;
+	}
+    }
+
+  if (matched_rule == nullptr)
+    {
+      RichLocation r (invoc_locus);
+      r.add_range (rules_def.get_locus ());
+      rust_error_at (r, "Failed to match any rule within macro");
+      return AST::ASTFragment::create_empty ();
+    }
+
+  return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments);
 }
-#endif
 
 void
-MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
+MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
 {
-  /* if current expansion depth > recursion limit, create an error (maybe fatal
-   * error) and return */
+  if (depth_exceeds_recursion_limit ())
+    {
+      rust_error_at (invoc.get_locus (), "reached recursion limit");
+      return;
+    }
 
-  /* switch on type of macro:
-      - '!' syntax macro (inner switch)
-	  - procedural macro - "A token-based function-like macro"
-	  - 'macro_rules' (by example/pattern-match) macro? or not? "an
-     AST-based function-like macro"
-	  - else is unreachable
-      - attribute syntax macro (inner switch)
-	  - procedural macro attribute syntax - "A token-based attribute macro"
-	  - legacy macro attribute syntax? - "an AST-based attribute macro"
-	  - non-macro attribute: mark known
-	  - else is unreachable
-      - derive macro (inner switch)
-	  - derive or legacy derive - "token-based" vs "AST-based"
-	  - else is unreachable
-      - derive container macro - unreachable*/
+  AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
 
-#if 0
-  // macro_rules macro test code
-  auto rule_def = find_rules_def(invoc->get_path());
-  if (rule_def != nullptr) {
-    ASTFrag expanded = expand_decl_macro(invoc, rule_def);
-    /* could make this a data structure containing vectors of exprs, patterns and types (for regular),
-     * and then stmts and items (for semi). Except what about having an expr, then a type? Hmm. Might
-     * have to do the "unified base type" thing OR just have a simulated union, and then have AST frag
-     * be a vector of these simulated unions. */
+  // ??
+  // switch on type of macro:
+  //  - '!' syntax macro (inner switch)
+  //      - procedural macro - "A token-based function-like macro"
+  //      - 'macro_rules' (by example/pattern-match) macro? or not? "an
+  // AST-based function-like macro"
+  //      - else is unreachable
+  //  - attribute syntax macro (inner switch)
+  //  - procedural macro attribute syntax - "A token-based attribute
+  // macro"
+  //      - legacy macro attribute syntax? - "an AST-based attribute macro"
+  //      - non-macro attribute: mark known
+  //      - else is unreachable
+  //  - derive macro (inner switch)
+  //      - derive or legacy derive - "token-based" vs "AST-based"
+  //      - else is unreachable
+  //  - derive container macro - unreachable
 
-    // how would errors be signalled? null fragment? something else?
-    // what about error vs just not having stuff in rules definition yet?
+  // lookup the rules for this macro
+  NodeId resolved_node = UNKNOWN_NODEID;
+  bool found = resolver->get_macro_scope ().lookup (
+    Resolver::CanonicalPath::new_seg (invoc.get_pattern_node_id (),
+				      invoc_data.get_path ().as_string ()),
+    &resolved_node);
+  if (!found)
+    {
+      rust_error_at (invoc.get_locus (), "unknown macro");
+      return;
+    }
 
-    /* replace macro invocation with ast frag. actually, don't have any context here. maybe attach ast
-     * frag to macro invocation, and then have a method above get it? Or just return the ast frag from
-     * this method. */
-  }
-#endif
+  // lookup the rules
+  AST::MacroRulesDefinition *rules_def = nullptr;
+  bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
+  rust_assert (ok);
+
+  auto fragment
+    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def);
+
+  // lets attach this fragment to the invocation
+  invoc.set_fragment (std::move (fragment));
 }
 
 /* Determines whether any cfg predicate is false and hence item with attributes
@@ -3225,6 +3276,9 @@ MacroExpander::expand_cfg_attrs (AST::AttrVec &attrs)
 void
 MacroExpander::expand_crate ()
 {
+  NodeId scope_node_id = crate.get_node_id ();
+  resolver->get_macro_scope ().push (scope_node_id);
+
   /* fill macro/decorator map from init list? not sure where init list comes
    * from? */
 
@@ -3267,4 +3321,396 @@ MacroExpander::expand_crate ()
 
   // extract exported macros?
 }
+
+bool
+MacroExpander::depth_exceeds_recursion_limit () const
+{
+  return expansion_depth >= cfg.recursion_limit;
+}
+
+bool
+MacroExpander::try_match_rule (AST::MacroRule &match_rule,
+			       AST::DelimTokenTree &invoc_token_tree)
+{
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+  Parser<MacroInvocLexer> parser (std::move (lex));
+
+  AST::MacroMatcher &matcher = match_rule.get_matcher ();
+
+  expansion_depth++;
+  if (!match_matcher (parser, matcher))
+    {
+      expansion_depth--;
+      return false;
+    }
+  expansion_depth--;
+
+  bool used_all_input_tokens = parser.skip_token (END_OF_FILE);
+  return used_all_input_tokens;
+}
+
+bool
+MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
+			       AST::MacroMatchFragment &fragment)
+{
+  switch (fragment.get_frag_spec ())
+    {
+    case AST::MacroFragSpec::EXPR:
+      parser.parse_expr ();
+      break;
+
+    case AST::MacroFragSpec::BLOCK:
+      parser.parse_block_expr ();
+      break;
+
+    case AST::MacroFragSpec::IDENT:
+      parser.parse_identifier_pattern ();
+      break;
+
+    case AST::MacroFragSpec::LITERAL:
+      parser.parse_literal_expr ();
+      break;
+
+    case AST::MacroFragSpec::ITEM:
+      parser.parse_item (false);
+      break;
+
+    case AST::MacroFragSpec::TY:
+      parser.parse_type ();
+      break;
+
+    case AST::MacroFragSpec::PAT:
+      parser.parse_pattern ();
+      break;
+
+    case AST::MacroFragSpec::PATH:
+      parser.parse_path_in_expression ();
+      break;
+
+    case AST::MacroFragSpec::VIS:
+      parser.parse_visibility ();
+      break;
+
+    case AST::MacroFragSpec::STMT:
+      parser.parse_stmt ();
+      break;
+
+    case AST::MacroFragSpec::LIFETIME:
+      parser.parse_lifetime_params ();
+      break;
+
+      // is meta attributes?
+    case AST::MacroFragSpec::META:
+      gcc_unreachable ();
+      break;
+
+      // what is TT?
+    case AST::MacroFragSpec::TT:
+      gcc_unreachable ();
+      break;
+
+      // i guess we just ignore invalid and just error out
+    case AST::MacroFragSpec::INVALID:
+      return false;
+    }
+
+  // it matches if the parser did not produce errors trying to parse that type
+  // of item
+  return !parser.has_errors ();
+}
+
+bool
+MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
+			      AST::MacroMatcher &matcher)
+{
+  if (depth_exceeds_recursion_limit ())
+    {
+      // FIXME location
+      rust_error_at (Location (), "reached recursion limit");
+      return false;
+    }
+
+  // this is used so we can check that we delimit the stream correctly.
+  switch (matcher.get_delim_type ())
+    {
+      case AST::DelimType::PARENS: {
+	if (!parser.skip_token (LEFT_PAREN))
+	  return false;
+      }
+      break;
+
+      case AST::DelimType::SQUARE: {
+	if (!parser.skip_token (LEFT_SQUARE))
+	  return false;
+      }
+      break;
+
+      case AST::DelimType::CURLY: {
+	if (!parser.skip_token (LEFT_CURLY))
+	  return false;
+      }
+      break;
+    }
+
+  const MacroInvocLexer &source = parser.get_token_source ();
+
+  for (auto &match : matcher.get_matches ())
+    {
+      size_t offs_begin = source.get_offs ();
+      switch (match->get_macro_match_type ())
+	{
+	  case AST::MacroMatch::MacroMatchType::Fragment: {
+	    AST::MacroMatchFragment *fragment
+	      = static_cast<AST::MacroMatchFragment *> (match.get ());
+	    if (!match_fragment (parser, *fragment))
+	      return false;
+
+	    // matched fragment get the offset in the token stream
+	    size_t offs_end = source.get_offs ();
+	    sub_stack.peek ().insert (
+	      {fragment->get_ident (),
+	       {fragment->get_ident (), offs_begin, offs_end}});
+	  }
+	  break;
+
+	  case AST::MacroMatch::MacroMatchType::Tok: {
+	    AST::Token *tok = static_cast<AST::Token *> (match.get ());
+	    if (!match_token (parser, *tok))
+	      return false;
+	  }
+	  break;
+
+	  case AST::MacroMatch::MacroMatchType::Repetition: {
+	    AST::MacroMatchRepetition *rep
+	      = static_cast<AST::MacroMatchRepetition *> (match.get ());
+	    if (!match_repetition (parser, *rep))
+	      return false;
+	  }
+	  break;
+
+	  case AST::MacroMatch::MacroMatchType::Matcher: {
+	    AST::MacroMatcher *m
+	      = static_cast<AST::MacroMatcher *> (match.get ());
+	    expansion_depth++;
+	    if (!match_matcher (parser, *m))
+	      {
+		expansion_depth--;
+		return false;
+	      }
+	    expansion_depth--;
+	  }
+	  break;
+	}
+    }
+
+  switch (matcher.get_delim_type ())
+    {
+      case AST::DelimType::PARENS: {
+	if (!parser.skip_token (RIGHT_PAREN))
+	  return false;
+      }
+      break;
+
+      case AST::DelimType::SQUARE: {
+	if (!parser.skip_token (RIGHT_SQUARE))
+	  return false;
+      }
+      break;
+
+      case AST::DelimType::CURLY: {
+	if (!parser.skip_token (RIGHT_CURLY))
+	  return false;
+      }
+      break;
+    }
+
+  return true;
+}
+
+bool
+MacroExpander::match_token (Parser<MacroInvocLexer> &parser, AST::Token &token)
+{
+  // FIXME this needs to actually match the content and the type
+  return parser.skip_token (token.get_id ());
+}
+
+bool
+MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
+				 AST::MacroMatchRepetition &rep)
+{
+  // TODO
+  gcc_unreachable ();
+  return false;
+}
+
+AST::ASTFragment
+MacroExpander::transcribe_rule (
+  AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
+  std::map<std::string, MatchedFragment> &matched_fragments)
+{
+  // we can manipulate the token tree to substitute the dollar identifiers so
+  // that when we call parse its already substituted for us
+  AST::MacroTranscriber &transcriber = match_rule.get_transcriber ();
+  AST::DelimTokenTree &transcribe_tree = transcriber.get_token_tree ();
+
+  auto invoc_stream = invoc_token_tree.to_token_stream ();
+  auto macro_rule_tokens = transcribe_tree.to_token_stream ();
+
+  std::vector<std::unique_ptr<AST::Token>> substituted_tokens
+    = substitute_tokens (invoc_stream, macro_rule_tokens, matched_fragments);
+
+  // handy for debugging
+  // for (auto &tok : substituted_tokens)
+  //   {
+  //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
+  //   }
+
+  // parse it to an ASTFragment
+  MacroInvocLexer lex (std::move (substituted_tokens));
+  Parser<MacroInvocLexer> parser (std::move (lex));
+
+  // this is used so we can check that we delimit the stream correctly.
+  std::vector<AST::SingleASTNode> nodes;
+  switch (transcribe_tree.get_delim_type ())
+    {
+    case AST::DelimType::PARENS:
+      rust_assert (parser.skip_token (LEFT_PAREN));
+      break;
+
+    case AST::DelimType::CURLY:
+      rust_assert (parser.skip_token (LEFT_CURLY));
+      break;
+
+    case AST::DelimType::SQUARE:
+      rust_assert (parser.skip_token (LEFT_SQUARE));
+      break;
+    }
+
+  // parse the item
+  switch (invoc_token_tree.get_delim_type ())
+    {
+      case AST::DelimType::PARENS: {
+	auto expr = parser.parse_expr ();
+	if (expr != nullptr && !parser.has_errors ())
+	  nodes.push_back (std::move (expr));
+      }
+      break;
+
+      case AST::DelimType::CURLY: {
+	auto item = parser.parse_item (false);
+	if (item != nullptr && !parser.has_errors ())
+	  nodes.push_back (std::move (item));
+      }
+      break;
+
+      case AST::DelimType::SQUARE: {
+	// FIXME
+	gcc_unreachable ();
+      }
+      break;
+    }
+
+  // emit any errors
+  if (parser.has_errors ())
+    {
+      for (auto &err : parser.get_errors ())
+	{
+	  rust_error_at (err.locus, "%s", err.message.c_str ());
+	}
+      return AST::ASTFragment::create_empty ();
+    }
+
+  // are all the tokens used?
+  bool did_delimit = false;
+  switch (transcribe_tree.get_delim_type ())
+    {
+    case AST::DelimType::PARENS:
+      did_delimit = parser.skip_token (RIGHT_PAREN);
+      break;
+    case AST::DelimType::SQUARE:
+      did_delimit = parser.skip_token (RIGHT_SQUARE);
+      break;
+    case AST::DelimType::CURLY:
+      did_delimit = parser.skip_token (RIGHT_CURLY);
+      break;
+    }
+
+  bool reached_end_of_stream = did_delimit && parser.skip_token (END_OF_FILE);
+  if (!reached_end_of_stream)
+    {
+      const_TokenPtr current_token = parser.peek_current_token ();
+      rust_error_at (current_token->get_locus (),
+		     "tokens here and after are unparsed");
+    }
+
+  return AST::ASTFragment (std::move (nodes));
+}
+
+std::vector<std::unique_ptr<AST::Token>>
+MacroExpander::substitute_tokens (
+  std::vector<std::unique_ptr<AST::Token>> &input,
+  std::vector<std::unique_ptr<AST::Token>> &macro,
+  std::map<std::string, MatchedFragment> &fragments)
+{
+  std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
+
+  for (size_t i = 0; i < macro.size (); i++)
+    {
+      auto &tok = macro.at (i);
+      if (tok->get_id () == DOLLAR_SIGN)
+	{
+	  std::vector<std::unique_ptr<AST::Token>> parsed_toks;
+
+	  std::string ident;
+	  for (size_t offs = i; i < macro.size (); offs++)
+	    {
+	      auto &tok = macro.at (offs);
+	      if (tok->get_id () == DOLLAR_SIGN && offs == i)
+		{
+		  parsed_toks.push_back (tok->clone_token ());
+		}
+	      else if (tok->get_id () == IDENTIFIER)
+		{
+		  rust_assert (tok->as_string ().size () == 1);
+		  ident.push_back (tok->as_string ().at (0));
+		  parsed_toks.push_back (tok->clone_token ());
+		}
+	      else
+		{
+		  break;
+		}
+	    }
+
+	  // lookup the ident
+	  auto it = fragments.find (ident);
+	  if (it == fragments.end ())
+	    {
+	      // just leave the tokens in
+	      for (auto &tok : parsed_toks)
+		{
+		  replaced_tokens.push_back (tok->clone_token ());
+		}
+	    }
+	  else
+	    {
+	      // replace
+	      MatchedFragment &frag = it->second;
+	      for (size_t offs = frag.token_offset_begin;
+		   offs < frag.token_offset_end; offs++)
+		{
+		  auto &tok = input.at (offs);
+		  replaced_tokens.push_back (tok->clone_token ());
+		}
+	    }
+	  i += parsed_toks.size () - 1;
+	}
+      else
+	{
+	  replaced_tokens.push_back (tok->clone_token ());
+	}
+    }
+
+  return replaced_tokens;
+}
+
 } // namespace Rust

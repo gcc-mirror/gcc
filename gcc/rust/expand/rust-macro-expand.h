@@ -19,8 +19,13 @@
 #ifndef RUST_MACRO_EXPAND_H
 #define RUST_MACRO_EXPAND_H
 
+#include "rust-buffered-queue.h"
+#include "rust-parse.h"
+#include "rust-token.h"
 #include "rust-ast.h"
 #include "rust-macro.h"
+#include "rust-hir-map.h"
+#include "rust-name-resolver.h"
 
 // Provides objects and method prototypes for macro expansion
 
@@ -43,6 +48,85 @@ struct ExpansionCfg
   std::string crate_name = "";
 };
 
+class MacroInvocLexer
+{
+public:
+  MacroInvocLexer (std::vector<std::unique_ptr<AST::Token>> stream)
+    : offs (0), token_stream (std::move (stream))
+  {}
+
+  // Returns token n tokens ahead of current position.
+  const_TokenPtr peek_token (int n)
+  {
+    if ((offs + n) >= token_stream.size ())
+      return Token::make (END_OF_FILE, Location ());
+
+    return token_stream.at (offs + n)->get_tok_ptr ();
+  }
+  // Peeks the current token.
+  const_TokenPtr peek_token () { return peek_token (0); }
+
+  // Advances current token to n + 1 tokens ahead of current position.
+  void skip_token (int n) { offs += (n + 1); }
+
+  // Skips the current token.
+  void skip_token () { skip_token (0); }
+
+  // Splits the current token into two. Intended for use with nested generics
+  // closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
+  // this will only work with "simple" tokens like punctuation.
+  void split_current_token (TokenId /*new_left*/, TokenId /*new_right*/)
+  {
+    // FIXME
+    gcc_unreachable ();
+  }
+
+  std::string get_filename () const
+  {
+    gcc_unreachable ();
+    return "FIXME";
+  }
+
+  size_t get_offs () const { return offs; }
+
+private:
+  size_t offs;
+  std::vector<std::unique_ptr<AST::Token>> token_stream;
+};
+
+struct MatchedFragment
+{
+  std::string fragment_ident;
+  size_t token_offset_begin;
+  size_t token_offset_end;
+
+  std::string as_string () const
+  {
+    return fragment_ident + "=" + std::to_string (token_offset_begin) + ":"
+	   + std::to_string (token_offset_end);
+  }
+};
+
+class SubstitutionScope
+{
+public:
+  SubstitutionScope () : stack () {}
+
+  void push () { stack.push_back ({}); }
+
+  std::map<std::string, MatchedFragment> pop ()
+  {
+    auto top = stack.back ();
+    stack.pop_back ();
+    return top;
+  }
+
+  std::map<std::string, MatchedFragment> &peek () { return stack.back (); }
+
+private:
+  std::vector<std::map<std::string, MatchedFragment>> stack;
+};
+
 // Object used to store shared data (between functions) for macro expansion.
 struct MacroExpander
 {
@@ -50,7 +134,9 @@ struct MacroExpander
   unsigned int expansion_depth = 0;
 
   MacroExpander (AST::Crate &crate, ExpansionCfg cfg, Session &session)
-    : cfg (cfg), crate (crate), session (session)
+    : cfg (cfg), crate (crate), session (session),
+      sub_stack (SubstitutionScope ()), resolver (Resolver::Resolver::get ()),
+      mappings (Analysis::Mappings::get ())
   {}
 
   ~MacroExpander () = default;
@@ -61,10 +147,11 @@ struct MacroExpander
   /* Expands a macro invocation (not macro invocation semi) - possibly make both
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
-  void expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc);
+  void expand_invoc (AST::MacroInvocation &invoc);
 
   // Expands a single declarative macro.
-  AST::ASTFragment expand_decl_macro (AST::MacroInvocData &invoc,
+  AST::ASTFragment expand_decl_macro (Location locus,
+				      AST::MacroInvocData &invoc,
 				      AST::MacroRulesDefinition &rules_def);
 
   void expand_cfg_attrs (AST::AttrVec &attrs);
@@ -76,10 +163,42 @@ struct MacroExpander
   // Get the literal representation of a cfg! macro.
   AST::Literal expand_cfg_macro (AST::MacroInvocData &invoc);
 
+  bool depth_exceeds_recursion_limit () const;
+
+  bool try_match_rule (AST::MacroRule &match_rule,
+		       AST::DelimTokenTree &invoc_token_tree);
+
+  AST::ASTFragment
+  transcribe_rule (AST::MacroRule &match_rule,
+		   AST::DelimTokenTree &invoc_token_tree,
+		   std::map<std::string, MatchedFragment> &matched_fragments);
+
+  bool match_fragment (Parser<MacroInvocLexer> &parser,
+		       AST::MacroMatchFragment &fragment);
+
+  bool match_token (Parser<MacroInvocLexer> &parser, AST::Token &token);
+
+  bool match_repetition (Parser<MacroInvocLexer> &parser,
+			 AST::MacroMatchRepetition &rep);
+
+  bool match_matcher (Parser<MacroInvocLexer> &parser,
+		      AST::MacroMatcher &matcher);
+
+  static std::vector<std::unique_ptr<AST::Token>>
+  substitute_tokens (std::vector<std::unique_ptr<AST::Token>> &input,
+		     std::vector<std::unique_ptr<AST::Token>> &macro,
+		     std::map<std::string, MatchedFragment> &fragments);
+
 private:
   AST::Crate &crate;
   Session &session;
+  SubstitutionScope sub_stack;
+
+public:
+  Resolver::Resolver *resolver;
+  Analysis::Mappings *mappings;
 };
+
 } // namespace Rust
 
 #endif

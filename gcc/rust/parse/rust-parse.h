@@ -86,6 +86,29 @@ struct ParseRestrictions
 // TODO: if updated to C++20, ManagedTokenSource would be useful as a concept
 template <typename ManagedTokenSource> class Parser
 {
+public:
+  bool skip_token (TokenId t);
+
+  std::unique_ptr<AST::Expr>
+  parse_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+	      ParseRestrictions restrictions = ParseRestrictions ());
+
+  std::unique_ptr<AST::LiteralExpr> parse_literal_expr (AST::AttrVec outer_attrs
+							= AST::AttrVec ());
+
+  std::unique_ptr<AST::BlockExpr>
+  parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+		    Location pratt_parsed_loc = Linemap::unknown_location ());
+
+  std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
+  std::unique_ptr<AST::Pattern> parse_pattern ();
+  std::unique_ptr<AST::Stmt> parse_stmt ();
+  std::unique_ptr<AST::Type> parse_type ();
+  AST::PathInExpression parse_path_in_expression ();
+  std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
+  AST::Visibility parse_visibility ();
+  std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
+
 private:
   void skip_after_semicolon ();
   void skip_after_end ();
@@ -93,7 +116,6 @@ private:
   void skip_after_next_block ();
   void skip_after_end_attribute ();
 
-  bool skip_token (TokenId t);
   const_TokenPtr expect_token (TokenId t);
   void unexpected_token (const_TokenPtr t);
   bool skip_generics_right_angle ();
@@ -118,7 +140,6 @@ private:
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
   AST::TypePathFunction parse_type_path_function ();
-  AST::PathInExpression parse_path_in_expression ();
   AST::PathExprSegment parse_path_expr_segment ();
   AST::QualifiedPathInExpression
   // When given a pratt_parsed_loc, use it as the location of the
@@ -147,10 +168,8 @@ private:
   std::unique_ptr<AST::MacroMatchRepetition> parse_macro_match_repetition ();
 
   // Top-level item-related
-  std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
   std::unique_ptr<AST::VisItem> parse_vis_item (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroItem> parse_macro_item (AST::AttrVec outer_attrs);
-  AST::Visibility parse_visibility ();
 
   // VisItem subclass-related
   std::unique_ptr<AST::Module> parse_module (AST::Visibility vis,
@@ -169,7 +188,7 @@ private:
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::GenericParam> >
   parse_generic_params (EndTokenPred is_end_token);
-  std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
+
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::LifetimeParam> >
   parse_lifetime_params (EndTokenPred is_end_token);
@@ -259,9 +278,6 @@ private:
   AST::Method parse_method ();
 
   // Expression-related (Pratt parsed)
-  std::unique_ptr<AST::Expr>
-  parse_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-	      ParseRestrictions restrictions = ParseRestrictions ());
   std::unique_ptr<AST::Expr>
   parse_expr (int right_binding_power,
 	      AST::AttrVec outer_attrs = AST::AttrVec (),
@@ -478,9 +494,6 @@ private:
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).
-  std::unique_ptr<AST::BlockExpr>
-  parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    Location pratt_parsed_loc = Linemap::unknown_location ());
   std::unique_ptr<AST::IfExpr>
   parse_if_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		 Location pratt_parsed_loc = Linemap::unknown_location ());
@@ -518,8 +531,7 @@ private:
   std::unique_ptr<AST::ClosureExpr> parse_closure_expr (AST::AttrVec outer_attrs
 							= AST::AttrVec ());
   AST::ClosureParam parse_closure_param ();
-  std::unique_ptr<AST::LiteralExpr> parse_literal_expr (AST::AttrVec outer_attrs
-							= AST::AttrVec ());
+
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).
@@ -548,7 +560,6 @@ private:
   bool will_be_expr_with_block ();
 
   // Type-related
-  std::unique_ptr<AST::Type> parse_type ();
   std::unique_ptr<AST::TypeNoBounds> parse_type_no_bounds ();
   std::unique_ptr<AST::TypeNoBounds> parse_slice_or_array_type ();
   std::unique_ptr<AST::RawPointerType> parse_raw_pointer_type ();
@@ -561,7 +572,6 @@ private:
   AST::MaybeNamedParam parse_maybe_named_param (AST::AttrVec outer_attrs);
 
   // Statement-related
-  std::unique_ptr<AST::Stmt> parse_stmt ();
   std::unique_ptr<AST::LetStmt> parse_let_stmt (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::ExprStmtWithBlock>
@@ -574,13 +584,11 @@ private:
   ExprOrStmt parse_path_based_stmt_or_expr (AST::AttrVec outer_attrs);
 
   // Pattern-related
-  std::unique_ptr<AST::Pattern> parse_pattern ();
   std::unique_ptr<AST::Pattern> parse_literal_or_range_pattern ();
   std::unique_ptr<AST::RangePatternBound> parse_range_pattern_bound ();
   std::unique_ptr<AST::ReferencePattern> parse_reference_pattern ();
   std::unique_ptr<AST::Pattern> parse_grouped_or_tuple_pattern ();
   std::unique_ptr<AST::SlicePattern> parse_slice_pattern ();
-  std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::Pattern> parse_ident_leading_pattern ();
   std::unique_ptr<AST::TupleStructItems> parse_tuple_struct_items ();
   AST::StructPatternElements parse_struct_pattern_elems ();
@@ -616,6 +624,10 @@ public:
 
   // Get a reference to the list of errors encountered
   std::vector<Error> &get_errors () { return error_table; }
+
+  const ManagedTokenSource &get_token_source () const { return lexer; }
+
+  const_TokenPtr peek_current_token () { return lexer.peek_token (0); }
 
 private:
   // The token source (usually lexer) associated with the parser.
