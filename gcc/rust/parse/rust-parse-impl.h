@@ -1678,23 +1678,25 @@ template <typename ManagedTokenSource>
 AST::MacroRule
 Parser<ManagedTokenSource>::parse_macro_rule ()
 {
+  Location locus = lexer.peek_token ()->get_locus ();
+
   // parse macro matcher
   AST::MacroMatcher matcher = parse_macro_matcher ();
 
   if (matcher.is_error ())
-    return AST::MacroRule::create_error ();
+    return AST::MacroRule::create_error (locus);
 
   if (!skip_token (MATCH_ARROW))
     {
       // skip after somewhere?
-      return AST::MacroRule::create_error ();
+      return AST::MacroRule::create_error (locus);
     }
 
   // parse transcriber (this is just a delim token tree)
   Location token_tree_loc = lexer.peek_token ()->get_locus ();
   AST::MacroTranscriber transcriber (parse_delim_token_tree (), token_tree_loc);
 
-  return AST::MacroRule (std::move (matcher), std::move (transcriber));
+  return AST::MacroRule (std::move (matcher), std::move (transcriber), locus);
 }
 
 // Parses a macro matcher (part of a macro rule definition).
