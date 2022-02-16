@@ -274,10 +274,12 @@ public:
   void push_new_name_rib (Rib *r);
   void push_new_type_rib (Rib *r);
   void push_new_label_rib (Rib *r);
+  void push_new_macro_rib (Rib *r);
 
   bool find_name_rib (NodeId id, Rib **rib);
   bool find_type_rib (NodeId id, Rib **rib);
   bool find_label_rib (NodeId id, Rib **rib);
+  bool find_macro_rib (NodeId id, Rib **rib);
 
   void insert_new_definition (NodeId id, Definition def);
   bool lookup_definition (NodeId id, Definition *def);
@@ -291,10 +293,14 @@ public:
   void insert_resolved_label (NodeId refId, NodeId defId);
   bool lookup_resolved_label (NodeId refId, NodeId *defId);
 
+  void insert_resolved_macro (NodeId refId, NodeId defId);
+  bool lookup_resolved_macro (NodeId refId, NodeId *defId);
+
   // proxy for scoping
   Scope &get_name_scope () { return name_scope; }
   Scope &get_type_scope () { return type_scope; }
   Scope &get_label_scope () { return label_scope; }
+  Scope &get_macro_scope () { return macro_scope; }
 
   NodeId get_global_type_node_id () { return global_type_node_id; }
 
@@ -371,6 +377,7 @@ private:
   Scope name_scope;
   Scope type_scope;
   Scope label_scope;
+  Scope macro_scope;
 
   NodeId global_type_node_id;
   NodeId unit_ty_node_id;
@@ -379,6 +386,7 @@ private:
   std::map<NodeId, Rib *> name_ribs;
   std::map<NodeId, Rib *> type_ribs;
   std::map<NodeId, Rib *> label_ribs;
+  std::map<NodeId, Rib *> macro_ribs;
 
   // map any Node to its Definition
   // ie any name or type usage
@@ -395,6 +403,7 @@ private:
   std::map<NodeId, NodeId> resolved_names;
   std::map<NodeId, NodeId> resolved_types;
   std::map<NodeId, NodeId> resolved_labels;
+  std::map<NodeId, NodeId> resolved_macros;
 
   // map of resolved names mutability flag
   std::map<NodeId, bool> decl_mutability;
