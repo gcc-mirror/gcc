@@ -559,6 +559,10 @@ public:
     return true;
   }
 
+  void insert_macro_def (AST::MacroRulesDefinition *macro);
+
+  bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
+
 private:
   Mappings ();
 
@@ -611,6 +615,9 @@ private:
 
   // all hirid nodes
   std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
+
+  // macros
+  std::map<NodeId, AST::MacroRulesDefinition *> macroMappings;
 
   // crate names
   std::map<CrateNum, std::string> crate_names;
