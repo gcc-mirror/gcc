@@ -1468,6 +1468,38 @@ omp_oacc_kernels_decompose_1 (gimple *kernels_stmt)
 		  /* Now that this data is mapped, turn the data clause on the
 		     inner OpenACC 'kernels' into a 'present' clause.  */
 		  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FORCE_PRESENT);
+
+		  /* See <https://gcc.gnu.org/PR100280>,
+		     <https://gcc.gnu.org/PR104086>.  */
+		  if (DECL_P (decl)
+		      && !TREE_ADDRESSABLE (decl))
+		    {
+		      /* Request that OMP lowering make 'decl' addressable.  */
+		      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (new_clause) = 1;
+
+		      if (dump_enabled_p ())
+			{
+			  location_t loc = OMP_CLAUSE_LOCATION (new_clause);
+			  const dump_user_location_t d_u_loc
+			    = dump_user_location_t::from_location_t (loc);
+			  /* PR100695 "Format decoder, quoting in 'dump_printf'
+			     etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc
+			    (MSG_NOTE, d_u_loc,
+			     "OpenACC %<kernels%> decomposition:"
+			     " variable %<%T%> in %qs clause"
+			     " requested to be made addressable\n",
+			     decl,
+			     user_omp_clause_code_name (new_clause, true));
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+			}
+		    }
 		}
 	      break;
 

@@ -24,7 +24,9 @@
 static int g1;
 static int g2;
 
-int main()
+/* PR100280, etc. */
+
+static void f1 ()
 {
   int a = 0;
   /*TODO Without making 'a' addressable, for GCN offloading we will not see the expected value copied out.  (But it does work for nvptx offloading, strange...)  */
@@ -152,6 +154,68 @@ int main()
   assert (g1 == N / 2 - 1);
   assert (g2 == N * (N + 1) / 2);
   assert (f1 == 2432902008176640000ULL);
+
+#undef N
+}
+
+
+/* PR104086 */
+
+static void f2 ()
+{
+#pragma acc data
+  /* { dg-bogus {note: variable [^\n\r]+ candidate for adjusting OpenACC privatization level} {TODO 'data'} { xfail *-*-* } .-1 } */
+  {
+    int i;
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    i = 1;
+
+    assert (i == 1);
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+    /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+       { dg-note {variable 'i' already made addressable} {} { target *-*-* } l_compute$c_compute } */
+    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    i = -1;
+
+    assert (i == -1);
+  }
+
+
+  int ia[1];
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'ia' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'ia' made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  ia[0] = -2;
+
+  assert (ia[0] == -2);
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'ia' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'ia' already made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {OpenACC 'kernels' decomposition: variable 'i' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute }
+     { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  for (int i = 0; i < 100; ++i)
+    ++ia[0];
+
+  assert (ia[0] == -2 + 100);
+}
+
+
+int main()
+{
+  f1 ();
+
+  f2 ();
 
   return 0;
 }
