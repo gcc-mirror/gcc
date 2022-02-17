@@ -541,11 +541,13 @@ private:
   // FIXME: think of better way to mark as invalid than taking up storage
   bool is_invalid;
 
-  // TODO: should this have location info?
+  Location locus;
 
 protected:
   // Constructor only used to create invalid type path functions.
-  TypePathFunction (bool is_invalid) : is_invalid (is_invalid) {}
+  TypePathFunction (bool is_invalid, Location locus)
+    : is_invalid (is_invalid), locus (locus)
+  {}
 
 public:
   // Returns whether the return type of the function has been specified.
@@ -558,13 +560,16 @@ public:
   bool is_error () const { return is_invalid; }
 
   // Creates an error state function.
-  static TypePathFunction create_error () { return TypePathFunction (true); }
+  static TypePathFunction create_error ()
+  {
+    return TypePathFunction (true, Location ());
+  }
 
   // Constructor
-  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
+  TypePathFunction (std::vector<std::unique_ptr<Type> > inputs, Location locus,
 		    std::unique_ptr<Type> type = nullptr)
     : inputs (std::move (inputs)), return_type (std::move (type)),
-      is_invalid (false)
+      is_invalid (false), locus (locus)
   {}
 
   // Copy constructor with clone

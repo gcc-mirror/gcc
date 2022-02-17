@@ -6436,7 +6436,8 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
       }
       case LEFT_PAREN: {
 	// parse type path function
-	AST::TypePathFunction type_path_function = parse_type_path_function ();
+	AST::TypePathFunction type_path_function
+	  = parse_type_path_function (locus);
 
 	if (type_path_function.is_error ())
 	  {
@@ -6462,7 +6463,7 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
 // Parses a function call representation inside a type path.
 template <typename ManagedTokenSource>
 AST::TypePathFunction
-Parser<ManagedTokenSource>::parse_type_path_function ()
+Parser<ManagedTokenSource>::parse_type_path_function (Location id_location)
 {
   if (!skip_token (LEFT_PAREN))
     {
@@ -6508,7 +6509,8 @@ Parser<ManagedTokenSource>::parse_type_path_function ()
   std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
 
   inputs.shrink_to_fit ();
-  return AST::TypePathFunction (std::move (inputs), std::move (return_type));
+  return AST::TypePathFunction (std::move (inputs), id_location,
+				std::move (return_type));
 }
 
 // Parses a path inside an expression that allows generic arguments.

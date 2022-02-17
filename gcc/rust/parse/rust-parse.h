@@ -139,7 +139,7 @@ private:
   AST::PathIdentSegment parse_path_ident_segment ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
-  AST::TypePathFunction parse_type_path_function ();
+  AST::TypePathFunction parse_type_path_function (Location locus);
   AST::PathExprSegment parse_path_expr_segment ();
   AST::QualifiedPathInExpression
   // When given a pratt_parsed_loc, use it as the location of the
