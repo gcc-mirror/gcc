@@ -8739,7 +8739,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 
       std::vector<std::unique_ptr<AST::Expr>> exprs;
       auto array_elems
-	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs));
+	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs), locus);
       return Rust::make_unique<AST::ArrayExpr> (std::move (array_elems),
 						std::move (inner_attrs),
 						std::move (outer_attrs), locus);
@@ -8799,7 +8799,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 	  skip_token (RIGHT_SQUARE);
 
 	  std::unique_ptr<AST::ArrayElemsValues> array_elems (
-	    new AST::ArrayElemsValues (std::move (exprs)));
+	    new AST::ArrayElemsValues (std::move (exprs), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (array_elems),
 				std::move (inner_attrs),
@@ -8841,7 +8841,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 	  exprs.shrink_to_fit ();
 
 	  std::unique_ptr<AST::ArrayElemsValues> array_elems (
-	    new AST::ArrayElemsValues (std::move (exprs)));
+	    new AST::ArrayElemsValues (std::move (exprs), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (array_elems),
 				std::move (inner_attrs),

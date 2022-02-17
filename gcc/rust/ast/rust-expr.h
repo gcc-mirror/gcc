@@ -953,12 +953,11 @@ protected:
 class ArrayElemsValues : public ArrayElems
 {
   std::vector<std::unique_ptr<Expr> > values;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
-  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems)
-    : ArrayElems (), values (std::move (elems))
+  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems, Location locus)
+    : ArrayElems (), values (std::move (elems)), locus (locus)
   {}
 
   // copy constructor with vector clone
