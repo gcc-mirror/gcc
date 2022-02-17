@@ -5195,7 +5195,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "expected single pointer in %qs clause",
-		    c_omp_map_clause_name (c, ort == C_ORT_ACC));
+		    user_omp_clause_code_name (c, ort == C_ORT_ACC));
 	  return error_mark_node;
 	}
     }
@@ -6653,7 +6653,7 @@ cp_oacc_check_attachments (tree c)
       if (TREE_CODE (type) != POINTER_TYPE)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c), "expected pointer in %qs clause",
-		    c_omp_map_clause_name (c, true));
+		    user_omp_clause_code_name (c, true));
 	  return true;
 	}
     }

@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "escaped_string.h"
 #include "gimple-range.h"
+#include "gomp-constants.h"
 
 /* Tree code classes.  */
 
@@ -438,6 +439,41 @@ const char * const omp_clause_code_name[] =
   "finalize",
   "nohost",
 };
+
+/* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric
+   clause names, but for use in diagnostics etc. would like to use the "user"
+   clause names.  */
+
+const char *
+user_omp_clause_code_name (tree clause, bool oacc)
+{
+  /* For OpenACC, the 'OMP_CLAUSE_MAP_KIND' of an 'OMP_CLAUSE_MAP' is used to
+     distinguish clauses as seen by the user.  See also where front ends do
+     'build_omp_clause' with 'OMP_CLAUSE_MAP'.  */
+  if (oacc && OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP)
+    switch (OMP_CLAUSE_MAP_KIND (clause))
+      {
+      case GOMP_MAP_FORCE_ALLOC:
+      case GOMP_MAP_ALLOC: return "create";
+      case GOMP_MAP_FORCE_TO:
+      case GOMP_MAP_TO: return "copyin";
+      case GOMP_MAP_FORCE_FROM:
+      case GOMP_MAP_FROM: return "copyout";
+      case GOMP_MAP_FORCE_TOFROM:
+      case GOMP_MAP_TOFROM: return "copy";
+      case GOMP_MAP_RELEASE: return "delete";
+      case GOMP_MAP_FORCE_PRESENT: return "present";
+      case GOMP_MAP_ATTACH: return "attach";
+      case GOMP_MAP_FORCE_DETACH:
+      case GOMP_MAP_DETACH: return "detach";
+      case GOMP_MAP_DEVICE_RESIDENT: return "device_resident";
+      case GOMP_MAP_LINK: return "link";
+      case GOMP_MAP_FORCE_DEVICEPTR: return "deviceptr";
+      default: break;
+      }
+
+  return omp_clause_code_name[OMP_CLAUSE_CODE (clause)];
+}
 
 
 /* Return the tree node structure used by tree code CODE.  */
