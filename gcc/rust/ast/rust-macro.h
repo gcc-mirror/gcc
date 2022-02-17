@@ -20,6 +20,7 @@
 #define RUST_AST_MACRO_H
 
 #include "rust-ast.h"
+#include "rust-location.h"
 
 namespace Rust {
 namespace AST {
@@ -295,25 +296,27 @@ struct MacroRule
 private:
   MacroMatcher matcher;
   MacroTranscriber transcriber;
-
-  // TODO: should store location information?
+  Location locus;
 
 public:
-  MacroRule (MacroMatcher matcher, MacroTranscriber transcriber)
-    : matcher (std::move (matcher)), transcriber (std::move (transcriber))
+  MacroRule (MacroMatcher matcher, MacroTranscriber transcriber, Location locus)
+    : matcher (std::move (matcher)), transcriber (std::move (transcriber)),
+      locus (locus)
   {}
 
   // Returns whether macro rule is in error state.
   bool is_error () const { return matcher.is_error (); }
 
   // Creates an error state macro rule.
-  static MacroRule create_error ()
+  static MacroRule create_error (Location locus)
   {
-    // FIXME: Once #928 is merged, give location to MacroMatcher
-    return MacroRule (MacroMatcher::create_error (Location ()),
+    return MacroRule (MacroMatcher::create_error (locus),
 		      MacroTranscriber (DelimTokenTree::create_empty (),
-					Location ()));
+					Location ()),
+		      locus);
   }
+
+  Location get_locus () const { return locus; }
 
   std::string as_string () const;
 };
