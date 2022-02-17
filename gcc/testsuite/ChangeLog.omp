@@ -1,5 +1,17 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* c-c++-common/gomp/declare-mapper-4.c: Enable for C.
+	* c-c++-common/gomp/declare-mapper-5.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-6.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-7.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-8.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-9.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-12.c: Enable for C.
+	* gcc.dg/gomp/declare-mapper-10.c: New test.
+	* gcc.dg/gomp/declare-mapper-11.c: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* gcc.dg/gomp/bad-array-section-c-1.c: New test.
 	* gcc.dg/gomp/bad-array-section-c-2.c: New test.
 	* gcc.dg/gomp/bad-array-section-c-3.c: New test.

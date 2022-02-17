@@ -15509,6 +15509,12 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_MAP:
 	  if (OMP_CLAUSE_MAP_IMPLICIT (c) && !implicit_moved)
 	    goto move_implicit;
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_PUSH_MAPPER_NAME
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POP_MAPPER_NAME)
+	    {
+	      remove = true;
+	      break;
+	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
@@ -16359,6 +16365,15 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
   bitmap_obstack_release (NULL);
   return clauses;
+}
+
+/* Do processing necessary to make CLAUSES well-formed, where CLAUSES result
+   from implicit instantiation of user-defined mappers (in gimplify.cc).  */
+
+tree
+c_omp_finish_mapper_clauses (tree clauses)
+{
+  return c_finish_omp_clauses (clauses, C_ORT_OMP);
 }
 
 /* Return code to initialize DST with a copy constructor from SRC.

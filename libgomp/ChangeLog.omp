@@ -1,5 +1,14 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c-c++-common/declare-mapper-9.c: Enable for C.
+	* testsuite/libgomp.c-c++-common/declare-mapper-10.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-13.c: Likewise.
+	* testsuite/libgomp.c-c++-common/declare-mapper-14.c: Likewise.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.c-c++-common/ind-base-4.c: New test.
 	* testsuite/libgomp.c-c++-common/unary-ptr-1.c: New test.
 

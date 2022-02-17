@@ -122,6 +122,18 @@ along with GCC; see the file COPYING3.  If not see
 #undef LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP
 #define LANG_HOOKS_OMP_CLAUSE_ASSIGN_OP c_omp_clause_copy_ctor
 
+#undef LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES
+#define LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES c_omp_finish_mapper_clauses
+
+#undef LANG_HOOKS_OMP_MAPPER_LOOKUP
+#define LANG_HOOKS_OMP_MAPPER_LOOKUP c_omp_mapper_lookup
+
+#undef LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE
+#define LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE c_omp_extract_mapper_directive
+
+#undef LANG_HOOKS_OMP_MAP_ARRAY_SECTION
+#define LANG_HOOKS_OMP_MAP_ARRAY_SECTION c_omp_map_array_section
+
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P c_var_mod_p
 #endif /* GCC_C_OBJC_COMMON */

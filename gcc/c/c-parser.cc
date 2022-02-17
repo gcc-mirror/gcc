@@ -17640,10 +17640,9 @@ c_parser_omp_clause_doacross (c_parser *parser, tree list)
      always | close */
 
 static tree
-c_parser_omp_clause_map (c_parser *parser, tree list)
+c_parser_omp_clause_map (c_parser *parser, tree list, enum gomp_map_kind kind)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
-  enum gomp_map_kind kind = GOMP_MAP_TOFROM;
   tree nl, c;
 
   matching_parens parens;
@@ -17662,12 +17661,26 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 
       if (c_parser_peek_nth_token_raw (parser, pos + 1)->type == CPP_COMMA)
 	pos++;
+      else if (c_parser_peek_nth_token_raw (parser, pos + 1)->type
+	       == CPP_OPEN_PAREN)
+	{
+	  unsigned int npos = pos + 2;
+	  if (c_parser_check_balanced_raw_token_sequence (parser, &npos)
+	      && (c_parser_peek_nth_token_raw (parser, npos)->type
+		  == CPP_CLOSE_PAREN)
+	      && (c_parser_peek_nth_token_raw (parser, npos + 1)->type
+		  == CPP_COMMA))
+	    pos = npos + 1;
+	}
+
       pos++;
     }
 
   int always_modifier = 0;
   int close_modifier = 0;
   int present_modifier = 0;
+  int mapper_modifier = 0;
+  tree mapper_name = NULL_TREE;
   for (int pos = 1; pos < map_kind_pos; ++pos)
     {
       c_token *tok = c_parser_peek_token (parser);
@@ -17688,6 +17701,7 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	      return list;
 	    }
 	  always_modifier++;
+	  c_parser_consume_token (parser);
 	}
       else if (strcmp ("close", p) == 0)
 	{
@@ -17698,6 +17712,60 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	      return list;
 	    }
 	  close_modifier++;
+	  c_parser_consume_token (parser);
+	}
+      else if (strcmp ("mapper", p) == 0)
+	{
+	  c_parser_consume_token (parser);
+
+	  matching_parens mparens;
+	  if (mparens.require_open (parser))
+	    {
+	      if (mapper_modifier)
+		{
+		  c_parser_error (parser, "too many %<mapper%> modifiers");
+		  /* Assume it's a well-formed mapper modifier, even if it
+		     seems to be in the wrong place.  */
+		  c_parser_consume_token (parser);
+		  mparens.require_close (parser);
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+
+	      tok = c_parser_peek_token (parser);
+
+	      switch (tok->type)
+		{
+		case CPP_NAME:
+		  {
+		    mapper_name = tok->value;
+		    c_parser_consume_token (parser);
+		  }
+		  break;
+
+		case CPP_KEYWORD:
+		  if (tok->keyword == RID_DEFAULT)
+		    {
+		      c_parser_consume_token (parser);
+		      break;
+		    }
+		  /* Fallthrough.  */
+
+		default:
+		  error_at (tok->location,
+			    "expected identifier or %<default%>");
+		  return list;
+		}
+
+	      if (!mparens.require_close (parser))
+		{
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+
+	      mapper_modifier++;
+	      pos += 3;
+	    }
 	}
       else if (strcmp ("present", p) == 0)
 	{
@@ -17708,16 +17776,16 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	      return list;
 	    }
 	  present_modifier++;
+	  c_parser_consume_token (parser);
 	}
       else
 	{
 	  c_parser_error (parser, "%<map%> clause with map-type modifier other "
-				  "than %<always%>, %<close%> or %<present%>");
+				  "than %<always%>, %<close%>, %<mapper%> or "
+				  "%<present%>");
 	  parens.skip_until_found_close (parser);
 	  return list;
 	}
-
-	c_parser_consume_token (parser);
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME)
@@ -17761,8 +17829,30 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
   nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list,
 				   C_ORT_OMP, true);
 
+  tree last_new = NULL_TREE;
+
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
-    OMP_CLAUSE_SET_MAP_KIND (c, kind);
+    {
+      OMP_CLAUSE_SET_MAP_KIND (c, kind);
+      last_new = c;
+    }
+
+  if (mapper_name)
+    {
+      tree name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_PUSH_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = mapper_name;
+      OMP_CLAUSE_CHAIN (name) = nl;
+      nl = name;
+
+      gcc_assert (last_new);
+
+      name = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (name, GOMP_MAP_POP_MAPPER_NAME);
+      OMP_CLAUSE_DECL (name) = null_pointer_node;
+      OMP_CLAUSE_CHAIN (name) = OMP_CLAUSE_CHAIN (last_new);
+      OMP_CLAUSE_CHAIN (last_new) = name;
+    }
 
   parens.skip_until_found_close (parser);
   return nl;
@@ -18654,7 +18744,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "doacross";
 	  break;
 	case PRAGMA_OMP_CLAUSE_MAP:
-	  clauses = c_parser_omp_clause_map (parser, clauses);
+	  clauses = c_parser_omp_clause_map (parser, clauses, GOMP_MAP_TOFROM);
 	  c_name = "map";
 	  break;
 	case PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR:
@@ -22948,7 +23038,7 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   c_parser_consume_pragma (parser);
-  tree *pc = NULL, stmt, block;
+  tree *pc = NULL, stmt, block, body, clauses;
 
   if (context != pragma_stmt && context != pragma_compound)
     {
@@ -23103,10 +23193,9 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
   stmt = make_node (OMP_TARGET);
   TREE_TYPE (stmt) = void_type_node;
 
-  OMP_TARGET_CLAUSES (stmt)
-    = c_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
-				"#pragma omp target", false);
-  for (tree c = OMP_TARGET_CLAUSES (stmt); c; c = OMP_CLAUSE_CHAIN (c))
+  clauses = c_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
+				      "#pragma omp target", false);
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION)
       {
 	tree nc = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
@@ -23115,14 +23204,19 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 	OMP_CLAUSE_CHAIN (nc) = OMP_CLAUSE_CHAIN (c);
 	OMP_CLAUSE_CHAIN (c) = nc;
       }
-  OMP_TARGET_CLAUSES (stmt)
-    = c_finish_omp_clauses (OMP_TARGET_CLAUSES (stmt), C_ORT_OMP_TARGET);
-  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
+  clauses = c_omp_instantiate_mappers (clauses);
+  clauses  = c_finish_omp_clauses (clauses, C_ORT_OMP_TARGET);
+  c_omp_adjust_map_clauses (clauses, true);
 
-  pc = &OMP_TARGET_CLAUSES (stmt);
   keep_next_level ();
   block = c_begin_compound_stmt (true);
-  add_stmt (c_parser_omp_structured_block (parser, if_p));
+  body = c_parser_omp_structured_block (parser, if_p);
+
+  c_omp_scan_mapper_bindings (loc, &clauses, body);
+
+  add_stmt (body);
+  OMP_TARGET_CLAUSES (stmt) = clauses;
+  pc = &OMP_TARGET_CLAUSES (stmt);
   OMP_TARGET_BODY (stmt) = c_end_compound_stmt (loc, block, true);
 
   SET_EXPR_LOCATION (stmt, loc);
@@ -24464,6 +24558,151 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
 }
 
 
+/* OpenMP 5.0
+   #pragma omp declare mapper ([mapper-identifier :] type var) \
+			      [clause [ [,] clause ] ... ] new-line  */
+
+static void
+c_parser_omp_declare_mapper (c_parser *parser, enum pragma_context context)
+{
+  tree type, mapper_name = NULL_TREE, var = NULL_TREE, stmt, stmtlist;
+  tree maplist = NULL_TREE, mapper_id, mapper_decl, t;
+  c_token *token;
+
+  if (context == pragma_struct || context == pragma_param)
+    {
+      error ("%<#pragma omp declare reduction%> not at file or block scope");
+      goto fail;
+    }
+
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    goto fail;
+
+  token = c_parser_peek_token (parser);
+
+  if (c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+    {
+      switch (token->type)
+	{
+	case CPP_NAME:
+	  mapper_name = token->value;
+	  c_parser_consume_token (parser);
+	  break;
+	case CPP_KEYWORD:
+	  if (token->keyword == RID_DEFAULT)
+	    {
+	      mapper_name = NULL_TREE;
+	      c_parser_consume_token (parser);
+	      break;
+	    }
+	  /* Fallthrough.  */
+	default:
+	  error_at (token->location, "expected identifier or %<default%>");
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  return;
+	}
+
+      if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	goto fail;
+    }
+
+  mapper_id = c_omp_mapper_id (mapper_name);
+  mapper_decl = c_omp_mapper_decl (mapper_id);
+
+  {
+    location_t loc = c_parser_peek_token (parser)->location;
+    struct c_type_name *ctype = c_parser_type_name (parser);
+    type = groktypename (ctype, NULL, NULL);
+    if (type == error_mark_node)
+      goto fail;
+    if (TREE_CODE (type) != RECORD_TYPE
+	&& TREE_CODE (type) != UNION_TYPE)
+      {
+	error_at (loc, "%qT is not a struct or union type in "
+		  "%<#pragma omp declare mapper%>", type);
+	c_parser_skip_to_pragma_eol (parser, false);
+	return;
+      }
+    for (tree t = DECL_INITIAL (mapper_decl); t; t = TREE_CHAIN (t))
+      if (comptypes (TREE_PURPOSE (t), type))
+	{
+	  error_at (loc, "redeclaration of %qs %<#pragma omp declare "
+		    "mapper%> for type %qT", IDENTIFIER_POINTER (mapper_id)
+		      + sizeof ("omp declare mapper ") - 1,
+		    type);
+	  tree prevmapper = TREE_VALUE (t);
+	  /* Hmm, this location might not be very accurate.  */
+	  location_t ploc
+	    = DECL_SOURCE_LOCATION (OMP_DECLARE_MAPPER_DECL (prevmapper));
+	  error_at (ploc, "previous %<#pragma omp declare mapper%>");
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  return;
+	}
+  }
+
+  token = c_parser_peek_token (parser);
+  if (token->type == CPP_NAME)
+    {
+      var = build_decl (token->location, VAR_DECL, token->value, type);
+      c_parser_consume_token (parser);
+      DECL_ARTIFICIAL (var) = 1;
+    }
+  else
+    {
+      error_at (token->location, "expected identifier");
+      goto fail;
+    }
+
+  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+    goto fail;
+
+  push_scope ();
+  stmtlist = push_stmt_list ();
+  pushdecl (var);
+  DECL_CONTEXT (var) = current_function_decl;
+
+  while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL))
+    {
+      location_t here;
+      pragma_omp_clause c_kind;
+      here = c_parser_peek_token (parser)->location;
+      c_kind = c_parser_omp_clause_name (parser);
+      if (c_kind != PRAGMA_OMP_CLAUSE_MAP)
+	{
+	  error_at (here, "unexpected clause");
+	  goto fail;
+	}
+      maplist = c_parser_omp_clause_map (parser, maplist, GOMP_MAP_UNSET);
+    }
+
+  if (maplist == NULL_TREE)
+    {
+      error_at (input_location, "missing %<map%> clause");
+      goto fail;
+    }
+
+  stmt = make_node (OMP_DECLARE_MAPPER);
+  TREE_TYPE (stmt) = type;
+  OMP_DECLARE_MAPPER_ID (stmt) = mapper_name;
+  OMP_DECLARE_MAPPER_DECL (stmt) = var;
+  OMP_DECLARE_MAPPER_CLAUSES (stmt) = maplist;
+
+  add_stmt (stmt);
+
+  pop_stmt_list (stmtlist);
+  pop_scope ();
+
+  c_parser_skip_to_pragma_eol (parser);
+
+  t = tree_cons (type, stmt, DECL_INITIAL (mapper_decl));
+  DECL_INITIAL (mapper_decl) = t;
+
+  return;
+
+ fail:
+  c_parser_skip_to_pragma_eol (parser);
+}
+
 /* OpenMP 4.0
    #pragma omp declare simd declare-simd-clauses[optseq] new-line
    #pragma omp declare reduction (reduction-id : typename-list : expression) \
@@ -24491,6 +24730,12 @@ c_parser_omp_declare (c_parser *parser, enum pragma_context context)
 	{
 	  c_parser_consume_token (parser);
 	  c_parser_omp_declare_reduction (parser, context);
+	  return false;
+	}
+      if (strcmp (p, "mapper") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  c_parser_omp_declare_mapper (parser, context);
 	  return false;
 	}
       if (!flag_openmp)  /* flag_openmp_simd  */

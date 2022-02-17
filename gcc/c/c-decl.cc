@@ -13136,6 +13136,175 @@ c_check_omp_declare_reduction_r (tree *tp, int *, void *data)
   return NULL_TREE;
 }
 
+/* Return identifier to look up for omp declare reduction.  */
+
+tree
+c_omp_mapper_id (tree mapper_id)
+{
+  const char *p = NULL;
+
+  const char prefix[] = "omp declare mapper ";
+
+  if (mapper_id == NULL_TREE)
+    p = "<default>";
+  else if (TREE_CODE (mapper_id) == IDENTIFIER_NODE)
+    p = IDENTIFIER_POINTER (mapper_id);
+  else
+    return error_mark_node;
+
+  size_t lenp = sizeof (prefix);
+  size_t len = strlen (p);
+  char *name = XALLOCAVEC (char, lenp + len);
+  memcpy (name, prefix, lenp - 1);
+  memcpy (name + lenp - 1, p, len + 1);
+  return get_identifier (name);
+}
+
+/* Lookup MAPPER_ID in the current scope, or create an artificial
+   VAR_DECL, bind it into the current scope and return it.  */
+
+tree
+c_omp_mapper_decl (tree mapper_id)
+{
+  struct c_binding *b = I_SYMBOL_BINDING (mapper_id);
+  if (b != NULL && B_IN_CURRENT_SCOPE (b))
+    return b->decl;
+
+  tree decl = build_decl (BUILTINS_LOCATION, VAR_DECL,
+			  mapper_id, integer_type_node);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  bind (mapper_id, decl, current_scope, true, false, BUILTINS_LOCATION);
+  return decl;
+}
+
+/* Lookup MAPPER_ID in the first scope where it has entry for TYPE.  */
+
+tree
+c_omp_mapper_lookup (tree mapper_id, tree type)
+{
+  if (TREE_CODE (type) != RECORD_TYPE
+      && TREE_CODE (type) != UNION_TYPE)
+    return NULL_TREE;
+
+  mapper_id = c_omp_mapper_id (mapper_id);
+
+  struct c_binding *b = I_SYMBOL_BINDING (mapper_id);
+  while (b)
+    {
+      tree t;
+      for (t = DECL_INITIAL (b->decl); t; t = TREE_CHAIN (t))
+	if (comptypes (TREE_PURPOSE (t), type))
+	  return TREE_VALUE (t);
+      b = b->shadowed;
+    }
+  return NULL_TREE;
+}
+
+/* For C, we record a pointer to the mapper itself without wrapping it in an
+   artificial function or similar.  So, just return it.  */
+
+tree
+c_omp_extract_mapper_directive (tree mapper)
+{
+  return mapper;
+}
+
+/* For now we can handle singleton OMP_ARRAY_SECTIONs with custom mappers, but
+   nothing more complicated.  */
+
+tree
+c_omp_map_array_section (location_t loc, tree t)
+{
+  tree low = TREE_OPERAND (t, 1);
+  tree len = TREE_OPERAND (t, 2);
+
+  if (len && integer_onep (len))
+    {
+      t = TREE_OPERAND (t, 0);
+
+      if (!low)
+	low = integer_zero_node;
+
+      t = build_array_ref (loc, t, low);
+    }
+
+  return t;
+}
+
+/* Helper function for below function.  */
+
+static tree
+c_omp_scan_mapper_bindings_r (tree *tp, int *walk_subtrees, void *ptr)
+{
+  tree t = *tp;
+  omp_mapper_list<tree> *mlist = (omp_mapper_list<tree> *) ptr;
+  tree aggr_type = NULL_TREE;
+
+  if (TREE_CODE (t) == SIZEOF_EXPR
+      || TREE_CODE (t) == ALIGNOF_EXPR)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == OMP_CLAUSE)
+    return NULL_TREE;
+
+  if (TREE_CODE (t) == COMPONENT_REF
+      && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (t, 0))))
+    aggr_type = TREE_TYPE (TREE_OPERAND (t, 0));
+  else if ((TREE_CODE (t) == VAR_DECL
+	    || TREE_CODE (t) == PARM_DECL
+	    || TREE_CODE (t) == RESULT_DECL)
+	   && AGGREGATE_TYPE_P (TREE_TYPE (t)))
+    aggr_type = TREE_TYPE (t);
+
+  if (aggr_type)
+    {
+      tree mapper_fn = c_omp_mapper_lookup (NULL_TREE, aggr_type);
+      if (mapper_fn)
+	mlist->add_mapper (NULL_TREE, aggr_type, mapper_fn);
+    }
+
+  return NULL_TREE;
+}
+
+/* Scan an offload region's body, and record uses of struct- or union-typed
+   variables.  Add _mapper_binding_ fake clauses to *CLAUSES_PTR.  */
+
+void
+c_omp_scan_mapper_bindings (location_t loc, tree *clauses_ptr, tree body)
+{
+  hash_set<omp_name_type<tree>> seen_types;
+  auto_vec<tree> mappers;
+  omp_mapper_list<tree> mlist (&seen_types, &mappers);
+
+  walk_tree_without_duplicates (&body, c_omp_scan_mapper_bindings_r, &mlist);
+
+  unsigned int i;
+  tree mapper;
+  FOR_EACH_VEC_ELT (mappers, i, mapper)
+    c_omp_find_nested_mappers (&mlist, mapper);
+
+  FOR_EACH_VEC_ELT (mappers, i, mapper)
+    {
+      if (mapper == error_mark_node)
+	continue;
+      tree mapper_name = OMP_DECLARE_MAPPER_ID (mapper);
+      tree decl = OMP_DECLARE_MAPPER_DECL (mapper);
+
+      tree c = build_omp_clause (loc, OMP_CLAUSE__MAPPER_BINDING_);
+      OMP_CLAUSE__MAPPER_BINDING__ID (c) = mapper_name;
+      OMP_CLAUSE__MAPPER_BINDING__DECL (c) = decl;
+      OMP_CLAUSE__MAPPER_BINDING__MAPPER (c) = mapper;
+
+      OMP_CLAUSE_CHAIN (c) = *clauses_ptr;
+      *clauses_ptr = c;
+    }
+}
 
 bool
 c_check_in_current_scope (tree decl)

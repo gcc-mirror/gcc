@@ -1,4 +1,4 @@
-/* { dg-do run { target c++ } } */
+/* { dg-do run } */
 
 #include <string.h>
 #include <stdlib.h>

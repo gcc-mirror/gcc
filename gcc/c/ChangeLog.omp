@@ -1,5 +1,30 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* c-decl.cc (c_omp_mapper_id, c_omp_mapper_decl, c_omp_mapper_lookup,
+	c_omp_extract_mapper_directive, c_omp_map_array_section,
+	c_omp_scan_mapper_bindings_r, c_omp_scan_mapper_bindings): New
+	functions.
+	* c-objc-common.h (LANG_HOOKS_OMP_FINISH_MAPPER_CLAUSES,
+	LANG_HOOKS_OMP_MAPPER_LOOKUP, LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE,
+	LANG_HOOKS_OMP_MAP_ARRAY_SECTION): Define langhooks for C.
+	* c-parser.cc (c_parser_omp_clause_map): Add KIND parameter.  Handle
+	mapper modifier.
+	(c_parser_omp_all_clauses): Update call to c_parser_omp_clause_map with
+	new kind argument.
+	(c_parser_omp_target): Instantiate explicit mappers and record bindings
+	for implicit mappers.
+	(c_parser_omp_declare_mapper): Parse "declare mapper" directives.
+	(c_parser_omp_declare): Support "declare mapper".
+	* c-tree.h (c_omp_finish_mapper_clauses, c_omp_mapper_lookup,
+	c_omp_extract_mapper_directive, c_omp_map_array_section,
+	c_omp_mapper_id, c_omp_mapper_decl, c_omp_scan_mapper_bindings,
+	c_omp_instantiate_mappers): Add prototypes.
+	* c-typeck.cc (c_finish_omp_clauses): Handle GOMP_MAP_PUSH_MAPPER_NAME
+	and GOMP_MAP_POP_MAPPER_NAME.
+	(c_omp_finish_mapper_clauses): New function (langhook).
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* c-pretty-print.cc (c_pretty_printer::postfix_expression,
 	c_pretty_printer::expression): Add OMP_ARRAY_SECTION support.
 	* c-parser.cc (c_parser_braced_init, c_parser_conditional_expression):
