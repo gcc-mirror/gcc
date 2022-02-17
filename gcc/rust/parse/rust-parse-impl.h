@@ -905,6 +905,9 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
 
   // parse actual token tree vector - 0 or more
   std::vector<std::unique_ptr<AST::TokenTree>> token_trees_in_tree;
+  auto delim_open
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
+  token_trees_in_tree.push_back (std::move (delim_open));
 
   // repeat loop until finding the matching delimiter
   t = lexer.peek_token ();
@@ -929,6 +932,9 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
       // lexer.skip_token();
       t = lexer.peek_token ();
     }
+  auto delim_close
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
+  token_trees_in_tree.push_back (std::move (delim_close));
 
   AST::DelimTokenTree token_tree (delim_type, std::move (token_trees_in_tree),
 				  initial_loc);

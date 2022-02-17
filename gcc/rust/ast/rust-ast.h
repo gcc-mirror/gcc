@@ -778,36 +778,6 @@ public:
   }
 
   DelimType get_delim_type () const { return delim_type; }
-
-  static TokenId left_delim_type_tok_token_id (DelimType delim_type)
-  {
-    switch (delim_type)
-      {
-      case PARENS:
-	return LEFT_PAREN;
-      case SQUARE:
-	return LEFT_SQUARE;
-      case CURLY:
-	return LEFT_CURLY;
-      default:
-	gcc_unreachable ();
-      }
-  }
-
-  static TokenId right_delim_type_tok_token_id (DelimType delim_type)
-  {
-    switch (delim_type)
-      {
-      case PARENS:
-	return RIGHT_PAREN;
-      case SQUARE:
-	return RIGHT_SQUARE;
-      case CURLY:
-	return RIGHT_CURLY;
-      default:
-	gcc_unreachable ();
-      }
-  }
 };
 
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
