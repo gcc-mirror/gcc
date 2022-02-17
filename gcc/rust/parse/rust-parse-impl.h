@@ -8782,7 +8782,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 
 	  std::unique_ptr<AST::ArrayElemsCopied> copied_array_elems (
 	    new AST::ArrayElemsCopied (std::move (initial_expr),
-				       std::move (copy_amount)));
+				       std::move (copy_amount), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (copied_array_elems),
 				std::move (inner_attrs),

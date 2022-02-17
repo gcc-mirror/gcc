@@ -1007,15 +1007,14 @@ class ArrayElemsCopied : public ArrayElems
 {
   std::unique_ptr<Expr> elem_to_copy;
   std::unique_ptr<Expr> num_copies;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
-		    std::unique_ptr<Expr> copy_amount)
+		    std::unique_ptr<Expr> copy_amount, Location locus)
     : ArrayElems (), elem_to_copy (std::move (copied_elem)),
-      num_copies (std::move (copy_amount))
+      num_copies (std::move (copy_amount)), locus (locus)
   {}
 
   // Copy constructor required due to unique_ptr - uses custom clone
