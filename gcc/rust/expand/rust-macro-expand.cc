@@ -2535,6 +2535,11 @@ public:
     // I don't think any macro token trees can be stripped in any way
 
     expander.expand_invoc (macro_invoc);
+
+    // we need to visit the expanded fragments since it may need cfg expansion
+    // and it may be recursive
+    for (auto &node : macro_invoc.get_fragment ().get_nodes ())
+      node.accept_vis (*this);
   }
 
   void visit (AST::MetaItemPath &) override {}
@@ -3401,11 +3406,16 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
 
       // is meta attributes?
     case AST::MacroFragSpec::META:
+      // parser.parse_inner_attribute ?
+      // parser.parse_outer_attribute ?
+      // parser.parse_attribute_body ?
+      // parser.parse_doc_comment ?
       gcc_unreachable ();
       break;
 
       // what is TT?
     case AST::MacroFragSpec::TT:
+      // parser.parse_token_tree() ?
       gcc_unreachable ();
       break;
 
@@ -3425,8 +3435,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 {
   if (depth_exceeds_recursion_limit ())
     {
-      // FIXME location
-      rust_error_at (Location (), "reached recursion limit");
+      rust_error_at (matcher.get_match_locus (), "reached recursion limit");
       return false;
     }
 
