@@ -1582,6 +1582,13 @@ less than or equal to @code{HOST_BITS_PER_INT}.
 @item GET_MODE_ALIGNMENT (@var{m})
 Return the required alignment, in bits, for an object of mode @var{m}.
 
+@findex GET_MODE_INNER
+@item GET_MODE_INNER (@var{m})
+Returns the mode of the basic parts of mode @var{m}.  For vector modes
+this is the mode of the vector elements.  For complex modes it is the
+mode of the real and imaginary parts.  For other modes it is mode @var{m}
+itself.
+
 @findex GET_MODE_UNIT_SIZE
 @item GET_MODE_UNIT_SIZE (@var{m})
 Returns the size in bytes of the subunits of a datum of mode @var{m}.
