@@ -16215,6 +16215,12 @@ rs6000_emit_int_cmove (rtx dest, rtx op, rtx true_cond, rtx false_cond)
   if (mode != SImode && (!TARGET_POWERPC64 || mode != DImode))
     return false;
 
+  /* PR104335: We now need to expect CC-mode "comparisons"
+     coming from ifcvt.  The following code expects proper
+     comparisons so better abort here.  */
+  if (GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC)
+    return false;
+
   /* We still have to do the compare, because isel doesn't do a
      compare, it just looks at the CRx bits set by a previous compare
      instruction.  */
