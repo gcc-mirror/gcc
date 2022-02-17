@@ -1111,7 +1111,7 @@ package body Sem_Ch5 is
 
          --  Where the object is the same on both sides
 
-         and then Same_Object (Lhs, Original_Node (Rhs))
+         and then Same_Object (Lhs, Rhs)
 
          --  But exclude the case where the right side was an operation that
          --  got rewritten (e.g. JUNK + K, where K was known to be zero). We
