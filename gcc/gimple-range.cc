@@ -458,6 +458,28 @@ gimple_ranger::fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
 void
 gimple_ranger::register_side_effects (gimple *s)
 {
+  // First, export the LHS if it is a new global range.
+  tree lhs = gimple_get_lhs (s);
+  if (lhs)
+    {
+      int_range_max tmp;
+      if (range_of_stmt (tmp, s, lhs) && !tmp.varying_p ()
+	  && update_global_range (tmp, lhs) && dump_file)
+	{
+	  value_range vr = tmp;
+	  fprintf (dump_file, "Global Exported: ");
+	  print_generic_expr (dump_file, lhs, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  vr.dump (dump_file);
+	  int_range_max same = vr;
+	  if (same != tmp)
+	    {
+	      fprintf (dump_file, " ...  irange was : ");
+	      tmp.dump (dump_file);
+	    }
+	  fputc ('\n', dump_file);
+	}
+    }
   m_cache.block_apply_nonnull (s);
 }
 

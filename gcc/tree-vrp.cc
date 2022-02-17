@@ -4302,6 +4302,9 @@ public:
   void pre_fold_bb (basic_block bb) OVERRIDE
   {
     m_pta->enter (bb);
+    for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	 gsi_next (&gsi))
+      m_ranger->register_side_effects (gsi.phi ());
   }
 
   void post_fold_bb (basic_block bb) OVERRIDE
@@ -4345,7 +4348,6 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p)
   gimple_ranger *ranger = enable_ranger (fun);
   rvrp_folder folder (ranger);
   folder.substitute_and_fold ();
-  ranger->export_global_ranges ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
 
