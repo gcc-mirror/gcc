@@ -38,7 +38,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    -------------------
 
    function Checked_Index
-     (Hash_Table : Hash_Table_Type'Class;
+     (Hash_Table : Hash_Table_Type;
       Node       : Count_Type) return Hash_Type
    is
    begin
@@ -49,7 +49,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    -- Clear --
    -----------
 
-   procedure Clear (HT : in out Hash_Table_Type'Class) is
+   procedure Clear (HT : in out Hash_Table_Type) is
    begin
       HT.Length := 0;
       --  HT.Busy := 0;
@@ -63,7 +63,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    --------------------------
 
    procedure Delete_Node_At_Index
-     (HT   : in out Hash_Table_Type'Class;
+     (HT   : in out Hash_Table_Type;
       Indx : Hash_Type;
       X    : Count_Type)
    is
@@ -106,7 +106,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    ---------------------------
 
    procedure Delete_Node_Sans_Free
-     (HT : in out Hash_Table_Type'Class;
+     (HT : in out Hash_Table_Type;
       X  : Count_Type)
    is
       pragma Assert (X /= 0);
@@ -162,7 +162,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    -- First --
    -----------
 
-   function First (HT : Hash_Table_Type'Class) return Count_Type is
+   function First (HT : Hash_Table_Type) return Count_Type is
       Indx : Hash_Type;
 
    begin
@@ -185,7 +185,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    ----------
 
    procedure Free
-     (HT : in out Hash_Table_Type'Class;
+     (HT : in out Hash_Table_Type;
       X  : Count_Type)
    is
       N : Nodes_Type renames HT.Nodes;
@@ -300,7 +300,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    ----------------------
 
    procedure Generic_Allocate
-     (HT   : in out Hash_Table_Type'Class;
+     (HT   : in out Hash_Table_Type;
       Node : out Count_Type)
    is
       N : Nodes_Type renames HT.Nodes;
@@ -338,7 +338,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    -------------------
 
    function Generic_Equal
-     (L, R : Hash_Table_Type'Class) return Boolean
+     (L, R : Hash_Table_Type) return Boolean
    is
       L_Index : Hash_Type;
       L_Node  : Count_Type;
@@ -346,10 +346,6 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       N : Count_Type;
 
    begin
-      if L'Address = R'Address then
-         return True;
-      end if;
-
       if L.Length /= R.Length then
          return False;
       end if;
@@ -403,7 +399,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    -- Generic_Iteration --
    -----------------------
 
-   procedure Generic_Iteration (HT : Hash_Table_Type'Class) is
+   procedure Generic_Iteration (HT : Hash_Table_Type) is
       Node : Count_Type;
 
    begin
@@ -426,7 +422,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
 
    procedure Generic_Read
      (Stream : not null access Root_Stream_Type'Class;
-      HT     : out Hash_Table_Type'Class)
+      HT     : out Hash_Table_Type)
    is
       N : Count_Type'Base;
 
@@ -467,7 +463,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
 
    procedure Generic_Write
      (Stream : not null access Root_Stream_Type'Class;
-      HT     : Hash_Table_Type'Class)
+      HT     : Hash_Table_Type)
    is
       procedure Write (Node : Count_Type);
       pragma Inline (Write);
@@ -500,7 +496,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    end Index;
 
    function Index
-     (HT   : Hash_Table_Type'Class;
+     (HT   : Hash_Table_Type;
       Node : Node_Type) return Hash_Type is
    begin
       return Index (HT.Buckets, Node);
@@ -511,7 +507,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    ----------
 
    function Next
-     (HT   : Hash_Table_Type'Class;
+     (HT   : Hash_Table_Type;
       Node : Count_Type) return Count_Type
    is
       Result : Count_Type;
@@ -527,7 +523,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       --  This was the last node in the bucket, so move to the next
       --  bucket, and start searching for next node from there.
 
-      First := Checked_Index (HT'Unrestricted_Access.all, Node) + 1;
+      First := Checked_Index (HT, Node) + 1;
       for Indx in First .. HT.Buckets'Last loop
          Result := HT.Buckets (Indx);
 

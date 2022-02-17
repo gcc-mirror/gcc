@@ -89,7 +89,7 @@ package Ada.Containers.Hash_Tables is
       type Hash_Table_Type
         (Capacity : Count_Type;
          Modulus  : Hash_Type) is
-      tagged record
+      record
          Length  : Count_Type                  := 0;
          Free    : Count_Type'Base             := -1;
          Nodes   : Nodes_Type (1 .. Capacity);

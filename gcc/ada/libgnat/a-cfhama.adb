@@ -56,7 +56,7 @@ is
    generic
       with procedure Set_Element (Node : in out Node_Type);
    procedure Generic_Allocate
-     (HT   : in out Map;
+     (HT   : in out HT_Types.Hash_Table_Type;
       Node : out Count_Type);
 
    function Hash_Node (Node : Node_Type) return Hash_Type;
@@ -154,10 +154,6 @@ is
    --  Start of processing for Assign
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       if Target.Capacity < Length (Source) then
          raise Constraint_Error with  -- correct exception ???
            "Source length exceeds Target capacity";
@@ -556,13 +552,16 @@ is
    -- Generic_Allocate --
    ----------------------
 
-   procedure Generic_Allocate (HT : in out Map; Node : out Count_Type) is
+   procedure Generic_Allocate
+     (HT   : in out HT_Types.Hash_Table_Type;
+      Node : out Count_Type)
+   is
       procedure Allocate is
         new HT_Ops.Generic_Allocate (Set_Element);
 
    begin
-      Allocate (HT.Content, Node);
-      HT.Content.Nodes (Node).Has_Element := True;
+      Allocate (HT, Node);
+      HT.Nodes (Node).Has_Element := True;
    end Generic_Allocate;
 
    -----------------
@@ -606,7 +605,8 @@ is
 
       if not Inserted then
          declare
-            N : Node_Type renames Container.Content.Nodes (Position.Node);
+            P : constant Count_Type := Position.Node;
+            N : Node_Type renames Container.Content.Nodes (P);
          begin
             N.Key := Key;
             N.Element := New_Item;
@@ -628,7 +628,9 @@ is
       procedure Assign_Key (Node : in out Node_Type);
       pragma Inline (Assign_Key);
 
-      function New_Node return Count_Type;
+      procedure New_Node
+        (HT   : in out HT_Types.Hash_Table_Type;
+         Node : out Count_Type);
       pragma Inline (New_Node);
 
       procedure Local_Insert is
@@ -651,11 +653,12 @@ is
       -- New_Node --
       --------------
 
-      function New_Node return Count_Type is
-         Result : Count_Type;
+      procedure New_Node
+        (HT   : in out HT_Types.Hash_Table_Type;
+         Node : out Count_Type)
+      is
       begin
-         Allocate (Container, Result);
-         return Result;
+         Allocate (HT, Node);
       end New_Node;
 
    --  Start of processing for Insert
@@ -669,11 +672,11 @@ is
       Key       : Key_Type;
       New_Item  : Element_Type)
    is
-      Position : Cursor;
-      Inserted : Boolean;
+      Unused_Position : Cursor;
+      Inserted        : Boolean;
 
    begin
-      Insert (Container, Key, New_Item, Position, Inserted);
+      Insert (Container, Key, New_Item, Unused_Position, Inserted);
 
       if not Inserted then
          raise Constraint_Error with "attempt to insert key already in map";
@@ -727,10 +730,6 @@ is
       Y  : Count_Type;
 
    begin
-      if Target'Address = Source'Address then
-         return;
-      end if;
-
       if Target.Capacity < Length (Source) then
          raise Constraint_Error with  -- ???
            "Source length exceeds Target capacity";

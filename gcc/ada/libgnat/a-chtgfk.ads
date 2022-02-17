@@ -54,27 +54,27 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    pragma Pure;
 
    function Index
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Hash_Type;
    pragma Inline (Index);
    --  Returns the bucket number (array index value) for the given key
 
    function Checked_Index
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Hash_Type;
    pragma Inline (Checked_Index);
    --  Calls Index, but also locks and unlocks the container, per AI05-0022, in
    --  order to detect element tampering by the generic actual Hash function.
 
    function Checked_Equivalent_Keys
-     (HT   : Hash_Table_Type'Class;
+     (HT   : Hash_Table_Type;
       Key  : Key_Type;
       Node : Count_Type) return Boolean;
    --  Calls Equivalent_Keys, but locks and unlocks the container, per
    --  AI05-0022, in order to detect element tampering by that generic actual.
 
    procedure Delete_Key_Sans_Free
-     (HT  : in out Hash_Table_Type'Class;
+     (HT  : in out Hash_Table_Type;
       Key : Key_Type;
       X   : out Count_Type);
    --  Removes the node (if any) with the given key from the hash table,
@@ -82,14 +82,16 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    --  table is busy.
 
    function Find
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Count_Type;
    --  Returns the node (if any) corresponding to the given key
 
    generic
-      with function New_Node return Count_Type;
+      with procedure New_Node
+        (HT   : in out Hash_Table_Type;
+         Node : out Count_Type);
    procedure Generic_Conditional_Insert
-     (HT       : in out Hash_Table_Type'Class;
+     (HT       : in out Hash_Table_Type;
       Key      : Key_Type;
       Node     : out Count_Type;
       Inserted : out Boolean);
@@ -103,7 +105,7 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       with function Hash (Node : Node_Type) return Hash_Type;
       with procedure Assign (Node : in out Node_Type; Key : Key_Type);
    procedure Generic_Replace_Element
-     (HT   : in out Hash_Table_Type'Class;
+     (HT   : in out Hash_Table_Type;
       Node : Count_Type;
       Key  : Key_Type);
    --  Assigns Key to Node, possibly changing its equivalence class. If Node

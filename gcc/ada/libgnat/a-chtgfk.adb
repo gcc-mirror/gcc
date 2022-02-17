@@ -36,7 +36,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    -----------------------------
 
    function Checked_Equivalent_Keys
-     (HT   : Hash_Table_Type'Class;
+     (HT   : Hash_Table_Type;
       Key  : Key_Type;
       Node : Count_Type) return Boolean
    is
@@ -49,7 +49,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    -------------------
 
    function Checked_Index
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Hash_Type
    is
    begin
@@ -61,7 +61,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    --------------------------
 
    procedure Delete_Key_Sans_Free
-     (HT  : in out Hash_Table_Type'Class;
+     (HT  : in out Hash_Table_Type;
       Key : Key_Type;
       X   : out Count_Type)
    is
@@ -108,7 +108,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    ----------
 
    function Find
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Count_Type
    is
       Indx : Hash_Type;
@@ -119,13 +119,11 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
          return 0;
       end if;
 
-      Indx := Checked_Index (HT'Unrestricted_Access.all, Key);
+      Indx := Checked_Index (HT, Key);
 
       Node := HT.Buckets (Indx);
       while Node /= 0 loop
-         if Checked_Equivalent_Keys
-           (HT'Unrestricted_Access.all, Key, Node)
-         then
+         if Checked_Equivalent_Keys (HT, Key, Node) then
             return Node;
          end if;
          Node := Next (HT.Nodes (Node));
@@ -139,7 +137,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    --------------------------------
 
    procedure Generic_Conditional_Insert
-     (HT       : in out Hash_Table_Type'Class;
+     (HT       : in out Hash_Table_Type;
       Key      : Key_Type;
       Node     : out Count_Type;
       Inserted : out Boolean)
@@ -155,7 +153,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
             raise Capacity_Error with "no more capacity for insertion";
          end if;
 
-         Node := New_Node;
+         New_Node (HT, Node);
          Set_Next (HT.Nodes (Node), Next => 0);
 
          Inserted := True;
@@ -181,7 +179,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
          raise Capacity_Error with "no more capacity for insertion";
       end if;
 
-      Node := New_Node;
+      New_Node (HT, Node);
       Set_Next (HT.Nodes (Node), Next => HT.Buckets (Indx));
 
       Inserted := True;
@@ -195,7 +193,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    -----------------------------
 
    procedure Generic_Replace_Element
-     (HT   : in out Hash_Table_Type'Class;
+     (HT   : in out Hash_Table_Type;
       Node : Count_Type;
       Key  : Key_Type)
    is
@@ -307,7 +305,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    -----------
 
    function Index
-     (HT  : Hash_Table_Type'Class;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Hash_Type is
    begin
       return HT.Buckets'First + Hash (Key) mod HT.Buckets'Length;
