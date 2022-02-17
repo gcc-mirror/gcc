@@ -24,6 +24,7 @@
 
 namespace Rust {
 namespace AST {
+
 // Decls as definitions moved to rust-ast.h
 class MacroItem;
 class MacroInvocationSemi;
@@ -109,6 +110,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  MacroMatchType get_macro_match_type () const override
+  {
+    return MacroMatchType::Fragment;
+  }
+
+  Identifier get_ident () const { return ident; }
+  MacroFragSpec get_frag_spec () const { return frag_spec; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -192,6 +201,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  MacroMatchType get_macro_match_type () const override
+  {
+    return MacroMatchType::Repetition;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -259,6 +273,14 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  MacroMatchType get_macro_match_type () const override
+  {
+    return MacroMatchType::Matcher;
+  }
+
+  DelimType get_delim_type () const { return delim_type; }
+  std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -288,6 +310,8 @@ public:
   std::string as_string () const { return token_tree.as_string (); }
 
   Location get_locus () const { return locus; }
+
+  DelimTokenTree &get_token_tree () { return token_tree; }
 };
 
 // A macro rule? Matcher and transcriber pair?
@@ -319,6 +343,9 @@ public:
   Location get_locus () const { return locus; }
 
   std::string as_string () const;
+
+  MacroMatcher &get_matcher () { return matcher; }
+  MacroTranscriber &get_transcriber () { return transcriber; }
 };
 
 // A macro rules definition item AST node
@@ -365,6 +392,11 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  Identifier get_rule_name () const { return rule_name; }
+
+  std::vector<MacroRule> &get_rules () { return rules; }
+  const std::vector<MacroRule> &get_rules () const { return rules; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -384,13 +416,17 @@ class MacroInvocation : public TypeNoBounds,
   MacroInvocData invoc_data;
   Location locus;
 
+  // this is the expanded macro
+  ASTFragment fragment;
+
 public:
   std::string as_string () const override;
 
   MacroInvocation (MacroInvocData invoc_data,
 		   std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)),
-      invoc_data (std::move (invoc_data)), locus (locus)
+      invoc_data (std::move (invoc_data)), locus (locus),
+      fragment (ASTFragment::create_empty ())
   {}
 
   Location get_locus () const override final { return locus; }
@@ -416,6 +452,12 @@ public:
   {
     return ExprWithoutBlock::get_node_id ();
   }
+
+  MacroInvocData &get_invoc_data () { return invoc_data; }
+
+  ASTFragment &get_fragment () { return fragment; }
+
+  void set_fragment (ASTFragment &&f) { fragment = std::move (f); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -649,62 +691,6 @@ protected:
   {
     return new MetaListNameValueStr (*this);
   }
-};
-
-/* Should be a tagged union to save space but implemented as struct due to
- * technical difficulties. TODO: fix
- * Basically, a single AST node used inside an AST fragment. */
-struct SingleASTNode
-{
-  std::unique_ptr<Expr> expr;
-  std::unique_ptr<Stmt> stmt;
-  std::unique_ptr<Item> item;
-  std::unique_ptr<Type> type;
-  std::unique_ptr<Pattern> pattern;
-  std::unique_ptr<TraitItem> trait_item;
-  std::unique_ptr<InherentImplItem> inherent_impl_item;
-  std::unique_ptr<TraitImplItem> trait_impl_item;
-  std::unique_ptr<ExternalItem> external_item;
-
-  SingleASTNode (std::unique_ptr<Expr> expr) : expr (std::move (expr)) {}
-  SingleASTNode (std::unique_ptr<Stmt> stmt) : stmt (std::move (stmt)) {}
-  SingleASTNode (std::unique_ptr<Item> item) : item (std::move (item)) {}
-  SingleASTNode (std::unique_ptr<Type> type) : type (std::move (type)) {}
-  SingleASTNode (std::unique_ptr<Pattern> pattern)
-    : pattern (std::move (pattern))
-  {}
-  SingleASTNode (std::unique_ptr<TraitItem> trait_item)
-    : trait_item (std::move (trait_item))
-  {}
-  SingleASTNode (std::unique_ptr<InherentImplItem> inherent_impl_item)
-    : inherent_impl_item (std::move (inherent_impl_item))
-  {}
-  SingleASTNode (std::unique_ptr<TraitImplItem> trait_impl_item)
-    : trait_impl_item (std::move (trait_impl_item))
-  {}
-  SingleASTNode (std::unique_ptr<ExternalItem> external_item)
-    : external_item (std::move (external_item))
-  {}
-};
-
-/* Basically, a "fragment" that can be incorporated into the AST, created as
- * a result of macro expansion. Really annoying to work with due to the fact
- * that macros can really expand to anything. As such, horrible representation
- * at the moment. */
-struct ASTFragment
-{
-private:
-  /* basic idea: essentially, a vector of tagged unions of different AST node
-   * types. Now, this could actually be stored without a tagged union if the
-   * different AST node types had a unified parent, but that would create
-   * issues with the diamond problem or significant performance penalties. So
-   * a tagged union had to be used instead. A vector is used to represent the
-   * ability for a macro to expand to two statements, for instance. */
-
-  std::vector<SingleASTNode> nodes;
-
-public:
-  ASTFragment (std::vector<SingleASTNode> nodes) : nodes (std::move (nodes)) {}
 };
 
 // Object that parses macros from a token stream.

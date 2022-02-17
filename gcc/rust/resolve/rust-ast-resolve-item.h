@@ -45,6 +45,13 @@ public:
     item->accept_vis (resolver);
   };
 
+  void visit (AST::MacroInvocationSemi &invoc) override
+  {
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
+
   void visit (AST::TraitItemType &type) override
   {
     auto decl = ResolveTraitItemTypeToCanonicalPath::resolve (type);
@@ -226,6 +233,13 @@ public:
     ResolveItem resolver (prefix, canonical_prefix);
     item->accept_vis (resolver);
   };
+
+  void visit (AST::MacroInvocationSemi &invoc) override
+  {
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
 
   void visit (AST::TypeAlias &alias) override
   {

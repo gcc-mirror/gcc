@@ -4387,13 +4387,6 @@ std::vector<std::unique_ptr<Token> >
 DelimTokenTree::to_token_stream () const
 {
   std::vector<std::unique_ptr<Token> > tokens;
-
-  // simulate presence of delimiters
-  const_TokenPtr left_paren
-    = Rust::Token::make (LEFT_PAREN, Linemap::unknown_location ());
-  tokens.push_back (
-    std::unique_ptr<Token> (new Token (std::move (left_paren))));
-
   for (const auto &tree : token_trees)
     {
       std::vector<std::unique_ptr<Token> > stream = tree->to_token_stream ();
@@ -4402,13 +4395,7 @@ DelimTokenTree::to_token_stream () const
 		     std::make_move_iterator (stream.end ()));
     }
 
-  const_TokenPtr right_paren
-    = Rust::Token::make (RIGHT_PAREN, Linemap::unknown_location ());
-  tokens.push_back (
-    std::unique_ptr<Token> (new Token (std::move (right_paren))));
-
   tokens.shrink_to_fit ();
-
   return tokens;
 }
 

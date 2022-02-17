@@ -54,6 +54,7 @@ Resolver::Resolver ()
     name_scope (Scope (mappings->get_current_crate ())),
     type_scope (Scope (mappings->get_current_crate ())),
     label_scope (Scope (mappings->get_current_crate ())),
+    macro_scope (Scope (mappings->get_current_crate ())),
     global_type_node_id (UNKNOWN_NODEID), unit_ty_node_id (UNKNOWN_NODEID)
 {
   generate_builtins ();
@@ -93,6 +94,13 @@ Resolver::push_new_label_rib (Rib *r)
   label_ribs[r->get_node_id ()] = r;
 }
 
+void
+Resolver::push_new_macro_rib (Rib *r)
+{
+  rust_assert (label_ribs.find (r->get_node_id ()) == label_ribs.end ());
+  macro_ribs[r->get_node_id ()] = r;
+}
+
 bool
 Resolver::find_name_rib (NodeId id, Rib **rib)
 {
@@ -109,6 +117,17 @@ Resolver::find_type_rib (NodeId id, Rib **rib)
 {
   auto it = type_ribs.find (id);
   if (it == type_ribs.end ())
+    return false;
+
+  *rib = it->second;
+  return true;
+}
+
+bool
+Resolver::find_macro_rib (NodeId id, Rib **rib)
+{
+  auto it = macro_ribs.find (id);
+  if (it == macro_ribs.end ())
     return false;
 
   *rib = it->second;
@@ -275,6 +294,27 @@ Resolver::lookup_resolved_label (NodeId refId, NodeId *defId)
 {
   auto it = resolved_labels.find (refId);
   if (it == resolved_labels.end ())
+    return false;
+
+  *defId = it->second;
+  return true;
+}
+
+void
+Resolver::insert_resolved_macro (NodeId refId, NodeId defId)
+{
+  auto it = resolved_macros.find (refId);
+  rust_assert (it == resolved_macros.end ());
+
+  resolved_labels[refId] = defId;
+  get_label_scope ().append_reference_for_def (refId, defId);
+}
+
+bool
+Resolver::lookup_resolved_macro (NodeId refId, NodeId *defId)
+{
+  auto it = resolved_macros.find (refId);
+  if (it == resolved_macros.end ())
     return false;
 
   *defId = it->second;

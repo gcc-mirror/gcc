@@ -738,5 +738,25 @@ Mappings::iterate_trait_items (
     }
 }
 
+void
+Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
+{
+  auto it = macroMappings.find (macro->get_node_id ());
+  rust_assert (it == macroMappings.end ());
+
+  macroMappings[macro->get_node_id ()] = macro;
+}
+
+bool
+Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
+{
+  auto it = macroMappings.find (id);
+  if (it == macroMappings.end ())
+    return false;
+
+  *def = it->second;
+  return true;
+}
+
 } // namespace Analysis
 } // namespace Rust

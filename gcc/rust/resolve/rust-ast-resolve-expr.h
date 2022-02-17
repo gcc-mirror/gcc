@@ -70,6 +70,13 @@ public:
     expr->accept_vis (resolver);
   };
 
+  void visit (AST::MacroInvocation &expr) override
+  {
+    AST::ASTFragment &fragment = expr.get_fragment ();
+    for (auto &node : fragment.get_nodes ())
+      node.accept_vis (*this);
+  }
+
   void visit (AST::TupleIndexExpr &expr) override
   {
     resolve_expr (expr.get_tuple_expr ().get (), expr.get_node_id ());
