@@ -118,5 +118,4 @@ extract_module_path (const AST::AttrVec &inner_attrs,
 
   return path;
 }
-
 } // namespace Rust

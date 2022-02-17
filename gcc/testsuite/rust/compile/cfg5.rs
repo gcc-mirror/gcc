@@ -1,4 +1,4 @@
-// { dg-additional-options "-w -frust-cfg=A=B" }
+// { dg-additional-options "-w -frust-cfg=A=\"B\"" }
 struct Foo;
 impl Foo {
     #[cfg(A = "B")]
