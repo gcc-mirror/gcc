@@ -26,7 +26,7 @@
 #define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \
     {                                                                          \
-      AST::PathIdentSegment seg (_X);                                          \
+      AST::PathIdentSegment seg (_X, Linemap::predeclared_location ());        \
       auto typePath = ::std::unique_ptr<AST::TypePathSegment> (                \
 	new AST::TypePathSegment (::std::move (seg), false,                    \
 				  Linemap::predeclared_location ()));          \

@@ -33,13 +33,12 @@ namespace AST {
 class PathIdentSegment
 {
   std::string segment_name;
-
-  // TODO: should this have location info stored?
+  Location locus;
 
   // only allow identifiers, "super", "self", "Self", "crate", or "$crate"
 public:
-  PathIdentSegment (std::string segment_name)
-    : segment_name (std::move (segment_name))
+  PathIdentSegment (std::string segment_name, Location locus)
+    : segment_name (std::move (segment_name)), locus (locus)
   {}
 
   /* TODO: insert check in constructor for this? Or is this a semantic error
@@ -49,7 +48,10 @@ public:
    * not entirely sure */
 
   // Creates an error PathIdentSegment.
-  static PathIdentSegment create_error () { return PathIdentSegment (""); }
+  static PathIdentSegment create_error ()
+  {
+    return PathIdentSegment ("", Location ());
+  }
 
   // Returns whether PathIdentSegment is in an error state.
   bool is_error () const { return segment_name.empty (); }
@@ -221,7 +223,7 @@ public:
   bool has_generic_args () const { return generic_args.has_generic_args (); }
 
   // Constructor for segment (from IdentSegment and GenericArgs)
-  PathExprSegment (PathIdentSegment segment_name, Location locus = Location (),
+  PathExprSegment (PathIdentSegment segment_name, Location locus,
 		   GenericArgs generic_args = GenericArgs::create_empty ())
     : segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus),
@@ -237,7 +239,7 @@ public:
 		   = std::vector<std::unique_ptr<Type> > (),
 		   std::vector<GenericArgsBinding> binding_args
 		   = std::vector<GenericArgsBinding> ())
-    : segment_name (PathIdentSegment (std::move (segment_name))),
+    : segment_name (PathIdentSegment (std::move (segment_name), locus)),
       generic_args (GenericArgs (std::move (lifetime_args),
 				 std::move (type_args),
 				 std::move (binding_args))),
@@ -250,7 +252,7 @@ public:
   // Creates an error-state path expression segment.
   static PathExprSegment create_error ()
   {
-    return PathExprSegment (PathIdentSegment::create_error ());
+    return PathExprSegment (PathIdentSegment::create_error (), Location ());
   }
 
   std::string as_string () const;
@@ -440,7 +442,7 @@ public:
 
   TypePathSegment (std::string segment_name,
 		   bool has_separating_scope_resolution, Location locus)
-    : ident_segment (PathIdentSegment (std::move (segment_name))),
+    : ident_segment (PathIdentSegment (std::move (segment_name), locus)),
       locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())

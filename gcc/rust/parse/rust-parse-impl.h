@@ -706,29 +706,29 @@ Parser<ManagedTokenSource>::parse_path_ident_segment ()
     case IDENTIFIER:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment (t->get_str ());
+      return AST::PathIdentSegment (t->get_str (), t->get_locus ());
     case SUPER:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("super");
+      return AST::PathIdentSegment ("super", t->get_locus ());
     case SELF:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("self");
+      return AST::PathIdentSegment ("self", t->get_locus ());
     case SELF_ALIAS:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("Self");
+      return AST::PathIdentSegment ("Self", t->get_locus ());
     case CRATE:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("crate");
+      return AST::PathIdentSegment ("crate", t->get_locus ());
     case DOLLAR_SIGN:
       if (lexer.peek_token (1)->get_id () == CRATE)
 	{
 	  lexer.skip_token (1);
 
-	  return AST::PathIdentSegment ("$crate");
+	  return AST::PathIdentSegment ("$crate", t->get_locus ());
 	}
       gcc_fallthrough ();
     default:
@@ -14613,8 +14613,10 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
 
       AST::GenericArgs generic_args = parse_path_generic_args ();
 
-      initial_segment = AST::PathExprSegment (initial_str, tok->get_locus (),
-					      std::move (generic_args));
+      initial_segment
+	= AST::PathExprSegment (AST::PathIdentSegment (initial_str,
+						       tok->get_locus ()),
+				tok->get_locus (), std::move (generic_args));
     }
   if (initial_segment.is_error ())
     {
