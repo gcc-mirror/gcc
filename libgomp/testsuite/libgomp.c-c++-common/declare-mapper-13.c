@@ -1,4 +1,4 @@
-/* { dg-do run { target c++ } } */
+/* { dg-do run } */
 
 #include <assert.h>
 
