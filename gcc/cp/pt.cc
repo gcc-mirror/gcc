@@ -24726,9 +24726,6 @@ mark_decl_instantiated (tree result, int extern_p)
        set correctly by tsubst.  */
     TREE_PUBLIC (result) = 1;
 
-  /* This might have been set by an earlier implicit instantiation.  */
-  DECL_COMDAT (result) = 0;
-
   if (extern_p)
     {
       DECL_EXTERNAL (result) = 1;
