@@ -7545,7 +7545,7 @@ package body Exp_Util is
             when N_Elsif_Part
                | N_Iteration_Scheme
             =>
-               if N = Condition (P) then
+               if Present (Condition (P)) and then N = Condition (P) then
                   if Present (Condition_Actions (P)) then
                      Insert_List_After_And_Analyze
                        (Last (Condition_Actions (P)), Ins_Actions);
