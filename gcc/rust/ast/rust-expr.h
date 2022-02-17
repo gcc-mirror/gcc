@@ -2134,8 +2134,7 @@ private:
 
   // bool has_type_given;
   std::unique_ptr<Type> type;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   // Returns whether the type of the parameter has been given.
@@ -2144,11 +2143,12 @@ public:
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
   // Constructor for closure parameter
-  ClosureParam (std::unique_ptr<Pattern> param_pattern,
+  ClosureParam (std::unique_ptr<Pattern> param_pattern, Location locus,
 		std::unique_ptr<Type> param_type = nullptr,
 		std::vector<Attribute> outer_attrs = {})
     : outer_attrs (std::move (outer_attrs)),
-      pattern (std::move (param_pattern)), type (std::move (param_type))
+      pattern (std::move (param_pattern)), type (std::move (param_type)),
+      locus (locus)
   {}
 
   // Copy constructor required due to cloning as a result of unique_ptrs
@@ -2189,7 +2189,10 @@ public:
   bool is_error () const { return pattern == nullptr; }
 
   // Creates an error state closure parameter.
-  static ClosureParam create_error () { return ClosureParam (nullptr); }
+  static ClosureParam create_error ()
+  {
+    return ClosureParam (nullptr, Location ());
+  }
 
   std::string as_string () const;
 

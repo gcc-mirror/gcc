@@ -8895,8 +8895,8 @@ Parser<ManagedTokenSource>::parse_closure_param ()
 	}
     }
 
-  return AST::ClosureParam (std::move (pattern), std::move (type),
-			    std::move (outer_attrs));
+  return AST::ClosureParam (std::move (pattern), pattern->get_locus (),
+			    std::move (type), std::move (outer_attrs));
 }
 
 // Parses a grouped or tuple expression (disambiguates).
