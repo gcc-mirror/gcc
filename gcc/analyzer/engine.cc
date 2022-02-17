@@ -500,6 +500,11 @@ public:
     return m_unknown_side_effects;
   }
 
+  const program_state *get_old_program_state () const FINAL OVERRIDE
+  {
+    return m_old_state;
+  }
+
   log_user m_logger;
   exploded_graph &m_eg;
   exploded_node *m_enode_for_diag;

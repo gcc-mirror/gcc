@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "tree-ssa-operands.h"
 #include "ssa-iterators.h"
+#include "calls.h"
 
 #if ENABLE_ANALYZER
 
@@ -1271,13 +1272,14 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	 in region-model-impl-calls.cc.
 	 Having them split out into separate functions makes it easier
 	 to put breakpoints on the handling of specific functions.  */
+      int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
 
       if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
 	switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
 	  {
 	  default:
-	    if (!DECL_PURE_P (callee_fndecl))
+	    if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
 	      unknown_side_effects = true;
 	    break;
 	  case BUILT_IN_ALLOCA:
@@ -1433,7 +1435,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	  /* Handle in "on_call_post".  */
 	}
       else if (!fndecl_has_gimple_body_p (callee_fndecl)
-	       && !DECL_PURE_P (callee_fndecl)
+	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
 	       && !fndecl_built_in_p (callee_fndecl))
 	unknown_side_effects = true;
     }

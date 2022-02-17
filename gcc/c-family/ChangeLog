@@ -1,3 +1,16 @@
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104531
+	* c-omp.cc (c_finish_omp_atomic): For MIN_EXPR/MAX_EXPR, try first
+	build_binary_op with LT_EXPR and only if that doesn't return
+	error_mark_node call build_modify_expr.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104510
+	* c-common.cc (shorten_compare): Convert original arguments to
+	the original *restype_ptr when mixing binary and decimal float.
+
 2022-02-14  Richard Biener  <rguenther@suse.de>
 
 	PR c/104505

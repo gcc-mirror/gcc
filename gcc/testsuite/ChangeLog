@@ -1,3 +1,62 @@
+2022-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104560
+	* g++.dg/analyzer/placement-new.C: Update expected wording.
+	* g++.dg/analyzer/pr100244.C: Likewise.
+	* gcc.dg/analyzer/attr-malloc-1.c (test_7): Likewise.
+	* gcc.dg/analyzer/malloc-1.c (test_24): Likewise.
+	(test_25): Likewise.
+	(test_26): Likewise.
+	(test_50a, test_50b, test_50c): New.
+	* gcc.dg/analyzer/malloc-callbacks.c (test_5): Update expected
+	wording.
+	* gcc.dg/analyzer/malloc-paths-8.c: Likewise.
+	* gcc.dg/analyzer/pr104560-1.c: New test.
+	* gcc.dg/analyzer/pr104560-2.c: New test.
+	* gcc.dg/analyzer/realloc-1.c (test_7): Updated expected wording.
+	* gcc.dg/analyzer/vla-1.c (test_2): New.  Prune output from
+	-Wfree-nonheap-object.
+
+2022-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104507
+	* g++.dg/template/non-dependent21.C: New test.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104448
+	* gcc.target/i386/pr104448.c: New test.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104544
+	* gcc.dg/pr104544.c: New test.
+
+2022-02-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/atomic-inst-cas.c: Add
+	-Wno-invalid-memory-model.
+
+2022-02-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/bic-bitmask-1.c: Remove XFAIL.
+
+2022-02-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100056
+	* gcc.target/aarch64/pr100056.c: XFAIL the original UBFIZ test
+	and instead expect two UBFIZs + two ADD UXTBs.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104531
+	* c-c++-common/gomp/atomic-31.c: New test.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104510
+	* gcc.dg/dfp/pr104510.c: New test.
+
 2022-02-15  Peter Bergner  <bergner@linux.ibm.com>
 
 	* gcc.target/powerpc/htm-1.c: Retry intermittent failing tbegins.

@@ -1,3 +1,7 @@
+2022-02-16  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (build_address_map): Initialize DWARF 5 fields of unit.
+
 2022-02-03  David Seifert  <soap@gentoo.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 

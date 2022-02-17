@@ -1,3 +1,23 @@
+2022-02-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use
+	range_compatible_p instead of direct type comparison.
+
+2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104544
+	* combine.cc (try_combine): When looking for insn whose links
+	should be updated from i3 to i2, don't stop on debug insns, instead
+	skip over them.
+
+2022-02-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100056
+	* config/aarch64/iterators.md (LOGICAL_OR_PLUS): New iterator.
+	* config/aarch64/aarch64.md: Extend the PR100056 patterns
+	to handle plus in the same way as ior, if the operands have
+	no set bits in common.
+
 2022-02-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/104526

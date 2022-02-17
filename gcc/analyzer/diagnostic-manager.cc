@@ -1272,6 +1272,35 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 
   interesting_t interest;
   pb.get_pending_diagnostic ()->mark_interesting_stuff (&interest);
+
+  /* Add region creation events for any globals of interest, at the
+     beginning of the path.  */
+  {
+    for (auto reg : interest.m_region_creation)
+      switch (reg->get_memory_space ())
+	{
+	default:
+	  continue;
+	case MEMSPACE_CODE:
+	case MEMSPACE_GLOBALS:
+	case MEMSPACE_READONLY_DATA:
+	  {
+	    const region *base_reg = reg->get_base_region ();
+	    if (tree decl = base_reg->maybe_get_decl ())
+	      if (DECL_P (decl)
+		  && DECL_SOURCE_LOCATION (decl) != UNKNOWN_LOCATION)
+		{
+		  emission_path->add_region_creation_event
+		    (reg,
+		     DECL_SOURCE_LOCATION (decl),
+		     NULL_TREE,
+		     0);
+		}
+	  }
+	}
+  }
+
+  /* Walk EPATH, adding events as appropriate.  */
   for (unsigned i = 0; i < epath.m_edges.length (); i++)
     {
       const exploded_edge *eedge = epath.m_edges[i];
@@ -1569,6 +1598,11 @@ struct null_assignment_sm_context : public sm_context
     return NULL_TREE;
   }
 
+  const program_state *get_old_program_state () const FINAL OVERRIDE
+  {
+    return m_old_state;
+  }
+
   const program_state *m_old_state;
   const program_state *m_new_state;
   const gimple *m_stmt;
@@ -1729,44 +1763,45 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		  break;
 	      }
 
-	    /* Look for changes in dynamic extents, which will identify
-	       the creation of heap-based regions and alloca regions.  */
-	    if (interest)
-	      {
-		const region_model *src_model = src_state.m_region_model;
-		const region_model *dst_model = dst_state.m_region_model;
-		if (src_model->get_dynamic_extents ()
-		    != dst_model->get_dynamic_extents ())
-		{
-		  unsigned i;
-		  const region *reg;
-		  FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
-		    {
-		      const region *base_reg = reg->get_base_region ();
-		      const svalue *old_extents
-			= src_model->get_dynamic_extents (base_reg);
-		      const svalue *new_extents
-			= dst_model->get_dynamic_extents (base_reg);
-		      if (old_extents == NULL && new_extents != NULL)
-			switch (base_reg->get_kind ())
-			  {
-			  default:
-			    break;
-			  case RK_HEAP_ALLOCATED:
-			  case RK_ALLOCA:
-			    emission_path->add_region_creation_event
-			      (reg,
-			       src_point.get_location (),
-			       src_point.get_fndecl (),
-			       src_stack_depth);
-			    break;
-			  }
-		    }
-		}
-	      }
 	  }
       }
       break;
+    }
+
+  /* Look for changes in dynamic extents, which will identify
+     the creation of heap-based regions and alloca regions.  */
+  if (interest)
+    {
+      const region_model *src_model = src_state.m_region_model;
+      const region_model *dst_model = dst_state.m_region_model;
+      if (src_model->get_dynamic_extents ()
+	  != dst_model->get_dynamic_extents ())
+	{
+	  unsigned i;
+	  const region *reg;
+	  FOR_EACH_VEC_ELT (interest->m_region_creation, i, reg)
+	    {
+	      const region *base_reg = reg->get_base_region ();
+	      const svalue *old_extents
+		= src_model->get_dynamic_extents (base_reg);
+	      const svalue *new_extents
+		= dst_model->get_dynamic_extents (base_reg);
+	      if (old_extents == NULL && new_extents != NULL)
+		switch (base_reg->get_kind ())
+		  {
+		  default:
+		    break;
+		  case RK_HEAP_ALLOCATED:
+		  case RK_ALLOCA:
+		    emission_path->add_region_creation_event
+		      (reg,
+		       src_point.get_location (),
+		       src_point.get_fndecl (),
+		       src_stack_depth);
+		    break;
+		  }
+	    }
+	}
     }
 
   if (pb.get_feasibility_problem ()

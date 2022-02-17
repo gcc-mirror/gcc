@@ -59,8 +59,8 @@ void test_6 (size_t sz)
 
 void *test_7 (size_t sz)
 {
-  char buf[100];
-  void *p = realloc (&buf, sz); /* { dg-warning "'realloc' of '&buf' which points to memory not on the heap" } */
+  char buf[100]; /* { dg-message "region created on stack here" } */
+  void *p = realloc (&buf, sz); /* { dg-warning "'realloc' of '&buf' which points to memory on the stack" } */
   return p;  
 }
 

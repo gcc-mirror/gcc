@@ -1,3 +1,37 @@
+2022-02-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104560
+	* diagnostic-manager.cc (diagnostic_manager::build_emission_path):
+	Add region creation events for globals of interest.
+	(null_assignment_sm_context::get_old_program_state): New.
+	(diagnostic_manager::add_events_for_eedge): Move check for
+	changing dynamic extents from PK_BEFORE_STMT case to after the
+	switch on the dst_point's kind so that we can emit them for the
+	final stmt in a basic block.
+	* engine.cc (impl_sm_context::get_old_program_state): New.
+	* sm-malloc.cc (malloc_state_machine::get_default_state): Rewrite
+	detection of m_non_heap to use get_memory_space.
+	(free_of_non_heap::free_of_non_heap): Add freed_reg param.
+	(free_of_non_heap::subclass_equal_p): Update for changes to
+	fields.
+	(free_of_non_heap::emit): Drop m_kind in favor of
+	get_memory_space.
+	(free_of_non_heap::describe_state_change): Remove logic for
+	detecting alloca.
+	(free_of_non_heap::mark_interesting_stuff): Add region-creation of
+	m_freed_reg.
+	(free_of_non_heap::get_memory_space): New.
+	(free_of_non_heap::kind): Drop enum.
+	(free_of_non_heap::m_freed_reg): New field.
+	(free_of_non_heap::m_kind): Drop field.
+	(malloc_state_machine::on_stmt): Drop transition to m_non_heap.
+	(malloc_state_machine::handle_free_of_non_heap): New function,
+	split out from on_deallocator_call and on_realloc_call, adding
+	detection of the freed region.
+	(malloc_state_machine::on_deallocator_call): Use it.
+	(malloc_state_machine::on_realloc_call): Likewise.
+	* sm.h (sm_context::get_old_program_state): New vfunc.
+
 2022-02-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104524

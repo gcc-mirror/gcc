@@ -1,3 +1,23 @@
+2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_build_builtins_module): Set purity of DECL_PURE_P
+	functions to PURE::const_.
+	* d-gimplify.cc (bit_field_ref): New function.
+	(d_gimplify_modify_expr): Handle implicit casting for assignments to
+	bit-fields.
+	(d_gimplify_unary_expr): New function.
+	(d_gimplify_binary_expr): New function.
+	(d_gimplify_expr): Handle UNARY_CLASS_P and BINARY_CLASS_P.
+	* d-target.cc (Target::_init): Initialize bitFieldStyle.
+	(TargetCPP::parameterType): Update signature.
+	(Target::supportsLinkerDirective): New function.
+	* dmd/MERGE: Merge upstream dmd 52844d4b1.
+	* expr.cc (ExprVisitor::visit (ThrowExp *)): New function.
+	* types.cc (d_build_bitfield_integer_type): New function.
+	(insert_aggregate_bitfield): New function.
+	(layout_aggregate_members): Handle inserting bit-fields into an
+	aggregate type.
+
 2022-01-31  Martin Liska  <mliska@suse.cz>
 
 	PR d/104287

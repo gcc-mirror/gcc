@@ -1,3 +1,10 @@
+2022-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104507
+	* constexpr.cc (potential_constant_expression_1)
+	<case NON_DEPENDENT_EXPR>: Return false instead of recursing.
+	Assert tf_error isn't set.
+
 2022-02-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104107
