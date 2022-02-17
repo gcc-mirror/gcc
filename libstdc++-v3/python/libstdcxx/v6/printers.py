@@ -1518,41 +1518,113 @@ class StdCmpCatPrinter:
 class StdErrorCodePrinter:
     "Print a std::error_code or std::error_condition"
 
-    _errno_categories = None # List of categories that use errno values
+    _system_is_posix = None  # Whether std::system_category() use errno values.
 
     def __init__ (self, typename, val):
         self.val = val
         self.typename = strip_versioned_namespace(typename)
         # Do this only once ...
-        if StdErrorCodePrinter._errno_categories is None:
-            StdErrorCodePrinter._errno_categories = ['generic']
+        if StdErrorCodePrinter._system_is_posix is None:
             try:
                 import posix
-                StdErrorCodePrinter._errno_categories.append('system')
+                StdErrorCodePrinter._system_is_posix = True
             except ImportError:
-                pass
+                StdErrorCodePrinter._system_is_posix = False
 
     @staticmethod
-    def _category_name(cat):
-        "Call the virtual function that overrides std::error_category::name()"
-        gdb.set_convenience_variable('__cat', cat)
-        return gdb.parse_and_eval('$__cat->name()').string()
+    def _find_errc_enum(name):
+        typ = gdb.lookup_type(name)
+        if typ is not None and typ.code == gdb.TYPE_CODE_ENUM:
+            return typ
+        return None
+
+    @classmethod
+    def _match_net_ts_category(cls, cat):
+        net_cats = ['stream', 'socket', 'ip::resolver']
+        for c in net_cats:
+            func = c + '_category()'
+            for ns in ['', _versioned_namespace]:
+                ns = 'std::{}experimental::net::v1'.format(ns)
+                sym = gdb.lookup_symbol('{}::{}::__c'.format(ns, func))[0]
+                if sym is not None:
+                    if cat == sym.value().address:
+                        name = 'net::' + func
+                        enum = cls._find_errc_enum('{}::{}_errc'.format(ns, c))
+                        return (name, enum)
+        return (None, None)
+
+    @classmethod
+    def _category_info(cls, cat):
+        "Return details of a std::error_category"
+
+        name = None
+        enum = None
+        is_errno = False
+
+        # Try these first, or we get "warning: RTTI symbol not found" when
+        # using cat.dynamic_type on the local class types for Net TS categories.
+        func, enum = cls._match_net_ts_category(cat)
+        if func is not None:
+            return (None, func, enum, is_errno)
+
+        # This might give a warning for a program-defined category defined as
+        # a local class, but there doesn't seem to be any way to avoid that.
+        typ = cat.dynamic_type.target()
+        # Shortcuts for the known categories defined by libstdc++.
+        if typ.tag.endswith('::generic_error_category'):
+            name = 'generic'
+            is_errno = True
+        if typ.tag.endswith('::system_error_category'):
+            name = 'system'
+            is_errno = cls._system_is_posix
+        if typ.tag.endswith('::future_error_category'):
+            name = 'future'
+            enum = cls._find_errc_enum('std::future_errc')
+        if typ.tag.endswith('::io_error_category'):
+            name = 'io'
+            enum = cls._find_errc_enum('std::io_errc')
+
+        if name is None:
+            try:
+                # Want to call std::error_category::name() override, but it's
+                # unsafe: https://sourceware.org/bugzilla/show_bug.cgi?id=28856
+                # gdb.set_convenience_variable('__cat', cat)
+                # return '"%s"' % gdb.parse_and_eval('$__cat->name()').string()
+                pass
+            except:
+                pass
+        return (name, typ.tag, enum, is_errno)
+
+    @staticmethod
+    def _unqualified_name(name):
+        "Strip any nested-name-specifier from NAME to give an unqualified name"
+        return name.split('::')[-1]
 
     def to_string (self):
         value = self.val['_M_value']
-        category = self._category_name(self.val['_M_cat'])
-        strval = str(value)
+        cat = self.val['_M_cat']
+        name, alt_name, enum, is_errno = self._category_info(cat)
         if value == 0:
-            default_cats = {'error_code':'system', 'error_condition':'generic'}
-            unqualified = self.typename.split('::')[-1]
-            if category == default_cats[unqualified]:
+            default_cats = { 'error_code' : 'system',
+                             'error_condition' : 'generic' }
+            if name == default_cats[self._unqualified_name(self.typename)]:
                 return self.typename + ' = { }' # default-constructed value
-        if value > 0 and category in StdErrorCodePrinter._errno_categories:
+
+        strval = str(value)
+        if is_errno and value != 0:
             try:
                 strval = errno.errorcode[int(value)]
             except:
                 pass
-        return '%s = {"%s": %s}' % (self.typename, category, strval)
+        elif enum is not None:
+            strval = self._unqualified_name(str(value.cast(enum)))
+
+        if name is not None:
+            name = '"%s"' % name
+        else:
+            name = alt_name
+        return '%s = {%s: %s}' % (self.typename, name, strval)
+
 
 class StdRegexStatePrinter:
     "Print a state node in the NFA for a std::regex"
@@ -1984,8 +2056,6 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::__cxx11::', 'basic_string', StdStringPrinter)
     libstdcxx_printer.add_container('std::', 'bitset', StdBitsetPrinter)
     libstdcxx_printer.add_container('std::', 'deque', StdDequePrinter)
-    libstdcxx_printer.add_version('std::', 'error_code', StdErrorCodePrinter)
-    libstdcxx_printer.add_version('std::', 'error_condition', StdErrorCodePrinter)
     libstdcxx_printer.add_container('std::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::__cxx11::', 'list', StdListPrinter)
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
@@ -2001,6 +2071,12 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'unique_ptr', UniquePointerPrinter)
     libstdcxx_printer.add_container('std::', 'vector', StdVectorPrinter)
     # vector<bool>
+
+    if hasattr(gdb.Value, 'dynamic_type'):
+        libstdcxx_printer.add_version('std::', 'error_code',
+                                      StdErrorCodePrinter)
+        libstdcxx_printer.add_version('std::', 'error_condition',
+                                      StdErrorCodePrinter)
 
     # Printer registrations for classes compiled with -D_GLIBCXX_DEBUG.
     libstdcxx_printer.add('std::__debug::bitset', StdBitsetPrinter)
