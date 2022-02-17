@@ -3203,13 +3203,9 @@ finish_compound_literal (tree type, tree compound_literal,
     return error_mark_node;
   compound_literal = reshape_init (type, compound_literal, complain);
   if (SCALAR_TYPE_P (type)
-      && !BRACE_ENCLOSED_INITIALIZER_P (compound_literal))
-    {
-      tree t = instantiate_non_dependent_expr_sfinae (compound_literal,
-						      complain);
-      if (!check_narrowing (type, t, complain))
-	return error_mark_node;
-    }
+      && !BRACE_ENCLOSED_INITIALIZER_P (compound_literal)
+      && !check_narrowing (type, compound_literal, complain))
+    return error_mark_node;
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_DOMAIN (type) == NULL_TREE)
     {
