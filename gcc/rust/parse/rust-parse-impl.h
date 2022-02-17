@@ -14441,6 +14441,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	AST::StructBase struct_base = AST::StructBase::error ();
 	if (lexer.peek_token ()->get_id () == DOT_DOT)
 	  {
+	    Location dot_dot_location = lexer.peek_token ()->get_locus ();
 	    lexer.skip_token ();
 
 	    // parse required struct base expr
@@ -14458,7 +14459,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	    // DEBUG:
 	    rust_debug ("struct/enum expr - parsed and validated base expr");
 
-	    struct_base = AST::StructBase (std::move (base_expr));
+	    struct_base
+	      = AST::StructBase (std::move (base_expr), dot_dot_location);
 
 	    // DEBUG:
 	    rust_debug ("assigned struct base to new struct base ");

@@ -1514,11 +1514,11 @@ struct StructBase
 {
 private:
   std::unique_ptr<Expr> base_struct;
+  Location locus;
 
 public:
-  // TODO: should this store location data?
-  StructBase (std::unique_ptr<Expr> base_struct_ptr)
-    : base_struct (std::move (base_struct_ptr))
+  StructBase (std::unique_ptr<Expr> base_struct_ptr, Location locus)
+    : base_struct (std::move (base_struct_ptr)), locus (locus)
   {}
 
   // Copy constructor requires clone
@@ -1550,7 +1550,7 @@ public:
   StructBase &operator= (StructBase &&other) = default;
 
   // Returns a null expr-ed StructBase - error state
-  static StructBase error () { return StructBase (nullptr); }
+  static StructBase error () { return StructBase (nullptr, Location ()); }
 
   // Returns whether StructBase is in error state
   bool is_invalid () const { return base_struct == nullptr; }
