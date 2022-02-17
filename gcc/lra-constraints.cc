@@ -6008,7 +6008,7 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
   HARD_REG_SET ignore;
   
   lra_assert (from != NULL && to != NULL);
-  CLEAR_HARD_REG_SET (ignore);
+  ignore = lra_no_alloc_regs;
   EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
     {
       lra_insn_recog_data_t id = lra_insn_recog_data[uid];
