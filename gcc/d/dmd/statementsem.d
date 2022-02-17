@@ -122,8 +122,10 @@ private LabelStatement checkLabeledLoop(Scope* sc, Statement statement)
  * Returns:
  *  `e` or ErrorExp.
  */
-private Expression checkAssignmentAsCondition(Expression e)
+private Expression checkAssignmentAsCondition(Expression e, Scope* sc)
 {
+    if (sc.flags & SCOPE.Cfile)
+        return e;
     auto ec = lastComma(e);
     if (ec.op == EXP.assign)
     {
@@ -148,7 +150,7 @@ extern(C++) Statement statementSemantic(Statement s, Scope* sc)
     return v.result;
 }
 
-private extern (C++) final class StatementSemanticVisitor : Visitor
+package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 {
     alias visit = Visitor.visit;
 
@@ -550,7 +552,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
             (cast(DotIdExp)ds.condition).noderef = true;
 
         // check in syntax level
-        ds.condition = checkAssignmentAsCondition(ds.condition);
+        ds.condition = checkAssignmentAsCondition(ds.condition, sc);
 
         ds.condition = ds.condition.expressionSemantic(sc);
         ds.condition = resolveProperties(sc, ds.condition);
@@ -623,7 +625,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                 (cast(DotIdExp)fs.condition).noderef = true;
 
             // check in syntax level
-            fs.condition = checkAssignmentAsCondition(fs.condition);
+            fs.condition = checkAssignmentAsCondition(fs.condition, sc);
 
             fs.condition = fs.condition.expressionSemantic(sc);
             fs.condition = resolveProperties(sc, fs.condition);
@@ -1867,7 +1869,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
          */
 
         // check in syntax level
-        ifs.condition = checkAssignmentAsCondition(ifs.condition);
+        ifs.condition = checkAssignmentAsCondition(ifs.condition, sc);
 
         auto sym = new ScopeDsymbol();
         sym.parent = sc.scopesym;
@@ -3732,44 +3734,61 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
          */
 
         //printf("ThrowStatement::semantic()\n");
+        if (throwSemantic(ts.loc, ts.exp, sc))
+            result = ts;
+        else
+            setError();
 
+    }
+
+    /**
+     * Run semantic on `throw <exp>`.
+     *
+     * Params:
+     *   loc = location of the `throw`
+     *   exp = value to be thrown
+     *   sc  = enclosing scope
+     *
+     * Returns: true if the `throw` is valid, or false if an error was found
+     */
+    extern(D) static bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
+    {
         if (!global.params.useExceptions)
         {
-            ts.error("Cannot use `throw` statements with -betterC");
-            return setError();
+            loc.error("Cannot use `throw` statements with -betterC");
+            return false;
         }
 
         if (!ClassDeclaration.throwable)
         {
-            ts.error("Cannot use `throw` statements because `object.Throwable` was not declared");
-            return setError();
+            loc.error("Cannot use `throw` statements because `object.Throwable` was not declared");
+            return false;
         }
 
-        FuncDeclaration fd = sc.parent.isFuncDeclaration();
-        fd.hasReturnExp |= 2;
+        if (FuncDeclaration fd = sc.parent.isFuncDeclaration())
+            fd.hasReturnExp |= 2;
 
-        if (ts.exp.op == EXP.new_)
+        if (exp.op == EXP.new_)
         {
-            NewExp ne = cast(NewExp)ts.exp;
+            NewExp ne = cast(NewExp) exp;
             ne.thrownew = true;
         }
 
-        ts.exp = ts.exp.expressionSemantic(sc);
-        ts.exp = resolveProperties(sc, ts.exp);
-        ts.exp = checkGC(sc, ts.exp);
-        if (ts.exp.op == EXP.error)
-            return setError();
+        exp = exp.expressionSemantic(sc);
+        exp = resolveProperties(sc, exp);
+        exp = checkGC(sc, exp);
+        if (exp.op == EXP.error)
+            return false;
 
-        checkThrowEscape(sc, ts.exp, false);
+        checkThrowEscape(sc, exp, false);
 
-        ClassDeclaration cd = ts.exp.type.toBasetype().isClassHandle();
+        ClassDeclaration cd = exp.type.toBasetype().isClassHandle();
         if (!cd || ((cd != ClassDeclaration.throwable) && !ClassDeclaration.throwable.isBaseOf(cd, null)))
         {
-            ts.error("can only throw class objects derived from `Throwable`, not type `%s`", ts.exp.type.toChars());
-            return setError();
+            loc.error("can only throw class objects derived from `Throwable`, not type `%s`", exp.type.toChars());
+            return false;
         }
-
-        result = ts;
+        return true;
     }
 
     override void visit(DebugStatement ds)

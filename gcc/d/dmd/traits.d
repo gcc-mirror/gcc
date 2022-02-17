@@ -150,6 +150,7 @@ shared static this()
         "hasPostblit",
         "hasCopyConstructor",
         "isCopyable",
+        "parameters"
     ];
 
     StringTable!(bool)* stringTable = cast(StringTable!(bool)*) &traitsStringTable;
@@ -998,7 +999,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 e.error("`bool` expected as third argument of `__traits(getOverloads)`, not `%s` of type `%s`", b.toChars(), b.type.toChars());
                 return ErrorExp.get();
             }
-            includeTemplates = b.toBool().hasValue(true);
+            includeTemplates = b.toBool().get();
         }
 
         StringExp se = ex.toStringExp();
@@ -2090,7 +2091,43 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         auto tup = new TupleExp(e.loc, exps);
         return tup.expressionSemantic(sc);
     }
+    //https://issues.dlang.org/show_bug.cgi?id=22291
+    if (e.ident == Id.parameters)
+    {
+        //No args are valid
+        if (e.args)
+        {
+            char[] contents = cast(char[]) e.args.toString();
+            contents = contents[1..$];
+            contents[$-1] = '\0';
+            e.error("`__traits(parameters)` cannot have arguments, but `%s` was supplied", contents.ptr);
+            return ErrorExp.get();
+        }
 
+        if (sc.func is null)
+        {
+            e.error("`__traits(parameters)` may only be used inside a function");
+            return ErrorExp.get();
+        }
+        assert(sc.func && sc.parent.isFuncDeclaration());
+        auto tf = sc.parent.isFuncDeclaration.type.isTypeFunction();
+        assert(tf);
+        auto exps = new Expressions(0);
+        int addParameterDG(size_t idx, Parameter x)
+        {
+            assert(x.ident);
+            exps.push(new IdentifierExp(e.loc, x.ident));
+            return 0;
+        }
+        /*
+            This is required since not all "parameters" actually have a name
+            until they (tuples) are expanded e.g. an anonymous tuple parameter's
+            contents get given names but not the tuple itself.
+        */
+        Parameter._foreach(tf.parameterList.parameters, &addParameterDG);
+        auto tup = new TupleExp(e.loc, exps);
+        return tup.expressionSemantic(sc);
+    }
     static const(char)[] trait_search_fp(const(char)[] seed, out int cost)
     {
         //printf("trait_search_fp('%s')\n", seed);

@@ -7,7 +7,8 @@
 ! For pointers, it depends on the address of the pointer target
 ! For allocatable, on the allocated memory address
 
-subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, doaap)
+subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, doaap, &
+               dssv, dossv)
   !use omp_lib
   use iso_c_binding, only: c_intptr_t
   implicit none (type, external)
@@ -18,8 +19,10 @@ subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, do
   optional :: doss, dosp, dosa, doaa, doaaa, doaap
   allocatable :: sa, aaa, dsa, daaa, dosa, doaaa
   pointer :: sp, aap, dsp, daap, dosp, doaap
+  integer, value :: dssv, dossv
+  optional :: dossv
 
-  integer(omp_depend_kind) :: object(18)
+  integer(omp_depend_kind) :: object(20)
   integer(omp_depend_kind) :: elem(9)
 
   !$omp depobj(object(1)) depend(in: ss)
@@ -40,6 +43,8 @@ subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, do
   !$omp depobj(object(16)) depend(in: doaa)
   !$omp depobj(object(17)) depend(in: doaaa)
   !$omp depobj(object(18)) depend(in: doaap)
+  !$omp depobj(object(19)) depend(in: dssv)
+  !$omp depobj(object(20)) depend(in: dossv)
 
   !$omp depobj(elem(1)) depend(in: aa(2))
   !$omp depobj(elem(2)) depend(in: aaa(2))
@@ -107,6 +112,12 @@ subroutine foo(dss, dsp, dsa, daa, daaa, daap, doss, dosp, dosa, doaa, doaaa, do
     !$omp task depend(out: doaap)
       doaap = 4
     !$omp end task
+    !$omp task depend(out: dossv)
+      dossv = 4
+    !$omp end task
+    !$omp task depend(out: dssv)
+      dssv = 4
+    !$omp end task
 
     !$omp task depend(out: aa(2))
       aa(2) = 4
@@ -168,8 +179,8 @@ end
 ! { dg-final { scan-tree-dump-times "&object\\\[4\\\] = .integer.kind=4.\\\[0:\\\] \\* restrict\\) aaa.data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[5\\\] = .integer.kind=4.\\\[0:\\\] \\*\\) aap.data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[6\\\] = dss;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object\\\[7\\\] = dsp;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "&object\\\[8\\\] = dsa;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[7\\\] = \\*dsp;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[8\\\] = \\*dsa;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[9\\\] = daa;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[10\\\] = .integer.kind=4.\\\[0:\\\] \\* restrict\\) daaa->data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[11\\\] = .integer.kind=4.\\\[0:\\\] \\*\\) daap->data;" 1 "original" } }
@@ -179,6 +190,8 @@ end
 ! { dg-final { scan-tree-dump-times "&object\\\[15\\\] = doaa;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[16\\\] = .integer.kind=4.\\\[0:\\\] \\* restrict\\) doaaa->data;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&object\\\[17\\\] = .integer.kind=4.\\\[0:\\\] \\*\\) doaap->data;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[18\\\] = &dssv;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "&object\\\[19\\\] = &dossv;" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "&elem\\\[0\\\] = &aa\\\[1\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "&elem\\\[1\\\] = &\\(\\*\\(integer.kind=4.\\\[0:\\\] \\* restrict\\) aaa.data\\)\\\[aaa.offset \\+ 2\\\];" 1 "original" } }
@@ -217,6 +230,8 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*doaa\\)\\\[1\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\(\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\* restrict\\) doaaa->data\\)\\\[doaaa->offset \\+ 2\\\]\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:\\*\\(integer\\(kind=4\\) \\*\\) \\(doaap->data \\+ \\(sizetype\\) \\(\\(doaap->offset \\+ doaap->dim\\\[0\\\].stride \\* 2\\) \\* doaap->span\\)\\)\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:dossv\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:dssv\\)" 1 "original" } }
 
 
 ! gimple dump - check only those which are simple one-line checkable:
@@ -230,6 +245,8 @@ end
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:doss\\) shared\\(doss\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:doaa\\) shared\\(doaa\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:&aa\\\[1\\\]\\) shared\\(aa\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:&dossv\\) shared\\(dossv\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp task depend\\(out:&dssv\\) shared\\(dssv\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = \\*dsp;" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = \\*dsa;" 3 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = \\*dosp;" 2 "gimple" } }
@@ -238,3 +255,7 @@ end
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = doaap->data;" 4 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = &\\(\\*daa\\)\\\[1\\\];" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = &\\(\\*doaa\\)\\\[1\\\];" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "= &dssv;" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "= &dossv;" 1 "gimple" } }
+
+

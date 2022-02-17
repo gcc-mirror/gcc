@@ -4223,10 +4223,12 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  for (rtx_insn *insn = NEXT_INSN (i3);
 	       !done
 	       && insn
-	       && NONDEBUG_INSN_P (insn)
+	       && INSN_P (insn)
 	       && BLOCK_FOR_INSN (insn) == this_basic_block;
 	       insn = NEXT_INSN (insn))
 	    {
+	      if (DEBUG_INSN_P (insn))
+		continue;
 	      struct insn_link *link;
 	      FOR_EACH_LOG_LINK (link, insn)
 		if (link->insn == i3 && link->regno == regno)

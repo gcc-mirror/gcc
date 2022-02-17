@@ -929,8 +929,10 @@ vect_reassociating_reduction_p (vec_info *vinfo,
    with conditions:
    1) @1, @2, c, d, a, b are all integral type.
    2) There's single_use for both @1 and @2.
-   3) a, c and d have same precision.
+   3) a, c have same precision.
    4) c and @1 have different precision.
+   5) c, d are the same type or they can differ in sign when convert is
+   truncation.
 
    record a and c and d and @3.  */
 
@@ -952,7 +954,7 @@ extern bool gimple_cond_expr_convert_p (tree, tree*, tree (*)(tree));
    TYPE_PRECISION (TYPE_E) != TYPE_PRECISION (TYPE_CD);
    TYPE_PRECISION (TYPE_AB) == TYPE_PRECISION (TYPE_CD);
    single_use of op_true and op_false.
-   TYPE_AB could differ in sign.
+   TYPE_AB could differ in sign when (TYPE_E) A is a truncation.
 
    Input:
 

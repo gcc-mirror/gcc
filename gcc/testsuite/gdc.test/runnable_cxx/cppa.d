@@ -9,6 +9,9 @@
 
 // N.B MSVC doesn't have a C++11 switch, but it defaults to the latest fully-supported standard
 
+// Broken for unknown reasons since the OMF => MsCOFF switch
+// DISABLED: win32omf
+
 import core.stdc.stdio;
 import core.stdc.stdarg;
 import core.stdc.config;

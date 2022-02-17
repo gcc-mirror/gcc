@@ -55,45 +55,16 @@ struct stat
     time_t  st_ctime;
 }
 
-S_IRWXU
-    S_IRUSR
-    S_IWUSR
-    S_IXUSR
-S_IRWXG
-    S_IRGRP
-    S_IWGRP
-    S_IXGRP
-S_IRWXO
-    S_IROTH
-    S_IWOTH
-    S_IXOTH
 S_ISUID
 S_ISGID
 S_ISVTX
 
-S_ISBLK(m)
-S_ISCHR(m)
-S_ISDIR(m)
-S_ISFIFO(m)
-S_ISREG(m)
-S_ISLNK(m)
-S_ISSOCK(m)
-
 S_TYPEISMQ(buf)
 S_TYPEISSEM(buf)
 S_TYPEISSHM(buf)
-
-int    chmod(const scope char*, mode_t);
-int    fchmod(int, mode_t);
-int    fstat(int, stat*);
-int    lstat(const scope char*, stat*);
-int    mkdir(const scope char*, mode_t);
-int    mkfifo(const scope char*, mode_t);
-int    stat(const scope char*, stat*);
-mode_t umask(mode_t);
  */
 
-version (CRuntime_Glibc)
+version (linux)
 {
     version (X86)
     {
@@ -956,40 +927,9 @@ version (CRuntime_Glibc)
     else
         static assert(0, "unimplemented");
 
-    enum S_IRUSR    = 0x100; // octal 0400
-    enum S_IWUSR    = 0x080; // octal 0200
-    enum S_IXUSR    = 0x040; // octal 0100
-    enum S_IRWXU    = S_IRUSR | S_IWUSR | S_IXUSR;
-
-    enum S_IRGRP    = S_IRUSR >> 3;
-    enum S_IWGRP    = S_IWUSR >> 3;
-    enum S_IXGRP    = S_IXUSR >> 3;
-    enum S_IRWXG    = S_IRWXU >> 3;
-
-    enum S_IROTH    = S_IRGRP >> 3;
-    enum S_IWOTH    = S_IWGRP >> 3;
-    enum S_IXOTH    = S_IXGRP >> 3;
-    enum S_IRWXO    = S_IRWXG >> 3;
-
     enum S_ISUID    = 0x800; // octal 04000
     enum S_ISGID    = 0x400; // octal 02000
     enum S_ISVTX    = 0x200; // octal 01000
-
-    private
-    {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
-        {
-            return ( mode & S_IFMT ) == mask;
-        }
-    }
-
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     static if ( true /*__USE_POSIX199309*/ )
     {
@@ -1000,10 +940,6 @@ version (CRuntime_Glibc)
 
     enum UTIME_NOW = 0x3fffffff;
     enum UTIME_OMIT = 0x3ffffffe;
-
-    int utimensat(int dirfd, const char *pathname,
-        ref const(timespec)[2] times, int flags);
-    int futimens(int fd, ref const(timespec)[2] times);
 }
 else version (Darwin)
 {
@@ -1049,40 +985,9 @@ else version (Darwin)
         long[2]     st_qspare;
     }
 
-    enum S_IRUSR    = 0x100;  // octal 0400
-    enum S_IWUSR    = 0x080;  // octal 0200
-    enum S_IXUSR    = 0x040;  // octal 0100
-    enum S_IRWXU    = S_IRUSR | S_IWUSR | S_IXUSR;
-
-    enum S_IRGRP    = S_IRUSR >> 3;
-    enum S_IWGRP    = S_IWUSR >> 3;
-    enum S_IXGRP    = S_IXUSR >> 3;
-    enum S_IRWXG    = S_IRWXU >> 3;
-
-    enum S_IROTH    = S_IRGRP >> 3;
-    enum S_IWOTH    = S_IWGRP >> 3;
-    enum S_IXOTH    = S_IXGRP >> 3;
-    enum S_IRWXO    = S_IRWXG >> 3;
-
     enum S_ISUID    = 0x800; // octal 04000
     enum S_ISGID    = 0x400; // octal 02000
     enum S_ISVTX    = 0x200; // octal 01000
-
-    private
-    {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
-        {
-            return ( mode & S_IFMT ) == mask;
-        }
-    }
-
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (FreeBSD)
 {
@@ -1164,51 +1069,12 @@ else version (FreeBSD)
         }
     }
 
-    enum S_IRUSR    = 0x100; // octal 0000400
-    enum S_IWUSR    = 0x080; // octal 0000200
-    enum S_IXUSR    = 0x040; // octal 0000100
-    enum S_IRWXU    = 0x1C0; // octal 0000700
-
-    enum S_IRGRP    = 0x020;  // octal 0000040
-    enum S_IWGRP    = 0x010;  // octal 0000020
-    enum S_IXGRP    = 0x008;  // octal 0000010
-    enum S_IRWXG    = 0x038;  // octal 0000070
-
-    enum S_IROTH    = 0x4; // 0000004
-    enum S_IWOTH    = 0x2; // 0000002
-    enum S_IXOTH    = 0x1; // 0000001
-    enum S_IRWXO    = 0x7; // 0000007
-
     enum S_ISUID    = 0x800; // octal 0004000
     enum S_ISGID    = 0x400; // octal 0002000
     enum S_ISVTX    = 0x200; // octal 0001000
 
-    private
-    {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
-        {
-            return ( mode & S_IFMT ) == mask;
-        }
-    }
-
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
-
     enum UTIME_NOW = -1;
     enum UTIME_OMIT = -2;
-
-    // Since FreeBSD 11:
-    version (none)
-    {
-        int utimensat(int dirfd, const char *pathname,
-            ref const(timespec)[2] times, int flags);
-        int futimens(int fd, ref const(timespec)[2] times);
-    }
 }
 else version (NetBSD)
 {
@@ -1237,40 +1103,9 @@ else version (NetBSD)
         uint32_t[2]  st_spare;
     }
 
-    enum S_IRUSR    = 0x100; // octal 0000400
-    enum S_IWUSR    = 0x080; // octal 0000200
-    enum S_IXUSR    = 0x040; // octal 0000100
-    enum S_IRWXU    = 0x1C0; // octal 0000700
-
-    enum S_IRGRP    = 0x020;  // octal 0000040
-    enum S_IWGRP    = 0x010;  // octal 0000020
-    enum S_IXGRP    = 0x008;  // octal 0000010
-    enum S_IRWXG    = 0x038;  // octal 0000070
-
-    enum S_IROTH    = 0x4; // 0000004
-    enum S_IWOTH    = 0x2; // 0000002
-    enum S_IXOTH    = 0x1; // 0000001
-    enum S_IRWXO    = 0x7; // 0000007
-
     enum S_ISUID    = 0x800; // octal 0004000
     enum S_ISGID    = 0x400; // octal 0002000
     enum S_ISVTX    = 0x200; // octal 0001000
-
-    private
-    {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
-        {
-            return ( mode & S_IFMT ) == mask;
-        }
-    }
-
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (OpenBSD)
 {
@@ -1322,32 +1157,9 @@ else version (OpenBSD)
       }
     }
 
-    enum S_IRUSR    = 0x100; // octal 0000400
-    enum S_IWUSR    = 0x080; // octal 0000200
-    enum S_IXUSR    = 0x040; // octal 0000100
-    enum S_IRWXU    = 0x1C0; // octal 0000700
-
-    enum S_IRGRP    = 0x020;  // octal 0000040
-    enum S_IWGRP    = 0x010;  // octal 0000020
-    enum S_IXGRP    = 0x008;  // octal 0000010
-    enum S_IRWXG    = 0x038;  // octal 0000070
-
-    enum S_IROTH    = 0x4; // 0000004
-    enum S_IWOTH    = 0x2; // 0000002
-    enum S_IXOTH    = 0x1; // 0000001
-    enum S_IRWXO    = 0x7; // 0000007
-
     enum S_ISUID    = 0x800; // octal 0004000
     enum S_ISGID    = 0x400; // octal 0002000
     enum S_ISVTX    = 0x200; // octal 0001000
-
-    extern (D) bool S_ISBLK(mode_t mode)  { return (mode & S_IFMT) == S_IFBLK;  }
-    extern (D) bool S_ISCHR(mode_t mode)  { return (mode & S_IFMT) == S_IFCHR;  }
-    extern (D) bool S_ISDIR(mode_t mode)  { return (mode & S_IFMT) == S_IFDIR;  }
-    extern (D) bool S_ISFIFO(mode_t mode) { return (mode & S_IFMT) == S_IFIFO;  }
-    extern (D) bool S_ISREG(mode_t mode)  { return (mode & S_IFMT) == S_IFREG;  }
-    extern (D) bool S_ISLNK(mode_t mode)  { return (mode & S_IFMT) == S_IFLNK;  }
-    extern (D) bool S_ISSOCK(mode_t mode) { return (mode & S_IFMT) == S_IFSOCK; }
 }
 else version (DragonFlyBSD)
 {
@@ -1376,40 +1188,9 @@ else version (DragonFlyBSD)
             int64_t   st_qspare2;
     }
 
-    enum S_IRUSR    = 0x100; // octal 0000400
-    enum S_IWUSR    = 0x080; // octal 0000200
-    enum S_IXUSR    = 0x040; // octal 0000100
-    enum S_IRWXU    = 0x1C0; // octal 0000700
-
-    enum S_IRGRP    = 0x020;  // octal 0000040
-    enum S_IWGRP    = 0x010;  // octal 0000020
-    enum S_IXGRP    = 0x008;  // octal 0000010
-    enum S_IRWXG    = 0x038;  // octal 0000070
-
-    enum S_IROTH    = 0x4; // 0000004
-    enum S_IWOTH    = 0x2; // 0000002
-    enum S_IXOTH    = 0x1; // 0000001
-    enum S_IRWXO    = 0x7; // 0000007
-
     enum S_ISUID    = 0x800; // octal 0004000
     enum S_ISGID    = 0x400; // octal 0002000
     enum S_ISVTX    = 0x200; // octal 0001000
-
-    private
-    {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
-        {
-            return ( mode & S_IFMT ) == mask;
-        }
-    }
-
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (Solaris)
 {
@@ -1525,6 +1306,242 @@ else version (Solaris)
 
     }
 
+    enum S_ISUID = 0x800;
+    enum S_ISGID = 0x400;
+    enum S_ISVTX = 0x200;
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
+
+/*
+S_IRWXU
+    S_IRUSR
+    S_IWUSR
+    S_IXUSR
+S_IRWXG
+    S_IRGRP
+    S_IWGRP
+    S_IXGRP
+S_IRWXO
+    S_IROTH
+    S_IWOTH
+    S_IXOTH
+
+S_ISBLK(m)
+S_ISCHR(m)
+S_ISDIR(m)
+S_ISFIFO(m)
+S_ISREG(m)
+S_ISLNK(m)
+S_ISSOCK(m)
+ */
+
+version (CRuntime_Glibc)
+{
+    enum S_IRUSR    = 0x100; // octal 0400
+    enum S_IWUSR    = 0x080; // octal 0200
+    enum S_IXUSR    = 0x040; // octal 0100
+    enum S_IRWXU    = S_IRUSR | S_IWUSR | S_IXUSR;
+
+    enum S_IRGRP    = S_IRUSR >> 3;
+    enum S_IWGRP    = S_IWUSR >> 3;
+    enum S_IXGRP    = S_IXUSR >> 3;
+    enum S_IRWXG    = S_IRWXU >> 3;
+
+    enum S_IROTH    = S_IRGRP >> 3;
+    enum S_IWOTH    = S_IWGRP >> 3;
+    enum S_IXOTH    = S_IXGRP >> 3;
+    enum S_IRWXO    = S_IRWXG >> 3;
+
+    private
+    {
+        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        {
+            return ( mode & S_IFMT ) == mask;
+        }
+    }
+
+    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+
+    int utimensat(int dirfd, const char *pathname,
+        ref const(timespec)[2] times, int flags);
+    int futimens(int fd, ref const(timespec)[2] times);
+}
+else version (Darwin)
+{
+    enum S_IRUSR    = 0x100;  // octal 0400
+    enum S_IWUSR    = 0x080;  // octal 0200
+    enum S_IXUSR    = 0x040;  // octal 0100
+    enum S_IRWXU    = S_IRUSR | S_IWUSR | S_IXUSR;
+
+    enum S_IRGRP    = S_IRUSR >> 3;
+    enum S_IWGRP    = S_IWUSR >> 3;
+    enum S_IXGRP    = S_IXUSR >> 3;
+    enum S_IRWXG    = S_IRWXU >> 3;
+
+    enum S_IROTH    = S_IRGRP >> 3;
+    enum S_IWOTH    = S_IWGRP >> 3;
+    enum S_IXOTH    = S_IXGRP >> 3;
+    enum S_IRWXO    = S_IRWXG >> 3;
+
+    private
+    {
+        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        {
+            return ( mode & S_IFMT ) == mask;
+        }
+    }
+
+    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+}
+else version (FreeBSD)
+{
+    enum S_IRUSR    = 0x100; // octal 0000400
+    enum S_IWUSR    = 0x080; // octal 0000200
+    enum S_IXUSR    = 0x040; // octal 0000100
+    enum S_IRWXU    = 0x1C0; // octal 0000700
+
+    enum S_IRGRP    = 0x020;  // octal 0000040
+    enum S_IWGRP    = 0x010;  // octal 0000020
+    enum S_IXGRP    = 0x008;  // octal 0000010
+    enum S_IRWXG    = 0x038;  // octal 0000070
+
+    enum S_IROTH    = 0x4; // 0000004
+    enum S_IWOTH    = 0x2; // 0000002
+    enum S_IXOTH    = 0x1; // 0000001
+    enum S_IRWXO    = 0x7; // 0000007
+
+    private
+    {
+        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        {
+            return ( mode & S_IFMT ) == mask;
+        }
+    }
+
+    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+
+    // Since FreeBSD 11:
+    version (none)
+    {
+        int utimensat(int dirfd, const char *pathname,
+            ref const(timespec)[2] times, int flags);
+        int futimens(int fd, ref const(timespec)[2] times);
+    }
+}
+else version (NetBSD)
+{
+    enum S_IRUSR    = 0x100; // octal 0000400
+    enum S_IWUSR    = 0x080; // octal 0000200
+    enum S_IXUSR    = 0x040; // octal 0000100
+    enum S_IRWXU    = 0x1C0; // octal 0000700
+
+    enum S_IRGRP    = 0x020;  // octal 0000040
+    enum S_IWGRP    = 0x010;  // octal 0000020
+    enum S_IXGRP    = 0x008;  // octal 0000010
+    enum S_IRWXG    = 0x038;  // octal 0000070
+
+    enum S_IROTH    = 0x4; // 0000004
+    enum S_IWOTH    = 0x2; // 0000002
+    enum S_IXOTH    = 0x1; // 0000001
+    enum S_IRWXO    = 0x7; // 0000007
+
+    private
+    {
+        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        {
+            return ( mode & S_IFMT ) == mask;
+        }
+    }
+
+    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+}
+else version (OpenBSD)
+{
+    enum S_IRUSR    = 0x100; // octal 0000400
+    enum S_IWUSR    = 0x080; // octal 0000200
+    enum S_IXUSR    = 0x040; // octal 0000100
+    enum S_IRWXU    = 0x1C0; // octal 0000700
+
+    enum S_IRGRP    = 0x020;  // octal 0000040
+    enum S_IWGRP    = 0x010;  // octal 0000020
+    enum S_IXGRP    = 0x008;  // octal 0000010
+    enum S_IRWXG    = 0x038;  // octal 0000070
+
+    enum S_IROTH    = 0x4; // 0000004
+    enum S_IWOTH    = 0x2; // 0000002
+    enum S_IXOTH    = 0x1; // 0000001
+    enum S_IRWXO    = 0x7; // 0000007
+
+    extern (D) bool S_ISBLK(mode_t mode)  { return (mode & S_IFMT) == S_IFBLK;  }
+    extern (D) bool S_ISCHR(mode_t mode)  { return (mode & S_IFMT) == S_IFCHR;  }
+    extern (D) bool S_ISDIR(mode_t mode)  { return (mode & S_IFMT) == S_IFDIR;  }
+    extern (D) bool S_ISFIFO(mode_t mode) { return (mode & S_IFMT) == S_IFIFO;  }
+    extern (D) bool S_ISREG(mode_t mode)  { return (mode & S_IFMT) == S_IFREG;  }
+    extern (D) bool S_ISLNK(mode_t mode)  { return (mode & S_IFMT) == S_IFLNK;  }
+    extern (D) bool S_ISSOCK(mode_t mode) { return (mode & S_IFMT) == S_IFSOCK; }
+}
+else version (DragonFlyBSD)
+{
+    enum S_IRUSR    = 0x100; // octal 0000400
+    enum S_IWUSR    = 0x080; // octal 0000200
+    enum S_IXUSR    = 0x040; // octal 0000100
+    enum S_IRWXU    = 0x1C0; // octal 0000700
+
+    enum S_IRGRP    = 0x020;  // octal 0000040
+    enum S_IWGRP    = 0x010;  // octal 0000020
+    enum S_IXGRP    = 0x008;  // octal 0000010
+    enum S_IRWXG    = 0x038;  // octal 0000070
+
+    enum S_IROTH    = 0x4; // 0000004
+    enum S_IWOTH    = 0x2; // 0000002
+    enum S_IXOTH    = 0x1; // 0000001
+    enum S_IRWXO    = 0x7; // 0000007
+
+    private
+    {
+        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        {
+            return ( mode & S_IFMT ) == mask;
+        }
+    }
+
+    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+}
+else version (Solaris)
+{
     enum S_IRUSR = 0x100;
     enum S_IWUSR = 0x080;
     enum S_IXUSR = 0x040;
@@ -1539,10 +1556,6 @@ else version (Solaris)
     enum S_IWOTH = 0x2; // 0000002
     enum S_IXOTH = 0x1; // 0000001
     enum S_IRWXO = 0x7; // 0000007
-
-    enum S_ISUID = 0x800;
-    enum S_ISGID = 0x400;
-    enum S_ISVTX = 0x200;
 
     private
     {
@@ -1564,115 +1577,6 @@ else version (Solaris)
 }
 else version (CRuntime_Bionic)
 {
-    version (X86)
-    {
-        struct stat_t
-        {
-            ulong       st_dev;
-            ubyte[4]    __pad0;
-            c_ulong     __st_ino;
-            uint        st_mode;
-            uint        st_nlink;
-            c_ulong     st_uid;
-            c_ulong     st_gid;
-            ulong       st_rdev;
-            ubyte[4]    __pad3;
-
-            long        st_size;
-            c_ulong     st_blksize;
-            ulong       st_blocks;
-            c_ulong     st_atime;
-            c_ulong     st_atime_nsec;
-            c_ulong     st_mtime;
-            c_ulong     st_mtime_nsec;
-            c_ulong     st_ctime;
-            c_ulong     st_ctime_nsec;
-            ulong       st_ino;
-        }
-    }
-    else version (ARM)
-    {
-        struct stat_t
-        {
-            ulong       st_dev;
-            ubyte[4]    __pad0;
-            c_ulong     __st_ino;
-            uint        st_mode;
-            uint        st_nlink;
-            c_ulong     st_uid;
-            c_ulong     st_gid;
-            ulong       st_rdev;
-            ubyte[4]    __pad3;
-
-            long        st_size;
-            c_ulong     st_blksize;
-            ulong       st_blocks;
-            c_ulong     st_atime;
-            c_ulong     st_atime_nsec;
-            c_ulong     st_mtime;
-            c_ulong     st_mtime_nsec;
-            c_ulong     st_ctime;
-            c_ulong     st_ctime_nsec;
-            ulong       st_ino;
-        }
-    }
-    else version (AArch64)
-    {
-        struct stat_t
-        {
-            ulong       st_dev;
-            ulong       st_ino;
-            uint        st_mode;
-            uint        st_nlink;
-            uid_t       st_uid;
-            gid_t       st_gid;
-            ulong       st_rdev;
-            ulong       __pad1;
-
-            long        st_size;
-            int         st_blksize;
-            int         __pad2;
-            long        st_blocks;
-            long        st_atime;
-            ulong       st_atime_nsec;
-            long        st_mtime;
-            ulong       st_mtime_nsec;
-            long        st_ctime;
-            ulong       st_ctime_nsec;
-            uint        __unused4;
-            uint        __unused5;
-        }
-    }
-    else version (X86_64)
-    {
-        struct stat_t
-        {
-            ulong       st_dev;
-            ulong       st_ino;
-            ulong       st_nlink;
-            uint        st_mode;
-            uid_t       st_uid;
-            gid_t       st_gid;
-            uint        __pad0;
-
-            ulong       st_rdev;
-            long        st_size;
-            long        st_blksize;
-            long        st_blocks;
-            long        st_atime;
-            ulong       st_atime_nsec;
-            long        st_mtime;
-            ulong       st_mtime_nsec;
-            long        st_ctime;
-            ulong       st_ctime_nsec;
-            long[3]     __pad3;
-        }
-    }
-    else
-    {
-        static assert(false, "Architecture not supported.");
-    }
-
     enum S_IRUSR    = 0x100; // octal 0000400
     enum S_IWUSR    = 0x080; // octal 0000200
     enum S_IXUSR    = 0x040; // octal 0000100
@@ -1687,10 +1591,6 @@ else version (CRuntime_Bionic)
     enum S_IWOTH    = 0x2; // 0000002
     enum S_IXOTH    = 0x1; // 0000001
     enum S_IRWXO    = 0x7; // 0000007
-
-    enum S_ISUID    = 0x800; // octal 0004000
-    enum S_ISGID    = 0x400; // octal 0002000
-    enum S_ISVTX    = 0x200; // octal 0001000
 
     private
     {
@@ -1730,229 +1630,7 @@ else version (CRuntime_Musl)
         S_IWOTH    = S_IWGRP >> 3,
         S_IXOTH    = S_IXGRP >> 3,
         S_IRWXO    = S_IRWXG >> 3,
-
-        S_ISUID    = 0x800, // octal 04000
-        S_ISGID    = 0x400, // octal 02000
-        S_ISVTX    = 0x200, // octal 01000
     }
-    version (ARM)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            int __st_dev_padding;
-            c_long __st_ino_truncated;
-            mode_t st_mode;
-            nlink_t st_nlink;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            int __st_rdev_padding;
-            off_t st_size;
-            blksize_t st_blksize;
-            blkcnt_t st_blocks;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-            ino_t st_ino;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (AArch64)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            ino_t st_ino;
-            mode_t st_mode;
-            nlink_t st_nlink;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            c_ulong __pad;
-            off_t st_size;
-            blksize_t st_blksize;
-            int __pad2;
-            blkcnt_t st_blocks;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-            uint[2] __unused;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (X86_64)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            ino_t st_ino;
-            nlink_t st_nlink;
-
-            mode_t st_mode;
-            uid_t st_uid;
-            gid_t st_gid;
-            uint   __pad0;
-            dev_t st_rdev;
-            off_t st_size;
-            blksize_t st_blksize;
-            blkcnt_t st_blocks;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-
-            c_long[3] __unused;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (X86)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            int __st_dev_padding;
-            c_long __st_ino_truncated;
-            mode_t st_mode;
-            nlink_t st_nlink;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            int __st_rdev_padding;
-            off_t st_size;
-            blksize_t st_blksize;
-            blkcnt_t st_blocks;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-            ino_t st_ino;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (MIPS64)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            int[3] __pad1;
-            ino_t st_ino;
-            mode_t st_mode;
-            nlink_t st_nlink;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            uint[2] __pad2;
-            off_t st_size;
-            int __pad3;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-            blksize_t st_blksize;
-            uint __pad4;
-            blkcnt_t st_blocks;
-            int[14] __pad5;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (PPC64)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            ino_t st_ino;
-            nlink_t st_nlink;
-            mode_t st_mode;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            off_t st_size;
-            blksize_t st_blksize;
-            blkcnt_t st_blocks;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-            c_ulong[3] __unused;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else version (SystemZ)
-    {
-        struct stat_t
-        {
-            dev_t st_dev;
-            ino_t st_ino;
-            nlink_t st_nlink;
-            mode_t st_mode;
-
-            uid_t st_uid;
-            gid_t st_gid;
-            dev_t st_rdev;
-            off_t st_size;
-
-            timespec st_atim;
-            timespec st_mtim;
-            timespec st_ctim;
-
-            blksize_t st_blksize;
-            blkcnt_t st_blocks;
-            c_ulong[3] __unused;
-
-            extern(D) @safe @property inout pure nothrow
-            {
-                ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-            }
-        }
-    }
-    else
-        static assert("Unsupported platform");
 
     private
     {
@@ -1975,170 +1653,6 @@ else version (CRuntime_Musl)
 }
 else version (CRuntime_UClibc)
 {
-    version (X86_64)
-    {
-        struct stat_t
-        {
-            dev_t       st_dev;
-            ino_t       st_ino;
-            nlink_t     st_nlink;
-            mode_t      st_mode;
-            uid_t       st_uid;
-            gid_t       st_gid;
-            uint        __pad0;
-            dev_t       st_rdev;
-            off_t       st_size;
-            blksize_t   st_blksize;
-            blkcnt_t    st_blocks;
-            time_t      st_atime;
-            ulong_t     st_atimensec;
-            time_t      st_mtime;
-            ulong_t     st_mtimensec;
-            time_t      st_ctime;
-            ulong_t     st_ctimensec;
-            slong_t[3]     __unused;
-        }
-    }
-    else version (MIPS_O32)
-    {
-        struct stat_t
-        {
-            c_ulong     st_dev;
-            c_long[3]   st_pad1;
-            ino_t       st_ino;
-            mode_t      st_mode;
-            nlink_t     st_nlink;
-            uid_t       st_uid;
-            gid_t       st_gid;
-            c_ulong     st_rdev;
-            static if (!__USE_FILE_OFFSET64)
-            {
-                c_long[2]   st_pad2;
-                off_t       st_size;
-                c_long      st_pad3;
-            }
-            else
-            {
-                c_long[3]   st_pad2;
-                off_t       st_size;
-            }
-            static if (__USE_MISC || __USE_XOPEN2K8)
-            {
-                timespec    st_atim;
-                timespec    st_mtim;
-                timespec    st_ctim;
-                extern(D) @safe @property inout pure nothrow
-                {
-                    ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
-                    ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
-                    ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
-                }
-            }
-            else
-            {
-                time_t      st_atime;
-                c_ulong     st_atimensec;
-                time_t      st_mtime;
-                c_ulong     st_mtimensec;
-                time_t      st_ctime;
-                c_ulong     st_ctimensec;
-            }
-            blksize_t   st_blksize;
-            static if (!__USE_FILE_OFFSET64)
-            {
-                blkcnt_t    st_blocks;
-            }
-            else
-            {
-                c_long      st_pad4;
-                blkcnt_t    st_blocks;
-            }
-            c_long[14]  st_pad5;
-        }
-    }
-    else version (ARM)
-    {
-        private
-        {
-            alias __dev_t = ulong;
-            alias __ino_t = c_ulong;
-            alias __ino64_t = ulong;
-            alias __mode_t = uint;
-            alias __nlink_t = size_t;
-            alias __uid_t = uint;
-            alias __gid_t = uint;
-            alias __off_t = c_long;
-            alias __off64_t = long;
-            alias __blksize_t = c_long;
-            alias __blkcnt_t = c_long;
-            alias __blkcnt64_t = long;
-            alias __timespec = timespec;
-            alias __time_t = time_t;
-        }
-        struct stat_t
-        {
-            __dev_t st_dev;
-            ushort __pad1;
-
-            static if (!__USE_FILE_OFFSET64)
-            {
-                __ino_t st_ino;
-            }
-            else
-            {
-                __ino_t __st_ino;
-            }
-            __mode_t st_mode;
-            __nlink_t st_nlink;
-            __uid_t st_uid;
-            __gid_t st_gid;
-            __dev_t st_rdev;
-            ushort __pad2;
-
-            static if (!__USE_FILE_OFFSET64)
-            {
-                __off_t st_size;
-            }
-            else
-            {
-                __off64_t st_size;
-            }
-            __blksize_t st_blksize;
-
-            static if (!__USE_FILE_OFFSET64)
-            {
-                __blkcnt_t st_blocks;
-            }
-            else
-            {
-                __blkcnt64_t st_blocks;
-            }
-
-            __time_t st_atime;
-            c_ulong st_atimensec;
-            __time_t st_mtime;
-            c_ulong st_mtimensec;
-            __time_t st_ctime;
-            c_ulong st_ctimensec;
-
-            static if (!__USE_FILE_OFFSET64)
-            {
-                c_ulong __unused4;
-                c_ulong __unused5;
-            }
-            else
-            {
-                __ino64_t st_ino;
-            }
-        }
-        static if (__USE_FILE_OFFSET64)
-            static assert(stat_t.sizeof == 104);
-        else
-            static assert(stat_t.sizeof == 88);
-    }
-    else
-        static assert(0, "unimplemented");
-
     enum S_IRUSR    = 0x100; // octal 0400
     enum S_IWUSR    = 0x080; // octal 0200
     enum S_IXUSR    = 0x040; // octal 0100
@@ -2153,10 +1667,6 @@ else version (CRuntime_UClibc)
     enum S_IWOTH    = S_IWGRP >> 3;
     enum S_IXOTH    = S_IXGRP >> 3;
     enum S_IRWXO    = S_IRWXG >> 3;
-
-    enum S_ISUID    = 0x800; // octal 04000
-    enum S_ISGID    = 0x400; // octal 02000
-    enum S_ISVTX    = 0x200; // octal 01000
 
     private
     {
@@ -2174,16 +1684,6 @@ else version (CRuntime_UClibc)
     extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
     extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
-    static if ( true /*__USE_POSIX199309*/ )
-    {
-        extern bool S_TYPEISMQ( stat_t* buf )  { return false; }
-        extern bool S_TYPEISSEM( stat_t* buf ) { return false; }
-        extern bool S_TYPEISSHM( stat_t* buf ) { return false; }
-    }
-
-    enum UTIME_NOW = 0x3fffffff;
-    enum UTIME_OMIT = 0x3ffffffe;
-
     int utimensat(int dirfd, const char *pathname,
     ref const(timespec)[2] times, int flags);
     int futimens(int fd, ref const(timespec)[2] times);
@@ -2192,6 +1692,17 @@ else
 {
     static assert(false, "Unsupported platform");
 }
+
+/*
+int    chmod(const scope char*, mode_t);
+int    fchmod(int, mode_t);
+int    fstat(int, stat*);
+int    lstat(const scope char*, stat*);
+int    mkdir(const scope char*, mode_t);
+int    mkfifo(const scope char*, mode_t);
+int    stat(const scope char*, stat*);
+mode_t umask(mode_t);
+*/
 
 int    chmod(const scope char*, mode_t);
 int    fchmod(int, mode_t);
@@ -2385,11 +1896,9 @@ S_IFREG
 S_IFDIR
 S_IFLNK
 S_IFSOCK
-
-int mknod(in 3char*, mode_t, dev_t);
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
     enum S_IFMT     = 0xF000; // octal 0170000
     enum S_IFBLK    = 0x6000; // octal 0060000
@@ -2399,8 +1908,6 @@ version (CRuntime_Glibc)
     enum S_IFDIR    = 0x4000; // octal 0040000
     enum S_IFLNK    = 0xA000; // octal 0120000
     enum S_IFSOCK   = 0xC000; // octal 0140000
-
-    int mknod(const scope char*, mode_t, dev_t);
 }
 else version (Darwin)
 {
@@ -2412,8 +1919,6 @@ else version (Darwin)
     enum S_IFDIR    = 0x4000; // octal 0040000
     enum S_IFLNK    = 0xA000; // octal 0120000
     enum S_IFSOCK   = 0xC000; // octal 0140000
-
-    int mknod(const scope char*, mode_t, dev_t);
 }
 else version (FreeBSD)
 {
@@ -2425,7 +1930,72 @@ else version (FreeBSD)
     enum S_IFDIR    = 0x4000; // octal 0040000
     enum S_IFLNK    = 0xA000; // octal 0120000
     enum S_IFSOCK   = 0xC000; // octal 0140000
+}
+else version (NetBSD)
+{
+    enum S_IFMT     = 0xF000; // octal 0170000
+    enum S_IFBLK    = 0x6000; // octal 0060000
+    enum S_IFCHR    = 0x2000; // octal 0020000
+    enum S_IFIFO    = 0x1000; // octal 0010000
+    enum S_IFREG    = 0x8000; // octal 0100000
+    enum S_IFDIR    = 0x4000; // octal 0040000
+    enum S_IFLNK    = 0xA000; // octal 0120000
+    enum S_IFSOCK   = 0xC000; // octal 0140000
+}
+else version (OpenBSD)
+{
+    enum S_IFMT     = 0xF000; // octal 0170000
+    enum S_IFBLK    = 0x6000; // octal 0060000
+    enum S_IFCHR    = 0x2000; // octal 0020000
+    enum S_IFIFO    = 0x1000; // octal 0010000
+    enum S_IFREG    = 0x8000; // octal 0100000
+    enum S_IFDIR    = 0x4000; // octal 0040000
+    enum S_IFLNK    = 0xA000; // octal 0120000
+    enum S_IFSOCK   = 0xC000; // octal 0140000
+}
+else version (DragonFlyBSD)
+{
+    enum S_IFMT     = 0xF000; // octal 0170000
+    enum S_IFBLK    = 0x6000; // octal 0060000
+    enum S_IFCHR    = 0x2000; // octal 0020000
+    enum S_IFIFO    = 0x1000; // octal 0010000
+    enum S_IFREG    = 0x8000; // octal 0100000
+    enum S_IFDIR    = 0x4000; // octal 0040000
+    enum S_IFLNK    = 0xA000; // octal 0120000
+    enum S_IFSOCK   = 0xC000; // octal 0140000
+}
+else version (Solaris)
+{
+    enum S_IFMT = 0xF000;
+    enum S_IFBLK = 0x6000;
+    enum S_IFCHR = 0x2000;
+    enum S_IFIFO = 0x1000;
+    enum S_IFREG = 0x8000;
+    enum S_IFDIR = 0x4000;
+    enum S_IFLNK = 0xA000;
+    enum S_IFSOCK = 0xC000;
+    enum S_IFDOOR = 0xD000;
+    enum S_IFPORT = 0xE000;
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
 
+/*
+int mknod(const scope char*, mode_t, dev_t);
+*/
+
+version (CRuntime_Glibc)
+{
+    int mknod(const scope char*, mode_t, dev_t);
+}
+else version (Darwin)
+{
+    int mknod(const scope char*, mode_t, dev_t);
+}
+else version (FreeBSD)
+{
     version (GNU)
     {
         int mknod(const scope char*, mode_t, dev_t);
@@ -2440,97 +2010,30 @@ else version (FreeBSD)
 }
 else version (NetBSD)
 {
-    enum S_IFMT     = 0xF000; // octal 0170000
-    enum S_IFBLK    = 0x6000; // octal 0060000
-    enum S_IFCHR    = 0x2000; // octal 0020000
-    enum S_IFIFO    = 0x1000; // octal 0010000
-    enum S_IFREG    = 0x8000; // octal 0100000
-    enum S_IFDIR    = 0x4000; // octal 0040000
-    enum S_IFLNK    = 0xA000; // octal 0120000
-    enum S_IFSOCK   = 0xC000; // octal 0140000
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (OpenBSD)
 {
-    enum S_IFMT     = 0xF000; // octal 0170000
-    enum S_IFBLK    = 0x6000; // octal 0060000
-    enum S_IFCHR    = 0x2000; // octal 0020000
-    enum S_IFIFO    = 0x1000; // octal 0010000
-    enum S_IFREG    = 0x8000; // octal 0100000
-    enum S_IFDIR    = 0x4000; // octal 0040000
-    enum S_IFLNK    = 0xA000; // octal 0120000
-    enum S_IFSOCK   = 0xC000; // octal 0140000
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (DragonFlyBSD)
 {
-    enum S_IFMT     = 0xF000; // octal 0170000
-    enum S_IFBLK    = 0x6000; // octal 0060000
-    enum S_IFCHR    = 0x2000; // octal 0020000
-    enum S_IFIFO    = 0x1000; // octal 0010000
-    enum S_IFREG    = 0x8000; // octal 0100000
-    enum S_IFDIR    = 0x4000; // octal 0040000
-    enum S_IFLNK    = 0xA000; // octal 0120000
-    enum S_IFSOCK   = 0xC000; // octal 0140000
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (Solaris)
 {
-    enum S_IFMT = 0xF000;
-    enum S_IFBLK = 0x6000;
-    enum S_IFCHR = 0x2000;
-    enum S_IFIFO = 0x1000;
-    enum S_IFREG = 0x8000;
-    enum S_IFDIR = 0x4000;
-    enum S_IFLNK = 0xA000;
-    enum S_IFSOCK = 0xC000;
-    enum S_IFDOOR = 0xD000;
-    enum S_IFPORT = 0xE000;
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (CRuntime_Bionic)
 {
-    enum S_IFMT     = 0xF000; // octal 0170000
-    enum S_IFBLK    = 0x6000; // octal 0060000
-    enum S_IFCHR    = 0x2000; // octal 0020000
-    enum S_IFIFO    = 0x1000; // octal 0010000
-    enum S_IFREG    = 0x8000; // octal 0100000
-    enum S_IFDIR    = 0x4000; // octal 0040000
-    enum S_IFLNK    = 0xA000; // octal 0120000
-    enum S_IFSOCK   = 0xC000; // octal 0140000
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (CRuntime_Musl)
 {
-    enum {
-        S_IFMT     = 0xF000, // octal 0170000
-        S_IFBLK    = 0x6000, // octal 0060000
-        S_IFCHR    = 0x2000, // octal 0020000
-        S_IFIFO    = 0x1000, // octal 0010000
-        S_IFREG    = 0x8000, // octal 0100000
-        S_IFDIR    = 0x4000, // octal 0040000
-        S_IFLNK    = 0xA000, // octal 0120000
-        S_IFSOCK   = 0xC000, // octal 0140000
-    }
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else version (CRuntime_UClibc)
 {
-    enum S_IFMT     = 0xF000; // octal 0170000
-    enum S_IFBLK    = 0x6000; // octal 0060000
-    enum S_IFCHR    = 0x2000; // octal 0020000
-    enum S_IFIFO    = 0x1000; // octal 0010000
-    enum S_IFREG    = 0x8000; // octal 0100000
-    enum S_IFDIR    = 0x4000; // octal 0040000
-    enum S_IFLNK    = 0xA000; // octal 0120000
-    enum S_IFSOCK   = 0xC000; // octal 0140000
-
     int mknod(const scope char*, mode_t, dev_t);
 }
 else

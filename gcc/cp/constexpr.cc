@@ -9065,6 +9065,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case BIND_EXPR:
       return RECUR (BIND_EXPR_BODY (t), want_rval);
 
+    case NON_DEPENDENT_EXPR:
+      /* Treat NON_DEPENDENT_EXPR as non-constant: it's not handled by
+	 constexpr evaluation or tsubst, so fold_non_dependent_expr can't
+	 do anything useful with it.  And we shouldn't see it in a context
+	 where a constant expression is strictly required, hence the assert.  */
+      gcc_checking_assert (!(flags & tf_error));
+      return false;
+
     case CLEANUP_POINT_EXPR:
     case MUST_NOT_THROW_EXPR:
     case TRY_CATCH_EXPR:
@@ -9072,7 +9080,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case EH_SPEC_BLOCK:
     case EXPR_STMT:
     case PAREN_EXPR:
-    case NON_DEPENDENT_EXPR:
       /* For convenience.  */
     case LOOP_EXPR:
     case EXIT_EXPR:

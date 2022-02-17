@@ -115,6 +115,7 @@ fail_compilation/reserved_version.d(216): Error: version identifier `D_PIE` is r
 fail_compilation/reserved_version.d(217): Error: version identifier `AVR` is reserved and cannot be set
 fail_compilation/reserved_version.d(218): Error: version identifier `D_PreConditions` is reserved and cannot be set
 fail_compilation/reserved_version.d(219): Error: version identifier `D_PostConditions` is reserved and cannot be set
+fail_compilation/reserved_version.d(220): Error: version identifier `D_ProfileGC` is reserved and cannot be set
 ---
 */
 
@@ -236,6 +237,7 @@ version = D_PIE;
 version = AVR;
 version = D_PreConditions;
 version = D_PostConditions;
+version = D_ProfileGC;
 
 // This should work though
 debug = DigitalMars;
@@ -346,3 +348,4 @@ debug = MSP430;
 debug = AVR;
 debug = D_PreConditions;
 debug = D_PostConditions;
+debug = D_ProfileGC;

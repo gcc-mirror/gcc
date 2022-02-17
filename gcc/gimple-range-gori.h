@@ -158,6 +158,8 @@ class gori_compute : public gori_map
 public:
   gori_compute (int not_executable_flag = 0);
   bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
+  bool condexpr_adjust (irange &r1, irange &r2, gimple *s, tree cond, tree op1,
+			tree op2, fur_source &src);
   bool has_edge_range_p (tree name, basic_block bb = NULL);
   bool has_edge_range_p (tree name, edge e);
   void dump (FILE *f);

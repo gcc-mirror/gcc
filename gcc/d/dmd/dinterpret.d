@@ -99,7 +99,15 @@ public Expression ctfeInterpret(Expression e)
 
     Expression result = interpret(e, null);
 
-    result = copyRegionExp(result);
+    // Report an error if the expression contained a `ThrowException` and
+    // hence generated an uncaught exception
+    if (auto tee = result.isThrownExceptionExp())
+    {
+        tee.generateUncaughtError();
+        result = CTFEExp.cantexp;
+    }
+    else
+        result = copyRegionExp(result);
 
     if (!CTFEExp.isCantExp(result))
         result = scrubReturnValue(e.loc, result);
@@ -1601,14 +1609,20 @@ public:
             istate.start = null;
         }
 
-        incUsageCtfe(istate, s.loc);
+        interpretThrow(s.exp, s.loc);
+    }
 
-        Expression e = interpretRegion(s.exp, istate);
+    /// Interpret `throw <exp>` found at the specified location `loc`
+    private void interpretThrow(Expression exp, const ref Loc loc)
+    {
+        incUsageCtfe(istate, loc);
+
+        Expression e = interpretRegion(exp, istate);
         if (exceptionOrCant(e))
             return;
 
         assert(e.op == EXP.classReference);
-        result = ctfeEmplaceExp!ThrownExceptionExp(s.loc, e.isClassReferenceExp());
+        result = ctfeEmplaceExp!ThrownExceptionExp(loc, e.isClassReferenceExp());
     }
 
     override void visit(ScopeGuardStatement s)
@@ -6147,6 +6161,15 @@ public:
         }
         result = e1;
         return;
+    }
+
+    override void visit(ThrowExp te)
+    {
+        debug (LOG)
+        {
+            printf("%s ThrowExpression::interpret()\n", e.loc.toChars());
+        }
+        interpretThrow(te.e1, te.loc);
     }
 
     override void visit(PtrExp e)

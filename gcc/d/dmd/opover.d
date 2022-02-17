@@ -853,11 +853,11 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         {
                             // Rewrite (e1 op e2) as e2.opfunc(e1)
                             result = build_overload(e.loc, sc, e.e2, e.e1, m.lastf ? m.lastf : s);
+                            // When reversing operands of comparison operators,
+                            // need to reverse the sense of the op
+                            if (pop)
+                                *pop = reverseRelation(e.op);
                         }
-                        // When reversing operands of comparison operators,
-                        // need to reverse the sense of the op
-                        if (pop)
-                            *pop = reverseRelation(e.op);
                         return;
                     }
                 }
@@ -1052,7 +1052,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 e.e2 = new DotIdExp(e.loc, e.e2, Id._tupleof);
 
                 auto sc2 = sc.push();
-                sc2.flags = (sc2.flags & ~SCOPE.onlysafeaccess) | SCOPE.noaccesscheck;
+                sc2.flags |= SCOPE.noaccesscheck;
                 result = e.expressionSemantic(sc2);
                 sc2.pop();
 

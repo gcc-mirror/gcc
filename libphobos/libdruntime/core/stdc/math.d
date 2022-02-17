@@ -850,59 +850,59 @@ else version (CRuntime_UClibc)
         FP_FAST_FMAL = 0,
     }
 
-    int __fpclassifyf(float x);
-    int __fpclassify(double x);
-    int __fpclassifyl(real x);
+    pure int __fpclassifyf(float x);
+    pure int __fpclassify(double x);
+    pure int __fpclassifyl(real x);
 
-    int __finitef(float x);
-    int __finite(double x);
-    int __finitel(real x);
+    pure int __finitef(float x);
+    pure int __finite(double x);
+    pure int __finitel(real x);
 
-    int __isinff(float x);
-    int __isinf(double x);
-    int __isinfl(real x);
+    pure int __isinff(float x);
+    pure int __isinf(double x);
+    pure int __isinfl(real x);
 
-    int __isnanf(float x);
-    int __isnan(double x);
-    int __isnanl(real x);
+    pure int __isnanf(float x);
+    pure int __isnan(double x);
+    pure int __isnanl(real x);
 
-    int __signbitf(float x);
-    int __signbit(double x);
-    int __signbitl(real x);
+    pure int __signbitf(float x);
+    pure int __signbit(double x);
+    pure int __signbitl(real x);
 
     ///
-    pragma(mangle, "__fpclassifyf") int fpclassify(float x);
+    pragma(mangle, "__fpclassifyf") pure int fpclassify(float x);
     ///
-    pragma(mangle, "__fpclassify")  int fpclassify(double x);
+    pragma(mangle, "__fpclassify")  pure int fpclassify(double x);
     ///
     pragma(mangle, real.sizeof == double.sizeof ? "__fpclassify" : "__fpclassifyl")
-    int fpclassify(real x);
+    pure int fpclassify(real x);
 
     ///
-    pragma(mangle, "__finitef") int isfinite(float x);
+    pragma(mangle, "__finitef") pure int isfinite(float x);
     ///
-    pragma(mangle, "__finite")  int isfinite(double x);
+    pragma(mangle, "__finite")  pure int isfinite(double x);
     ///
     pragma(mangle, real.sizeof == double.sizeof ? "__finite" : "__finitel")
-    int isfinite(real x);
+    pure int isfinite(real x);
 
     ///
-    pragma(mangle, "__isinff") int isinf(float x);
+    pragma(mangle, "__isinff") pure int isinf(float x);
     ///
-    pragma(mangle, "__isinf")  int isinf(double x);
+    pragma(mangle, "__isinf")  pure int isinf(double x);
     ///
     pragma(mangle, real.sizeof == double.sizeof ? "__isinf" : "__isinfl")
-    int isinf(real x);
+    pure int isinf(real x);
 
     ///
-    pragma(mangle, "__isnanf") int isnan(float x);
+    pragma(mangle, "__isnanf") pure int isnan(float x);
     ///
-    pragma(mangle, "__isnan")  int isnan(double x);
+    pragma(mangle, "__isnan")  pure int isnan(double x);
     ///
     pragma(mangle, real.sizeof == double.sizeof ? "__isnan" : "__isnanl")
-    int isnan(real x);
+    pure int isnan(real x);
 
-  extern (D)
+  extern (D) pure
   {
     ///
     int isnormal(float x)       { return fpclassify(x) == FP_NORMAL; }
@@ -913,12 +913,12 @@ else version (CRuntime_UClibc)
   }
 
     ///
-    pragma(mangle, "__signbitf") int signbit(float x);
+    pragma(mangle, "__signbitf") pure int signbit(float x);
     ///
-    pragma(mangle, "__signbit")  int signbit(double x);
+    pragma(mangle, "__signbit")  pure int signbit(double x);
     ///
     pragma(mangle, real.sizeof == double.sizeof ? "__signbit" : "__signbitl")
-    int signbit(real x);
+    pure int signbit(real x);
 }
 else version (Darwin)
 {
@@ -3089,7 +3089,7 @@ else version (OpenBSD)
     ///
     pure real atanl(real x);
     ///
-    real atan2l(real x, real y);
+    real atan2l(real y, real x);
     ///
     pure real cosl(real x);
     ///
@@ -3377,7 +3377,7 @@ else version (DragonFlyBSD)
     pure real acosl(real x);
     pure real asinl(real x);
     pure real atanl(real x);
-    real atan2l(real x, real y);
+    real atan2l(real y, real x);
     pure real cosl(real x);
     pure real sinl(real x);
     pure real tanl(real x);
@@ -3872,7 +3872,7 @@ else version (CRuntime_UClibc)
     ///
     float   atan2f(float y, float x);
     ///
-    extern(D) real atan2l(real y, real x) { return atan2(cast(double) x, cast(double) y); }
+    extern(D) real atan2l(real y, real x) { return atan2(cast(double) y, cast(double) x); }
 
     ///
     pure double  cos(double x);

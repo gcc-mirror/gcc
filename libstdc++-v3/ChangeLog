@@ -1,3 +1,11 @@
+2022-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104542
+	* include/bits/uses_allocator_args.h (make_obj_using_allocator)
+	(uninitialized_construct_using_allocator): Add constexpr.
+	* testsuite/20_util/uses_allocator/make_obj.cc: Check constexpr.
+	* testsuite/20_util/uses_allocator/uninitialized_construct.cc: New test.
+
 2022-02-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100912

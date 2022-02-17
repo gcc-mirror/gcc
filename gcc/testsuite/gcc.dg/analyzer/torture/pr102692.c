@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2 -Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
 /* TODO: remove the need for -Wno-analyzer-too-complex.  */
 
 struct lisp;
@@ -73,7 +73,7 @@ fix_overlays_before (struct buffer *bp, long prev, long pos)
       parent = tail;
       tail = tail->next;
     }
-  if (!tail || end < prev || !tail->next) /* { dg-bogus "use of uninitialized value 'end'" "uninit" { xfail *-*-* } } */
+  if (!tail || end < prev || !tail->next) /* { dg-bogus "use of uninitialized value 'end'" "uninit" } */
     /* { dg-bogus "dereference of NULL 'tail'" "null deref" { target *-*-* } .-1 } */
     return;
   right_pair = parent;

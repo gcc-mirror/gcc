@@ -52,11 +52,9 @@ IPC_PRIVATE
 IPC_RMID
 IPC_SET
 IPC_STAT
-
-key_t ftok(const scope char*, int);
 */
 
-version (CRuntime_Glibc)
+version (linux)
 {
     struct ipc_perm
     {
@@ -82,8 +80,6 @@ version (CRuntime_Glibc)
     enum IPC_RMID       = 0;
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
-
-    key_t ftok(const scope char*, int);
 }
 else version (Darwin)
 {
@@ -122,8 +118,6 @@ else version (FreeBSD)
     enum IPC_RMID       = 0;
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
-
-    key_t ftok(const scope char*, int);
 }
 else version (NetBSD)
 {
@@ -147,8 +141,6 @@ else version (NetBSD)
     enum IPC_RMID       = 0;
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
-
-    key_t ftok(const scope char*, int);
 }
 else version (OpenBSD)
 {
@@ -172,8 +164,6 @@ else version (OpenBSD)
     enum IPC_RMID       = 0;
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
-
-    key_t ftok(const scope char*, int);
 }
 else version (DragonFlyBSD)
 {
@@ -197,79 +187,53 @@ else version (DragonFlyBSD)
     enum IPC_RMID       = 0;
     enum IPC_SET        = 1;
     enum IPC_STAT       = 2;
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
 
+/*
+key_t ftok(const scope char*, int);
+*/
+
+version (CRuntime_Glibc)
+{
+    key_t ftok(const scope char*, int);
+}
+else version (Darwin)
+{
+
+}
+else version (FreeBSD)
+{
+    key_t ftok(const scope char*, int);
+}
+else version (NetBSD)
+{
+    key_t ftok(const scope char*, int);
+}
+else version (OpenBSD)
+{
+    key_t ftok(const scope char*, int);
+}
+else version (DragonFlyBSD)
+{
     key_t ftok(const scope char*, int);
 }
 else version (CRuntime_Bionic)
 {
-    // All except ftok are from the linux kernel headers. Latest Bionic headers
-    // don't use this legacy definition anymore, consider updating.
-    version (D_LP64)
-    {
-        struct ipc_perm
-        {
-            key_t   key;
-            uint    uid;
-            uint    gid;
-            uint    cuid;
-            uint    cgid;
-            mode_t  mode;
-            ushort  seq;
-        }
-    }
-    else
-    {
-        struct ipc_perm
-        {
-            key_t   key;
-            ushort  uid;
-            ushort  gid;
-            ushort  cuid;
-            ushort  cgid;
-            mode_t  mode;
-            ushort  seq;
-        }
-    }
-
-    enum IPC_CREAT      = 0x0200; // 01000
-    enum IPC_EXCL       = 0x0400; // 02000
-    enum IPC_NOWAIT     = 0x0800; // 04000
-
-    enum key_t IPC_PRIVATE = 0;
-
-    enum IPC_RMID       = 0;
-    enum IPC_SET        = 1;
-    enum IPC_STAT       = 2;
-
+    key_t ftok(const scope char*, int);
+}
+else version (CRuntime_Musl)
+{
     key_t ftok(const scope char*, int);
 }
 else version (CRuntime_UClibc)
 {
-    struct ipc_perm
-    {
-        key_t   __key;
-        uid_t   uid;
-        gid_t   gid;
-        uid_t   cuid;
-        gid_t   cgid;
-        ushort  mode;
-        ushort  __pad1;
-        ushort  __seq;
-        ushort  __pad2;
-        c_ulong __unused1;
-        c_ulong __unused2;
-    }
-
-    enum IPC_CREAT      = 0x0200; // 01000
-    enum IPC_EXCL       = 0x0400; // 02000
-    enum IPC_NOWAIT     = 0x0800; // 04000
-
-    enum key_t IPC_PRIVATE = 0;
-
-    enum IPC_RMID       = 0;
-    enum IPC_SET        = 1;
-    enum IPC_STAT       = 2;
-    enum IPC_INFO       = 3;
-
     key_t ftok(const scope char*, int);
+}
+else
+{
+    static assert(false, "Unsupported platform");
 }

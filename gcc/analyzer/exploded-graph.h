@@ -90,6 +90,8 @@ class impl_region_model_context : public region_model_context
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx) FINAL OVERRIDE;
 
+  const gimple *get_stmt () const OVERRIDE { return m_stmt; }
+
   exploded_graph *m_eg;
   log_user m_logger;
   exploded_node *m_enode_for_diag;

@@ -1,4 +1,4 @@
-// COMPILE_SEPARATELY
+// COMPILE_SEPARATELY:
 // EXTRA_SOURCES: imports/test8997a.d
 
 module test8997;

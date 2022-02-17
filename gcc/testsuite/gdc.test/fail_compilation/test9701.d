@@ -1,5 +1,5 @@
 /*
-TEST_OUTPUT
+TEST_OUTPUT:
 ---
 fail_compilation/test9701.d(38): Error: `@safe` is not a valid attribute for enum members
 fail_compilation/test9701.d(39): Error: `@system` is not a valid attribute for enum members

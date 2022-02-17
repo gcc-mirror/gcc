@@ -34,16 +34,6 @@ import core.sys.linux.config;
 version (X86_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x00001; // POSIX
-    // enum RTLD_NOW = 0x00002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -58,16 +48,6 @@ version (X86_Any)
 else version (HPPA_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=ports/sysdeps/hppa/bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x0004; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -82,16 +62,6 @@ else version (HPPA_Any)
 else version (MIPS_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=ports/sysdeps/mips/bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00008;
-    enum RTLD_DEEPBIND = 0x00010;
-
-    // enum RTLD_GLOBAL = 0x0004; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -106,16 +76,6 @@ else version (MIPS_Any)
 else version (PPC_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -130,16 +90,6 @@ else version (PPC_Any)
 else version (ARM_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -154,16 +104,6 @@ else version (ARM_Any)
 else version (RISCV_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -178,16 +118,6 @@ else version (RISCV_Any)
 else version (SPARC_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -202,16 +132,6 @@ else version (SPARC_Any)
 else version (IBMZ_Any)
 {
     // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
-    // enum RTLD_LAZY = 0x0001; // POSIX
-    // enum RTLD_NOW = 0x0002; // POSIX
-    enum RTLD_BINDING_MASK = 0x3;
-    enum RTLD_NOLOAD = 0x00004;
-    enum RTLD_DEEPBIND = 0x00008;
-
-    // enum RTLD_GLOBAL = 0x00100; // POSIX
-    // enum RTLD_LOCAL = 0; // POSIX
-    enum RTLD_NODELETE = 0x01000;
-
     static if (__USE_GNU)
     {
         RT DL_CALL_FCT(RT, Args...)(RT function(Args) fctp, auto ref Args args)
@@ -251,15 +171,6 @@ static if (__USE_GNU)
 
 static if (__USE_GNU)
 {
-    struct Dl_info
-    {
-        const(char)* dli_fname;
-        void* dli_fbase;
-        const(char)* dli_sname;
-        void* dli_saddr;
-    }
-
-    int dladdr(const scope void* __address, Dl_info* __info);
     int dladdr1(void* __address, Dl_info* __info, void** __extra_info, int __flags);
 
     enum

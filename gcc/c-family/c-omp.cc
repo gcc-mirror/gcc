@@ -353,8 +353,13 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
     }
   bool save = in_late_binary_op;
   in_late_binary_op = true;
-  x = build_modify_expr (loc, blhs ? blhs : lhs, NULL_TREE, opcode,
-			 loc, rhs, NULL_TREE);
+  if ((opcode == MIN_EXPR || opcode == MAX_EXPR)
+      && build_binary_op (loc, LT_EXPR, blhs ? blhs : lhs, rhs,
+			  true) == error_mark_node)
+    x = error_mark_node;
+  else
+    x = build_modify_expr (loc, blhs ? blhs : lhs, NULL_TREE, opcode,
+			   loc, rhs, NULL_TREE);
   in_late_binary_op = save;
   if (x == error_mark_node)
     return error_mark_node;

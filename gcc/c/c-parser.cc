@@ -13145,7 +13145,16 @@ c_parser_omp_variable_list (c_parser *parser,
 		{
 		  location_t op_loc = c_parser_peek_token (parser)->location;
 		  if (c_parser_next_token_is (parser, CPP_DEREF))
-		    t = build_simple_mem_ref (t);
+		    {
+		      c_expr t_expr;
+		      t_expr.value = t;
+		      t_expr.original_code = ERROR_MARK;
+		      t_expr.original_type = NULL;
+		      set_c_expr_source_range (&t_expr, op_loc, op_loc);
+		      t_expr = convert_lvalue_to_rvalue (op_loc, t_expr,
+							 true, false);
+		      t = build_indirect_ref (op_loc, t_expr.value, RO_ARROW);
+		    }
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_NAME))
 		    {

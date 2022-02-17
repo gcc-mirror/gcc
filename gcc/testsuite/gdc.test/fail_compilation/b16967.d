@@ -1,9 +1,8 @@
 /*
- * REQUIRED_ARGS: -c
  * TEST_OUTPUT:
 ---
-compilable/b16967.d(16): Deprecation: switch case fallthrough - use 'goto default;' if intended
-compilable/b16967.d(26): Deprecation: switch case fallthrough - use 'goto default;' if intended
+fail_compilation/b16967.d(15): Error: switch case fallthrough - use 'goto default;' if intended
+fail_compilation/b16967.d(25): Error: switch case fallthrough - use 'goto default;' if intended
 ---
 */
 int foo(int x)

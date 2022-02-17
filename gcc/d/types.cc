@@ -274,6 +274,72 @@ insert_aggregate_field (tree type, tree field, size_t offset)
   TYPE_FIELDS (type) = chainon (TYPE_FIELDS (type), field);
 }
 
+/* Build a bit-field integer type for the given WIDTH and UNSIGNEDP.  */
+
+static tree
+d_build_bitfield_integer_type (unsigned HOST_WIDE_INT width, int unsignedp)
+{
+  /* Same as d_type_for_size, but uses exact match for size.  */
+  if (width == TYPE_PRECISION (d_byte_type))
+    return unsignedp ? d_ubyte_type : d_byte_type;
+
+  if (width == TYPE_PRECISION (d_short_type))
+    return unsignedp ? d_ushort_type : d_short_type;
+
+  if (width == TYPE_PRECISION (d_int_type))
+    return unsignedp ? d_uint_type : d_int_type;
+
+  if (width == TYPE_PRECISION (d_long_type))
+    return unsignedp ? d_ulong_type : d_long_type;
+
+  if (width == TYPE_PRECISION (d_cent_type))
+    return unsignedp ? d_ucent_type : d_cent_type;
+
+  for (int i = 0; i < NUM_INT_N_ENTS; i ++)
+    {
+      if (int_n_enabled_p[i] && width == int_n_data[i].bitsize)
+	{
+	  if (unsignedp)
+	    return int_n_trees[i].unsigned_type;
+	  else
+	    return int_n_trees[i].signed_type;
+	}
+    }
+
+  return build_nonstandard_integer_type (width, unsignedp);
+}
+
+/* Adds BITFIELD into the aggregate TYPE at OFFSET+BITOFFSET.  */
+
+static void
+insert_aggregate_bitfield (tree type, tree bitfield, size_t width,
+			   size_t offset, size_t bitoffset)
+{
+  DECL_FIELD_CONTEXT (bitfield) = type;
+  SET_DECL_OFFSET_ALIGN (bitfield, TYPE_ALIGN (TREE_TYPE (bitfield)));
+  DECL_SIZE (bitfield) = bitsize_int (width);
+  DECL_FIELD_OFFSET (bitfield) = size_int (offset);
+  DECL_FIELD_BIT_OFFSET (bitfield) = bitsize_int (bitoffset);
+
+  TREE_ADDRESSABLE (bitfield) = TYPE_SHARED (TREE_TYPE (bitfield));
+
+  DECL_BIT_FIELD (bitfield) = 1;
+  DECL_BIT_FIELD_TYPE (bitfield) = TREE_TYPE (bitfield);
+
+  layout_decl (bitfield, 0);
+
+  /* Give bit-field its proper type after layout_decl.  */
+  tree orig_type = DECL_BIT_FIELD_TYPE (bitfield);
+  if (width != TYPE_PRECISION (orig_type))
+    {
+      TREE_TYPE (bitfield)
+    	= d_build_bitfield_integer_type (width, TYPE_UNSIGNED (orig_type));
+      SET_DECL_MODE (bitfield, TYPE_MODE (TREE_TYPE (bitfield)));
+    }
+
+  TYPE_FIELDS (type) = chainon (TYPE_FIELDS (type), bitfield);
+}
+
 /* For all decls in the FIELDS chain, adjust their field offset by OFFSET.
    This is done as the frontend puts fields into the outer struct, and so
    their offset is from the beginning of the aggregate.
@@ -356,7 +422,16 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	      tree field = create_field_decl (declaration_type (var), ident,
 					      inherited_p, inherited_p);
 	      apply_user_attributes (var, field);
-	      insert_aggregate_field (context, field, var->offset);
+
+	      if (BitFieldDeclaration *bf = var->isBitFieldDeclaration ())
+		{
+		  /* Bit-fields come from an ImportC context, and require the
+		     field be correctly adjusted.  */
+		  insert_aggregate_bitfield (context, field, bf->fieldWidth,
+					     bf->offset, bf->bitOffset);
+		}
+	      else
+  		insert_aggregate_field (context, field, var->offset);
 
 	      /* Because the front-end shares field decls across classes, don't
 		 create the corresponding back-end symbol unless we are adding

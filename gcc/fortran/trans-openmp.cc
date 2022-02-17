@@ -5536,9 +5536,12 @@ gfc_trans_omp_depobj (gfc_code *code)
 	      gcc_assert (POINTER_TYPE_P (TREE_TYPE (var)));
 	    }
 	  else if ((n->sym->attr.allocatable || n->sym->attr.pointer)
-		   && n->sym->attr.optional)
+		   && n->sym->attr.dummy)
 	    var = build_fold_indirect_ref (var);
-	  else if (!POINTER_TYPE_P (TREE_TYPE (var)))
+	  else if (!POINTER_TYPE_P (TREE_TYPE (var))
+		   || (n->sym->ts.f90_type == BT_VOID
+		       && !POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (var)))
+		       && !GFC_ARRAY_TYPE_P (TREE_TYPE (TREE_TYPE (var)))))
 	    {
 	      TREE_ADDRESSABLE (var) = 1;
 	      var = gfc_build_addr_expr (NULL, var);

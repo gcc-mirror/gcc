@@ -459,8 +459,11 @@ extern(C):
      * Throws:
      *  OutOfMemoryError on allocation failure.
      */
-    pragma(mangle, "gc_malloc") static void* malloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow;
-
+    version (D_ProfileGC)
+        pragma(mangle, "gc_mallocTrace") static void* malloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null,
+            string file = __FILE__, int line = __LINE__, string func = __FUNCTION__) pure nothrow;
+    else
+        pragma(mangle, "gc_malloc") static void* malloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow;
 
     /**
      * Requests an aligned block of managed memory from the garbage collector.
@@ -482,7 +485,11 @@ extern(C):
      * Throws:
      *  OutOfMemoryError on allocation failure.
      */
-    pragma(mangle, "gc_qalloc") static BlkInfo qalloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow;
+    version (D_ProfileGC)
+        pragma(mangle, "gc_qallocTrace") static BlkInfo qalloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null,
+            string file = __FILE__, int line = __LINE__, string func = __FUNCTION__) pure nothrow;
+    else
+        pragma(mangle, "gc_qalloc") static BlkInfo qalloc(size_t sz, uint ba = 0, const scope TypeInfo ti = null) pure nothrow;
 
 
     /**
@@ -506,7 +513,11 @@ extern(C):
      * Throws:
      *  OutOfMemoryError on allocation failure.
      */
-    pragma(mangle, "gc_calloc") static void* calloc(size_t sz, uint ba = 0, const TypeInfo ti = null) pure nothrow;
+    version (D_ProfileGC)
+        pragma(mangle, "gc_callocTrace") static void* calloc(size_t sz, uint ba = 0, const TypeInfo ti = null,
+            string file = __FILE__, int line = __LINE__, string func = __FUNCTION__) pure nothrow;
+    else
+        pragma(mangle, "gc_calloc") static void* calloc(size_t sz, uint ba = 0, const TypeInfo ti = null) pure nothrow;
 
 
     /**
@@ -551,7 +562,11 @@ extern(C):
      * Throws:
      *  `OutOfMemoryError` on allocation failure.
      */
-    pragma(mangle, "gc_realloc") static void* realloc(return scope void* p, size_t sz, uint ba = 0, const TypeInfo ti = null) pure nothrow;
+    version (D_ProfileGC)
+        pragma(mangle, "gc_reallocTrace") static void* realloc(return scope void* p, size_t sz, uint ba = 0, const TypeInfo ti = null,
+            string file = __FILE__, int line = __LINE__, string func = __FUNCTION__) pure nothrow;
+    else
+        pragma(mangle, "gc_realloc") static void* realloc(return scope void* p, size_t sz, uint ba = 0, const TypeInfo ti = null) pure nothrow;
 
     // https://issues.dlang.org/show_bug.cgi?id=13111
     ///
@@ -593,7 +608,12 @@ extern(C):
      *  as an indicator of success. $(LREF capacity) should be used to
      *  retrieve actual usable slice capacity.
      */
-    pragma(mangle, "gc_extend") static size_t extend(void* p, size_t mx, size_t sz, const TypeInfo ti = null) pure nothrow;
+    version (D_ProfileGC)
+        pragma(mangle, "gc_extendTrace") static size_t extend(void* p, size_t mx, size_t sz, const TypeInfo ti = null,
+            string file = __FILE__, int line = __LINE__, string func = __FUNCTION__) pure nothrow;
+    else
+        pragma(mangle, "gc_extend") static size_t extend(void* p, size_t mx, size_t sz, const TypeInfo ti = null) pure nothrow;
+
     /// Standard extending
     unittest
     {

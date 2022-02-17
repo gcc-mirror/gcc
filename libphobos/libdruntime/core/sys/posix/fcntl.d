@@ -96,12 +96,8 @@ struct flock
     off_t   l_len;
     pid_t   l_pid;
 }
-
-int creat(const scope char*, mode_t);
-int fcntl(int, int, ...);
-int open(const scope char*, int, ...);
 */
-version (CRuntime_Glibc)
+version (linux)
 {
     enum F_DUPFD        = 0;
     enum F_GETFD        = 1;
@@ -116,6 +112,12 @@ version (CRuntime_Glibc)
     enum F_SETLKW       = 7;
   }
   else version (AArch64)
+  {
+    enum F_GETLK        = 5;
+    enum F_SETLK        = 6;
+    enum F_SETLKW       = 7;
+  }
+  else version (PPC64)
   {
     enum F_GETLK        = 5;
     enum F_SETLK        = 6;
@@ -163,6 +165,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x010000; // octal   0200000
+        enum O_NOFOLLOW     = 0x020000; // octal   0400000
+        enum O_DIRECT       = 0x004000; // octal    040000
+        version (X86_64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x08000; // octal   0100000
+        enum O_TMPFILE      = 0x410000; // octal 020200000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x40000;  // octal  01000000
+        enum O_PATH         = 0x200000; // octal 010000000
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (HPPA_Any)
     {
@@ -177,6 +192,16 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x48000;  // octal 01100000
         enum O_DSYNC        = 0x40000;  // octal 01000000
         enum O_RSYNC        = 0x80000;  // octal 02000000
+
+        enum O_DIRECTORY    = 0x001000; // octal 000010000
+        enum O_NOFOLLOW     = 0x000080; // octal 000000200
+        enum O_DIRECT       = 0x004000; // octal    040000
+        enum O_LARGEFILE    = 0x000800; // octal  00004000
+        enum O_TMPFILE      = 0x801000; // octal 040010000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x100000; // octal 004000000
+        enum O_PATH         = 0x400000; // octal 020000000
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (MIPS_Any)
     {
@@ -191,6 +216,19 @@ version (CRuntime_Glibc)
         enum O_CLOEXEC      = 0x80000;
         enum O_RSYNC        = O_SYNC;
         enum O_SYNC         = 0x4010;
+
+        enum O_DIRECTORY    = 0x010000;
+        enum O_NOFOLLOW     = 0x020000;
+        enum O_DIRECT       = 0x8000;
+        version (MIPS_N64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x2000;
+        enum O_TMPFILE      = 0x410000;
+        enum O_ASYNC        = 0x1000;
+        enum O_NOATIME      = 0x40000;
+        enum O_PATH         = 0x200000;
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (PPC_Any)
     {
@@ -205,6 +243,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x004000; // octal    040000
+        enum O_NOFOLLOW     = 0x008000; // octal   0100000
+        enum O_DIRECT       = 0x020000; // octal   0400000
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x10000; // octal   0200000
+        enum O_TMPFILE      = 0x404000; // octal 020040000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x40000;  // octal  01000000
+        enum O_PATH         = 0x200000;
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (ARM_Any)
     {
@@ -219,6 +270,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x004000; // octal    040000
+        enum O_NOFOLLOW     = 0x008000; // octal   0100000
+        enum O_DIRECT       = 0x010000; // octal   0200000
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x20000; // octal   0400000
+        enum O_TMPFILE      = 0x404000; // octal 020040000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x40000;  // octal  01000000
+        enum O_PATH         = 0x200000; // octal 010000000
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (RISCV_Any)
     {
@@ -233,6 +297,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x010000;
+        enum O_NOFOLLOW     = 0x020000;
+        enum O_DIRECT       = 0x004000;
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x8000;
+        enum O_TMPFILE      = 0x410000;
+        enum O_ASYNC        = 0x2000;
+        enum O_NOATIME      = 0x40000;
+        enum O_PATH         = 0x200000;
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else version (SPARC_Any)
     {
@@ -247,6 +324,19 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x802000;
         enum O_DSYNC        = 0x2000;
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x10000;
+        enum O_NOFOLLOW     = 0x20000;
+        enum O_DIRECT       = 0x100000;
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x40000;
+        enum O_TMPFILE      = 0x2010000;
+        enum O_ASYNC        = 0x0040;
+        enum O_NOATIME      = 0x200000;
+        enum O_PATH         = 0x1000000;
+        enum O_NDELAY       = (0x0004|O_NONBLOCK);
     }
     else version (IBMZ_Any)
     {
@@ -261,11 +351,33 @@ version (CRuntime_Glibc)
         enum O_SYNC         = 0x101000; // octal 04010000
         enum O_DSYNC        = 0x1000;   // octal   010000
         enum O_RSYNC        = O_SYNC;
+
+        enum O_DIRECTORY    = 0x010000; // octal   0200000
+        enum O_NOFOLLOW     = 0x020000; // octal   0400000
+        enum O_DIRECT       = 0x004000; // octal    040000
+        version (D_LP64)
+            enum O_LARGEFILE = 0;
+        else
+            enum O_LARGEFILE = 0x08000; // octal   0100000
+        enum O_TMPFILE      = 0x410000; // octal 020200000
+        enum O_ASYNC        = 0x2000;   // octal    020000
+        enum O_NOATIME      = 0x40000;  // octal  01000000
+        enum O_PATH         = 0x200000; // octal 010000000
+        enum O_NDELAY       = O_NONBLOCK;
     }
     else
         static assert(0, "unimplemented");
 
-    enum O_ACCMODE      = 0x3;
+    version (CRuntime_Musl)
+    {
+        enum O_SEARCH   = O_PATH;
+        enum O_EXEC     = O_PATH;
+        enum O_ACCMODE  = (3|O_SEARCH);
+    }
+    else
+    {
+        enum O_ACCMODE  = 0x3;
+    }
     enum O_RDONLY       = 0x0;
     enum O_WRONLY       = 0x1;
     enum O_RDWR         = 0x2;
@@ -279,22 +391,11 @@ version (CRuntime_Glibc)
         pid_t   l_pid;
     }
 
-    static if ( __USE_FILE_OFFSET64 )
-    {
-        int   creat64(const scope char*, mode_t);
-        alias creat64 creat;
-
-        int   open64(const scope char*, int, ...);
-        alias open64 open;
-    }
-    else
-    {
-        int   creat(const scope char*, mode_t);
-        int   open(const scope char*, int, ...);
-    }
-
     enum AT_SYMLINK_NOFOLLOW = 0x100;
     enum AT_FDCWD = -100;
+    enum AT_REMOVEDIR = 0x200;
+    enum AT_SYMLINK_FOLLOW = 0x400;
+    enum AT_EACCESS = 0x200;
 }
 else version (Darwin)
 {
@@ -339,9 +440,6 @@ else version (Darwin)
         short   l_type;
         short   l_whence;
     }
-
-    int creat(const scope char*, mode_t);
-    int open(const scope char*, int, ...);
 }
 else version (FreeBSD)
 {
@@ -400,9 +498,6 @@ else version (FreeBSD)
         short   l_type;
         short   l_whence;
     }
-
-    int creat(const scope char*, mode_t);
-    int open(const scope char*, int, ...);
 
     enum AT_SYMLINK_NOFOLLOW = 0x200;
     enum AT_FDCWD = -100;
@@ -466,9 +561,6 @@ else version (OpenBSD)
         short   l_whence;
     }
 
-    int creat(const scope char*, mode_t);
-    int open(const scope char*, int, ...);
-
     enum AT_FDCWD            = -100;
 
     enum AT_EACCESS          = 0x01;
@@ -524,10 +616,6 @@ else version (NetBSD)
         short   l_type;
         short   l_whence;
     }
-
-
-    int creat(const scope char*, mode_t);
-    int open(const scope char*, int, ...);
 }
 else version (DragonFlyBSD)
 {
@@ -612,11 +700,6 @@ else version (DragonFlyBSD)
     }
 
     alias oflock = flock;
-
-    int creat(const scope char*, mode_t);
-    int open(const scope char*, int, ...);
-    //int fcntl(int, int, ...);  /*defined below*/
-    //int flock(int, int);
 }
 else version (Solaris)
 {
@@ -700,7 +783,60 @@ else version (Solaris)
             c_long[4]   l_pad;
         }
     }
+}
+else
+{
+    static assert(false, "Unsupported platform");
+}
 
+/*
+int creat(const scope char*, mode_t);
+int fcntl(int, int, ...);
+int open(const scope char*, int, ...);
+*/
+version (CRuntime_Glibc)
+{
+    static if ( __USE_FILE_OFFSET64 )
+    {
+        int   creat64(const scope char*, mode_t);
+        alias creat64 creat;
+
+        int   open64(const scope char*, int, ...);
+        alias open64 open;
+    }
+    else
+    {
+        int   creat(const scope char*, mode_t);
+        int   open(const scope char*, int, ...);
+    }
+}
+else version (Darwin)
+{
+    int creat(const scope char*, mode_t);
+    int open(const scope char*, int, ...);
+}
+else version (FreeBSD)
+{
+    int creat(const scope char*, mode_t);
+    int open(const scope char*, int, ...);
+}
+else version (OpenBSD)
+{
+    int creat(const scope char*, mode_t);
+    int open(const scope char*, int, ...);
+}
+else version (NetBSD)
+{
+    int creat(const scope char*, mode_t);
+    int open(const scope char*, int, ...);
+}
+else version (DragonFlyBSD)
+{
+    int creat(const scope char*, mode_t);
+    int open(const scope char*, int, ...);
+}
+else version (Solaris)
+{
     version (D_LP64)
     {
         int creat(const scope char*, mode_t);
@@ -731,323 +867,15 @@ else version (Solaris)
 }
 else version (CRuntime_Bionic)
 {
-    // All these except for the two functions open and creat really come from
-    // the linux kernel and can probably be merged.
-    enum F_DUPFD        = 0;
-    enum F_GETFD        = 1;
-    enum F_SETFD        = 2;
-    enum F_GETFL        = 3;
-    enum F_SETFL        = 4;
-    enum F_GETLK        = 5;
-    enum F_SETLK        = 6;
-    enum F_SETLKW       = 7;
-    enum F_SETOWN       = 8;
-    enum F_GETOWN       = 9;
-
-    enum FD_CLOEXEC     = 1;
-
-    enum F_RDLCK        = 0;
-    enum F_WRLCK        = 1;
-    enum F_UNLCK        = 2;
-
-    enum O_CREAT        = 0x40;     // octal     0100
-    enum O_EXCL         = 0x80;     // octal     0200
-    enum O_NOCTTY       = 0x100;    // octal     0400
-    enum O_TRUNC        = 0x200;    // octal    01000
-
-    enum O_APPEND       = 0x400;    // octal    02000
-    enum O_NONBLOCK     = 0x800;    // octal    04000
-
-    version (D_LP64)
-    {
-        enum O_SYNC     = 0x101000; // octal 04010000
-    }
-    else
-    {
-        enum O_SYNC     = 0x1000;   // octal   010000
-    }
-
-    enum O_ACCMODE      = 0x3;
-    enum O_RDONLY       = 0x0;
-    enum O_WRONLY       = 0x1;
-    enum O_RDWR         = 0x2;
-
-    struct flock
-    {
-        short   l_type;
-        short   l_whence;
-        off_t   l_start;
-        off_t   l_len;
-        pid_t   l_pid;
-    }
-
     int   creat(const scope char*, mode_t);
     int   open(const scope char*, int, ...);
-
-    enum AT_FDCWD = -100;
 }
 else version (CRuntime_Musl)
 {
-    version (X86_64)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x010000, // octal   0200000
-            O_NOFOLLOW      = 0x020000, // octal   0400000
-            O_DIRECT        = 0x004000, // octal    040000
-            O_LARGEFILE     =        0,
-            O_TMPFILE       = 0x410000, // octal 020200000
-
-            F_GETLK        = 5,
-            F_SETLK        = 6,
-            F_SETLKW       = 7,
-        }
-    }
-    // Note: Definitions for i386 are in arch/generic/bits/fcntl.h
-    else version (X86)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x010000, // octal   0200000
-            O_NOFOLLOW      = 0x020000, // octal   0400000
-            O_DIRECT        = 0x004000, // octal    040000
-            O_LARGEFILE     = 0x008000, // octal   0100000
-            O_TMPFILE       = 0x410000, // octal 020200000
-
-            F_GETLK        = 12,
-            F_SETLK        = 13,
-            F_SETLKW       = 14,
-        }
-    }
-    else version (ARM)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x004000, // octal    040000
-            O_NOFOLLOW      = 0x008000, // octal   0100000
-            O_DIRECT        = 0x010000, // octal   0200000
-            O_LARGEFILE     = 0x020000, // octal   0400000
-            O_TMPFILE       = 0x404000, // octal 020040000
-
-            F_GETLK        = 12,
-            F_SETLK        = 13,
-            F_SETLKW       = 14,
-        }
-    }
-    else version (AArch64)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x004000, // octal    040000
-            O_NOFOLLOW      = 0x008000, // octal   0100000
-            O_DIRECT        = 0x010000, // octal   0200000
-            O_LARGEFILE     = 0x020000, // octal   0400000
-            O_TMPFILE       = 0x404000, // octal 020040000
-
-            F_GETLK        = 5,
-            F_SETLK        = 6,
-            F_SETLKW       = 7,
-        }
-    }
-    else version (SystemZ)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x010000, // octal   0200000
-            O_NOFOLLOW      = 0x020000, // octal   0400000
-            O_DIRECT        = 0x004000, // octal    040000
-            O_LARGEFILE     = 0x008000, // octal   0100000
-            O_TMPFILE       = 0x410000, // octal 020200000
-
-            F_GETLK        = 5,
-            F_SETLK        = 6,
-            F_SETLKW       = 7,
-        }
-    }
-    else version (PPC64)
-    {
-        enum
-        {
-            O_DIRECTORY     = 0x004000, // octal    040000
-            O_NOFOLLOW      = 0x008000, // octal   0100000
-            O_DIRECT        = 0x020000, // octal   0400000
-            O_LARGEFILE     = 0x010000, // octal   0200000
-            O_TMPFILE       = 0x410000, // octal 020200000
-
-            F_GETLK        = 5,
-            F_SETLK        = 6,
-            F_SETLKW       = 7,
-        }
-    }
-    else
-        static assert(0, "Platform not supported");
-
-    enum
-    {
-        O_CREAT         = 0x40,     // octal     0100
-        O_EXCL          = 0x80,     // octal     0200
-        O_NOCTTY        = 0x100,    // octal     0400
-        O_TRUNC         = 0x200,    // octal    01000
-
-        O_APPEND        = 0x400,    // octal    02000
-        O_NONBLOCK      = 0x800,    // octal    04000
-        O_DSYNC         = 0x1000,   // octal   010000
-        O_SYNC          = 0x101000, // octal 04010000
-        O_RSYNC         = O_SYNC,
-        O_CLOEXEC       = 0x80000,
-
-        O_ASYNC         = 0x2000,
-        O_NOATIME       = 0x40000,
-        O_PATH          = 0x200000,
-        O_NDELAY        = O_NONBLOCK,
-        O_SEARCH        = O_PATH,
-        O_EXEC          = O_PATH,
-
-        O_ACCMODE       = (3|O_SEARCH),
-        O_RDONLY        = 0,
-        O_WRONLY        = 1,
-        O_RDWR          = 2,
-    }
-    enum
-    {
-        F_DUPFD        = 0,
-        F_GETFD        = 1,
-        F_SETFD        = 2,
-        F_GETFL        = 3,
-        F_SETFL        = 4,
-        // F_GETLK, F_SETLK, F_SETLKW are arch-specific
-        F_SETOWN       = 8,
-        F_GETOWN       = 9,
-    }
-    enum
-    {
-        F_RDLCK        = 0,
-        F_WRLCK        = 1,
-        F_UNLCK        = 2,
-    }
-    struct flock
-    {
-        short   l_type;
-        short   l_whence;
-        off_t   l_start;
-        off_t   l_len;
-        pid_t   l_pid;
-    }
-    enum FD_CLOEXEC     = 1;
     int open(const scope char*, int, ...);
-
-    enum AT_FDCWD = -100;
-    enum AT_SYMLINK_NOFOLLOW = 0x100;
-    enum AT_REMOVEDIR = 0x200;
-    enum AT_SYMLINK_FOLLOW = 0x400;
-    enum AT_EACCESS = 0x200;
 }
 else version (CRuntime_UClibc)
 {
-    enum F_DUPFD        = 0;
-    enum F_GETFD        = 1;
-    enum F_SETFD        = 2;
-    enum F_GETFL        = 3;
-    enum F_SETFL        = 4;
-
-    version (X86_64)
-    {
-        enum F_GETLK        = 5;
-        enum F_SETLK        = 6;
-        enum F_SETLKW       = 7;
-    }
-    else static if (__USE_FILE_OFFSET64)
-    {
-        enum F_GETLK        = 5;
-        enum F_SETLK        = 6;
-        enum F_SETLKW       = 7;
-    }
-    else
-    {
-        enum F_GETLK        = 12;
-        enum F_SETLK        = 13;
-        enum F_SETLKW       = 14;
-    }
-
-    enum F_GETOWN       = 9;
-    enum F_SETOWN       = 8;
-
-    enum FD_CLOEXEC     = 1;
-
-    enum F_RDLCK        = 0;
-    enum F_UNLCK        = 2;
-    enum F_WRLCK        = 1;
-
-    version (X86_Any)
-    {
-        enum O_CREAT        = 0x40;     // octal     0100
-        enum O_EXCL         = 0x80;     // octal     0200
-        enum O_NOCTTY       = 0x100;    // octal     0400
-        enum O_TRUNC        = 0x200;    // octal    01000
-
-        enum O_APPEND       = 0x400;    // octal    02000
-        enum O_NONBLOCK     = 0x800;    // octal    04000
-        enum O_CLOEXEC      = 0x80000;  // octal    02000000
-        enum O_SYNC         = 0x1000;   // octal    010000
-        enum O_NDELAY       = O_NONBLOCK;
-        enum O_FSYNC        = O_SYNC;
-        enum O_ASYNC        = 0x2000;   // octal    020000
-    }
-    else version (MIPS_Any)
-    {
-        enum O_CREAT        = 0x0100;
-        enum O_EXCL         = 0x0400;
-        enum O_NOCTTY       = 0x0800;
-        enum O_TRUNC        = 0x0200;
-
-        enum O_APPEND       = 0x0008;
-        enum O_SYNC         = 0x0010;
-        enum O_NONBLOCK     = 0x0080;
-        enum O_CLOEXEC      = 0x80000;  // octal    02000000
-        enum O_NDELAY       = O_NONBLOCK;
-        enum O_FSYNC        = O_SYNC;
-        enum O_ASYNC        = 0x1000;
-    }
-    else version (ARM_Any)
-    {
-        enum O_CREAT        = 0x40;     // octal     0100
-        enum O_EXCL         = 0x80;     // octal     0200
-        enum O_NOCTTY       = 0x100;    // octal     0400
-        enum O_TRUNC        = 0x200;    // octal    01000
-
-        enum O_APPEND       = 0x400;    // octal    02000
-        enum O_NONBLOCK     = 0x800;    // octal    04000
-        enum O_CLOEXEC      = 0x80000;  // octal    02000000
-        enum O_SYNC         = 0x1000;   // octal    010000
-        enum O_NDELAY       = O_NONBLOCK;
-        enum O_FSYNC        = O_SYNC;
-        enum O_ASYNC        = 0x2000;     // octal 020000
-    }
-    else
-        static assert(0, "unimplemented");
-
-    enum O_ACCMODE      = 0x3;
-    enum O_RDONLY       = 0x0;
-    enum O_WRONLY       = 0x1;
-    enum O_RDWR         = 0x2;
-
-    struct flock
-    {
-        short   l_type;
-        short   l_whence;
-        static if (__USE_FILE_OFFSET64)
-        {
-            off64_t   l_start;
-            off64_t   l_len;
-        }
-        else
-        {
-            off_t   l_start;
-            off_t   l_len;
-        }
-        pid_t   l_pid;
-    }
-
     static if ( __USE_FILE_OFFSET64 )
     {
         int   creat64(const scope char*, mode_t);
@@ -1061,9 +889,6 @@ else version (CRuntime_UClibc)
         int   creat(const scope char*, mode_t);
         int   open(const scope char*, int, ...);
     }
-
-    enum AT_SYMLINK_NOFOLLOW    = 0x100;
-    enum AT_FDCWD               = -100;
 }
 else
 {
