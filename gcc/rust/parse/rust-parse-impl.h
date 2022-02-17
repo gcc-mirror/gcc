@@ -5993,6 +5993,7 @@ Parser<ManagedTokenSource>::parse_named_function_param (
   std::string name;
 
   const_TokenPtr t = lexer.peek_token ();
+  Location name_location = t->get_locus ();
   switch (t->get_id ())
     {
     case IDENTIFIER:
@@ -6028,7 +6029,7 @@ Parser<ManagedTokenSource>::parse_named_function_param (
     }
 
   return AST::NamedFunctionParam (std::move (name), std::move (param_type),
-				  std::move (outer_attrs));
+				  std::move (outer_attrs), name_location);
 }
 
 // Parses a statement (will further disambiguate any statement).
