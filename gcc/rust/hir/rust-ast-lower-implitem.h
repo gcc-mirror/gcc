@@ -52,6 +52,16 @@ public:
     return resolver.translated;
   }
 
+  void visit (AST::MacroInvocationSemi &invoc) override
+  {
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+
+    // FIXME
+    // this assertion might go away, maybe on failure's to expand a macro?
+    rust_assert (!fragment.get_nodes ().empty ());
+    fragment.get_nodes ().at (0).accept_vis (*this);
+  }
+
   void visit (AST::TypeAlias &alias) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
@@ -306,6 +316,16 @@ public:
     item->accept_vis (resolver);
     rust_assert (resolver.translated != nullptr);
     return resolver.translated;
+  }
+
+  void visit (AST::MacroInvocationSemi &invoc) override
+  {
+    AST::ASTFragment &fragment = invoc.get_fragment ();
+
+    // FIXME
+    // this assertion might go away, maybe on failure's to expand a macro?
+    rust_assert (!fragment.get_nodes ().empty ());
+    fragment.get_nodes ().at (0).accept_vis (*this);
   }
 
   void visit (AST::TraitItemFunc &func) override

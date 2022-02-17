@@ -1475,6 +1475,160 @@ public:
   }
 };
 
+class SingleASTNode
+{
+public:
+  enum NodeType
+  {
+    EXPRESSION,
+    ITEM,
+    STMT,
+  };
+
+  SingleASTNode (std::unique_ptr<Expr> expr)
+    : type (EXPRESSION), expr (std::move (expr)), item (nullptr), stmt (nullptr)
+  {}
+
+  SingleASTNode (std::unique_ptr<Item> item)
+    : type (ITEM), expr (nullptr), item (std::move (item)), stmt (nullptr)
+  {}
+
+  SingleASTNode (std::unique_ptr<Stmt> stmt)
+    : type (STMT), expr (nullptr), item (nullptr), stmt (std::move (stmt))
+  {}
+
+  SingleASTNode (SingleASTNode const &other)
+  {
+    type = other.type;
+    switch (type)
+      {
+      case EXPRESSION:
+	expr = other.expr->clone_expr ();
+	break;
+
+      case ITEM:
+	item = other.item->clone_item ();
+	break;
+
+      case STMT:
+	stmt = other.stmt->clone_stmt ();
+	break;
+      }
+  }
+
+  SingleASTNode operator= (SingleASTNode const &other)
+  {
+    type = other.type;
+    switch (type)
+      {
+      case EXPRESSION:
+	expr = other.expr->clone_expr ();
+	break;
+
+      case ITEM:
+	item = other.item->clone_item ();
+	break;
+
+      case STMT:
+	stmt = other.stmt->clone_stmt ();
+	break;
+      }
+    return *this;
+  }
+
+  SingleASTNode (SingleASTNode &&other) = default;
+  SingleASTNode &operator= (SingleASTNode &&other) = default;
+
+  std::unique_ptr<Expr> &get_expr ()
+  {
+    rust_assert (type == EXPRESSION);
+    return expr;
+  }
+
+  std::unique_ptr<Item> &get_item ()
+  {
+    rust_assert (type == ITEM);
+    return item;
+  }
+
+  std::unique_ptr<Stmt> &get_stmt ()
+  {
+    rust_assert (type == STMT);
+    return stmt;
+  }
+
+  void accept_vis (ASTVisitor &vis)
+  {
+    switch (type)
+      {
+      case EXPRESSION:
+	expr->accept_vis (vis);
+	break;
+
+      case ITEM:
+	item->accept_vis (vis);
+	break;
+
+      case STMT:
+	stmt->accept_vis (vis);
+	break;
+      }
+  }
+
+private:
+  NodeType type;
+
+  // FIXME make this a union
+  std::unique_ptr<Expr> expr;
+  std::unique_ptr<Item> item;
+  std::unique_ptr<Stmt> stmt;
+};
+
+/* Basically, a "fragment" that can be incorporated into the AST, created as
+ * a result of macro expansion. Really annoying to work with due to the fact
+ * that macros can really expand to anything. As such, horrible representation
+ * at the moment. */
+class ASTFragment
+{
+private:
+  /* basic idea: essentially, a vector of tagged unions of different AST node
+   * types. Now, this could actually be stored without a tagged union if the
+   * different AST node types had a unified parent, but that would create
+   * issues with the diamond problem or significant performance penalties. So
+   * a tagged union had to be used instead. A vector is used to represent the
+   * ability for a macro to expand to two statements, for instance. */
+
+  std::vector<SingleASTNode> nodes;
+
+public:
+  ASTFragment (std::vector<SingleASTNode> nodes) : nodes (std::move (nodes)) {}
+
+  ASTFragment (ASTFragment const &other)
+  {
+    nodes.clear ();
+    nodes.reserve (other.nodes.size ());
+    for (auto &n : other.nodes)
+      {
+	nodes.push_back (n);
+      }
+  }
+
+  ASTFragment &operator= (ASTFragment const &other)
+  {
+    nodes.clear ();
+    nodes.reserve (other.nodes.size ());
+    for (auto &n : other.nodes)
+      {
+	nodes.push_back (n);
+      }
+    return *this;
+  }
+
+  static ASTFragment create_empty () { return ASTFragment ({}); }
+
+  std::vector<SingleASTNode> &get_nodes () { return nodes; }
+};
+
 /* A macro invocation item (or statement) AST node (i.e. semi-coloned macro
  * invocation) */
 class MacroInvocationSemi : public MacroItem,
@@ -1486,6 +1640,10 @@ class MacroInvocationSemi : public MacroItem,
   std::vector<Attribute> outer_attrs;
   MacroInvocData invoc_data;
   Location locus;
+  NodeId node_id;
+
+  // this is the expanded macro
+  ASTFragment fragment;
 
 public:
   std::string as_string () const override;
@@ -1493,7 +1651,9 @@ public:
   MacroInvocationSemi (MacroInvocData invoc_data,
 		       std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)),
-      invoc_data (std::move (invoc_data)), locus (locus)
+      invoc_data (std::move (invoc_data)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      fragment (ASTFragment::create_empty ())
   {}
 
   void accept_vis (ASTVisitor &vis) override;
@@ -1516,6 +1676,14 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
   Location get_locus () const override final { return locus; }
+
+  MacroInvocData &get_invoc_data () { return invoc_data; }
+
+  ASTFragment &get_fragment () { return fragment; }
+
+  void set_fragment (ASTFragment &&f) { fragment = std::move (f); }
+
+  NodeId get_macro_node_id () const { return node_id; }
 
 protected:
   MacroInvocationSemi *clone_macro_invocation_semi_impl () const

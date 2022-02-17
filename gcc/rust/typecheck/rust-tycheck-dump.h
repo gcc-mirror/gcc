@@ -57,6 +57,12 @@ public:
       += indent () + "union " + type_string (union_decl.get_mappings ()) + "\n";
   }
 
+  void visit (HIR::TupleStruct &struct_decl) override
+  {
+    dump += indent () + "struct" + type_string (struct_decl.get_mappings ())
+	    + "\n";
+  }
+
   void visit (HIR::ImplBlock &impl_block) override
   {
     dump += indent () + "impl "

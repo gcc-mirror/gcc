@@ -324,6 +324,13 @@ public:
     // I don't think any macro token trees can be stripped in any way
 
     // TODO: maybe have cfg! macro stripping behaviour here?
+
+    expander.expand_invoc_semi (macro_invoc);
+
+    // we need to visit the expanded fragments since it may need cfg expansion
+    // and it may be recursive
+    for (auto &node : macro_invoc.get_fragment ().get_nodes ())
+      node.accept_vis (*this);
   }
 
   void visit (AST::PathInExpression &path) override
@@ -1034,13 +1041,17 @@ public:
 		     "cannot strip expression in this position - outer "
 		     "attributes not allowed");
   }
+
   void visit (AST::BlockExpr &expr) override
   {
+    expander.push_context (MacroExpander::BLOCK);
+
     // initial strip test based on outer attrs
     expander.expand_cfg_attrs (expr.get_outer_attrs ());
     if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
       {
 	expr.mark_for_strip ();
+	expander.pop_context ();
 	return;
       }
 
@@ -1050,6 +1061,7 @@ public:
     if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
       {
 	expr.mark_for_strip ();
+	expander.pop_context ();
 	return;
       }
 
@@ -1066,7 +1078,9 @@ public:
 	if (tail_expr->is_marked_for_strip ())
 	  expr.strip_tail_expr ();
       }
+    expander.pop_context ();
   }
+
   void visit (AST::ClosureExprInnerTyped &expr) override
   {
     // initial strip test based on outer attrs
@@ -2533,7 +2547,6 @@ public:
       }
 
     // I don't think any macro token trees can be stripped in any way
-
     expander.expand_invoc (macro_invoc);
 
     // we need to visit the expanded fragments since it may need cfg expansion
@@ -3059,7 +3072,8 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
 AST::ASTFragment
 MacroExpander::expand_decl_macro (Location invoc_locus,
 				  AST::MacroInvocData &invoc,
-				  AST::MacroRulesDefinition &rules_def)
+				  AST::MacroRulesDefinition &rules_def,
+				  bool semicolon)
 {
   // ensure that both invocation and rules are in a valid state
   rust_assert (!invoc.is_marked_for_strip ());
@@ -3126,7 +3140,8 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
       return AST::ASTFragment::create_empty ();
     }
 
-  return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments);
+  return transcribe_rule (*matched_rule, invoc_token_tree, matched_fragments,
+			  semicolon, peek_context ());
 }
 
 void
@@ -3176,7 +3191,42 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
   rust_assert (ok);
 
   auto fragment
-    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def);
+    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, false);
+
+  // lets attach this fragment to the invocation
+  invoc.set_fragment (std::move (fragment));
+}
+
+void
+MacroExpander::expand_invoc_semi (AST::MacroInvocationSemi &invoc)
+{
+  if (depth_exceeds_recursion_limit ())
+    {
+      rust_error_at (invoc.get_locus (), "reached recursion limit");
+      return;
+    }
+
+  AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
+
+  // lookup the rules for this macro
+  NodeId resolved_node = UNKNOWN_NODEID;
+  bool found = resolver->get_macro_scope ().lookup (
+    Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
+				      invoc_data.get_path ().as_string ()),
+    &resolved_node);
+  if (!found)
+    {
+      rust_error_at (invoc.get_locus (), "unknown macro");
+      return;
+    }
+
+  // lookup the rules
+  AST::MacroRulesDefinition *rules_def = nullptr;
+  bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
+  rust_assert (ok);
+
+  auto fragment
+    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
 
   // lets attach this fragment to the invocation
   invoc.set_fragment (std::move (fragment));
@@ -3301,6 +3351,8 @@ MacroExpander::expand_crate ()
     }
   // expand module attributes?
 
+  push_context (ITEM);
+
   // expand attributes recursively and strip items if required
   AttrVisitor attr_visitor (*this);
   auto &items = crate.items;
@@ -3316,6 +3368,8 @@ MacroExpander::expand_crate ()
       else
 	++it;
     }
+
+  pop_context ();
 
   // TODO: should recursive attribute and macro expansion be done in the same
   // transversal? Or in separate ones like currently?
@@ -3555,7 +3609,8 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
-  std::map<std::string, MatchedFragment> &matched_fragments)
+  std::map<std::string, MatchedFragment> &matched_fragments, bool semicolon,
+  ContextType ctx)
 {
   // we can manipulate the token tree to substitute the dollar identifiers so
   // that when we call parse its already substituted for us
@@ -3568,7 +3623,7 @@ MacroExpander::transcribe_rule (
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_tokens (invoc_stream, macro_rule_tokens, matched_fragments);
 
-  // handy for debugging
+  // // handy for debugging
   // for (auto &tok : substituted_tokens)
   //   {
   //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
@@ -3579,7 +3634,6 @@ MacroExpander::transcribe_rule (
   Parser<MacroInvocLexer> parser (std::move (lex));
 
   // this is used so we can check that we delimit the stream correctly.
-  std::vector<AST::SingleASTNode> nodes;
   switch (transcribe_tree.get_delim_type ())
     {
     case AST::DelimType::PARENS:
@@ -3595,26 +3649,61 @@ MacroExpander::transcribe_rule (
       break;
     }
 
+  // see https://github.com/Rust-GCC/gccrs/issues/22
+  // TL;DR:
+  //   - Treat all macro invocations with parentheses, (), or square brackets,
+  //   [], as expressions.
+  //   - If the macro invocation has curly brackets, {}, it may be parsed as a
+  //   statement depending on the context.
+  //   - If the macro invocation has a semicolon at the end, it must be parsed
+  //   as a statement (either via ExpressionStatement or
+  //   MacroInvocationWithSemi)
+
   // parse the item
+  std::vector<AST::SingleASTNode> nodes;
   switch (invoc_token_tree.get_delim_type ())
     {
-      case AST::DelimType::PARENS: {
-	auto expr = parser.parse_expr ();
-	if (expr != nullptr && !parser.has_errors ())
-	  nodes.push_back (std::move (expr));
+    case AST::DelimType::PARENS:
+      case AST::DelimType::SQUARE: {
+	switch (ctx)
+	  {
+	    case ContextType::ITEM: {
+	      auto item = parser.parse_item (true);
+	      if (item != nullptr && !parser.has_errors ())
+		{
+		  rust_debug ("HELLO WORLD: [%s]", item->as_string ().c_str ());
+		  nodes.push_back (std::move (item));
+		}
+	    }
+	    break;
+
+	    case ContextType::BLOCK: {
+	      auto expr = parser.parse_expr ();
+	      if (expr != nullptr && !parser.has_errors ())
+		nodes.push_back (std::move (expr));
+	    }
+	    break;
+	  }
       }
       break;
 
       case AST::DelimType::CURLY: {
-	auto item = parser.parse_item (false);
-	if (item != nullptr && !parser.has_errors ())
-	  nodes.push_back (std::move (item));
-      }
-      break;
+	switch (ctx)
+	  {
+	    case ContextType::ITEM: {
+	      auto item = parser.parse_item (true);
+	      if (item != nullptr && !parser.has_errors ())
+		nodes.push_back (std::move (item));
+	    }
+	    break;
 
-      case AST::DelimType::SQUARE: {
-	// FIXME
-	gcc_unreachable ();
+	    case ContextType::BLOCK: {
+	      auto stmt = parser.parse_stmt ();
+	      if (stmt != nullptr && !parser.has_errors ())
+		nodes.push_back (std::move (stmt));
+	    }
+	    break;
+	  }
       }
       break;
     }

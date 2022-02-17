@@ -1571,6 +1571,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 
   // parse actual token trees
   std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
+  auto delim_open
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
+  token_trees.push_back (std::move (delim_open));
 
   t = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -1593,6 +1596,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 
       t = lexer.peek_token ();
     }
+  auto delim_close
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
+  token_trees.push_back (std::move (delim_close));
 
   AST::DelimTokenTree delim_tok_tree (delim_type, std::move (token_trees),
 				      tok_tree_locus);
@@ -1611,6 +1617,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	  if (!skip_token (SEMICOLON))
 	    {
 	      // as this is the end, allow recovery (probably) - may change
+
 	      return std::unique_ptr<AST::MacroInvocationSemi> (
 		new AST::MacroInvocationSemi (std::move (invoc_data),
 					      std::move (outer_attrs),
@@ -11761,6 +11768,9 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 
 	// parse actual token trees
 	std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
+	auto delim_open
+	  = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
+	token_trees.push_back (std::move (delim_open));
 
 	t3 = lexer.peek_token ();
 	// parse token trees until the initial delimiter token is found again
@@ -11784,6 +11794,10 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 
 	    t3 = lexer.peek_token ();
 	  }
+
+	auto delim_close
+	  = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
+	token_trees.push_back (std::move (delim_close));
 
 	// parse end delimiters
 	t3 = lexer.peek_token ();
@@ -12076,6 +12090,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
 
   // parse actual token trees
   std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
+  auto delim_open
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
+  token_trees.push_back (std::move (delim_open));
 
   t3 = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -12098,6 +12115,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
 
       t3 = lexer.peek_token ();
     }
+  auto delim_close
+    = std::unique_ptr<AST::Token> (new AST::Token (std::move (t3)));
+  token_trees.push_back (std::move (delim_close));
 
   // parse end delimiters
   t3 = lexer.peek_token ();

@@ -130,6 +130,12 @@ private:
 // Object used to store shared data (between functions) for macro expansion.
 struct MacroExpander
 {
+  enum ContextType
+  {
+    ITEM,
+    BLOCK,
+  };
+
   ExpansionCfg cfg;
   unsigned int expansion_depth = 0;
 
@@ -148,11 +154,13 @@ struct MacroExpander
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
   void expand_invoc (AST::MacroInvocation &invoc);
+  void expand_invoc_semi (AST::MacroInvocationSemi &invoc);
 
   // Expands a single declarative macro.
   AST::ASTFragment expand_decl_macro (Location locus,
 				      AST::MacroInvocData &invoc,
-				      AST::MacroRulesDefinition &rules_def);
+				      AST::MacroRulesDefinition &rules_def,
+				      bool semicolon);
 
   void expand_cfg_attrs (AST::AttrVec &attrs);
   bool fails_cfg (const AST::AttrVec &attr) const;
@@ -171,7 +179,8 @@ struct MacroExpander
   AST::ASTFragment
   transcribe_rule (AST::MacroRule &match_rule,
 		   AST::DelimTokenTree &invoc_token_tree,
-		   std::map<std::string, MatchedFragment> &matched_fragments);
+		   std::map<std::string, MatchedFragment> &matched_fragments,
+		   bool semicolon, ContextType ctx);
 
   bool match_fragment (Parser<MacroInvocLexer> &parser,
 		       AST::MacroMatchFragment &fragment);
@@ -189,10 +198,22 @@ struct MacroExpander
 		     std::vector<std::unique_ptr<AST::Token>> &macro,
 		     std::map<std::string, MatchedFragment> &fragments);
 
+  void push_context (ContextType t) { context.push_back (t); }
+
+  ContextType pop_context ()
+  {
+    ContextType t = context.back ();
+    context.pop_back ();
+    return t;
+  }
+
+  ContextType peek_context () { return context.back (); }
+
 private:
   AST::Crate &crate;
   Session &session;
   SubstitutionScope sub_stack;
+  std::vector<ContextType> context;
 
 public:
   Resolver::Resolver *resolver;
