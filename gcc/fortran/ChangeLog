@@ -1,3 +1,12 @@
+2022-02-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104211
+	* expr.c (find_array_section): Replace assertion by error
+	recovery when encountering bad array constructor.
+
 2022-02-14  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/100337
