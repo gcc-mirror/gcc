@@ -10603,7 +10603,8 @@ Parser<ManagedTokenSource>::parse_pattern ()
 		}
 
 	      return std::unique_ptr<AST::StructPattern> (
-		new AST::StructPattern (std::move (path), std::move (elems)));
+		new AST::StructPattern (std::move (path), t->get_locus (),
+					std::move (elems)));
 	    }
 	  default:
 	    // assume path in expression
@@ -11057,7 +11058,8 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	rust_debug ("successfully parsed struct pattern");
 
 	return std::unique_ptr<AST::StructPattern> (
-	  new AST::StructPattern (std::move (path), std::move (elems)));
+	  new AST::StructPattern (std::move (path), initial_tok->get_locus (),
+				  std::move (elems)));
       }
     case DOT_DOT_EQ:
       case ELLIPSIS: {
