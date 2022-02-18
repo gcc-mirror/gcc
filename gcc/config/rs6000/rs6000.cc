@@ -4446,30 +4446,6 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION;
 
-  if (TARGET_POWER10 &&
-      (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LD_CMPI) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LD_CMPI;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2LOGICAL) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LOGADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LOGADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_ADDLOG) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_ADDLOG;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
-
-  if (TARGET_POWER10
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2STORE) == 0)
-    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2STORE;
-
   /* Turn off vector pair/mma options on non-power10 systems.  */
   else if (!TARGET_POWER10 && TARGET_MMA)
     {
@@ -19032,8 +19008,7 @@ power10_sched_reorder (rtx_insn **ready, int lastpos)
 
   /* Try to pair certain store insns to adjacent memory locations
      so that the hardware will fuse them to a single operation.  */
-  if (TARGET_P10_FUSION && TARGET_P10_FUSION_2STORE
-      && is_fusable_store (last_scheduled_insn, &mem1))
+  if (TARGET_P10_FUSION && is_fusable_store (last_scheduled_insn, &mem1))
     {
 
       /* A fusable store was just scheduled.  Scan the ready list for another

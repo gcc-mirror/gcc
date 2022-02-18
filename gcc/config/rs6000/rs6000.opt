@@ -487,32 +487,8 @@ Target Mask(P8_VECTOR) Var(rs6000_isa_flags)
 Use vector and scalar instructions added in ISA 2.07.
 
 mpower10-fusion
-Target Mask(P10_FUSION) Var(rs6000_isa_flags)
+Target Undocumented Mask(P10_FUSION) Var(rs6000_isa_flags)
 Fuse certain integer operations together for better performance on power10.
-
-mpower10-fusion-ld-cmpi
-Target Undocumented Mask(P10_FUSION_LD_CMPI) Var(rs6000_isa_flags)
-Fuse certain integer operations together for better performance on power10.
-
-mpower10-fusion-2logical
-Target Undocumented Mask(P10_FUSION_2LOGICAL) Var(rs6000_isa_flags)
-Fuse pairs of scalar or vector logical operations together for better performance on power10.
-
-mpower10-fusion-logical-add
-Target Undocumented Mask(P10_FUSION_LOGADD) Var(rs6000_isa_flags)
-Fuse scalar logical op with add/subf for better performance on power10.
-
-mpower10-fusion-add-logical
-Target Undocumented Mask(P10_FUSION_ADDLOG) Var(rs6000_isa_flags)
-Fuse scalar add/subf with logical op for better performance on power10.
-
-mpower10-fusion-2add
-Target Undocumented Mask(P10_FUSION_2ADD) Var(rs6000_isa_flags)
-Fuse dependent pairs of add or vaddudm instructions for better performance on power10.
-
-mpower10-fusion-2store
-Target Undocumented Mask(P10_FUSION_2STORE) Var(rs6000_isa_flags)
-Fuse certain store operations together for better performance on power10.
 
 mcrypto
 Target Mask(CRYPTO) Var(rs6000_isa_flags)
