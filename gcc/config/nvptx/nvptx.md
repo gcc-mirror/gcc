@@ -2097,7 +2097,7 @@
       = "%.\tst%A0.b%T0\t%0, %1;";
     return nvptx_output_atomic_insn (t, operands, 0, 2);
   }
-  [(set_attr "atomic" "true")])
+  [(set_attr "atomic" "false")]) ;; Note: st is not an atomic insn.
 
 (define_insn "atomic_fetch_add<mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")

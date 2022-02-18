@@ -3274,12 +3274,24 @@ nvptx_reorg_uniform_simt ()
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (!(CALL_P (insn) && nvptx_call_insn_is_syscall_p (insn))
-	  && !(NONJUMP_INSN_P (insn)
-	       && GET_CODE (PATTERN (insn)) == PARALLEL
-	       && get_attr_atomic (insn)))
+
+      /* Skip NOTE, USE, etc.  */
+      if (!INSN_P (insn) || recog_memoized (insn) == -1)
 	continue;
+
+      if (CALL_P (insn) && nvptx_call_insn_is_syscall_p (insn))
+	{
+	  /* Handle syscall.  */
+	}
+      else if (get_attr_atomic (insn))
+	{
+	  /* Handle atomic insn.  */
+	}
+      else
+	continue;
+
       rtx pat = PATTERN (insn);
+      gcc_assert (GET_CODE (pat) == PARALLEL);
       rtx master = nvptx_get_unisimt_master ();
       bool shuffle_p = false;
       for (int i = 0; i < XVECLEN (pat, 0); i++)
