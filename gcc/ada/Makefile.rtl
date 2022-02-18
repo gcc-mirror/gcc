@@ -2854,7 +2854,7 @@ endif
 
 # Turn on shared gnatlib for specific vx7r2 targets for RTP runtimes. Once
 # all targets are ported the target_cpu selector can be removed.
-ifeq ($(strip $(filter-out vxworks7r2 powerpc64 x86_64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
+ifeq ($(strip $(filter-out vxworks7r2 powerpc64 x86_64 aarch64 rtp rtp-smp, $(target_os) $(target_cpu) $(THREAD_KIND))),)
     GNATLIB_SHARED = gnatlib-shared-dual
     LIBRARY_VERSION := $(LIB_VERSION)
 endif
