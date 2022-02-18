@@ -195,6 +195,7 @@ static vec<gomp_task *> task_cpyfns;
 
 static void scan_omp (gimple_seq *, omp_context *);
 static tree scan_omp_1_op (tree *, int *, void *);
+static bool omp_maybe_offloaded_ctx (omp_context *ctx);
 
 #define WALK_SUBSTMTS  \
     case GIMPLE_BIND: \
@@ -1154,6 +1155,15 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    || !integer_onep (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
 	    || OMP_CLAUSE_ALLOCATE_ALIGN (c) != NULL_TREE))
       {
+	/* The allocate clauses that appear on a target construct or on
+	   constructs in a target region must specify an allocator expression
+	   unless a requires directive with the dynamic_allocators clause
+	   is present in the same compilation unit.  */
+	if (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) == NULL_TREE
+	    && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
+	    && omp_maybe_offloaded_ctx (ctx))
+	  error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> clause must"
+		    " specify an allocator here");
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	tree val = integer_zero_node;
