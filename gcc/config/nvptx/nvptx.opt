@@ -95,3 +95,6 @@ Specify the version of the ptx version to use.
 minit-regs=
 Target Var(nvptx_init_regs) IntegerRange(0, 3) Joined UInteger Init(3)
 Initialize ptx registers.
+
+mptx-comment
+Target Var(nvptx_comment) Init(1) Undocumented

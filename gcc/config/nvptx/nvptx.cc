@@ -5372,6 +5372,17 @@ workaround_barsyncs (void)
 }
 #endif
 
+static rtx
+gen_comment (const char *s)
+{
+  const char *sep = " ";
+  size_t len = strlen (ASM_COMMENT_START) + strlen (sep) + strlen (s) + 1;
+  char *comment = (char *) alloca (len);
+  snprintf (comment, len, "%s%s%s", ASM_COMMENT_START, sep, s);
+  return gen_rtx_ASM_INPUT_loc (VOIDmode, ggc_strdup (comment),
+				cfun->function_start_locus);
+}
+
 /* Initialize all declared regs at function entry.
    Advantage   : Fool-proof.
    Disadvantage: Potentially creates a lot of long live ranges and adds a lot
@@ -5394,6 +5405,8 @@ workaround_uninit_method_1 (void)
       gcc_assert (CONST0_RTX (GET_MODE (reg)));
 
       start_sequence ();
+      if (nvptx_comment && first != NULL)
+	emit_insn (gen_comment ("Start: Added by -minit-regs=1"));
       emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
       rtx_insn *inits = get_insns ();
       end_sequence ();
@@ -5411,6 +5424,9 @@ workaround_uninit_method_1 (void)
       else
 	insert_here = emit_insn_after (inits, insert_here);
     }
+
+  if (nvptx_comment && insert_here != NULL)
+    emit_insn_after (gen_comment ("End: Added by -minit-regs=1"), insert_here);
 }
 
 /* Find uses of regs that are not defined on all incoming paths, and insert a
@@ -5446,6 +5462,8 @@ workaround_uninit_method_2 (void)
       gcc_assert (CONST0_RTX (GET_MODE (reg)));
 
       start_sequence ();
+      if (nvptx_comment && first != NULL)
+	emit_insn (gen_comment ("Start: Added by -minit-regs=2:"));
       emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
       rtx_insn *inits = get_insns ();
       end_sequence ();
@@ -5463,6 +5481,9 @@ workaround_uninit_method_2 (void)
       else
 	insert_here = emit_insn_after (inits, insert_here);
     }
+
+  if (nvptx_comment && insert_here != NULL)
+    emit_insn_after (gen_comment ("End: Added by -minit-regs=2"), insert_here);
 }
 
 /* Find uses of regs that are not defined on all incoming paths, and insert a
@@ -5530,6 +5551,27 @@ workaround_uninit_method_3 (void)
 	    }
 	}
     }
+
+  if (nvptx_comment)
+    FOR_EACH_BB_FN (bb, cfun)
+      {
+	if (single_pred_p (bb))
+	  continue;
+
+	edge e;
+	edge_iterator ei;
+	FOR_EACH_EDGE (e, ei, bb->preds)
+	  {
+	    if (e->insns.r == NULL_RTX)
+	      continue;
+	    start_sequence ();
+	    emit_insn (gen_comment ("Start: Added by -minit-regs=3:"));
+	    emit_insn (e->insns.r);
+	    emit_insn (gen_comment ("End: Added by -minit-regs=3:"));
+	    e->insns.r = get_insns ();
+	    end_sequence ();
+	  }
+      }
 
   commit_edge_insertions ();
 }
