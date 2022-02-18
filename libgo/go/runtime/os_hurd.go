@@ -129,3 +129,16 @@ func osinit() {
 		physPageSize = uintptr(getPageSize())
 	}
 }
+
+func setProcessCPUProfiler(hz int32) {
+	setProcessCPUProfilerTimer(hz)
+}
+
+func setThreadCPUProfiler(hz int32) {
+	setThreadCPUProfilerHz(hz)
+}
+
+//go:nosplit
+func validSIGPROF(mp *m, c *sigctxt) bool {
+	return true
+}

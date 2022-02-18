@@ -1,8 +1,8 @@
-// Copyright 2011 The Go Authors. All rights reserved.
+// Copyright 2022 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build aix || darwin || dragonfly || netbsd || openbsd || solaris
+//go:build hurd
 
 package syscall
 
@@ -145,11 +145,7 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		ngroups := len(cred.Groups)
 		var groups unsafe.Pointer
 		if ngroups > 0 {
-			gids := make([]Gid_t, ngroups)
-			for i, v := range cred.Groups {
-				gids[i] = Gid_t(v)
-			}
-			groups = unsafe.Pointer(&gids[0])
+			groups = unsafe.Pointer(&cred.Groups[0])
 		}
 		if !cred.NoSetGroups {
 			err1 = raw_setgroups(ngroups, groups)
