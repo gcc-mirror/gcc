@@ -109,6 +109,17 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
       (builtin_vectorization_cost (kind, vectype, misalign) * count);
 }
 
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind,
+		  enum vect_cost_model_location where)
+{
+  gcc_assert (kind == cond_branch_taken || kind == cond_branch_not_taken
+	      || kind == scalar_stmt);
+  return record_stmt_cost (body_cost_vec, count, kind, NULL,
+			   NULL_TREE, 0, where);
+}
+
 /* Return a variable of type ELEM_TYPE[NELEMS].  */
 
 static tree

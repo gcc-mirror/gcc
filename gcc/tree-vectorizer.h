@@ -1762,6 +1762,15 @@ add_stmt_cost (vector_costs *costs, int count,
   return cost;
 }
 
+static inline unsigned
+add_stmt_cost (vector_costs *costs, int count, enum vect_cost_for_stmt kind,
+	       enum vect_cost_model_location where)
+{
+  gcc_assert (kind == cond_branch_taken || kind == cond_branch_not_taken
+	      || kind == scalar_stmt);
+  return add_stmt_cost (costs, count, kind, NULL, NULL_TREE, 0, where);
+}
+
 /* Alias targetm.vectorize.add_stmt_cost.  */
 
 static inline unsigned
@@ -2120,6 +2129,9 @@ extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  tree, int, enum vect_cost_model_location);
+extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
+				  enum vect_cost_for_stmt,
+				  enum vect_cost_model_location);
 
 /* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO.  */
 
