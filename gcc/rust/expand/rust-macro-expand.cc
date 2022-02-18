@@ -3754,10 +3754,10 @@ MacroExpander::transcribe_rule (
     = substitute_tokens (invoc_stream, macro_rule_tokens, matched_fragments);
 
   // // handy for debugging
-  // for (auto &tok : substituted_tokens)
-  //   {
-  //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
-  //   }
+  for (auto &tok : substituted_tokens)
+    {
+      rust_debug ("tok: [%s]", tok->as_string ().c_str ());
+    }
 
   // parse it to an ASTFragment
   MacroInvocLexer lex (std::move (substituted_tokens));
@@ -3875,6 +3875,67 @@ MacroExpander::transcribe_rule (
 }
 
 std::vector<std::unique_ptr<AST::Token>>
+MacroExpander::substitute_metavar (
+  std::vector<std::unique_ptr<AST::Token>> &input,
+  std::map<std::string, MatchedFragment> &fragments,
+  std::unique_ptr<AST::Token> &metavar)
+{
+  auto metavar_name = metavar->get_str ();
+
+  rust_debug ("expanding metavar: %s", metavar_name.c_str ());
+  std::vector<std::unique_ptr<AST::Token>> expanded;
+  auto it = fragments.find (metavar_name);
+  if (it == fragments.end ())
+    {
+      // Return a copy of the original token
+      expanded.push_back (metavar->clone_token ());
+    }
+  else
+    {
+      // Replace
+      MatchedFragment &frag = it->second;
+      for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
+	   offs++)
+	{
+	  auto &tok = input.at (offs);
+	  expanded.push_back (tok->clone_token ());
+	}
+    }
+
+  return expanded;
+}
+
+std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
+MacroExpander::substitute_token (
+  std::vector<std::unique_ptr<AST::Token>> &input,
+  std::map<std::string, MatchedFragment> &fragments,
+  std::unique_ptr<AST::Token> &token)
+{
+  switch (token->get_id ())
+    {
+    case IDENTIFIER:
+      rust_debug ("expanding metavar");
+      return {substitute_metavar (input, fragments, token), 1};
+    case LEFT_PAREN:
+      rust_debug ("expanding repetition");
+      break;
+      // TODO: We need to check if the $ was alone. In that case, do
+      // not error out: Simply act as if there was an empty identifier
+      // with no associated fragment and paste the dollar sign in the
+      // transcription. Unsure how to do that since we always have at
+      // least the closing curly brace after an empty $...
+    default:
+      rust_error_at (token->get_locus (),
+		     "unexpected token in macro transcribe: expected "
+		     "%<(%> or identifier after %<$%>, got %<%s%>",
+		     get_token_description (token->get_id ()));
+    }
+
+  // FIXME: gcc_unreachable() error case?
+  return {std::vector<std::unique_ptr<AST::Token>> (), 0};
+}
+
+std::vector<std::unique_ptr<AST::Token>>
 MacroExpander::substitute_tokens (
   std::vector<std::unique_ptr<AST::Token>> &input,
   std::vector<std::unique_ptr<AST::Token>> &macro,
@@ -3882,60 +3943,83 @@ MacroExpander::substitute_tokens (
 {
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
 
+  // for token in macro
+  // 	if token == ?:
+  // 	// That's not always true: If it's a left paren, it's repetition
+  // 	// We probably want to store the matched amount in the fragment so
+  // 	// we can expand it here
+  // 		id = next_token();
+  // 		frag = fragment.find(id);
+
   for (size_t i = 0; i < macro.size (); i++)
     {
       auto &tok = macro.at (i);
       if (tok->get_id () == DOLLAR_SIGN)
 	{
-	  std::vector<std::unique_ptr<AST::Token>> parsed_toks;
+	  auto &next_tok = macro.at (i + 1);
+	  // Aaaaah, if only we had C++17 :)
+	  // auto [expanded, tok_to_skip] = ...
+	  auto p = substitute_token (input, fragments, next_tok);
+	  auto expanded = std::move (p.first);
+	  auto tok_to_skip = p.second;
 
-	  std::string ident;
-	  for (size_t offs = i; i < macro.size (); offs++)
-	    {
-	      auto &tok = macro.at (offs);
-	      if (tok->get_id () == DOLLAR_SIGN && offs == i)
-		{
-		  parsed_toks.push_back (tok->clone_token ());
-		}
-	      else if (tok->get_id () == IDENTIFIER)
-		{
-		  rust_assert (tok->as_string ().size () == 1);
-		  ident.push_back (tok->as_string ().at (0));
-		  parsed_toks.push_back (tok->clone_token ());
-		}
-	      else
-		{
-		  break;
-		}
-	    }
+	  i += tok_to_skip;
 
-	  // lookup the ident
-	  auto it = fragments.find (ident);
-	  if (it == fragments.end ())
-	    {
-	      // just leave the tokens in
-	      for (auto &tok : parsed_toks)
-		{
-		  replaced_tokens.push_back (tok->clone_token ());
-		}
-	    }
-	  else
-	    {
-	      // replace
-	      MatchedFragment &frag = it->second;
-	      for (size_t offs = frag.token_offset_begin;
-		   offs < frag.token_offset_end; offs++)
-		{
-		  auto &tok = input.at (offs);
-		  replaced_tokens.push_back (tok->clone_token ());
-		}
-	    }
-	  i += parsed_toks.size () - 1;
+	  for (auto &token : expanded)
+	    replaced_tokens.emplace_back (token->clone_token ());
 	}
       else
 	{
-	  replaced_tokens.push_back (tok->clone_token ());
+	  replaced_tokens.emplace_back (tok->clone_token ());
 	}
+
+      // std::vector<std::unique_ptr<AST::Token>> parsed_toks;
+
+      // std::string ident;
+      // for (size_t offs = i; i < macro.size (); offs++)
+      //   {
+      //     auto &tok = macro.at (offs);
+      //     if (tok->get_id () == DOLLAR_SIGN && offs == i)
+      //       {
+      //         parsed_toks.push_back (tok->clone_token ());
+      //       }
+      //     else if (tok->get_id () == IDENTIFIER)
+      //       {
+      //         rust_assert (tok->as_string ().size () == 1);
+      //         ident.push_back (tok->as_string ().at (0));
+      //         parsed_toks.push_back (tok->clone_token ());
+      //       }
+      //     else
+      //       {
+      //         break;
+      //       }
+      //   }
+
+      // // lookup the ident
+      // auto it = fragments.find (ident);
+      // if (it == fragments.end ())
+      //   {
+      //     // just leave the tokens in
+      //     for (auto &tok : parsed_toks)
+      //       {
+      //         replaced_tokens.push_back (tok->clone_token ());
+      //       }
+      //   }
+      // else
+      //   {
+      //     // replace
+      //     MatchedFragment &frag = it->second;
+      //     for (size_t offs = frag.token_offset_begin;
+      //          offs < frag.token_offset_end; offs++)
+      //       {
+      //         auto &tok = input.at (offs);
+      //         replaced_tokens.push_back (tok->clone_token ());
+      //       }
+      //   }
+      // i += parsed_toks.size () - 1;
+      //
+      // }
+      // else { replaced_tokens.push_back (tok->clone_token ()); }
     }
 
   return replaced_tokens;
