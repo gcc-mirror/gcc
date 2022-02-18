@@ -1,3 +1,12 @@
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92918
+	* name-lookup.c (push_class_level_binding_1): Do overload a new
+	function with a previous using-declaration.
+
 2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

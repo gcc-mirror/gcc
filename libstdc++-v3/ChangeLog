@@ -1,3 +1,14 @@
+2022-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/102358
+	* include/bits/stl_iterator.h (__niter_base): Make constexpr
+	for C++20.
+	(__miter_base): Likewise.
+	* testsuite/25_algorithms/move/constexpr.cc: New test.
+
 2022-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
