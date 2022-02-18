@@ -47,7 +47,7 @@ _mm_malloc (size_t __size, size_t __alignment)
     return malloc (__size);
   if (__alignment < __vec_align)
     __alignment = __vec_align;
-  if (__posix_memalign (&__ptr, __alignment, __size) == 0)
+  if (posix_memalign (&__ptr, __alignment, __size) == 0)
     return __ptr;
   else
     return NULL;
