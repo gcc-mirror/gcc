@@ -388,41 +388,6 @@ NameResolution::go (AST::Crate &crate)
     ResolveItem::go (it->get (), CanonicalPath::create_empty (), crate_prefix);
 }
 
-// rust-ast-resolve-expr.h
-
-void
-ResolveExpr::visit (AST::BlockExpr &expr)
-{
-  NodeId scope_node_id = expr.get_node_id ();
-  resolver->get_name_scope ().push (scope_node_id);
-  resolver->get_type_scope ().push (scope_node_id);
-  resolver->get_label_scope ().push (scope_node_id);
-  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
-
-  for (auto &s : expr.get_statements ())
-    {
-      if (s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
-			 CanonicalPath::create_empty ());
-    }
-
-  for (auto &s : expr.get_statements ())
-    {
-      if (!s->is_item ())
-	ResolveStmt::go (s.get (), s->get_node_id (), prefix, canonical_prefix,
-			 CanonicalPath::create_empty ());
-    }
-
-  if (expr.has_tail_expr ())
-    resolve_expr (expr.get_tail_expr ().get (), expr.get_node_id ());
-
-  resolver->get_name_scope ().pop ();
-  resolver->get_type_scope ().pop ();
-  resolver->get_label_scope ().pop ();
-}
-
 // rust-ast-resolve-struct-expr-field.h
 
 void
