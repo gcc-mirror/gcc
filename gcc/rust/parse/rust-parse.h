@@ -603,6 +603,7 @@ private:
   bool done_end_of_file ();
 
   void add_error (Error error) { error_table.push_back (std::move (error)); }
+  void clear_errors () { error_table.clear (); }
 
 public:
   // Construct parser with specified "managed" token source.
