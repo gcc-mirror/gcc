@@ -392,6 +392,8 @@ public:
 
   void visit (AST::TraitObjectType &type) override;
 
+  void visit (AST::SliceType &type) override;
+
 private:
   ResolveType (NodeId parent, bool canonicalize_type_with_generics,
 	       CanonicalPath *canonical_path)

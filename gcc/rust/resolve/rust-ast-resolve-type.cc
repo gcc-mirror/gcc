@@ -197,5 +197,11 @@ ResolveType::visit (AST::InferredType &type)
   ok = true;
 }
 
+void
+ResolveType::visit (AST::SliceType &type)
+{
+  type.get_elem_type ()->accept_vis (*this);
+}
+
 } // namespace Resolver
 } // namespace Rust
