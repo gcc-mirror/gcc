@@ -22997,7 +22997,7 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				  stmt_vec_info stmt_info, slp_tree,
+				  stmt_vec_info stmt_info, slp_tree node,
 				  tree vectype, int misalign,
 				  vect_cost_model_location where)
 {
@@ -23159,6 +23159,49 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
+    }
+  else if (kind == vec_construct
+	   && node
+	   && SLP_TREE_DEF_TYPE (node) == vect_external_def
+	   && INTEGRAL_TYPE_P (TREE_TYPE (vectype)))
+    {
+      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      unsigned i;
+      tree op;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	{
+	  if (TREE_CODE (op) != SSA_NAME
+	      || TREE_VISITED (op))
+	    continue;
+	  TREE_VISITED (op) = 1;
+	  gimple *def = SSA_NAME_DEF_STMT (op);
+	  tree tem;
+	  if (is_gimple_assign (def)
+	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	      && ((tem = gimple_assign_rhs1 (def)), true)
+	      && TREE_CODE (tem) == SSA_NAME
+	      /* A sign-change expands to nothing.  */
+	      && tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (def)),
+					TREE_TYPE (tem)))
+	    def = SSA_NAME_DEF_STMT (tem);
+	  /* When the component is loaded from memory we can directly
+	     move it to a vector register, otherwise we have to go
+	     via a GPR or via vpinsr which involves similar cost.
+	     Likewise with a BIT_FIELD_REF extracting from a vector
+	     register we can hope to avoid using a GPR.  */
+	  if (!is_gimple_assign (def)
+	      || (!gimple_assign_load_p (def)
+		  && (gimple_assign_rhs_code (def) != BIT_FIELD_REF
+		      || !VECTOR_TYPE_P (TREE_TYPE
+				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
+	    stmt_cost += ix86_cost->sse_to_integer;
+	}
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
