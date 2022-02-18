@@ -1,3 +1,14 @@
+2022-02-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_construct): Move handling of
+	PRAGMA_OMP_METADIRECTIVE from here...
+	(cp_parser_pragma): ...to here.
+	(analyze_metadirective_body): Check that the bracket
+	nesting level is also zero before stopping the adding of tokens on
+	encountering a close brace.
+	(cp_parser_omp_metadirective): Modify function signature and update.
+	Do not assert on remaining tokens if there has been a parse error.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.cc (omp_target_device_selectors): New.
