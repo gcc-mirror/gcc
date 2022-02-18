@@ -1,3 +1,8 @@
+2022-02-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/gomp/metadirective-1.c (f): Add test for
+	improperly nested metadirectives.
+
 2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/gomp/metadirective-8.f90: New.

@@ -47540,7 +47540,7 @@ cp_parser_omp_end (cp_parser *parser, cp_token *pragma_tok)
 }
 
 
-/* Helper function for c_parser_omp_metadirective.  */
+/* Helper function for cp_parser_omp_metadirective.  */
 
 static void
 analyze_metadirective_body (cp_parser *parser,
@@ -47576,7 +47576,7 @@ analyze_metadirective_body (cp_parser *parser,
 	  ++nesting_depth;
 	  goto add;
 	case CPP_CLOSE_BRACE:
-	  if (--nesting_depth == 0)
+	  if (--nesting_depth == 0 && bracket_depth == 0)
 	    stop = true;
 	  goto add;
 	case CPP_OPEN_PAREN:
@@ -47611,9 +47611,8 @@ analyze_metadirective_body (cp_parser *parser,
   # pragma omp metadirective [clause[, clause]]
 */
 
-static tree
+static void
 cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
-			     char *p_name, omp_clause_mask, tree *,
 			     bool *if_p)
 {
   tree ret;
@@ -47624,15 +47623,14 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
   auto_vec<tree> ctxs;
   bool default_seen = false;
   int directive_token_idx = 0;
-  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  location_t pragma_loc = pragma_tok->location;
   tree standalone_body = NULL_TREE;
   vec<struct omp_metadirective_variant> candidates;
 
   ret = make_node (OMP_METADIRECTIVE);
-  SET_EXPR_LOCATION (ret, loc);
+  SET_EXPR_LOCATION (ret, pragma_loc);
   TREE_TYPE (ret) = void_type_node;
   OMP_METADIRECTIVE_CLAUSES (ret) = NULL_TREE;
-  strcat (p_name, " metadirective");
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
@@ -47851,6 +47849,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
       parser->lexer = lexer;
       cp_lexer_set_source_position_from_token (lexer->next_token);
 
+      int prev_errorcount = errorcount;
       tree directive = push_stmt_list ();
       tree directive_stmt = begin_compound_stmt (0);
 
@@ -47885,8 +47884,10 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
       OMP_METADIRECTIVE_CLAUSES (ret)
 	= chainon (OMP_METADIRECTIVE_CLAUSES (ret), variant);
 
-      /* Check that all valid tokens have been consumed.  */
-      gcc_assert (cp_lexer_next_token_is (parser->lexer, CPP_EOF));
+      /* Check that all valid tokens have been consumed if no parse errors
+	 encountered.  */
+      gcc_assert (errorcount != prev_errorcount
+		  || cp_lexer_next_token_is (parser->lexer, CPP_EOF));
 
       parser->lexer = old_lexer;
       cp_lexer_set_source_position_from_token (old_lexer->next_token);
@@ -47898,8 +47899,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
     ret = c_omp_expand_metadirective (candidates);
 
   add_stmt (ret);
-
-  return ret;
+  return;
 
 fail:
   /* Skip the metadirective pragma.  */
@@ -47907,7 +47907,6 @@ fail:
 
   /* Skip the metadirective body.  */
   cp_parser_skip_to_end_of_block_or_statement (parser);
-  return error_mark_node;
 }
 
 
@@ -49142,11 +49141,6 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       stmt = cp_parser_omp_master (parser, pragma_tok, p_name, mask, NULL,
 				   if_p);
       break;
-    case PRAGMA_OMP_METADIRECTIVE:
-      strcpy (p_name, "#pragma omp");
-      stmt = cp_parser_omp_metadirective (parser, pragma_tok, p_name, mask,
-					  NULL, if_p);
-      break;
     case PRAGMA_OMP_PARALLEL:
       strcpy (p_name, "#pragma omp");
       stmt = cp_parser_omp_parallel (parser, pragma_tok, p_name, mask, NULL,
@@ -49797,7 +49791,6 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_LOOP:
     case PRAGMA_OMP_MASKED:
     case PRAGMA_OMP_MASTER:
-    case PRAGMA_OMP_METADIRECTIVE:
     case PRAGMA_OMP_PARALLEL:
     case PRAGMA_OMP_SCOPE:
     case PRAGMA_OMP_SECTIONS:
@@ -49839,6 +49832,10 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_NOTHING:
       cp_parser_omp_nothing (parser, pragma_tok);
       return false;
+
+    case PRAGMA_OMP_METADIRECTIVE:
+      cp_parser_omp_metadirective (parser, pragma_tok, if_p);
+      return true;
 
     case PRAGMA_OMP_ERROR:
       return cp_parser_omp_error (parser, pragma_tok, context);

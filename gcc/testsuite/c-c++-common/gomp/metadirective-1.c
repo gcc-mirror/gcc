@@ -4,6 +4,8 @@
 
 void f (int a[], int b[], int c[])
 {
+  int i;
+
   #pragma omp metadirective \
       default (teams loop) \
       default (parallel loop) /* { dg-error "there can only be one default clause in a metadirective before '\\(' token" } */
@@ -26,4 +28,15 @@ void f (int a[], int b[], int c[])
   #pragma omp metadirective \
 	default (metadirective default (flush))	/* { dg-error "metadirectives cannot be used as directive variants before 'default'" } */
     for (i = 0; i < N; i++) c[i] = a[i] * b[i];
+
+  /* Test improperly nested metadirectives - even though the second
+     metadirective resolves to 'omp nothing', that is not the same as there
+     being literally nothing there.  */
+  #pragma omp metadirective \
+      when (implementation={vendor("gnu")}: parallel for)
+    #pragma omp metadirective \
+	when (implementation={vendor("cray")}: parallel for)
+	/* { dg-error "for statement expected before '#pragma'" "" { target c } .-2 } */
+	/* { dg-error "'#pragma' is not allowed here" "" { target c++ } .-3 } */
+      for (i = 0; i < N; i++) c[i] = a[i] * b[i];
 }
