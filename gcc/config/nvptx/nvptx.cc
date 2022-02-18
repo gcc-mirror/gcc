@@ -3248,12 +3248,18 @@ nvptx_call_insn_is_syscall_p (rtx_insn *insn)
 /* If SET subexpression of INSN sets a register, emit a shuffle instruction to
    propagate its value from lane MASTER to current lane.  */
 
-static void
+static bool
 nvptx_unisimt_handle_set (rtx set, rtx_insn *insn, rtx master)
 {
   rtx reg;
   if (GET_CODE (set) == SET && REG_P (reg = SET_DEST (set)))
-    emit_insn_after (nvptx_gen_shuffle (reg, reg, master, SHUFFLE_IDX), insn);
+    {
+      emit_insn_after (nvptx_gen_shuffle (reg, reg, master, SHUFFLE_IDX),
+		       insn);
+      return true;
+    }
+
+  return false;
 }
 
 /* Adjust code for uniform-simt code generation variant by making atomics and
@@ -3275,8 +3281,30 @@ nvptx_reorg_uniform_simt ()
 	continue;
       rtx pat = PATTERN (insn);
       rtx master = nvptx_get_unisimt_master ();
+      bool shuffle_p = false;
       for (int i = 0; i < XVECLEN (pat, 0); i++)
-	nvptx_unisimt_handle_set (XVECEXP (pat, 0, i), insn, master);
+	shuffle_p
+	  |= nvptx_unisimt_handle_set (XVECEXP (pat, 0, i), insn, master);
+      if (shuffle_p && TARGET_PTX_6_0)
+	{
+	  /* The shuffle is a sync, so uniformity is guaranteed.  */
+	}
+      else
+	{
+	  if (TARGET_PTX_6_0)
+	    {
+	      gcc_assert (!shuffle_p);
+	      /* Emit after the insn, to guarantee uniformity.  */
+	      emit_insn_after (gen_nvptx_warpsync (), insn);
+	    }
+	  else
+	    {
+	      /* Emit after the insn (and before the shuffle, if there are any)
+		 to check uniformity.  */
+	      emit_insn_after (gen_nvptx_uniform_warp_check (), insn);
+	    }
+	}
+
       rtx pred = nvptx_get_unisimt_predicate ();
       pred = gen_rtx_NE (BImode, pred, const0_rtx);
       pat = gen_rtx_COND_EXEC (VOIDmode, pred, pat);
