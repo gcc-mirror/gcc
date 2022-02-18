@@ -1,3 +1,57 @@
+2022-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/79754
+	* gcc.target/i386/pr79754.c: Add target dfp.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102893
+	* gcc.dg/tree-ssa/ssa-dce-9.c: New testcase.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/45178
+	* gcc.dg/tree-ssa/ssa-dce-3.c: Adjust testcase.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103864
+	PR tree-optimization/103544
+	* gcc.dg/vect/pr103864.c: New testcase.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103544
+	* gcc.dg/vect/pr103544.c: New testcase.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* g++.dg/torture/pr103361.C: New testcase.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gcc.dg/torture/pr100786.c: New testcase.
+
 2022-02-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

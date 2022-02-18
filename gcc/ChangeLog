@@ -1,3 +1,70 @@
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102893
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Fix the
+	test for an exit edge.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/45178
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): For
+	infinite loops without exit do not mark control dependent
+	edges of the latch necessary.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103864
+	PR tree-optimization/103544
+	* tree-vect-slp.c (vect_analyze_slp_instance): Exclude
+	reductions wrapped in conversions from SLP handling.
+	(vect_analyze_slp): Revert PR103544 change.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103544
+	* tree-vect-slp.c (vect_analyze_slp): Only add a SLP reduction
+	opportunity if the stmt in question is the reduction root.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* gimple-loop-jam.c (adjust_unroll_factor): Use lambda_int
+	for the dependence distance.
+	* tree-data-ref.c (print_lambda_vector): Properly print a lambda_int.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100786
+	* gimple-fold.c (get_symbol_constant_value): Only return
+	values of compatible type to the symbol.
+
+2022-02-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR target/100784
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Check for
+	LHS before folding __builtin_ia32_shufpd and friends.
+
 2022-02-16  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
