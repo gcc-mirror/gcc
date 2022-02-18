@@ -706,29 +706,29 @@ Parser<ManagedTokenSource>::parse_path_ident_segment ()
     case IDENTIFIER:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment (t->get_str ());
+      return AST::PathIdentSegment (t->get_str (), t->get_locus ());
     case SUPER:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("super");
+      return AST::PathIdentSegment ("super", t->get_locus ());
     case SELF:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("self");
+      return AST::PathIdentSegment ("self", t->get_locus ());
     case SELF_ALIAS:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("Self");
+      return AST::PathIdentSegment ("Self", t->get_locus ());
     case CRATE:
       lexer.skip_token ();
 
-      return AST::PathIdentSegment ("crate");
+      return AST::PathIdentSegment ("crate", t->get_locus ());
     case DOLLAR_SIGN:
       if (lexer.peek_token (1)->get_id () == CRATE)
 	{
 	  lexer.skip_token (1);
 
-	  return AST::PathIdentSegment ("$crate");
+	  return AST::PathIdentSegment ("$crate", t->get_locus ());
 	}
       gcc_fallthrough ();
     default:
@@ -5993,6 +5993,7 @@ Parser<ManagedTokenSource>::parse_named_function_param (
   std::string name;
 
   const_TokenPtr t = lexer.peek_token ();
+  Location name_location = t->get_locus ();
   switch (t->get_id ())
     {
     case IDENTIFIER:
@@ -6028,7 +6029,7 @@ Parser<ManagedTokenSource>::parse_named_function_param (
     }
 
   return AST::NamedFunctionParam (std::move (name), std::move (param_type),
-				  std::move (outer_attrs));
+				  std::move (outer_attrs), name_location);
 }
 
 // Parses a statement (will further disambiguate any statement).
@@ -6435,7 +6436,8 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
       }
       case LEFT_PAREN: {
 	// parse type path function
-	AST::TypePathFunction type_path_function = parse_type_path_function ();
+	AST::TypePathFunction type_path_function
+	  = parse_type_path_function (locus);
 
 	if (type_path_function.is_error ())
 	  {
@@ -6461,7 +6463,7 @@ Parser<ManagedTokenSource>::parse_type_path_segment ()
 // Parses a function call representation inside a type path.
 template <typename ManagedTokenSource>
 AST::TypePathFunction
-Parser<ManagedTokenSource>::parse_type_path_function ()
+Parser<ManagedTokenSource>::parse_type_path_function (Location id_location)
 {
   if (!skip_token (LEFT_PAREN))
     {
@@ -6507,7 +6509,8 @@ Parser<ManagedTokenSource>::parse_type_path_function ()
   std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
 
   inputs.shrink_to_fit ();
-  return AST::TypePathFunction (std::move (inputs), std::move (return_type));
+  return AST::TypePathFunction (std::move (inputs), id_location,
+				std::move (return_type));
 }
 
 // Parses a path inside an expression that allows generic arguments.
@@ -8738,7 +8741,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 
       std::vector<std::unique_ptr<AST::Expr>> exprs;
       auto array_elems
-	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs));
+	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs), locus);
       return Rust::make_unique<AST::ArrayExpr> (std::move (array_elems),
 						std::move (inner_attrs),
 						std::move (outer_attrs), locus);
@@ -8781,7 +8784,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 
 	  std::unique_ptr<AST::ArrayElemsCopied> copied_array_elems (
 	    new AST::ArrayElemsCopied (std::move (initial_expr),
-				       std::move (copy_amount)));
+				       std::move (copy_amount), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (copied_array_elems),
 				std::move (inner_attrs),
@@ -8798,7 +8801,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 	  skip_token (RIGHT_SQUARE);
 
 	  std::unique_ptr<AST::ArrayElemsValues> array_elems (
-	    new AST::ArrayElemsValues (std::move (exprs)));
+	    new AST::ArrayElemsValues (std::move (exprs), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (array_elems),
 				std::move (inner_attrs),
@@ -8840,7 +8843,7 @@ Parser<ManagedTokenSource>::parse_array_expr (AST::AttrVec outer_attrs,
 	  exprs.shrink_to_fit ();
 
 	  std::unique_ptr<AST::ArrayElemsValues> array_elems (
-	    new AST::ArrayElemsValues (std::move (exprs)));
+	    new AST::ArrayElemsValues (std::move (exprs), locus));
 	  return std::unique_ptr<AST::ArrayExpr> (
 	    new AST::ArrayExpr (std::move (array_elems),
 				std::move (inner_attrs),
@@ -8894,8 +8897,8 @@ Parser<ManagedTokenSource>::parse_closure_param ()
 	}
     }
 
-  return AST::ClosureParam (std::move (pattern), std::move (type),
-			    std::move (outer_attrs));
+  return AST::ClosureParam (std::move (pattern), pattern->get_locus (),
+			    std::move (type), std::move (outer_attrs));
 }
 
 // Parses a grouped or tuple expression (disambiguates).
@@ -10600,7 +10603,8 @@ Parser<ManagedTokenSource>::parse_pattern ()
 		}
 
 	      return std::unique_ptr<AST::StructPattern> (
-		new AST::StructPattern (std::move (path), std::move (elems)));
+		new AST::StructPattern (std::move (path), t->get_locus (),
+					std::move (elems)));
 	    }
 	  default:
 	    // assume path in expression
@@ -11054,7 +11058,8 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	rust_debug ("successfully parsed struct pattern");
 
 	return std::unique_ptr<AST::StructPattern> (
-	  new AST::StructPattern (std::move (path), std::move (elems)));
+	  new AST::StructPattern (std::move (path), initial_tok->get_locus (),
+				  std::move (elems)));
       }
     case DOT_DOT_EQ:
       case ELLIPSIS: {
@@ -14440,6 +14445,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	AST::StructBase struct_base = AST::StructBase::error ();
 	if (lexer.peek_token ()->get_id () == DOT_DOT)
 	  {
+	    Location dot_dot_location = lexer.peek_token ()->get_locus ();
 	    lexer.skip_token ();
 
 	    // parse required struct base expr
@@ -14457,7 +14463,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	    // DEBUG:
 	    rust_debug ("struct/enum expr - parsed and validated base expr");
 
-	    struct_base = AST::StructBase (std::move (base_expr));
+	    struct_base
+	      = AST::StructBase (std::move (base_expr), dot_dot_location);
 
 	    // DEBUG:
 	    rust_debug ("assigned struct base to new struct base ");
@@ -14610,8 +14617,10 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
 
       AST::GenericArgs generic_args = parse_path_generic_args ();
 
-      initial_segment = AST::PathExprSegment (initial_str, tok->get_locus (),
-					      std::move (generic_args));
+      initial_segment
+	= AST::PathExprSegment (AST::PathIdentSegment (initial_str,
+						       tok->get_locus ()),
+				tok->get_locus (), std::move (generic_args));
     }
   if (initial_segment.is_error ())
     {

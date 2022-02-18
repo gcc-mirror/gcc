@@ -848,18 +848,18 @@ class StructPattern : public Pattern
   // bool has_struct_pattern_elements;
   StructPatternElements elems;
 
-  // TODO: should this store location data? Accessor uses path location data.
   NodeId node_id;
+  Location locus;
 
 public:
   std::string as_string () const override;
 
   // Constructs a struct pattern from specified StructPatternElements
-  StructPattern (PathInExpression struct_path,
+  StructPattern (PathInExpression struct_path, Location locus,
 		 StructPatternElements elems
 		 = StructPatternElements::create_empty ())
     : path (std::move (struct_path)), elems (std::move (elems)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   /* TODO: constructor to construct via elements included in

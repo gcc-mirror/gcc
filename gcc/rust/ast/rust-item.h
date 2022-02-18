@@ -3941,12 +3941,11 @@ private:
 
   std::unique_ptr<Type> param_type;
 
-  // TODO: should this store location data?
-
   // seemingly new since writing this node
   std::vector<Attribute> outer_attrs;
 
   NodeId node_id;
+  Location locus;
 
 public:
   /* Returns whether the named function parameter has a name (i.e. name is not
@@ -3967,14 +3966,14 @@ public:
   // Creates an error state named function parameter.
   static NamedFunctionParam create_error ()
   {
-    return NamedFunctionParam ("", nullptr, {});
+    return NamedFunctionParam ("", nullptr, {}, Location ());
   }
 
   NamedFunctionParam (std::string name, std::unique_ptr<Type> param_type,
-		      std::vector<Attribute> outer_attrs)
+		      std::vector<Attribute> outer_attrs, Location locus)
     : name (std::move (name)), param_type (std::move (param_type)),
       outer_attrs (std::move (outer_attrs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor

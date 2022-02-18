@@ -953,12 +953,11 @@ protected:
 class ArrayElemsValues : public ArrayElems
 {
   std::vector<std::unique_ptr<Expr> > values;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
-  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems)
-    : ArrayElems (), values (std::move (elems))
+  ArrayElemsValues (std::vector<std::unique_ptr<Expr> > elems, Location locus)
+    : ArrayElems (), values (std::move (elems)), locus (locus)
   {}
 
   // copy constructor with vector clone
@@ -1008,15 +1007,14 @@ class ArrayElemsCopied : public ArrayElems
 {
   std::unique_ptr<Expr> elem_to_copy;
   std::unique_ptr<Expr> num_copies;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   // Constructor requires pointers for polymorphism
   ArrayElemsCopied (std::unique_ptr<Expr> copied_elem,
-		    std::unique_ptr<Expr> copy_amount)
+		    std::unique_ptr<Expr> copy_amount, Location locus)
     : ArrayElems (), elem_to_copy (std::move (copied_elem)),
-      num_copies (std::move (copy_amount))
+      num_copies (std::move (copy_amount)), locus (locus)
   {}
 
   // Copy constructor required due to unique_ptr - uses custom clone
@@ -1516,11 +1514,11 @@ struct StructBase
 {
 private:
   std::unique_ptr<Expr> base_struct;
+  Location locus;
 
 public:
-  // TODO: should this store location data?
-  StructBase (std::unique_ptr<Expr> base_struct_ptr)
-    : base_struct (std::move (base_struct_ptr))
+  StructBase (std::unique_ptr<Expr> base_struct_ptr, Location locus)
+    : base_struct (std::move (base_struct_ptr)), locus (locus)
   {}
 
   // Copy constructor requires clone
@@ -1552,7 +1550,7 @@ public:
   StructBase &operator= (StructBase &&other) = default;
 
   // Returns a null expr-ed StructBase - error state
-  static StructBase error () { return StructBase (nullptr); }
+  static StructBase error () { return StructBase (nullptr, Location ()); }
 
   // Returns whether StructBase is in error state
   bool is_invalid () const { return base_struct == nullptr; }
@@ -2136,8 +2134,7 @@ private:
 
   // bool has_type_given;
   std::unique_ptr<Type> type;
-
-  // TODO: should this store location data?
+  Location locus;
 
 public:
   // Returns whether the type of the parameter has been given.
@@ -2146,11 +2143,12 @@ public:
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
   // Constructor for closure parameter
-  ClosureParam (std::unique_ptr<Pattern> param_pattern,
+  ClosureParam (std::unique_ptr<Pattern> param_pattern, Location locus,
 		std::unique_ptr<Type> param_type = nullptr,
 		std::vector<Attribute> outer_attrs = {})
     : outer_attrs (std::move (outer_attrs)),
-      pattern (std::move (param_pattern)), type (std::move (param_type))
+      pattern (std::move (param_pattern)), type (std::move (param_type)),
+      locus (locus)
   {}
 
   // Copy constructor required due to cloning as a result of unique_ptrs
@@ -2191,7 +2189,10 @@ public:
   bool is_error () const { return pattern == nullptr; }
 
   // Creates an error state closure parameter.
-  static ClosureParam create_error () { return ClosureParam (nullptr); }
+  static ClosureParam create_error ()
+  {
+    return ClosureParam (nullptr, Location ());
+  }
 
   std::string as_string () const;
 
