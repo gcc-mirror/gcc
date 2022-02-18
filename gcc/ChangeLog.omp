@@ -1,3 +1,8 @@
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	* omp-low.cc (omp_maybe_offloaded_ctx): New prototype.
+	(scan_sharing_clauses):  Check a restriction on allocate clause.
+
 2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* langhooks-def.h (lhd_omp_deep_mapping_p,

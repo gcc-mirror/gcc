@@ -1,3 +1,10 @@
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	* c-c++-common/gomp/allocate-2.c: Add tests.
+	* c-c++-common/gomp/allocate-8.c: New test.
+	* gfortran.dg/gomp/allocate-3.f90: Add tests.
+	* gcc.dg/gomp/pr104517.c: Update.
+
 2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/c_loc_test_22.f90: Update scan-tree.
