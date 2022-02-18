@@ -206,6 +206,9 @@ public:
     return MacroMatchType::Repetition;
   }
 
+  MacroRepOp get_op () const { return op; }
+  std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
