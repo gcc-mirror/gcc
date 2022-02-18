@@ -477,5 +477,37 @@ ResolveExpr::visit (AST::MatchExpr &expr)
     }
 }
 
+void
+ResolveExpr::visit (AST::RangeFromToExpr &expr)
+{
+  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
+  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+}
+
+void
+ResolveExpr::visit (AST::RangeFromExpr &expr)
+{
+  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
+}
+
+void
+ResolveExpr::visit (AST::RangeToExpr &expr)
+{
+  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+}
+
+void
+ResolveExpr::visit (AST::RangeFullExpr &expr)
+{
+  // nothing to do
+}
+
+void
+ResolveExpr::visit (AST::RangeFromToInclExpr &expr)
+{
+  resolve_expr (expr.get_from_expr ().get (), expr.get_node_id ());
+  resolve_expr (expr.get_to_expr ().get (), expr.get_node_id ());
+}
+
 } // namespace Resolver
 } // namespace Rust

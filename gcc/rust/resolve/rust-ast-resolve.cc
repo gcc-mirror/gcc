@@ -22,6 +22,7 @@
 #include "rust-ast-resolve-toplevel.h"
 #include "rust-ast-resolve-item.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-ast-resolve-struct-expr-field.h"
 
 #define MKBUILTIN_TYPE(_X, _R, _TY)                                            \
   do                                                                           \

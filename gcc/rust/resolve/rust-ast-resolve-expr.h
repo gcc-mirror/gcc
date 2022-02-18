@@ -21,10 +21,6 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-full.h"
-#include "rust-ast-resolve-struct-expr-field.h"
-#include "rust-ast-verify-assignee.h"
-#include "rust-ast-resolve-type.h"
-#include "rust-ast-resolve-pattern.h"
 
 namespace Rust {
 namespace Resolver {
@@ -139,6 +135,16 @@ public:
   void visit (AST::DereferenceExpr &expr) override;
 
   void visit (AST::MatchExpr &expr) override;
+
+  void visit (AST::RangeFromToExpr &expr) override;
+
+  void visit (AST::RangeFromExpr &expr) override;
+
+  void visit (AST::RangeToExpr &expr) override;
+
+  void visit (AST::RangeFullExpr &expr) override;
+
+  void visit (AST::RangeFromToInclExpr &expr) override;
 
 protected:
   void resolve_expr (AST::Expr *e, NodeId parent)
