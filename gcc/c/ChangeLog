@@ -1,3 +1,10 @@
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104532
+	* c-parser.cc (c_parser_omp_variable_list): For CPP_DEREF, use
+	convert_lvalue_to_rvalue and build_indirect_ref instead of
+	build_simple_mem_ref.
+
 2022-02-11  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_gimple_statement): Properly parse

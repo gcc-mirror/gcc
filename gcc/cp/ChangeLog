@@ -1,3 +1,27 @@
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104539
+	* pt.cc (mark_decl_instantiated): Don't clear DECL_COMDAT.
+
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90451
+	* decl2.cc (mark_single_function): New.
+	* cp-tree.h: Declare it.
+	* typeck.cc (cp_build_addr_expr_1): mark_used when making a PMF.
+	* semantics.cc (finish_qualified_id_expr): Not here.
+	(finish_id_expression_1): Or here.
+	(finish_decltype_type): Call mark_single_function.
+	* cvt.cc (convert_to_void): And here.
+	* pt.cc (convert_nontype_argument): And here.
+	* init.cc (build_offset_ref): Adjust assert.
+
+2022-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104565
+	* semantics.cc (finish_compound_literal): Don't perform
+	non-dependent expr folding before calling check_narrowing.
+
 2022-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/104507

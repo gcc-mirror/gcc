@@ -1,3 +1,10 @@
+2022-02-17  Mark Wielaard  <mark@klomp.org>
+
+	* rust-demangle.c (rust_demangle_callback): Ignore everything
+	after '.' char in sym for v0. For legacy symbols search
+	backwards to find the last 'E' before any '.'.
+	* testsuite/rust-demangle-expected: Add new .suffix testcases.
+
 2022-01-31  Nick Clifton  <nickc@redhat.com>
 
 	PR demangler/98886

@@ -1,3 +1,23 @@
+2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104559
+	* doc/xml/manual/evolution.xml: Document deprecation.
+	* doc/html/manual/api.html: Regenerate.
+	* include/bits/stl_bvector.h (insert(const_iterator, const bool&)):
+	Remove default argument.
+	(insert(const_iterator)): New overload with deprecated attribute.
+	* testsuite/23_containers/vector/bool/modifiers/insert/104559.cc:
+	New test.
+
+2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdErrorCodePrinter): Replace
+	code that call cat->name() on std::error_category objects.
+	Identify known categories by symbol name and use a hardcoded
+	name. Print error code values as enumerators where appopriate.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Adjust expected
+	name of custom category. Check io_errc and future_errc errors.
+
 2022-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104542

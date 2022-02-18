@@ -1,3 +1,59 @@
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104539
+	* g++.dg/ipa/inline-4.C: New test.
+
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/deprecated-16.C: New test.
+
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90451
+	* g++.dg/warn/deprecated-14.C: New test.
+	* g++.dg/warn/deprecated-15.C: New test.
+
+2022-02-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/79754
+	* gcc.target/i386/pr79754.c: Add target dfp.
+
+2022-02-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104447
+	* gcc.target/i386/pr104447.c: New.
+
+2022-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104565
+	* g++.dg/template/non-dependent22.C: New test.
+
+2022-02-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr104551.c: New test.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* gcc.dg/dfp/pr104557.c: New test.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104532
+	* gcc.dg/gomp/pr104532.c: New test.
+
+2022-02-17  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* gcc.target/powerpc/pr99708.c: New test.
+
+2022-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104576
+	* gcc.dg/analyzer/torture/uninit-pr63311.c: New test.
+	* gcc.dg/analyzer/uninit-pr104576.c: New test.
+	* gfortran.dg/analyzer/uninit-pr63311.f90: New test.
+
 2022-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104560

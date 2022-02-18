@@ -1,3 +1,19 @@
+2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-pragma.cc (handle_pragma_pack): Remove parameter name.
+	(handle_pragma_weak): Likewise.
+	(handle_pragma_scalar_storage_order): Likewise.
+	(handle_pragma_redefine_extname): Likewise.
+	(handle_pragma_visibility): Likewise.
+	(handle_pragma_diagnostic): Likewise.
+	(handle_pragma_target): Likewise.
+	(handle_pragma_optimize): Likewise.
+	(handle_pragma_push_options): Likewise.
+	(handle_pragma_pop_options): Likewise.
+	(handle_pragma_reset_options): Likewise.
+	(handle_pragma_message): Likewise.
+	(handle_pragma_float_const_decimal64): Likewise.
+
 2022-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/104531

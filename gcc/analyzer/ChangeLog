@@ -1,3 +1,10 @@
+2022-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104576
+	* region-model.cc: Include "calls.h".
+	(region_model::on_call_pre): Use flags_from_decl_or_type to
+	generalize check for DECL_PURE_P to also check for ECF_CONST.
+
 2022-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104560

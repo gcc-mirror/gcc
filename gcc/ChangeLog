@@ -1,3 +1,62 @@
+2022-02-17  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (warn_deprecated_use): Look for TYPE_STUB_DECL
+	on TYPE_MAIN_VARIANT.
+
+2022-02-17  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/104257
+	* config/rs6000/bmi2intrin.h: Uglify local variables.
+	* config/rs6000/emmintrin.h: Likewise.
+	* config/rs6000/mm_malloc.h: Likewise.
+	* config/rs6000/mmintrin.h: Likewise.
+	* config/rs6000/pmmintrin.h: Likewise.
+	* config/rs6000/smmintrin.h: Likewise.
+	* config/rs6000/tmmintrin.h: Likewise.
+	* config/rs6000/xmmintrin.h: Likewise.
+
+2022-02-17  Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/104335
+	* config/rs6000/rs6000.cc (rs6000_emit_int_cmove): Return false
+	if the expected comparison's first operand is of mode MODE_CC.
+
+2022-02-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/104447
+	* lra-constraints.cc (spill_hard_reg_in_range): Initiate ignore
+	hard reg set by lra_no_alloc_regs.
+
+2022-02-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/104551
+	PR tree-optimization/103771
+	* match.pd (cond_expr_convert_p): Add types_match check when
+	convert is extension.
+	* tree-vect-patterns.cc
+	(gimple_cond_expr_convert_p): Adjust comments.
+	(vect_recog_cond_expr_convert_pattern): Ditto.
+
+2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* valtrack.cc (debug_lowpart_subreg): Don't call gen_rtx_raw_SUBREG
+	if expr has VOIDmode.
+
+2022-02-17  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/cpuid.h (bit_MPX): Removed.
+	(bit_BNDREGS): Ditto.
+	(bit_BNDCSR): Ditto.
+
+2022-02-17  Michael Meissner  <meissner@the-meissners.org>
+
+	PR target/99708
+	* config/rs6000/rs6000-c.cc (rs6000_cpu_cpp_builtins): Define
+	__SIZEOF_IBM128__ if the IBM 128-bit long double type is created.
+	Define __SIZEOF_FLOAT128__ if the IEEE 128-bit floating point type
+	is created.
+
 2022-02-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Use
