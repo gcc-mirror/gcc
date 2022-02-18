@@ -5212,7 +5212,7 @@ public:
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
@@ -5428,8 +5428,9 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 
 unsigned
 rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, tree vectype,
-				 int misalign, vect_cost_model_location where)
+				 stmt_vec_info stmt_info, slp_tree,
+				 tree vectype, int misalign,
+				 vect_cost_model_location where)
 {
   unsigned retval = 0;
 
@@ -5470,7 +5471,8 @@ rs6000_cost_data::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
 	  /* Each length needs one shift to fill into bits 0-7.  */
 	  shift_cnt += num_vectors_m1 + 1;
 
-      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL_TREE, 0, vect_body);
+      add_stmt_cost (shift_cnt, scalar_stmt, NULL, NULL,
+		     NULL_TREE, 0, vect_body);
     }
 }
 

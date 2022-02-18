@@ -3982,7 +3982,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       (void) add_stmt_cost (target_cost_data, 1, vector_stmt,
-			    NULL, NULL_TREE, 0, vect_prologue);
+			    NULL, NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
 		     "cost model: Adding cost of checks for loop "
@@ -4079,8 +4079,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       {
 	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_prologue, si->kind,
-			      si->stmt_info, si->vectype, si->misalign,
-			      vect_prologue);
+			      si->stmt_info, si->node, si->vectype,
+			      si->misalign, vect_prologue);
       }
 
   /* Add costs associated with peel_iters_epilogue.  */
@@ -4089,8 +4089,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       {
 	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_epilogue, si->kind,
-			      si->stmt_info, si->vectype, si->misalign,
-			      vect_epilogue);
+			      si->stmt_info, si->node, si->vectype,
+			      si->misalign, vect_epilogue);
       }
 
   /* Add possible cond_branch_taken/cond_branch_not_taken cost.  */
@@ -4136,9 +4136,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	 being the tie-breaker between vectorizing or not, then it's
 	 probably better not to vectorize.  */
       (void) add_stmt_cost (target_cost_data, num_masks,
-			    vector_stmt, NULL, NULL_TREE, 0, vect_prologue);
+			    vector_stmt, NULL, NULL, NULL_TREE, 0,
+			    vect_prologue);
       (void) add_stmt_cost (target_cost_data, num_masks - 1,
-			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
+			    vector_stmt, NULL, NULL, NULL_TREE, 0,
+			    vect_body);
     }
   else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
     {

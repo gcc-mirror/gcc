@@ -4612,7 +4612,7 @@ vect_prologue_cost_for_slp (slp_tree node,
 	kind = scalar_to_vec;
       else
 	kind = vec_construct;
-      record_stmt_cost (cost_vec, 1, kind, NULL, vectype, 0, vect_prologue);
+      record_stmt_cost (cost_vec, 1, kind, node, vectype, 0, vect_prologue);
     }
 }
 
@@ -7120,7 +7120,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
     }
 
   if (!gsi)
-    record_stmt_cost (cost_vec, nperms, vec_perm, NULL, vectype, 0, vect_body);
+    record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
 
   return true;
 }

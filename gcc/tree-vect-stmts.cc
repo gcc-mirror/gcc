@@ -89,9 +89,10 @@ stmt_in_inner_loop_p (vec_info *vinfo, class _stmt_vec_info *stmt_info)
    target model or by saving it in a vector for later processing.
    Return a preliminary estimate of the statement's cost.  */
 
-unsigned
+static unsigned
 record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
-		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  enum vect_cost_for_stmt kind,
+		  stmt_vec_info stmt_info, slp_tree node,
 		  tree vectype, int misalign,
 		  enum vect_cost_model_location where)
 {
@@ -102,11 +103,32 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
       && (stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info)))
     kind = vector_scatter_store;
 
-  stmt_info_for_cost si = { count, kind, where, stmt_info, vectype, misalign };
+  stmt_info_for_cost si
+    = { count, kind, where, stmt_info, node, vectype, misalign };
   body_cost_vec->safe_push (si);
 
   return (unsigned)
       (builtin_vectorization_cost (kind, vectype, misalign) * count);
+}
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  tree vectype, int misalign,
+		  enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, stmt_info, NULL,
+			   vectype, misalign, where);
+}
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, slp_tree node,
+		  tree vectype, int misalign,
+		  enum vect_cost_model_location where)
+{
+  return record_stmt_cost (body_cost_vec, count, kind, NULL, node,
+			   vectype, misalign, where);
 }
 
 unsigned
@@ -116,7 +138,7 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 {
   gcc_assert (kind == cond_branch_taken || kind == cond_branch_not_taken
 	      || kind == scalar_stmt);
-  return record_stmt_cost (body_cost_vec, count, kind, NULL,
+  return record_stmt_cost (body_cost_vec, count, kind, NULL, NULL,
 			   NULL_TREE, 0, where);
 }
 

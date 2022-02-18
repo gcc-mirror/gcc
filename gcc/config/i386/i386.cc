@@ -22982,8 +22982,8 @@ class ix86_vector_costs : public vector_costs
   using vector_costs::vector_costs;
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
-			      int misalign,
+			      stmt_vec_info stmt_info, slp_tree node,
+			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
 };
 
@@ -22997,8 +22997,9 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				  stmt_vec_info stmt_info, tree vectype,
-				  int misalign, vect_cost_model_location where)
+				  stmt_vec_info stmt_info, slp_tree,
+				  tree vectype, int misalign,
+				  vect_cost_model_location where)
 {
   unsigned retval = 0;
   bool scalar_p

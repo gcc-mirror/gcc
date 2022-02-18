@@ -15058,7 +15058,7 @@ public:
   aarch64_vector_costs (vec_info *, bool);
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
-			      stmt_vec_info stmt_info, tree vectype,
+			      stmt_vec_info stmt_info, slp_tree, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
@@ -16003,8 +16003,8 @@ aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
 
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				     stmt_vec_info stmt_info, tree vectype,
-				     int misalign,
+				     stmt_vec_info stmt_info, slp_tree,
+				     tree vectype, int misalign,
 				     vect_cost_model_location where)
 {
   fractional_cost stmt_cost
