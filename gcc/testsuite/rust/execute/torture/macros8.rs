@@ -17,7 +17,9 @@ macro_rules! zero_or_one {
     }
 }
 
-fn main() {
+fn main() -> i32 {
     zero_or_one!();
     zero_or_one!(f());
+
+    0
 }

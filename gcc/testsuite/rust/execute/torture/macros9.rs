@@ -13,11 +13,14 @@ fn f() {
 
 macro_rules! one_or_more {
     ($($a:expr)+) => {
-        $($a;)+
+        f()
     }
 }
 
-fn main() {
+fn main() -> i32 {
     one_or_more!(f());
     one_or_more!(f() f());
+    one_or_more!(f() f() 15 + 12);
+
+    0
 }

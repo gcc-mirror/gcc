@@ -1,4 +1,4 @@
-// { dg-output "any\nany\nany\nany\nany\n" }
+// { dg-output "any\nany\nany\n" }
 extern "C" {
     fn printf(s: *const i8, ...);
 }
@@ -8,17 +8,19 @@ fn f() {
     let s_p = r_s as *const str;
     let c_p = s_p as *const i8;
 
-    printf(c_p);
+    unsafe { printf(c_p); }
 }
 
 macro_rules! any {
     ($($a:expr)*) => {
-        $($a;)*
+        f()
     }
 }
 
-fn main() {
-    any!(); // valid, but does not print anything
-    any!(f() f());
-    any!(f() f()    f());
+fn main() -> i32 {
+    any!();
+    any!(a + b);
+    any!(a + b    14 "gcc");
+
+    0
 }
