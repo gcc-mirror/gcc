@@ -1991,20 +1991,19 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
 
   // parse repetition operator
   t = lexer.peek_token ();
-  AST::MacroMatchRepetition::MacroRepOp op
-    = AST::MacroMatchRepetition::ASTERISK;
+  AST::MacroMatchRepetition::MacroRepOp op = AST::MacroMatchRepetition::NONE;
   switch (t->get_id ())
     {
     case ASTERISK:
-      op = AST::MacroMatchRepetition::ASTERISK;
+      op = AST::MacroMatchRepetition::ANY;
       lexer.skip_token ();
       break;
     case PLUS:
-      op = AST::MacroMatchRepetition::PLUS;
+      op = AST::MacroMatchRepetition::ONE_OR_MORE;
       lexer.skip_token ();
       break;
     case QUESTION_MARK:
-      op = AST::MacroMatchRepetition::QUESTION_MARK;
+      op = AST::MacroMatchRepetition::ZERO_OR_ONE;
       lexer.skip_token ();
       break;
     default:

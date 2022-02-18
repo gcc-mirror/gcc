@@ -134,9 +134,9 @@ public:
   enum MacroRepOp
   {
     NONE,
-    ASTERISK,
-    PLUS,
-    QUESTION_MARK
+    ANY,
+    ONE_OR_MORE,
+    ZERO_OR_ONE,
   };
 
 private:
