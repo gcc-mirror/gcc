@@ -382,31 +382,11 @@ public:
 
   void visit (AST::ArrayType &type) override;
 
-  void visit (AST::ReferenceType &type) override
-  {
-    type.get_type_referenced ()->accept_vis (*this);
+  void visit (AST::ReferenceType &type) override;
 
-    if (canonical_path != nullptr && canonical_path->size () > 0)
-      {
-	std::string seg = canonical_path->get ();
-	*canonical_path
-	  = CanonicalPath::new_seg (type.get_node_id (), "&" + seg);
-      }
-  }
+  void visit (AST::InferredType &type) override;
 
-  void visit (AST::InferredType &type) override { ok = true; }
-
-  void visit (AST::RawPointerType &type) override
-  {
-    type.get_type_pointed_to ()->accept_vis (*this);
-
-    if (canonical_path != nullptr && canonical_path->size () > 0)
-      {
-	std::string seg = canonical_path->get ();
-	*canonical_path
-	  = CanonicalPath::new_seg (type.get_node_id (), "*" + seg);
-      }
-  }
+  void visit (AST::RawPointerType &type) override;
 
   void visit (AST::TraitObjectTypeOneBound &type) override;
 
