@@ -204,6 +204,7 @@ runtime/debug
 runtime/internal/atomic
 runtime/internal/math
 runtime/internal/sys
+runtime/internal/syscall
 runtime/metrics
 runtime/pprof
 runtime/trace

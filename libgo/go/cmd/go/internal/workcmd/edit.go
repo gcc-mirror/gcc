@@ -63,25 +63,25 @@ writing it back to go.mod.
 The -json flag prints the final go.work file in JSON format instead of
 writing it back to go.mod. The JSON output corresponds to these Go types:
 
-	type Module struct {
-		Path    string
-		Version string
-	}
-
 	type GoWork struct {
-		Go        string
-		Directory []Directory
-		Replace   []Replace
+		Go      string
+		Use     []Use
+		Replace []Replace
 	}
 
 	type Use struct {
-		Path       string
+		DiskPath   string
 		ModulePath string
 	}
 
 	type Replace struct {
 		Old Module
 		New Module
+	}
+
+	type Module struct {
+		Path    string
+		Version string
 	}
 
 See the workspaces design proposal at
@@ -110,22 +110,9 @@ func init() {
 	cmdEdit.Flag.Var(flagFunc(flagEditworkDropUse), "dropuse", "")
 	cmdEdit.Flag.Var(flagFunc(flagEditworkReplace), "replace", "")
 	cmdEdit.Flag.Var(flagFunc(flagEditworkDropReplace), "dropreplace", "")
-
-	base.AddWorkfileFlag(&cmdEdit.Flag)
 }
 
 func runEditwork(ctx context.Context, cmd *base.Command, args []string) {
-	anyFlags :=
-		*editGo != "" ||
-			*editJSON ||
-			*editPrint ||
-			*editFmt ||
-			len(workedits) > 0
-
-	if !anyFlags {
-		base.Fatalf("go: no flags specified (see 'go help work edit').")
-	}
-
 	if *editJSON && *editPrint {
 		base.Fatalf("go: cannot use both -json and -print")
 	}
@@ -145,6 +132,21 @@ func runEditwork(ctx context.Context, cmd *base.Command, args []string) {
 		if !modfile.GoVersionRE.MatchString(*editGo) {
 			base.Fatalf(`go mod: invalid -go option; expecting something like "-go %s"`, modload.LatestGoVersion())
 		}
+	}
+
+	if gowork == "" {
+		base.Fatalf("go: no go.work file found\n\t(run 'go work init' first or specify path using GOWORK environment variable)")
+	}
+
+	anyFlags :=
+		*editGo != "" ||
+			*editJSON ||
+			*editPrint ||
+			*editFmt ||
+			len(workedits) > 0
+
+	if !anyFlags {
+		base.Fatalf("go: no flags specified (see 'go help work edit').")
 	}
 
 	workFile, err := modload.ReadWorkFile(gowork)
