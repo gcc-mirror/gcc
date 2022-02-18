@@ -26140,20 +26140,15 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 
-	  if (!DECL_LOCAL_DECL_P (fn))
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && !DECL_LOCAL_DECL_P (fn))
 	    {
 	      /* If needed, set current_class_ptr for the benefit of
-		 tsubst_copy/PARM_DECL.  The exception pattern will
-		 refer to the parm of the template, not the
-		 instantiation.  */
-	      tree tdecl = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (fn));
-	      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (tdecl))
-		{
-		  tree this_parm = DECL_ARGUMENTS (tdecl);
-		  current_class_ptr = NULL_TREE;
-		  current_class_ref = cp_build_fold_indirect_ref (this_parm);
-		  current_class_ptr = this_parm;
-		}
+		 tsubst_copy/PARM_DECL.  */
+	      tree this_parm = DECL_ARGUMENTS (fn);
+	      current_class_ptr = NULL_TREE;
+	      current_class_ref = cp_build_fold_indirect_ref (this_parm);
+	      current_class_ptr = this_parm;
 	    }
 
 	  /* If this function is represented by a TEMPLATE_DECL, then
