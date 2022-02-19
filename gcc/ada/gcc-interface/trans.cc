@@ -6139,7 +6139,8 @@ gnat_to_gnu (Node_Id gnat_node)
   bool aa_sync;
 
   /* Save node number for error message and set location information.  */
-  Current_Error_Node = gnat_node;
+  if (Sloc (gnat_node) > No_Location)
+    Current_Error_Node = gnat_node;
   Sloc_to_locus (Sloc (gnat_node), &input_location);
 
   /* If we are only annotating types and this node is a statement, return
