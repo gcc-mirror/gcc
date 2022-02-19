@@ -1,3 +1,25 @@
+2022-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/104581
+	* gcc.target/i386/pieces-memset-21.c: Expect vzeroupper for ia32.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/104581
+	* gcc.target/i386/pr101456-1.c: XFAIL.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96881
+	* g++.dg/torture/pr96881-1.C: New testcase.
+	* g++.dg/torture/pr96881-2.C: Likewise.
+
+2022-02-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94944
+	* g++.dg/cpp0x/noexcept34.C: Adjusted expected diagnostics.
+	* g++.dg/cpp0x/noexcept75.C: New test.
+
 2022-02-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/104539

@@ -1,3 +1,43 @@
+2022-02-18  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.opt (mpower10-fusion): Mark Undocumented.
+	(mpower10-fusion-ld-cmpi, mpower10-fusion-2logical,
+	mpower10-fusion-logical-add, mpower10-fusion-add-logical,
+	mpower10-fusion-2add, mpower10-fusion-2store): Remove.
+	* config/rs6000/rs6000-cpus.def (ISA_3_1_MASKS_SERVER,
+	OTHER_P9_VECTOR_MASKS): Remove Power10 fusion sub-options.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal,
+	power10_sched_reorder): Likewise.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10, gen_logical_addsubf,
+	gen_addadd): Likewise
+	* config/rs6000/fusion.md: Regenerate.
+
+2022-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104257
+	PR target/104598
+	* config/rs6000/mm_malloc.h (_mm_malloc): Call posix_memalign
+	rather than __posix_memalign.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR target/104581
+	* config/i386/i386.cc (ix86_avx_u128_mode_source): Remove.
+	(ix86_avx_u128_mode_needed): Return AVX_U128_DIRTY instead
+	of calling ix86_avx_u128_mode_source which would eventually
+	have returned AVX_U128_ANY in some very special case.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96881
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Comment
+	CLOBBER handling.
+	(control_parents_preserved_p): New function.
+	(eliminate_unnecessary_stmts): Check that we preserved control
+	parents before retaining a CLOBBER.
+	(perform_tree_ssa_dce): Pass down aggressive flag
+	to eliminate_unnecessary_stmts.
+
 2022-02-17  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (warn_deprecated_use): Look for TYPE_STUB_DECL
