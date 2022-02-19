@@ -9248,19 +9248,6 @@ package body Sem_Ch4 is
             Save_Interps (Subprog, Node_To_Replace);
 
          else
-            --  The type of the subprogram may be a limited view obtained
-            --  transitively from another unit. If full view is available,
-            --  use it to analyze call. If there is no nonlimited view, then
-            --  this is diagnosed when analyzing the rewritten call.
-
-            declare
-               T : constant Entity_Id := Etype (Subprog);
-            begin
-               if From_Limited_With (T) then
-                  Set_Etype (Entity (Subprog), Available_View (T));
-               end if;
-            end;
-
             Analyze (Node_To_Replace);
 
             --  If the operation has been rewritten into a call, which may get

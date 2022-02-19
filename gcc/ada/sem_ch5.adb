@@ -3675,6 +3675,7 @@ package body Sem_Ch5 is
          begin
             return
               Present (Def_Iter)
+                and then Present (Etype (Def_Iter))
                 and then Requires_Transient_Scope (Etype (Def_Iter));
          end Has_Sec_Stack_Default_Iterator;
 
