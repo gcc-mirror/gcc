@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -misa=sm_75 -mptx=7.0" } */
+/* { dg-options "-O2 -ffast-math -misa=sm_75" } */
 
 float foo(float x)
 {
