@@ -1,3 +1,25 @@
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97043
+	* tree-vect-slp.c (vect_analyze_slp_instance): Do not
+	elide a load permutation if the current vectorization
+	factor is one.
+
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* tree-ssa-address.c (copy_ref_info): Reset flow-sensitive
+	info of the copied points-to.  Transfer bigger alignment
+	via the access type.
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Reset all flow-sensitive info.
+
 2022-02-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96522
+	* gcc.dg/torture/pr96522.c: New testcase.
+
 2022-02-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
