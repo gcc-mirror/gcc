@@ -2305,13 +2305,13 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     return;
 
   poly_int64 decl_size;
-  if (VAR_P (inner)
+  if ((VAR_P (inner) || TREE_CODE (inner) == RESULT_DECL)
       && offset == NULL_TREE
       && DECL_SIZE (inner)
       && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
       && known_subrange_p (bitpos, bitsize, 0, decl_size))
     {
-      if (DECL_THREAD_LOCAL_P (inner))
+      if (VAR_P (inner) && DECL_THREAD_LOCAL_P (inner))
 	return;
       if (!param_asan_globals && is_global_var (inner))
         return;
@@ -2335,6 +2335,11 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
 	    return;
 	}
     }
+
+  if (DECL_P (inner)
+      && decl_function_context (inner) == current_function_decl
+      && !TREE_ADDRESSABLE (inner))
+    mark_addressable (inner);
 
   base = build_fold_addr_expr (t);
   if (!has_mem_ref_been_instrumented (base, size_in_bytes))
