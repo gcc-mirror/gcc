@@ -1,3 +1,12 @@
+2022-02-18  Ian Lance Taylor  <iant@golang.org>
+
+	Backported from master:
+	2021-05-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/100537
+	* go-gcc.cc (class Gcc_backend): Update methods that create
+	variables to take a flags parameter.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

@@ -1,3 +1,13 @@
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100464
+	PR c++/100468
+	* gimple-fold.c (canonicalize_constructor_val): Do not set
+	TREE_ADDRESSABLE.
+
 2022-02-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

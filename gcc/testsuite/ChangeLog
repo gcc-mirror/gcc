@@ -1,3 +1,13 @@
+2022-02-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100464
+	PR c++/100468
+	* gcc.dg/pr100464.c: New testcase.
+	* g++.dg/tree-ssa/array-temp1.C: Adjust.
+
 2022-02-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/79754
