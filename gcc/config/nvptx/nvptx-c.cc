@@ -43,6 +43,8 @@ nvptx_cpu_cpp_builtins (void)
     cpp_define (parse_in, "__PTX_SM__=800");
   else if (TARGET_SM75)
     cpp_define (parse_in, "__PTX_SM__=750");
+  else if (TARGET_SM70)
+    cpp_define (parse_in, "__PTX_SM__=700");
   else if (TARGET_SM53)
     cpp_define (parse_in, "__PTX_SM__=530");
   else if (TARGET_SM35)

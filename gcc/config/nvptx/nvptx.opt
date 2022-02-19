@@ -65,6 +65,9 @@ EnumValue
 Enum(ptx_isa) String(sm_53) Value(PTX_ISA_SM53)
 
 EnumValue
+Enum(ptx_isa) String(sm_70) Value(PTX_ISA_SM70)
+
+EnumValue
 Enum(ptx_isa) String(sm_75) Value(PTX_ISA_SM75)
 
 EnumValue

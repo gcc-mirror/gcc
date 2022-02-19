@@ -2,7 +2,7 @@
    shared state space.  */
 
 /* { dg-do compile } */
-/* { dg-options "-misa=sm_75" } */
+/* { dg-options "-misa=sm_70" } */
 
 enum memmodel
 {
