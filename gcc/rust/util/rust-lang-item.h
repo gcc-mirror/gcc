@@ -56,6 +56,14 @@ public:
     DEREF,
     DEREF_MUT,
 
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/range.rs
+    RANGE_FULL,
+    RANGE,
+    RANGE_FROM,
+    RANGE_TO,
+    RANGE_INCLUSIVE,
+    RANGE_TO_INCLUSIVE,
+
     UNKNOWN,
   };
 
@@ -157,6 +165,26 @@ public:
       {
 	return ItemType::DEREF_MUT;
       }
+    else if (item.compare ("Range") == 0)
+      {
+	return ItemType::RANGE;
+      }
+    else if (item.compare ("RangeFrom") == 0)
+      {
+	return ItemType::RANGE_FROM;
+      }
+    else if (item.compare ("RangeTo") == 0)
+      {
+	return ItemType::RANGE_TO;
+      }
+    else if (item.compare ("RangeInclusive") == 0)
+      {
+	return ItemType::RANGE_INCLUSIVE;
+      }
+    else if (item.compare ("RangeToInclusive") == 0)
+      {
+	return ItemType::RANGE_TO_INCLUSIVE;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -213,6 +241,18 @@ public:
 	return "deref";
       case DEREF_MUT:
 	return "deref_mut";
+      case RANGE_FULL:
+	return "RangeFull";
+      case RANGE:
+	return "Range";
+      case RANGE_FROM:
+	return "RangeFrom";
+      case RANGE_TO:
+	return "RangeTo";
+      case RANGE_INCLUSIVE:
+	return "RangeInclusive";
+      case RANGE_TO_INCLUSIVE:
+	return "RangeToInclusive";
 
       case UNKNOWN:
 	return "<UNKNOWN>";
