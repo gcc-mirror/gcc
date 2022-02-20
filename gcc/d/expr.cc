@@ -1438,28 +1438,16 @@ public:
       {
 	/* For class object references, if there is a destructor for that class,
 	   the destructor is called for the object instance.  */
-	libcall_fn libcall;
+	gcc_assert (e->e1->op == EXP::variable);
 
-	if (e->e1->op == EXP::variable)
-	  {
-	    VarDeclaration *v = e->e1->isVarExp ()->var->isVarDeclaration ();
-	    if (v && v->onstack)
-	      {
-		libcall = tb1->isClassHandle ()->isInterfaceDeclaration ()
-		  ? LIBCALL_CALLINTERFACEFINALIZER : LIBCALL_CALLFINALIZER;
+	VarDeclaration *v = e->e1->isVarExp ()->var->isVarDeclaration ();
+	gcc_assert (v && v->onstack);
 
-		this->result_ = build_libcall (libcall, Type::tvoid, 1, t1);
-		return;
-	      }
-	  }
+	libcall_fn libcall = tb1->isClassHandle ()->isInterfaceDeclaration ()
+	  ? LIBCALL_CALLINTERFACEFINALIZER : LIBCALL_CALLFINALIZER;
 
-	/* Otherwise, the garbage collector is called to immediately free the
-	   memory allocated for the class instance.  */
-	libcall = tb1->isClassHandle ()->isInterfaceDeclaration ()
-	  ? LIBCALL_DELINTERFACE : LIBCALL_DELCLASS;
-
-	t1 = build_address (t1);
 	this->result_ = build_libcall (libcall, Type::tvoid, 1, t1);
+	return;
       }
     else
       {

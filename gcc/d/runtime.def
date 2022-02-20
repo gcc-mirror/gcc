@@ -63,11 +63,7 @@ DEF_D_RUNTIME (ARRAYBOUNDS_INDEXP, "_d_arraybounds_indexp", RT(VOID),
 DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)
 DEF_D_RUNTIME (NEWTHROW, "_d_newThrowable", RT(OBJECT), P1(CONST_CLASSINFO), 0)
 
-/* Used when calling delete on a class or interface.  */
-DEF_D_RUNTIME (DELCLASS, "_d_delclass", RT(VOID), P1(VOIDPTR), 0)
-DEF_D_RUNTIME (DELINTERFACE, "_d_delinterface", RT(VOID), P1(VOIDPTR), 0)
-
-/* Same as deleting a class, but used for stack-allocated classes.  */
+/* Used when calling delete on a stack-allocated class or interface.  */
 DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
 DEF_D_RUNTIME (CALLINTERFACEFINALIZER, "_d_callinterfacefinalizer", RT(VOID),
 	       P1(VOIDPTR), 0)
