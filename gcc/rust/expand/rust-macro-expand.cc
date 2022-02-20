@@ -3520,6 +3520,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
   for (auto &match : matcher.get_matches ())
     {
       size_t offs_begin = source.get_offs ();
+
       switch (match->get_macro_match_type ())
 	{
 	  case AST::MacroMatch::MacroMatchType::Fragment: {
@@ -3598,12 +3599,122 @@ MacroExpander::match_token (Parser<MacroInvocLexer> &parser, AST::Token &token)
 }
 
 bool
+MacroExpander::match_n_matches (
+  Parser<MacroInvocLexer> &parser,
+  std::vector<std::unique_ptr<AST::MacroMatch>> &matches, size_t &match_amount,
+  size_t lo_bound, size_t hi_bound)
+{
+  match_amount = 0;
+
+  const MacroInvocLexer &source = parser.get_token_source ();
+  while (true)
+    {
+      // If the current token is a closing macro delimiter, break away.
+      // TODO: Is this correct?
+      auto t_id = parser.peek_current_token ()->get_id ();
+      if (t_id == RIGHT_PAREN || t_id == RIGHT_SQUARE || t_id == RIGHT_CURLY)
+	break;
+
+      bool valid_current_match = false;
+      for (auto &match : matches)
+	{
+	  size_t offs_begin = source.get_offs ();
+	  switch (match->get_macro_match_type ())
+	    {
+	      case AST::MacroMatch::MacroMatchType::Fragment: {
+		AST::MacroMatchFragment *fragment
+		  = static_cast<AST::MacroMatchFragment *> (match.get ());
+		valid_current_match = match_fragment (parser, *fragment);
+
+		// matched fragment get the offset in the token stream
+		size_t offs_end = source.get_offs ();
+		sub_stack.peek ().insert (
+		  {fragment->get_ident (),
+		   {fragment->get_ident (), offs_begin, offs_end}});
+	      }
+	      break;
+
+	      case AST::MacroMatch::MacroMatchType::Tok: {
+		AST::Token *tok = static_cast<AST::Token *> (match.get ());
+		valid_current_match = match_token (parser, *tok);
+	      }
+	      break;
+
+	      case AST::MacroMatch::MacroMatchType::Repetition: {
+		AST::MacroMatchRepetition *rep
+		  = static_cast<AST::MacroMatchRepetition *> (match.get ());
+		valid_current_match = match_repetition (parser, *rep);
+	      }
+	      break;
+
+	      case AST::MacroMatch::MacroMatchType::Matcher: {
+		AST::MacroMatcher *m
+		  = static_cast<AST::MacroMatcher *> (match.get ());
+		valid_current_match = match_matcher (parser, *m);
+	      }
+	      break;
+	    }
+	}
+      // If we've encountered an error once, stop trying to match more
+      // repetitions
+      if (!valid_current_match)
+	break;
+
+      match_amount++;
+
+      // Break early if we notice there's too many expressions already
+      if (hi_bound && match_amount > hi_bound)
+	break;
+    }
+
+  // Check if the amount of matches we got is valid: Is it more than the lower
+  // bound and less than the higher bound?
+  if (!hi_bound) // infinite amount, no upper bound
+    return match_amount >= lo_bound;
+  else
+    return match_amount >= lo_bound && match_amount <= hi_bound;
+}
+
+bool
 MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 				 AST::MacroMatchRepetition &rep)
 {
-  // TODO
-  gcc_unreachable ();
-  return false;
+  size_t match_amount = 0;
+  bool res = false;
+
+  std::string lo_str;
+  std::string hi_str;
+  switch (rep.get_op ())
+    {
+    case AST::MacroMatchRepetition::MacroRepOp::ANY:
+      lo_str = "0";
+      hi_str = "+inf";
+      res = match_n_matches (parser, rep.get_matches (), match_amount);
+      break;
+    case AST::MacroMatchRepetition::MacroRepOp::ONE_OR_MORE:
+      lo_str = "1";
+      hi_str = "+inf";
+      res = match_n_matches (parser, rep.get_matches (), match_amount, 1);
+      break;
+    case AST::MacroMatchRepetition::MacroRepOp::ZERO_OR_ONE:
+      lo_str = "0";
+      hi_str = "1";
+      res = match_n_matches (parser, rep.get_matches (), match_amount, 0, 1);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!res)
+    rust_error_at (rep.get_match_locus (),
+		   "invalid amount of matches for macro invocation. Expected "
+		   "between %s and %s, got %lu",
+		   lo_str.c_str (), hi_str.c_str (), match_amount);
+
+  rust_debug_loc (rep.get_match_locus (), "%s matched %lu times",
+		  res ? "successfully" : "unsuccessfully", match_amount);
+
+  return res;
 }
 
 AST::ASTFragment

@@ -2446,13 +2446,13 @@ MacroMatchRepetition::as_string () const
   str += "\n Op: ";
   switch (op)
     {
-    case ASTERISK:
+    case ANY:
       str += "*";
       break;
-    case PLUS:
+    case ONE_OR_MORE:
       str += "+";
       break;
-    case QUESTION_MARK:
+    case ZERO_OR_ONE:
       str += "?";
       break;
     case NONE:

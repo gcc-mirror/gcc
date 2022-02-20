@@ -193,6 +193,31 @@ struct MacroExpander
   bool match_matcher (Parser<MacroInvocLexer> &parser,
 		      AST::MacroMatcher &matcher);
 
+  /**
+   * Match any amount of matches
+   *
+   * @param parser Parser to use for matching
+   * @param matches All consecutive matches to identify
+   * @param match_amount Reference in which to store the ammount of succesful
+   * and valid matches
+   *
+   * @param lo_bound Lower bound of the matcher. When specified, the matcher
+   * will only succeed if it parses at *least* `lo_bound` fragments. If
+   * unspecified, the matcher could succeed when parsing 0 fragments.
+   *
+   * @param hi_bound Higher bound of the matcher. When specified, the matcher
+   * will only succeed if it parses *less than* `hi_bound` fragments. If
+   * unspecified, the matcher could succeed when parsing an infinity of
+   * fragments.
+   *
+   * @return true if matching was successful and within the given limits, false
+   * otherwise
+   */
+  bool match_n_matches (Parser<MacroInvocLexer> &parser,
+			std::vector<std::unique_ptr<AST::MacroMatch>> &matches,
+			size_t &match_amount, size_t lo_bound = 0,
+			size_t hi_bound = 0);
+
   static std::vector<std::unique_ptr<AST::Token>>
   substitute_tokens (std::vector<std::unique_ptr<AST::Token>> &input,
 		     std::vector<std::unique_ptr<AST::Token>> &macro,

@@ -134,9 +134,9 @@ public:
   enum MacroRepOp
   {
     NONE,
-    ASTERISK,
-    PLUS,
-    QUESTION_MARK
+    ANY,
+    ONE_OR_MORE,
+    ZERO_OR_ONE,
   };
 
 private:
@@ -205,6 +205,9 @@ public:
   {
     return MacroMatchType::Repetition;
   }
+
+  MacroRepOp get_op () const { return op; }
+  std::vector<std::unique_ptr<MacroMatch> > &get_matches () { return matches; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
