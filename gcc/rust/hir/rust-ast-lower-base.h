@@ -281,6 +281,16 @@ protected:
 
   HIR::FunctionQualifiers
   lower_qualifiers (const AST::FunctionQualifiers &qualifiers);
+
+  void handle_outer_attributes (const HIR::Item &item);
+
+  void handle_lang_item_attribute (const HIR::Item &item,
+				   const AST::Attribute &attr);
+
+  static bool is_known_attribute (const std::string &attribute_path);
+
+  static bool
+  attribute_handled_in_another_pass (const std::string &attribute_path);
 };
 
 } // namespace HIR
