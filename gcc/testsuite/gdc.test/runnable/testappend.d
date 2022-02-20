@@ -1,13 +1,5 @@
 /*
 PERMUTE_ARGS:
-TEST_OUTPUT:
----
-runnable/testappend.d(54): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/testappend.d(55): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/testappend.d(76): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
-runnable/testappend.d(77): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
----
-
 RUN_OUTPUT:
 ---
 Success
@@ -51,8 +43,8 @@ int main()
     {
         assert(isnan(v));
     }
-    delete a;
-    delete b;
+    destroy(a);
+    destroy(b);
 
     a = null;
     for (int i = 0; i < 100000; i++)
@@ -73,8 +65,8 @@ int main()
     {
         assert(v == k);
     }
-    delete a;
-    delete b;
+    destroy(a);
+    destroy(b);
 
     test12826();
     printf("Success\n");

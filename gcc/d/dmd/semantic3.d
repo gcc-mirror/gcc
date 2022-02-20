@@ -377,6 +377,12 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
             // Reverts: https://issues.dlang.org/show_bug.cgi?id=5710
             // No compiler supports this, and there was never any spec for it.
+            // @@@DEPRECATED_2.116@@@
+            // Deprecated in 2.096, can be made an error in 2.116.
+            // The deprecation period is longer than usual as dual-context
+            // functions may be widely used by dmd-compiled projects.
+            // It also gives more time for the implementation of dual-context
+            // functions to be reworked as a frontend-only feature.
             if (funcdecl.isThis2)
             {
                 funcdecl.deprecation("function requires a dual-context, which is deprecated");
@@ -746,7 +752,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 // Check for errors related to 'nothrow'.
                 const blockexit = funcdecl.fbody.blockExit(funcdecl, f.isnothrow);
                 if (f.isnothrow && blockexit & BE.throw_)
-                    error(funcdecl.loc, "`nothrow` %s `%s` may throw", funcdecl.kind(), funcdecl.toPrettyChars());
+                    error(funcdecl.loc, "%s `%s` may throw but is marked as `nothrow`", funcdecl.kind(), funcdecl.toPrettyChars());
 
                 if (!(blockexit & (BE.throw_ | BE.halt) || funcdecl.flags & FUNCFLAG.hasCatches))
                 {
@@ -1146,14 +1152,16 @@ private extern(C++) final class Semantic3Visitor : Visitor
 
                             s = s.statementSemantic(sc2);
 
-                            bool isnothrow = f.isnothrow & !(funcdecl.flags & FUNCFLAG.nothrowInprocess);
+                            immutable bool isnothrow = f.isnothrow && !(funcdecl.flags & FUNCFLAG.nothrowInprocess);
                             const blockexit = s.blockExit(funcdecl, isnothrow);
                             if (blockexit & BE.throw_)
+                            {
                                 funcdecl.eh_none = false;
-                            if (f.isnothrow && isnothrow && blockexit & BE.throw_)
-                                error(funcdecl.loc, "`nothrow` %s `%s` may throw", funcdecl.kind(), funcdecl.toPrettyChars());
-                            if (funcdecl.flags & FUNCFLAG.nothrowInprocess && blockexit & BE.throw_)
-                                f.isnothrow = false;
+                                if (isnothrow)
+                                    error(funcdecl.loc, "%s `%s` may throw but is marked as `nothrow`", funcdecl.kind(), funcdecl.toPrettyChars());
+                                else if (funcdecl.flags & FUNCFLAG.nothrowInprocess)
+                                    f.isnothrow = false;
+                            }
 
                             if (sbody.blockExit(funcdecl, f.isnothrow) == BE.fallthru)
                                 sbody = new CompoundStatement(Loc.initial, sbody, s);
@@ -1402,7 +1410,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
         auto sexp = new ExpStatement(ctor.loc, ce);
         auto ss = new ScopeStatement(ctor.loc, sexp, ctor.loc);
 
-        // @@@DEPRECATED_2096@@@
+        // @@@DEPRECATED_2.106@@@
         // Allow negligible attribute violations to allow for a smooth
         // transition. Remove this after the usual deprecation period
         // after 2.106.

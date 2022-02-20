@@ -1608,7 +1608,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
      * Params:
      *  sc = context
      *  fs = ForeachStatement
-     *  tfld = type of function literal to be created, can be null
+     *  tfld = type of function literal to be created (type of opApply() function if any), can be null
      * Returns:
      *  Function literal created, as an expression
      *  null if error.
@@ -1619,7 +1619,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         foreach (i; 0 .. fs.parameters.dim)
         {
             Parameter p = (*fs.parameters)[i];
-            StorageClass stc = STC.ref_;
+            StorageClass stc = STC.ref_ | (p.storageClass & STC.scope_);
             Identifier id;
 
             p.type = p.type.typeSemantic(fs.loc, sc);
@@ -1628,17 +1628,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             {
                 Parameter prm = tfld.parameterList[i];
                 //printf("\tprm = %s%s\n", (prm.storageClass&STC.ref_?"ref ":"").ptr, prm.ident.toChars());
-                stc = prm.storageClass & STC.ref_;
-                id = p.ident; // argument copy is not need.
-                if ((p.storageClass & STC.ref_) != stc)
+                stc = (prm.storageClass & STC.ref_) | (p.storageClass & STC.scope_);
+                if ((p.storageClass & STC.ref_) != (prm.storageClass & STC.ref_))
                 {
-                    if (!stc)
+                    if (!(prm.storageClass & STC.ref_))
                     {
                         fs.error("`foreach`: cannot make `%s` `ref`", p.ident.toChars());
                         return null;
                     }
                     goto LcopyArg;
                 }
+                id = p.ident; // argument copy is not need.
             }
             else if (p.storageClass & STC.ref_)
             {
@@ -1655,7 +1655,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
                 Initializer ie = new ExpInitializer(fs.loc, new IdentifierExp(fs.loc, id));
                 auto v = new VarDeclaration(fs.loc, p.type, p.ident, ie);
-                v.storage_class |= STC.temp;
+                v.storage_class |= STC.temp | (stc & STC.scope_);
                 Statement s = new ExpStatement(fs.loc, v);
                 fs._body = new CompoundStatement(fs.loc, s, fs._body);
             }
@@ -3567,7 +3567,6 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         tcs.tryBody = sc.tryBody;   // chain on the in-flight tryBody
         tcs._body = tcs._body.semanticScope(sc, null, null, tcs);
-        assert(tcs._body);
 
         /* Even if body is empty, still do semantic analysis on catches
          */
@@ -3609,6 +3608,11 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (catchErrors)
             return setError();
+
+        // No actual code in the try (i.e. omitted any conditionally compiled code)
+        // Could also be extended to check for hasCode
+        if (!tcs._body)
+            return;
 
         if (tcs._body.isErrorStatement())
         {
@@ -4764,161 +4768,71 @@ private Statements* flatten(Statement statement, Scope* sc)
 }
 
 /***********************************************************
- * Convert TemplateMixin members (== Dsymbols) to Statements.
+ * Convert TemplateMixin members (which are Dsymbols) to Statements.
+ * Params:
+ *    s = the symbol to convert to a Statement
+ * Returns:
+ *    s redone as a Statement
  */
 private Statement toStatement(Dsymbol s)
 {
-    extern (C++) final class ToStmt : Visitor
+    Statement result;
+
+    if (auto tm = s.isTemplateMixin())
     {
-        alias visit = Visitor.visit;
-    public:
-        Statement result;
-
-        Statement visitMembers(Loc loc, Dsymbols* a)
+        auto a = new Statements();
+        foreach (m; *tm.members)
         {
-            if (!a)
-                return null;
-
-            auto statements = new Statements();
-            foreach (s; *a)
-            {
-                statements.push(toStatement(s));
-            }
-            return new CompoundStatement(loc, statements);
+            if (Statement sx = toStatement(m))
+                a.push(sx);
         }
-
-        override void visit(Dsymbol s)
-        {
-            .error(Loc.initial, "Internal Compiler Error: cannot mixin %s `%s`\n", s.kind(), s.toChars());
-            result = new ErrorStatement();
-        }
-
-        override void visit(TemplateMixin tm)
-        {
-            auto a = new Statements();
-            foreach (m; *tm.members)
-            {
-                Statement s = toStatement(m);
-                if (s)
-                    a.push(s);
-            }
-            result = new CompoundStatement(tm.loc, a);
-        }
-
+        result = new CompoundStatement(tm.loc, a);
+    }
+    else if (s.isVarDeclaration()       ||
+             s.isAggregateDeclaration() ||
+             s.isFuncDeclaration()      ||
+             s.isEnumDeclaration()      ||
+             s.isAliasDeclaration()     ||
+             s.isTemplateDeclaration())
+    {
+        /* Perhaps replace the above with isScopeDsymbol() || isDeclaration()
+         */
         /* An actual declaration symbol will be converted to DeclarationExp
          * with ExpStatement.
          */
-        Statement declStmt(Dsymbol s)
-        {
-            auto de = new DeclarationExp(s.loc, s);
-            de.type = Type.tvoid; // avoid repeated semantic
-            return new ExpStatement(s.loc, de);
-        }
-
-        override void visit(VarDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
-        override void visit(AggregateDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
-        override void visit(FuncDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
-        override void visit(EnumDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
-        override void visit(AliasDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
-        override void visit(TemplateDeclaration d)
-        {
-            result = declStmt(d);
-        }
-
+        auto de = new DeclarationExp(s.loc, s);
+        de.type = Type.tvoid; // avoid repeated semantic
+        result = new ExpStatement(s.loc, de);
+    }
+    else if (auto d = s.isAttribDeclaration())
+    {
         /* All attributes have been already picked by the semantic analysis of
          * 'bottom' declarations (function, struct, class, etc).
          * So we don't have to copy them.
          */
-        override void visit(StorageClassDeclaration d)
+        if (Dsymbols* a = d.include(null))
         {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(DeprecatedDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(LinkDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(VisibilityDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(AlignDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(UserAttributeDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(ForwardingAttribDeclaration d)
-        {
-            result = visitMembers(d.loc, d.decl);
-        }
-
-        override void visit(StaticAssert s)
-        {
-        }
-
-        override void visit(Import s)
-        {
-        }
-
-        override void visit(PragmaDeclaration d)
-        {
-        }
-
-        override void visit(ConditionalDeclaration d)
-        {
-            result = visitMembers(d.loc, d.include(null));
-        }
-
-        override void visit(StaticForeachDeclaration d)
-        {
-            assert(d.sfe && !!d.sfe.aggrfe ^ !!d.sfe.rangefe);
-            result = visitMembers(d.loc, d.include(null));
-        }
-
-        override void visit(CompileDeclaration d)
-        {
-            result = visitMembers(d.loc, d.include(null));
+            auto statements = new Statements();
+            foreach (sx; *a)
+            {
+                statements.push(toStatement(sx));
+            }
+            result = new CompoundStatement(d.loc, statements);
         }
     }
+    else if (s.isStaticAssert() ||
+             s.isImport())
+    {
+        /* Ignore as they are not Statements
+         */
+    }
+    else
+    {
+        .error(Loc.initial, "Internal Compiler Error: cannot mixin %s `%s`\n", s.kind(), s.toChars());
+        result = new ErrorStatement();
+    }
 
-    if (!s)
-        return null;
-
-    scope ToStmt v = new ToStmt();
-    s.accept(v);
-    return v.result;
+    return result;
 }
 
 /**

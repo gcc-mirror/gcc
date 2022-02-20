@@ -4635,7 +4635,7 @@ private struct DirIteratorImpl
             import std.path : chainPath;
             auto searchPattern = chainPath(directory, "*.*");
 
-            static auto trustedFindFirstFileW(typeof(searchPattern) pattern, WIN32_FIND_DATAW* findinfo) @trusted
+            static auto trustedFindFirstFileW(typeof(searchPattern) pattern, scope WIN32_FIND_DATAW* findinfo) @trusted
             {
                 return FindFirstFileW(pattern.tempCString!FSChar(), findinfo);
             }
@@ -4653,7 +4653,7 @@ private struct DirIteratorImpl
             return toNext(true, &_findinfo);
         }
 
-        bool toNext(bool fetch, WIN32_FIND_DATAW* findinfo) @trusted
+        bool toNext(bool fetch, scope WIN32_FIND_DATAW* findinfo) @trusted
         {
             import core.stdc.wchar_ : wcscmp;
 
@@ -5274,7 +5274,21 @@ Returns:
 */
 string tempDir() @trusted
 {
-    import std.path : dirSeparator;
+    // We must check that the end of a path is not a separator, before adding another
+    // If we don't we end up with https://issues.dlang.org/show_bug.cgi?id=22738
+    static string addSeparator(string input)
+    {
+        import std.path : dirSeparator;
+        import std.algorithm.searching : endsWith;
+
+        // It is very rare a directory path will reach this point with a directory separator at the end
+        // However on OSX this can happen, so we must verify lest we break user code i.e. https://github.com/dlang/dub/pull/2208
+        if (!input.endsWith(dirSeparator))
+            return input ~ dirSeparator;
+        else
+            return input;
+    }
+
     static string cache;
     if (cache is null)
     {
@@ -5294,7 +5308,7 @@ string tempDir() @trusted
             static string findExistingDir(T...)(lazy T alternatives)
             {
                 foreach (dir; alternatives)
-                    if (!dir.empty && exists(dir)) return dir ~ dirSeparator;
+                    if (!dir.empty && exists(dir)) return addSeparator(dir);
                 return null;
             }
 
@@ -5309,7 +5323,7 @@ string tempDir() @trusted
 
         if (cache is null)
         {
-            cache = getcwd() ~ dirSeparator;
+            cache = addSeparator(getcwd());
         }
     }
     return cache;
@@ -5338,6 +5352,9 @@ string tempDir() @trusted
     import std.algorithm.searching : endsWith;
     import std.path : dirSeparator;
     assert(tempDir.endsWith(dirSeparator));
+
+    // https://issues.dlang.org/show_bug.cgi?id=22738
+    assert(!tempDir.endsWith(dirSeparator ~ dirSeparator));
 }
 
 /**

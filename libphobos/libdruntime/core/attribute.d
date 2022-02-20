@@ -241,3 +241,52 @@ version (UdaGNUAbiTag) struct gnuAbiTag
         this.tags = tags;
     }
 }
+
+/**
+ * Use this attribute to ensure that values of a `struct` or `union` type are
+ * not discarded.
+ *
+ * The value of an expression is considered to be discarded if
+ *
+ * $(UL
+ *  $(LI
+ *      the expression is the top-level expression in a statement or the
+ *      left-hand expression in a comma expression, and
+ *  ),
+ *  $(LI
+ *      the expression is not an assignment (`=`, `+=`, etc.), increment
+ *      (`++`), or decrement (`--`) expression.
+ *  ),
+ * )
+ *
+ * If the declaration of a `struct` or `union` type has the `@mustuse`
+ * attribute, the compiler will emit an error any time a value of that type
+ * would be discarded.
+ *
+ * Currently, `@mustuse` is only recognized by the compiler when attached to
+ * `struct` and `union` declarations. To allow for future expansion, attaching
+ * `@mustuse` to a `class`, `interface`, `enum`, or function declaration is
+ * currently forbidden, and will result in a compile-time error. All other uses
+ * of `@mustuse` are ignored.
+ *
+ * Examples:
+ * ---
+ * @mustuse struct ErrorCode { int value; }
+ *
+ * extern(C) ErrorCode doSomething();
+ *
+ * void main()
+ * {
+ *     // error: would discard a value of type ErrorCode
+ *     //doSomething();
+ *
+ *     ErrorCode result;
+ *     // ok: value is assigned to a variable
+ *     result = doSomething();
+ *
+ *     // ok: can ignore the value explicitly with a cast
+ *     cast(void) doSomething();
+ * }
+ * ---
+ */
+enum mustuse;

@@ -83,9 +83,6 @@ DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
 DEF_D_RUNTIME (NEWITEMT, "_d_newitemT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 DEF_D_RUNTIME (NEWITEMIT, "_d_newitemiT", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
 
-/* Used when calling delete on a pointer.  */
-DEF_D_RUNTIME (DELMEMORY, "_d_delmemory", RT(VOID), P1(POINTER_VOIDPTR), 0)
-
 /* Used when calling new on an array.  The `i' variant is for when the
    initializer is nonzero, and the `m' variant is when initializing a
    multi-dimensional array.  */
@@ -101,10 +98,6 @@ DEF_D_RUNTIME (NEWARRAYMITX, "_d_newarraymiTX", RT(ARRAY_VOID),
 /* Used for allocating an array literal on the GC heap.  */
 DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),
 	       P2(CONST_TYPEINFO, SIZE_T), 0)
-
-/* Used when calling delete on an array.  */
-DEF_D_RUNTIME (DELARRAYT, "_d_delarray_t", RT(VOID),
-	       P2(ARRAYPTR_VOID, CONST_TYPEINFO), 0)
 
 /* Used for value equality (x == y) and comparisons (x < y) of non-trivial
    arrays.  Such as an array of structs or classes.  */

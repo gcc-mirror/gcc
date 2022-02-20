@@ -1885,8 +1885,8 @@ class TypeInfo_Struct : TypeInfo
             return false;
         else if (xopEquals)
         {
-            const dg = _memberFunc(p2, xopEquals);
-            return dg.xopEquals(p1);
+            const dg = _memberFunc(p1, xopEquals);
+            return dg.xopEquals(p2);
         }
         else if (p1 == p2)
             return true;

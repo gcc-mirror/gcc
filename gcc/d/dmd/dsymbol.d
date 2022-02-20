@@ -51,6 +51,7 @@ import dmd.root.rootobject;
 import dmd.root.speller;
 import dmd.root.string;
 import dmd.statement;
+import dmd.staticassert;
 import dmd.tokens;
 import dmd.visitor;
 
@@ -1305,9 +1306,10 @@ extern (C++) class Dsymbol : ASTNode
     inout(AttribDeclaration)           isAttribDeclaration()           inout { return null; }
     inout(AnonDeclaration)             isAnonDeclaration()             inout { return null; }
     inout(CPPNamespaceDeclaration)     isCPPNamespaceDeclaration()     inout { return null; }
-    inout(VisibilityDeclaration)             isVisibilityDeclaration()             inout { return null; }
+    inout(VisibilityDeclaration)       isVisibilityDeclaration()       inout { return null; }
     inout(OverloadSet)                 isOverloadSet()                 inout { return null; }
     inout(CompileDeclaration)          isCompileDeclaration()          inout { return null; }
+    inout(StaticAssert)                isStaticAssert()                inout { return null; }
 }
 
 /***********************************************************
@@ -2500,12 +2502,15 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
         if (fd.fbody)                   // fd is the definition
         {
             sds.symtab.update(fd);      // replace fd2 in symbol table with fd
+            fd.overnext = fd2;
             return fd;
         }
 
-        /* BUG: just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
-         * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.
+        /* Just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
+         * FuncDeclaration::semantic() detects this, but it relies on .overnext being set.
          */
+        fd2.overloadInsert(fd);
+
         return fd2;
     }
 

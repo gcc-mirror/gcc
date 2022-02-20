@@ -524,17 +524,8 @@ extern (C++) final class Module : Package
             buf.printf("%s\t(%s)", ident.toChars(), m.srcfile.toChars());
             message("import    %s", buf.peekChars());
         }
-        m = m.parse();
+        if((m = m.parse()) is null) return null;
 
-        // Call onImport here because if the module is going to be compiled then we
-        // need to determine it early because it affects semantic analysis. This is
-        // being done after parsing the module so the full module name can be taken
-        // from whatever was declared in the file.
-        if (!m.isRoot() && Compiler.onImport(m))
-        {
-            m.importedFrom = m;
-            assert(m.isRoot());
-        }
         return m;
     }
 
@@ -727,7 +718,7 @@ extern (C++) final class Module : Package
             if (buf.length & 3)
             {
                 error("odd length of UTF-32 char source %llu", cast(ulong) buf.length);
-                fatal();
+                return null;
             }
 
             const (uint)[] eBuf = cast(const(uint)[])buf;
@@ -743,7 +734,7 @@ extern (C++) final class Module : Package
                     if (u > 0x10FFFF)
                     {
                         error("UTF-32 value %08x greater than 0x10FFFF", u);
-                        fatal();
+                        return null;
                     }
                     dbuf.writeUTF8(u);
                 }
@@ -773,7 +764,7 @@ extern (C++) final class Module : Package
             if (buf.length & 1)
             {
                 error("odd length of UTF-16 char source %llu", cast(ulong) buf.length);
-                fatal();
+                return null;
             }
 
             const (ushort)[] eBuf = cast(const(ushort)[])buf;
@@ -793,13 +784,13 @@ extern (C++) final class Module : Package
                         if (i >= eBuf.length)
                         {
                             error("surrogate UTF-16 high value %04x at end of file", u);
-                            fatal();
+                            return null;
                         }
                         const u2 = readNext(&eBuf[i]);
                         if (u2 < 0xDC00 || 0xE000 <= u2)
                         {
                             error("surrogate UTF-16 low value %04x out of range", u2);
-                            fatal();
+                            return null;
                         }
                         u = (u - 0xD7C0) << 10;
                         u |= (u2 - 0xDC00);
@@ -807,12 +798,12 @@ extern (C++) final class Module : Package
                     else if (u >= 0xDC00 && u <= 0xDFFF)
                     {
                         error("unpaired surrogate UTF-16 value %04x", u);
-                        fatal();
+                        return null;
                     }
                     else if (u == 0xFFFE || u == 0xFFFF)
                     {
                         error("illegal UTF-16 value %04x", u);
-                        fatal();
+                        return null;
                     }
                     dbuf.writeUTF8(u);
                 }
@@ -899,7 +890,7 @@ extern (C++) final class Module : Package
                     if (buf[0] >= 0x80)
                     {
                         error("source file must start with BOM or ASCII character, not \\x%02X", buf[0]);
-                        fatal();
+                        return null;
                     }
                 }
             }
@@ -929,6 +920,8 @@ extern (C++) final class Module : Package
                       ? UTF32ToUTF8!(Endian.little)(buf)
                       : UTF32ToUTF8!(Endian.big)(buf);
             }
+            // an error happened on UTF conversion
+            if (buf is null) return null;
         }
 
         /* If it starts with the string "Ddoc", then it's a documentation
@@ -962,6 +955,16 @@ extern (C++) final class Module : Package
             isHdrFile = true;
         }
 
+        /// Promote `this` to a root module if requested via `-i`
+        void checkCompiledImport()
+        {
+            if (!this.isRoot() && Compiler.onImport(this))
+                this.importedFrom = this;
+        }
+
+        DsymbolTable dst;
+        Package ppack = null;
+
         /* If it has the extension ".c", it is a "C" file.
          * If it has the extension ".i", it is a preprocessed "C" file.
          */
@@ -971,33 +974,41 @@ extern (C++) final class Module : Package
 
             scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c);
             p.nextToken();
+            checkCompiledImport();
             members = p.parseModule();
-            md = p.md;
+            assert(!p.md); // C doesn't have module declarations
             numlines = p.scanloc.linnum;
         }
         else
         {
             scope p = new Parser!AST(this, buf, cast(bool) docfile);
             p.nextToken();
-            members = p.parseModule();
+            p.parseModuleDeclaration();
             md = p.md;
+
+            if (md)
+            {
+                /* A ModuleDeclaration, md, was provided.
+                * The ModuleDeclaration sets the packages this module appears in, and
+                * the name of this module.
+                */
+                this.ident = md.id;
+                dst = Package.resolve(md.packages, &this.parent, &ppack);
+            }
+
+            // Done after parsing the module header because `module x.y.z` may override the file name
+            checkCompiledImport();
+
+            members = p.parseModuleContent();
             numlines = p.scanloc.linnum;
         }
         srcBuffer.destroy();
         srcBuffer = null;
         /* The symbol table into which the module is to be inserted.
          */
-        DsymbolTable dst;
+
         if (md)
         {
-            /* A ModuleDeclaration, md, was provided.
-             * The ModuleDeclaration sets the packages this module appears in, and
-             * the name of this module.
-             */
-            this.ident = md.id;
-            Package ppack = null;
-            dst = Package.resolve(md.packages, &this.parent, &ppack);
-
             // Mark the package path as accessible from the current module
             // https://issues.dlang.org/show_bug.cgi?id=21661
             // Code taken from Import.addPackageAccess()
@@ -1201,10 +1212,13 @@ extern (C++) final class Module : Package
             if (StringExp se = msg ? msg.toStringExp() : null)
             {
                 const slice = se.peekString();
-                deprecation(loc, "is deprecated - %.*s", cast(int)slice.length, slice.ptr);
+                if (slice.length)
+                {
+                    deprecation(loc, "is deprecated - %.*s", cast(int)slice.length, slice.ptr);
+                    return;
+                }
             }
-            else
-                deprecation(loc, "is deprecated");
+            deprecation(loc, "is deprecated");
         }
     }
 

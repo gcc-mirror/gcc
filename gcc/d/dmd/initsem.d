@@ -590,7 +590,11 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     i.exp = ErrorExp.get();
                 }
             }
+            Type et = i.exp.type;
+            const errors = global.startGagging();
             i.exp = i.exp.implicitCastTo(sc, t);
+            if (global.endGagging(errors))
+                currExp.error("cannot implicitly convert expression `%s` of type `%s` to `%s`", currExp.toChars(), et.toChars(), t.toChars());
         }
     L1:
         if (i.exp.op == EXP.error)

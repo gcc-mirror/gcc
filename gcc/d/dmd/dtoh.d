@@ -2545,29 +2545,9 @@ public:
             buf.writeByte('U');
         buf.writeByte('"');
 
-        for (size_t i = 0; i < e.len; i++)
+        foreach (i; 0 .. e.len)
         {
-            uint c = e.charAt(i);
-            switch (c)
-            {
-                case '"':
-                case '\\':
-                    buf.writeByte('\\');
-                    goto default;
-                default:
-                    if (c <= 0xFF)
-                    {
-                        if (c >= 0x20 && c < 0x80)
-                            buf.writeByte(c);
-                        else
-                            buf.printf("\\x%02x", c);
-                    }
-                    else if (c <= 0xFFFF)
-                        buf.printf("\\u%04x", c);
-                    else
-                        buf.printf("\\U%08x", c);
-                    break;
-            }
+            writeCharLiteral(*buf, e.getCodeUnit(i));
         }
         buf.writeByte('"');
     }

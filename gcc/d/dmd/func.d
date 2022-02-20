@@ -567,7 +567,8 @@ extern (C++) class FuncDeclaration : Declaration
              * do existing practice. But we should examine how TypeFunction does
              * it, for consistency.
              */
-            if (!tf.isref && isRefReturnScope(vthis.storage_class))
+            if (global.params.useDIP1000 != FeatureState.enabled &&
+                !tf.isref && isRefReturnScope(vthis.storage_class))
             {
                 /* if `ref return scope`, evaluate to `ref` `return scope`
                  */

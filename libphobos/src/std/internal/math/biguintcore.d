@@ -813,7 +813,7 @@ public:
 
     // If wantSub is false, return x + y, leaving sign unchanged.
     // If wantSub is true, return abs(x - y), negating sign if x<y
-    static BigUint addOrSub(scope BigUint x, scope BigUint y, bool wantSub, bool *sign)
+    static BigUint addOrSub(scope BigUint x, scope BigUint y, bool wantSub, ref bool sign)
         pure nothrow @safe
     {
         BigUint r;
@@ -822,10 +822,10 @@ public:
             bool negative;
             // sub returns GC allocated array, can be safely cast to immutable
             r.data = (() @trusted => cast(immutable) sub(x.data, y.data, &negative))();
-            *sign ^= negative;
+            sign ^= negative;
             if (r.isZero())
             {
-                *sign = false;
+                sign = false;
             }
         }
         else

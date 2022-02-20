@@ -5125,15 +5125,6 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
             //printf("NewExp.reliesOnTemplateParameters('%s')\n", e.toChars());
             if (e.thisexp)
                 e.thisexp.accept(this);
-            if (!result && e.newargs)
-            {
-                foreach (ea; *e.newargs)
-                {
-                    ea.accept(this);
-                    if (result)
-                        return;
-                }
-            }
             result = e.newtype.reliesOnTemplateParameters(tparams);
             if (!result && e.arguments)
             {
@@ -7351,12 +7342,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         //    toPrettyChars(),
         //    enclosing ? enclosing.toPrettyChars() : null,
         //    mi ? mi.toPrettyChars() : null);
-        if (!mi || mi.isRoot())
+        if (global.params.allInst || !mi || mi.isRoot())
         {
             /* If the instantiated module is speculative or root, insert to the
              * member of a root module. Then:
              *  - semantic3 pass will get called on the instance members.
-             *  - codegen pass will get a selection chance to do/skip it.
+             *  - codegen pass will get a selection chance to do/skip it (needsCodegen()).
              */
             static Dsymbol getStrictEnclosing(TemplateInstance ti)
             {
@@ -7374,8 +7365,18 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             // where tempdecl is declared.
             mi = (enc ? enc : tempdecl).getModule();
             if (!mi.isRoot())
-                mi = mi.importedFrom;
-            assert(mi.isRoot());
+            {
+                if (mi.importedFrom)
+                {
+                    mi = mi.importedFrom;
+                    assert(mi.isRoot());
+                }
+                else
+                {
+                    // This can happen when using the frontend as a library.
+                    // Append it to the non-root module.
+                }
+            }
         }
         else
         {
@@ -7383,24 +7384,12 @@ extern (C++) class TemplateInstance : ScopeDsymbol
              * non-root module. Then:
              *  - semantic3 pass won't be called on the instance.
              *  - codegen pass won't reach to the instance.
+             * Unless it is re-appended to a root module later (with changed minst).
              */
         }
         //printf("\t-. mi = %s\n", mi.toPrettyChars());
 
-        if (memberOf is mi)     // already a member
-        {
-            debug               // make sure it really is a member
-            {
-                auto a = mi.members;
-                for (size_t i = 0; 1; ++i)
-                {
-                    assert(i != a.dim);
-                    if (this == (*a)[i])
-                        break;
-                }
-            }
-            return null;
-        }
+        assert(!memberOf || (!memberOf.isRoot() && mi.isRoot()), "can only re-append from non-root to root module");
 
         Dsymbols* a = mi.members;
         a.push(this);
@@ -7801,15 +7790,22 @@ struct TemplateInstanceBox
     {
         bool res = void;
         if (ti.inst && s.ti.inst)
+        {
             /* This clause is only used when an instance with errors
              * is replaced with a correct instance.
              */
             res = ti is s.ti;
+        }
         else
+        {
             /* Used when a proposed instance is used to see if there's
              * an existing instance.
              */
-            res = (cast()s.ti).equalsx(cast()ti);
+            static if (__VERSION__ >= 2099)
+                res = (cast()ti).equalsx(cast()s.ti);
+            else // https://issues.dlang.org/show_bug.cgi?id=22717
+                res = (cast()s.ti).equalsx(cast()ti);
+        }
 
         debug (FindExistingInstance) ++(res ? nHits : nCollisions);
         return res;

@@ -1,14 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail196.d(27): Error: delimited string must end in )"
+fail_compilation/fail196.d(27): Error: delimited string must end in `)"`
 fail_compilation/fail196.d(27): Error: Implicit string concatenation is error-prone and disallowed in D
-fail_compilation/fail196.d(27):        Use the explicit syntax instead (concatenating literals is `@nogc`): "foo(xxx)" ~ ";\x0a    assert(s == "
+fail_compilation/fail196.d(27):        Use the explicit syntax instead (concatenating literals is `@nogc`): "foo(xxx)" ~ ";\n    assert(s == "
 fail_compilation/fail196.d(28): Error: semicolon needed to end declaration of `s`, instead of `foo`
 fail_compilation/fail196.d(27):        `s` declared here
-fail_compilation/fail196.d(28): Error: found `");\x0a\x0a    s = q"` when expecting `;` following statement
-fail_compilation/fail196.d(30): Error: found `";\x0a    assert(s == "` when expecting `;` following statement
-fail_compilation/fail196.d(31): Error: found `");\x0a\x0a    s = q"` when expecting `;` following statement
+fail_compilation/fail196.d(28): Error: found `");\n\n    s = q"` when expecting `;` following statement
+fail_compilation/fail196.d(30): Error: found `";\n    assert(s == "` when expecting `;` following statement
+fail_compilation/fail196.d(31): Error: found `");\n\n    s = q"` when expecting `;` following statement
 fail_compilation/fail196.d(33): Error: found `{` when expecting `;` following statement
 fail_compilation/fail196.d(33): Error: found `}` when expecting `;` following statement
 fail_compilation/fail196.d(34): Error: found `foo` when expecting `;` following statement

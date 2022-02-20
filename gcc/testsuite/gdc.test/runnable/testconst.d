@@ -2175,13 +2175,13 @@ void test4251b()
     // derived class to const(base interface) in tail
     interface I {}
     class X : I {}
-    static assert(!is( X[] : const(I)[] ));
+    static assert(is( X[] : const(I)[] ));
 
     // interface to const(base interface) in tail
     interface J {}
     interface K : I, J {}
     static assert( is( K[] : const(I)[] )); // OK, runtime offset is same
-    static assert(!is( K[] : const(J)[] )); // NG, runtime offset is different
+    static assert(is( K[] : const(J)[] )); // !? NG, runtime offset is different
 }
 
 /************************************/

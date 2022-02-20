@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/aggregate.h"
 #include "dmd/ctfe.h"
 #include "dmd/declaration.h"
+#include "dmd/enum.h"
 #include "dmd/expression.h"
 #include "dmd/identifier.h"
 #include "dmd/init.h"
@@ -1460,40 +1461,6 @@ public:
 	t1 = build_address (t1);
 	this->result_ = build_libcall (libcall, Type::tvoid, 1, t1);
       }
-    else if (tb1->ty == TY::Tarray)
-      {
-	/* For dynamic arrays, the garbage collector is called to immediately
-	   release the memory.  */
-	Type *telem = tb1->nextOf ()->baseElemOf ();
-	tree ti = null_pointer_node;
-
-	if (TypeStruct *ts = telem->isTypeStruct ())
-	  {
-	    /* Might need to run destructor on array contents.  */
-	    if (ts->sym->dtor)
-	      ti = build_typeinfo (e->loc, tb1->nextOf ());
-	  }
-
-	/* Generate: _delarray_t (&t1, ti);  */
-	this->result_ = build_libcall (LIBCALL_DELARRAYT, Type::tvoid, 2,
-				       build_address (t1), ti);
-      }
-    else if (tb1->ty == TY::Tpointer)
-      {
-	/* For pointers to a struct instance, if the struct has overloaded
-	   operator delete, then that operator is called.  */
-	t1 = build_address (t1);
-	Type *tnext = tb1->isTypePointer ()->next->toBasetype ();
-
-	/* This case should have been rewritten to `_d_delstruct` in the
-	   semantic phase.  */
-	if (TypeStruct *ts = tnext->isTypeStruct ())
-	  gcc_assert (!ts->sym->dtor);
-
-	/* Otherwise, the garbage collector is called to immediately free the
-	   memory allocated for the pointer.  */
-	this->result_ = build_libcall (LIBCALL_DELMEMORY, Type::tvoid, 1, t1);
-      }
     else
       {
 	error ("don%'t know how to delete %qs", e->e1->toChars ());
@@ -1936,9 +1903,16 @@ public:
 	else
 	  {
 	    tree object = build_expr (e->e1);
+	    Type *tb = e->e1->type->toBasetype ();
 
-	    if (e->e1->type->toBasetype ()->ty != TY::Tstruct)
+	    if (tb->ty != TY::Tstruct)
 	      object = build_deref (object);
+
+	    /* __complex is represented as a struct in the front-end, but
+	       underlying is really a complex type.  */
+	    if (e->e1->type->ty == TY::Tenum
+		&& e->e1->type->isTypeEnum ()->sym->isSpecial ())
+	      object = build_vconvert (build_ctype (tb), object);
 
 	    this->result_ = component_ref (object, get_symbol_decl (vd));
 	  }
@@ -2604,7 +2578,7 @@ public:
 
 	for (size_t i = 0; i < e->len; i++)
 	  {
-	    tree value = build_integer_cst (e->charAt (i), etype);
+	    tree value = build_integer_cst (e->getCodeUnit (i), etype);
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	  }
 

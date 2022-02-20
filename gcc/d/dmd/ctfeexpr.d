@@ -1565,7 +1565,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
             error(loc, "string index %llu is out of bounds `[0 .. %llu]`", indx, cast(ulong)es1.len);
             return CTFEExp.cantexp;
         }
-        emplaceExp!IntegerExp(pue, loc, es1.charAt(indx), type);
+        emplaceExp!IntegerExp(pue, loc, es1.getCodeUnit(cast(size_t) indx), type);
         return pue.exp();
     }
 

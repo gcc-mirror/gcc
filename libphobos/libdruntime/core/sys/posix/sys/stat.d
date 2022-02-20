@@ -89,7 +89,7 @@ version (linux)
             off_t       st_size;
             blksize_t   st_blksize;
             blkcnt_t    st_blocks;
-            static if (__USE_MISC || __USE_XOPEN2K8)
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 timespec    st_atim;
                 timespec    st_mtim;
@@ -136,7 +136,7 @@ version (linux)
             off_t       st_size;
             blksize_t   st_blksize;
             blkcnt_t    st_blocks;
-            static if (__USE_MISC || __USE_XOPEN2K8)
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 timespec    st_atim;
                 timespec    st_mtim;
@@ -218,7 +218,7 @@ version (linux)
                 __blkcnt64_t st_blocks;
             }
 
-            static if ( __USE_MISC || __USE_XOPEN2K8)
+            static if ( _DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -278,7 +278,7 @@ version (linux)
                 c_long[3]   st_pad2;
                 off_t       st_size;
             }
-            static if (__USE_MISC || __USE_XOPEN2K8)
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 timespec    st_atim;
                 timespec    st_mtim;
@@ -339,7 +339,7 @@ version (linux)
                 uint[3]     st_pad2;
                 off_t       st_size;
             }
-            static if (__USE_MISC || __USE_XOPEN2K8)
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 timespec    st_atim;
                 timespec    st_mtim;
@@ -491,7 +491,7 @@ version (linux)
                 __blkcnt_t st_blocks;
             }
 
-            static if (__USE_MISC)
+            static if (_DEFAULT_SOURCE)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -573,7 +573,7 @@ version (linux)
                 __blkcnt64_t st_blocks;
             }
 
-            static if ( __USE_MISC || __USE_XOPEN2K8)
+            static if ( _DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -668,7 +668,7 @@ version (linux)
                 __blkcnt64_t st_blocks;
             }
 
-            static if (__USE_MISC)
+            static if (_DEFAULT_SOURCE)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -753,7 +753,7 @@ version (linux)
                 __blkcnt64_t st_blocks;
             }
 
-            static if (__USE_XOPEN2K8)
+            static if (_XOPEN_SOURCE >= 700)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -830,7 +830,7 @@ version (linux)
                 __blkcnt_t st_blocks;
             else
                 __blkcnt64_t st_blocks;
-            static if (__USE_XOPEN2K8)
+            static if (_XOPEN_SOURCE >= 700)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -894,7 +894,7 @@ version (linux)
             int __glibc_reserved0;
             __dev_t st_rdev;
             __off_t st_size;
-            static if (__USE_XOPEN2K8)
+            static if (_XOPEN_SOURCE >= 700)
             {
                 __timespec st_atim;
                 __timespec st_mtim;
@@ -919,7 +919,7 @@ version (linux)
             __blkcnt_t st_blocks;
             c_long[3] __glibc_reserved;
         }
-        static if (__USE_XOPEN2K8)
+        static if (_XOPEN_SOURCE >= 700)
             static assert(stat_t.sizeof == 144);
         else
             static assert(stat_t.sizeof == 144);

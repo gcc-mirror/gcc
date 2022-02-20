@@ -15,7 +15,7 @@ struct RegexMatch
 }
 static m() { return RegexMatch(); }
 
-void fun(int a); 
+void fun(int a);
 
 void initCommands()
 {

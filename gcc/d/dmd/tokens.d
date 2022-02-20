@@ -35,7 +35,6 @@ enum TOK : ubyte
     leftCurly,
     rightCurly,
     colon,
-    negate,
     semicolon,
     dotDotDot,
     endOfFile,
@@ -44,26 +43,18 @@ enum TOK : ubyte
     assert_,
     true_,
     false_,
-    array,
-    call,
-    address,
-    type,
     throw_,
     new_,
     delete_,
-    star,
     variable,
     slice,
     version_,
     module_,
     dollar,
     template_,
-    declaration,
     typeof_,
     pragma_,
     typeid_,
-    uadd,
-    remove,
     comment,
 
     // Operators
@@ -75,7 +66,6 @@ enum TOK : ubyte
     notEqual,
     identity,
     notIdentity,
-    index,
     is_,
 
     leftShift,
@@ -281,6 +271,7 @@ enum TOK : ubyte
     _import,
     __cdecl,
     __declspec,
+    __stdcall,
     __attribute__,
 }
 
@@ -589,6 +580,7 @@ private immutable TOK[] keywords =
     TOK._import,
     TOK.__cdecl,
     TOK.__declspec,
+    TOK.__stdcall,
     TOK.__attribute__,
 ];
 
@@ -617,7 +609,7 @@ static immutable TOK[TOK.max + 1] Ckeywords =
                        restrict, return_, int16, signed, sizeof_, static_, struct_, switch_, typedef_,
                        union_, unsigned, void_, volatile, while_, asm_,
                        _Alignas, _Alignof, _Atomic, _Bool, _Complex, _Generic, _Imaginary, _Noreturn,
-                       _Static_assert, _Thread_local, _import, __cdecl, __declspec, __attribute__ ];
+                       _Static_assert, _Thread_local, _import, __cdecl, __declspec, __stdcall, __attribute__ ];
 
         foreach (kw; Ckwds)
             tab[kw] = cast(TOK) kw;
@@ -805,18 +797,11 @@ extern (C++) struct Token
         TOK.andAnd: "&&",
         TOK.or: "|",
         TOK.orOr: "||",
-        TOK.array: "[]",
-        TOK.index: "[i]",
-        TOK.address: "&",
-        TOK.star: "*",
         TOK.tilde: "~",
         TOK.dollar: "$",
         TOK.plusPlus: "++",
         TOK.minusMinus: "--",
-        TOK.type: "type",
         TOK.question: "?",
-        TOK.negate: "-",
-        TOK.uadd: "+",
         TOK.variable: "var",
         TOK.addAssign: "+=",
         TOK.minAssign: "-=",
@@ -829,7 +814,6 @@ extern (C++) struct Token
         TOK.andAssign: "&=",
         TOK.orAssign: "|=",
         TOK.concatenateAssign: "~=",
-        TOK.call: "call",
         TOK.identity: "is",
         TOK.notIdentity: "!is",
         TOK.identifier: "identifier",
@@ -844,14 +828,12 @@ extern (C++) struct Token
         // For debugging
         TOK.error: "error",
         TOK.string_: "string",
-        TOK.declaration: "declaration",
         TOK.onScopeExit: "scope(exit)",
         TOK.onScopeSuccess: "scope(success)",
         TOK.onScopeFailure: "scope(failure)",
 
         // Finish up
         TOK.reserved: "reserved",
-        TOK.remove: "remove",
         TOK.comment: "comment",
         TOK.int32Literal: "int32v",
         TOK.uns32Literal: "uns32v",
@@ -896,6 +878,7 @@ extern (C++) struct Token
         TOK._import       : "__import",
         TOK.__cdecl        : "__cdecl",
         TOK.__declspec     : "__declspec",
+        TOK.__stdcall      : "__stdcall",
         TOK.__attribute__  : "__attribute__",
     ];
 
@@ -963,12 +946,20 @@ nothrow:
             sprintf(&buffer[0], "%d", cast(d_int32)intvalue);
             break;
         case TOK.uns32Literal:
-        case TOK.charLiteral:
         case TOK.wcharLiteral:
         case TOK.dcharLiteral:
         case TOK.wchar_tLiteral:
             sprintf(&buffer[0], "%uU", cast(d_uns32)unsvalue);
             break;
+        case TOK.charLiteral:
+        {
+            const v = cast(d_int32)intvalue;
+            if (v >= ' ' && v <= '~')
+                sprintf(&buffer[0], "'%c'", v);
+            else
+                sprintf(&buffer[0], "'\\x%02x'", v);
+            break;
+        }
         case TOK.int64Literal:
             sprintf(&buffer[0], "%lldL", cast(long)intvalue);
             break;
@@ -1006,29 +997,7 @@ nothrow:
                 {
                     dchar c;
                     utf_decodeChar(ustring[0 .. len], i, c);
-                    switch (c)
-                    {
-                    case 0:
-                        break;
-                    case '"':
-                    case '\\':
-                        buf.writeByte('\\');
-                        goto default;
-                    default:
-                        if (c <= 0x7F)
-                        {
-                            if (isprint(c))
-                                buf.writeByte(c);
-                            else
-                                buf.printf("\\x%02x", c);
-                        }
-                        else if (c <= 0xFFFF)
-                            buf.printf("\\u%04x", c);
-                        else
-                            buf.printf("\\U%08x", c);
-                        continue;
-                    }
-                    break;
+                    writeCharLiteral(buf, c);
                 }
                 buf.writeByte('"');
                 if (postfix)
@@ -1103,3 +1072,64 @@ nothrow:
     }
 }
 
+/**
+ * Write a character, using a readable escape sequence if needed
+ *
+ * Useful for printing "" string literals in e.g. error messages, ddoc, or the `.stringof` property
+ *
+ * Params:
+ *   buf = buffer to append character in
+ *   c = code point to write
+ */
+nothrow
+void writeCharLiteral(ref OutBuffer buf, dchar c)
+{
+    switch (c)
+    {
+        case '\0':
+            buf.writestring("\\0");
+            break;
+        case '\n':
+            buf.writestring("\\n");
+            break;
+        case '\r':
+            buf.writestring("\\r");
+            break;
+        case '\t':
+            buf.writestring("\\t");
+            break;
+        case '\b':
+            buf.writestring("\\b");
+            break;
+        case '\f':
+            buf.writestring("\\f");
+            break;
+        case '"':
+        case '\\':
+            buf.writeByte('\\');
+            goto default;
+        default:
+            if (c <= 0x7F)
+            {
+                if (isprint(c))
+                    buf.writeByte(c);
+                else
+                    buf.printf("\\x%02x", c);
+            }
+            else if (c <= 0xFFFF)
+                buf.printf("\\u%04x", c);
+            else
+                buf.printf("\\U%08x", c);
+            break;
+    }
+}
+
+unittest
+{
+    OutBuffer buf;
+    foreach(dchar d; "a\n\r\t\b\f\0\x11\u7233\U00017233"d)
+    {
+        writeCharLiteral(buf, d);
+    }
+    assert(buf.extractSlice() == `a\n\r\t\b\f\0\x11\u7233\U00017233`);
+}

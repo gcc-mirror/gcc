@@ -206,6 +206,32 @@ string MODtoString(MOD mod) nothrow pure
     }
 }
 
+/*************************************************
+ * Pick off one of the trust flags from trust,
+ * and return a string representation of it.
+ */
+string trustToString(TRUST trust) pure nothrow @nogc @safe
+{
+    final switch (trust)
+    {
+    case TRUST.default_:
+        return null;
+    case TRUST.system:
+        return "@system";
+    case TRUST.trusted:
+        return "@trusted";
+    case TRUST.safe:
+        return "@safe";
+    }
+}
+
+unittest
+{
+    assert(trustToString(TRUST.default_) == "");
+    assert(trustToString(TRUST.system) == "@system");
+    assert(trustToString(TRUST.trusted) == "@trusted");
+    assert(trustToString(TRUST.safe) == "@safe");
+}
 
 /************************************
  * Convert MODxxxx to STCxxx
@@ -400,7 +426,7 @@ extern (C++) abstract class Type : ASTNode
     extern (C++) __gshared Type[TMAX] basic;
 
     extern (D) __gshared StringTable!Type stringtable;
-    extern (D) private __gshared ubyte[TMAX] sizeTy = ()
+    extern (D) private static immutable ubyte[TMAX] sizeTy = ()
         {
             ubyte[TMAX] sizeTy = __traits(classInstanceSize, TypeBasic);
             sizeTy[Tsarray] = __traits(classInstanceSize, TypeSArray);
@@ -2604,6 +2630,10 @@ extern (C++) abstract class Type : ASTNode
             default:
                 assert(0);
             }
+            // @@@DEPRECATED_2.117@@@
+            // Deprecated in 2.097 - Can be made an error from 2.117.
+            // The deprecation period is longer than usual as `cfloat`,
+            // `cdouble`, and `creal` were quite widely used.
             if (t.iscomplex())
             {
                 deprecation(loc, "use of complex type `%s` is deprecated, use `std.complex.Complex!(%s)` instead",
@@ -4219,9 +4249,9 @@ extern (C++) final class TypeFunction : TypeNext
         this.trust = TRUST.default_;
         if (stc & STC.safe)
             this.trust = TRUST.safe;
-        if (stc & STC.system)
+        else if (stc & STC.system)
             this.trust = TRUST.system;
-        if (stc & STC.trusted)
+        else if (stc & STC.trusted)
             this.trust = TRUST.trusted;
     }
 
@@ -6346,7 +6376,7 @@ extern (C++) final class TypeClass : Type
         /* Conversion derived to const(base)
          */
         int offset = 0;
-        if (to.isBaseOf(this, &offset) && offset == 0 && MODimplicitConv(mod, to.mod))
+        if (to.isBaseOf(this, &offset) && MODimplicitConv(mod, to.mod))
         {
             // Disallow:
             //  derived to base
@@ -7253,10 +7283,9 @@ void attributesApply(const TypeFunction tf, void delegate(string) dg, TRUSTforma
 
     if (trustAttrib == TRUST.default_)
     {
-        if (trustFormat == TRUSTformatSystem)
-            trustAttrib = TRUST.system;
-        else
-            return; // avoid calling with an empty string
+        if (trustFormat != TRUSTformatSystem)
+            return;
+        trustAttrib = TRUST.system; // avoid calling with an empty string
     }
 
     dg(trustToString(trustAttrib));

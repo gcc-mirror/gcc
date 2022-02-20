@@ -122,6 +122,16 @@ extern (C++) final class PrintASTVisitor : Visitor
         printAST(e.e1, indent + 2);
     }
 
+    override void visit(CastExp e)
+    {
+        printIndent(indent);
+        auto s = EXPtoString(e.op);
+        printf("%.*s %s\n", cast(int)s.length, s.ptr, e.type ? e.type.toChars() : "");
+        printIndent(indent + 2);
+        printf(".to: %s\n", e.to.toChars());
+        printAST(e.e1, indent + 2);
+    }
+
     override void visit(VectorExp e)
     {
         printIndent(indent);

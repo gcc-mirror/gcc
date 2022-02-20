@@ -277,7 +277,7 @@ void issue22076()
     static struct S1
     {
         S0 a;
-        inout(S0)* b() inout nothrow { return &a; }
+        inout(S0)* b() inout return nothrow { return &a; }
         alias b this;
     }
 

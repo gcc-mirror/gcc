@@ -726,7 +726,8 @@ public:
     extern (D) static const(char)[] externallyMangledIdentifier(Declaration d)
     {
         const par = d.toParent(); //toParent() skips over mixin templates
-        if (!par || par.isModule() || d.linkage == LINK.cpp)
+        if (!par || par.isModule() || d.linkage == LINK.cpp ||
+            (d.linkage == LINK.c && d.isCsymbol() && d.isFuncDeclaration()))
         {
             if (d.linkage != LINK.d && d.localNum)
                 d.error("the same declaration cannot be in multiple scopes with non-D linkage");
