@@ -1,3 +1,37 @@
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Handle SET insn.
+	* config/nvptx/nvptx.md
+	(define_insn "nvptx_atomic_store<mode>"): Rename to ...
+	(define_insn "nvptx_atomic_store_sm70<mode>"): This.
+	(define_insn "nvptx_atomic_store<mode>"): New define_insn.
+	(define_expand "atomic_store<mode>"): Handle rename.  Use
+	nvptx_atomic_store instead of atomic_exchange.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Handle all
+	insns with atomic attribute.  Assert that all handled insns are
+	PARALLELs.
+	* config/nvptx/nvptx.md (define_insn "nvptx_atomic_store<mode>"):
+	Set atomic attribute to false.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (nvptx_unisimt_handle_set): Change return
+	type to bool.
+	(nvptx_reorg_uniform_simt): Insert nvptx_uniform_warp_check or
+	nvptx_warpsync, if necessary.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* asan.cc (instrument_derefs): If inner is a RESULT_DECL and access is
+	known to be within bounds, treat it like automatic variables.
+	If instrumenting access and inner is {VAR,PARM,RESULT}_DECL from
+	current function and !TREE_STATIC which is not TREE_ADDRESSABLE, mark
+	it addressable.
+
 2022-02-18  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* config/rs6000/rs6000.opt (mpower10-fusion): Mark Undocumented.

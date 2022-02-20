@@ -1,3 +1,21 @@
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-1.c: Update.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/uniform-simt-3.c: New test.
+
+2022-02-19  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/uniform-simt-1.c: Add scan-assembler test.
+	* gcc.target/nvptx/uniform-simt-2.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/102656
+	* g++.dg/asan/pr102656.C: New test.
+
 2022-02-18  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/104581
