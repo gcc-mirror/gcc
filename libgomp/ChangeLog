@@ -1,3 +1,13 @@
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/104385
+	* task.c (gomp_task_run_post_handle_dependers): If parent is NULL,
+	clear task->parent.
+	* testsuite/libgomp.c/pr104385.c: New test.
+
 2021-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

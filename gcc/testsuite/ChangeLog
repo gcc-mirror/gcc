@@ -1,3 +1,117 @@
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* gcc.dg/dfp/pr104557.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104448
+	* gcc.target/i386/pr104448.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104544
+	* gcc.dg/pr104544.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104510
+	* gcc.dg/dfp/pr104510.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104517
+	* gcc.dg/gomp/pr104517.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104513
+	* g++.dg/cpp1y/constexpr-104513.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor12.C: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* gcc.dg/asan/pr104449.c: New test.
+	* g++.dg/asan/pr104449.C: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* gcc.target/i386/pr104502.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/104472
+	* g++.dg/cpp0x/constexpr-104472.C: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* gcc.target/i386/pr104446.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* gcc.dg/pr102140.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/104147
+	* c-c++-common/cpp/pr104147.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104307
+	* gcc.target/i386/pr104307.c: New test.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104263
+	* gcc.dg/pr104263.c: New test.
+
 2022-02-18  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

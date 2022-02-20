@@ -1,3 +1,103 @@
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104557
+	* valtrack.c (debug_lowpart_subreg): Don't call gen_rtx_raw_SUBREG
+	if expr has VOIDmode.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/104544
+	* combine.c (try_combine): When looking for insn whose links
+	should be updated from i3 to i2, don't stop on debug insns, instead
+	skip over them.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/104517
+	* omp-low.c (task_cpyfns): New variable.
+	(delete_omp_context): Don't call finalize_task_copyfn from here.
+	(create_task_copyfn): Push task_stmt into task_cpyfns.
+	(execute_lower_omp): Call finalize_task_copyfn here on entries from
+	task_cpyfns vector and release the vector.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/104449
+	* asan.c: Include tree-eh.h.
+	(handle_builtin_alloca): Handle the case when __builtin_alloca or
+	__builtin_alloca_with_align can throw.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104502
+	* config/i386/i386.md (cvtsd2ss splitter): If operands[1] is xmm16+
+	and AVX512VL isn't available, move operands[1] to operands[0] first.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104446
+	* combine.c (subst): Don't substitute CONST_INTs into RTX_AUTOINC
+	operands.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102140
+	* config/rs6000/rs6000.c (vspltis_shifted): Return false also if
+	split1 pass has finished already.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104307
+	* tree-vect-generic.c (expand_vector_comparison): Don't push debug
+	stmts to uses vector, just set vec_cond_expr_only to false for
+	non-VEC_COND_EXPRs instead of pushing them into uses.  Treat
+	VEC_COND_EXPRs that use lhs not just in rhs1, but rhs2 or rhs3 too
+	like non-VEC_COND_EXPRs.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104263
+	* gimple-ssa-store-merging.c (get_status_for_store_merging): For
+	cfun->can_throw_non_call_exceptions && cfun->eh test whether
+	last non-debug stmt in the bb is store_valid_for_store_merging_p
+	rather than last stmt.
+
+2022-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/104237
+	* cfgrtl.c (loc_equal): New function.
+	(unique_locus_on_edge_between_p): Use it.
+
 2022-02-18  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
