@@ -99,12 +99,22 @@ struct MatchedFragment
   std::string fragment_ident;
   size_t token_offset_begin;
   size_t token_offset_end;
+  size_t match_amount;
+
+  MatchedFragment (std::string identifier, size_t token_offset_begin,
+		   size_t token_offset_end, size_t match_amount = 0)
+    : fragment_ident (identifier), token_offset_begin (token_offset_begin),
+      token_offset_end (token_offset_end), match_amount (match_amount)
+  {}
 
   std::string as_string () const
   {
     return fragment_ident + "=" + std::to_string (token_offset_begin) + ":"
-	   + std::to_string (token_offset_end);
+	   + std::to_string (token_offset_end) + " (matched "
+	   + std::to_string (match_amount) + " times)";
   }
+
+  void set_match_amount (size_t new_amount) { match_amount = new_amount; }
 };
 
 class SubstitutionScope

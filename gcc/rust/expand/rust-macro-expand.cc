@@ -3127,6 +3127,10 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
       if (did_match_rule)
 	{
+	  for (auto &frag : matched_fragments)
+	    rust_debug ("matched fragment: %s",
+			frag.second.as_string ().c_str ());
+
 	  matched_rule = &rule;
 	  break;
 	}
@@ -3533,7 +3537,7 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	    size_t offs_end = source.get_offs ();
 	    sub_stack.peek ().insert (
 	      {fragment->get_ident (),
-	       {fragment->get_ident (), offs_begin, offs_end}});
+	       MatchedFragment (fragment->get_ident (), offs_begin, offs_end)});
 	  }
 	  break;
 
@@ -3607,6 +3611,7 @@ MacroExpander::match_n_matches (
   match_amount = 0;
 
   const MacroInvocLexer &source = parser.get_token_source ();
+  std::vector<std::string> fragment_identifiers;
   while (true)
     {
       // If the current token is a closing macro delimiter, break away.
@@ -3630,7 +3635,10 @@ MacroExpander::match_n_matches (
 		size_t offs_end = source.get_offs ();
 		sub_stack.peek ().insert (
 		  {fragment->get_ident (),
-		   {fragment->get_ident (), offs_begin, offs_end}});
+		   MatchedFragment (fragment->get_ident (), offs_begin,
+				    offs_end)});
+
+		fragment_identifiers.emplace_back (fragment->get_ident ());
 	      }
 	      break;
 
@@ -3669,10 +3677,21 @@ MacroExpander::match_n_matches (
 
   // Check if the amount of matches we got is valid: Is it more than the lower
   // bound and less than the higher bound?
-  if (!hi_bound) // infinite amount, no upper bound
-    return match_amount >= lo_bound;
-  else
-    return match_amount >= lo_bound && match_amount <= hi_bound;
+  auto result = hi_bound ? match_amount >= lo_bound && match_amount <= hi_bound
+			 : match_amount >= lo_bound;
+
+  // We can now set the amount to each fragment we matched in the substack
+  auto &stack_map = sub_stack.peek ();
+  for (auto &fragment_id : fragment_identifiers)
+    {
+      auto it = stack_map.find (fragment_id);
+
+      rust_assert (it != stack_map.end ());
+
+      it->second.set_match_amount (match_amount);
+    }
+
+  return result;
 }
 
 bool
