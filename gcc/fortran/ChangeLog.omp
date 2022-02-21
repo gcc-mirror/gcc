@@ -1,3 +1,8 @@
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
+	* parse.cc (gfc_parse_file): Set OMP_REQUIRES_DYNAMIC_ALLOCATORS
+	bit in omp_requires_mask.
+
 2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	* class.cc (finalization_scalarizer): Mark syms as artificial.

@@ -7022,6 +7022,9 @@ done:
       break;
     }
 
+  if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
+    omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_DYNAMIC_ALLOCATORS);
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 
