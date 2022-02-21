@@ -1472,6 +1472,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		  t = false;
 		  break;
 		};
+	      if (cons->expr->shape == NULL)
+		continue;
 	      mpz_set_ui (len, 1);
 	      mpz_add (len, len, comp->as->upper[n]->value.integer);
 	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
