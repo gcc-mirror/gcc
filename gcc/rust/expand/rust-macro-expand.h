@@ -204,14 +204,16 @@ struct MacroExpander
    *
    * @param input Tokens given to the transcribing context
    * @param fragments Fragments given to the macro substitution
-   * @param repetition Set of tokens to substitute and replace
+   * @param pattern_start Start index of the pattern tokens
+   * @param pattern_end Index  Amount of tokens in the pattern
    *
    * @return A vector containing the repeated pattern
    */
   static std::vector<std::unique_ptr<AST::Token>>
   substitute_repetition (std::vector<std::unique_ptr<AST::Token>> &input,
+			 std::vector<std::unique_ptr<AST::Token>> &macro,
 			 std::map<std::string, MatchedFragment> &fragments,
-			 std::vector<std::unique_ptr<AST::Token>> &pattern);
+			 size_t pattern_start, size_t pattern_end);
 
   /**
    * Substitute a given token by its appropriate representation
@@ -228,8 +230,8 @@ struct MacroExpander
    * ahead of the input to avoid mis-substitutions
    */
   static std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
-  substitute_token (std::vector<std::unique_ptr<AST::Token>> &macro,
-		    std::vector<std::unique_ptr<AST::Token>> &input,
+  substitute_token (std::vector<std::unique_ptr<AST::Token>> &input,
+		    std::vector<std::unique_ptr<AST::Token>> &macro,
 		    std::map<std::string, MatchedFragment> &fragments,
 		    size_t token_idx);
 

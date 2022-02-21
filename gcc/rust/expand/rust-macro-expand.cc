@@ -3882,7 +3882,6 @@ MacroExpander::substitute_metavar (
 {
   auto metavar_name = metavar->get_str ();
 
-  rust_debug ("expanding metavar: %s", metavar_name.c_str ());
   std::vector<std::unique_ptr<AST::Token>> expanded;
   auto it = fragments.find (metavar_name);
   if (it == fragments.end ())
@@ -3908,40 +3907,95 @@ MacroExpander::substitute_metavar (
 std::vector<std::unique_ptr<AST::Token>>
 MacroExpander::substitute_repetition (
   std::vector<std::unique_ptr<AST::Token>> &input,
-  std::map<std::string, MatchedFragment> &fragments,
-  std::vector<std::unique_ptr<AST::Token>> &pattern)
+  std::vector<std::unique_ptr<AST::Token>> &macro,
+  std::map<std::string, MatchedFragment> &fragments, size_t pattern_start,
+  size_t pattern_end)
 {
-  // If the repetition is not anything we know (ie no declared metavars, or
-  // metavars which aren't present in the fragment), we can just error out. No
-  // need to paste the tokens as if nothing had happened.
-  for (auto &token : pattern)
-    rust_debug ("[repetition pattern]: %s", token->as_string ().c_str ());
+  rust_assert (pattern_end < macro.size ());
 
-  return std::vector<std::unique_ptr<AST::Token>> ();
+  rust_debug ("pattern start: %lu", pattern_start);
+  rust_debug ("pattern end: %lu", pattern_end);
+
+  std::vector<std::unique_ptr<AST::Token>> expanded;
+
+  for (size_t i = pattern_start; i < pattern_end; i++)
+    rust_debug ("[repetition pattern]: %s",
+		macro.at (i)->as_string ().c_str ());
+
+  // Find the first fragment and get the amount of repetitions that we should
+  // perform
+  size_t repeat_amount = 0;
+  for (size_t i = pattern_start; i < pattern_end; i++)
+    {
+      if (macro.at (i)->get_id () == DOLLAR_SIGN)
+	{
+	  auto &frag_token = macro.at (i + 1);
+	  if (frag_token->get_id () == IDENTIFIER)
+	    {
+	      auto it = fragments.find (frag_token->get_str ());
+	      if (it == fragments.end ())
+		{
+		  // If the repetition is not anything we know (ie no declared
+		  // metavars, or metavars which aren't present in the
+		  // fragment), we can just error out. No need to paste the
+		  // tokens as if nothing had happened.
+		  rust_error_at (frag_token->get_locus (),
+				 "metavar used in repetition does not exist");
+		  return expanded;
+		}
+
+	      repeat_amount = it->second.match_amount;
+	    }
+	}
+    }
+
+  std::vector<std::unique_ptr<AST::Token>> new_macro;
+  for (size_t tok_idx = pattern_start; tok_idx < pattern_end; tok_idx++)
+    {
+      new_macro.emplace_back (macro.at (tok_idx)->clone_token ());
+      rust_debug ("new macro token: %s",
+		  macro.at (tok_idx)->as_string ().c_str ());
+    }
+
+  // FIXME: We have to be careful and not push the repetition token
+  auto new_tokens = substitute_tokens (input, new_macro, fragments);
+
+  rust_debug ("repetition amount to use: %lu", repeat_amount);
+  for (size_t i = 0; i < repeat_amount; i++)
+    {
+      for (auto &new_token : new_tokens)
+	expanded.emplace_back (new_token->clone_token ());
+    }
+
+  // FIXME: We also need to make sure that all subsequent fragments
+  // contain the same amount of repetitions as the first one
+
+  return expanded;
 }
 
 std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
 MacroExpander::substitute_token (
-  std::vector<std::unique_ptr<AST::Token>> &macro,
   std::vector<std::unique_ptr<AST::Token>> &input,
+  std::vector<std::unique_ptr<AST::Token>> &macro,
   std::map<std::string, MatchedFragment> &fragments, size_t token_idx)
 {
   auto &token = macro.at (token_idx);
   switch (token->get_id ())
     {
     case IDENTIFIER:
-      rust_debug ("expanding metavar");
+      rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
       return {substitute_metavar (input, fragments, token), 1};
       case LEFT_PAREN: {
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
 	rust_debug ("expanding repetition");
 	std::vector<std::unique_ptr<AST::Token>> repetition_pattern;
-	for (size_t rep_idx = token_idx + 1;
-	     rep_idx < macro.size ()
-	     && macro.at (rep_idx)->get_id () != RIGHT_PAREN;
-	     rep_idx++)
-	  repetition_pattern.emplace_back (macro.at (rep_idx)->clone_token ());
+	size_t pattern_start = token_idx + 1;
+	size_t pattern_end = pattern_start;
+	for (; pattern_end < macro.size ()
+	       && macro.at (pattern_end)->get_id () != RIGHT_PAREN;
+	     pattern_end++)
+	  ;
 
 	// FIXME: This skips whitespaces... Is that okay??
 	// FIXME: Is there any existing parsing function that allows us to parse
@@ -3953,9 +4007,11 @@ MacroExpander::substitute_token (
 	// FIXME: We need to parse the repetition token now
 
 	return {
-	  substitute_repetition (input, fragments, repetition_pattern),
+	  substitute_repetition (input, macro, fragments, pattern_start,
+				 pattern_end),
 	  // + 2 for the opening and closing parenthesis which are mandatory
-	  repetition_pattern.size () + 2};
+	  // + 1 for the repetitor (+, *, ?)
+	  pattern_end - pattern_start + 3};
       }
       // TODO: We need to check if the $ was alone. In that case, do
       // not error out: Simply act as if there was an empty identifier
@@ -3996,7 +4052,7 @@ MacroExpander::substitute_tokens (
 	{
 	  // Aaaaah, if only we had C++17 :)
 	  // auto [expanded, tok_to_skip] = ...
-	  auto p = substitute_token (macro, input, fragments, i + 1);
+	  auto p = substitute_token (input, macro, fragments, i + 1);
 	  auto expanded = std::move (p.first);
 	  auto tok_to_skip = p.second;
 
