@@ -2195,6 +2195,7 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base,
   tree x_decl = SYMBOL_REF_DECL (x_base);
   tree y_decl = SYMBOL_REF_DECL (y_base);
   bool binds_def = true;
+  bool swap = false;
 
   if (XSTR (x_base, 0) == XSTR (y_base, 0))
     return 1;
@@ -2204,6 +2205,7 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base,
     {
       if (!x_decl)
 	{
+	  swap = true;
 	  std::swap (x_decl, y_decl);
 	  std::swap (x_base, y_base);
 	}
@@ -2238,8 +2240,8 @@ compare_base_symbol_refs (const_rtx x_base, const_rtx y_base,
       if (SYMBOL_REF_BLOCK (x_base) != SYMBOL_REF_BLOCK (y_base))
 	return 0;
       if (distance)
-	*distance += (SYMBOL_REF_BLOCK_OFFSET (y_base)
-		      - SYMBOL_REF_BLOCK_OFFSET (x_base));
+	*distance += (swap ? -1 : 1) * (SYMBOL_REF_BLOCK_OFFSET (y_base)
+					- SYMBOL_REF_BLOCK_OFFSET (x_base));
       return binds_def ? 1 : -1;
     }
   /* Either the symbols are equal (via aliasing) or they refer to
