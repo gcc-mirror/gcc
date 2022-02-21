@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-linux* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mno-vsx" } */
