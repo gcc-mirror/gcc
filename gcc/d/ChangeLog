@@ -1,3 +1,25 @@
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Remove handling of
+	deleting GC allocated classes.
+	* runtime.def (DELCLASS): Remove.
+	(DELINTERFACE): Remove.
+
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd cb49e99f8.
+	* dmd/VERSION: Update version to v2.099.0-beta.1.
+	* decl.cc (layout_class_initializer): Update call to NewExp::create.
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Remove handling of
+	deleting arrays and pointers.
+	(ExprVisitor::visit (DotVarExp *)): Convert complex types to the
+	front-end library type representing them.
+	(ExprVisitor::visit (StringExp *)): Use getCodeUnit instead of charAt
+	to get the value of each index in a string expression.
+	* runtime.def (DELMEMORY): Remove.
+	(DELARRAYT): Remove.
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Handle anonymous enums.
+
 2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-builtins.cc (d_build_builtins_module): Set purity of DECL_PURE_P

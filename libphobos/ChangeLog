@@ -1,3 +1,10 @@
+2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 55528bd1.
+	* src/MERGE: Merge upstream phobos 1a3e80ec2.
+	* testsuite/libphobos.hash/test_hash.d: Update.
+	* testsuite/libphobos.betterc/test19933.d: New test.
+
 2022-02-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in: Regenerate.

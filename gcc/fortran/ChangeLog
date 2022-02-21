@@ -1,3 +1,11 @@
+2022-02-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/77693
+	* data.cc (gfc_assign_data_value): If a variable in a data
+	statement has the POINTER attribute, check for allowed initial
+	data target that is compatible with pointer assignment.
+	* gfortran.h (IS_POINTER): New macro.
+
 2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_depobj): Fix to alloc/ptr dummy
