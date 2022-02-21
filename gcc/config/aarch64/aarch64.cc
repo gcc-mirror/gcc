@@ -80,6 +80,7 @@
 #include "fractional-cost.h"
 #include "rtlanal.h"
 #include "tree-dfa.h"
+#include "asan.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -7547,8 +7548,8 @@ aarch64_layout_frame (void)
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
-  frame.wb_candidate1 = INVALID_REGNUM;
-  frame.wb_candidate2 = INVALID_REGNUM;
+  frame.wb_push_candidate1 = INVALID_REGNUM;
+  frame.wb_push_candidate2 = INVALID_REGNUM;
   frame.spare_pred_reg = INVALID_REGNUM;
 
   /* First mark all the registers that really need to be saved...  */
@@ -7663,9 +7664,9 @@ aarch64_layout_frame (void)
     {
       /* FP and LR are placed in the linkage record.  */
       frame.reg_offset[R29_REGNUM] = offset;
-      frame.wb_candidate1 = R29_REGNUM;
+      frame.wb_push_candidate1 = R29_REGNUM;
       frame.reg_offset[R30_REGNUM] = offset + UNITS_PER_WORD;
-      frame.wb_candidate2 = R30_REGNUM;
+      frame.wb_push_candidate2 = R30_REGNUM;
       offset += 2 * UNITS_PER_WORD;
     }
 
@@ -7673,10 +7674,10 @@ aarch64_layout_frame (void)
     if (known_eq (frame.reg_offset[regno], SLOT_REQUIRED))
       {
 	frame.reg_offset[regno] = offset;
-	if (frame.wb_candidate1 == INVALID_REGNUM)
-	  frame.wb_candidate1 = regno;
-	else if (frame.wb_candidate2 == INVALID_REGNUM)
-	  frame.wb_candidate2 = regno;
+	if (frame.wb_push_candidate1 == INVALID_REGNUM)
+	  frame.wb_push_candidate1 = regno;
+	else if (frame.wb_push_candidate2 == INVALID_REGNUM)
+	  frame.wb_push_candidate2 = regno;
 	offset += UNITS_PER_WORD;
       }
 
@@ -7699,11 +7700,11 @@ aarch64_layout_frame (void)
 	  }
 
 	frame.reg_offset[regno] = offset;
-	if (frame.wb_candidate1 == INVALID_REGNUM)
-	  frame.wb_candidate1 = regno;
-	else if (frame.wb_candidate2 == INVALID_REGNUM
-		 && frame.wb_candidate1 >= V0_REGNUM)
-	  frame.wb_candidate2 = regno;
+	if (frame.wb_push_candidate1 == INVALID_REGNUM)
+	  frame.wb_push_candidate1 = regno;
+	else if (frame.wb_push_candidate2 == INVALID_REGNUM
+		 && frame.wb_push_candidate1 >= V0_REGNUM)
+	  frame.wb_push_candidate2 = regno;
 	offset += vector_save_size;
       }
 
@@ -7734,10 +7735,38 @@ aarch64_layout_frame (void)
   frame.sve_callee_adjust = 0;
   frame.callee_offset = 0;
 
+  frame.wb_pop_candidate1 = frame.wb_push_candidate1;
+  frame.wb_pop_candidate2 = frame.wb_push_candidate2;
+
+  /* Shadow call stack only deals with functions where the LR is pushed
+     onto the stack and without specifying the "no_sanitize" attribute
+     with the argument "shadow-call-stack".  */
+  frame.is_scs_enabled
+    = (!crtl->calls_eh_return
+       && sanitize_flags_p (SANITIZE_SHADOW_CALL_STACK)
+       && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0));
+
+  /* When shadow call stack is enabled, the scs_pop in the epilogue will
+     restore x30, and we don't need to pop x30 again in the traditional
+     way.  Pop candidates record the registers that need to be popped
+     eventually.  */
+  if (frame.is_scs_enabled)
+    {
+      if (frame.wb_pop_candidate2 == R30_REGNUM)
+	frame.wb_pop_candidate2 = INVALID_REGNUM;
+      else if (frame.wb_pop_candidate1 == R30_REGNUM)
+	frame.wb_pop_candidate1 = INVALID_REGNUM;
+    }
+
+  /* If candidate2 is INVALID_REGNUM, we need to adjust max_push_offset to
+     256 to ensure that the offset meets the requirements of emit_move_insn.
+     Similarly, if candidate1 is INVALID_REGNUM, we need to set
+     max_push_offset to 0, because no registers are popped at this time,
+     so callee_adjust cannot be adjusted.  */
   HOST_WIDE_INT max_push_offset = 0;
-  if (frame.wb_candidate2 != INVALID_REGNUM)
+  if (frame.wb_pop_candidate2 != INVALID_REGNUM)
     max_push_offset = 512;
-  else if (frame.wb_candidate1 != INVALID_REGNUM)
+  else if (frame.wb_pop_candidate1 != INVALID_REGNUM)
     max_push_offset = 256;
 
   HOST_WIDE_INT const_size, const_outgoing_args_size, const_fp_offset;
@@ -7827,8 +7856,8 @@ aarch64_layout_frame (void)
     {
       /* We've decided not to associate any register saves with the initial
 	 stack allocation.  */
-      frame.wb_candidate1 = INVALID_REGNUM;
-      frame.wb_candidate2 = INVALID_REGNUM;
+      frame.wb_pop_candidate1 = frame.wb_push_candidate1 = INVALID_REGNUM;
+      frame.wb_pop_candidate2 = frame.wb_push_candidate2 = INVALID_REGNUM;
     }
 
   frame.laid_out = true;
@@ -8141,8 +8170,8 @@ aarch64_save_callee_saves (poly_int64 start_offset,
       bool frame_related_p = aarch64_emit_cfi_for_reg_p (regno);
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_candidate1
-	      || regno == cfun->machine->frame.wb_candidate2))
+	  && (regno == cfun->machine->frame.wb_push_candidate1
+	      || regno == cfun->machine->frame.wb_push_candidate2))
 	continue;
 
       if (cfun->machine->reg_is_wrapped_separately[regno])
@@ -8252,8 +8281,8 @@ aarch64_restore_callee_saves (poly_int64 start_offset, unsigned start,
       rtx reg, mem;
 
       if (skip_wb
-	  && (regno == cfun->machine->frame.wb_candidate1
-	      || regno == cfun->machine->frame.wb_candidate2))
+	  && (regno == cfun->machine->frame.wb_pop_candidate1
+	      || regno == cfun->machine->frame.wb_pop_candidate2))
 	continue;
 
       machine_mode mode = aarch64_reg_save_mode (regno);
@@ -8424,8 +8453,8 @@ aarch64_get_separate_components (void)
   if (cfun->machine->frame.spare_pred_reg != INVALID_REGNUM)
     bitmap_clear_bit (components, cfun->machine->frame.spare_pred_reg);
 
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
   /* If registers have been chosen to be stored/restored with
      writeback don't interfere with them to avoid having to output explicit
      stack adjustment instructions.  */
@@ -9034,8 +9063,8 @@ aarch64_expand_prologue (void)
   poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
     = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_push_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_push_candidate2;
   bool emit_frame_chain = cfun->machine->frame.emit_frame_chain;
   rtx_insn *insn;
 
@@ -9065,6 +9094,10 @@ aarch64_expand_prologue (void)
       add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+
+  /* Push return address to shadow call stack.  */
+  if (cfun->machine->frame.is_scs_enabled)
+    emit_insn (gen_scs_push ());
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = constant_lower_bound (frame_size);
@@ -9212,8 +9245,10 @@ aarch64_expand_epilogue (bool for_sibcall)
   poly_int64 sve_callee_adjust = cfun->machine->frame.sve_callee_adjust;
   poly_int64 below_hard_fp_saved_regs_size
     = cfun->machine->frame.below_hard_fp_saved_regs_size;
-  unsigned reg1 = cfun->machine->frame.wb_candidate1;
-  unsigned reg2 = cfun->machine->frame.wb_candidate2;
+  unsigned reg1 = cfun->machine->frame.wb_pop_candidate1;
+  unsigned reg2 = cfun->machine->frame.wb_pop_candidate2;
+  unsigned int last_gpr = (cfun->machine->frame.is_scs_enabled
+			   ? R29_REGNUM : R30_REGNUM);
   rtx cfi_ops = NULL;
   rtx_insn *insn;
   /* A stack clash protection prologue may not have left EP0_REGNUM or
@@ -9283,8 +9318,12 @@ aarch64_expand_epilogue (bool for_sibcall)
 				false, &cfi_ops);
   if (maybe_ne (sve_callee_adjust, 0))
     aarch64_add_sp (NULL_RTX, NULL_RTX, sve_callee_adjust, true);
+
+  /* When shadow call stack is enabled, the scs_pop in the epilogue will
+     restore x30, we don't need to restore x30 again in the traditional
+     way.  */
   aarch64_restore_callee_saves (callee_offset - sve_callee_adjust,
-				R0_REGNUM, R30_REGNUM,
+				R0_REGNUM, last_gpr,
 				callee_adjust != 0, &cfi_ops);
 
   if (need_barrier_p)
@@ -9319,6 +9358,17 @@ aarch64_expand_epilogue (bool for_sibcall)
       insn = get_last_insn ();
       cfi_ops = alloc_reg_note (REG_CFA_DEF_CFA, stack_pointer_rtx, cfi_ops);
       REG_NOTES (insn) = cfi_ops;
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+
+  /* Pop return address from shadow call stack.  */
+  if (cfun->machine->frame.is_scs_enabled)
+    {
+      machine_mode mode = aarch64_reg_save_mode (R30_REGNUM);
+      rtx reg = gen_rtx_REG (mode, R30_REGNUM);
+
+      insn = emit_insn (gen_scs_pop ());
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -16877,6 +16927,10 @@ aarch64_override_options_internal (struct gcc_options *opts)
 	       "-mstack-protector-guard-offset=");
       aarch64_stack_protector_guard_offset = offs;
     }
+
+  if ((flag_sanitize & SANITIZE_SHADOW_CALL_STACK)
+      && !fixed_regs[R18_REGNUM])
+    error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
@@ -27083,6 +27137,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE aarch64_sls_emit_blr_function_thunks
+
+#undef TARGET_HAVE_SHADOW_CALL_STACK
+#define TARGET_HAVE_SHADOW_CALL_STACK true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

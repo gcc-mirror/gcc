@@ -15620,6 +15620,36 @@ add @code{detect_invalid_pointer_pairs=2} to the environment variable
 @env{ASAN_OPTIONS}. Using @code{detect_invalid_pointer_pairs=1} detects
 invalid operation only when both pointers are non-null.
 
+@item -fsanitize=shadow-call-stack
+@opindex fsanitize=shadow-call-stack
+Enable ShadowCallStack, a security enhancement mechanism used to protect
+programs against return address overwrites (e.g. stack buffer overflows.)
+It works by saving a function's return address to a separately allocated
+shadow call stack in the function prologue and restoring the return address
+from the shadow call stack in the function epilogue.  Instrumentation only
+occurs in functions that need to save the return address to the stack.
+
+Currently it only supports the aarch64 platform.  It is specifically
+designed for linux kernels that enable the CONFIG_SHADOW_CALL_STACK option.
+For the user space programs, runtime support is not currently provided
+in libc and libgcc.  Users who want to use this feature in user space need
+to provide their own support for the runtime.  It should be noted that
+this may cause the ABI rules to be broken.
+
+On aarch64, the instrumentation makes use of the platform register @code{x18}.
+This generally means that any code that may run on the same thread as code
+compiled with ShadowCallStack must be compiled with the flag
+@option{-ffixed-x18}, otherwise functions compiled without
+@option{-ffixed-x18} might clobber @code{x18} and so corrupt the shadow
+stack pointer.
+
+Also, because there is no userspace runtime support, code compiled with
+ShadowCallStack cannot use exception handling.  Use @option{-fno-exceptions}
+to turn off exceptions.
+
+See @uref{https://clang.llvm.org/docs/ShadowCallStack.html} for more
+details.
+
 @item -fsanitize=thread
 @opindex fsanitize=thread
 Enable ThreadSanitizer, a fast data race detector.
