@@ -61,7 +61,7 @@ jobs:
     - name: Check regressions
       run: |
            cd gccrs-build; \
-           if grep "# of unexpected" gcc/testsuite/rust/rust.sum;\
+           if grep -e "unexpected" -e "unresolved" gcc/testsuite/rust/rust.sum;\
            then \
               echo "some tests are not correct"; \
               exit 1; \
