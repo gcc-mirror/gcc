@@ -1,3 +1,4 @@
+// { dg-additional-options "-fdump-tree-gimple" }
 #[inline]
 fn test_a() {}
 
