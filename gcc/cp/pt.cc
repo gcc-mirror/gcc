@@ -13752,7 +13752,7 @@ defarg_insts_for (tree fn)
 {
   if (!defarg_inst)
     defarg_inst = hash_table<tree_vec_map_cache_hasher>::create_ggc (13);
-  tree_vec_map in = { fn, nullptr };
+  tree_vec_map in = { { fn }, nullptr };
   tree_vec_map **slot
     = defarg_inst->find_slot_with_hash (&in, DECL_UID (fn), INSERT);
   if (!*slot)
