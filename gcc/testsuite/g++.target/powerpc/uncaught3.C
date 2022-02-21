@@ -1,4 +1,4 @@
-// { dg-do compile { target powerpc*-*-darwin* } }
+// { dg-do compile { target *-*-darwin* } }
 // { dg-final { scan-assembler-not "__cxa_get_exception" } }
 // { dg-options "-mmacosx-version-min=10.4" }
 // { dg-additional-options "-Wno-deprecated" { target c++17 } }

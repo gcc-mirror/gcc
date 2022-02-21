@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-darwin* } } */
+/* { dg-do run { target *-*-darwin* } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O -maltivec" } */
 
 #include <cstdlib>

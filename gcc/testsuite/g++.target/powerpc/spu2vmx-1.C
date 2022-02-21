@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_spu } */
 /* { dg-options "-maltivec" } */
 
