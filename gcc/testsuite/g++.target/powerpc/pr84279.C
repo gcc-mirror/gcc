@@ -1,5 +1,5 @@
-/* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-do compile } */
+/* { dg-skip-if "" { *-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O3 -mdejagnu-cpu=power8 -g -fPIC -fvisibility=hidden -fstack-protector-strong" } */

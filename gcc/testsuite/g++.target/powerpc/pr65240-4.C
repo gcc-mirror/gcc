@@ -1,5 +1,5 @@
-/* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-skip-if "" { powerpc*-*-darwin* } } */
+/* { dg-do compile { target lp64 } } */
+/* { dg-skip-if "" { *-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O3 -ffast-math -Wno-return-type" } */
 

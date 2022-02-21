@@ -1,4 +1,4 @@
-// { dg-do compile { target { powerpc*-*-linux* } } }
+// { dg-do compile { target { *-*-linux* } } }
 // { dg-require-effective-target ppc_float128_sw }
 // { dg-options "-mvsx -mfloat128 -O2 -mabi=ibmlongdouble -Wno-psabi" }
 
