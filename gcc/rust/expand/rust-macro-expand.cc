@@ -3905,20 +3905,58 @@ MacroExpander::substitute_metavar (
   return expanded;
 }
 
-std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
-MacroExpander::substitute_token (
+std::vector<std::unique_ptr<AST::Token>>
+MacroExpander::substitute_repetition (
   std::vector<std::unique_ptr<AST::Token>> &input,
   std::map<std::string, MatchedFragment> &fragments,
-  std::unique_ptr<AST::Token> &token)
+  std::vector<std::unique_ptr<AST::Token>> &pattern)
 {
+  // If the repetition is not anything we know (ie no declared metavars, or
+  // metavars which aren't present in the fragment), we can just error out. No
+  // need to paste the tokens as if nothing had happened.
+  for (auto &token : pattern)
+    rust_debug ("[repetition pattern]: %s", token->as_string ().c_str ());
+
+  return std::vector<std::unique_ptr<AST::Token>> ();
+}
+
+std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
+MacroExpander::substitute_token (
+  std::vector<std::unique_ptr<AST::Token>> &macro,
+  std::vector<std::unique_ptr<AST::Token>> &input,
+  std::map<std::string, MatchedFragment> &fragments, size_t token_idx)
+{
+  auto &token = macro.at (token_idx);
   switch (token->get_id ())
     {
     case IDENTIFIER:
       rust_debug ("expanding metavar");
       return {substitute_metavar (input, fragments, token), 1};
-    case LEFT_PAREN:
-      rust_debug ("expanding repetition");
-      break;
+      case LEFT_PAREN: {
+	// We need to parse up until the closing delimiter and expand this
+	// fragment->n times.
+	rust_debug ("expanding repetition");
+	std::vector<std::unique_ptr<AST::Token>> repetition_pattern;
+	for (size_t rep_idx = token_idx + 1;
+	     rep_idx < macro.size ()
+	     && macro.at (rep_idx)->get_id () != RIGHT_PAREN;
+	     rep_idx++)
+	  repetition_pattern.emplace_back (macro.at (rep_idx)->clone_token ());
+
+	// FIXME: This skips whitespaces... Is that okay??
+	// FIXME: Is there any existing parsing function that allows us to parse
+	// a macro pattern?
+
+	// FIXME: Add error handling in the case we haven't found a matching
+	// closing delimiter
+
+	// FIXME: We need to parse the repetition token now
+
+	return {
+	  substitute_repetition (input, fragments, repetition_pattern),
+	  // + 2 for the opening and closing parenthesis which are mandatory
+	  repetition_pattern.size () + 2};
+      }
       // TODO: We need to check if the $ was alone. In that case, do
       // not error out: Simply act as if there was an empty identifier
       // with no associated fragment and paste the dollar sign in the
@@ -3956,10 +3994,9 @@ MacroExpander::substitute_tokens (
       auto &tok = macro.at (i);
       if (tok->get_id () == DOLLAR_SIGN)
 	{
-	  auto &next_tok = macro.at (i + 1);
 	  // Aaaaah, if only we had C++17 :)
 	  // auto [expanded, tok_to_skip] = ...
-	  auto p = substitute_token (input, fragments, next_tok);
+	  auto p = substitute_token (macro, input, fragments, i + 1);
 	  auto expanded = std::move (p.first);
 	  auto tok_to_skip = p.second;
 
