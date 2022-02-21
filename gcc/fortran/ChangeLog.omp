@@ -1,5 +1,10 @@
 2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
 
+	* parse.c (gfc_parse_file): Set OMP_REQUIRES_DYNAMIC_ALLOCATORS
+	bit in omp_requires_mask.
+
+2022-03-08  Abid Qadeer  <abidh@codesourcery.com>
+
 	Backported from master:
 	* dump-parse-tree.c (show_omp_clauses): Handle OMP_LIST_ALLOCATE.
 	* gfortran.h (OMP_LIST_ALLOCATE): New enum value.
