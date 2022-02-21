@@ -5978,7 +5978,7 @@ package body Sem_Ch3 is
       if Nkind (Subtype_Indication (N)) = N_Subtype_Indication then
          declare
             Indic_Typ    : constant Entity_Id :=
-                             Etype (Subtype_Mark (Subtype_Indication (N)));
+              Underlying_Type (Etype (Subtype_Mark (Subtype_Indication (N))));
             Subt_Index   : Node_Id;
             Target_Index : Node_Id;
 
@@ -13594,6 +13594,8 @@ package body Sem_Ch3 is
       if Is_Access_Type (T) then
          T := Designated_Type (T);
       end if;
+
+      T := Underlying_Type (T);
 
       --  If an index constraint follows a subtype mark in a subtype indication
       --  then the type or subtype denoted by the subtype mark must not already
