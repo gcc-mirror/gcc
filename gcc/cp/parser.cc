@@ -18674,7 +18674,10 @@ cp_parser_template_name (cp_parser* parser,
 	  return error_mark_node;
 	}
       else if ((!DECL_P (decl) && !is_overloaded_fn (decl))
-	       || TREE_CODE (decl) == USING_DECL)
+	       || TREE_CODE (decl) == USING_DECL
+	       /* cp_parser_template_id can only handle some TYPE_DECLs.  */
+	       || (TREE_CODE (decl) == TYPE_DECL
+		   && TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE))
 	/* Repeat the lookup at instantiation time.  */
 	decl = identifier;
     }
