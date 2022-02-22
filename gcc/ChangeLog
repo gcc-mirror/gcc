@@ -1,3 +1,58 @@
+2022-02-21  Dan Li  <ashimida@linux.alibaba.com>
+
+	* config/aarch64/aarch64.cc (SLOT_REQUIRED):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_layout_frame): Likewise, and
+	change callee_adjust when scs is enabled.
+	(aarch64_save_callee_saves):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_restore_callee_saves):
+	Change wb_candidate[12] to wb_pop_candidate[12].
+	(aarch64_get_separate_components):
+	Change wb_candidate[12] to wb_push_candidate[12].
+	(aarch64_expand_prologue): Push x30 onto SCS before it's
+	pushed onto stack.
+	(aarch64_expand_epilogue): Pop x30 frome SCS, while
+	preventing it from being popped from the regular stack again.
+	(aarch64_override_options_internal): Add SCS compile option check.
+	(TARGET_HAVE_SHADOW_CALL_STACK): New hook.
+	* config/aarch64/aarch64.h (struct GTY): Add is_scs_enabled,
+	wb_pop_candidate[12], and rename wb_candidate[12] to
+	wb_push_candidate[12].
+	* config/aarch64/aarch64.md (scs_push): New template.
+	(scs_pop): Likewise.
+	* doc/invoke.texi: Document -fsanitize=shadow-call-stack.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add hook have_shadow_call_stack.
+	* flag-types.h (enum sanitize_code):
+	Add SANITIZE_SHADOW_CALL_STACK.
+	* opts.cc (parse_sanitizer_options): Add shadow-call-stack
+	and exclude SANITIZE_SHADOW_CALL_STACK.
+	* target.def: New hook.
+	* toplev.cc (process_options): Add SCS compile option check.
+	* ubsan.cc (ubsan_expand_null_ifn): Enum type conversion.
+
+2022-02-21  Tom de Vries  <tdevries@suse.de>
+
+	PR target/104440
+	* config/nvptx/nvptx.cc (workaround_uninit_method_1)
+	(workaround_uninit_method_2, workaround_uninit_method_3)
+	(workaround_uninit): New function.
+	(nvptx_reorg): Use workaround_uninit.
+	* config/nvptx/nvptx.opt (minit-regs): New option.
+
+2022-02-21  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/104498
+	* alias.cc (compare_base_symbol_refs): Correct distance computation
+	when swapping x and y.
+
+2022-02-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/104506
+	* tree-ssa.cc (tree_ssa_useless_type_conversion):
+	Check the inner type before calling useless_type_conversion_p.
+
 2022-02-19  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.cc (nvptx_reorg_uniform_simt): Handle SET insn.

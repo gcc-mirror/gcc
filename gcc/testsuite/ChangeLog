@@ -1,3 +1,26 @@
+2022-02-21  Dan Li  <ashimida@linux.alibaba.com>
+
+	* gcc.target/aarch64/shadow_call_stack_1.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_2.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_3.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_4.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_5.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_6.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_7.c: New test.
+	* gcc.target/aarch64/shadow_call_stack_8.c: New test.
+
+2022-02-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85493
+	* g++.dg/cpp0x/decltype80.C: New test.
+
+2022-02-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/104506
+	* gcc.dg/pr104506-1.c: New test.
+	* gcc.dg/pr104506-2.c: New test.
+	* gcc.dg/pr104506-3.c: New test.
+
 2022-02-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/special1.d: New file.
