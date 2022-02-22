@@ -23287,11 +23287,11 @@ void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
 
   switch (mode)
     {
-    case TImode:
+    case E_TImode:
       gendw = gen_atomic_compare_and_swapti_doubleword;
       hmode = DImode;
       break;
-    case DImode:
+    case E_DImode:
       if (doubleword)
 	{
 	  gendw = gen_atomic_compare_and_swapdi_doubleword;
@@ -23300,12 +23300,15 @@ void ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
       else
 	gen = gen_atomic_compare_and_swapdi_1;
       break;
-    case SImode:
-      gen = gen_atomic_compare_and_swapsi_1; break;
-    case HImode:
-      gen = gen_atomic_compare_and_swaphi_1; break;
-    case QImode:
-      gen = gen_atomic_compare_and_swapqi_1; break;
+    case E_SImode:
+      gen = gen_atomic_compare_and_swapsi_1;
+      break;
+    case E_HImode:
+      gen = gen_atomic_compare_and_swaphi_1;
+      break;
+    case E_QImode:
+      gen = gen_atomic_compare_and_swapqi_1;
+      break;
     default:
       gcc_unreachable ();
     }
