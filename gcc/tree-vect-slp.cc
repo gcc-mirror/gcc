@@ -2202,7 +2202,8 @@ out:
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Using a splat of the uniform operand\n");
+				 "Using a splat of the uniform operand %G",
+				 first_def->stmt);
 	      oprnd_info->first_dt = vect_external_def;
 	    }
 	}
