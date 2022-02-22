@@ -26,6 +26,7 @@
 #include "rust-macro.h"
 #include "rust-hir-map.h"
 #include "rust-name-resolver.h"
+#include "rust-macro-invoc-lexer.h"
 
 // Provides objects and method prototypes for macro expansion
 
@@ -46,52 +47,6 @@ struct ExpansionCfg
   bool should_test = false; // strip #[test] nodes if false
   bool keep_macs = false;   // keep macro definitions
   std::string crate_name = "";
-};
-
-class MacroInvocLexer
-{
-public:
-  MacroInvocLexer (std::vector<std::unique_ptr<AST::Token>> stream)
-    : offs (0), token_stream (std::move (stream))
-  {}
-
-  // Returns token n tokens ahead of current position.
-  const_TokenPtr peek_token (int n)
-  {
-    if ((offs + n) >= token_stream.size ())
-      return Token::make (END_OF_FILE, Location ());
-
-    return token_stream.at (offs + n)->get_tok_ptr ();
-  }
-  // Peeks the current token.
-  const_TokenPtr peek_token () { return peek_token (0); }
-
-  // Advances current token to n + 1 tokens ahead of current position.
-  void skip_token (int n) { offs += (n + 1); }
-
-  // Skips the current token.
-  void skip_token () { skip_token (0); }
-
-  // Splits the current token into two. Intended for use with nested generics
-  // closes (i.e. T<U<X>> where >> is wrongly lexed as one token). Note that
-  // this will only work with "simple" tokens like punctuation.
-  void split_current_token (TokenId /*new_left*/, TokenId /*new_right*/)
-  {
-    // FIXME
-    gcc_unreachable ();
-  }
-
-  std::string get_filename () const
-  {
-    gcc_unreachable ();
-    return "FIXME";
-  }
-
-  size_t get_offs () const { return offs; }
-
-private:
-  size_t offs;
-  std::vector<std::unique_ptr<AST::Token>> token_stream;
 };
 
 struct MatchedFragment
