@@ -3611,7 +3611,6 @@ MacroExpander::match_n_matches (
   match_amount = 0;
 
   const MacroInvocLexer &source = parser.get_token_source ();
-  std::vector<std::string> fragment_identifiers;
   while (true)
     {
       // If the current token is a closing macro delimiter, break away.
@@ -3637,8 +3636,6 @@ MacroExpander::match_n_matches (
 		  {fragment->get_ident (),
 		   MatchedFragment (fragment->get_ident (), offs_begin,
 				    offs_end)});
-
-		fragment_identifiers.emplace_back (fragment->get_ident ());
 	      }
 	      break;
 
@@ -3677,21 +3674,10 @@ MacroExpander::match_n_matches (
 
   // Check if the amount of matches we got is valid: Is it more than the lower
   // bound and less than the higher bound?
-  auto result = hi_bound ? match_amount >= lo_bound && match_amount <= hi_bound
-			 : match_amount >= lo_bound;
+  bool did_meet_lo_bound = match_amount >= lo_bound;
+  bool did_meet_hi_bound = hi_bound ? match_amount <= hi_bound : true;
 
-  // We can now set the amount to each fragment we matched in the substack
-  auto &stack_map = sub_stack.peek ();
-  for (auto &fragment_id : fragment_identifiers)
-    {
-      auto it = stack_map.find (fragment_id);
-
-      rust_assert (it != stack_map.end ());
-
-      it->second.set_match_amount (match_amount);
-    }
-
-  return result;
+  return did_meet_lo_bound && did_meet_hi_bound;
 }
 
 bool
@@ -3732,6 +3718,31 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 
   rust_debug_loc (rep.get_match_locus (), "%s matched %lu times",
 		  res ? "successfully" : "unsuccessfully", match_amount);
+
+  // We can now set the amount to each fragment we matched in the substack
+  auto &stack_map = sub_stack.peek ();
+  for (auto &match : rep.get_matches ())
+    {
+      if (match->get_macro_match_type ()
+	  == AST::MacroMatch::MacroMatchType::Fragment)
+	{
+	  auto fragment = static_cast<AST::MacroMatchFragment *> (match.get ());
+	  auto it = stack_map.find (fragment->get_ident ());
+
+	  // If we can't find the fragment, but the result was valid, then it's
+	  // a zero-matched fragment and we can insert it
+	  if (it == stack_map.end ())
+	    {
+	      stack_map.insert (
+		{fragment->get_ident (),
+		 MatchedFragment::zero (fragment->get_ident ())});
+	    }
+	  else
+	    {
+	      it->second.set_match_amount (match_amount);
+	    }
+	}
+    }
 
   return res;
 }
@@ -4037,14 +4048,6 @@ MacroExpander::substitute_tokens (
 {
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
 
-  // for token in macro
-  // 	if token == ?:
-  // 	// That's not always true: If it's a left paren, it's repetition
-  // 	// We probably want to store the matched amount in the fragment so
-  // 	// we can expand it here
-  // 		id = next_token();
-  // 		frag = fragment.find(id);
-
   for (size_t i = 0; i < macro.size (); i++)
     {
       auto &tok = macro.at (i);
@@ -4065,54 +4068,6 @@ MacroExpander::substitute_tokens (
 	{
 	  replaced_tokens.emplace_back (tok->clone_token ());
 	}
-
-      // std::vector<std::unique_ptr<AST::Token>> parsed_toks;
-
-      // std::string ident;
-      // for (size_t offs = i; i < macro.size (); offs++)
-      //   {
-      //     auto &tok = macro.at (offs);
-      //     if (tok->get_id () == DOLLAR_SIGN && offs == i)
-      //       {
-      //         parsed_toks.push_back (tok->clone_token ());
-      //       }
-      //     else if (tok->get_id () == IDENTIFIER)
-      //       {
-      //         rust_assert (tok->as_string ().size () == 1);
-      //         ident.push_back (tok->as_string ().at (0));
-      //         parsed_toks.push_back (tok->clone_token ());
-      //       }
-      //     else
-      //       {
-      //         break;
-      //       }
-      //   }
-
-      // // lookup the ident
-      // auto it = fragments.find (ident);
-      // if (it == fragments.end ())
-      //   {
-      //     // just leave the tokens in
-      //     for (auto &tok : parsed_toks)
-      //       {
-      //         replaced_tokens.push_back (tok->clone_token ());
-      //       }
-      //   }
-      // else
-      //   {
-      //     // replace
-      //     MatchedFragment &frag = it->second;
-      //     for (size_t offs = frag.token_offset_begin;
-      //          offs < frag.token_offset_end; offs++)
-      //       {
-      //         auto &tok = input.at (offs);
-      //         replaced_tokens.push_back (tok->clone_token ());
-      //       }
-      //   }
-      // i += parsed_toks.size () - 1;
-      //
-      // }
-      // else { replaced_tokens.push_back (tok->clone_token ()); }
     }
 
   return replaced_tokens;

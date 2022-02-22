@@ -57,10 +57,20 @@ struct MatchedFragment
   size_t match_amount;
 
   MatchedFragment (std::string identifier, size_t token_offset_begin,
-		   size_t token_offset_end, size_t match_amount = 0)
+		   size_t token_offset_end, size_t match_amount = 1)
     : fragment_ident (identifier), token_offset_begin (token_offset_begin),
       token_offset_end (token_offset_end), match_amount (match_amount)
   {}
+
+  /**
+   * Create a valid fragment matched zero times. This is useful for repetitions
+   * which allow the absence of a fragment, such as * and ?
+   */
+  static MatchedFragment zero (std::string identifier)
+  {
+    // We don't need offsets since there is "no match"
+    return MatchedFragment (identifier, 0, 0, 0);
+  }
 
   std::string as_string () const
   {
