@@ -16792,6 +16792,26 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
   return equal;
 }
 
+/* Return the single non-zero element of a CONSTRUCTOR or NULL_TREE.  */
+tree
+ctor_single_nonzero_element (const_tree t)
+{
+  unsigned HOST_WIDE_INT idx;
+  constructor_elt *ce;
+  tree elt = NULL_TREE;
+
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return NULL_TREE;
+  for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
+    if (!integer_zerop (ce->value) && !real_zerop (ce->value))
+      {
+	if (elt)
+	  return NULL_TREE;
+	elt = ce->value;
+      }
+  return elt;
+}
+
 #if CHECKING_P
 
 namespace selftest {

@@ -7532,6 +7532,24 @@ and,
        (BIT_FIELD_REF:elt_type @0 { size; } { pos; })
        { elt; })))))))
 
+/* Fold reduction of a single nonzero element constructor.  */
+(for reduc (IFN_REDUC_PLUS IFN_REDUC_IOR IFN_REDUC_XOR)
+  (simplify (reduc (CONSTRUCTOR@0))
+    (with { tree ctor = (TREE_CODE (@0) == SSA_NAME
+			 ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
+	    tree elt = ctor_single_nonzero_element (ctor); }
+      (if (elt
+	   && !HONOR_SNANS (type)
+	   && !HONOR_SIGNED_ZEROS (type))
+	{ elt; }))))
+
+/* Fold REDUC (@0 op VECTOR_CST) as REDUC (@0) op REDUC (VECTOR_CST).  */
+(for reduc (IFN_REDUC_PLUS IFN_REDUC_MAX IFN_REDUC_MIN IFN_REDUC_FMAX
+	    IFN_REDUC_FMIN IFN_REDUC_AND IFN_REDUC_IOR IFN_REDUC_XOR)
+     op (plus max min IFN_FMAX IFN_FMIN bit_and bit_ior bit_xor)
+  (simplify (reduc (op @0 VECTOR_CST@1))
+    (op (reduc:type @0) (reduc:type @1))))
+
 (simplify
  (vec_perm @0 @1 VECTOR_CST@2)
  (with

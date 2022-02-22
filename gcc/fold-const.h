@@ -225,6 +225,7 @@ extern const char *c_getstr (tree);
 extern wide_int tree_nonzero_bits (const_tree);
 extern int address_compare (tree_code, tree, tree, tree, tree &, tree &,
 			    poly_int64 &, poly_int64 &, bool);
+extern tree ctor_single_nonzero_element (const_tree);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
    POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */
