@@ -89,17 +89,38 @@ public:
 
   void push () { stack.push_back ({}); }
 
-  std::map<std::string, MatchedFragment> pop ()
+  std::map<std::string, std::vector<MatchedFragment>> pop ()
   {
     auto top = stack.back ();
     stack.pop_back ();
     return top;
   }
 
-  std::map<std::string, MatchedFragment> &peek () { return stack.back (); }
+  std::map<std::string, std::vector<MatchedFragment>> &peek ()
+  {
+    return stack.back ();
+  }
+
+  void insert_fragment (MatchedFragment fragment)
+  {
+    auto &current_map = stack.back ();
+    auto it = current_map.find (fragment.fragment_ident);
+
+    if (it == current_map.end ())
+      {
+	auto new_frags = std::vector<MatchedFragment> ();
+	new_frags.emplace_back (fragment);
+	current_map.insert ({fragment.fragment_ident, new_frags});
+      }
+    else
+      {
+	auto &frags = it->second;
+	frags.emplace_back (fragment);
+      }
+  }
 
 private:
-  std::vector<std::map<std::string, MatchedFragment>> stack;
+  std::vector<std::map<std::string, std::vector<MatchedFragment>>> stack;
 };
 
 // Object used to store shared data (between functions) for macro expansion.
@@ -151,11 +172,10 @@ struct MacroExpander
   bool try_match_rule (AST::MacroRule &match_rule,
 		       AST::DelimTokenTree &invoc_token_tree);
 
-  AST::ASTFragment
-  transcribe_rule (AST::MacroRule &match_rule,
-		   AST::DelimTokenTree &invoc_token_tree,
-		   std::map<std::string, MatchedFragment> &matched_fragments,
-		   bool semicolon, ContextType ctx);
+  AST::ASTFragment transcribe_rule (
+    AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
+    std::map<std::string, std::vector<MatchedFragment>> &matched_fragments,
+    bool semicolon, ContextType ctx);
 
   bool match_fragment (Parser<MacroInvocLexer> &parser,
 		       AST::MacroMatchFragment &fragment);
@@ -204,10 +224,10 @@ struct MacroExpander
    * @return A token containing the associated fragment expanded into tokens if
    * any, or the cloned token if no fragment was associated
    */
-  static std::vector<std::unique_ptr<AST::Token>>
-  substitute_metavar (std::vector<std::unique_ptr<AST::Token>> &input,
-		      std::map<std::string, MatchedFragment> &fragments,
-		      std::unique_ptr<AST::Token> &metavar);
+  static std::vector<std::unique_ptr<AST::Token>> substitute_metavar (
+    std::vector<std::unique_ptr<AST::Token>> &input,
+    std::map<std::string, std::vector<MatchedFragment>> &fragments,
+    std::unique_ptr<AST::Token> &metavar);
 
   /**
    * Substitute a macro repetition by its given fragments
@@ -219,11 +239,11 @@ struct MacroExpander
    *
    * @return A vector containing the repeated pattern
    */
-  static std::vector<std::unique_ptr<AST::Token>>
-  substitute_repetition (std::vector<std::unique_ptr<AST::Token>> &input,
-			 std::vector<std::unique_ptr<AST::Token>> &macro,
-			 std::map<std::string, MatchedFragment> &fragments,
-			 size_t pattern_start, size_t pattern_end);
+  static std::vector<std::unique_ptr<AST::Token>> substitute_repetition (
+    std::vector<std::unique_ptr<AST::Token>> &input,
+    std::vector<std::unique_ptr<AST::Token>> &macro,
+    std::map<std::string, std::vector<MatchedFragment>> &fragments,
+    size_t pattern_start, size_t pattern_end);
 
   /**
    * Substitute a given token by its appropriate representation
@@ -240,15 +260,16 @@ struct MacroExpander
    * ahead of the input to avoid mis-substitutions
    */
   static std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
-  substitute_token (std::vector<std::unique_ptr<AST::Token>> &input,
-		    std::vector<std::unique_ptr<AST::Token>> &macro,
-		    std::map<std::string, MatchedFragment> &fragments,
-		    size_t token_idx);
+  substitute_token (
+    std::vector<std::unique_ptr<AST::Token>> &input,
+    std::vector<std::unique_ptr<AST::Token>> &macro,
+    std::map<std::string, std::vector<MatchedFragment>> &fragments,
+    size_t token_idx);
 
-  static std::vector<std::unique_ptr<AST::Token>>
-  substitute_tokens (std::vector<std::unique_ptr<AST::Token>> &input,
-		     std::vector<std::unique_ptr<AST::Token>> &macro,
-		     std::map<std::string, MatchedFragment> &fragments);
+  static std::vector<std::unique_ptr<AST::Token>> substitute_tokens (
+    std::vector<std::unique_ptr<AST::Token>> &input,
+    std::vector<std::unique_ptr<AST::Token>> &macro,
+    std::map<std::string, std::vector<MatchedFragment>> &fragments);
 
   void push_context (ContextType t) { context.push_back (t); }
 

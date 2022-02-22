@@ -3118,7 +3118,7 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
   // find matching arm
   AST::MacroRule *matched_rule = nullptr;
-  std::map<std::string, MatchedFragment> matched_fragments;
+  std::map<std::string, std::vector<MatchedFragment>> matched_fragments;
   for (auto &rule : rules_def.get_rules ())
     {
       sub_stack.push ();
@@ -3127,9 +3127,9 @@ MacroExpander::expand_decl_macro (Location invoc_locus,
 
       if (did_match_rule)
 	{
-	  for (auto &frag : matched_fragments)
-	    rust_debug ("matched fragment: %s",
-			frag.second.as_string ().c_str ());
+	  for (auto &kv : matched_fragments)
+	    rust_debug ("[fragment]: %s (%ld)", kv.first.c_str (),
+			kv.second.size ());
 
 	  matched_rule = &rule;
 	  break;
@@ -3535,9 +3535,8 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
 	    // matched fragment get the offset in the token stream
 	    size_t offs_end = source.get_offs ();
-	    sub_stack.peek ().insert (
-	      {fragment->get_ident (),
-	       MatchedFragment (fragment->get_ident (), offs_begin, offs_end)});
+	    sub_stack.insert_fragment (
+	      MatchedFragment (fragment->get_ident (), offs_begin, offs_end));
 	  }
 	  break;
 
@@ -3632,10 +3631,9 @@ MacroExpander::match_n_matches (
 
 		// matched fragment get the offset in the token stream
 		size_t offs_end = source.get_offs ();
-		sub_stack.peek ().insert (
-		  {fragment->get_ident (),
-		   MatchedFragment (fragment->get_ident (), offs_begin,
-				    offs_end)});
+		sub_stack.insert_fragment (
+		  MatchedFragment (fragment->get_ident (), offs_begin,
+				   offs_end));
 	      }
 	      break;
 
@@ -3729,17 +3727,19 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 	  auto fragment = static_cast<AST::MacroMatchFragment *> (match.get ());
 	  auto it = stack_map.find (fragment->get_ident ());
 
-	  // If we can't find the fragment, but the result was valid, then it's
-	  // a zero-matched fragment and we can insert it
+	  // If we can't find the fragment, but the result was valid, then
+	  // it's a zero-matched fragment and we can insert it
 	  if (it == stack_map.end ())
 	    {
-	      stack_map.insert (
-		{fragment->get_ident (),
-		 MatchedFragment::zero (fragment->get_ident ())});
+	      sub_stack.insert_fragment (
+		MatchedFragment::zero (fragment->get_ident ()));
 	    }
 	  else
 	    {
-	      it->second.set_match_amount (match_amount);
+	      // We can just set the repetition amount on the first match
+	      // FIXME: Make this more ergonomic and similar to what we fetch
+	      // in `substitute_repetition`
+	      it->second[0].set_match_amount (match_amount);
 	    }
 	}
     }
@@ -3750,8 +3750,8 @@ MacroExpander::match_repetition (Parser<MacroInvocLexer> &parser,
 AST::ASTFragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
-  std::map<std::string, MatchedFragment> &matched_fragments, bool semicolon,
-  ContextType ctx)
+  std::map<std::string, std::vector<MatchedFragment>> &matched_fragments,
+  bool semicolon, ContextType ctx)
 {
   // we can manipulate the token tree to substitute the dollar identifiers so
   // that when we call parse its already substituted for us
@@ -3765,10 +3765,10 @@ MacroExpander::transcribe_rule (
     = substitute_tokens (invoc_stream, macro_rule_tokens, matched_fragments);
 
   // // handy for debugging
-  for (auto &tok : substituted_tokens)
-    {
-      rust_debug ("tok: [%s]", tok->as_string ().c_str ());
-    }
+  // for (auto &tok : substituted_tokens)
+  //   {
+  //     rust_debug ("tok: [%s]", tok->as_string ().c_str ());
+  //   }
 
   // parse it to an ASTFragment
   MacroInvocLexer lex (std::move (substituted_tokens));
@@ -3888,7 +3888,7 @@ MacroExpander::transcribe_rule (
 std::vector<std::unique_ptr<AST::Token>>
 MacroExpander::substitute_metavar (
   std::vector<std::unique_ptr<AST::Token>> &input,
-  std::map<std::string, MatchedFragment> &fragments,
+  std::map<std::string, std::vector<MatchedFragment>> &fragments,
   std::unique_ptr<AST::Token> &metavar)
 {
   auto metavar_name = metavar->get_str ();
@@ -3903,7 +3903,10 @@ MacroExpander::substitute_metavar (
   else
     {
       // Replace
-      MatchedFragment &frag = it->second;
+      // We only care about the vector when expanding repetitions. Just access
+      // the first element of the vector.
+      // FIXME: Clean this up so it makes more sense
+      auto &frag = it->second[0];
       for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
 	   offs++)
 	{
@@ -3919,8 +3922,8 @@ std::vector<std::unique_ptr<AST::Token>>
 MacroExpander::substitute_repetition (
   std::vector<std::unique_ptr<AST::Token>> &input,
   std::vector<std::unique_ptr<AST::Token>> &macro,
-  std::map<std::string, MatchedFragment> &fragments, size_t pattern_start,
-  size_t pattern_end)
+  std::map<std::string, std::vector<MatchedFragment>> &fragments,
+  size_t pattern_start, size_t pattern_end)
 {
   rust_assert (pattern_end < macro.size ());
 
@@ -3928,10 +3931,6 @@ MacroExpander::substitute_repetition (
   rust_debug ("pattern end: %lu", pattern_end);
 
   std::vector<std::unique_ptr<AST::Token>> expanded;
-
-  for (size_t i = pattern_start; i < pattern_end; i++)
-    rust_debug ("[repetition pattern]: %s",
-		macro.at (i)->as_string ().c_str ());
 
   // Find the first fragment and get the amount of repetitions that we should
   // perform
@@ -3951,29 +3950,56 @@ MacroExpander::substitute_repetition (
 		  // fragment), we can just error out. No need to paste the
 		  // tokens as if nothing had happened.
 		  rust_error_at (frag_token->get_locus (),
-				 "metavar used in repetition does not exist");
+				 "metavar %s used in repetition does not exist",
+				 frag_token->get_str ().c_str ());
+		  // FIXME:
 		  return expanded;
 		}
 
-	      repeat_amount = it->second.match_amount;
+	      // FIXME: Refactor, ugly
+	      repeat_amount = it->second[0].match_amount;
 	    }
 	}
     }
 
-  std::vector<std::unique_ptr<AST::Token>> new_macro;
-  for (size_t tok_idx = pattern_start; tok_idx < pattern_end; tok_idx++)
-    {
-      new_macro.emplace_back (macro.at (tok_idx)->clone_token ());
-      rust_debug ("new macro token: %s",
-		  macro.at (tok_idx)->as_string ().c_str ());
-    }
-
-  // FIXME: We have to be careful and not push the repetition token
-  auto new_tokens = substitute_tokens (input, new_macro, fragments);
-
   rust_debug ("repetition amount to use: %lu", repeat_amount);
+  std::vector<std::unique_ptr<AST::Token>> new_macro;
+
+  // We want to generate a "new macro" to substitute with. This new macro
+  // should contain only the tokens inside the pattern
+  for (size_t tok_idx = pattern_start; tok_idx < pattern_end; tok_idx++)
+    new_macro.emplace_back (macro.at (tok_idx)->clone_token ());
+
+  // Then, we want to create a subset of the matches so that
+  // `substitute_tokens()` can only see one fragment per metavar. Let's say we
+  // have the following user input: (1 145 'h')
+  // on the following match arm: ($($lit:literal)*)
+  // which causes the following matches: { "lit": [1, 145, 'h'] }
+  //
+  // The pattern (new_macro) is `$lit:literal`
+  // The first time we expand it, we want $lit to have the following token: 1
+  // The second time, 145
+  // The third and final time, 'h'
+  //
+  // In order to do so we must create "sub maps", which only contain parts of
+  // the original matches
+  // sub-maps: [ { "lit": 1 }, { "lit": 145 }, { "lit": 'h' } ]
+  //
+  // and give them to `substitute_tokens` one by one.
+
   for (size_t i = 0; i < repeat_amount; i++)
     {
+      std::map<std::string, std::vector<MatchedFragment>> sub_map;
+      for (auto &kv_match : fragments)
+	{
+	  std::vector<MatchedFragment> sub_vec;
+	  sub_vec.emplace_back (kv_match.second[i]);
+
+	  sub_map.insert ({kv_match.first, sub_vec});
+	}
+
+      auto new_tokens = substitute_tokens (input, new_macro, sub_map);
+
       for (auto &new_token : new_tokens)
 	expanded.emplace_back (new_token->clone_token ());
     }
@@ -3988,7 +4014,8 @@ std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
 MacroExpander::substitute_token (
   std::vector<std::unique_ptr<AST::Token>> &input,
   std::vector<std::unique_ptr<AST::Token>> &macro,
-  std::map<std::string, MatchedFragment> &fragments, size_t token_idx)
+  std::map<std::string, std::vector<MatchedFragment>> &fragments,
+  size_t token_idx)
 {
   auto &token = macro.at (token_idx);
   switch (token->get_id ())
@@ -4020,7 +4047,7 @@ MacroExpander::substitute_token (
 	return {
 	  substitute_repetition (input, macro, fragments, pattern_start,
 				 pattern_end),
-	  // + 2 for the opening and closing parenthesis which are mandatory
+	  // + 2 for the opening and closing parentheses which are mandatory
 	  // + 1 for the repetitor (+, *, ?)
 	  pattern_end - pattern_start + 3};
       }
@@ -4044,7 +4071,7 @@ std::vector<std::unique_ptr<AST::Token>>
 MacroExpander::substitute_tokens (
   std::vector<std::unique_ptr<AST::Token>> &input,
   std::vector<std::unique_ptr<AST::Token>> &macro,
-  std::map<std::string, MatchedFragment> &fragments)
+  std::map<std::string, std::vector<MatchedFragment>> &fragments)
 {
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
 
