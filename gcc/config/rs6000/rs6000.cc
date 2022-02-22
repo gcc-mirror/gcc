@@ -27699,14 +27699,13 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   return "";
 }
 
-
-#ifdef RS6000_GLIBC_ATOMIC_FENV
-/* Function declarations for rs6000_atomic_assign_expand_fenv.  */
-static tree atomic_hold_decl, atomic_clear_decl, atomic_update_decl;
-#endif
+/* This is not inside an  #ifdef RS6000_GLIBC_ATOMIC_FENV  because gengtype
+   ignores it then.  */
+static GTY(()) tree atomic_hold_decl;
+static GTY(()) tree atomic_clear_decl;
+static GTY(()) tree atomic_update_decl;
 
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
-
 static void
 rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
