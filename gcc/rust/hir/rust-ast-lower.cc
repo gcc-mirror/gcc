@@ -609,5 +609,69 @@ ASTLoweringBase::lower_qualifiers (const AST::FunctionQualifiers &qualifiers)
 				  has_extern, extern_abi);
 }
 
+void
+ASTLoweringBase::handle_outer_attributes (const HIR::Item &item)
+{
+  for (const auto &attr : item.get_outer_attrs ())
+    {
+      const auto &str_path = attr.get_path ().as_string ();
+      if (!is_known_attribute (str_path))
+	{
+	  rust_error_at (attr.get_locus (), "unknown attribute");
+	  continue;
+	}
+
+      bool is_lang_item = str_path.compare ("lang") == 0
+			  && attr.has_attr_input ()
+			  && attr.get_attr_input ().get_attr_input_type ()
+			       == AST::AttrInput::AttrInputType::LITERAL;
+
+      if (is_lang_item)
+	handle_lang_item_attribute (item, attr);
+      else if (!attribute_handled_in_another_pass (str_path))
+	{
+	  rust_error_at (attr.get_locus (), "unhandled attribute: [%s]",
+			 attr.get_path ().as_string ().c_str ());
+	}
+    }
+}
+
+void
+ASTLoweringBase::handle_lang_item_attribute (const HIR::Item &item,
+					     const AST::Attribute &attr)
+{
+  auto &literal = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+  const auto &lang_item_type_str = literal.get_literal ().as_string ();
+  auto lang_item_type = Analysis::RustLangItem::Parse (lang_item_type_str);
+  if (lang_item_type == Analysis::RustLangItem::ItemType::UNKNOWN)
+    {
+      rust_error_at (attr.get_locus (), "unknown lang item");
+      return;
+    }
+  mappings->insert_lang_item (lang_item_type,
+			      item.get_mappings ().get_defid ());
+}
+
+bool
+ASTLoweringBase::is_known_attribute (const std::string &attribute_path) const
+{
+  const auto &lookup = attr_mappings->lookup_builtin (attribute_path);
+  return !lookup.is_error ();
+}
+
+bool
+ASTLoweringBase::attribute_handled_in_another_pass (
+  const std::string &attribute_path) const
+{
+  const auto &lookup = attr_mappings->lookup_builtin (attribute_path);
+  if (lookup.is_error ())
+    return false;
+
+  if (lookup.handler == Analysis::CompilerPass::UNKNOWN)
+    return false;
+
+  return lookup.handler != Analysis::CompilerPass::HIR_LOWERING;
+}
+
 } // namespace HIR
 } // namespace Rust

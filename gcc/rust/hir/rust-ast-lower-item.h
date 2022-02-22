@@ -44,6 +44,10 @@ public:
   {
     ASTLoweringItem resolver;
     item->accept_vis (resolver);
+
+    if (resolver.translated != nullptr)
+      resolver.handle_outer_attributes (*resolver.translated);
+
     return resolver.translated;
   }
 
