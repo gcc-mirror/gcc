@@ -4532,7 +4532,9 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
   if (!is_a <bb_vec_info> (vinfo)
       || node == SLP_INSTANCE_TREE (node_instance)
       || !SLP_TREE_SCALAR_STMTS (node).exists ()
-      || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node)))
+      || vect_contains_pattern_stmt_p (SLP_TREE_SCALAR_STMTS (node))
+      /* Force the mask use to be built from scalars instead.  */
+      || VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (node)))
     return false;
 
   if (dump_enabled_p ())
@@ -4544,6 +4546,8 @@ vect_slp_convert_to_external (vec_info *vinfo, slp_tree node,
      (need to) ignore child nodes of anything that isn't vect_internal_def.  */
   unsigned int group_size = SLP_TREE_LANES (node);
   SLP_TREE_DEF_TYPE (node) = vect_external_def;
+  /* Invariants get their vector type from the uses.  */
+  SLP_TREE_VECTYPE (node) = NULL_TREE;
   SLP_TREE_SCALAR_OPS (node).safe_grow (group_size, true);
   SLP_TREE_LOAD_PERMUTATION (node).release ();
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
@@ -4878,7 +4882,8 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
     reduc_code = PLUS_EXPR;
   internal_fn reduc_fn;
   tree vectype = SLP_TREE_VECTYPE (SLP_INSTANCE_TREE (instance));
-  if (!reduction_fn_for_scalar_code (reduc_code, &reduc_fn)
+  if (!vectype
+      || !reduction_fn_for_scalar_code (reduc_code, &reduc_fn)
       || reduc_fn == IFN_LAST
       || !direct_internal_fn_supported_p (reduc_fn, vectype, OPTIMIZE_FOR_BOTH)
       || !useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
