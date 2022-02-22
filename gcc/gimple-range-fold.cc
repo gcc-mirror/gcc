@@ -397,7 +397,8 @@ adjust_imagpart_expr (irange &res, const gimple *stmt)
 	}
       return;
     }
-  if (is_gimple_assign (def_stmt))
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
@@ -422,7 +423,8 @@ adjust_realpart_expr (irange &res, const gimple *stmt)
   if (!SSA_NAME_DEF_STMT (name))
     return;
 
-  if (is_gimple_assign (def_stmt))
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == COMPLEX_CST)
     {
       tree cst = gimple_assign_rhs1 (def_stmt);
       if (TREE_CODE (cst) == COMPLEX_CST)
