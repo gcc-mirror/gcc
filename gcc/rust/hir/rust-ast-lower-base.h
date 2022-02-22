@@ -24,6 +24,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-hir-full.h"
+#include "rust-attributes.h"
 
 namespace Rust {
 namespace HIR {
@@ -230,9 +231,13 @@ public:
   virtual void visit (AST::BareFunctionType &type) {}
 
 protected:
-  ASTLoweringBase () : mappings (Analysis::Mappings::get ()) {}
+  ASTLoweringBase ()
+    : mappings (Analysis::Mappings::get ()),
+      attr_mappings (Analysis::BuiltinAttributeMappings::get ())
+  {}
 
   Analysis::Mappings *mappings;
+  Analysis::BuiltinAttributeMappings *attr_mappings;
 
   HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime)
   {
@@ -287,10 +292,10 @@ protected:
   void handle_lang_item_attribute (const HIR::Item &item,
 				   const AST::Attribute &attr);
 
-  static bool is_known_attribute (const std::string &attribute_path);
+  bool is_known_attribute (const std::string &attribute_path) const;
 
-  static bool
-  attribute_handled_in_another_pass (const std::string &attribute_path);
+  bool
+  attribute_handled_in_another_pass (const std::string &attribute_path) const;
 };
 
 } // namespace HIR

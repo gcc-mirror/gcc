@@ -653,39 +653,24 @@ ASTLoweringBase::handle_lang_item_attribute (const HIR::Item &item,
 }
 
 bool
-ASTLoweringBase::is_known_attribute (const std::string &attribute_path)
+ASTLoweringBase::is_known_attribute (const std::string &attribute_path) const
 {
-  if (attribute_path.compare ("inline") == 0)
-    return true;
-  else if (attribute_path.compare ("cfg") == 0)
-    return true;
-  else if (attribute_path.compare ("cfg_attr") == 0)
-    return true;
-  else if (attribute_path.compare ("allow") == 0)
-    return true;
-  else if (attribute_path.compare ("lang") == 0)
-    return true;
-
-  return false;
+  const auto &lookup = attr_mappings->lookup_builtin (attribute_path);
+  return !lookup.is_error ();
 }
 
 bool
 ASTLoweringBase::attribute_handled_in_another_pass (
-  const std::string &attribute_path)
+  const std::string &attribute_path) const
 {
-  // handled during code-generation
-  if (attribute_path.compare ("inline") == 0)
-    return true;
+  const auto &lookup = attr_mappings->lookup_builtin (attribute_path);
+  if (lookup.is_error ())
+    return false;
 
-  // handled during previous expansion pass
-  else if (attribute_path.compare ("cfg") == 0)
-    return true;
-  else if (attribute_path.compare ("cfg_attr") == 0)
-    return true;
-  else if (attribute_path.compare ("allow") == 0)
-    return true;
+  if (lookup.handler == Analysis::CompilerPass::UNKNOWN)
+    return false;
 
-  return false;
+  return lookup.handler != Analysis::CompilerPass::HIR_LOWERING;
 }
 
 } // namespace HIR
