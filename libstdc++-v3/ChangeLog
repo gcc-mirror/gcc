@@ -1,3 +1,24 @@
+2022-02-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__detail::__is_initializer_list):
+	Define.
+	(viewable_range): Adjust as per P2415R2.
+	* include/bits/ranges_cmp.h (__cpp_lib_ranges): Adjust value.
+	* include/std/ranges (owning_view): Define as per P2415R2.
+	(enable_borrowed_range<owning_view>): Likewise.
+	(views::__detail::__can_subrange): Replace with ...
+	(views::__detail::__can_owning_view): ... this.
+	(views::_All::_S_noexcept): Sync with operator().
+	(views::_All::operator()): Use owning_view instead of subrange
+	as per P2415R2.
+	* include/std/version (__cpp_lib_ranges): Adjust value.
+	* testsuite/std/ranges/adaptors/all.cc (test06): Adjust now that
+	views::all uses owning_view instead of subrange.
+	(test08): New test.
+	* testsuite/std/ranges/adaptors/lazy_split.cc (test09): Adjust
+	now that rvalue non-view non-borrowed ranges are viewable.
+	* testsuite/std/ranges/adaptors/split.cc (test06): Likewise.
+
 2022-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/104559

@@ -1,3 +1,338 @@
+2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_cmpxchg_loop): Restore
+	bootstrap.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-low.cc (omp_build_component_ref): Move function...
+	* omp-general.cc (omp_build_component_ref): ... here.  Remove
+	'static'.
+	* omp-general.h (omp_build_component_ref): Declare function.
+	* omp-oacc-neuter-broadcast.cc (oacc_build_component_ref): Remove
+	function.
+	(build_receiver_ref, build_sender_ref): Call
+	'omp_build_component_ref' instead.
+
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-oacc-neuter-broadcast.cc (record_field_map_t): Further
+	simplify.  Adjust all users.
+
+2022-02-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/88134
+	* config/rs6000/rs6000.cc (atomic_hold_decl, atomic_clear_decl,
+	atomic_update_decl): Add GTY markup.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.h (REG_CLASS_CONTENTS): Add VPR_REG to ALL_REGS.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (CX_UNARY_UNONE_QUALIFIERS): Use
+	predicate.
+	(CX_BINARY_UNONE_QUALIFIERS): Likewise.
+	(CX_TERNARY_UNONE_QUALIFIERS): Likewise.
+	(TERNOP_NONE_NONE_NONE_UNONE_QUALIFIERS): Delete.
+	(QUADOP_NONE_NONE_NONE_NONE_UNONE_QUALIFIERS): Delete.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_UNONE_QUALIFIERS): Delete.
+	* config/arm/arm_mve_builtins.def: Use predicated qualifiers.
+	* config/arm/mve.md: Use VxBI instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (STRSBS_P_QUALIFIERS): Use predicate
+	qualifier.
+	(STRSBU_P_QUALIFIERS): Likewise.
+	(LDRGBS_Z_QUALIFIERS): Likewise.
+	(LDRGBU_Z_QUALIFIERS): Likewise.
+	(LDRGBWBXU_Z_QUALIFIERS): Likewise.
+	(LDRGBWBS_Z_QUALIFIERS): Likewise.
+	(LDRGBWBU_Z_QUALIFIERS): Likewise.
+	(STRSBWBS_P_QUALIFIERS): Likewise.
+	(STRSBWBU_P_QUALIFIERS): Likewise.
+	* config/arm/mve.md: Use VxBI instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (TERNOP_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_UNONE_UNONE_NONE_PRED_QUALIFIERS): ... this.
+	(TERNOP_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(TERNOP_NONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_NONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(TERNOP_NONE_NONE_UNONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_NONE_NONE_UNONE_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_NONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_NONE_NONE_PRED_QUALIFIERS): ... this.
+	(QUADOP_NONE_NONE_NONE_NONE_PRED_QUALIFIERS): New.
+	(QUADOP_NONE_NONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_NONE_NONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_UNONE_PRED_QUALIFIERS): New.
+	(QUADOP_UNONE_UNONE_NONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_NONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_NONE_NONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_NONE_NONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(QUADOP_UNONE_UNONE_UNONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(QUADOP_UNONE_UNONE_UNONE_NONE_PRED_QUALIFIERS): ... this.
+	(STRS_P_QUALIFIERS): Use predicate qualifier.
+	(STRU_P_QUALIFIERS): Likewise.
+	(STRSU_P_QUALIFIERS): Likewise.
+	(STRSS_P_QUALIFIERS): Likewise.
+	(LDRGS_Z_QUALIFIERS): Likewise.
+	(LDRGU_Z_QUALIFIERS): Likewise.
+	(LDRS_Z_QUALIFIERS): Likewise.
+	(LDRU_Z_QUALIFIERS): Likewise.
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_UNONE_QUALIFIERS): Change to ...
+	(QUINOP_UNONE_UNONE_UNONE_UNONE_IMM_PRED_QUALIFIERS): ... this.
+	(BINOP_NONE_NONE_PRED_QUALIFIERS): New.
+	(BINOP_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm_mve_builtins.def: Use new predicated qualifiers.
+	* config/arm/mve.md: Use MVE_VPRED instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (BINOP_UNONE_NONE_NONE_QUALIFIERS):
+	Delete.
+	(TERNOP_UNONE_NONE_NONE_UNONE_QUALIFIERS): Change to ...
+	(TERNOP_PRED_NONE_NONE_PRED_QUALIFIERS): ... this.
+	(TERNOP_PRED_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm_mve_builtins.def (vcmp*q_n_, vcmp*q_m_f): Use new
+	predicated qualifiers.
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_n_<mode>)
+	(mve_vcmp*q_m_f<mode>): Use MVE_VPRED instead of HI.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	* config/arm/arm-protos.h (arm_get_mask_mode): New prototype.
+	(arm_expand_vector_compare): Update prototype.
+	* config/arm/arm.cc (TARGET_VECTORIZE_GET_MASK_MODE): New.
+	(arm_vector_mode_supported_p): Add support for VxBI modes.
+	(arm_expand_vector_compare): Remove useless generation of vpsel.
+	(arm_expand_vcond): Fix select operands.
+	(arm_get_mask_mode): New.
+	* config/arm/mve.md (vec_cmp<mode><MVE_vpred>): New.
+	(vec_cmpu<mode><MVE_vpred>): New.
+	(vcond_mask_<mode><MVE_vpred>): New.
+	* config/arm/vec-common.md (vec_cmp<mode><v_cmp_result>)
+	(vec_cmpu<mode><mode, vcond_mask_<mode><v_cmp_result>): Move to ...
+	* config/arm/neon.md (vec_cmp<mode><v_cmp_result>)
+	(vec_cmpu<mode><mode, vcond_mask_<mode><v_cmp_result>): ... here
+	and disable for MVE.
+	* doc/sourcebuild.texi (arm_mve): Document new effective-target.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/arm-builtins.cc (BINOP_PRED_UNONE_UNONE_QUALIFIERS)
+	(BINOP_PRED_NONE_NONE_QUALIFIERS)
+	(TERNOP_NONE_NONE_NONE_PRED_QUALIFIERS)
+	(TERNOP_UNONE_UNONE_UNONE_PRED_QUALIFIERS): New.
+	* config/arm/arm-protos.h (mve_bool_vec_to_const): New.
+	* config/arm/arm.cc (arm_hard_regno_mode_ok): Handle new VxBI
+	modes.
+	(arm_mode_to_pred_mode): New.
+	(arm_expand_vector_compare): Use the right VxBI mode instead of
+	HI.
+	(arm_expand_vcond): Likewise.
+	(simd_valid_immediate): Handle MODE_VECTOR_BOOL.
+	(mve_bool_vec_to_const): New.
+	(neon_make_constant): Call mve_bool_vec_to_const when needed.
+	* config/arm/arm_mve_builtins.def (vcmpneq_, vcmphiq_, vcmpcsq_)
+	(vcmpltq_, vcmpleq_, vcmpgtq_, vcmpgeq_, vcmpeqq_, vcmpneq_f)
+	(vcmpltq_f, vcmpleq_f, vcmpgtq_f, vcmpgeq_f, vcmpeqq_f, vpselq_u)
+	(vpselq_s, vpselq_f): Use new predicated qualifiers.
+	* config/arm/constraints.md (DB): New.
+	* config/arm/iterators.md (MVE_7, MVE_7_HI): New mode iterators.
+	(MVE_VPRED, MVE_vpred): New attribute iterators.
+	* config/arm/mve.md (@mve_vcmp<mve_cmp_op>q_<mode>)
+	(@mve_vcmp<mve_cmp_op>q_f<mode>, @mve_vpselq_<supf><mode>)
+	(@mve_vpselq_f<mode>): Use MVE_VPRED instead of HI.
+	(@mve_vpselq_<supf>v2di): Define separately.
+	(mov<mode>): New expander for VxBI modes.
+	* config/arm/vfp.md (thumb2_movhi_vfp, thumb2_movhi_fp16): Use
+	MVE_7_HI iterator and add support for DB constraint.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/aarch64/aarch64-modes.def (VNx16BI, VNx8BI, VNx4BI,
+	VNx2BI): Update definition.
+	* config/arm/arm-builtins.cc (arm_init_simd_builtin_types): Add new
+	simd types.
+	(arm_init_builtin): Map predicate vectors arguments to HImode.
+	(arm_expand_builtin_args): Move HImode predicate arguments to VxBI
+	rtx. Move return value to HImode rtx.
+	* config/arm/arm-builtins.h (arm_type_qualifiers): Add qualifier_predicate.
+	* config/arm/arm-modes.def (B2I, B4I, V16BI, V8BI, V4BI): New modes.
+	* config/arm/arm-simd-builtin-types.def (Pred1x16_t,
+	Pred2x8_t,Pred4x4_t): New.
+	* emit-rtl.cc (init_emit_once): Handle all boolean modes.
+	* genmodes.cc (mode_data): Add boolean field.
+	(blank_mode): Initialize it.
+	(make_complex_modes): Fix handling of boolean modes.
+	(make_vector_modes): Likewise.
+	(VECTOR_BOOL_MODE): Use new COMPONENT parameter.
+	(make_vector_bool_mode): Likewise.
+	(BOOL_MODE): New.
+	(make_bool_mode): New.
+	(emit_insn_modes_h): Fix generation of boolean modes.
+	(emit_class_narrowest_mode): Likewise.
+	* machmode.def: (VECTOR_BOOL_MODE): Document new COMPONENT
+	parameter.  Use new BOOL_MODE instead of FRACTIONAL_INT_MODE to
+	define BImode.
+	* rtx-vector-builder.cc (rtx_vector_builder::find_cached_value):
+	Fix handling of constm1_rtx for VECTOR_BOOL.
+	* simplify-rtx.cc (native_encode_rtx): Fix support for VECTOR_BOOL.
+	(native_decode_vector_rtx): Likewise.
+	(test_vector_ops_duplicate): Skip vec_merge test
+	with vectors of booleans.
+	* varasm.cc (output_constant_pool_2): Likewise.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/mve.md (mve_vmvnq_n_<supf><mode>): Use V_elem mode
+	for operand 1.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.cc (arm_class_likely_spilled_p): Handle VPR_REG.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm.h (reg_class): Add GENERAL_AND_VPR_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(CLASS_MAX_NREGS): Handle VPR.
+	* config/arm/arm.cc (arm_hard_regno_nregs): Handle VPR.
+
+2022-02-22  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-c.cc (nvptx_cpu_cpp_builtins): Handle SM70.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm):
+	Likewise.
+	* config/nvptx/nvptx.opt (misa): Add sm_70 alias PTX_ISA_SM70.
+
+2022-02-22  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.opt (mptx): Add 6.0 alias PTX_VERSION_6_0.
+	* doc/invoke.texi (-mptx): Update for new values and defaults.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (gen_comment): New function.
+	(workaround_uninit_method_1, workaround_uninit_method_2)
+	(workaround_uninit_method_3): : Use gen_comment.
+	* config/nvptx/nvptx.opt (mptx-comment): New option.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Dump the def used
+	for a splat.
+
+2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* fold-const.cc (ctor_single_nonzero_element): New function to
+	return the single non-zero element of a (vector) constructor.
+	* fold-const.h (ctor_single_nonzero_element): Prototype here.
+	* match.pd (reduc (constructor@0)): Simplify reductions of a
+	constructor containing a single non-zero element.
+	(reduc (@0 op VECTOR_CST) ->  (reduc @0) op CONST): Simplify
+	reductions of vector operations of the same operator with
+	constant vector operands.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104604
+	* gimple-range-fold.cc (adjust_imagpart_expr, adjust_realpart_expr):
+	Only check if gimple_assign_rhs1 is COMPLEX_CST if
+	gimple_assign_rhs_code is COMPLEX_CST.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104612
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Call force_reg
+	on input operands before calling lowpart_subreg on it.  For output
+	operand, use a vmode pseudo as destination and then move its lowpart
+	subreg into operands[0] if lowpart_subreg fails on dest.
+	(ix86_expand_xorsign): Likewise.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	PR target/99881
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Cost GPR to vector register moves for integer vector construction.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	* tree-vectorizer.h (stmt_info_for_cost::node): New field.
+	(vector_costs::add_stmt_cost): Add SLP node parameter.
+	(dump_stmt_cost): Likewise.
+	(add_stmt_cost): Likewise, new overload and adjust.
+	(add_stmt_costs): Adjust.
+	(record_stmt_cost): New overload.
+	* tree-vectorizer.cc (dump_stmt_cost): Dump the SLP node.
+	(vector_costs::add_stmt_cost): Adjust.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters):
+	Adjust.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Record
+	the SLP node for costing.
+	(vectorizable_slp_permutation): Likewise.
+	* tree-vect-stmts.cc (record_stmt_cost): Adjust and add
+	new overloads.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Adjust.
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Adjust.
+	* config/rs6000/rs6000.cc (rs6000_vector_costs::add_stmt_cost):
+	Adjust.
+	(rs6000_cost_data::adjust_vect_cost_per_loop): Likewise.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	* tree-vectorizer.h (add_stmt_cost): New overload.
+	(record_stmt_cost): Likewise.
+	* tree-vect-loop.cc (vect_compute_single_scalar_iteration_cost):
+	Use add_stmt_costs.
+	(vect_get_known_peeling_cost): Use new overloads.
+	(vect_estimate_min_profitable_iters): Likewise.  Consistently
+	use scalar_stmt for costing versioning checks.
+	* tree-vect-stmts.cc (record_stmt_cost): New overload.
+
+2022-02-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* config/i386/i386-expand.cc (ix86_expand_atomic_fetch_op_loop):
+	Split atomic fetch and loop part.
+	(ix86_expand_cmpxchg_loop): New expander for cmpxchg loop.
+	* config/i386/i386-protos.h (ix86_expand_cmpxchg_loop): New
+	prototype.
+	* config/i386/sync.md (atomic_compare_and_swap<mode>): Call new
+	expander under TARGET_RELAX_CMPXCHG_LOOP.
+	(atomic_compare_and_swap<mode>): Likewise for doubleword modes.
+
 2022-02-21  Dan Li  <ashimida@linux.alibaba.com>
 
 	* config/aarch64/aarch64.cc (SLOT_REQUIRED):

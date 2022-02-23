@@ -1,3 +1,33 @@
+2022-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Fix OpenACC
+	gang-redundant execution.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR target/99555
+	* config/nvptx/bar.c (generation_to_barrier): New function, copied
+	from config/rtems/bar.c.
+	(futex_wait, futex_wake): New function.
+	(do_spin, do_wait): New function, copied from config/linux/wait.h.
+	(gomp_barrier_wait_end, gomp_barrier_wait_last)
+	(gomp_team_barrier_wake, gomp_team_barrier_wait_end):
+	(gomp_team_barrier_wait_cancel_end, gomp_team_barrier_cancel): Remove
+	and replace with include of config/linux/bar.c.
+	* config/nvptx/bar.h (gomp_barrier_t): Add fields waiters and lock.
+	(gomp_barrier_init): Init new fields.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Remove nvptx-specific
+	workarounds.
+	* testsuite/libgomp.c/pr99555-1.c: Same.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Same.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	PR testsuite/104146
+	* testsuite/libgomp.c++/pr96390.C: Add additional-option
+	-foffload=-Wa,--verify for nvptx.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Same.
+
 2022-02-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/depend-4.f90: New test.

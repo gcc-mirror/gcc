@@ -1,3 +1,156 @@
+2022-02-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* g++.dg/ext/altivec-1.C: Move to g++.target/powerpc, adjust dg
+	directives.
+	* g++.dg/ext/altivec-2.C: Likewise.
+	* g++.dg/ext/altivec-3.C: Likewise.
+	* g++.dg/ext/altivec-4.C: Likewise.
+	* g++.dg/ext/altivec-5.C: Likewise.
+	* g++.dg/ext/altivec-6.C: Likewise.
+	* g++.dg/ext/altivec-7.C: Likewise.
+	* g++.dg/ext/altivec-8.C: Likewise.
+	* g++.dg/ext/altivec-9.C: Likewise.
+	* g++.dg/ext/altivec-10.C: Likewise.
+	* g++.dg/ext/altivec-11.C: Likewise.
+	* g++.dg/ext/altivec-12.C: Likewise.
+	* g++.dg/ext/altivec-13.C: Likewise.
+	* g++.dg/ext/altivec-14.C: Likewise.
+	* g++.dg/ext/altivec-15.C: Likewise.
+	* g++.dg/ext/altivec-16.C: Likewise.
+	* g++.dg/ext/altivec-17.C: Likewise.
+	* g++.dg/ext/altivec-18.C: Likewise.
+	* g++.dg/ext/altivec-cell-1.C: Likewise.
+	* g++.dg/ext/altivec-cell-2.C: Likewise.
+	* g++.dg/ext/altivec-cell-3.C: Likewise.
+	* g++.dg/ext/altivec-cell-4.C: Likewise.
+	* g++.dg/ext/altivec-cell-5.C: Likewise.
+	* g++.dg/ext/altivec-types-1.C: Likewise.
+	* g++.dg/ext/altivec-types-2.C: Likewise.
+	* g++.dg/ext/altivec-types-3.C: Likewise.
+	* g++.dg/ext/altivec-types-4.C: Likewise.
+	* g++.dg/ext/undef-bool-1.C: Likewise.
+	* g++.target/powerpc/altivec-1.C: New file.
+	* g++.target/powerpc/altivec-10.C: New file.
+	* g++.target/powerpc/altivec-11.C: New file.
+	* g++.target/powerpc/altivec-12.C: New file.
+	* g++.target/powerpc/altivec-13.C: New file.
+	* g++.target/powerpc/altivec-14.C: New file.
+	* g++.target/powerpc/altivec-15.C: New file.
+	* g++.target/powerpc/altivec-16.C: New file.
+	* g++.target/powerpc/altivec-17.C: New file.
+	* g++.target/powerpc/altivec-18.C: New file.
+	* g++.target/powerpc/altivec-2.C: New file.
+	* g++.target/powerpc/altivec-3.C: New file.
+	* g++.target/powerpc/altivec-4.C: New file.
+	* g++.target/powerpc/altivec-5.C: New file.
+	* g++.target/powerpc/altivec-6.C: New file.
+	* g++.target/powerpc/altivec-7.C: New file.
+	* g++.target/powerpc/altivec-8.C: New file.
+	* g++.target/powerpc/altivec-9.C: New file.
+	* g++.target/powerpc/altivec-cell-1.C: New file.
+	* g++.target/powerpc/altivec-cell-2.C: New file.
+	* g++.target/powerpc/altivec-cell-3.C: New file.
+	* g++.target/powerpc/altivec-cell-4.C: New file.
+	* g++.target/powerpc/altivec-cell-5.C: New file.
+	* g++.target/powerpc/altivec-types-1.C: New file.
+	* g++.target/powerpc/altivec-types-2.C: New file.
+	* g++.target/powerpc/altivec-types-3.C: New file.
+	* g++.target/powerpc/altivec-types-4.C: New file.
+	* g++.target/powerpc/undef-bool-1.C: New file.
+
+2022-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104619
+	* gfortran.dg/derived_constructor_comps_7.f90: New test.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/100757
+	* gcc.target/arm/simd/pr100757-2.c: New.
+	* gcc.target/arm/simd/pr100757-3.c: New.
+	* gcc.target/arm/simd/pr100757-4.c: New.
+	* gcc.target/arm/simd/pr100757.c: New.
+	* gcc.dg/signbit-2.c: Skip when targeting ARM/MVE.
+	* lib/target-supports.exp (check_effective_target_arm_mve): New.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* gcc.dg/rtl/arm/mve-vxbi.c: New test.
+	* gcc.target/arm/simd/pr101325.c: New.
+	* gcc.target/arm/simd/pr101325-2.c: New.
+	* lib/target-supports.exp (check_effective_target_arm_mve_hw): Use
+	add_options_for_arm_v8_1m_mve_fp.
+
+2022-02-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/simd/mve-vcmp-f32-2.c: New.
+	* gcc.target/arm/simd/neon-compare-1.c: New.
+	* gcc.target/arm/simd/neon-compare-2.c: New.
+	* gcc.target/arm/simd/neon-compare-3.c: New.
+	* gcc.target/arm/simd/neon-compare-scalar-1.c: New.
+	* gcc.target/arm/simd/neon-vcmp-f16.c: New.
+	* gcc.target/arm/simd/neon-vcmp-f32-2.c: New.
+	* gcc.target/arm/simd/neon-vcmp-f32-3.c: New.
+	* gcc.target/arm/simd/neon-vcmp-f32.c: New.
+	* gcc.target/arm/simd/neon-vcmp.c: New.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/atomic-store-2.c: Use -misa=sm_70.
+	* gcc.target/nvptx/uniform-simt-3.c: Same.
+
+2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/fold-reduc-1.c: New test case.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104604
+	* gcc.c-torture/execute/pr104604.c: New test.
+
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104612
+	* gcc.dg/pr104612.c: New test.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/sibcall-10.c: Xfail execution test for nvptx.
+	* gcc.dg/sibcall-3.c: Same.
+	* gcc.dg/sibcall-4.c: Same.
+
+2022-02-22  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/float16-1.c: Drop -mptx setting.
+	* gcc.target/nvptx/float16-2.c: Same.
+	* gcc.target/nvptx/float16-3.c: Same.
+	* gcc.target/nvptx/float16-4.c: Same.
+	* gcc.target/nvptx/float16-5.c: Same.
+	* gcc.target/nvptx/float16-6.c: Same.
+	* gcc.target/nvptx/tanh-1.c: Same.
+
+2022-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104582
+	PR target/99881
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr104582-1.c: New.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr104582-2.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr104582-3.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr104582-4.c: Likewise.
+	* gcc.target/i386/pr99881.c: Un-XFAIL.
+	* gcc.target/i386/pr91446.c: Adjust to not expect vectorization.
+
+2022-02-22  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* gcc.target/i386/pr103069-2.c: Adjust result check.
+	* gcc.target/i386/pr103069-3.c: New test.
+	* gcc.target/i386/pr103069-4.c: Likewise.
+
 2022-02-21  Dan Li  <ashimida@linux.alibaba.com>
 
 	* gcc.target/aarch64/shadow_call_stack_1.c: New test.

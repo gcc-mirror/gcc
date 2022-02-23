@@ -1,3 +1,12 @@
+2022-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/104617
+	* simple-object-elf.c (simple_object_elf_match): Fix up URL
+	in comment.
+	(simple_object_elf_copy_lto_debug_sections): Remap sh_info and
+	sh_link even if they are in the SHN_LORESERVE .. SHN_HIRESERVE
+	range (inclusive).
+
 2022-02-17  Mark Wielaard  <mark@klomp.org>
 
 	* rust-demangle.c (rust_demangle_callback): Ignore everything
