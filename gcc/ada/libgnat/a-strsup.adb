@@ -1226,7 +1226,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                  (New_Item (New_Item'First .. New_Item'Last - Droplen));
 
             when Strings.Left =>
-               if New_Item'Length > Max_Length then
+               if New_Item'Length >= Max_Length then
                   Source.Data (1 .. Max_Length) := Super_String_Data
                     (New_Item
                       (New_Item'Last - Max_Length + 1 .. New_Item'Last));
