@@ -18,6 +18,8 @@
 
 #include "rust-macro-builtins.h"
 #include "rust-diagnostics.h"
+#include "rust-expr.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 AST::ASTFragment
@@ -26,5 +28,18 @@ MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
   rust_debug ("assert!() called");
 
   return AST::ASTFragment::create_empty ();
+}
+
+AST::ASTFragment
+MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  auto current_file
+    = Session::get_instance ().linemap->location_file (invoc_locus);
+  auto file_str = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
+    new AST::LiteralExpr (current_file, AST::Literal::STRING,
+			  PrimitiveCoreType::CORETYPE_STR,
+			  std::vector<AST::Attribute> (), invoc_locus)));
+
+  return AST::ASTFragment ({file_str});
 }
 } // namespace Rust
