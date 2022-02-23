@@ -165,6 +165,10 @@ public:
       {
 	return ItemType::DEREF_MUT;
       }
+    else if (item.compare ("RangeFull") == 0)
+      {
+	return ItemType::RANGE_FULL;
+      }
     else if (item.compare ("Range") == 0)
       {
 	return ItemType::RANGE;
