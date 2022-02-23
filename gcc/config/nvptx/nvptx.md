@@ -288,7 +288,8 @@
   "@
    %.\\tmov.b16\\t%0, %1;
    %.\\tld.b16\\t%0, %1;
-   %.\\tst.b16\\t%0, %1;")
+   %.\\tst.b16\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
 
 (define_expand "movhf"
   [(set (match_operand:HF 0 "nonimmediate_operand" "")
