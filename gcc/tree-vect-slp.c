@@ -4192,7 +4192,13 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	     SLP tree root.  */
 	  || (SLP_INSTANCE_ROOT_STMT (instance)
 	      && (SLP_TREE_DEF_TYPE (SLP_INSTANCE_TREE (instance))
-		  != vect_internal_def)))
+		  != vect_internal_def
+		  /* Make sure we vectorized with the expected type.  */
+		  || !useless_type_conversion_p
+			(TREE_TYPE (TREE_TYPE (gimple_assign_rhs1
+					      (instance->root_stmt->stmt))),
+			 TREE_TYPE (SLP_TREE_VECTYPE
+					    (SLP_INSTANCE_TREE (instance)))))))
         {
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
 	  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
