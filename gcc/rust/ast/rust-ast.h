@@ -204,6 +204,7 @@ public:
   std::vector<std::unique_ptr<Token> > to_token_stream () const override;
 
   TokenId get_id () const { return tok_ref->get_id (); }
+  const std::string &get_str () const { return tok_ref->get_str (); }
 
   Location get_locus () const { return tok_ref->get_locus (); }
 
