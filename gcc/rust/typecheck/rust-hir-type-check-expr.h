@@ -1271,6 +1271,16 @@ public:
       }
   }
 
+  void visit (HIR::RangeFromToExpr &expr) override;
+
+  void visit (HIR::RangeFromExpr &expr) override;
+
+  void visit (HIR::RangeToExpr &expr) override;
+
+  void visit (HIR::RangeFullExpr &expr) override;
+
+  void visit (HIR::RangeFromToInclExpr &expr) override;
+
 protected:
   bool
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
