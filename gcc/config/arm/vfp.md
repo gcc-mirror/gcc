@@ -89,7 +89,7 @@
       return "mov%?\t%0, %1\t%@ movhi";
     case 1:
       if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
-        operands[1] = mve_const_bool_vec_to_hi (operands[1]);
+        operands[1] = mve_bool_vec_to_const (operands[1]);
       else
         operands[1] = gen_lowpart (HImode, operands[1]);
       return "mov%?\t%0, %1\t%@ movhi";
@@ -193,7 +193,7 @@
       return "mov%?\t%0, %1\t%@ movhi";
     case 1:
       if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
-        operands[1] = mve_const_bool_vec_to_hi (operands[1]);
+        operands[1] = mve_bool_vec_to_const (operands[1]);
       else
         operands[1] = gen_lowpart (HImode, operands[1]);
       return "mov%?\t%0, %1\t%@ movhi";
