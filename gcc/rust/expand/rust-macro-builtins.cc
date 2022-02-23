@@ -22,6 +22,16 @@
 #include "rust-session-manager.h"
 
 namespace Rust {
+namespace {
+std::unique_ptr<AST::Expr>
+make_string (Location locus, std::string value)
+{
+  return std::unique_ptr<AST::Expr> (
+    new AST::LiteralExpr (value, AST::Literal::STRING,
+			  PrimitiveCoreType::CORETYPE_STR, {}, locus));
+}
+} // namespace
+
 AST::ASTFragment
 MacroBuiltin::assert (Location invoc_locus, AST::MacroInvocData &invoc)
 {
@@ -35,10 +45,7 @@ MacroBuiltin::file (Location invoc_locus, AST::MacroInvocData &invoc)
 {
   auto current_file
     = Session::get_instance ().linemap->location_file (invoc_locus);
-  auto file_str = AST::SingleASTNode (std::unique_ptr<AST::Expr> (
-    new AST::LiteralExpr (current_file, AST::Literal::STRING,
-			  PrimitiveCoreType::CORETYPE_STR,
-			  std::vector<AST::Attribute> (), invoc_locus)));
+  auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
 
   return AST::ASTFragment ({file_str});
 }
