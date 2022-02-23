@@ -3962,7 +3962,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (cmp (bswap @0) INTEGER_CST@1)
    (with { tree ctype = TREE_TYPE (@1); }
-    (cmp (convert:ctype @0) (bswap @1)))))
+    (cmp (convert:ctype @0) (bswap! @1)))))
  /* (bswap(x) >> C1) & C2 can sometimes be simplified to (x >> C3) & C2.  */
  (simplify
   (bit_and (convert1? (rshift@0 (convert2? (bswap@4 @1)) INTEGER_CST@2))
