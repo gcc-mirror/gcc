@@ -3194,8 +3194,14 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
   bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
   rust_assert (ok);
 
-  auto fragment
-    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, false);
+  auto fragment = AST::ASTFragment::create_empty ();
+
+  if (rules_def->is_builtin ())
+    fragment
+      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
+  else
+    fragment
+      = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, false);
 
   // lets attach this fragment to the invocation
   invoc.set_fragment (std::move (fragment));
@@ -3229,8 +3235,14 @@ MacroExpander::expand_invoc_semi (AST::MacroInvocationSemi &invoc)
   bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
   rust_assert (ok);
 
-  auto fragment
-    = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
+  auto fragment = AST::ASTFragment::create_empty ();
+
+  if (rules_def->is_builtin ())
+    fragment
+      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
+  else
+    fragment
+      = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
 
   // lets attach this fragment to the invocation
   invoc.set_fragment (std::move (fragment));
