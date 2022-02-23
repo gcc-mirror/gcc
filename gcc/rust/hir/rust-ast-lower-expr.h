@@ -728,6 +728,85 @@ public:
 			    expr.get_outer_attrs (), expr.get_locus ());
   }
 
+  void visit (AST::RangeFromToExpr &expr) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    HIR::Expr *range_from
+      = ASTLoweringExpr::translate (expr.get_from_expr ().get ());
+    HIR::Expr *range_to
+      = ASTLoweringExpr::translate (expr.get_to_expr ().get ());
+
+    translated
+      = new HIR::RangeFromToExpr (mapping,
+				  std::unique_ptr<HIR::Expr> (range_from),
+				  std::unique_ptr<HIR::Expr> (range_to),
+				  expr.get_locus ());
+  }
+
+  void visit (AST::RangeFromExpr &expr) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    HIR::Expr *range_from
+      = ASTLoweringExpr::translate (expr.get_from_expr ().get ());
+
+    translated
+      = new HIR::RangeFromExpr (mapping,
+				std::unique_ptr<HIR::Expr> (range_from),
+				expr.get_locus ());
+  }
+
+  void visit (AST::RangeToExpr &expr) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    HIR::Expr *range_to
+      = ASTLoweringExpr::translate (expr.get_to_expr ().get ());
+
+    translated
+      = new HIR::RangeToExpr (mapping, std::unique_ptr<HIR::Expr> (range_to),
+			      expr.get_locus ());
+  }
+
+  void visit (AST::RangeFullExpr &expr) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::RangeFullExpr (mapping, expr.get_locus ());
+  }
+
+  void visit (AST::RangeFromToInclExpr &expr) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    HIR::Expr *range_from
+      = ASTLoweringExpr::translate (expr.get_from_expr ().get ());
+    HIR::Expr *range_to
+      = ASTLoweringExpr::translate (expr.get_to_expr ().get ());
+
+    translated
+      = new HIR::RangeFromToInclExpr (mapping,
+				      std::unique_ptr<HIR::Expr> (range_from),
+				      std::unique_ptr<HIR::Expr> (range_to),
+				      expr.get_locus ());
+  }
+
 private:
   ASTLoweringExpr ()
     : ASTLoweringBase (), translated (nullptr),

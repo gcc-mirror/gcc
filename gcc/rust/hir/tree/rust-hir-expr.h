@@ -2480,6 +2480,8 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_from_expr () { return from; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2530,6 +2532,8 @@ public:
   RangeToExpr &operator= (RangeToExpr &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_to_expr () { return to; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2616,6 +2620,9 @@ public:
   RangeFromToInclExpr &operator= (RangeFromToInclExpr &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_from_expr () { return from; }
+  std::unique_ptr<Expr> &get_to_expr () { return to; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
