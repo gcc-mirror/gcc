@@ -18913,14 +18913,14 @@ typically 31.  This means that code may change in behavior when moving
 from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
 
 @example
-type Rec is record;
+type Rec is record
    A : Natural;
    B : Natural;
 end record;
 
 for Rec use record
-   at 0  range 0 .. Natural'Size - 1;
-   at 0  range Natural'Size .. 2 * Natural'Size - 1;
+   A at 0 range 0 .. Natural'Size - 1;
+   B at 0 range Natural'Size .. 2 * Natural'Size - 1;
 end record;
 @end example
 

@@ -457,14 +457,14 @@ from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
 
 .. code-block:: ada
 
-     type Rec is record;
+     type Rec is record
         A : Natural;
         B : Natural;
      end record;
 
      for Rec use record
-        at 0  range 0 .. Natural'Size - 1;
-        at 0  range Natural'Size .. 2 * Natural'Size - 1;
+        A at 0 range 0 .. Natural'Size - 1;
+        B at 0 range Natural'Size .. 2 * Natural'Size - 1;
      end record;
 
 In the above code, since the typical size of ``Natural`` objects
