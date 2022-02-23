@@ -75,6 +75,7 @@ GRS_OBJS = \
     rust/rust-compile-resolve-path.o \
     rust/rust-macro-expand.o \
     rust/rust-macro-invoc-lexer.o \
+    rust/rust-macro-builtins.o \
     rust/rust-hir-full-test.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
