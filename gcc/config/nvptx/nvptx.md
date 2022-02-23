@@ -808,6 +808,22 @@
   ""
   "%.\\tshr.u%T0\\t%0, %1, %2;")
 
+(define_insn "rotlsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotate:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		   (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			   (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.l.wrap.b32\\t%0, %1, %1, %2;")
+
+(define_insn "rotrsi3"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(rotatert:SI (match_operand:SI 1 "nvptx_register_operand" "R")
+		     (and:SI (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")
+			     (const_int 31))))]
+  "TARGET_SM35"
+  "%.\\tshf.r.wrap.b32\\t%0, %1, %1, %2;")
+
 ;; Logical operations
 
 (define_code_iterator any_logic [and ior xor])
