@@ -1232,6 +1232,32 @@ get_or_create_asm_output_svalue (tree type,
   return asm_output_sval;
 }
 
+
+/* Return the svalue * of type TYPE for the result of a call to FNDECL
+   with __attribute__((const)), given INPUTS as inputs.  */
+
+const svalue *
+region_model_manager::
+get_or_create_const_fn_result_svalue (tree type,
+				      tree fndecl,
+				      const vec<const svalue *> &inputs)
+{
+  gcc_assert (type);
+  gcc_assert (fndecl);
+  gcc_assert (DECL_P (fndecl));
+  gcc_assert (TREE_READONLY (fndecl));
+  gcc_assert (inputs.length () <= const_fn_result_svalue::MAX_INPUTS);
+
+  const_fn_result_svalue::key_t key (type, fndecl, inputs);
+  if (const_fn_result_svalue **slot = m_const_fn_result_values_map.get (key))
+    return *slot;
+  const_fn_result_svalue *const_fn_result_sval
+    = new const_fn_result_svalue (type, fndecl, inputs);
+  RETURN_UNKNOWN_IF_TOO_COMPLEX (const_fn_result_sval);
+  m_const_fn_result_values_map.put (key, const_fn_result_sval);
+  return const_fn_result_sval;
+}
+
 /* Given STRING_CST, a STRING_CST and BYTE_OFFSET_CST a constant,
    attempt to get the character at that offset, returning either
    the svalue for the character constant, or NULL if unsuccessful.  */
@@ -1671,6 +1697,8 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   log_uniq_map (logger, show_objs, "conjured_svalue", m_conjured_values_map);
   log_uniq_map (logger, show_objs, "asm_output_svalue",
 		m_asm_output_values_map);
+  log_uniq_map (logger, show_objs, "const_fn_result_svalue",
+		m_const_fn_result_values_map);
 
   logger->log ("max accepted svalue num_nodes: %i",
 	       m_max_complexity.m_num_nodes);

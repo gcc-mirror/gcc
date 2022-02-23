@@ -1207,6 +1207,51 @@ region_model::check_call_args (const call_details &cd) const
     cd.get_arg_svalue (arg_idx);
 }
 
+/* Return true if CD is known to be a call to a function with
+   __attribute__((const)).  */
+
+static bool
+const_fn_p (const call_details &cd)
+{
+  tree fndecl = cd.get_fndecl_for_call ();
+  if (!fndecl)
+    return false;
+  gcc_assert (DECL_P (fndecl));
+  return TREE_READONLY (fndecl);
+}
+
+/* If this CD is known to be a call to a function with
+   __attribute__((const)), attempt to get a const_fn_result_svalue
+   based on the arguments, or return NULL otherwise.  */
+
+static const svalue *
+maybe_get_const_fn_result (const call_details &cd)
+{
+  if (!const_fn_p (cd))
+    return NULL;
+
+  unsigned num_args = cd.num_args ();
+  if (num_args > const_fn_result_svalue::MAX_INPUTS)
+    /* Too many arguments.  */
+    return NULL;
+
+  auto_vec<const svalue *> inputs (num_args);
+  for (unsigned arg_idx = 0; arg_idx < num_args; arg_idx++)
+    {
+      const svalue *arg_sval = cd.get_arg_svalue (arg_idx);
+      if (!arg_sval->can_have_associated_state_p ())
+	return NULL;
+      inputs.quick_push (arg_sval);
+    }
+
+  region_model_manager *mgr = cd.get_manager ();
+  const svalue *sval
+    = mgr->get_or_create_const_fn_result_svalue (cd.get_lhs_type (),
+						 cd.get_fndecl_for_call (),
+						 inputs);
+  return sval;
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1245,10 +1290,16 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
   if (tree lhs = gimple_call_lhs (call))
     {
       const region *lhs_region = get_lvalue (lhs, ctxt);
-      const svalue *sval
-	= m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
-						lhs_region);
-      purge_state_involving (sval, ctxt);
+      const svalue *sval = maybe_get_const_fn_result (cd);
+      if (!sval)
+	{
+	  /* For the common case of functions without __attribute__((const)),
+	     use a conjured value, and purge any prior state involving that
+	     value (in case this is in a loop).  */
+	  sval = m_mgr->get_or_create_conjured_svalue (TREE_TYPE (lhs), call,
+						       lhs_region);
+	  purge_state_involving (sval, ctxt);
+	}
       set_value (lhs_region, sval, ctxt);
     }
 

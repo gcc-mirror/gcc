@@ -224,6 +224,7 @@ public:
   virtual void visit_compound_svalue (const compound_svalue *) {}
   virtual void visit_conjured_svalue (const conjured_svalue *) {}
   virtual void visit_asm_output_svalue (const asm_output_svalue *) {}
+  virtual void visit_const_fn_result_svalue (const const_fn_result_svalue *) {}
 
   virtual void visit_region (const region *) {}
 };
@@ -282,6 +283,10 @@ public:
 				   const gasm *asm_stmt,
 				   unsigned output_idx,
 				   const vec<const svalue *> &inputs);
+  const svalue *
+  get_or_create_const_fn_result_svalue (tree type,
+					tree fndecl,
+					const vec<const svalue *> &inputs);
 
   const svalue *maybe_get_char_from_string_cst (tree string_cst,
 						tree byte_offset_cst);
@@ -436,6 +441,10 @@ private:
 		   asm_output_svalue *> asm_output_values_map_t;
   asm_output_values_map_t m_asm_output_values_map;
 
+  typedef hash_map<const_fn_result_svalue::key_t,
+		   const_fn_result_svalue *> const_fn_result_values_map_t;
+  const_fn_result_values_map_t m_const_fn_result_values_map;
+
   bool m_checking_feasibility;
 
   /* "Dynamically-allocated" svalue instances.
@@ -496,6 +505,7 @@ public:
   call_details (const gcall *call, region_model *model,
 		region_model_context *ctxt);
 
+  region_model_manager *get_manager () const;
   region_model_context *get_ctxt () const { return m_ctxt; }
   uncertainty_t *get_uncertainty () const;
   tree get_lhs_type () const { return m_lhs_type; }
