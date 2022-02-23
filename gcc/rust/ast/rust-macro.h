@@ -361,8 +361,25 @@ class MacroRulesDefinition : public MacroItem
   DelimType delim_type;
   // MacroRules rules;
   std::vector<MacroRule> rules; // inlined form
-
   Location locus;
+
+  std::function<ASTFragment (Location, MacroInvocData &)>
+    associated_transcriber;
+  // Since we can't compare std::functions, we need to use an extra boolean
+  bool is_builtin_rule;
+
+  /**
+   * Default function to use as an associated transcriber. This function should
+   * never be called, hence the gcc_unreachable().
+   * If this function is used, then the macro is not builtin and the compiler
+   * should make use of the actual rules. If the macro is builtin, then another
+   * associated transcriber should be used
+   */
+  static ASTFragment dummy_builtin (Location, MacroInvocData &)
+  {
+    gcc_unreachable ();
+    return ASTFragment::create_empty ();
+  }
 
   /* NOTE: in rustc, macro definitions are considered (and parsed as) a type
    * of macro, whereas here they are considered part of the language itself.
@@ -377,7 +394,17 @@ public:
 			std::vector<MacroRule> rules,
 			std::vector<Attribute> outer_attrs, Location locus)
     : outer_attrs (std::move (outer_attrs)), rule_name (std::move (rule_name)),
-      delim_type (delim_type), rules (std::move (rules)), locus (locus)
+      delim_type (delim_type), rules (std::move (rules)), locus (locus),
+      associated_transcriber (dummy_builtin), is_builtin_rule (false)
+  {}
+
+  MacroRulesDefinition (Identifier builtin_name, DelimType delim_type,
+			std::function<ASTFragment (Location, MacroInvocData &)>
+			  associated_transcriber)
+    : outer_attrs (std::vector<Attribute> ()), rule_name (builtin_name),
+      delim_type (delim_type), rules (std::vector<MacroRule> ()),
+      locus (Location ()), associated_transcriber (associated_transcriber),
+      is_builtin_rule (true)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
@@ -399,6 +426,20 @@ public:
 
   std::vector<MacroRule> &get_rules () { return rules; }
   const std::vector<MacroRule> &get_rules () const { return rules; }
+
+  bool is_builtin () const { return is_builtin_rule; }
+  const std::function<ASTFragment (Location, MacroInvocData &)> &
+  get_builtin_transcriber () const
+  {
+    rust_assert (is_builtin ());
+    return associated_transcriber;
+  }
+  void set_builtin_transcriber (
+    std::function<ASTFragment (Location, MacroInvocData &)> transcriber)
+  {
+    associated_transcriber = transcriber;
+    is_builtin_rule = true;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

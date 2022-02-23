@@ -19,6 +19,7 @@
 #include "rust-hir-map.h"
 #include "rust-ast-full.h"
 #include "rust-hir-full.h"
+#include "rust-macro-builtins.h"
 
 namespace Rust {
 namespace Analysis {
@@ -741,6 +742,16 @@ Mappings::iterate_trait_items (
 void
 Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
 {
+  static std::map<std::string, std::function<AST::ASTFragment (
+				 Location, AST::MacroInvocData &)>>
+    builtin_macros = {
+      {"assert", MacroBuiltin::assert},
+    };
+
+  auto builtin = builtin_macros.find (macro->get_rule_name ());
+  if (builtin != builtin_macros.end ())
+    macro->set_builtin_transcriber (builtin->second);
+
   auto it = macroMappings.find (macro->get_node_id ());
   rust_assert (it == macroMappings.end ());
 
