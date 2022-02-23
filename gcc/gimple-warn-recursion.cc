@@ -112,13 +112,25 @@ pass_warn_recursion::find_function_exit (basic_block bb)
 	  if (!strcmp (name, "siglongjmp"))
 	    return true;
 
-	  if (m_built_in && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
+	  if (m_built_in
+	      && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
 	      && m_built_in == DECL_FUNCTION_CODE (fndecl))
 	    {
-	      /* The call is being made from the definition of a built-in
-		 (e.g., in a replacement of one) to itself.  */
-	      m_calls->safe_push (stmt);
-	      return false;
+	      const char *cname
+		= IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+	      /* Don't warn about gnu_inline extern inline function
+		 like strcpy calling __builtin_strcpy, that is fine,
+		 if some call is made (the builtin isn't expanded inline),
+		 a call is made to the external definition.  */
+	      if (!(DECL_DECLARED_INLINE_P (current_function_decl)
+		    && DECL_EXTERNAL (current_function_decl))
+		  || strcmp (name, cname) == 0)
+		{
+		  /* The call is being made from the definition of a built-in
+		     (e.g., in a replacement of one) to itself.  */
+		  m_calls->safe_push (stmt);
+		  return false;
+		}
 	    }
 	}
 
