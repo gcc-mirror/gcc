@@ -1459,6 +1459,7 @@ path_oracle::reset_path ()
   bitmap_clear (m_equiv.m_names);
   m_relations.m_head = NULL;
   bitmap_clear (m_relations.m_names);
+  bitmap_clear (m_killed_defs);
 }
 
 // Dump relation in basic block... Do nothing here.
