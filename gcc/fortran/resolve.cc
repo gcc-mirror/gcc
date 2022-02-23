@@ -11944,8 +11944,17 @@ start:
 	case EXEC_END_NESTED_BLOCK:
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
+	  break;
+
 	case EXEC_STOP:
 	case EXEC_ERROR_STOP:
+	  if (code->expr2 != NULL
+	      && (code->expr2->ts.type != BT_LOGICAL
+		  || code->expr2->rank != 0))
+	    gfc_error ("QUIET specifier at %L must be a scalar LOGICAL",
+		       &code->expr2->where);
+	  break;
+
 	case EXEC_EXIT:
 	case EXEC_CONTINUE:
 	case EXEC_DT_END:

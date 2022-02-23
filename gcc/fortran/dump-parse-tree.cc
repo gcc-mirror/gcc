@@ -2370,6 +2370,11 @@ show_code_node (int level, gfc_code *c)
 	show_expr (c->expr1);
       else
 	fprintf (dumpfile, "%d", c->ext.stop_code);
+      if (c->expr2 != NULL)
+	{
+	  fputs (" QUIET=", dumpfile);
+	  show_expr (c->expr2);
+	}
 
       break;
 
