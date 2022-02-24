@@ -13547,6 +13547,10 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
       if (int_size_in_bytes (TREE_TYPE (first)) <= 0)
 	maybe_zero_len = true;
 
+      struct dim { tree low_bound, length; };
+      auto_vec<dim> dims (num);
+      dims.safe_grow (num);
+
       for (i = num, t = OMP_CLAUSE_DECL (c); i > 0;
 	   t = TREE_CHAIN (t))
 	{
@@ -13668,6 +13672,9 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      else
 		size = size_binop (MULT_EXPR, size, l);
 	    }
+
+	  dim d = { low_bound, length };
+	  dims[i] = d;
 	}
       if (non_contiguous)
 	{
@@ -13715,6 +13722,23 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  OMP_CLAUSE_DECL (c) = t;
 	  return false;
 	}
+
+      tree aref = t;
+      for (i = 0; i < dims.length (); i++)
+	{
+	  if (dims[i].length && integer_onep (dims[i].length))
+	    {
+	      tree lb = dims[i].low_bound;
+	      aref = build_array_ref (OMP_CLAUSE_LOCATION (c), aref, lb);
+	    }
+	  else
+	    {
+	      if (TREE_CODE (TREE_TYPE (aref)) == POINTER_TYPE)
+		t = aref;
+	      break;
+	    }
+	}
+
       first = c_fully_fold (first, false, NULL);
       OMP_CLAUSE_DECL (c) = first;
       if (size)
@@ -13747,7 +13771,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  break;
 	}
       tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
-      if (TREE_CODE (t) == COMPONENT_REF)
+      if (TREE_CODE (t) == COMPONENT_REF || TREE_CODE (t) == ARRAY_REF
+	  || TREE_CODE (t) == INDIRECT_REF)
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
       else
 	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
