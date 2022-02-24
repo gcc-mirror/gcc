@@ -1,4 +1,6 @@
 /* { dg-do compile { target R_flag_in_section } } */
+/* Prevent readonly data from being put in writable sdata for 32-bit powerpc. */
+/* { dg-options "-G0" { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-final { scan-assembler ".text.*,\"axR\"" } } */
 /* { dg-final { scan-assembler ".bss.*,\"awR\"" } } */
 /* { dg-final { scan-assembler ".data.*,\"awR\"" } } */
