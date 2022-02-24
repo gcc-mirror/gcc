@@ -245,29 +245,18 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  TyTy::BaseType *size_ty;
-  if (!context->lookup_builtin ("usize", &size_ty))
-    {
-      rust_error_at (
-	expr.get_locus (),
-	"Failure looking up size type for index in ArrayIndexExpr");
-      return;
-    }
-
-  auto resolved_index_expr
-    = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
-  if (resolved_index_expr->get_kind () != TyTy::TypeKind::ERROR)
-    {
-      // allow the index expr to fail lets just continue on
-      context->insert_type (expr.get_index_expr ()->get_mappings (),
-			    resolved_index_expr);
-    }
-
   auto array_expr_ty
     = TypeCheckExpr::Resolve (expr.get_array_expr (), inside_loop);
   if (array_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
     return;
-  else if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
+
+  auto index_expr_ty = TypeCheckExpr::Resolve (expr.get_index_expr (), false);
+  if (index_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  // is this a case of core::ops::index?
+
+  if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
     {
       // lets try and deref it since rust allows this
       auto ref = static_cast<TyTy::ReferenceType *> (array_expr_ty);
@@ -283,6 +272,15 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 		     array_expr_ty->as_string ().c_str ());
       return;
     }
+
+  TyTy::BaseType *size_ty;
+  bool ok = context->lookup_builtin ("usize", &size_ty);
+  rust_assert (ok);
+
+  auto resolved_index_expr
+    = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
+  if (resolved_index_expr->get_kind () == TyTy::TypeKind::ERROR)
+    return;
 
   TyTy::ArrayType *array_type = static_cast<TyTy::ArrayType *> (array_expr_ty);
   infered = array_type->get_element_type ()->clone ();
