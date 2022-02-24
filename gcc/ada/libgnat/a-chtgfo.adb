@@ -33,18 +33,6 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
 
    Checks : constant Boolean := Container_Checks'Enabled;
 
-   -------------------
-   -- Checked_Index --
-   -------------------
-
-   function Checked_Index
-     (Hash_Table : Hash_Table_Type;
-      Node       : Count_Type) return Hash_Type
-   is
-   begin
-      return Index (Hash_Table, Hash_Table.Nodes (Node));
-   end Checked_Index;
-
    -----------
    -- Clear --
    -----------
@@ -52,54 +40,9 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    procedure Clear (HT : in out Hash_Table_Type) is
    begin
       HT.Length := 0;
-      --  HT.Busy := 0;
-      --  HT.Lock := 0;
       HT.Free := -1;
       HT.Buckets := [others => 0];  -- optimize this somehow ???
    end Clear;
-
-   --------------------------
-   -- Delete_Node_At_Index --
-   --------------------------
-
-   procedure Delete_Node_At_Index
-     (HT   : in out Hash_Table_Type;
-      Indx : Hash_Type;
-      X    : Count_Type)
-   is
-      Prev : Count_Type;
-      Curr : Count_Type;
-
-   begin
-      Prev := HT.Buckets (Indx);
-
-      if Checks and then Prev = 0 then
-         raise Program_Error with
-           "attempt to delete node from empty hash bucket";
-      end if;
-
-      if Prev = X then
-         HT.Buckets (Indx) := Next (HT.Nodes (Prev));
-         HT.Length := HT.Length - 1;
-         return;
-      end if;
-
-      if Checks and then HT.Length = 1 then
-         raise Program_Error with
-           "attempt to delete node not in its proper hash bucket";
-      end if;
-
-      loop
-         Curr := Next (HT.Nodes (Prev));
-
-         if Checks and then Curr = 0 then
-            raise Program_Error with
-              "attempt to delete node not in its proper hash bucket";
-         end if;
-
-         Prev := Curr;
-      end loop;
-   end Delete_Node_At_Index;
 
    ---------------------------
    -- Delete_Node_Sans_Free --
@@ -121,7 +64,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
            "attempt to delete node from empty hashed container";
       end if;
 
-      Indx := Checked_Index (HT, X);
+      Indx := Index (HT, HT.Nodes (X));
       Prev := HT.Buckets (Indx);
 
       if Checks and then Prev = 0 then
@@ -223,7 +166,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       --  in the "normal" way: Container.Free points to the head of the list
       --  of free (inactive) nodes, and the value 0 means the free list is
       --  empty. Each node on the free list has been initialized to point
-      --  to the next free node (via its Parent component), and the value 0
+      --  to the next free node (via its Next component), and the value 0
       --  means that this is the last free node.
       --
       --  If Container.Free is negative, then the links on the free store
@@ -446,7 +389,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       for J in 1 .. N loop
          declare
             Node : constant Count_Type := New_Node (Stream);
-            Indx : constant Hash_Type := Checked_Index (HT, Node);
+            Indx : constant Hash_Type := Index (HT, HT.Nodes (Node));
             B    : Count_Type renames HT.Buckets (Indx);
          begin
             Set_Next (HT.Nodes (Node), Next => B);
@@ -523,7 +466,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       --  This was the last node in the bucket, so move to the next
       --  bucket, and start searching for next node from there.
 
-      First := Checked_Index (HT, Node) + 1;
+      First := Index (HT, HT.Nodes (Node)) + 1;
       for Indx in First .. HT.Buckets'Last loop
          Result := HT.Buckets (Indx);
 

@@ -31,31 +31,6 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
 
    Checks : constant Boolean := Container_Checks'Enabled;
 
-   -----------------------------
-   -- Checked_Equivalent_Keys --
-   -----------------------------
-
-   function Checked_Equivalent_Keys
-     (HT   : Hash_Table_Type;
-      Key  : Key_Type;
-      Node : Count_Type) return Boolean
-   is
-   begin
-      return Equivalent_Keys (Key, HT.Nodes (Node));
-   end Checked_Equivalent_Keys;
-
-   -------------------
-   -- Checked_Index --
-   -------------------
-
-   function Checked_Index
-     (HT  : Hash_Table_Type;
-      Key : Key_Type) return Hash_Type
-   is
-   begin
-      return HT.Buckets'First + Hash (Key) mod HT.Buckets'Length;
-   end Checked_Index;
-
    --------------------------
    -- Delete_Key_Sans_Free --
    --------------------------
@@ -74,14 +49,14 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
          return;
       end if;
 
-      Indx := Checked_Index (HT, Key);
+      Indx := Index (HT, Key);
       X := HT.Buckets (Indx);
 
       if X = 0 then
          return;
       end if;
 
-      if Checked_Equivalent_Keys (HT, Key, X) then
+      if Equivalent_Keys (Key, HT.Nodes (X)) then
          HT.Buckets (Indx) := Next (HT.Nodes (X));
          HT.Length := HT.Length - 1;
          return;
@@ -95,7 +70,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
             return;
          end if;
 
-         if Checked_Equivalent_Keys (HT, Key, X) then
+         if Equivalent_Keys (Key, HT.Nodes (X)) then
             Set_Next (HT.Nodes (Prev), Next => Next (HT.Nodes (X)));
             HT.Length := HT.Length - 1;
             return;
@@ -119,11 +94,11 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
          return 0;
       end if;
 
-      Indx := Checked_Index (HT, Key);
+      Indx := Index (HT, Key);
 
       Node := HT.Buckets (Indx);
       while Node /= 0 loop
-         if Checked_Equivalent_Keys (HT, Key, Node) then
+         if Equivalent_Keys (Key, HT.Nodes (Node)) then
             return Node;
          end if;
          Node := Next (HT.Nodes (Node));
@@ -145,7 +120,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       Indx : Hash_Type;
 
    begin
-      Indx := Checked_Index (HT, Key);
+      Indx := Index (HT, Key);
       Node := HT.Buckets (Indx);
 
       if Node = 0 then
@@ -165,7 +140,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       end if;
 
       loop
-         if Checked_Equivalent_Keys (HT, Key, Node) then
+         if Equivalent_Keys (Key, HT.Nodes (Node)) then
             Inserted := False;
             return;
          end if;
@@ -204,19 +179,12 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       NN : Nodes_Type renames HT.Nodes;
 
       Old_Indx : Hash_Type;
-      New_Indx : constant Hash_Type := Checked_Index (HT, Key);
+      New_Indx : constant Hash_Type := Index (HT, Key);
 
       New_Bucket : Count_Type renames BB (New_Indx);
       N, M       : Count_Type;
 
    begin
-      --  The following block appears to be vestigial -- this should be done
-      --  using Checked_Index instead. Also, we might have to move the actual
-      --  tampering checks to the top of the subprogram, in order to prevent
-      --  infinite recursion when calling Hash. (This is similar to how Insert
-      --  and Delete are implemented.) This implies that we will have to defer
-      --  the computation of New_Index until after the tampering check. ???
-
       Old_Indx := HT.Buckets'First + Hash (NN (Node)) mod HT.Buckets'Length;
 
       --  Replace_Element is allowed to change a node's key to Key
@@ -224,7 +192,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       --  only if Key is not already in the hash table. (In a unique-key
       --  hash table as this one, a key is mapped to exactly one node.)
 
-      if Checked_Equivalent_Keys (HT, Key, Node) then
+      if Equivalent_Keys (Key, NN (Node)) then
          --  The new Key value is mapped to this same Node, so Node
          --  stays in the same bucket.
 
@@ -239,7 +207,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
 
       N := New_Bucket;
       while N /= 0 loop
-         if Checks and then Checked_Equivalent_Keys (HT, Key, N) then
+         if Checks and then Equivalent_Keys (Key, NN (N)) then
             pragma Assert (N /= Node);
             raise Program_Error with
               "attempt to replace existing element";
@@ -249,11 +217,7 @@ package body Ada.Containers.Hash_Tables.Generic_Formal_Keys is
       end loop;
 
       --  We have determined that Key is not already in the hash table, so
-      --  the change is tentatively allowed. We now perform the standard
-      --  checks to determine whether the hash table is locked (because you
-      --  cannot change an element while it's in use by Query_Element or
-      --  Update_Element), or if the container is busy (because moving a
-      --  node to a different bucket would interfere with iteration).
+      --  the change is allowed.
 
       if Old_Indx = New_Indx then
          --  The node is already in the bucket implied by Key. In this case

@@ -59,27 +59,11 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    pragma Inline (Index);
    --  Returns the bucket number (array index value) for the given key
 
-   function Checked_Index
-     (HT  : Hash_Table_Type;
-      Key : Key_Type) return Hash_Type;
-   pragma Inline (Checked_Index);
-   --  Calls Index, but also locks and unlocks the container, per AI05-0022, in
-   --  order to detect element tampering by the generic actual Hash function.
-
-   function Checked_Equivalent_Keys
-     (HT   : Hash_Table_Type;
-      Key  : Key_Type;
-      Node : Count_Type) return Boolean;
-   --  Calls Equivalent_Keys, but locks and unlocks the container, per
-   --  AI05-0022, in order to detect element tampering by that generic actual.
-
    procedure Delete_Key_Sans_Free
      (HT  : in out Hash_Table_Type;
       Key : Key_Type;
       X   : out Count_Type);
-   --  Removes the node (if any) with the given key from the hash table,
-   --  without deallocating it. Program_Error is raised if the hash
-   --  table is busy.
+   --  Removes the node (if any) with the given key from the hash table
 
    function Find
      (HT  : Hash_Table_Type;
@@ -98,8 +82,7 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
    --  Attempts to insert a new node with the given key into the hash table.
    --  If a node with that key already exists in the table, then that node
    --  is returned and Inserted returns False. Otherwise New_Node is called
-   --  to allocate a new node, and Inserted returns True. Program_Error is
-   --  raised if the hash table is busy.
+   --  to allocate a new node, and Inserted returns True.
 
    generic
       with function Hash (Node : Node_Type) return Hash_Type;
@@ -108,15 +91,11 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Keys is
      (HT   : in out Hash_Table_Type;
       Node : Count_Type;
       Key  : Key_Type);
-   --  Assigns Key to Node, possibly changing its equivalence class. If Node
-   --  is in the same equivalence class as Key (that is, it's already in the
-   --  bucket implied by Key), then if the hash table is locked then
-   --  Program_Error is raised; otherwise Assign is called to assign Key to
-   --  Node. If Node is in a different bucket from Key, then Program_Error is
-   --  raised if the hash table is busy. Otherwise it Assigns Key to Node and
-   --  moves the Node from its current bucket to the bucket implied by Key.
-   --  Note that it is never proper to assign to Node a key value already
-   --  in the map, and so if Key is equivalent to some other node then
-   --  Program_Error is raised.
+   --  Assigns Key to Node, possibly changing its equivalence class. Procedure
+   --  Assign is called to assign Key to Node. If Node is not in the same
+   --  bucket as Key before the assignment, it is moved from its current bucket
+   --  to the bucket implied by Key. Note that it is never proper to assign to
+   --  Node a key value already in the hash table, and so if Key is equivalent
+   --  to some other node then Program_Error is raised.
 
 end Ada.Containers.Hash_Tables.Generic_Formal_Keys;

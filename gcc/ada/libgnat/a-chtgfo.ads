@@ -62,12 +62,6 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    --  Uses the hash value of Node to compute its Hash_Table buckets array
    --  index.
 
-   function Checked_Index
-     (Hash_Table : Hash_Table_Type;
-      Node       : Count_Type) return Hash_Type;
-   --  Calls Index, but also locks and unlocks the container, per AI05-0022, in
-   --  order to detect element tampering by the generic actual Hash function.
-
    generic
       with function Find
         (HT  : Hash_Table_Type;
@@ -80,19 +74,7 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Operations is
    --  node then Generic_Equal returns True.
 
    procedure Clear (HT : in out Hash_Table_Type);
-   --  Deallocates each node in hash table HT. (Note that it only deallocates
-   --  the nodes, not the buckets array.) Program_Error is raised if the hash
-   --  table is busy.
-
-   procedure Delete_Node_At_Index
-     (HT   : in out Hash_Table_Type;
-      Indx : Hash_Type;
-      X    : Count_Type);
-   --  Delete a node whose bucket position is known. extracted from following
-   --  subprogram, but also used directly to remove a node whose element has
-   --  been modified through a key_preserving reference: in that case we cannot
-   --  use the value of the element precisely because the current value does
-   --  not correspond to the hash code that determines its bucket.
+   --  Empties the hash table HT
 
    procedure Delete_Node_Sans_Free
      (HT : in out Hash_Table_Type;
