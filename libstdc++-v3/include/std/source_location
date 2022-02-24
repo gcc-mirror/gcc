@@ -43,12 +43,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   private:
     using uint_least32_t = __UINT_LEAST32_TYPE__;
+    using __builtin_ret_type = decltype(__builtin_source_location());
 
   public:
 
     // [support.srcloc.cons], creation
     static consteval source_location
-    current(const void* __p = __builtin_source_location()) noexcept
+    current(__builtin_ret_type __p = __builtin_source_location()) noexcept
     {
       source_location __ret;
       __ret._M_impl = static_cast <const __impl*>(__p);
