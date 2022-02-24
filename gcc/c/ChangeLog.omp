@@ -1,3 +1,8 @@
+2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-typeck.cc (handle_omp_array_sections): Add handling for
+	creating array-reference base-pointer attachment clause.
+
 2022-02-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_construct): Move handling of

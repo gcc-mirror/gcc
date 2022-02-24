@@ -10490,7 +10490,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   || (component_ref_p
 			       && (INDIRECT_REF_P (decl)
 				   || TREE_CODE (decl) == MEM_REF
-				   || TREE_CODE (decl) == ARRAY_REF)))))
+				   || TREE_CODE (decl) == ARRAY_REF))
+			   || (TREE_CODE (decl) == ARRAY_REF
+			       && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+			       && (OMP_CLAUSE_MAP_KIND (c)
+				   == GOMP_MAP_ATTACH_DETACH)))))
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH

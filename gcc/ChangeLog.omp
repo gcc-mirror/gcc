@@ -1,3 +1,8 @@
+2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Add case for
+	attach/detach map kind for ARRAY_REF of POINTER_TYPE.
+
 2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-general.cc (DELAY_METADIRECTIVES_AFTER_LTO): Check that cfun is

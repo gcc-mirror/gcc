@@ -1,3 +1,7 @@
+2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/ptr-attach-2.c: New test.
+
 2022-01-28  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/metadirective-2.c (main): Add
