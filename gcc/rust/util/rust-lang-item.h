@@ -56,6 +56,10 @@ public:
     DEREF,
     DEREF_MUT,
 
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/index.rs
+    INDEX,
+    INDEX_MUT,
+
     // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/range.rs
     RANGE_FULL,
     RANGE,
@@ -165,6 +169,14 @@ public:
       {
 	return ItemType::DEREF_MUT;
       }
+    else if (item.compare ("index") == 0)
+      {
+	return ItemType::INDEX;
+      }
+    else if (item.compare ("index_mut") == 0)
+      {
+	return ItemType::INDEX_MUT;
+      }
     else if (item.compare ("RangeFull") == 0)
       {
 	return ItemType::RANGE_FULL;
@@ -245,6 +257,10 @@ public:
 	return "deref";
       case DEREF_MUT:
 	return "deref_mut";
+      case INDEX:
+	return "index";
+      case INDEX_MUT:
+	return "index_mut";
       case RANGE_FULL:
 	return "RangeFull";
       case RANGE:
