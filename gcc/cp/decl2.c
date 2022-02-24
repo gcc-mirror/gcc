@@ -1202,6 +1202,9 @@ is_late_template_attribute (tree attr, tree decl)
     {
       tree type = TYPE_P (decl) ? decl : TREE_TYPE (decl);
 
+      if (!type)
+	return true;
+
       /* We can't apply any attributes to a completely unknown type until
 	 instantiation time.  */
       enum tree_code code = TREE_CODE (type);
