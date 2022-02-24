@@ -1,3 +1,12 @@
+2022-02-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104619
+	* resolve.c (resolve_structure_cons): Skip shape check if shape
+	of constructor cannot be determined at compile time.
+
 2022-02-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
