@@ -43,6 +43,7 @@ public:
   void visit (const TyTy::FnType &) override;
   void visit (const TyTy::FnPtr &) override;
   void visit (const TyTy::ArrayType &) override;
+  void visit (const TyTy::SliceType &) override;
   void visit (const TyTy::BoolType &) override;
   void visit (const TyTy::IntType &) override;
   void visit (const TyTy::UintType &) override;

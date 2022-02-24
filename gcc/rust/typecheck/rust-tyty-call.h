@@ -43,6 +43,7 @@ public:
   void visit (InferType &) override { gcc_unreachable (); }
   void visit (TupleType &) override { gcc_unreachable (); }
   void visit (ArrayType &) override { gcc_unreachable (); }
+  void visit (SliceType &) override { gcc_unreachable (); }
   void visit (BoolType &) override { gcc_unreachable (); }
   void visit (IntType &) override { gcc_unreachable (); }
   void visit (UintType &) override { gcc_unreachable (); }
@@ -99,6 +100,7 @@ public:
   void visit (InferType &) override { gcc_unreachable (); }
   void visit (TupleType &) override { gcc_unreachable (); }
   void visit (ArrayType &) override { gcc_unreachable (); }
+  void visit (SliceType &) override { gcc_unreachable (); }
   void visit (BoolType &) override { gcc_unreachable (); }
   void visit (IntType &) override { gcc_unreachable (); }
   void visit (UintType &) override { gcc_unreachable (); }
