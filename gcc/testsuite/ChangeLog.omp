@@ -1,3 +1,7 @@
+2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/target-enter-data-1.c: Adjust testcase.
+
 2022-02-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/gomp/metadirective-1.c (f): Add test for
