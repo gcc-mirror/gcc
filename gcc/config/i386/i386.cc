@@ -18286,6 +18286,10 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   bool is_vshift;
   unsigned HOST_WIDE_INT elems;
 
+  /* Don't fold when there's isa mismatch.  */
+  if (!ix86_check_builtin_isa_match (fn_code, NULL, NULL))
+    return false;
+
   switch (fn_code)
     {
     case IX86_BUILTIN_TZCNT32:

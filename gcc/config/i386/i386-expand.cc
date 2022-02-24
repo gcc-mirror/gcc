@@ -12232,46 +12232,14 @@ ix86_expand_vec_set_builtin (tree exp)
   return target;
 }
 
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-rtx
-ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
-		     machine_mode mode, int ignore)
+/* Return true if the necessary isa options for this builtin exist,
+   else false.
+   fcode = DECL_MD_FUNCTION_CODE (fndecl);  */
+bool
+ix86_check_builtin_isa_match (unsigned int fcode,
+			      HOST_WIDE_INT* pbisa,
+			      HOST_WIDE_INT* pbisa2)
 {
-  size_t i;
-  enum insn_code icode, icode2;
-  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  tree arg0, arg1, arg2, arg3, arg4;
-  rtx op0, op1, op2, op3, op4, pat, pat2, insn;
-  machine_mode mode0, mode1, mode2, mode3, mode4;
-  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-
-  /* For CPU builtins that can be folded, fold first and expand the fold.  */
-  switch (fcode)
-    {
-    case IX86_BUILTIN_CPU_INIT:
-      {
-	/* Make it call __cpu_indicator_init in libgcc. */
-	tree call_expr, fndecl, type;
-        type = build_function_type_list (integer_type_node, NULL_TREE); 
-	fndecl = build_fn_decl ("__cpu_indicator_init", type);
-	call_expr = build_call_expr (fndecl, 0); 
-	return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
-      }
-    case IX86_BUILTIN_CPU_IS:
-    case IX86_BUILTIN_CPU_SUPPORTS:
-      {
-	tree arg0 = CALL_EXPR_ARG (exp, 0);
-	tree fold_expr = fold_builtin_cpu (fndecl, &arg0);
-	gcc_assert (fold_expr != NULL_TREE);
-	return expand_expr (fold_expr, target, mode, EXPAND_NORMAL);
-      }
-    }
-
   HOST_WIDE_INT isa = ix86_isa_flags;
   HOST_WIDE_INT isa2 = ix86_isa_flags2;
   HOST_WIDE_INT bisa = ix86_builtins_isa[fcode].isa;
@@ -12321,7 +12289,56 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       bisa |= OPTION_MASK_ISA_SSE2;
     }
 
-  if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
+  if (pbisa)
+    *pbisa = bisa;
+  if (pbisa2)
+    *pbisa2 = bisa2;
+
+  return (bisa & isa) == bisa && (bisa2 & isa2) == bisa2;
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+rtx
+ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
+		     machine_mode mode, int ignore)
+{
+  size_t i;
+  enum insn_code icode, icode2;
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  tree arg0, arg1, arg2, arg3, arg4;
+  rtx op0, op1, op2, op3, op4, pat, pat2, insn;
+  machine_mode mode0, mode1, mode2, mode3, mode4;
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+  HOST_WIDE_INT bisa, bisa2;
+
+  /* For CPU builtins that can be folded, fold first and expand the fold.  */
+  switch (fcode)
+    {
+    case IX86_BUILTIN_CPU_INIT:
+      {
+	/* Make it call __cpu_indicator_init in libgcc.  */
+	tree call_expr, fndecl, type;
+	type = build_function_type_list (integer_type_node, NULL_TREE);
+	fndecl = build_fn_decl ("__cpu_indicator_init", type);
+	call_expr = build_call_expr (fndecl, 0);
+	return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+      }
+    case IX86_BUILTIN_CPU_IS:
+    case IX86_BUILTIN_CPU_SUPPORTS:
+      {
+	tree arg0 = CALL_EXPR_ARG (exp, 0);
+	tree fold_expr = fold_builtin_cpu (fndecl, &arg0);
+	gcc_assert (fold_expr != NULL_TREE);
+	return expand_expr (fold_expr, target, mode, EXPAND_NORMAL);
+      }
+    }
+
+  if (!ix86_check_builtin_isa_match (fcode, &bisa, &bisa2))
     {
       bool add_abi_p = bisa & OPTION_MASK_ISA_64BIT;
       if (TARGET_ABI_X32)
