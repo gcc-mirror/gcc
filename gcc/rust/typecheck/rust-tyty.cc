@@ -840,16 +840,14 @@ ADTType::is_equal (const BaseType &other) const
 	    return false;
 	}
     }
-  else
-    {
-      for (size_t i = 0; i < number_of_variants (); i++)
-	{
-	  const TyTy::VariantDef *a = get_variants ().at (i);
-	  const TyTy::VariantDef *b = other2.get_variants ().at (i);
 
-	  if (!a->is_equal (*b))
-	    return false;
-	}
+  for (size_t i = 0; i < number_of_variants (); i++)
+    {
+      const TyTy::VariantDef *a = get_variants ().at (i);
+      const TyTy::VariantDef *b = other2.get_variants ().at (i);
+
+      if (!a->is_equal (*b))
+	return false;
     }
 
   return true;
