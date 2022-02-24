@@ -2758,7 +2758,25 @@ package body Osint is
 
    begin
       if Std_Prefix = null then
-         Std_Prefix := Executable_Prefix;
+         Std_Prefix := String_Ptr (Getenv ("GNSA_ROOT"));
+
+         if Std_Prefix.all = "" then
+            Std_Prefix := Executable_Prefix;
+
+         elsif not Is_Directory_Separator (Std_Prefix (Std_Prefix'Last)) then
+
+            --  The remainder of this function assumes that Std_Prefix
+            --  terminates with a dir separator, so we force this here.
+
+            declare
+               Old_Prefix : String_Ptr := Std_Prefix;
+            begin
+               Std_Prefix := new String (1 .. Old_Prefix'Length + 1);
+               Std_Prefix (1 .. Old_Prefix'Length) := Old_Prefix.all;
+               Std_Prefix (Old_Prefix'Length + 1) := Directory_Separator;
+               Free (Old_Prefix);
+            end;
+         end if;
 
          if Std_Prefix.all /= "" then
 
