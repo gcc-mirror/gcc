@@ -5218,12 +5218,20 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 
   if (vnresult)
     {
-      if (vnresult->result_vdef && vdef)
-	changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
-      else if (vdef)
-	/* If the call was discovered to be pure or const reflect
-	   that as far as possible.  */
-	changed |= set_ssa_val_to (vdef, vuse_ssa_val (gimple_vuse (stmt)));
+      if (vdef)
+	{
+	  if (vnresult->result_vdef)
+	    changed |= set_ssa_val_to (vdef, vnresult->result_vdef);
+	  else if (!lhs && gimple_call_lhs (stmt))
+	    /* If stmt has non-SSA_NAME lhs, value number the vdef to itself,
+	       as the call still acts as a lhs store.  */
+	    changed |= set_ssa_val_to (vdef, vdef);
+	  else
+	    /* If the call was discovered to be pure or const reflect
+	       that as far as possible.  */
+	    changed |= set_ssa_val_to (vdef,
+				       vuse_ssa_val (gimple_vuse (stmt)));
+	}
 
       if (!vnresult->result && lhs)
 	vnresult->result = lhs;
@@ -5248,7 +5256,11 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 	      if (TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 		  && (flags_from_decl_or_type (TREE_OPERAND (fn, 0))
-		      & (ECF_CONST | ECF_PURE)))
+		      & (ECF_CONST | ECF_PURE))
+		  /* If stmt has non-SSA_NAME lhs, value number the
+		     vdef to itself, as the call still acts as a lhs
+		     store.  */
+		  && (lhs || gimple_call_lhs (stmt) == NULL_TREE))
 		vdef_val = vuse_ssa_val (gimple_vuse (stmt));
 	    }
 	  changed |= set_ssa_val_to (vdef, vdef_val);
