@@ -249,6 +249,10 @@ bool has_VN_INFO (tree);
 extern vn_ssa_aux_t VN_INFO (tree);
 tree vn_get_expr_for (tree);
 void scc_vn_restore_ssa_info (void);
+vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, struct obstack *);
+unsigned int vn_nary_length_from_stmt (gimple *);
+void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
+hashval_t vn_nary_op_compute_hash (const vn_nary_op_t);
 tree vn_nary_op_lookup_stmt (gimple *, vn_nary_op_t *);
 tree vn_nary_op_lookup_pieces (unsigned int, enum tree_code,
 			       tree, tree *, vn_nary_op_t *);
