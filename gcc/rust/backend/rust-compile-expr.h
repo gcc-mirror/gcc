@@ -803,6 +803,16 @@ public:
 
   void visit (HIR::MatchExpr &expr) override;
 
+  void visit (HIR::RangeFromToExpr &expr) override;
+
+  void visit (HIR::RangeFromExpr &expr) override;
+
+  void visit (HIR::RangeToExpr &expr) override;
+
+  void visit (HIR::RangeFullExpr &expr) override;
+
+  void visit (HIR::RangeFromToInclExpr &expr) override;
+
 protected:
   tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 				  TyTy::BaseType *receiver,

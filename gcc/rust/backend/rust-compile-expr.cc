@@ -1377,5 +1377,112 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
     }
 }
 
+void
+CompileExpr::visit (HIR::RangeFromToExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (from == error_mark_node || to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFromExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  if (from == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeToExpr &expr)
+{
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {to}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFullExpr &expr)
+{
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+  translated = ctx->get_backend ()->constructor_expression (adt, false, {}, -1,
+							    expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (from == error_mark_node || to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
+						   expr.get_locus ());
+}
+
 } // namespace Compile
 } // namespace Rust
