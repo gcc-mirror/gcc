@@ -1,3 +1,46 @@
+2022-02-23  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104644
+	* doc/match-and-simplify.texi: Amend ! documentation.
+	* genmatch.cc (expr::gen_transform): Code-generate ! support
+	for GENERIC.
+	(parser::parse_expr): Allow ! for GENERIC.
+	* match.pd (cmp (bswap @0) INTEGER_CST@1): Use ! modifier on
+	bswap.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101636
+	* tree-vect-slp.cc (vect_print_slp_tree): Dump the
+	vector type of the node.
+	(vect_slp_analyze_operations): Make sure the CTOR
+	is vectorized with an expected type.
+	(vectorize_slp_instance_root_stmt): Revert r10-5979 fix.
+
+2022-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104633
+	* gimple-warn-recursion.cc (pass_warn_recursion::find_function_exit):
+	Don't warn about calls to corresponding builtin from extern inline
+	gnu_inline wrappers.
+
+2022-02-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/104489
+	* config/nvptx/nvptx.md (*movhf_insn): Add subregs_ok attribute.
+
+2022-02-23  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/100757
+	PR target/101325
+	* config/arm/vfp.md (thumb2_movhi_vfp, thumb2_movhi_fp16): Fix
+	typo.
+
+2022-02-23  Cui,Lili  <lili.cui@intel.com>
+
+	* doc/invoke.texi: Update documents for Intel architectures.
+
 2022-02-22  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_cmpxchg_loop): Restore

@@ -1,3 +1,47 @@
+2022-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104434
+	* gcc.dg/analyzer/attr-const-1.c: New test.
+	* gcc.dg/analyzer/attr-const-2.c: New test.
+	* gcc.dg/analyzer/attr-const-3.c: New test.
+	* gcc.dg/analyzer/pr104434-const.c: New test.
+	* gcc.dg/analyzer/pr104434-nonconst.c: New test.
+	* gcc.dg/analyzer/pr104434.h: New test.
+
+2022-02-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79493
+	* g++.dg/diagnostic/undeclared1.C: New test.
+
+2022-02-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70077
+	* g++.dg/cpp0x/noexcept76.C: New test.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104644
+	* gcc.dg/pr104644.c: New test.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-49.c: New testcase.
+	* gcc.dg/gimplefe-error-13.c: Likewise.
+
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101636
+	* gcc.target/i386/pr101636.c: New testcase.
+	* c-c++-common/torture/pr101636.c: Likewise.
+
+2022-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/104633
+	* gcc.dg/Winfinite-recursion-3.c: New test.
+	* gcc.dg/Winfinite-recursion-4.c: New test.
+	* gcc.dg/Winfinite-recursion-5.c: New test.
+
 2022-02-22  Paul A. Clarke  <pc@us.ibm.com>
 
 	* g++.dg/ext/altivec-1.C: Move to g++.target/powerpc, adjust dg

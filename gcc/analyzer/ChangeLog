@@ -1,3 +1,34 @@
+2022-02-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/104434
+	* analyzer.h (class const_fn_result_svalue): New decl.
+	* region-model-impl-calls.cc (call_details::get_manager): New.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_const_fn_result_svalue): New.
+	(region_model_manager::log_stats): Log
+	m_const_fn_result_values_map.
+	* region-model.cc (const_fn_p): New.
+	(maybe_get_const_fn_result): New.
+	(region_model::on_call_pre): Handle fndecls with
+	__attribute__((const)) by calling the above rather than making
+	a conjured_svalue.
+	* region-model.h (visitor::visit_const_fn_result_svalue): New.
+	(region_model_manager::get_or_create_const_fn_result_svalue): New
+	decl.
+	(region_model_manager::const_fn_result_values_map_t): New typedef.
+	(region_model_manager::m_const_fn_result_values_map): New field.
+	(call_details::get_manager): New decl.
+	* svalue.cc (svalue::cmp_ptr): Handle SK_CONST_FN_RESULT.
+	(const_fn_result_svalue::dump_to_pp): New.
+	(const_fn_result_svalue::dump_input): New.
+	(const_fn_result_svalue::accept): New.
+	* svalue.h (enum svalue_kind): Add SK_CONST_FN_RESULT.
+	(svalue::dyn_cast_const_fn_result_svalue): New.
+	(class const_fn_result_svalue): New.
+	(is_a_helper <const const_fn_result_svalue *>::test): New.
+	(template <> struct default_hash_traits<const_fn_result_svalue::key_t>):
+	New.
+
 2022-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104576

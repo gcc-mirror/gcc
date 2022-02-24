@@ -1,3 +1,9 @@
+2022-02-23  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_parse_gimple_body): Diagnose
+	SSA names without definition.
+	(c_parser_gimple_declaration): Handle pointer typed SSA names.
+
 2022-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/104532
