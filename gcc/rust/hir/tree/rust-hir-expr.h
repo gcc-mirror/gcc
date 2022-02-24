@@ -4029,6 +4029,36 @@ protected:
     return new AsyncBlockExpr (*this);
   }
 };
+
+// this is a utility helper class for type-checking and code-generation
+class OperatorExprMeta
+{
+public:
+  OperatorExprMeta (HIR::CompoundAssignmentExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::ArithmeticOrLogicalExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::NegationExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::DereferenceExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
+
+  Location get_locus () const { return locus; }
+
+private:
+  const Analysis::NodeMapping node_mappings;
+  Location locus;
+};
+
 } // namespace HIR
 } // namespace Rust
 

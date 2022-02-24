@@ -799,7 +799,7 @@ protected:
 
   tree
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExpr &expr, tree lhs, tree rhs,
+			     HIR::OperatorExprMeta expr, tree lhs, tree rhs,
 			     HIR::Expr *lhs_expr, HIR::Expr *rhs_expr);
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,

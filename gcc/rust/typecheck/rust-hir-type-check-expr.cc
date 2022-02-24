@@ -288,7 +288,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 
 bool
 TypeCheckExpr::resolve_operator_overload (
-  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExpr &expr,
+  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
   TyTy::BaseType *lhs, TyTy::BaseType *rhs)
 {
   // look up lang item for arithmetic type

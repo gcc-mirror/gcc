@@ -790,7 +790,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 
 tree
 CompileExpr::resolve_operator_overload (
-  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExpr &expr,
+  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
   tree lhs, tree rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
 {
   TyTy::FnType *fntype;

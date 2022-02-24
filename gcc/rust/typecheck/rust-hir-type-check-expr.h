@@ -1239,7 +1239,7 @@ public:
 protected:
   bool
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExpr &expr, TyTy::BaseType *lhs,
+			     HIR::OperatorExprMeta expr, TyTy::BaseType *lhs,
 			     TyTy::BaseType *rhs);
 
 private:
