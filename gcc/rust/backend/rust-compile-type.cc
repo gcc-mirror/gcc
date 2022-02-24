@@ -148,11 +148,13 @@ TyTyResolveCompile::visit (const TyTy::FnPtr &type)
   tree result_type = TyTyResolveCompile::compile (ctx, type.get_return_type ());
 
   std::vector<tree> parameters;
-  type.iterate_params ([&] (TyTy::BaseType *p) mutable -> bool {
-    tree pty = TyTyResolveCompile::compile (ctx, p);
-    parameters.push_back (pty);
-    return true;
-  });
+
+  auto &params = type.get_params ();
+  for (auto &p : params)
+    {
+      tree pty = TyTyResolveCompile::compile (ctx, p.get_tyty ());
+      parameters.push_back (pty);
+    }
 
   translated = ctx->get_backend ()->function_ptr_type (result_type, parameters,
 						       type.get_ident ().locus);

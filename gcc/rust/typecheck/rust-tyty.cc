@@ -1294,10 +1294,13 @@ std::string
 FnPtr::as_string () const
 {
   std::string params_str;
-  iterate_params ([&] (BaseType *p) mutable -> bool {
-    params_str += p->as_string () + " ,";
-    return true;
-  });
+
+  auto &params = get_params ();
+  for (auto &p : params)
+    {
+      params_str += p.get_tyty ()->as_string () + " ,";
+    }
+
   return "fnptr (" + params_str + ") -> " + get_return_type ()->as_string ();
 }
 

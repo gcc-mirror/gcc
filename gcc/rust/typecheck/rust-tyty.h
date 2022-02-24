@@ -1526,6 +1526,9 @@ public:
       }
   }
 
+  std::vector<TyVar> &get_params () { return params; }
+  const std::vector<TyVar> &get_params () const { return params; }
+
   bool is_concrete () const override final
   {
     for (auto &p : params)
