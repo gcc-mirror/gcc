@@ -55,6 +55,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX906 0x2f
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX908
 #define EF_AMDGPU_MACH_AMDGCN_GFX908 0x30
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX90a
+#define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
 
 #define EF_AMDGPU_FEATURE_XNACK_V4	0x300  /* Mask.  */
 #define EF_AMDGPU_FEATURE_XNACK_UNSUPPORTED_V4	0x000
@@ -904,6 +906,8 @@ main (int argc, char **argv)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX906;
       else if (strcmp (argv[i], "-march=gfx908") == 0)
 	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX908;
+      else if (strcmp (argv[i], "-march=gfx90a") == 0)
+	elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX90a;
     }
 
   if (!(fopenacc ^ fopenmp))

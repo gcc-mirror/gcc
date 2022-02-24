@@ -24,6 +24,10 @@
 	builtin_define ("__GCN3__");	\
       else if (TARGET_GCN5)		\
 	builtin_define ("__GCN5__");	\
+      else if (TARGET_CDNA1)		\
+	builtin_define ("__CDNA1__");	\
+      else if (TARGET_CDNA2)		\
+	builtin_define ("__CDNA2__");	\
     }					\
   while(0)
 
