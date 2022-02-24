@@ -4050,6 +4050,10 @@ public:
     : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
   {}
 
+  OperatorExprMeta (HIR::ArrayIndexExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
   const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
 
   Location get_locus () const { return locus; }

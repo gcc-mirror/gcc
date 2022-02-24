@@ -255,6 +255,20 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
     return;
 
   // is this a case of core::ops::index?
+  auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
+  bool operator_overloaded
+    = resolve_operator_overload (lang_item_type, expr, array_expr_ty,
+				 index_expr_ty);
+  if (operator_overloaded)
+    {
+      // index and index mut always return a reference to the element
+      TyTy::BaseType *resolved = infered;
+      rust_assert (resolved->get_kind () == TyTy::TypeKind::REF);
+      TyTy::ReferenceType *ref = static_cast<TyTy::ReferenceType *> (resolved);
+
+      infered = ref->get_base ()->clone ();
+      return;
+    }
 
   if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
     {

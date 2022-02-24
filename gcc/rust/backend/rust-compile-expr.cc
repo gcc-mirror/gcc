@@ -1490,6 +1490,35 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
   tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
   tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
 
+  // this might be an core::ops::index lang item situation
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  if (is_op_overload)
+    {
+      auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
+      tree operator_overload_call
+	= resolve_operator_overload (lang_item_type, expr, array_reference,
+				     index, expr.get_array_expr (),
+				     expr.get_index_expr ());
+
+      // lookup the expected type for this expression
+      TyTy::BaseType *tyty = nullptr;
+      bool ok
+	= ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					  &tyty);
+      rust_assert (ok);
+      tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+
+      // rust deref always returns a reference from this overload then we can
+      // actually do the indirection
+      translated
+	= ctx->get_backend ()->indirect_expression (expected_type,
+						    operator_overload_call,
+						    true, expr.get_locus ());
+      return;
+    }
+
   // lets check if the array is a reference type then we can add an
   // indirection if required
   TyTy::BaseType *array_expr_ty = nullptr;
