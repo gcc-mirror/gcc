@@ -3853,7 +3853,7 @@ loop_distribution::execute (function *fun)
 
       /* Cached scalar evolutions now may refer to wrong or non-existing
 	 loops.  */
-      scev_reset_htab ();
+      scev_reset ();
       mark_virtual_operands_for_renaming (fun);
       rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
     }
