@@ -1410,7 +1410,7 @@
   ""
 {
   if (can_create_pseudo_p ()
-      && !TARGET_GCN5
+      && !TARGET_GCN5_PLUS
       && !gcn_inline_immediate_operand (operands[2], SImode))
     operands[2] = force_reg (SImode, operands[2]);
 
@@ -1451,7 +1451,7 @@
 		(match_operand:SI 1 "register_operand"         "Sg,Sg,v"))
 	      (match_operand:DI 2 "gcn_32bit_immediate_operand" "A, B,A"))
 	    (const_int 32))))]
-  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "TARGET_GCN5_PLUS || gcn_inline_immediate_operand (operands[2], SImode)"
   "@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
@@ -1469,7 +1469,7 @@
   ""
 {
   if (can_create_pseudo_p ()
-      && !TARGET_GCN5
+      && !TARGET_GCN5_PLUS
       && !gcn_inline_immediate_operand (operands[2], SImode))
     operands[2] = force_reg (SImode, operands[2]);
 
@@ -1506,7 +1506,7 @@
 		   (match_operand:SI 1 "register_operand"       "Sg, Sg, v"))
 		 (match_operand:DI 2 "gcn_32bit_immediate_operand"
 								 "A,  B, A")))]
-  "TARGET_GCN5 || gcn_inline_immediate_operand (operands[2], SImode)"
+  "TARGET_GCN5_PLUS || gcn_inline_immediate_operand (operands[2], SImode)"
   "#"
   "&& reload_completed"
   [(const_int 0)]

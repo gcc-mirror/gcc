@@ -66,7 +66,7 @@ static bool ext_gcn_constants_init = 0;
 
 /* Holds the ISA variant, derived from the command line parameters.  */
 
-int gcn_isa = 3;		/* Default to GCN3.  */
+enum gcn_isa gcn_isa = ISA_GCN3;	/* Default to GCN3.  */
 
 /* Reserve this much space for LDS (for propagating variables from
    worker-single mode to worker-partitioned mode), per workgroup.  Global
@@ -129,7 +129,13 @@ gcn_option_override (void)
   if (!flag_pic)
     flag_pic = flag_pie;
 
-  gcn_isa = gcn_arch == PROCESSOR_FIJI ? 3 : 5;
+  gcn_isa = (gcn_arch == PROCESSOR_FIJI ? ISA_GCN3
+      : gcn_arch == PROCESSOR_VEGA10 ? ISA_GCN5
+      : gcn_arch == PROCESSOR_VEGA20 ? ISA_GCN5
+      : gcn_arch == PROCESSOR_GFX908 ? ISA_CDNA1
+      : gcn_arch == PROCESSOR_GFX90a ? ISA_CDNA2
+      : ISA_UNKNOWN);
+  gcc_assert (gcn_isa != ISA_UNKNOWN);
 
   /* The default stack size needs to be small for offload kernels because
      there may be many, many threads.  Also, a smaller stack gives a
@@ -2642,6 +2648,8 @@ gcn_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
 	return gcn_arch == PROCESSOR_VEGA20;
       if (strcmp (name, "gfx908") == 0)
 	return gcn_arch == PROCESSOR_GFX908;
+      if (strcmp (name, "gfx90a") == 0)
+	return gcn_arch == PROCESSOR_GFX90a;
       return 0;
     default:
       gcc_unreachable ();
@@ -3081,13 +3089,35 @@ gcn_expand_prologue ()
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
-  /* m0 is initialized for the usual LDS DS and FLAT memory case.
-     The low-part is the address of the topmost addressable byte, which is
-     size-1.  The high-part is an offset and should be zero.  */
-  emit_move_insn (gen_rtx_REG (SImode, M0_REG),
-		  gen_int_mode (LDS_SIZE, SImode));
+  if (TARGET_M0_LDS_LIMIT)
+  {
+    /* m0 is initialized for the usual LDS DS and FLAT memory case.
+       The low-part is the address of the topmost addressable byte, which is
+       size-1.  The high-part is an offset and should be zero.  */
+    emit_move_insn (gen_rtx_REG (SImode, M0_REG),
+	gen_int_mode (LDS_SIZE, SImode));
 
-  emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
+    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, M0_REG)));
+  }
+
+  if (TARGET_PACKED_WORK_ITEMS
+      && cfun && cfun->machine && !cfun->machine->normal_function)
+  {
+    /* v0 conatins the X, Y and Z dimensions all in one.
+       Expand them out for ABI compatibility.  */
+    /* TODO: implement and use zero_extract.  */
+    rtx v1 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
+    emit_insn (gen_andv64si3 (v1, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 10)));
+    emit_insn (gen_lshrv64si3 (v1, v1, gen_rtx_CONST_INT (VOIDmode, 10)));
+    emit_insn (gen_prologue_use (v1));
+
+    rtx v2 = gen_rtx_REG (V64SImode, VGPR_REGNO (2));
+    emit_insn (gen_andv64si3 (v2, gen_rtx_REG (V64SImode, VGPR_REGNO (0)),
+	       gen_rtx_CONST_INT (VOIDmode, 0x3FF << 20)));
+    emit_insn (gen_lshrv64si3 (v2, v2, gen_rtx_CONST_INT (VOIDmode, 20)));
+    emit_insn (gen_prologue_use (v2));
+  }
 
   if (cfun && cfun->machine && !cfun->machine->normal_function && flag_openmp)
     {
@@ -5243,6 +5273,9 @@ output_file_start (void)
     case PROCESSOR_GFX908:
       cpu = "gfx908";
       break;
+    case PROCESSOR_GFX90a:
+      cpu = "gfx90a";
+      break;
     default: gcc_unreachable ();
     }
 
@@ -5295,6 +5328,10 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
       if (sgpr < MAX_NORMAL_SGPR_COUNT)
 	sgpr = MAX_NORMAL_SGPR_COUNT;
     }
+
+  /* The gfx90a accum_offset field can't represent 0 registers.  */
+  if (gcn_arch == PROCESSOR_GFX90a && vgpr < 4)
+    vgpr = 4;
 
   fputs ("\t.rodata\n"
 	 "\t.p2align\t6\n"
@@ -5364,6 +5401,11 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	      one 64th the wave-front stack size.  */
 	   stack_size_opt / 64,
 	   LDS_SIZE);
+  if (gcn_arch == PROCESSOR_GFX90a)
+    fprintf (file,
+	     "\t  .amdhsa_accum_offset\t%i\n"
+	     "\t  .amdhsa_tg_split\t0\n",
+	     (vgpr+3)&~3); // I think this means the AGPRs come after the VGPRs
   fputs ("\t.end_amdhsa_kernel\n", file);
 
 #if 1
@@ -5392,6 +5434,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   LDS_SIZE,
 	   stack_size_opt / 64,
 	   sgpr, vgpr);
+  if (gcn_arch == PROCESSOR_GFX90a)
+    fprintf (file, "            .agpr_count: 0\n"); // AGPRs are not used, yet
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif
 

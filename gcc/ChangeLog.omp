@@ -1,3 +1,39 @@
+2022-02-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-02-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (amdgcn): Accept --with-arch=gfx908 and gfx90a.
+	* config/gcn/gcn-opts.h (enum gcn_isa): New.
+	(TARGET_GCN3): Use enum gcn_isa.
+	(TARGET_GCN3_PLUS): Likewise.
+	(TARGET_GCN5): Likewise.
+	(TARGET_GCN5_PLUS): Likewise.
+	(TARGET_CDNA1): New.
+	(TARGET_CDNA1_PLUS): New.
+	(TARGET_CDNA2): New.
+	(TARGET_CDNA2_PLUS): New.
+	(TARGET_M0_LDS_LIMIT): New.
+	(TARGET_PACKED_WORK_ITEMS): New.
+	* config/gcn/gcn.cc (gcn_isa): Change to enum gcn_isa.
+	(gcn_option_override): Recognise CDNA ISA variants.
+	(gcn_omp_device_kind_arch_isa): Support gfx90a.
+	(gcn_expand_prologue): Make m0 init optional.
+	Add support for packed work items.
+	(output_file_start): Support gfx90a.
+	(gcn_hsa_declare_function_name): Support gfx90a metadata.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS):Add __CDNA1__ and
+	__CDNA2__.
+	* config/gcn/gcn.md (<su>mulsi3_highpart): Use TARGET_GCN5_PLUS.
+	(<su>mulsi3_highpart_imm): Likewise.
+	(<su>mulsidi3): Likewise.
+	(<su>mulsidi3_imm): Likewise.
+	* config/gcn/gcn.opt (gpu_type): Add gfx90a.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX90a): New.
+	(main): Support gfx90a.
+	* config/gcn/t-gcn-hsa: Add gfx90a multilib.
+	* config/gcn/t-omp-device: Add gfx90a isa.
+
 2022-02-15  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

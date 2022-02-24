@@ -1,3 +1,14 @@
+2022-02-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2022-02-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Add
+	EF_AMDGPU_MACH_AMDGCN_GFX90a.
+	(gcn_gfx90a_s): New.
+	(isa_hsa_name): Support gfx90a.
+	(isa_code): Likewise.
+
 2022-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
