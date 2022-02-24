@@ -280,8 +280,7 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
     {
       rust_error_at (expr.get_index_expr ()->get_locus (),
 		     "expected an ArrayType got [%s]",
-		     infered->as_string ().c_str ());
-      infered = nullptr;
+		     array_expr_ty->as_string ().c_str ());
       return;
     }
 
