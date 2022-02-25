@@ -1715,7 +1715,6 @@ static void consider_binding_level (tree name,
 				    cp_binding_level *lvl,
 				    bool look_within_fields,
 				    enum lookup_name_fuzzy_kind kind);
-static void diagnose_name_conflict (tree, tree);
 
 /* ADL lookup of NAME.  FNS is the result of regular lookup, and we
    don't add duplicates to it.  ARGS is the vector of call
@@ -2711,9 +2710,13 @@ supplement_binding (cxx_binding *binding, tree decl)
   return ok;
 }
 
-/* Diagnose a name conflict between DECL and BVAL.  */
+/* Diagnose a name conflict between DECL and BVAL.
 
-static void
+   This is non-static so maybe_push_used_methods can use it and avoid changing
+   the diagnostic for inherit/using4.C; otherwise it should not be used from
+   outside this file.  */
+
+void
 diagnose_name_conflict (tree decl, tree bval)
 {
   if (TREE_CODE (decl) == TREE_CODE (bval)
@@ -5480,13 +5483,18 @@ push_class_level_binding (tree name, tree x)
 	       && DECL_DEPENDENT_P (bval))
 	return true;
       else if (TREE_CODE (decl) == USING_DECL
+	       && DECL_DEPENDENT_P (decl)
 	       && OVL_P (target_bval))
+	/* The new dependent using beats an old overload.  */
 	old_decl = bval;
       else if (TREE_CODE (bval) == USING_DECL
+	       && DECL_DEPENDENT_P (bval)
 	       && OVL_P (target_decl))
-	old_decl = bval;
+	/* The old dependent using beats a new overload.  */
+	return true;
       else if (OVL_P (target_decl)
 	       && OVL_P (target_bval))
+	/* The new overload set contains the old one.  */
 	old_decl = bval;
 
       if (old_decl && binding->scope == class_binding_level)

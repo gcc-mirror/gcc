@@ -1049,7 +1049,12 @@ add_method (tree type, tree method, bool via_using)
       if (via_using && iter.using_p ()
 	  /* Except handle inherited constructors specially.  */
 	  && ! DECL_CONSTRUCTOR_P (fn))
-	continue;
+	{
+	  if (fn == method)
+	    /* Don't add the same one twice.  */
+	    return false;
+	  continue;
+	}
 
       /* [over.load] Member function declarations with the
 	 same name and the same parameter types cannot be
@@ -1212,10 +1217,11 @@ add_method (tree type, tree method, bool via_using)
       if (via_using)
 	/* Defer to the local function.  */
 	return false;
-      else if (flag_new_inheriting_ctors
-	       && DECL_INHERITED_CTOR (fn))
+      else if (iter.using_p ()
+	       ||  (flag_new_inheriting_ctors
+		    && DECL_INHERITED_CTOR (fn)))
 	{
-	  /* Remove the inherited constructor.  */
+	  /* Remove the inherited function.  */
 	  current_fns = iter.remove_node (current_fns);
 	  continue;
 	}
@@ -1299,21 +1305,65 @@ declared_access (tree decl)
 	  : access_public_node);
 }
 
+/* If DECL is a non-dependent using of non-ctor function members, push them
+   and return true, otherwise return false.  Called from
+   finish_member_declaration.  */
+
+bool
+maybe_push_used_methods (tree decl)
+{
+  if (TREE_CODE (decl) != USING_DECL)
+    return false;
+  tree used = strip_using_decl (decl);
+  if (!used || !is_overloaded_fn (used))
+    return false;
+
+  /* Add the functions to CLASSTYPE_MEMBER_VEC so that overload resolution
+     works within the class body.  */
+  for (tree f : ovl_range (used))
+    {
+      if (DECL_CONSTRUCTOR_P (f))
+	/* Inheriting constructors are handled separately.  */
+	return false;
+
+      bool added = add_method (current_class_type, f, true);
+
+      if (added)
+	alter_access (current_class_type, f, current_access_specifier);
+
+      /* If add_method returns false because f was already declared, look
+	 for a duplicate using-declaration.  */
+      else
+	for (tree d = TYPE_FIELDS (current_class_type); d; d = DECL_CHAIN (d))
+	  if (TREE_CODE (d) == USING_DECL
+	      && DECL_NAME (d) == DECL_NAME (decl)
+	      && same_type_p (USING_DECL_SCOPE (d), USING_DECL_SCOPE (decl)))
+	    {
+	      diagnose_name_conflict (decl, d);
+	      break;
+	    }
+    }
+  return true;
+}
+
 /* Process the USING_DECL, which is a member of T.  */
 
 static void
 handle_using_decl (tree using_decl, tree t)
 {
   tree decl = USING_DECL_DECLS (using_decl);
-  tree name = DECL_NAME (using_decl);
-  tree access = declared_access (using_decl);
-  tree flist = NULL_TREE;
-  tree old_value;
 
   gcc_assert (!processing_template_decl && decl);
 
-  old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false,
-			     tf_warning_or_error);
+  cp_emit_debug_info_for_using (decl, t);
+
+  if (is_overloaded_fn (decl))
+    /* Handled in maybe_push_used_methods.  */
+    return;
+
+  tree name = DECL_NAME (using_decl);
+  tree old_value = lookup_member (t, name, /*protect=*/0, /*want_type=*/false,
+				  tf_warning_or_error);
   if (old_value)
     {
       old_value = OVL_FIRST (old_value);
@@ -1324,27 +1374,16 @@ handle_using_decl (tree using_decl, tree t)
 	old_value = NULL_TREE;
     }
 
-  cp_emit_debug_info_for_using (decl, t);
-
-  if (is_overloaded_fn (decl))
-    flist = decl;
-
   if (! old_value)
     ;
   else if (is_overloaded_fn (old_value))
     {
-      if (flist)
-	/* It's OK to use functions from a base when there are functions with
-	   the same name already present in the current class.  */;
-      else
-	{
-	  error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
-		    "because of local method %q#D with same name",
-		    using_decl, t, old_value);
-	  inform (DECL_SOURCE_LOCATION (old_value),
-		  "local method %q#D declared here", old_value);
-	  return;
-	}
+      error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
+		"because of local method %q#D with same name",
+		using_decl, t, old_value);
+      inform (DECL_SOURCE_LOCATION (old_value),
+	      "local method %q#D declared here", old_value);
+      return;
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
@@ -1357,23 +1396,17 @@ handle_using_decl (tree using_decl, tree t)
     }
 
   iloc_sentinel ils (DECL_SOURCE_LOCATION (using_decl));
+  tree access = declared_access (using_decl);
 
   /* Make type T see field decl FDECL with access ACCESS.  */
-  if (flist)
-    for (tree f : ovl_range (flist))
-      {
-	add_method (t, f, true);
-	alter_access (t, f, access);
-      }
-  else if (USING_DECL_UNRELATED_P (using_decl))
+  if (USING_DECL_UNRELATED_P (using_decl))
     {
       /* C++20 using enum can import non-inherited enumerators into class
 	 scope.  We implement that by making a copy of the CONST_DECL for which
 	 CONST_DECL_USING_P is true.  */
       gcc_assert (TREE_CODE (decl) == CONST_DECL);
 
-      auto cas = make_temp_override (current_access_specifier);
-      set_current_access_from_decl (using_decl);
+      auto cas = make_temp_override (current_access_specifier, access);
       tree copy = copy_decl (decl);
       DECL_CONTEXT (copy) = t;
       DECL_ARTIFICIAL (copy) = true;
@@ -7672,18 +7705,8 @@ finish_struct (tree t, tree attributes)
     {
       tree x;
 
-      /* We need to add the target functions of USING_DECLS, so that
-	 they can be found when the using declaration is not
-	 instantiated yet.  */
       for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-	if (TREE_CODE (x) == USING_DECL)
-	  {
-	    tree fn = strip_using_decl (x);
-  	    if (OVL_P (fn))
-	      for (lkp_iterator iter (fn); iter; ++iter)
-		add_method (t, *iter, true);
-	  }
-	else if (DECL_DECLARES_FUNCTION_P (x))
+	if (DECL_DECLARES_FUNCTION_P (x))
 	  {
 	    DECL_IN_AGGR_P (x) = false;
 	    if (DECL_VIRTUAL_P (x))
@@ -7700,14 +7723,17 @@ finish_struct (tree t, tree attributes)
 	 lookup not to fail or recurse into bases.  This isn't added
 	 to the template decl list so we drop this at instantiation
 	 time.  */
-      tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
-				     NULL_TREE);
-      DECL_CONTEXT (ass_op) = t;
-      USING_DECL_SCOPE (ass_op) = t;
-      DECL_DEPENDENT_P (ass_op) = true;
-      DECL_ARTIFICIAL (ass_op) = true;
-      DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
-      TYPE_FIELDS (t) = ass_op;
+      if (!get_class_binding_direct (t, assign_op_identifier, false))
+	{
+	  tree ass_op = build_lang_decl (USING_DECL, assign_op_identifier,
+					 NULL_TREE);
+	  DECL_CONTEXT (ass_op) = t;
+	  USING_DECL_SCOPE (ass_op) = t;
+	  DECL_DEPENDENT_P (ass_op) = true;
+	  DECL_ARTIFICIAL (ass_op) = true;
+	  DECL_CHAIN (ass_op) = TYPE_FIELDS (t);
+	  TYPE_FIELDS (t) = ass_op;
+	}
 
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;
