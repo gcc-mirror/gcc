@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O2 -save-temps" } */
+/* { dg-options "-O2 -save-temps -misa=sm_35" } */
 
 #define MASK 0x1f
 
