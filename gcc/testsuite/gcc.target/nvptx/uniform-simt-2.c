@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -muniform-simt -mptx=3.1" } */
+/* { dg-options "-O2 -muniform-simt -mptx=3.1 -misa=sm_30" } */
 
 enum memmodel
 {
