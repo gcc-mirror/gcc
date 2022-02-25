@@ -62,6 +62,8 @@ public:
 
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
+
   void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
 
   void visit (TyTy::PointerType &) override { gcc_unreachable (); }

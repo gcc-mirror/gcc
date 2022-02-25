@@ -2430,6 +2430,9 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  std::unique_ptr<Expr> &get_from_expr () { return from; }
+  std::unique_ptr<Expr> &get_to_expr () { return to; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -2479,6 +2482,8 @@ public:
   RangeFromExpr &operator= (RangeFromExpr &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_from_expr () { return from; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2530,6 +2535,8 @@ public:
   RangeToExpr &operator= (RangeToExpr &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_to_expr () { return to; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2616,6 +2623,9 @@ public:
   RangeFromToInclExpr &operator= (RangeFromToInclExpr &&other) = default;
 
   void accept_vis (HIRFullVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_from_expr () { return from; }
+  std::unique_ptr<Expr> &get_to_expr () { return to; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4019,6 +4029,40 @@ protected:
     return new AsyncBlockExpr (*this);
   }
 };
+
+// this is a utility helper class for type-checking and code-generation
+class OperatorExprMeta
+{
+public:
+  OperatorExprMeta (HIR::CompoundAssignmentExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::ArithmeticOrLogicalExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::NegationExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::DereferenceExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  OperatorExprMeta (HIR::ArrayIndexExpr &expr)
+    : node_mappings (expr.get_mappings ()), locus (expr.get_locus ())
+  {}
+
+  const Analysis::NodeMapping &get_mappings () const { return node_mappings; }
+
+  Location get_locus () const { return locus; }
+
+private:
+  const Analysis::NodeMapping node_mappings;
+  Location locus;
+};
+
 } // namespace HIR
 } // namespace Rust
 

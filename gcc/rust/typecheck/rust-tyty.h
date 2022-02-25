@@ -47,6 +47,7 @@ enum TypeKind
   POINTER,
   PARAM,
   ARRAY,
+  SLICE,
   FNDEF,
   FNPTR,
   TUPLE,
@@ -1664,6 +1665,50 @@ public:
 private:
   TyVar element_type;
   HIR::Expr &capacity_expr;
+};
+
+class SliceType : public BaseType
+{
+public:
+  SliceType (HirId ref, Location locus, TyVar base,
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::SLICE,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      element_type (base)
+  {}
+
+  SliceType (HirId ref, HirId ty_ref, Location locus, TyVar base,
+	     std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::SLICE,
+		{Resolver::CanonicalPath::create_empty (), locus}, refs),
+      element_type (base)
+  {}
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  std::string get_name () const override final { return as_string (); }
+
+  BaseType *unify (BaseType *other) override;
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  BaseType *coerce (BaseType *other) override;
+  BaseType *cast (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *get_element_type () const;
+
+  BaseType *clone () const final override;
+
+  bool is_concrete () const final override
+  {
+    return get_element_type ()->is_concrete ();
+  }
+
+private:
+  TyVar element_type;
 };
 
 class BoolType : public BaseType

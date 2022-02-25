@@ -790,7 +790,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 
 tree
 CompileExpr::resolve_operator_overload (
-  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExpr &expr,
+  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
   tree lhs, tree rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
 {
   TyTy::FnType *fntype;
@@ -1375,6 +1375,173 @@ CompileExpr::visit (HIR::IdentifierExpr &expr)
 	translated = CompileItem::compile (resolved_item, ctx, lookup, true,
 					   expr.get_locus ());
     }
+}
+
+void
+CompileExpr::visit (HIR::RangeFromToExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (from == error_mark_node || to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFromExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  if (from == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeToExpr &expr)
+{
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {to}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFullExpr &expr)
+{
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+  translated = ctx->get_backend ()->constructor_expression (adt, false, {}, -1,
+							    expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
+{
+  tree from = CompileExpr::Compile (expr.get_from_expr ().get (), ctx);
+  tree to = CompileExpr::Compile (expr.get_to_expr ().get (), ctx);
+  if (from == error_mark_node || to == error_mark_node)
+    {
+      translated = error_mark_node;
+      return;
+    }
+
+  TyTy::BaseType *tyty = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
+  rust_assert (ok);
+
+  tree adt = TyTyResolveCompile::compile (ctx, tyty);
+
+  // make the constructor
+  translated
+    = ctx->get_backend ()->constructor_expression (adt, false, {from, to}, -1,
+						   expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::ArrayIndexExpr &expr)
+{
+  tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
+  tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
+
+  // this might be an core::ops::index lang item situation
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  if (is_op_overload)
+    {
+      auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
+      tree operator_overload_call
+	= resolve_operator_overload (lang_item_type, expr, array_reference,
+				     index, expr.get_array_expr (),
+				     expr.get_index_expr ());
+
+      // lookup the expected type for this expression
+      TyTy::BaseType *tyty = nullptr;
+      bool ok
+	= ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					  &tyty);
+      rust_assert (ok);
+      tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+
+      // rust deref always returns a reference from this overload then we can
+      // actually do the indirection
+      translated
+	= ctx->get_backend ()->indirect_expression (expected_type,
+						    operator_overload_call,
+						    true, expr.get_locus ());
+      return;
+    }
+
+  // lets check if the array is a reference type then we can add an
+  // indirection if required
+  TyTy::BaseType *array_expr_ty = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    expr.get_array_expr ()->get_mappings ().get_hirid (), &array_expr_ty);
+  rust_assert (ok);
+
+  // do we need to add an indirect reference
+  if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
+    {
+      TyTy::ReferenceType *r
+	= static_cast<TyTy::ReferenceType *> (array_expr_ty);
+      TyTy::BaseType *tuple_type = r->get_base ();
+      tree array_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
+
+      array_reference
+	= ctx->get_backend ()->indirect_expression (array_tyty, array_reference,
+						    true, expr.get_locus ());
+    }
+
+  translated
+    = ctx->get_backend ()->array_index_expression (array_reference, index,
+						   expr.get_locus ());
 }
 
 } // namespace Compile

@@ -59,6 +59,9 @@ TypeKindFormat::to_string (TypeKind kind)
     case TypeKind::ARRAY:
       return "ARRAY";
 
+    case TypeKind::SLICE:
+      return "SLICE";
+
     case TypeKind::FNDEF:
       return "FnDef";
 
@@ -840,16 +843,14 @@ ADTType::is_equal (const BaseType &other) const
 	    return false;
 	}
     }
-  else
-    {
-      for (size_t i = 0; i < number_of_variants (); i++)
-	{
-	  const TyTy::VariantDef *a = get_variants ().at (i);
-	  const TyTy::VariantDef *b = other2.get_variants ().at (i);
 
-	  if (!a->is_equal (*b))
-	    return false;
-	}
+  for (size_t i = 0; i < number_of_variants (); i++)
+    {
+      const TyTy::VariantDef *a = get_variants ().at (i);
+      const TyTy::VariantDef *b = other2.get_variants ().at (i);
+
+      if (!a->is_equal (*b))
+	return false;
     }
 
   return true;
@@ -1502,6 +1503,79 @@ ArrayType::clone () const
 {
   return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
 			element_type, get_combined_refs ());
+}
+
+void
+SliceType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+SliceType::accept_vis (TyConstVisitor &vis) const
+{
+  vis.visit (*this);
+}
+
+std::string
+SliceType::as_string () const
+{
+  return "[" + get_element_type ()->as_string () + "]";
+}
+
+BaseType *
+SliceType::unify (BaseType *other)
+{
+  SliceRules r (this);
+  return r.unify (other);
+}
+
+BaseType *
+SliceType::coerce (BaseType *other)
+{
+  SliceCoercionRules r (this);
+  return r.coerce (other);
+}
+
+BaseType *
+SliceType::cast (BaseType *other)
+{
+  SliceCastRules r (this);
+  return r.cast (other);
+}
+
+bool
+SliceType::can_eq (const BaseType *other, bool emit_errors) const
+{
+  SliceCmp r (this, emit_errors);
+  return r.can_eq (other);
+}
+
+bool
+SliceType::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const SliceType &> (other);
+
+  auto this_element_type = get_element_type ();
+  auto other_element_type = other2.get_element_type ();
+
+  return this_element_type->is_equal (*other_element_type);
+}
+
+BaseType *
+SliceType::get_element_type () const
+{
+  return element_type.get_tyty ();
+}
+
+BaseType *
+SliceType::clone () const
+{
+  return new SliceType (get_ref (), get_ty_ref (), ident.locus, element_type,
+			get_combined_refs ());
 }
 
 void

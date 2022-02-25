@@ -124,6 +124,7 @@ public:
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &) override { gcc_unreachable (); }
   void visit (TyTy::IntType &) override { gcc_unreachable (); }
   void visit (TyTy::UintType &) override { gcc_unreachable (); }
@@ -224,6 +225,7 @@ public:
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &) override { gcc_unreachable (); }
   void visit (TyTy::IntType &) override { gcc_unreachable (); }
   void visit (TyTy::UintType &) override { gcc_unreachable (); }
@@ -286,6 +288,7 @@ public:
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::SliceType &) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &) override { gcc_unreachable (); }
   void visit (TyTy::IntType &) override { gcc_unreachable (); }
   void visit (TyTy::UintType &) override { gcc_unreachable (); }
@@ -343,6 +346,7 @@ public:
   void visit (const TyTy::TupleType &) override {}
   void visit (const TyTy::FnPtr &) override {}
   void visit (const TyTy::ArrayType &) override {}
+  void visit (const TyTy::SliceType &) override {}
   void visit (const TyTy::BoolType &) override {}
   void visit (const TyTy::IntType &) override {}
   void visit (const TyTy::UintType &) override {}

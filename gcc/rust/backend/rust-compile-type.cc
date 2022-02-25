@@ -345,6 +345,13 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 }
 
 void
+TyTyResolveCompile::visit (const TyTy::SliceType &type)
+{
+  // TODO
+  gcc_unreachable ();
+}
+
+void
 TyTyResolveCompile::visit (const TyTy::BoolType &type)
 {
   tree compiled_type = nullptr;

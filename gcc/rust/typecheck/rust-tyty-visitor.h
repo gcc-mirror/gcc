@@ -33,6 +33,7 @@ public:
   virtual void visit (FnType &type) = 0;
   virtual void visit (FnPtr &type) = 0;
   virtual void visit (ArrayType &type) = 0;
+  virtual void visit (SliceType &type) = 0;
   virtual void visit (BoolType &type) = 0;
   virtual void visit (IntType &type) = 0;
   virtual void visit (UintType &type) = 0;
@@ -61,6 +62,7 @@ public:
   virtual void visit (const FnType &type) = 0;
   virtual void visit (const FnPtr &type) = 0;
   virtual void visit (const ArrayType &type) = 0;
+  virtual void visit (const SliceType &type) = 0;
   virtual void visit (const BoolType &type) = 0;
   virtual void visit (const IntType &type) = 0;
   virtual void visit (const UintType &type) = 0;

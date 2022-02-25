@@ -201,36 +201,7 @@ public:
 
   void visit (HIR::CompoundAssignmentExpr &expr) override;
 
-  void visit (HIR::ArrayIndexExpr &expr) override
-  {
-    tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
-    tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
-
-    // lets check if the array is a reference type then we can add an
-    // indirection if required
-    TyTy::BaseType *array_expr_ty = nullptr;
-    bool ok = ctx->get_tyctx ()->lookup_type (
-      expr.get_array_expr ()->get_mappings ().get_hirid (), &array_expr_ty);
-    rust_assert (ok);
-
-    // do we need to add an indirect reference
-    if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
-      {
-	TyTy::ReferenceType *r
-	  = static_cast<TyTy::ReferenceType *> (array_expr_ty);
-	TyTy::BaseType *tuple_type = r->get_base ();
-	tree array_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
-
-	array_reference
-	  = ctx->get_backend ()->indirect_expression (array_tyty,
-						      array_reference, true,
-						      expr.get_locus ());
-      }
-
-    translated
-      = ctx->get_backend ()->array_index_expression (array_reference, index,
-						     expr.get_locus ());
-  }
+  void visit (HIR::ArrayIndexExpr &expr) override;
 
   void visit (HIR::ArrayExpr &expr) override;
 
@@ -803,6 +774,16 @@ public:
 
   void visit (HIR::MatchExpr &expr) override;
 
+  void visit (HIR::RangeFromToExpr &expr) override;
+
+  void visit (HIR::RangeFromExpr &expr) override;
+
+  void visit (HIR::RangeToExpr &expr) override;
+
+  void visit (HIR::RangeFullExpr &expr) override;
+
+  void visit (HIR::RangeFromToInclExpr &expr) override;
+
 protected:
   tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 				  TyTy::BaseType *receiver,
@@ -818,7 +799,7 @@ protected:
 
   tree
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExpr &expr, tree lhs, tree rhs,
+			     HIR::OperatorExprMeta expr, tree lhs, tree rhs,
 			     HIR::Expr *lhs_expr, HIR::Expr *rhs_expr);
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,

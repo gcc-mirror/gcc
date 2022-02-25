@@ -153,6 +153,17 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (SliceType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "invalid cast [%s] to [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
   virtual void visit (BoolType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -456,6 +467,19 @@ public:
   }
 
   void visit (ArrayType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseCastRules::visit (type);
+  }
+
+  void visit (SliceType &type) override
   {
     bool is_valid
       = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
@@ -816,6 +840,35 @@ private:
   BaseType *get_base () override { return base; }
 
   ArrayType *base;
+};
+
+class SliceCastRules : public BaseCastRules
+{
+  using Rust::TyTy::BaseCastRules::visit;
+
+public:
+  SliceCastRules (SliceType *base) : BaseCastRules (base), base (base) {}
+
+  void visit (SliceType &type) override
+  {
+    // check base type
+    auto base_resolved
+      = base->get_element_type ()->unify (type.get_element_type ());
+    if (base_resolved == nullptr)
+      {
+	BaseCastRules::visit (type);
+	return;
+      }
+
+    resolved = new SliceType (type.get_ref (), type.get_ty_ref (),
+			      type.get_ident ().locus,
+			      TyVar (base_resolved->get_ref ()));
+  }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  SliceType *base;
 };
 
 class BoolCastRules : public BaseCastRules
