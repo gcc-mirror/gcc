@@ -32,6 +32,7 @@ enum ptx_isa
 
 enum ptx_version
 {
+  PTX_VERSION_default,
   PTX_VERSION_3_0,
   PTX_VERSION_3_1,
   PTX_VERSION_4_2,
