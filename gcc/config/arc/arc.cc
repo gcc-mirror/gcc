@@ -2256,7 +2256,8 @@ gen_compare_reg (rtx comparison, machine_mode omode)
   cmode = GET_MODE (x);
   if (cmode == VOIDmode)
     cmode = GET_MODE (y);
-  gcc_assert (cmode == SImode || cmode == SFmode || cmode == DFmode);
+  if (cmode != SImode && cmode != SFmode && cmode != DFmode)
+    return NULL_RTX;
   if (cmode == SImode)
     {
       if (!register_operand (x, SImode))

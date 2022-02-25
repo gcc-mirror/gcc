@@ -1618,8 +1618,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		         (match_operand:SI 2 "nonmemory_operand" "")
  		         (match_operand:SI 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
-
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_expand "movdicc"
   [(set (match_operand:DI 0 "dest_reg_operand" "")
@@ -1627,7 +1630,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		        (match_operand:DI 2 "nonmemory_operand" "")
 		        (match_operand:DI 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 
 (define_expand "movsfcc"
@@ -1636,7 +1643,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		      (match_operand:SF 2 "nonmemory_operand" "")
 		      (match_operand:SF 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "dest_reg_operand" "")
@@ -1644,7 +1655,11 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 		      (match_operand:DF 2 "nonmemory_operand" "")
 		      (match_operand:DF 3 "register_operand" "")))]
   ""
-  "operands[1] = gen_compare_reg (operands[1], VOIDmode);")
+  "
+  operands[1] = gen_compare_reg (operands[1], VOIDmode);
+  if (operands[1] == NULL_RTX)
+    FAIL;
+  ")
 
 (define_insn "*movsicc_insn"
   [(set (match_operand:SI 0 "dest_reg_operand" "=w,w")
