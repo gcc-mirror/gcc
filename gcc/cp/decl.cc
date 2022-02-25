@@ -3613,11 +3613,6 @@ check_goto (tree decl)
   if (TREE_CODE (decl) != LABEL_DECL)
     return;
 
-  /* We didn't record any information about this label when we created it,
-     and there's not much point since it's trivial to analyze as a return.  */
-  if (decl == cdtor_label)
-    return;
-
   hashval_t hash = IDENTIFIER_HASH_VALUE (DECL_NAME (decl));
   named_label_entry **slot
     = named_labels->find_slot_with_hash (DECL_NAME (decl), hash, NO_INSERT);
@@ -17325,14 +17320,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   ++function_depth;
 
-  if (DECL_DESTRUCTOR_P (decl1)
-      || (DECL_CONSTRUCTOR_P (decl1)
-	  && targetm.cxx.cdtor_returns_this ()))
-    {
-      cdtor_label = create_artificial_label (input_location);
-      LABEL_DECL_CDTOR (cdtor_label) = true;
-    }
-
   start_fname_decls ();
 
   store_parm_decls (current_function_parms);
@@ -17503,9 +17490,6 @@ finish_constructor_body (void)
 
   if (targetm.cxx.cdtor_returns_this ())
     {
-      /* Any return from a constructor will end up here.  */
-      add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
-
       val = DECL_ARGUMENTS (current_function_decl);
       suppress_warning (val, OPT_Wuse_after_free);
       val = build2 (MODIFY_EXPR, TREE_TYPE (val),
@@ -17591,10 +17575,6 @@ static void
 finish_destructor_body (void)
 {
   tree exprstmt;
-
-  /* Any return from a destructor will end up here; that way all base
-     and member cleanups will be run when the function returns.  */
-  add_stmt (build_stmt (input_location, LABEL_EXPR, cdtor_label));
 
   if (targetm.cxx.cdtor_returns_this ())
     {

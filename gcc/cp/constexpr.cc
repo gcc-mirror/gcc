@@ -6060,9 +6060,7 @@ static bool
 returns (tree *jump_target)
 {
   return *jump_target
-    && (TREE_CODE (*jump_target) == RETURN_EXPR
-	|| (TREE_CODE (*jump_target) == LABEL_DECL
-	    && LABEL_DECL_CDTOR (*jump_target)));
+    && TREE_CODE (*jump_target) == RETURN_EXPR;
 }
 
 static bool
@@ -7473,9 +7471,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case GOTO_EXPR:
       if (breaks (&TREE_OPERAND (t, 0))
-	  || continues (&TREE_OPERAND (t, 0))
-	  /* Allow for jumping to a cdtor_label.  */
-	  || returns (&TREE_OPERAND (t, 0)))
+	  || continues (&TREE_OPERAND (t, 0)))
 	*jump_target = TREE_OPERAND (t, 0);
       else
 	{

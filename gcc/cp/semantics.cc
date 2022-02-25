@@ -1238,17 +1238,6 @@ finish_return_stmt (tree expr)
     {
       if (warn_sequence_point)
 	verify_sequence_points (expr);
-
-      if (DECL_DESTRUCTOR_P (current_function_decl)
-	  || (DECL_CONSTRUCTOR_P (current_function_decl)
-	      && targetm.cxx.cdtor_returns_this ()))
-	{
-	  /* Similarly, all destructors must run destructors for
-	     base-classes before returning.  So, all returns in a
-	     destructor get sent to the DTOR_LABEL; finish_function emits
-	     code to return a value there.  */
-	  return finish_goto_stmt (cdtor_label);
-	}
     }
 
   r = build_stmt (input_location, RETURN_EXPR, expr);

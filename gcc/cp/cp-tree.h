@@ -543,7 +543,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
-      LABEL_DECL_CDTOR (in LABEL_DECL)
       USING_DECL_UNRELATED_P (in USING_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
@@ -2057,7 +2056,6 @@ struct named_label_hash : ggc_remove <named_label_entry *>
 struct GTY(()) language_function {
   struct c_language_function base;
 
-  tree x_cdtor_label;
   tree x_current_class_ptr;
   tree x_current_class_ref;
   tree x_eh_spec_block;
@@ -2090,13 +2088,6 @@ struct GTY(()) language_function {
 /* The current C++-specific per-function global variables.  */
 
 #define cp_function_chain (cfun->language)
-
-/* In a constructor destructor, the point at which all derived class
-   destroying/construction has been done.  I.e., just before a
-   constructor returns, or before any base class destroying will be done
-   in a destructor.  */
-
-#define cdtor_label cp_function_chain->x_cdtor_label
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
@@ -4277,11 +4268,6 @@ get_vec_init_expr (tree t)
 /* The namespace-scope decl a DECL_LOCAL_DECL_P aliases.  */
 #define DECL_LOCAL_DECL_ALIAS(NODE)			\
   DECL_ACCESS ((gcc_checking_assert (DECL_LOCAL_DECL_P (NODE)), NODE))
-
-/* Nonzero if NODE is the target for genericization of 'return' stmts
-   in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
-#define LABEL_DECL_CDTOR(NODE) \
-  DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
 
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by
