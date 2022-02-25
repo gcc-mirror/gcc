@@ -1,3 +1,14 @@
+2022-02-24  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Call find_fde_tail
+	with 0 instead of NULL.
+
+2022-02-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/104656
+	* configure.ac: --disable-gcov if targetting bpf-*.
+	* configure: Regenerate.
+
 2022-01-25  Florian Weimer  <fweimer@redhat.com>
 
 	PR libgcc/104207

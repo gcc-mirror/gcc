@@ -1,3 +1,14 @@
+2022-02-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84519
+	* dump-parse-tree.cc (show_code_node): Dump QUIET specifier when
+	present.
+	* match.cc (gfc_match_stopcode): Implement parsing of F2018 QUIET
+	specifier.  F2018 stopcodes may have non-default integer kind.
+	* resolve.cc (gfc_resolve_code): Add checks for QUIET argument.
+	* trans-stmt.cc (gfc_trans_stop): Pass QUIET specifier to call of
+	library function.
+
 2022-02-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104619

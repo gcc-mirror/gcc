@@ -1,3 +1,49 @@
+2022-02-24  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/invoke.texi (RISC-V -mcmodel=medany): Document the degree
+	of position independence that -mcmodel=medany affords.
+
+2022-02-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR target/104656
+	* configure.ac: --disable-gcov if targetting bpf-*.
+	* configure: Regenerate.
+
+2022-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104676
+	* tree-loop-distribution.cc (loop_distribution::execute):
+	Do a full scev_reset.
+
+2022-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104601
+	* tree-ssa-sccvn.cc (visit_reference_op_call): For calls with
+	non-SSA_NAME lhs value number vdef to itself instead of e.g. the
+	vuse value number.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_omp_device_kind_arch_isa): Handle
+	sm_70, sm_75 and sm_80.
+	* config/nvptx/t-omp-device: Add sm_53, sm_70, sm_75 and sm_80.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "rotlsi3", define_insn
+	"rotrsi3"): New define_insn.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.cc (gen_comment): Use
+	DECL_SOURCE_LOCATION (cfun->decl) instead of cfun->function_start_locus.
+
+2022-02-24  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (<code>v1ti3): Add suffix and replace
+	isa attr of alternative 2 from avx to avx512vl.
+
 2022-02-23  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

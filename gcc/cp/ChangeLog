@@ -1,3 +1,7 @@
+2022-02-24  Martin Liska  <mliska@suse.cz>
+
+	* pt.cc (defarg_insts_for): Use braces for subobject.
+
 2022-02-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94944

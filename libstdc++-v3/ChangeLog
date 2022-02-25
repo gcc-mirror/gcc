@@ -1,3 +1,9 @@
+2022-02-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104602
+	* include/std/source_location (source_location::current): Use
+	deduced type of __builtin_source_location().
+
 2022-02-22  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_base.h (__detail::__is_initializer_list):

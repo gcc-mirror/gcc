@@ -1,3 +1,36 @@
+2022-02-24  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR testsuite/100407
+	* gcc.c-torture/compile/attr-retain-1.c: Add -G0 for 32-bit PowerPC.
+	* gcc.c-torture/compile/attr-retain-2.c: Likewise.
+
+2022-02-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/84519
+	* gfortran.dg/stop_1.f90: New test.
+	* gfortran.dg/stop_2.f: New test.
+	* gfortran.dg/stop_3.f90: New test.
+	* gfortran.dg/stop_4.f90: New test.
+
+2022-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/104676
+	* gcc.dg/torture/pr104676.c: New testcase.
+
+2022-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104601
+	* g++.dg/torture/pr104601.C: New test.
+
+2022-02-24  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.target/nvptx/rotate-run.c: New test.
+	* gcc.target/nvptx/rotate.c: New test.
+
+2022-02-24  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vl-logicsuffix-1.c: New test.
+
 2022-02-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/104434
