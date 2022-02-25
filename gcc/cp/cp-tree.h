@@ -6833,7 +6833,7 @@ extern void xref_basetypes			(tree, tree);
 extern tree start_enum				(tree, tree, tree, tree, bool, bool *);
 extern void finish_enum_value_list		(tree);
 extern void finish_enum				(tree);
-extern void build_enumerator			(tree, tree, tree, tree, location_t);
+extern tree build_enumerator			(tree, tree, tree, tree, location_t);
 extern tree lookup_enumerator			(tree, tree);
 extern bool start_preparsed_function		(tree, tree, int);
 extern bool start_function			(cp_decl_specifier_seq *,

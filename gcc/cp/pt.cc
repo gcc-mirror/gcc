@@ -26944,9 +26944,8 @@ tsubst_enum (tree tag, tree newtag, tree args)
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
       tree value;
-      tree decl;
+      tree decl = TREE_VALUE (e);
 
-      decl = TREE_VALUE (e);
       /* Note that in a template enum, the TREE_VALUE is the
 	 CONST_DECL, not the corresponding INTEGER_CST.  */
       value = tsubst_expr (DECL_INITIAL (decl),
@@ -26958,8 +26957,14 @@ tsubst_enum (tree tag, tree newtag, tree args)
 
       /* Actually build the enumerator itself.  Here we're assuming that
 	 enumerators can't have dependent attributes.  */
-      build_enumerator (DECL_NAME (decl), value, newtag,
-			DECL_ATTRIBUTES (decl), DECL_SOURCE_LOCATION (decl));
+      tree newdecl = build_enumerator (DECL_NAME (decl), value, newtag,
+				       DECL_ATTRIBUTES (decl),
+				       DECL_SOURCE_LOCATION (decl));
+      /* Attribute deprecated without an argument isn't sticky: it'll
+	 melt into a tree flag, so we need to propagate the flag here,
+	 since we just created a new enumerator.  */
+      TREE_DEPRECATED (newdecl) = TREE_DEPRECATED (decl);
+      TREE_UNAVAILABLE (newdecl) = TREE_UNAVAILABLE (decl);
     }
 
   if (SCOPED_ENUM_P (newtag))
@@ -26970,6 +26975,10 @@ tsubst_enum (tree tag, tree newtag, tree args)
 
   DECL_SOURCE_LOCATION (TYPE_NAME (newtag))
     = DECL_SOURCE_LOCATION (TYPE_NAME (tag));
+  TREE_DEPRECATED (newtag) = TREE_DEPRECATED (tag);
+  /* We don't need to propagate TREE_UNAVAILABLE here, because it is, unlike
+     deprecated, applied at instantiation time rather than template
+     definition time.  */
 }
 
 /* DECL is a FUNCTION_DECL that is a template specialization.  Return
