@@ -4640,6 +4640,31 @@ gimple_phi_arg_has_location (const gphi *phi, size_t i)
   return gimple_phi_arg_location (phi, i) != UNKNOWN_LOCATION;
 }
 
+/* Return the number of arguments that can be accessed by gimple_arg.  */
+
+static inline unsigned
+gimple_num_args (const gimple *gs)
+{
+  if (auto phi = dyn_cast<const gphi *> (gs))
+    return gimple_phi_num_args (phi);
+  if (auto call = dyn_cast<const gcall *> (gs))
+    return gimple_call_num_args (call);
+  return gimple_num_ops (as_a <const gassign *> (gs)) - 1;
+}
+
+/* GS must be an assignment, a call, or a PHI.
+   If it's an assignment, return rhs operand I.
+   If it's a call, return function argument I.
+   If it's a PHI, return the value of PHI argument I.  */
+
+static inline tree
+gimple_arg (const gimple *gs, unsigned int i)
+{
+  if (auto phi = dyn_cast<const gphi *> (gs))
+    return gimple_phi_arg_def (phi, i);
+  if (auto call = dyn_cast<const gcall *> (gs))
+    return gimple_call_arg (call, i);
+  return gimple_op (as_a <const gassign *> (gs), i + 1);                                                                                                                                                                                                                       }
 
 /* Return the region number for GIMPLE_RESX RESX_STMT.  */
 
