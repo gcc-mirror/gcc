@@ -33,6 +33,14 @@ typedef int TupleIndex;
 namespace HIR {
 // foward decl: ast visitor
 class HIRFullVisitor;
+class HIRStmtVisitor;
+class HIRTraitItemVisitor;
+class HIRExternalItemVisitor;
+class HIRVisItemVisitor;
+class HIRExpressionVisitor;
+class HIRPatternVisitor;
+class HIRImplVisitor;
+class HIRTypeVisitor;
 
 // forward decl for use in token tree method
 class Token;
@@ -97,6 +105,7 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+  virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
   virtual Location get_locus () const = 0;
 
@@ -136,8 +145,6 @@ public:
   virtual void
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
-
-  virtual void accept_vis (HIRFullVisitor &vis ATTRIBUTE_UNUSED) {}
 
   AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
@@ -225,8 +232,6 @@ public:
 
   virtual Location get_locus () const = 0;
 
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
-
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
   // Clone function implementation as pure virtual method
@@ -235,6 +240,9 @@ public:
   virtual BlockType get_block_expr_type () const = 0;
 
   virtual ExprType get_expression_type () const = 0;
+
+  virtual void accept_vis (HIRExpressionVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // Constructor
@@ -318,6 +326,7 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
 
   // Clones this object.
   std::unique_ptr<IdentifierExpr> clone_identifier_expr () const
@@ -380,6 +389,7 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+  virtual void accept_vis (HIRPatternVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
 
@@ -420,6 +430,7 @@ public:
    * declaration. */
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+  virtual void accept_vis (HIRTypeVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -704,6 +715,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
+  virtual void accept_vis (HIRTraitItemVisitor &vis) = 0;
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   virtual const std::string trait_identifier () const = 0;
@@ -733,7 +745,9 @@ public:
 
   virtual std::string as_string () const = 0;
 
+  virtual void accept_vis (HIRImplVisitor &vis) = 0;
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
+  virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 

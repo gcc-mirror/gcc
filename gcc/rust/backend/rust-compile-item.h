@@ -24,11 +24,9 @@
 namespace Rust {
 namespace Compile {
 
-class CompileItem : public HIRCompileBase
+class CompileItem : public HIRCompileBase, public HIR::HIRStmtVisitor
 {
 protected:
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static tree compile (HIR::Item *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
@@ -46,16 +44,32 @@ public:
   }
 
   void visit (HIR::StaticItem &var) override;
-
   void visit (HIR::ConstantItem &constant) override;
-
   void visit (HIR::Function &function) override;
-
   void visit (HIR::ImplBlock &impl_block) override;
-
   void visit (HIR::ExternBlock &extern_block) override;
-
   void visit (HIR::Module &module) override;
+
+  // Empty visit for unused Stmt HIR nodes.
+  void visit (HIR::TupleStruct &) override {}
+  void visit (HIR::EnumItem &) override {}
+  void visit (HIR::EnumItemTuple &) override {}
+  void visit (HIR::EnumItemStruct &) override {}
+  void visit (HIR::EnumItemDiscriminant &) override {}
+  void visit (HIR::TypePathSegmentFunction &) override {}
+  void visit (HIR::TypePath &) override {}
+  void visit (HIR::QualifiedPathInType &) override {}
+  void visit (HIR::ExternCrate &) override {}
+  void visit (HIR::UseDeclaration &) override {}
+  void visit (HIR::TypeAlias &) override {}
+  void visit (HIR::StructStruct &) override {}
+  void visit (HIR::Enum &) override {}
+  void visit (HIR::Union &) override {}
+  void visit (HIR::Trait &) override {}
+  void visit (HIR::EmptyStmt &) override {}
+  void visit (HIR::LetStmt &) override {}
+  void visit (HIR::ExprStmtWithoutBlock &) override {}
+  void visit (HIR::ExprStmtWithBlock &) override {}
 
 protected:
   CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)

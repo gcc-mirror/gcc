@@ -25,10 +25,8 @@
 namespace Rust {
 namespace Compile {
 
-class ResolvePathRef : public HIRCompileBase
+class ResolvePathRef : public HIRCompileBase, public HIR::HIRPatternVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static tree Compile (HIR::QualifiedPathInExpression &expr, Context *ctx)
   {
@@ -45,10 +43,20 @@ public:
   }
 
   void visit (HIR::PathInExpression &expr) override;
-
   void visit (HIR::QualifiedPathInExpression &expr) override;
 
-private:
+  // Empty visit for unused Pattern HIR nodes.
+  void visit (HIR::GroupedPattern &) override {}
+  void visit (HIR::IdentifierPattern &) override {}
+  void visit (HIR::LiteralPattern &) override {}
+  void visit (HIR::RangePattern &) override {}
+  void visit (HIR::ReferencePattern &) override {}
+  void visit (HIR::SlicePattern &) override {}
+  void visit (HIR::StructPattern &) override {}
+  void visit (HIR::TuplePattern &) override {}
+  void visit (HIR::TupleStructPattern &) override {}
+  void visit (HIR::WildcardPattern &) override {}
+
   ResolvePathRef (Context *ctx)
     : HIRCompileBase (ctx), resolved (error_mark_node)
   {}

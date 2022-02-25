@@ -26,10 +26,8 @@
 namespace Rust {
 namespace Compile {
 
-class CompileStmt : public HIRCompileBase
+class CompileStmt : public HIRCompileBase, public HIR::HIRStmtVisitor
 {
-  using Rust::Compile::HIRCompileBase::visit;
-
 public:
   static tree Compile (HIR::Stmt *stmt, Context *ctx)
   {
@@ -102,6 +100,30 @@ public:
 	ctx->add_statement (s);
       }
   }
+
+  // Empty visit for unused Stmt HIR nodes.
+  void visit (HIR::TupleStruct &) override {}
+  void visit (HIR::EnumItem &) override {}
+  void visit (HIR::EnumItemTuple &) override {}
+  void visit (HIR::EnumItemStruct &) override {}
+  void visit (HIR::EnumItemDiscriminant &) override {}
+  void visit (HIR::TypePathSegmentFunction &) override {}
+  void visit (HIR::TypePath &) override {}
+  void visit (HIR::QualifiedPathInType &) override {}
+  void visit (HIR::Module &) override {}
+  void visit (HIR::ExternCrate &) override {}
+  void visit (HIR::UseDeclaration &) override {}
+  void visit (HIR::Function &) override {}
+  void visit (HIR::TypeAlias &) override {}
+  void visit (HIR::StructStruct &) override {}
+  void visit (HIR::Enum &) override {}
+  void visit (HIR::Union &) override {}
+  void visit (HIR::ConstantItem &) override {}
+  void visit (HIR::StaticItem &) override {}
+  void visit (HIR::Trait &) override {}
+  void visit (HIR::ImplBlock &) override {}
+  void visit (HIR::ExternBlock &) override {}
+  void visit (HIR::EmptyStmt &) override {}
 
 private:
   CompileStmt (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}

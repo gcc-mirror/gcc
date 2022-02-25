@@ -139,6 +139,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 };
 
 // An opaque value of another type that implements a set of traits
@@ -196,6 +197,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
   {
@@ -275,6 +277,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 };
 
 // Impl trait with a single bound? Poor reference material here.
@@ -311,6 +314,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 };
 
 class TypePath; // definition moved to "rust-path.h"
@@ -362,6 +366,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
   const std::vector<std::unique_ptr<Type> > &get_elems () const
@@ -411,6 +416,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 };
 
 // A type consisting of a pointer without safety or liveness guarantees
@@ -453,6 +459,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   std::unique_ptr<Type> &get_type () { return type; }
 
@@ -532,6 +539,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   Lifetime &get_lifetime () { return lifetime; }
 
@@ -598,6 +606,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   Type *get_element_type () { return elem_type.get (); }
 
@@ -657,6 +666,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -703,6 +713,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 };
 
 class QualifiedPathInType; // definition moved to "rust-path.h"
@@ -845,6 +856,7 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRTypeVisitor &vis) override;
 
   std::vector<MaybeNamedParam> &get_function_params () { return params; }
   const std::vector<MaybeNamedParam> &get_function_params () const
