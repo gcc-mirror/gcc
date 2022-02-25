@@ -276,18 +276,11 @@ sm_version_to_string (enum ptx_isa sm)
 {
   switch (sm)
     {
-    case PTX_ISA_SM30:
-      return "30";
-    case PTX_ISA_SM35:
-      return "35";
-    case PTX_ISA_SM53:
-      return "53";
-    case PTX_ISA_SM70:
-      return "70";
-    case PTX_ISA_SM75:
-      return "75";
-    case PTX_ISA_SM80:
-      return "80";
+#define NVPTX_SM(XX, SEP)			\
+      case PTX_ISA_SM ## XX:			\
+	return #XX;
+#include "nvptx-sm.def"
+#undef NVPTX_SM
     default:
       gcc_unreachable ();
     }
@@ -6177,18 +6170,13 @@ nvptx_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_arch:
       return strcmp (name, "nvptx") == 0;
     case omp_device_isa:
-      if (strcmp (name, "sm_30") == 0)
-	return !TARGET_SM35;
-      if (strcmp (name, "sm_35") == 0)
-	return TARGET_SM35 && !TARGET_SM53;
-      if (strcmp (name, "sm_53") == 0)
-	return TARGET_SM53 && !TARGET_SM70;
-      if (strcmp (name, "sm_70") == 0)
-	return TARGET_SM70 && !TARGET_SM75;
-      if (strcmp (name, "sm_75") == 0)
-	return TARGET_SM75 && !TARGET_SM80;
-      if (strcmp (name, "sm_80") == 0)
-	return TARGET_SM80;
+#define NVPTX_SM(XX, SEP)				\
+      {							\
+	if (strcmp (name, "sm_" #XX) == 0)		\
+	  return ptx_isa_option == PTX_ISA_SM ## XX;	\
+      }
+#include "nvptx-sm.def"
+#undef NVPTX_SM
       return 0;
     default:
       gcc_unreachable ();

@@ -1,5 +1,4 @@
-/* Definitions for the NVPTX port needed for option handling.
-   Copyright (C) 2015-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2022 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -17,28 +16,15 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef NVPTX_OPTS_H
-#define NVPTX_OPTS_H
-
-enum ptx_isa
-{
-#define NVPTX_SM(XX, SEP) PTX_ISA_SM ## XX SEP
-#define NVPTX_SM_SEP ,
-#include "nvptx-sm.def"
-#undef NVPTX_SM_SEP
-#undef NVPTX_SM
-};
-
-enum ptx_version
-{
-  PTX_VERSION_default,
-  PTX_VERSION_3_0,
-  PTX_VERSION_3_1,
-  PTX_VERSION_4_2,
-  PTX_VERSION_6_0,
-  PTX_VERSION_6_3,
-  PTX_VERSION_7_0
-};
-
+#ifndef NVPTX_SM_SEP
+#define NVPTX_SM_SEP
 #endif
 
+NVPTX_SM (30, NVPTX_SM_SEP)
+NVPTX_SM (35, NVPTX_SM_SEP)
+NVPTX_SM (53, NVPTX_SM_SEP)
+NVPTX_SM (70, NVPTX_SM_SEP)
+NVPTX_SM (75, NVPTX_SM_SEP)
+NVPTX_SM (80,)
+
+#undef NVPTX_SM_SEP
