@@ -1,5 +1,5 @@
 /* { dg-do link { target { offload_target_nvptx } } } */
-/* { dg-additional-options "-foffload=-misa=sm_80" } */
+/* { dg-additional-options "-foffload=-misa=sm_80 -foffload=-mptx=_" } */
 /* { dg-additional-options "-foffload=-fdump-tree-optimized" } */
 
 #include "declare-variant-3.h"
