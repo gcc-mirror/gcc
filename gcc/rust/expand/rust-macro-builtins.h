@@ -28,6 +28,9 @@ class MacroBuiltin
 public:
   static AST::ASTFragment assert (Location invoc_locus,
 				  AST::MacroInvocData &invoc);
+
+  static AST::ASTFragment file (Location invoc_locus,
+				AST::MacroInvocData &invoc);
 };
 } // namespace Rust
 
