@@ -1394,7 +1394,10 @@
  [(set (match_operand:VEC_N 0 "nonimmediate_operand")
        (match_operand:VEC_N 1 "any_operand"))]
  "VECTOR_MEM_VSX_P (<MODE>mode) && TARGET_ALLOW_MOVMISALIGN"
- "")
+{
+  rs6000_emit_move (operands[0], operands[1], <MODE>mode);
+  DONE;
+})
 
 ;; Vector shift right in bits. Currently supported ony for shift
 ;; amounts that can be expressed as byte shifts (divisible by 8).
