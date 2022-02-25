@@ -2776,13 +2776,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (minus (convert? (negate @0)) integer_each_onep)
    (if (!TYPE_OVERFLOW_TRAPS (type)
+	&& TREE_CODE (type) != COMPLEX_TYPE
 	&& tree_nop_conversion_p (type, TREE_TYPE (@0)))
     (bit_not (convert @0))))
 
   /* -1 - A -> ~A */
   (simplify
    (minus integer_all_onesp @0)
-   (bit_not @0))
+   (if (TREE_CODE (type) != COMPLEX_TYPE)
+    (bit_not @0)))
 
   /* (T)(P + A) - (T)P -> (T) A */
   (simplify
