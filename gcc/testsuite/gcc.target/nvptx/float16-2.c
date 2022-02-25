@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -misa=sm_80" } */
+/* { dg-options "-O2 -ffast-math -misa=sm_80 -mptx=_" } */
 
 _Float16 x;
 _Float16 y;
