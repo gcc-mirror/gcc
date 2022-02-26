@@ -1,3 +1,91 @@
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* match.pd (t * 2U / 2 -> t & (~0 / 2), t / 2U * 2 -> t & ~1):
+	Restrict simplifications to INTEGRAL_TYPE_P.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* config/rs6000/vector.md (movmisalign<mode>): Use rs6000_emit_move.
+
+2022-02-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.cc (gen_compare_reg): Return NULL_RTX if the
+	comparison is not valid.
+	* config/arc/arc.md (movsicc): Fail if comparison is not valid.
+	(movdicc): Likewise.
+	(movsfcc): Likewise.
+	(movdfcc): Likewise.
+
+2022-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103037
+	* tree-ssa-sccvn.h (alloc_vn_nary_op_noinit): Declare.
+	(vn_nary_length_from_stmt): Likewise.
+	(init_vn_nary_op_from_stmt): Likewise.
+	(vn_nary_op_compute_hash): Likewise.
+	* tree-ssa-sccvn.cc (alloc_vn_nary_op_noinit): Export.
+	(vn_nary_length_from_stmt): Likewise.
+	(init_vn_nary_op_from_stmt): Likewise.
+	(vn_nary_op_compute_hash): Likewise.
+	* tree-ssa-pre.cc (pre_expr_obstack): New obstack.
+	(get_or_alloc_expr_for_nary): Pass in the value-id to use,
+	(re-)compute the hash value and if the expression is not
+	found allocate it from pre_expr_obstack.
+	(phi_translate_1): Do not insert the NARY found in the
+	VN tables but build a PRE expression from the valueized
+	NARY with the value-id we eventually found.
+	(find_or_generate_expression): Assert we have an entry
+	for constant values.
+	(compute_avail): Insert not valueized expressions into
+	EXP_GEN using the value-id from the VN tables.
+	(init_pre): Allocate pre_expr_obstack.
+	(fini_pre): Free pre_expr_obstack.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104674
+	* config/i386/i386.h (enum ix86_stack_slot): Add SLOT_FLOATxFDI_387.
+	* config/i386/i386.md (splitter to floatdi<mode>2_i387_with_xmm): Use
+	SLOT_FLOATxFDI_387 rather than SLOT_TEMP.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* warning-control.cc (get_nowarn_spec): Comment spelling fix.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104679
+	* internal-fn.cc (expand_SPACESHIP): Call do_pending_stack_adjust.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* match.pd (-A - 1 -> ~A, -1 - A -> ~A): Don't simplify for
+	COMPLEX_TYPE.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/104121
+	PR target/103302
+	* expr.cc (emit_move_multi_word): Restore clobbers during LRA.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104540
+	* dwarf2cfi.cc (cfi_oprnd_equal_p): Cope with NULL
+	dw_cfi_cfa_loc.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103856
+	* gimple-harden-conditionals.cc (non_eh_succ_edge): Enable the
+	eh edge to be requested through an extra parameter.
+	(pass_harden_compares::execute): Copy PHI args in the EH dest
+	block for the new EH edge added for the inverted compare.
+
 2022-02-24  Palmer Dabbelt  <palmer@rivosinc.com>
 
 	* doc/invoke.texi (RISC-V -mcmodel=medany): Document the degree

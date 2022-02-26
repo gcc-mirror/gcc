@@ -1,3 +1,61 @@
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/104675
+	* gcc.dg/pr104675-3.c : New test.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104681
+	* g++.dg/opt/pr104681.C: New test.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/pr104540.C: Move to ...
+	* g++.target/i386/pr104540.C: ... here.
+
+2022-02-25  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/104687
+	* gcc.dg/lto/20090717_0.c: Fix asan error.
+
+2022-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103037
+	* gcc.dg/torture/pr103037.c: New testcase.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104674
+	* gcc.target/i386/pr104674.c: New test.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/104679
+	* g++.dg/torture/pr104679.C: New test.
+
+2022-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/104675
+	* gcc.dg/pr104675-1.c: New test.
+	* gcc.dg/pr104675-2.c: New test.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103845
+	PR tree-optimization/104263
+	* gcc.dg/pr103845.c: New.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/104540
+	* g++.dg/pr104540.C: New.
+
+2022-02-25  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103856
+	* g++.dg/pr103856.C: New.
+
 2022-02-24  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	PR testsuite/100407
