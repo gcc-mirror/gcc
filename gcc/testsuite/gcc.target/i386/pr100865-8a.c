@@ -20,5 +20,5 @@ foo (void)
     array[i] = MK_CONST128_BROADCAST_SIGNED (-45);
 }
 
-/* { dg-final { scan-assembler-times "(?:vpbroadcastd|vpshufd)\[\\t \]+\[^\n\]*, %xmm\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "(?:vpbroadcastd|vpshufd)\[\\t \]+\[^\n\]*, %xmm\[0-9\]+" 1 { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-times "vmovdqa\[\\t \]%xmm\[0-9\]+, " 16 } } */
