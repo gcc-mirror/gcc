@@ -23,6 +23,7 @@
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
 
+#include <cstdio>
 #include <utility>
 #include <tuple>
 
@@ -49,6 +50,13 @@ public:
       file = fopen (filename, "r");
   }
 
+  /**
+   * Create a RAIIFile from an existing instance of FILE*
+   */
+  RAIIFile (FILE *raw, const char *filename = nullptr)
+    : file (raw), filename (filename)
+  {}
+
   RAIIFile (const RAIIFile &other) = delete;
   RAIIFile &operator= (const RAIIFile &other) = delete;
 
@@ -57,6 +65,7 @@ public:
   {
     other.file = nullptr;
   }
+
   RAIIFile &operator= (RAIIFile &&other)
   {
     close ();
@@ -131,6 +140,19 @@ public:
   // Construct lexer with input file and filename provided
   Lexer (const char *filename, RAIIFile input, Linemap *linemap);
   ~Lexer ();
+
+  /**
+   * Lex the contents of a string instead of a file
+   */
+  static Lexer lex_string (std::string &input)
+  {
+    // We can perform this ugly cast to a non-const char* since we're only
+    // *reading* the string. This would not be valid if we were doing any
+    // modification to it.
+    auto string_file = fmemopen (&input[0], input.length (), "r");
+
+    return Lexer (nullptr, RAIIFile (string_file), nullptr);
+  }
 
   // don't allow copy semantics (for now, at least)
   Lexer (const Lexer &other) = delete;

@@ -366,9 +366,11 @@ Session::handle_option (
       Compile::Mangler::set_mangling (flag_rust_mangling);
       break;
 
-    case OPT_frust_cfg_:
-      ret = handle_cfg_option (std::string (arg));
-      break;
+      case OPT_frust_cfg_: {
+	auto string_arg = std::string (arg);
+	ret = handle_cfg_option (string_arg);
+	break;
+      }
 
     default:
       break;
@@ -378,7 +380,7 @@ Session::handle_option (
 }
 
 bool
-Session::handle_cfg_option (const std::string &input)
+Session::handle_cfg_option (std::string &input)
 {
   std::string key;
   std::string value;
@@ -402,8 +404,8 @@ Session::handle_cfg_option (const std::string &input)
   return true;
 }
 
-/* Enables a certain dump depending on the name passed in. Returns true if name
- * is valid, false otherwise. */
+/* Enables a certain dump depending on the name passed in. Returns true if
+ * name is valid, false otherwise. */
 bool
 Session::enable_dump (std::string arg)
 {
@@ -532,8 +534,8 @@ Session::parse_file (const char *filename)
    * line into crate root)
    *  - injection (some lint checks or dummy, register builtin macros, crate
    * injection)
-   *  - expansion (expands all macros, maybe build test harness, AST validation,
-   * maybe macro crate)
+   *  - expansion (expands all macros, maybe build test harness, AST
+   * validation, maybe macro crate)
    *  - resolution (name resolution, type resolution, maybe feature checking,
    * maybe buffered lints)
    *  TODO not done */
@@ -603,8 +605,8 @@ Session::parse_file (const char *filename)
   if (saw_errors ())
     return;
 
-  // scan unused has to be done after type resolution since methods are resolved
-  // at that point
+  // scan unused has to be done after type resolution since methods are
+  // resolved at that point
   Resolver::ScanUnused::Scan ();
 
   if (saw_errors ())
@@ -638,11 +640,11 @@ Session::debug_dump_load_crates (Parser<Lexer> &parser)
 
   /* TODO: search through inner attrs and see whether any of those attr paths
    * contain "no_core", "no_std", "compiler_builtins". If so/not, save certain
-   * crate names. In these names, insert items at beginning of crate items. This
-   * is crate injection. Also, inject prelude use decl at beginning (first name
-   * is assumed to be prelude - prelude is a use decl automatically generated to
-   * enable using Option and Copy without qualifying it or importing it via
-   * 'use' manually) */
+   * crate names. In these names, insert items at beginning of crate items.
+   * This is crate injection. Also, inject prelude use decl at beginning
+   * (first name is assumed to be prelude - prelude is a use decl
+   * automatically generated to enable using Option and Copy without
+   * qualifying it or importing it via 'use' manually) */
 
   std::vector<std::string> crate_names;
   for (const auto &item : crate.items)
@@ -695,8 +697,8 @@ Session::injection (AST::Crate &crate)
 
   // register builtin macros
   /* In rustc, builtin macros are divided into 3 categories depending on use -
-   * "bang" macros, "attr" macros, and "derive" macros. I think the meanings of
-   * these categories should be fairly obvious to anyone who has used rust.
+   * "bang" macros, "attr" macros, and "derive" macros. I think the meanings
+   * of these categories should be fairly obvious to anyone who has used rust.
    * Builtin macro list by category: Bang
    *      - asm
    *      - assert
@@ -739,8 +741,8 @@ Session::injection (AST::Crate &crate)
    * rustc also has a "quote" macro that is defined differently and is
    * supposedly not stable so eh. */
   /* TODO: actually implement injection of these macros. In particular, derive
-   * macros, cfg, and test should be prioritised since they seem to be used the
-   * most. */
+   * macros, cfg, and test should be prioritised since they seem to be used
+   * the most. */
 
   // crate injection
   std::vector<std::string> names;
@@ -804,11 +806,11 @@ Session::injection (AST::Crate &crate)
   crate.items.insert (crate.items.begin (), std::move (use_decl));
 
   /* TODO: potentially add checking attribute crate type? I can't figure out
-   * what this does currently comment says "Unconditionally collect crate types
-   * from attributes to make them used", which presumably refers to checking the
-   * linkage info by "crate_type". It also seems to ensure that an invalid crate
-   * type is not specified, so maybe just do that. Valid crate types: bin lib
-   * dylib staticlib cdylib rlib proc-macro */
+   * what this does currently comment says "Unconditionally collect crate
+   * types from attributes to make them used", which presumably refers to
+   * checking the linkage info by "crate_type". It also seems to ensure that
+   * an invalid crate type is not specified, so maybe just do that. Valid
+   * crate types: bin lib dylib staticlib cdylib rlib proc-macro */
 
   rust_debug ("finished injection");
 }
@@ -818,8 +820,8 @@ Session::expansion (AST::Crate &crate)
 {
   rust_debug ("started expansion");
 
-  /* rustc has a modification to windows PATH temporarily here, which may end up
-   * being required */
+  /* rustc has a modification to windows PATH temporarily here, which may end
+   * up being required */
 
   // create macro expansion config?
   // if not, would at least have to configure recursion_limit
@@ -1036,10 +1038,10 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  * [types/values] or absolute paths)
  *  - HIR lower (convert modified AST to simpler HIR [both expressions and
  * module tree])
- *  - resolve type aliases (replace any usages of type aliases with actual type
- * [except associated types])
- *  - resolve bind (iterate HIR tree and set binding annotations on all concrete
- * types [avoids path lookups later])
+ *  - resolve type aliases (replace any usages of type aliases with actual
+ * type [except associated types])
+ *  - resolve bind (iterate HIR tree and set binding annotations on all
+ * concrete types [avoids path lookups later])
  *  - resolve HIR markings (generate "markings" [e.g. for Copy/Send/Sync/...]
  * for all types
  *  - sort impls (small pass - sort impls into groups)
@@ -1059,8 +1061,8 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  * function calls)
  *  - expand HIR reborrows (apply reborrow rules [taking '&mut *v' instead of
  * 'v'])
- *  - expand HIR erasedtype (replace all erased types 'impl Trait' with the true
- * type)
+ *  - expand HIR erasedtype (replace all erased types 'impl Trait' with the
+ * true type)
  *  - typecheck expressions (validate - double check that previous passes
  * haven't broke type system rules)
  *  - lower MIR (convert HIR exprs into a control-flow graph [MIR])
@@ -1071,15 +1073,16 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  *  - MIR optimise (perform various simple optimisations on the MIR - constant
  * propagation, dead code elimination, borrow elimination, some inlining)
  *  - MIR validate PO (re-validate the MIR)
- *  - MIR validate full (optionally: perform expensive state-tracking validation
- * on MIR)
- *  - trans enumerate (enumerate all items needed for code generation, primarily
- * types used for generics)
- *  - trans auto impls (create magic trait impls as enumerated in previous pass)
+ *  - MIR validate full (optionally: perform expensive state-tracking
+ * validation on MIR)
+ *  - trans enumerate (enumerate all items needed for code generation,
+ * primarily types used for generics)
+ *  - trans auto impls (create magic trait impls as enumerated in previous
+ * pass)
  *  - trans monomorph (generate monomorphised copies of all functions [with
  * generics replaced with real types])
- *  - MIR optimise inline (run optimisation again, this time with full type info
- * [primarily for inlining])
+ *  - MIR optimise inline (run optimisation again, this time with full type
+ * info [primarily for inlining])
  *  - HIR serialise (write out HIR dump [module tree and generic/inline MIR])
  *  - trans codegen (generate final output file: emit C source file and call C
  * compiler) */
@@ -1087,8 +1090,8 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
 /* rustc compile pipeline (basic, in way less detail):
  *  - parse input (parse .rs to AST)
  *  - name resolution, macro expansion, and configuration (process AST
- * recursively, resolving paths, expanding macros, processing #[cfg] nodes [i.e.
- * maybe stripping stuff from AST])
+ * recursively, resolving paths, expanding macros, processing #[cfg] nodes
+ * [i.e. maybe stripping stuff from AST])
  *  - lower to HIR
  *  - type check and other analyses (e.g. privacy checking)
  *  - lower to MIR and post-processing (and do stuff like borrow checking)
@@ -1100,14 +1103,14 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
  *  - register plugins (attributes injection, set various options, register
  * lints, load plugins)
  *  - expansion/configure and expand (initial 'cfg' processing, 'loading
- * compiler plugins', syntax expansion, secondary 'cfg' expansion, synthesis of
- * a test harness if required, injection of any std lib dependency and prelude,
- * and name resolution) - actually documented inline
+ * compiler plugins', syntax expansion, secondary 'cfg' expansion, synthesis
+ * of a test harness if required, injection of any std lib dependency and
+ * prelude, and name resolution) - actually documented inline
  *      - seeming pierced-together order: pre-AST expansion lint checks,
  * registering builtin macros, crate injection, then expand all macros, then
- * maybe build test harness, AST validation, maybe create a macro crate (if not
- * rustdoc), name resolution, complete gated feature checking, add all buffered
- * lints
+ * maybe build test harness, AST validation, maybe create a macro crate (if
+ * not rustdoc), name resolution, complete gated feature checking, add all
+ * buffered lints
  *  - create global context (lower to HIR)
  *  - analysis on global context (HIR optimisations? create MIR?)
  *  - code generation

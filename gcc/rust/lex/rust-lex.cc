@@ -128,7 +128,8 @@ Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap)
     token_queue (TokenSource (this))
 {
   // inform line_table that file is being entered and is in line 1
-  line_map->start_file (filename, current_line);
+  if (linemap)
+    line_map->start_file (filename, current_line);
 }
 
 Lexer::~Lexer ()
@@ -152,7 +153,11 @@ Lexer::~Lexer ()
 Location
 Lexer::get_current_location ()
 {
-  return line_map->get_location (current_column);
+  if (line_map)
+    return line_map->get_location (current_column);
+  else
+    // If we have no linemap, we're lexing something without proper locations
+    return Location ();
 }
 
 int

@@ -288,7 +288,7 @@ private:
   void expansion (AST::Crate &crate);
 
   // handle cfg_option
-  bool handle_cfg_option (const std::string &data);
+  bool handle_cfg_option (std::string &data);
 };
 } // namespace Rust
 
