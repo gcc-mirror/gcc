@@ -1,3 +1,29 @@
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-compile.c: Add new cases.
+	* gcc.target/arm/simd/vdot-exec.c: Likewise.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/arm/simd/vdot-2-1.c: Add new tests.
+	* gcc.target/arm/simd/vdot-2-2.c: Likewise and fix output.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* g++.dg/vect/pr99149.cc: xfail for now.
+	* gcc.dg/vect/complex/pr102819-1.c: New test.
+	* gcc.dg/vect/complex/pr102819-2.c: New test.
+	* gcc.dg/vect/complex/pr102819-3.c: New test.
+	* gcc.dg/vect/complex/pr102819-4.c: New test.
+	* gcc.dg/vect/complex/pr102819-5.c: New test.
+	* gcc.dg/vect/complex/pr102819-6.c: New test.
+	* gcc.dg/vect/complex/pr102819-7.c: New test.
+	* gcc.dg/vect/complex/pr102819-8.c: New test.
+	* gcc.dg/vect/complex/pr102819-9.c: New test.
+	* gcc.dg/vect/complex/pr103169.c: New test.
+
 2022-02-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

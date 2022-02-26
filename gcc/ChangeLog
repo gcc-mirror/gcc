@@ -1,3 +1,67 @@
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vdot_laneq_u32, vdotq_laneq_u32,
+	vdot_laneq_s32, vdotq_laneq_s32): New.
+	* config/arm/arm_neon_builtins.def (sdot_laneq, udot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot<vsi2qi>): New.
+	(<sup>dot_prod<vsi2qi>): Re-order rtl.
+	(neon_<sup>dot_lane<vsi2qi>): Fix rtl order and endiannes.
+	(neon_<sup>dot_laneq<vsi2qi>): New.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/arm_neon.h (vusdotq_s32, vusdot_laneq_s32,
+	vusdotq_laneq_s32, vsudot_laneq_s32, vsudotq_laneq_s32): New
+	* config/arm/arm_neon_builtins.def (usdot): Add V16QI.
+	(usdot_laneq, sudot_laneq): New.
+	* config/arm/neon.md (neon_<sup>dot_laneq<vsi2qi>): New.
+	(neon_<sup>dot_lane<vsi2qi>): Remote unneeded code.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* config/arm/vec-common.md (cml<fcmac1><conj_op><mode>4): Use
+	canonical order.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* config/aarch64/aarch64-simd.md (cml<fcmac1><conj_op><mode>4): Use
+	canonical order.
+	* config/aarch64/aarch64-sve.md (cml<fcmac1><conj_op><mode>4): Likewise.
+
+2022-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102819
+	PR tree-optimization/103169
+	* gimple.h (gimple_num_args, gimple_arg): New.
+	* doc/md.texi: Update docs for cfms, cfma.
+	* tree-data-ref.h (same_data_refs): Accept optional offset.
+	* tree-vect-slp-patterns.c (is_linear_load_p): Fix issue with repeating
+	patterns.
+	(vect_normalize_conj_loc): Remove.
+	(is_eq_or_top): Change to take two nodes.
+	(enum _conj_status, compatible_complex_nodes_p,
+	vect_validate_multiplication): New.
+	(class complex_add_pattern, complex_add_pattern::matches,
+	complex_add_pattern::recognize, class complex_mul_pattern,
+	complex_mul_pattern::recognize, class complex_fms_pattern,
+	complex_fms_pattern::recognize,, class complex_fma_pattern,
+	complex_fma_pattern::recognize, class complex_operations_pattern,
+	complex_operations_pattern::recognize, addsub_pattern::recognize): Pass
+	new cache.
+	(complex_fms_pattern::matches, complex_fma_pattern::matches,
+	complex_mul_pattern::matches): Pass new cache and use new validation
+	code.
+	* tree-vect-slp.c (vect_match_slp_patterns_2, vect_match_slp_patterns,
+	vect_analyze_slp): Pass along cache.
+	(compatible_calls_p): Expose.
+	* tree-vectorizer.h (compatible_calls_p, slp_node_hash,
+	slp_compat_nodes_map_t): New.
+	(class vect_pattern): Update signatures include new cache.
+
 2022-02-21  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* config/rs6000/rs6000.opt (mpower10-fusion): Mark Undocumented.
