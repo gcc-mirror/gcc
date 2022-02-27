@@ -1981,6 +1981,9 @@ package body Freeze is
                DTW_Id   : Entity_Id;
                DTW_Spec : Node_Id;
 
+               Prim_Next_E : constant Entity_Id := Next_Entity (Prim);
+               Prim_Prev_E : constant Entity_Id := Prev_Entity (Prim);
+
             begin
                --  The wrapper must be analyzed in the scope of its wrapped
                --  primitive (to ensure its correct decoration).
@@ -2049,9 +2052,46 @@ package body Freeze is
                   Insert_Before_And_Analyze (Freeze_Node (R), DTW_Decl);
                else
                   Append_Freeze_Action (R, DTW_Decl);
+                  Analyze (DTW_Decl);
                end if;
 
-               Analyze (DTW_Decl);
+               --  The analyis of DTW_Decl has removed Prim from its scope
+               --  chain and added DTW_Id at the end of the scope chain. Move
+               --  DTW_Id to its correct place in the scope chain: the analysis
+               --  of the wrapper declaration has just added DTW_Id at the end
+               --  of the list of entities of its scope. However, given that
+               --  this wrapper overrides Prim, we must move DTW_Id to the
+               --  original place of Prim in its scope chain. This is required
+               --  for wrappers of private type primitives to ensure their
+               --  correct visibility since wrappers are built when the full
+               --  tagged type declaration is frozen (in the private part of
+               --  the package) but they may override primitives defined in the
+               --  public part of the package.
+
+               declare
+                  DTW_Prev_E : constant Entity_Id := Prev_Entity (DTW_Id);
+
+               begin
+                  pragma Assert (Last_Entity (Current_Scope) = DTW_Id);
+                  pragma Assert
+                    (Ekind (Current_Scope) not in E_Package | E_Generic_Package
+                       or else No (First_Private_Entity (Current_Scope))
+                       or else First_Private_Entity (Current_Scope) /= DTW_Id);
+
+                  --  Remove DTW_Id from the end of the doubly-linked list of
+                  --  entities of this scope; no need to handle removing it
+                  --  from the beginning of the chain since such case can never
+                  --  occur for this entity.
+
+                  Set_Last_Entity (Current_Scope, DTW_Prev_E);
+                  Set_Next_Entity (DTW_Prev_E, Empty);
+
+                  --  Place DTW_Id back in the original place of its wrapped
+                  --  primitive in the list of entities of this scope.
+
+                  Link_Entities (Prim_Prev_E, DTW_Id);
+                  Link_Entities (DTW_Id, Prim_Next_E);
+               end;
 
                --  Insert the body of the wrapper in the freeze actions of
                --  its record type declaration to ensure that it is placed
