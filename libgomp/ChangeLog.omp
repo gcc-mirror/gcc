@@ -1,6 +1,15 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-12-13 Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103576
+	* libgomp.texi (OpenMP 5.1): Set Fortran support for atomic to 'Y'.
+	* testsuite/libgomp.fortran/atomic-19.f90: New test.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1): Update status.

@@ -1,6 +1,16 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-12-13 Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103576
+	* gfortran.dg/gomp/atomic-25.f90: Remove sorry, fix + add checks.
+	* gfortran.dg/gomp/atomic-26.f90: Likewise.
+	* gfortran.dg/gomp/atomic-21.f90: New test.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/atomic-2.f90: Move now supported code to ...
