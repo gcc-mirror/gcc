@@ -1941,6 +1941,23 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 
   switch (GET_MODE (dst))
     {
+      case E_DCmode:
+      case E_CDImode:
+	{
+	  gcc_assert (GET_CODE (dst) == CONCAT);
+	  gcc_assert (GET_CODE (src) == CONCAT);
+	  rtx dst_real = XEXP (dst, 0);
+	  rtx dst_imag = XEXP (dst, 1);
+	  rtx src_real = XEXP (src, 0);
+	  rtx src_imag = XEXP (src, 1);
+
+	  start_sequence ();
+	  emit_insn (nvptx_gen_shuffle (dst_real, src_real, idx, kind));
+	  emit_insn (nvptx_gen_shuffle (dst_imag, src_imag, idx, kind));
+	  res = get_insns ();
+	  end_sequence ();
+	}
+	break;
     case E_SImode:
       res = gen_nvptx_shufflesi (dst, src, idx, GEN_INT (kind));
       break;
