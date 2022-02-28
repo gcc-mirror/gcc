@@ -5486,6 +5486,12 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 		   "with %qs attribute", name, "target");
 	  *no_add_attrs = true;
 	}
+      else if (get_target_clone_attr_len (args) == -1)
+	{
+	  warning (OPT_Wattributes,
+		   "single %<target_clones%> attribute is ignored");
+	  *no_add_attrs = true;
+	}
       else
       /* Do not inline functions with multiple clone targets.  */
 	DECL_UNINLINABLE (*node) = 1;
