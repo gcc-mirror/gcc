@@ -11770,32 +11770,25 @@ package body Sem_Util is
       return Task_Body_Procedure (Underlying_Type (Root_Type (E)));
    end Get_Task_Body_Procedure;
 
-   -------------------------
-   -- Get_User_Defined_Eq --
-   -------------------------
+   -------------------------------
+   -- Get_User_Defined_Equality --
+   -------------------------------
 
-   function Get_User_Defined_Eq (E : Entity_Id) return Entity_Id is
+   function Get_User_Defined_Equality (E : Entity_Id) return Entity_Id is
       Prim : Elmt_Id;
-      Op   : Entity_Id;
 
    begin
       Prim := First_Elmt (Collect_Primitive_Operations (E));
       while Present (Prim) loop
-         Op := Node (Prim);
-
-         if Chars (Op) = Name_Op_Eq
-           and then Etype (Op) = Standard_Boolean
-           and then Etype (First_Formal (Op)) = E
-           and then Etype (Next_Formal (First_Formal (Op))) = E
-         then
-            return Op;
+         if Is_User_Defined_Equality (Node (Prim)) then
+            return Node (Prim);
          end if;
 
          Next_Elmt (Prim);
       end loop;
 
       return Empty;
-   end Get_User_Defined_Eq;
+   end Get_User_Defined_Equality;
 
    ---------------
    -- Get_Views --
@@ -21498,15 +21491,31 @@ package body Sem_Util is
    ------------------------------
 
    function Is_User_Defined_Equality (Id : Entity_Id) return Boolean is
+      F1, F2 : Entity_Id;
+
    begin
-      return Ekind (Id) = E_Function
+      --  An equality operator is a function that carries the name "=", returns
+      --  Boolean, and has exactly two formal parameters of an identical type.
+
+      if Ekind (Id) = E_Function
         and then Chars (Id) = Name_Op_Eq
-        and then Comes_From_Source (Id)
+        and then Base_Type (Etype (Id)) = Standard_Boolean
+      then
+         F1 := First_Formal (Id);
 
-        --  Internally generated equalities have a full type declaration
-        --  as their parent.
+         if No (F1) then
+            return False;
+         end if;
 
-        and then Nkind (Parent (Id)) = N_Function_Specification;
+         F2 := Next_Formal (F1);
+
+         return Present (F2)
+           and then No (Next_Formal (F2))
+           and then Base_Type (Etype (F1)) = Base_Type (Etype (F2));
+
+      else
+         return False;
+      end if;
    end Is_User_Defined_Equality;
 
    -----------------------------

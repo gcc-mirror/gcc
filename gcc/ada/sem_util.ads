@@ -1338,7 +1338,7 @@ package Sem_Util is
    --  Given an entity for a task type or subtype, retrieves the
    --  Task_Body_Procedure field from the corresponding task type declaration.
 
-   function Get_User_Defined_Eq (E : Entity_Id) return Entity_Id;
+   function Get_User_Defined_Equality (E : Entity_Id) return Entity_Id;
    --  For a type entity, return the entity of the primitive equality function
    --  for the type if it exists, otherwise return Empty.
 

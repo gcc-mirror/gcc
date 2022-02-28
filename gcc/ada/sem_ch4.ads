@@ -67,6 +67,12 @@ package Sem_Ch4  is
    --  The resolution of the construct requires some semantic information
    --  on the prefix and the indexes.
 
+   procedure Nondispatching_Call_To_Abstract_Operation
+     (N           : Node_Id;
+      Abstract_Op : Entity_Id);
+   --  Give an error, or a warning and rewrite N to raise Program_Error because
+   --  it is a nondispatching call to an abstract operation.
+
    function Try_Object_Operation
      (N                : Node_Id;
       CW_Test_Only     : Boolean := False;

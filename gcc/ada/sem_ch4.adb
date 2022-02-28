@@ -1253,19 +1253,11 @@ package body Sem_Ch4 is
          --  If the nonoverloaded interpretation is a call to an abstract
          --  nondispatching operation, then flag an error and return.
 
-         --  Should this be incorporated in Remove_Abstract_Operations (which
-         --  currently only deals with cases where the name is overloaded)? ???
-
          if Is_Overloadable (Nam_Ent)
            and then Is_Abstract_Subprogram (Nam_Ent)
            and then not Is_Dispatching_Operation (Nam_Ent)
          then
-            Set_Etype (N, Any_Type);
-
-            Error_Msg_Sloc := Sloc (Nam_Ent);
-            Error_Msg_NE
-              ("cannot call abstract operation& declared#", N, Nam_Ent);
-
+            Nondispatching_Call_To_Abstract_Operation (N, Nam_Ent);
             return;
          end if;
 
@@ -3386,18 +3378,11 @@ package body Sem_Ch4 is
             Check_Fully_Declared (Entity (R), R);
 
          elsif Ada_Version >= Ada_2012 and then Find_Interp then
-            if Nkind (N) = N_In then
-               Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
-            else
-               Op := Make_Op_Ne (Loc, Left_Opnd => L, Right_Opnd => R);
-            end if;
+            Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
+            Resolve_Membership_Equality (Op, Etype (L));
 
-            if Is_Record_Or_Limited_Type (Etype (L)) then
-
-               --  We reset the Entity in order to use the primitive equality
-               --  of the type, as per RM 4.5.2 (28.1/4).
-
-               Set_Entity (Op, Empty);
+            if Nkind (N) = N_Not_In then
+               Op := Make_Op_Not (Loc, Op);
             end if;
 
             Rewrite (N, Op);
@@ -7872,6 +7857,42 @@ package body Sem_Ch4 is
       return Etype (N) /= Any_Type;
    end Has_Possible_Literal_Aspects;
 
+   -----------------------------------------------
+   -- Nondispatching_Call_To_Abstract_Operation --
+   -----------------------------------------------
+
+   procedure Nondispatching_Call_To_Abstract_Operation
+     (N : Node_Id;
+      Abstract_Op : Entity_Id)
+   is
+      Typ : constant Entity_Id := Etype (N);
+
+   begin
+      --  In an instance body, this is a runtime check, but one we know will
+      --  fail, so give an appropriate warning. As usual this kind of warning
+      --  is an error in SPARK mode.
+
+      Error_Msg_Sloc := Sloc (Abstract_Op);
+
+      if In_Instance_Body and then SPARK_Mode /= On then
+         Error_Msg_NE
+           ("??cannot call abstract operation& declared#",
+            N, Abstract_Op);
+         Error_Msg_N ("\Program_Error [??", N);
+         Rewrite (N,
+           Make_Raise_Program_Error (Sloc (N),
+           Reason => PE_Explicit_Raise));
+         Analyze (N);
+         Set_Etype (N, Typ);
+
+      else
+         Error_Msg_NE
+           ("cannot call abstract operation& declared#",
+            N, Abstract_Op);
+         Set_Etype (N, Any_Type);
+      end if;
+   end Nondispatching_Call_To_Abstract_Operation;
+
    ----------------------------------------------
    -- Possible_Type_For_Conditional_Expression --
    ----------------------------------------------
@@ -8191,10 +8212,7 @@ package body Sem_Ch4 is
 
                --  Removal of abstract operation left no viable candidate
 
-               Set_Etype (N, Any_Type);
-               Error_Msg_Sloc := Sloc (Abstract_Op);
-               Error_Msg_NE
-                 ("cannot call abstract operation& declared#", N, Abstract_Op);
+               Nondispatching_Call_To_Abstract_Operation (N, Abstract_Op);
 
             --  In Ada 2005, an abstract operation may disable predefined
             --  operators. Since the context is not yet known, we mark the

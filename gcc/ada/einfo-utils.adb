@@ -2520,11 +2520,13 @@ package body Einfo.Utils is
 
       elsif Id = First then
          Set_First_Entity (Scop, Next);
+         Set_Prev_Entity (Next, Empty);  --  Empty <-- First_Entity
 
       --  The eliminated entity was the tail of the entity chain
 
       elsif Id = Last then
          Set_Last_Entity (Scop, Prev);
+         Set_Next_Entity (Prev, Empty);  --  Last_Entity --> Empty
 
       --  Otherwise the eliminated entity comes from the middle of the entity
       --  chain.

@@ -2826,7 +2826,7 @@ package Sinfo is
       --  Defining_Identifier
       --  Null_Exclusion_Present
       --  Subtype_Indication
-      --  Generic_Parent_Type (set for an actual derived type).
+      --  Generic_Parent_Type (for actual of formal private or derived type)
       --  Exception_Junk
 
       -------------------------------

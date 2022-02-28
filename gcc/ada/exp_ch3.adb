@@ -271,9 +271,6 @@ package body Exp_Ch3 is
    --  in a case statement, recursively. This latter pattern may occur for the
    --  initialization procedure of an unchecked union.
 
-   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean;
-   --  Returns true if Prim is a user defined equality function
-
    function Make_Eq_Body
      (Typ     : Entity_Id;
       Eq_Name : Name_Id) return Node_Id;
@@ -4487,7 +4484,6 @@ package body Exp_Ch3 is
       Comp     : Entity_Id;
       Decl     : Node_Id;
       Op       : Entity_Id;
-      Prim     : Elmt_Id;
       Eq_Op    : Entity_Id;
 
       function User_Defined_Eq (T : Entity_Id) return Entity_Id;
@@ -4506,7 +4502,7 @@ package body Exp_Ch3 is
          if Present (Op) then
             return Op;
          else
-            return Get_User_Defined_Eq (T);
+            return Get_User_Defined_Equality (T);
          end if;
       end User_Defined_Eq;
 
@@ -4532,23 +4528,14 @@ package body Exp_Ch3 is
       --  If there is a user-defined equality for the type, we do not create
       --  the implicit one.
 
-      Prim := First_Elmt (Collect_Primitive_Operations (Typ));
-      Eq_Op := Empty;
-      while Present (Prim) loop
-         if Chars (Node (Prim)) = Name_Op_Eq
-           and then Comes_From_Source (Node (Prim))
-
-         --  Don't we also need to check formal types and return type as in
-         --  User_Defined_Eq above???
-
-         then
-            Eq_Op := Node (Prim);
+      Eq_Op := Get_User_Defined_Equality (Typ);
+      if Present (Eq_Op) then
+         if Comes_From_Source (Eq_Op) then
             Build_Eq := False;
-            exit;
+         else
+            Eq_Op := Empty;
          end if;
-
-         Next_Elmt (Prim);
-      end loop;
+      end if;
 
       --  If the type is derived, inherit the operation, if present, from the
       --  parent type. It may have been declared after the type derivation. If
@@ -4557,35 +4544,28 @@ package body Exp_Ch3 is
       --  flags. Ditto for inequality.
 
       if No (Eq_Op) and then Is_Derived_Type (Typ) then
-         Prim := First_Elmt (Collect_Primitive_Operations (Etype (Typ)));
-         while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq then
-               Copy_TSS (Node (Prim), Typ);
-               Build_Eq := False;
+         Eq_Op := Get_User_Defined_Equality (Etype (Typ));
+         if Present (Eq_Op) then
+            Copy_TSS (Eq_Op, Typ);
+            Build_Eq := False;
 
-               declare
-                  Op    : constant Entity_Id := User_Defined_Eq (Typ);
-                  Eq_Op : constant Entity_Id := Node (Prim);
-                  NE_Op : constant Entity_Id := Next_Entity (Eq_Op);
+            declare
+               Op    : constant Entity_Id := User_Defined_Eq (Typ);
+               NE_Op : constant Entity_Id := Next_Entity (Eq_Op);
 
-               begin
-                  if Present (Op) then
-                     Set_Alias (Op, Eq_Op);
+            begin
+               if Present (Op) then
+                  Set_Alias (Op, Eq_Op);
+                  Set_Is_Abstract_Subprogram
+                    (Op, Is_Abstract_Subprogram (Eq_Op));
+
+                  if Chars (Next_Entity (Op)) = Name_Op_Ne then
                      Set_Is_Abstract_Subprogram
-                       (Op, Is_Abstract_Subprogram (Eq_Op));
-
-                     if Chars (Next_Entity (Op)) = Name_Op_Ne then
-                        Set_Is_Abstract_Subprogram
-                          (Next_Entity (Op), Is_Abstract_Subprogram (NE_Op));
-                     end if;
+                       (Next_Entity (Op), Is_Abstract_Subprogram (NE_Op));
                   end if;
-               end;
-
-               exit;
-            end if;
-
-            Next_Elmt (Prim);
-         end loop;
+               end if;
+            end;
+         end if;
       end if;
 
       --  If not inherited and not user-defined, build body as for a type with
@@ -9828,18 +9808,6 @@ package body Exp_Ch3 is
       return True;
    end Is_Null_Statement_List;
 
-   ------------------------------
-   -- Is_User_Defined_Equality --
-   ------------------------------
-
-   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean is
-   begin
-      return Chars (Prim) = Name_Op_Eq
-        and then Etype (First_Formal (Prim)) =
-                 Etype (Next_Formal (First_Formal (Prim)))
-        and then Base_Type (Etype (Prim)) = Standard_Boolean;
-   end Is_User_Defined_Equality;
-
    ----------------------------------------
    -- Make_Controlling_Function_Wrappers --
    ----------------------------------------
@@ -11212,15 +11180,8 @@ package body Exp_Ch3 is
 
          Prim := First_Elmt (Primitive_Operations (Tag_Typ));
          while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq
+            if Is_User_Defined_Equality (Node (Prim))
               and then not Is_Internal (Node (Prim))
-
-              --  The predefined equality primitive must have exactly two
-              --  formals whose type is this tagged type.
-
-              and then Number_Formals (Node (Prim)) = 2
-              and then Etype (First_Formal (Node (Prim))) = Tag_Typ
-              and then Etype (Last_Formal (Node (Prim))) = Tag_Typ
             then
                Eq_Needed := False;
                Eq_Name := No_Name;
@@ -11236,7 +11197,7 @@ package body Exp_Ch3 is
 
          Prim := First_Elmt (Primitive_Operations (Tag_Typ));
          while Present (Prim) loop
-            if Chars (Node (Prim)) = Name_Op_Eq
+            if Is_User_Defined_Equality (Node (Prim))
               and then Is_Internal (Node (Prim))
             then
                Eq_Needed := True;

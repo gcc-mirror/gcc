@@ -566,7 +566,10 @@ package body Sem_Disp is
          --  when it is user-defined.
 
          if Is_Predefined_Dispatching_Operation (Subp_Entity)
-           and then not Is_User_Defined_Equality (Subp_Entity)
+           and then not (Is_User_Defined_Equality (Subp_Entity)
+                          and then Comes_From_Source (Subp_Entity)
+                          and then Nkind (Parent (Subp_Entity)) =
+                                                      N_Function_Specification)
          then
             return;
          end if;

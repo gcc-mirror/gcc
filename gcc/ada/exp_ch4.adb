@@ -425,36 +425,21 @@ package body Exp_Ch4 is
       Lhs : Node_Id;
       Rhs : Node_Id) return Node_Id
    is
-      Prim   : Node_Id;
-      Prim_E : Elmt_Id;
+      Eq : constant Entity_Id := Get_User_Defined_Equality (Typ);
 
    begin
-      Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
-      while Present (Prim_E) loop
-         Prim := Node (Prim_E);
+      if Present (Eq) then
+         if Is_Abstract_Subprogram (Eq) then
+            return Make_Raise_Program_Error (Loc,
+               Reason =>  PE_Explicit_Raise);
 
-         --  Locate primitive equality with the right signature
-
-         if Chars (Prim) = Name_Op_Eq
-           and then Etype (First_Formal (Prim)) =
-                    Etype (Next_Formal (First_Formal (Prim)))
-           and then Etype (Prim) = Standard_Boolean
-         then
-            if Is_Abstract_Subprogram (Prim) then
-               return
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Explicit_Raise);
-
-            else
-               return
-                 Make_Function_Call (Loc,
-                   Name                   => New_Occurrence_Of (Prim, Loc),
-                   Parameter_Associations => New_List (Lhs, Rhs));
-            end if;
+         else
+            return
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Eq, Loc),
+                Parameter_Associations => New_List (Lhs, Rhs));
          end if;
-
-         Next_Elmt (Prim_E);
-      end loop;
+      end if;
 
       --  If not found, predefined operation will be used
 
@@ -7817,20 +7802,9 @@ package body Exp_Ch4 is
       --  build and analyze call, adding conversions if the operation is
       --  inherited.
 
-      function Is_Equality (Subp : Entity_Id;
-                            Typ  : Entity_Id := Empty) return Boolean;
-      --  Determine whether arbitrary Entity_Id denotes a function with the
-      --  right name and profile for an equality op, specifically for the
-      --  base type Typ if Typ is nonempty.
-
       function Find_Equality (Prims : Elist_Id) return Entity_Id;
       --  Find a primitive equality function within primitive operation list
       --  Prims.
-
-      function User_Defined_Primitive_Equality_Op
-        (Typ : Entity_Id) return Entity_Id;
-      --  Find a user-defined primitive equality function for a given untagged
-      --  record type, ignoring visibility. Return Empty if no such op found.
 
       function Has_Unconstrained_UU_Component (Typ : Entity_Id) return Boolean;
       --  Determines whether a type has a subcomponent of an unconstrained
@@ -8080,43 +8054,6 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end Build_Equality_Call;
 
-      -----------------
-      -- Is_Equality --
-      -----------------
-
-      function Is_Equality (Subp : Entity_Id;
-                            Typ  : Entity_Id := Empty) return Boolean is
-         Formal_1 : Entity_Id;
-         Formal_2 : Entity_Id;
-      begin
-         --  The equality function carries name "=", returns Boolean, and has
-         --  exactly two formal parameters of an identical type.
-
-         if Ekind (Subp) = E_Function
-           and then Chars (Subp) = Name_Op_Eq
-           and then Base_Type (Etype (Subp)) = Standard_Boolean
-         then
-            Formal_1 := First_Formal (Subp);
-            Formal_2 := Empty;
-
-            if Present (Formal_1) then
-               Formal_2 := Next_Formal (Formal_1);
-            end if;
-
-            return
-              Present (Formal_1)
-                and then Present (Formal_2)
-                and then No (Next_Formal (Formal_2))
-                and then Base_Type (Etype (Formal_1)) =
-                         Base_Type (Etype (Formal_2))
-                and then
-                  (not Present (Typ)
-                    or else Implementation_Base_Type (Etype (Formal_1)) = Typ);
-         end if;
-
-         return False;
-      end Is_Equality;
-
       -------------------
       -- Find_Equality --
       -------------------
@@ -8139,7 +8076,7 @@ package body Exp_Ch4 is
 
             Candid := Prim;
             while Present (Candid) loop
-               if Is_Equality (Candid) then
+               if Is_User_Defined_Equality (Candid) then
                   return Candid;
                end if;
 
@@ -8177,43 +8114,6 @@ package body Exp_Ch4 is
 
          return Eq_Prim;
       end Find_Equality;
-
-      ----------------------------------------
-      -- User_Defined_Primitive_Equality_Op --
-      ----------------------------------------
-
-      function User_Defined_Primitive_Equality_Op
-        (Typ : Entity_Id) return Entity_Id
-      is
-         Enclosing_Scope : constant Entity_Id := Scope (Typ);
-         E : Entity_Id;
-      begin
-         for Private_Entities in Boolean loop
-            if Private_Entities then
-               if Ekind (Enclosing_Scope) /= E_Package then
-                  exit;
-               end if;
-               E := First_Private_Entity (Enclosing_Scope);
-
-            else
-               E := First_Entity (Enclosing_Scope);
-            end if;
-
-            while Present (E) loop
-               if Is_Equality (E, Typ) then
-                  return E;
-               end if;
-               Next_Entity (E);
-            end loop;
-         end loop;
-
-         if Is_Derived_Type (Typ) then
-            return User_Defined_Primitive_Equality_Op
-                     (Implementation_Base_Type (Etype (Typ)));
-         end if;
-
-         return Empty;
-      end User_Defined_Primitive_Equality_Op;
 
       ------------------------------------
       -- Has_Unconstrained_UU_Component --
@@ -8358,14 +8258,7 @@ package body Exp_Ch4 is
 
       --  Deal with private types
 
-      Typl := A_Typ;
-
-      if Ekind (Typl) = E_Private_Type then
-         Typl := Underlying_Type (Typl);
-
-      elsif Ekind (Typl) = E_Private_Subtype then
-         Typl := Underlying_Type (Base_Type (Typl));
-      end if;
+      Typl := Underlying_Type (A_Typ);
 
       --  It may happen in error situations that the underlying type is not
       --  set. The error will be detected later, here we just defend the
@@ -8528,15 +8421,6 @@ package body Exp_Ch4 is
                Build_Equality_Call
                  (Find_Equality (Primitive_Operations (Typl)));
             end if;
-
-         --  See AI12-0101 (which only removes a legality rule) and then
-         --  AI05-0123 (which then applies in the previously illegal case).
-         --  AI12-0101 is a binding interpretation.
-
-         elsif Ada_Version >= Ada_2012
-           and then Present (User_Defined_Primitive_Equality_Op (Typl))
-         then
-            Build_Equality_Call (User_Defined_Primitive_Equality_Op (Typl));
 
          --  Ada 2005 (AI-216): Program_Error is raised when evaluating the
          --  predefined equality operator for a type which has a subcomponent
@@ -13132,23 +13016,11 @@ package body Exp_Ch4 is
          if (Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)))
            or else Nkind (Alt) = N_Range
          then
-            Cond :=
-              Make_In (Sloc (Alt),
-                Left_Opnd  => L,
-                Right_Opnd => R);
+            Cond := Make_In (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+
          else
-            Cond :=
-              Make_Op_Eq (Sloc (Alt),
-                Left_Opnd  => L,
-                Right_Opnd => R);
-
-            if Is_Record_Or_Limited_Type (Etype (Alt)) then
-
-               --  We reset the Entity in order to use the primitive equality
-               --  of the type, as per RM 4.5.2 (28.1/4).
-
-               Set_Entity (Cond, Empty);
-            end if;
+            Cond := Make_Op_Eq (Sloc (Alt), Left_Opnd  => L, Right_Opnd => R);
+            Resolve_Membership_Equality (Cond, Etype (Alt));
          end if;
 
          return Cond;

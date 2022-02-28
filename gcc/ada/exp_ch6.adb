@@ -4475,16 +4475,6 @@ package body Exp_Ch6 is
 
          Set_Entity (Name (Call_Node), Parent_Subp);
 
-         --  Move this check to sem???
-
-         if Is_Abstract_Subprogram (Parent_Subp)
-           and then not In_Instance
-         then
-            Error_Msg_NE
-              ("cannot call abstract subprogram &!",
-               Name (Call_Node), Parent_Subp);
-         end if;
-
          --  Inspect all formals of derived subprogram Subp. Compare parameter
          --  types with the parent subprogram and check whether an actual may
          --  need a type conversion to the corresponding formal of the parent
