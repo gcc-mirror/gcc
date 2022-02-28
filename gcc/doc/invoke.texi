@@ -13459,6 +13459,7 @@ counts to a file called @file{@var{sourcename}.gcda} for each source
 file.  The information in this data file is very dependent on the
 structure of the generated code, so you must use the same source code
 and the same optimization options for both compilations.
+See details about the file naming in @option{-fprofile-arcs}.
 
 With @option{-fbranch-probabilities}, GCC puts a
 @samp{REG_BR_PROB} note on each @samp{JUMP_INSN} and @samp{CALL_INSN}.
@@ -15237,6 +15238,12 @@ explicitly specified and it is not the final executable, otherwise it is
 the basename of the source file.  In both cases any suffix is removed
 (e.g.@: @file{foo.gcda} for input file @file{dir/foo.c}, or
 @file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
+
+Note that if a command line directly links source files, the corresponding
+@var{.gcda} files will be prefixed with the unsuffixed name of the output file.
+E.g. @code{gcc a.c b.c -o binary} would generate @file{binary-a.gcda} and
+@file{binary-b.gcda} files.
+
 @xref{Cross-profiling}.
 
 @cindex @command{gcov}
@@ -15330,7 +15337,8 @@ profile data file appears in the same directory as the object file.
 In order to prevent the file name clashing, if the object file name is
 not an absolute path, we mangle the absolute path of the
 @file{@var{sourcename}.gcda} file and use it as the file name of a
-@file{.gcda} file.  See similar option @option{-fprofile-note}.
+@file{.gcda} file.  See details about the file naming in @option{-fprofile-arcs}.
+See similar option @option{-fprofile-note}.
 
 When an executable is run in a massive parallel environment, it is recommended
 to save profile to different folders.  That can be done with variables
