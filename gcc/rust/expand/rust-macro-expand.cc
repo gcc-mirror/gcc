@@ -309,29 +309,32 @@ public:
   {
     // supposedly does not require - cfg does nothing
   }
-  void visit (AST::MacroInvocationSemi &macro_invoc) override
-  {
-    // initial strip test based on outer attrs
-    expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
-    if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
-      {
-	macro_invoc.mark_for_strip ();
-	return;
-      }
 
-    // can't strip simple path
+  // FIXME: ARTHUR: Check to see if necessary for MacroInvocation
+  // void visit (AST::MacroInvocationSemi &macro_invoc) override
+  // {
+  //   // initial strip test based on outer attrs
+  //   expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
+  //   if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
+  //     {
+  // macro_invoc.mark_for_strip ();
+  // return;
+  //     }
 
-    // I don't think any macro token trees can be stripped in any way
+  //   // can't strip simple path
 
-    // TODO: maybe have cfg! macro stripping behaviour here?
+  //   // I don't think any macro token trees can be stripped in any way
 
-    expander.expand_invoc_semi (macro_invoc);
+  //   // TODO: maybe have cfg! macro stripping behaviour here?
 
-    // we need to visit the expanded fragments since it may need cfg expansion
-    // and it may be recursive
-    for (auto &node : macro_invoc.get_fragment ().get_nodes ())
-      node.accept_vis (*this);
-  }
+  //   expander.expand_invoc_semi (macro_invoc);
+
+  //   // we need to visit the expanded fragments since it may need cfg
+  //   expansion
+  //   // and it may be recursive
+  //   for (auto &node : macro_invoc.get_fragment ().get_nodes ())
+  //     node.accept_vis (*this);
+  // }
 
   void visit (AST::PathInExpression &path) override
   {
@@ -3207,46 +3210,48 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc)
   invoc.set_fragment (std::move (fragment));
 }
 
-void
-MacroExpander::expand_invoc_semi (AST::MacroInvocationSemi &invoc)
-{
-  if (depth_exceeds_recursion_limit ())
-    {
-      rust_error_at (invoc.get_locus (), "reached recursion limit");
-      return;
-    }
-
-  AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
-
-  // lookup the rules for this macro
-  NodeId resolved_node = UNKNOWN_NODEID;
-  bool found = resolver->get_macro_scope ().lookup (
-    Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
-				      invoc_data.get_path ().as_string ()),
-    &resolved_node);
-  if (!found)
-    {
-      rust_error_at (invoc.get_locus (), "unknown macro");
-      return;
-    }
-
-  // lookup the rules
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
-  rust_assert (ok);
-
-  auto fragment = AST::ASTFragment::create_empty ();
-
-  if (rules_def->is_builtin ())
-    fragment
-      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data);
-  else
-    fragment
-      = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
-
-  // lets attach this fragment to the invocation
-  invoc.set_fragment (std::move (fragment));
-}
+// FIXME: ARTHUR: Check to see if necessary for MacroInvocation
+// void
+// MacroExpander::expand_invoc_semi (AST::MacroInvocationSemi &invoc)
+// {
+//   if (depth_exceeds_recursion_limit ())
+//     {
+//       rust_error_at (invoc.get_locus (), "reached recursion limit");
+//       return;
+//     }
+//
+//   AST::MacroInvocData &invoc_data = invoc.get_invoc_data ();
+//
+//   // lookup the rules for this macro
+//   NodeId resolved_node = UNKNOWN_NODEID;
+//   bool found = resolver->get_macro_scope ().lookup (
+//     Resolver::CanonicalPath::new_seg (invoc.get_macro_node_id (),
+// 				      invoc_data.get_path ().as_string ()),
+//     &resolved_node);
+//   if (!found)
+//     {
+//       rust_error_at (invoc.get_locus (), "unknown macro");
+//       return;
+//     }
+//
+//   // lookup the rules
+//   AST::MacroRulesDefinition *rules_def = nullptr;
+//   bool ok = mappings->lookup_macro_def (resolved_node, &rules_def);
+//   rust_assert (ok);
+//
+//   auto fragment = AST::ASTFragment::create_empty ();
+//
+//   if (rules_def->is_builtin ())
+//     fragment
+//       = rules_def->get_builtin_transcriber () (invoc.get_locus (),
+//       invoc_data);
+//   else
+//     fragment
+//       = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def, true);
+//
+//   // lets attach this fragment to the invocation
+//   invoc.set_fragment (std::move (fragment));
+// }
 
 /* Determines whether any cfg predicate is false and hence item with attributes
  * should be stripped. Note that attributes must be expanded before calling. */

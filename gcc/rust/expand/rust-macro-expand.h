@@ -150,7 +150,6 @@ struct MacroExpander
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
   void expand_invoc (AST::MacroInvocation &invoc);
-  void expand_invoc_semi (AST::MacroInvocationSemi &invoc);
 
   // Expands a single declarative macro.
   AST::ASTFragment expand_decl_macro (Location locus,

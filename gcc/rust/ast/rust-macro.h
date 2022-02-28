@@ -27,7 +27,6 @@ namespace AST {
 
 // Decls as definitions moved to rust-ast.h
 class MacroItem;
-class MacroInvocationSemi;
 
 enum MacroFragSpec
 {
@@ -454,6 +453,10 @@ protected:
  * compile time */
 class MacroInvocation : public TypeNoBounds,
 			public Pattern,
+			public MacroItem,
+			public TraitItem,
+			public TraitImplItem,
+			public InherentImplItem,
 			public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
@@ -463,14 +466,18 @@ class MacroInvocation : public TypeNoBounds,
   // this is the expanded macro
   ASTFragment fragment;
 
+  // Important for when we actually expand the macro
+  bool is_semi_coloned;
+
 public:
   std::string as_string () const override;
 
   MacroInvocation (MacroInvocData invoc_data,
-		   std::vector<Attribute> outer_attrs, Location locus)
+		   std::vector<Attribute> outer_attrs, Location locus,
+		   bool is_semi_coloned = false)
     : outer_attrs (std::move (outer_attrs)),
       invoc_data (std::move (invoc_data)), locus (locus),
-      fragment (ASTFragment::create_empty ())
+      fragment (ASTFragment::create_empty ()), is_semi_coloned (is_semi_coloned)
   {}
 
   Location get_locus () const override final { return locus; }
@@ -503,6 +510,8 @@ public:
 
   void set_fragment (ASTFragment &&f) { fragment = std::move (f); }
 
+  bool has_semicolon () const { return is_semi_coloned; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -528,6 +537,40 @@ protected:
   /*virtual*/ MacroInvocation *clone_macro_invocation_impl () const
   {
     return new MacroInvocation (*this);
+  }
+
+  Item *clone_item_impl () const override
+  {
+    return clone_macro_invocation_impl ();
+  }
+
+  bool is_item () const override { return !has_semicolon (); }
+
+  TraitItem *clone_trait_item_impl () const override
+  {
+    return clone_macro_invocation_impl ();
+  };
+
+  TraitImplItem *clone_trait_impl_item_impl () const override
+  {
+    return clone_macro_invocation_impl ();
+  };
+
+  InherentImplItem *clone_inherent_impl_item_impl () const override
+  {
+    return clone_macro_invocation_impl ();
+  }
+
+  ExprWithoutBlock *to_stmt () const override
+  
+   
+   
+   
+  { 
+    auto new_impl  = clone_macro_invocation_impl();
+    new_impl->is_semi_coloned = true;
+
+    return new_impl;
   }
 };
 

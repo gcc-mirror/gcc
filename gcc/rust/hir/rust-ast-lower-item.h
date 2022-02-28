@@ -51,15 +51,16 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::MacroInvocationSemi &invoc) override
-  {
-    AST::ASTFragment &fragment = invoc.get_fragment ();
+  // FIXME: ARTHUR: See if this is necessary for MacroInvocation
+  // void visit (AST::MacroInvocationSemi &invoc) override
+  // {
+  //   AST::ASTFragment &fragment = invoc.get_fragment ();
 
-    // FIXME
-    // this assertion might go away, maybe on failure's to expand a macro?
-    rust_assert (!fragment.get_nodes ().empty ());
-    fragment.get_nodes ().at (0).accept_vis (*this);
-  }
+  //   // FIXME
+  //   // this assertion might go away, maybe on failure's to expand a macro?
+  //   rust_assert (!fragment.get_nodes ().empty ());
+  //   fragment.get_nodes ().at (0).accept_vis (*this);
+  // }
 
   void visit (AST::Module &module) override
   {

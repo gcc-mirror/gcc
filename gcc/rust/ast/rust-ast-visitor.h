@@ -52,7 +52,6 @@ public:
   // virtual void visit(TraitItem& trait_item) = 0;
   // virtual void visit(InherentImplItem& inherent_impl_item) = 0;
   // virtual void visit(TraitImplItem& trait_impl_item) = 0;
-  virtual void visit (MacroInvocationSemi &macro) = 0;
 
   // rust-path.h
   virtual void visit (PathInExpression &path) = 0;
