@@ -615,6 +615,14 @@ extern (C++) final class Module : Package
             const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
             errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
         }
+        else if (FileName.ext(this.arg) || !loc.isValid())
+        {
+            // Modules whose original argument name has an extension, or do not
+            // have a valid location come from the command-line.
+            // Error that their file cannot be found and return early.
+            .error(loc, "cannot find input file `%s`", srcfile.toChars());
+            return false;
+        }
         else
         {
             // if module is not named 'package' but we're trying to read 'package.d', we're looking for a package module

@@ -388,50 +388,93 @@ version (linux)
     {
         struct stat_t
         {
-            c_ulong     st_dev;
-            ino_t       st_ino;
+            dev_t       st_dev;
+            static if (!__USE_FILE_OFFSET64)
+            {
+                ushort  __pad1;
+                ino_t   st_ino;
+            }
+            else
+                ino_t   st_ino;
             mode_t      st_mode;
             nlink_t     st_nlink;
             uid_t       st_uid;
             gid_t       st_gid;
-            c_ulong     st_rdev;
+            dev_t       st_rdev;
+            ushort      __pad2;
             off_t       st_size;
-            c_ulong     st_blksize;
-            c_ulong     st_blocks;
-            c_ulong     st_atime;
-            c_ulong     st_atime_nsec;
-            c_ulong     st_mtime;
-            c_ulong     st_mtime_nsec;
-            c_ulong     st_ctime;
-            c_ulong     st_ctime_nsec;
+            blksize_t   st_blksize;
+            blkcnt_t    st_blocks;
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
+            {
+                timespec    st_atim;
+                timespec    st_mtim;
+                timespec    st_ctim;
+                extern(D) @safe @property inout pure nothrow
+                {
+                    ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
+                    ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
+                    ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
+                }
+            }
+            else
+            {
+                time_t      st_atime;
+                c_ulong     st_atimensec;
+                time_t      st_mtime;
+                c_ulong     st_mtimensec;
+                time_t      st_ctime;
+                c_ulong     st_ctimensec;
+            }
             c_ulong     __unused4;
             c_ulong     __unused5;
         }
+        static if (__USE_FILE_OFFSET64)
+            static assert(stat_t.sizeof == 104);
+        else
+            static assert(stat_t.sizeof == 88);
     }
     else version (PPC64)
     {
         struct stat_t
         {
-            c_ulong     st_dev;
+            dev_t       st_dev;
             ino_t       st_ino;
             nlink_t     st_nlink;
             mode_t      st_mode;
             uid_t       st_uid;
             gid_t       st_gid;
-            c_ulong     st_rdev;
+            int         __pad2;
+            dev_t       st_rdev;
             off_t       st_size;
-            c_ulong     st_blksize;
-            c_ulong     st_blocks;
-            c_ulong     st_atime;
-            c_ulong     st_atime_nsec;
-            c_ulong     st_mtime;
-            c_ulong     st_mtime_nsec;
-            c_ulong     st_ctime;
-            c_ulong     st_ctime_nsec;
+            blksize_t   st_blksize;
+            blkcnt_t    st_blocks;
+            static if (_DEFAULT_SOURCE || _XOPEN_SOURCE >= 700)
+            {
+                timespec    st_atim;
+                timespec    st_mtim;
+                timespec    st_ctim;
+                extern(D) @safe @property inout pure nothrow
+                {
+                    ref inout(time_t) st_atime() return { return st_atim.tv_sec; }
+                    ref inout(time_t) st_mtime() return { return st_mtim.tv_sec; }
+                    ref inout(time_t) st_ctime() return { return st_ctim.tv_sec; }
+                }
+            }
+            else
+            {
+                time_t      st_atime;
+                c_ulong     st_atimensec;
+                time_t      st_mtime;
+                c_ulong     st_mtimensec;
+                time_t      st_ctime;
+                c_ulong     st_ctimensec;
+            }
             c_ulong     __unused4;
             c_ulong     __unused5;
             c_ulong     __unused6;
         }
+        static assert(stat_t.sizeof == 144);
     }
     else version (RISCV_Any)
     {

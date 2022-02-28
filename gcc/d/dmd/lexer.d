@@ -60,7 +60,11 @@ class Lexer
     bool Ccompile;              /// true if compiling ImportC
 
     // The following are valid only if (Ccompile == true)
+    ubyte boolsize;             /// size of a C _Bool, default 1
+    ubyte shortsize;            /// size of a C short, default 2
+    ubyte intsize;              /// size of a C int, default 4
     ubyte longsize;             /// size of C long, 4 or 8
+    ubyte long_longsize;        /// size of a C long long, default 8
     ubyte long_doublesize;      /// size of C long double, 8 or D real.sizeof
     ubyte wchar_tsize;          /// size of C wchar_t, 2 or 4
 
@@ -2312,7 +2316,7 @@ class Lexer
             case FLAGS.decimal | FLAGS.long_:
                 /* First that fits: long, long long
                  */
-                if (longsize == 4)
+                if (longsize == 4 || long_longsize == 4)
                 {
                     if (n & 0xFFFFFFFF_80000000L)
                         result = TOK.int64Literal;
@@ -2329,7 +2333,7 @@ class Lexer
                 /* First that fits: long, unsigned long, long long,
                  * unsigned long long
                  */
-                if (longsize == 4)
+                if (longsize == 4 || long_longsize == 4)
                 {
                     if (n & 0x8000000000000000L)
                         result = TOK.uns64Literal;
@@ -2353,7 +2357,7 @@ class Lexer
             case FLAGS.decimal  | FLAGS.unsigned | FLAGS.long_:
                 /* First that fits: unsigned long, unsigned long long
                  */
-                if (longsize == 4)
+                if (longsize == 4 || long_longsize == 4)
                 {
                     if (n & 0xFFFFFFFF00000000L)
                         result = TOK.uns64Literal;
@@ -2710,6 +2714,8 @@ class Lexer
             case '2':
             case '3':
             case '4':
+                if (!linemarker)
+                    goto Lerr;
                 flags = true;   // linemarker flags seen
                 ++p;
                 if ('0' <= *p && *p <= '9')

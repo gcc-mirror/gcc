@@ -1713,6 +1713,38 @@ extern(C++):
          * Ds       char16_t
          * u <source-name>  # vendor extended type
          */
+        if (t.isimaginary() || t.iscomplex())
+        {
+            // https://issues.dlang.org/show_bug.cgi?id=22806
+            // Complex and imaginary types are represented in the same way as
+            // arrays or vectors in C++.  First substitute the outer type, then
+            // write out the mangle string of the underlying type.
+            if (substitute(t))
+                return;
+            append(t);
+            CV_qualifiers(t);
+
+            if (t.isimaginary())
+                buf.writeByte('G'); // 'G' means imaginary
+            else
+                buf.writeByte('C'); // 'C' means complex
+
+            switch (t.ty)
+            {
+                case Timaginary32:
+                case Tcomplex32:
+                    return Type.tfloat32.accept(this);
+                case Timaginary64:
+                case Tcomplex64:
+                    return Type.tfloat64.accept(this);
+                case Timaginary80:
+                case Tcomplex80:
+                    return Type.tfloat80.accept(this);
+                default:
+                    assert(0);
+            }
+        }
+
         char c;
         char p = 0;
         switch (t.ty)
@@ -1739,12 +1771,6 @@ extern(C++):
             case Tchar:                  c = 'c';       break;
             case Twchar:        p = 'D'; c = 's';       break;  // since C++11
             case Tdchar:        p = 'D'; c = 'i';       break;  // since C++11
-            case Timaginary32:  p = 'G'; c = 'f';       break;  // 'G' means imaginary
-            case Timaginary64:  p = 'G'; c = 'd';       break;
-            case Timaginary80:  p = 'G'; c = 'e';       break;
-            case Tcomplex32:    p = 'C'; c = 'f';       break;  // 'C' means complex
-            case Tcomplex64:    p = 'C'; c = 'd';       break;
-            case Tcomplex80:    p = 'C'; c = 'e';       break;
 
             default:
                 return error(t);
@@ -1889,11 +1915,11 @@ extern(C++):
         else if (id == Id.__c_ulonglong)
             return writeBasicType(t, 0, 'y');
         else if (id == Id.__c_complex_float)
-            return writeBasicType(t, 'C', 'f');
+            return Type.tcomplex32.accept(this);
         else if (id == Id.__c_complex_double)
-            return writeBasicType(t, 'C', 'd');
+            return Type.tcomplex64.accept(this);
         else if (id == Id.__c_complex_real)
-            return writeBasicType(t, 'C', 'e');
+            return Type.tcomplex80.accept(this);
 
         doSymbol(t);
     }

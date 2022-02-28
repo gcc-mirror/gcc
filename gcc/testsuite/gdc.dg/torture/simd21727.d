@@ -1,7 +1,7 @@
-// REQUIRED_ARGS: -m64 -O -inline
-// DISABLED: win32 linux32 freebsd32 osx32 netbsd32 dragonflybsd32
 // https://issues.dlang.org/show_bug.cgi?id=21727
-
+// { dg-additional-options "-mavx" { target avx_runtime } }
+// { dg-do run { target { avx_runtime || vect_sizes_16B_8B } } }
+// { dg-skip-if "needs gcc/config.d" { ! d_runtime } }
 import core.simd;
 
 @nogc nothrow pure @safe:
@@ -25,10 +25,7 @@ pragma(inline, false) Float4 identity(Float4 a)
 
 pragma(inline, true) Float4 twoTimes(const ref Float4 a)
 {
-    version (D_SIMD)
-        return Float4(cast(float4) __simd(XMM.ADDPS, a.mVector, a.mVector));
-    else // Allow non-DMD compilers to compile this test.
-        return Float4(a.mVector + a.mVector);
+    return Float4(a.mVector + a.mVector);
 }
 
 pragma(inline, false) Float4 fourTimes(const Float4 a)

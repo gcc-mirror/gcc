@@ -425,10 +425,10 @@ version (Windows) private void[] readImpl(scope const(char)[] name, scope const(
             fileSize = makeUlong(sizeLow, sizeHigh);
         return result;
     }
-    static trustedReadFile(HANDLE hFile, void *lpBuffer, ulong nNumberOfBytesToRead)
+    static trustedReadFile(HANDLE hFile, void *lpBuffer, size_t nNumberOfBytesToRead)
     {
         // Read by chunks of size < 4GB (Windows API limit)
-        ulong totalNumRead = 0;
+        size_t totalNumRead = 0;
         while (totalNumRead != nNumberOfBytesToRead)
         {
             const uint chunkSize = min(nNumberOfBytesToRead - totalNumRead, 0xffff_0000);

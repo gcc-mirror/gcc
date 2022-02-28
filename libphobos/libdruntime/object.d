@@ -2649,13 +2649,18 @@ class Throwable : Object
 
     /**
      * Get the message describing the error.
-     * Base behavior is to return the `Throwable.msg` field.
-     * Override to return some other error message.
+     *
+     * This getter is an alternative way to access the Exception's message,
+     * with the added advantage of being override-able in subclasses.
+     * Subclasses are hence free to do their own memory managements without
+     * being tied to the requirement of providing a `string` in a field.
+     *
+     * The default behavior is to return the `Throwable.msg` field.
      *
      * Returns:
-     *  Error message
+     *  A message representing the cause of the `Throwable`
      */
-    @__future const(char)[] message() const
+    @__future const(char)[] message() const @safe nothrow
     {
         return this.msg;
     }

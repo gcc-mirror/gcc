@@ -133,7 +133,7 @@ private
     }
 
     extern (C) BlkInfo_ gc_query(return scope void* p) pure nothrow;
-    extern (C) GC.Stats gc_stats ( ) nothrow @nogc;
+    extern (C) GC.Stats gc_stats ( ) @safe nothrow @nogc;
     extern (C) GC.ProfileStats gc_profileStats ( ) nothrow @nogc @safe;
 }
 
@@ -766,7 +766,7 @@ extern(D):
      * Returns runtime stats for currently active GC implementation
      * See `core.memory.GC.Stats` for list of available metrics.
      */
-    static Stats stats() nothrow
+    static Stats stats() @safe nothrow @nogc
     {
         return gc_stats();
     }

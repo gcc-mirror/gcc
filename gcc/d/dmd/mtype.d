@@ -648,7 +648,15 @@ extern (C++) abstract class Type : ASTNode
                     goto Lcovariant;
             }
             else if (t1n.ty == t2n.ty && t1n.implicitConvTo(t2n))
+            {
+                if (t1.isref && t2.isref)
+                {
+                    // Treat like pointers to t1n and t2n
+                    if (t1n.constConv(t2n) < MATCH.constant)
+                        goto Lnotcovariant;
+                }
                 goto Lcovariant;
+            }
             else if (t1n.ty == Tnull)
             {
                 // NULL is covariant with any pointer type, but not with any

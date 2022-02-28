@@ -69,17 +69,12 @@ The return value of `T`
 auto toCStringThen(alias dg)(const(char)[] src) nothrow
 {
     import dmd.root.rmem : mem;
+    import dmd.common.string : SmallBuffer;
 
     const len = src.length + 1;
     char[512] small = void;
-    scope ptr = (src.length < (small.length - 1))
-                    ? small[0 .. len]
-                    : (cast(char*)mem.xmalloc(len))[0 .. len];
-    scope (exit)
-    {
-        if (&ptr[0] != &small[0])
-            mem.xfree(&ptr[0]);
-    }
+    auto sb = SmallBuffer!char(len, small[]);
+    scope ptr = sb[];
     ptr[0 .. src.length] = src[];
     ptr[src.length] = '\0';
     return dg(ptr);

@@ -1151,7 +1151,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             return mtype;
         }
         //printf("TypeFunction::semantic() this = %p\n", this);
-        //printf("TypeFunction::semantic() %s, sc.stc = %llx, fargs = %p\n", toChars(), sc.stc, fargs);
+        //printf("TypeFunction::semantic() %s, sc.stc = %llx\n", mtype.toChars(), sc.stc);
 
         bool errors = false;
 
@@ -1457,6 +1457,17 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         {
                             fparam.storageClass &= ~STC.return_;   // https://issues.dlang.org/show_bug.cgi?id=18963
                         }
+                    }
+
+                    if (i + 1 == dim && tf.parameterList.varargs == VarArg.typesafe &&
+                        (t.isTypeDArray() || t.isTypeClass()))
+                    {
+                        /* This is because they can be constructed on the stack
+                         * https://dlang.org/spec/function.html#typesafe_variadic_functions
+                         */
+                        .error(loc, "typesafe variadic function parameter `%s` of type `%s` cannot be marked `return`",
+                            fparam.ident ? fparam.ident.toChars() : "", t.toChars());
+                        errors = true;
                     }
                 }
 

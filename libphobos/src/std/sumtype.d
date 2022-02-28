@@ -533,15 +533,35 @@ public:
         /**
          * Assigns a value to a `SumType`.
          *
-         * Assigning to a `SumType` is `@system` if any of the
-         * `SumType`'s members contain pointers or references, since
-         * those members may be reachable through external references,
-         * and overwriting them could therefore lead to memory
-         * corruption.
+         * If any of the `SumType`'s members other than the one being assigned
+         * to contain pointers or references, it is possible for the assignment
+         * to cause memory corruption (see the
+         * ["Memory corruption" example](#memory-corruption) below for an
+         * illustration of how). Therefore, such assignments are considered
+         * `@system`.
          *
          * An individual assignment can be `@trusted` if the caller can
-         * guarantee that there are no outstanding references to $(I any)
-         * of the `SumType`'s members when the assignment occurs.
+         * guarantee that there are no outstanding references to any `SumType`
+         * members that contain pointers or references at the time the
+         * assignment occurs.
+         *
+         * Examples:
+         *
+         * $(DIVID memory-corruption, $(H3 Memory corruption))
+         *
+         * This example shows how assignment to a `SumType` can be used to
+         * cause memory corruption in `@system` code. In `@safe` code, the
+         * assignment `s = 123` would not be allowed.
+         *
+         * ---
+         * SumType!(int*, int) s = new int;
+         * s.tryMatch!(
+         *     (ref int* p) {
+         *         s = 123; // overwrites `p`
+         *         return *p; // undefined behavior
+         *     }
+         * );
+         * ---
          */
         ref SumType opAssign(T rhs);
     }
@@ -553,14 +573,35 @@ public:
             /**
              * Assigns a value to a `SumType`.
              *
-             * Assigning to a `SumType` is `@system` if any of the `SumType`'s
-             * $(I other) members contain pointers or references, since those
-             * members may be reachable through external references, and
-             * overwriting them could therefore lead to memory corruption.
+             * If any of the `SumType`'s members other than the one being assigned
+             * to contain pointers or references, it is possible for the assignment
+             * to cause memory corruption (see the
+             * ["Memory corruption" example](#memory-corruption) below for an
+             * illustration of how). Therefore, such assignments are considered
+             * `@system`.
              *
              * An individual assignment can be `@trusted` if the caller can
-             * guarantee that, when the assignment occurs, there are no
-             * outstanding references to any such members.
+             * guarantee that there are no outstanding references to any `SumType`
+             * members that contain pointers or references at the time the
+             * assignment occurs.
+             *
+             * Examples:
+             *
+             * $(DIVID memory-corruption, $(H3 Memory corruption))
+             *
+             * This example shows how assignment to a `SumType` can be used to
+             * cause memory corruption in `@system` code. In `@safe` code, the
+             * assignment `s = 123` would not be allowed.
+             *
+             * ---
+             * SumType!(int*, int) s = new int;
+             * s.tryMatch!(
+             *     (ref int* p) {
+             *         s = 123; // overwrites `p`
+             *         return *p; // undefined behavior
+             *     }
+             * );
+             * ---
              */
             ref SumType opAssign(T rhs)
             {
@@ -1528,7 +1569,27 @@ private enum bool isSumTypeInstance(T) = is(T == SumType!Args, Args...);
 }
 
 /// True if `T` is a [SumType] or implicitly converts to one, otherwise false.
-enum bool isSumType(T) = is(T : SumType!Args, Args...);
+template isSumType(T)
+{
+    static if (is(T : SumType!Args, Args...))
+    {
+        enum isSumType = true;
+    }
+    else static if (is(T == struct) && __traits(getAliasThis, T).length > 0)
+    {
+        // Workaround for https://issues.dlang.org/show_bug.cgi?id=21975
+        import std.traits : ReturnType;
+
+        alias AliasThisType = ReturnType!((T t) =>
+            __traits(getMember, t, __traits(getAliasThis, T)[0])
+        );
+        enum isSumType = .isSumType!AliasThisType;
+    }
+    else
+    {
+        enum isSumType = false;
+    }
+}
 
 ///
 @safe unittest
@@ -1547,6 +1608,25 @@ enum bool isSumType(T) = is(T : SumType!Args, Args...);
     assert(isSumType!(SumType!int));
     assert(isSumType!ConvertsToSumType);
     assert(!isSumType!ContainsSumType);
+}
+
+@safe unittest
+{
+    static struct AliasThisVar(T)
+    {
+        SumType!T payload;
+        alias payload this;
+    }
+
+    static struct AliasThisFunc(T)
+    {
+        SumType!T payload;
+        ref get() { return payload; }
+        alias get this;
+    }
+
+    static assert(isSumType!(AliasThisVar!int));
+    static assert(isSumType!(AliasThisFunc!int));
 }
 
 /**

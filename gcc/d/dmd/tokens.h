@@ -67,7 +67,7 @@ enum class TOK : unsigned char
     comment,
 
     // Operators
-    lessThan,       // 54
+    lessThan,
     greaterThan,
     lessOrEqual,
     greaterOrEqual,
@@ -77,7 +77,7 @@ enum class TOK : unsigned char
     notIdentity,
     is_,
 
-    leftShift,      // 64
+    leftShift,
     rightShift,
     leftShiftAssign,
     rightShiftAssign,
@@ -112,7 +112,7 @@ enum class TOK : unsigned char
     orOr,
 
     // Numeric literals
-    int32Literal,   // 104,
+    int32Literal,
     uns32Literal,
     int64Literal,
     uns64Literal,
@@ -126,12 +126,12 @@ enum class TOK : unsigned char
     imaginary80Literal,
 
     // Char constants
-    charLiteral,    // 116,
+    charLiteral,
     wcharLiteral,
     dcharLiteral,
 
     // Leaf operators
-    identifier,     // 119,
+    identifier,
     string_,
     hexadecimalString,
     this_,
@@ -139,7 +139,7 @@ enum class TOK : unsigned char
     error,
 
     // Basic types
-    void_,          // 127
+    void_,
     int8,
     uns8,
     int16,
@@ -165,7 +165,7 @@ enum class TOK : unsigned char
     bool_,
 
     // Aggregates
-    struct_,        // 151
+    struct_,
     class_,
     interface_,
     union_,
@@ -197,7 +197,7 @@ enum class TOK : unsigned char
     immutable_,
 
     // Statements
-    if_,            // 181
+    if_,
     else_,
     while_,
     for_,
@@ -223,7 +223,7 @@ enum class TOK : unsigned char
     onScopeSuccess,
 
     // Contracts
-    invariant_,     // 205
+    invariant_,
 
     // Testing
     unittest_,
@@ -233,7 +233,7 @@ enum class TOK : unsigned char
     ref_,
     macro_,
 
-    parameters,     // 210
+    parameters,
     traits,
     pure_,
     nothrow_,

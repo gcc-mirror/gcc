@@ -3285,8 +3285,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         else
             assert(0);
 
-        if (global.params.vcomplex)
-            exp.type.checkComplexTransition(exp.loc, sc);
+        exp.type.checkComplexTransition(exp.loc, sc);
 
         result = e;
     }
@@ -5375,8 +5374,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
         }
 
-        if (global.params.vcomplex)
-            ta.checkComplexTransition(exp.loc, sc);
+        ta.checkComplexTransition(exp.loc, sc);
 
         Expression e;
         auto tb = ta.toBasetype();
