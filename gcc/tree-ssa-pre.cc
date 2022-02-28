@@ -3993,14 +3993,7 @@ compute_avail (function *fun)
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	    {
 	      pre_expr e = get_or_alloc_expr_for_name (op);
-	      unsigned value_id = get_expr_value_id (e);
-	      if (value_id_constant_p (value_id))
-		{
-		  get_or_alloc_expr_for_constant (VN_INFO (op)->valnum);
-		  continue;
-		}
-
-	      add_to_value (value_id, e);
+	      add_to_value (get_expr_value_id (e), e);
 	      bitmap_insert_into_set (TMP_GEN (block), e);
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
