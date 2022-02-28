@@ -14899,7 +14899,12 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	  dperm.one_operand_p = true;
 
 	  if (mode == V8HFmode)
-	    tmp1 = lowpart_subreg (V8HFmode, force_reg (HFmode, val), HFmode);
+	    {
+	      tmp1 = force_reg (HFmode, val);
+	      tmp2 = gen_reg_rtx (mode);
+	      emit_insn (gen_vec_setv8hf_0 (tmp2, CONST0_RTX (mode), tmp1));
+	      tmp1 = gen_lowpart (mode, tmp2);
+	    }
 	  else
 	    {
 	      /* Extend to SImode using a paradoxical SUBREG.  */
