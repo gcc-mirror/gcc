@@ -1,3 +1,8 @@
+2022-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104618
+	* g++.dg/overload/paren1.C: New test.
+
 2022-02-25  Jakub Jelinek  <jakub@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 

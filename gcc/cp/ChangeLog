@@ -1,3 +1,9 @@
+2022-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/104618
+	* typeck.cc (cp_build_addr_expr_1): Also
+	maybe_undo_parenthesized_ref.
+
 2022-02-24  Martin Liska  <mliska@suse.cz>
 
 	* pt.cc (defarg_insts_for): Use braces for subobject.
