@@ -1773,8 +1773,8 @@ lra_split_hard_reg_for (void)
      iterations.  Either it's an asm and something is wrong with the
      constraints, or we have run out of spill registers; error out in
      either case.  */
-  bool asm_p = false;
-  bitmap_head failed_reload_insns, failed_reload_pseudos;
+  bool asm_p = false, spill_p = false;
+  bitmap_head failed_reload_insns, failed_reload_pseudos, over_split_insns;
   
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
@@ -1785,6 +1785,7 @@ lra_split_hard_reg_for (void)
   bitmap_ior (&non_reload_pseudos, &lra_inheritance_pseudos, &lra_split_regs);
   bitmap_ior_into (&non_reload_pseudos, &lra_subreg_reload_pseudos);
   bitmap_ior_into (&non_reload_pseudos, &lra_optional_reload_pseudos);
+  bitmap_initialize (&over_split_insns, &reg_obstack);
   for (i = lra_constraint_new_regno_start; i < max_regno; i++)
     if (reg_renumber[i] < 0 && lra_reg_info[i].nrefs != 0
 	&& (rclass = lra_get_allocno_class (i)) != NO_REGS
@@ -1792,13 +1793,41 @@ lra_split_hard_reg_for (void)
       {
 	if (! find_reload_regno_insns (i, first, last))
 	  continue;
-	if (spill_hard_reg_in_range (i, rclass, first, last))
+	if (BLOCK_FOR_INSN (first) == BLOCK_FOR_INSN (last))
 	  {
-	    bitmap_clear (&failed_reload_pseudos);
-	    return true;
+	    /* Check that we are not trying to split over the same insn
+	       requiring reloads to avoid splitting the same hard reg twice or
+	       more.  If we need several hard regs splitting over the same insn
+	       it can be finished on the next iterations.
+
+	       The following loop iteration number is small as we split hard
+	       reg in a very small range.  */
+	    for (insn = first;
+		 insn != NEXT_INSN (last);
+		 insn = NEXT_INSN (insn))
+	      if (bitmap_bit_p (&over_split_insns, INSN_UID (insn)))
+		break;
+	    if (insn != NEXT_INSN (last)
+		|| !spill_hard_reg_in_range (i, rclass, first, last))
+	      {
+		bitmap_set_bit (&failed_reload_pseudos, i);
+	      }
+	    else
+	      {
+		for (insn = first;
+		     insn != NEXT_INSN (last);
+		     insn = NEXT_INSN (insn))
+		  bitmap_set_bit (&over_split_insns, INSN_UID (insn));
+		spill_p = true;
+	      }
 	  }
-	bitmap_set_bit (&failed_reload_pseudos, i);
       }
+  bitmap_clear (&over_split_insns);
+  if (spill_p)
+    {
+      bitmap_clear (&failed_reload_pseudos);
+      return true;
+    }
   bitmap_clear (&non_reload_pseudos);
   bitmap_initialize (&failed_reload_insns, &reg_obstack);
   EXECUTE_IF_SET_IN_BITMAP (&failed_reload_pseudos, 0, u, bi)
