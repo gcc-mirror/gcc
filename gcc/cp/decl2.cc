@@ -5737,6 +5737,9 @@ decl_dependent_p (tree decl)
 bool
 mark_single_function (tree expr, tsubst_flags_t complain)
 {
+  expr = maybe_undo_parenthesized_ref (expr);
+  expr = tree_strip_any_location_wrapper (expr);
+
   if (is_overloaded_fn (expr) == 1
       && !mark_used (expr, complain)
       && (complain & tf_error))

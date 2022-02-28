@@ -6884,9 +6884,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
      so we can just form an ADDR_EXPR with the correct type.  */
   if (processing_template_decl || TREE_CODE (arg) != COMPONENT_REF)
     {
-      tree stripped_arg
-	= tree_strip_any_location_wrapper (maybe_undo_parenthesized_ref (arg));
-      if (!mark_single_function (stripped_arg, complain))
+      if (!mark_single_function (arg, complain))
 	return error_mark_node;
       val = build_address (arg);
       if (TREE_CODE (arg) == OFFSET_REF)
