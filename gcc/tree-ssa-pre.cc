@@ -1197,18 +1197,6 @@ get_or_alloc_expr_for_constant (tree constant)
   return newexpr;
 }
 
-/* Get or allocate a pre_expr for a piece of GIMPLE, and return it.
-   Currently only supports constants and SSA_NAMES.  */
-static pre_expr
-get_or_alloc_expr_for (tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    return get_or_alloc_expr_for_name (t);
-  else if (is_gimple_min_invariant (t))
-    return get_or_alloc_expr_for_constant (t);
-  gcc_unreachable ();
-}
-
 /* Return the folded version of T if T, when folded, is a gimple
    min_invariant or an SSA name.  Otherwise, return T.  */
 
@@ -2779,8 +2767,16 @@ create_component_ref_by_pieces (basic_block block, vn_reference_t ref,
 static tree
 find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 {
-  pre_expr expr = get_or_alloc_expr_for (op);
-  unsigned int lookfor = get_expr_value_id (expr);
+  /* Constants are always leaders.  */
+  if (is_gimple_min_invariant (op))
+    return op;
+
+  gcc_assert (TREE_CODE (op) == SSA_NAME);
+  vn_ssa_aux_t info = VN_INFO (op);
+  unsigned int lookfor = info->value_id;
+  if (value_id_constant_p (lookfor))
+    return info->valnum;
+
   pre_expr leader = bitmap_find_leader (AVAIL_OUT (block), lookfor);
   if (leader)
     {
@@ -2808,7 +2804,7 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 	 its operand values.  */
       if (temp->kind == NARY)
 	return create_expression_by_pieces (block, temp, stmts,
-					    get_expr_type (expr));
+					    TREE_TYPE (op));
     }
 
   /* Defer.  */
