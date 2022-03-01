@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
-#define MOD_VERSION "15"
+#define MOD_VERSION "16"
 
 
 /* Structure that describes a position within a module file.  */
@@ -6634,7 +6634,7 @@ create_intrinsic_function (const char *name, int id,
    list was provided.  */
 
 static void
-import_iso_c_binding_module (void)
+import_iso_c_binding_module (bool import_all)
 {
   gfc_symbol *mod_sym = NULL, *return_type;
   gfc_symtree *mod_symtree = NULL, *tmp_symtree;
@@ -6705,16 +6705,17 @@ import_iso_c_binding_module (void)
 	}
     }
 
-  if ((want_c_ptr || !only_flag) && !c_ptr)
+  if ((want_c_ptr || !only_flag || import_all) && !c_ptr)
     c_ptr = generate_isocbinding_symbol (iso_c_module_name,
 					 (iso_c_binding_symbol)
 							ISOCBINDING_PTR,
-					 NULL, NULL, only_flag);
-  if ((want_c_funptr || !only_flag) && !c_funptr)
+					 NULL, NULL, only_flag && !import_all);
+  if ((want_c_funptr || !only_flag || import_all) && !c_funptr)
     c_funptr = generate_isocbinding_symbol (iso_c_module_name,
 					    (iso_c_binding_symbol)
 							ISOCBINDING_FUNPTR,
-					    NULL, NULL, only_flag);
+					    NULL, NULL,
+					    only_flag && !import_all);
 
   /* Generate the symbols for the named constants representing
      the kinds for intrinsic data types.  */
@@ -6813,7 +6814,7 @@ import_iso_c_binding_module (void)
 	      }
 	  }
 
-      if (!found && !only_flag)
+      if (!found && !only_flag && !import_all)
 	{
 	  /* Skip, if the symbol is not in the enabled standard.  */
 	  switch (i)
@@ -6847,7 +6848,9 @@ import_iso_c_binding_module (void)
 	      default:
 		; /* Not GFC_STD_* versioned.  */
 	    }
-
+	}
+      if (!found && (!only_flag || import_all))
+	{
 	  switch (i)
 	    {
 #define NAMED_FUNCTION(a,b,c,d) \
@@ -6895,6 +6898,13 @@ import_iso_c_binding_module (void)
       gfc_error ("Symbol %qs referenced at %L not found in intrinsic "
 		 "module ISO_C_BINDING", u->use_name, &u->where);
      }
+}
+
+void
+gfc_import_iso_c_binding_module (void)
+{
+  gcc_assert (gfc_rename_list == NULL);
+  import_iso_c_binding_module (true);
 }
 
 
@@ -7306,7 +7316,7 @@ gfc_use_module (gfc_use_list *module)
       if (strcmp (module_name, "iso_c_binding") == 0
 	  && gfc_notify_std (GFC_STD_F2003, "ISO_C_BINDING module at %C"))
 	{
-	  import_iso_c_binding_module();
+	  import_iso_c_binding_module (false);
 	  free_rename (module->rename);
 	  module->rename = NULL;
 	  gfc_current_locus = old_locus;

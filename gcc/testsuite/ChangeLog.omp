@@ -1,3 +1,9 @@
+2022-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/c_loc_test_22.f90: Update scan-tree.
+	* gfortran.dg/finalize_21.f90: Likewise.
+	* gfortran.dg/gomp/map-alloc-comp-1.f90: Remove sorry dg-error.
+
 2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/gomp/target-enter-data-1.c: Adjust testcase.
