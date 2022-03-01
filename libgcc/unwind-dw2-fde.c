@@ -42,15 +42,34 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+#ifdef ATOMIC_FDE_FAST_PATH
+#include "unwind-dw2-btree.h"
+
+static struct btree registered_frames;
+
+static void
+release_registered_frames (void) __attribute__ ((destructor (110)));
+static void
+release_registered_frames (void)
+{
+  /* Release the b-tree and all frames. Frame releases that happen later are
+   * silently ignored */
+  btree_destroy (&registered_frames);
+}
+
+static void
+get_pc_range (const struct object *ob, uintptr_t *range);
+static void
+init_object (struct object *ob);
+
+#else
+
 /* The unseen_objects list contains objects that have been registered
    but not yet categorized in any way.  The seen_objects list has had
    its pc_begin and count fields initialized at minimum, and is sorted
    by decreasing value of pc_begin.  */
 static struct object *unseen_objects;
 static struct object *seen_objects;
-#ifdef ATOMIC_FDE_FAST_PATH
-static int any_objects_registered;
-#endif
 
 #ifdef __GTHREAD_MUTEX_INIT
 static __gthread_mutex_t object_mutex = __GTHREAD_MUTEX_INIT;
@@ -78,6 +97,7 @@ init_object_mutex_once (void)
 static __gthread_mutex_t object_mutex;
 #endif
 #endif
+#endif
 
 /* Called from crtbegin.o to register the unwind info for an object.  */
 
@@ -99,23 +119,23 @@ __register_frame_info_bases (const void *begin, struct object *ob,
   ob->fde_end = NULL;
 #endif
 
+#ifdef ATOMIC_FDE_FAST_PATH
+  // Initialize eagerly to avoid locking later
+  init_object (ob);
+
+  // And register the frame
+  uintptr_t range[2];
+  get_pc_range (ob, range);
+  btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
+#else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
 
   ob->next = unseen_objects;
   unseen_objects = ob;
-#ifdef ATOMIC_FDE_FAST_PATH
-  /* Set flag that at least one library has registered FDEs.
-     Use relaxed MO here, it is up to the app to ensure that the library
-     loading/initialization happens-before using that library in other
-     threads (in particular unwinding with that library's functions
-     appearing in the backtraces).  Calling that library's functions
-     without waiting for the library to initialize would be racy.  */
-  if (!any_objects_registered)
-    __atomic_store_n (&any_objects_registered, 1, __ATOMIC_RELAXED);
-#endif
 
   __gthread_mutex_unlock (&object_mutex);
+#endif
 }
 
 void
@@ -153,23 +173,23 @@ __register_frame_info_table_bases (void *begin, struct object *ob,
   ob->s.b.from_array = 1;
   ob->s.b.encoding = DW_EH_PE_omit;
 
+#ifdef ATOMIC_FDE_FAST_PATH
+  // Initialize eagerly to avoid locking later
+  init_object (ob);
+
+  // And register the frame
+  uintptr_t range[2];
+  get_pc_range (ob, range);
+  btree_insert (&registered_frames, range[0], range[1] - range[0], ob);
+#else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
 
   ob->next = unseen_objects;
   unseen_objects = ob;
-#ifdef ATOMIC_FDE_FAST_PATH
-  /* Set flag that at least one library has registered FDEs.
-     Use relaxed MO here, it is up to the app to ensure that the library
-     loading/initialization happens-before using that library in other
-     threads (in particular unwinding with that library's functions
-     appearing in the backtraces).  Calling that library's functions
-     without waiting for the library to initialize would be racy.  */
-  if (!any_objects_registered)
-    __atomic_store_n (&any_objects_registered, 1, __ATOMIC_RELAXED);
-#endif
 
   __gthread_mutex_unlock (&object_mutex);
+#endif
 }
 
 void
@@ -200,16 +220,33 @@ __register_frame_table (void *begin)
 void *
 __deregister_frame_info_bases (const void *begin)
 {
-  struct object **p;
   struct object *ob = 0;
 
   /* If .eh_frame is empty, we haven't registered.  */
   if ((const uword *) begin == 0 || *(const uword *) begin == 0)
     return ob;
 
+#ifdef ATOMIC_FDE_FAST_PATH
+  // Find the corresponding PC range
+  struct object lookupob;
+  lookupob.tbase = 0;
+  lookupob.dbase = 0;
+  lookupob.u.single = begin;
+  lookupob.s.i = 0;
+  lookupob.s.b.encoding = DW_EH_PE_omit;
+#ifdef DWARF2_OBJECT_END_PTR_EXTENSION
+  lookupob.fde_end = NULL;
+#endif
+  uintptr_t range[2];
+  get_pc_range (&lookupob, range);
+
+  // And remove
+  ob = btree_remove (&registered_frames, range[0]);
+#else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
 
+  struct object **p;
   for (p = &unseen_objects; *p ; p = &(*p)->next)
     if ((*p)->u.single == begin)
       {
@@ -241,6 +278,8 @@ __deregister_frame_info_bases (const void *begin)
 
  out:
   __gthread_mutex_unlock (&object_mutex);
+#endif
+
   gcc_assert (ob);
   return (void *) ob;
 }
@@ -264,7 +303,7 @@ __deregister_frame (void *begin)
    instead of an _Unwind_Context.  */
 
 static _Unwind_Ptr
-base_from_object (unsigned char encoding, struct object *ob)
+base_from_object (unsigned char encoding, const struct object *ob)
 {
   if (encoding == DW_EH_PE_omit)
     return 0;
@@ -628,13 +667,17 @@ end_fde_sort (struct object *ob, struct fde_accumulator *accu, size_t count)
     }
 }
 
-
-/* Update encoding, mixed_encoding, and pc_begin for OB for the
-   fde array beginning at THIS_FDE.  Return the number of fdes
-   encountered along the way.  */
+/* Inspect the fde array beginning at this_fde. This
+   function can be used either in query mode (RANGE is
+   not null, OB is const), or in update mode (RANGE is
+   null, OB is modified). In query mode the function computes
+   the range of PC values and stores it in RANGE. In
+   update mode it updates encoding, mixed_encoding, and pc_begin
+   for OB. Return the number of fdes encountered along the way. */
 
 static size_t
-classify_object_over_fdes (struct object *ob, const fde *this_fde)
+classify_object_over_fdes (struct object *ob, const fde *this_fde,
+			   uintptr_t *range)
 {
   const struct dwarf_cie *last_cie = 0;
   size_t count = 0;
@@ -660,14 +703,18 @@ classify_object_over_fdes (struct object *ob, const fde *this_fde)
 	  if (encoding == DW_EH_PE_omit)
 	    return -1;
 	  base = base_from_object (encoding, ob);
-	  if (ob->s.b.encoding == DW_EH_PE_omit)
-	    ob->s.b.encoding = encoding;
-	  else if (ob->s.b.encoding != encoding)
-	    ob->s.b.mixed_encoding = 1;
+	  if (!range)
+	    {
+	      if (ob->s.b.encoding == DW_EH_PE_omit)
+		ob->s.b.encoding = encoding;
+	      else if (ob->s.b.encoding != encoding)
+		ob->s.b.mixed_encoding = 1;
+	    }
 	}
 
-      read_encoded_value_with_base (encoding, base, this_fde->pc_begin,
-				    &pc_begin);
+      const unsigned char *p;
+      p = read_encoded_value_with_base (encoding, base, this_fde->pc_begin,
+					&pc_begin);
 
       /* Take care to ignore link-once functions that were removed.
 	 In these cases, the function address will be NULL, but if
@@ -683,8 +730,29 @@ classify_object_over_fdes (struct object *ob, const fde *this_fde)
 	continue;
 
       count += 1;
-      if ((void *) pc_begin < ob->pc_begin)
-	ob->pc_begin = (void *) pc_begin;
+      if (range)
+	{
+	  _Unwind_Ptr pc_range, pc_end;
+	  read_encoded_value_with_base (encoding & 0x0F, 0, p, &pc_range);
+	  pc_end = pc_begin + pc_range;
+	  if ((!range[0]) && (!range[1]))
+	    {
+	      range[0] = pc_begin;
+	      range[1] = pc_end;
+	    }
+	  else
+	    {
+	      if (pc_begin < range[0])
+		range[0] = pc_begin;
+	      if (pc_end > range[1])
+		range[1] = pc_end;
+	    }
+	}
+      else
+	{
+	  if ((void *) pc_begin < ob->pc_begin)
+	    ob->pc_begin = (void *) pc_begin;
+	}
     }
 
   return count;
@@ -769,7 +837,7 @@ init_object (struct object* ob)
 	  fde **p = ob->u.array;
 	  for (count = 0; *p; ++p)
 	    {
-	      size_t cur_count = classify_object_over_fdes (ob, *p);
+	      size_t cur_count = classify_object_over_fdes (ob, *p, NULL);
 	      if (cur_count == (size_t) -1)
 		goto unhandled_fdes;
 	      count += cur_count;
@@ -777,7 +845,7 @@ init_object (struct object* ob)
 	}
       else
 	{
-	  count = classify_object_over_fdes (ob, ob->u.single);
+	  count = classify_object_over_fdes (ob, ob->u.single, NULL);
 	  if (count == (size_t) -1)
 	    {
 	      static const fde terminator;
@@ -820,6 +888,32 @@ init_object (struct object* ob)
 
   ob->s.b.sorted = 1;
 }
+
+#ifdef ATOMIC_FDE_FAST_PATH
+/* Get the PC range for lookup */
+static void
+get_pc_range (const struct object *ob, uintptr_t *range)
+{
+  // It is safe to cast to non-const object* here as
+  // classify_object_over_fdes does not modify ob in query mode.
+  struct object *ncob = (struct object *) (uintptr_t) ob;
+  range[0] = range[1] = 0;
+  if (ob->s.b.sorted)
+    {
+      classify_object_over_fdes (ncob, ob->u.sort->orig_data, range);
+    }
+  else if (ob->s.b.from_array)
+    {
+      fde **p = ob->u.array;
+      for (; *p; ++p)
+	classify_object_over_fdes (ncob, *p, range);
+    }
+  else
+    {
+      classify_object_over_fdes (ncob, ob->u.single, range);
+    }
+}
+#endif
 
 /* A linear search through a set of FDEs for the given PC.  This is
    used when there was insufficient memory to allocate and sort an
@@ -985,6 +1079,9 @@ binary_search_mixed_encoding_fdes (struct object *ob, void *pc)
 static const fde *
 search_object (struct object* ob, void *pc)
 {
+  /* The fast path initializes objects eagerly to avoid locking.
+   * On the slow path we initialize them now */
+#ifndef ATOMIC_FDE_FAST_PATH
   /* If the data hasn't been sorted, try to do this now.  We may have
      more memory available than last time we tried.  */
   if (! ob->s.b.sorted)
@@ -997,6 +1094,7 @@ search_object (struct object* ob, void *pc)
       if (pc < ob->pc_begin)
 	return NULL;
     }
+#endif
 
   if (ob->s.b.sorted)
     {
@@ -1033,17 +1131,12 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   const fde *f = NULL;
 
 #ifdef ATOMIC_FDE_FAST_PATH
-  /* For targets where unwind info is usually not registered through these
-     APIs anymore, avoid taking a global lock.
-     Use relaxed MO here, it is up to the app to ensure that the library
-     loading/initialization happens-before using that library in other
-     threads (in particular unwinding with that library's functions
-     appearing in the backtraces).  Calling that library's functions
-     without waiting for the library to initialize would be racy.  */
-  if (__builtin_expect (!__atomic_load_n (&any_objects_registered,
-					  __ATOMIC_RELAXED), 1))
+  ob = btree_lookup (&registered_frames, (uintptr_t) pc);
+  if (!ob)
     return NULL;
-#endif
+
+  f = search_object (ob, pc);
+#else
 
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
@@ -1081,6 +1174,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 
  fini:
   __gthread_mutex_unlock (&object_mutex);
+#endif
 
   if (f)
     {
