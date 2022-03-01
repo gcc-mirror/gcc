@@ -213,64 +213,6 @@ struct MacroExpander
 			size_t &match_amount, size_t lo_bound = 0,
 			size_t hi_bound = 0);
 
-  /**
-   * Substitute a metavariable by its given fragment in a transcribing context,
-   * i.e. replacing $var with the associated fragment.
-   *
-   * @param input Tokens given to the transcribing context
-   * @param fragments Fragments given to the macro substitution
-   * @param metavar Metavariable to try and replace
-   *
-   * @return A token containing the associated fragment expanded into tokens if
-   * any, or the cloned token if no fragment was associated
-   */
-  static std::vector<std::unique_ptr<AST::Token>> substitute_metavar (
-    std::vector<std::unique_ptr<AST::Token>> &input,
-    std::map<std::string, std::vector<MatchedFragment>> &fragments,
-    std::unique_ptr<AST::Token> &metavar);
-
-  /**
-   * Substitute a macro repetition by its given fragments
-   *
-   * @param input Tokens given to the transcribing context
-   * @param fragments Fragments given to the macro substitution
-   * @param pattern_start Start index of the pattern tokens
-   * @param pattern_end Index  Amount of tokens in the pattern
-   *
-   * @return A vector containing the repeated pattern
-   */
-  static std::vector<std::unique_ptr<AST::Token>> substitute_repetition (
-    std::vector<std::unique_ptr<AST::Token>> &input,
-    std::vector<std::unique_ptr<AST::Token>> &macro,
-    std::map<std::string, std::vector<MatchedFragment>> &fragments,
-    size_t pattern_start, size_t pattern_end);
-
-  /**
-   * Substitute a given token by its appropriate representation
-   *
-   * @param macro Tokens used in the macro declaration
-   * @param input Tokens given to the transcribing context
-   * @param fragments Fragments given to the macro substitution
-   * @param token Current token to try and substitute
-   *
-   * @return A token containing the associated fragment expanded into tokens if
-   * any, or the cloned token if no fragment was associated, as well as the
-   * amount of tokens that should be skipped before the next invocation. Since
-   * this function may consume more than just one token, it is important to skip
-   * ahead of the input to avoid mis-substitutions
-   */
-  static std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
-  substitute_token (
-    std::vector<std::unique_ptr<AST::Token>> &input,
-    std::vector<std::unique_ptr<AST::Token>> &macro,
-    std::map<std::string, std::vector<MatchedFragment>> &fragments,
-    size_t token_idx);
-
-  static std::vector<std::unique_ptr<AST::Token>> substitute_tokens (
-    std::vector<std::unique_ptr<AST::Token>> &input,
-    std::vector<std::unique_ptr<AST::Token>> &macro,
-    std::map<std::string, std::vector<MatchedFragment>> &fragments);
-
   void push_context (ContextType t) { context.push_back (t); }
 
   ContextType pop_context ()
