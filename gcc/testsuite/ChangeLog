@@ -1,3 +1,11 @@
+2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2022-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/104667
+	* g++.dg/ext/attrib64.C: New test.
+
 2022-02-25  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/arm/simd/vdot-compile.c: Add new cases.
