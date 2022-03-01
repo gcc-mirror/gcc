@@ -2267,12 +2267,20 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 
   /* Handle special case - vector comparsion with boolean result, transform
      it using ptest instruction.  */
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      || mode == OImode)
     {
       rtx flag = gen_rtx_REG (CCZmode, FLAGS_REG);
       machine_mode p_mode = GET_MODE_SIZE (mode) == 32 ? V4DImode : V2DImode;
 
       gcc_assert (code == EQ || code == NE);
+
+      if (mode == OImode)
+	{
+	  op0 = lowpart_subreg (p_mode, force_reg (mode, op0), mode);
+	  op1 = lowpart_subreg (p_mode, force_reg (mode, op1), mode);
+	  mode = p_mode;
+	}
       /* Generate XOR since we can't check that one operand is zero vector.  */
       tmp = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (tmp, gen_rtx_XOR (mode, op0, op1)));
